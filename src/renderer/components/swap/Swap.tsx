@@ -8,7 +8,6 @@ import {
   MagnifyingGlassMinusIcon,
   MagnifyingGlassPlusIcon
 } from '@heroicons/react/24/outline'
-//import { getValueOfAsset1InAsset2, PoolData } from '@thorchain/asgardex-util'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { CryptoAmount, QuoteSwapParams, ThorchainQuery, TxDetails } from '@xchainjs/xchain-thorchain-query'
 import {
