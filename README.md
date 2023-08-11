@@ -5,9 +5,9 @@
   <img src="internals/img/asgardex-splash.png" width="100%" />
 </div>
 
-[![Version](https://img.shields.io/github/package-json/v/thorchain/asgardex-desktopcolor=xyz&filename=package.json&style=flat-square)](https://github.com/thorchain/asgardex-desktop/releases)
-![Test](https://github.com/thorchain/asgardex-desktop/workflows/Test/badge.svg)
-![Electron build](https://github.com/thorchain/asgardex-desktop/workflows/Electron%20build/badge.svg)
+[![Version](https://img.shields.io/github/package-json/v/asgardex/asgardex-desktopcolor=xyz&filename=package.json&style=flat-square)](https://github.com/asgardex/asgardex-desktop/releases)
+![Test](https://github.com/asgardex/asgardex-desktop/workflows/Test/badge.svg)
+![Electron build](https://github.com/asgardex/asgardex-desktop/workflows/Electron%20build/badge.svg)
 
 [![Discord](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/pHcS67yX7Z)
 [![Follow on Twitter](https://img.shields.io/twitter/follow/asgardex?style=social)](https://twitter.com/asgardex)
@@ -98,7 +98,7 @@ _(in alphabetical order)_
 It's recommended to use a Node version as same as Electron is running with (currently: [`Electron v20.x` / Node `16.15.x`](https://github.com/electron/releases#releases)). It's recommened to install [nvm](https://github.com/nvm-sh/nvm) to run as same Node version locally as used for building ASGARDEX on CI.
 
 ```bash
-git clone https://github.com/thorchain/asgardex-desktop.git asgardex
+git clone https://github.com/asgardex/asgardex-desktop.git asgardex
 cd asgardex
 yarn
 ```
@@ -196,7 +196,7 @@ yarn test
 
 ### `e2e`
 
-Note: Running test-cafe is disabled (see https://github.com/thorchain/asgardex-desktop/issues/750)
+Note: Running test-cafe is disabled (see https://github.com/asgardex/asgardex-desktop/issues/750)
 
 ```bash
 yarn test:e2e
@@ -369,11 +369,11 @@ See the [docs and guides here](https://docs.thorchain.org)
 
 ## Contributing
 
-Everyone is welcome to contribute. Check [open issues](https://github.com/thorchain/asgardex-desktop/issues) or create a new one to start your work with and open a PR afterwards. Newcomers might want to check issues labeled as [good first issues](https://github.com/thorchain/asgardex-desktop/labels/good%20first%20issue).
+Everyone is welcome to contribute. Check [open issues](https://github.com/asgardex/asgardex-desktop/issues) or create a new one to start your work with and open a PR afterwards. Newcomers might want to check issues labeled as [good first issues](https://github.com/asgardex/asgardex-desktop/labels/good%20first%20issue).
 
 ## Bug Reports
 
-Please use [bug report template](https://github.com/thorchain/asgardex-desktop/issues/new?assignees=&labels=bug&template=2-Bug_report.md) to file any bugs.
+Please use [bug report template](https://github.com/asgardex/asgardex-desktop/issues/new?assignees=&labels=bug&template=2-Bug_report.md) to file any bugs.
 
 ## License
 
