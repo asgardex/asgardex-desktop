@@ -64,7 +64,7 @@
   },
   "publish": {
     "provider": "github",
-    "owner": "thorchain",
+    "owner": "asgardex",
     "repo": "asgardex-desktop",
     "private": false
   }
