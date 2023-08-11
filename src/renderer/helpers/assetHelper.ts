@@ -29,7 +29,11 @@ import {
   AssetRuneB1A,
   AssetRuneERC20,
   AssetRuneERC20Testnet,
-  AssetRuneNative
+  AssetRuneNative,
+  AssetSynthBnb,
+  AssetSynthBtc,
+  AssetSynthBusd,
+  AssetSynthEth
 } from '../../shared/utils/asset'
 import { isEnabledChain } from '../../shared/utils/chain'
 import {
@@ -108,7 +112,7 @@ export const isBnbAsset = (asset: Asset): boolean => eqAsset.equals(asset, Asset
 /**
  * Checks whether an asset is a BNB synthetic asset
  */
-export const isBnbAssetSynth = (asset: Asset): boolean => eqAsset.equals(asset, { ...AssetBNB, synth: true })
+export const isBnbAssetSynth = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthBnb)
 
 /**
  * Checks whether an asset is a BTC asset
@@ -116,9 +120,23 @@ export const isBnbAssetSynth = (asset: Asset): boolean => eqAsset.equals(asset, 
 export const isBtcAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetBTC)
 
 /**
+ * Checks whether an asset is a Btc synthetic asset
+ */
+export const isBtcAssetSynth = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthBtc)
+
+/**
+ * Checks whether an asset is a Btc synthetic asset
+ */
+export const isBusdAssetSynth = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthBusd)
+/**
  * Checks whether an asset is an ETH asset
  */
 export const isEthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetETH)
+
+/**
+ * Checks whether an asset is an ETH synthetic
+ */
+export const isEthSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthEth)
 
 /**
  * Checks whether an asset is a DOGE asset
@@ -242,6 +260,7 @@ export const isPricePoolAsset = (asset: Asset): asset is PricePoolAsset =>
   // all of PoolAsset except BNB -> see `PricePoolAsset`
   [...DEFAULT_PRICE_ASSETS, ...USD_PRICE_ASSETS].includes(asset)
 
+// How should this work for synths
 export const isChainAsset = (asset: Asset): boolean =>
   isEnabledChain(asset.chain) && eqAsset.equals(asset, getChainAsset(asset.chain))
 

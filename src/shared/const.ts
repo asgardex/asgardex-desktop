@@ -7,14 +7,20 @@ import { DEFAULT_THORNODE_API_URLS, DEFAULT_THORNODE_RPC_URLS } from './thorchai
 
 export const ASGARDEX_IDENTIFIER = 999
 
+// Thorname for affialiate address
+export const ASGARDEX_THORNAME = 'dx'
+
+// Affilaite Fee in basis points
+export const ASGARDEX_AFFILIATE_FEE = 30
+
 // Header key for 9R endpoints
 export const NINE_REALMS_CLIENT_HEADER = 'x-client-id'
 
 export enum ExternalUrl {
   DOCS = 'https://docs.thorchain.org',
   DISCORD = 'https://discord.gg/pHcS67yX7Z',
-  GITHUB_REPO = `https://github.com/thorchain/asgardex-electron`,
-  GITHUB_RELEASE = `https://github.com/thorchain/asgardex-electron/releases/tag/v`,
+  GITHUB_REPO = `https://github.com/thorchain/asgardex-desktop`,
+  GITHUB_RELEASE = `https://github.com/thorchain/asgardex-desktop/releases/tag/v`,
   TWITTER = 'https://twitter.com/asgardex'
 }
 

@@ -1,12 +1,40 @@
+# 1.20.0 (2023-08-1)
+
+## Add
+
+- [Synths Support] [#2545](https://github.com/thorchain/asgardex-electron/issues/2545)
+- Affiliate Fee of 30 bps
+
+## Update
+
+- Quotes are now fetched from the Quote Endpoint using the xchainjs query package.
+- Upgraded to the latest thorchain and cosmos xchain client packages..
+- Added Synths to the asset list.
+- Introduced Slip tolerance to quote request for enhanced price protection.
+- Enabled [Savers UI] [#2485](https://github.com/thorchain/asgardex-electron/pull/2485) - read-only access.
+- Changed 2 to 4 decimal points on the output amount.
+
+## Internal
+
+- Integrated xchain-thorchain-query and its related dependencies to fetch data from the quote endpoint.
+- Integrated latest xchain-thornode to utilise the latest THORNode version (v116).
+- Adjusted routing to accommodate synths, which is essential for [Savers] [#2431](https://github.com/thorchain/asgardex-electron/issues/2431).
+- Updated routing to support synths, utilising `replace('/', '_synth_')`.
+- Upgraded and activated Savers Routing for Earn and Withdrawal.
+- Adjusted Asgard Midgard to comprehend Synths.
+- Replaced Inbound and Outbound fees with references to Inbound_address or the Quote endpoint, and removed the flat 3 * inbound fee.
+- Enhanced the Mimir detection logic to identify functionality pauses more effectively.
+- Added Affiliate Fee is 30 bps and uses THORName dx
+
 # 1.19.2 (2023-06-30)
 
-# Internal
+## Internal
 
 -Updates xchain-thorchain package due to gas issue.
 
-# 1.19.1 (2023-04-XX)
+# 1.19.1 (2023-04-11)
 
-# Internal
+## Internal
 
 -Updates/refactor to support latest xchain updates for UTXO support. Keystore clients and ledger code updated.
 

@@ -1,7 +1,7 @@
 {
   "name": "asgardex",
   "productName": "ASGARDEX",
-  "version": "1.19.2-alpha",
+  "version": "1.20.0",
   "description": "WALLET AND EXCHANGE CLIENT FOR THORCHAIN",
   "main": "index.js",
   "scripts": {
@@ -33,7 +33,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/thorchain/asgardex-electron"
+    "url": "https://github.com/asgardex/asgardex-desktop"
   },
   "author": {
     "name": "ASGARDEX Maintainers",
@@ -49,7 +49,7 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/thorchain/asgardex-electron/issues"
+    "url": "https://github.com/asgardex/asgardex-desktop/issues"
   },
   "keywords": [
     "thorchain",
@@ -91,16 +91,20 @@
     "@xchainjs/xchain-bitcoin": "^0.21.1",
     "@xchainjs/xchain-bitcoincash": "^0.15.9",
     "@xchainjs/xchain-client": "^0.13.6",
-    "@xchainjs/xchain-cosmos": "0.20.8",
+    "@xchainjs/xchain-cosmos": "0.21.2",
     "@xchainjs/xchain-crypto": "^0.2.7",
     "@xchainjs/xchain-doge": "^0.5.10",
     "@xchainjs/xchain-ethereum": "^0.27.7",
     "@xchainjs/xchain-litecoin": "^0.11.1",
-    "@xchainjs/xchain-thorchain": "^0.28.3",
+    "@xchainjs/xchain-midgard": "0.5.0",
+    "@xchainjs/xchain-thorchain": "^0.28.5",
+    "@xchainjs/xchain-thorchain-query": "0.4.6",
+    "@xchainjs/xchain-thornode": "0.3.4",
     "@xchainjs/xchain-util": "^0.12.0",
     "@xchainjs/xchain-utxo-providers": "^0.1.1",
     "antd": "^4.20.7",
     "axios": "^0.25.0",
+    "axios-retry": "^3.2.5",
     "bchaddrjs": "^0.5.2",
     "bech32-buffer": "^0.2.0",
     "bignumber.js": "^9.0.2",

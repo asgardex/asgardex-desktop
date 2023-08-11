@@ -5,9 +5,9 @@
   <img src="internals/img/asgardex-splash.png" width="100%" />
 </div>
 
-[![Version](https://img.shields.io/github/package-json/v/thorchain/asgardex-electron?color=xyz&filename=package.json&style=flat-square)](https://github.com/thorchain/asgardex-electron/releases)
-![Test](https://github.com/thorchain/asgardex-electron/workflows/Test/badge.svg)
-![Electron build](https://github.com/thorchain/asgardex-electron/workflows/Electron%20build/badge.svg)
+[![Version](https://img.shields.io/github/package-json/v/thorchain/asgardex-desktopcolor=xyz&filename=package.json&style=flat-square)](https://github.com/thorchain/asgardex-desktop/releases)
+![Test](https://github.com/thorchain/asgardex-desktop/workflows/Test/badge.svg)
+![Electron build](https://github.com/thorchain/asgardex-desktop/workflows/Electron%20build/badge.svg)
 
 [![Discord](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/pHcS67yX7Z)
 [![Follow on Twitter](https://img.shields.io/twitter/follow/asgardex?style=social)](https://twitter.com/asgardex)
@@ -27,17 +27,17 @@ Symbols:
 | Ledger \*      | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Send \*\*      | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Receive        | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Upgrade \*\*\* | :heavy_check_mark: | :heavy_check_mark: | -                  | -                  | -                  | :heavy_check_mark: | -                  | -                  |
+| Upgrade \*\*\* | -                  | -                  | -                  | -                  | -                  | :heavy_check_mark: | -                  | -                  |
 | Deposit        | :heavy_check_mark: | -                  | -                  | -                  | -                  | -                  | -                  | -                  |
 | Shares         | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | History        | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Synths         | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Synths         | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 
 (\*) Ledger `RUNE` is not supported at `stagenet`. Ledger `LTC`/`BCH`/`DOGE` are not supported at `testnet`
 
 (\*\*) With or without memo
 
-(\*\*\*) Upgrade RUNE (BEP2) or RUNE (ERC20) to RUNE (Native)
+(\*\*\*) Upgrade RUNE (BEP2) or RUNE (ERC20) to RUNE (Native) - No longer required with Killswitch completed
 
 ### Exchange
 
@@ -49,7 +49,8 @@ Symbols:
 | Deposit \*     | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Withdraw \*    | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Recovery tool  | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Synths         | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Synths         | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Savers         | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 
 (\*) Symmetrical deposit/withdraw only
 
@@ -97,7 +98,7 @@ _(in alphabetical order)_
 It's recommended to use a Node version as same as Electron is running with (currently: [`Electron v20.x` / Node `16.15.x`](https://github.com/electron/releases#releases)). It's recommened to install [nvm](https://github.com/nvm-sh/nvm) to run as same Node version locally as used for building ASGARDEX on CI.
 
 ```bash
-git clone https://github.com/thorchain/asgardex-electron.git asgardex
+git clone https://github.com/thorchain/asgardex-desktop.git asgardex
 cd asgardex
 yarn
 ```
@@ -105,7 +106,7 @@ yarn
 In case you get an an `ENAMETOOLONG: name too long` error or similar by running `yarn install`, e.g.
 
 ```bash
-YN0001: │ Error: @storybook/react-docgen-typescript-plugin@npm:1.0.2-canary.6.9d540b91e815f8fc2f8829189deb00553559ff63.0: ENAMETOOLONG: name too long, unlink '~/.yarn/berry/cache/@storybook-react-docgen-typescript-plugin-npm-1.0.2-canary.6.9d540b91e815f8fc2f8829189deb00553559ff63.0-b31cc57c40-8.zip' -> 'asgardex-electron/.yarn/cache/@storybook-react-docgen-typescript-plugin-npm-1.0.2-canary.6.9d540b91e815f8fc2f8829189deb00553559ff63.0-b31cc57c40-91a3015d38.zip-3439e0483605ccee.tmp'
+YN0001: │ Error: @storybook/react-docgen-typescript-plugin@npm:1.0.2-canary.6.9d540b91e815f8fc2f8829189deb00553559ff63.0: ENAMETOOLONG: name too long, unlink '~/.yarn/berry/cache/@storybook-react-docgen-typescript-plugin-npm-1.0.2-canary.6.9d540b91e815f8fc2f8829189deb00553559ff63.0-b31cc57c40-8.zip' -> 'asgardex-desktop/.yarn/cache/@storybook-react-docgen-typescript-plugin-npm-1.0.2-canary.6.9d540b91e815f8fc2f8829189deb00553559ff63.0-b31cc57c40-91a3015d38.zip-3439e0483605ccee.tmp'
 ```
 
 change cache folder as described in [Unable to install latest SB version: Error: ENAMETOOLONG: name too long, unlink... #18441](https://github.com/storybookjs/storybook/discussions/18441) to run `yarn install` as follow:
@@ -195,7 +196,7 @@ yarn test
 
 ### `e2e`
 
-Note: Running test-cafe is disabled (see https://github.com/thorchain/asgardex-electron/issues/750)
+Note: Running test-cafe is disabled (see https://github.com/thorchain/asgardex-desktop/issues/750)
 
 ```bash
 yarn test:e2e
@@ -368,11 +369,11 @@ See the [docs and guides here](https://docs.thorchain.org)
 
 ## Contributing
 
-Everyone is welcome to contribute. Check [open issues](https://github.com/thorchain/asgardex-electron/issues) or create a new one to start your work with and open a PR afterwards. Newcomers might want to check issues labeled as [good first issues](https://github.com/thorchain/asgardex-electron/labels/good%20first%20issue).
+Everyone is welcome to contribute. Check [open issues](https://github.com/thorchain/asgardex-desktop/issues) or create a new one to start your work with and open a PR afterwards. Newcomers might want to check issues labeled as [good first issues](https://github.com/thorchain/asgardex-desktop/labels/good%20first%20issue).
 
 ## Bug Reports
 
-Please use [bug report template](https://github.com/thorchain/asgardex-electron/issues/new?assignees=&labels=bug&template=2-Bug_report.md) to file any bugs.
+Please use [bug report template](https://github.com/thorchain/asgardex-desktop/issues/new?assignees=&labels=bug&template=2-Bug_report.md) to file any bugs.
 
 ## License
 

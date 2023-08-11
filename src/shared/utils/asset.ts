@@ -12,16 +12,26 @@ import {
   AssetRuneERC20,
   AssetRuneERC20Testnet
 } from '@xchainjs/xchain-thorchain'
+import { assetFromStringEx } from '@xchainjs/xchain-util'
+
+const AssetSynthBtc = assetFromStringEx('BTC/BTC')
+const AssetSynthBnb = assetFromStringEx('BNB/BNB')
+const AssetSynthBusd = assetFromStringEx('BNB/BUSD-BD1')
+const AssetSynthEth = assetFromStringEx('ETH/ETH')
 
 // Re-export to have asset definition at one place only to handle xchain-* changes easily in the future
 export {
   AssetBTC,
+  AssetSynthBtc,
+  AssetSynthBnb,
+  AssetSynthBusd,
   AssetBNB,
   AssetBCH,
   AssetATOM,
   AssetLTC,
   AssetDOGE,
   AssetETH,
+  AssetSynthEth,
   AssetRune67C,
   AssetRuneB1A,
   AssetRuneNative,
