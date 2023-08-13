@@ -11,7 +11,7 @@ export const ASGARDEX_IDENTIFIER = 999
 export const ASGARDEX_THORNAME = 'dx'
 
 // Affilaite Fee in basis points
-export const ASGARDEX_AFFILIATE_FEE = 30
+export const ASGARDEX_AFFILIATE_FEE = 10
 
 // Header key for 9R endpoints
 export const NINE_REALMS_CLIENT_HEADER = 'x-client-id'

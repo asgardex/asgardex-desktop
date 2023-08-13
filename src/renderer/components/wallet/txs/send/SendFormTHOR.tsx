@@ -188,7 +188,6 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
 
   const submitTx = useCallback(() => {
     setSendTxStartTime(Date.now())
-
     subscribeSendTxState(
       transfer$({
         walletType,
