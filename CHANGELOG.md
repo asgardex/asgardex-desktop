@@ -1,4 +1,13 @@
-# 1.20.0 (2023-08-1)
+# 1.20.1 (2023-08-14)
+
+## Update
+
+- Fixed [Sending Synths Issue] [#5](https://github.com/asgardex/asgardex-desktop/issues/5)
+- Reduced Affiliate Fee to 10 bps
+- Fixed Slip Issue
+- Fixed Issues in Swap Details.
+
+# 1.20.0 (2023-08-11)
 
 ## Add
 
