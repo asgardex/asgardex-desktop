@@ -407,7 +407,7 @@ export const Swap = ({
     _setAmountToSwapMax1e8 /* private - never set it directly, use setAmountToSwapMax1e8() instead */
   ] = useState(initialAmountToSwapMax1e8)
 
-  const priceAmountToSwapMax1e8: AssetWithAmount = useMemo(() => {
+  const priceAmountToSwapMax1e8: CryptoAmount = useMemo(() => {
     const result = FP.pipe(
       PoolHelpers.getPoolPriceValue({
         balance: { asset: sourceAsset, amount: amountToSwapMax1e8 },
@@ -418,7 +418,7 @@ export const Swap = ({
       O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal)),
       (amount) => ({ asset: pricePool.asset, amount })
     )
-    return result
+    return new CryptoAmount(result.amount, result.asset)
   }, [amountToSwapMax1e8, network, poolDetails, pricePool, sourceAsset])
 
   const isZeroAmountToSwap = useMemo(() => amountToSwapMax1e8.amount().isZero(), [amountToSwapMax1e8])
@@ -727,14 +727,14 @@ export const Swap = ({
       ),
     [oQuote]
   )
-  // Slippage basis points
+  // Quote slippage returned as a percent
   const swapSlippage: number = useMemo(
     () =>
       FP.pipe(
         oQuote,
         O.fold(
-          () => 0, // default affiliate fee asset amount
-          (txDetails) => txDetails.txEstimate.slipBasisPoints
+          () => 0, // default affiliate fee asset amount return as number not as BP
+          (txDetails) => txDetails.txEstimate.slipBasisPoints / 100
         )
       ),
     [oQuote]
@@ -812,8 +812,9 @@ export const Swap = ({
     [oPoolAddress, oSourceAssetWB, sourceAsset, amountToSwapMax1e8, sourceAssetDecimal, oQuote]
   )
   // Check to see slippage greater than tolerance
+  // This is handled by thornode
   const isCausedSlippage = useMemo(() => {
-    const result = swapSlippage > slipTolerance * 100
+    const result = swapSlippage > slipTolerance
     return result
   }, [swapSlippage, slipTolerance])
 
@@ -1833,7 +1834,7 @@ export const Swap = ({
           className="w-full"
           title={intl.formatMessage({ id: 'swap.input' })}
           amount={{ amount: amountToSwapMax1e8, asset: sourceAsset }}
-          priceAmount={priceAmountToSwapMax1e8}
+          priceAmount={{ asset: priceAmountToSwapMax1e8.asset, amount: priceAmountToSwapMax1e8.baseAmount }}
           assets={selectableSourceAssets}
           network={network}
           onChangeAsset={setSourceAsset}
@@ -2041,12 +2042,12 @@ export const Swap = ({
                   <div>{intl.formatMessage({ id: 'swap.slip.title' })}</div>
                   <div>
                     {formatAssetAmountCurrency({
-                      amount: baseToAsset(priceAmountToSwapMax1e8.amount.times(swapSlippage / 100)),
+                      amount: priceAmountToSwapMax1e8.assetAmount.times(swapSlippage / 100), // Find the value of swap slippage
                       asset: priceAmountToSwapMax1e8.asset,
                       decimal: isUSDAsset(priceAmountToSwapMax1e8.asset) ? 2 : 6,
                       trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)
                     })}{' '}
-                    ({swapSlippage / 100}%)
+                    ({swapSlippage.toFixed(4)}%)
                   </div>
                 </div>
 
