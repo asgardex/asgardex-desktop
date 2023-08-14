@@ -407,7 +407,7 @@ export const Swap = ({
     _setAmountToSwapMax1e8 /* private - never set it directly, use setAmountToSwapMax1e8() instead */
   ] = useState(initialAmountToSwapMax1e8)
 
-  const priceAmountToSwapMax1e8: AssetWithAmount = useMemo(() => {
+  const priceAmountToSwapMax1e8: CryptoAmount = useMemo(() => {
     const result = FP.pipe(
       PoolHelpers.getPoolPriceValue({
         balance: { asset: sourceAsset, amount: amountToSwapMax1e8 },
@@ -418,7 +418,7 @@ export const Swap = ({
       O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal)),
       (amount) => ({ asset: pricePool.asset, amount })
     )
-    return result
+    return new CryptoAmount(result.amount, result.asset)
   }, [amountToSwapMax1e8, network, poolDetails, pricePool, sourceAsset])
 
   const isZeroAmountToSwap = useMemo(() => amountToSwapMax1e8.amount().isZero(), [amountToSwapMax1e8])
@@ -628,37 +628,6 @@ export const Swap = ({
     [oPriceSwapFees1e8, swapFeesRD]
   )
 
-  // Helper to price target fees into source asset - original decimal
-  // const outFeeInTargetAsset: BaseAmount = useMemo(() => {
-  //   const {
-  //     outFee: { amount: outFeeAmount, asset: outFeeAsset }
-  //   } = swapFees
-
-  //   // no pricing if target asset === target fee asset
-  //   if (eqAsset.equals(targetAsset, outFeeAsset)) return outFeeAmount
-
-  //   const oTargetFeeAssetPoolData: O.Option<PoolData> = O.fromNullable(poolsData[assetToString(outFeeAsset)])
-  //   const oTargetAssetPoolData: O.Option<PoolData> = O.fromNullable(poolsData[assetToString(targetAsset)])
-
-  //   return FP.pipe(
-  //     sequenceTOption(oTargetFeeAssetPoolData, oTargetAssetPoolData),
-  //     O.fold(
-  //       () => zeroTargetBaseAmountMax,
-  //       ([targetFeeAssetPoolData, targetAssetPoolData]) => {
-  //         // pool data are always 1e8 decimal based
-  //         // and we have to convert fees to 1e8, too
-  //         const amount1e8 = getValueOfAsset1InAsset2(
-  //           to1e8BaseAmount(outFeeAmount),
-  //           targetFeeAssetPoolData,
-  //           targetAssetPoolData
-  //         )
-  //         // convert fee amount back into original decimal
-  //         return convertBaseAmountDecimal(amount1e8, targetAssetDecimal)
-  //       }
-  //     )
-  //   )
-  // }, [swapFees, targetAsset, poolsData, zeroTargetBaseAmountMax, targetAssetDecimal])
-
   const oQuoteSwapData: O.Option<QuoteSwapParams> = useMemo(
     () =>
       FP.pipe(
@@ -758,18 +727,20 @@ export const Swap = ({
       ),
     [oQuote]
   )
-  // const swapResultAmountMax1e8: BaseAmount = useMemo(() => {
-  //   // 1. Convert `swapResult` (1e8) to original decimal of target asset (original decimal might be < 1e8)
-  //   const swapResultAmount = convertBaseAmountDecimal(swapData.swapResult, targetAssetDecimal)
-  //   // 2. We still need to make sure `swapResult` is <= 1e8
-  //   const swapResultAmountMax1e8 = max1e8BaseAmount(swapResultAmount)
-  //   // 3. Deduct outbound fee from result
-  //   const outFeeMax1e8 = max1e8BaseAmount(outFeeInTargetAsset)
-  //   const resultMax1e8 = swapResultAmountMax1e8.minus(outFeeMax1e8)
-  //   // don't show negative results
-  //   return resultMax1e8.gt(zeroTargetBaseAmountMax1e8) ? resultMax1e8 : zeroTargetBaseAmountMax1e8
-  // }, [outFeeInTargetAsset, swapData.swapResult, targetAssetDecimal, zeroTargetBaseAmountMax1e8])
+  // Quote slippage returned as a percent
+  const swapSlippage: number = useMemo(
+    () =>
+      FP.pipe(
+        oQuote,
+        O.fold(
+          () => 0, // default affiliate fee asset amount return as number not as BP
+          (txDetails) => txDetails.txEstimate.slipBasisPoints / 100
+        )
+      ),
+    [oQuote]
+  )
 
+  /// Swap result from thornode
   const swapResultAmountMax: CryptoAmount = useMemo(
     () =>
       FP.pipe(
@@ -840,29 +811,12 @@ export const Swap = ({
       ),
     [oPoolAddress, oSourceAssetWB, sourceAsset, amountToSwapMax1e8, sourceAssetDecimal, oQuote]
   )
-
-  // Swap slip calculated from expected amount out and swaplimit
-  const swapSlip: number = useMemo(
-    () =>
-      FP.pipe(
-        swapLimit1e8,
-        O.fold(
-          () => 0, // default value if swapLimit1e8 is None
-          (swapLimitValue) => {
-            const swapResultAmountMaxBase = swapResultAmountMax.baseAmount
-            const swaplimitNumber = swapLimitValue.amount().toNumber()
-            const swapResultNumber = swapResultAmountMaxBase.amount().toNumber()
-            return ((swapResultNumber - swaplimitNumber) / swapResultNumber) * 100
-          }
-        )
-      ),
-    [swapLimit1e8, swapResultAmountMax]
-  )
   // Check to see slippage greater than tolerance
+  // This is handled by thornode
   const isCausedSlippage = useMemo(() => {
-    const result = swapSlip > slipTolerance
+    const result = swapSlippage > slipTolerance
     return result
-  }, [swapSlip, slipTolerance])
+  }, [swapSlippage, slipTolerance])
 
   type RateDirection = 'fromSource' | 'fromTarget'
   const [rateDirection, setRateDirection] = useState<RateDirection>('fromSource')
@@ -1880,7 +1834,7 @@ export const Swap = ({
           className="w-full"
           title={intl.formatMessage({ id: 'swap.input' })}
           amount={{ amount: amountToSwapMax1e8, asset: sourceAsset }}
-          priceAmount={priceAmountToSwapMax1e8}
+          priceAmount={{ asset: priceAmountToSwapMax1e8.asset, amount: priceAmountToSwapMax1e8.baseAmount }}
           assets={selectableSourceAssets}
           network={network}
           onChangeAsset={setSourceAsset}
@@ -2088,12 +2042,12 @@ export const Swap = ({
                   <div>{intl.formatMessage({ id: 'swap.slip.title' })}</div>
                   <div>
                     {formatAssetAmountCurrency({
-                      amount: baseToAsset(priceAmountToSwapMax1e8.amount.times(swapSlip / 100)),
+                      amount: priceAmountToSwapMax1e8.assetAmount.times(swapSlippage / 100), // Find the value of swap slippage
                       asset: priceAmountToSwapMax1e8.asset,
                       decimal: isUSDAsset(priceAmountToSwapMax1e8.asset) ? 2 : 6,
                       trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)
                     })}{' '}
-                    ({swapSlip.toFixed(2)}%)
+                    ({swapSlippage.toFixed(2)}%)
                   </div>
                 </div>
 

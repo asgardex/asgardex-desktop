@@ -49,7 +49,7 @@ export const sendTx$ = ({
   walletIndex,
   hdMode
 }: SendTxParams): TxHashLD => {
-  const { chain } = asset
+  const { chain } = asset.synth ? AssetRuneNative : asset
 
   if (!isEnabledChain(chain)) return txFailure$(`${chain} is not supported for 'sendTx$'`)
 
