@@ -813,7 +813,7 @@ export const Swap = ({
   )
   // Check to see slippage greater than tolerance
   const isCausedSlippage = useMemo(() => {
-    const result = swapSlippage > slipTolerance
+    const result = swapSlippage > slipTolerance * 100
     return result
   }, [swapSlippage, slipTolerance])
 
