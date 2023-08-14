@@ -2046,7 +2046,7 @@ export const Swap = ({
                       decimal: isUSDAsset(priceAmountToSwapMax1e8.asset) ? 2 : 6,
                       trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)
                     })}{' '}
-                    ({swapSlippage.toFixed(2)}%)
+                    ({swapSlippage / 100}%)
                   </div>
                 </div>
 
