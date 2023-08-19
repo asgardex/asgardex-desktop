@@ -9,6 +9,7 @@ const swap: SwapMessages = {
   'swap.info.max.balance': 'Баланс актива ({balance})',
   'swap.info.max.balanceMinusFee': 'Баланс актива ({balance}) за вычетом комиссии обмена ({fee})',
   'swap.slip.title': 'Проскальзывание',
+  'swap.slip.streamingtitle': 'Slip Striming',
   'swap.slip.tolerance': 'Допуск по проскальзыванию',
   'swap.slip.tolerance.info':
     'Чем выше процент, тем большее проскальзывание вы допускаете. Большее проскальзывание включает также более широкий диапазон расчёта комиссий во избежание прерывания обмена.',

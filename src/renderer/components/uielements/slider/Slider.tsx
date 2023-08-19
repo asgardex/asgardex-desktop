@@ -9,8 +9,8 @@ type CustomProps = {
   tooltipPlacement?: TooltipPlacement
   withLabel?: boolean
   labelPosition?: 'top' | 'bottom'
-  useMiddleLabel?: boolean
   error?: boolean
+  labels?: string[] // New prop for custom labels
 }
 
 type Props = CustomProps & SliderSingleProps
@@ -18,11 +18,11 @@ type Props = CustomProps & SliderSingleProps
 export const Slider: React.FC<Props> = ({
   tooltipPlacement = 'bottom',
   withLabel = false,
-  tipFormatter = (value) => `${value}%`,
+  tipFormatter = (value) => `${value}`,
   labelPosition,
   tooltipVisible,
-  useMiddleLabel,
   error = false,
+  labels = ['0%', '50%', '100%'], // Default labels, you can modify them
   ...rest
 }): JSX.Element => {
   const ref = useRef()
@@ -31,12 +31,12 @@ export const Slider: React.FC<Props> = ({
   const percentLabels = useMemo(
     () => (
       <SliderLabel>
-        <span>0%</span>
-        {useMiddleLabel && <span>50%</span>}
-        <span>100%</span>
+        {labels.map((label, index) => (
+          <span key={index}>{label}</span>
+        ))}
       </SliderLabel>
     ),
-    [useMiddleLabel]
+    [labels]
   )
 
   return (
