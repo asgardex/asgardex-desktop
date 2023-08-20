@@ -17,9 +17,9 @@ const Template = () => {
   return (
     <div style={style}>
       <p>currentValue {currentValue}</p>
-      <Component percent={currentValue} tooltipText={''} customInfo={''} />
-      <Component percent={currentValue} withLabel labels={labels} tooltipText={''} customInfo={''} />
-      <Component percent={currentValue} withLabel labels={labels} tooltipText={''} customInfo={''} />
+      <Component percent={currentValue} customInfo={''} />
+      <Component percent={currentValue} withLabel labels={labels} customInfo={''} />
+      <Component percent={currentValue} withLabel labels={labels} customInfo={''} />
     </div>
   )
 }

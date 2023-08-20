@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 
-import { Progress, Tooltip } from 'antd' // Import the Ant Design Progress and Tooltip components
+import { Progress } from 'antd' // Import the Ant Design Progress and Tooltip components
 import { ProgressProps } from 'antd/lib/progress'
 import { TooltipPlacement } from 'antd/lib/tooltip'
 
@@ -13,7 +13,6 @@ type CustomProps = {
   hasError?: boolean
   labels?: string[] // New prop for custom labels
   customInfo?: string
-  tooltipText: string // New prop for tooltip text
 }
 
 type Props = CustomProps & ProgressProps
@@ -23,7 +22,6 @@ export const ProgressBar: React.FC<Props> = ({
   withLabel = false,
   labelPosition,
   labels = ['0%', '50%', '100%'], // Default labels
-  tooltipText = `Tooltip`, // Default tooltip text
   strokeLinecap = 'round',
   customInfo = 'info',
   showInfo = false,
@@ -48,11 +46,9 @@ export const ProgressBar: React.FC<Props> = ({
         strokeLinecap={strokeLinecap}
         showInfo={showInfo}
         strokeColor={{ from: '#F3BA2F', to: '#23DCC8' }}>
-        <Tooltip title={tooltipText}>
-          {' '}
-          {/* Wrap the Progress component with Tooltip */}
-          <Progress {...rest} percent={percent} format={() => customInfo} />
-        </Tooltip>
+        {' '}
+        {/* Wrap the Progress component with Tooltip */}
+        <Progress {...rest} percent={percent} format={() => customInfo} />
       </ProgressWrapper>
       {withLabel && labelPosition !== 'top' && percentLabels}
     </>

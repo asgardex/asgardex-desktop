@@ -62,7 +62,7 @@ import {
   getWalletTypeLabel,
   hasLedgerInBalancesByAsset
 } from '../../helpers/walletHelper'
-import { useMimirConstants } from '../../hooks/useMimirConstants'
+// import { useMimirConstants } from '../../hooks/useMimirConstants'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
 import { ChangeSlipToleranceHandler } from '../../services/app/types'
 import { INITIAL_SWAP_STATE } from '../../services/chain/const'
@@ -237,16 +237,13 @@ export const Swap = ({
   const [oQuote, setQuote] = useState<O.Option<TxDetails>>(O.none)
 
   // Default Streaming interval set to 0 blocks
-  const [streamingInterval, setStreamingInterval] = useState<number>(10)
+  const [streamingInterval, setStreamingInterval] = useState<number>(1)
   // Default Streaming quantity set to 0 network computes the optimum
   const [streamingQuantity] = useState<number>(0)
 
   const [oTargetWalletType, setTargetWalletType] = useState<O.Option<WalletType>>(oInitialTargetWalletType)
 
-  // find streaming swap min basis points
-  const { STREAMINGSWAPMINBPFEE } = useMimirConstants(['STREAMINGSWAPMINBPFEE'])
-
-  const [isStreaming, setIsStreaming] = useState<Boolean>(false)
+  const [isStreaming] = useState<Boolean>(true)
 
   // Update state needed - initial target walletAddress is loaded async and can be different at first run
   useEffect(() => {
@@ -738,8 +735,8 @@ export const Swap = ({
           const amount = new CryptoAmount(amountToSwapMax1e8, sourceAsset)
           const address = destinationAddress
           const walletAddress = sourceAddress
-          const streamingInt = isStreaming ? streamingInterval : 0
-          const streaminQuant = isStreaming ? streamingQuantity : 0
+          const streamingInt = streamingInterval
+          const streaminQuant = streamingQuantity
           const toleranceBps = isStreaming ? 10000 : slipTolerance * 100 // convert to basis points
 
           return {
@@ -770,16 +767,14 @@ export const Swap = ({
   )
 
   const debouncedEffect = useRef(
-    debounce((quoteSwapData, STREAMINGSWAPMINBPFEE) => {
+    debounce((quoteSwapData) => {
       // Include isStreaming as a parameter
       const thorchainQuery = new ThorchainQuery()
 
       thorchainQuery
         .quoteSwap(quoteSwapData)
         .then((quote) => {
-          // Conditionally store the quote based on whether it's a streaming quote
-          setIsStreaming(quote.txEstimate.slipBasisPoints / 100 > STREAMINGSWAPMINBPFEE)
-          console.log(quote)
+          // console.log(quote)
           setQuote(O.some(quote))
         })
         .catch((error) => {
@@ -799,7 +794,7 @@ export const Swap = ({
         },
         (quoteSwapData) => {
           if (!quoteSwapData.amount.baseAmount.eq(baseAmount(0)) && !disableSwapAction) {
-            currentDebouncedEffect(quoteSwapData, STREAMINGSWAPMINBPFEE) // Pass the isStreaming flag
+            currentDebouncedEffect(quoteSwapData) // Pass the isStreaming flag
           }
         }
       )
@@ -809,7 +804,7 @@ export const Swap = ({
     return () => {
       currentDebouncedEffect.cancel()
     }
-  }, [oQuoteSwapData, disableSwapAction, STREAMINGSWAPMINBPFEE])
+  }, [oQuoteSwapData, disableSwapAction])
 
   // Swap boolean for use later
   const canSwap: boolean = useMemo(
@@ -899,17 +894,17 @@ export const Swap = ({
     [oQuote, targetAsset]
   )
   // Swap streaming result from thornode
-  // const maxStreamingQuantity: number = useMemo(
-  //   () =>
-  //     FP.pipe(
-  //       sequenceTOption(oQuote),
-  //       O.fold(
-  //         () => 0,
-  //         ([txDetails]) => txDetails.txEstimate.maxStreamingQuantity
-  //       )
-  //     ),
-  //   [oQuote]
-  // )
+  const maxStreamingQuantity: number = useMemo(
+    () =>
+      FP.pipe(
+        sequenceTOption(oQuote),
+        O.fold(
+          () => 0,
+          ([txDetails]) => txDetails.txEstimate.maxStreamingQuantity
+        )
+      ),
+    [oQuote]
+  )
   // Swap streaming result from thornode
   const streamingBlockSeconds: number = useMemo(
     () =>
@@ -1358,7 +1353,7 @@ export const Swap = ({
     // max streaming quantity * interval divide 60 to get minutes / 60 to get hours
     const estimateStreamingCompletionTime = (streamingBlockSeconds / 60 / 60).toFixed(2)
     const estimateSwapCompletionTime = (outboundDelaySeconds / 60 / 60).toFixed(2)
-
+    const block = interval === 1 ? 'Block' : 'Blocks'
     return (
       <div>
         <Slider
@@ -1367,18 +1362,19 @@ export const Swap = ({
           onChange={setInterval}
           tooltipVisible
           max={99}
-          tipFormatter={() =>
+          tipFormatter={() => `${interval} ${block}`}
+          withLabel={true}
+          labels={[
             `${
               estimateStreamingCompletionTime === '0.00' ? estimateSwapCompletionTime : estimateStreamingCompletionTime
-            } hrs`
-          }
-          withLabel={true}
-          labels={['.1 hrs', '24 hrs']}
+            } hrs`,
+            `Max swaps ${maxStreamingQuantity}`
+          ]}
           tooltipPlacement={'top'}
         />
       </div>
     )
-  }, [streamingInterval, outboundDelaySeconds, streamingBlockSeconds])
+  }, [streamingInterval, outboundDelaySeconds, streamingBlockSeconds, maxStreamingQuantity])
 
   // Progress bar for swap return comparison
   const renderStreamerReturns = useMemo(() => {
@@ -1390,17 +1386,20 @@ export const Swap = ({
     const percentageDifference =
       difference.div(average).times(100).toFixed(2) === '0.00' ? 1 : difference.div(average).times(100).toFixed(2)
 
+    const swapAmount = swapResultAmountMax.assetAmount.amount().toFixed(3)
+    const swapAmountStreaming = swapStreamingNetOutput.assetAmount.amount().toFixed(3)
+    const streamerComparison = Number(difference) === 0 ? 'Instant' : `${percentageDifference}% `
+
     return (
       <ProgressBar
         key={'Streamer Interval progress bar'}
-        percent={+percentageDifference}
-        tooltipText={`%`}
+        percent={Number(percentageDifference)}
         withLabel={true}
-        labels={[`${swapResultAmountMax.formatedAssetString()}`, `${swapStreamingNetOutput.formatedAssetString()}`]}
+        labels={[`${streamerComparison}`, `${swapAmountStreaming} vs ${swapAmount} ${targetAsset.ticker}`]}
         tooltipPlacement={'top'}
       />
     )
-  }, [swapStreamingNetOutput, swapResultAmountMax])
+  }, [swapStreamingNetOutput, swapResultAmountMax, targetAsset])
 
   const submitSwapTx = useCallback(() => {
     FP.pipe(
@@ -2377,55 +2376,6 @@ export const Swap = ({
                         }) + ` (${swapStreamingSlippage.toFixed(2)}%)`}
                       </div>
                     </div>
-                    {showDetails && (
-                      <>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div
-                            className={`flex items-center ${
-                              disableSlippage ? 'text-warning0 dark:text-warning0d' : ''
-                            }`}>
-                            {intl.formatMessage({ id: 'swap.slip.tolerance' })}
-                            {disableSlippage ? (
-                              <InfoIcon
-                                className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                                tooltip={intl.formatMessage({ id: 'swap.slip.tolerance.ledger-disabled.info' })}
-                                color="warning"
-                              />
-                            ) : (
-                              <InfoIcon
-                                className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                                tooltip={intl.formatMessage({ id: 'swap.slip.tolerance.info' })}
-                              />
-                            )}
-                          </div>
-                          <div>
-                            {/* we don't show slippage tolerance whenever slippage is disabled (e.g. due memo restriction for Ledger BTC) */}
-                            {disableSlippage ? (
-                              <>{noDataString}</>
-                            ) : (
-                              <SelectableSlipTolerance value={slipTolerance} onChange={changeSlipTolerance} />
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div
-                            className={`flex items-center ${
-                              disableSlippage ? 'text-warning0 dark:text-warning0d' : ''
-                            }`}>
-                            {intl.formatMessage({ id: 'swap.min.result.protected' })}
-                            <InfoIcon
-                              className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                              tooltip={
-                                disableSlippage
-                                  ? intl.formatMessage({ id: 'swap.slip.tolerance.ledger-disabled.info' })
-                                  : intl.formatMessage({ id: 'swap.min.result.info' }, { tolerance: slipTolerance })
-                              }
-                            />
-                          </div>
-                          <div>{swapMinResultLabel}</div>
-                        </div>
-                      </>
-                    )}
                   </>
                 )}
 
