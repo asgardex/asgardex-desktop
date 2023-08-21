@@ -30,7 +30,7 @@ jobs:
       - name: Publish Windows
         run: yarn package:ci
         env:
-          NODE_OPTIONS: --max-old-space-size=4096
+          NODE_OPTIONS: --max-old-space-size=6144
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REACT_APP_BLOCKCHAIR_API_KEY: ${{ secrets.REACT_APP_BLOCKCHAIR_API_KEY }}
           REACT_APP_ETHPLORER_API_KEY: ${{ secrets.REACT_APP_ETHPLORER_API_KEY }}
