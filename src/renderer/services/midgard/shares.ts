@@ -190,7 +190,7 @@ const createSharesService = (midgardUrl$: MidgardUrlLD, getMidgardDefaultApi: (b
 
   return {
     shares$,
-    reloadShares: (delayTime = 0) => reloadSharesWithTimer(delayTime),
+    reloadShares: (delayTime = 500) => reloadSharesWithTimer(delayTime),
     symShareByAsset$,
     asymShareByAsset$,
     combineShares$,
