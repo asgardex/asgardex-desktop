@@ -9,7 +9,6 @@ const swap: SwapMessages = {
   'swap.info.max.balance': 'Gesamtguthaben ({balance})',
   'swap.info.max.balanceMinusFee': 'Gesamtguthaben ({balance}) minus voraussichtliche Swapgebühr ({fee})',
   'swap.slip.title': 'Slip',
-  'swap.slip.streamingtitle': 'Slip Streaming',
   'swap.slip.tolerance': 'Slippage-Toleranz',
   'swap.slip.tolerance.info':
     'Je höher die Prozentangabe, je höher akzeptierst Du ein Slippage. Mehr Slippage bedeutet zugleich ein größerer Spielraum zur Abdeckung der geschätzten Gebühren, um fehlgeschlagene Swaps zu vermeiden.',

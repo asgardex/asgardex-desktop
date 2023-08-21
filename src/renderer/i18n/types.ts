@@ -380,7 +380,6 @@ type SwapMessageKey =
   | 'swap.input'
   | 'swap.output'
   | 'swap.slip.title'
-  | 'swap.slip.streamingtitle'
   | 'swap.slip.tolerance'
   | 'swap.slip.tolerance.info'
   | 'swap.slip.tolerance.ledger-disabled.info'

@@ -70,7 +70,7 @@ Symbols:
 
 - 100% open-source (built by the community)
 - Security first
-- No extra (affiliate) fees
+- 10 bps affiliate fees
 
 ## ASGARDEX uses following libraries, frameworks and more:
 
@@ -87,7 +87,6 @@ _(in alphabetical order)_
 - [ReactJS](https://github.com/facebook/react/)
 - [Styled Components](https://styled-components.com/)
 - [Testcafe](https://github.com/DevExpress/testcafe)
-- ~~[THORChain Byzantine Module](https://gitlab.com/thorchain/byzantine-module/)~~
 - [RxJS](https://rxjs.dev/)
 - [Typescript](https://github.com/microsoft/TypeScript)
 - [xchainjs-lib](https://github.com/xchainjs/xchainjs-lib/)
