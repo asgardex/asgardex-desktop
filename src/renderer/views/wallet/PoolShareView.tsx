@@ -128,6 +128,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   const openExternalShareInfo = useCallback(() => {
     // `thoryield.com` does not support testnet, we ignore it here
     const oMainnet = O.fromPredicate<Network>(() => network === 'mainnet')(network)
+
     return FP.pipe(
       sequenceTOption(oRuneNativeAddress, oMainnet),
       O.map(([thorAddress, _]) => `https://app.thoryield.com/accounts?thor=${thorAddress}`),
@@ -138,6 +139,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   const renderPoolSharesTable = useCallback(
     (data: PoolShareTableRowData[], loading: boolean) => {
       previousPoolShares.current = O.some(data)
+      console.log(priceAsset)
       return (
         <PoolSharesTable
           haltedChains={haltedChains}
@@ -202,6 +204,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
           // error state
           (error: Error) => {
             const msg = error?.toString() ?? ''
+            console.log(msg)
             return <ErrorView title={msg} extra={renderRefreshBtn} />
           },
           // success state

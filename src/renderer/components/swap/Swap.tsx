@@ -239,11 +239,13 @@ export const Swap = ({
   // Default Streaming interval set to 0 blocks
   const [streamingInterval, setStreamingInterval] = useState<number>(1)
   // Default Streaming quantity set to 0 network computes the optimum
-  const [streamingQuantity] = useState<number>(0)
+  const [streamingQuantity, setStreamingQuantity] = useState<number>(0)
+  // Slide use state
+  const [slider, setSlider] = useState<number>(50)
 
   const [oTargetWalletType, setTargetWalletType] = useState<O.Option<WalletType>>(oInitialTargetWalletType)
 
-  const [isStreaming] = useState<Boolean>(true)
+  const [isStreaming, setIsStreaming] = useState<Boolean>(true)
 
   // Update state needed - initial target walletAddress is loaded async and can be different at first run
   useEffect(() => {
@@ -735,8 +737,8 @@ export const Swap = ({
           const amount = new CryptoAmount(amountToSwapMax1e8, sourceAsset)
           const address = destinationAddress
           const walletAddress = sourceAddress
-          const streamingInt = streamingInterval
-          const streaminQuant = streamingQuantity
+          const streamingInt = isStreaming ? streamingInterval : 0
+          const streaminQuant = isStreaming ? streamingQuantity : 0
           const toleranceBps = isStreaming ? 10000 : slipTolerance * 100 // convert to basis points
 
           return {
@@ -774,8 +776,8 @@ export const Swap = ({
       thorchainQuery
         .quoteSwap(quoteSwapData)
         .then((quote) => {
-          // console.log(quote)
           setQuote(O.some(quote))
+          // setStreamingQuantity(quote.txEstimate.maxStreamingQuantity)
         })
         .catch((error) => {
           console.error('Failed to get quote:', error)
@@ -906,13 +908,13 @@ export const Swap = ({
     [oQuote]
   )
   // Swap streaming result from thornode
-  const streamingBlockSeconds: number = useMemo(
+  const totalSwapSeconds: number = useMemo(
     () =>
       FP.pipe(
         sequenceTOption(oQuote),
         O.fold(
           () => 0,
-          ([txDetails]) => txDetails.txEstimate.streamingSwapSeconds
+          ([txDetails]) => txDetails.txEstimate.totalSwapSeconds
         )
       ),
     [oQuote]
@@ -1337,69 +1339,82 @@ export const Swap = ({
       />
     )
   }, [amountToSwapMax1e8, maxAmountToSwapMax1e8, reloadFeesHandler, disableSwapAction, setAmountToSwapMax1e8])
+
   // Function to reset the slider to default position
   const resetToDefault = () => {
-    setStreamingInterval(10) // Default position
+    setStreamingInterval(1) // Default position
+    setStreamingQuantity(0) // thornode decides the swap quantity
+    setSlider(50)
+    setIsStreaming(true)
   }
 
   // Streaming inteval slider
-
   const renderStreamerQuantity = useMemo(() => {
-    const interval = streamingInterval
-
-    const setInterval = (intervals: number) => {
-      setStreamingInterval(intervals)
+    const setInterval = (slider: number) => {
+      setSlider(slider)
+      if (slider < 1) {
+        // Time optimised
+        setStreamingInterval(0) // 0 blocks
+        setStreamingQuantity(0) // one swap
+        setIsStreaming(false)
+      } else if (slider > 1 && slider < 70) {
+        // time & price Optimised
+        setStreamingInterval(1) // 1 block
+        setStreamingQuantity(0) // thornode decides the swap quantity
+        setIsStreaming(true)
+      } else {
+        // price Optimised
+        setStreamingInterval(5) // 1 block
+        setStreamingQuantity(0) // thornode decides the swap quantity
+        setIsStreaming(true)
+      }
     }
     // max streaming quantity * interval divide 60 to get minutes / 60 to get hours
-    const estimateStreamingCompletionTime = (streamingBlockSeconds / 60 / 60).toFixed(2)
+    const estimateStreamingCompletionTime = (totalSwapSeconds / 60 / 60).toFixed(2)
     const estimateSwapCompletionTime = (outboundDelaySeconds / 60 / 60).toFixed(2)
-    const block = interval === 1 ? 'Block' : 'Blocks'
+
     return (
       <div>
         <Slider
           key={'Streamer Quantity slider'}
-          value={interval}
+          value={slider}
           onChange={setInterval}
           tooltipVisible
-          max={99}
-          tipFormatter={() => `${interval} ${block}`}
-          withLabel={true}
-          labels={[
+          max={100}
+          tipFormatter={() =>
             `${
               estimateStreamingCompletionTime === '0.00' ? estimateSwapCompletionTime : estimateStreamingCompletionTime
-            } hrs`,
-            `Max swaps ${maxStreamingQuantity}`
-          ]}
+            } hrs`
+          }
+          withLabel={true}
+          labels={[`Time Optimised`, `Price Optimised`]}
           tooltipPlacement={'top'}
         />
       </div>
     )
-  }, [streamingInterval, outboundDelaySeconds, streamingBlockSeconds, maxStreamingQuantity])
+  }, [totalSwapSeconds, outboundDelaySeconds, slider])
 
   // Progress bar for swap return comparison
   const renderStreamerReturns = useMemo(() => {
-    // calculate % diff between the two
-    const a = swapStreamingNetOutput.assetAmount.amount()
-    const b = swapResultAmountMax.assetAmount.amount()
-    const difference = a.minus(b).abs() // Absolute difference
-    const average = a.plus(b).div(2) // Average
-    const percentageDifference =
-      difference.div(average).times(100).toFixed(2) === '0.00' ? 1 : difference.div(average).times(100).toFixed(2)
+    // calculate difference=(swapCount−1)/swapCount
+    const percentageDifference = (((maxStreamingQuantity - 1) / maxStreamingQuantity) * 100).toFixed(2)
 
     const swapAmount = swapResultAmountMax.assetAmount.amount().toFixed(3)
     const swapAmountStreaming = swapStreamingNetOutput.assetAmount.amount().toFixed(3)
-    const streamerComparison = Number(difference) === 0 ? 'Instant' : `${percentageDifference}% `
+    const swapStreamingLabel =
+      percentageDifference === '-Infinity' ? '' : `${swapAmountStreaming} vs ${swapAmount} ${targetAsset.ticker}`
+    const streamerComparison = percentageDifference === '-Infinity' ? 'Instant' : `${percentageDifference}% `
 
     return (
       <ProgressBar
         key={'Streamer Interval progress bar'}
         percent={Number(percentageDifference)}
         withLabel={true}
-        labels={[`${streamerComparison}`, `${swapAmountStreaming} vs ${swapAmount} ${targetAsset.ticker}`]}
+        labels={[`${streamerComparison}`, `${swapStreamingLabel}`]}
         tooltipPlacement={'top'}
       />
     )
-  }, [swapStreamingNetOutput, swapResultAmountMax, targetAsset])
+  }, [swapStreamingNetOutput, swapResultAmountMax, targetAsset, maxStreamingQuantity])
 
   const submitSwapTx = useCallback(() => {
     FP.pipe(
@@ -2101,29 +2116,18 @@ export const Swap = ({
         />
         <div className="w-full px-20px">{renderSlider}</div>
         <div>
-          {isStreaming ? (
-            <div className="flex w-full pt-20px pb-20px">
-              <div className="w-full ">
-                <div className="w-9/10 px-20px pb-20px">{renderStreamerQuantity}</div>
-                <div className="w-9/10 px-20px">{renderStreamerReturns}</div>
-              </div>
-              <div className="flex">
-                <TooltipAddress title="Reset to best time & price">
-                  <BaseButton onClick={resetToDefault}>
-                    <ArrowPathIcon className="ease h-[25px] w-[25px] group-hover:rotate-180" />
-                  </BaseButton>
-                </TooltipAddress>
-              </div>
-              <div className="m-40px flex flex-col items-center justify-center">
-                <div className="h-full border-r border-gray1 dark:border-gray1d"></div> {/* Updated divider */}
-                <BaseButton
-                  onClick={onSwitchAssets}
-                  className="group rounded-full !p-10px hover:rotate-180 hover:shadow-full dark:hover:shadow-fulld">
-                  <ArrowsUpDownIcon className="ease h-[40px] w-[40px] text-turquoise " />
-                </BaseButton>
-              </div>
+          <div className="flex w-full pt-20px pb-20px">
+            <div className="w-full ">
+              <div className="w-9/10 px-20px pb-20px">{renderStreamerQuantity}</div>
+              <div className="w-9/10 px-20px">{renderStreamerReturns}</div>
             </div>
-          ) : (
+            <div className="flex">
+              <TooltipAddress title="Reset to best time & price">
+                <BaseButton onClick={resetToDefault}>
+                  <ArrowPathIcon className="ease h-[25px] w-[25px] group-hover:rotate-180" />
+                </BaseButton>
+              </TooltipAddress>
+            </div>
             <div className="m-40px flex flex-col items-center justify-center">
               <div className="h-full border-r border-gray1 dark:border-gray1d"></div> {/* Updated divider */}
               <BaseButton
@@ -2132,7 +2136,7 @@ export const Swap = ({
                 <ArrowsUpDownIcon className="ease h-[40px] w-[40px] text-turquoise " />
               </BaseButton>
             </div>
-          )}
+          </div>
         </div>
         <div className="flex flex-col">
           <AssetInput
@@ -2366,7 +2370,7 @@ export const Swap = ({
                       className={`flex w-full justify-between ${
                         showDetails ? 'pt-10px' : ''
                       } font-mainBold text-[14px] ${isCausedSlippage ? 'text-error0 dark:text-error0d' : ''}`}>
-                      <div>{intl.formatMessage({ id: 'swap.slip.streamingtitle' })}</div>
+                      <div>{intl.formatMessage({ id: 'swap.slip.title' })}</div>
                       <div>
                         {formatAssetAmountCurrency({
                           amount: priceAmountToSwapMax1e8.assetAmount.times(swapStreamingSlippage / 100), // Find the value of swap slippage
