@@ -133,6 +133,8 @@ export type Mimir = {
 export type MimirLD = LiveData<Error, Mimir>
 export type MimirRD = RD.RemoteData<Error, Mimir>
 
+export type MimirConstantsRD = RD.RemoteData<Error, Mimir>
+
 export type MimirHaltChain = Record<`halt${EnabledChain}Chain`, boolean>
 
 export type MimirHaltTrading = Record<`halt${EnabledChain}Trading`, boolean>

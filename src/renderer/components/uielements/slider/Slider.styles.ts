@@ -64,6 +64,22 @@ export const SliderWrapper = styled(Slider)<SliderSingleProps & { error: boolean
       background: ${({ error }) => (error ? palette('error', 0) : palette('primary', 0))};
     }
   }
+
+  .ant-slider-mark {
+    color: ${palette('text', 2)}; /* Define text color */
+    font-size: 12px; /* Define font size */
+    padding-top: 8px;
+
+    &-text {
+      /* Additional styling for mark text, if needed */
+      font-family: inherit;
+    }
+
+    &-text-active {
+      /* Styling for the active mark, if needed */
+      font-weight: bold; /* Example: make the active mark bold */
+    }
+  }
 `
 
 export const SliderLabel = styled.div.attrs({ className: 'sliderLabel' })`

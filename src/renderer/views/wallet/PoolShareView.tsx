@@ -128,6 +128,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   const openExternalShareInfo = useCallback(() => {
     // `thoryield.com` does not support testnet, we ignore it here
     const oMainnet = O.fromPredicate<Network>(() => network === 'mainnet')(network)
+
     return FP.pipe(
       sequenceTOption(oRuneNativeAddress, oMainnet),
       O.map(([thorAddress, _]) => `https://app.thoryield.com/accounts?thor=${thorAddress}`),

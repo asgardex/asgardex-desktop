@@ -61,7 +61,8 @@ const createSharesService = (midgardUrl$: MidgardUrlLD, getMidgardDefaultApi: (b
              * 2. User has no any stake units for the pool
              * In both cases return empty array as `No Data` identifier
              */
-            if ('status' in e && e.status === 404) {
+
+            if (('status' in e && e.status === 404) || e.status === 503) {
               return Rx.of(RD.success([]))
             }
 
@@ -189,7 +190,7 @@ const createSharesService = (midgardUrl$: MidgardUrlLD, getMidgardDefaultApi: (b
 
   return {
     shares$,
-    reloadShares: (delayTime = 0) => reloadSharesWithTimer(delayTime),
+    reloadShares: (delayTime = 500) => reloadSharesWithTimer(delayTime),
     symShareByAsset$,
     asymShareByAsset$,
     combineShares$,

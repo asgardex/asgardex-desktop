@@ -1,3 +1,18 @@
+# 1.20.2 (2023-08-21)
+
+## Add
+
+- [Streaming Swaps] [#2](https://github.com/asgardex/asgardex-desktop/issues/2)
+
+## Internal
+
+- Slider works on interval only, as follows
+  - Slider < 1 % `:Limit/0/0` is used. Normal swap with limit, no streaming. 
+  - Slider > 1 and < 70 % `:0/1/0` is used. No limit, THORNode works out swap quantity.
+  - Slider >= 70 and =< 100 % `:0/5/0` is used. No limit, THORNode works out swap quantity.
+- force electron version 20.3.8
+- xchainjs/xchain-thorchain dependency updated
+
 # 1.20.1 (2023-08-14)
 
 ## Update
