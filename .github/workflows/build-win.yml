@@ -3,7 +3,6 @@ name: Electron build - Windows
 on:
   push:
     branches:
-      # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#onpushpull_requestbranchestags
       - 'release/**'
       - 'hotfix/**'
 
@@ -19,6 +18,15 @@ jobs:
       - name: Checkout git repo
         uses: actions/checkout@v2
 
+      # Cache Yarn dependencies
+      - name: Cache Yarn dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/yarn
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
       - uses: actions/setup-node@v2
         with:
           node-version-file: '.nvmrc'
@@ -27,10 +35,21 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable --network-timeout 1000000
 
-      - name: Publish Windows
-        run: yarn package:ci
+      - name: Run Post Install
+        run: yarn postinstall
+
+      - name: Run Prebuild
+        run: yarn prebuild
+
+      - name: Build
+        run: yarn build
         env:
-          NODE_OPTIONS: --max-old-space-size=4096
+          NODE_OPTIONS: --max-old-space-size=6144
+
+      - name: Package Electron
+        run: yarn package:electron --publish always
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REACT_APP_BLOCKCHAIR_API_KEY: ${{ secrets.REACT_APP_BLOCKCHAIR_API_KEY }}
           REACT_APP_ETHPLORER_API_KEY: ${{ secrets.REACT_APP_ETHPLORER_API_KEY }}
