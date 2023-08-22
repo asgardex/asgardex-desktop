@@ -43,6 +43,8 @@ jobs:
 
       - name: Build
         run: yarn build
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
 
       - name: Package Electron
         run: yarn package:electron --publish always
