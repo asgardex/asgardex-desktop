@@ -40,6 +40,26 @@ export type SymDepositAddresses = {
 
 export type DepositFees = { inFee: BaseAmount; outFee: BaseAmount; refundFee: BaseAmount }
 export type DepositAssetFees = DepositFees & { asset: Asset }
+
+/**
+ * Sym. deposit fees
+ *
+ */
+export type AsymDepositFees = {
+  /** fee for asset txs */
+  readonly asset: DepositAssetFees
+}
+
+export type AsymDepositFeesRD = RD.RemoteData<Error, AsymDepositFees>
+export type AsymDepositFeesLD = LiveData<Error, AsymDepositFees>
+
+export type AsymDepositFeesParams = {
+  readonly asset: Asset
+}
+
+export type AsymDepositFeesHandler = (asset: Asset) => AsymDepositFeesLD
+export type ReloadAsymDepositFeesHandler = (asset: Asset) => void
+
 /**
  * Sym. deposit fees
  *
@@ -66,6 +86,7 @@ export type AsymDepositParams = {
   readonly asset: Asset
   readonly amount: BaseAmount
   readonly memo: string
+  readonly sender: Address
   readonly walletIndex: number
   readonly walletType: WalletType
   readonly hdMode: HDMode
@@ -322,3 +343,14 @@ export type SendTxState = {
 export type SendTxState$ = Rx.Observable<SendTxState>
 
 export type SendTxStateHandler = (p: SendTxParams) => SendTxState$
+
+// Saver fees
+export type SaverFees = {
+  /** fee for asset txs */
+  readonly asset: DepositAssetFees
+}
+
+export type SaverFeesRD = RD.RemoteData<Error, SaverFees>
+export type SaverFeesLD = LiveData<Error, SaverFees>
+
+export type SaverFeesHandler = (asset: Asset) => SaverFeesLD

@@ -37,7 +37,7 @@ export const SliderWrapper = styled(Slider)<SliderSingleProps & { error: boolean
 
       &-tooltip {
         padding: 0;
-        color: inherit;
+        color: ${palette('text', 2)};
 
         .ant {
           &-tooltip {
@@ -51,7 +51,7 @@ export const SliderWrapper = styled(Slider)<SliderSingleProps & { error: boolean
               min-height: auto;
               background-color: transparent;
               box-shadow: none;
-              color: inherit;
+              color: ${palette('text', 2)};
             }
           }
         }

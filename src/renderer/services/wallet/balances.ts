@@ -70,6 +70,7 @@ export const createBalancesService = ({
     DOGE.reloadBalances()
     COSMOS.reloadBalances()
   }
+  console.log(THOR.reloadBalances())
 
   // Returns lazy functions to reload balances by given chain
   const reloadBalancesByChain = (chain: Chain) => {
@@ -116,7 +117,7 @@ export const createBalancesService = ({
         reloadBalances$: Rx.EMPTY
       }
     }
-
+    console.log(chain)
     switch (chain) {
       case BNBChain:
         return {
@@ -153,6 +154,7 @@ export const createBalancesService = ({
           reloadBalances$: ETH.reloadBalances$
         }
       case THORChain:
+        console.log('here in case')
         return {
           reloadBalances: THOR.reloadBalances,
           resetReloadBalances: THOR.resetReloadBalances,

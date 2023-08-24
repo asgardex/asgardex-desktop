@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react'
 
-import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import {
   Address,
@@ -18,7 +17,7 @@ import { useIntl } from 'react-intl'
 import { Network } from '../../../shared/api/types'
 import { max1e8BaseAmount } from '../../helpers/assetHelper'
 import { loadingString, noDataString } from '../../helpers/stringHelper'
-import { BaseAmountRD } from '../../types'
+import { AsymDepositFeesHandler } from '../../services/chain/types'
 import { AssetWithAmount, AssetWithDecimal } from '../../types/asgardex'
 import { PricePool } from '../../views/pools/Pools.types'
 import { AssetInput } from '../uielements/assets/assetInput'
@@ -33,15 +32,14 @@ export type Props = {
   address: Address
   network: Network
   pricePool: PricePool
-  fees: BaseAmountRD
+  fees$: AsymDepositFeesHandler
 }
 
 export const WithdrawSavers: React.FC<Props> = (props): JSX.Element => {
   const {
     asset: { asset, decimal: assetDecimal },
     network,
-    pricePool,
-    fees: feesRD
+    pricePool
   } = props
 
   const intl = useIntl()
@@ -148,7 +146,7 @@ export const WithdrawSavers: React.FC<Props> = (props): JSX.Element => {
               {/* fees */}
               <div className="flex w-full items-center justify-between font-mainBold">
                 <BaseButton
-                  disabled={RD.isPending(feesRD) || RD.isInitial(feesRD)}
+                  // disabled={RD.isPending(feesRD) || RD.isInitial(feesRD)}
                   className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
                   onClick={reloadFeesHandler}>
                   {intl.formatMessage({ id: 'common.fees.estimated' })}

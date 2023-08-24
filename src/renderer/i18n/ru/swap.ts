@@ -14,6 +14,10 @@ const swap: SwapMessages = {
     'Чем выше процент, тем большее проскальзывание вы допускаете. Большее проскальзывание включает также более широкий диапазон расчёта комиссий во избежание прерывания обмена.',
   'swap.slip.tolerance.ledger-disabled.info':
     'Чувствительность к проскальзыванию была отключена из-за технических проблем с Ledger.',
+  'swap.streaming.interval': 'Interval',
+  'swap.streaming.interval.info': 'Интервал между обменами, 10 блоков равно 1-минутному интервалу',
+  'swap.streaming.quantity': 'Quanity',
+  'swap.streaming.quantity.info': 'Количество мини-обменов, выполненных за интервал',
   'swap.errors.amount.balanceShouldCoverChainFee':
     'Комиссия транзакции {fee} должна покрываться вашим балансом (сейчас {balance}).',
   'swap.errors.amount.outputShouldCoverChainFee':

@@ -34,8 +34,8 @@ export const RESERVE_MODULE_ADDRESS = 'thor1dheycdevq39qlkxs2a6wuuzyn4aqxhve4qxt
 
 // 'unknown' by default - needed to be requested from THORNode before initializing a `xchain-thorchain` client
 export const INITIAL_CHAIN_IDS: ChainIds = {
-  [Network.Mainnet]: 'unkown-mainnet-chain-id',
-  [Network.Stagenet]: 'unkown-stagenet-chain-id',
+  [Network.Mainnet]: 'thorchain-mainnet-v1',
+  [Network.Stagenet]: 'thorchain-stagenet-v2',
   [Network.Testnet]: 'unkown-testnet-chain-id'
 }
 
