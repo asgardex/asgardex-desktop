@@ -1358,7 +1358,8 @@ export const Swap = ({
   // Function to reset the slider to default position
   const resetToDefault = () => {
     setStreamingInterval(3) // Default position
-    setStreamingQuantity(0) // thornode decides the swap quantity
+    const setStreamingQuantityValue = Math.ceil(maxStreamingQuantity / 2)
+    setStreamingQuantity(setStreamingQuantityValue) // thornode decides the swap quantity
     setSlider(30)
     setIsStreaming(true)
   }
@@ -1403,6 +1404,7 @@ export const Swap = ({
           value={quantity}
           onChange={setQuantity}
           tooltipVisible
+          min={0} // Need to fix defaults before making this 1
           max={maxStreamingQuantity}
           tipFormatter={() => ``}
           withLabel={true}

@@ -1,17 +1,39 @@
+# 1.20.3 (2023-08-26)
+
+## Add
+
+- [Savers] [#3](https://github.com/asgardex/asgardex-desktop/issues/3) - Earn only. No Affiliate.
+
+# Update
+
+- Streaming interface improvements
+  - Slider Interval / Max 10 blocks. Default is 3.
+  - Slider Quantity > Sub swap selection.
+  - More details around Streaming Info, e.g. Swap time.
+
+## Fix
+
+- Streaming Dark mode style adjustment - On loading new wallet and not connected to internet display thor address.
+- Error producing THORNode address with no Internet connection.
+
 # 1.20.2 (2023-08-21)
 
 ## Add
 
-- [Streaming Swaps] [#2](https://github.com/asgardex/asgardex-desktop/issues/2)
+- [Streaming Swaps] (Add) [#2](https://github.com/asgardex/asgardex-desktop/issues/2)
+  - User can now add to any of the savers pools
+  - Including the stables e.g USDC
 
 ## Internal
 
 - Slider works on interval only, as follows
   - Slider < 1 % `:Limit/0/0` is used. Normal swap with limit, no streaming. 
   - Slider > 1 and < 70 % `:0/1/0` is used. No limit, THORNode works out swap quantity.
-  - Slider >= 70 and =< 100 % `:0/5/0` is used. No limit, THORNode works out swap quantity.
-- force electron version 20.3.8
+  - Slider >= 70 and <= 100 % `:0/5/0` is used. No limit, THORNode works out swap quantity.
+- force electron version 20.3.8 for node-hid
 - xchainjs/xchain-thorchain dependency updated
+- Updated affiliate fee to dosplay price and amount
+- Fixed 'AJAX ERROR 803' in Shares by adding 500 ms delay
 
 # 1.20.1 (2023-08-14)
 
