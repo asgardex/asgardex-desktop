@@ -3,7 +3,6 @@ import { useCallback, useMemo, useRef } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import {
   Asset,
-  assetFromString,
   assetToString,
   BaseAmount,
   baseToAsset,
@@ -26,7 +25,6 @@ import { PoolsPeriodSelector } from '../../components/uielements/pools/PoolsPeri
 import { Table } from '../../components/uielements/table'
 import { DEFAULT_GET_POOLS_PERIOD, DEFAULT_WALLET_TYPE } from '../../const'
 import { useMidgardContext } from '../../contexts/MidgardContext'
-import { isChainAsset } from '../../helpers/assetHelper'
 import { ordBigNumber } from '../../helpers/fp/ord'
 import { sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
@@ -280,15 +278,7 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
             // filter chain assets
             const poolDetailsFiltered: PoolDetails = FP.pipe(
               poolDetails,
-              A.filter(({ asset: assetString }) =>
-                FP.pipe(
-                  assetString,
-                  assetFromString,
-                  O.fromNullable,
-                  O.map(isChainAsset),
-                  O.getOrElse(() => false)
-                )
-              )
+              A.filter(({ saversDepth }) => Number(saversDepth) > 0)
             )
 
             const poolViewData = getSaversTableRowsData({

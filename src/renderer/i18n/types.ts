@@ -387,6 +387,8 @@ type SwapMessageKey =
   | 'swap.streaming.interval.info'
   | 'swap.streaming.quantity'
   | 'swap.streaming.quantity.info'
+  | 'swap.streaming.time'
+  | 'swap.streaming.time.info'
   | 'swap.state.pending'
   | 'swap.state.success'
   | 'swap.state.error'

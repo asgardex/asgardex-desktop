@@ -14,7 +14,8 @@ import {
   formatAssetAmountCurrency,
   baseToAsset,
   eqAsset,
-  delay
+  delay,
+  assetFromString
 } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/lib/function'
@@ -23,19 +24,28 @@ import * as O from 'fp-ts/lib/Option'
 import debounce from 'lodash/debounce'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
+import * as RxOp from 'rxjs/operators'
 
 import { Network } from '../../../shared/api/types'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
-import { isChainAsset, isEthAsset, isUSDAsset, max1e8BaseAmount } from '../../helpers/assetHelper'
+import { ZERO_BASE_AMOUNT } from '../../const'
+import {
+  getEthTokenAddress,
+  isChainAsset,
+  isEthAsset,
+  isEthTokenAsset,
+  isUSDAsset,
+  max1e8BaseAmount
+} from '../../helpers/assetHelper'
 import { getChainAsset, isEthChain } from '../../helpers/chainHelper'
-import { unionAssets } from '../../helpers/fp/array'
-import { eqBaseAmount } from '../../helpers/fp/eq'
+import { eqBaseAmount, eqOApproveParams, eqOAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
-import { liveData } from '../../helpers/rx/liveData'
+import { LiveData, liveData } from '../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../helpers/stringHelper'
+import * as WalletHelper from '../../helpers/walletHelper'
 import {
   filterWalletBalancesByAssets,
   getWalletBalanceByAssetAndWalletType,
@@ -50,21 +60,39 @@ import {
   AsymDepositParams,
   AsymDepositState,
   AsymDepositStateHandler,
+  FeeRD,
   ReloadAsymDepositFeesHandler
 } from '../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../services/clients'
+import {
+  ApproveFeeHandler,
+  ApproveParams,
+  IsApprovedRD,
+  IsApproveParams,
+  LoadApproveFeeHandler
+} from '../../services/ethereum/types'
 import { PoolAddress } from '../../services/midgard/types'
-import { BalancesState, KeystoreState, ValidatePasswordHandler, WalletBalance } from '../../services/wallet/types'
+import {
+  ApiError,
+  BalancesState,
+  KeystoreState,
+  ValidatePasswordHandler,
+  WalletBalance,
+  TxHashLD,
+  TxHashRD
+} from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
 import { AssetWithAmount } from '../../types/asgardex'
 import { PricePool } from '../../views/pools/Pools.types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
 import { TxModal } from '../modal/tx'
 import { DepositAsset } from '../modal/tx/extra/DepositAsset'
+import { LoadingView } from '../shared/loading'
 import { AssetInput } from '../uielements/assets/assetInput'
 import { BaseButton, FlatButton, ViewTxButton } from '../uielements/button'
 import { MaxBalanceButton } from '../uielements/button/MaxBalanceButton'
 import { Tooltip, TooltipAddress } from '../uielements/common/Common.styles'
+import { Fees, UIFeesRD } from '../uielements/fees'
 import { InfoIcon } from '../uielements/info'
 import * as Utils from './Saver.utils'
 
@@ -87,6 +115,10 @@ export type AddProps = {
   goToTransaction: OpenExplorerTxUrl
   getExplorerTxUrl: GetExplorerTxUrl
   reloadSelectedPoolDetail: (delay?: number) => void
+  approveERC20Token$: (params: ApproveParams) => TxHashLD
+  reloadApproveFee: LoadApproveFeeHandler
+  approveFee$: ApproveFeeHandler
+  isApprovedERC20Token$: (params: IsApproveParams) => LiveData<ApiError, boolean>
   validatePassword$: ValidatePasswordHandler
   reloadFees: ReloadAsymDepositFeesHandler
   reloadBalances: FP.Lazy<void>
@@ -96,7 +128,6 @@ export type AddProps = {
 export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
   const {
     keystore,
-    poolAssets,
     poolDetails,
     asset,
     sourceWalletType: initialSourceWalletType,
@@ -108,7 +139,12 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     fees$,
     saverDeposit$,
     validatePassword$,
-    reloadBalances,
+    isApprovedERC20Token$,
+    approveERC20Token$,
+    reloadBalances = FP.constVoid,
+    reloadFees,
+    reloadApproveFee,
+    approveFee$,
     reloadSelectedPoolDetail,
     goToTransaction,
     getExplorerTxUrl,
@@ -129,6 +165,8 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
   // Deposit start time
   const [depositStartTime, setDepositStartTime] = useState<number>(0)
 
+  const prevAsset = useRef<O.Option<Asset>>(O.none)
+
   const {
     state: depositState,
     reset: resetDepositState,
@@ -136,32 +174,46 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
   } = useSubscriptionState<AsymDepositState>(INITIAL_ASYM_DEPOSIT_STATE)
 
   const { balances: oWalletBalances, loading: walletBalancesLoading } = walletBalances
+
+  /**
+   * Selectable source assets to add to savers.
+   * Based on saver depth
+   */
+  const selectableAssets: Asset[] = useMemo(() => {
+    const result = FP.pipe(
+      poolDetails,
+      A.filter(({ saversDepth }) => Number(saversDepth) > 0),
+      A.filterMap(({ asset: assetString }) => O.fromNullable(assetFromString(assetString)))
+    )
+    return result
+  }, [poolDetails])
+
   /**
    * All balances based on available assets
    */
-  const allBalances: WalletBalances = useMemo(
-    () =>
-      FP.pipe(
-        oWalletBalances,
-        // filter wallet balances to include assets available only including synth balances
-        O.map((balances) => filterWalletBalancesByAssets(balances, poolAssets)),
-        O.getOrElse<WalletBalances>(() => [])
-      ),
-    [poolAssets, oWalletBalances]
-  )
+  const allBalances: WalletBalances = useMemo(() => {
+    const balances = FP.pipe(
+      oWalletBalances,
+      // filter wallet balances
+      O.map((balances) => filterWalletBalancesByAssets(balances, selectableAssets)),
+      O.getOrElse<WalletBalances>(() => [])
+    )
+    return balances
+  }, [selectableAssets, oWalletBalances])
 
   const hasLedger = useMemo(() => hasLedgerInBalancesByAsset(asset.asset, allBalances), [asset, allBalances])
 
   const sourceWalletType: WalletType = useMemo(() => (useLedger ? 'ledger' : 'keystore'), [useLedger])
 
-  // `AssetWB` of source asset - which might be none (user has no balances for this asset or wallet is locked)
+  // `oSourceAssetWB` of source asset - which might be none (user has no balances for this asset or wallet is locked)
   const oSourceAssetWB: O.Option<WalletBalance> = useMemo(() => {
     const oWalletBalances = NEA.fromArray(allBalances)
-    return getWalletBalanceByAssetAndWalletType({
+    const result = getWalletBalanceByAssetAndWalletType({
       oWalletBalances,
       asset: asset.asset,
       walletType: sourceWalletType
     })
+    return result
   }, [asset, allBalances, sourceWalletType])
 
   // User balance for source asset
@@ -244,10 +296,10 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     })
   }, [lockedWallet, asset, sourceAssetAmountMax1e8, saverFees])
 
+  // Set amount to send
   const setAmountToSendMax1e8 = useCallback(
     (amountToSend: BaseAmount) => {
-      const newAmount = baseAmount(amountToSend.amount(), amountToSendMax1e8.decimal)
-
+      const newAmount = baseAmount(amountToSend.amount(), sourceAssetAmountMax1e8.decimal)
       // dirty check - do nothing if prev. and next amounts are equal
       if (eqBaseAmount.equals(newAmount, amountToSendMax1e8)) return {}
 
@@ -255,8 +307,9 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
 
       _setAmountToSendMax1e8({ ...newAmountToSend })
     },
-    [amountToSendMax1e8, maxAmountToSendMax1e8]
+    [amountToSendMax1e8, maxAmountToSendMax1e8, sourceAssetAmountMax1e8]
   )
+  // price of amount to send
   const priceAmountToSendMax1e8: CryptoAmount = useMemo(() => {
     const result = FP.pipe(
       PoolHelpers.getPoolPriceValue({
@@ -284,7 +337,63 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       ),
     [oSaversQuote, asset]
   )
+  const oChainAssetBalance: O.Option<BaseAmount> = useMemo(() => {
+    const chainAsset = getChainAsset(sourceChain)
+    return FP.pipe(
+      WalletHelper.getWalletBalanceByAssetAndWalletType({
+        oWalletBalances,
+        asset: chainAsset,
+        walletType: sourceWalletType
+      }),
+      O.map(({ amount }) => amount)
+    )
+  }, [sourceChain, oWalletBalances, sourceWalletType])
 
+  const chainAssetBalance: BaseAmount = useMemo(
+    () =>
+      FP.pipe(
+        oChainAssetBalance,
+        O.getOrElse(() => ZERO_BASE_AMOUNT)
+      ),
+    [oChainAssetBalance]
+  )
+  const needApprovement = useMemo(() => {
+    // Other chains than ETH do not need an approvement
+    if (!isEthChain(asset.asset.chain)) return false
+    // ETH does not need to be approved
+    if (isEthAsset(asset.asset)) return false
+    // ERC20 token does need approvement only
+    return isEthTokenAsset(asset.asset)
+  }, [asset])
+
+  const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
+    const oRouterAddress: O.Option<Address> = FP.pipe(
+      oPoolAddress,
+      O.chain(({ router }) => router)
+    )
+    const oTokenAddress: O.Option<string> = getEthTokenAddress(asset.asset)
+
+    const oNeedApprovement: O.Option<boolean> = FP.pipe(
+      needApprovement,
+      // `None` if needApprovement is `false`, no request then
+      O.fromPredicate((v) => !!v)
+    )
+
+    return FP.pipe(
+      sequenceTOption(oNeedApprovement, oTokenAddress, oRouterAddress, oSourceAssetWB),
+      O.map(([_, tokenAddress, routerAddress, { walletAddress, walletIndex, walletType, hdMode }]) => ({
+        network,
+        spenderAddress: routerAddress,
+        contractAddress: tokenAddress,
+        fromAddress: walletAddress,
+        walletIndex,
+        walletType,
+        hdMode
+      }))
+    )
+  }, [oPoolAddress, asset, needApprovement, oSourceAssetWB, network])
+
+  // Boolean on if amount to send is zero
   const isZeroAmountToSend = useMemo(() => amountToSendMax1e8.amount().isZero(), [amountToSendMax1e8])
   const minAmountError = useMemo(() => {
     if (isZeroAmountToSend) return false
@@ -301,8 +410,11 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     return inFee.gt(sourceChainAssetAmount)
   }, [minAmountError, sourceChainAssetAmount, saverFees])
 
-  // Diables the submit button
-  const disableSubmit = useMemo(() => sourceChainFeeError, [sourceChainFeeError])
+  // Disables the submit button
+  const disableSubmit = useMemo(
+    () => sourceChainFeeError || isZeroAmountToSend || lockedWallet || minAmountError || walletBalancesLoading,
+    [sourceChainFeeError, isZeroAmountToSend, lockedWallet, minAmountError, walletBalancesLoading]
+  )
 
   const debouncedEffect = useRef(
     debounce((amountToSendMax1e8) => {
@@ -337,7 +449,152 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     },
     [onChangeAsset]
   )
-  const reloadFeesHandler = () => {}
+  // Reload balances at `onMount`
+  useEffect(() => {
+    reloadBalances()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const prevApproveFee = useRef<O.Option<BaseAmount>>(O.none)
+
+  const [approveFeeRD, approveFeesParamsUpdated] = useObservableState<FeeRD, ApproveParams>((approveFeeParam$) => {
+    return approveFeeParam$.pipe(
+      RxOp.switchMap((params) =>
+        FP.pipe(
+          approveFee$(params),
+          liveData.map((fee) => {
+            // store every successfully loaded fees
+            prevApproveFee.current = O.some(fee)
+            return fee
+          })
+        )
+      )
+    )
+  }, RD.initial)
+
+  const prevApproveParams = useRef<O.Option<ApproveParams>>(O.none)
+
+  const renderFeeError = useCallback(
+    (fee: BaseAmount, amount: BaseAmount, asset: Asset) => {
+      const msg = intl.formatMessage(
+        { id: 'deposit.add.error.chainFeeNotCovered' },
+        {
+          fee: formatAssetAmountCurrency({
+            asset: getChainAsset(sourceChain),
+            trimZeros: true,
+            amount: baseToAsset(fee)
+          }),
+          balance: formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, trimZeros: true })
+        }
+      )
+
+      return (
+        <p className="mb-20px p-0 text-center font-main text-[12px] uppercase text-error0 dark:text-error0d">{msg}</p>
+      )
+    },
+    [sourceChain, intl]
+  )
+
+  const approveFee: BaseAmount = useMemo(
+    () =>
+      FP.pipe(
+        approveFeeRD,
+        RD.toOption,
+        O.alt(() => prevApproveFee.current),
+        O.getOrElse(() => ZERO_BASE_AMOUNT)
+      ),
+    [approveFeeRD]
+  )
+  const uiApproveFeesRD: UIFeesRD = useMemo(
+    () =>
+      FP.pipe(
+        approveFeeRD,
+        RD.map((approveFee) => [{ asset: getChainAsset(sourceChain), amount: approveFee }])
+      ),
+    [approveFeeRD, sourceChain]
+  )
+
+  const isApproveFeeError = useMemo(() => {
+    // ignore error check if we don't need to check allowance
+    if (!needApprovement) return false
+
+    return FP.pipe(
+      oChainAssetBalance,
+      O.fold(
+        () => true,
+        (balance) => FP.pipe(approveFee, balance.lt)
+      )
+    )
+  }, [needApprovement, oChainAssetBalance, approveFee])
+
+  const renderApproveFeeError = useMemo(() => {
+    if (
+      !isApproveFeeError ||
+      // Don't render anything if chainAssetBalance is not available (still loading)
+      O.isNone(oChainAssetBalance) ||
+      // Don't render error if walletBalances are still loading
+      walletBalancesLoading
+    )
+      return <></>
+
+    return renderFeeError(approveFee, chainAssetBalance, getChainAsset(sourceChain))
+  }, [
+    isApproveFeeError,
+    oChainAssetBalance,
+    walletBalancesLoading,
+    renderFeeError,
+    approveFee,
+    chainAssetBalance,
+    sourceChain
+  ])
+
+  // State for values of `isApprovedERC20Token$`
+  const {
+    state: isApprovedState,
+    reset: resetIsApprovedState,
+    subscribe: subscribeIsApprovedState
+  } = useSubscriptionState<IsApprovedRD>(RD.initial)
+
+  const checkApprovedStatus = useCallback(
+    ({ contractAddress, spenderAddress, fromAddress }: ApproveParams) => {
+      subscribeIsApprovedState(
+        isApprovedERC20Token$({
+          contractAddress,
+          spenderAddress,
+          fromAddress
+        })
+      )
+    },
+    [isApprovedERC20Token$, subscribeIsApprovedState]
+  )
+
+  // Update `approveFeesRD` whenever `oApproveParams` has been changed
+  useEffect(() => {
+    FP.pipe(
+      oApproveParams,
+      // Do nothing if prev. and current router a the same
+      O.filter((params) => !eqOApproveParams.equals(O.some(params), prevApproveParams.current)),
+      // update ref
+      O.map((params) => {
+        prevApproveParams.current = O.some(params)
+        return params
+      }),
+      // Trigger update for `approveFeesRD` + `checkApprove`
+      O.map((params) => {
+        approveFeesParamsUpdated(params)
+        checkApprovedStatus(params)
+        return true
+      })
+    )
+  }, [approveFeesParamsUpdated, checkApprovedStatus, oApproveParams, oPoolAddress])
+
+  const reloadApproveFeesHandler = useCallback(() => {
+    FP.pipe(oApproveParams, O.map(reloadApproveFee))
+  }, [oApproveParams, reloadApproveFee])
+
+  const reloadFeesHandler = useCallback(() => {
+    reloadFees(asset.asset)
+  }, [reloadFees, asset])
 
   const zeroBaseAmountMax = useMemo(() => baseAmount(0, asset.baseAmount.decimal), [asset])
 
@@ -421,8 +678,9 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
 
   const onCloseTxModal = useCallback(() => {
     resetDepositState()
+    reloadBalances()
     reloadSelectedPoolDetail(5000)
-  }, [resetDepositState, reloadSelectedPoolDetail])
+  }, [resetDepositState, reloadSelectedPoolDetail, reloadBalances])
 
   const onFinishTxModal = useCallback(() => {
     onCloseTxModal()
@@ -514,26 +772,82 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     )
   }, [oEarnParams, subscribeDepositState, saverDeposit$])
 
-  /**
-   * Selectable source assets to add to savers.
-   *
-   * Based on users layer 1 balances.
-   * Zero balances are ignored.
-   * Duplications of assets are merged.
-   */
-  const selectableAssets: Asset[] = useMemo(
+  const {
+    state: approveState,
+    reset: resetApproveState,
+    subscribe: subscribeApproveState
+  } = useSubscriptionState<TxHashRD>(RD.initial)
+
+  const onApprove = useCallback(() => {
+    if (useLedger) {
+      setShowLedgerModal('approve')
+    } else {
+      setShowPasswordModal('approve')
+    }
+  }, [useLedger])
+
+  const submitApproveTx = useCallback(() => {
+    FP.pipe(
+      oApproveParams,
+      O.map(({ walletIndex, walletType, hdMode, contractAddress, spenderAddress, fromAddress }) =>
+        subscribeApproveState(
+          approveERC20Token$({
+            network,
+            contractAddress,
+            spenderAddress,
+            fromAddress,
+            walletIndex,
+            hdMode,
+            walletType
+          })
+        )
+      )
+    )
+  }, [approveERC20Token$, network, oApproveParams, subscribeApproveState])
+
+  const renderApproveError = useMemo(
     () =>
       FP.pipe(
-        allBalances,
-        // Get assets
-        A.map(({ asset }) => asset),
-        // Filter assets by matching chain
-        A.filter((a) => isChainAsset(a)),
-        // Merge duplications
-        (assets) => unionAssets(assets)(assets)
+        approveState,
+        RD.fold(
+          () => <></>,
+          () => <></>,
+          (error) => (
+            <p className="mb-20px p-0 text-center font-main uppercase text-error0 dark:text-error0d">{error.msg}</p>
+          ),
+          () => <></>
+        )
       ),
-    [allBalances] // Include asset in dependencies if it can change
+    [approveState]
   )
+
+  const isApproved = useMemo(
+    () =>
+      !needApprovement ||
+      RD.isSuccess(approveState) ||
+      FP.pipe(
+        isApprovedState,
+        // ignore other RD states and set to `true`
+        // to avoid switch between approve and submit button
+        // Submit button will still be disabled
+        RD.getOrElse(() => true)
+      ),
+    [approveState, isApprovedState, needApprovement]
+  )
+
+  useEffect(() => {
+    if (!eqOAsset.equals(prevAsset.current, O.some(asset.asset))) {
+      prevAsset.current = O.some(asset.asset)
+      // reset deposit state
+      resetDepositState()
+      // reset isApproved state
+      resetIsApprovedState()
+      // reset approve state
+      resetApproveState()
+      // reload fees
+      reloadFeesHandler()
+    }
+  }, [asset, reloadFeesHandler, resetApproveState, resetIsApprovedState, reloadSelectedPoolDetail, resetDepositState])
 
   type ModalState = 'deposit' | 'approve' | 'none'
   const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
@@ -546,6 +860,43 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       setShowPasswordModal('deposit')
     }
   }, [setShowLedgerModal, useLedger]) // Dependencies array inside the useCallback hook
+
+  const checkIsApproved = useMemo(() => {
+    if (!needApprovement) return false
+    // ignore initial + loading states for `isApprovedState`
+    return RD.isPending(isApprovedState)
+  }, [isApprovedState, needApprovement])
+
+  const checkIsApprovedError = useMemo(() => {
+    // ignore error check if we don't need to check allowance
+    if (!needApprovement) return false
+
+    return RD.isFailure(isApprovedState)
+  }, [needApprovement, isApprovedState])
+
+  const renderIsApprovedError = useMemo(() => {
+    if (!checkIsApprovedError) return <></>
+
+    return FP.pipe(
+      isApprovedState,
+
+      RD.fold(
+        () => <></>,
+        () => <></>,
+        (error) => (
+          <p className="mb-20px p-0 text-center font-main text-[12px] uppercase text-error0 dark:text-error0d">
+            {intl.formatMessage({ id: 'common.approve.error' }, { asset: asset.asset.ticker, error: error.msg })}
+          </p>
+        ),
+        (_) => <></>
+      )
+    )
+  }, [checkIsApprovedError, intl, isApprovedState, asset])
+  const disableSubmitApprove = useMemo(
+    () => checkIsApprovedError || isApproveFeeError || walletBalancesLoading,
+
+    [checkIsApprovedError, isApproveFeeError, walletBalancesLoading]
+  )
 
   const renderMinAmount = useMemo(
     () => (
@@ -576,7 +927,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
 
     const onSuccess = () => {
       if (showPasswordModal === 'deposit') submitDepositTx()
-      // if (showPasswordModal === 'approve') submitApproveTx()
+      if (showPasswordModal === 'approve') submitApproveTx()
       setShowPasswordModal('none')
     }
     const onClose = () => {
@@ -586,7 +937,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     return (
       <WalletPasswordConfirmationModal onSuccess={onSuccess} onClose={onClose} validatePassword$={validatePassword$} />
     )
-  }, [showPasswordModal, submitDepositTx, validatePassword$])
+  }, [showPasswordModal, submitApproveTx, submitDepositTx, validatePassword$])
 
   const renderLedgerConfirmationModal = useMemo(() => {
     if (showLedgerModal === 'none') return <></>
@@ -700,7 +1051,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
 
     [saverFeesRD, oPriceAssetInFee]
   )
-
+  // label for Price in fee
   const priceInFeeLabel = useMemo(
     () =>
       FP.pipe(
@@ -785,6 +1136,45 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
               </div>
             }
           />
+          <div className="flex flex-col items-center justify-between py-30px">
+            {renderIsApprovedError}
+            {(walletBalancesLoading || checkIsApproved) && (
+              <LoadingView
+                className="mb-20px"
+                label={
+                  // We show only one loading state at time
+                  // Order matters: Show states with shortest loading time before others
+                  // (approve state takes just a short time to load, but needs to be displayed)
+                  checkIsApproved
+                    ? intl.formatMessage({ id: 'common.approve.checking' }, { asset: asset.asset.ticker })
+                    : walletBalancesLoading
+                    ? intl.formatMessage({ id: 'common.balance.loading' })
+                    : undefined
+                }
+              />
+            )}
+            {isApproved ? (
+              <></>
+            ) : (
+              <>
+                {renderApproveFeeError}
+                {renderApproveError}
+                <FlatButton
+                  className="mb-20px min-w-[200px]"
+                  size="large"
+                  color="warning"
+                  disabled={disableSubmitApprove}
+                  onClick={onApprove}
+                  loading={RD.isPending(approveState)}>
+                  {intl.formatMessage({ id: 'common.approve' })}
+                </FlatButton>
+
+                {!RD.isInitial(uiApproveFeesRD) && (
+                  <Fees fees={uiApproveFeesRD} reloadFees={reloadApproveFeesHandler} />
+                )}
+              </>
+            )}
+          </div>
 
           <div className="flex flex-col items-center justify-center">
             <FlatButton

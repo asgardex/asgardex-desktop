@@ -22,6 +22,7 @@ import { ErrorView } from '../../components/shared/error'
 import { Spin } from '../../components/shared/loading'
 import { BackLinkButton, FlatButton, RefreshButton } from '../../components/uielements/button'
 import { useChainContext } from '../../contexts/ChainContext'
+import { useEthereumContext } from '../../contexts/EthereumContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useWalletContext } from '../../contexts/WalletContext'
@@ -80,6 +81,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
 
   const { reloadSaverProvider } = useThorchainContext()
   const { assetWithDecimal$, addressByChain$, reloadAsymDepositFee, asymDeposit$ } = useChainContext()
+  const { approveERC20Token$, isApprovedERC20Token$, approveFee$, reloadApproveFee } = useEthereumContext()
   const {
     balancesState$,
     reloadBalancesByChain,
@@ -271,8 +273,12 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         fees$={asymDepositFee$}
                         address={address}
                         reloadBalances={reloadHandler}
+                        approveFee$={approveFee$}
+                        reloadApproveFee={reloadApproveFee}
                         reloadFees={reloadAsymDepositFee}
                         reloadSelectedPoolDetail={reloadSelectedPoolDetail}
+                        isApprovedERC20Token$={isApprovedERC20Token$}
+                        approveERC20Token$={approveERC20Token$}
                         poolAddress={oPoolAddress}
                         saverDeposit$={asymDeposit$}
                         hidePrivateData={false}
