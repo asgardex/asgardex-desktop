@@ -243,8 +243,6 @@ export const Swap = ({
   // Slide use state
   const [slider, setSlider] = useState<number>(30)
 
-  const [totalTransactionTime, setTotalTransactionTime] = useState<number>(0)
-
   const [oTargetWalletType, setTargetWalletType] = useState<O.Option<WalletType>>(oInitialTargetWalletType)
 
   const [isStreaming, setIsStreaming] = useState<Boolean>(true)
@@ -774,9 +772,6 @@ export const Swap = ({
     debounce((quoteSwapData) => {
       // Include isStreaming as a parameter
       const thorchainQuery = new ThorchainQuery()
-      thorchainQuery.confCounting(new CryptoAmount(amountToSwapMax1e8, sourceAsset)).then((value) => {
-        setTotalTransactionTime(value)
-      })
       thorchainQuery
         .quoteSwap(quoteSwapData)
         .then((quote) => {
@@ -911,29 +906,6 @@ export const Swap = ({
       ),
     [oQuote]
   )
-
-  useEffect(() => {
-    const thorchainQuery = new ThorchainQuery()
-
-    // Define an async function inside the effect
-    const fetchTotalTransactionTime = async () => {
-      try {
-        const value = await thorchainQuery.confCounting(swapResultAmountMax)
-        setTotalTransactionTime(value + totalSwapSeconds)
-      } catch (error) {
-        console.error('An error occurred while fetching the total transaction time:', error)
-        // Handle the error as needed
-      }
-    }
-
-    // Call the async function
-    fetchTotalTransactionTime()
-
-    // You may include any cleanup logic if needed
-    return () => {
-      // Cleanup code here
-    }
-  }, [swapResultAmountMax, totalSwapSeconds]) // Dependencies for the effect
 
   /**
    * Price of swap result in max 1e8 // boolean to convert between streaming and regular swaps
@@ -1358,8 +1330,7 @@ export const Swap = ({
   // Function to reset the slider to default position
   const resetToDefault = () => {
     setStreamingInterval(3) // Default position
-    const setStreamingQuantityValue = Math.ceil(maxStreamingQuantity / 2)
-    setStreamingQuantity(setStreamingQuantityValue) // thornode decides the swap quantity
+    setStreamingQuantity(0) // thornode decides the swap quantity
     setSlider(30)
     setIsStreaming(true)
   }
@@ -1373,6 +1344,9 @@ export const Swap = ({
       setStreamingQuantity(0)
       setIsStreaming(streamingIntervalValue !== 0)
     }
+    const tipFormatter = slider === 0 ? 'Instant swap' : `${Math.floor(slider / 10)} Block interval between swaps`
+    const labelMin = slider <= 0 ? `Instant Swap` : `` || slider <= 50 ? 'Time Optimised' : ''
+    const labelMax = slider >= 50 ? `Price Optimised` : ``
     return (
       <div>
         <Slider
@@ -1381,9 +1355,9 @@ export const Swap = ({
           onChange={setInterval}
           tooltipVisible
           max={100}
-          tipFormatter={() => `${Math.floor(slider / 10)} Block interval between swaps`}
+          tipFormatter={() => `${tipFormatter} `}
           withLabel={true}
-          labels={[`Time Optimised`, `Price Optimised`]}
+          labels={[`${labelMin}`, `${labelMax}`]}
           tooltipPlacement={'top'}
         />
       </div>
@@ -1396,7 +1370,20 @@ export const Swap = ({
     const setQuantity = (quantity: number) => {
       setStreamingQuantity(quantity)
     }
-
+    let quantityLabel: string
+    let toolTip: string
+    if (streamingInterval === 0) {
+      quantityLabel = `Instant swap`
+      toolTip = `No Streaming interval set`
+    } else {
+      quantityLabel = quantity === 0 ? `Auto swap count` : `Sub swaps ${quantity}`
+      toolTip =
+        quantity === 0
+          ? `Thornode decides the swap count`
+          : `` || quantity === maxStreamingQuantity
+          ? `Max sub swaps ${maxStreamingQuantity}`
+          : ''
+    }
     return (
       <div>
         <Slider
@@ -1404,16 +1391,15 @@ export const Swap = ({
           value={quantity}
           onChange={setQuantity}
           tooltipVisible
-          min={0} // Need to fix defaults before making this 1
           max={maxStreamingQuantity}
-          tipFormatter={() => ``}
+          tipFormatter={() => `${toolTip}`}
           withLabel={true}
-          labels={[`Sub swaps ${quantity}`]}
+          labels={[`${quantityLabel}`]}
           tooltipPlacement={'top'}
         />
       </div>
     )
-  }, [maxStreamingQuantity, streamingQuantity])
+  }, [maxStreamingQuantity, streamingQuantity, streamingInterval])
 
   // Progress bar for swap return comparison
   const renderStreamerReturns = useMemo(() => {
@@ -1424,7 +1410,7 @@ export const Swap = ({
     const swapAmountStreaming = swapStreamingNetOutput.assetAmount.amount().toFixed(3)
     const swapStreamingLabel =
       percentageDifference === '-Infinity' ? '' : `${swapAmountStreaming} vs ${swapAmount} ${targetAsset.ticker}`
-    const streamerComparison = percentageDifference === '-Infinity' ? 'Instant' : `${percentageDifference}% `
+    const streamerComparison = percentageDifference === '-Infinity' ? 'Instant swap' : `${percentageDifference}% `
 
     return (
       <ProgressBar
@@ -2443,7 +2429,7 @@ export const Swap = ({
                               tooltip={intl.formatMessage({ id: 'swap.streaming.time.info' })}
                             />
                           </div>
-                          <div>{formatSwapTime(totalTransactionTime)}</div>
+                          <div>{formatSwapTime(totalSwapSeconds)}</div>
                         </div>
                       </>
                     )}
