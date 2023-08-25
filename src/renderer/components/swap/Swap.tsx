@@ -875,29 +875,6 @@ export const Swap = ({
     [oQuote, targetAsset]
   )
 
-  useEffect(() => {
-    const thorchainQuery = new ThorchainQuery()
-
-    // Define an async function inside the effect
-    const fetchTotalTransactionTime = async () => {
-      try {
-        const value = await thorchainQuery.confCounting(swapResultAmountMax)
-        setTotalTransactionTime(value)
-      } catch (error) {
-        console.error('An error occurred while fetching the total transaction time:', error)
-        // Handle the error as needed
-      }
-    }
-
-    // Call the async function
-    fetchTotalTransactionTime()
-
-    // You may include any cleanup logic if needed
-    return () => {
-      // Cleanup code here
-    }
-  }, [swapResultAmountMax]) // Dependencies for the effect
-
   // Swap streaming result from thornode
   const swapStreamingNetOutput: CryptoAmount = useMemo(
     () =>
@@ -934,6 +911,29 @@ export const Swap = ({
       ),
     [oQuote]
   )
+
+  useEffect(() => {
+    const thorchainQuery = new ThorchainQuery()
+
+    // Define an async function inside the effect
+    const fetchTotalTransactionTime = async () => {
+      try {
+        const value = await thorchainQuery.confCounting(swapResultAmountMax)
+        setTotalTransactionTime(value + totalSwapSeconds)
+      } catch (error) {
+        console.error('An error occurred while fetching the total transaction time:', error)
+        // Handle the error as needed
+      }
+    }
+
+    // Call the async function
+    fetchTotalTransactionTime()
+
+    // You may include any cleanup logic if needed
+    return () => {
+      // Cleanup code here
+    }
+  }, [swapResultAmountMax, totalSwapSeconds]) // Dependencies for the effect
 
   /**
    * Price of swap result in max 1e8 // boolean to convert between streaming and regular swaps
@@ -2066,13 +2066,12 @@ export const Swap = ({
   )
 
   const formatSwapTime = (totalSwapSeconds: number) => {
-    const totalSeconds = totalSwapSeconds + totalTransactionTime
-    if (totalSeconds < 60) {
-      return `${totalSeconds} seconds`
-    } else if (totalSeconds < 3600) {
-      return `${Math.floor(totalSeconds / 60)} minutes`
+    if (totalSwapSeconds < 60) {
+      return `${totalSwapSeconds} seconds`
+    } else if (totalSwapSeconds < 3600) {
+      return `${Math.floor(totalSwapSeconds / 60)} minutes`
     } else {
-      return `${totalSeconds / 60 / 60} hours`
+      return `${totalSwapSeconds / 60 / 60} hours`
     }
   }
 
@@ -2442,7 +2441,7 @@ export const Swap = ({
                               tooltip={intl.formatMessage({ id: 'swap.streaming.time.info' })}
                             />
                           </div>
-                          <div>{formatSwapTime(totalSwapSeconds)}</div>
+                          <div>{formatSwapTime(totalTransactionTime)}</div>
                         </div>
                       </>
                     )}
