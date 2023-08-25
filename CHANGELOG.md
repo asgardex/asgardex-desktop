@@ -16,6 +16,12 @@
 - Streaming Dark mode style adjustment - On loading new wallet and not connected to internet display thor address.
 - Error producing THORNode address with no Internet connection.
 
+## Internal
+
+- xchainjs/xchain-thorchain-query dependency updated
+- xchainjs/xchain-thornode dependency updated to use latest version of THORNode. 
+
+
 # 1.20.2 (2023-08-21)
 
 ## Add
