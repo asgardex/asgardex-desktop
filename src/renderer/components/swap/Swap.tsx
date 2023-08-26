@@ -2140,7 +2140,7 @@ export const Swap = ({
               <div className="w-9/10 px-20px">{renderStreamerReturns}</div>
             </div>
             <div className="flex">
-              <TooltipAddress title="Reset to best time & price">
+              <TooltipAddress title="Reset to streaming default">
                 <BaseButton
                   onClick={resetToDefault}
                   className=" rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
@@ -2148,8 +2148,8 @@ export const Swap = ({
                 </BaseButton>
               </TooltipAddress>
             </div>
-            <div className="m-40px flex flex-col ">
-              <div className="h-full border-gray1 dark:border-gray1d"></div>
+            <div className="m-40px flex flex-col justify-center ">
+              <div className=" border-gray1 dark:border-gray1d"></div>
               <BaseButton
                 onClick={onSwitchAssets}
                 className="group rounded-full !p-10px hover:rotate-180 hover:shadow-full dark:hover:shadow-fulld">
