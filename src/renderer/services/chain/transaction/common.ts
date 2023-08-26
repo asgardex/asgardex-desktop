@@ -158,7 +158,6 @@ export const sendPoolTx$ = ({
   memo,
   feeOption = DEFAULT_FEE_OPTION
 }: SendPoolTxParams): TxHashLD => {
-  console.log(asset)
   const { chain } = asset.synth ? AssetRuneNative : asset
   if (!isEnabledChain(chain)) return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)
 

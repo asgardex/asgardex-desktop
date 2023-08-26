@@ -4,6 +4,9 @@ import { palette } from 'styled-theme'
 
 export const ProgressWrapper = styled(Progress)<ProgressProps & { percent: number }>`
   margin-bottom: 10px;
+  .ant-progress-inner {
+    background-color: ${palette('background', 2)};
+  }
 `
 
 export const ProgressLabel = styled.div.attrs({ className: 'progressLabel' })`

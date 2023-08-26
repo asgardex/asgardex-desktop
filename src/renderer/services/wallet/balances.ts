@@ -116,7 +116,6 @@ export const createBalancesService = ({
         reloadBalances$: Rx.EMPTY
       }
     }
-
     switch (chain) {
       case BNBChain:
         return {

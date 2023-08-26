@@ -138,15 +138,12 @@ export const getRuneNativeAmountFromBalances = (balances: WalletBalances): O.Opt
 
 export const filterWalletBalancesByAssets = (balances: NonEmptyWalletBalances, assets: Asset[]): WalletBalances => {
   return balances.filter((balance) => {
-    // Check if there's an asset in the assets array that matches the balance's asset's chain, symbol, and ticker
-    // regardless of whether it's synthetic or not.
     const assetIndex = assets.findIndex(
       (asset) =>
         asset.chain === balance.asset.chain &&
-        asset.symbol === balance.asset.symbol &&
+        asset.symbol.toUpperCase() === balance.asset.symbol.toUpperCase() && // Convert to uppercase for comparison
         asset.ticker === balance.asset.ticker
     )
-
     return assetIndex >= 0
   })
 }

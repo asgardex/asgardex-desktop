@@ -13,6 +13,12 @@ const swap: SwapMessages = {
   'swap.slip.tolerance.info':
     'The higher the percentage, the more slippage you will accept. More slippage includes also a wider range for covering estimated fees to avoid aborted swaps.',
   'swap.slip.tolerance.ledger-disabled.info': 'Slippage tolerance has been disabled due technical issues with Ledger.',
+  'swap.streaming.interval': 'Interval',
+  'swap.streaming.interval.info': 'Interval between swaps, 10 blocks is 1 minute interval',
+  'swap.streaming.quantity': 'Quanity',
+  'swap.streaming.quantity.info': 'The quantity of mini swaps overall done per interval',
+  'swap.streaming.time': 'Streaming swap ETA',
+  'swap.streaming.time.info': 'Estimated time for this streaming swap to be completed',
   'swap.errors.amount.balanceShouldCoverChainFee':
     'Transaction fee {fee} needs to be covered by your balance (currently {balance}).',
   'swap.errors.amount.outputShouldCoverChainFee':

@@ -237,11 +237,11 @@ export const Swap = ({
   const [oQuote, setQuote] = useState<O.Option<TxDetails>>(O.none)
 
   // Default Streaming interval set to 0 blocks
-  const [streamingInterval, setStreamingInterval] = useState<number>(1)
+  const [streamingInterval, setStreamingInterval] = useState<number>(3)
   // Default Streaming quantity set to 0 network computes the optimum
   const [streamingQuantity, setStreamingQuantity] = useState<number>(0)
   // Slide use state
-  const [slider, setSlider] = useState<number>(50)
+  const [slider, setSlider] = useState<number>(30)
 
   const [oTargetWalletType, setTargetWalletType] = useState<O.Option<WalletType>>(oInitialTargetWalletType)
 
@@ -772,12 +772,10 @@ export const Swap = ({
     debounce((quoteSwapData) => {
       // Include isStreaming as a parameter
       const thorchainQuery = new ThorchainQuery()
-
       thorchainQuery
         .quoteSwap(quoteSwapData)
         .then((quote) => {
           setQuote(O.some(quote))
-          // setStreamingQuantity(quote.txEstimate.maxStreamingQuantity)
         })
         .catch((error) => {
           console.error('Failed to get quote:', error)
@@ -845,18 +843,7 @@ export const Swap = ({
       ),
     [oQuote]
   )
-  // Quote slippage returned as a percent
-  const outboundDelaySeconds: number = useMemo(
-    () =>
-      FP.pipe(
-        oQuote,
-        O.fold(
-          () => 0, // default affiliate fee asset amount return as number not as BP
-          (txDetails) => txDetails.txEstimate.outboundDelaySeconds
-        )
-      ),
-    [oQuote]
-  )
+
   // Quote slippage returned as a percent
   const swapStreamingSlippage: number = useMemo(
     () =>
@@ -992,9 +979,9 @@ export const Swap = ({
   // Check to see slippage greater than tolerance
   // This is handled by thornode
   const isCausedSlippage = useMemo(() => {
-    const result = swapSlippage > slipTolerance
+    const result = isStreaming ? false : swapSlippage > slipTolerance
     return result
-  }, [swapSlippage, slipTolerance])
+  }, [swapSlippage, slipTolerance, isStreaming])
 
   type RateDirection = 'fromSource' | 'fromTarget'
   const [rateDirection, setRateDirection] = useState<RateDirection>('fromSource')
@@ -1342,57 +1329,77 @@ export const Swap = ({
 
   // Function to reset the slider to default position
   const resetToDefault = () => {
-    setStreamingInterval(1) // Default position
+    setStreamingInterval(3) // Default position
     setStreamingQuantity(0) // thornode decides the swap quantity
-    setSlider(50)
+    setSlider(30)
     setIsStreaming(true)
   }
 
-  // Streaming inteval slider
-  const renderStreamerQuantity = useMemo(() => {
+  // Streaming Interval slider
+  const renderStreamerInterval = useMemo(() => {
     const setInterval = (slider: number) => {
       setSlider(slider)
-      if (slider < 1) {
-        // Time optimised
-        setStreamingInterval(0) // 0 blocks
-        setStreamingQuantity(0) // one swap
-        setIsStreaming(false)
-      } else if (slider > 1 && slider < 70) {
-        // time & price Optimised
-        setStreamingInterval(1) // 1 block
-        setStreamingQuantity(0) // thornode decides the swap quantity
-        setIsStreaming(true)
-      } else {
-        // price Optimised
-        setStreamingInterval(5) // 1 block
-        setStreamingQuantity(0) // thornode decides the swap quantity
-        setIsStreaming(true)
-      }
+      const streamingIntervalValue = Math.floor(slider / 10) // Mapping slider value to range 0 to 10
+      setStreamingInterval(streamingIntervalValue)
+      setStreamingQuantity(0)
+      setIsStreaming(streamingIntervalValue !== 0)
     }
-    // max streaming quantity * interval divide 60 to get minutes / 60 to get hours
-    const estimateStreamingCompletionTime = (totalSwapSeconds / 60 / 60).toFixed(2)
-    const estimateSwapCompletionTime = (outboundDelaySeconds / 60 / 60).toFixed(2)
-
+    const tipFormatter = slider === 0 ? 'Instant swap' : `${Math.floor(slider / 10)} Block interval between swaps`
+    const labelMin = slider <= 0 ? `Instant Swap` : `` || slider <= 50 ? 'Time Optimised' : ''
+    const labelMax = slider >= 50 ? `Price Optimised` : ``
     return (
       <div>
         <Slider
-          key={'Streamer Quantity slider'}
+          key={'Streamer Interval slider'}
           value={slider}
           onChange={setInterval}
           tooltipVisible
           max={100}
-          tipFormatter={() =>
-            `${
-              estimateStreamingCompletionTime === '0.00' ? estimateSwapCompletionTime : estimateStreamingCompletionTime
-            } hrs`
-          }
+          tipFormatter={() => `${tipFormatter} `}
           withLabel={true}
-          labels={[`Time Optimised`, `Price Optimised`]}
+          labels={[`${labelMin}`, `${labelMax}`]}
           tooltipPlacement={'top'}
         />
       </div>
     )
-  }, [totalSwapSeconds, outboundDelaySeconds, slider])
+  }, [slider])
+
+  // Streaming Quantity slider
+  const renderStreamerQuantity = useMemo(() => {
+    const quantity = streamingQuantity
+    const setQuantity = (quantity: number) => {
+      setStreamingQuantity(quantity)
+    }
+    let quantityLabel: string
+    let toolTip: string
+    if (streamingInterval === 0) {
+      quantityLabel = `Instant swap`
+      toolTip = `No Streaming interval set`
+    } else {
+      quantityLabel = quantity === 0 ? `Auto swap count` : `Sub swaps ${quantity}`
+      toolTip =
+        quantity === 0
+          ? `Thornode decides the swap count`
+          : `` || quantity === maxStreamingQuantity
+          ? `Max sub swaps ${maxStreamingQuantity}`
+          : ''
+    }
+    return (
+      <div>
+        <Slider
+          key={'Streamer Quantity slider'}
+          value={quantity}
+          onChange={setQuantity}
+          tooltipVisible
+          max={maxStreamingQuantity}
+          tipFormatter={() => `${toolTip}`}
+          withLabel={true}
+          labels={[`${quantityLabel}`]}
+          tooltipPlacement={'top'}
+        />
+      </div>
+    )
+  }, [maxStreamingQuantity, streamingQuantity, streamingInterval])
 
   // Progress bar for swap return comparison
   const renderStreamerReturns = useMemo(() => {
@@ -1403,7 +1410,7 @@ export const Swap = ({
     const swapAmountStreaming = swapStreamingNetOutput.assetAmount.amount().toFixed(3)
     const swapStreamingLabel =
       percentageDifference === '-Infinity' ? '' : `${swapAmountStreaming} vs ${swapAmount} ${targetAsset.ticker}`
-    const streamerComparison = percentageDifference === '-Infinity' ? 'Instant' : `${percentageDifference}% `
+    const streamerComparison = percentageDifference === '-Infinity' ? 'Instant swap' : `${percentageDifference}% `
 
     return (
       <ProgressBar
@@ -2046,6 +2053,16 @@ export const Swap = ({
     [oSwapParams]
   )
 
+  const formatSwapTime = (totalSwapSeconds: number) => {
+    if (totalSwapSeconds < 60) {
+      return `${totalSwapSeconds} seconds`
+    } else if (totalSwapSeconds < 3600) {
+      return `${Math.floor(totalSwapSeconds / 60)} minutes`
+    } else {
+      return `${totalSwapSeconds / 60 / 60} hours`
+    }
+  }
+
   const maxBalanceInfoTxt = useMemo(() => {
     const balanceLabel = formatAssetAmountCurrency({
       amount: baseToAsset(sourceAssetAmountMax1e8),
@@ -2118,18 +2135,21 @@ export const Swap = ({
         <div>
           <div className="flex w-full pt-20px pb-20px">
             <div className="w-full ">
+              <div className="w-9/10 px-20px pb-20px">{renderStreamerInterval}</div>
               <div className="w-9/10 px-20px pb-20px">{renderStreamerQuantity}</div>
               <div className="w-9/10 px-20px">{renderStreamerReturns}</div>
             </div>
             <div className="flex">
-              <TooltipAddress title="Reset to best time & price">
-                <BaseButton onClick={resetToDefault}>
-                  <ArrowPathIcon className="ease h-[25px] w-[25px] group-hover:rotate-180" />
+              <TooltipAddress title="Reset to streaming default">
+                <BaseButton
+                  onClick={resetToDefault}
+                  className=" rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
+                  <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
                 </BaseButton>
               </TooltipAddress>
             </div>
-            <div className="m-40px flex flex-col items-center justify-center">
-              <div className="h-full border-r border-gray1 dark:border-gray1d"></div> {/* Updated divider */}
+            <div className="m-40px flex flex-col justify-center ">
+              <div className=" border-gray1 dark:border-gray1d"></div>
               <BaseButton
                 onClick={onSwitchAssets}
                 className="group rounded-full !p-10px hover:rotate-180 hover:shadow-full dark:hover:shadow-fulld">
@@ -2365,7 +2385,6 @@ export const Swap = ({
                   </>
                 ) : (
                   <>
-                    {' '}
                     <div
                       className={`flex w-full justify-between ${
                         showDetails ? 'pt-10px' : ''
@@ -2380,6 +2399,40 @@ export const Swap = ({
                         }) + ` (${swapStreamingSlippage.toFixed(2)}%)`}
                       </div>
                     </div>
+                    {showDetails && (
+                      <>
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          <div className={`flex items-center `}>
+                            {intl.formatMessage({ id: 'swap.streaming.interval' })}
+                            <InfoIcon
+                              className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                              tooltip={intl.formatMessage({ id: 'swap.streaming.interval.info' })}
+                            />
+                          </div>
+                          <div>{streamingInterval}</div>
+                        </div>
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          <div className={`flex items-center`}>
+                            {intl.formatMessage({ id: 'swap.streaming.quantity' })}
+                            <InfoIcon
+                              className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                              tooltip={intl.formatMessage({ id: 'swap.streaming.quantity.info' })}
+                            />
+                          </div>
+                          <div>{streamingQuantity}</div>
+                        </div>
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          <div className={`flex items-center`}>
+                            {intl.formatMessage({ id: 'swap.streaming.time' })}
+                            <InfoIcon
+                              className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                              tooltip={intl.formatMessage({ id: 'swap.streaming.time.info' })}
+                            />
+                          </div>
+                          <div>{formatSwapTime(totalSwapSeconds)}</div>
+                        </div>
+                      </>
+                    )}
                   </>
                 )}
 
