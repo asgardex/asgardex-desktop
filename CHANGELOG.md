@@ -1,3 +1,18 @@
+# 1.20.4 (2023-09-01)
+
+## Add
+
+- 
+
+## Update
+
+- [Update Swap SS price efficiency and bar to reflect user input] [#26](https://github.com/asgardex/asgardex-desktop/issues/26)
+- 'Shares' renamed to 'LP Shares'
+
+## Internal
+
+- [REMOVE: Upgrade function] [#24](https://github.com/asgardex/asgardex-desktop/issues/24)
+
 # 1.20.3 (2023-08-26)
 
 ## Add
