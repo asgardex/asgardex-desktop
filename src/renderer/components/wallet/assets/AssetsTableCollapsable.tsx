@@ -51,7 +51,7 @@ import * as Styled from './AssetsTableCollapsable.styles'
 
 const { Panel } = Collapse
 
-export type AssetAction = 'send' | 'upgrade' | 'deposit'
+export type AssetAction = 'send' | 'deposit'
 
 type Props = {
   chainBalances: ChainBalances
@@ -303,21 +303,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
               ]
             : []
         )
-        // // 'upgrade' for non-RuneNativeAsset only
-        // A.concatW<ActionButtonAction>(
-        //   isNonNativeRuneAsset(asset, network)
-        //     ? [
-        //         {
-        //           label: intl.formatMessage({ id: 'wallet.action.upgrade' }),
-        //           // Disable UPGRADE button if needed
-        //           disabled: disableRuneUpgrade({ asset, haltThorChain, haltEthChain, haltBnbChain, network }),
-        //           callback: () => {
-        //             assetHandler(walletAsset, 'upgrade')
-        //           }
-        //         }
-        //       ]
-        //     : []
-        // )
       )
 
       return (

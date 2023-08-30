@@ -52,16 +52,16 @@ import {
   hasLedgerInBalancesByAsset
 } from '../../helpers/walletHelper'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
-import { INITIAL_ASYM_DEPOSIT_STATE } from '../../services/chain/const'
+import { INITIAL_SAVER_DEPOSIT_STATE } from '../../services/chain/const'
 import {
-  AsymDepositFees,
-  AsymDepositFeesHandler,
-  AsymDepositFeesRD,
-  AsymDepositParams,
-  AsymDepositState,
-  AsymDepositStateHandler,
+  SaverDepositFees,
+  SaverDepositFeesHandler,
+  SaverDepositFeesRD,
+  SaverDepositParams,
+  SaverDepositState,
+  SaverDepositStateHandler,
   FeeRD,
-  ReloadAsymDepositFeesHandler
+  ReloadSaverDepositFeesHandler
 } from '../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../services/clients'
 import {
@@ -107,11 +107,11 @@ export type AddProps = {
   network: Network
   pricePool: PricePool
   poolAddress: O.Option<PoolAddress>
-  fees$: AsymDepositFeesHandler
+  fees$: SaverDepositFeesHandler
   sourceWalletType: WalletType
   onChangeAsset: ({ source, sourceWalletType }: { source: Asset; sourceWalletType: WalletType }) => void
   walletBalances: Pick<BalancesState, 'balances' | 'loading'>
-  saverDeposit$: AsymDepositStateHandler
+  saverDeposit$: SaverDepositStateHandler
   goToTransaction: OpenExplorerTxUrl
   getExplorerTxUrl: GetExplorerTxUrl
   reloadSelectedPoolDetail: (delay?: number) => void
@@ -120,7 +120,7 @@ export type AddProps = {
   approveFee$: ApproveFeeHandler
   isApprovedERC20Token$: (params: IsApproveParams) => LiveData<ApiError, boolean>
   validatePassword$: ValidatePasswordHandler
-  reloadFees: ReloadAsymDepositFeesHandler
+  reloadFees: ReloadSaverDepositFeesHandler
   reloadBalances: FP.Lazy<void>
   hidePrivateData: boolean
 }
@@ -171,7 +171,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     state: depositState,
     reset: resetDepositState,
     subscribe: subscribeDepositState
-  } = useSubscriptionState<AsymDepositState>(INITIAL_ASYM_DEPOSIT_STATE)
+  } = useSubscriptionState<SaverDepositState>(INITIAL_SAVER_DEPOSIT_STATE)
 
   const { balances: oWalletBalances, loading: walletBalancesLoading } = walletBalances
 
@@ -247,11 +247,11 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     [oWalletBalances, asset, sourceChainAsset, sourceWalletType]
   )
   // *********** FEES **************
-  const zeroSaverFees: AsymDepositFees = useMemo(() => Utils.getZeroSaverDepositFees(asset.asset), [asset])
+  const zeroSaverFees: SaverDepositFees = useMemo(() => Utils.getZeroSaverDepositFees(asset.asset), [asset])
 
-  const prevSaverFees = useRef<O.Option<AsymDepositFees>>(O.none)
+  const prevSaverFees = useRef<O.Option<SaverDepositFees>>(O.none)
 
-  const [saverFeesRD] = useObservableState<AsymDepositFeesRD>(
+  const [saverFeesRD] = useObservableState<SaverDepositFeesRD>(
     () =>
       FP.pipe(
         fees$(asset.asset),
@@ -264,7 +264,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     RD.success(zeroSaverFees)
   )
 
-  const saverFees: AsymDepositFees = useMemo(
+  const saverFees: SaverDepositFees = useMemo(
     () =>
       FP.pipe(
         saverFeesRD,
@@ -626,7 +626,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       : intl.formatMessage({ id: 'swap.info.max.balance' }, { balance: balanceLabel })
   }, [sourceAssetAmountMax1e8, saverFeesRD, asset, intl])
 
-  const oEarnParams: O.Option<AsymDepositParams> = useMemo(() => {
+  const oEarnParams: O.Option<SaverDepositParams> = useMemo(() => {
     return FP.pipe(
       sequenceTOption(oPoolAddress, oSourceAssetWB, oSaversQuote),
       O.map(([poolAddress, { walletType, walletAddress, walletIndex, hdMode }, saversQuote]) => {

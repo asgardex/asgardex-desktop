@@ -4,22 +4,14 @@ import { assetWithDecimal$ } from './decimal'
 import {
   reloadSymDepositFees,
   symDepositFees$,
-  reloadAsymDepositFee,
-  asymDepositFee$,
+  reloadSaverDepositFee,
+  saverDepositFee$,
   symWithdrawFee$,
   reloadWithdrawFees,
   reloadSwapFees,
   swapFees$
 } from './fees'
-import {
-  swap$,
-  asymDeposit$,
-  symDeposit$,
-  upgradeRuneToNative$,
-  symWithdraw$,
-  asymWithdraw$,
-  transfer$
-} from './transaction'
+import { swap$, saverDeposit$, symDeposit$, symWithdraw$, saverWithdraw$, transfer$ } from './transaction'
 
 /**
  * Exports all functions and observables needed at UI level (provided by `ChainContext`)
@@ -29,19 +21,18 @@ export {
   clientByChain$,
   reloadSymDepositFees,
   symDepositFees$,
-  reloadAsymDepositFee,
-  asymDepositFee$,
+  reloadSaverDepositFee,
+  saverDepositFee$,
   symWithdrawFee$,
   reloadWithdrawFees,
   reloadSwapFees,
   swapFees$,
   assetAddress$,
   swap$,
-  asymDeposit$,
+  saverDeposit$,
   symDeposit$,
-  upgradeRuneToNative$,
   symWithdraw$,
-  asymWithdraw$,
+  saverWithdraw$,
   transfer$,
   assetWithDecimal$
 }

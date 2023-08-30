@@ -152,34 +152,6 @@ export const AppView: React.FC = (): JSX.Element => {
     [haltedChainsRD, intl, mimirHaltRD]
   )
 
-  // const prevMimirHaltRD = useRef<MimirHaltRD>(RD.initial)
-
-  // const renderUpgradeWarning = useMemo(
-  //   () =>
-  //     FP.pipe(
-  //       mimirHaltRD,
-  //       RD.map((mimirHalt) => {
-  //         prevMimirHaltRD.current = RD.success(mimirHalt)
-  //         return mimirHalt
-  //       }),
-  //       rdAltOnPending(() => prevMimirHaltRD.current),
-  //       RD.toOption,
-  //       O.map(({ haltThorChain, haltEthChain, haltBnbChain }) => {
-  //         const mkMsg = (chains: string[]) =>
-  //           intl.formatMessage({ id: 'halt.chain.upgrade' }, { chains: chains.join(', ') })
-  //         const mkAlert = (msg: string) => <Styled.Alert key={'upgrade_warning'} type="warning" message={msg} />
-
-  //         if (haltThorChain || (haltEthChain && haltBnbChain)) return FP.pipe(mkMsg(['ETH.RUNE', 'BNB.RUNE']), mkAlert)
-  //         if (haltEthChain) return FP.pipe(mkMsg(['ETH.RUNE']), mkAlert)
-  //         if (haltBnbChain) return FP.pipe(mkMsg(['BNB.RUNE']), mkAlert)
-
-  //         return <></>
-  //       }),
-  //       O.getOrElse(() => <></>)
-  //     ),
-  //   [intl, mimirHaltRD]
-  // )
-
   const renderMidgardError = useMemo(() => {
     const empty = () => <></>
     return FP.pipe(

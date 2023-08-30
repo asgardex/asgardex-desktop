@@ -13,7 +13,7 @@ import { liveData } from '../../../helpers/rx/liveData'
 import { observableState } from '../../../helpers/stateHelper'
 import { service as midgardService } from '../../midgard/service'
 import { INITIAL_WITHDRAW_STATE, ChainTxFeeOption } from '../const'
-import { AsymWithdrawParams, SymWithdrawParams, WithdrawState, WithdrawState$ } from '../types'
+import { SaverWithdrawParams, SymWithdrawParams, WithdrawState, WithdrawState$ } from '../types'
 import { sendTx$, poolTxStatusByChain$, sendPoolTx$ } from './common'
 import { smallestAmountToSent } from './transaction.helper'
 
@@ -127,7 +127,7 @@ export const symWithdraw$ = ({ memo, network, walletType, walletIndex, hdMode }:
 }
 
 /**
- * Asymmetrical withdraw stream does 3 steps:
+ * Savermetrical withdraw stream does 3 steps:
  *
  * 1. Validate pool address or node
  * 2. Send withdraw transaction
@@ -136,7 +136,7 @@ export const symWithdraw$ = ({ memo, network, walletType, walletIndex, hdMode }:
  * @returns WithdrawState$ - Observable state to reflect loading status. It provides all data we do need to display status in `TxModal`
  *
  */
-export const asymWithdraw$ = ({
+export const saverWithdraw$ = ({
   poolAddress,
   asset,
   memo,
@@ -144,7 +144,7 @@ export const asymWithdraw$ = ({
   walletIndex,
   hdMode,
   walletType
-}: AsymWithdrawParams): WithdrawState$ => {
+}: SaverWithdrawParams): WithdrawState$ => {
   // total of progress
   const total = O.some(100)
   const { chain } = asset

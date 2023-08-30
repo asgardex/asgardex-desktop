@@ -107,7 +107,6 @@ const common: CommonMessages = {
   'common.tx.type.refund': 'Erstatten',
   'common.tx.type.deposit': 'Einzahlen',
   'common.tx.type.withdraw': 'Auszahlen',
-  'common.tx.type.upgrade': 'Upgrade',
   'common.detail': 'Detail',
   'common.details': 'Details',
   'common.filter': 'Filter',

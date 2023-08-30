@@ -36,7 +36,8 @@ import { usePricePool } from '../../hooks/usePricePool'
 import * as poolsRoutes from '../../routes/pools'
 import { SaversRouteParams } from '../../routes/pools/savers'
 import * as saversRoutes from '../../routes/pools/savers'
-import { asymDepositFee$ } from '../../services/chain'
+import { saverDepositFee$ } from '../../services/chain'
+import { saverWithdrawFee$ } from '../../services/chain/fees'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
 import { PoolAddress } from '../../services/midgard/types'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/wallet/const'
@@ -80,7 +81,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   const { reloadInboundAddresses } = useThorchainContext()
 
   const { reloadSaverProvider } = useThorchainContext()
-  const { assetWithDecimal$, addressByChain$, reloadAsymDepositFee, asymDeposit$ } = useChainContext()
+  const { assetWithDecimal$, addressByChain$, reloadSaverDepositFee, saverDeposit$ } = useChainContext()
   const { approveERC20Token$, isApprovedERC20Token$, approveFee$, reloadApproveFee } = useEthereumContext()
   const {
     balancesState$,
@@ -270,17 +271,17 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         network={network}
                         asset={new CryptoAmount(baseAmount(0, assetWD.decimal), assetWD.asset)}
                         pricePool={pricePool}
-                        fees$={asymDepositFee$}
+                        fees$={saverDepositFee$}
                         address={address}
                         reloadBalances={reloadHandler}
                         approveFee$={approveFee$}
                         reloadApproveFee={reloadApproveFee}
-                        reloadFees={reloadAsymDepositFee}
+                        reloadFees={reloadSaverDepositFee}
                         reloadSelectedPoolDetail={reloadSelectedPoolDetail}
                         isApprovedERC20Token$={isApprovedERC20Token$}
                         approveERC20Token$={approveERC20Token$}
                         poolAddress={oPoolAddress}
-                        saverDeposit$={asymDeposit$}
+                        saverDeposit$={saverDeposit$}
                         hidePrivateData={false}
                         onChangeAsset={onChangeAssetHandler}
                       />
@@ -291,7 +292,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         network={network}
                         asset={assetWD}
                         pricePool={pricePool}
-                        fees$={asymDepositFee$}
+                        fees$={saverWithdrawFee$}
                         address={address}
                       />
                     )

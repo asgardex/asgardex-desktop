@@ -109,7 +109,6 @@ const common: CommonMessages = {
   'common.tx.type.withdraw': 'Retrait',
   'common.detail': 'Détail',
   'common.details': 'Détails',
-  'common.tx.type.upgrade': 'Mise à jour',
   'common.filter': 'Filtre',
   'common.all': 'Tout',
   'common.time.days': '{days} jours',

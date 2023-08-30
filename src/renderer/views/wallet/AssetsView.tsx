@@ -87,9 +87,6 @@ export const AssetsView: React.FC = (): JSX.Element => {
         case 'send':
           navigate(walletRoutes.send.path())
           break
-        case 'upgrade':
-          navigate(walletRoutes.upgradeRune.path())
-          break
         case 'deposit':
           navigate(walletRoutes.interact.path({ interactType: 'bond' }))
           break

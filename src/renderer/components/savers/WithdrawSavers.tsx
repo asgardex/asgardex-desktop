@@ -17,7 +17,7 @@ import { useIntl } from 'react-intl'
 import { Network } from '../../../shared/api/types'
 import { max1e8BaseAmount } from '../../helpers/assetHelper'
 import { loadingString, noDataString } from '../../helpers/stringHelper'
-import { AsymDepositFeesHandler } from '../../services/chain/types'
+import { SaverWithdrawFeesHandler } from '../../services/chain/types'
 import { AssetWithAmount, AssetWithDecimal } from '../../types/asgardex'
 import { PricePool } from '../../views/pools/Pools.types'
 import { AssetInput } from '../uielements/assets/assetInput'
@@ -32,7 +32,7 @@ export type Props = {
   address: Address
   network: Network
   pricePool: PricePool
-  fees$: AsymDepositFeesHandler
+  fees$: SaverWithdrawFeesHandler
 }
 
 export const WithdrawSavers: React.FC<Props> = (props): JSX.Element => {

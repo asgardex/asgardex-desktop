@@ -26,7 +26,6 @@ import { NoWalletView } from './wallet/NoWalletView'
 import { PoolShareView } from './wallet/PoolShareView'
 import { SendView } from './wallet/send'
 import { UnlockView } from './wallet/UnlockView'
-import { UpgradeView } from './wallet/upgrade'
 import { WalletAuth } from './wallet/WalletAuth'
 import { WalletSettingsAuth } from './wallet/WalletSettingsAuth'
 
@@ -101,15 +100,6 @@ export const ViewRoutes: React.FC<{}> = (): JSX.Element => {
         element={
           <WalletAuth>
             <SendView />
-          </WalletAuth>
-        }
-      />
-
-      <Route
-        path={walletRoutes.upgradeRune.template}
-        element={
-          <WalletAuth>
-            <UpgradeView />
           </WalletAuth>
         }
       />

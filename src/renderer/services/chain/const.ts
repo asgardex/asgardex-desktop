@@ -3,11 +3,10 @@ import { FeeOption } from '@xchainjs/xchain-client'
 import * as O from 'fp-ts/lib/Option'
 
 import {
-  AsymDepositState,
+  SaverDepositState,
   SwapState,
   SymDepositState,
   WithdrawState,
-  UpgradeRuneTxState,
   SendTxState,
   TxTypes,
   SymDepositAddresses
@@ -22,7 +21,6 @@ export const ChainTxFeeOption: { [key in TxTypes]: FeeOption } = {
   SWAP: FeeOption.Fast,
   DEPOSIT: FeeOption.Fast,
   WITHDRAW: FeeOption.Fast,
-  UPGRADE: FeeOption.Fast,
   APPROVE: FeeOption.Fast,
   SEND: FeeOption.Fast
 }
@@ -34,7 +32,7 @@ export const INITIAL_SWAP_STATE: SwapState = {
   swap: RD.initial
 }
 
-export const INITIAL_ASYM_DEPOSIT_STATE: AsymDepositState = {
+export const INITIAL_SAVER_DEPOSIT_STATE: SaverDepositState = {
   step: 1,
   depositTx: RD.initial,
   stepsTotal: 3,
@@ -53,11 +51,6 @@ export const INITIAL_WITHDRAW_STATE: WithdrawState = {
   stepsTotal: 3,
   withdrawTx: RD.initial,
   withdraw: RD.initial
-}
-
-export const INITIAL_UPGRADE_RUNE_STATE: UpgradeRuneTxState = {
-  steps: { current: 0, total: 3 },
-  status: RD.initial
 }
 
 export const INITIAL_SEND_STATE: SendTxState = {

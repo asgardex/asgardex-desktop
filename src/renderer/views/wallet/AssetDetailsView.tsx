@@ -143,7 +143,6 @@ export const AssetDetailsView: React.FC = (): JSX.Element => {
           openExplorerAddressUrl={openExplorerAddressUrlHandler}
           walletAddress={walletAddress}
           disableSend={isRuneNativeAsset(asset) && haltTHORChain}
-          disableUpgrade={true}
           network={network}
         />
       )

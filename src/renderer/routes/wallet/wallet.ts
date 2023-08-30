@@ -75,13 +75,6 @@ export const send: Route<void> = {
   }
 }
 
-export const upgradeRune: Route<void> = {
-  template: `${assetDetail.template}/upgrade`,
-  path() {
-    return this.template
-  }
-}
-
 export const history: Route<void> = {
   template: `${base.template}/history`,
   path() {

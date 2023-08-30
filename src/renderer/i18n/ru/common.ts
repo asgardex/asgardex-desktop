@@ -107,7 +107,6 @@ const common: CommonMessages = {
   'common.tx.type.refund': 'Возврат',
   'common.tx.type.deposit': 'Вклад',
   'common.tx.type.withdraw': 'Изъятие',
-  'common.tx.type.upgrade': 'Улучшение',
   'common.detail': 'Подробно',
   'common.details': 'Подробности',
   'common.filter': 'Фильтр',
