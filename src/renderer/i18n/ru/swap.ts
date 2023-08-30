@@ -18,7 +18,11 @@ const swap: SwapMessages = {
   'swap.streaming.interval.info': 'Интервал между обменами, 10 блоков равно 1-минутному интервалу',
   'swap.streaming.quantity': 'Quanity',
   'swap.streaming.quantity.info': 'Количество мини-обменов, выполненных за интервал',
-  'swap.streaming.time': 'Время стримингового обмена ETA',
+  'swap.time.title': 'Время',
+  'swap.inbound.time': 'Входящий',
+  'swap.outbound.time': 'Исходящий',
+  'swap.streaming.time': 'Стриминг',
+  'swap.totalswap.time': 'Общее время обмена',
   'swap.streaming.time.info': 'Ожидаемое время завершения этого стримингового обмена',
   'swap.errors.amount.balanceShouldCoverChainFee':
     'Комиссия транзакции {fee} должна покрываться вашим балансом (сейчас {balance}).',

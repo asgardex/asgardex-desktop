@@ -8,7 +8,7 @@ const wallet: WalletMessages = {
   'wallet.name.error.rename': 'Error while renaming the wallet',
   'wallet.nav.deposits': 'Deposits',
   'wallet.nav.bonds': 'Bonds',
-  'wallet.nav.poolshares': 'Shares',
+  'wallet.nav.poolshares': 'LP Shares',
   'wallet.column.name': 'Name',
   'wallet.column.ticker': 'Ticker',
   'wallet.action.send': 'Send',

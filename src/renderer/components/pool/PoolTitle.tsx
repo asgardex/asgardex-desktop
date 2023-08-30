@@ -96,9 +96,8 @@ export const PoolTitle: React.FC<Props> = ({
           )
         }
       },
-      // TODO(@veado) Enable savers
       {
-        label: intl.formatMessage({ id: 'common.savers' }),
+        label: intl.formatMessage({ id: 'common.earn' }),
         disabled: !isAvailablePool,
         callback: () => {
           navigate(saversRoutes.earn.path({ asset: assetToString(asset), walletType: DEFAULT_WALLET_TYPE }))

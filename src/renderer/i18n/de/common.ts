@@ -96,7 +96,7 @@ const common: CommonMessages = {
   'common.tx.view': '{assetTicker} Transaktion ansehen',
   'common.value': 'Wert',
   'common.modal.confirmTitle': 'Bestätige die Aktion',
-  'common.manage': 'Manage',
+  'common.manage': 'Manage Lp',
   'common.analytics': 'Analyse',
   'common.asset.base': 'Base',
   'common.asset.change': 'Ändere Asset',

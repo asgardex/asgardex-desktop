@@ -30,7 +30,7 @@ export const SaversButton: React.FC<Props> = ({ asset, isTextView, ...otherProps
   return (
     <FlatButton onClick={onClick} {...otherProps}>
       <BanknotesIcon className={`h-[16px] w-[16px] text-inherit lg:h-20px lg:w-20px ${isTextView ? `mr-[8px]` : ''}`} />
-      <span className={`${isTextView ? 'mr-10px' : 'hidden'}`}>{intl.formatMessage({ id: 'common.savers' })}</span>
+      <span className={`${isTextView ? 'mr-10px' : 'hidden'}`}>{intl.formatMessage({ id: 'common.earn' })}</span>
     </FlatButton>
   )
 }

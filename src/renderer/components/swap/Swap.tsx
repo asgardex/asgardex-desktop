@@ -47,7 +47,8 @@ import {
   THORCHAIN_DECIMAL,
   isUSDAsset,
   isChainAsset,
-  isRuneNativeAsset
+  isRuneNativeAsset,
+  isRuneAsset
 } from '../../helpers/assetHelper'
 import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isEthChain, isLtcChain } from '../../helpers/chainHelper'
 import { unionAssets } from '../../helpers/fp/array'
@@ -114,7 +115,7 @@ import { ProgressBar } from '../uielements/progressBar'
 import { Slider } from '../uielements/slider'
 import { EditableAddress } from './EditableAddress'
 import { SelectableSlipTolerance } from './SelectableSlipTolerance'
-import { SwapAsset } from './Swap.types'
+import { SwapAsset, SwapTime } from './Swap.types'
 import * as Utils from './Swap.utils'
 
 const ErrorLabel: React.FC<{
@@ -895,16 +896,21 @@ export const Swap = ({
     [oQuote]
   )
   // Swap streaming result from thornode
-  const totalSwapSeconds: number = useMemo(
+  const transactionTime: SwapTime = useMemo(
     () =>
       FP.pipe(
         sequenceTOption(oQuote),
         O.fold(
-          () => 0,
-          ([txDetails]) => txDetails.txEstimate.totalSwapSeconds
+          () => ({ inbound: 0, outbound: 0, totalSwap: 0, streaming: 0 }),
+          ([txDetails]) => ({
+            inbound: isRuneAsset(sourceAsset, network) ? 6 : txDetails.txEstimate.inboundConfirmationSeconds, // Replace with actual value from txDetails
+            outbound: txDetails.txEstimate.outboundDelaySeconds,
+            totalSwap: txDetails.txEstimate.totalSwapSeconds,
+            streaming: txDetails.txEstimate.streamingSwapSeconds // Replace with actual value from txDetails
+          })
         )
       ),
-    [oQuote]
+    [network, oQuote, sourceAsset]
   )
 
   /**
@@ -1345,24 +1351,24 @@ export const Swap = ({
       setIsStreaming(streamingIntervalValue !== 0)
     }
     const tipFormatter = slider === 0 ? 'Instant swap' : `${Math.floor(slider / 10)} Block interval between swaps`
-    const labelMin = slider <= 0 ? `Instant Swap` : `` || slider <= 50 ? 'Time Optimised' : ''
-    const labelMax = slider >= 50 ? `Price Optimised` : ``
+    const labelMin = slider <= 0 ? `Instant Swap` : `` || slider < 50 ? 'Time Optimised' : `Price Optimised`
+
     return (
       <div>
         <Slider
           key={'Streamer Interval slider'}
           value={slider}
           onChange={setInterval}
-          tooltipVisible
+          included={false}
           max={100}
+          tooltipVisible
           tipFormatter={() => `${tipFormatter} `}
-          withLabel={true}
-          labels={[`${labelMin}`, `${labelMax}`]}
+          labels={[`${labelMin}`, `${streamingInterval}`]}
           tooltipPlacement={'top'}
         />
       </div>
     )
-  }, [slider])
+  }, [slider, streamingInterval])
 
   // Streaming Quantity slider
   const renderStreamerQuantity = useMemo(() => {
@@ -1370,13 +1376,13 @@ export const Swap = ({
     const setQuantity = (quantity: number) => {
       setStreamingQuantity(quantity)
     }
-    let quantityLabel: string
+    let quantityLabel: string[]
     let toolTip: string
     if (streamingInterval === 0) {
-      quantityLabel = `Instant swap`
+      quantityLabel = [`Instant swap`]
       toolTip = `No Streaming interval set`
     } else {
-      quantityLabel = quantity === 0 ? `Auto swap count` : `Sub swaps ${quantity}`
+      quantityLabel = quantity === 0 ? [`Auto swap count`] : [`Sub swaps`, `${quantity}`]
       toolTip =
         quantity === 0
           ? `Thornode decides the swap count`
@@ -1390,11 +1396,11 @@ export const Swap = ({
           key={'Streamer Quantity slider'}
           value={quantity}
           onChange={setQuantity}
-          tooltipVisible
           max={maxStreamingQuantity}
+          tooltipVisible
           tipFormatter={() => `${toolTip}`}
-          withLabel={true}
-          labels={[`${quantityLabel}`]}
+          included={false}
+          labels={quantityLabel}
           tooltipPlacement={'top'}
         />
       </div>
@@ -1404,24 +1410,34 @@ export const Swap = ({
   // Progress bar for swap return comparison
   const renderStreamerReturns = useMemo(() => {
     // calculate difference=(swapCount−1)/swapCount
-    const percentageDifference = (((maxStreamingQuantity - 1) / maxStreamingQuantity) * 100).toFixed(2)
+    //const priceExecution = streamingQuantity === 0 ? maxStreamingQuantity : streamingQuantity
+    // Initialize percentageDifference
+    let percentageDifference = 0
 
-    const swapAmount = swapResultAmountMax.assetAmount.amount().toFixed(3)
-    const swapAmountStreaming = swapStreamingNetOutput.assetAmount.amount().toFixed(3)
-    const swapStreamingLabel =
-      percentageDifference === '-Infinity' ? '' : `${swapAmountStreaming} vs ${swapAmount} ${targetAsset.ticker}`
-    const streamerComparison = percentageDifference === '-Infinity' ? 'Instant swap' : `${percentageDifference}% `
+    // Check if swapSlippage is not zero to avoid division by zero
+    if (swapSlippage !== 0) {
+      percentageDifference = ((swapSlippage - swapStreamingSlippage) / swapSlippage) * 100
+    }
+
+    // Check if percentageDifference is a number
+    const isPercentageValid = !isNaN(percentageDifference) && isFinite(percentageDifference)
+
+    const streamerComparison = isPercentageValid
+      ? percentageDifference <= 1
+        ? 'Instant swap'
+        : `${percentageDifference.toFixed(2)}% Better swap execution via streaming`
+      : 'Invalid or zero slippage' // Default message for invalid or zero slippage
 
     return (
       <ProgressBar
         key={'Streamer Interval progress bar'}
-        percent={Number(percentageDifference)}
+        percent={percentageDifference}
         withLabel={true}
-        labels={[`${streamerComparison}`, `${swapStreamingLabel}`]}
+        labels={[`${streamerComparison}`, ``]}
         tooltipPlacement={'top'}
       />
     )
-  }, [swapStreamingNetOutput, swapResultAmountMax, targetAsset, maxStreamingQuantity])
+  }, [swapSlippage, swapStreamingSlippage])
 
   const submitSwapTx = useCallback(() => {
     FP.pipe(
@@ -2054,12 +2070,16 @@ export const Swap = ({
   )
 
   const formatSwapTime = (totalSwapSeconds: number) => {
+    if (isNaN(totalSwapSeconds)) {
+      return ''
+    }
+
     if (totalSwapSeconds < 60) {
       return `${totalSwapSeconds} seconds`
     } else if (totalSwapSeconds < 3600) {
       return `${Math.floor(totalSwapSeconds / 60)} minutes`
     } else {
-      return `${totalSwapSeconds / 60 / 60} hours`
+      return `${(totalSwapSeconds / 60 / 60).toFixed(2)} hours`
     }
   }
 
@@ -2421,21 +2441,40 @@ export const Swap = ({
                           </div>
                           <div>{streamingQuantity}</div>
                         </div>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div className={`flex items-center`}>
-                            {intl.formatMessage({ id: 'swap.streaming.time' })}
-                            <InfoIcon
-                              className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                              tooltip={intl.formatMessage({ id: 'swap.streaming.time.info' })}
-                            />
-                          </div>
-                          <div>{formatSwapTime(totalSwapSeconds)}</div>
-                        </div>
                       </>
                     )}
                   </>
                 )}
-
+                {/* Swap Time Inbound / swap / Outbound */}
+                <>
+                  <div
+                    className={`flex w-full justify-between ${showDetails ? 'pt-10px' : ''} font-mainBold text-[14px]`}>
+                    <div>{intl.formatMessage({ id: 'swap.time.title' })}</div>
+                    <div>
+                      {formatSwapTime(
+                        Number(transactionTime.totalSwap) +
+                          Number(transactionTime.inbound) +
+                          Number(transactionTime.streaming)
+                      )}
+                    </div>
+                  </div>
+                  {showDetails && (
+                    <>
+                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                        <div className={`flex items-center`}>{intl.formatMessage({ id: 'swap.inbound.time' })}</div>
+                        <div>{formatSwapTime(Number(transactionTime.inbound))}</div>
+                      </div>
+                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                        <div className={`flex items-center`}>{intl.formatMessage({ id: 'swap.streaming.time' })}</div>
+                        <div>{formatSwapTime(Number(transactionTime.streaming))}</div>
+                      </div>
+                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                        <div className={`flex items-center`}>{intl.formatMessage({ id: 'swap.outbound.time' })}</div>
+                        <div>{formatSwapTime(Number(transactionTime.outbound))}</div>
+                      </div>
+                    </>
+                  )}
+                </>
                 {/* addresses */}
                 {showDetails && (
                   <>

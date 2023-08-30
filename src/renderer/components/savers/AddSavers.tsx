@@ -948,7 +948,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
 
     const onSucceess = () => {
       if (showLedgerModal === 'deposit') setShowPasswordModal('deposit')
-      //if (showLedgerModal === 'approve') submitApproveTx()
+      if (showLedgerModal === 'approve') submitApproveTx()
       setShowLedgerModal('none')
     }
 
@@ -996,7 +996,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
         addresses={addresses}
       />
     )
-  }, [asset, sourceChain, intl, useLedger, network, oEarnParams, showLedgerModal])
+  }, [showLedgerModal, sourceChain, intl, asset.asset, oEarnParams, network, submitApproveTx, useLedger])
 
   // Price of asset IN fee
   const oPriceAssetInFee: O.Option<AssetWithAmount> = useMemo(() => {
