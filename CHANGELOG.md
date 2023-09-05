@@ -2,7 +2,8 @@
 
 ## Add
 
-- 
+- [Savers] - Withdraw tab is now operational
+- [Savers] - Add amount slider to Earn tab
 
 ## Update
 

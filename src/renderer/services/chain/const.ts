@@ -38,6 +38,12 @@ export const INITIAL_SAVER_DEPOSIT_STATE: SaverDepositState = {
   stepsTotal: 3,
   deposit: RD.initial
 }
+export const INITIAL_SAVER_WITHDRAW_STATE: WithdrawState = {
+  step: 1,
+  withdrawTx: RD.initial,
+  stepsTotal: 3,
+  withdraw: RD.initial
+}
 
 export const INITIAL_SYM_DEPOSIT_STATE: SymDepositState = {
   step: 1,

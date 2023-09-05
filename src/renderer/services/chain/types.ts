@@ -263,6 +263,7 @@ export type WithdrawAssetFees = WithdrawFees & {
   asset: Asset
 }
 
+export type SaverWithdrawFeesRD = RD.RemoteData<Error, WithdrawAssetFees>
 export type SaverWithdrawFeesLD = LiveData<Error, WithdrawAssetFees>
 export type SaverWithdrawFeesHandler = (asset: Asset) => SaverWithdrawFeesLD
 
@@ -295,10 +296,12 @@ export type SymWithdrawStateHandler = (p: SymWithdrawParams) => WithdrawState$
 export type SaverWithdrawParams = {
   readonly poolAddress: PoolAddress
   readonly asset: Asset
+  readonly amount: BaseAmount
   readonly memo: Memo
   readonly network: Network
   readonly walletType: WalletType
   readonly walletIndex: number
+  readonly sender: Address
   readonly hdMode: HDMode
 }
 

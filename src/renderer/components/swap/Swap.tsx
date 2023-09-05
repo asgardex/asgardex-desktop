@@ -9,7 +9,13 @@ import {
   MagnifyingGlassPlusIcon
 } from '@heroicons/react/24/outline'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
-import { CryptoAmount, QuoteSwapParams, ThorchainQuery, TxDetails } from '@xchainjs/xchain-thorchain-query'
+import {
+  CryptoAmount,
+  QuoteSwapParams,
+  ThorchainQuery,
+  TxDetails
+  // ChainAttributes
+} from '@xchainjs/xchain-thorchain-query'
 import {
   Asset,
   baseToAsset,
@@ -895,6 +901,7 @@ export const Swap = ({
       ),
     [oQuote]
   )
+  // @st0rmzy update chaindefaults here.
   // Swap streaming result from thornode
   const transactionTime: SwapTime = useMemo(
     () =>
@@ -1561,7 +1568,7 @@ export const Swap = ({
     const txModalTitle = FP.pipe(
       swap,
       RD.fold(
-        () => 'swap.state.pending',
+        () => 'swap.state.sending',
         () => 'swap.state.pending',
         () => 'swap.state.error',
         () => 'swap.state.success'
