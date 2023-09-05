@@ -11,6 +11,7 @@ import {
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import {
   CryptoAmount,
+  DefaultChainAttributes,
   QuoteSwapParams,
   ThorchainQuery,
   TxDetails
@@ -901,7 +902,7 @@ export const Swap = ({
       ),
     [oQuote]
   )
-  // @st0rmzy update chaindefaults here.
+
   // Swap streaming result from thornode
   const transactionTime: SwapTime = useMemo(
     () =>
@@ -910,14 +911,16 @@ export const Swap = ({
         O.fold(
           () => ({ inbound: 0, outbound: 0, totalSwap: 0, streaming: 0 }),
           ([txDetails]) => ({
-            inbound: isRuneAsset(sourceAsset, network) ? 6 : txDetails.txEstimate.inboundConfirmationSeconds, // Replace with actual value from txDetails
+            inbound: isRuneAsset(sourceAsset, network)
+              ? DefaultChainAttributes[sourceChain].avgBlockTimeInSecs
+              : txDetails.txEstimate.inboundConfirmationSeconds, // Replace with actual value from txDetails
             outbound: txDetails.txEstimate.outboundDelaySeconds,
             totalSwap: txDetails.txEstimate.totalSwapSeconds,
             streaming: txDetails.txEstimate.streamingSwapSeconds // Replace with actual value from txDetails
           })
         )
       ),
-    [network, oQuote, sourceAsset]
+    [oQuote, sourceAsset, network, sourceChain]
   )
 
   /**
