@@ -1,9 +1,9 @@
-# 1.20.4 (2023-09-01)
+# 1.20.4 (2023-09-09)
 
 ## Add
 
-- [Savers] - Withdraw tab is now operational
-- [Savers] - Add amount slider to Earn tab
+- [ADD: Savers withdraw] [#20](https://github.com/asgardex/asgardex-desktop/issues/20)
+- [Add Affiliate for Savers] [#22](https://github.com/asgardex/asgardex-desktop/issues/22)
 
 ## Update
 
