@@ -139,10 +139,16 @@ export const eqPoolShare = Eq.struct<PoolShare>({
 
 export const eqPoolShares = A.getEq(eqPoolShare)
 
+export const eqStringCaseInsensitive: Eq.Eq<string> = {
+  equals: (x: string, y: string) => x.toLowerCase() === y.toLowerCase()
+}
+
+const eqOptionStringCaseInsensitive = O.getEq(eqStringCaseInsensitive)
+
 export const eqPoolAddresses = Eq.struct<PoolAddress>({
-  chain: eqChain,
-  address: eqAddress,
-  router: eqOAddress,
+  chain: eqStringCaseInsensitive,
+  address: eqStringCaseInsensitive,
+  router: eqOptionStringCaseInsensitive,
   halted: eqBoolean
 })
 

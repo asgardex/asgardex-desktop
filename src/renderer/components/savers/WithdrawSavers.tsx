@@ -45,6 +45,7 @@ import { sequenceTOption } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { liveData, LiveData } from '../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../helpers/stringHelper'
+import { calculateTransactionTime, formatSwapTime, Time } from '../../helpers/timeHelper'
 import * as WalletHelper from '../../helpers/walletHelper'
 import {
   filterWalletBalancesByAssets,
@@ -388,7 +389,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     return inFee.gt(chainAssetBalance) || dustThreshold.baseAmount.gt(chainAssetBalance)
   }, [amountToWithdrawMax1e8, saverFees, chainAssetBalance, dustThreshold.baseAmount])
 
-  const [withdrawBps, setWithdrawBps] = useState(0)
+  const [withdrawBps, setWithdrawBps] = useState(0) // init state
 
   // Disables the submit button
   const disableSubmit = useMemo(
@@ -415,6 +416,31 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       debouncedEffect.current(withdrawBps, asset, address)
     }
   }, [withdrawBps, disableSubmit, asset, address])
+
+  // Outbound fee in for use later
+  const outboundFee: CryptoAmount = useMemo(
+    () =>
+      FP.pipe(
+        oSaverWithdrawQuote,
+        O.fold(
+          () => new CryptoAmount(baseAmount(0), sourceAsset), // default value if oQuote is None
+          (txDetails) => txDetails.fee.outbound // already of type cryptoAmount
+        )
+      ),
+    [oSaverWithdrawQuote, sourceAsset]
+  )
+  // Outbound fee in for use later
+  const liquidityFee: CryptoAmount = useMemo(
+    () =>
+      FP.pipe(
+        oSaverWithdrawQuote,
+        O.fold(
+          () => new CryptoAmount(baseAmount(0), sourceAsset), // default value if oQuote is None
+          (txDetails) => txDetails.fee.liquidity // already of type cryptoAmount
+        )
+      ),
+    [oSaverWithdrawQuote, sourceAsset]
+  )
 
   // Boolean on if amount to send is zero
   const zeroBaseAmountMax = useMemo(() => baseAmount(0, asset.baseAmount.decimal), [asset])
@@ -992,7 +1018,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
   // Price of asset IN fee
   const oPriceAssetInFee: O.Option<CryptoAmount> = useMemo(() => {
     const asset = saverFees.asset
-    const amount = saverFees.inFee
+    const amount = saverFees.inFee.plus(liquidityFee.baseAmount).plus(outboundFee.baseAmount)
 
     return FP.pipe(
       PoolHelpers.getPoolPriceValue({
@@ -1003,7 +1029,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       }),
       O.map((amount) => new CryptoAmount(amount, pricePool.asset))
     )
-  }, [network, poolDetails, pricePool, saverFees])
+  }, [liquidityFee, network, outboundFee, poolDetails, pricePool, saverFees.asset, saverFees.inFee])
 
   // Price fee label
   const priceFeesLabel = useMemo(
@@ -1015,8 +1041,9 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
           () => loadingString,
           () => noDataString,
           ({ asset: feeAsset, inFee }) => {
+            const fees = inFee.plus(liquidityFee.baseAmount).plus(outboundFee.baseAmount)
             const fee = formatAssetAmountCurrency({
-              amount: baseToAsset(inFee),
+              amount: baseToAsset(fees),
               asset: feeAsset,
               decimal: isUSDAsset(feeAsset) ? 2 : 6,
               trimZeros: !isUSDAsset(feeAsset)
@@ -1041,7 +1068,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
         )
       ),
 
-    [saverFeesRD, oPriceAssetInFee]
+    [saverFeesRD, liquidityFee, outboundFee, oPriceAssetInFee]
   )
   // label for Price in fee
   const priceInFeeLabel = useMemo(
@@ -1080,6 +1107,25 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       ),
 
     [saverFeesRD, oPriceAssetInFee]
+  )
+  //calculating transaction time from chain & quote
+  const transactionTime: Time = useMemo(
+    () =>
+      FP.pipe(
+        sequenceTOption(oSaverWithdrawQuote),
+        O.fold(
+          () => ({}),
+          ([txDetails]) =>
+            calculateTransactionTime(
+              sourceAsset.chain,
+              {
+                outboundDelaySeconds: txDetails.outBoundDelaySeconds
+              },
+              sourceAsset // as target asset
+            )
+        )
+      ),
+    [oSaverWithdrawQuote, sourceAsset]
   )
 
   const renderSlider = useMemo(() => {
@@ -1243,14 +1289,54 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
                     <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
                     <div>
                       {formatAssetAmountCurrency({
-                        amount: assetAmount(0),
+                        amount: assetAmount(0), // affiliate is set to zero
                         asset: pricePool.asset,
                         decimal: 0
                       })}
                     </div>
                   </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'common.liquidity' })}</div>
+                    <div>{liquidityFee.formatedAssetString()}</div>
+                  </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'common.fee.outbound' })}</div>
+                    <div>{outboundFee.formatedAssetString()}</div>
+                  </div>
                 </>
               )}
+              {/* Withdraw saver transaction time, inbound / outbound / confirmations */}
+              <>
+                <div
+                  className={`flex w-full justify-between ${showDetails ? 'pt-10px' : ''} font-mainBold text-[14px]`}>
+                  <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
+                  <div>
+                    {formatSwapTime(
+                      Number(transactionTime.inbound) +
+                        Number(transactionTime.outbound) +
+                        Number(transactionTime.confirmation)
+                    )}
+                  </div>
+                </div>
+                {showDetails && (
+                  <>
+                    <div className="flex w-full justify-between pl-10px text-[12px]">
+                      <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.inbound.time' })}</div>
+                      <div>{formatSwapTime(Number(transactionTime.inbound))}</div>
+                    </div>
+                    <div className="flex w-full justify-between pl-10px text-[12px]">
+                      <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.outbound.time' })}</div>
+                      <div>{formatSwapTime(Number(transactionTime.outbound))}</div>
+                    </div>
+                    <div className="flex w-full justify-between pl-10px text-[12px]">
+                      <div className={`flex items-center`}>
+                        {intl.formatMessage({ id: 'common.confirmation.time' })}
+                      </div>
+                      <div>{formatSwapTime(Number(transactionTime.confirmation))}</div>
+                    </div>
+                  </>
+                )}
+              </>
 
               {/* addresses */}
               {showDetails && (

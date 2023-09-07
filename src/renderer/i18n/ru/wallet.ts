@@ -9,6 +9,7 @@ const wallet: WalletMessages = {
   'wallet.nav.deposits': 'Вклады',
   'wallet.nav.bonds': 'Бонды',
   'wallet.nav.poolshares': 'Доли',
+  'wallet.nav.savers': 'Сберегатели',
   'wallet.column.name': 'Имя',
   'wallet.column.ticker': 'Тикер',
   'wallet.action.send': 'Отправить',

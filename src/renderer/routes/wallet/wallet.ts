@@ -43,6 +43,12 @@ export const poolShares: Route<void> = {
     return this.template
   }
 }
+export const savers: Route<void> = {
+  template: `${base.template}/savers`,
+  path() {
+    return this.template
+  }
+}
 
 export type InteractParams = {
   interactType: InteractType

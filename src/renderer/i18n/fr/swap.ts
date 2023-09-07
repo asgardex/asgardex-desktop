@@ -18,12 +18,6 @@ const swap: SwapMessages = {
   'swap.streaming.interval.info': 'Interval between swaps, 10 blocks is 1 minute interval',
   'swap.streaming.quantity': 'Quanity',
   'swap.streaming.quantity.info': 'The quantity of mini swaps overall done per interval',
-  'swap.time.title': 'Temps',
-  'swap.inbound.time': 'Entrant',
-  'swap.outbound.time': 'Sortant',
-  'swap.streaming.time': 'En streaming',
-  'swap.totalswap.time': 'Temps total déchange',
-  'swap.streaming.time.info': 'Temps estimé pour que cet échange en streaming soit terminé',
   'swap.errors.amount.balanceShouldCoverChainFee':
     '{fee} de frais de transaction doivent être couverts par votre solde (actuellement {balance}).',
   'swap.errors.amount.outputShouldCoverChainFee':

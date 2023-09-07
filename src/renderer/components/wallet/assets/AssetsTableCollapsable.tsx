@@ -172,7 +172,9 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
     ({ asset, walletAddress, walletIndex, walletType, hdMode }: WalletBalance) => {
       const { chain } = asset
       const walletAsset: SelectedWalletAsset = { asset, walletAddress, walletIndex, walletType, hdMode }
-      const hasActivePool: boolean = FP.pipe(O.fromNullable(poolsData[assetToString(asset)]), O.isSome)
+      const normalizedAssetString = assetToString(asset).toUpperCase()
+      const hasActivePool: boolean = FP.pipe(O.fromNullable(poolsData[normalizedAssetString]), O.isSome)
+
       const deepestPoolAsset = FP.pipe(
         getDeepestPool(poolDetails),
         O.chain(({ asset }) => O.fromNullable(assetFromString(asset))),

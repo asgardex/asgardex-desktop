@@ -12,6 +12,7 @@ import * as Styled from './AssetsNav.styles'
 enum MenuKey {
   ASSETS = 'assets',
   POOLSHARES = 'poolshares',
+  SAVERS = 'savers',
   BONDS = 'bonds',
   HISTORY = 'history',
   WALLETSETTINGS = 'walletsettings',
@@ -43,6 +44,11 @@ export const AssetsNav: React.FC = (): JSX.Element => {
           path: walletRoutes.poolShares.path()
         },
         {
+          key: MenuKey.SAVERS,
+          label: intl.formatMessage({ id: 'wallet.nav.savers' }),
+          path: walletRoutes.savers.path()
+        },
+        {
           key: MenuKey.BONDS,
           label: intl.formatMessage({ id: 'wallet.nav.bonds' }),
           path: walletRoutes.bonds.path()
@@ -58,6 +64,7 @@ export const AssetsNav: React.FC = (): JSX.Element => {
 
   const assetsRoute = matchPath(walletRoutes.assets.path(), pathname)
   const poolSharesRoute = matchPath(walletRoutes.poolShares.path(), pathname)
+  const saversRoute = matchPath(walletRoutes.savers.path(), pathname)
   const bondsRoute = matchPath(walletRoutes.bonds.path(), pathname)
   const matchHistoryRoute = matchPath(walletRoutes.history.path(), pathname)
 
@@ -66,6 +73,8 @@ export const AssetsNav: React.FC = (): JSX.Element => {
       return MenuKey.ASSETS
     } else if (poolSharesRoute) {
       return MenuKey.POOLSHARES
+    } else if (saversRoute) {
+      return MenuKey.SAVERS
     } else if (bondsRoute) {
       return MenuKey.BONDS
     } else if (matchHistoryRoute) {
@@ -73,7 +82,7 @@ export const AssetsNav: React.FC = (): JSX.Element => {
     } else {
       return MenuKey.UNKNOWN
     }
-  }, [assetsRoute, poolSharesRoute, bondsRoute, matchHistoryRoute])
+  }, [assetsRoute, poolSharesRoute, saversRoute, bondsRoute, matchHistoryRoute])
 
   return (
     <>

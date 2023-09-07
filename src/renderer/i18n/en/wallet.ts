@@ -9,6 +9,7 @@ const wallet: WalletMessages = {
   'wallet.nav.deposits': 'Deposits',
   'wallet.nav.bonds': 'Bonds',
   'wallet.nav.poolshares': 'LP Shares',
+  'wallet.nav.savers': 'Savers',
   'wallet.column.name': 'Name',
   'wallet.column.ticker': 'Ticker',
   'wallet.action.send': 'Send',

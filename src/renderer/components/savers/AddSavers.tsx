@@ -46,6 +46,7 @@ import { sequenceTOption } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { LiveData, liveData } from '../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../helpers/stringHelper'
+import { calculateTransactionTime, formatSwapTime, Time } from '../../helpers/timeHelper'
 import * as WalletHelper from '../../helpers/walletHelper'
 import {
   filterWalletBalancesByAssets,
@@ -1120,6 +1121,11 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     [saverFeesRD, oPriceAssetInFee]
   )
 
+  //calculating transaction time from chain & quote
+  const transactionTime: Time = useMemo(() => {
+    return calculateTransactionTime(sourceChain)
+  }, [sourceChain])
+
   const oWalletAddress: O.Option<Address> = useMemo(() => {
     return FP.pipe(
       sequenceTOption(oSourceAssetWB),
@@ -1261,6 +1267,22 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
                   </div>
                 </>
               )}
+              {/* Add saver transaction time only inbound */}
+              <>
+                <div
+                  className={`flex w-full justify-between ${showDetails ? 'pt-10px' : ''} font-mainBold text-[14px]`}>
+                  <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
+                  <div>{formatSwapTime(Number(transactionTime.inbound))}</div>
+                </div>
+                {showDetails && (
+                  <>
+                    <div className="flex w-full justify-between pl-10px text-[12px]">
+                      <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.inbound.time' })}</div>
+                      <div>{formatSwapTime(Number(transactionTime.inbound))}</div>
+                    </div>
+                  </>
+                )}
+              </>
 
               {/* addresses */}
               {showDetails && (

@@ -45,6 +45,18 @@ export const ViewTxButton: React.FC<Props> = ({
           ) || false
         }
       />
+      <Styled.CopyLabel
+        copyable={
+          FP.pipe(
+            oTxHash,
+            O.map((txHash) => ({
+              text: txHash,
+              tooltips: intl.formatMessage({ id: 'common.copyTxHash' })
+            })),
+            O.toUndefined
+          ) || false
+        }
+      />
     </Styled.Wrapper>
   )
 }

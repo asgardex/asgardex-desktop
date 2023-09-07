@@ -11,10 +11,3 @@ export type SwapData = {
 }
 
 export type AssetsToSwap = { source: Asset; target: Asset }
-
-export type SwapTime = {
-  inbound?: number
-  outbound?: number
-  totalSwap?: number
-  streaming?: number
-}
