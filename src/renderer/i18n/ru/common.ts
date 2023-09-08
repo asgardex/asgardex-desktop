@@ -128,7 +128,7 @@ const common: CommonMessages = {
   'common.streaming.time': 'Стриминг',
   'common.streaming.time.info': 'Оценочное время для завершения этого стримингового обмена',
   'common.totaltransaction.time': 'Общее время транзакции',
-  'common.confirmation.time': 'Подтверждение цепочки',
+  'common.confirmation.time': '{chain} Подтверждение цепочки',
   'common.theme.light': 'Светлая тема',
   'common.theme.dark': 'Темная тема',
   'common.volume24': 'Количество (24ч)',

@@ -128,7 +128,7 @@ const common: CommonMessages = {
   'common.streaming.time': 'Streaming',
   'common.streaming.time.info': 'Geschatte tijd voor voltooiing van deze streamingruil',
   'common.totaltransaction.time': 'Totale transactietijd',
-  'common.confirmation.time': 'Ketenbevestiging',
+  'common.confirmation.time': '{chain} Ketenbevestiging',
   'common.theme.light': 'Tag modus',
   'common.theme.dark': 'Nacht modus',
   'common.volume24': 'Volumen (24h)',

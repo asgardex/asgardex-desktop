@@ -34,7 +34,7 @@ export const TotalValue: React.FC<Props> = (props): JSX.Element => {
           () => <Styled.Spin />,
           (error) => (
             <Styled.BalanceError>
-              {intl.formatMessage({ id: 'wallet.errors.balancesFailed' }, { errorMsg: error.message })}
+              {intl.formatMessage({ id: 'common.error.api.limit' }, { errorMsg: error.message })}
             </Styled.BalanceError>
           ),
           (total) => (

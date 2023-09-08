@@ -128,7 +128,7 @@ const common: CommonMessages = {
   'common.streaming.time': 'Streaming',
   'common.streaming.time.info': 'Estimated time for this streaming swap to be completed',
   'common.totaltransaction.time': 'Total transaction time',
-  'common.confirmation.time': 'Chain Confirmation',
+  'common.confirmation.time': '{chain} Chain Confirmation',
   'common.theme.light': 'Day mode',
   'common.theme.dark': 'Night mode',
   'common.volume24': 'Volume (24h)',
