@@ -24,9 +24,9 @@ import { ImportsView } from './wallet/importsView'
 import { InteractView } from './wallet/Interact'
 import { NoWalletView } from './wallet/NoWalletView'
 import { PoolShareView } from './wallet/PoolShareView'
+import { SaversDetailsView } from './wallet/SaversDetailsView'
 import { SendView } from './wallet/send'
 import { UnlockView } from './wallet/UnlockView'
-import { UpgradeView } from './wallet/upgrade'
 import { WalletAuth } from './wallet/WalletAuth'
 import { WalletSettingsAuth } from './wallet/WalletSettingsAuth'
 
@@ -80,6 +80,14 @@ export const ViewRoutes: React.FC<{}> = (): JSX.Element => {
         }
       />
       <Route
+        path={walletRoutes.savers.template}
+        element={
+          <WalletAuth>
+            <SaversDetailsView />
+          </WalletAuth>
+        }
+      />
+      <Route
         path={walletRoutes.interact.template}
         element={
           <WalletAuth>
@@ -101,15 +109,6 @@ export const ViewRoutes: React.FC<{}> = (): JSX.Element => {
         element={
           <WalletAuth>
             <SendView />
-          </WalletAuth>
-        }
-      />
-
-      <Route
-        path={walletRoutes.upgradeRune.template}
-        element={
-          <WalletAuth>
-            <UpgradeView />
           </WalletAuth>
         }
       />

@@ -1,16 +1,4 @@
-import {
-  base,
-  imports,
-  locked,
-  assets,
-  bonds,
-  assetDetail,
-  send,
-  upgradeRune,
-  poolShares,
-  history,
-  interact
-} from './wallet'
+import { base, imports, locked, assets, bonds, assetDetail, send, poolShares, history, interact } from './wallet'
 
 describe('Wallet routes', () => {
   describe('base routes', () => {
@@ -84,16 +72,6 @@ describe('Wallet routes', () => {
     })
     it('path ', () => {
       expect(send.path()).toEqual('/wallet/assets/detail/send')
-    })
-  })
-
-  describe('upgrade route', () => {
-    it('template', () => {
-      expect(upgradeRune.template).toEqual('/wallet/assets/detail/upgrade')
-    })
-
-    it('path ', () => {
-      expect(upgradeRune.path()).toEqual('/wallet/assets/detail/upgrade')
     })
   })
 

@@ -17,6 +17,7 @@ import {
   delay,
   assetFromString
 } from '@xchainjs/xchain-util'
+import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
@@ -27,13 +28,13 @@ import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
 import { Network } from '../../../shared/api/types'
+import { ASGARDEX_THORNAME } from '../../../shared/const'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import {
   getEthTokenAddress,
-  isChainAsset,
   isEthAsset,
   isEthTokenAsset,
   isUSDAsset,
@@ -45,6 +46,7 @@ import { sequenceTOption } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { LiveData, liveData } from '../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../helpers/stringHelper'
+import { calculateTransactionTime, formatSwapTime, Time } from '../../helpers/timeHelper'
 import * as WalletHelper from '../../helpers/walletHelper'
 import {
   filterWalletBalancesByAssets,
@@ -52,16 +54,16 @@ import {
   hasLedgerInBalancesByAsset
 } from '../../helpers/walletHelper'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
-import { INITIAL_ASYM_DEPOSIT_STATE } from '../../services/chain/const'
+import { INITIAL_SAVER_DEPOSIT_STATE } from '../../services/chain/const'
 import {
-  AsymDepositFees,
-  AsymDepositFeesHandler,
-  AsymDepositFeesRD,
-  AsymDepositParams,
-  AsymDepositState,
-  AsymDepositStateHandler,
+  SaverDepositFees,
+  SaverDepositFeesHandler,
+  SaverDepositFeesRD,
+  SaverDepositParams,
+  SaverDepositState,
+  SaverDepositStateHandler,
   FeeRD,
-  ReloadAsymDepositFeesHandler
+  ReloadSaverDepositFeesHandler
 } from '../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../services/clients'
 import {
@@ -94,6 +96,7 @@ import { MaxBalanceButton } from '../uielements/button/MaxBalanceButton'
 import { Tooltip, TooltipAddress } from '../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../uielements/fees'
 import { InfoIcon } from '../uielements/info'
+import { Slider } from '../uielements/slider'
 import * as Utils from './Saver.utils'
 
 export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
@@ -107,11 +110,11 @@ export type AddProps = {
   network: Network
   pricePool: PricePool
   poolAddress: O.Option<PoolAddress>
-  fees$: AsymDepositFeesHandler
+  fees$: SaverDepositFeesHandler
   sourceWalletType: WalletType
   onChangeAsset: ({ source, sourceWalletType }: { source: Asset; sourceWalletType: WalletType }) => void
   walletBalances: Pick<BalancesState, 'balances' | 'loading'>
-  saverDeposit$: AsymDepositStateHandler
+  saverDeposit$: SaverDepositStateHandler
   goToTransaction: OpenExplorerTxUrl
   getExplorerTxUrl: GetExplorerTxUrl
   reloadSelectedPoolDetail: (delay?: number) => void
@@ -120,8 +123,9 @@ export type AddProps = {
   approveFee$: ApproveFeeHandler
   isApprovedERC20Token$: (params: IsApproveParams) => LiveData<ApiError, boolean>
   validatePassword$: ValidatePasswordHandler
-  reloadFees: ReloadAsymDepositFeesHandler
+  reloadFees: ReloadSaverDepositFeesHandler
   reloadBalances: FP.Lazy<void>
+  disableSaverAction: boolean
   hidePrivateData: boolean
 }
 
@@ -148,12 +152,12 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     reloadSelectedPoolDetail,
     goToTransaction,
     getExplorerTxUrl,
+    disableSaverAction,
     hidePrivateData
   } = props
 
   const intl = useIntl()
 
-  // For normal quotes
   const [oSaversQuote, setSaversQuote] = useState<O.Option<EstimateAddSaver>>(O.none)
 
   const { chain: sourceChain } = asset.asset
@@ -171,7 +175,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     state: depositState,
     reset: resetDepositState,
     subscribe: subscribeDepositState
-  } = useSubscriptionState<AsymDepositState>(INITIAL_ASYM_DEPOSIT_STATE)
+  } = useSubscriptionState<SaverDepositState>(INITIAL_SAVER_DEPOSIT_STATE)
 
   const { balances: oWalletBalances, loading: walletBalancesLoading } = walletBalances
 
@@ -247,11 +251,11 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     [oWalletBalances, asset, sourceChainAsset, sourceWalletType]
   )
   // *********** FEES **************
-  const zeroSaverFees: AsymDepositFees = useMemo(() => Utils.getZeroSaverDepositFees(asset.asset), [asset])
+  const zeroSaverFees: SaverDepositFees = useMemo(() => Utils.getZeroSaverDepositFees(asset.asset), [asset])
 
-  const prevSaverFees = useRef<O.Option<AsymDepositFees>>(O.none)
+  const prevSaverFees = useRef<O.Option<SaverDepositFees>>(O.none)
 
-  const [saverFeesRD] = useObservableState<AsymDepositFeesRD>(
+  const [saverFeesRD] = useObservableState<SaverDepositFeesRD>(
     () =>
       FP.pipe(
         fees$(asset.asset),
@@ -264,7 +268,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     RD.success(zeroSaverFees)
   )
 
-  const saverFees: AsymDepositFees = useMemo(
+  const saverFees: SaverDepositFees = useMemo(
     () =>
       FP.pipe(
         saverFeesRD,
@@ -303,7 +307,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       // dirty check - do nothing if prev. and next amounts are equal
       if (eqBaseAmount.equals(newAmount, amountToSendMax1e8)) return {}
 
-      const newAmountToSend = newAmount.gt(maxAmountToSendMax1e8) ? amountToSendMax1e8 : newAmount
+      const newAmountToSend = newAmount.gt(maxAmountToSendMax1e8) ? maxAmountToSendMax1e8 : newAmount
 
       _setAmountToSendMax1e8({ ...newAmountToSend })
     },
@@ -604,7 +608,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     const balanceLabel = formatAssetAmountCurrency({
       amount: baseToAsset(sourceAssetAmountMax1e8),
       asset: asset.asset,
-      decimal: isUSDAsset(asset.asset) ? 2 : 8, // use 8 decimal as same we use in maxAmountToSwapMax1e8
+      decimal: isUSDAsset(asset.asset) ? 2 : 8, // use 8 decimal as same we use in maxAmountToSendMax1e8
       trimZeros: !isUSDAsset(asset.asset)
     })
 
@@ -614,19 +618,17 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
         formatAssetAmountCurrency({
           amount: baseToAsset(inFee),
           asset: feeAsset,
-          decimal: isUSDAsset(feeAsset) ? 2 : 8, // use 8 decimal as same we use in maxAmountToSwapMax1e8
+          decimal: isUSDAsset(feeAsset) ? 2 : 8, // use 8 decimal as same we use in maxAmountToSendMax1e8
           trimZeros: !isUSDAsset(feeAsset)
         })
       ),
       RD.getOrElse(() => noDataString)
     )
 
-    return isChainAsset(asset.asset)
-      ? intl.formatMessage({ id: 'swap.info.max.balanceMinusFee' }, { balance: balanceLabel, fee: feeLabel })
-      : intl.formatMessage({ id: 'swap.info.max.balance' }, { balance: balanceLabel })
+    return intl.formatMessage({ id: 'savers.info.max.balance' }, { balance: balanceLabel, fee: feeLabel })
   }, [sourceAssetAmountMax1e8, saverFeesRD, asset, intl])
 
-  const oEarnParams: O.Option<AsymDepositParams> = useMemo(() => {
+  const oEarnParams: O.Option<SaverDepositParams> = useMemo(() => {
     return FP.pipe(
       sequenceTOption(oPoolAddress, oSourceAssetWB, oSaversQuote),
       O.map(([poolAddress, { walletType, walletAddress, walletIndex, hdMode }, saversQuote]) => {
@@ -634,7 +636,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
           poolAddress,
           asset: asset.asset,
           amount: amountToSendMax1e8,
-          memo: saversQuote.memo,
+          memo: saversQuote.memo.concat(`:${ASGARDEX_THORNAME}:0`), // add tracking,
           walletType,
           sender: walletAddress,
           walletIndex,
@@ -712,10 +714,10 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     const txModalTitle = FP.pipe(
       depositRD,
       RD.fold(
-        () => 'deposit.add.state.pending',
-        () => 'deposit.add.state.pending',
-        () => 'deposit.add.state.error',
-        () => 'deposit.add.state.success'
+        () => 'savers.add.state.sending',
+        () => 'savers.add.state.pending',
+        () => 'savers.add.state.error',
+        () => 'savers.add.state.success'
       ),
       (id) => intl.formatMessage({ id })
     )
@@ -948,7 +950,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
 
     const onSucceess = () => {
       if (showLedgerModal === 'deposit') setShowPasswordModal('deposit')
-      //if (showLedgerModal === 'approve') submitApproveTx()
+      if (showLedgerModal === 'approve') submitApproveTx()
       setShowLedgerModal('none')
     }
 
@@ -996,7 +998,36 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
         addresses={addresses}
       />
     )
-  }, [asset, sourceChain, intl, useLedger, network, oEarnParams, showLedgerModal])
+  }, [showLedgerModal, sourceChain, intl, asset.asset, oEarnParams, network, submitApproveTx, useLedger])
+
+  const renderSlider = useMemo(() => {
+    const percentage = amountToSendMax1e8
+      .amount()
+      .dividedBy(maxAmountToSendMax1e8.amount())
+      .multipliedBy(100)
+      // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
+      .decimalPlaces(0, BigNumber.ROUND_DOWN)
+      .toNumber()
+
+    const setAmountToSendFromPercentValue = (percents: number) => {
+      const amountFromPercentage = maxAmountToSendMax1e8.amount().multipliedBy(percents / 100)
+      return setAmountToSendMax1e8(baseAmount(amountFromPercentage, amountToSendMax1e8.decimal))
+    }
+
+    return (
+      <Slider
+        key={'swap percentage slider'}
+        value={percentage}
+        onChange={setAmountToSendFromPercentValue}
+        onAfterChange={reloadFeesHandler}
+        tooltipVisible
+        tipFormatter={(value) => `${value}%`}
+        withLabel
+        tooltipPlacement={'top'}
+        disabled={disableSaverAction}
+      />
+    )
+  }, [amountToSendMax1e8, disableSaverAction, maxAmountToSendMax1e8, reloadFeesHandler, setAmountToSendMax1e8])
 
   // Price of asset IN fee
   const oPriceAssetInFee: O.Option<AssetWithAmount> = useMemo(() => {
@@ -1090,6 +1121,11 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     [saverFeesRD, oPriceAssetInFee]
   )
 
+  //calculating transaction time from chain & quote
+  const transactionTime: Time = useMemo(() => {
+    return calculateTransactionTime(sourceChain)
+  }, [sourceChain])
+
   const oWalletAddress: O.Option<Address> = useMemo(() => {
     return FP.pipe(
       sequenceTOption(oSourceAssetWB),
@@ -1136,6 +1172,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
               </div>
             }
           />
+          <div className="w-full px-20px">{renderSlider}</div>
           <div className="flex flex-col items-center justify-between py-30px">
             {renderIsApprovedError}
             {(walletBalancesLoading || checkIsApproved) && (
@@ -1230,6 +1267,22 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
                   </div>
                 </>
               )}
+              {/* Add saver transaction time only inbound */}
+              <>
+                <div
+                  className={`flex w-full justify-between ${showDetails ? 'pt-10px' : ''} font-mainBold text-[14px]`}>
+                  <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
+                  <div>{formatSwapTime(Number(transactionTime.inbound))}</div>
+                </div>
+                {showDetails && (
+                  <>
+                    <div className="flex w-full justify-between pl-10px text-[12px]">
+                      <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.inbound.time' })}</div>
+                      <div>{formatSwapTime(Number(transactionTime.inbound))}</div>
+                    </div>
+                  </>
+                )}
+              </>
 
               {/* addresses */}
               {showDetails && (

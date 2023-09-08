@@ -47,7 +47,7 @@ import {
 import { ERC20_WHITELIST } from '../types/generated/thorchain/erc20whitelist'
 import { PricePoolAsset } from '../views/pools/Pools.types'
 import { getEthChecksumAddress } from './addressHelper'
-import { getChainAsset, isBchChain, isBnbChain, isBtcChain, isDogeChain, isEthChain, isLtcChain } from './chainHelper'
+import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isEthChain, isLtcChain } from './chainHelper'
 import { eqAsset, eqString } from './fp/eq'
 import { sequenceTOption } from './fpHelpers'
 
@@ -361,30 +361,6 @@ export const getTwoSigfigAssetAmount = (amount: AssetAmount) => {
   const amountIntegerValue = amount.amount().integerValue(BigNumber.ROUND_DOWN)
   const precisionCount = amountIntegerValue.gt(0) ? amountIntegerValue.toString().length + 2 : 2
   return assetAmount(amount.amount().toPrecision(precisionCount))
-}
-
-export const disableRuneUpgrade = ({
-  asset,
-  haltThorChain,
-  haltEthChain,
-  haltBnbChain,
-  network
-}: {
-  asset: Asset
-  haltThorChain: boolean
-  haltEthChain: boolean
-  haltBnbChain: boolean
-  network: Network
-}) => {
-  if (isNonNativeRuneAsset(asset, network)) {
-    // BNB.RUNE + ETH.RUNE
-    if (haltThorChain) return true
-    // ETH.RUNE
-    if (isEthChain(asset.chain) && haltEthChain) return true
-    // BNB.RUNE
-    if (isBnbChain(asset.chain) && haltBnbChain) return true
-  }
-  return false
 }
 
 /**

@@ -1,4 +1,4 @@
-import { BaseAmount, Asset } from '@xchainjs/xchain-util'
+import { BaseAmount, Asset, Address } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 
 import { Network } from '../../../shared/api/types'
@@ -15,3 +15,5 @@ export type SaversTableRowData = {
 }
 
 export type SaversTableRowsData = SaversTableRowData[]
+
+export type UpdateSaverProvider = { address: Address; asset: Asset }

@@ -20,7 +20,7 @@ import { Props as WidthdrawContentProps } from '../../views/deposit/withdraw/Wit
 import { AddWallet } from '../wallet/add'
 import * as Styled from './Deposit.styles'
 
-type TabKey = 'deposit-sym' | 'deposit-asym' | 'withdraw-sym' | 'withdraw-asym-asset'
+type TabKey = 'deposit-sym' | 'deposit-saver' | 'withdraw-sym' | 'withdraw-saver-asset'
 
 type Tab = {
   key: TabKey

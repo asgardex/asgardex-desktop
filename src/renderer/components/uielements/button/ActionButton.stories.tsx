@@ -51,13 +51,6 @@ const meta: ComponentMeta<typeof Component> = {
           console.log('deposit')
         },
         disabled: false
-      },
-      {
-        label: 'upgrade',
-        callback: () => {
-          console.log('upgrade')
-        },
-        disabled: true
       }
     ],
     disabled: false,

@@ -160,7 +160,6 @@ export const sendPoolTx$ = ({
 }: SendPoolTxParams): TxHashLD => {
   const { chain } = asset.synth ? AssetRuneNative : asset
   if (!isEnabledChain(chain)) return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)
-
   switch (chain) {
     case ETHChain:
       return ETH.sendPoolTx$({

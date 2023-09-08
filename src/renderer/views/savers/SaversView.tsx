@@ -29,14 +29,17 @@ import { useWalletContext } from '../../contexts/WalletContext'
 import { getAssetFromNullableString } from '../../helpers/assetHelper'
 import { eqChain, eqNetwork, eqWalletType } from '../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../helpers/fpHelpers'
+import * as PoolHelpers from '../../helpers/poolHelper'
 import { addressFromOptionalWalletAddress } from '../../helpers/walletHelper'
+import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { usePricePool } from '../../hooks/usePricePool'
 import * as poolsRoutes from '../../routes/pools'
 import { SaversRouteParams } from '../../routes/pools/savers'
 import * as saversRoutes from '../../routes/pools/savers'
-import { asymDepositFee$ } from '../../services/chain'
+import { saverDepositFee$ } from '../../services/chain'
+import { saverWithdrawFee$ } from '../../services/chain/fees'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
 import { PoolAddress } from '../../services/midgard/types'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/wallet/const'
@@ -79,8 +82,9 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   const { network } = useNetwork()
   const { reloadInboundAddresses } = useThorchainContext()
 
-  const { reloadSaverProvider } = useThorchainContext()
-  const { assetWithDecimal$, addressByChain$, reloadAsymDepositFee, asymDeposit$ } = useChainContext()
+  const { getSaverProvider$, reloadSaverProvider } = useThorchainContext()
+
+  const { assetWithDecimal$, addressByChain$, reloadSaverDepositFee, saverDeposit$, saverWithdraw$ } = useChainContext()
   const { approveERC20Token$, isApprovedERC20Token$, approveFee$, reloadApproveFee } = useEthereumContext()
   const {
     balancesState$,
@@ -93,12 +97,14 @@ const Content: React.FC<Props> = (props): JSX.Element => {
 
   const {
     service: {
-      pools: { poolsState$, reloadPools, reloadSelectedPoolDetail, selectedPoolAddress$ },
+      pools: { poolsState$, reloadPools, reloadSelectedPoolDetail, selectedPoolAddress$, haltedChains$ },
       setSelectedPoolAsset
     }
   } = useMidgardContext()
   const oPoolAddress: O.Option<PoolAddress> = useObservableState(selectedPoolAddress$, O.none)
 
+  const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
+  const { mimirHalt } = useMimirHalt()
   // reload inbound addresses at `onMount` to get always latest `pool address` + `feeRates`
   useEffect(() => {
     reloadInboundAddresses()
@@ -254,6 +260,15 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                 assetDetails,
                 A.map(({ asset }) => asset)
               )
+              const disableAllPoolActions = (chain: Chain) =>
+                PoolHelpers.disableAllActions({ chain, haltedChains, mimirHalt })
+
+              const disableTradingPoolActions = (chain: Chain) =>
+                PoolHelpers.disableTradingActions({ chain, haltedChains, mimirHalt })
+
+              const checkDisableSaverAction = () => {
+                return disableAllPoolActions(chain) || disableTradingPoolActions(chain)
+              }
               const getTabContentByIndex = (index: number) => {
                 switch (index) {
                   case TabIndex.ADD:
@@ -270,29 +285,51 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         network={network}
                         asset={new CryptoAmount(baseAmount(0, assetWD.decimal), assetWD.asset)}
                         pricePool={pricePool}
-                        fees$={asymDepositFee$}
+                        fees$={saverDepositFee$}
                         address={address}
                         reloadBalances={reloadHandler}
                         approveFee$={approveFee$}
                         reloadApproveFee={reloadApproveFee}
-                        reloadFees={reloadAsymDepositFee}
+                        reloadFees={reloadSaverDepositFee}
                         reloadSelectedPoolDetail={reloadSelectedPoolDetail}
                         isApprovedERC20Token$={isApprovedERC20Token$}
                         approveERC20Token$={approveERC20Token$}
                         poolAddress={oPoolAddress}
-                        saverDeposit$={asymDeposit$}
+                        saverDeposit$={saverDeposit$}
                         hidePrivateData={false}
                         onChangeAsset={onChangeAssetHandler}
+                        disableSaverAction={checkDisableSaverAction()}
                       />
                     )
                   case TabIndex.WITHDRAW:
                     return (
                       <WithdrawSavers
+                        keystore={keystore}
+                        poolDetails={poolDetails}
+                        asset={new CryptoAmount(baseAmount(0, assetWD.decimal), assetWD.asset)}
+                        walletBalances={balancesState}
                         network={network}
-                        asset={assetWD}
                         pricePool={pricePool}
-                        fees$={asymDepositFee$}
+                        fees$={saverWithdrawFee$}
                         address={address}
+                        validatePassword$={validatePassword$}
+                        goToTransaction={openExplorerTxUrl}
+                        getExplorerTxUrl={getExplorerTxUrl}
+                        sourceWalletType={walletType}
+                        poolAssets={poolAssets}
+                        reloadBalances={reloadHandler}
+                        approveFee$={approveFee$}
+                        reloadApproveFee={reloadApproveFee}
+                        reloadFees={reloadSaverDepositFee}
+                        reloadSelectedPoolDetail={reloadSelectedPoolDetail}
+                        isApprovedERC20Token$={isApprovedERC20Token$}
+                        approveERC20Token$={approveERC20Token$}
+                        poolAddress={oPoolAddress}
+                        saverWithdraw$={saverWithdraw$}
+                        hidePrivateData={false}
+                        onChangeAsset={onChangeAssetHandler}
+                        saverPosition={getSaverProvider$}
+                        disableSaverAction={checkDisableSaverAction()}
                       />
                     )
                   default:

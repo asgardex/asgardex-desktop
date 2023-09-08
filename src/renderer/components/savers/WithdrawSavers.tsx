@@ -1,84 +1,1171 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
+import { PoolDetails } from '@xchainjs/xchain-midgard'
+import { CryptoAmount, EstimateWithdrawSaver, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
   Asset,
   assetAmount,
+  assetFromString,
   BaseAmount,
   baseAmount,
   baseToAsset,
-  formatAssetAmountCurrency
+  assetToBase,
+  delay,
+  formatAssetAmountCurrency,
+  eqAsset
 } from '@xchainjs/xchain-util'
+import BigNumber from 'bignumber.js'
+import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/lib/function'
+import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import * as O from 'fp-ts/lib/Option'
+import debounce from 'lodash/debounce'
+import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
+import * as RxOp from 'rxjs/operators'
 
 import { Network } from '../../../shared/api/types'
-import { max1e8BaseAmount } from '../../helpers/assetHelper'
-import { loadingString, noDataString } from '../../helpers/stringHelper'
-import { AsymDepositFeesHandler } from '../../services/chain/types'
-import { AssetWithAmount, AssetWithDecimal } from '../../types/asgardex'
+import { chainToString } from '../../../shared/utils/chain'
+import { isLedgerWallet } from '../../../shared/utils/guard'
+import { WalletType } from '../../../shared/wallet/types'
+import { ZERO_BASE_AMOUNT } from '../../const'
+import {
+  getEthTokenAddress,
+  isEthAsset,
+  isEthTokenAsset,
+  isUSDAsset,
+  max1e8BaseAmount
+} from '../../helpers/assetHelper'
+import { getChainAsset, isEthChain } from '../../helpers/chainHelper'
+import { eqBaseAmount, eqOApproveParams, eqOAsset } from '../../helpers/fp/eq'
+import { sequenceTOption } from '../../helpers/fpHelpers'
+import * as PoolHelpers from '../../helpers/poolHelper'
+import { liveData, LiveData } from '../../helpers/rx/liveData'
+import { emptyString, hiddenString, loadingString, noDataString } from '../../helpers/stringHelper'
+import { calculateTransactionTime, formatSwapTime, Time } from '../../helpers/timeHelper'
+import * as WalletHelper from '../../helpers/walletHelper'
+import {
+  filterWalletBalancesByAssets,
+  getWalletBalanceByAssetAndWalletType,
+  hasLedgerInBalancesByAsset
+} from '../../helpers/walletHelper'
+import { useSubscriptionState } from '../../hooks/useSubscriptionState'
+import { INITIAL_SAVER_WITHDRAW_STATE } from '../../services/chain/const'
+import {
+  FeeRD,
+  ReloadSaverDepositFeesHandler,
+  SaverWithdrawFeesHandler,
+  SaverWithdrawFeesRD,
+  SaverWithdrawParams,
+  SaverWithdrawStateHandler,
+  WithdrawAssetFees,
+  WithdrawState
+} from '../../services/chain/types'
+import { OpenExplorerTxUrl, GetExplorerTxUrl, WalletBalances } from '../../services/clients'
+import {
+  ApproveFeeHandler,
+  ApproveParams,
+  IsApprovedRD,
+  IsApproveParams,
+  LoadApproveFeeHandler
+} from '../../services/ethereum/types'
+import { PoolAddress } from '../../services/midgard/types'
+import { SaverProviderLD } from '../../services/thorchain/types'
+import {
+  KeystoreState,
+  BalancesState,
+  TxHashLD,
+  ApiError,
+  ValidatePasswordHandler,
+  WalletBalance,
+  TxHashRD
+} from '../../services/wallet/types'
+import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
 import { PricePool } from '../../views/pools/Pools.types'
+import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
+import { TxModal } from '../modal/tx'
+import { DepositAsset } from '../modal/tx/extra/DepositAsset'
+import { LoadingView } from '../shared/loading'
 import { AssetInput } from '../uielements/assets/assetInput'
-import { BaseButton, FlatButton } from '../uielements/button'
+import { BaseButton, FlatButton, ViewTxButton } from '../uielements/button'
 import { MaxBalanceButton } from '../uielements/button/MaxBalanceButton'
-import { TooltipAddress } from '../uielements/common/Common.styles'
+import { Tooltip, TooltipAddress } from '../uielements/common/Common.styles'
+import { Fees, UIFeesRD } from '../uielements/fees'
+import { Slider } from '../uielements/slider'
+import * as Utils from './Saver.utils'
 
 export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
 
-export type Props = {
-  asset: AssetWithDecimal
+export type WithDrawProps = {
+  keystore: KeystoreState
+  poolAssets: Asset[]
+  poolDetails: PoolDetails
+  asset: CryptoAmount
   address: Address
   network: Network
   pricePool: PricePool
-  fees$: AsymDepositFeesHandler
+  poolAddress: O.Option<PoolAddress>
+  saverPosition: (asset: Asset, address: string) => SaverProviderLD
+  fees$: SaverWithdrawFeesHandler
+  sourceWalletType: WalletType
+  onChangeAsset: ({ source, sourceWalletType }: { source: Asset; sourceWalletType: WalletType }) => void
+  walletBalances: Pick<BalancesState, 'balances' | 'loading'>
+  goToTransaction: OpenExplorerTxUrl
+  getExplorerTxUrl: GetExplorerTxUrl
+  reloadSelectedPoolDetail: (delay?: number) => void
+  approveERC20Token$: (params: ApproveParams) => TxHashLD
+  reloadApproveFee: LoadApproveFeeHandler
+  approveFee$: ApproveFeeHandler
+  isApprovedERC20Token$: (params: IsApproveParams) => LiveData<ApiError, boolean>
+  validatePassword$: ValidatePasswordHandler
+  reloadFees: ReloadSaverDepositFeesHandler
+  saverWithdraw$: SaverWithdrawStateHandler
+  reloadBalances: FP.Lazy<void>
+  disableSaverAction: boolean
+  hidePrivateData: boolean
 }
 
-export const WithdrawSavers: React.FC<Props> = (props): JSX.Element => {
+export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
   const {
-    asset: { asset, decimal: assetDecimal },
+    keystore,
+    poolDetails,
+    asset,
+    sourceWalletType: initialSourceWalletType,
+    walletBalances,
     network,
-    pricePool
+    pricePool,
+    poolAddress: oPoolAddress,
+    saverPosition,
+    onChangeAsset,
+    address,
+    fees$,
+    validatePassword$,
+    isApprovedERC20Token$,
+    approveERC20Token$,
+    reloadBalances = FP.constVoid,
+    reloadFees,
+    reloadApproveFee,
+    approveFee$,
+    reloadSelectedPoolDetail,
+    goToTransaction,
+    getExplorerTxUrl,
+    saverWithdraw$,
+    disableSaverAction,
+    hidePrivateData
   } = props
 
   const intl = useIntl()
 
-  const amountToSendMax1e8: BaseAmount = baseAmount(0)
-  const maxAmountToSendMax1e8: BaseAmount = baseAmount(0)
-  const priceAmountToSendMax1e8: AssetWithAmount = { asset, amount: baseAmount(0) }
-  const selectableAssets: Asset[] = []
-  const setAsset = (_: Asset) => {}
-  const setAmountToSendMax1e8 = (_: BaseAmount) => {}
-  const reloadFeesHandler = () => {}
+  const [oSaverWithdrawQuote, setSaverWithdrawQuote] = useState<O.Option<EstimateWithdrawSaver>>(O.none)
 
-  const minAmountError = false
+  const { chain: sourceChain } = asset.asset
+  const { asset: sourceAsset } = asset
 
-  const zeroBaseAmountMax = useMemo(() => baseAmount(0, assetDecimal), [assetDecimal])
+  const lockedWallet: boolean = useMemo(() => isLocked(keystore) || !hasImportedKeystore(keystore), [keystore])
+
+  const useLedger = isLedgerWallet(initialSourceWalletType)
+
+  const sourceWalletType: WalletType = useMemo(() => (useLedger ? 'ledger' : 'keystore'), [useLedger])
+
+  const [withdrawStartTime, setWithdrawStartTime] = useState<number>(0)
+
+  const prevAsset = useRef<O.Option<Asset>>(O.none)
+
+  const {
+    state: withdrawState,
+    reset: resetWithdrawState,
+    subscribe: subscribeWithdrawState
+  } = useSubscriptionState<WithdrawState>(INITIAL_SAVER_WITHDRAW_STATE)
+
+  const { balances: oWalletBalances, loading: walletBalancesLoading } = walletBalances
+
+  // Observable chain asset balance
+  const oChainAssetBalance: O.Option<BaseAmount> = useMemo(() => {
+    const chainAsset = getChainAsset(sourceChain)
+    return FP.pipe(
+      WalletHelper.getWalletBalanceByAssetAndWalletType({
+        oWalletBalances,
+        asset: chainAsset,
+        walletType: sourceWalletType
+      }),
+      O.map(({ amount }) => amount)
+    )
+  }, [sourceChain, oWalletBalances, sourceWalletType])
+
+  // Chain asset balance
+  const chainAssetBalance: BaseAmount = useMemo(
+    () =>
+      FP.pipe(
+        oChainAssetBalance,
+        O.getOrElse(() => ZERO_BASE_AMOUNT)
+      ),
+    [oChainAssetBalance]
+  )
+
+  const needApprovement = useMemo(() => {
+    // Other chains than ETH do not need an approvement
+    if (!isEthChain(sourceAsset.chain)) return false
+    // ETH does not need to be approved
+    if (isEthAsset(sourceAsset)) return false
+    // ERC20 token does need approvement only
+    return isEthTokenAsset(sourceAsset)
+  }, [sourceAsset])
+
+  /**
+   * Selectable source assets to add to savers.
+   * Based on savers the address has
+   */
+  const selectableAssets: Asset[] = useMemo(() => {
+    const result = FP.pipe(
+      poolDetails,
+      A.filter(({ saversDepth }) => Number(saversDepth) > 0),
+      A.filterMap(({ asset: assetString }) => O.fromNullable(assetFromString(assetString)))
+    )
+    return result
+  }, [poolDetails])
+  /**
+   * All balances based on available assets
+   */
+  const allBalances: WalletBalances = useMemo(() => {
+    const balances = FP.pipe(
+      oWalletBalances,
+      // filter wallet balances
+      O.map((balances) => filterWalletBalancesByAssets(balances, selectableAssets)),
+      O.getOrElse<WalletBalances>(() => [])
+    )
+    return balances
+  }, [selectableAssets, oWalletBalances])
+
+  const hasLedger = useMemo(() => hasLedgerInBalancesByAsset(sourceAsset, allBalances), [sourceAsset, allBalances])
+
+  // *********** FEES **************
+  const zeroSaverFees: WithdrawAssetFees = useMemo(() => Utils.getZeroSaverWithdrawFees(sourceAsset), [sourceAsset])
+
+  const prevSaverFees = useRef<O.Option<WithdrawAssetFees>>(O.none)
+
+  const [saverFeesRD] = useObservableState<SaverWithdrawFeesRD>(
+    () =>
+      FP.pipe(
+        fees$(sourceAsset),
+        liveData.map((fees) => {
+          // store every successfully loaded fees
+          prevSaverFees.current = O.some(fees)
+          return fees
+        })
+      ),
+    RD.success(zeroSaverFees)
+  )
+
+  const saverFees: WithdrawAssetFees = useMemo(
+    () =>
+      FP.pipe(
+        saverFeesRD,
+        RD.toOption,
+        O.alt(() => prevSaverFees.current),
+        O.getOrElse(() => zeroSaverFees)
+      ),
+    [saverFeesRD, zeroSaverFees]
+  )
+
+  // `oSourceAssetWB` of source asset - which might be none (user has no balances for this asset or wallet is locked)
+  const oSourceAssetWB: O.Option<WalletBalance> = useMemo(() => {
+    const oWalletBalances = NEA.fromArray(allBalances)
+    const result = getWalletBalanceByAssetAndWalletType({
+      oWalletBalances,
+      asset: sourceAsset,
+      walletType: sourceWalletType
+    })
+    return result
+  }, [allBalances, sourceAsset, sourceWalletType])
+
+  // User balance for source asset
+  const sourceAssetAmount: BaseAmount = useMemo(
+    () =>
+      FP.pipe(
+        oSourceAssetWB,
+        O.map(({ amount }) => amount),
+        O.getOrElse(() => baseAmount(0, asset.baseAmount.decimal))
+      ),
+    [oSourceAssetWB, asset]
+  )
+
+  // User Saver redeem Amount for source asset
+  const [saverAssetAmount, setSaverAssetAmount] = useState<CryptoAmount>(
+    new CryptoAmount(baseAmount(0, asset.baseAmount.decimal), sourceAsset)
+  )
+
+  useEffect(() => {
+    const subscription = saverPosition(sourceAsset, address).subscribe((saverProviderRD) => {
+      if (RD.isSuccess(saverProviderRD)) {
+        // Replace with the actual check for RemoteData's success state
+        const saverProvider = saverProviderRD.value // Replace 'value' with the correct property if needed
+        setSaverAssetAmount(new CryptoAmount(saverProvider.redeemValue, sourceAsset))
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [address, saverPosition, sourceAsset])
+
+  // set init amount
+  const initialAmountToWithdrawMax1e8 = useMemo(
+    () => baseAmount(0, saverAssetAmount.baseAmount.decimal),
+    [saverAssetAmount]
+  )
+
+  const [
+    /* max. 1e8 decimal */
+    amountToWithdrawMax1e8,
+    _setAmountToWithdrawMax1e8 /* private - never set it directly, use setAmountToSendMax1e8() instead */
+  ] = useState(initialAmountToWithdrawMax1e8)
+
+  /** Balance of source asset converted to <= 1e8 */
+  const saverAssetAmountMax1e8: BaseAmount = useMemo(
+    () => max1e8BaseAmount(saverAssetAmount.baseAmount),
+    [saverAssetAmount]
+  )
+  // max amount to withdraw is 100% saver position
+  const maxAmountToWithdrawMax1e8: BaseAmount = useMemo(() => {
+    if (lockedWallet) return assetToBase(assetAmount(10000, saverAssetAmountMax1e8.decimal))
+
+    return saverAssetAmountMax1e8
+  }, [lockedWallet, saverAssetAmountMax1e8])
+
+  // Set amount to send
+  const setAmountToWithdrawMax1e8 = useCallback(
+    (amountToSend: BaseAmount) => {
+      const newAmount = baseAmount(amountToSend.amount(), saverAssetAmountMax1e8.decimal)
+      // dirty check - do nothing if prev. and next amounts are equal
+      if (eqBaseAmount.equals(newAmount, amountToWithdrawMax1e8)) return {}
+
+      const newAmountToSend = newAmount.gt(saverAssetAmountMax1e8) ? saverAssetAmountMax1e8 : newAmount
+
+      _setAmountToWithdrawMax1e8({ ...newAmountToSend })
+    },
+    [amountToWithdrawMax1e8, saverAssetAmountMax1e8]
+  )
+
+  // Chain Dust threshold, can't send less than this amount.
+  const dustThreshold: CryptoAmount = useMemo(
+    () =>
+      FP.pipe(
+        oSaverWithdrawQuote,
+        O.fold(
+          () => new CryptoAmount(baseAmount(0), sourceAsset), // default value if oSaverWithdrawQuote is None
+          (txDetails) => txDetails.dustThreshold
+        )
+      ),
+    [oSaverWithdrawQuote, sourceAsset]
+  )
+  // price of amount to withdraw
+  const priceAmountToWithdrawMax1e8: CryptoAmount = useMemo(() => {
+    const result = FP.pipe(
+      PoolHelpers.getPoolPriceValue({
+        balance: { asset: sourceAsset, amount: amountToWithdrawMax1e8 },
+        poolDetails,
+        pricePool,
+        network
+      }),
+      O.getOrElse(() => baseAmount(0, amountToWithdrawMax1e8.decimal)),
+      (amount) => ({ asset: pricePool.asset, amount })
+    )
+
+    return new CryptoAmount(result.amount, result.asset)
+  }, [amountToWithdrawMax1e8, network, poolDetails, pricePool, sourceAsset])
+
+  // Boolean on if amount to send is zero
+  const isZeroAmountToSend = useMemo(() => amountToWithdrawMax1e8.amount().isZero(), [amountToWithdrawMax1e8])
+
+  const sourceChainFeeError: boolean = useMemo(() => {
+    // ignore error check by having zero amounts
+    if (amountToWithdrawMax1e8) return false
+
+    const { inFee } = saverFees
+    // check against in fee and dust threshold
+    return inFee.gt(chainAssetBalance) || dustThreshold.baseAmount.gt(chainAssetBalance)
+  }, [amountToWithdrawMax1e8, saverFees, chainAssetBalance, dustThreshold.baseAmount])
+
+  const [withdrawBps, setWithdrawBps] = useState(0) // init state
+
+  // Disables the submit button
+  const disableSubmit = useMemo(
+    () => sourceChainFeeError || isZeroAmountToSend || lockedWallet || walletBalancesLoading,
+    [sourceChainFeeError, isZeroAmountToSend, lockedWallet, walletBalancesLoading]
+  )
+
+  const debouncedEffect = useRef(
+    debounce((withdrawBps, asset, address) => {
+      const thorchainQuery = new ThorchainQuery()
+      thorchainQuery
+        .estimateWithdrawSaver({ asset: sourceAsset, address: address, withdrawBps: Number(withdrawBps) })
+        .then((quote) => {
+          setSaverWithdrawQuote(O.some(quote)) // Wrapping the quote in an Option
+        })
+        .catch((error) => {
+          console.error('Failed to get quote:', error)
+        })
+    }, 500)
+  )
+
+  useEffect(() => {
+    if (withdrawBps !== 0 && !disableSubmit) {
+      debouncedEffect.current(withdrawBps, asset, address)
+    }
+  }, [withdrawBps, disableSubmit, asset, address])
+
+  // Outbound fee in for use later
+  const outboundFee: CryptoAmount = useMemo(
+    () =>
+      FP.pipe(
+        oSaverWithdrawQuote,
+        O.fold(
+          () => new CryptoAmount(baseAmount(0), sourceAsset), // default value if oQuote is None
+          (txDetails) => txDetails.fee.outbound // already of type cryptoAmount
+        )
+      ),
+    [oSaverWithdrawQuote, sourceAsset]
+  )
+  // Outbound fee in for use later
+  const liquidityFee: CryptoAmount = useMemo(
+    () =>
+      FP.pipe(
+        oSaverWithdrawQuote,
+        O.fold(
+          () => new CryptoAmount(baseAmount(0), sourceAsset), // default value if oQuote is None
+          (txDetails) => txDetails.fee.liquidity // already of type cryptoAmount
+        )
+      ),
+    [oSaverWithdrawQuote, sourceAsset]
+  )
+
+  // Boolean on if amount to send is zero
+  const zeroBaseAmountMax = useMemo(() => baseAmount(0, asset.baseAmount.decimal), [asset])
 
   const zeroBaseAmountMax1e8 = useMemo(() => max1e8BaseAmount(zeroBaseAmountMax), [zeroBaseAmountMax])
-  const maxBalanceInfoTxt = 'max balance info text'
-  const renderMinAmount = <div>min amount TBD</div>
 
-  const hasLedger = false
-  const useLedger = false
+  const setAsset = useCallback(
+    async (asset: Asset) => {
+      // delay to avoid render issues while switching
+      await delay(100)
+
+      onChangeAsset({
+        source: asset,
+        // back to default 'keystore' type
+        sourceWalletType: 'keystore'
+      })
+    },
+    [onChangeAsset]
+  )
+  // Reload balances at `onMount`
+  useEffect(() => {
+    reloadBalances()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const maxBalanceInfoTxt = useMemo(() => {
+    const balanceLabel = formatAssetAmountCurrency({
+      amount: baseToAsset(saverAssetAmountMax1e8),
+      asset: sourceAsset,
+      decimal: isUSDAsset(sourceAsset) ? 2 : 8, // use 8 decimal as same we use in maxAmountToSwapMax1e8
+      trimZeros: !isUSDAsset(sourceAsset)
+    })
+    const feeLabel = FP.pipe(
+      saverFeesRD,
+      RD.map(({ asset: feeAsset, inFee }) =>
+        formatAssetAmountCurrency({
+          amount: baseToAsset(inFee),
+          asset: feeAsset,
+          decimal: isUSDAsset(feeAsset) ? 2 : 8, // use 8 decimal as same we use in maxAmountToSwapMax1e8
+          trimZeros: !isUSDAsset(feeAsset)
+        })
+      ),
+      RD.getOrElse(() => noDataString)
+    )
+
+    return intl.formatMessage({ id: 'savers.info.max.redeem.value' }, { balance: balanceLabel, fee: feeLabel })
+  }, [saverAssetAmountMax1e8, sourceAsset, saverFeesRD, intl])
+
+  // State for values of `isApprovedERC20Token$`
+  const {
+    state: isApprovedState,
+    reset: resetIsApprovedState,
+    subscribe: subscribeIsApprovedState
+  } = useSubscriptionState<IsApprovedRD>(RD.initial)
+
+  // State for values of Approved
+  const {
+    state: approveState,
+    reset: resetApproveState,
+    subscribe: subscribeApproveState
+  } = useSubscriptionState<TxHashRD>(RD.initial)
+
+  const prevApproveFee = useRef<O.Option<BaseAmount>>(O.none)
+
+  const [approveFeeRD, approveFeesParamsUpdated] = useObservableState<FeeRD, ApproveParams>((approveFeeParam$) => {
+    return approveFeeParam$.pipe(
+      RxOp.switchMap((params) =>
+        FP.pipe(
+          approveFee$(params),
+          liveData.map((fee) => {
+            // store every successfully loaded fees
+            prevApproveFee.current = O.some(fee)
+            return fee
+          })
+        )
+      )
+    )
+  }, RD.initial)
+
+  const prevApproveParams = useRef<O.Option<ApproveParams>>(O.none)
+
+  const checkApprovedStatus = useCallback(
+    ({ contractAddress, spenderAddress, fromAddress }: ApproveParams) => {
+      subscribeIsApprovedState(
+        isApprovedERC20Token$({
+          contractAddress,
+          spenderAddress,
+          fromAddress
+        })
+      )
+    },
+    [isApprovedERC20Token$, subscribeIsApprovedState]
+  )
+
+  const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
+    const oRouterAddress: O.Option<Address> = FP.pipe(
+      oPoolAddress,
+      O.chain(({ router }) => router)
+    )
+    const oTokenAddress: O.Option<string> = getEthTokenAddress(sourceAsset)
+
+    const oNeedApprovement: O.Option<boolean> = FP.pipe(
+      needApprovement,
+      // `None` if needApprovement is `false`, no request then
+      O.fromPredicate((v) => !!v)
+    )
+
+    return FP.pipe(
+      sequenceTOption(oNeedApprovement, oTokenAddress, oRouterAddress, oSourceAssetWB),
+      O.map(([_, tokenAddress, routerAddress, { walletAddress, walletIndex, walletType, hdMode }]) => ({
+        network,
+        spenderAddress: routerAddress,
+        contractAddress: tokenAddress,
+        fromAddress: walletAddress,
+        walletIndex,
+        walletType,
+        hdMode
+      }))
+    )
+  }, [oPoolAddress, sourceAsset, needApprovement, oSourceAssetWB, network])
+
+  const renderFeeError = useCallback(
+    (fee: BaseAmount, amount: BaseAmount, asset: Asset) => {
+      const msg = intl.formatMessage(
+        { id: 'deposit.add.error.chainFeeNotCovered' },
+        {
+          fee: formatAssetAmountCurrency({
+            asset: getChainAsset(sourceChain),
+            trimZeros: true,
+            amount: baseToAsset(fee)
+          }),
+          balance: formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, trimZeros: true })
+        }
+      )
+
+      return (
+        <p className="mb-20px p-0 text-center font-main text-[12px] uppercase text-error0 dark:text-error0d">{msg}</p>
+      )
+    },
+    [sourceChain, intl]
+  )
+
+  // Update `approveFeesRD` whenever `oApproveParams` has been changed
+  useEffect(() => {
+    FP.pipe(
+      oApproveParams,
+      // Do nothing if prev. and current router a the same
+      O.filter((params) => !eqOApproveParams.equals(O.some(params), prevApproveParams.current)),
+      // update ref
+      O.map((params) => {
+        prevApproveParams.current = O.some(params)
+        return params
+      }),
+      // Trigger update for `approveFeesRD` + `checkApprove`
+      O.map((params) => {
+        approveFeesParamsUpdated(params)
+        checkApprovedStatus(params)
+        return true
+      })
+    )
+  }, [approveFeesParamsUpdated, checkApprovedStatus, oApproveParams, oPoolAddress])
+
+  const reloadFeesHandler = useCallback(() => {
+    reloadFees(sourceAsset)
+  }, [reloadFees, sourceAsset])
+
+  const reloadApproveFeesHandler = useCallback(() => {
+    FP.pipe(oApproveParams, O.map(reloadApproveFee))
+  }, [oApproveParams, reloadApproveFee])
+
+  const approveFee: BaseAmount = useMemo(
+    () =>
+      FP.pipe(
+        approveFeeRD,
+        RD.toOption,
+        O.alt(() => prevApproveFee.current),
+        O.getOrElse(() => ZERO_BASE_AMOUNT)
+      ),
+    [approveFeeRD]
+  )
+  const uiApproveFeesRD: UIFeesRD = useMemo(
+    () =>
+      FP.pipe(
+        approveFeeRD,
+        RD.map((approveFee) => [{ asset: getChainAsset(sourceChain), amount: approveFee }])
+      ),
+    [approveFeeRD, sourceChain]
+  )
+
+  const isApproveFeeError = useMemo(() => {
+    // ignore error check if we don't need to check allowance
+    if (!needApprovement) return false
+
+    return FP.pipe(
+      oChainAssetBalance,
+      O.fold(
+        () => true,
+        (balance) => FP.pipe(approveFee, balance.lt)
+      )
+    )
+  }, [needApprovement, oChainAssetBalance, approveFee])
+
+  const renderApproveError = useMemo(
+    () =>
+      FP.pipe(
+        approveState,
+        RD.fold(
+          () => <></>,
+          () => <></>,
+          (error) => (
+            <p className="mb-20px p-0 text-center font-main uppercase text-error0 dark:text-error0d">{error.msg}</p>
+          ),
+          () => <></>
+        )
+      ),
+    [approveState]
+  )
+
+  type ModalState = 'withdraw' | 'approve' | 'none'
+  const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
+  const [showLedgerModal, setShowLedgerModal] = useState<ModalState>('none')
+
+  const onSubmit = useCallback(() => {
+    if (useLedger) {
+      setShowLedgerModal('withdraw')
+    } else {
+      setShowPasswordModal('withdraw')
+    }
+  }, [setShowLedgerModal, useLedger]) // Dependencies array inside the useCallback hook
+
+  const checkIsApproved = useMemo(() => {
+    if (!needApprovement) return false
+    // ignore initial + loading states for `isApprovedState`
+    return RD.isPending(isApprovedState)
+  }, [isApprovedState, needApprovement])
+
+  const checkIsApprovedError = useMemo(() => {
+    // ignore error check if we don't need to check allowance
+    if (!needApprovement) return false
+
+    return RD.isFailure(isApprovedState)
+  }, [needApprovement, isApprovedState])
+
+  const renderIsApprovedError = useMemo(() => {
+    if (!checkIsApprovedError) return <></>
+
+    return FP.pipe(
+      isApprovedState,
+
+      RD.fold(
+        () => <></>,
+        () => <></>,
+        (error) => (
+          <p className="mb-20px p-0 text-center font-main text-[12px] uppercase text-error0 dark:text-error0d">
+            {intl.formatMessage({ id: 'common.approve.error' }, { asset: sourceAsset.ticker, error: error.msg })}
+          </p>
+        ),
+        (_) => <></>
+      )
+    )
+  }, [checkIsApprovedError, intl, isApprovedState, sourceAsset])
+  const disableSubmitApprove = useMemo(
+    () => checkIsApprovedError || isApproveFeeError || walletBalancesLoading,
+
+    [checkIsApprovedError, isApproveFeeError, walletBalancesLoading]
+  )
+
+  const renderApproveFeeError = useMemo(() => {
+    if (
+      !isApproveFeeError ||
+      // Don't render anything if chainAssetBalance is not available (still loading)
+      O.isNone(oChainAssetBalance) ||
+      // Don't render error if walletBalances are still loading
+      walletBalancesLoading
+    )
+      return <></>
+
+    return renderFeeError(approveFee, chainAssetBalance, getChainAsset(sourceChain))
+  }, [
+    isApproveFeeError,
+    oChainAssetBalance,
+    walletBalancesLoading,
+    renderFeeError,
+    approveFee,
+    chainAssetBalance,
+    sourceChain
+  ])
+
+  const isApproved = useMemo(
+    () =>
+      !needApprovement ||
+      RD.isSuccess(approveState) ||
+      FP.pipe(
+        isApprovedState,
+        // ignore other RD states and set to `true`
+        // to avoid switch between approve and submit button
+        // Submit button will still be disabled
+        RD.getOrElse(() => true)
+      ),
+    [approveState, isApprovedState, needApprovement]
+  )
+
+  useEffect(() => {
+    if (!eqOAsset.equals(prevAsset.current, O.some(sourceAsset))) {
+      prevAsset.current = O.some(sourceAsset)
+      // reset deposit state
+      resetWithdrawState()
+      // reset isApproved state
+      resetIsApprovedState()
+      // reset approve state
+      resetApproveState()
+      // reload fees
+      reloadFeesHandler()
+    }
+  }, [
+    sourceAsset,
+    reloadFeesHandler,
+    resetApproveState,
+    resetIsApprovedState,
+    reloadSelectedPoolDetail,
+    resetWithdrawState
+  ])
+
+  // Withdraw saver Params only send dust amount
+  const oWithdrawSaverParams: O.Option<SaverWithdrawParams> = useMemo(() => {
+    return FP.pipe(
+      sequenceTOption(oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote),
+      O.map(([poolAddress, { walletType, walletIndex, hdMode }, saversWithdrawQuote]) => {
+        const result = {
+          poolAddress,
+          asset: sourceAsset,
+          amount: saversWithdrawQuote.dustAmount.baseAmount,
+          memo: saversWithdrawQuote.memo,
+          network,
+          walletType,
+          walletIndex,
+          sender: address,
+          hdMode
+        }
+        return result
+      })
+    )
+  }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceAsset, network, address])
+
   const onClickUseLedger = useCallback(() => {}, [])
 
-  const onSubmit = () => {}
-  const disableSubmit = false
+  const txModalExtraContent = useMemo(() => {
+    const stepDescriptions = [
+      intl.formatMessage({ id: 'common.tx.healthCheck' }),
+      intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: sourceAsset.ticker }),
+      intl.formatMessage({ id: 'common.tx.checkResult' })
+    ]
+    const stepDescription = FP.pipe(
+      withdrawState.withdraw,
+      RD.fold(
+        () => '',
+        () =>
+          `${intl.formatMessage(
+            { id: 'common.step' },
+            { current: withdrawState.step, total: withdrawState.stepsTotal }
+          )}: ${stepDescriptions[withdrawState.step - 1]}`,
+        () => '',
+        () => `${intl.formatMessage({ id: 'common.done' })}!`
+      )
+    )
 
-  const priceFeesLabel = 'price-fee-label'
-  const priceInFeeLabel = 'price-in-fee-label'
+    return (
+      <DepositAsset
+        source={O.some({ asset: sourceAsset, amount: amountToWithdrawMax1e8 })}
+        stepDescription={stepDescription}
+        network={network}
+      />
+    )
+  }, [intl, sourceAsset, withdrawState, amountToWithdrawMax1e8, network])
 
-  const oWalletAddress = O.some('wallel-address')
-  const oEarnParams = O.some({ poolAddress: { address: 'wallel-address' } })
+  const onCloseTxModal = useCallback(() => {
+    resetWithdrawState()
+    reloadBalances()
+    reloadSelectedPoolDetail(5000)
+  }, [resetWithdrawState, reloadBalances, reloadSelectedPoolDetail])
 
-  const reloadBalances = () => {}
-  const walletBalancesLoading = false
+  const onFinishTxModal = useCallback(() => {
+    onCloseTxModal()
+    reloadBalances()
+    reloadSelectedPoolDetail(5000)
+  }, [onCloseTxModal, reloadBalances, reloadSelectedPoolDetail])
 
-  const memoTitle = 'Memo-title'
-  const memoLabel = 'Memo-label'
+  const renderTxModal = useMemo(() => {
+    const { withdraw: withdrawRD, withdrawTx } = withdrawState
 
+    // don't render TxModal in initial state
+    if (RD.isInitial(withdrawRD)) return <></>
+
+    // Get timer value
+    const timerValue = FP.pipe(
+      withdrawRD,
+      RD.fold(
+        () => 0,
+        FP.flow(
+          O.map(({ loaded }) => loaded),
+          O.getOrElse(() => 0)
+        ),
+        () => 0,
+        () => 100
+      )
+    )
+
+    // title
+    const txModalTitle = FP.pipe(
+      withdrawRD,
+      RD.fold(
+        () => 'savers.withdraw.state.sending',
+        () => 'savers.withdraw.state.pending',
+        () => 'savers.withdraw.state.error',
+        () => 'savers.withdraw.state.success'
+      ),
+      (id) => intl.formatMessage({ id })
+    )
+
+    const extraResult = (
+      <div className="flex flex-col items-center justify-between">
+        {FP.pipe(withdrawTx, RD.toOption, (oTxHash) => (
+          <ViewTxButton
+            className="pb-20px"
+            txHash={oTxHash}
+            onClick={goToTransaction}
+            txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
+            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: sourceAsset.ticker })}
+          />
+        ))}
+      </div>
+    )
+
+    return (
+      <TxModal
+        title={txModalTitle}
+        onClose={onCloseTxModal}
+        onFinish={onFinishTxModal}
+        startTime={withdrawStartTime}
+        txRD={withdrawRD}
+        timerValue={timerValue}
+        extraResult={extraResult}
+        extra={txModalExtraContent}
+      />
+    )
+  }, [
+    withdrawState,
+    onCloseTxModal,
+    onFinishTxModal,
+    withdrawStartTime,
+    txModalExtraContent,
+    intl,
+    goToTransaction,
+    getExplorerTxUrl,
+    sourceAsset.ticker
+  ])
+  // sumbit to withdraw state submit tx
+  const submitWithdrawTx = useCallback(() => {
+    FP.pipe(
+      oWithdrawSaverParams,
+      O.map((withdrawParams) => {
+        // set start time
+        setWithdrawStartTime(Date.now())
+        // subscribe to saverWithdraw$
+        subscribeWithdrawState(saverWithdraw$(withdrawParams))
+
+        return true
+      })
+    )
+  }, [oWithdrawSaverParams, saverWithdraw$, subscribeWithdrawState])
+
+  const onApprove = useCallback(() => {
+    if (useLedger) {
+      setShowLedgerModal('approve')
+    } else {
+      setShowPasswordModal('approve')
+    }
+  }, [useLedger])
+
+  const submitApproveTx = useCallback(() => {
+    FP.pipe(
+      oApproveParams,
+      O.map(({ walletIndex, walletType, hdMode, contractAddress, spenderAddress, fromAddress }) =>
+        subscribeApproveState(
+          approveERC20Token$({
+            network,
+            contractAddress,
+            spenderAddress,
+            fromAddress,
+            walletIndex,
+            hdMode,
+            walletType
+          })
+        )
+      )
+    )
+  }, [approveERC20Token$, network, oApproveParams, subscribeApproveState])
+
+  const renderPasswordConfirmationModal = useMemo(() => {
+    if (showPasswordModal === 'none') return <></>
+
+    const onSuccess = () => {
+      if (showPasswordModal === 'withdraw') submitWithdrawTx()
+      if (showPasswordModal === 'approve') submitWithdrawTx()
+      setShowPasswordModal('none')
+    }
+    const onClose = () => {
+      setShowPasswordModal('none')
+    }
+
+    return (
+      <WalletPasswordConfirmationModal onSuccess={onSuccess} onClose={onClose} validatePassword$={validatePassword$} />
+    )
+  }, [showPasswordModal, submitWithdrawTx, validatePassword$])
+
+  const renderLedgerConfirmationModal = useMemo(() => {
+    if (showLedgerModal === 'none') return <></>
+
+    const onClose = () => {
+      setShowLedgerModal('none')
+    }
+
+    const onSucceess = () => {
+      if (showLedgerModal === 'withdraw') setShowPasswordModal('withdraw')
+      if (showLedgerModal === 'approve') submitApproveTx()
+      setShowLedgerModal('none')
+    }
+
+    const chainAsString = chainToString(sourceChain)
+    const txtNeedsConnected = intl.formatMessage(
+      {
+        id: 'ledger.needsconnected'
+      },
+      { chain: chainAsString }
+    )
+
+    const description1 =
+      // extra info for ERC20 assets only
+      isEthChain(sourceChain) && !isEthAsset(sourceAsset)
+        ? `${txtNeedsConnected} ${intl.formatMessage(
+            {
+              id: 'ledger.blindsign'
+            },
+            { chain: chainAsString }
+          )}`
+        : txtNeedsConnected
+
+    const description2 = intl.formatMessage({ id: 'ledger.sign' })
+
+    const oIsDeposit = O.fromPredicate<ModalState>((v) => v === 'withdraw')(showLedgerModal)
+
+    const addresses = FP.pipe(
+      sequenceTOption(oIsDeposit, oWithdrawSaverParams),
+      O.chain(([_, { poolAddress, sender }]) => {
+        const recipient = poolAddress.address
+        if (useLedger) return O.some({ recipient, sender })
+        return O.none
+      })
+    )
+
+    return (
+      <LedgerConfirmationModal
+        onSuccess={onSucceess}
+        onClose={onClose}
+        visible
+        chain={sourceChain}
+        network={network}
+        description1={description1}
+        description2={description2}
+        addresses={addresses}
+      />
+    )
+  }, [showLedgerModal, sourceChain, intl, sourceAsset, oWithdrawSaverParams, network, submitApproveTx, useLedger])
+
+  // Price of asset IN fee
+  const oPriceAssetInFee: O.Option<CryptoAmount> = useMemo(() => {
+    const asset = saverFees.asset
+    const amount = saverFees.inFee.plus(liquidityFee.baseAmount).plus(outboundFee.baseAmount)
+
+    return FP.pipe(
+      PoolHelpers.getPoolPriceValue({
+        balance: { asset, amount },
+        poolDetails,
+        pricePool,
+        network
+      }),
+      O.map((amount) => new CryptoAmount(amount, pricePool.asset))
+    )
+  }, [liquidityFee, network, outboundFee, poolDetails, pricePool, saverFees.asset, saverFees.inFee])
+
+  // Price fee label
+  const priceFeesLabel = useMemo(
+    () =>
+      FP.pipe(
+        saverFeesRD,
+        RD.fold(
+          () => loadingString,
+          () => loadingString,
+          () => noDataString,
+          ({ asset: feeAsset, inFee }) => {
+            const fees = inFee.plus(liquidityFee.baseAmount).plus(outboundFee.baseAmount)
+            const fee = formatAssetAmountCurrency({
+              amount: baseToAsset(fees),
+              asset: feeAsset,
+              decimal: isUSDAsset(feeAsset) ? 2 : 6,
+              trimZeros: !isUSDAsset(feeAsset)
+            })
+            const price = FP.pipe(
+              oPriceAssetInFee,
+              O.map(({ assetAmount, asset: priceAsset }) =>
+                eqAsset(feeAsset, priceAsset)
+                  ? emptyString
+                  : formatAssetAmountCurrency({
+                      amount: assetAmount,
+                      asset: priceAsset,
+                      decimal: isUSDAsset(priceAsset) ? 2 : 6,
+                      trimZeros: !isUSDAsset(priceAsset)
+                    })
+              ),
+              O.getOrElse(() => emptyString)
+            )
+
+            return price ? `${price} (${fee})` : fee
+          }
+        )
+      ),
+
+    [saverFeesRD, liquidityFee, outboundFee, oPriceAssetInFee]
+  )
+  // label for Price in fee
+  const priceInFeeLabel = useMemo(
+    () =>
+      FP.pipe(
+        saverFeesRD,
+        RD.fold(
+          () => loadingString,
+          () => loadingString,
+          () => noDataString,
+          ({ asset: feeAsset, inFee }) => {
+            const fee = formatAssetAmountCurrency({
+              amount: baseToAsset(inFee),
+              asset: feeAsset,
+              decimal: isUSDAsset(feeAsset) ? 2 : 6,
+              trimZeros: !isUSDAsset(feeAsset)
+            })
+            const price = FP.pipe(
+              oPriceAssetInFee,
+              O.map(({ assetAmount, asset: priceAsset }) =>
+                eqAsset(feeAsset, priceAsset)
+                  ? emptyString
+                  : formatAssetAmountCurrency({
+                      amount: assetAmount,
+                      asset: priceAsset,
+                      decimal: isUSDAsset(priceAsset) ? 2 : 6,
+                      trimZeros: !isUSDAsset(priceAsset)
+                    })
+              ),
+              O.getOrElse(() => emptyString)
+            )
+
+            return price ? `${price} (${fee})` : fee
+          }
+        )
+      ),
+
+    [saverFeesRD, oPriceAssetInFee]
+  )
+  //calculating transaction time from chain & quote
+  const transactionTime: Time = useMemo(
+    () =>
+      FP.pipe(
+        sequenceTOption(oSaverWithdrawQuote),
+        O.fold(
+          () => ({}),
+          ([txDetails]) =>
+            calculateTransactionTime(
+              sourceAsset.chain,
+              {
+                outboundDelaySeconds: txDetails.outBoundDelaySeconds
+              },
+              sourceAsset // as target asset
+            )
+        )
+      ),
+    [oSaverWithdrawQuote, sourceAsset]
+  )
+
+  const renderSlider = useMemo(() => {
+    const percentage = amountToWithdrawMax1e8
+      .amount()
+      .dividedBy(saverAssetAmount.baseAmount.amount())
+      .multipliedBy(100)
+      // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
+      .decimalPlaces(0, BigNumber.ROUND_DOWN)
+      .toNumber()
+
+    const setAmountToWithdrawFromPercentValue = (percents: number) => {
+      const amountFromPercentage = saverAssetAmount.baseAmount.amount().multipliedBy(percents / 100)
+      setAmountToWithdrawMax1e8(baseAmount(amountFromPercentage, saverAssetAmount.baseAmount.decimal))
+    }
+    // Update withdrawBps based on the selected percentage
+    const newWithdrawBps = Math.floor(percentage * 100)
+    setWithdrawBps(newWithdrawBps)
+
+    return (
+      <Slider
+        key={'swap percentage slider'}
+        value={percentage}
+        onChange={setAmountToWithdrawFromPercentValue}
+        onAfterChange={reloadFeesHandler}
+        tooltipVisible
+        tipFormatter={(value) => `${value}%`}
+        withLabel
+        tooltipPlacement={'top'}
+        disabled={disableSaverAction}
+      />
+    )
+  }, [amountToWithdrawMax1e8, disableSaverAction, reloadFeesHandler, saverAssetAmount, setAmountToWithdrawMax1e8])
+
+  const oWalletAddress: O.Option<Address> = useMemo(() => {
+    return FP.pipe(
+      sequenceTOption(oSourceAssetWB),
+      O.map(([{ walletAddress }]) => walletAddress)
+    )
+  }, [oSourceAssetWB])
   const [showDetails, setShowDetails] = useState<boolean>(false)
 
   return (
@@ -87,14 +1174,13 @@ export const WithdrawSavers: React.FC<Props> = (props): JSX.Element => {
         <div className="flex flex-col">
           <AssetInput
             className="w-full"
-            amount={{ amount: amountToSendMax1e8, asset }}
-            priceAmount={priceAmountToSendMax1e8}
+            amount={{ amount: amountToWithdrawMax1e8, asset: sourceAsset }}
+            priceAmount={{ amount: priceAmountToWithdrawMax1e8.baseAmount, asset: sourceAsset }}
             assets={selectableAssets}
             network={network}
             onChangeAsset={setAsset}
-            onChange={setAmountToSendMax1e8}
+            onChange={setAmountToWithdrawMax1e8}
             onBlur={reloadFeesHandler}
-            showError={minAmountError}
             hasLedger={hasLedger}
             useLedger={useLedger}
             useLedgerHandler={onClickUseLedger}
@@ -105,20 +1191,58 @@ export const WithdrawSavers: React.FC<Props> = (props): JSX.Element => {
                   classNameButton="!text-gray2 dark:!text-gray2d"
                   classNameIcon={
                     // show warn icon if maxAmountToSwapMax <= 0
-                    maxAmountToSendMax1e8.gt(zeroBaseAmountMax1e8)
+                    maxAmountToWithdrawMax1e8.gt(zeroBaseAmountMax1e8)
                       ? `text-gray2 dark:text-gray2d`
                       : 'text-warning0 dark:text-warning0d'
                   }
                   size="medium"
-                  balance={{ amount: maxAmountToSendMax1e8, asset }}
-                  onClick={() => setAmountToSendMax1e8(maxAmountToSendMax1e8)}
+                  balance={{ amount: maxAmountToWithdrawMax1e8, asset: sourceAsset }}
+                  onClick={() => setAmountToWithdrawMax1e8(maxAmountToWithdrawMax1e8)}
                   maxInfoText={maxBalanceInfoTxt}
                 />
-                {minAmountError && renderMinAmount}
               </div>
             }
           />
+          <div className="w-full px-20px">{renderSlider}</div>
+          <div className="flex flex-col items-center justify-between py-30px">
+            {renderIsApprovedError}
+            {(walletBalancesLoading || checkIsApproved) && (
+              <LoadingView
+                className="mb-20px"
+                label={
+                  // We show only one loading state at time
+                  // Order matters: Show states with shortest loading time before others
+                  // (approve state takes just a short time to load, but needs to be displayed)
+                  checkIsApproved
+                    ? intl.formatMessage({ id: 'common.approve.checking' }, { asset: sourceAsset.ticker })
+                    : walletBalancesLoading
+                    ? intl.formatMessage({ id: 'common.balance.loading' })
+                    : undefined
+                }
+              />
+            )}
+            {isApproved ? (
+              <></>
+            ) : (
+              <>
+                {renderApproveFeeError}
+                {renderApproveError}
+                <FlatButton
+                  className="mb-20px min-w-[200px]"
+                  size="large"
+                  color="warning"
+                  disabled={disableSubmitApprove}
+                  onClick={onApprove}
+                  loading={RD.isPending(approveState)}>
+                  {intl.formatMessage({ id: 'common.approve' })}
+                </FlatButton>
 
+                {!RD.isInitial(uiApproveFeesRD) && (
+                  <Fees fees={uiApproveFeesRD} reloadFees={reloadApproveFeesHandler} />
+                )}
+              </>
+            )}
+          </div>
           <div className="flex flex-col items-center justify-center">
             <FlatButton
               className="my-30px min-w-[200px]"
@@ -165,14 +1289,54 @@ export const WithdrawSavers: React.FC<Props> = (props): JSX.Element => {
                     <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
                     <div>
                       {formatAssetAmountCurrency({
-                        amount: assetAmount(0),
+                        amount: assetAmount(0), // affiliate is set to zero
                         asset: pricePool.asset,
                         decimal: 0
                       })}
                     </div>
                   </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'common.liquidity' })}</div>
+                    <div>{liquidityFee.formatedAssetString()}</div>
+                  </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'common.fee.outbound' })}</div>
+                    <div>{outboundFee.formatedAssetString()}</div>
+                  </div>
                 </>
               )}
+              {/* Withdraw saver transaction time, inbound / outbound / confirmations */}
+              <>
+                <div
+                  className={`flex w-full justify-between ${showDetails ? 'pt-10px' : ''} font-mainBold text-[14px]`}>
+                  <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
+                  <div>
+                    {formatSwapTime(
+                      Number(transactionTime.inbound) +
+                        Number(transactionTime.outbound) +
+                        Number(transactionTime.confirmation)
+                    )}
+                  </div>
+                </div>
+                {showDetails && (
+                  <>
+                    <div className="flex w-full justify-between pl-10px text-[12px]">
+                      <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.inbound.time' })}</div>
+                      <div>{formatSwapTime(Number(transactionTime.inbound))}</div>
+                    </div>
+                    <div className="flex w-full justify-between pl-10px text-[12px]">
+                      <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.outbound.time' })}</div>
+                      <div>{formatSwapTime(Number(transactionTime.outbound))}</div>
+                    </div>
+                    <div className="flex w-full justify-between pl-10px text-[12px]">
+                      <div className={`flex items-center`}>
+                        {intl.formatMessage({ id: 'common.confirmation.time' }, { chain: sourceAsset.chain })}
+                      </div>
+                      <div>{formatSwapTime(Number(transactionTime.confirmation))}</div>
+                    </div>
+                  </>
+                )}
+              </>
 
               {/* addresses */}
               {showDetails && (
@@ -197,7 +1361,7 @@ export const WithdrawSavers: React.FC<Props> = (props): JSX.Element => {
                   </div>
                   {/* inbound address */}
                   {FP.pipe(
-                    oEarnParams,
+                    oWithdrawSaverParams,
                     O.map(({ poolAddress: { address } }) =>
                       address ? (
                         <div className="flex w-full items-center justify-between pl-10px text-[12px]" key="pool-addr">
@@ -232,8 +1396,8 @@ export const WithdrawSavers: React.FC<Props> = (props): JSX.Element => {
                       {walletBalancesLoading
                         ? loadingString
                         : formatAssetAmountCurrency({
-                            amount: baseToAsset(amountToSendMax1e8),
-                            asset,
+                            amount: baseToAsset(sourceAssetAmount),
+                            asset: sourceAsset,
                             decimal: 8,
                             trimZeros: true
                           })}
@@ -244,12 +1408,27 @@ export const WithdrawSavers: React.FC<Props> = (props): JSX.Element => {
               {/* memo */}
               {showDetails && (
                 <>
-                  <div className="ml-[-2px] flex w-full items-start pt-10px font-mainBold text-[14px]">{memoTitle}</div>
-                  <div className="truncate pl-10px font-main text-[12px]">{memoLabel}</div>
+                  <div className={`w-full pt-10px font-mainBold text-[14px]`}>
+                    {intl.formatMessage({ id: 'common.memo' })}
+                  </div>
+                  <div className="truncate pl-10px font-main text-[12px]">
+                    {FP.pipe(
+                      oWithdrawSaverParams,
+                      O.map(({ memo }) => (
+                        <Tooltip title={memo} key="tooltip-asset-memo">
+                          {hidePrivateData ? hiddenString : memo}
+                        </Tooltip>
+                      )),
+                      O.toNullable
+                    )}
+                  </div>
                 </>
               )}
             </div>
           </div>
+          {renderPasswordConfirmationModal}
+          {renderLedgerConfirmationModal}
+          {renderTxModal}
         </div>
       </div>
     </div>

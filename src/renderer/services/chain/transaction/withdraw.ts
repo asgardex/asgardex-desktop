@@ -13,8 +13,8 @@ import { liveData } from '../../../helpers/rx/liveData'
 import { observableState } from '../../../helpers/stateHelper'
 import { service as midgardService } from '../../midgard/service'
 import { INITIAL_WITHDRAW_STATE, ChainTxFeeOption } from '../const'
-import { AsymWithdrawParams, SymWithdrawParams, WithdrawState, WithdrawState$ } from '../types'
-import { sendTx$, poolTxStatusByChain$, sendPoolTx$ } from './common'
+import { SaverWithdrawParams, SymWithdrawParams, WithdrawState, WithdrawState$ } from '../types'
+import { poolTxStatusByChain$, sendPoolTx$ } from './common'
 import { smallestAmountToSent } from './transaction.helper'
 
 const { pools: midgardPoolsService, validateNode$ } = midgardService
@@ -127,7 +127,7 @@ export const symWithdraw$ = ({ memo, network, walletType, walletIndex, hdMode }:
 }
 
 /**
- * Asymmetrical withdraw stream does 3 steps:
+ * Saver withdraw stream does 3 steps:
  *
  * 1. Validate pool address or node
  * 2. Send withdraw transaction
@@ -136,15 +136,15 @@ export const symWithdraw$ = ({ memo, network, walletType, walletIndex, hdMode }:
  * @returns WithdrawState$ - Observable state to reflect loading status. It provides all data we do need to display status in `TxModal`
  *
  */
-export const asymWithdraw$ = ({
+export const saverWithdraw$ = ({
   poolAddress,
   asset,
   memo,
-  network,
+  amount,
   walletIndex,
   hdMode,
   walletType
-}: AsymWithdrawParams): WithdrawState$ => {
+}: SaverWithdrawParams): WithdrawState$ => {
   // total of progress
   const total = O.some(100)
   const { chain } = asset
@@ -162,7 +162,7 @@ export const asymWithdraw$ = ({
   })
 
   // All requests will be done in a sequence
-  // to update `SymWithdrawState` step by step
+  // to update `SaverWithdrawState` step by step
   const requests$ = Rx.of(poolAddress).pipe(
     // 1. validate pool address or node
     RxOp.switchMap((poolAddresses) =>
@@ -174,16 +174,17 @@ export const asymWithdraw$ = ({
         midgardPoolsService.validatePool$(poolAddresses, chain)
       )
     ),
-    // 2. send RUNE withdraw txs
+    // 2. send asset withdraw txs
     liveData.chain((_) => {
       setState({ ...getState(), step: 2, withdraw: RD.progress({ loaded: 50, total }) })
-      return sendTx$({
+      return sendPoolTx$({
         walletType,
         walletIndex,
         hdMode,
+        router: poolAddress.router,
         asset,
         recipient: poolAddress.address, // it will be empty string for RUNE
-        amount: smallestAmountToSent(chain, network),
+        amount: amount, // parse in value from thornode withdraw quote dustAmount
         memo,
         feeOption: ChainTxFeeOption.WITHDRAW
       })

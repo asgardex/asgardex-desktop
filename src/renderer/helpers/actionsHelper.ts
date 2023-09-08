@@ -15,8 +15,6 @@ const getTxTypeI18nKey = (type: MidgardTxType): CommonMessageKey | undefined => 
       return 'common.tx.type.donate'
     case 'REFUND':
       return 'common.tx.type.refund'
-    case 'SWITCH':
-      return 'common.tx.type.upgrade'
   }
 }
 

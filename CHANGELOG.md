@@ -1,3 +1,27 @@
+# 1.20.4 (2023-09-08)
+
+## Add
+
+- [ADD: Savers withdraw] [#20](https://github.com/asgardex/asgardex-desktop/issues/20)
+- [Add Affiliate tracking for Savers] [#22](https://github.com/asgardex/asgardex-desktop/issues/22)
+- [Add: Savers Tab] [#31](https://github.com/asgardex/asgardex-desktop/issues/31)
+
+## Update / Fix
+
+- [ADD: Better TX Page View/Copy] [#15](https://github.com/asgardex/asgardex-desktop/issues/15)
+- 'Shares' renamed to 'LP Shares'
+- [Wallet View no function for USDC] [#21](https://github.com/asgardex/asgardex-desktop/issues/21)
+- Updated Swap Details and Earn / Withdraw Details
+- [Update Swap SS price efficiency and bar to reflect user input] [#26](https://github.com/asgardex/asgardex-desktop/issues/26)
+- [Error NO PROVIDER ABLE TO GET BALANCE] [#19](https://github.com/asgardex/asgardex-desktop/issues/19)
+
+## Internal
+
+- [REMOVE: Upgrade function] [#24](https://github.com/asgardex/asgardex-desktop/issues/24)
+- Add sliders to Savers Earn and Withdraw
+- Changed default exploer from viewblock to thorchain.net
+- Note: Ledger not fully supported for Savers [#15](https://github.com/asgardex/asgardex-desktop/issues/15)
+
 # 1.20.3 (2023-08-26)
 
 ## Add

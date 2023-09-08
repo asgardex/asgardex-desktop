@@ -9,8 +9,7 @@ const halt: HaltMessages = {
   'halt.chain.pause':
     'Les activités de liquidité (ajouter/retirer) pour la(es) chaîne(s) {chains} sont temporairement désactivées.',
   'halt.chain.pauseall':
-    'Les activités de liquidité (ajouter/retirer) pour toutes les chaînes ont été temporairement désactivées.',
-  'halt.chain.upgrade': 'La mise à jour pour {chains} est temporairement désactivée pour maintenance.'
+    'Les activités de liquidité (ajouter/retirer) pour toutes les chaînes ont été temporairement désactivées.'
 }
 
 export default halt

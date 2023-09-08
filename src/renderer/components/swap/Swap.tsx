@@ -9,7 +9,13 @@ import {
   MagnifyingGlassPlusIcon
 } from '@heroicons/react/24/outline'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
-import { CryptoAmount, QuoteSwapParams, ThorchainQuery, TxDetails } from '@xchainjs/xchain-thorchain-query'
+import {
+  CryptoAmount,
+  QuoteSwapParams,
+  ThorchainQuery,
+  TxDetails
+  // ChainAttributes
+} from '@xchainjs/xchain-thorchain-query'
 import {
   Asset,
   baseToAsset,
@@ -56,6 +62,7 @@ import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { liveData, LiveData } from '../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../helpers/stringHelper'
+import { calculateTransactionTime, formatSwapTime, Time } from '../../helpers/timeHelper'
 import {
   filterWalletBalancesByAssets,
   getWalletBalanceByAssetAndWalletType,
@@ -767,7 +774,6 @@ export const Swap = ({
       slipTolerance
     ]
   )
-
   const debouncedEffect = useRef(
     debounce((quoteSwapData) => {
       // Include isStreaming as a parameter
@@ -785,7 +791,6 @@ export const Swap = ({
 
   useEffect(() => {
     const currentDebouncedEffect = debouncedEffect.current
-
     FP.pipe(
       oQuoteSwapData,
       O.fold(
@@ -799,7 +804,6 @@ export const Swap = ({
         }
       )
     )
-
     // Clean up the debounced function
     return () => {
       currentDebouncedEffect.cancel()
@@ -818,6 +822,7 @@ export const Swap = ({
       ),
     [oQuote]
   )
+
   // Reccommend amount in for use later
   const reccommendedAmountIn: CryptoAmount = useMemo(
     () =>
@@ -890,18 +895,6 @@ export const Swap = ({
         O.fold(
           () => 0,
           ([txDetails]) => txDetails.txEstimate.maxStreamingQuantity
-        )
-      ),
-    [oQuote]
-  )
-  // Swap streaming result from thornode
-  const totalSwapSeconds: number = useMemo(
-    () =>
-      FP.pipe(
-        sequenceTOption(oQuote),
-        O.fold(
-          () => 0,
-          ([txDetails]) => txDetails.txEstimate.totalSwapSeconds
         )
       ),
     [oQuote]
@@ -1181,8 +1174,8 @@ export const Swap = ({
 
   const minAmountError = useMemo(() => {
     if (isZeroAmountToSwap) return false
-
-    return amountToSwapMax1e8.lt(reccommendedAmountIn.baseAmount)
+    const convertReccomended = convertBaseAmountDecimal(reccommendedAmountIn.baseAmount, amountToSwapMax1e8.decimal) // needed to make sure comparision is accurate
+    return amountToSwapMax1e8.lt(convertReccomended)
   }, [amountToSwapMax1e8, isZeroAmountToSwap, reccommendedAmountIn])
 
   const renderMinAmount = useMemo(
@@ -1223,7 +1216,7 @@ export const Swap = ({
 
   const setAmountToSwapMax1e8 = useCallback(
     (amountToSwap: BaseAmount) => {
-      const newAmount = baseAmount(amountToSwap.amount(), maxAmountToSwapMax1e8.decimal)
+      const newAmount = baseAmount(amountToSwap.amount(), sourceAssetAmountMax1e8.decimal)
 
       // dirty check - do nothing if prev. and next amounts are equal
       if (eqBaseAmount.equals(newAmount, amountToSwapMax1e8)) return {}
@@ -1239,7 +1232,7 @@ export const Swap = ({
        */
       _setAmountToSwapMax1e8({ ...newAmountToSwap })
     },
-    [amountToSwapMax1e8, maxAmountToSwapMax1e8]
+    [amountToSwapMax1e8, maxAmountToSwapMax1e8, sourceAssetAmountMax1e8]
   )
 
   /**
@@ -1345,24 +1338,24 @@ export const Swap = ({
       setIsStreaming(streamingIntervalValue !== 0)
     }
     const tipFormatter = slider === 0 ? 'Instant swap' : `${Math.floor(slider / 10)} Block interval between swaps`
-    const labelMin = slider <= 0 ? `Instant Swap` : `` || slider <= 50 ? 'Time Optimised' : ''
-    const labelMax = slider >= 50 ? `Price Optimised` : ``
+    const labelMin = slider <= 0 ? `Instant Swap` : `` || slider < 50 ? 'Time Optimised' : `Price Optimised`
+
     return (
       <div>
         <Slider
           key={'Streamer Interval slider'}
           value={slider}
           onChange={setInterval}
-          tooltipVisible
+          included={false}
           max={100}
+          tooltipVisible
           tipFormatter={() => `${tipFormatter} `}
-          withLabel={true}
-          labels={[`${labelMin}`, `${labelMax}`]}
+          labels={[`${labelMin}`, `${streamingInterval}`]}
           tooltipPlacement={'top'}
         />
       </div>
     )
-  }, [slider])
+  }, [slider, streamingInterval])
 
   // Streaming Quantity slider
   const renderStreamerQuantity = useMemo(() => {
@@ -1370,13 +1363,13 @@ export const Swap = ({
     const setQuantity = (quantity: number) => {
       setStreamingQuantity(quantity)
     }
-    let quantityLabel: string
+    let quantityLabel: string[]
     let toolTip: string
     if (streamingInterval === 0) {
-      quantityLabel = `Instant swap`
+      quantityLabel = [`Instant swap`]
       toolTip = `No Streaming interval set`
     } else {
-      quantityLabel = quantity === 0 ? `Auto swap count` : `Sub swaps ${quantity}`
+      quantityLabel = quantity === 0 ? [`Auto swap count`] : [`Sub swaps`, `${quantity}`]
       toolTip =
         quantity === 0
           ? `Thornode decides the swap count`
@@ -1390,11 +1383,11 @@ export const Swap = ({
           key={'Streamer Quantity slider'}
           value={quantity}
           onChange={setQuantity}
-          tooltipVisible
           max={maxStreamingQuantity}
+          tooltipVisible
           tipFormatter={() => `${toolTip}`}
-          withLabel={true}
-          labels={[`${quantityLabel}`]}
+          included={false}
+          labels={quantityLabel}
           tooltipPlacement={'top'}
         />
       </div>
@@ -1404,24 +1397,34 @@ export const Swap = ({
   // Progress bar for swap return comparison
   const renderStreamerReturns = useMemo(() => {
     // calculate difference=(swapCount−1)/swapCount
-    const percentageDifference = (((maxStreamingQuantity - 1) / maxStreamingQuantity) * 100).toFixed(2)
+    //const priceExecution = streamingQuantity === 0 ? maxStreamingQuantity : streamingQuantity
+    // Initialize percentageDifference
+    let percentageDifference = 0
 
-    const swapAmount = swapResultAmountMax.assetAmount.amount().toFixed(3)
-    const swapAmountStreaming = swapStreamingNetOutput.assetAmount.amount().toFixed(3)
-    const swapStreamingLabel =
-      percentageDifference === '-Infinity' ? '' : `${swapAmountStreaming} vs ${swapAmount} ${targetAsset.ticker}`
-    const streamerComparison = percentageDifference === '-Infinity' ? 'Instant swap' : `${percentageDifference}% `
+    // Check if swapSlippage is not zero to avoid division by zero
+    if (swapSlippage !== 0) {
+      percentageDifference = ((swapSlippage - swapStreamingSlippage) / swapSlippage) * 100
+    }
+
+    // Check if percentageDifference is a number
+    const isPercentageValid = !isNaN(percentageDifference) && isFinite(percentageDifference)
+
+    const streamerComparison = isPercentageValid
+      ? percentageDifference <= 1
+        ? 'Instant swap'
+        : `${percentageDifference.toFixed(2)}% Better swap execution via streaming`
+      : 'Invalid or zero slippage' // Default message for invalid or zero slippage
 
     return (
       <ProgressBar
         key={'Streamer Interval progress bar'}
-        percent={Number(percentageDifference)}
+        percent={percentageDifference}
         withLabel={true}
-        labels={[`${streamerComparison}`, `${swapStreamingLabel}`]}
+        labels={[`${streamerComparison}`, ``]}
         tooltipPlacement={'top'}
       />
     )
-  }, [swapStreamingNetOutput, swapResultAmountMax, targetAsset, maxStreamingQuantity])
+  }, [swapSlippage, swapStreamingSlippage])
 
   const submitSwapTx = useCallback(() => {
     FP.pipe(
@@ -1545,7 +1548,7 @@ export const Swap = ({
     const txModalTitle = FP.pipe(
       swap,
       RD.fold(
-        () => 'swap.state.pending',
+        () => 'swap.state.sending',
         () => 'swap.state.pending',
         () => 'swap.state.error',
         () => 'swap.state.success'
@@ -2052,16 +2055,27 @@ export const Swap = ({
       ),
     [oSwapParams]
   )
-
-  const formatSwapTime = (totalSwapSeconds: number) => {
-    if (totalSwapSeconds < 60) {
-      return `${totalSwapSeconds} seconds`
-    } else if (totalSwapSeconds < 3600) {
-      return `${Math.floor(totalSwapSeconds / 60)} minutes`
-    } else {
-      return `${totalSwapSeconds / 60 / 60} hours`
-    }
-  }
+  // Time of transaction from source chain and quote details
+  const transactionTime: Time = useMemo(
+    () =>
+      FP.pipe(
+        sequenceTOption(oQuote),
+        O.fold(
+          () => ({}),
+          ([txDetails]) =>
+            calculateTransactionTime(
+              sourceChain,
+              {
+                outboundDelaySeconds: txDetails.txEstimate.outboundDelaySeconds,
+                totalTransactionSeconds: txDetails.txEstimate.totalSwapSeconds,
+                streamingTransactionSeconds: txDetails.txEstimate.streamingSwapSeconds
+              },
+              targetAsset
+            )
+        )
+      ),
+    [oQuote, sourceChain, targetAsset]
+  )
 
   const maxBalanceInfoTxt = useMemo(() => {
     const balanceLabel = formatAssetAmountCurrency({
@@ -2421,21 +2435,47 @@ export const Swap = ({
                           </div>
                           <div>{streamingQuantity}</div>
                         </div>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div className={`flex items-center`}>
-                            {intl.formatMessage({ id: 'swap.streaming.time' })}
-                            <InfoIcon
-                              className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                              tooltip={intl.formatMessage({ id: 'swap.streaming.time.info' })}
-                            />
-                          </div>
-                          <div>{formatSwapTime(totalSwapSeconds)}</div>
-                        </div>
                       </>
                     )}
                   </>
                 )}
-
+                {/* Swap Time Inbound / swap / Outbound */}
+                <>
+                  <div
+                    className={`flex w-full justify-between ${showDetails ? 'pt-10px' : ''} font-mainBold text-[14px]`}>
+                    <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
+                    <div>
+                      {formatSwapTime(
+                        Number(transactionTime.totalSwap) +
+                          Number(transactionTime.inbound) +
+                          Number(transactionTime.streaming) +
+                          Number(transactionTime.confirmation)
+                      )}
+                    </div>
+                  </div>
+                  {showDetails && (
+                    <>
+                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                        <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.inbound.time' })}</div>
+                        <div>{formatSwapTime(Number(transactionTime.inbound))}</div>
+                      </div>
+                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                        <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.streaming.time' })}</div>
+                        <div>{formatSwapTime(Number(transactionTime.streaming))}</div>
+                      </div>
+                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                        <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.outbound.time' })}</div>
+                        <div>{formatSwapTime(Number(transactionTime.outbound))}</div>
+                      </div>
+                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                        <div className={`flex items-center`}>
+                          {intl.formatMessage({ id: 'common.confirmation.time' }, { chain: targetAsset.chain })}
+                        </div>
+                        <div>{formatSwapTime(Number(transactionTime.confirmation))}</div>
+                      </div>
+                    </>
+                  )}
+                </>
                 {/* addresses */}
                 {showDetails && (
                   <>

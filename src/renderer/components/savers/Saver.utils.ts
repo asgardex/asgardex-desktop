@@ -3,7 +3,7 @@ import { Asset, BaseAmount, baseAmount } from '@xchainjs/xchain-util'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { isChainAsset, max1e8BaseAmount } from '../../helpers/assetHelper'
 import { getChainAsset } from '../../helpers/chainHelper'
-import { AsymDepositFees } from '../../services/chain/types'
+import { SaverDepositFees, WithdrawAssetFees } from '../../services/chain/types'
 
 /**
  * Calculates max. balance available to swap
@@ -33,11 +33,21 @@ export const maxAmountToSendMax1e8 = ({
  * Returns zero sym deposit fees
  * by given paired asset to deposit
  */
-export const getZeroSaverDepositFees = (asset: Asset): AsymDepositFees => ({
+export const getZeroSaverDepositFees = (asset: Asset): SaverDepositFees => ({
   asset: {
     asset: getChainAsset(asset.chain),
     inFee: ZERO_BASE_AMOUNT,
     outFee: ZERO_BASE_AMOUNT,
     refundFee: ZERO_BASE_AMOUNT
   }
+})
+
+/**
+ * Returns zero sym deposit fees
+ * by given paired asset to deposit
+ */
+export const getZeroSaverWithdrawFees = (asset: Asset): WithdrawAssetFees => ({
+  asset,
+  inFee: ZERO_BASE_AMOUNT,
+  outFee: ZERO_BASE_AMOUNT
 })

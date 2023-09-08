@@ -165,7 +165,6 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
         mimirHalt
       })
 
-      // TODO(@veado) Enable savers
       const _disabled = disableAllPoolActions || disableTradingActions || disablePoolActions || walletLocked
 
       const onClickHandler = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
@@ -177,7 +176,7 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
       return (
         <div className="relative flex flex-col items-center justify-center">
           <FlatButton className="min-w-[120px]" disabled={false} size="normal" onClick={onClickHandler}>
-            {intl.formatMessage({ id: 'common.manage' })}
+            {intl.formatMessage({ id: 'common.earn' })}
           </FlatButton>
         </div>
       )
