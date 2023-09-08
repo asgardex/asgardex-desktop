@@ -1,9 +1,9 @@
-# 1.20.4 (2023-09-09)
+# 1.20.4 (2023-09-08)
 
 ## Add
 
 - [ADD: Savers withdraw] [#20](https://github.com/asgardex/asgardex-desktop/issues/20)
-- [Add Affiliate for Savers] [#22](https://github.com/asgardex/asgardex-desktop/issues/22)
+- [Add Affiliate tracking for Savers] [#22](https://github.com/asgardex/asgardex-desktop/issues/22)
 - [Add: Savers Tab] [#31](https://github.com/asgardex/asgardex-desktop/issues/31)
 
 ## Update / Fix
@@ -18,6 +18,9 @@
 ## Internal
 
 - [REMOVE: Upgrade function] [#24](https://github.com/asgardex/asgardex-desktop/issues/24)
+- Add sliders to Savers Earn and Withdraw
+- Changed default exploer from viewblock to thorchain.net
+- Note: Ledger not fully supported for Savers [#15](https://github.com/asgardex/asgardex-desktop/issues/15)
 
 # 1.20.3 (2023-08-26)
 
