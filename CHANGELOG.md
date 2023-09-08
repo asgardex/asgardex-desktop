@@ -4,11 +4,16 @@
 
 - [ADD: Savers withdraw] [#20](https://github.com/asgardex/asgardex-desktop/issues/20)
 - [Add Affiliate for Savers] [#22](https://github.com/asgardex/asgardex-desktop/issues/22)
+- [Add: Savers Tab] [#31](https://github.com/asgardex/asgardex-desktop/issues/31)
 
-## Update
+## Update / Fix
 
-- [Update Swap SS price efficiency and bar to reflect user input] [#26](https://github.com/asgardex/asgardex-desktop/issues/26)
+- [ADD: Better TX Page View/Copy] [#15](https://github.com/asgardex/asgardex-desktop/issues/15)
 - 'Shares' renamed to 'LP Shares'
+- [Wallet View no function for USDC] [#21](https://github.com/asgardex/asgardex-desktop/issues/21)
+- Updated Swap Details and Earn / Withdraw Details
+- [Update Swap SS price efficiency and bar to reflect user input] [#26](https://github.com/asgardex/asgardex-desktop/issues/26)
+- [Error NO PROVIDER ABLE TO GET BALANCE] [#19](https://github.com/asgardex/asgardex-desktop/issues/19)
 
 ## Internal
 
