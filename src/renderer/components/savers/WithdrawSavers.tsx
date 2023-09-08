@@ -1330,7 +1330,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
                     </div>
                     <div className="flex w-full justify-between pl-10px text-[12px]">
                       <div className={`flex items-center`}>
-                        {intl.formatMessage({ id: 'common.confirmation.time' })}
+                        {intl.formatMessage({ id: 'common.confirmation.time' }, { chain: sourceAsset.chain })}
                       </div>
                       <div>{formatSwapTime(Number(transactionTime.confirmation))}</div>
                     </div>
