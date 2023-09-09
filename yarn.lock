@@ -6855,14 +6855,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-client@npm:^0.13.6":
-  version: 0.13.6
-  resolution: "@xchainjs/xchain-client@npm:0.13.6"
+"@xchainjs/xchain-client@npm:^0.14.1":
+  version: 0.14.1
+  resolution: "@xchainjs/xchain-client@npm:0.14.1"
   peerDependencies:
-    "@xchainjs/xchain-crypto": ^0.2.6
-    "@xchainjs/xchain-util": ^0.12.0
-    axios: ^0.25.0
-  checksum: 9234b6db6c500eb44251cbb149ba0df456079bf29674362a30e2a4b13402e4155438f5108341581fb3173358342fa99f8ddaa376dca0d6db9caa8d7e8d947c52
+    "@xchainjs/xchain-crypto": ^0.3.0
+    "@xchainjs/xchain-util": ^0.13.0
+    axios: ^1.3.6
+  checksum: 7bd2fc609b8ca20fc8615779cb87c673d39f0f993e0f6617990699f144985783203792a8b90e6172b8bba10bd888ffadbba0df414080cd4e6aa7e809b085dd3e
   languageName: node
   linkType: hard
 
@@ -6879,17 +6879,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-crypto@npm:^0.2.7":
-  version: 0.2.7
-  resolution: "@xchainjs/xchain-crypto@npm:0.2.7"
+"@xchainjs/xchain-crypto@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "@xchainjs/xchain-crypto@npm:0.3.0"
   dependencies:
     bech32: ^2.0.0
     bip39: ^3.1.0
     crypto-js: ^4.1.1
-    foundry-primitives: ^0.2.1
+    foundry-primitives-xchainjs: "github:xchainjs/foundry-primitives-js#master"
     hdkey: ^2.1.0
     uuid: ^9.0.0
-  checksum: 7f0b2ee87eee3eb3098fded871d0bdae5b0cae2d4c782c7b3779cabc6e1df35774d4c8e6e058006913056dad771076b310ab35487136d97d0532dc15ec12339d
+  checksum: 90661240d67036a7466a53b6da9d1fc1bd5255f930bf93d8f15c3ab35c5574fd045214d89723cf1839f8ad702881b6c9b2dd917541108621432aa1417be3e6f0
   languageName: node
   linkType: hard
 
@@ -7814,9 +7814,9 @@ __metadata:
     "@xchainjs/xchain-binance": ^5.6.7
     "@xchainjs/xchain-bitcoin": ^0.21.1
     "@xchainjs/xchain-bitcoincash": ^0.15.9
-    "@xchainjs/xchain-client": ^0.13.6
+    "@xchainjs/xchain-client": ^0.14.1
     "@xchainjs/xchain-cosmos": 0.21.2
-    "@xchainjs/xchain-crypto": ^0.2.7
+    "@xchainjs/xchain-crypto": ^0.3.0
     "@xchainjs/xchain-doge": ^0.5.10
     "@xchainjs/xchain-ethereum": ^0.27.7
     "@xchainjs/xchain-litecoin": ^0.11.1
@@ -13755,9 +13755,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"foundry-primitives@npm:^0.2.1":
+"foundry-primitives-xchainjs@github:xchainjs/foundry-primitives-js#master":
   version: 0.2.1
-  resolution: "foundry-primitives@npm:0.2.1"
+  resolution: "foundry-primitives-xchainjs@https://github.com/xchainjs/foundry-primitives-js.git#commit=cc69da563d0a4b29adf70f1e75cccab1ca3752c0"
   dependencies:
     bignumber.js: ^7.2.1
     blakejs: ^1.1.0
@@ -13766,11 +13766,11 @@ __metadata:
     crypto-js: ^3.1.9-1
     elliptic: ^6.4.1
     hmac-drbg: ^1.0.1
-    lodash: ^4.17.14
-    node-forge: ^0.7.6
+    lodash: ^4.17.21
+    node-forge: ^1.3.1
     rlp: ^2.1.0
     tweetnacl: ^1.0.3
-  checksum: 5a228c4c672861c61a6957793777220e4eaf4665ea9844167c0912a07179e135b27916d175001f7023bdc72686861d01608ffe36f745b35f05b30fa26a0eb31a
+  checksum: 00bd4a0886c3fed64ce1de74dcf5c35295325163073e2048b617fbe4833ea554c4f238d23c341e702264d4295943e1268c1943ba354187f7f1f501be07339391
   languageName: node
   linkType: hard
 
@@ -17830,7 +17830,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:4.17.21, lodash@npm:4.6.1 || ^4.16.1, lodash@npm:^4.14.0, lodash@npm:^4.17.10, lodash@npm:^4.17.11, lodash@npm:^4.17.13, lodash@npm:^4.17.14, lodash@npm:^4.17.15, lodash@npm:^4.17.19, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.17.4, lodash@npm:^4.7.0":
+"lodash@npm:4.17.21, lodash@npm:4.6.1 || ^4.16.1, lodash@npm:^4.14.0, lodash@npm:^4.17.10, lodash@npm:^4.17.11, lodash@npm:^4.17.13, lodash@npm:^4.17.15, lodash@npm:^4.17.19, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.17.4, lodash@npm:^4.7.0":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: eb835a2e51d381e561e508ce932ea50a8e5a68f4ebdd771ea240d3048244a8d13658acbd502cd4829768c56f2e16bdd4340b9ea141297d472517b83868e677f7
@@ -19293,14 +19293,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-forge@npm:^0.7.6":
-  version: 0.7.6
-  resolution: "node-forge@npm:0.7.6"
-  checksum: 661d420847da736d82f3aad0e8ad2b5fceddc4bd5f4065b923c566e9fd68e568509677374f101c1f4321c541dcbef0864516a2a55ff03a9236d0895195dfa7aa
-  languageName: node
-  linkType: hard
-
-"node-forge@npm:^1":
+"node-forge@npm:^1, node-forge@npm:^1.3.1":
   version: 1.3.1
   resolution: "node-forge@npm:1.3.1"
   checksum: 08fb072d3d670599c89a1704b3e9c649ff1b998256737f0e06fbd1a5bf41cae4457ccaee32d95052d80bbafd9ffe01284e078c8071f0267dc9744e51c5ed42a9

@@ -7,6 +7,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
+import { from } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { ENABLED_CHAINS } from '../../../shared/utils/chain'
@@ -40,34 +41,34 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
   const pricePool = usePricePool()
   const poolsStateRD = useObservableState(poolsState$, RD.initial)
 
-  const [cachedSaverProviders, setCachedSaverProviders] = useState<Record<string, SaverProviderRD>>({})
   const [allSaverProviders, setAllSaverProviders] = useState<Record<string, SaverProviderRD>>({}) // to store the SaverProviderRD for each chain
 
   useEffect(() => {
-    if (Object.keys(cachedSaverProviders).length === 0) {
-      const subscriptions = ENABLED_CHAINS.map((chain) => {
-        const asset = getChainAsset(chain)
-        return addressByChain$(chain)
-          .pipe(RxOp.map(addressFromOptionalWalletAddress))
-          .subscribe((addressOpt) => {
+    const subscriptions = ENABLED_CHAINS.map((chain) => {
+      const asset = getChainAsset(chain)
+      return addressByChain$(chain)
+        .pipe(
+          RxOp.map(addressFromOptionalWalletAddress),
+          RxOp.switchMap((addressOpt) => {
             if (O.isSome(addressOpt)) {
               const address = addressOpt.value
-              // Assuming `getSaverProvider$` can work with other chains as well, not just THORChain.
-              const subscription = getSaverProvider$(asset, address).subscribe((saverProvider) => {
-                setCachedSaverProviders((prev) => ({ ...prev, [chain]: saverProvider }))
-              })
-              return subscription
+              return getSaverProvider$(asset, address)
             }
+            // return an observable that emits `null` or some default value
+            return from([null])
           })
-      })
-      // Cleanup
-      return () => {
-        subscriptions.forEach((sub) => sub.unsubscribe())
-      }
-    } else {
-      setAllSaverProviders(cachedSaverProviders) // use cached data
+        )
+        .subscribe((saverProvider) => {
+          if (saverProvider !== null) {
+            setAllSaverProviders((prev) => ({ ...prev, [chain]: saverProvider }))
+          }
+        })
+    })
+
+    return () => {
+      subscriptions.forEach((sub) => sub.unsubscribe())
     }
-  }, [addressByChain$, cachedSaverProviders, getSaverProvider$])
+  }, [addressByChain$, getSaverProvider$])
 
   const renderLoading = () => (
     <div className="flex h-full w-full items-center justify-center">
