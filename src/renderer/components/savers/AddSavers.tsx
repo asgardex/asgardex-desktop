@@ -636,7 +636,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
           poolAddress,
           asset: asset.asset,
           amount: amountToSendMax1e8,
-          memo: saversQuote.memo.concat(`:${ASGARDEX_THORNAME}:0`), // add tracking,
+          memo: saversQuote.memo.concat(`::${ASGARDEX_THORNAME}:0`), // add tracking,
           walletType,
           sender: walletAddress,
           walletIndex,
