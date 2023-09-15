@@ -1,4 +1,4 @@
-import { ETHAddress, getTokenAddress } from '@xchainjs/xchain-ethereum'
+import { getTokenAddress } from '@xchainjs/xchain-evm'
 import {
   Address,
   Asset,
@@ -17,6 +17,7 @@ import * as P from 'fp-ts/lib/Predicate'
 import * as S from 'fp-ts/lib/string'
 
 import { Network } from '../../shared/api/types'
+import { ETHAddress } from '../../shared/ethereum/const'
 import {
   AssetATOM,
   AssetBCH,

@@ -129,15 +129,15 @@ const SuccessRouteView: React.FC<Props> = ({
   }, [reloadInboundAddresses])
 
   const sourceAssetDecimal$: AssetWithDecimalLD = useMemo(
-    () => assetWithDecimal$(sourceAsset, network),
-    [assetWithDecimal$, network, sourceAsset]
+    () => assetWithDecimal$(sourceAsset),
+    [assetWithDecimal$, sourceAsset]
   )
 
   const sourceAssetRD: AssetWithDecimalRD = useObservableState(sourceAssetDecimal$, RD.initial)
 
   const targetAssetDecimal$: AssetWithDecimalLD = useMemo(
-    () => assetWithDecimal$(targetAsset, network),
-    [assetWithDecimal$, network, targetAsset]
+    () => assetWithDecimal$(targetAsset),
+    [assetWithDecimal$, targetAsset]
   )
 
   const targetAssetRD: AssetWithDecimalRD = useObservableState(targetAssetDecimal$, RD.initial)

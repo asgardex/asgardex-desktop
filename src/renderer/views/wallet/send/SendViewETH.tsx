@@ -1,12 +1,13 @@
 import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { ETHAddress, ETHChain } from '@xchainjs/xchain-ethereum'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 
+import { ETHAddress } from '../../../../shared/ethereum/const'
 import { LoadingView } from '../../../components/shared/loading'
 import { SendFormETH } from '../../../components/wallet/txs/send/'
 import { useChainContext } from '../../../contexts/ChainContext'

@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { FeeOption, Fees, TxParams } from '@xchainjs/xchain-client'
-import { ETHChain, validateAddress } from '@xchainjs/xchain-ethereum'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { validateAddress } from '@xchainjs/xchain-evm'
 import {
   formatAssetAmountCurrency,
   bn,

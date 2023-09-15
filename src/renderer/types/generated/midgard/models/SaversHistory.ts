@@ -11,21 +11,24 @@
  * Do not edit the class manually.
  */
 
+import {
+    SaversHistoryItem,
+    SaversHistoryMeta,
+} from './';
+
 /**
  * @export
- * @interface HeightTS
+ * @interface SaversHistory
  */
-export interface HeightTS {
+export interface SaversHistory {
     /**
-     * Block height
-     * @type {number}
-     * @memberof HeightTS
+     * @type {Array<SaversHistoryItem>}
+     * @memberof SaversHistory
      */
-    height: number;
+    intervals: Array<SaversHistoryItem>;
     /**
-     * Block timestamp (seconds since epoch)
-     * @type {number}
-     * @memberof HeightTS
+     * @type {SaversHistoryMeta}
+     * @memberof SaversHistory
      */
-    timestamp: number;
+    meta: SaversHistoryMeta;
 }

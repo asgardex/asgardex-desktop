@@ -11,30 +11,39 @@
  * Do not edit the class manually.
  */
 
-import {
-    Coin,
-} from './';
-
 /**
  * @export
- * @interface Balance
+ * @interface SaversHistoryItem
  */
-export interface Balance {
+export interface SaversHistoryItem {
     /**
-     * @type {Array<Coin>}
-     * @memberof Balance
-     */
-    coins: Array<Coin>;
-    /**
-     * full timestamp (nanoseconds since 1970) of the block at which the returned balance snapshot was valid
+     * Int64, The end time of bucket in unix timestamp
      * @type {string}
-     * @memberof Balance
+     * @memberof SaversHistoryItem
      */
-    date: string;
+    endTime: string;
     /**
-     * height of the block at which the returned balance snapshot was valid
+     * Int64, Number of saver members in the pool at the end of the interval
      * @type {string}
-     * @memberof Balance
+     * @memberof SaversHistoryItem
      */
-    height: string;
+    saversCount: string;
+    /**
+     * Int64(e8), The depth in the savers vault at the end of the interval
+     * @type {string}
+     * @memberof SaversHistoryItem
+     */
+    saversDepth: string;
+    /**
+     * Int64, Savers Units in the saver vault at the end of the interval 
+     * @type {string}
+     * @memberof SaversHistoryItem
+     */
+    saversUnits: string;
+    /**
+     * Int64, The beginning time of bucket in unix timestamp
+     * @type {string}
+     * @memberof SaversHistoryItem
+     */
+    startTime: string;
 }

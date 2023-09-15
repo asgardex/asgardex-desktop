@@ -1,7 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { PoolData } from '@thorchain/asgardex-util'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
-import { ETH_DECIMAL } from '@xchainjs/xchain-ethereum'
+import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/Option'
 
@@ -336,9 +336,9 @@ describe('deposit/Deposit.helper', () => {
       const params = {
         fees: {
           asset: AssetETH,
-          inFee: assetToBase(assetAmount(0.01, ETH_DECIMAL)),
-          outFee: assetToBase(assetAmount(0.03, ETH_DECIMAL)),
-          refundFee: assetToBase(assetAmount(0.03, ETH_DECIMAL))
+          inFee: assetToBase(assetAmount(0.01, ETH_GAS_ASSET_DECIMAL)),
+          outFee: assetToBase(assetAmount(0.03, ETH_GAS_ASSET_DECIMAL)),
+          refundFee: assetToBase(assetAmount(0.03, ETH_GAS_ASSET_DECIMAL))
         },
         asset: AssetUSDTERC20Testnet,
         assetDecimal: depositAssetDecimal,

@@ -121,10 +121,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
     }
   }, [asset, setSelectedPoolAsset])
 
-  const assetDecimal$: AssetWithDecimalLD = useMemo(
-    () => assetWithDecimal$(asset, network),
-    [assetWithDecimal$, network, asset]
-  )
+  const assetDecimal$: AssetWithDecimalLD = useMemo(() => assetWithDecimal$(asset), [assetWithDecimal$, asset])
 
   const [balancesState] = useObservableState(
     () =>

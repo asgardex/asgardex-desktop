@@ -13,19 +13,19 @@
 
 /**
  * @export
- * @interface HeightTS
+ * @interface DepthHistoryItemPool
  */
-export interface HeightTS {
+export interface DepthHistoryItemPool {
     /**
-     * Block height
-     * @type {number}
-     * @memberof HeightTS
+     * asset for the given pool
+     * @type {string}
+     * @memberof DepthHistoryItemPool
      */
-    height: number;
+    pool: string;
     /**
-     * Block timestamp (seconds since epoch)
-     * @type {number}
-     * @memberof HeightTS
+     * Int64(e8) in rune, the total value in the pool (both assets and rune) at the end of the interval. Note: this is twice of the pool\'s Rune depth. (as pools are symmetrically balance) 
+     * @type {string}
+     * @memberof DepthHistoryItemPool
      */
-    timestamp: number;
+    totalDepth: string;
 }

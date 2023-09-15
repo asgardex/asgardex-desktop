@@ -12,20 +12,21 @@
  */
 
 /**
+ * action query metadata
  * @export
- * @interface HeightTS
+ * @interface ActionMeta
  */
-export interface HeightTS {
+export interface ActionMeta {
     /**
-     * Block height
-     * @type {number}
-     * @memberof HeightTS
+     * Int64, The last action event_id that can be used for pagination.  This token is needed to be given for next page. 
+     * @type {string}
+     * @memberof ActionMeta
      */
-    height: number;
+    nextPageToken: string;
     /**
-     * Block timestamp (seconds since epoch)
-     * @type {number}
-     * @memberof HeightTS
+     * Int64, The first action event_id that can be used for previous pagination. This token is needed to be given for previous page. 
+     * @type {string}
+     * @memberof ActionMeta
      */
-    timestamp: number;
+    prevPageToken: string;
 }

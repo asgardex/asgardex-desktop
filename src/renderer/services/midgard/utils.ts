@@ -9,7 +9,7 @@ import { COSMOS_DECIMAL } from '@xchainjs/xchain-cosmos'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGE_DECIMAL } from '@xchainjs/xchain-doge'
 import { DOGEChain } from '@xchainjs/xchain-doge'
-import { ETH_DECIMAL } from '@xchainjs/xchain-ethereum'
+import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTC_DECIMAL } from '@xchainjs/xchain-litecoin'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
@@ -259,7 +259,7 @@ export const getOutboundAssetFeeByChain = (
         case ETHChain: {
           return O.some({
             // Convertion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
-            amount: convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), ETH_DECIMAL),
+            amount: convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), ETH_GAS_ASSET_DECIMAL),
             asset: AssetETH
           })
         }
@@ -416,5 +416,7 @@ export const poolsPeriodToPoolPeriod = (period: GetPoolsPeriodEnum): GetPoolPeri
       return GetPoolPeriodEnum._24h
     case GetPoolsPeriodEnum._1h:
       return GetPoolPeriodEnum._1h
+    default:
+      throw new Error(`Unexpected period: ${period}`)
   }
 }

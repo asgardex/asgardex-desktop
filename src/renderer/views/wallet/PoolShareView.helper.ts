@@ -1,4 +1,5 @@
 import { getValueOfAsset1InAsset2, getValueOfRuneInAsset, PoolData } from '@thorchain/asgardex-util'
+// import { LiquidityData as PoolData } from '@xchainjs/xchain-thorchain-query'
 import { BaseAmount } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'

@@ -11,21 +11,19 @@
  * Do not edit the class manually.
  */
 
+import {
+    BorrowerPool,
+} from './';
+
 /**
  * @export
- * @interface HeightTS
+ * @interface BorrowerDetails
  */
-export interface HeightTS {
+export interface BorrowerDetails {
     /**
-     * Block height
-     * @type {number}
-     * @memberof HeightTS
+     * List details of all the loans identified with the given address
+     * @type {Array<BorrowerPool>}
+     * @memberof BorrowerDetails
      */
-    height: number;
-    /**
-     * Block timestamp (seconds since epoch)
-     * @type {number}
-     * @memberof HeightTS
-     */
-    timestamp: number;
+    pools: Array<BorrowerPool>;
 }

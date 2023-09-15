@@ -33,11 +33,14 @@ export const createActionsService = (
             limit: itemsPerPage,
             offset: itemsPerPage * page
           }),
-          RxOp.catchError((): Rx.Observable<InlineResponse200> => Rx.of({ actions: [], count: '0' })),
+          RxOp.catchError(
+            (): Rx.Observable<InlineResponse200> =>
+              Rx.of({ actions: [], count: '0', meta: { nextPageToken: '', prevPageToken: '' } })
+          ),
           RxOp.switchMap((response) => Rx.of(RD.success(response))),
           liveData.map(({ actions, count }) => ({
             actions: FP.pipe(actions, A.map(mapAction)),
-            total: parseInt(count, 10)
+            total: parseInt(count || '', 10)
           })),
           liveData.mapLeft(() => ({
             errorId: ErrorId.GET_ACTIONS,
