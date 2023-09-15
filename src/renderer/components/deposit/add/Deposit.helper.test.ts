@@ -129,7 +129,7 @@ describe('deposit/Deposit.helper', () => {
       const runeBalance = baseAmount(20000)
       const assetBalance = { asset: AssetBUSD74E, amount: baseAmount(10000) }
       const result = maxAssetAmountToDeposit({ poolData, assetBalance, runeBalance, fees })
-      console.log('result', result.amount().toString())
+      // console.log('result', result.amount().toString())
       // R = 200000 (rune pool)
       // A = 100000 (asset pool)
       // r = 20000 (rune balance)
