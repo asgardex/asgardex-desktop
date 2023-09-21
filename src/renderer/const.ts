@@ -144,7 +144,7 @@ export const CHAIN_WEIGHTS: Record<EnabledChain, number> = {
 // Weight of currencies needed for pricing
 // The higher the value the higher the weight
 export const CURRENCY_WEIGHTS: PricePoolCurrencyWeights = {
-  [assetToString(AssetBUSDBAF)]: 10,
+  [assetToString(AssetBUSDBAF)]: 0,
   [assetToString(AssetBUSDBD1)]: 1,
   [assetToString(AssetBUSD74E)]: 2,
   [assetToString(AssetUSDTDC8)]: 3,
@@ -154,7 +154,7 @@ export const CURRENCY_WEIGHTS: PricePoolCurrencyWeights = {
   [assetToString(AssetUSDC)]: 7,
   [assetToString(AssetETH)]: 8,
   [assetToString(AssetBTC)]: 9,
-  [assetToString(AssetRuneNative)]: 0
+  [assetToString(AssetRuneNative)]: 10
 }
 
 // Whitelist of pools for pricing things

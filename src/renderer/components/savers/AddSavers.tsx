@@ -343,6 +343,19 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       ),
     [oSaversQuote, asset]
   )
+
+  // Liquidity fee in for use later
+  const liquidityFee: CryptoAmount = useMemo(
+    () =>
+      FP.pipe(
+        oSaversQuote,
+        O.fold(
+          () => new CryptoAmount(baseAmount(0), asset.asset), // default value if oQuote is None
+          (txDetails) => txDetails.fee.liquidity // already of type cryptoAmount
+        )
+      ),
+    [oSaversQuote, asset]
+  )
   const oChainAssetBalance: O.Option<BaseAmount> = useMemo(() => {
     const chainAsset = getChainAsset(sourceChain)
     return FP.pipe(
@@ -1264,6 +1277,10 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
                         asset: pricePool.asset,
                         decimal: 0
                       })}
+                    </div>
+                    <div className="flex w-full justify-between pl-10px text-[12px]">
+                      <div>{intl.formatMessage({ id: 'common.liquidity' })}</div>
+                      <div>{liquidityFee.formatedAssetString()}</div>
                     </div>
                   </div>
                 </>
