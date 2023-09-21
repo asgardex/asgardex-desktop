@@ -1,4 +1,3 @@
-import { PoolData } from '@thorchain/asgardex-util'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -14,7 +13,7 @@ import { AssetBTC, AssetETH, AssetRune67C, AssetRuneERC20Testnet, AssetRuneNativ
 import { EnabledChain } from '../shared/utils/chain'
 import { WalletType } from '../shared/wallet/types'
 import { GetPoolsPeriodEnum } from './types/generated/midgard'
-import { PricePoolCurrencyWeights, PricePoolAssets } from './views/pools/Pools.types'
+import { PricePoolCurrencyWeights, PricePoolAssets, PoolData } from './views/pools/Pools.types'
 
 //
 // ERC-20 assets
@@ -145,7 +144,7 @@ export const CHAIN_WEIGHTS: Record<EnabledChain, number> = {
 // Weight of currencies needed for pricing
 // The higher the value the higher the weight
 export const CURRENCY_WEIGHTS: PricePoolCurrencyWeights = {
-  [assetToString(AssetBUSDBAF)]: 0,
+  [assetToString(AssetBUSDBAF)]: 10,
   [assetToString(AssetBUSDBD1)]: 1,
   [assetToString(AssetBUSD74E)]: 2,
   [assetToString(AssetUSDTDC8)]: 3,
@@ -155,7 +154,7 @@ export const CURRENCY_WEIGHTS: PricePoolCurrencyWeights = {
   [assetToString(AssetUSDC)]: 7,
   [assetToString(AssetETH)]: 8,
   [assetToString(AssetBTC)]: 9,
-  [assetToString(AssetRuneNative)]: 10
+  [assetToString(AssetRuneNative)]: 0
 }
 
 // Whitelist of pools for pricing things

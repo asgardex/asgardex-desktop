@@ -5544,13 +5544,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@thorchain/asgardex-util@npm:^0.10.0":
-  version: 0.10.0
-  resolution: "@thorchain/asgardex-util@npm:0.10.0"
-  checksum: 370ff670d72cf5015cc79ef17b9d07e6f7aec281cb2c3e0aa3f0b32512a7da654927093fc9b9228309c969f9ea8ca7a74c24bba84500d38738d02276142efa12
-  languageName: node
-  linkType: hard
-
 "@thorchain/ledger-thorchain@npm:^0.1.0-alpha.2":
   version: 0.1.0-alpha.2
   resolution: "@thorchain/ledger-thorchain@npm:0.1.0-alpha.2"
@@ -7836,7 +7829,6 @@ __metadata:
     "@testing-library/react-hooks": ^8.0.0
     "@testing-library/user-event": ^14.2.0
     "@thorchain/asgardex-theme": ^0.1.1
-    "@thorchain/asgardex-util": ^0.10.0
     "@thorchain/ledger-thorchain": ^0.1.0-alpha.2
     "@types/bchaddrjs": ^0.4.0
     "@types/electron-devtools-installer": ^2.2.2

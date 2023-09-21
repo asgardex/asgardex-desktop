@@ -3,18 +3,36 @@ import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
+import { media } from '../../../helpers/styleHelper'
 import { InnerForm } from '../../shared/form/Form.styles'
 import { Button as UIButton } from '../../uielements/button/Button'
 import { Fees as UIFees } from '../../uielements/fees'
 import { Label as UILabel } from '../../uielements/label'
 
-export const Col = styled(A.Col)`
-  padding: 20px 30px;
-  background: ${palette('background', 1)};
+// export const Col = styled(A.Col)`
+//   padding: 20px 30px;
+//   justify-content: center; /* Align children vertically in the center */
+//   align-items: center;
+//   background: ${palette('background', 1)};
+// `
+
+export const Container = styled('div')`
+  min-height: 100%;
+  width: 100%;
+  max-width: 630px;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+
+  ${media.sm`
+    padding: 35px 50px 150px 50px;
+  `}
 `
 
 export const Form = styled(InnerForm)`
-  padding: 30px;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
 `
 
 export const SubForm = styled.div`

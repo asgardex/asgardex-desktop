@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { getBondMemo, getLeaveMemo, getUnbondMemo } from '@thorchain/asgardex-util'
+import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, assetToBase, BaseAmount, baseToAsset, bn, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
-import { Form } from 'antd'
+import { Form, Tooltip } from 'antd'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
 import * as FP from 'fp-ts/function'
@@ -18,6 +18,7 @@ import { HDMode, WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
+import { getBondMemo, getLeaveMemo, getUnbondMemo } from '../../../../helpers/memoHelper'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { FeeRD } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../services/clients'
@@ -27,7 +28,7 @@ import { ValidatePasswordHandler, WalletBalance } from '../../../../services/wal
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
 import { TxModal } from '../../../modal/tx'
 import { SendAsset } from '../../../modal/tx/extra/SendAsset'
-import { FlatButton, ViewTxButton } from '../../../uielements/button'
+import { BaseButton, FlatButton, ViewTxButton } from '../../../uielements/button'
 import { CheckButton } from '../../../uielements/button/CheckButton'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { UIFeesRD } from '../../../uielements/fees'
@@ -78,7 +79,7 @@ export const InteractForm: React.FC<Props> = (props) => {
   const [hasProviderAddress, setHasProviderAddress] = useState(false)
 
   const [_amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
-
+  const [memo, setMemo] = useState<string>()
   const amountToSend = useMemo(() => {
     switch (interactType) {
       case 'bond':
@@ -223,23 +224,33 @@ export const InteractForm: React.FC<Props> = (props) => {
   const getMemo = useCallback(() => {
     const thorAddress = form.getFieldValue('thorAddress')
     const providerAddress = form.getFieldValue('providerAddress')
+    let memo = ''
+
     switch (interactType) {
       case 'bond': {
-        const memo = getBondMemo(thorAddress)
-        return hasProviderAddress ? `${memo}:${providerAddress}` : memo
+        memo = getBondMemo(thorAddress)
+        break
       }
       case 'unbond': {
-        const memo = getUnbondMemo(
-          thorAddress,
-          assetToBase(assetAmount(form.getFieldValue('amount'), THORCHAIN_DECIMAL))
-        )
-        return hasProviderAddress ? `${memo}:${providerAddress}` : memo
+        memo = getUnbondMemo(thorAddress, assetToBase(assetAmount(form.getFieldValue('amount'), THORCHAIN_DECIMAL)))
+        break
       }
-      case 'leave':
-        return getLeaveMemo(thorAddress)
-      case 'custom':
-        return form.getFieldValue('memo')
+      case 'leave': {
+        memo = getLeaveMemo(thorAddress)
+        break
+      }
+      case 'custom': {
+        memo = form.getFieldValue('memo')
+        break
+      }
     }
+
+    const providerAddedMemo = hasProviderAddress ? `${memo}:${providerAddress}` : memo
+
+    // Set memo for all cases
+    setMemo(providerAddedMemo)
+
+    return providerAddedMemo
   }, [form, hasProviderAddress, interactType])
 
   const submitTx = useCallback(() => {
@@ -350,6 +361,15 @@ export const InteractForm: React.FC<Props> = (props) => {
     )
   }, [interactState, intl, reset, sendTxStartTime, openExplorerTxUrl, getExplorerTxUrl, asset, amountToSend, network])
 
+  const memoLabel = useMemo(
+    () => (
+      <Tooltip title={memo} key="tooltip-memo">
+        {memo}
+      </Tooltip>
+    ),
+    [memo]
+  )
+
   const submitLabel = useMemo(() => {
     switch (interactType) {
       case 'bond':
@@ -390,7 +410,10 @@ export const InteractForm: React.FC<Props> = (props) => {
   // Reset values whenever interactType has been changed (an user clicks on navigation tab)
   useEffect(() => {
     reset()
+    setMemo('')
   }, [interactType, reset])
+
+  const [showDetails, setShowDetails] = useState<boolean>(false)
 
   return (
     <Styled.Form
@@ -410,7 +433,7 @@ export const InteractForm: React.FC<Props> = (props) => {
                   message: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
                 }
               ]}>
-              <Input disabled={isLoading} size="large" />
+              <Input disabled={isLoading} onChange={() => getMemo()} size="large" />
             </Form.Item>
           </Styled.InputContainer>
         )}
@@ -427,7 +450,7 @@ export const InteractForm: React.FC<Props> = (props) => {
                   validator: addressValidator
                 }
               ]}>
-              <Input disabled={isLoading} size="large" />
+              <Input disabled={isLoading} onChange={() => getMemo()} size="large" />
             </Form.Item>
           </Styled.InputContainer>
         )}
@@ -449,7 +472,7 @@ export const InteractForm: React.FC<Props> = (props) => {
                       validator: addressValidator
                     }
                   ]}>
-                  <Input disabled={isLoading} size="large" />
+                  <Input disabled={isLoading} onChange={() => getMemo()} size="large" />
                 </Form.Item>
               </>
             )}
@@ -495,6 +518,29 @@ export const InteractForm: React.FC<Props> = (props) => {
           size="large">
           {submitLabel}
         </FlatButton>
+      </div>
+      <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
+        {/* memo */}
+        <div className={`my-20px w-full font-main text-[12px] uppercase dark:border-gray1d`}>
+          <BaseButton
+            className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+            onClick={() => setShowDetails((current) => !current)}>
+            {intl.formatMessage({ id: 'common.details' })}
+            {showDetails ? (
+              <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+            ) : (
+              <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
+            )}
+          </BaseButton>
+          {showDetails && (
+            <>
+              <div className="ml-[-2px] flex w-full items-start pt-10px font-mainBold text-[14px]">
+                {intl.formatMessage({ id: 'common.memo' })}
+              </div>
+              <div className="truncate pl-10px font-main text-[12px]">{memoLabel}</div>
+            </>
+          )}
+        </div>
       </div>
       {showConfirmationModal && renderConfirmationModal}
       {renderTxModal}

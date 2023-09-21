@@ -1,5 +1,3 @@
-import { getValueOfAsset1InAsset2, getValueOfRuneInAsset, PoolData } from '@thorchain/asgardex-util'
-// import { LiquidityData as PoolData } from '@xchainjs/xchain-thorchain-query'
 import { BaseAmount } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
@@ -10,6 +8,8 @@ import { ZERO_BASE_AMOUNT } from '../../const'
 import * as ShareHelpers from '../../helpers/poolShareHelper'
 import { PoolDetails, PoolShares } from '../../services/midgard/types'
 import { getPoolDetail, toPoolData } from '../../services/midgard/utils'
+import { PoolData } from '../pools/Pools.types'
+import { getValueOfAsset1InAsset2, getValueOfRuneInAsset } from '../pools/Pools.utils'
 
 export const getSharesTotal = (shares: PoolShares, poolDetails: PoolDetails, pricePoolData: PoolData): BaseAmount =>
   FP.pipe(

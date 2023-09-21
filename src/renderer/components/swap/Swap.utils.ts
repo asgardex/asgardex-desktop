@@ -1,27 +1,17 @@
-import { getDoubleSwapOutput, getDoubleSwapSlip, getSwapOutput, getSwapSlip } from '@thorchain/asgardex-util'
-import { Asset, assetToString, bn, BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
-import BigNumber from 'bignumber.js'
+import { Asset, BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
 import * as E from 'fp-ts/Either'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 
 import { isLedgerWallet } from '../../../shared/utils/guard'
-import { ZERO_BASE_AMOUNT } from '../../const'
-import {
-  isChainAsset,
-  isRuneNativeAsset,
-  isUtxoAssetChain,
-  max1e8BaseAmount,
-  to1e8BaseAmount
-} from '../../helpers/assetHelper'
+import { isChainAsset, isRuneNativeAsset, isUtxoAssetChain, max1e8BaseAmount } from '../../helpers/assetHelper'
 import { eqAsset, eqChain } from '../../helpers/fp/eq'
-import { sequenceTOption } from '../../helpers/fpHelpers'
 import { priceFeeAmountForAsset } from '../../services/chain/fees/utils'
 import { SwapFees } from '../../services/chain/types'
 import { PoolAssetDetail, PoolAssetDetails, PoolsDataMap } from '../../services/midgard/types'
 import { WalletBalances } from '../../services/wallet/types'
-import { AssetsToSwap, SwapData } from './Swap.types'
+import { AssetsToSwap } from './Swap.types'
 /**
  * @returns none - neither sourceAsset neither targetAsset is RUNE
  *          some(true) - targetAsset is RUNE
@@ -37,107 +27,6 @@ export const isRuneSwap = (sourceAsset: Asset, targetAsset: Asset) => {
   }
 
   return O.none
-}
-
-export const getSlipPercent = ({
-  sourceAsset,
-  targetAsset,
-  amountToSwap,
-  poolsData
-}: {
-  sourceAsset: Asset
-  targetAsset: Asset
-  amountToSwap: BaseAmount
-  poolsData: PoolsDataMap
-}): BigNumber => {
-  // pool data provided by Midgard are always 1e8 decimal based
-  // that's why we have to convert `amountToSwap into `1e8` decimal as well
-  const inputAmount = to1e8BaseAmount(amountToSwap)
-  return FP.pipe(
-    isRuneSwap(sourceAsset, targetAsset),
-    O.chain((toRune) =>
-      FP.pipe(
-        O.fromNullable(poolsData[assetToString(isRuneNativeAsset(targetAsset) ? sourceAsset : targetAsset)]),
-        O.map((targetPoolData) => getSwapSlip(inputAmount, targetPoolData, toRune))
-      )
-    ),
-    O.alt(() =>
-      FP.pipe(
-        sequenceTOption(
-          O.fromNullable(poolsData[assetToString(sourceAsset)]),
-          O.fromNullable(poolsData[assetToString(targetAsset)])
-        ),
-        O.map(([source, target]) => getDoubleSwapSlip(inputAmount, source, target))
-      )
-    ),
-    O.map((slip) => slip.times(100)),
-    O.getOrElse(() => bn(0))
-  )
-}
-
-/**
- * Result of swap
- *
- * Note: Returned `amountToSwap` is `1e8` decimal based
- */
-export const getSwapResult = ({
-  sourceAsset,
-  targetAsset,
-  amountToSwap,
-  poolsData
-}: {
-  sourceAsset: Asset
-  targetAsset: Asset
-  amountToSwap: BaseAmount
-  poolsData: PoolsDataMap
-}): BaseAmount => {
-  // pool data provided by Midgard are always 1e8 decimal based,
-  // that's why we have to convert `amountToSwap into `1e8` as well
-  const inputAmount = to1e8BaseAmount(amountToSwap)
-  return FP.pipe(
-    isRuneSwap(sourceAsset, targetAsset),
-    O.chain((toRune) => {
-      const assetSymbol = assetToString(toRune ? sourceAsset : targetAsset)
-      return FP.pipe(
-        O.fromNullable(poolsData[assetSymbol]),
-        O.map((poolData) => getSwapOutput(inputAmount, poolData, toRune))
-      )
-    }),
-    O.alt(() =>
-      FP.pipe(
-        sequenceTOption(
-          O.fromNullable(poolsData[assetToString(sourceAsset)]),
-          O.fromNullable(poolsData[assetToString(targetAsset)])
-        ),
-        O.map(([source, target]) => getDoubleSwapOutput(inputAmount, source, target))
-      )
-    ),
-    O.getOrElse(() => ZERO_BASE_AMOUNT)
-  )
-}
-
-/**
- * Returns `SwapData`
- *
- * Note: `amountToSwap` of `swapResult` is `1e8` decimal based
- */
-export const getSwapData = ({
-  amountToSwap,
-  sourceAsset,
-  targetAsset,
-  poolsData
-}: {
-  amountToSwap: BaseAmount
-  sourceAsset: Asset
-  targetAsset: Asset
-  poolsData: PoolsDataMap
-}): SwapData => {
-  const slip = getSlipPercent({ sourceAsset, targetAsset, amountToSwap, poolsData })
-  const swapResult = getSwapResult({ sourceAsset, targetAsset, amountToSwap, poolsData })
-  return {
-    slip,
-    swapResult
-  }
 }
 
 /**

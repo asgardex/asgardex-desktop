@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { PoolData } from '@thorchain/asgardex-util'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
@@ -42,7 +41,7 @@ import { ordPricePool } from '../../helpers/fp/ord'
 import { getDeepestPool, RUNE_POOL_ADDRESS, RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { AssetWithAmount } from '../../types/asgardex'
 import { GetPoolPeriodEnum, GetPoolsPeriodEnum, PoolDetail } from '../../types/generated/midgard'
-import { PricePoolAssets, PricePools, PricePoolAsset, PricePool } from '../../views/pools/Pools.types'
+import { PricePoolAssets, PricePools, PricePoolAsset, PricePool, PoolData } from '../../views/pools/Pools.types'
 import { InboundAddress } from '../thorchain/types'
 import {
   PoolAssetDetails as PoolAssetsDetail,

@@ -134,6 +134,7 @@ const ErrorLabel: React.FC<{
 )
 
 export type SwapProps = {
+  thorchainQuery: ThorchainQuery
   keystore: KeystoreState
   poolAssets: Asset[]
   assets: {
@@ -187,6 +188,7 @@ export type SwapProps = {
 }
 
 export const Swap = ({
+  thorchainQuery,
   keystore,
   poolAssets,
   assets: {
@@ -777,7 +779,6 @@ export const Swap = ({
   const debouncedEffect = useRef(
     debounce((quoteSwapData) => {
       // Include isStreaming as a parameter
-      const thorchainQuery = new ThorchainQuery()
       thorchainQuery
         .quoteSwap(quoteSwapData)
         .then((quote) => {

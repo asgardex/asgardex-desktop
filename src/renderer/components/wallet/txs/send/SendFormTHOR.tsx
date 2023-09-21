@@ -4,7 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, baseAmount } from '@xchainjs/xchain-util'
 import { formatAssetAmountCurrency, assetAmount, bn, assetToBase, BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
-import { Row, Form } from 'antd'
+import { Form } from 'antd'
 import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -301,57 +301,55 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
 
   return (
     <>
-      <Row>
-        <Styled.Col span={24}>
-          <AccountSelector selectedWallet={balance} network={network} />
-          <Styled.Form
-            form={form}
-            initialValues={{ amount: bn(0) }}
-            onFinish={() => setShowConfirmationModal(true)}
-            labelCol={{ span: 24 }}>
-            <Styled.SubForm>
-              <Styled.CustomLabel size="big">
-                {intl.formatMessage({ id: 'common.address' })}
-                {renderWalletType}
-              </Styled.CustomLabel>
-              <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
-                <Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
-              </Form.Item>
-              <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
-              <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">
-                <InputBigNumber
-                  min={0}
-                  size="large"
-                  disabled={isLoading}
-                  decimal={THORCHAIN_DECIMAL}
-                  onChange={onChangeInput}
-                />
-              </Styled.FormItem>
-              <MaxBalanceButton
-                className="mb-10px "
-                color="neutral"
-                balance={{ amount: maxAmount, asset: asset }}
-                onClick={addMaxAmountHandler}
+      <Styled.Container>
+        <AccountSelector selectedWallet={balance} network={network} />
+        <Styled.Form
+          form={form}
+          initialValues={{ amount: bn(0) }}
+          onFinish={() => setShowConfirmationModal(true)}
+          labelCol={{ span: 24 }}>
+          <Styled.SubForm>
+            <Styled.CustomLabel size="big">
+              {intl.formatMessage({ id: 'common.address' })}
+              {renderWalletType}
+            </Styled.CustomLabel>
+            <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
+              <Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
+            </Form.Item>
+            <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
+            <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">
+              <InputBigNumber
+                min={0}
+                size="large"
                 disabled={isLoading}
+                decimal={THORCHAIN_DECIMAL}
+                onChange={onChangeInput}
               />
-              <Styled.Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} disabled={isLoading} />
-              {renderFeeError}
-              <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
-              <Form.Item name="memo">
-                <Input size="large" disabled={isLoading} />
-              </Form.Item>
-            </Styled.SubForm>
-            <FlatButton
-              className="mt-40px min-w-[200px]"
-              loading={isLoading}
-              disabled={isFeeError}
-              type="submit"
-              size="large">
-              {intl.formatMessage({ id: 'wallet.action.send' })}
-            </FlatButton>
-          </Styled.Form>
-        </Styled.Col>
-      </Row>
+            </Styled.FormItem>
+            <MaxBalanceButton
+              className="mb-10px "
+              color="neutral"
+              balance={{ amount: maxAmount, asset: asset }}
+              onClick={addMaxAmountHandler}
+              disabled={isLoading}
+            />
+            <Styled.Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} disabled={isLoading} />
+            {renderFeeError}
+            <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
+            <Form.Item name="memo">
+              <Input size="large" disabled={isLoading} />
+            </Form.Item>
+          </Styled.SubForm>
+          <FlatButton
+            className="mt-40px min-w-[200px]"
+            loading={isLoading}
+            disabled={isFeeError}
+            type="submit"
+            size="large">
+            {intl.formatMessage({ id: 'wallet.action.send' })}
+          </FlatButton>
+        </Styled.Form>
+      </Styled.Container>
       {showConfirmationModal && renderConfirmationModal}
       {renderTxModal}
     </>

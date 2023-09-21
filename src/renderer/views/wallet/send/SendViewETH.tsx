@@ -19,6 +19,7 @@ import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { FeesRD, WalletBalances } from '../../../services/clients'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAsset } from '../../../services/wallet/types'
+import * as Styled from '../Interact/InteractView.styles'
 
 type Props = {
   asset: SelectedWalletAsset
@@ -75,21 +76,23 @@ export const SendViewETH: React.FC<Props> = (props): JSX.Element => {
     O.fold(
       () => <LoadingView size="large" />,
       (walletBalance) => (
-        <SendFormETH
-          asset={asset}
-          balance={walletBalance}
-          balances={FP.pipe(
-            oBalances,
-            O.getOrElse<WalletBalances>(() => [])
-          )}
-          fees={feesRD}
-          transfer$={transfer$}
-          openExplorerTxUrl={openExplorerTxUrl}
-          getExplorerTxUrl={getExplorerTxUrl}
-          reloadFeesHandler={reloadFees}
-          validatePassword$={validatePassword$}
-          network={network}
-        />
+        <Styled.Container>
+          <SendFormETH
+            asset={asset}
+            balance={walletBalance}
+            balances={FP.pipe(
+              oBalances,
+              O.getOrElse<WalletBalances>(() => [])
+            )}
+            fees={feesRD}
+            transfer$={transfer$}
+            openExplorerTxUrl={openExplorerTxUrl}
+            getExplorerTxUrl={getExplorerTxUrl}
+            reloadFeesHandler={reloadFees}
+            validatePassword$={validatePassword$}
+            network={network}
+          />
+        </Styled.Container>
       )
     )
   )

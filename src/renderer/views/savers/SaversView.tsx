@@ -25,6 +25,7 @@ import { useChainContext } from '../../contexts/ChainContext'
 import { useEthereumContext } from '../../contexts/EthereumContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
+import { useThorchainQueryContext } from '../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { getAssetFromNullableString } from '../../helpers/assetHelper'
 import { eqChain, eqNetwork, eqWalletType } from '../../helpers/fp/eq'
@@ -81,6 +82,8 @@ const Content: React.FC<Props> = (props): JSX.Element => {
 
   const { network } = useNetwork()
   const { reloadInboundAddresses } = useThorchainContext()
+
+  const { thorchainQuery } = useThorchainQueryContext()
 
   const { getSaverProvider$, reloadSaverProvider } = useThorchainContext()
 
@@ -273,6 +276,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                       <AddSavers
                         keystore={keystore}
                         validatePassword$={validatePassword$}
+                        thorchainQuery={thorchainQuery}
                         goToTransaction={openExplorerTxUrl}
                         getExplorerTxUrl={getExplorerTxUrl}
                         sourceWalletType={walletType}
@@ -303,6 +307,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                       <WithdrawSavers
                         keystore={keystore}
                         poolDetails={poolDetails}
+                        thorchainQuery={thorchainQuery}
                         asset={new CryptoAmount(baseAmount(0, assetWD.decimal), assetWD.asset)}
                         walletBalances={balancesState}
                         network={network}

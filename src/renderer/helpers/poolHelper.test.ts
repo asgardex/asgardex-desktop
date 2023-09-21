@@ -1,4 +1,3 @@
-import { PoolData } from '@thorchain/asgardex-util'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -20,7 +19,7 @@ import { PoolDetails } from '../services/midgard/types'
 import { toPoolData } from '../services/midgard/utils'
 import { DEFAULT_MIMIR_HALT } from '../services/thorchain/const'
 import { GetPoolsStatusEnum, PoolDetail } from '../types/generated/midgard'
-import { PricePool } from '../views/pools/Pools.types'
+import { PoolData, PricePool } from '../views/pools/Pools.types'
 import {
   disableAllActions,
   disablePoolActions,

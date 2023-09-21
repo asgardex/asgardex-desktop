@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { PoolData } from '@thorchain/asgardex-util'
 import { TxHash } from '@xchainjs/xchain-client'
 import { Address, Asset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -28,7 +27,7 @@ import {
   GetLiquidityHistoryRequest,
   GetPoolsPeriodEnum
 } from '../../types/generated/midgard'
-import { PricePools, PricePoolAsset, PricePool } from '../../views/pools/Pools.types'
+import { PricePools, PricePoolAsset, PricePool, PoolData } from '../../views/pools/Pools.types'
 import { Memo, PoolFeeLD } from '../chain/types'
 import { ApiError } from '../wallet/types'
 

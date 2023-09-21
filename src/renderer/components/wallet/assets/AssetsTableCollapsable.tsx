@@ -259,6 +259,24 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
               ]
             : []
         ),
+        // 'Earn' for assets of active pools only
+        A.concatW<ActionButtonAction>(
+          hasActivePool
+            ? [
+                {
+                  label: intl.formatMessage({ id: 'common.earn' }),
+                  callback: () => {
+                    navigate(
+                      poolsRoutes.earn.path({
+                        asset: assetToString(asset),
+                        walletType: walletType
+                      })
+                    )
+                  }
+                }
+              ]
+            : []
+        ),
         // 'add' LP for assets of active pools only
         A.concatW<ActionButtonAction>(
           hasActivePool

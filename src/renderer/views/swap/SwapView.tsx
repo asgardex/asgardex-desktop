@@ -30,6 +30,7 @@ import { useChainContext } from '../../contexts/ChainContext'
 import { useEthereumContext } from '../../contexts/EthereumContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
+import { useThorchainQueryContext } from '../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { assetInList, getAssetFromNullableString } from '../../helpers/assetHelper'
 import { eqChain, eqNetwork } from '../../helpers/fp/eq'
@@ -85,6 +86,7 @@ const SuccessRouteView: React.FC<Props> = ({
   const { network } = useNetwork()
 
   const { reloadInboundAddresses } = useThorchainContext()
+  const { thorchainQuery } = useThorchainQueryContext()
 
   const { service: midgardService } = useMidgardContext()
   const {
@@ -415,6 +417,7 @@ const SuccessRouteView: React.FC<Props> = ({
                   addressValidator={validateSwapAddress}
                   // TODO (@veado) Handle private data
                   hidePrivateData={false}
+                  thorchainQuery={thorchainQuery}
                 />
               )
             }

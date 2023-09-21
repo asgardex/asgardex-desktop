@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { PoolData } from '@thorchain/asgardex-util'
 import { Balance } from '@xchainjs/xchain-client'
 import { Address, Asset, AssetAmount, assetToString, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -17,7 +16,7 @@ import { ApproveParams } from '../../services/ethereum/types'
 import { PoolAddress, PoolShare } from '../../services/midgard/types'
 import { ApiError, LedgerAddress, SelectedWalletAsset, WalletBalance } from '../../services/wallet/types'
 import { AssetWithAmount } from '../../types/asgardex'
-import { PricePool } from '../../views/pools/Pools.types'
+import { PoolData, PricePool } from '../../views/pools/Pools.types'
 
 export const eqString = S.Eq
 

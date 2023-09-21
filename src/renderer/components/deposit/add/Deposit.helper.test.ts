@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { PoolData } from '@thorchain/asgardex-util'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
@@ -10,6 +9,7 @@ import { AssetBUSD74E, AssetUSDTERC20Testnet } from '../../../const'
 import { BNB_DECIMAL, THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { eqBaseAmount, eqODepositAssetFees, eqODepositFees } from '../../../helpers/fp/eq'
 import { DepositAssetFees, DepositFees, SymDepositFees, SymDepositFeesRD } from '../../../services/chain/types'
+import { PoolData } from '../../../views/pools/Pools.types'
 import {
   getAssetAmountToDeposit,
   getRuneAmountToDeposit,

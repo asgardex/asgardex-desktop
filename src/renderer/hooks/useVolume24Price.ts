@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { getValueOfRuneInAsset } from '@thorchain/asgardex-util'
 import { baseAmount, bnOrZero } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import { useObservableState } from 'observable-hooks'
@@ -12,6 +11,7 @@ import { triggerStream } from '../helpers/stateHelper'
 import { PriceRD } from '../services/midgard/types'
 import { AssetWithAmount } from '../types/asgardex'
 import { GetLiquidityHistoryIntervalEnum, GetSwapHistoryIntervalEnum } from '../types/generated/midgard'
+import { getValueOfRuneInAsset } from '../views/pools/Pools.utils'
 
 const { stream$: reloadHistory$, trigger: reloadHistory } = triggerStream()
 

@@ -21,7 +21,7 @@ import { useWalletContext } from '../../../contexts/WalletContext'
 import { eqOSelectedWalletAsset } from '../../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../../helpers/fpHelpers'
 import { liveData } from '../../../helpers/rx/liveData'
-import { getWalletBalanceByAddress } from '../../../helpers/walletHelper'
+import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
@@ -69,16 +69,22 @@ export const InteractView: React.FC = () => {
 
   const { validateAddress } = useValidateAddress(THORChain)
 
-  const oWalletBalance = useMemo(
-    () =>
-      FP.pipe(
-        selectedAssetRD,
-        RD.toOption,
-        (oSelectedAsset) => sequenceTOption(oBalances, oSelectedAsset),
-        O.chain(([balances, { walletAddress }]) => getWalletBalanceByAddress(balances, walletAddress))
-      ),
-    [oBalances, selectedAssetRD]
-  )
+  const oWalletBalance = useMemo(() => {
+    return FP.pipe(
+      selectedAssetRD,
+      RD.toOption, // Convert RemoteData to Option
+      O.chain((selectedAsset) => {
+        // Combine oBalances and oSelectedAsset into a single Option
+        return FP.pipe(
+          sequenceTOption(oBalances, O.some(selectedAsset)),
+          // Extract balance for the given walletAddress and asset
+          O.chain(([balances, { walletAddress }]) =>
+            getWalletBalanceByAddressAndAsset({ balances, address: walletAddress, asset: selectedAsset.asset })
+          )
+        )
+      })
+    )
+  }, [oBalances, selectedAssetRD])
 
   const { interact$ } = useThorchainContext()
 
@@ -117,11 +123,15 @@ export const InteractView: React.FC = () => {
       ),
       ([interactType, { walletType, walletIndex, hdMode }]) => (
         <>
-          <Row justify="space-between">
-            <Col>
-              <BackLinkButton />
-            </Col>
-          </Row>
+          <div className="relative mb-20px flex items-center justify-between">
+            {' '}
+            <Row justify="space-between">
+              <Col>
+                <BackLinkButton />
+              </Col>
+            </Row>
+          </div>
+
           <Styled.Container>
             {FP.pipe(
               oWalletBalance,

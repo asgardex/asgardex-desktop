@@ -3,6 +3,7 @@ import { ComponentMeta, StoryFn } from '@storybook/react'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { TxHash } from '@xchainjs/xchain-client'
+import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import { assetAmount, assetToBase, assetToString, baseAmount, bn } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -110,7 +111,8 @@ const defaultProps: SwapProps = {
   importWalletHandler: () => console.log('import wallet'),
   clickAddressLinkHandler: () => console.log('handle click on address'),
   addressValidator: () => Promise.resolve(true),
-  hidePrivateData: false
+  hidePrivateData: false,
+  thorchainQuery: new ThorchainQuery()
 }
 
 export const Default: StoryFn = () => <Component {...defaultProps} />

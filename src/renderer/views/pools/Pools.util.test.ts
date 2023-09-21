@@ -1,4 +1,3 @@
-import { PoolData } from '@thorchain/asgardex-util'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
@@ -11,7 +10,7 @@ import { eqBaseAmount } from '../../helpers/fp/eq'
 import { LastblockItems } from '../../services/thorchain/types'
 import { PoolDetail } from '../../types/generated/midgard'
 import { GetPoolsStatusEnum } from '../../types/generated/midgard'
-import { PoolTableRowData } from './Pools.types'
+import { PoolData, PoolTableRowData } from './Pools.types'
 import {
   getPoolTableRowData,
   getBlocksLeftForPendingPool,

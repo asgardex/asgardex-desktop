@@ -103,6 +103,7 @@ export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
 
 export type AddProps = {
   keystore: KeystoreState
+  thorchainQuery: ThorchainQuery
   poolAssets: Asset[]
   poolDetails: PoolDetails
   asset: CryptoAmount
@@ -132,6 +133,7 @@ export type AddProps = {
 export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
   const {
     keystore,
+    thorchainQuery,
     poolDetails,
     asset,
     sourceWalletType: initialSourceWalletType,
@@ -422,7 +424,6 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
 
   const debouncedEffect = useRef(
     debounce((amountToSendMax1e8) => {
-      const thorchainQuery = new ThorchainQuery()
       thorchainQuery
         .estimateAddSaver(new CryptoAmount(amountToSendMax1e8, asset.asset))
         .then((quote) => {

@@ -14,6 +14,7 @@ import { Label as UILabel } from '../../../uielements/label'
 export const Container = styled('div')`
   min-height: 100%;
   width: 100%;
+  max-width: 630px;
   display: flex;
   flex-direction: column;
   padding: 10px;
@@ -188,6 +189,7 @@ export const SubmitButton = styled(UIButton).attrs({
 `
 
 export const InputContainer = styled('div')`
+  width: 100%;
   ${media.sm`
     max-width: 630px;
   `}
