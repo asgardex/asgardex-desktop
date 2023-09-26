@@ -12,7 +12,7 @@ import { Network } from '../shared/api/types'
 import { AssetBTC, AssetETH, AssetRune67C, AssetRuneERC20Testnet, AssetRuneNative } from '../shared/utils/asset'
 import { EnabledChain } from '../shared/utils/chain'
 import { WalletType } from '../shared/wallet/types'
-import { GetPoolsPeriodEnum } from './types/generated/midgard'
+import { GetPoolsPeriodEnum } from './services/midgard/types'
 import { PricePoolCurrencyWeights, PricePoolAssets, PoolData } from './views/pools/Pools.types'
 
 //

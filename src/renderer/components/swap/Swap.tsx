@@ -543,31 +543,18 @@ export const Swap = ({
     return result
   }, [oQuote, swapFees.outFee.amount, targetAsset, targetAssetDecimal])
 
-  // Price of swap OUT fee from oQuote // get poolPrice value and return
-  const oPriceSwapOutFee: CryptoAmount = useMemo(() => {
-    const result = FP.pipe(
-      O.some(oSwapOutFee),
-      O.fold(
-        () => new CryptoAmount(baseAmount(0, targetAssetDecimal), targetAsset),
-        (outFee: CryptoAmount) => {
-          const txOutFee = outFee
-          const poolPriceValue = PoolHelpers.getPoolPriceValue({
-            balance: { asset: txOutFee.asset, amount: txOutFee.baseAmount },
-            poolDetails,
-            pricePool,
-            network
-          })
+  const [outFeePriceValue, setOutFeePriceValue] = useState<CryptoAmount>(
+    new CryptoAmount(baseAmount(0, targetAssetDecimal), targetAsset)
+  )
 
-          return FP.pipe(
-            poolPriceValue,
-            O.map((amount) => new CryptoAmount(amount, pricePool.asset)),
-            O.getOrElse(() => new CryptoAmount(baseAmount(0, targetAssetDecimal), targetAsset))
-          )
-        }
-      )
-    )
-    return result
-  }, [targetAsset, targetAssetDecimal, poolDetails, pricePool, network, oSwapOutFee])
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const fetchData = async () => {
+      setOutFeePriceValue(await thorchainQuery.convert(oSwapOutFee, pricePool.asset))
+    }
+
+    fetchData()
+  }, [thorchainQuery, oSwapOutFee, pricePool.asset])
 
   const priceSwapOutFeeLabel = useMemo(
     () =>
@@ -589,8 +576,9 @@ export const Swap = ({
                     decimal: isUSDAsset(outFee.asset) ? 2 : 6,
                     trimZeros: !isUSDAsset(outFee.asset)
                   })
+
                   const price = FP.pipe(
-                    O.some(oPriceSwapOutFee),
+                    O.some(outFeePriceValue),
                     O.map((cryptoAmount: CryptoAmount) =>
                       eqAsset.equals(outFee.asset, cryptoAmount.asset)
                         ? ''
@@ -609,7 +597,7 @@ export const Swap = ({
             )
         )
       ),
-    [swapFeesRD, oPriceSwapOutFee, oSwapOutFee]
+    [swapFeesRD, oSwapOutFee, outFeePriceValue]
   )
 
   // Affiliate fee
@@ -625,31 +613,19 @@ export const Swap = ({
     [oQuote]
   )
 
-  // Price of swap OUT fee from oQuote // get poolPrice value and return
-  const oPriceAffiliatetFee: CryptoAmount = useMemo(() => {
-    const result = FP.pipe(
-      O.some(affiliateFee),
-      O.fold(
-        () => new CryptoAmount(baseAmount(0, targetAssetDecimal), targetAsset),
-        (outFee: CryptoAmount) => {
-          const txOutFee = outFee
-          const poolPriceValue = PoolHelpers.getPoolPriceValue({
-            balance: { asset: txOutFee.asset, amount: txOutFee.baseAmount },
-            poolDetails,
-            pricePool,
-            network
-          })
+  // store affiliate fee
+  const [affiliatePriceValue, setAffiliatePriceValue] = useState<CryptoAmount>(
+    new CryptoAmount(baseAmount(0, targetAssetDecimal), targetAsset)
+  )
 
-          return FP.pipe(
-            poolPriceValue,
-            O.map((amount) => new CryptoAmount(amount, pricePool.asset)),
-            O.getOrElse(() => new CryptoAmount(baseAmount(0, targetAssetDecimal), targetAsset))
-          )
-        }
-      )
-    )
-    return result
-  }, [targetAsset, targetAssetDecimal, poolDetails, pricePool, network, affiliateFee])
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const fetchData = async () => {
+      setAffiliatePriceValue(await thorchainQuery.convert(affiliateFee, pricePool.asset))
+    }
+
+    fetchData()
+  }, [thorchainQuery, affiliateFee, pricePool.asset])
 
   const priceAffiliateFeeLabel = useMemo(
     () =>
@@ -672,7 +648,7 @@ export const Swap = ({
                     trimZeros: !isUSDAsset(outFee.asset)
                   })
                   const price = FP.pipe(
-                    O.some(oPriceAffiliatetFee),
+                    O.some(affiliatePriceValue),
                     O.map((cryptoAmount: CryptoAmount) =>
                       eqAsset.equals(outFee.asset, cryptoAmount.asset)
                         ? ''
@@ -691,7 +667,7 @@ export const Swap = ({
             )
         )
       ),
-    [swapFeesRD, affiliateFee, oPriceAffiliatetFee]
+    [swapFeesRD, affiliateFee, affiliatePriceValue]
   )
 
   /**
@@ -702,8 +678,8 @@ export const Swap = ({
       FP.pipe(
         sequenceSOption({
           inFee: oPriceSwapInFee,
-          outFee: O.some(oPriceSwapOutFee),
-          affiliateFee: O.some(oPriceAffiliatetFee)
+          outFee: O.some(outFeePriceValue),
+          affiliateFee: O.some(affiliatePriceValue)
         }),
         O.map(({ inFee, outFee, affiliateFee }) => {
           const in1e8 = to1e8BaseAmount(inFee.baseAmount)
@@ -712,7 +688,7 @@ export const Swap = ({
           return { asset: inFee.asset, amount: in1e8.plus(out1e8).plus(affiliate) }
         })
       ),
-    [oPriceSwapInFee, oPriceSwapOutFee, oPriceAffiliatetFee]
+    [oPriceSwapInFee, outFeePriceValue, affiliatePriceValue]
   )
 
   const priceSwapFeesLabel = useMemo(

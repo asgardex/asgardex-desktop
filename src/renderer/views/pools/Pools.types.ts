@@ -2,7 +2,7 @@ import { BaseAmount, Asset } from '@xchainjs/xchain-util'
 import { NonEmptyArray } from 'fp-ts/lib/NonEmptyArray'
 
 import { Network } from '../../../shared/api/types'
-import { GetPoolsStatusEnum } from '../../types/generated/midgard'
+import { GetPoolsStatusEnum } from '../../services/midgard/types'
 
 // List of assets used for pricing
 export type PricePoolAsset = Asset

@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { MemberPool, MidgardApi } from '@xchainjs/xchain-midgard'
 import { Address, Asset, assetFromString, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
@@ -10,12 +11,10 @@ import { optionFromNullableString } from '../../../shared/utils/fp'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { liveData } from '../../helpers/rx/liveData'
 import { triggerStream, observableState } from '../../helpers/stateHelper'
-import { MemberPool } from '../../types/generated/midgard'
-import { DefaultApi } from '../../types/generated/midgard/apis'
 import { MidgardUrlLD, PoolShare, PoolShareLD, PoolSharesLD } from './types'
 import { combineShares, combineSharesByAsset, getSharesByAssetAndType, getSymSharesByAddress } from './utils'
 
-const createSharesService = (midgardUrl$: MidgardUrlLD, getMidgardDefaultApi: (basePath: string) => DefaultApi) => {
+const createSharesService = (midgardUrl$: MidgardUrlLD, getMidgardDefaultApi: (basePath: string) => MidgardApi) => {
   const api$ = midgardUrl$.pipe(RxOp.map(RD.map(getMidgardDefaultApi)))
 
   /**
@@ -45,14 +44,14 @@ const createSharesService = (midgardUrl$: MidgardUrlLD, getMidgardDefaultApi: (b
         FP.pipe(
           Rx.timer(delayTime),
           RxOp.switchMap(() => Rx.of(api)),
-          RxOp.startWith(RD.pending as RD.RemoteData<Error, DefaultApi>)
+          RxOp.startWith(RD.pending as RD.RemoteData<Error, MidgardApi>)
         )
       ),
       liveData.chain((api) =>
         FP.pipe(
-          api.getMemberDetail({ address }),
+          Rx.from(api.getMemberDetail(address)),
           RxOp.map(RD.success),
-          liveData.map(({ pools }) => pools),
+          liveData.map(({ data }) => data.pools),
           liveData.mapLeft(() => Error('No pool found')),
           RxOp.catchError((e) => {
             /**

@@ -1,19 +1,67 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { AssetBTC, BTCChain, BTC_DECIMAL, Client as BitcoinClient, defaultBTCParams } from '@xchainjs/xchain-bitcoin'
-import { HaskoinNetwork, HaskoinProvider } from '@xchainjs/xchain-utxo-providers'
+import { AssetBTC, BTCChain, Client as BitcoinClient, defaultBTCParams } from '@xchainjs/xchain-bitcoin'
+import { Network, UtxoOnlineDataProviders } from '@xchainjs/xchain-client'
+import {
+  BlockcypherNetwork,
+  BlockcypherProvider,
+  HaskoinNetwork,
+  HaskoinProvider
+} from '@xchainjs/xchain-utxo-providers'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import { Observable } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { getHaskoinBTCApiUrl } from '../../../shared/api/haskoin'
+// import { getHaskoinBTCApiUrl } from '../../../shared/api/haskoin'
+import { blockcypherApiKey } from '../../../shared/api/blockcypher'
 import { isError } from '../../../shared/utils/guard'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
 import { keystoreService } from '../wallet/keystore'
 import { getPhrase } from '../wallet/util'
 import { ClientState, ClientState$ } from './types'
+
+const testnetHaskoinProvider = new HaskoinProvider(
+  'https://api.haskoin.com',
+  BTCChain,
+  AssetBTC,
+  8,
+  HaskoinNetwork.BTCTEST
+)
+
+const mainnetHaskoinProvider = new HaskoinProvider('https://api.haskoin.com', BTCChain, AssetBTC, 8, HaskoinNetwork.BTC)
+const HaskoinDataProviders: UtxoOnlineDataProviders = {
+  [Network.Testnet]: testnetHaskoinProvider,
+  [Network.Stagenet]: mainnetHaskoinProvider,
+  [Network.Mainnet]: mainnetHaskoinProvider
+}
+
+//======================
+// Blockcypher
+//======================
+const testnetBlockcypherProvider = new BlockcypherProvider(
+  'https://api.blockcypher.com/v1',
+  BTCChain,
+  AssetBTC,
+  8,
+  BlockcypherNetwork.BTCTEST,
+  blockcypherApiKey
+)
+
+const mainnetBlockcypherProvider = new BlockcypherProvider(
+  'https://api.blockcypher.com/v1',
+  BTCChain,
+  AssetBTC,
+  8,
+  BlockcypherNetwork.BTC,
+  blockcypherApiKey
+)
+const BlockcypherDataProviders: UtxoOnlineDataProviders = {
+  [Network.Testnet]: testnetBlockcypherProvider,
+  [Network.Stagenet]: mainnetBlockcypherProvider,
+  [Network.Mainnet]: mainnetBlockcypherProvider
+}
 
 /**
  * Stream to create an observable BitcoinClient depending on existing phrase in keystore
@@ -35,13 +83,7 @@ const clientState$: ClientState$ = FP.pipe(
                 ...defaultBTCParams,
                 phrase: phrase,
                 network: network,
-                haskoinProvider: new HaskoinProvider(
-                  getHaskoinBTCApiUrl()[network],
-                  BTCChain,
-                  AssetBTC,
-                  BTC_DECIMAL,
-                  HaskoinNetwork.BTC
-                )
+                dataProviders: [BlockcypherDataProviders, HaskoinDataProviders]
               }
               const client = new BitcoinClient(btcInitParams)
               return RD.success(client)

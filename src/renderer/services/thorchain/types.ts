@@ -1,5 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Client, ClientUrl, DepositParam, NodeUrl } from '@xchainjs/xchain-thorchain'
+import type * as TN from '@xchainjs/xchain-thornode'
 import { Address, Asset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as O from 'fp-ts/Option'
@@ -11,8 +12,6 @@ import { EnabledChain } from '../../../shared/utils/chain'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
 import { AssetsWithAmount1e8, AssetWithAmount1e8 } from '../../types/asgardex'
-import type * as TN from '../../types/generated/thornode'
-import { ConstantsResponse } from '../../types/generated/thornode'
 import * as C from '../clients'
 import { TxHashLD, TxHashRD } from '../wallet/types'
 
@@ -30,8 +29,8 @@ export type InboundAddressRD = RD.RemoteData<Error, InboundAddresses>
 export type InboundAddresses = InboundAddress[]
 export type InboundAddressesLD = LiveData<Error, InboundAddresses>
 
-export type ThorchainConstantsRD = RD.RemoteData<Error, ConstantsResponse>
-export type ThorchainConstantsLD = LiveData<Error, ConstantsResponse>
+export type ThorchainConstantsRD = RD.RemoteData<Error, TN.ConstantsResponse>
+export type ThorchainConstantsLD = LiveData<Error, TN.ConstantsResponse>
 
 export type LastblockItem = TN.LastBlock
 export type LastblockItems = LastblockItem[]

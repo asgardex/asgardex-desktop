@@ -1,3 +1,4 @@
+import { type PoolDetail } from '@xchainjs/xchain-midgard'
 import {
   baseAmount,
   assetFromString,
@@ -20,10 +21,9 @@ import { isBtcAsset, isChainAsset, isEthAsset, isUSDAsset, isEthTokenAsset } fro
 import { isBnbChain, isEthChain } from '../../helpers/chainHelper'
 import { eqString, eqAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
-import { PoolFilter } from '../../services/midgard/types'
+import { GetPoolsStatusEnum, PoolFilter } from '../../services/midgard/types'
 import { toPoolData } from '../../services/midgard/utils'
 import { LastblockItem } from '../../services/thorchain/types'
-import { GetPoolsStatusEnum, type PoolDetail } from '../../types/generated/midgard'
 import { PoolData, PoolTableRowData } from './Pools.types'
 
 export const stringToGetPoolsStatus = (status: string): GetPoolsStatusEnum => {

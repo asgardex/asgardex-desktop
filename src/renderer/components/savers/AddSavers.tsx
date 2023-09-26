@@ -1278,10 +1278,10 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
                         decimal: 0
                       })}
                     </div>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div>{intl.formatMessage({ id: 'common.liquidity' })}</div>
-                      <div>{liquidityFee.formatedAssetString()}</div>
-                    </div>
+                  </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'common.liquidity' })}</div>
+                    <div>{liquidityFee.formatedAssetString()}</div>
                   </div>
                 </>
               )}

@@ -1,16 +1,15 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { Configuration, MidgardApi } from '@xchainjs/xchain-midgard'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { add9Rheader } from '../../../shared/api/ninerealms'
 import { ApiUrls, Network } from '../../../shared/api/types'
 import { DEFAULT_MIDGARD_URLS } from '../../../shared/midgard/const'
 import { eqApiUrls } from '../../helpers/fp/eq'
 import { liveData } from '../../helpers/rx/liveData'
 import { triggerStream, TriggerStream$ } from '../../helpers/stateHelper'
-import { Configuration, DefaultApi, Middleware } from '../../types/generated/midgard'
 import { network$ } from '../app/service'
 import { MIDGARD_MAX_RETRY } from '../const'
 import { getStorageState$, modifyStorage, getStorageState } from '../storage/common'
@@ -67,16 +66,13 @@ const setMidgardUrl = (url: string, network: Network) => {
   modifyStorage(O.some({ midgard: midgardUrls }))
 }
 
-const MIDGARD_API_MIDDLEWARE: Middleware = { pre: add9Rheader }
-
 /**
  * Helper to get `DefaultApi` instance for Midgard using custom basePath
  */
 const getMidgardDefaultApi = (basePath: string) =>
-  new DefaultApi(
+  new MidgardApi(
     new Configuration({
-      basePath,
-      middleware: [MIDGARD_API_MIDDLEWARE]
+      basePath
     })
   )
 /**
@@ -95,8 +91,8 @@ const loadNetworkInfo$ = (): Rx.Observable<NetworkInfoRD> =>
     midgardUrl$,
     liveData.chain((endpoint) =>
       FP.pipe(
-        getMidgardDefaultApi(endpoint).getNetworkData(),
-        RxOp.map(RD.success),
+        Rx.from(getMidgardDefaultApi(endpoint).getNetworkData()), // Convert Promise to Observable
+        RxOp.map((response) => RD.success(response.data)), // Extract data from AxiosResponse
         RxOp.startWith(RD.pending),
         RxOp.catchError((e: Error) => Rx.of(RD.failure(e))),
         RxOp.retry(MIDGARD_MAX_RETRY)
@@ -121,8 +117,8 @@ const health$: HealthLD = FP.pipe(
   midgardUrl$,
   liveData.chain((endpoint) =>
     FP.pipe(
-      getMidgardDefaultApi(endpoint).getHealth(),
-      RxOp.map(RD.success),
+      Rx.from(getMidgardDefaultApi(endpoint).getHealth()), // Convert Promise to Observable
+      RxOp.map((response) => RD.success(response.data)), // Extract data from AxiosResponse
       RxOp.startWith(RD.pending),
       RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
     )
@@ -144,9 +140,9 @@ export const { stream$: reloadChartDataUI$, trigger: reloadChartDataUI } = trigg
 
 export const checkMidgardUrl$: CheckMidgardUrlHandler = (url, intl) =>
   FP.pipe(
-    getMidgardDefaultApi(url).getHealth(),
+    Rx.from(getMidgardDefaultApi(url).getHealth()),
     RxOp.map((result) => {
-      const { database, inSync } = result
+      const { database, inSync } = result.data
       if (database && inSync) return RD.success(url)
 
       return RD.failure(

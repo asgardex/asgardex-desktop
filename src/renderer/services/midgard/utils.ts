@@ -12,6 +12,7 @@ import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTC_DECIMAL } from '@xchainjs/xchain-litecoin'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   assetFromString,
@@ -40,7 +41,6 @@ import { eqAsset, eqChain, eqOAddress } from '../../helpers/fp/eq'
 import { ordPricePool } from '../../helpers/fp/ord'
 import { getDeepestPool, RUNE_POOL_ADDRESS, RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { AssetWithAmount } from '../../types/asgardex'
-import { GetPoolPeriodEnum, GetPoolsPeriodEnum, PoolDetail } from '../../types/generated/midgard'
 import { PricePoolAssets, PricePools, PricePoolAsset, PricePool, PoolData } from '../../views/pools/Pools.types'
 import { InboundAddress } from '../thorchain/types'
 import {
@@ -53,7 +53,9 @@ import {
   PoolShare,
   PoolAddress,
   PoolAddresses,
-  PoolsDataMap
+  PoolsDataMap,
+  GetPoolsPeriodEnum,
+  GetPoolPeriodEnum
 } from './types'
 
 export const getPricePools = (details: PoolDetails, whitelist: PricePoolAssets): PricePools => {

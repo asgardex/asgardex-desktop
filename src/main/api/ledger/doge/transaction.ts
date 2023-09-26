@@ -15,7 +15,7 @@ import { Address, BaseAmount } from '@xchainjs/xchain-util'
 import { BlockcypherProvider, BlockcypherNetwork } from '@xchainjs/xchain-utxo-providers'
 import * as E from 'fp-ts/lib/Either'
 
-import { getBlockcypherUrl } from '../../../../shared/api/blockcypher'
+import { blockcypherUrl } from '../../../../shared/api/blockcypher'
 import { LedgerError, LedgerErrorId, Network } from '../../../../shared/api/types'
 import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
@@ -101,7 +101,7 @@ export const send = async ({
     })
 
     // Note: DOGE Ledger is not supported on `testnet` - all txs will be broadcasted to Blockcypher
-    const nodeUrl = getSendTxUrl({ network: clientNetwork, blockcypherUrl: getBlockcypherUrl() })
+    const nodeUrl = getSendTxUrl({ network: clientNetwork, blockcypherUrl: blockcypherUrl })
     const blockcypherProvider = new BlockcypherProvider(nodeUrl, DOGEChain, AssetDOGE, 8, BlockcypherNetwork.DOGE)
 
     const txHash = await blockcypherProvider.broadcastTx(txHex)

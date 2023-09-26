@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { Asset, BaseAmount } from '@xchainjs/xchain-util'
 import { Spin } from 'antd'
 import BigNumber from 'bignumber.js'
@@ -18,7 +19,6 @@ import * as ShareHelpers from '../../../helpers/poolShareHelper'
 import { PoolDetailRD, PoolShareRD, PoolShare } from '../../../services/midgard/types'
 import { toPoolData } from '../../../services/midgard/utils'
 import { AssetWithDecimal } from '../../../types/asgardex'
-import { PoolDetail } from '../../../types/generated/midgard'
 import { getValueOfAsset1InAsset2, getValueOfRuneInAsset } from '../../pools/Pools.utils'
 
 type Props = {

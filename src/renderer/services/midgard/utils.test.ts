@@ -7,6 +7,7 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { ETH_GAS_ASSET_DECIMAL as ETH_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, assetToBase, assetToString, baseAmount, bn } from '@xchainjs/xchain-util'
 import { Chain } from '@xchainjs/xchain-util'
@@ -25,9 +26,8 @@ import { PRICE_POOLS_WHITELIST, AssetBUSDBAF, AssetUSDC, AssetUSDTDAC, AssetBUSD
 import { BNB_DECIMAL } from '../../helpers/assetHelper'
 import { eqAsset, eqPoolShare, eqPoolShares, eqOAssetWithAmount, eqString } from '../../helpers/fp/eq'
 import { RUNE_POOL_ADDRESS, RUNE_PRICE_POOL } from '../../helpers/poolHelper'
-import { GetPoolPeriodEnum, GetPoolsPeriodEnum, PoolDetail } from '../../types/generated/midgard'
 import { PricePool, PricePools } from '../../views/pools/Pools.types'
-import { PoolAddress, PoolShare, PoolShares, PoolsStateRD } from './types'
+import { GetPoolPeriodEnum, GetPoolsPeriodEnum, PoolAddress, PoolShare, PoolShares, PoolsStateRD } from './types'
 import {
   getPricePools,
   pricePoolSelector,
