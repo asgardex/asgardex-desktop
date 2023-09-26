@@ -46,7 +46,7 @@ const testnetBlockcypherProvider = new BlockcypherProvider(
   AssetBTC,
   8,
   BlockcypherNetwork.BTCTEST,
-  blockcypherApiKey
+  blockcypherApiKey || ''
 )
 
 const mainnetBlockcypherProvider = new BlockcypherProvider(
@@ -55,7 +55,7 @@ const mainnetBlockcypherProvider = new BlockcypherProvider(
   AssetBTC,
   8,
   BlockcypherNetwork.BTC,
-  blockcypherApiKey
+  blockcypherApiKey || ''
 )
 const BlockcypherDataProviders: UtxoOnlineDataProviders = {
   [Network.Testnet]: testnetBlockcypherProvider,
