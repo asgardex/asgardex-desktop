@@ -76,7 +76,7 @@ export const send = async ({
     }
     const btcClient = new Client(btcInitParams)
 
-    const { psbt, utxos } = await btcClient.buildTx({
+    const { psbt, inputs: filteredUtxos } = await btcClient.buildTx({
       amount,
       recipient,
       memo,
@@ -84,25 +84,26 @@ export const send = async ({
       sender,
       spendPendingUTXO
     })
-
-    const inputs: Array<[Transaction, number, string | null, number | null]> = utxos.map(({ txHex, hash, index }) => {
-      if (!txHex) {
-        throw Error(`Missing 'txHex' for UTXO (txHash ${hash})`)
+    // Uses inputs: filteredUtxos, which are the UTXOs actually used in the generated PSBT.
+    const ledgerInputs: [Transaction, number, string | null, number | null][] = filteredUtxos.map(
+      ({ txHex, hash, index }) => {
+        if (!txHex) {
+          throw Error(`Missing 'txHex' for UTXO (txHash ${hash})`)
+        }
+        const utxoTx = Bitcoin.Transaction.fromHex(txHex)
+        const splittedTx = app.splitTransaction(txHex, utxoTx.hasWitnesses())
+        return [splittedTx, index, null, null]
       }
-      const utxoTx = Bitcoin.Transaction.fromHex(txHex)
-      const splittedTx = app.splitTransaction(txHex, utxoTx.hasWitnesses())
-      return [splittedTx, index, null, null]
-    })
+    )
 
-    const associatedKeysets: string[] = inputs.map((_) => derivePath)
+    const associatedKeysets = ledgerInputs.map(() => derivePath)
 
-    const newTxHex = psbt.data.globalMap.unsignedTx.toBuffer().toString('hex')
-    const newTx: Transaction = app.splitTransaction(newTxHex, true)
-
+    const unsignedHex = psbt.data.globalMap.unsignedTx.toBuffer().toString('hex')
+    const newTx = app.splitTransaction(unsignedHex, true)
     const outputScriptHex = app.serializeTransactionOutputs(newTx).toString('hex')
 
     const txHex = await app.createPaymentTransaction({
-      inputs,
+      inputs: ledgerInputs,
       associatedKeysets,
       outputScriptHex,
       segwit: true,
