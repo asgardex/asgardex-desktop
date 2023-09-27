@@ -9,17 +9,31 @@ import {
   LOWER_FEE_BOUND,
   UPPER_FEE_BOUND
 } from '@xchainjs/xchain-bitcoincash'
-import { checkFeeBounds, FeeRate, TxHash } from '@xchainjs/xchain-client'
+import { checkFeeBounds, FeeRate, Network, TxHash, UtxoOnlineDataProviders } from '@xchainjs/xchain-client'
 import { Address, BaseAmount } from '@xchainjs/xchain-util'
 import { HaskoinProvider, HaskoinNetwork } from '@xchainjs/xchain-utxo-providers'
 import * as Bitcoin from 'bitcoinjs-lib'
 import * as E from 'fp-ts/lib/Either'
 
-import { getHaskoinBCHApiUrl } from '../../../../shared/api/haskoin'
-import { LedgerError, LedgerErrorId, Network } from '../../../../shared/api/types'
+import { LedgerError, LedgerErrorId, Network as LedgerNetwork } from '../../../../shared/api/types'
 import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
 import { getDerivationPath } from './common'
+
+const testnetHaskoinProvider = new HaskoinProvider(
+  'https://api.haskoin.com',
+  BCHChain,
+  AssetBCH,
+  8,
+  HaskoinNetwork.BTCTEST
+)
+
+const mainnetHaskoinProvider = new HaskoinProvider('https://api.haskoin.com', BCHChain, AssetBCH, 8, HaskoinNetwork.BCH)
+const HaskoinDataProviders: UtxoOnlineDataProviders = {
+  [Network.Testnet]: testnetHaskoinProvider,
+  [Network.Stagenet]: mainnetHaskoinProvider,
+  [Network.Mainnet]: mainnetHaskoinProvider
+}
 
 /**
  * Sends BCH tx using Ledger
@@ -35,7 +49,7 @@ export const send = async ({
   walletIndex
 }: {
   transport: Transport
-  network: Network
+  network: LedgerNetwork
   sender?: Address
   recipient: Address
   amount: BaseAmount
@@ -62,12 +76,10 @@ export const send = async ({
     const clientNetwork = toClientNetwork(network)
     const derivePath = getDerivationPath(walletIndex, clientNetwork)
 
-    const haskoinUrl = getHaskoinBCHApiUrl()[network]
-    const haskoinProvider = new HaskoinProvider(haskoinUrl, BCHChain, AssetBCH, 8, HaskoinNetwork.BCH)
-
     const bchInitParams = {
       ...defaultBchParams,
-      network: clientNetwork
+      network: clientNetwork,
+      dataProviders: [HaskoinDataProviders]
     }
 
     const bchClient = new Client(bchInitParams)
@@ -109,7 +121,7 @@ export const send = async ({
       sigHashType: 0x41 // If not set, Ledger will throw LEDGER DEVICE: INVALID DATA RECEIVED (0X6A80)
     })
 
-    const txHash = await haskoinProvider.broadcastTx(txHex)
+    const txHash = await mainnetHaskoinProvider.broadcastTx(txHex)
 
     if (!txHash) {
       return E.left({

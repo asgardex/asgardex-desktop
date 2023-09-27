@@ -1,12 +1,11 @@
 import AppBTC from '@ledgerhq/hw-app-btc'
 import { Transaction } from '@ledgerhq/hw-app-btc/lib/types'
 import Transport from '@ledgerhq/hw-transport'
-import { checkFeeBounds, FeeRate, TxHash } from '@xchainjs/xchain-client'
+import { checkFeeBounds, FeeRate, Network, TxHash, UtxoOnlineDataProviders } from '@xchainjs/xchain-client'
 import {
   AssetDOGE,
   Client,
   DOGEChain,
-  getSendTxUrl,
   LOWER_FEE_BOUND,
   UPPER_FEE_BOUND,
   defaultDogeParams
@@ -15,11 +14,37 @@ import { Address, BaseAmount } from '@xchainjs/xchain-util'
 import { BlockcypherProvider, BlockcypherNetwork } from '@xchainjs/xchain-utxo-providers'
 import * as E from 'fp-ts/lib/Either'
 
-import { blockcypherUrl } from '../../../../shared/api/blockcypher'
-import { LedgerError, LedgerErrorId, Network } from '../../../../shared/api/types'
+import { blockcypherApiKey } from '../../../../shared/api/blockcypher'
+import { LedgerError, LedgerErrorId, Network as LedgerNetwork } from '../../../../shared/api/types'
 import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
 import { getDerivationPath } from './common'
+
+//======================
+// Blockcypher
+//======================
+const testnetBlockcypherProvider = new BlockcypherProvider(
+  'https://api.blockcypher.com/v1',
+  DOGEChain,
+  AssetDOGE,
+  8,
+  BlockcypherNetwork.BTCTEST,
+  blockcypherApiKey || ''
+)
+
+const mainnetBlockcypherProvider = new BlockcypherProvider(
+  'https://api.blockcypher.com/v1',
+  DOGEChain,
+  AssetDOGE,
+  8,
+  BlockcypherNetwork.BTC,
+  blockcypherApiKey || ''
+)
+const BlockcypherDataProviders: UtxoOnlineDataProviders = {
+  [Network.Testnet]: testnetBlockcypherProvider,
+  [Network.Stagenet]: mainnetBlockcypherProvider,
+  [Network.Mainnet]: mainnetBlockcypherProvider
+}
 
 /**
  * Sends DOGE tx using Ledger
@@ -35,7 +60,7 @@ export const send = async ({
   walletIndex
 }: {
   transport: Transport
-  network: Network
+  network: LedgerNetwork
   sender?: Address
   recipient: Address
   amount: BaseAmount
@@ -64,7 +89,8 @@ export const send = async ({
 
     const dogeInitParams = {
       ...defaultDogeParams,
-      network: clientNetwork
+      network: clientNetwork,
+      dataProviders: [BlockcypherDataProviders]
     }
 
     const dogeClient = new Client(dogeInitParams)
@@ -100,11 +126,7 @@ export const send = async ({
       additionals: []
     })
 
-    // Note: DOGE Ledger is not supported on `testnet` - all txs will be broadcasted to Blockcypher
-    const nodeUrl = getSendTxUrl({ network: clientNetwork, blockcypherUrl: blockcypherUrl })
-    const blockcypherProvider = new BlockcypherProvider(nodeUrl, DOGEChain, AssetDOGE, 8, BlockcypherNetwork.DOGE)
-
-    const txHash = await blockcypherProvider.broadcastTx(txHex)
+    const txHash = await dogeClient.broadcastTx(txHex)
 
     if (!txHash) {
       return E.left({

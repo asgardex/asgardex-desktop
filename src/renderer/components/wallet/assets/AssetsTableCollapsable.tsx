@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { assetUSDC } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
   Asset,
@@ -8,6 +9,7 @@ import {
   assetToString,
   baseAmount,
   baseToAsset,
+  CryptoAmount,
   formatAssetAmountCurrency,
   isSynthAsset
 } from '@xchainjs/xchain-util'
@@ -85,6 +87,8 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
   const screenMap: ScreenMap = Grid.useBreakpoint()
 
   const [showQRModal, setShowQRModal] = useState<O.Option<{ asset: Asset; address: Address }>>(O.none)
+
+  const [filterByValue, setFilterByValue] = useState(false)
 
   // State to store open panel keys
   const [openPanelKeys, setOpenPanelKeys] = useState<string[]>()
@@ -414,17 +418,30 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           },
           // success state
           (balances) => {
-            const prev = previousAssetsTableData.current
-            prev[index] = balances
+            let sortedBalances = balances.sort((a, b) => {
+              return b.amount.amount().minus(a.amount.amount()).toNumber()
+            })
+
+            if (filterByValue) {
+              sortedBalances = sortedBalances.filter(({ amount, asset }) => {
+                const usdValue = getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool, network })
+                return (
+                  O.isSome(usdValue) &&
+                  new CryptoAmount(baseAmount(usdValue.value.amount()), assetUSDC).assetAmount.gt(1)
+                )
+              })
+            }
+
+            previousAssetsTableData.current[index] = sortedBalances
             return renderAssetsTable({
-              tableData: balances,
+              tableData: sortedBalances,
               loading: false
             })
           }
         )
       )
     },
-    [renderAssetsTable]
+    [filterByValue, network, poolDetails, pricePool, renderAssetsTable]
   )
 
   // Panel
@@ -553,15 +570,20 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
   }, [showQRModal, network, closeQrModal])
 
   return (
-    <Styled.Collapse
-      expandIcon={({ isActive }) => <Styled.ExpandIcon rotate={isActive ? 90 : 0} />}
-      defaultActiveKey={openPanelKeys}
-      activeKey={openPanelKeys}
-      expandIconPosition="end"
-      onChange={onChangeCollapseHandler}
-      ghost>
-      {chainBalances.map(renderPanel)}
-      {renderQRCodeModal}
-    </Styled.Collapse>
+    <>
+      <Styled.FilterCheckbox checked={filterByValue} onChange={(e) => setFilterByValue(e.target.checked)}>
+        Filter out assets below $1
+      </Styled.FilterCheckbox>
+      <Styled.Collapse
+        expandIcon={({ isActive }) => <Styled.ExpandIcon rotate={isActive ? 90 : 0} />}
+        defaultActiveKey={openPanelKeys}
+        activeKey={openPanelKeys}
+        expandIconPosition="end"
+        onChange={onChangeCollapseHandler}
+        ghost>
+        {chainBalances.map(renderPanel)}
+        {renderQRCodeModal}
+      </Styled.Collapse>
+    </>
   )
 }

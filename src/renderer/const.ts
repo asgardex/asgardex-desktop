@@ -109,7 +109,7 @@ export const AssetUSDT62E: Asset = {
 // ETH.USDC mainnet
 export const AssetUSDC: Asset = {
   chain: ETHChain,
-  symbol: 'USDC-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+  symbol: 'ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48',
   ticker: 'USDC',
   synth: false
 }
