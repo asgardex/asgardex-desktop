@@ -1,3 +1,39 @@
+# 1.20.5 (2023-09-27)
+
+## Update / Fix
+
+- Bond and Unbond not looking at RUNE balance [#44](https://github.com/asgardex/asgardex-desktop/issues/44)
+- Add: Deposit and Savers Option on wallet view. [#30](https://github.com/asgardex/asgardex-desktop/issues/30)
+- Add liquidity fee for earn [#35](https://github.com/asgardex/asgardex-desktop/issues/35)
+
+## Internal
+
+- Remove dependancy on @thorchain/asgardex-util [#33](https://github.com/asgardex/asgardex-desktop/issues/33)
+- Remove Asym references from AsgardEx [#36](https://github.com/asgardex/asgardex-desktop/issues/36)
+- REMOVE: Asgardex-midgard replace with xchain-midgard [#13](https://github.com/asgardex/asgardex-desktop/issues/33)
+- Update packages [#42](https://github.com/asgardex/asgardex-desktop/issues/42)
+  - Updated
+    - xchainjs/xchain-binance
+    - xchainjs/xchain-bitcoin
+    - xchainjs/xchain-bitcoincash
+    - xchainjs/xchain-client
+    - xchainjs/xchain-cosmos
+    - xchainjs/xchain-crypto
+    - xchainjs/xchain-doge
+    - xchainjs/xchain-ethereum
+    - xchainjs/xchain-litecoin
+    - xchainjs/xchain-midgard
+    - xchainjs/xchain-midgard-query
+    - xchainjs/xchain-thorchain
+    - xchainjs/xchain-thorchain-query
+    - xchainjs/xchain-thornode
+    - xchainjs/xchain-utxo-providers
+    - axios
+    - ethers
+    - coinselect
+    - openapi for internally for thornode
+  - Updates to MsgDeposit page
+
 # 1.20.4 (2023-09-08)
 
 ## Add
@@ -28,7 +64,7 @@
 
 - [Savers] [#3](https://github.com/asgardex/asgardex-desktop/issues/3) - Earn only. No Affiliate.
 
-# Update
+## Update
 
 - Streaming interface improvements
   - Slider Interval / Max 10 blocks. Default is 3.
