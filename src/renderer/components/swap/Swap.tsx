@@ -2422,12 +2422,7 @@ export const Swap = ({
                     className={`flex w-full justify-between ${showDetails ? 'pt-10px' : ''} font-mainBold text-[14px]`}>
                     <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
                     <div>
-                      {formatSwapTime(
-                        Number(transactionTime.totalSwap) +
-                          Number(transactionTime.inbound) +
-                          Number(transactionTime.streaming) +
-                          Number(transactionTime.confirmation)
-                      )}
+                      {formatSwapTime(Number(transactionTime.totalSwap) + Number(transactionTime.confirmation))}
                     </div>
                   </div>
                   {showDetails && (
