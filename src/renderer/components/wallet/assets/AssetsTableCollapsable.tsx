@@ -33,6 +33,7 @@ import * as poolsRoutes from '../../../routes/pools'
 import { WalletBalancesRD } from '../../../services/clients'
 import { PoolDetails, PoolsDataMap } from '../../../services/midgard/types'
 import { MimirHaltRD } from '../../../services/thorchain/types'
+import { reloadBalancesByChain } from '../../../services/wallet'
 import {
   ApiError,
   ChainBalance,
@@ -54,6 +55,7 @@ const { Panel } = Collapse
 export type AssetAction = 'send' | 'deposit'
 
 type Props = {
+  disableRefresh: boolean
   chainBalances: ChainBalances
   pricePool: PricePool
   poolDetails: PoolDetails
@@ -67,6 +69,7 @@ type Props = {
 
 export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
   const {
+    disableRefresh,
     chainBalances = [],
     pricePool,
     poolDetails,
@@ -322,6 +325,21 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
                 }
               ]
             : []
+        ),
+        // Reload Balance
+        A.concatW<ActionButtonAction>(
+          !disableRefresh
+            ? [
+                {
+                  label: intl.formatMessage({ id: 'common.refresh' }),
+                  callback: () => {
+                    console.log('Refresh clicked')
+                    const lazyReload = reloadBalancesByChain(chain)
+                    lazyReload() // Invoke the lazy function
+                  }
+                }
+              ]
+            : []
         )
       )
 
@@ -331,7 +349,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         </div>
       )
     },
-    [assetHandler, intl, navigate, poolDetails, poolsData]
+    [assetHandler, intl, navigate, poolDetails, poolsData, disableRefresh]
   )
 
   const actionColumn: ColumnType<WalletBalance> = useMemo(

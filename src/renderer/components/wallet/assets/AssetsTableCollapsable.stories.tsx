@@ -26,7 +26,7 @@ const selectAssetHandler = ({ asset, walletType, walletAddress }: SelectedWallet
 
 const assetHandler = ({ asset, walletType, walletAddress }: SelectedWalletAsset) =>
   console.log('assetHandler params ', assetToString(asset), walletType, walletAddress)
-
+const disableRefresh = false
 const balances: Partial<Record<EnabledChain, ChainBalances>> = {
   [BNBChain]: [
     {
@@ -154,6 +154,7 @@ const getBalance = (chain: EnabledChain, status: RDStatus | undefined, walletTyp
 const Template = (args: Partial<Record<EnabledChain, RDStatus>>) => {
   return (
     <AssetsTableCollapsable
+      disableRefresh={disableRefresh}
       selectAssetHandler={selectAssetHandler}
       assetHandler={assetHandler}
       chainBalances={FP.pipe(

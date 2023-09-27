@@ -17,7 +17,7 @@ export type Props = Omit<ButtonProps, 'onClick'> & {
 export const SaversButton: React.FC<Props> = ({ asset, isTextView, ...otherProps }) => {
   const intl = useIntl()
   const navigate = useNavigate()
-
+  console.log(asset)
   const onClick = useCallback(
     (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
       event.preventDefault()

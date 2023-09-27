@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { Row } from 'antd'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -10,7 +9,6 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 import * as RxOp from 'rxjs/operators'
 
-import { RefreshButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
 import { AssetsTableCollapsable } from '../../components/wallet/assets/AssetsTableCollapsable'
 import type { AssetAction } from '../../components/wallet/assets/AssetsTableCollapsable'
@@ -29,7 +27,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
   const navigate = useNavigate()
   const intl = useIntl()
 
-  const { chainBalances$, balancesState$, setSelectedAsset, reloadBalances } = useWalletContext()
+  const { chainBalances$, balancesState$, setSelectedAsset } = useWalletContext()
 
   const { network } = useNetwork()
 
@@ -62,7 +60,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
   )
   const {
     service: {
-      pools: { poolsState$, selectedPricePool$, reloadAllPools }
+      pools: { poolsState$, selectedPricePool$ }
     }
   } = useMidgardContext()
 
@@ -102,16 +100,8 @@ export const AssetsView: React.FC = (): JSX.Element => {
 
   const disableRefresh = useMemo(() => RD.isPending(poolsRD) || loadingBalances, [loadingBalances, poolsRD])
 
-  const refreshHandler = useCallback(() => {
-    reloadAllPools()
-    reloadBalances()
-  }, [reloadAllPools, reloadBalances])
-
   return (
     <>
-      <Row justify="end" style={{ marginBottom: '20px' }}>
-        <RefreshButton onClick={refreshHandler} disabled={disableRefresh} />
-      </Row>
       <AssetsNav />
       <TotalValue
         total={totalWalletBalances}
@@ -122,6 +112,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
         hidePrivateData={false}
       />
       <AssetsTableCollapsable
+        disableRefresh={disableRefresh}
         chainBalances={chainBalances}
         pricePool={selectedPricePool}
         poolDetails={poolDetails}

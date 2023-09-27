@@ -11,7 +11,7 @@ import { from } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { ENABLED_CHAINS } from '../../../shared/utils/chain'
-import { SaversDetails } from '../../components/savers/SaversDetails'
+import { SaversDetailsTable } from '../../components/savers/SaversDetailsTable'
 import { ErrorView } from '../../components/shared/error'
 import { Spin } from '../../components/shared/loading'
 import { FlatButton, RefreshButton } from '../../components/uielements/button'
@@ -128,7 +128,7 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
               )
               return (
                 <>
-                  <SaversDetails
+                  <SaversDetailsTable
                     key={chain}
                     asset={asset}
                     priceAsset={pricePool.asset}
