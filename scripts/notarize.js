@@ -1,5 +1,5 @@
 require('dotenv').config()
-const { notarize } = require('electron-notarize')
+const { notarize } = require('@electron/notarize')
 
 /*
  Pre-requisites: https://github.com/electron/electron-notarize#prerequisites
@@ -35,7 +35,8 @@ exports.default = async function notarizing(context) {
     appBundleId: 'org.thorchain.asgardex',
     appPath: `${appOutDir}/${appName}.app`,
     appleId: SIGNING_APPLE_ID,
-    appleIdPassword: SIGNING_APP_PASSWORD
+    appleIdPassword: SIGNING_APP_PASSWORD,
+    teamId: SIGNING_TEAM_ID
   }
   if (!isEmpty(SIGNING_TEAM_ID)) options.ascProvider = SIGNING_TEAM_ID
 
