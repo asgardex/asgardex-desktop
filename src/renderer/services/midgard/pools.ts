@@ -730,6 +730,7 @@ const createPoolsService = ({
             api.getLiquidityHistory(
               request.pool,
               request.interval,
+              request.count,
               O.toUndefined(roundToFiveMinutes(from)),
               O.toUndefined(roundToFiveMinutes(to))
             )
