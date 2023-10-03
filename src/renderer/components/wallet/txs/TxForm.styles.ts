@@ -137,3 +137,8 @@ export const SubmitStatus = styled(UILabel).attrs({
 export const WalletTypeLabelWrapper = styled(`div`)`
   margin-left: 5px;
 `
+
+export const Input = styled(A.Input)`
+  background: inherit !important;
+  color: ${palette('text', 0)};
+`

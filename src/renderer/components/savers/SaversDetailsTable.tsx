@@ -1,116 +1,91 @@
 import React from 'react'
 
-import { Asset, BaseAmount, baseToAsset, formatAssetAmountCurrency, baseAmount, formatBN } from '@xchainjs/xchain-util'
-import BigNumber from 'bignumber.js'
+import { baseToAsset, formatAssetAmountCurrency, baseAmount, formatBN } from '@xchainjs/xchain-util'
 
 import { ZERO_BN } from '../../const'
 import { isUSDAsset } from '../../helpers/assetHelper'
+import { ParentProps } from '../../views/wallet/SaversDetailsView'
 import * as Styled from '../PoolShares/PoolShares.styles'
 import { SaversButton } from '../uielements/button/SaversButton'
 
-type Props = {
-  asset: Asset
-  priceAsset: Asset
-  deposit: { amount: BaseAmount; price: BaseAmount }
-  redeem: { amount: BaseAmount; price: BaseAmount }
-  percent: BigNumber
-}
-
-export const SaversDetailsTable: React.FC<Props> = (props): JSX.Element => {
-  const { asset, priceAsset, deposit, redeem, percent } = props
-  // const navigate = useNavigate()
-  const depositValueLabel = formatAssetAmountCurrency({ amount: baseToAsset(deposit.amount), asset, decimal: 3 })
-
-  const priceDepositLabel = formatAssetAmountCurrency({
-    amount: baseToAsset(deposit.price),
-    asset: priceAsset,
-    decimal: isUSDAsset(priceAsset) ? 2 : 6
-  })
-  const redeemValueLabel = formatAssetAmountCurrency({ amount: baseToAsset(redeem.amount), asset, decimal: 3 })
-
-  const redeemDepositLabel = formatAssetAmountCurrency({
-    amount: baseToAsset(redeem.price),
-    asset: priceAsset,
-    decimal: isUSDAsset(priceAsset) ? 2 : 6
-  })
-
-  const growthValue = redeem.amount.minus(deposit.amount)
-  const growthValueLabel = formatAssetAmountCurrency({
-    amount: baseToAsset(growthValue.gt(0) ? growthValue : baseAmount(0, deposit.amount.decimal)),
-    asset,
-    decimal: isUSDAsset(asset) ? 2 : 6
-  })
-
-  const priceGrowthLabel = formatAssetAmountCurrency({
-    amount: baseToAsset(growthValue.gt(0) ? growthValue : baseAmount(0, deposit.price.decimal)),
-    asset: priceAsset,
-    decimal: isUSDAsset(priceAsset) ? 2 : 6
-  })
-
-  const percentLabel = `${formatBN(percent.gt(0) ? percent : ZERO_BN, 4)}%`
-
-  // const navigateToManagePage = (asset: Asset) => {
-  //   // Here, navigate to the manage page with the assetSymbol
-  //   // For example, using your existing navigate function:
-  //   navigate(
-  //     poolsRoutes.earn.path({
-  //       asset: assetToString(asset),
-  //       walletType: DEFAULT_WALLET_TYPE
-  //     })
-  //   )
-  // }
-
-  //const hasSavings = deposit.amount.gt(0)
+export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX.Element => {
   const columns = [
     {
-      title: `Asset`,
-      dataIndex: 'key', // This will display the asset symbol
-      key: `asset-${asset.symbol}`
+      title: 'Asset',
+      dataIndex: 'key',
+      key: 'asset'
     },
     {
-      title: `Deposit Value`,
+      title: 'Deposit Value',
       dataIndex: 'priceDepositLabel',
-      key: `priceDeposit-${asset.symbol}`
+      key: 'priceDeposit'
     },
     {
-      title: `Asset Amount`,
+      title: 'Asset Amount',
       dataIndex: 'depositValueLabel',
-      key: `assetValue-${asset.symbol}`
+      key: 'assetValue'
     },
     {
-      title: `Redeem Value`,
+      title: 'Redeem Value',
       dataIndex: 'redeemValueLabel',
-      key: `redeemValue-${asset.symbol}`
+      key: 'redeemValue'
     },
     {
-      title: `Redeem Deposit Amount`,
+      title: 'Redeem Deposit Amount',
       dataIndex: 'redeemDepositLabel',
-      key: `redeemValue-${asset.symbol}`
+      key: 'redeemDeposit'
     },
     {
-      title: `Growth Value`,
+      title: 'Growth Value',
       dataIndex: 'growthValueLabel',
-      key: `redeemValue-${asset.symbol}`
+      key: 'growthValue'
     },
     {
-      title: `Price growth`,
+      title: 'Price Growth',
       dataIndex: 'priceGrowthLabel',
-      key: `redeemValue-${asset.symbol}`
+      key: 'priceGrowth'
     },
     {
       title: 'Manage',
       key: 'manage',
-      render: () => (
-        <SaversButton asset={asset} isTextView={true} {...asset}>
-          Manage
-        </SaversButton>
-      )
+      render: (record: typeof dataSource[0]) => {
+        const assetDetail = assetDetails.find((detail) => detail.asset.symbol === record.key)
+        return assetDetail ? <SaversButton asset={assetDetail.asset} isTextView={true}></SaversButton> : 'N/A'
+      }
     }
-    // Add more columns as needed
   ]
 
-  const dataSource = [
-    {
+  const dataSource = assetDetails.map(({ asset, deposit, redeem, priceAsset, percent }) => {
+    const depositValueLabel = formatAssetAmountCurrency({ amount: baseToAsset(deposit.amount), asset, decimal: 3 })
+
+    const priceDepositLabel = formatAssetAmountCurrency({
+      amount: baseToAsset(deposit.price),
+      asset: priceAsset,
+      decimal: isUSDAsset(priceAsset) ? 2 : 6
+    })
+    const redeemValueLabel = formatAssetAmountCurrency({ amount: baseToAsset(redeem.amount), asset, decimal: 3 })
+
+    const redeemDepositLabel = formatAssetAmountCurrency({
+      amount: baseToAsset(redeem.price),
+      asset: priceAsset,
+      decimal: isUSDAsset(priceAsset) ? 2 : 6
+    })
+
+    const growthValue = redeem.amount.minus(deposit.amount)
+    const growthValueLabel = formatAssetAmountCurrency({
+      amount: baseToAsset(growthValue.gt(0) ? growthValue : baseAmount(0, deposit.amount.decimal)),
+      asset,
+      decimal: isUSDAsset(asset) ? 2 : 6
+    })
+
+    const priceGrowthLabel = formatAssetAmountCurrency({
+      amount: baseToAsset(growthValue.gt(0) ? growthValue : baseAmount(0, deposit.price.decimal)),
+      asset: priceAsset,
+      decimal: isUSDAsset(priceAsset) ? 2 : 6
+    })
+
+    const percentLabel = `${formatBN(percent.gt(0) ? percent : ZERO_BN, 4)}%`
+    return {
       key: asset.symbol,
       depositValueLabel,
       redeemValueLabel,
@@ -120,9 +95,9 @@ export const SaversDetailsTable: React.FC<Props> = (props): JSX.Element => {
       growthValueLabel,
       percentLabel,
       priceGrowthLabel
-      // Add more data fields as needed
+      // your formatted labels and values
     }
-  ]
+  })
 
   return (
     <>

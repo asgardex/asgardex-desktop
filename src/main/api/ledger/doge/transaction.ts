@@ -28,7 +28,7 @@ const testnetBlockcypherProvider = new BlockcypherProvider(
   DOGEChain,
   AssetDOGE,
   8,
-  BlockcypherNetwork.BTCTEST,
+  BlockcypherNetwork.DOGE,
   blockcypherApiKey || ''
 )
 
@@ -37,7 +37,7 @@ const mainnetBlockcypherProvider = new BlockcypherProvider(
   DOGEChain,
   AssetDOGE,
   8,
-  BlockcypherNetwork.BTC,
+  BlockcypherNetwork.DOGE,
   blockcypherApiKey || ''
 )
 const BlockcypherDataProviders: UtxoOnlineDataProviders = {

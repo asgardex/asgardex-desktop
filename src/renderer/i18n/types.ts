@@ -506,6 +506,7 @@ export type HaltMessageKey =
   | 'halt.chain'
   | 'halt.chains'
   | 'halt.chain.trading'
+  | 'halt.chain.synth'
   | 'halt.chain.pause'
   | 'halt.chain.pauseall'
 

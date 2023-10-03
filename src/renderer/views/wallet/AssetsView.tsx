@@ -39,15 +39,15 @@ export const AssetsView: React.FC = (): JSX.Element => {
           FP.pipe(
             chainBalances,
             // we show all balances
-            A.filter(({ balancesType }) => balancesType === 'all'),
+            A.filter(({ balancesType }) => balancesType === 'all')
             // accept balances > 0 only
-            A.map((chainBalance) => ({
-              ...chainBalance,
-              balances: FP.pipe(
-                chainBalance.balances,
-                RD.map((balances) => balances.filter((balance) => balance.amount.gt(0)))
-              )
-            }))
+            // A.map((chainBalance) => ({
+            //   ...chainBalance,
+            //   balances: FP.pipe(
+            //     chainBalance.balances,
+            //     RD.map((balances) => balances.filter((balance) => balance.amount.gt(0)))
+            //   )
+            // }))
           )
         )
       ),

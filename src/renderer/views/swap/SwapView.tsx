@@ -369,10 +369,10 @@ const SuccessRouteView: React.FC<Props> = ({
 
               const checkDisableSwapAction = () => {
                 return (
-                  disableAllPoolActions(sourceChain) ||
-                  disableTradingPoolActions(sourceChain) ||
-                  disableAllPoolActions(targetChain) ||
-                  disableTradingPoolActions(targetChain)
+                  disableAllPoolActions(sourceAsset.asset.chain) ||
+                  disableTradingPoolActions(sourceAsset.asset.chain) ||
+                  disableAllPoolActions(targetAsset.asset.chain) ||
+                  disableTradingPoolActions(targetAsset.asset.chain)
                 )
               }
 

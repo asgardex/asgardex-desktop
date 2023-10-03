@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { assetUSDC } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
@@ -88,7 +89,14 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
   const [showQRModal, setShowQRModal] = useState<O.Option<{ asset: Asset; address: Address }>>(O.none)
 
-  const [filterByValue, setFilterByValue] = useState(false)
+  const [filterByValue, setFilterByValue] = useState(() => {
+    const cachedValue = localStorage.getItem('filterByValue')
+    return cachedValue ? JSON.parse(cachedValue) : false
+  })
+
+  useEffect(() => {
+    localStorage.setItem('filterByValue', JSON.stringify(filterByValue))
+  }, [filterByValue])
 
   // State to store open panel keys
   const [openPanelKeys, setOpenPanelKeys] = useState<string[]>()
@@ -176,7 +184,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
   )
 
   const renderActionColumn = useCallback(
-    ({ asset, walletAddress, walletIndex, walletType, hdMode }: WalletBalance) => {
+    ({ asset, amount, walletAddress, walletIndex, walletType, hdMode }: WalletBalance) => {
       const { chain } = asset
       const walletAsset: SelectedWalletAsset = { asset, walletAddress, walletIndex, walletType, hdMode }
       const normalizedAssetString = assetToString(asset).toUpperCase()
@@ -187,68 +195,23 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         O.chain(({ asset }) => O.fromNullable(assetFromString(asset))),
         O.toNullable
       )
+      const isZeroBalance = amount.amount().isZero()
+      let actions: ActionButtonAction[] = []
 
-      const actions: ActionButtonAction[] = FP.pipe(
-        // 'swap' for RUNE
-        isRuneNativeAsset(asset) && deepestPoolAsset !== null
-          ? [
-              {
-                label: intl.formatMessage({ id: 'common.swap' }),
-                callback: () => {
-                  navigate(
-                    poolsRoutes.swap.path({
-                      source: assetToString(asset),
-                      target: assetToString(deepestPoolAsset),
-                      sourceWalletType: walletType,
-                      targetWalletType: DEFAULT_WALLET_TYPE
-                    })
-                  )
-                }
-              }
-            ]
-          : [],
-        // 'add' LP RUNE
-        A.concatW<ActionButtonAction>(
+      if (isZeroBalance) {
+        actions = [
+          {
+            label: intl.formatMessage({ id: 'common.refresh' }),
+            callback: () => {
+              const lazyReload = reloadBalancesByChain(ETHChain)
+              lazyReload() // Invoke the lazy function
+            }
+          }
+        ]
+      } else {
+        actions = FP.pipe(
+          // 'swap' for RUNE
           isRuneNativeAsset(asset) && deepestPoolAsset !== null
-            ? [
-                {
-                  label: intl.formatMessage({ id: 'common.add' }),
-                  callback: () => {
-                    navigate(
-                      poolsRoutes.deposit.path({
-                        asset: assetToString(deepestPoolAsset),
-                        assetWalletType: DEFAULT_WALLET_TYPE,
-                        runeWalletType: walletType
-                      })
-                    )
-                  }
-                }
-              ]
-            : []
-        ),
-        // 'swap' for synths assets of active pools only
-        A.concatW<ActionButtonAction>(
-          isSynthAsset(asset)
-            ? [
-                {
-                  label: intl.formatMessage({ id: 'common.swap' }),
-                  callback: () => {
-                    navigate(
-                      poolsRoutes.swap.path({
-                        source: `${asset.chain}/${asset.symbol}`,
-                        target: assetToString(AssetRuneNative),
-                        sourceWalletType: walletType,
-                        targetWalletType: DEFAULT_WALLET_TYPE
-                      })
-                    )
-                  }
-                }
-              ]
-            : []
-        ),
-        // 'swap' for assets of active pools only
-        A.concatW<ActionButtonAction>(
-          hasActivePool
             ? [
                 {
                   label: intl.formatMessage({ id: 'common.swap' }),
@@ -256,7 +219,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
                     navigate(
                       poolsRoutes.swap.path({
                         source: assetToString(asset),
-                        target: assetToString(AssetRuneNative),
+                        target: assetToString(deepestPoolAsset),
                         sourceWalletType: walletType,
                         targetWalletType: DEFAULT_WALLET_TYPE
                       })
@@ -264,88 +227,146 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
                   }
                 }
               ]
-            : []
-        ),
-        // 'Earn' for assets of active pools only
-        A.concatW<ActionButtonAction>(
-          hasActivePool
-            ? [
-                {
-                  label: intl.formatMessage({ id: 'common.earn' }),
-                  callback: () => {
-                    navigate(
-                      poolsRoutes.earn.path({
-                        asset: assetToString(asset),
-                        walletType: walletType
-                      })
-                    )
+            : [],
+          // 'add' LP RUNE
+          A.concatW<ActionButtonAction>(
+            isRuneNativeAsset(asset) && deepestPoolAsset !== null
+              ? [
+                  {
+                    label: intl.formatMessage({ id: 'common.add' }),
+                    callback: () => {
+                      navigate(
+                        poolsRoutes.deposit.path({
+                          asset: assetToString(deepestPoolAsset),
+                          assetWalletType: DEFAULT_WALLET_TYPE,
+                          runeWalletType: walletType
+                        })
+                      )
+                    }
                   }
-                }
-              ]
-            : []
-        ),
-        // 'add' LP for assets of active pools only
-        A.concatW<ActionButtonAction>(
-          hasActivePool
-            ? [
-                {
-                  label: intl.formatMessage({ id: 'common.add' }),
-                  callback: () => {
-                    navigate(
-                      poolsRoutes.deposit.path({
-                        asset: assetToString(asset),
-                        assetWalletType: walletType,
-                        runeWalletType: DEFAULT_WALLET_TYPE
-                      })
-                    )
+                ]
+              : []
+          ),
+          // 'swap' for synths assets of active pools only
+          A.concatW<ActionButtonAction>(
+            isSynthAsset(asset)
+              ? [
+                  {
+                    label: intl.formatMessage({ id: 'common.swap' }),
+                    callback: () => {
+                      navigate(
+                        poolsRoutes.swap.path({
+                          source: `${asset.chain}/${asset.symbol}`,
+                          target: assetToString(AssetRuneNative),
+                          sourceWalletType: walletType,
+                          targetWalletType: DEFAULT_WALLET_TYPE
+                        })
+                      )
+                    }
                   }
-                }
-              ]
-            : []
-        ),
-        A.concat([
-          {
-            label: intl.formatMessage({ id: 'wallet.action.send' }),
-            callback: () => {
-              assetHandler(walletAsset, 'send')
+                ]
+              : []
+          ),
+          // 'swap' for assets of active pools only
+          A.concatW<ActionButtonAction>(
+            hasActivePool
+              ? [
+                  {
+                    label: intl.formatMessage({ id: 'common.swap' }),
+                    callback: () => {
+                      navigate(
+                        poolsRoutes.swap.path({
+                          source: assetToString(asset),
+                          target: assetToString(AssetRuneNative),
+                          sourceWalletType: walletType,
+                          targetWalletType: DEFAULT_WALLET_TYPE
+                        })
+                      )
+                    }
+                  }
+                ]
+              : []
+          ),
+          // 'Earn' for assets of active pools only
+          A.concatW<ActionButtonAction>(
+            hasActivePool
+              ? [
+                  {
+                    label: intl.formatMessage({ id: 'common.earn' }),
+                    callback: () => {
+                      navigate(
+                        poolsRoutes.earn.path({
+                          asset: assetToString(asset),
+                          walletType: walletType
+                        })
+                      )
+                    }
+                  }
+                ]
+              : []
+          ),
+          // 'add' LP for assets of active pools only
+          A.concatW<ActionButtonAction>(
+            hasActivePool
+              ? [
+                  {
+                    label: intl.formatMessage({ id: 'common.add' }),
+                    callback: () => {
+                      navigate(
+                        poolsRoutes.deposit.path({
+                          asset: assetToString(asset),
+                          assetWalletType: walletType,
+                          runeWalletType: DEFAULT_WALLET_TYPE
+                        })
+                      )
+                    }
+                  }
+                ]
+              : []
+          ),
+          A.concat([
+            {
+              label: intl.formatMessage({ id: 'wallet.action.send' }),
+              callback: () => {
+                assetHandler(walletAsset, 'send')
+              }
+            },
+            {
+              label: intl.formatMessage({ id: 'wallet.action.receive' }),
+              callback: () => {
+                setShowQRModal(O.some({ asset: getChainAsset(chain), address: walletAddress }))
+              }
             }
-          },
-          {
-            label: intl.formatMessage({ id: 'wallet.action.receive' }),
-            callback: () => {
-              setShowQRModal(O.some({ asset: getChainAsset(chain), address: walletAddress }))
-            }
-          }
-        ]),
-        // 'deposit'  for RuneNativeAsset only
-        A.concatW<ActionButtonAction>(
-          isRuneNativeAsset(asset)
-            ? [
-                {
-                  label: intl.formatMessage({ id: 'wallet.action.deposit' }),
-                  callback: () => {
-                    assetHandler(walletAsset, 'deposit')
+          ]),
+          // 'deposit'  for RuneNativeAsset only
+          A.concatW<ActionButtonAction>(
+            isRuneNativeAsset(asset)
+              ? [
+                  {
+                    label: intl.formatMessage({ id: 'wallet.action.deposit' }),
+                    callback: () => {
+                      assetHandler(walletAsset, 'deposit')
+                    }
                   }
-                }
-              ]
-            : []
-        ),
-        // Reload Balance
-        A.concatW<ActionButtonAction>(
-          !disableRefresh
-            ? [
-                {
-                  label: intl.formatMessage({ id: 'common.refresh' }),
-                  callback: () => {
-                    console.log('Refresh clicked')
-                    const lazyReload = reloadBalancesByChain(chain)
-                    lazyReload() // Invoke the lazy function
+                ]
+              : []
+          ),
+          // Reload Balance
+          A.concatW<ActionButtonAction>(
+            !disableRefresh
+              ? [
+                  {
+                    label: intl.formatMessage({ id: 'common.refresh' }),
+                    callback: () => {
+                      const lazyReload = reloadBalancesByChain(chain)
+                      lazyReload() // Invoke the lazy function
+                    }
                   }
-                }
-              ]
-            : []
+                ]
+              : []
+          )
         )
-      )
+      }
 
       return (
         <div className="flex justify-center">

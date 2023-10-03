@@ -8,6 +8,7 @@ import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { Row } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
@@ -15,8 +16,9 @@ import { useIntl } from 'react-intl'
 
 import { isEnabledChain } from '../../../../shared/utils/chain'
 import { LoadingView } from '../../../components/shared/loading'
-import { BackLinkButton } from '../../../components/uielements/button'
+import { BackLinkButton, RefreshButton } from '../../../components/uielements/button'
 import { useWalletContext } from '../../../contexts/WalletContext'
+import { reloadBalancesByChain } from '../../../services/wallet'
 import { SelectedWalletAsset } from '../../../services/wallet/types'
 import {
   SendViewBNB,
@@ -82,7 +84,10 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
       () => <LoadingView size="large" />,
       (selectedAsset) => (
         <div>
-          <BackLinkButton />
+          <Row justify="space-between">
+            <BackLinkButton />
+            <RefreshButton onClick={reloadBalancesByChain(selectedAsset.asset.chain)}></RefreshButton>
+          </Row>
           {renderSendView(selectedAsset)}
         </div>
       )

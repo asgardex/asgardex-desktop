@@ -2,17 +2,17 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { FeeOption, Fees, TxParams } from '@xchainjs/xchain-client'
-import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { AssetETH, ETHChain } from '@xchainjs/xchain-ethereum'
 import { validateAddress } from '@xchainjs/xchain-evm'
 import {
-  formatAssetAmountCurrency,
   bn,
   baseToAsset,
   BaseAmount,
-  baseAmount,
   assetToBase,
   assetAmount,
-  Address
+  Address,
+  formatAssetAmountCurrency,
+  baseAmount
 } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
 import { RadioChangeEvent } from 'antd/lib/radio'
@@ -22,7 +22,6 @@ import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
 import { Network } from '../../../../../shared/api/types'
-import { AssetETH } from '../../../../../shared/utils/asset'
 import { chainToString } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
@@ -41,7 +40,7 @@ import * as StyledR from '../../../shared/form/Radio.styles'
 import { FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { UIFeesRD } from '../../../uielements/fees'
-import { Input, InputBigNumber } from '../../../uielements/input'
+import { InputBigNumber } from '../../../uielements/input'
 import { AccountSelector } from '../../account'
 import * as H from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
@@ -476,7 +475,7 @@ export const SendFormETH: React.FC<Props> = (props): JSX.Element => {
               {renderWalletType}
             </Styled.CustomLabel>
             <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
-              <Input
+              <Styled.Input
                 color="primary"
                 size="large"
                 disabled={isLoading}
@@ -507,7 +506,7 @@ export const SendFormETH: React.FC<Props> = (props): JSX.Element => {
             {renderFeeError}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
             <Form.Item name="memo">
-              <Input size="large" disabled={isLoading} onBlur={reloadFees} />
+              <Styled.Input size="large" disabled={isLoading} onBlur={reloadFees} />
             </Form.Item>
             <Form.Item name="fee">{renderFeeOptions}</Form.Item>
           </Styled.SubForm>
