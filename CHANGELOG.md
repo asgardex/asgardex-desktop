@@ -1,38 +1,25 @@
-# 1.20.5 (2023-09-27)
+# 1.20.5 (2023-10-03)
 
 ## Update / Fix
 
 - Bond and Unbond not looking at RUNE balance [#44](https://github.com/asgardex/asgardex-desktop/issues/44)
-- Add: Deposit and Savers Option on wallet view. [#30](https://github.com/asgardex/asgardex-desktop/issues/30)
+- Implement Updated Transaction Tracking [#23](https://github.com/asgardex/asgardex-desktop/issues/23)
+- Add: Deposit and Savers Option on wallet view [#30](https://github.com/asgardex/asgardex-desktop/issues/30)
+- FIX: USDC swap before quote shows wrong fee decimals [#39](https://github.com/asgardex/asgardex-desktop/issues/39)
 - Add liquidity fee for earn [#35](https://github.com/asgardex/asgardex-desktop/issues/35)
+- Change refresh function on wallet [#47](https://github.com/asgardex/asgardex-desktop/issues/47)
+- Format Wallet: Savers position# [34](https://github.com/asgardex/asgardex-desktop/issues/34)
+- BUG: High fee issue with BTC swaps from a Ledger address [#45](https://github.com/asgardex/asgardex-desktop/issues/45)
+- BUG: 24 Vol not being displayed (was working in prev version) [#50](https://github.com/asgardex/asgardex-desktop/issues/50)
 
 ## Internal
 
-- Remove dependancy on @thorchain/asgardex-util [#33](https://github.com/asgardex/asgardex-desktop/issues/33)
+- Add new blockcypher API Key [#49](https://github.com/asgardex/asgardex-desktop/issues/49)
+- Remove dependency on @thorchain/asgardex-util [#33](https://github.com/asgardex/asgardex-desktop/issues/33)
 - Remove Asym references from AsgardEx [#36](https://github.com/asgardex/asgardex-desktop/issues/36)
 - REMOVE: Asgardex-midgard replace with xchain-midgard [#13](https://github.com/asgardex/asgardex-desktop/issues/33)
 - Update packages [#42](https://github.com/asgardex/asgardex-desktop/issues/42)
-  - Updated
-    - xchainjs/xchain-binance
-    - xchainjs/xchain-bitcoin
-    - xchainjs/xchain-bitcoincash
-    - xchainjs/xchain-client
-    - xchainjs/xchain-cosmos
-    - xchainjs/xchain-crypto
-    - xchainjs/xchain-doge
-    - xchainjs/xchain-ethereum
-    - xchainjs/xchain-litecoin
-    - xchainjs/xchain-midgard
-    - xchainjs/xchain-midgard-query
-    - xchainjs/xchain-thorchain
-    - xchainjs/xchain-thorchain-query
-    - xchainjs/xchain-thornode
-    - xchainjs/xchain-utxo-providers
-    - axios
-    - ethers
-    - coinselect
-    - openapi for internally for thornode
-  - Updates to MsgDeposit page
+- Updates to MsgDeposit page
 
 # 1.20.4 (2023-09-08)
 
