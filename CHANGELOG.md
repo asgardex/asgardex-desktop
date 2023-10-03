@@ -11,6 +11,7 @@
 - Format Wallet: Savers position# [34](https://github.com/asgardex/asgardex-desktop/issues/34)
 - BUG: High fee issue with BTC swaps from a Ledger address [#45](https://github.com/asgardex/asgardex-desktop/issues/45)
 - BUG: 24 Vol not being displayed (was working in prev version) [#50](https://github.com/asgardex/asgardex-desktop/issues/50)
+- BUG: Get 404 when looking at LP Shares [#53](https://github.com/asgardex/asgardex-desktop/issues/53)
 
 ## Internal
 
