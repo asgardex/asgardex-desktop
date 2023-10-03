@@ -1,19 +1,28 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { Action, MidgardApi } from '@xchainjs/xchain-midgard'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as Rx from 'rxjs'
+import { from } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { liveData } from '../../helpers/rx/liveData'
-import { DefaultApi } from '../../types/generated/midgard/apis'
-import { InlineResponse200 } from '../../types/generated/midgard/models'
 import { ErrorId } from '../wallet/types'
 import { getRequestType, mapAction } from './action.utils'
 import { LoadActionsParams, ActionsPageLD, MidgardUrlLD } from './types'
 
+interface InlineResponse200 {
+  actions: unknown[]
+  count: string
+  meta: {
+    nextPageToken: string
+    prevPageToken: string
+  }
+}
+
 export const createActionsService = (
   midgardUrl$: MidgardUrlLD,
-  getMidgardDefaultApi: (basePath: string) => DefaultApi
+  getMidgardDefaultApi: (basePath: string) => MidgardApi
 ) => {
   const midgardDefaultApi$ = FP.pipe(midgardUrl$, liveData.map(getMidgardDefaultApi), RxOp.shareReplay(1))
 
@@ -26,19 +35,35 @@ export const createActionsService = (
       })),
       liveData.chain((api) =>
         FP.pipe(
-          api.getActions({
-            ...params,
-            address: addresses ? addresses.join(',') : undefined,
-            type: getRequestType(type),
-            limit: itemsPerPage,
-            offset: itemsPerPage * page
-          }),
-          RxOp.catchError((): Rx.Observable<InlineResponse200> => Rx.of({ actions: [], count: '0' })),
+          from(
+            api.getActions(
+              JSON.stringify({
+                ...params,
+                address: addresses ? addresses.join(',') : undefined,
+                type: getRequestType(type),
+                limit: itemsPerPage,
+                offset: itemsPerPage * page
+              })
+            )
+          ),
+          RxOp.catchError(
+            (): Rx.Observable<InlineResponse200> =>
+              Rx.of({ actions: [], count: '0', meta: { nextPageToken: '', prevPageToken: '' } })
+          ),
           RxOp.switchMap((response) => Rx.of(RD.success(response))),
-          liveData.map(({ actions, count }) => ({
-            actions: FP.pipe(actions, A.map(mapAction)),
-            total: parseInt(count, 10)
-          })),
+          liveData.map((response) => {
+            if ('actions' in response && 'count' in response) {
+              return {
+                actions: FP.pipe(response.actions as Action[], A.map(mapAction)),
+                total: parseInt(response.count || '', 10)
+              }
+            } else {
+              return {
+                actions: [],
+                total: 0
+              }
+            }
+          }),
           liveData.mapLeft(() => ({
             errorId: ErrorId.GET_ACTIONS,
             msg: 'Error while getting a history'

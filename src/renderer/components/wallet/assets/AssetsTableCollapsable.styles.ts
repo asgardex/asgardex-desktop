@@ -140,3 +140,19 @@ export const AssetSynthLabel = styled(AssetSynthLabelUI)`
   font-size: 10px;
   line-height: 12px;
 `
+
+export const FilterCheckbox = styled(A.Checkbox)`
+  font-family: 'MainFontRegular';
+  font-size: 14px;
+  color: ${palette('gray', 2)};
+  margin: 10px 0;
+
+  .ant-checkbox-inner {
+    border-color: ${palette('primary', 0)};
+  }
+
+  .ant-checkbox-checked .ant-checkbox-inner {
+    background-color: ${palette('primary', 0)};
+    border-color: ${palette('primary', 0)};
+  }
+`

@@ -1,17 +1,14 @@
 import EthApp from '@ledgerhq/hw-app-eth'
 import type Transport from '@ledgerhq/hw-transport'
 import { FeeOption, TxHash } from '@xchainjs/xchain-client'
-import * as ETH from '@xchainjs/xchain-ethereum'
+import * as ETH from '@xchainjs/xchain-evm'
 import { Address, Asset, assetToString, BaseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
 
-import { getEtherscanApiKey } from '../../../../shared/api/etherscan'
-import { getEthplorerCreds } from '../../../../shared/api/ethplorer'
-import { getInfuraCreds } from '../../../../shared/api/infura'
 import { LedgerError, LedgerErrorId, Network } from '../../../../shared/api/types'
 import { ROUTER_ABI } from '../../../../shared/ethereum/abi'
-import { DEPOSIT_EXPIRATION_OFFSET, FEE_BOUNDS } from '../../../../shared/ethereum/const'
+import { DEPOSIT_EXPIRATION_OFFSET, ETHAddress, FEE_BOUNDS, defaultEthParams } from '../../../../shared/ethereum/const'
 import { getDerivationPath } from '../../../../shared/ethereum/ledger'
 import { getBlocktime } from '../../../../shared/ethereum/provider'
 import { EthHDMode } from '../../../../shared/ethereum/types'
@@ -44,20 +41,9 @@ export const send = async ({
   ethHDMode: EthHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const { ethplorerApiKey, ethplorerUrl } = getEthplorerCreds()
-
-    const infuraCreds = getInfuraCreds()
     const clientNetwork = toClientNetwork(network)
-    const etherscanApiKey = getEtherscanApiKey()
 
-    const client = new ETH.Client({
-      network: clientNetwork,
-      etherscanApiKey,
-      ethplorerApiKey,
-      ethplorerUrl,
-      infuraCreds,
-      feeBounds: FEE_BOUNDS[clientNetwork]
-    })
+    const client = new ETH.Client({ ...defaultEthParams, network: clientNetwork, feeBounds: FEE_BOUNDS[clientNetwork] })
 
     const app = new EthApp(transport)
     const path = getDerivationPath(walletIndex, ethHDMode)
@@ -116,7 +102,7 @@ export const deposit = async ({
   ethHDMode: EthHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const address = ETH.getAssetAddress(asset)
+    const address = ETH.getTokenAddress(asset)
 
     if (!address) {
       return E.left({
@@ -125,22 +111,11 @@ export const deposit = async ({
       })
     }
 
-    const isETHAddress = address === ETH.ETHAddress
+    const isETHAddress = address === ETHAddress
 
-    const { ethplorerApiKey, ethplorerUrl } = getEthplorerCreds()
-
-    const infuraCreds = getInfuraCreds()
     const clientNetwork = toClientNetwork(network)
-    const etherscanApiKey = getEtherscanApiKey()
 
-    const client = new ETH.Client({
-      network: clientNetwork,
-      etherscanApiKey,
-      ethplorerApiKey,
-      ethplorerUrl,
-      infuraCreds,
-      feeBounds: FEE_BOUNDS[clientNetwork]
-    })
+    const client = new ETH.Client({ ...defaultEthParams, network: clientNetwork, feeBounds: FEE_BOUNDS[clientNetwork] })
 
     const app = new EthApp(transport)
     const path = getDerivationPath(walletIndex, ethHDMode)

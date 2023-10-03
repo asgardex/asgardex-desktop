@@ -1,6 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { TxHash, XChainClient } from '@xchainjs/xchain-client'
-import { ETHChain, getTokenAddress } from '@xchainjs/xchain-ethereum'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
+import * as ETH from '@xchainjs/xchain-evm'
 import { Address } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
@@ -25,7 +26,7 @@ export const loadTxs$ = ({
 } & TxsParams): TxsPageLD => {
   const txAsset = FP.pipe(
     oAsset,
-    O.map((asset) => (asset.chain === ETHChain ? getTokenAddress(asset) || undefined : asset.symbol)),
+    O.map((asset) => (asset.chain === ETHChain ? ETH.getTokenAddress(asset) || undefined : asset.symbol)),
     O.toUndefined
   )
   const address = FP.pipe(

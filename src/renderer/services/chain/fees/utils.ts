@@ -1,4 +1,3 @@
-import { getValueOfAsset1InAsset2, PoolData } from '@thorchain/asgardex-util'
 import { Asset, baseAmount, assetToString, BaseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/lib/Option'
@@ -7,6 +6,8 @@ import { convertBaseAmountDecimal, isRuneNativeAsset, to1e8BaseAmount } from '..
 import { eqAsset } from '../../../helpers/fp/eq'
 import { sequenceTOption } from '../../../helpers/fpHelpers'
 import { RUNE_POOL_DATA } from '../../../helpers/poolHelper'
+import { PoolData } from '../../../views/pools/Pools.types'
+import { getValueOfAsset1InAsset2 } from '../../../views/pools/Pools.utils'
 import { PoolsDataMap } from '../../midgard/types'
 
 export const getPoolData = (poolsData: PoolsDataMap, asset: Asset): O.Option<PoolData> =>

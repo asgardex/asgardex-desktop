@@ -15,6 +15,7 @@ import { LitecoinProvider } from './contexts/LitecoinContext'
 import { MidgardProvider } from './contexts/MidgardContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { ThorchainProvider } from './contexts/ThorchainContext'
+import { ThorchainQueryProvider } from './contexts/ThorchainQueryContext'
 import { UserNodesProvider } from './contexts/UserNodesContext'
 import { WalletProvider } from './contexts/WalletContext'
 import { AppView } from './views/app/AppView'
@@ -33,15 +34,17 @@ export const App: React.FC = (): JSX.Element => {
                       <DogeProvider>
                         <CosmosProvider>
                           <MidgardProvider>
-                            <UserNodesProvider>
-                              <I18nProvider>
-                                <Router>
-                                  <ThemeProvider>
-                                    <AppView />
-                                  </ThemeProvider>
-                                </Router>
-                              </I18nProvider>
-                            </UserNodesProvider>
+                            <ThorchainQueryProvider>
+                              <UserNodesProvider>
+                                <I18nProvider>
+                                  <Router>
+                                    <ThemeProvider>
+                                      <AppView />
+                                    </ThemeProvider>
+                                  </Router>
+                                </I18nProvider>
+                              </UserNodesProvider>
+                            </ThorchainQueryProvider>
                           </MidgardProvider>
                         </CosmosProvider>
                       </DogeProvider>

@@ -14,8 +14,11 @@ import { PoolDetailsChart } from '../../components/uielements/chart'
 import { ChartDataType, ChartDetailsRD, ChartTimeFrame } from '../../components/uielements/chart/PoolDetailsChart.types'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { liveData } from '../../helpers/rx/liveData'
-import { SelectedPricePoolAsset } from '../../services/midgard/types'
-import { GetLiquidityHistoryIntervalEnum, GetSwapHistoryIntervalEnum } from '../../types/generated/midgard'
+import {
+  GetLiquidityHistoryIntervalEnum,
+  GetSwapHistoryIntervalEnum,
+  SelectedPricePoolAsset
+} from '../../services/midgard/types'
 import {
   getCachedChartData,
   getDepthHistoryParams,

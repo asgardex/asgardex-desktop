@@ -1,4 +1,3 @@
-import { PoolData } from '@thorchain/asgardex-util'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -7,6 +6,7 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { assetAmount, assetToBase, assetToString, baseAmount } from '@xchainjs/xchain-util'
 import { Chain } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
@@ -16,11 +16,10 @@ import { PoolsWatchList } from '../../shared/api/io'
 import { ASSETS_TESTNET } from '../../shared/mock/assets'
 import { AssetBNB, AssetRuneNative } from '../../shared/utils/asset'
 import { AssetBUSD74E } from '../const'
-import { PoolDetails } from '../services/midgard/types'
+import { GetPoolsStatusEnum, PoolDetails } from '../services/midgard/types'
 import { toPoolData } from '../services/midgard/utils'
 import { DEFAULT_MIMIR_HALT } from '../services/thorchain/const'
-import { GetPoolsStatusEnum, PoolDetail } from '../types/generated/midgard'
-import { PricePool } from '../views/pools/Pools.types'
+import { PoolData, PricePool } from '../views/pools/Pools.types'
 import {
   disableAllActions,
   disablePoolActions,
@@ -48,7 +47,9 @@ describe('helpers/poolHelper/', () => {
     nativeDecimal: '0',
     saversDepth: '0',
     saversUnits: '0',
-    saversAPR: '0'
+    saversAPR: '0',
+    totalCollateral: '0',
+    totalDebtTor: '0'
   }
   const pool1: PoolDetail = { ...mockPoolDetail, status: GetPoolsStatusEnum.Staged, runeDepth: '1000' }
   const pool2: PoolDetail = { ...mockPoolDetail, status: GetPoolsStatusEnum.Available, runeDepth: '2000' }

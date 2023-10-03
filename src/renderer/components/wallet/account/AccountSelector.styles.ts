@@ -8,7 +8,7 @@ import { Label as UILabel } from '../../uielements/label'
 export const Card = styled(A.Card)`
   background: ${palette('background', 1)};
   .ant-card-body {
-    padding: 20px 35px;
+    padding: 20px 2px;
   }
 `
 

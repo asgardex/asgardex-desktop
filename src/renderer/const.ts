@@ -1,4 +1,3 @@
-import { PoolData } from '@thorchain/asgardex-util'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -13,8 +12,8 @@ import { Network } from '../shared/api/types'
 import { AssetBTC, AssetETH, AssetRune67C, AssetRuneERC20Testnet, AssetRuneNative } from '../shared/utils/asset'
 import { EnabledChain } from '../shared/utils/chain'
 import { WalletType } from '../shared/wallet/types'
-import { GetPoolsPeriodEnum } from './types/generated/midgard'
-import { PricePoolCurrencyWeights, PricePoolAssets } from './views/pools/Pools.types'
+import { GetPoolsPeriodEnum } from './services/midgard/types'
+import { PricePoolCurrencyWeights, PricePoolAssets, PoolData } from './views/pools/Pools.types'
 
 //
 // ERC-20 assets
@@ -110,7 +109,7 @@ export const AssetUSDT62E: Asset = {
 // ETH.USDC mainnet
 export const AssetUSDC: Asset = {
   chain: ETHChain,
-  symbol: 'USDC-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+  symbol: 'ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48',
   ticker: 'USDC',
   synth: false
 }

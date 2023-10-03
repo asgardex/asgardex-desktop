@@ -1,5 +1,22 @@
 import * as RD from '@devexperts/remote-data-ts'
+import {
+  Configuration,
+  ConstantsResponse,
+  InboundAddressesResponse,
+  LastBlockResponse,
+  LiquidityProvidersApi,
+  LiquidityProvidersResponse,
+  LiquidityProviderSummary,
+  MimirApi,
+  NetworkApi,
+  Node,
+  NodesApi,
+  NodesResponse,
+  Saver,
+  SaversApi
+} from '@xchainjs/xchain-thornode'
 import { Address, Asset, assetFromString, assetToString, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
+import { AxiosResponse } from 'axios'
 import * as A from 'fp-ts/Array'
 // import * as E from 'fp-ts/Either'
 import * as FP from 'fp-ts/function'
@@ -10,7 +27,6 @@ import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { add9Rheader } from '../../../shared/api/ninerealms'
 import { AssetRuneNative } from '../../../shared/utils/asset'
 import { isEnabledChain } from '../../../shared/utils/chain'
 import { ZERO_BASE_AMOUNT } from '../../const'
@@ -18,18 +34,6 @@ import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { LiveData, liveData } from '../../helpers/rx/liveData'
 import { triggerStream } from '../../helpers/stateHelper'
-import {
-  Configuration,
-  LiquidityProvidersApi,
-  LiquidityProviderSummary,
-  Middleware,
-  MimirApi,
-  NetworkApi,
-  Node,
-  NodesApi,
-  Saver,
-  SaversApi
-} from '../../types/generated/thornode'
 import { Network$ } from '../app/types'
 import {
   Mimir,
@@ -44,12 +48,15 @@ import {
   ThorchainConstantsLD,
   ThorchainLastblockLD,
   SaverProviderLD,
-  SaverProvider
+  SaverProvider,
+  InboundAddresses,
+  InboundAddress
 } from './types'
 
+const height: number | undefined = undefined
+
 export const getThornodeAPIConfiguration = (basePath: string): Configuration => {
-  const middleware: Middleware = { pre: add9Rheader }
-  return new Configuration({ basePath, middleware: [middleware] })
+  return new Configuration({ basePath })
 }
 
 export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl$) => {
@@ -69,8 +76,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       thornodeUrl$,
       liveData.chain((basePath) =>
         FP.pipe(
-          new NodesApi(getThornodeAPIConfiguration(basePath)).nodes({ height: undefined }),
-          RxOp.map(RD.success),
+          Rx.from(new NodesApi(getThornodeAPIConfiguration(basePath)).nodes(height)),
+          RxOp.map((response: AxiosResponse<NodesResponse, unknown>) => RD.success(response.data)), // Extract nodes from AxiosResponse
           RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
         )
       ),
@@ -82,8 +89,21 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       thornodeUrl$,
       liveData.chain((basePath) =>
         FP.pipe(
-          new NetworkApi(getThornodeAPIConfiguration(basePath)).inboundAddresses({}),
-          RxOp.map(RD.success),
+          Rx.from(new NetworkApi(getThornodeAPIConfiguration(basePath)).inboundAddresses()),
+          RxOp.map((response: AxiosResponse<InboundAddressesResponse, InboundAddress>) => {
+            const data: InboundAddresses = response.data.map((item) => ({
+              chain: item.chain || '', // provide a default value if chain is undefined
+              address: item.address || '',
+              router: item.router || '',
+              global_trading_paused: item.global_trading_paused,
+              chain_trading_paused: item.chain_trading_paused,
+              chain_lp_actions_paused: item.chain_lp_actions_paused,
+              outbound_fee: item.outbound_fee,
+              dust_threshold: item.dust_threshold,
+              halted: item.halted || false // provide a default value if halted is undefined
+            }))
+            return RD.success(data)
+          }),
           liveData.map(
             FP.flow(
               A.filterMap(({ chain, address, ...rest }) =>
@@ -128,8 +148,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     thornodeUrl$,
     liveData.chain((basePath) =>
       FP.pipe(
-        new NetworkApi(getThornodeAPIConfiguration(basePath)).constants({}),
-        RxOp.map(RD.success),
+        Rx.from(new NetworkApi(getThornodeAPIConfiguration(basePath)).constants()),
+        RxOp.map((response: AxiosResponse<ConstantsResponse>) => RD.success(response.data)), // Extract data from AxiosResponse
         RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
       )
     )
@@ -156,8 +176,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     thornodeUrl$,
     liveData.chain((basePath) =>
       FP.pipe(
-        new NetworkApi(getThornodeAPIConfiguration(basePath)).lastblock({}),
-        RxOp.map(RD.success),
+        Rx.from(new NetworkApi(getThornodeAPIConfiguration(basePath)).lastblock()),
+        RxOp.map((response: AxiosResponse<LastBlockResponse>) => RD.success(response.data)), // Extract data from AxiosResponse
         RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
       )
     )
@@ -227,15 +247,14 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       thornodeUrl$,
       liveData.chain((basePath) =>
         FP.pipe(
-          new LiquidityProvidersApi(getThornodeAPIConfiguration(basePath)).liquidityProviders({
-            asset: assetToString(asset)
-          }),
-          RxOp.map(RD.success),
+          Rx.from(
+            new LiquidityProvidersApi(getThornodeAPIConfiguration(basePath)).liquidityProviders(assetToString(asset))
+          ),
+          RxOp.map((response: AxiosResponse<LiquidityProvidersResponse>) => RD.success(response.data)), // Extract data from AxiosResponse
           RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
         )
       )
     )
-
   const { stream$: reloadLiquidityProviders$, trigger: reloadLiquidityProviders } = triggerStream()
 
   const getLiquidityProviders = (asset: Asset): LiquidityProvidersLD =>
@@ -283,7 +302,11 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     thornodeUrl$,
     liveData.chain((basePath) =>
       FP.pipe(
-        new MimirApi(getThornodeAPIConfiguration(basePath)).mimir({ height: undefined }),
+        Rx.from(
+          height !== undefined
+            ? new MimirApi(getThornodeAPIConfiguration(basePath)).mimir(height)
+            : new MimirApi(getThornodeAPIConfiguration(basePath)).mimir()
+        ),
         RxOp.catchError((e) => Rx.of(RD.failure(Error(`Failed loading mimir: ${JSON.stringify(e)}`)))),
         RxOp.map((response) => {
           if (typeof response === 'object' && response !== null) {
@@ -317,11 +340,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       thornodeUrl$,
       liveData.chain((basePath) =>
         FP.pipe(
-          new SaversApi(getThornodeAPIConfiguration(basePath)).saver({
-            asset: assetToString(asset),
-            address
-          }),
-          RxOp.map(RD.success),
+          Rx.from(new SaversApi(getThornodeAPIConfiguration(basePath)).saver(assetToString(asset), address)),
+          RxOp.map((response: AxiosResponse<Saver>) => RD.success(response.data)), // Extract data from AxiosResponse
           RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
         )
       ),

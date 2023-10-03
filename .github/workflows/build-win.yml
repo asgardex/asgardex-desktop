@@ -3,6 +3,7 @@ name: Electron build - Windows
 on:
   push:
     branches:
+      # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#onpushpull_requestbranchestags
       - 'release/**'
       - 'hotfix/**'
 
@@ -18,7 +19,7 @@ jobs:
       - name: Checkout git repo
         uses: actions/checkout@v2
 
-      # Cache Yarn dependencies
+        # Cache Yarn dependencies
       - name: Cache Yarn dependencies
         uses: actions/cache@v2
         with:
@@ -35,19 +36,8 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable --network-timeout 1000000
 
-      - name: Run Post Install
-        run: yarn postinstall
-
-      - name: Run Prebuild
-        run: yarn prebuild
-
-      - name: Build
-        run: yarn build
-        env:
-          NODE_OPTIONS: --max-old-space-size=7168
-
-      - name: Package Electron
-        run: yarn package:electron --publish always
+      - name: Publish Windows
+        run: yarn package:ci
         env:
           NODE_OPTIONS: --max-old-space-size=7168
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

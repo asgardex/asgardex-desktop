@@ -1,12 +1,13 @@
 import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { ETHAddress, ETHChain } from '@xchainjs/xchain-ethereum'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 
+import { ETHAddress } from '../../../../shared/ethereum/const'
 import { LoadingView } from '../../../components/shared/loading'
 import { SendFormETH } from '../../../components/wallet/txs/send/'
 import { useChainContext } from '../../../contexts/ChainContext'
@@ -18,6 +19,7 @@ import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { FeesRD, WalletBalances } from '../../../services/clients'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAsset } from '../../../services/wallet/types'
+import * as Styled from '../Interact/InteractView.styles'
 
 type Props = {
   asset: SelectedWalletAsset
@@ -74,21 +76,23 @@ export const SendViewETH: React.FC<Props> = (props): JSX.Element => {
     O.fold(
       () => <LoadingView size="large" />,
       (walletBalance) => (
-        <SendFormETH
-          asset={asset}
-          balance={walletBalance}
-          balances={FP.pipe(
-            oBalances,
-            O.getOrElse<WalletBalances>(() => [])
-          )}
-          fees={feesRD}
-          transfer$={transfer$}
-          openExplorerTxUrl={openExplorerTxUrl}
-          getExplorerTxUrl={getExplorerTxUrl}
-          reloadFeesHandler={reloadFees}
-          validatePassword$={validatePassword$}
-          network={network}
-        />
+        <Styled.Container>
+          <SendFormETH
+            asset={asset}
+            balance={walletBalance}
+            balances={FP.pipe(
+              oBalances,
+              O.getOrElse<WalletBalances>(() => [])
+            )}
+            fees={feesRD}
+            transfer$={transfer$}
+            openExplorerTxUrl={openExplorerTxUrl}
+            getExplorerTxUrl={getExplorerTxUrl}
+            reloadFeesHandler={reloadFees}
+            validatePassword$={validatePassword$}
+            network={network}
+          />
+        </Styled.Container>
       )
     )
   )

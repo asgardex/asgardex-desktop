@@ -120,7 +120,8 @@ export const AppView: React.FC = (): JSX.Element => {
 
             msg =
               haltedChains.length === 1
-                ? `${msg} ${intl.formatMessage({ id: 'halt.chain' }, { chain: haltedChains[0] })}`
+                ? `${msg} ${intl.formatMessage({ id: 'halt.chain' }, { chain: haltedChains[0] })}
+                ${intl.formatMessage({ id: 'halt.chain.synth' }, { chain: haltedChains[0] })}`
                 : haltedChains.length > 1
                 ? `${msg} ${intl.formatMessage({ id: 'halt.chains' }, { chains: haltedChains.join(', ') })}`
                 : `${msg}`

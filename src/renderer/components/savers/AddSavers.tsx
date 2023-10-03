@@ -103,6 +103,7 @@ export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
 
 export type AddProps = {
   keystore: KeystoreState
+  thorchainQuery: ThorchainQuery
   poolAssets: Asset[]
   poolDetails: PoolDetails
   asset: CryptoAmount
@@ -132,6 +133,7 @@ export type AddProps = {
 export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
   const {
     keystore,
+    thorchainQuery,
     poolDetails,
     asset,
     sourceWalletType: initialSourceWalletType,
@@ -341,6 +343,19 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       ),
     [oSaversQuote, asset]
   )
+
+  // Liquidity fee in for use later
+  const liquidityFee: CryptoAmount = useMemo(
+    () =>
+      FP.pipe(
+        oSaversQuote,
+        O.fold(
+          () => new CryptoAmount(baseAmount(0), asset.asset), // default value if oQuote is None
+          (txDetails) => txDetails.fee.liquidity // already of type cryptoAmount
+        )
+      ),
+    [oSaversQuote, asset]
+  )
   const oChainAssetBalance: O.Option<BaseAmount> = useMemo(() => {
     const chainAsset = getChainAsset(sourceChain)
     return FP.pipe(
@@ -422,7 +437,6 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
 
   const debouncedEffect = useRef(
     debounce((amountToSendMax1e8) => {
-      const thorchainQuery = new ThorchainQuery()
       thorchainQuery
         .estimateAddSaver(new CryptoAmount(amountToSendMax1e8, asset.asset))
         .then((quote) => {
@@ -1264,6 +1278,10 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
                         decimal: 0
                       })}
                     </div>
+                  </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'common.liquidity' })}</div>
+                    <div>{liquidityFee.formatedAssetString()}</div>
                   </div>
                 </>
               )}

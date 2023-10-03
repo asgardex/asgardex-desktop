@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { PoolData } from '@thorchain/asgardex-util'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
@@ -9,10 +8,11 @@ import { COSMOS_DECIMAL } from '@xchainjs/xchain-cosmos'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGE_DECIMAL } from '@xchainjs/xchain-doge'
 import { DOGEChain } from '@xchainjs/xchain-doge'
-import { ETH_DECIMAL } from '@xchainjs/xchain-ethereum'
+import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTC_DECIMAL } from '@xchainjs/xchain-litecoin'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   assetFromString,
@@ -41,8 +41,7 @@ import { eqAsset, eqChain, eqOAddress } from '../../helpers/fp/eq'
 import { ordPricePool } from '../../helpers/fp/ord'
 import { getDeepestPool, RUNE_POOL_ADDRESS, RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { AssetWithAmount } from '../../types/asgardex'
-import { GetPoolPeriodEnum, GetPoolsPeriodEnum, PoolDetail } from '../../types/generated/midgard'
-import { PricePoolAssets, PricePools, PricePoolAsset, PricePool } from '../../views/pools/Pools.types'
+import { PricePoolAssets, PricePools, PricePoolAsset, PricePool, PoolData } from '../../views/pools/Pools.types'
 import { InboundAddress } from '../thorchain/types'
 import {
   PoolAssetDetails as PoolAssetsDetail,
@@ -54,7 +53,9 @@ import {
   PoolShare,
   PoolAddress,
   PoolAddresses,
-  PoolsDataMap
+  PoolsDataMap,
+  GetPoolsPeriodEnum,
+  GetPoolPeriodEnum
 } from './types'
 
 export const getPricePools = (details: PoolDetails, whitelist: PricePoolAssets): PricePools => {
@@ -259,7 +260,7 @@ export const getOutboundAssetFeeByChain = (
         case ETHChain: {
           return O.some({
             // Convertion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
-            amount: convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), ETH_DECIMAL),
+            amount: convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), ETH_GAS_ASSET_DECIMAL),
             asset: AssetETH
           })
         }
@@ -416,5 +417,7 @@ export const poolsPeriodToPoolPeriod = (period: GetPoolsPeriodEnum): GetPoolPeri
       return GetPoolPeriodEnum._24h
     case GetPoolsPeriodEnum._1h:
       return GetPoolPeriodEnum._1h
+    default:
+      throw new Error(`Unexpected period: ${period}`)
   }
 }

@@ -17,12 +17,11 @@ export type Props = Omit<ButtonProps, 'onClick'> & {
 export const SaversButton: React.FC<Props> = ({ asset, isTextView, ...otherProps }) => {
   const intl = useIntl()
   const navigate = useNavigate()
-
   const onClick = useCallback(
     (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
       event.preventDefault()
       event.stopPropagation()
-      navigate(saversRoutes.earn.path({ asset: assetToString(asset), walletType: DEFAULT_WALLET_TYPE }))
+      navigate(saversRoutes.withdraw.path({ asset: assetToString(asset), walletType: DEFAULT_WALLET_TYPE }))
     },
     [asset, navigate]
   )
@@ -30,7 +29,7 @@ export const SaversButton: React.FC<Props> = ({ asset, isTextView, ...otherProps
   return (
     <FlatButton onClick={onClick} {...otherProps}>
       <BanknotesIcon className={`h-[16px] w-[16px] text-inherit lg:h-20px lg:w-20px ${isTextView ? `mr-[8px]` : ''}`} />
-      <span className={`${isTextView ? 'mr-10px' : 'hidden'}`}>{intl.formatMessage({ id: 'common.earn' })}</span>
+      <span className={`${isTextView ? 'mr-10px' : 'hidden'}`}>{intl.formatMessage({ id: 'common.withdraw' })}</span>
     </FlatButton>
   )
 }

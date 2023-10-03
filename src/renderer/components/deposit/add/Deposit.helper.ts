@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { PoolData } from '@thorchain/asgardex-util'
 import { Asset, baseAmount, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
@@ -22,6 +21,7 @@ import { priceFeeAmountForAsset } from '../../../services/chain/fees/utils'
 import { DepositAssetFees, DepositFees, SymDepositFees, SymDepositFeesRD } from '../../../services/chain/types'
 import { PoolsDataMap } from '../../../services/midgard/types'
 import { AssetWithAmount } from '../../../types/asgardex'
+import { PoolData } from '../../../views/pools/Pools.types'
 
 /**
  * Returns zero sym deposit fees

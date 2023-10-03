@@ -101,6 +101,7 @@ export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
 
 export type WithDrawProps = {
   keystore: KeystoreState
+  thorchainQuery: ThorchainQuery
   poolAssets: Asset[]
   poolDetails: PoolDetails
   asset: CryptoAmount
@@ -131,6 +132,7 @@ export type WithDrawProps = {
 export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
   const {
     keystore,
+    thorchainQuery,
     poolDetails,
     asset,
     sourceWalletType: initialSourceWalletType,
@@ -399,7 +401,6 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
 
   const debouncedEffect = useRef(
     debounce((withdrawBps, asset, address) => {
-      const thorchainQuery = new ThorchainQuery()
       thorchainQuery
         .estimateWithdrawSaver({ asset: sourceAsset, address: address, withdrawBps: Number(withdrawBps) })
         .then((quote) => {
@@ -413,9 +414,9 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
 
   useEffect(() => {
     if (withdrawBps !== 0 && !disableSubmit) {
-      debouncedEffect.current(withdrawBps, asset, address)
+      debouncedEffect.current(withdrawBps, sourceAsset, address)
     }
-  }, [withdrawBps, disableSubmit, asset, address])
+  }, [withdrawBps, disableSubmit, sourceAsset, address])
 
   // Outbound fee in for use later
   const outboundFee: CryptoAmount = useMemo(

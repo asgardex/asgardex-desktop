@@ -1,20 +1,18 @@
 import React, { useCallback, useEffect, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { baseAmount } from '@xchainjs/xchain-util'
+import { Asset, BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
+import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
-import { useIntl } from 'react-intl'
 import { from } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { ENABLED_CHAINS } from '../../../shared/utils/chain'
-import { SaversDetails } from '../../components/savers/SaversDetails'
-import { ErrorView } from '../../components/shared/error'
-import { Spin } from '../../components/shared/loading'
-import { FlatButton, RefreshButton } from '../../components/uielements/button'
+import { SaversDetailsTable } from '../../components/savers/SaversDetailsTable'
+import { RefreshButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
 import { useChainContext } from '../../contexts/ChainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
@@ -27,8 +25,20 @@ import { useNetwork } from '../../hooks/useNetwork'
 import { usePricePool } from '../../hooks/usePricePool'
 import { SaverProviderRD } from '../../services/thorchain/types'
 
+type AssetProps = {
+  key: Chain
+  asset: Asset
+  priceAsset: Asset
+  deposit: { amount: BaseAmount; price: BaseAmount }
+  redeem: { amount: BaseAmount; price: BaseAmount }
+  percent: BigNumber
+}
+export type ParentProps = {
+  assetDetails: AssetProps[]
+}
+
 export const SaversDetailsView: React.FC = (): JSX.Element => {
-  const intl = useIntl()
+  //const intl = useIntl()
 
   const { network } = useNetwork()
   const {
@@ -41,7 +51,8 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
   const pricePool = usePricePool()
   const poolsStateRD = useObservableState(poolsState$, RD.initial)
 
-  const [allSaverProviders, setAllSaverProviders] = useState<Record<string, SaverProviderRD>>({}) // to store the SaverProviderRD for each chain
+  const [allSaverProviders, setAllSaverProviders] = useState<Record<string, SaverProviderRD>>({})
+  const [assetDetailsArray, setAssetDetailsArray] = useState<AssetProps[]>([])
 
   useEffect(() => {
     const subscriptions = ENABLED_CHAINS.map((chain) => {
@@ -70,41 +81,19 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
     }
   }, [addressByChain$, getSaverProvider$])
 
-  const renderLoading = () => (
-    <div className="flex h-full w-full items-center justify-center">
-      <Spin size="default" />,
-    </div>
-  )
-  const refreshHandler = useCallback(() => {
-    reloadAllPools()
-    reloadSaverProvider()
-  }, [reloadAllPools, reloadSaverProvider])
-
-  return (
-    <div>
-      <Row justify="end" style={{ marginBottom: '20px' }}>
-        <RefreshButton onClick={refreshHandler} disabled={false} />
-      </Row>
-      <AssetsNav />
-      {Object.keys(allSaverProviders).map((chain) => {
+  useEffect(() => {
+    const assetDetails: AssetProps[] = Object.keys(allSaverProviders)
+      .map((chain) => {
         const saverProviderRD = allSaverProviders[chain]
         return FP.pipe(
           sequenceTRD(poolsStateRD, saverProviderRD),
           RD.fold(
-            () => renderLoading(),
-            () => renderLoading(),
-            (error) => (
-              <ErrorView
-                title={intl.formatMessage({ id: 'common.error' })}
-                subTitle={error?.message ?? error.toString()}
-                extra={
-                  <FlatButton onClick={reloadSaverProvider}>{intl.formatMessage({ id: 'common.retry' })}</FlatButton>
-                }
-              />
-            ),
+            () => null,
+            () => null,
+            (_) => null,
             ([{ poolDetails }, { depositValue, redeemValue, growthPercent }]) => {
               if (depositValue.amount().isZero() && redeemValue.amount().isZero()) {
-                return null // Skip rendering if both depositValue and redeemValue are zero
+                return null
               }
               const asset = getChainAsset(chain)
               const depositPrice = FP.pipe(
@@ -126,22 +115,35 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
                 }),
                 O.getOrElse(() => baseAmount(0, depositValue.decimal))
               )
-              return (
-                <>
-                  <SaversDetails
-                    key={chain}
-                    asset={asset}
-                    priceAsset={pricePool.asset}
-                    deposit={{ amount: depositValue, price: depositPrice }}
-                    redeem={{ amount: redeemValue, price: redeemPrice }}
-                    percent={growthPercent}
-                  />
-                </>
-              )
+
+              return {
+                key: pricePool.asset.chain,
+                asset,
+                priceAsset: pricePool.asset,
+                deposit: { amount: depositValue, price: depositPrice },
+                redeem: { amount: redeemValue, price: redeemPrice },
+                percent: growthPercent
+              }
             }
           )
         )
-      })}
+      })
+      .filter((item): item is AssetProps => item !== null)
+
+    setAssetDetailsArray(assetDetails)
+  }, [allSaverProviders, network, poolsStateRD, pricePool])
+
+  const refreshHandler = useCallback(() => {
+    reloadAllPools()
+    reloadSaverProvider()
+  }, [reloadAllPools, reloadSaverProvider])
+  return (
+    <div>
+      <Row justify="end" style={{ marginBottom: '20px' }}>
+        <RefreshButton onClick={refreshHandler} disabled={false} />
+      </Row>
+      <AssetsNav />
+      <SaversDetailsTable assetDetails={assetDetailsArray} />
     </div>
   )
 }

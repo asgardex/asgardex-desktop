@@ -23,7 +23,6 @@ import { useWalletContext } from '../../contexts/WalletContext'
 import { getAssetFromNullableString } from '../../helpers/assetHelper'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
-import { useNetwork } from '../../hooks/useNetwork'
 import { useSymDepositAddresses } from '../../hooks/useSymDepositAddresses'
 import { DepositRouteParams } from '../../routes/pools/deposit'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
@@ -36,8 +35,6 @@ type Props = {}
 
 export const DepositView: React.FC<Props> = () => {
   const intl = useIntl()
-
-  const { network } = useNetwork()
 
   const { reloadLiquidityProviders } = useThorchainContext()
 
@@ -84,12 +81,12 @@ export const DepositView: React.FC<Props> = () => {
             oSelectedPoolAsset,
             O.fold(
               () => Rx.of(RD.initial),
-              (asset) => assetWithDecimal$(asset, network)
+              (asset) => assetWithDecimal$(asset)
             )
           )
         )
       ),
-    [network, selectedPoolAsset$, assetWithDecimal$]
+    [selectedPoolAsset$, assetWithDecimal$]
   )
 
   const assetWithDecimalRD = useObservableState<AssetWithDecimalRD>(assetWithDecimalLD, RD.initial)

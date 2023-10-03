@@ -1,6 +1,6 @@
 import { ComponentMeta } from '@storybook/react'
 import { Fees, FeeType, TxHash } from '@xchainjs/xchain-client'
-import { ETH_DECIMAL } from '@xchainjs/xchain-ethereum'
+import { ETH_GAS_ASSET_DECIMAL as ETH_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'

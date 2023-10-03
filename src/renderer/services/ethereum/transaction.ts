@@ -1,6 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { TxHash } from '@xchainjs/xchain-client'
-import { ETHAddress, ETHChain, isApproved } from '@xchainjs/xchain-ethereum'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { isApproved } from '@xchainjs/xchain-evm'
 import { baseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/lib/Either'
@@ -19,7 +20,7 @@ import {
 } from '../../../shared/api/io'
 import { LedgerError, Network } from '../../../shared/api/types'
 import { ROUTER_ABI } from '../../../shared/ethereum/abi'
-import { DEFAULT_APPROVE_GAS_LIMIT_FALLBACK, DEPOSIT_EXPIRATION_OFFSET } from '../../../shared/ethereum/const'
+import { DEPOSIT_EXPIRATION_OFFSET, ETHAddress } from '../../../shared/ethereum/const'
 import { getBlocktime } from '../../../shared/ethereum/provider'
 import { isError, isEthHDMode, isLedgerWallet } from '../../../shared/utils/guard'
 import { addressInERC20Whitelist, getEthAssetAddress } from '../../helpers/assetHelper'
@@ -189,8 +190,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
           signer,
           contractAddress,
           spenderAddress,
-          feeOption: ChainTxFeeOption.APPROVE,
-          gasLimitFallback: DEFAULT_APPROVE_GAS_LIMIT_FALLBACK
+          feeOption: ChainTxFeeOption.APPROVE
         })
       ),
       RxOp.switchMap((txResult) => Rx.from(txResult.wait(1))),
