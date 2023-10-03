@@ -67,7 +67,6 @@ const createSharesService = (midgardUrl$: MidgardUrlLD, getMidgardDefaultApi: (b
             /**
              * In all other cases return error as is
              */
-            console.log(e)
             return Rx.of(RD.failure(Error(e)))
           }),
           RxOp.startWith(RD.pending)
