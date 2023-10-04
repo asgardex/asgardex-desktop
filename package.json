@@ -143,6 +143,7 @@
     "wif": "^2.0.6"
   },
   "devDependencies": {
+    "@electron/notarize": "^2.1.0",
     "@storybook/addon-essentials": "^7.0.0-alpha.13",
     "@storybook/addons": "^7.0.0-alpha.13",
     "@storybook/builder-webpack5": "^7.0.0-alpha.13",
@@ -176,7 +177,6 @@
     "electron": "20.3.8",
     "electron-builder": "^23.6.0",
     "electron-devtools-installer": "^3.2.0",
-    "electron-notarize": "^1.2.1",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
     "git-revision-webpack-plugin": "^5.0.0",
