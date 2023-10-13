@@ -3,6 +3,7 @@ import React from 'react'
 import { HashRouter as Router } from 'react-router-dom'
 
 import { AppProvider } from './contexts/AppContext'
+import { AvaxProvider } from './contexts/AvaxContext'
 import { BinanceProvider } from './contexts/BinanceContext'
 import { BitcoinCashProvider } from './contexts/BitcoinCashContext'
 import { BitcoinProvider } from './contexts/BitcoinContext'
@@ -31,23 +32,25 @@ export const App: React.FC = (): JSX.Element => {
                 <LitecoinProvider>
                   <BitcoinCashProvider>
                     <EthereumProvider>
-                      <DogeProvider>
-                        <CosmosProvider>
-                          <MidgardProvider>
-                            <ThorchainQueryProvider>
-                              <UserNodesProvider>
-                                <I18nProvider>
-                                  <Router>
-                                    <ThemeProvider>
-                                      <AppView />
-                                    </ThemeProvider>
-                                  </Router>
-                                </I18nProvider>
-                              </UserNodesProvider>
-                            </ThorchainQueryProvider>
-                          </MidgardProvider>
-                        </CosmosProvider>
-                      </DogeProvider>
+                      <AvaxProvider>
+                        <DogeProvider>
+                          <CosmosProvider>
+                            <MidgardProvider>
+                              <ThorchainQueryProvider>
+                                <UserNodesProvider>
+                                  <I18nProvider>
+                                    <Router>
+                                      <ThemeProvider>
+                                        <AppView />
+                                      </ThemeProvider>
+                                    </Router>
+                                  </I18nProvider>
+                                </UserNodesProvider>
+                              </ThorchainQueryProvider>
+                            </MidgardProvider>
+                          </CosmosProvider>
+                        </DogeProvider>
+                      </AvaxProvider>
                     </EthereumProvider>
                   </BitcoinCashProvider>
                 </LitecoinProvider>

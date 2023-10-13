@@ -71,7 +71,7 @@ import {
   IsApprovedRD,
   IsApproveParams,
   LoadApproveFeeHandler
-} from '../../services/ethereum/types'
+} from '../../services/evm/types'
 import { PoolAddress } from '../../services/midgard/types'
 import { SaverProviderLD } from '../../services/thorchain/types'
 import {

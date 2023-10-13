@@ -1,3 +1,4 @@
+import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -31,6 +32,7 @@ export const DEFAULT_BALANCES_FILTER: BalancesStateFilter = {
   [GAIAChain]: 'all',
   [DOGEChain]: 'all',
   [ETHChain]: 'all',
+  [AVAXChain]: 'all',
   [LTCChain]: 'all',
   [THORChain]: 'all'
 }

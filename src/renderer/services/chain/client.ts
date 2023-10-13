@@ -1,3 +1,4 @@
+import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -12,6 +13,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isEnabledChain } from '../../../shared/utils/chain'
+import * as AVAX from '../avax'
 import * as BNC from '../binance'
 import * as BTC from '../bitcoin'
 import * as BCH from '../bitcoincash'
@@ -35,6 +37,8 @@ export const clientByChain$ = (chain: Chain): XChainClient$ => {
       return BCH.client$
     case ETHChain:
       return ETH.client$
+    case AVAXChain:
+      return AVAX.client$
     case THORChain:
       return THOR.client$
     case LTCChain:
@@ -57,6 +61,8 @@ export const clientByAsset$ = (asset: Asset): XChainClient$ => {
       return asset.synth ? THOR.client$ : BCH.client$
     case ETHChain:
       return asset.synth ? THOR.client$ : ETH.client$
+    case AVAXChain:
+      return asset.synth ? THOR.client$ : AVAX.client$
     case THORChain:
       return THOR.client$
     case LTCChain:

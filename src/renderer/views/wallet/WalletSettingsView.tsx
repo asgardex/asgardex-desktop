@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -19,11 +20,11 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { LedgerErrorId } from '../../../shared/api/types'
-import { DEFAULT_ETH_HD_MODE } from '../../../shared/ethereum/const'
-import { EthHDMode } from '../../../shared/ethereum/types'
+import { DEFAULT_EVM_HD_MODE, EvmHDMode } from '../../../shared/evm/types'
 import { isEnabledChain } from '../../../shared/utils/chain'
 import { HDMode } from '../../../shared/wallet/types'
 import { WalletSettings } from '../../components/settings'
+import { useAvaxContext } from '../../contexts/AvaxContext'
 import { useBinanceContext } from '../../contexts/BinanceContext'
 import { useBitcoinCashContext } from '../../contexts/BitcoinCashContext'
 import { useBitcoinContext } from '../../contexts/BitcoinContext'
@@ -43,7 +44,8 @@ import {
   isLtcChain,
   isThorChain,
   isEthChain,
-  isCosmosChain
+  isCosmosChain,
+  isAvaxChain
 } from '../../helpers/chainHelper'
 import { sequenceTOptionFromArray } from '../../helpers/fpHelpers'
 import { useCollapsedSetting } from '../../hooks/useCollapsedSetting'
@@ -75,14 +77,15 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
 
   const { address$: thorAddressUI$ } = useThorchainContext()
   const { addressUI$: bnbAddressUI$ } = useBinanceContext()
-  const { addressUI$: ethAddressUI$, ethHDMode$, updateEthHDMode } = useEthereumContext()
+  const { addressUI$: ethAddressUI$, ethHDMode$, updateEvmHDMode } = useEthereumContext()
+  const { addressUI$: avaxAddressUI$ } = useAvaxContext()
   const { addressUI$: btcAddressUI$ } = useBitcoinContext()
   const { addressUI$: ltcAddressUI$ } = useLitecoinContext()
   const { addressUI$: bchAddressUI$ } = useBitcoinCashContext()
   const { addressUI$: dogeAddressUI$ } = useDogeContext()
   const { addressUI$: cosmosAddressUI$ } = useCosmosContext()
 
-  const ethHDMode: EthHDMode = useObservableState(ethHDMode$, DEFAULT_ETH_HD_MODE)
+  const evmHDMode: EvmHDMode = useObservableState(ethHDMode$, DEFAULT_EVM_HD_MODE)
 
   const {
     addAddress: addLedgerThorAddress,
@@ -132,6 +135,12 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     address: oEthLedgerWalletAddress,
     removeAddress: removeLedgerEthAddress
   } = useLedger(ETHChain, keystoreId)
+  const {
+    addAddress: addLedgerAvaxAddress,
+    verifyAddress: verifyLedgerAvaxAddress,
+    address: oAvaxLedgerWalletAddress,
+    removeAddress: removeLedgerAvaxAddress
+  } = useLedger(ETHChain, keystoreId)
 
   const {
     addAddress: addLedgerCosmosAddress,
@@ -156,6 +165,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     if (isBchChain(chain)) return addLedgerBchAddress(walletIndex, hdMode)
     if (isDogeChain(chain)) return addLedgerDOGEAddress(walletIndex, hdMode)
     if (isEthChain(chain)) return addLedgerEthAddress(walletIndex, hdMode)
+    if (isAvaxChain(chain)) return addLedgerAvaxAddress(walletIndex, hdMode)
     if (isCosmosChain(chain)) return addLedgerCosmosAddress(walletIndex, hdMode)
 
     return Rx.of(
@@ -182,6 +192,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     if (isBchChain(chain)) return verifyLedgerBchAddress(walletIndex, hdMode)
     if (isDogeChain(chain)) return verifyLedgerDOGEAddress(walletIndex, hdMode)
     if (isEthChain(chain)) return verifyLedgerEthAddress(walletIndex, hdMode)
+    if (isAvaxChain(chain)) return verifyLedgerAvaxAddress(walletIndex, hdMode)
     if (isCosmosChain(chain)) return verifyLedgerCosmosAddress(walletIndex, hdMode)
 
     return Rx.of(RD.failure(Error(`Ledger address verification for ${chain} has not been implemented`)))
@@ -195,6 +206,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     if (isBchChain(chain)) return removeLedgerBchAddress()
     if (isDogeChain(chain)) return removeLedgerDOGEAddress()
     if (isEthChain(chain)) return removeLedgerEthAddress()
+    if (isAvaxChain(chain)) return removeLedgerAvaxAddress()
     if (isCosmosChain(chain)) return removeLedgerCosmosAddress()
 
     return FP.constVoid
@@ -204,6 +216,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
 
   const oBNBClient = useObservableState(clientByChain$(BNBChain), O.none)
   const oETHClient = useObservableState(clientByChain$(ETHChain), O.none)
+  const oAVAXClient = useObservableState(clientByChain$(AVAXChain), O.none)
   const oBTCClient = useObservableState(clientByChain$(BTCChain), O.none)
   const oBCHClient = useObservableState(clientByChain$(BCHChain), O.none)
   const oTHORClient = useObservableState(clientByChain$(THORChain), O.none)
@@ -233,6 +246,9 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
         break
       case ETHChain:
         FP.pipe(oETHClient, O.map(openExplorerAddressUrl))
+        break
+      case AVAXChain:
+        FP.pipe(oAVAXClient, O.map(openExplorerAddressUrl))
         break
       case THORChain:
         FP.pipe(oTHORClient, O.map(openExplorerAddressUrl))
@@ -264,6 +280,11 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
       addressUI$: ethAddressUI$,
       ledgerAddress: oEthLedgerWalletAddress,
       chain: ETHChain
+    })
+    const avaxWalletAccount$ = walletAccount$({
+      addressUI$: avaxAddressUI$,
+      ledgerAddress: oAvaxLedgerWalletAddress,
+      chain: AVAXChain
     })
     const bnbWalletAccount$ = walletAccount$({
       addressUI$: bnbAddressUI$,
@@ -298,6 +319,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
           THOR: [thorWalletAccount$],
           BTC: [btcWalletAccount$],
           ETH: [ethWalletAccount$],
+          AVAX: [avaxWalletAccount$],
           BNB: [bnbWalletAccount$],
           BCH: [bchWalletAccount$],
           LTC: [ltcWalletAccount$],
@@ -315,6 +337,8 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     oBtcLedgerWalletAddress,
     ethAddressUI$,
     oEthLedgerWalletAddress,
+    avaxAddressUI$,
+    oAvaxLedgerWalletAddress,
     bnbAddressUI$,
     oBnbLedgerWalletAddress,
     bchAddressUI$,
@@ -347,8 +371,8 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
       validatePassword$={validatePassword$}
       collapsed={collapsed}
       toggleCollapse={toggleCollapse}
-      ethHDMode={ethHDMode}
-      updateEthHDMode={updateEthHDMode}
+      evmHDMode={evmHDMode}
+      updateEvmHDMode={updateEvmHDMode}
     />
   )
 }

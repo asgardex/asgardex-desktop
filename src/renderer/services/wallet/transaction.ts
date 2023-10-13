@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -14,6 +15,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { isEnabledChain } from '../../../shared/utils/chain'
 import { observableState } from '../../helpers/stateHelper'
+import * as AVAX from '../avax'
 import * as BNB from '../binance'
 import * as BTC from '../bitcoin'
 import * as BCH from '../bitcoincash'
@@ -69,6 +71,8 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
                 return BTC.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
               case ETHChain:
                 return ETH.txs$({ asset: O.some(asset), limit, offset, walletAddress, walletIndex })
+              case AVAXChain:
+                return AVAX.txs$({ asset: O.some(asset), limit, offset, walletAddress, walletIndex })
               case THORChain:
                 return THOR.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
               case LTCChain:

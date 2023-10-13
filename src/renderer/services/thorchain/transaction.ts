@@ -137,6 +137,7 @@ export const createTransactionService = (
     clientUrl: ClientUrl
     params: SendTxParams
   }): TxHashLD => {
+    console.log(`here in send ledger tx`)
     const sendLedgerTxParams: IPCLedgerSendTxParams = {
       chain: THORChain,
       network,

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { SearchOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
+import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -19,8 +20,8 @@ import { FormattedMessage, useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { KeystoreId, Network } from '../../../shared/api/types'
-import { getDerivationPath as getEthDerivationPath } from '../../../shared/ethereum/ledger'
-import { EthHDMode } from '../../../shared/ethereum/types'
+import { getDerivationPath as getEvmDerivationPath } from '../../../shared/evm/ledger'
+import { EvmHDMode } from '../../../shared/evm/types'
 import { chainToString, EnabledChain, isEnabledChain } from '../../../shared/utils/chain'
 import { isError } from '../../../shared/utils/guard'
 import { HDMode, WalletAddress } from '../../../shared/wallet/types'
@@ -30,7 +31,7 @@ import { RemoveWalletConfirmationModal } from '../../components/modal/confirmati
 import { AssetIcon } from '../../components/uielements/assets/assetIcon/AssetIcon'
 import { QRCodeModal } from '../../components/uielements/qrCodeModal/QRCodeModal'
 import { PhraseCopyModal } from '../../components/wallet/phrase/PhraseCopyModal'
-import { getChainAsset, isEthChain } from '../../helpers/chainHelper'
+import { getChainAsset, isAvaxChain, isEthChain } from '../../helpers/chainHelper'
 import { eqChain, eqString } from '../../helpers/fp/eq'
 import { emptyString } from '../../helpers/stringHelper'
 import { getWalletNamesFromKeystoreWallets, isEnabledLedger } from '../../helpers/walletHelper'
@@ -81,8 +82,8 @@ type Props = {
   validatePassword$: ValidatePasswordHandler
   collapsed: boolean
   toggleCollapse: FP.Lazy<void>
-  ethHDMode: EthHDMode
-  updateEthHDMode: (mode: EthHDMode) => void
+  evmHDMode: EvmHDMode
+  updateEvmHDMode: (mode: EvmHDMode) => void
 }
 
 type AddressToVerify = O.Option<{ address: Address; chain: Chain }>
@@ -105,8 +106,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     validatePassword$,
     collapsed,
     toggleCollapse,
-    updateEthHDMode,
-    ethHDMode
+    updateEvmHDMode,
+    evmHDMode
   } = props
 
   const intl = useIntl()
@@ -160,7 +161,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     [THORChain]: 0,
     [ETHChain]: 0,
     [GAIAChain]: 0,
-    [DOGEChain]: 0
+    [DOGEChain]: 0,
+    [AVAXChain]: 0
   })
 
   const {
@@ -211,11 +213,11 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
         addLedgerAddress$({
           chain,
           walletIndex,
-          hdMode: isEthChain(chain) ? ethHDMode : 'default' // other Ledgers uses `default` path
+          hdMode: isEthChain(chain) || isAvaxChain(chain) ? evmHDMode : 'default' // other Ledgers uses `default` path
         })
       )
     },
-    [resetAddLedgerAddressRD, subscribeAddLedgerAddressRD, addLedgerAddress$, ethHDMode]
+    [resetAddLedgerAddressRD, subscribeAddLedgerAddressRD, addLedgerAddress$, evmHDMode]
   )
 
   const verifyLedgerAddressHandler = useCallback(
@@ -236,8 +238,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
   const renderLedgerAddress = useCallback(
     (chain: EnabledChain, oAddress: O.Option<WalletAddress>) => {
       const renderAddAddress = () => {
-        const onChangeEthDerivationMode = (e: RadioChangeEvent) => {
-          updateEthHDMode(e.target.value as EthHDMode)
+        const onChangeEvmDerivationMode = (e: RadioChangeEvent) => {
+          updateEvmHDMode(e.target.value as EvmHDMode)
         }
 
         const selectedWalletIndex = walletIndexMap[chain]
@@ -289,46 +291,47 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                 </>
               </div>
 
-              {isEthChain(chain) && (
-                <StyledR.Radio.Group
-                  className="!flex flex-col items-start lg:flex-row lg:items-center lg:!pl-30px"
-                  onChange={onChangeEthDerivationMode}
-                  value={ethHDMode}>
-                  <StyledR.Radio value="ledgerlive" key="ledgerlive">
-                    <Styled.EthDerivationModeRadioLabel>
-                      {intl.formatMessage({ id: 'common.ledgerlive' })}
-                      <InfoIcon
-                        tooltip={intl.formatMessage(
-                          { id: 'setting.wallet.hdpath.ledgerlive.info' },
-                          { path: getEthDerivationPath(walletIndexMap[ETHChain], 'ledgerlive') }
-                        )}
-                      />
-                    </Styled.EthDerivationModeRadioLabel>
-                  </StyledR.Radio>
-                  <StyledR.Radio value="legacy" key="legacy">
-                    <Styled.EthDerivationModeRadioLabel>
-                      {intl.formatMessage({ id: 'common.legacy' })}
-                      <InfoIcon
-                        tooltip={intl.formatMessage(
-                          { id: 'setting.wallet.hdpath.legacy.info' },
-                          { path: getEthDerivationPath(walletIndexMap[ETHChain], 'legacy') }
-                        )}
-                      />
-                    </Styled.EthDerivationModeRadioLabel>
-                  </StyledR.Radio>
-                  <StyledR.Radio value="metamask" key="metamask">
-                    <Styled.EthDerivationModeRadioLabel>
-                      {intl.formatMessage({ id: 'common.metamask' })}
-                      <InfoIcon
-                        tooltip={intl.formatMessage(
-                          { id: 'setting.wallet.hdpath.metamask.info' },
-                          { path: getEthDerivationPath(walletIndexMap[ETHChain], 'metamask') }
-                        )}
-                      />
-                    </Styled.EthDerivationModeRadioLabel>
-                  </StyledR.Radio>
-                </StyledR.Radio.Group>
-              )}
+              {isEthChain(chain) ||
+                (isAvaxChain(chain) && (
+                  <StyledR.Radio.Group
+                    className="!flex flex-col items-start lg:flex-row lg:items-center lg:!pl-30px"
+                    onChange={onChangeEvmDerivationMode}
+                    value={evmHDMode}>
+                    <StyledR.Radio value="ledgerlive" key="ledgerlive">
+                      <Styled.EthDerivationModeRadioLabel>
+                        {intl.formatMessage({ id: 'common.ledgerlive' })}
+                        <InfoIcon
+                          tooltip={intl.formatMessage(
+                            { id: 'setting.wallet.hdpath.ledgerlive.info' },
+                            { path: getEvmDerivationPath(walletIndexMap[ETHChain], 'ledgerlive') }
+                          )}
+                        />
+                      </Styled.EthDerivationModeRadioLabel>
+                    </StyledR.Radio>
+                    <StyledR.Radio value="legacy" key="legacy">
+                      <Styled.EthDerivationModeRadioLabel>
+                        {intl.formatMessage({ id: 'common.legacy' })}
+                        <InfoIcon
+                          tooltip={intl.formatMessage(
+                            { id: 'setting.wallet.hdpath.legacy.info' },
+                            { path: getEvmDerivationPath(walletIndexMap[ETHChain], 'legacy') }
+                          )}
+                        />
+                      </Styled.EthDerivationModeRadioLabel>
+                    </StyledR.Radio>
+                    <StyledR.Radio value="metamask" key="metamask">
+                      <Styled.EthDerivationModeRadioLabel>
+                        {intl.formatMessage({ id: 'common.metamask' })}
+                        <InfoIcon
+                          tooltip={intl.formatMessage(
+                            { id: 'setting.wallet.hdpath.metamask.info' },
+                            { path: getEvmDerivationPath(walletIndexMap[ETHChain], 'metamask') }
+                          )}
+                        />
+                      </Styled.EthDerivationModeRadioLabel>
+                    </StyledR.Radio>
+                  </StyledR.Radio.Group>
+                ))}
             </div>
             {currentLedgerToAdd && renderError}
           </>
@@ -366,8 +369,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
       walletIndexMap,
       ledgerChainToAdd,
       addLedgerAddressRD,
-      ethHDMode,
-      updateEthHDMode,
+      evmHDMode,
+      updateEvmHDMode,
       addLedgerAddress,
       network,
       clickAddressLinkHandler,

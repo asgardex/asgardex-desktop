@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react'
 
+import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -55,7 +56,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
           </h1>
         )
       }
-
+      console.log(chain)
       switch (chain) {
         case BNBChain:
           return <SendViewBNB asset={asset} />
@@ -64,6 +65,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
         case BTCChain:
           return <SendViewBTC asset={asset} />
         case ETHChain:
+        case AVAXChain:
           return <SendViewETH asset={asset} />
         case THORChain:
           return <SendViewTHOR asset={asset} />

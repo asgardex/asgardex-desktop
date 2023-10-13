@@ -1,3 +1,4 @@
+import { AssetAVAX } from '@xchainjs/xchain-avax'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
 import {
   Address,
@@ -17,6 +18,7 @@ import * as P from 'fp-ts/lib/Predicate'
 import * as S from 'fp-ts/lib/string'
 
 import { Network } from '../../shared/api/types'
+import { AvaxZeroAddress } from '../../shared/avax/const'
 import { ETHAddress } from '../../shared/ethereum/const'
 import {
   AssetATOM,
@@ -135,6 +137,11 @@ export const isBusdAssetSynth = (asset: Asset): boolean => eqAsset.equals(asset,
 export const isEthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetETH)
 
 /**
+ * Checks whether an asset is an ETH asset
+ */
+export const isAvaxAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetAVAX)
+
+/**
  * Checks whether an asset is an ETH synthetic
  */
 export const isEthSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthEth)
@@ -192,6 +199,16 @@ export const validAssetForETH = (asset: Asset /* ETH or ERC20 asset */, network:
   network !== 'mainnet' /* (1) */ || isEthAsset(asset) /* (2) */ || assetInERC20Whitelist(asset)
 
 /**
+ * Checks whether ETH/ERC20 asset is whitelisted or not
+ * based on following rules:
+ * (1) Check on `mainnet` only
+ * (2) Always accept ETH
+ * (3) ERC20 asset needs to be listed in `ERC20Whitelist`
+ */
+export const validAssetForAVAX = (asset: Asset /* ETH or ERC20 asset */, network: Network): boolean =>
+  network !== 'mainnet' /* (1) */ || isAvaxAsset(asset) /* (2)  || assetInERC20Whitelist(asset)/*
+
+/**
  * Checks whether an ERC20 address is black listed or not
  */
 const addressInList = (address: Address, list: Asset[]): boolean => {
@@ -246,10 +263,25 @@ export const getEthTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
 )
 
 /**
+ * Get ethereum token address (as check sum address) from a given asset
+ */
+export const getAvaxTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
+  getTokenAddress,
+  O.fromNullable,
+  O.chain(getEthChecksumAddress)
+)
+
+/**
  * Get address (as check sum address) from an ETH or ETH token asset
  */
 export const getEthAssetAddress = (asset: Asset): O.Option<Address> =>
   isEthAsset(asset) ? O.some(ETHAddress) : getEthTokenAddress(asset)
+
+/**
+ * Get address (as check sum address) from an Avax or Avax token asset
+ */
+export const getAvaxAssetAddress = (asset: Asset): O.Option<Address> =>
+  isAvaxAsset(asset) ? O.some(AvaxZeroAddress) : getAvaxTokenAddress(asset)
 
 /**
  * Check whether an asset is an ERC20 asset

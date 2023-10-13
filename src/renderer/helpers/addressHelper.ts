@@ -1,3 +1,4 @@
+import { AVAXChain } from '@xchainjs/xchain-avax'
 import { getPrefix as getBinancePrefix } from '@xchainjs/xchain-binance'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { getPrefix as getBitcoinPrefix } from '@xchainjs/xchain-bitcoin'
@@ -9,7 +10,7 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { getPrefix as getDogePrefix } from '@xchainjs/xchain-doge'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { getPrefix as getEthereumPrefix } from '@xchainjs/xchain-evm'
+import { getPrefix as getEvmPrefix } from '@xchainjs/xchain-evm'
 import { getPrefix as getLitecoinPrefix } from '@xchainjs/xchain-litecoin'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { getPrefix as getThorchainPrefix } from '@xchainjs/xchain-thorchain'
@@ -44,7 +45,9 @@ export const getAddressPrefixLength = (chain: Chain, network: Network): number =
     case GAIAChain:
       return getCosmosPrefix().length
     case ETHChain:
-      return getEthereumPrefix().length
+      return getEvmPrefix().length
+    case AVAXChain:
+      return getEvmPrefix().length
     case DOGEChain:
       return getDogePrefix(clientNetwork).length
     case THORChain:

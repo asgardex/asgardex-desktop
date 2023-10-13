@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { AVAX_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-avax'
 import { Fees, FeeType, TxParams } from '@xchainjs/xchain-client'
-import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { getFee, GasPrices } from '@xchainjs/xchain-evm'
 import { Asset, baseAmount } from '@xchainjs/xchain-util'
 import { ethers } from 'ethers'
@@ -9,8 +9,8 @@ import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { ETHAddress } from '../../../shared/ethereum/const'
-import { isEthAsset } from '../../helpers/assetHelper'
+import { AvaxZeroAddress } from '../../../shared/avax/const'
+import { isAvaxAsset } from '../../helpers/assetHelper'
 import { observableState } from '../../helpers/stateHelper'
 import { FeeLD } from '../chain/types'
 import * as C from '../clients'
@@ -24,7 +24,7 @@ export const ERC20_OUT_TX_GAS_LIMIT = ethers.BigNumber.from('49610')
 export const createFeesService = (client$: Client$): FeesService => {
   const { get$: reloadFees$, set: reloadFees } = observableState<TxParams>({
     amount: baseAmount(1),
-    recipient: ETHAddress
+    recipient: AvaxZeroAddress
   })
 
   const fees$ = (params: TxParams): FeesLD =>
@@ -60,9 +60,9 @@ export const createFeesService = (client$: Client$): FeesService => {
               ]).pipe(
                 RxOp.map<[ethers.BigNumber, GasPrices], Fees>(([gasLimit, gasPrices]) => ({
                   type: FeeType.PerByte,
-                  average: getFee({ gasPrice: gasPrices.average, gasLimit, decimals: ETH_GAS_ASSET_DECIMAL }),
-                  fast: getFee({ gasPrice: gasPrices.fast, gasLimit, decimals: ETH_GAS_ASSET_DECIMAL }),
-                  fastest: getFee({ gasPrice: gasPrices.fastest, gasLimit, decimals: ETH_GAS_ASSET_DECIMAL })
+                  average: getFee({ gasPrice: gasPrices.average, gasLimit, decimals: AVAX_GAS_ASSET_DECIMAL }),
+                  fast: getFee({ gasPrice: gasPrices.fast, gasLimit, decimals: AVAX_GAS_ASSET_DECIMAL }),
+                  fastest: getFee({ gasPrice: gasPrices.fastest, gasLimit, decimals: AVAX_GAS_ASSET_DECIMAL })
                 })),
                 RxOp.map(RD.success),
                 RxOp.catchError((error) => Rx.of(RD.failure(error))),
@@ -84,13 +84,13 @@ export const createFeesService = (client$: Client$): FeesService => {
           O.fold(
             () => Rx.of(RD.initial),
             (client) => {
-              const gasLimit = isEthAsset(asset) ? ETH_OUT_TX_GAS_LIMIT : ERC20_OUT_TX_GAS_LIMIT
+              const gasLimit = isAvaxAsset(asset) ? ETH_OUT_TX_GAS_LIMIT : ERC20_OUT_TX_GAS_LIMIT
               return Rx.from(client.estimateGasPrices()).pipe(
                 RxOp.map<GasPrices, Fees>((gasPrices) => ({
                   type: FeeType.PerByte,
-                  average: getFee({ gasPrice: gasPrices.average, gasLimit, decimals: ETH_GAS_ASSET_DECIMAL }),
-                  fast: getFee({ gasPrice: gasPrices.fast, gasLimit, decimals: ETH_GAS_ASSET_DECIMAL }),
-                  fastest: getFee({ gasPrice: gasPrices.fastest, gasLimit, decimals: ETH_GAS_ASSET_DECIMAL })
+                  average: getFee({ gasPrice: gasPrices.average, gasLimit, decimals: AVAX_GAS_ASSET_DECIMAL }),
+                  fast: getFee({ gasPrice: gasPrices.fast, gasLimit, decimals: AVAX_GAS_ASSET_DECIMAL }),
+                  fastest: getFee({ gasPrice: gasPrices.fastest, gasLimit, decimals: AVAX_GAS_ASSET_DECIMAL })
                 })),
                 RxOp.map(RD.success),
                 RxOp.catchError((error) => Rx.of(RD.failure(error))),
@@ -118,7 +118,7 @@ export const createFeesService = (client$: Client$): FeesService => {
                 client.estimateGasPrices()
               ]).pipe(
                 RxOp.map(([gasLimit, gasPrices]) =>
-                  getFee({ gasPrice: gasPrices.fast, gasLimit, decimals: ETH_GAS_ASSET_DECIMAL })
+                  getFee({ gasPrice: gasPrices.fast, gasLimit, decimals: AVAX_GAS_ASSET_DECIMAL })
                 ),
                 RxOp.map(RD.success),
                 RxOp.catchError((error) => Rx.of(RD.failure(error))),

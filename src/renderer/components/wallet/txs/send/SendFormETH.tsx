@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { FeeOption, Fees, TxParams } from '@xchainjs/xchain-client'
-import { AssetETH, ETHChain } from '@xchainjs/xchain-ethereum'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { validateAddress } from '@xchainjs/xchain-evm'
 import {
   bn,
@@ -26,9 +26,9 @@ import { chainToString } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../../const'
-import { isEthAsset } from '../../../../helpers/assetHelper'
+import { isAvaxAsset, isEthAsset } from '../../../../helpers/assetHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
-import { getEthAmountFromBalances } from '../../../../helpers/walletHelper'
+import { getEvmAmountFromBalances } from '../../../../helpers/walletHelper'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import { SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
@@ -123,32 +123,35 @@ export const SendFormETH: React.FC<Props> = (props): JSX.Element => {
       ),
     [oFees, selectedFeeOption]
   )
-
-  const oEthAmount: O.Option<BaseAmount> = useMemo(() => {
+  // Could be AVAX or ETH
+  const oAssetAmount: O.Option<BaseAmount> = useMemo(() => {
     // return balance of current asset (if ETH)
     if (isEthAsset(asset)) {
       return O.some(balance.amount)
     }
+    if (isAvaxAsset(asset)) {
+      return O.some(balance.amount)
+    }
     // or check list of other assets to get eth balance
-    return FP.pipe(balances, getEthAmountFromBalances, O.map(assetToBase))
+    return FP.pipe(balances, getEvmAmountFromBalances, O.map(assetToBase))
   }, [asset, balance.amount, balances])
 
   const isFeeError = useMemo(() => {
     return FP.pipe(
-      sequenceTOption(selectedFee, oEthAmount),
+      sequenceTOption(selectedFee, oAssetAmount),
       O.fold(
         // Missing (or loading) fees does not mean we can't sent something. No error then.
         () => false,
-        ([fee, ethAmount]) => ethAmount.lt(fee)
+        ([fee, assetAmount]) => assetAmount.lt(fee)
       )
     )
-  }, [oEthAmount, selectedFee])
+  }, [oAssetAmount, selectedFee])
 
   const renderFeeError = useMemo(() => {
     if (!isFeeError) return <></>
 
     const amount: BaseAmount = FP.pipe(
-      oEthAmount,
+      oAssetAmount,
       // no eth asset == zero amount
       O.getOrElse(() => ZERO_BASE_AMOUNT)
     )
@@ -158,7 +161,7 @@ export const SendFormETH: React.FC<Props> = (props): JSX.Element => {
       {
         balance: formatAssetAmountCurrency({
           amount: baseToAsset(amount),
-          asset: AssetETH,
+          asset,
           trimZeros: true
         })
       }
@@ -169,7 +172,7 @@ export const SendFormETH: React.FC<Props> = (props): JSX.Element => {
         {msg}
       </Styled.Label>
     )
-  }, [oEthAmount, intl, isFeeError])
+  }, [oAssetAmount, intl, asset, isFeeError])
 
   const feeOptionsLabel: Record<FeeOption, string> = useMemo(
     () => ({
@@ -218,19 +221,19 @@ export const SendFormETH: React.FC<Props> = (props): JSX.Element => {
 
   // max amount for eth
   const maxAmount: BaseAmount = useMemo(() => {
-    const maxEthAmount: BigNumber = FP.pipe(
-      sequenceTOption(selectedFee, oEthAmount),
+    const maxAssetAmount: BigNumber = FP.pipe(
+      sequenceTOption(selectedFee, oAssetAmount),
       O.fold(
         // Set maxAmount to zero if we dont know anything about eth and fee amounts
         () => ZERO_BN,
-        ([fee, ethAmount]) => {
-          const max = ethAmount.amount().minus(fee.amount())
+        ([fee, assetAmount]) => {
+          const max = assetAmount.amount().minus(fee.amount())
           return max.isGreaterThan(0) ? max : ZERO_BN
         }
       )
     )
-    return isEthAsset(asset) ? baseAmount(maxEthAmount, balance.amount.decimal) : balance.amount
-  }, [selectedFee, oEthAmount, asset, balance.amount])
+    return baseAmount(maxAssetAmount, balance.amount.decimal)
+  }, [selectedFee, oAssetAmount, balance.amount])
 
   useEffect(() => {
     FP.pipe(
@@ -436,9 +439,9 @@ export const SendFormETH: React.FC<Props> = (props): JSX.Element => {
     () =>
       FP.pipe(
         feesRD,
-        RD.map((fees) => [{ asset: AssetETH, amount: fees[selectedFeeOption] }])
+        RD.map((fees) => [{ asset: asset, amount: fees[selectedFeeOption] }])
       ),
-    [feesRD, selectedFeeOption]
+    [feesRD, asset, selectedFeeOption]
   )
 
   const addMaxAmountHandler = useCallback(() => setAmountToSend(O.some(maxAmount)), [maxAmount])

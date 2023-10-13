@@ -91,7 +91,7 @@ import {
   IsApprovedRD,
   IsApproveParams,
   LoadApproveFeeHandler
-} from '../../services/ethereum/types'
+} from '../../services/evm/types'
 import { PoolAddress, PoolDetails, PoolsDataMap } from '../../services/midgard/types'
 import {
   ApiError,

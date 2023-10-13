@@ -1,3 +1,4 @@
+import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -61,6 +62,7 @@ export const AssetTGTERC20: Asset = {
 // This hardcode list is for testnet only
 export const ERC20AssetsTestnet = [AssetUSDTERC20Testnet, AssetXRuneTestnet, AssetRuneERC20Testnet]
 export const ETHAssetsTestnet = [AssetETH, ...ERC20AssetsTestnet]
+export const AvaxAssetsTestnet = [AssetAVAX]
 
 // UNIH (exploit contract)
 // https://etherscan.io/address/0x4bf5dc91E2555449293D7824028Eb8Fe5879B689
@@ -138,7 +140,8 @@ export const CHAIN_WEIGHTS: Record<EnabledChain, number> = {
   [ETHChain]: 4,
   [BNBChain]: 5,
   [GAIAChain]: 6,
-  [DOGEChain]: 7
+  [AVAXChain]: 7,
+  [DOGEChain]: 8
 }
 
 // Weight of currencies needed for pricing

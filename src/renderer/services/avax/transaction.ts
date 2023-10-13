@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { AVAXChain } from '@xchainjs/xchain-avax'
 import { TxHash } from '@xchainjs/xchain-client'
-import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { isApproved } from '@xchainjs/xchain-evm'
 import { baseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -19,11 +19,11 @@ import {
   ipcLedgerSendTxParamsIO
 } from '../../../shared/api/io'
 import { LedgerError, Network } from '../../../shared/api/types'
-import { DEPOSIT_EXPIRATION_OFFSET, ETHAddress } from '../../../shared/ethereum/const'
+import { AvaxZeroAddress, DEPOSIT_EXPIRATION_OFFSET } from '../../../shared/avax/const'
 import { ROUTER_ABI } from '../../../shared/evm/abi'
 import { getBlocktime } from '../../../shared/evm/provider'
 import { isError, isEvmHDMode, isLedgerWallet } from '../../../shared/utils/guard'
-import { addressInERC20Whitelist, getEthAssetAddress } from '../../helpers/assetHelper'
+import { addressInERC20Whitelist, getAvaxAssetAddress } from '../../helpers/assetHelper'
 import { sequenceSOption } from '../../helpers/fpHelpers'
 import { LiveData } from '../../helpers/rx/liveData'
 import { Network$ } from '../app/types'
@@ -38,14 +38,14 @@ import {
   SendTxParams
 } from '../evm/types'
 import { ApiError, ErrorId, TxHashLD } from '../wallet/types'
-import { Client$, Client as EthClient } from './types'
+import { Client$, Client as AvaxClient } from './types'
 
 export const createTransactionService = (client$: Client$, network$: Network$): TransactionService => {
   const common = C.createTransactionService(client$)
 
   // Note: We don't use `client.deposit` to send "pool" txs to avoid repeating same requests we already do in ASGARDEX
   // That's why we call `deposit` directly here
-  const runSendPoolTx$ = (client: EthClient, { ...params }: SendPoolTxParams): TxHashLD => {
+  const runSendPoolTx$ = (client: AvaxClient, { ...params }: SendPoolTxParams): TxHashLD => {
     // helper for failures
     const failure$ = (msg: string) =>
       Rx.of<RD.RemoteData<ApiError, never>>(
@@ -58,7 +58,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     const provider = client.getProvider()
 
     return FP.pipe(
-      sequenceSOption({ address: getEthAssetAddress(params.asset), router: params.router }),
+      sequenceSOption({ address: getAvaxAssetAddress(params.asset), router: params.router }),
       O.fold(
         () => failure$(`Invalid values: Asset ${params.asset} / router address ${params.router}`),
         ({ address, router }) =>
@@ -68,8 +68,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
               blockTime: Rx.from(getBlocktime(provider))
             }),
             RxOp.switchMap(({ gasPrices, blockTime }) => {
-              const isETHAddress = address === ETHAddress
-              const amount = isETHAddress ? baseAmount(0) : params.amount
+              const isAvaxAddress = address === AvaxZeroAddress
+              const amount = isAvaxAddress ? baseAmount(0) : params.amount
               const gasPrice = gasPrices[params.feeOption].amount().toFixed(0) // no round down needed
               const signer = client.getWallet(params.walletIndex)
               const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
@@ -90,7 +90,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
                     amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
                     params.memo,
                     expiration,
-                    isETHAddress
+                    isAvaxAddress
                       ? {
                           // Send `BaseAmount` w/o decimal and always round down for currencies
                           value: params.amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
@@ -112,7 +112,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
 
   const sendLedgerPoolTx = ({ network, params }: { network: Network; params: SendPoolTxParams }): TxHashLD => {
     const ipcParams: IPCLedgerDepositTxParams = {
-      chain: ETHChain,
+      chain: AVAXChain,
       network,
       asset: params.asset,
       router: O.toUndefined(params.router),
@@ -135,7 +135,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
               Rx.of(
                 RD.failure({
                   errorId: ErrorId.DEPOSIT_LEDGER_TX_ERROR,
-                  msg: `Deposit Ledger ETH/ERC20 tx failed. (${msg})`
+                  msg: `Deposit Ledger Avax/ERC20 tx failed. (${msg})`
                 })
               ),
             (txHash) => Rx.of(RD.success(txHash))
@@ -168,7 +168,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
   }
 
   const runApproveERC20Token$ = (
-    client: EthClient,
+    client: AvaxClient,
     { walletIndex, contractAddress, spenderAddress }: ApproveParams
   ): TxHashLD => {
     const signer = client.getWallet(walletIndex)
@@ -219,7 +219,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       return Rx.of(
         RD.failure({
           errorId: ErrorId.APPROVE_LEDGER_TX,
-          msg: `Invalid EthHDMode ${hdMode} - needed for Ledger to send ERC20 token.`
+          msg: `Invalid AvaxHDMode ${hdMode} - needed for Ledger to send ERC20 token.`
         })
       )
     }
@@ -290,7 +290,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
   }
 
   const runIsApprovedERC20Token$ = (
-    client: EthClient,
+    client: AvaxClient,
     { contractAddress, spenderAddress, fromAddress }: IsApproveParams
   ): LiveData<ApiError, boolean> => {
     const provider = client.getProvider()
@@ -327,7 +327,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
 
   const sendLedgerTx = ({ network, params }: { network: Network; params: SendTxParams }): TxHashLD => {
     const ipcParams: IPCLedgerSendTxParams = {
-      chain: ETHChain,
+      chain: AVAXChain,
       network,
       asset: params.asset,
       feeAsset: undefined,

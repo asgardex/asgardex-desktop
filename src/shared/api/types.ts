@@ -6,7 +6,7 @@ import { Address, Chain } from '@xchainjs/xchain-util'
 import * as E from 'fp-ts/lib/Either'
 import * as O from 'fp-ts/Option'
 
-import { EthHDMode } from '../ethereum/types'
+import { EvmHDMode } from '../evm/types'
 import { Locale } from '../i18n/types'
 import { HDMode, WalletAddress } from '../wallet/types'
 import { IPCLedgerAddressesIO, KeystoreWallets, PoolsStorageEncoded } from './io'
@@ -20,7 +20,7 @@ export type UserNodesStorage = Readonly<Record<Network, Address[]> & StorageVers
 export type CommonStorage = Readonly<
   {
     locale: Locale
-    ethDerivationMode: EthHDMode
+    evmDerivationMode: EvmHDMode
     midgard: ApiUrls
     thornodeRpc: ApiUrls
     thornodeApi: ApiUrls

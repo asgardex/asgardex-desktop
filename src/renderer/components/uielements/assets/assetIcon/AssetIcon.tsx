@@ -21,13 +21,15 @@ import {
   isXRuneAsset,
   isAtomAsset,
   isBnbAssetSynth,
-  isBtcAssetSynth
+  isBtcAssetSynth,
+  isAvaxAsset
 } from '../../../../helpers/assetHelper'
 import { isBnbChain, isEthChain } from '../../../../helpers/chainHelper'
 import { getIntFromName, rainbowStop } from '../../../../helpers/colorHelpers'
 import { useRemoteImage } from '../../../../hooks/useRemoteImage'
 import {
   atomIcon,
+  avaxIcon,
   bnbIcon,
   btcIcon,
   dogeIcon,
@@ -57,6 +59,10 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     // ETH
     if (isEthAsset(asset)) {
       return ethIcon
+    }
+    // AVAX
+    if (isAvaxAsset(asset)) {
+      return avaxIcon
     }
     // RUNE
     if (isRuneNativeAsset(asset)) {

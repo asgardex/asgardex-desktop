@@ -74,9 +74,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
   const intl = useIntl()
 
   const { asset } = balance
-
   const [amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
-
   const {
     state: sendTxState,
     reset: resetSendTxState,

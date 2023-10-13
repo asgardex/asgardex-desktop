@@ -37,7 +37,7 @@ import * as StyledR from '../../../shared/form/Radio.styles'
 import { FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { UIFeesRD } from '../../../uielements/fees'
-import { Input, InputBigNumber } from '../../../uielements/input'
+import { InputBigNumber } from '../../../uielements/input'
 import { AccountSelector } from '../../account'
 import * as H from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
@@ -441,7 +441,7 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
               {renderWalletType}
             </Styled.CustomLabel>
             <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
-              <Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
+              <Styled.Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
             </Form.Item>
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
             <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">
@@ -464,7 +464,7 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
             {renderFeeError}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
             <Form.Item name="memo">
-              <Input size="large" disabled={isLoading} />
+              <Styled.Input size="large" disabled={isLoading} />
             </Form.Item>
             <Form.Item name="feeRate">{renderFeeOptions}</Form.Item>
           </Styled.SubForm>

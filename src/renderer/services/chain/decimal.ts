@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { AVAXChain, AVAX_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
@@ -33,6 +34,8 @@ const getDecimal = (asset: Asset): Promise<number> => {
       return Promise.resolve(BTC_DECIMAL)
     case ETHChain:
       return Promise.resolve(ETH_GAS_ASSET_DECIMAL)
+    case AVAXChain:
+      return Promise.resolve(AVAX_GAS_ASSET_DECIMAL)
     case THORChain:
       return Promise.resolve(THORCHAIN_DECIMAL)
     case DOGEChain:

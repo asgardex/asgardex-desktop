@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { baseAmount } from '@xchainjs/xchain-util'
+// import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { baseAmount, Chain } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
@@ -10,6 +10,7 @@ import { useObservableState } from 'observable-hooks'
 import { ETHAddress } from '../../../../shared/ethereum/const'
 import { LoadingView } from '../../../components/shared/loading'
 import { SendFormETH } from '../../../components/wallet/txs/send/'
+import { useAvaxContext } from '../../../contexts/AvaxContext'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useEthereumContext } from '../../../contexts/EthereumContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
@@ -29,7 +30,7 @@ export const SendViewETH: React.FC<Props> = (props): JSX.Element => {
   const { asset } = props
 
   const { network } = useNetwork()
-
+  console.log(asset)
   const {
     balancesState$,
     keystoreService: { validatePassword$ }
@@ -40,7 +41,7 @@ export const SendViewETH: React.FC<Props> = (props): JSX.Element => {
     INITIAL_BALANCES_STATE
   )
 
-  const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(ETHChain))
+  const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(asset.asset.chain))
 
   const oWalletBalance = useMemo(
     () =>
@@ -54,8 +55,22 @@ export const SendViewETH: React.FC<Props> = (props): JSX.Element => {
   )
 
   const { transfer$ } = useChainContext()
+  const useContext = (chain: Chain) => {
+    const ethereumContext = useEthereumContext()
+    const avaxContext = useAvaxContext()
 
-  const { fees$, reloadFees } = useEthereumContext()
+    let fees$, reloadFees
+    if (chain === 'ETH') {
+      fees$ = ethereumContext.fees$
+      reloadFees = ethereumContext.reloadFees
+    } else {
+      fees$ = avaxContext.fees$
+      reloadFees = avaxContext.reloadFees
+    }
+
+    return { fees$, reloadFees }
+  }
+  const { fees$, reloadFees } = useContext(asset.asset.chain)
 
   const [feesRD] = useObservableState<FeesRD>(
     // First fees are based on "default" values

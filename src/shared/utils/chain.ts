@@ -1,3 +1,4 @@
+import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -20,7 +21,8 @@ export const ENABLED_CHAINS = [
   DOGEChain,
   ETHChain,
   LTCChain,
-  THORChain
+  THORChain,
+  AVAXChain
 ] as const
 
 export type EnabledChain = typeof ENABLED_CHAINS[number]
@@ -59,5 +61,7 @@ export const chainToString = (chain: Chain): string => {
       return 'Litecoin'
     case THORChain:
       return 'THORChain'
+    case AVAXChain:
+      return 'Avax'
   }
 }

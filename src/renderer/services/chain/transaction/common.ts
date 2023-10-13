@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -18,6 +19,7 @@ import * as Rx from 'rxjs'
 import { isEnabledChain } from '../../../../shared/utils/chain'
 import { DEFAULT_FEE_OPTION } from '../../../components/wallet/txs/send/Send.const'
 import { LiveData, liveData } from '../../../helpers/rx/liveData'
+import * as AVAX from '../../avax'
 import * as BNB from '../../binance'
 import * as BTC from '../../bitcoin'
 import * as BCH from '../../bitcoincash'
@@ -71,6 +73,9 @@ export const sendTx$ = ({
 
     case ETHChain:
       return ETH.sendTx({ walletType, asset, recipient, amount, memo, feeOption, walletIndex, hdMode })
+
+    case AVAXChain:
+      return AVAX.sendTx({ walletType, asset, recipient, amount, memo, feeOption, walletIndex, hdMode })
 
     case THORChain:
       return THOR.sendTx({ walletType, amount, asset, memo, recipient, walletIndex, hdMode })
@@ -173,6 +178,18 @@ export const sendPoolTx$ = ({
         hdMode,
         feeOption
       })
+    case AVAXChain:
+      return AVAX.sendPoolTx$({
+        walletType,
+        router,
+        recipient,
+        asset,
+        amount,
+        memo,
+        walletIndex,
+        hdMode,
+        feeOption
+      })
 
     case THORChain:
       return THOR.sendPoolTx$({ walletType, amount, asset, memo, walletIndex, hdMode })
@@ -204,6 +221,8 @@ export const txStatusByChain$ = ({ txHash, chain }: { txHash: TxHash; chain: Cha
       return BTC.txStatus$(txHash, O.none)
     case ETHChain:
       return ETH.txStatus$(txHash, O.none)
+    case AVAXChain:
+      return AVAX.txStatus$(txHash, O.none)
     case THORChain:
       return THOR.txStatus$(txHash, O.none)
     case GAIAChain:
@@ -238,6 +257,8 @@ export const poolTxStatusByChain$ = ({
   switch (chain) {
     case ETHChain:
       return ETH.txStatus$(txHash, oAssetAddress)
+    case AVAXChain:
+      return AVAX.txStatus$(txHash, oAssetAddress)
     case BNBChain:
     case BTCChain:
     case THORChain:

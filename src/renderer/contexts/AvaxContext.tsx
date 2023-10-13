@@ -24,10 +24,10 @@ import {
   isApprovedERC20Token$,
   approveFee$,
   reloadApproveFee
-} from '../services/ethereum'
+} from '../services/avax'
 import { getStorageState$, modifyStorage } from '../services/storage/common'
 
-export type EthereumContextValue = {
+export type AvaxContextValue = {
   client$: typeof client$
   clientState$: typeof clientState$
   txs$: typeof txs$
@@ -45,11 +45,11 @@ export type EthereumContextValue = {
   isApprovedERC20Token$: typeof isApprovedERC20Token$
   approveFee$: typeof approveFee$
   reloadApproveFee: typeof reloadApproveFee
-  ethHDMode$: Rx.Observable<EvmHDMode>
+  avaxHDMode$: Rx.Observable<EvmHDMode>
   updateEvmHDMode: (m: EvmHDMode) => void
 }
 
-const ethHDMode$ = FP.pipe(
+const avaxHDMode$ = FP.pipe(
   getStorageState$,
   RxOp.map(
     FP.flow(
@@ -64,7 +64,7 @@ const updateEvmHDMode = (mode: EvmHDMode) => {
   modifyStorage(O.some({ evmDerivationMode: mode }))
 }
 
-const initialContext: EthereumContextValue = {
+const initialContext: AvaxContextValue = {
   client$,
   clientState$,
   txs$,
@@ -82,20 +82,20 @@ const initialContext: EthereumContextValue = {
   isApprovedERC20Token$,
   approveFee$,
   reloadApproveFee,
-  ethHDMode$,
+  avaxHDMode$,
   updateEvmHDMode
 }
 
-const EthereumContext = createContext<EthereumContextValue | null>(null)
+const AvaxContext = createContext<AvaxContextValue | null>(null)
 
-export const EthereumProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => {
-  return <EthereumContext.Provider value={initialContext}>{children}</EthereumContext.Provider>
+export const AvaxProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => {
+  return <AvaxContext.Provider value={initialContext}>{children}</AvaxContext.Provider>
 }
 
-export const useEthereumContext = () => {
-  const context = useContext(EthereumContext)
+export const useAvaxContext = () => {
+  const context = useContext(AvaxContext)
   if (!context) {
-    throw new Error('Context must be used within a EthereumProvider.')
+    throw new Error('Context must be used within a AvaxProvider.')
   }
   return context
 }

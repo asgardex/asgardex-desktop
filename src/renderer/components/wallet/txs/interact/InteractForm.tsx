@@ -224,6 +224,7 @@ export const InteractForm: React.FC<Props> = (props) => {
   const getMemo = useCallback(() => {
     const thorAddress = form.getFieldValue('thorAddress')
     const providerAddress = form.getFieldValue('providerAddress')
+    const amount = form.getFieldValue('amount')
     let memo = ''
 
     switch (interactType) {
@@ -232,7 +233,7 @@ export const InteractForm: React.FC<Props> = (props) => {
         break
       }
       case 'unbond': {
-        memo = getUnbondMemo(thorAddress, assetToBase(assetAmount(form.getFieldValue('amount'), THORCHAIN_DECIMAL)))
+        memo = getUnbondMemo(thorAddress, assetToBase(assetAmount(amount, THORCHAIN_DECIMAL)))
         break
       }
       case 'leave': {
