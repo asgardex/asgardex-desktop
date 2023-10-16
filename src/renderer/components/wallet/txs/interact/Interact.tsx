@@ -24,7 +24,8 @@ export const Interact: React.FC<Props> = ({ interactType, interactTypeChanged, n
       { type: 'bond', label: intl.formatMessage({ id: 'deposit.interact.actions.bond' }) },
       { type: 'unbond', label: intl.formatMessage({ id: 'deposit.interact.actions.unbond' }) },
       { type: 'leave', label: intl.formatMessage({ id: 'deposit.interact.actions.leave' }) },
-      { type: 'custom', label: intl.formatMessage({ id: 'common.custom' }) }
+      { type: 'custom', label: intl.formatMessage({ id: 'common.custom' }) },
+      { type: 'thorname', label: intl.formatMessage({ id: 'common.thorname' }) }
     ],
     [intl]
   )

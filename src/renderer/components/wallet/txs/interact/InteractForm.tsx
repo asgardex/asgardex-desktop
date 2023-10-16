@@ -39,7 +39,7 @@ import * as H from './Interact.helpers'
 import * as Styled from './Interact.styles'
 import { InteractType } from './Interact.types'
 
-type FormValues = { memo: string; thorAddress: string; providerAddress: string; amount: BigNumber }
+type FormValues = { memo: string; thorAddress: string; providerAddress: string; operatorFee: number; amount: BigNumber }
 
 type Props = {
   interactType: InteractType
@@ -84,9 +84,11 @@ export const InteractForm: React.FC<Props> = (props) => {
     switch (interactType) {
       case 'bond':
       case 'custom':
+      case 'unbond':
         return _amountToSend
       case 'leave':
-      case 'unbond':
+        return ZERO_BASE_AMOUNT
+      case 'thorname':
         return ZERO_BASE_AMOUNT
     }
   }, [_amountToSend, interactType])
@@ -185,21 +187,13 @@ export const InteractForm: React.FC<Props> = (props) => {
     [interactType, intl, maxAmount]
   )
 
-  const onChangeInput = useCallback(
-    async (value: BigNumber) => {
-      // we have to validate input before storing into the state
-      amountValidator(undefined, value)
-        .then(() => {
-          if (interactType === 'bond' || interactType === 'custom') {
-            setAmountToSend(assetToBase(assetAmount(value, THORCHAIN_DECIMAL)))
-          }
-        })
-        .catch(() => {}) // do nothing, Ant' form does the job for us to show an error message
+  const addMaxAmountHandler = useCallback(
+    (maxAmount: BaseAmount) => {
+      setAmountToSend(maxAmount)
+      console.log('Amount set to:', maxAmount) // Debugging log
     },
-    [amountValidator, interactType]
+    [setAmountToSend]
   )
-
-  const addMaxAmountHandler = useCallback(() => setAmountToSend(maxAmount), [maxAmount])
 
   const addressValidator = useCallback(
     async (_: unknown, value: string) =>
@@ -224,16 +218,18 @@ export const InteractForm: React.FC<Props> = (props) => {
   const getMemo = useCallback(() => {
     const thorAddress = form.getFieldValue('thorAddress')
     const providerAddress = form.getFieldValue('providerAddress')
-    const amount = form.getFieldValue('amount')
+    const nodeOperatorFee = form.getFieldValue('operatorFee')
+    const feeInBasisPoints = nodeOperatorFee ? nodeOperatorFee * 100 : undefined
+
     let memo = ''
 
     switch (interactType) {
       case 'bond': {
-        memo = getBondMemo(thorAddress)
+        memo = getBondMemo(thorAddress, providerAddress, feeInBasisPoints)
         break
       }
       case 'unbond': {
-        memo = getUnbondMemo(thorAddress, assetToBase(assetAmount(amount, THORCHAIN_DECIMAL)))
+        memo = getUnbondMemo(thorAddress, amountToSend, providerAddress)
         break
       }
       case 'leave': {
@@ -244,15 +240,32 @@ export const InteractForm: React.FC<Props> = (props) => {
         memo = form.getFieldValue('memo')
         break
       }
+      case 'thorname': {
+        memo = getLeaveMemo(thorAddress)
+        break
+      }
     }
+    setMemo(memo)
+    return memo
+  }, [amountToSend, form, interactType])
 
-    const providerAddedMemo = hasProviderAddress ? `${memo}:${providerAddress}` : memo
-
-    // Set memo for all cases
-    setMemo(providerAddedMemo)
-
-    return providerAddedMemo
-  }, [form, hasProviderAddress, interactType])
+  const onChangeInput = useCallback(
+    async (value: BigNumber) => {
+      // we have to validate input before storing into the state
+      amountValidator(undefined, value)
+        .then(() => {
+          const newAmountToSend = assetToBase(assetAmount(value, THORCHAIN_DECIMAL))
+          setAmountToSend(newAmountToSend)
+        })
+        .catch(() => {})
+      // do nothing, Ant' form does the job for us to show an error message
+    },
+    [amountValidator]
+  )
+  useEffect(() => {
+    // This code will run after the state has been updated
+    getMemo()
+  }, [amountToSend, getMemo])
 
   const submitTx = useCallback(() => {
     setSendTxStartTime(Date.now())
@@ -274,6 +287,7 @@ export const InteractForm: React.FC<Props> = (props) => {
     resetInteractState()
     form.resetFields()
     setHasProviderAddress(false)
+    setMemo('')
     setAmountToSend(ZERO_BASE_AMOUNT)
   }, [form, resetInteractState])
 
@@ -374,15 +388,21 @@ export const InteractForm: React.FC<Props> = (props) => {
   const submitLabel = useMemo(() => {
     switch (interactType) {
       case 'bond':
-        return intl.formatMessage({ id: 'deposit.interact.actions.bond' })
+        if (hasProviderAddress) {
+          return intl.formatMessage({ id: 'deposit.interact.actions.addBondProvider' })
+        } else {
+          return intl.formatMessage({ id: 'deposit.interact.actions.bond' })
+        }
       case 'unbond':
         return intl.formatMessage({ id: 'deposit.interact.actions.unbond' })
       case 'leave':
         return intl.formatMessage({ id: 'deposit.interact.actions.leave' })
       case 'custom':
         return intl.formatMessage({ id: 'wallet.action.send' })
+      case 'thorname':
+        return intl.formatMessage({ id: 'deposit.interact.actions.buyThorname' })
     }
-  }, [interactType, intl])
+  }, [interactType, intl, hasProviderAddress])
 
   const uiFeesRD: UIFeesRD = useMemo(
     () =>
@@ -396,10 +416,12 @@ export const InteractForm: React.FC<Props> = (props) => {
 
   const onClickHasProviderAddress = useCallback(() => {
     // clean address
-    form.setFieldsValue({ providerAddress: '' })
+    form.setFieldsValue({ providerAddress: undefined })
+    form.setFieldsValue({ operatorFee: undefined })
     // toggle
     setHasProviderAddress((v) => !v)
-  }, [form])
+    getMemo()
+  }, [form, getMemo])
 
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field
@@ -481,32 +503,88 @@ export const InteractForm: React.FC<Props> = (props) => {
         )}
 
         {/* Amount input (BOND/UNBOND/CUSTOM only) */}
-        {(interactType === 'bond' || interactType === 'unbond' || interactType === 'custom') && (
-          <Styled.InputContainer>
-            <Styled.InputLabel>{intl.formatMessage({ id: 'common.amount' })}</Styled.InputLabel>
-            <Styled.FormItem
-              name="amount"
-              rules={[
-                {
-                  required: true,
-                  validator: amountValidator
-                }
-              ]}>
-              <InputBigNumber disabled={isLoading} size="large" decimal={THORCHAIN_DECIMAL} onChange={onChangeInput} />
-            </Styled.FormItem>
-            {/* max. amount button (BOND/CUSTOM only) */}
-            {(interactType === 'bond' || interactType === 'custom') && (
-              <MaxBalanceButton
-                className="mb-10px"
-                color="neutral"
-                balance={{ amount: maxAmount, asset: asset }}
-                onClick={addMaxAmountHandler}
-                disabled={isLoading}
-              />
+        {!hasProviderAddress && (
+          <>
+            {(interactType === 'bond' || interactType === 'unbond' || interactType === 'custom') && (
+              <Styled.InputContainer>
+                <Styled.InputLabel>{intl.formatMessage({ id: 'common.amount' })}</Styled.InputLabel>
+                <Styled.FormItem
+                  name="amount"
+                  rules={[
+                    {
+                      required: true,
+                      validator: amountValidator
+                    }
+                  ]}>
+                  <InputBigNumber
+                    disabled={isLoading}
+                    size="large"
+                    decimal={THORCHAIN_DECIMAL}
+                    onChange={onChangeInput}
+                  />
+                </Styled.FormItem>
+                {/* max. amount button (BOND/CUSTOM only) */}
+                {(interactType === 'bond' || interactType === 'custom') && (
+                  <MaxBalanceButton
+                    className="mb-10px"
+                    color="neutral"
+                    balance={{ amount: maxAmount, asset: asset }}
+                    onClick={() => addMaxAmountHandler(maxAmount)}
+                    disabled={isLoading}
+                    onChange={() => getMemo()}
+                  />
+                )}
+                <Styled.Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} disabled={isLoading} />
+                {isFeeError && renderFeeError}
+              </Styled.InputContainer>
             )}
-            <Styled.Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} disabled={isLoading} />
-            {isFeeError && renderFeeError}
-          </Styled.InputContainer>
+          </>
+        )}
+        {hasProviderAddress && (
+          <>
+            {interactType === 'unbond' && (
+              <Styled.InputContainer>
+                <Styled.InputLabel>{intl.formatMessage({ id: 'common.amount' })}</Styled.InputLabel>
+                <Styled.FormItem
+                  name="amount"
+                  rules={[
+                    {
+                      required: true,
+                      validator: amountValidator
+                    }
+                  ]}>
+                  <InputBigNumber
+                    disabled={isLoading}
+                    size="large"
+                    decimal={THORCHAIN_DECIMAL}
+                    onChange={onChangeInput}
+                  />
+                </Styled.FormItem>
+                <Styled.Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} disabled={isLoading} />
+                {isFeeError && renderFeeError}
+              </Styled.InputContainer>
+            )}
+          </>
+        )}
+
+        {/* Fee input (BOND/UNBOND/CUSTOM only) */}
+        {hasProviderAddress && (
+          <>
+            {interactType === 'bond' && (
+              <Styled.InputContainer>
+                <Styled.InputLabel>{intl.formatMessage({ id: 'common.fee.nodeOperator' })}</Styled.InputLabel>
+                <Styled.FormItem
+                  name="operatorFee"
+                  rules={[
+                    {
+                      required: true
+                    }
+                  ]}>
+                  <Input disabled={isLoading} size="large" onChange={() => getMemo()} />
+                </Styled.FormItem>
+              </Styled.InputContainer>
+            )}
+          </>
         )}
       </>
 

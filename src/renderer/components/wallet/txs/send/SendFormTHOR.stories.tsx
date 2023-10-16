@@ -9,6 +9,7 @@ import { getMockRDValueFactory, RDStatus } from '../../../../../shared/mock/rdBy
 import { mockValidatePassword$ } from '../../../../../shared/mock/wallet'
 import { AssetRuneNative } from '../../../../../shared/utils/asset'
 import { WalletType } from '../../../../../shared/wallet/types'
+import { useThorchainQueryContext } from '../../../../contexts/ThorchainQueryContext'
 import { mockWalletBalance } from '../../../../helpers/test/testWalletHelper'
 import { FeeRD, SendTxStateHandler } from '../../../../services/chain/types'
 import { ApiError, ErrorId, WalletBalance } from '../../../../services/wallet/types'
@@ -45,6 +46,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
       () => Error('getting fees failed')
     )
   )
+  const { thorchainQuery } = useThorchainQueryContext()
 
   const runeBalance: WalletBalance = mockWalletBalance({
     amount: assetToBase(assetAmount(balance))
@@ -65,6 +67,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
         console.log(`Open explorer - tx hash ${txHash}`)
         return Promise.resolve(true)
       }}
+      thorchainQuery={thorchainQuery}
       getExplorerTxUrl={(txHash: TxHash) => O.some(`url/asset-${txHash}`)}
     />
   )

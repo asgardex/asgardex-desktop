@@ -9,7 +9,7 @@ import { useObservableState } from 'observable-hooks'
 
 import { ETHAddress } from '../../../../shared/ethereum/const'
 import { LoadingView } from '../../../components/shared/loading'
-import { SendFormETH } from '../../../components/wallet/txs/send/'
+import { SendFormETH } from '../../../components/wallet/txs/send'
 import { useAvaxContext } from '../../../contexts/AvaxContext'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useEthereumContext } from '../../../contexts/EthereumContext'

@@ -10,6 +10,7 @@ import { LoadingView } from '../../../components/shared/loading'
 import { SendFormTHOR } from '../../../components/wallet/txs/send/'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
+import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { liveData } from '../../../helpers/rx/liveData'
 import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
@@ -55,6 +56,8 @@ export const SendViewTHOR: React.FC<Props> = (props): JSX.Element => {
 
   const { transfer$ } = useChainContext()
 
+  const { thorchainQuery } = useThorchainQueryContext()
+
   const { fees$, reloadFees } = useThorchainContext()
 
   const [feeRD] = useObservableState<FeeRD>(
@@ -88,6 +91,7 @@ export const SendViewTHOR: React.FC<Props> = (props): JSX.Element => {
             fee={feeRD}
             reloadFeesHandler={reloadFees}
             validatePassword$={validatePassword$}
+            thorchainQuery={thorchainQuery}
             network={network}
           />
         </Styled.Container>

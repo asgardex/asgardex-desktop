@@ -5,7 +5,7 @@ const DELIMITER = ':'
 // Helper to filter out invalid values
 const filterMemoPart = (part: unknown) => part !== null && part !== undefined
 
-const mkMemo = (values: Array<string | null>) => values.filter(filterMemoPart).join(DELIMITER)
+const mkMemo = (values: Array<string | null | undefined | number>) => values.filter(filterMemoPart).join(DELIMITER)
 
 // Helper to create asset string from asset used in memo's
 const assetToMemoString = ({ chain, symbol }: Asset) => `${chain}.${symbol}`
@@ -27,7 +27,8 @@ export const getSwitchMemo = (address: string) => mkMemo(['SWITCH', address])
  * Memo is based on definition in https://gitlab.com/thorchain/thornode/-/blob/develop/x/thorchain/memo/memo.go#L55
  * @docs https://docs.thorchain.org/thornodes/joining#2-send-bond
  */
-export const getBondMemo = (thorAddress: string) => mkMemo(['BOND', thorAddress])
+export const getBondMemo = (thorAddress: string, providerAddress?: string, nodeFee?: number) =>
+  mkMemo(['BOND', thorAddress, providerAddress, nodeFee])
 
 /**
  * Memo to unbond
@@ -38,8 +39,8 @@ export const getBondMemo = (thorAddress: string) => mkMemo(['BOND', thorAddress]
  * Memo is based on definition in https://gitlab.com/thorchain/thornode/-/blob/develop/x/thorchain/memo/memo.go#L55
  * @docs https://docs.thorchain.org/thornodes/leaving#unbonding
  */
-export const getUnbondMemo = (thorAddress: string, units: BaseAmount) =>
-  mkMemo(['UNBOND', thorAddress, units.amount().toString()])
+export const getUnbondMemo = (thorAddress: string, units: BaseAmount, providerAddress?: string) =>
+  mkMemo(['UNBOND', thorAddress, units.amount().toString(), providerAddress])
 
 /**
  * Memo to withdraw

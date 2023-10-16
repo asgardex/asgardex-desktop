@@ -56,7 +56,6 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
           </h1>
         )
       }
-      console.log(chain)
       switch (chain) {
         case BNBChain:
           return <SendViewBNB asset={asset} />

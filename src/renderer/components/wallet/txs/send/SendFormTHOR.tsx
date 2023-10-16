@@ -1,13 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
 import { Address, baseAmount } from '@xchainjs/xchain-util'
 import { formatAssetAmountCurrency, assetAmount, bn, assetToBase, BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
 import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
+import debounce from 'lodash/debounce'
 import { useIntl } from 'react-intl'
 
 import { Network } from '../../../../../shared/api/types'
@@ -17,6 +20,7 @@ import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { isRuneNativeAsset, THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
+import { noDataString } from '../../../../helpers/stringHelper'
 import { getRuneNativeAmountFromBalances } from '../../../../helpers/walletHelper'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
@@ -25,8 +29,9 @@ import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances 
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
-import { FlatButton } from '../../../uielements/button'
+import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
+import { TooltipAddress } from '../../../uielements/common/Common.styles'
 import { UIFeesRD } from '../../../uielements/fees'
 import { Input, InputBigNumber } from '../../../uielements/input'
 import { AccountSelector } from '../../account'
@@ -52,6 +57,7 @@ export type Props = {
   fee: FeeRD
   reloadFeesHandler: FP.Lazy<void>
   validatePassword$: ValidatePasswordHandler
+  thorchainQuery: ThorchainQuery
   network: Network
 }
 
@@ -68,6 +74,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
     fee: feeRD,
     reloadFeesHandler,
     validatePassword$,
+    thorchainQuery,
     network
   } = props
 
@@ -130,16 +137,39 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
     )
   }, [oRuneNativeAmount, intl, isFeeError])
 
-  const addressValidator = useCallback(
+  // state variable for thornames
+  const [oThorname, setThorname] = useState<O.Option<ThornameDetails>>(O.none)
+  const [recipientAddress, setRecipientAddress] = useState<Address>('')
+  useEffect(() => {
+    // Check if initialRecipient has a value before making the request
+    if (recipientAddress) {
+      const fetchThorname = async () => {
+        try {
+          const thornameDetails = await thorchainQuery.getThornameDetails(recipientAddress)
+          if (thornameDetails) {
+            setThorname(O.some(thornameDetails))
+          }
+        } catch (error) {
+          // Handle errors if the promise is rejected
+          setThorname(O.none)
+          return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
+        }
+      }
+
+      fetchThorname() // Call the async function to fetch Thorname
+    }
+  }, [thorchainQuery, form, recipientAddress, intl])
+
+  const debouncedAddressValidator = debounce(
     async (_: unknown, value: string) => {
       if (!value) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.empty' }))
       }
-      if (!addressValidation(value.toLowerCase())) {
+      if (!O.isSome(oThorname) && !addressValidation(value.toLowerCase())) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
     },
-    [addressValidation, intl]
+    500 // Adjust the debounce delay (in milliseconds) as needed
   )
 
   // max amount for RuneNative
@@ -186,18 +216,30 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
 
   const submitTx = useCallback(() => {
     setSendTxStartTime(Date.now())
+    const recipient = O.isSome(oThorname) ? oThorname.value.owner : recipientAddress
     subscribeSendTxState(
       transfer$({
         walletType,
         walletIndex,
-        recipient: form.getFieldValue('recipient'),
+        recipient,
         asset,
         amount: amountToSend,
         memo: form.getFieldValue('memo'),
         hdMode
       })
     )
-  }, [subscribeSendTxState, transfer$, walletType, walletIndex, hdMode, form, asset, amountToSend])
+  }, [
+    subscribeSendTxState,
+    transfer$,
+    walletType,
+    walletIndex,
+    oThorname,
+    recipientAddress,
+    asset,
+    amountToSend,
+    form,
+    hdMode
+  ])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
 
@@ -285,8 +327,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
 
   const addMaxAmountHandler = useCallback(() => setAmountToSend(maxAmount), [maxAmount])
 
-  const [recipientAddress, setRecipientAddress] = useState<Address>('')
-  const handleOnKeyUp = useCallback(() => {
+  const handleOnChange = useCallback(() => {
     setRecipientAddress(form.getFieldValue('recipient'))
   }, [form])
 
@@ -296,6 +337,8 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
   )
 
   const renderWalletType = useMemo(() => H.renderedWalletType(oMatchedWalletType), [oMatchedWalletType])
+
+  const [showDetails, setShowDetails] = useState<boolean>(false)
 
   return (
     <>
@@ -308,11 +351,13 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
           labelCol={{ span: 24 }}>
           <Styled.SubForm>
             <Styled.CustomLabel size="big">
-              {intl.formatMessage({ id: 'common.address' })}
+              {O.isSome(oThorname)
+                ? intl.formatMessage({ id: 'common.thorname' })
+                : intl.formatMessage({ id: 'common.address' })}
               {renderWalletType}
             </Styled.CustomLabel>
-            <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
-              <Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
+            <Form.Item rules={[{ required: true, validator: debouncedAddressValidator }]} name="recipient">
+              <Input color="primary" size="large" disabled={isLoading} onChange={handleOnChange} />
             </Form.Item>
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
             <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">
@@ -346,6 +391,37 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
             size="large">
             {intl.formatMessage({ id: 'wallet.action.send' })}
           </FlatButton>
+          <div className={`w-full pt-10 font-main text-[12px] uppercase dark:border-gray1d`}>
+            <BaseButton
+              className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+              onClick={() => setShowDetails((current) => !current)}>
+              {intl.formatMessage({ id: 'common.details' })}
+              {showDetails ? (
+                <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+              ) : (
+                <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
+              )}
+            </BaseButton>
+          </div>
+          {showDetails && (
+            <>
+              {/* recipient address */}
+              <div className="flex w-full items-center justify-between pl-10px text-[12px]">
+                <div>{intl.formatMessage({ id: 'common.recipient' })}</div>
+                <div className="truncate pl-20px text-[13px] normal-case leading-normal">
+                  {FP.pipe(
+                    oThorname,
+                    O.map((thorname) => (
+                      <TooltipAddress title={thorname.owner} key="tooltip-target-addr">
+                        {thorname.owner}
+                      </TooltipAddress>
+                    )),
+                    O.getOrElse(() => <>{noDataString}</>)
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </Styled.Form>
       </Styled.Container>
       {showConfirmationModal && renderConfirmationModal}

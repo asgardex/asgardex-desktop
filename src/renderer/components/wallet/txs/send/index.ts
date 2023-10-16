@@ -1,7 +1,7 @@
 export { SendFormBNB } from './SendFormBNB'
 export { SendFormBCH } from './SendFormBCH'
 export { SendFormBTC } from './SendFormBTC'
-export { SendFormETH } from './SendFormETH'
+export { SendFormETH } from './SendFormEVM'
 export { SendFormTHOR } from './SendFormTHOR'
 export { SendFormLTC } from './SendFormLTC'
 export { SendFormDOGE } from './SendFormDOGE'
