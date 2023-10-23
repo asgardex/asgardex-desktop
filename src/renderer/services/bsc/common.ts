@@ -16,11 +16,11 @@ import { getPhrase } from '../wallet/util'
 import { Client$, ClientState, ClientState$ } from './types'
 
 /**
- * Stream to create an observable `AVAXClient` depending on existing phrase in keystore
+ * Stream to create an observable `BSCClient` depending on existing phrase in keystore
  *
- * Whenever a phrase has been added to keystore, a new `AVAXClient` will be created.
+ * Whenever a phrase has been added to keystore, a new `BSCClient` will be created.
  * By the other hand: Whenever a phrase has been removed, `ClientState` is set to `initial`
- * A `AVAXClient` will never be created as long as no phrase is available
+ * A `BSCClient` will never be created as long as no phrase is available
  */
 const clientState$: ClientState$ = FP.pipe(
   Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$]),
@@ -38,7 +38,7 @@ const clientState$: ClientState$ = FP.pipe(
               })
               return RD.success(client)
             } catch (error) {
-              return RD.failure<Error>(isError(error) ? error : new Error('Failed to create AVAX client'))
+              return RD.failure<Error>(isError(error) ? error : new Error('Failed to create BSC client'))
             }
           }),
           // Set back to `initial` if no phrase is available (locked wallet)

@@ -19,11 +19,12 @@ import {
   ipcLedgerSendTxParamsIO
 } from '../../../shared/api/io'
 import { LedgerError, Network } from '../../../shared/api/types'
-import { AvaxZeroAddress, DEPOSIT_EXPIRATION_OFFSET } from '../../../shared/avax/const'
+import { BscZeroAddress } from '../../../shared/bsc/const'
+import { DEPOSIT_EXPIRATION_OFFSET } from '../../../shared/bsc/const'
 import { ROUTER_ABI } from '../../../shared/evm/abi'
 import { getBlocktime } from '../../../shared/evm/provider'
 import { isError, isEvmHDMode, isLedgerWallet } from '../../../shared/utils/guard'
-import { addressInERC20Whitelist, getAvaxAssetAddress } from '../../helpers/assetHelper'
+import { addressInERC20Whitelist, getBscAssetAddress } from '../../helpers/assetHelper'
 import { sequenceSOption } from '../../helpers/fpHelpers'
 import { LiveData } from '../../helpers/rx/liveData'
 import { Network$ } from '../app/types'
@@ -38,14 +39,14 @@ import {
   SendTxParams
 } from '../evm/types'
 import { ApiError, ErrorId, TxHashLD } from '../wallet/types'
-import { Client$, Client as AvaxClient } from './types'
+import { Client$, Client as BscClient } from './types'
 
 export const createTransactionService = (client$: Client$, network$: Network$): TransactionService => {
   const common = C.createTransactionService(client$)
 
   // Note: We don't use `client.deposit` to send "pool" txs to avoid repeating same requests we already do in ASGARDEX
   // That's why we call `deposit` directly here
-  const runSendPoolTx$ = (client: AvaxClient, { ...params }: SendPoolTxParams): TxHashLD => {
+  const runSendPoolTx$ = (client: BscClient, { ...params }: SendPoolTxParams): TxHashLD => {
     // helper for failures
     const failure$ = (msg: string) =>
       Rx.of<RD.RemoteData<ApiError, never>>(
@@ -58,7 +59,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     const provider = client.getProvider()
 
     return FP.pipe(
-      sequenceSOption({ address: getAvaxAssetAddress(params.asset), router: params.router }),
+      sequenceSOption({ address: getBscAssetAddress(params.asset), router: params.router }),
       O.fold(
         () => failure$(`Invalid values: Asset ${params.asset} / router address ${params.router}`),
         ({ address, router }) =>
@@ -68,8 +69,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
               blockTime: Rx.from(getBlocktime(provider))
             }),
             RxOp.switchMap(({ gasPrices, blockTime }) => {
-              const isAvaxAddress = address === AvaxZeroAddress
-              const amount = isAvaxAddress ? baseAmount(0) : params.amount
+              const isBscAddress = address === BscZeroAddress
+              const amount = isBscAddress ? baseAmount(0) : params.amount
               const gasPrice = gasPrices[params.feeOption].amount().toFixed(0) // no round down needed
               const signer = client.getWallet(params.walletIndex)
               const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
@@ -90,7 +91,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
                     amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
                     params.memo,
                     expiration,
-                    isAvaxAddress
+                    isBscAddress
                       ? {
                           // Send `BaseAmount` w/o decimal and always round down for currencies
                           value: params.amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
@@ -135,7 +136,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
               Rx.of(
                 RD.failure({
                   errorId: ErrorId.DEPOSIT_LEDGER_TX_ERROR,
-                  msg: `Deposit Ledger Avax/ERC20 tx failed. (${msg})`
+                  msg: `Deposit Ledger Bsc/ERC20 tx failed. (${msg})`
                 })
               ),
             (txHash) => Rx.of(RD.success(txHash))
@@ -168,7 +169,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
   }
 
   const runApproveERC20Token$ = (
-    client: AvaxClient,
+    client: BscClient,
     { walletIndex, contractAddress, spenderAddress }: ApproveParams
   ): TxHashLD => {
     const signer = client.getWallet(walletIndex)
@@ -219,7 +220,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       return Rx.of(
         RD.failure({
           errorId: ErrorId.APPROVE_LEDGER_TX,
-          msg: `Invalid AvaxHDMode ${hdMode} - needed for Ledger to send ERC20 token.`
+          msg: `Invalid BscHDMode ${hdMode} - needed for Ledger to send ERC20 token.`
         })
       )
     }
@@ -290,7 +291,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
   }
 
   const runIsApprovedERC20Token$ = (
-    client: AvaxClient,
+    client: BscClient,
     { contractAddress, spenderAddress, fromAddress }: IsApproveParams
   ): LiveData<ApiError, boolean> => {
     const provider = client.getProvider()

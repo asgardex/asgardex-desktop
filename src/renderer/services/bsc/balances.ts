@@ -4,8 +4,8 @@ import * as FP from 'fp-ts/lib/function'
 
 import { Network } from '../../../shared/api/types'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
-import { AvaxAssetsTestnet } from '../../const'
-import { validAssetForAVAX } from '../../helpers/assetHelper'
+import { BscAssetsTestnet } from '../../const'
+import { validAssetForBSC } from '../../helpers/assetHelper'
 import { liveData } from '../../helpers/rx/liveData'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
@@ -39,7 +39,7 @@ const balances$: ({
   hdMode: HDMode
 }) => C.WalletBalancesLD = ({ walletType, walletIndex, network, hdMode }) => {
   // For testnet we limit requests by using pre-defined assets only
-  const assets: Asset[] | undefined = network === 'testnet' ? AvaxAssetsTestnet : undefined
+  const assets: Asset[] | undefined = network === 'testnet' ? BscAssetsTestnet : undefined
   return FP.pipe(
     C.balances$({
       client$,
@@ -51,13 +51,13 @@ const balances$: ({
       walletBalanceType: 'all'
     }),
     // Filter assets based on ERC20Whitelist (mainnet only)
-    liveData.map(FP.flow(A.filter(({ asset }) => validAssetForAVAX(asset, network))))
+    liveData.map(FP.flow(A.filter(({ asset }) => validAssetForBSC(asset, network))))
   )
 }
 
 // State of balances loaded by Client and Address
 const getBalanceByAddress$ = (network: Network) => {
-  const assets: Asset[] | undefined = network === 'testnet' ? AvaxAssetsTestnet : undefined
+  const assets: Asset[] | undefined = network === 'testnet' ? BscAssetsTestnet : undefined
   return C.balancesByAddress$({ client$, trigger$: reloadBalances$, assets, walletBalanceType: 'all' })
 }
 

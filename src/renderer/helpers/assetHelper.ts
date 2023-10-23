@@ -214,6 +214,18 @@ export const validAssetForETH = (asset: Asset /* ETH or ERC20 asset */, network:
 export const validAssetForAVAX = (asset: Asset /* ETH or ERC20 asset */, network: Network): boolean =>
   network !== 'mainnet' /* (1) */ || isAvaxAsset(asset) /* (2)  || assetInERC20Whitelist(asset)/*
 
+
+  /**
+ * Checks whether ETH/ERC20 asset is whitelisted or not
+ * based on following rules:
+ * (1) Check on `mainnet` only
+ * (2) Always accept ETH
+ * (3) ERC20 asset needs to be listed in `ERC20Whitelist`
+ */
+export const validAssetForBSC = (asset: Asset /* ETH or ERC20 asset */, network: Network): boolean =>
+  network !== 'mainnet' /* (1) */ || isBscAsset(asset) /* (2)  || assetInERC20Whitelist(asset)/*
+
+
 /**
  * Checks whether an ERC20 address is black listed or not
  */

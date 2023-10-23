@@ -2,7 +2,7 @@ import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
-import { BSCChain } from '@xchainjs/xchain-bsc'
+import { AssetBSC, BSCChain } from '@xchainjs/xchain-bsc'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -64,6 +64,7 @@ export const AssetTGTERC20: Asset = {
 export const ERC20AssetsTestnet = [AssetUSDTERC20Testnet, AssetXRuneTestnet, AssetRuneERC20Testnet]
 export const ETHAssetsTestnet = [AssetETH, ...ERC20AssetsTestnet]
 export const AvaxAssetsTestnet = [AssetAVAX]
+export const BscAssetsTestnet = [AssetBSC]
 
 // UNIH (exploit contract)
 // https://etherscan.io/address/0x4bf5dc91E2555449293D7824028Eb8Fe5879B689

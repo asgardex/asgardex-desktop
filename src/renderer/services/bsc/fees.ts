@@ -44,7 +44,7 @@ export const createFeesService = (client$: Client$): FeesService => {
     )
 
   /**
-   * Fees for sending txs into pool on Avax
+   * Fees for sending txs into pool on Bsc
    **/
   const poolInTxFees$ = ({ address, abi, func, params }: PollInTxFeeParams): C.FeesLD =>
     client$.pipe(
@@ -74,7 +74,7 @@ export const createFeesService = (client$: Client$): FeesService => {
     )
 
   /**
-   * Fees for sending txs out of a pool on Avax
+   * Fees for sending txs out of a pool on Bsc
    **/
   const poolOutTxFee$ = (asset: Asset): C.FeesLD =>
     client$.pipe(

@@ -4,6 +4,7 @@ import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -27,6 +28,7 @@ import {
   SendViewBTC,
   SendViewETH,
   SendViewAVAX,
+  SendViewBSC,
   SendViewDOGE,
   SendViewTHOR,
   SendViewLTC,
@@ -68,6 +70,8 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
           return <SendViewETH asset={asset} />
         case AVAXChain:
           return <SendViewAVAX asset={asset} />
+        case BSCChain:
+          return <SendViewBSC asset={asset} />
         case THORChain:
           return <SendViewTHOR asset={asset} />
         case LTCChain:
