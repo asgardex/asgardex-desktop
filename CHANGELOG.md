@@ -1,3 +1,18 @@
+# 1.20.6 (2023-10-24)
+
+## Update / Fix
+
+- Ledger tx gives 403 Error [#62](https://github.com/asgardex/asgardex-desktop/issues/62)
+- Add THORName Support for sending Tx [#6](https://github.com/asgardex/asgardex-desktop/issues/6)
+- Update Bond and Unbond to support pooled Nodes[ #43](https://github.com/asgardex/asgardex-desktop/issues/43)
+- USDC dollar value not displayed [#51](https://github.com/asgardex/asgardex-desktop/issues/51)
+- ADD: AVAX & BSC #4 (BSC Only)[#4](https://github.com/asgardex/asgardex-desktop/issues/4)
+- Bug: Cannot add ETH via Ledger to savers [#48](https://github.com/asgardex/asgardex-desktop/issues/48)
+
+## Internal
+
+- Update xchainks packages
+
 # 1.20.5 (2023-10-03)
 
 ## Update / Fix
