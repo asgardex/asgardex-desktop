@@ -3,6 +3,7 @@ import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -21,6 +22,7 @@ import { getAddress as getCOSMOSAddress, verifyAddress as verifyCOSMOSAddress } 
 import { getAddress as getDOGEAddress, verifyAddress as verifyDOGEAddress } from './doge/address'
 import { getAddress as getETHAddress, verifyAddress as verifyETHAddress } from './ethereum/address'
 import { getAddress as getAVAXAddress, verifyAddress as verifyAVAXAddress } from './ethereum/address'
+import { getAddress as getBSCAddress, verifyAddress as verifyBSCAddress } from './ethereum/address'
 import { getAddress as getLTCAddress, verifyAddress as verifyLTCAddress } from './litecoin/address'
 import { getAddress as getTHORAddress, verifyAddress as verifyTHORAddress } from './thorchain/address'
 
@@ -74,10 +76,21 @@ export const getAddress = async ({
           if (!isEvmHDMode(hdMode)) {
             res = E.left({
               errorId: LedgerErrorId.INVALID_ETH_DERIVATION_MODE,
-              msg: `Invalid 'EthHDMode' - needed for ETH to get Ledger address`
+              msg: `Invalid 'EthHDMode' - needed for AVAX to get Ledger address`
             })
           } else {
             res = await getAVAXAddress({ transport, walletIndex, evmHdMode: hdMode })
+          }
+          break
+        }
+        case BSCChain: {
+          if (!isEvmHDMode(hdMode)) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_ETH_DERIVATION_MODE,
+              msg: `Invalid 'EthHDMode' - needed for BSC to get Ledger address`
+            })
+          } else {
+            res = await getBSCAddress({ transport, walletIndex, evmHdMode: hdMode })
           }
           break
         }
@@ -129,6 +142,11 @@ export const verifyLedgerAddress = async ({ chain, network, walletIndex, hdMode 
     case AVAXChain: {
       if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for ETH to verify Ledger address`)
       result = await verifyAVAXAddress({ transport, walletIndex, evmHdMode: hdMode })
+      break
+    }
+    case BSCChain: {
+      if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for ETH to verify Ledger address`)
+      result = await verifyBSCAddress({ transport, walletIndex, evmHdMode: hdMode })
       break
     }
     case GAIAChain:

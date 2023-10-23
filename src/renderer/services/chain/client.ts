@@ -2,6 +2,7 @@ import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -17,6 +18,7 @@ import * as AVAX from '../avax'
 import * as BNC from '../binance'
 import * as BTC from '../bitcoin'
 import * as BCH from '../bitcoincash'
+import * as BSC from '../bsc'
 import { XChainClient$ } from '../clients'
 import * as COSMOS from '../cosmos'
 import * as DOGE from '../doge'
@@ -39,6 +41,8 @@ export const clientByChain$ = (chain: Chain): XChainClient$ => {
       return ETH.client$
     case AVAXChain:
       return AVAX.client$
+    case BSCChain:
+      return BSC.client$
     case THORChain:
       return THOR.client$
     case LTCChain:
@@ -62,6 +66,8 @@ export const clientByAsset$ = (asset: Asset): XChainClient$ => {
     case ETHChain:
       return asset.synth ? THOR.client$ : ETH.client$
     case AVAXChain:
+      return asset.synth ? THOR.client$ : AVAX.client$
+    case BSCChain:
       return asset.synth ? THOR.client$ : AVAX.client$
     case THORChain:
       return THOR.client$

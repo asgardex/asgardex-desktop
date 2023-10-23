@@ -5,6 +5,7 @@ import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { BSCChain, BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { COSMOS_DECIMAL } from '@xchainjs/xchain-cosmos'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGE_DECIMAL } from '@xchainjs/xchain-doge'
@@ -36,6 +37,8 @@ const getDecimal = (asset: Asset): Promise<number> => {
       return Promise.resolve(ETH_GAS_ASSET_DECIMAL)
     case AVAXChain:
       return Promise.resolve(AVAX_GAS_ASSET_DECIMAL)
+    case BSCChain:
+      return Promise.resolve(BSC_GAS_ASSET_DECIMAL)
     case THORChain:
       return Promise.resolve(THORCHAIN_DECIMAL)
     case DOGEChain:

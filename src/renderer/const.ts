@@ -2,6 +2,7 @@ import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -141,7 +142,8 @@ export const CHAIN_WEIGHTS: Record<EnabledChain, number> = {
   [BNBChain]: 5,
   [GAIAChain]: 6,
   [AVAXChain]: 7,
-  [DOGEChain]: 8
+  [BSCChain]: 8,
+  [DOGEChain]: 9
 }
 
 // Weight of currencies needed for pricing

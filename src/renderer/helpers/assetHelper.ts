@@ -1,4 +1,3 @@
-import { AssetAVAX } from '@xchainjs/xchain-avax'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
 import {
   Address,
@@ -19,6 +18,7 @@ import * as S from 'fp-ts/lib/string'
 
 import { Network } from '../../shared/api/types'
 import { AvaxZeroAddress } from '../../shared/avax/const'
+import { BscZeroAddress } from '../../shared/bsc/const'
 import { ETHAddress } from '../../shared/ethereum/const'
 import {
   AssetATOM,
@@ -27,6 +27,8 @@ import {
   AssetBTC,
   AssetDOGE,
   AssetETH,
+  AssetAVAX,
+  AssetBSC,
   AssetLTC,
   AssetRune67C,
   AssetRuneB1A,
@@ -49,7 +51,7 @@ import {
 } from '../const'
 import { ERC20_WHITELIST } from '../types/generated/thorchain/erc20whitelist'
 import { PricePoolAsset } from '../views/pools/Pools.types'
-import { getAvaxChecksumAddress, getEthChecksumAddress } from './addressHelper'
+import { getAvaxChecksumAddress, getBscChecksumAddress, getEthChecksumAddress } from './addressHelper'
 import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isEthChain, isLtcChain } from './chainHelper'
 import { eqAsset, eqString } from './fp/eq'
 import { sequenceTOption } from './fpHelpers'
@@ -137,9 +139,13 @@ export const isBusdAssetSynth = (asset: Asset): boolean => eqAsset.equals(asset,
 export const isEthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetETH)
 
 /**
- * Checks whether an asset is an ETH asset
+ * Checks whether an asset is an AVAX asset
  */
 export const isAvaxAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetAVAX)
+/**
+ * Checks whether an asset is an BSC asset
+ */
+export const isBscAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetBSC)
 
 /**
  * Checks whether an asset is an ETH synthetic
@@ -272,6 +278,15 @@ export const getAvaxTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
 )
 
 /**
+ * Get ethereum token address (as check sum address) from a given asset
+ */
+export const getBscTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
+  getTokenAddress,
+  O.fromNullable,
+  O.chain(getBscChecksumAddress)
+)
+
+/**
  * Get address (as check sum address) from an ETH or ETH token asset
  */
 export const getEthAssetAddress = (asset: Asset): O.Option<Address> =>
@@ -282,6 +297,12 @@ export const getEthAssetAddress = (asset: Asset): O.Option<Address> =>
  */
 export const getAvaxAssetAddress = (asset: Asset): O.Option<Address> =>
   isAvaxAsset(asset) ? O.some(AvaxZeroAddress) : getAvaxTokenAddress(asset)
+
+/**
+ * Get address (as check sum address) from an Bsc or Bsc token asset
+ */
+export const getBscAssetAddress = (asset: Asset): O.Option<Address> =>
+  isBscAsset(asset) ? O.some(BscZeroAddress) : getBscTokenAddress(asset)
 
 /**
  * Check whether an asset is an ERC20 asset

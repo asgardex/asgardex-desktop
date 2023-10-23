@@ -7,6 +7,7 @@ import atomIcon from '!file-loader!../../assets/svg/asset-atom.svg'
 import avaxIcon from '!file-loader!../../assets/svg/asset-avax.svg'
 import bnbRuneIcon from '!file-loader!../../assets/svg/asset-bnb-rune.svg'
 import bnbIcon from '!file-loader!../../assets/svg/asset-bnb.svg'
+import bscIcon from '!file-loader!../../assets/svg/asset-bsc.svg'
 import btcIcon from '!file-loader!../../assets/svg/asset-btc.svg'
 import ethIcon from '!file-loader!../../assets/svg/asset-eth.svg'
 import lunaIcon from '!file-loader!../../assets/svg/asset-luna.svg'
@@ -29,6 +30,7 @@ export {
   atomIcon,
   bnbIcon,
   avaxIcon,
+  bscIcon,
   btcIcon,
   dogeIcon,
   ethIcon,

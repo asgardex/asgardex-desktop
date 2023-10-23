@@ -3,6 +3,7 @@ import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -19,6 +20,7 @@ import * as AVAX from '../avax'
 import * as BNB from '../binance'
 import * as BTC from '../bitcoin'
 import * as BCH from '../bitcoincash'
+import * as BSC from '../bsc'
 import * as C from '../clients'
 import { ExplorerUrl$, TxsPageLD, LoadTxsParams } from '../clients'
 import * as COSMOS from '../cosmos'
@@ -73,6 +75,8 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
                 return ETH.txs$({ asset: O.some(asset), limit, offset, walletAddress, walletIndex })
               case AVAXChain:
                 return AVAX.txs$({ asset: O.some(asset), limit, offset, walletAddress, walletIndex })
+              case BSCChain:
+                return BSC.txs$({ asset: O.some(asset), limit, offset, walletAddress, walletIndex })
               case THORChain:
                 return THOR.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
               case LTCChain:

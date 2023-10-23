@@ -3,6 +3,7 @@ import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -31,6 +32,7 @@ import * as AVAX from '../avax'
 import * as BNB from '../binance'
 import * as BTC from '../bitcoin'
 import * as BCH from '../bitcoincash'
+import * as BSC from '../bsc'
 import { WalletBalancesLD, WalletBalancesRD } from '../clients'
 import * as COSMOS from '../cosmos'
 import * as DOGE from '../doge'
@@ -68,6 +70,7 @@ export const createBalancesService = ({
     BCH.reloadBalances()
     ETH.reloadBalances()
     AVAX.reloadBalances()
+    BSC.reloadBalances()
     THOR.reloadBalances()
     LTC.reloadBalances()
     DOGE.reloadBalances()
@@ -89,6 +92,8 @@ export const createBalancesService = ({
         return ETH.reloadBalances
       case AVAXChain:
         return AVAX.reloadBalances
+      case BSCChain:
+        return BSC.reloadBalances
       case THORChain:
         return THOR.reloadBalances
       case LTCChain:
@@ -165,6 +170,16 @@ export const createBalancesService = ({
             RxOp.switchMap((network) => AVAX.balances$({ walletType, network, walletIndex, hdMode }))
           ),
           reloadBalances$: AVAX.reloadBalances$
+        }
+      case BSCChain:
+        return {
+          reloadBalances: BSC.reloadBalances,
+          resetReloadBalances: BSC.resetReloadBalances,
+          balances$: FP.pipe(
+            network$,
+            RxOp.switchMap((network) => BSC.balances$({ walletType, network, walletIndex, hdMode }))
+          ),
+          reloadBalances$: BSC.reloadBalances$
         }
       case THORChain:
         return {
@@ -599,6 +614,28 @@ export const createBalancesService = ({
     }))
   )
 
+  const bscBalances$ = getChainBalance$({
+    chain: BSCChain,
+    walletType: 'keystore',
+    walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
+    hdMode: 'default',
+    walletBalanceType: 'all'
+  })
+
+  /**
+   * Transforms AVAX data (address + `WalletBalance`) into `ChainBalance`
+   */
+  const bscChainBalance$: ChainBalance$ = Rx.combineLatest([BSC.addressUI$, bscBalances$]).pipe(
+    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
+      walletType: 'keystore',
+      chain: BSCChain,
+      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
+      balances,
+      balancesType: 'all'
+    }))
+  )
+
   /**
    * Transforms COSMOS balances into `ChainBalance`
    */
@@ -657,6 +694,19 @@ export const createBalancesService = ({
       })
     )
   )
+  /**
+   * BSC Ledger balances
+   */
+  const bscLedgerChainBalance$: ChainBalance$ = FP.pipe(
+    network$,
+    RxOp.switchMap((network) =>
+      ledgerChainBalance$({
+        chain: BSCChain,
+        walletBalanceType: 'all',
+        getBalanceByAddress$: BSC.getBalanceByAddress$(network)
+      })
+    )
+  )
 
   /**
    * List of `ChainBalances` for all available chains (order is important)
@@ -673,6 +723,7 @@ export const createBalancesService = ({
         BCH: [bchChainBalance$, bchLedgerChainBalance$],
         ETH: [ethChainBalance$, ethLedgerChainBalance$],
         AVAX: [avaxChainBalance$, avaxLedgerChainBalance$],
+        BSC: [bscChainBalance$, bscLedgerChainBalance$],
         BNB: [bnbChainBalance$, bnbLedgerChainBalance$],
         LTC: [ltcBalance$, ltcLedgerChainBalance$],
         DOGE: [dogeChainBalance$, dogeLedgerChainBalance$],

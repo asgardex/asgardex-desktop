@@ -3,6 +3,7 @@ import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { TxHash } from '@xchainjs/xchain-client'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
@@ -20,8 +21,9 @@ import * as BTC from './bitcoin/transaction'
 import * as BCH from './bitcoincash/transaction'
 import * as COSMOS from './cosmos/transaction'
 import * as DOGE from './doge/transaction'
-import * as ETH from './ethereum/transaction'
+import * as BSC from './ethereum/transaction'
 import * as AVAX from './ethereum/transaction'
+import * as ETH from './ethereum/transaction'
 import * as LTC from './litecoin/transaction'
 import * as THOR from './thorchain/transaction'
 
@@ -180,6 +182,36 @@ export const sendTx = async ({
             })
           }
           break
+        case BSCChain:
+          if (!asset) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(chain)}`
+            })
+          } else if (!feeOption) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Fee option needs to be set to send Ledger transaction on ${chainToString(chain)}`
+            })
+          } else if (!isEvmHDMode(hdMode)) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(chain)}`
+            })
+          } else {
+            res = await BSC.send({
+              asset,
+              transport,
+              network,
+              recipient,
+              amount,
+              memo,
+              walletIndex,
+              feeOption,
+              evmHDMode: hdMode
+            })
+          }
+          break
         case GAIAChain:
           if (!asset) {
             res = E.left({
@@ -298,6 +330,7 @@ export const deposit = async ({
         case DOGEChain:
         case GAIAChain:
         case AVAXChain:
+        case BSCChain:
           res = notSupportedError
           break
       }

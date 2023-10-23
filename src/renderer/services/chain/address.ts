@@ -2,6 +2,7 @@ import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -38,6 +39,8 @@ const addressByChain$ = (chain: Chain): WalletAddress$ => {
     case ETHChain:
       return ETH.address$
     case AVAXChain:
+      return AVAX.address$
+    case BSCChain:
       return AVAX.address$
     case THORChain:
       return THOR.address$

@@ -5,6 +5,7 @@ import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { AssetBSC, BSC_GAS_ASSET_DECIMAL, BSCChain } from '@xchainjs/xchain-bsc'
 import { COSMOS_DECIMAL } from '@xchainjs/xchain-cosmos'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGE_DECIMAL } from '@xchainjs/xchain-doge'
@@ -270,6 +271,13 @@ export const getOutboundAssetFeeByChain = (
             // Convertion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
             amount: convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), AVAX_GAS_ASSET_DECIMAL),
             asset: AssetAVAX
+          })
+        }
+        case BSCChain: {
+          return O.some({
+            // Convertion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
+            amount: convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), BSC_GAS_ASSET_DECIMAL),
+            asset: AssetBSC
           })
         }
         case GAIAChain: {

@@ -2,6 +2,7 @@ import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
 import { AssetBNB, BNBChain } from '@xchainjs/xchain-binance'
 import { AssetBTC, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { AssetBCH, BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { AssetBSC, BSCChain } from '@xchainjs/xchain-bsc'
 import { AssetATOM, GAIAChain } from '@xchainjs/xchain-cosmos'
 import { AssetDOGE, DOGEChain } from '@xchainjs/xchain-doge'
 import { AssetETH, ETHChain } from '@xchainjs/xchain-ethereum'
@@ -24,6 +25,8 @@ export const getChainAsset = (chain: Chain): Asset => {
       return AssetETH
     case AVAXChain:
       return AssetAVAX
+    case BSCChain:
+      return AssetBSC
     case THORChain:
       return AssetRuneNative
     case GAIAChain:
