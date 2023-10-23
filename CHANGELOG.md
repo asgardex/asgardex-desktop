@@ -11,7 +11,7 @@
 
 ## Internal
 
-- Update xchainks packages
+- Update xchainjs packages
 
 # 1.20.5 (2023-10-03)
 
