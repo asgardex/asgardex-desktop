@@ -26,6 +26,7 @@ import {
   SendViewBCH,
   SendViewBTC,
   SendViewETH,
+  SendViewAVAX,
   SendViewDOGE,
   SendViewTHOR,
   SendViewLTC,
@@ -64,8 +65,9 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
         case BTCChain:
           return <SendViewBTC asset={asset} />
         case ETHChain:
-        case AVAXChain:
           return <SendViewETH asset={asset} />
+        case AVAXChain:
+          return <SendViewAVAX asset={asset} />
         case THORChain:
           return <SendViewTHOR asset={asset} />
         case LTCChain:

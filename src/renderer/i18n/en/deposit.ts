@@ -8,6 +8,7 @@ const deposit: DepositMessages = {
   'deposit.interact.actions.unbond': 'Unbond',
   'deposit.interact.actions.leave': 'Leave',
   'deposit.interact.actions.buyThorname': 'Buy Thorname',
+  'deposit.interact.actions.checkThorname': 'Check Availability',
   'deposit.interact.actions.addBondProvider': 'Add Bond Provider',
   'deposit.share.title': 'Your pool share',
   'deposit.share.units': 'Liquidity units',

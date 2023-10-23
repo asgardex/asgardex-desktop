@@ -1,48 +1,33 @@
 import { ComponentMeta } from '@storybook/react'
-import { TxHash } from '@xchainjs/xchain-client'
-import { assetAmount, assetToBase, BaseAmount, baseAmount } from '@xchainjs/xchain-util'
+import { Fees, FeeType, TxHash } from '@xchainjs/xchain-client'
+import { ETH_GAS_ASSET_DECIMAL as ETH_DECIMAL } from '@xchainjs/xchain-ethereum'
+import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 
 import { getMockRDValueFactory, RDStatus } from '../../../../../shared/mock/rdByStatus'
 import { mockValidatePassword$ } from '../../../../../shared/mock/wallet'
+import { AssetETH } from '../../../../../shared/utils/asset'
 import { WalletType } from '../../../../../shared/wallet/types'
-import { useThorchainQueryContext } from '../../../../contexts/ThorchainQueryContext'
+import { THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
 import { mockWalletBalance } from '../../../../helpers/test/testWalletHelper'
-import { FeeRD } from '../../../../services/chain/types'
-import { InteractStateHandler } from '../../../../services/thorchain/types'
+import { FeesRD, SendTxStateHandler } from '../../../../services/chain/types'
 import { ApiError, ErrorId, WalletBalance } from '../../../../services/wallet/types'
-import { InteractType } from './Interact.types'
-import { InteractForm as Component } from './InteractForm'
+import { SendFormETH as Component } from './SendFormETH'
 
 type Args = {
-  interactType: InteractType
   txRDStatus: RDStatus
   feeRDStatus: RDStatus
   balance: string
-  validAddress: boolean
   walletType: WalletType
 }
 
-const Template = ({ interactType, txRDStatus, feeRDStatus, balance, validAddress, walletType }: Args) => {
-  const interact$: InteractStateHandler = (_) => {
-    const getCurrentStep = () => {
-      switch (txRDStatus) {
-        case 'initial':
-          return 0
-        case 'pending':
-          return 1
-        case 'success':
-          return 2
-        case 'error':
-          return 2
-      }
-    }
-    return Rx.of({
-      step: getCurrentStep(),
-      stepsTotal: 2,
-      txRD: FP.pipe(
+const Template = ({ txRDStatus, feeRDStatus, balance, walletType }: Args) => {
+  const transfer$: SendTxStateHandler = (_) =>
+    Rx.of({
+      steps: { current: txRDStatus === 'initial' ? 0 : 1, total: 1 },
+      status: FP.pipe(
         txRDStatus,
         getMockRDValueFactory<ApiError, TxHash>(
           () => 'tx-hash',
@@ -53,35 +38,40 @@ const Template = ({ interactType, txRDStatus, feeRDStatus, balance, validAddress
         )
       )
     })
-  }
-  const { thorchainQuery } = useThorchainQueryContext()
 
-  const feeRD: FeeRD = FP.pipe(
+  const ethBalance: WalletBalance = mockWalletBalance({
+    asset: AssetETH,
+    amount: assetToBase(assetAmount(balance, ETH_DECIMAL)),
+    walletAddress: 'ETH wallet address'
+  })
+
+  const runeBalance: WalletBalance = mockWalletBalance({
+    amount: assetToBase(assetAmount(2, THORCHAIN_DECIMAL))
+  })
+
+  const feesRD: FeesRD = FP.pipe(
     feeRDStatus,
-    getMockRDValueFactory<Error, BaseAmount>(
-      () => baseAmount(2000000),
+    getMockRDValueFactory<Error, Fees>(
+      () => ({
+        type: FeeType.PerByte,
+        fastest: assetToBase(assetAmount(0.002499, ETH_DECIMAL)),
+        fast: assetToBase(assetAmount(0.002079, ETH_DECIMAL)),
+        average: assetToBase(assetAmount(0.001848, ETH_DECIMAL))
+      }),
       () => Error('getting fees failed')
     )
   )
 
-  const runeBalance: WalletBalance = mockWalletBalance({
-    amount: assetToBase(assetAmount(balance))
-  })
-
   return (
     <Component
-      interactType={interactType}
-      walletType={walletType}
-      walletIndex={0}
-      hdMode="default"
-      interact$={interact$}
-      balance={runeBalance}
-      addressValidation={(_: string) => validAddress}
-      fee={feeRD}
+      asset={{ asset: AssetETH, walletAddress: 'eth-address', walletType, walletIndex: 0, hdMode: 'default' }}
+      transfer$={transfer$}
+      balances={[ethBalance, runeBalance]}
+      balance={ethBalance}
+      fees={feesRD}
       reloadFeesHandler={() => console.log('reload fees')}
       validatePassword$={mockValidatePassword$}
       network="testnet"
-      thorchainQuery={thorchainQuery}
       openExplorerTxUrl={(txHash: TxHash) => {
         console.log(`Open explorer - tx hash ${txHash}`)
         return Promise.resolve(true)
@@ -90,16 +80,12 @@ const Template = ({ interactType, txRDStatus, feeRDStatus, balance, validAddress
     />
   )
 }
-
 export const Default = Template.bind({})
 
 const meta: ComponentMeta<typeof Template> = {
-  component: Template,
-  title: 'Wallet/InteractForm',
+  component: Component,
+  title: 'Wallet/SendFormETH',
   argTypes: {
-    interactType: {
-      control: { type: 'select', options: ['bond', 'unbond', 'leave', 'custom'] }
-    },
     txRDStatus: {
       control: { type: 'select', options: ['pending', 'error', 'success'] }
     },
@@ -108,14 +94,16 @@ const meta: ComponentMeta<typeof Template> = {
     },
     walletType: {
       control: { type: 'select', options: ['keystore', 'ledger'] }
+    },
+    balance: {
+      control: { type: 'text' }
     }
   },
   args: {
-    interactType: 'bond',
     txRDStatus: 'success',
+    feeRDStatus: 'success',
     walletType: 'keystore',
-    balance: '2',
-    validAddress: true
+    balance: '2'
   }
 }
 

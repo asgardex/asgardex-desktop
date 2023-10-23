@@ -115,17 +115,16 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       chain: ETHChain,
       network,
       asset: params.asset,
-      router: O.toUndefined(params.router),
       amount: params.amount,
-      memo: params.memo,
+      router: O.toUndefined(params.router),
       recipient: params.recipient,
+      memo: params.memo,
       walletIndex: params.walletIndex,
       feeOption: params.feeOption,
       nodeUrl: undefined,
       hdMode: params.hdMode
     }
     const encoded = ipcLedgerDepositTxParamsIO.encode(ipcParams)
-
     return FP.pipe(
       Rx.from(window.apiHDWallet.depositLedgerTx(encoded)),
       RxOp.switchMap(
@@ -342,6 +341,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       nodeUrl: undefined,
       hdMode: params.hdMode
     }
+
     const encoded = ipcLedgerSendTxParamsIO.encode(ipcParams)
 
     return FP.pipe(

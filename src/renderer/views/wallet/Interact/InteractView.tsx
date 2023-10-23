@@ -17,6 +17,7 @@ import { getInteractTypeFromNullableString } from '../../../components/wallet/tx
 import { InteractType } from '../../../components/wallet/txs/interact/Interact.types'
 import { InteractForm } from '../../../components/wallet/txs/interact/InteractForm'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
+import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { eqOSelectedWalletAsset } from '../../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../../helpers/fpHelpers'
@@ -69,6 +70,7 @@ export const InteractView: React.FC = () => {
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(THORChain))
 
   const { validateAddress } = useValidateAddress(THORChain)
+  const { thorchainQuery } = useThorchainQueryContext()
 
   const oWalletBalance = useMemo(() => {
     return FP.pipe(
@@ -164,6 +166,7 @@ export const InteractView: React.FC = () => {
                       fee={feeRD}
                       reloadFeesHandler={reloadFees}
                       validatePassword$={validatePassword$}
+                      thorchainQuery={thorchainQuery}
                       network={network}
                     />
                   </Interact>

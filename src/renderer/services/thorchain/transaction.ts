@@ -56,7 +56,6 @@ export const createTransactionService = (
       hdMode: params.hdMode
     }
     const encoded = ipcLedgerDepositTxParamsIO.encode(depositLedgerTxParams)
-
     return FP.pipe(
       Rx.from(window.apiHDWallet.depositLedgerTx(encoded)),
       RxOp.switchMap(
@@ -137,7 +136,6 @@ export const createTransactionService = (
     clientUrl: ClientUrl
     params: SendTxParams
   }): TxHashLD => {
-    console.log(`here in send ledger tx`)
     const sendLedgerTxParams: IPCLedgerSendTxParams = {
       chain: THORChain,
       network,

@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { AVAXChain } from '@xchainjs/xchain-avax'
-import * as ETH from '@xchainjs/xchain-evm'
+import * as AVAX from '@xchainjs/xchain-evm'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -16,11 +16,11 @@ import { getPhrase } from '../wallet/util'
 import { Client$, ClientState, ClientState$ } from './types'
 
 /**
- * Stream to create an observable `EthereumClient` depending on existing phrase in keystore
+ * Stream to create an observable `AVAXClient` depending on existing phrase in keystore
  *
- * Whenever a phrase has been added to keystore, a new `EthereumClient` will be created.
+ * Whenever a phrase has been added to keystore, a new `AVAXClient` will be created.
  * By the other hand: Whenever a phrase has been removed, `ClientState` is set to `initial`
- * A `EthereumClient` will never be created as long as no phrase is available
+ * A `AVAXClient` will never be created as long as no phrase is available
  */
 const clientState$: ClientState$ = FP.pipe(
   Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$]),
@@ -31,7 +31,7 @@ const clientState$: ClientState$ = FP.pipe(
           getPhrase(keystore),
           O.map<string, ClientState>((phrase) => {
             try {
-              const client = new ETH.Client({
+              const client = new AVAX.Client({
                 ...defaultAvaxParams,
                 network: network,
                 phrase: phrase,
@@ -39,7 +39,7 @@ const clientState$: ClientState$ = FP.pipe(
               })
               return RD.success(client)
             } catch (error) {
-              return RD.failure<Error>(isError(error) ? error : new Error('Failed to create ETH client'))
+              return RD.failure<Error>(isError(error) ? error : new Error('Failed to create AVAX client'))
             }
           }),
           // Set back to `initial` if no phrase is available (locked wallet)

@@ -49,7 +49,7 @@ import {
 } from '../const'
 import { ERC20_WHITELIST } from '../types/generated/thorchain/erc20whitelist'
 import { PricePoolAsset } from '../views/pools/Pools.types'
-import { getEthChecksumAddress } from './addressHelper'
+import { getAvaxChecksumAddress, getEthChecksumAddress } from './addressHelper'
 import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isEthChain, isLtcChain } from './chainHelper'
 import { eqAsset, eqString } from './fp/eq'
 import { sequenceTOption } from './fpHelpers'
@@ -268,7 +268,7 @@ export const getEthTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
 export const getAvaxTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
   getTokenAddress,
   O.fromNullable,
-  O.chain(getEthChecksumAddress)
+  O.chain(getAvaxChecksumAddress)
 )
 
 /**

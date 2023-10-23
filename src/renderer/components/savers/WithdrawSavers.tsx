@@ -33,6 +33,7 @@ import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import {
+  convertBaseAmountDecimal,
   getEthTokenAddress,
   isEthAsset,
   isEthTokenAsset,
@@ -391,18 +392,31 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     return inFee.gt(chainAssetBalance) || dustThreshold.baseAmount.gt(chainAssetBalance)
   }, [amountToWithdrawMax1e8, saverFees, chainAssetBalance, dustThreshold.baseAmount])
 
+  // memo check disable submit if no memo
+  const noMemo: boolean = useMemo(
+    () =>
+      FP.pipe(
+        oSaverWithdrawQuote,
+        O.fold(
+          () => false, // default value if oSaverWithdrawQuote is None
+          (txDetails) => txDetails.memo === ''
+        )
+      ),
+    [oSaverWithdrawQuote]
+  )
+
   const [withdrawBps, setWithdrawBps] = useState(0) // init state
 
   // Disables the submit button
   const disableSubmit = useMemo(
-    () => sourceChainFeeError || isZeroAmountToSend || lockedWallet || walletBalancesLoading,
-    [sourceChainFeeError, isZeroAmountToSend, lockedWallet, walletBalancesLoading]
+    () => sourceChainFeeError || isZeroAmountToSend || lockedWallet || walletBalancesLoading || noMemo,
+    [sourceChainFeeError, isZeroAmountToSend, lockedWallet, walletBalancesLoading, noMemo]
   )
 
   const debouncedEffect = useRef(
     debounce((withdrawBps, asset, address) => {
       thorchainQuery
-        .estimateWithdrawSaver({ asset: sourceAsset, address: address, withdrawBps: Number(withdrawBps) })
+        .estimateWithdrawSaver({ asset: asset, address: address, withdrawBps: Number(withdrawBps) })
         .then((quote) => {
           setSaverWithdrawQuote(O.some(quote)) // Wrapping the quote in an Option
         })
@@ -773,7 +787,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
         const result = {
           poolAddress,
           asset: sourceAsset,
-          amount: saversWithdrawQuote.dustAmount.baseAmount,
+          amount: convertBaseAmountDecimal(saversWithdrawQuote.dustAmount.baseAmount, asset.baseAmount.decimal),
           memo: saversWithdrawQuote.memo,
           network,
           walletType,
@@ -784,9 +798,20 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
         return result
       })
     )
-  }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceAsset, network, address])
+  }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceAsset, asset.baseAmount.decimal, network, address])
 
-  const onClickUseLedger = useCallback(() => {}, [])
+  const resetEnteredAmounts = useCallback(() => {
+    setAmountToWithdrawMax1e8(initialAmountToWithdrawMax1e8)
+  }, [setAmountToWithdrawMax1e8, initialAmountToWithdrawMax1e8])
+
+  const onClickUseLedger = useCallback(
+    (useLedger: boolean) => {
+      const walletType: WalletType = useLedger ? 'ledger' : 'keystore'
+      onChangeAsset({ source: asset.asset, sourceWalletType: walletType })
+      resetEnteredAmounts()
+    },
+    [asset.asset, onChangeAsset, resetEnteredAmounts]
+  )
 
   const txModalExtraContent = useMemo(() => {
     const stepDescriptions = [
@@ -958,14 +983,14 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
   }, [showPasswordModal, submitWithdrawTx, validatePassword$])
 
   const renderLedgerConfirmationModal = useMemo(() => {
-    if (showLedgerModal === 'none') return <></>
+    const visible = showLedgerModal === 'withdraw' || showLedgerModal === 'approve'
 
     const onClose = () => {
       setShowLedgerModal('none')
     }
 
     const onSucceess = () => {
-      if (showLedgerModal === 'withdraw') setShowPasswordModal('withdraw')
+      if (showLedgerModal === 'withdraw') submitWithdrawTx()
       if (showLedgerModal === 'approve') submitApproveTx()
       setShowLedgerModal('none')
     }
@@ -1006,7 +1031,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       <LedgerConfirmationModal
         onSuccess={onSucceess}
         onClose={onClose}
-        visible
+        visible={visible}
         chain={sourceChain}
         network={network}
         description1={description1}
@@ -1014,7 +1039,17 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
         addresses={addresses}
       />
     )
-  }, [showLedgerModal, sourceChain, intl, sourceAsset, oWithdrawSaverParams, network, submitApproveTx, useLedger])
+  }, [
+    showLedgerModal,
+    sourceChain,
+    intl,
+    sourceAsset,
+    oWithdrawSaverParams,
+    network,
+    submitWithdrawTx,
+    submitApproveTx,
+    useLedger
+  ])
 
   // Price of asset IN fee
   const oPriceAssetInFee: O.Option<CryptoAmount> = useMemo(() => {

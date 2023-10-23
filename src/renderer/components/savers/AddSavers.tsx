@@ -34,6 +34,7 @@ import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import {
+  convertBaseAmountDecimal,
   getEthTokenAddress,
   isEthAsset,
   isEthTokenAsset,
@@ -429,10 +430,24 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     return inFee.gt(sourceChainAssetAmount)
   }, [minAmountError, sourceChainAssetAmount, saverFees])
 
+  // memo check disable submit if no memo
+  const noMemo: boolean = useMemo(
+    () =>
+      FP.pipe(
+        oSaversQuote,
+        O.fold(
+          () => false, // default value if oSaverWithdrawQuote is None
+          (txDetails) => txDetails.memo === ''
+        )
+      ),
+    [oSaversQuote]
+  )
+
   // Disables the submit button
   const disableSubmit = useMemo(
-    () => sourceChainFeeError || isZeroAmountToSend || lockedWallet || minAmountError || walletBalancesLoading,
-    [sourceChainFeeError, isZeroAmountToSend, lockedWallet, minAmountError, walletBalancesLoading]
+    () =>
+      sourceChainFeeError || isZeroAmountToSend || lockedWallet || minAmountError || walletBalancesLoading || noMemo,
+    [isZeroAmountToSend, lockedWallet, minAmountError, noMemo, sourceChainFeeError, walletBalancesLoading]
   )
 
   const debouncedEffect = useRef(
@@ -642,6 +657,10 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     return intl.formatMessage({ id: 'savers.info.max.balance' }, { balance: balanceLabel, fee: feeLabel })
   }, [sourceAssetAmountMax1e8, saverFeesRD, asset, intl])
 
+  const resetEnteredAmounts = useCallback(() => {
+    setAmountToSendMax1e8(initialAmountToSendMax1e8)
+  }, [initialAmountToSendMax1e8, setAmountToSendMax1e8])
+
   const oEarnParams: O.Option<SaverDepositParams> = useMemo(() => {
     return FP.pipe(
       sequenceTOption(oPoolAddress, oSourceAssetWB, oSaversQuote),
@@ -649,7 +668,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
         const result = {
           poolAddress,
           asset: asset.asset,
-          amount: amountToSendMax1e8,
+          amount: convertBaseAmountDecimal(amountToSendMax1e8, asset.baseAmount.decimal),
           memo: saversQuote.memo.concat(`::${ASGARDEX_THORNAME}:0`), // add tracking,
           walletType,
           sender: walletAddress,
@@ -661,7 +680,14 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     )
   }, [oSourceAssetWB, amountToSendMax1e8, asset, oSaversQuote, oPoolAddress])
 
-  const onClickUseLedger = useCallback(() => {}, [])
+  const onClickUseLedger = useCallback(
+    (useLedger: boolean) => {
+      const walletType: WalletType = useLedger ? 'ledger' : 'keystore'
+      onChangeAsset({ source: asset.asset, sourceWalletType: walletType })
+      resetEnteredAmounts()
+    },
+    [asset.asset, onChangeAsset, resetEnteredAmounts]
+  )
 
   const txModalExtraContent = useMemo(() => {
     const stepDescriptions = [
@@ -956,14 +982,14 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
   }, [showPasswordModal, submitApproveTx, submitDepositTx, validatePassword$])
 
   const renderLedgerConfirmationModal = useMemo(() => {
-    if (showLedgerModal === 'none') return <></>
+    const visible = showLedgerModal === 'deposit' || showLedgerModal === 'approve'
 
     const onClose = () => {
       setShowLedgerModal('none')
     }
 
     const onSucceess = () => {
-      if (showLedgerModal === 'deposit') setShowPasswordModal('deposit')
+      if (showLedgerModal === 'deposit') submitDepositTx()
       if (showLedgerModal === 'approve') submitApproveTx()
       setShowLedgerModal('none')
     }
@@ -989,11 +1015,9 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
 
     const description2 = intl.formatMessage({ id: 'ledger.sign' })
 
-    const oIsDeposit = O.fromPredicate<ModalState>((v) => v === 'deposit')(showLedgerModal)
-
     const addresses = FP.pipe(
-      sequenceTOption(oIsDeposit, oEarnParams),
-      O.chain(([_, { poolAddress, sender }]) => {
+      oEarnParams,
+      O.chain(({ poolAddress, sender }) => {
         const recipient = poolAddress.address
         if (useLedger) return O.some({ recipient, sender })
         return O.none
@@ -1004,7 +1028,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       <LedgerConfirmationModal
         onSuccess={onSucceess}
         onClose={onClose}
-        visible
+        visible={visible}
         chain={sourceChain}
         network={network}
         description1={description1}
@@ -1012,7 +1036,17 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
         addresses={addresses}
       />
     )
-  }, [showLedgerModal, sourceChain, intl, asset.asset, oEarnParams, network, submitApproveTx, useLedger])
+  }, [
+    showLedgerModal,
+    sourceChain,
+    intl,
+    asset.asset,
+    oEarnParams,
+    network,
+    submitDepositTx,
+    submitApproveTx,
+    useLedger
+  ])
 
   const renderSlider = useMemo(() => {
     const percentage = amountToSendMax1e8
@@ -1281,7 +1315,13 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
                   </div>
                   <div className="flex w-full justify-between pl-10px text-[12px]">
                     <div>{intl.formatMessage({ id: 'common.liquidity' })}</div>
-                    <div>{liquidityFee.formatedAssetString()}</div>
+                    <div>
+                      {formatAssetAmountCurrency({
+                        amount: liquidityFee.assetAmount,
+                        asset: pricePool.asset,
+                        decimal: 0
+                      })}
+                    </div>
                   </div>
                 </>
               )}

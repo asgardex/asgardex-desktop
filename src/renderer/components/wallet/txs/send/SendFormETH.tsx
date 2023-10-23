@@ -26,9 +26,9 @@ import { chainToString } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../../const'
-import { isAvaxAsset, isEthAsset } from '../../../../helpers/assetHelper'
+import { isEthAsset } from '../../../../helpers/assetHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
-import { getEvmAmountFromBalances } from '../../../../helpers/walletHelper'
+import { getEthAmountFromBalances } from '../../../../helpers/walletHelper'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import { SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
@@ -123,17 +123,14 @@ export const SendFormETH: React.FC<Props> = (props): JSX.Element => {
       ),
     [oFees, selectedFeeOption]
   )
-  // Could be AVAX or ETH
+
   const oAssetAmount: O.Option<BaseAmount> = useMemo(() => {
     // return balance of current asset (if ETH)
     if (isEthAsset(asset)) {
       return O.some(balance.amount)
     }
-    if (isAvaxAsset(asset)) {
-      return O.some(balance.amount)
-    }
     // or check list of other assets to get eth balance
-    return FP.pipe(balances, getEvmAmountFromBalances, O.map(assetToBase))
+    return FP.pipe(balances, getEthAmountFromBalances, O.map(assetToBase))
   }, [asset, balance.amount, balances])
 
   const isFeeError = useMemo(() => {

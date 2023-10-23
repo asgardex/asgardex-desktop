@@ -76,6 +76,14 @@ export const removeAddressPrefix = (address: Address): Address => {
 export const getEthChecksumAddress = (address: Address): O.Option<Address> =>
   O.tryCatch(() => ethers.utils.getAddress(address.toLowerCase()))
 
+/**
+ * Helper to get Avax address as a checksum address
+ * toLowerCase() is needed to handle the ERC20 addresses start with 0X as well, not only 0x
+ * ethers getAddress function recognize 0X address as invalid one
+ */
+export const getAvaxChecksumAddress = (address: Address): O.Option<Address> =>
+  O.tryCatch(() => ethers.utils.getAddress(address.toLowerCase()))
+
 export const hasLedgerAddress = (addresses: LedgerAddresses, chain: Chain): boolean =>
   FP.pipe(
     addresses,

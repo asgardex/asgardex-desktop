@@ -3,8 +3,18 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { assetAmount, assetToBase, BaseAmount, baseToAsset, bn, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import { AssetAVAX, QuoteThornameParams, ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
+import {
+  Asset,
+  assetAmount,
+  assetToBase,
+  BaseAmount,
+  baseToAsset,
+  bn,
+  formatAssetAmountCurrency
+} from '@xchainjs/xchain-util'
 import { Form, Tooltip } from 'antd'
+import { RadioChangeEvent } from 'antd/lib/radio'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
 import * as FP from 'fp-ts/function'
@@ -12,10 +22,11 @@ import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
 import { Network } from '../../../../../shared/api/types'
-import { AssetRuneNative } from '../../../../../shared/utils/asset'
+import { AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../shared/wallet/types'
-import { ZERO_BASE_AMOUNT } from '../../../../const'
+import * as StyledR from '../../../../components/shared/form/Radio.styles'
+import { AssetUSDTDAC, ZERO_BASE_AMOUNT } from '../../../../const'
 import { THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
 import { getBondMemo, getLeaveMemo, getUnbondMemo } from '../../../../helpers/memoHelper'
@@ -32,14 +43,25 @@ import { BaseButton, FlatButton, ViewTxButton } from '../../../uielements/button
 import { CheckButton } from '../../../uielements/button/CheckButton'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { UIFeesRD } from '../../../uielements/fees'
-import { Input, InputBigNumber } from '../../../uielements/input'
+import { InfoIcon } from '../../../uielements/info'
+import { InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
 import * as Styled from './Interact.styles'
 import { InteractType } from './Interact.types'
 
-type FormValues = { memo: string; thorAddress: string; providerAddress: string; operatorFee: number; amount: BigNumber }
+type FormValues = {
+  memo: string
+  thorAddress: string
+  providerAddress: string
+  operatorFee: number
+  amount: BigNumber
+  thorname: string
+  chainAddress: string
+  chain: string
+  preferredAsset: string
+}
 
 type Props = {
   interactType: InteractType
@@ -54,6 +76,7 @@ type Props = {
   reloadFeesHandler: FP.Lazy<void>
   addressValidation: AddressValidation
   validatePassword$: ValidatePasswordHandler
+  thorchainQuery: ThorchainQuery
   network: Network
 }
 export const InteractForm: React.FC<Props> = (props) => {
@@ -70,6 +93,7 @@ export const InteractForm: React.FC<Props> = (props) => {
     fee: feeRD,
     reloadFeesHandler,
     validatePassword$,
+    thorchainQuery,
     network
   } = props
   const intl = useIntl()
@@ -79,16 +103,16 @@ export const InteractForm: React.FC<Props> = (props) => {
   const [hasProviderAddress, setHasProviderAddress] = useState(false)
 
   const [_amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
-  const [memo, setMemo] = useState<string>()
+  const [expireDate, setExpireDate] = useState<Date | undefined>()
+  const [memo, setMemo] = useState<string>('')
   const amountToSend = useMemo(() => {
     switch (interactType) {
       case 'bond':
       case 'custom':
       case 'unbond':
+      case 'thorname':
         return _amountToSend
       case 'leave':
-        return ZERO_BASE_AMOUNT
-      case 'thorname':
         return ZERO_BASE_AMOUNT
     }
   }, [_amountToSend, interactType])
@@ -105,6 +129,14 @@ export const InteractForm: React.FC<Props> = (props) => {
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
 
+  // state variable for thornames
+  const [oThorname, setThorname] = useState<O.Option<ThornameDetails>>(O.none)
+  const [thornameAvailable, setThornameAvailable] = useState<boolean>(false) // if thorname is available
+  const [thornameUpdate, setThornameUpdate] = useState<boolean>(false) // allow to update
+  const [thornameQuoteValid, setThornameQuoteValid] = useState<boolean>(false) // if the quote is valid then allow to buy
+  const [isOwner, setIsOwner] = useState<boolean>(false) // if the thorname.owner is the wallet address then allow to update
+  const [preferredAsset, setPreferredAsset] = useState<Asset>()
+  const [aliasChain, setAliasChain] = useState<string>('')
   const isFeeError = useMemo(
     () =>
       FP.pipe(
@@ -134,6 +166,15 @@ export const InteractForm: React.FC<Props> = (props) => {
       </Label>
     ),
     [intl, balance.amount]
+  )
+
+  const renderThornameError = useMemo(
+    () => (
+      <Label size="big" color="error">
+        {intl.formatMessage({ id: 'common.thornameError' })}
+      </Label>
+    ),
+    [intl]
   )
 
   // max amount for RuneNative
@@ -186,11 +227,80 @@ export const InteractForm: React.FC<Props> = (props) => {
     },
     [interactType, intl, maxAmount]
   )
+  const thornameHandler = useCallback(() => {
+    const thorname = form.getFieldValue('thorname')
+    setThornameQuoteValid(false) // set quote back to false on change
+    setMemo('')
+    if (thorname !== '') {
+      const fetchThorname = async () => {
+        try {
+          const thornameDetails = await thorchainQuery.getThornameDetails(thorname)
+          if (thornameDetails) {
+            setThorname(O.some(thornameDetails))
+            setShowDetails(true)
+            setThornameAvailable(thornameDetails.owner === '' || balance.walletAddress === thornameDetails.owner)
+            setThornameUpdate(thorname === thornameDetails.name && thornameDetails.owner === '')
+            setIsOwner(balance.walletAddress === thornameDetails.owner)
+          }
+        } catch (error) {
+          // Handle errors if the promise is rejected
+          // console.error('Error fetching Thorname:', error)
+          setThornameAvailable(true)
+          // You can return a rejected Promise here, but you should also handle it where this function is called.
+        }
+      }
+      // Call the fetchThorname function to fetch Thorname details
+      fetchThorname()
+    }
+    setThorname(O.none)
+  }, [balance.walletAddress, form, thorchainQuery])
+
+  const estimateThornameHandler = useCallback(() => {
+    const thorname = form.getFieldValue('thorname')
+    const chain = form.getFieldValue('aliasChain')
+    const chainAddress = form.getFieldValue('aliasAddress')
+    const owner = balance.walletAddress
+    if (thorname !== undefined && chain !== undefined && chainAddress !== undefined) {
+      const fetchThornameQuote = async () => {
+        try {
+          const params: QuoteThornameParams = {
+            thorname,
+            chain: aliasChain,
+            chainAddress,
+            owner,
+            preferredAsset,
+            expirity: expireDate,
+            isUpdate: thornameUpdate
+          }
+
+          const thornameQuote = await thorchainQuery.estimateThorname(params)
+
+          if (thornameQuote) {
+            setMemo(thornameQuote.memo)
+            setAmountToSend(thornameQuote.value.baseAmount)
+            setThornameQuoteValid(true)
+          }
+        } catch (error) {
+          // console.error('Error fetching fetchThornameQuote:', error)
+        }
+      }
+      fetchThornameQuote()
+    }
+  }, [aliasChain, balance.walletAddress, expireDate, form, preferredAsset, thorchainQuery, thornameUpdate])
+
+  const handleRadioAssetChange = useCallback((e: RadioChangeEvent) => {
+    const asset = e.target.value
+    setPreferredAsset(asset)
+  }, [])
+
+  const handleRadioChainChange = useCallback((e: RadioChangeEvent) => {
+    const chain = e.target.value
+    setAliasChain(chain)
+  }, [])
 
   const addMaxAmountHandler = useCallback(
     (maxAmount: BaseAmount) => {
       setAmountToSend(maxAmount)
-      console.log('Amount set to:', maxAmount) // Debugging log
     },
     [setAmountToSend]
   )
@@ -221,33 +331,33 @@ export const InteractForm: React.FC<Props> = (props) => {
     const nodeOperatorFee = form.getFieldValue('operatorFee')
     const feeInBasisPoints = nodeOperatorFee ? nodeOperatorFee * 100 : undefined
 
-    let memo = ''
+    let createMemo = ''
 
     switch (interactType) {
       case 'bond': {
-        memo = getBondMemo(thorAddress, providerAddress, feeInBasisPoints)
+        createMemo = getBondMemo(thorAddress, providerAddress, feeInBasisPoints)
         break
       }
       case 'unbond': {
-        memo = getUnbondMemo(thorAddress, amountToSend, providerAddress)
+        createMemo = getUnbondMemo(thorAddress, amountToSend, providerAddress)
         break
       }
       case 'leave': {
-        memo = getLeaveMemo(thorAddress)
+        createMemo = getLeaveMemo(thorAddress)
         break
       }
       case 'custom': {
-        memo = form.getFieldValue('memo')
+        createMemo = form.getFieldValue('memo')
         break
       }
       case 'thorname': {
-        memo = getLeaveMemo(thorAddress)
+        createMemo = memo
         break
       }
     }
-    setMemo(memo)
-    return memo
-  }, [amountToSend, form, interactType])
+    setMemo(createMemo)
+    return createMemo
+  }, [amountToSend, form, interactType, memo])
 
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
@@ -289,6 +399,11 @@ export const InteractForm: React.FC<Props> = (props) => {
     setHasProviderAddress(false)
     setMemo('')
     setAmountToSend(ZERO_BASE_AMOUNT)
+    setThorname(O.none)
+    setIsOwner(false)
+    setThornameQuoteValid(false)
+    setThornameUpdate(false)
+    setThornameAvailable(false)
   }, [form, resetInteractState])
 
   const renderConfirmationModal = useMemo(() => {
@@ -400,9 +515,13 @@ export const InteractForm: React.FC<Props> = (props) => {
       case 'custom':
         return intl.formatMessage({ id: 'wallet.action.send' })
       case 'thorname':
-        return intl.formatMessage({ id: 'deposit.interact.actions.buyThorname' })
+        if (thornameUpdate) {
+          return intl.formatMessage({ id: 'common.isUpdate' })
+        } else {
+          return intl.formatMessage({ id: 'deposit.interact.actions.buyThorname' })
+        }
     }
-  }, [interactType, intl, hasProviderAddress])
+  }, [interactType, hasProviderAddress, intl, thornameUpdate])
 
   const uiFeesRD: UIFeesRD = useMemo(
     () =>
@@ -413,6 +532,36 @@ export const InteractForm: React.FC<Props> = (props) => {
 
     [feeRD]
   )
+  const thorNamefees: UIFeesRD = useMemo(
+    () =>
+      FP.pipe(
+        feeRD,
+        RD.map((fee) => [{ asset: AssetRuneNative, amount: fee.plus(amountToSend) }])
+      ),
+
+    [amountToSend, feeRD]
+  )
+
+  const handleRadioChange = useCallback((e: RadioChangeEvent) => {
+    const value = e.target.value
+    const yearsToAdd = Number(value) ?? 0
+
+    // Calculate the new date by adding years to the current date
+    if (yearsToAdd > 0) {
+      const currentDate = new Date()
+      const newDate = new Date(currentDate.getFullYear() + yearsToAdd, currentDate.getMonth(), currentDate.getDate())
+      setExpireDate(newDate)
+      setThornameQuoteValid(false)
+    } else {
+      // Handle the case when no option is selected
+      setExpireDate(undefined)
+    }
+  }, [])
+
+  const setThornameUpdateHandler = useCallback(() => {
+    setThornameUpdate((thornameUpdate) => !thornameUpdate)
+    setThornameQuoteValid(false)
+  }, [])
 
   const onClickHasProviderAddress = useCallback(() => {
     // clean address
@@ -456,7 +605,7 @@ export const InteractForm: React.FC<Props> = (props) => {
                   message: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
                 }
               ]}>
-              <Input disabled={isLoading} onChange={() => getMemo()} size="large" />
+              <Styled.Input disabled={isLoading} onChange={() => getMemo()} size="large" />
             </Form.Item>
           </Styled.InputContainer>
         )}
@@ -473,7 +622,7 @@ export const InteractForm: React.FC<Props> = (props) => {
                   validator: addressValidator
                 }
               ]}>
-              <Input disabled={isLoading} onChange={() => getMemo()} size="large" />
+              <Styled.Input disabled={isLoading} onChange={() => getMemo()} size="large" />
             </Form.Item>
           </Styled.InputContainer>
         )}
@@ -495,7 +644,7 @@ export const InteractForm: React.FC<Props> = (props) => {
                       validator: addressValidator
                     }
                   ]}>
-                  <Input disabled={isLoading} onChange={() => getMemo()} size="large" />
+                  <Styled.Input disabled={isLoading} onChange={() => getMemo()} size="large" />
                 </Form.Item>
               </>
             )}
@@ -580,24 +729,146 @@ export const InteractForm: React.FC<Props> = (props) => {
                       required: true
                     }
                   ]}>
-                  <Input disabled={isLoading} size="large" onChange={() => getMemo()} />
+                  <Styled.Input disabled={isLoading} size="large" onChange={() => getMemo()} />
                 </Styled.FormItem>
               </Styled.InputContainer>
             )}
           </>
         )}
-      </>
+        {/* Thorname Button and Details*/}
+        <>
+          {interactType === 'thorname' && (
+            <Styled.InputContainer>
+              <div className="flex w-full items-center text-[12px]">
+                <Styled.InputLabel>{intl.formatMessage({ id: 'common.thorname' })}</Styled.InputLabel>
+                <InfoIcon
+                  className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                  tooltip={intl.formatMessage({ id: 'common.thornameRegistrationSpecifics' })}
+                  color="primary"
+                />
+              </div>
 
-      <div>
-        <FlatButton
-          className="mt-10px min-w-[200px]"
-          loading={isLoading}
-          disabled={isLoading || !!form.getFieldsError().filter(({ errors }) => errors.length).length}
-          type="submit"
-          size="large">
-          {submitLabel}
-        </FlatButton>
-      </div>
+              <Styled.FormItem
+                name="thorname"
+                rules={[
+                  {
+                    required: true
+                  }
+                ]}>
+                <Styled.Input disabled={isLoading} size="large" onChange={() => thornameHandler()} />
+              </Styled.FormItem>
+              {O.isSome(oThorname) && !thornameAvailable && !isOwner && renderThornameError}
+            </Styled.InputContainer>
+          )}
+          {/** Form item for unregistered thorname */}
+          {thornameAvailable && (
+            <Styled.InputContainer>
+              {isOwner ? (
+                <CheckButton
+                  checked={thornameUpdate || isOwner}
+                  clickHandler={() => setThornameUpdate(true)}
+                  disabled={isLoading}>
+                  {intl.formatMessage({ id: 'common.isUpdate' })}
+                </CheckButton>
+              ) : (
+                <CheckButton checked={thornameUpdate} clickHandler={setThornameUpdateHandler} disabled={isLoading}>
+                  {intl.formatMessage({ id: 'common.isUpdate' })}
+                </CheckButton>
+              )}
+
+              <div className="flex w-full items-center text-[12px]">
+                <Styled.InputLabel>{intl.formatMessage({ id: 'common.preferredAsset' })}</Styled.InputLabel>
+              </div>
+              <Styled.FormItem
+                name="preferredAsset"
+                rules={[
+                  {
+                    required: false
+                  }
+                ]}>
+                <StyledR.Radio.Group onChange={handleRadioAssetChange} value={preferredAsset}>
+                  <StyledR.Radio value={AssetRuneNative}>RUNE</StyledR.Radio>
+                  <StyledR.Radio value={AssetBTC}>BTC</StyledR.Radio>
+                  <StyledR.Radio value={AssetETH}>ETH</StyledR.Radio>
+                  <StyledR.Radio value={AssetUSDTDAC}>USDT</StyledR.Radio>
+                </StyledR.Radio.Group>
+              </Styled.FormItem>
+              {/* Add input fields for aliasChain, aliasAddress, and expiry */}
+              <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasChain' })}</Styled.InputLabel>
+              <Styled.FormItem
+                name="aliasChain"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please provide an alias chain.'
+                  }
+                ]}>
+                <StyledR.Radio.Group onChange={handleRadioChainChange} value={aliasChain}>
+                  <StyledR.Radio value={AssetAVAX.chain}>AVAX</StyledR.Radio>
+                  <StyledR.Radio value={AssetBTC.chain}>BTC</StyledR.Radio>
+                  <StyledR.Radio value={AssetETH.chain}>ETH</StyledR.Radio>
+                  <StyledR.Radio value={AssetBNB.chain}>BNB</StyledR.Radio>
+                </StyledR.Radio.Group>
+              </Styled.FormItem>
+              <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasAddress' })}</Styled.InputLabel>
+              <Styled.FormItem
+                name="aliasAddress"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please provide an alias address.'
+                  }
+                ]}>
+                <Styled.Input disabled={isLoading} size="middle" />
+              </Styled.FormItem>
+              <Styled.InputLabel>{intl.formatMessage({ id: 'common.expiry' })}</Styled.InputLabel>
+              <Styled.FormItem
+                name="expiry"
+                rules={[
+                  {
+                    required: false
+                  }
+                ]}>
+                <StyledR.Radio.Group onChange={handleRadioChange} value={expireDate}>
+                  <StyledR.Radio value={1}>1 year</StyledR.Radio>
+                  <StyledR.Radio value={2}>2 years</StyledR.Radio>
+                  <StyledR.Radio value={3}>3 years</StyledR.Radio>
+                  <StyledR.Radio value={5}>5 years</StyledR.Radio>
+                </StyledR.Radio.Group>
+              </Styled.FormItem>
+              <Styled.Fees
+                className="mt-10px"
+                fees={thorNamefees}
+                reloadFees={reloadFeesHandler}
+                disabled={isLoading}
+              />
+              <FlatButton
+                className="mt-10px min-w-[200px]"
+                loading={isLoading}
+                disabled={thornameQuoteValid}
+                size="large"
+                onClick={() => estimateThornameHandler()}>
+                Estimate
+              </FlatButton>
+            </Styled.InputContainer>
+          )}
+        </>
+      </>
+      {thornameQuoteValid && (
+        <>
+          {' '}
+          <div>
+            <FlatButton
+              className="mt-10px min-w-[200px]"
+              loading={isLoading}
+              disabled={isLoading || !!form.getFieldsError().filter(({ errors }) => errors.length).length}
+              type="submit"
+              size="large">
+              {submitLabel}
+            </FlatButton>
+          </div>
+        </>
+      )}
       <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
         {/* memo */}
         <div className={`my-20px w-full font-main text-[12px] uppercase dark:border-gray1d`}>
@@ -613,6 +884,50 @@ export const InteractForm: React.FC<Props> = (props) => {
           </BaseButton>
           {showDetails && (
             <>
+              {FP.pipe(
+                oThorname,
+                O.map(({ owner, name, aliases, preferredAsset, expireBlockHeight }) => {
+                  if (owner && name && aliases && preferredAsset && expireBlockHeight) {
+                    return (
+                      <>
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          <div>{intl.formatMessage({ id: 'common.thorname' })}</div>
+                          <div>{name}</div>
+                        </div>
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          {intl.formatMessage({ id: 'common.owner' })}
+                          <div>{owner}</div>
+                        </div>
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          <div>{intl.formatMessage({ id: 'common.expirationBlock' })}</div>
+                          <div>{expireBlockHeight}</div>
+                        </div>
+
+                        {aliases &&
+                          aliases.map((alias, index) => (
+                            <div key={index}>
+                              <div className="flex w-full justify-between pl-10px text-[12px]">
+                                {intl.formatMessage({ id: 'common.aliasChain' })}
+                                <div>{alias.chain}</div>
+                              </div>
+                              <div className="flex w-full justify-between pl-10px text-[12px]">
+                                {intl.formatMessage({ id: 'common.aliasAddress' })}
+                                <div>{alias.address}</div>
+                              </div>
+                            </div>
+                          ))}
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          {intl.formatMessage({ id: 'common.preferredAsset' })}
+                          <div>{preferredAsset}</div>
+                        </div>
+                      </>
+                    )
+                  }
+                  return null
+                }),
+                O.toNullable
+              )}
+
               <div className="ml-[-2px] flex w-full items-start pt-10px font-mainBold text-[14px]">
                 {intl.formatMessage({ id: 'common.memo' })}
               </div>

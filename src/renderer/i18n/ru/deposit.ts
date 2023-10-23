@@ -5,6 +5,7 @@ const deposit: DepositMessages = {
   'deposit.interact.actions.unbond': 'Изъять',
   'deposit.interact.actions.leave': 'Выйти',
   'deposit.interact.actions.buyThorname': 'Купить Thorname',
+  'deposit.interact.actions.checkThorname': 'Проверить доступность',
   'deposit.interact.actions.addBondProvider': 'Добавить поставщика обеспечения',
   'deposit.interact.title': 'Вклад',
   'deposit.interact.subtitle': 'Взаимодействие с THORСhain',

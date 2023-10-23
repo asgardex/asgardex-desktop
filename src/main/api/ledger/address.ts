@@ -63,7 +63,7 @@ export const getAddress = async ({
           if (!isEvmHDMode(hdMode)) {
             res = E.left({
               errorId: LedgerErrorId.INVALID_ETH_DERIVATION_MODE,
-              msg: `Invaid 'EthHDMode' - needed for ETH to get Ledger address`
+              msg: `Invalid 'EthHDMode' - needed for ETH to get Ledger address`
             })
           } else {
             res = await getETHAddress({ transport, walletIndex, evmHdMode: hdMode })
@@ -74,7 +74,7 @@ export const getAddress = async ({
           if (!isEvmHDMode(hdMode)) {
             res = E.left({
               errorId: LedgerErrorId.INVALID_ETH_DERIVATION_MODE,
-              msg: `Invaid 'EthHDMode' - needed for ETH to get Ledger address`
+              msg: `Invalid 'EthHDMode' - needed for ETH to get Ledger address`
             })
           } else {
             res = await getAVAXAddress({ transport, walletIndex, evmHdMode: hdMode })

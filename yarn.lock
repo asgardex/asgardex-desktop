@@ -7106,18 +7106,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-thorchain-query@npm:0.6.3":
-  version: 0.6.3
-  resolution: "@xchainjs/xchain-thorchain-query@npm:0.6.3"
+"@xchainjs/xchain-thorchain-query@npm:0.6.4":
+  version: 0.6.4
+  resolution: "@xchainjs/xchain-thorchain-query@npm:0.6.4"
   peerDependencies:
-    "@xchainjs/xchain-client": ^0.14.2
+    "@xchainjs/xchain-client": ^0.15.0
     "@xchainjs/xchain-midgard-query": ^0.1.3
-    "@xchainjs/xchain-thornode": ^0.3.7
+    "@xchainjs/xchain-thornode": ^0.3.8
     "@xchainjs/xchain-util": ^0.13.1
     axios: ^1.3.6
     axios-retry: ^3.2.5
     bignumber.js: ^9.0.0
-  checksum: cf5b8df23f8d3ebf171b8663e704b8d9de83b5736b822e4573cacbbc8ebccda498028a255bf8afd305106c53a573c4ca811ae083e61cd3124ce5618bb66443fa
+  checksum: 65cbac997609dff600807a389994a72c5bab106acf899c804180a51a724d41b157475593c973dea3d3320225ab689e949fabaf7087eda1544217057a29709dc7
   languageName: node
   linkType: hard
 
@@ -7136,12 +7136,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-thornode@npm:0.3.7":
-  version: 0.3.7
-  resolution: "@xchainjs/xchain-thornode@npm:0.3.7"
+"@xchainjs/xchain-thornode@npm:0.3.8":
+  version: 0.3.8
+  resolution: "@xchainjs/xchain-thornode@npm:0.3.8"
   peerDependencies:
     axios: ^1.3.6
-  checksum: 53fe0586eac6ff2f023fac9952440ebd33c08014a59531f879977ae35245b0f4cbf7f4f88c68d521dc468adfb77267fe7fb34dda82f98b8f64f32072cf2ab45b
+  checksum: 969be569583d659a37dcf4b89780c936d2d51000ecc05dfeb112018474dddd23607e2145bdfd3342cf5f7ab7f268fd531a894f3be6dcf2b04a382866fc7ab484
   languageName: node
   linkType: hard
 
@@ -7155,16 +7155,16 @@ __metadata:
   linkType: hard
 
 "@xchainjs/xchain-utxo-providers@npm:^0.2.4":
-  version: 0.2.4
-  resolution: "@xchainjs/xchain-utxo-providers@npm:0.2.4"
+  version: 0.2.5
+  resolution: "@xchainjs/xchain-utxo-providers@npm:0.2.5"
   dependencies:
     "@supercharge/promise-pool": ^2.4.0
   peerDependencies:
-    "@xchainjs/xchain-client": ^0.14.2
+    "@xchainjs/xchain-client": ^0.15.0
     "@xchainjs/xchain-crypto": ^0.3.0
     "@xchainjs/xchain-util": ^0.13.1
     axios: ^1.3.6
-  checksum: d13241f7d25320701e3ca3e2a73295f381c22e665d1e60ccb1a863798ccd9fb3cc5de91e2d0c6ac6776b2d89c2b9c1072c9b7a53b58584ff2f82fd2c41901b49
+  checksum: 78e42a16ec1e3ad7184785516ae989b43968c27e44efcbeaecd6f0a5f38619038972c8a14466a6dd90e2df1e7450807e387f4530cdcb79a7981823378afa96b1
   languageName: node
   linkType: hard
 
@@ -7970,8 +7970,8 @@ __metadata:
     "@xchainjs/xchain-midgard": 0.5.2
     "@xchainjs/xchain-midgard-query": 0.1.3
     "@xchainjs/xchain-thorchain": ^0.28.8
-    "@xchainjs/xchain-thorchain-query": 0.6.3
-    "@xchainjs/xchain-thornode": 0.3.7
+    "@xchainjs/xchain-thorchain-query": 0.6.4
+    "@xchainjs/xchain-thornode": 0.3.8
     "@xchainjs/xchain-util": ^0.13.1
     "@xchainjs/xchain-utxo-providers": ^0.2.4
     ansis: ^1.5.5

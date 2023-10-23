@@ -6,6 +6,7 @@ import { Address, Asset, assetToString, BaseAmount } from '@xchainjs/xchain-util
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
 
+import { isEthAsset } from '../../../../renderer/helpers/assetHelper'
 import { LedgerError, LedgerErrorId, Network } from '../../../../shared/api/types'
 import { DEPOSIT_EXPIRATION_OFFSET, ETHAddress, FEE_BOUNDS, defaultEthParams } from '../../../../shared/ethereum/const'
 import { ROUTER_ABI } from '../../../../shared/evm/abi'
@@ -101,7 +102,7 @@ export const deposit = async ({
   evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const address = ETH.getTokenAddress(asset)
+    const address = !isEthAsset(asset) ? ETH.getTokenAddress(asset) : ETHAddress
 
     if (!address) {
       return E.left({
