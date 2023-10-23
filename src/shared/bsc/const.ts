@@ -4,6 +4,8 @@ import { EVMClientParams } from '@xchainjs/xchain-evm'
 import { EtherscanProvider } from '@xchainjs/xchain-evm-providers'
 import { BigNumber, ethers } from 'ethers'
 
+import { envOrDefault } from '../utils/env'
+
 // export const FEE_BOUNDS: Record<Network, FeeBounds | undefined> = {
 //   /* for main|stagenet use default values defined in ETH.Client */
 //   [Network.Mainnet]: undefined,
@@ -33,7 +35,7 @@ const ethersJSProviders = {
 const BSC_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
   BSC_TESTNET_ETHERS_PROVIDER,
   'https://api-testnet.bscscan.com',
-  process.env['BSCCHAIN_API_KEY'] || '',
+  envOrDefault(process.env['REACT_APP_BSCSCAN_API_KEY'], ''),
   BSCChain,
   AssetBSC,
   BSC_GAS_ASSET_DECIMAL
@@ -41,7 +43,7 @@ const BSC_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
 const BSC_ONLINE_PROVIDER_MAINNET = new EtherscanProvider(
   BSC_MAINNET_ETHERS_PROVIDER,
   'https://api.bscscan.com',
-  process.env['BSCCHAIN_API_KEY'] || '',
+  envOrDefault(process.env['REACT_APP_BSCSCAN_API_KEY'], ''),
   BSCChain,
   AssetBSC,
   BSC_GAS_ASSET_DECIMAL
