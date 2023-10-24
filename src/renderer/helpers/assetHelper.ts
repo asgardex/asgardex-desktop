@@ -42,7 +42,11 @@ import {
 } from '../../shared/utils/asset'
 import { isEnabledChain } from '../../shared/utils/chain'
 import {
+  AssetBUSDBD1,
   AssetTGTERC20,
+  AssetUSDC,
+  AssetUSDCAVAX,
+  AssetUSDTDAC,
   AssetXRune,
   AssetXRuneTestnet,
   BinanceBlackList,
@@ -161,6 +165,25 @@ export const isDogeAsset = (asset: Asset): boolean => eqAsset.equals(asset, Asse
  * Checks whether an asset is a ATOM asset
  */
 export const isAtomAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetATOM)
+
+const assetMap: { [symbol: string]: Asset } = {
+  [AssetATOM.symbol]: AssetATOM,
+  [AssetAVAX.symbol]: AssetAVAX,
+  [AssetUSDC.symbol]: AssetUSDC,
+  [AssetBNB.symbol]: AssetBNB,
+  [AssetBUSDBD1.symbol]: AssetBUSDBD1,
+  [AssetBSC.symbol]: AssetBSC,
+  [AssetBTC.symbol]: AssetBTC,
+  [AssetBCH.symbol]: AssetBCH,
+  [AssetDOGE.symbol]: AssetDOGE,
+  [AssetETH.symbol]: AssetETH,
+  [AssetUSDTDAC.symbol]: AssetUSDTDAC,
+  [AssetUSDCAVAX.symbol]: AssetUSDCAVAX
+}
+
+export const getAssetFromSymbol = (symbol: string): Asset | null => {
+  return assetMap[symbol] ?? null
+}
 
 /**
  * Check whether an asset is in a list

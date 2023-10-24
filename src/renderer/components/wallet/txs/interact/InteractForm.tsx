@@ -19,6 +19,7 @@ import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/lib/Option'
+import { debounce } from 'lodash'
 import { useIntl } from 'react-intl'
 
 import { Network } from '../../../../../shared/api/types'
@@ -227,35 +228,55 @@ export const InteractForm: React.FC<Props> = (props) => {
     },
     [interactType, intl, maxAmount]
   )
+  const debouncedFetch = debounce(
+    async (
+      thorname,
+      setThorname,
+      setShowDetails,
+      setThornameAvailable,
+      setThornameUpdate,
+      setIsOwner,
+      thorchainQuery,
+      balance
+    ) => {
+      try {
+        const thornameDetails = await thorchainQuery.getThornameDetails(thorname)
+        console.log(thornameDetails)
+        if (thornameDetails) {
+          setThorname(O.some(thornameDetails))
+          setShowDetails(true)
+          setThornameAvailable(thornameDetails.owner === '' || balance.walletAddress === thornameDetails.owner)
+          setThornameUpdate(thorname === thornameDetails.name && thornameDetails.owner === '')
+          setIsOwner(balance.walletAddress === thornameDetails.owner)
+        }
+      } catch (error) {
+        setThornameAvailable(true)
+      }
+      // setThorname(O.none)
+    },
+    500
+  )
+
   const thornameHandler = useCallback(() => {
     const thorname = form.getFieldValue('thorname')
-    setThornameQuoteValid(false) // set quote back to false on change
+    setThornameQuoteValid(false)
     setMemo('')
     if (thorname !== '') {
-      const fetchThorname = async () => {
-        try {
-          const thornameDetails = await thorchainQuery.getThornameDetails(thorname)
-          if (thornameDetails) {
-            setThorname(O.some(thornameDetails))
-            setShowDetails(true)
-            setThornameAvailable(thornameDetails.owner === '' || balance.walletAddress === thornameDetails.owner)
-            setThornameUpdate(thorname === thornameDetails.name && thornameDetails.owner === '')
-            setIsOwner(balance.walletAddress === thornameDetails.owner)
-          }
-        } catch (error) {
-          // Handle errors if the promise is rejected
-          // console.error('Error fetching Thorname:', error)
-          setThornameAvailable(true)
-          // You can return a rejected Promise here, but you should also handle it where this function is called.
-        }
-      }
-      // Call the fetchThorname function to fetch Thorname details
-      fetchThorname()
+      debouncedFetch(
+        thorname,
+        setThorname,
+        setShowDetails,
+        setThornameAvailable,
+        setThornameUpdate,
+        setIsOwner,
+        thorchainQuery,
+        balance
+      )
     }
-    setThorname(O.none)
-  }, [balance.walletAddress, form, thorchainQuery])
+  }, [balance, debouncedFetch, form, thorchainQuery])
 
   const estimateThornameHandler = useCallback(() => {
+    form.validateFields()
     const thorname = form.getFieldValue('thorname')
     const chain = form.getFieldValue('aliasChain')
     const chainAddress = form.getFieldValue('aliasAddress')
@@ -887,7 +908,7 @@ export const InteractForm: React.FC<Props> = (props) => {
               {FP.pipe(
                 oThorname,
                 O.map(({ owner, name, aliases, preferredAsset, expireBlockHeight }) => {
-                  if (owner && name && aliases && preferredAsset && expireBlockHeight) {
+                  if (owner || name || aliases || preferredAsset || expireBlockHeight) {
                     return (
                       <>
                         <div className="flex w-full justify-between pl-10px text-[12px]">

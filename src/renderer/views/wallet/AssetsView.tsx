@@ -9,6 +9,7 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 import * as RxOp from 'rxjs/operators'
 
+import { RefreshButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
 import { AssetsTableCollapsable } from '../../components/wallet/assets/AssetsTableCollapsable'
 import type { AssetAction } from '../../components/wallet/assets/AssetsTableCollapsable'
@@ -20,6 +21,7 @@ import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useTotalWalletBalance } from '../../hooks/useWalletBalance'
 import * as walletRoutes from '../../routes/wallet'
+import { reloadBalancesByChain } from '../../services/wallet'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ChainBalances, SelectedWalletAsset } from '../../services/wallet/types'
 
@@ -100,8 +102,27 @@ export const AssetsView: React.FC = (): JSX.Element => {
 
   const disableRefresh = useMemo(() => RD.isPending(poolsRD) || loadingBalances, [loadingBalances, poolsRD])
 
+  const chains = useMemo(
+    () =>
+      FP.pipe(
+        chainBalances,
+        A.map(({ chain }) => chain)
+      ),
+    [chainBalances]
+  )
+
+  const refreshHandler = useCallback(() => {
+    chains.forEach((chain) => {
+      const lazyReload = reloadBalancesByChain(chain)
+      lazyReload() // Invoke the lazy function
+    })
+  }, [chains])
+
   return (
     <>
+      <div className="flex w-full justify-end pb-10px">
+        <RefreshButton onClick={refreshHandler}></RefreshButton>
+      </div>
       <AssetsNav />
       <TotalValue
         total={totalWalletBalances}
@@ -111,6 +132,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
         // TODO (@veado) Handle private data
         hidePrivateData={false}
       />
+
       <AssetsTableCollapsable
         disableRefresh={disableRefresh}
         chainBalances={chainBalances}

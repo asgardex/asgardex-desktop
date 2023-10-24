@@ -6,10 +6,20 @@ import { ZERO_BN } from '../../const'
 import { isUSDAsset } from '../../helpers/assetHelper'
 import { ParentProps } from '../../views/wallet/SaversDetailsView'
 import * as Styled from '../PoolShares/PoolShares.styles'
+import { AssetIcon } from '../uielements/assets/assetIcon'
 import { SaversButton } from '../uielements/button/SaversButton'
 
 export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX.Element => {
   const columns = [
+    {
+      title: 'Chain',
+      dataIndex: 'key',
+      key: 'key',
+      render: (key: string) => {
+        const assetDetail = assetDetails.find((detail) => detail.asset.symbol === key)
+        return assetDetail ? <AssetIcon asset={assetDetail.asset} size="small" network={assetDetail.network} /> : 'N/A'
+      }
+    },
     {
       title: 'Asset',
       dataIndex: 'key',
@@ -95,7 +105,6 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       growthValueLabel,
       percentLabel,
       priceGrowthLabel
-      // your formatted labels and values
     }
   })
 
