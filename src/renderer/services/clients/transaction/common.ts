@@ -24,16 +24,19 @@ export const loadTxs$ = ({
 }: {
   client: XChainClient
 } & TxsParams): TxsPageLD => {
+  // To do, fix filter by assets for avax and bsc
   const txAsset = FP.pipe(
     oAsset,
-    O.map((asset) => (asset.chain === ETHChain ? ETH.getTokenAddress(asset) || undefined : asset.symbol)),
+    O.map((asset) => (asset.chain === ETHChain ? ETH.getTokenAddress(asset) || undefined : undefined)),
     O.toUndefined
   )
+
   const address = FP.pipe(
     walletAddress,
     /* TODO (@asgdx-team) Make sure we use correct index by introducing HD wallets in the future */
     O.getOrElse(() => client.getAddress(walletIndex))
   )
+
   return Rx.from(
     client.getTransactions({
       address,

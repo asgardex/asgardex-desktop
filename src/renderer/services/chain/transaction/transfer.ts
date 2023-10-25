@@ -31,7 +31,10 @@ export const transfer$: SendTxStateHandler = (params) => {
   const requests$ = FP.pipe(
     sendTx$(params),
     // Update state
-    liveData.map((txHash) => setState({ ...getState(), status: RD.success(txHash) })),
+    liveData.map((txHash) => {
+      // Update state and return
+      return setState({ ...getState(), status: RD.success(txHash) })
+    }),
     // Add failures to state
     liveData.mapLeft((apiError) => {
       setState({ ...getState(), status: RD.failure(apiError) })

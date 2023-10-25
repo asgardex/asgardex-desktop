@@ -66,9 +66,14 @@ export const isBnbChain = (chain: Chain): boolean => eqChain.equals(chain, BNBCh
 export const isEthChain = (chain: Chain): boolean => eqChain.equals(chain, ETHChain)
 
 /**
- * Check whether chain is ETH chain
+ * Check whether chain is AVAX chain
  */
 export const isAvaxChain = (chain: Chain): boolean => eqChain.equals(chain, AVAXChain)
+
+/**
+ * Check whether chain is BSC chain
+ */
+export const isBscChain = (chain: Chain): boolean => eqChain.equals(chain, BSCChain)
 
 /**
  * Check whether chain is BCH chain

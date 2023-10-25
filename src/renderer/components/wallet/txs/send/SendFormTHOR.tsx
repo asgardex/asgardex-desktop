@@ -142,25 +142,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
   const [oThorname, setThorname] = useState<O.Option<ThornameDetails>>(O.none)
   const [recipientAddress, setRecipientAddress] = useState<Address>('')
   const [thornameSend, setThornameSend] = useState<boolean>(false)
-  useEffect(() => {
-    // Check if initialRecipient has a value before making the request
-    if (thornameSend && recipientAddress.length <= 30 && recipientAddress !== '') {
-      const fetchThorname = async () => {
-        try {
-          const thornameDetails = await thorchainQuery.getThornameDetails(recipientAddress)
-          if (thornameDetails) {
-            setThorname(O.some(thornameDetails))
-          }
-        } catch (error) {
-          // Handle errors if the promise is rejected
-          setThorname(O.none)
-          return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
-        }
-      }
-
-      fetchThorname() // Call the async function to fetch Thorname
-    }
-  }, [thorchainQuery, form, recipientAddress, intl, thornameSend])
+  const [showDetails, setShowDetails] = useState<boolean>(false)
 
   const debouncedAddressValidator = debounce(
     async (_: unknown, value: string) => {
@@ -173,6 +155,32 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
     },
     500 // Adjust the debounce delay (in milliseconds) as needed
   )
+  const handleAddressInput = useCallback(() => {
+    const recipient = form.getFieldValue('recipient')
+    // Check if initialRecipient has a value before making the request
+    if (thornameSend && recipient.length <= 30 && recipient !== '') {
+      const fetchThorname = async () => {
+        try {
+          const thornameDetails = await thorchainQuery.getThornameDetails(recipient)
+          if (thornameDetails) {
+            setThorname(O.some(thornameDetails))
+            setRecipientAddress(thornameDetails.owner)
+            setThornameSend(true)
+            setShowDetails(true)
+          }
+        } catch (error) {
+          // Handle errors if the promise is rejected
+          setThorname(O.none)
+          return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
+        }
+      }
+
+      fetchThorname() // Call the async function to fetch Thorname
+    } else {
+      setThornameSend(false)
+      debouncedAddressValidator(undefined, form.getFieldValue('recipient'))
+    }
+  }, [form, thornameSend, thorchainQuery, setShowDetails, intl, debouncedAddressValidator])
 
   // max amount for RuneNative
   const maxAmount: BaseAmount = useMemo(() => {
@@ -329,13 +337,6 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
 
   const addMaxAmountHandler = useCallback(() => setAmountToSend(maxAmount), [maxAmount])
 
-  const handleOnChange = useCallback(() => {
-    const recipientAddress = form.getFieldValue('recipient')
-    const isThornameValid = recipientAddress.length > 0 && recipientAddress.length <= 30
-    setRecipientAddress(recipientAddress)
-    setThornameSend(isThornameValid)
-  }, [form])
-
   const oMatchedWalletType: O.Option<WalletType> = useMemo(
     () => H.matchedWalletType(balances, recipientAddress),
     [balances, recipientAddress]
@@ -343,8 +344,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
 
   const renderWalletType = useMemo(() => H.renderedWalletType(oMatchedWalletType), [oMatchedWalletType])
 
-  const [showDetails, setShowDetails] = useState<boolean>(false)
-  const onClickThornameAddress = useCallback(() => {
+  const useThornameAddress = useCallback(() => {
     setThornameSend((prevThornameSend) => !prevThornameSend)
     setThorname(O.none)
     form.setFieldsValue({ recipient: undefined })
@@ -365,13 +365,13 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
                 {intl.formatMessage({ id: 'common.address' })}
                 {renderWalletType}
               </Styled.CustomLabel>
-              <CheckButton checked={thornameSend} clickHandler={onClickThornameAddress} disabled={isLoading}>
+              <CheckButton checked={thornameSend} clickHandler={useThornameAddress} disabled={isLoading}>
                 {intl.formatMessage({ id: 'common.thorname' })}
               </CheckButton>
             </div>
 
-            <Form.Item rules={[{ required: true, validator: debouncedAddressValidator }]} name="recipient">
-              <Input color="primary" size="large" disabled={isLoading} onChange={handleOnChange} />
+            <Form.Item rules={[{ required: true }]} name="recipient">
+              <Input color="primary" size="large" disabled={isLoading} onChange={handleAddressInput} />
             </Form.Item>
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
             <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">

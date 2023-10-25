@@ -68,7 +68,7 @@ export const clientByAsset$ = (asset: Asset): XChainClient$ => {
     case AVAXChain:
       return asset.synth ? THOR.client$ : AVAX.client$
     case BSCChain:
-      return asset.synth ? THOR.client$ : AVAX.client$
+      return asset.synth ? THOR.client$ : BSC.client$
     case THORChain:
       return THOR.client$
     case LTCChain:

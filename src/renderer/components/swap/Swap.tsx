@@ -2567,7 +2567,6 @@ export const Swap = ({
           </>
         )}
       </div>
-
       {renderPasswordConfirmationModal}
       {renderLedgerConfirmationModal}
       {renderTxModal}

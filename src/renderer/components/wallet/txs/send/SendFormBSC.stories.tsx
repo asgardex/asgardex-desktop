@@ -64,7 +64,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, walletType }: Args) => {
 
   return (
     <Component
-      asset={{ asset: AssetBSC, walletAddress: 'avax-address', walletType, walletIndex: 0, hdMode: 'default' }}
+      asset={{ asset: AssetBSC, walletAddress: 'bsc-address', walletType, walletIndex: 0, hdMode: 'default' }}
       transfer$={transfer$}
       balances={[bscBalance, runeBalance]}
       balance={bscBalance}
@@ -84,7 +84,7 @@ export const Default = Template.bind({})
 
 const meta: ComponentMeta<typeof Template> = {
   component: Component,
-  title: 'Wallet/SendFormETH',
+  title: 'Wallet/SendFormBSC',
   argTypes: {
     txRDStatus: {
       control: { type: 'select', options: ['pending', 'error', 'success'] }

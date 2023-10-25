@@ -241,7 +241,6 @@ export const InteractForm: React.FC<Props> = (props) => {
     ) => {
       try {
         const thornameDetails = await thorchainQuery.getThornameDetails(thorname)
-        console.log(thornameDetails)
         if (thornameDetails) {
           setThorname(O.some(thornameDetails))
           setShowDetails(true)

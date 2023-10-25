@@ -149,7 +149,7 @@ export const SendFormBSC: React.FC<Props> = (props): JSX.Element => {
 
     const amount: BaseAmount = FP.pipe(
       oAssetAmount,
-      // no avax asset == zero amount
+      // no bsc asset == zero amount
       O.getOrElse(() => ZERO_BASE_AMOUNT)
     )
 
@@ -216,12 +216,12 @@ export const SendFormBSC: React.FC<Props> = (props): JSX.Element => {
     [intl]
   )
 
-  // max amount for avax
+  // max amount for bsc
   const maxAmount: BaseAmount = useMemo(() => {
     const maxAssetAmount: BigNumber = FP.pipe(
       sequenceTOption(selectedFee, oAssetAmount),
       O.fold(
-        // Set maxAmount to zero if we dont know anything about avax and fee amounts
+        // Set maxAmount to zero if we dont know anything about bsc and fee amounts
         () => ZERO_BN,
         ([fee, assetAmount]) => {
           const max = assetAmount.amount().minus(fee.amount())
