@@ -33,7 +33,6 @@ import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import {
-  convertBaseAmountDecimal,
   getEthTokenAddress,
   isEthAsset,
   isEthTokenAsset,
@@ -796,7 +795,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
         const result = {
           poolAddress,
           asset: sourceAsset,
-          amount: convertBaseAmountDecimal(saversWithdrawQuote.dustAmount.baseAmount, asset.baseAmount.decimal),
+          amount: saversWithdrawQuote.dustAmount.baseAmount,
           memo: saversWithdrawQuote.memo,
           network,
           walletType,
@@ -807,7 +806,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
         return result
       })
     )
-  }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceAsset, asset.baseAmount.decimal, network, address])
+  }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceAsset, network, address])
 
   const resetEnteredAmounts = useCallback(() => {
     setAmountToWithdrawMax1e8(initialAmountToWithdrawMax1e8)

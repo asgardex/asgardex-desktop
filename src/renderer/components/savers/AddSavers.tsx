@@ -464,10 +464,10 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
   )
 
   useEffect(() => {
-    if (!amountToSendMax1e8.eq(baseAmount(0)) && !disableSubmit) {
+    if (!amountToSendMax1e8.eq(baseAmount(0)) && !sourceChainFeeError) {
       debouncedEffect.current(amountToSendMax1e8)
     }
-  }, [amountToSendMax1e8, disableSubmit])
+  }, [amountToSendMax1e8, sourceChainFeeError])
 
   const setAsset = useCallback(
     async (asset: Asset) => {
