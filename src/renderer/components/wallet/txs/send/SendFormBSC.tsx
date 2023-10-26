@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { BSCChain } from '@xchainjs/xchain-bsc'
+import { AssetBSC, BSCChain } from '@xchainjs/xchain-bsc'
 import { FeeOption, Fees, TxParams } from '@xchainjs/xchain-client'
 import { validateAddress } from '@xchainjs/xchain-evm'
 import {
@@ -158,7 +158,7 @@ export const SendFormBSC: React.FC<Props> = (props): JSX.Element => {
       {
         balance: formatAssetAmountCurrency({
           amount: baseToAsset(amount),
-          asset,
+          asset: AssetBSC,
           trimZeros: true
         })
       }
@@ -169,7 +169,7 @@ export const SendFormBSC: React.FC<Props> = (props): JSX.Element => {
         {msg}
       </Styled.Label>
     )
-  }, [oAssetAmount, intl, asset, isFeeError])
+  }, [oAssetAmount, intl, isFeeError])
 
   const feeOptionsLabel: Record<FeeOption, string> = useMemo(
     () => ({
@@ -218,7 +218,7 @@ export const SendFormBSC: React.FC<Props> = (props): JSX.Element => {
 
   // max amount for bsc
   const maxAmount: BaseAmount = useMemo(() => {
-    const maxAssetAmount: BigNumber = FP.pipe(
+    const maxBscAmount: BigNumber = FP.pipe(
       sequenceTOption(selectedFee, oAssetAmount),
       O.fold(
         // Set maxAmount to zero if we dont know anything about bsc and fee amounts
@@ -229,8 +229,8 @@ export const SendFormBSC: React.FC<Props> = (props): JSX.Element => {
         }
       )
     )
-    return baseAmount(maxAssetAmount, balance.amount.decimal)
-  }, [selectedFee, oAssetAmount, balance.amount])
+    return isBscAsset(asset) ? baseAmount(maxBscAmount, balance.amount.decimal) : balance.amount
+  }, [selectedFee, oAssetAmount, asset, balance.amount])
 
   useEffect(() => {
     FP.pipe(

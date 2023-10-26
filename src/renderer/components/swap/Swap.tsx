@@ -1416,8 +1416,6 @@ export const Swap = ({
 
   // Progress bar for swap return comparison
   const renderStreamerReturns = useMemo(() => {
-    // calculate difference=(swapCount−1)/swapCount
-    //const priceExecution = streamingQuantity === 0 ? maxStreamingQuantity : streamingQuantity
     // Initialize percentageDifference
     let percentageDifference = 0
 

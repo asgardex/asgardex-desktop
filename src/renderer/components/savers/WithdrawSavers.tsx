@@ -364,6 +364,19 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       ),
     [oSaverWithdrawQuote, sourceAsset]
   )
+
+  const memoInvalid: boolean = useMemo(
+    () =>
+      FP.pipe(
+        oSaverWithdrawQuote,
+        O.fold(
+          () => false, // default value if oSaverWithdrawQuote is None
+          (txDetails) => txDetails.memo === ''
+        )
+      ),
+    [oSaverWithdrawQuote]
+  )
+
   // price of amount to withdraw
   const priceAmountToWithdrawMax1e8: CryptoAmount = useMemo(() => {
     const result = FP.pipe(
@@ -392,45 +405,39 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     return inFee.gt(chainAssetBalance) || dustThreshold.baseAmount.gt(chainAssetBalance)
   }, [amountToWithdrawMax1e8, saverFees, chainAssetBalance, dustThreshold.baseAmount])
 
-  // memo check disable submit if no memo
-  const noMemo: boolean = useMemo(
-    () =>
-      FP.pipe(
-        oSaverWithdrawQuote,
-        O.fold(
-          () => false, // default value if oSaverWithdrawQuote is None
-          (txDetails) => txDetails.memo === ''
-        )
-      ),
-    [oSaverWithdrawQuote]
-  )
-
   const [withdrawBps, setWithdrawBps] = useState(0) // init state
 
   // Disables the submit button
   const disableSubmit = useMemo(
-    () => sourceChainFeeError || isZeroAmountToSend || lockedWallet || walletBalancesLoading || noMemo,
-    [sourceChainFeeError, isZeroAmountToSend, lockedWallet, walletBalancesLoading, noMemo]
+    () =>
+      sourceChainFeeError ||
+      isZeroAmountToSend ||
+      lockedWallet ||
+      walletBalancesLoading ||
+      !O.isSome(oSaverWithdrawQuote) ||
+      memoInvalid,
+    [sourceChainFeeError, isZeroAmountToSend, lockedWallet, walletBalancesLoading, oSaverWithdrawQuote, memoInvalid]
   )
 
   const debouncedEffect = useRef(
-    debounce((withdrawBps, asset, address) => {
+    debounce((asset, address, withdrawBps) => {
       thorchainQuery
         .estimateWithdrawSaver({ asset: asset, address: address, withdrawBps: Number(withdrawBps) })
         .then((quote) => {
-          setSaverWithdrawQuote(O.some(quote)) // Wrapping the quote in an Option
+          setSaverWithdrawQuote(O.some(quote))
         })
         .catch((error) => {
           console.error('Failed to get quote:', error)
+          setSaverWithdrawQuote(O.none)
         })
     }, 500)
   )
 
   useEffect(() => {
-    if (withdrawBps !== 0 && !disableSubmit) {
-      debouncedEffect.current(withdrawBps, sourceAsset, address)
+    if (withdrawBps !== 0 && !sourceChainFeeError) {
+      debouncedEffect.current(sourceAsset, address, withdrawBps)
     }
-  }, [withdrawBps, disableSubmit, sourceAsset, address])
+  }, [withdrawBps, sourceChainFeeError, sourceAsset, address])
 
   // Outbound fee in for use later
   const outboundFee: CryptoAmount = useMemo(
@@ -769,6 +776,8 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       resetApproveState()
       // reload fees
       reloadFeesHandler()
+      // Set quote to none
+      setSaverWithdrawQuote(O.none)
     }
   }, [
     sourceAsset,

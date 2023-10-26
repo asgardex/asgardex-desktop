@@ -123,7 +123,7 @@ export const deposit = async ({
     const signer = new LedgerSigner({ provider, path, app })
 
     const gasPrices = await client.estimateGasPrices()
-    const gasPrice = gasPrices[feeOption].amount().toFixed(0) // no round down needed
+    const gasPrice = gasPrices[feeOption].amount().toFixed(0) // no round down needed)
     const blockTime = await getBlocktime(provider)
     const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
 

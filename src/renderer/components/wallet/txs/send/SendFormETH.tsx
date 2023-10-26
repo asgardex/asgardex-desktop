@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { FeeOption, Fees, TxParams } from '@xchainjs/xchain-client'
-import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { AssetETH, ETHChain } from '@xchainjs/xchain-ethereum'
 import { validateAddress } from '@xchainjs/xchain-evm'
 import {
   bn,
@@ -132,7 +132,6 @@ export const SendFormETH: React.FC<Props> = (props): JSX.Element => {
     // or check list of other assets to get eth balance
     return FP.pipe(balances, getEthAmountFromBalances, O.map(assetToBase))
   }, [asset, balance.amount, balances])
-
   const isFeeError = useMemo(() => {
     return FP.pipe(
       sequenceTOption(selectedFee, oAssetAmount),
@@ -158,7 +157,7 @@ export const SendFormETH: React.FC<Props> = (props): JSX.Element => {
       {
         balance: formatAssetAmountCurrency({
           amount: baseToAsset(amount),
-          asset,
+          asset: AssetETH,
           trimZeros: true
         })
       }
@@ -169,7 +168,7 @@ export const SendFormETH: React.FC<Props> = (props): JSX.Element => {
         {msg}
       </Styled.Label>
     )
-  }, [oAssetAmount, intl, asset, isFeeError])
+  }, [oAssetAmount, intl, isFeeError])
 
   const feeOptionsLabel: Record<FeeOption, string> = useMemo(
     () => ({
@@ -218,7 +217,7 @@ export const SendFormETH: React.FC<Props> = (props): JSX.Element => {
 
   // max amount for eth
   const maxAmount: BaseAmount = useMemo(() => {
-    const maxAssetAmount: BigNumber = FP.pipe(
+    const maxEthAmount: BigNumber = FP.pipe(
       sequenceTOption(selectedFee, oAssetAmount),
       O.fold(
         // Set maxAmount to zero if we dont know anything about eth and fee amounts
@@ -229,8 +228,8 @@ export const SendFormETH: React.FC<Props> = (props): JSX.Element => {
         }
       )
     )
-    return baseAmount(maxAssetAmount, balance.amount.decimal)
-  }, [selectedFee, oAssetAmount, balance.amount])
+    return isEthAsset(asset) ? baseAmount(maxEthAmount, balance.amount.decimal) : balance.amount
+  }, [selectedFee, oAssetAmount, asset, balance.amount])
 
   useEffect(() => {
     FP.pipe(
