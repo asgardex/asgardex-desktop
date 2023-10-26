@@ -110,7 +110,6 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
             })
           )
           .subscribe((saverProvider) => {
-            console.log(saverProvider)
             if (
               saverProvider !== null &&
               saverProvider._tag === 'RemoteSuccess' &&

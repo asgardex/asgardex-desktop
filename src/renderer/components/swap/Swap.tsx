@@ -273,6 +273,8 @@ export const Swap = ({
   const prevTargetAsset = useRef<O.Option<Asset>>(O.none)
 
   const [customAddressEditActive, setCustomAddressEditActive] = useState(false)
+  const [currentDate, setCurrentDate] = useState(new Date())
+  const [quoteExpired, setQuoteExpired] = useState<boolean>(false)
 
   /**
    * All balances based on available assets to swap
@@ -837,6 +839,18 @@ export const Swap = ({
       ),
     [oQuote]
   )
+  // Quote expiry returned as a date
+  const swapExpiry: Date = useMemo(
+    () =>
+      FP.pipe(
+        oQuote,
+        O.fold(
+          () => new Date(), // default to false
+          (txDetails) => txDetails.expiry
+        )
+      ),
+    [oQuote]
+  )
 
   // Swap result from thornode
   const swapResultAmountMax: CryptoAmount = useMemo(
@@ -1369,6 +1383,36 @@ export const Swap = ({
       </div>
     )
   }, [maxStreamingQuantity, streamingQuantity, streamingInterval])
+
+  // swap expiry progress bar
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentDate(new Date())
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [])
+
+  const renderSwapExpiry = useMemo(() => {
+    const quoteValidTime = 15 * 60 * 1000 // 15 minutes in milliseconds
+
+    const remainingTime = swapExpiry.getTime() - currentDate.getTime()
+    const remainingTimeInMinutes = Math.floor(remainingTime / (60 * 1000))
+
+    const progress = Math.max(0, (remainingTime / quoteValidTime) * 100)
+    setQuoteExpired(remainingTimeInMinutes < 1)
+    const expiryLabel =
+      remainingTimeInMinutes < 0 ? `Quote Expired` : `Quote expiring in ${remainingTimeInMinutes} minutes`
+
+    return (
+      <ProgressBar
+        key={'Quote expiry progress bar'}
+        percent={progress}
+        withLabel={true}
+        labels={[`${expiryLabel}`, ``]}
+      />
+    )
+  }, [swapExpiry, currentDate])
 
   // Progress bar for swap return comparison
   const renderStreamerReturns = useMemo(() => {
@@ -1927,7 +1971,8 @@ export const Swap = ({
       swapResultAmountMax.baseAmount.lte(zeroTargetBaseAmountMax1e8) ||
       O.isNone(oRecipientAddress) ||
       !canSwap ||
-      customAddressEditActive,
+      customAddressEditActive ||
+      quoteExpired,
     [
       disableSwapAction,
       lockedWallet,
@@ -1942,7 +1987,8 @@ export const Swap = ({
       zeroTargetBaseAmountMax1e8,
       oRecipientAddress,
       canSwap,
-      customAddressEditActive
+      customAddressEditActive,
+      quoteExpired
     ]
   )
 
@@ -2250,7 +2296,7 @@ export const Swap = ({
                 )}
               </>
             )}
-
+            <div className="w-full px-20px pb-10px">{renderSwapExpiry}</div>
             <div className={`mx-50px w-full px-10px font-main text-[12px] uppercase dark:border-gray1d`}>
               <BaseButton
                 className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
