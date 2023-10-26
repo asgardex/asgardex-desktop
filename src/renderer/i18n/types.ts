@@ -64,6 +64,7 @@ export type CommonMessageKey =
   | 'common.transaction.short.asset'
   | 'common.viewTransaction'
   | 'common.copyTxUrl'
+  | 'common.trackTransaction'
   | 'common.copyTxHash'
   | 'common.fee'
   | 'common.fee.nodeOperator'

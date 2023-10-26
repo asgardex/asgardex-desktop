@@ -66,6 +66,7 @@ const common: CommonMessages = {
   'common.transaction.short.asset': 'Asset Tx',
   'common.viewTransaction': 'Transaktion ansehen',
   'common.copyTxUrl': 'Transaktion URL kopieren',
+  'common.trackTransaction': 'Transactie volgen',
   'common.copyTxHash': 'Transaktion hash kopieren',
   'common.fee': 'Gebühr',
   'common.fee.nodeOperator': 'Node Operator Vergoeding',

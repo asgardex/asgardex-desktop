@@ -66,6 +66,7 @@ const common: CommonMessages = {
   'common.transaction.short.asset': 'Asset tx',
   'common.viewTransaction': 'View transaction',
   'common.copyTxUrl': 'Copy transaction url',
+  'common.trackTransaction': 'Track transaction',
   'common.copyTxHash': 'Copy transaction hash',
   'common.fee': 'Fee',
   'common.fee.nodeOperator': 'Node Operator Fee',

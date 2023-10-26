@@ -66,6 +66,7 @@ const common: CommonMessages = {
   'common.transaction.short.asset': 'Тр. актива',
   'common.viewTransaction': 'Посмотреть транзакцию',
   'common.copyTxUrl': 'Скопировать url транзакции',
+  'common.trackTransaction': 'Отслеживать транзакцию',
   'common.copyTxHash': 'Скопировать tx hash',
   'common.fee': 'Комиссия',
   'common.fee.nodeOperator': 'Сбор оператора узла',
