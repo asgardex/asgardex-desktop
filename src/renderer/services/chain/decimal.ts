@@ -7,7 +7,8 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isEnabledChain } from '../../../shared/utils/chain'
-import { isBscChain } from '../../helpers/chainHelper'
+import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
+import { isBscChain, isThorChain } from '../../helpers/chainHelper'
 import { AssetWithDecimalLD } from './types'
 // gets asset decimal from midgard-query
 const getDecimal = (asset: Asset): Promise<number> => {
@@ -19,6 +20,10 @@ const getDecimal = (asset: Asset): Promise<number> => {
   // @St0rmzy find out why bsc.bnb on midgard -1 instead of being the correct decimals.
   if (isBscChain(chain)) {
     return Promise.resolve(BSC_GAS_ASSET_DECIMAL)
+  }
+  // @St0rmzy find out why bsc.bnb on midgard -1 instead of being the correct decimals.
+  if (isThorChain(chain)) {
+    return Promise.resolve(THORCHAIN_DECIMAL)
   }
 
   const midgardQuery = new MidgardQuery()

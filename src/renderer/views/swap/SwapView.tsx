@@ -348,7 +348,6 @@ const SuccessRouteView: React.FC<Props> = ({
               if (!hasRuneAsset) {
                 assetDetails = [{ asset: AssetRuneNative, assetPrice: bn(1) }, ...assetDetails]
               }
-
               const sourceAssetDetail = FP.pipe(Utils.pickPoolAsset(assetDetails, sourceAsset.asset), O.toNullable)
               // Make sure sourceAsset is available in pools
               if (!sourceAssetDetail)
