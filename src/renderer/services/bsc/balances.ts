@@ -50,7 +50,7 @@ const balances$: ({
       hdMode,
       walletBalanceType: 'all'
     }),
-    // Filter assets based on ERC20Whitelist (mainnet only)
+    // Filter assets based on BSCERC20Whitelist (mainnet only)
     liveData.map(FP.flow(A.filter(({ asset }) => validAssetForBSC(asset, network))))
   )
 }

@@ -14,7 +14,7 @@ import { THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
 import { mockWalletBalance } from '../../../../helpers/test/testWalletHelper'
 import { FeesRD, SendTxStateHandler } from '../../../../services/chain/types'
 import { ApiError, ErrorId, WalletBalance } from '../../../../services/wallet/types'
-import { SendFormETH as Component } from './SendFormETH'
+import { SendFormAVAX as Component } from './SendFormAVAX'
 
 type Args = {
   txRDStatus: RDStatus
@@ -84,7 +84,7 @@ export const Default = Template.bind({})
 
 const meta: ComponentMeta<typeof Template> = {
   component: Component,
-  title: 'Wallet/SendFormETH',
+  title: 'Wallet/SendFormAVAX',
   argTypes: {
     txRDStatus: {
       control: { type: 'select', options: ['pending', 'error', 'success'] }

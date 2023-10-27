@@ -2,6 +2,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
+import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { CryptoAmount, EstimateWithdrawSaver, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
@@ -33,7 +36,13 @@ import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import {
+  getAvaxTokenAddress,
+  getBscTokenAddress,
   getEthTokenAddress,
+  isAvaxAsset,
+  isAvaxTokenAsset,
+  isBscAsset,
+  isBscTokenAsset,
   isEthAsset,
   isEthTokenAsset,
   isUSDAsset,
@@ -207,15 +216,22 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     [oChainAssetBalance]
   )
 
-  const needApprovement = useMemo(() => {
-    // Other chains than ETH do not need an approvement
-    if (!isEthChain(sourceAsset.chain)) return false
-    // ETH does not need to be approved
-    if (isEthAsset(sourceAsset)) return false
-    // ERC20 token does need approvement only
-    return isEthTokenAsset(sourceAsset)
-  }, [sourceAsset])
+  const needApprovement: O.Option<boolean> = useMemo(() => {
+    // not needed for users with locked or not imported wallets
+    if (!hasImportedKeystore(keystore) || isLocked(keystore)) return O.some(false)
 
+    // ERC20 token does need approval only
+    switch (sourceChain) {
+      case ETHChain:
+        return isEthAsset(sourceAsset) ? O.some(false) : O.some(isEthTokenAsset(sourceAsset))
+      case AVAXChain:
+        return isAvaxAsset(sourceAsset) ? O.some(false) : O.some(isAvaxTokenAsset(sourceAsset))
+      case BSCChain:
+        return isBscAsset(sourceAsset) ? O.some(false) : O.some(isBscTokenAsset(sourceAsset))
+      default:
+        return O.none
+    }
+  }, [keystore, sourceAsset, sourceChain])
   /**
    * Selectable source assets to add to savers.
    * Based on savers the address has
@@ -561,12 +577,24 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       oPoolAddress,
       O.chain(({ router }) => router)
     )
-    const oTokenAddress: O.Option<string> = getEthTokenAddress(sourceAsset)
+
+    const oTokenAddress: O.Option<string> = (() => {
+      switch (sourceChain) {
+        case ETHChain:
+          return getEthTokenAddress(sourceAsset)
+        case AVAXChain:
+          return getAvaxTokenAddress(sourceAsset)
+        case BSCChain:
+          return getBscTokenAddress(sourceAsset)
+        default:
+          return O.none
+      }
+    })()
 
     const oNeedApprovement: O.Option<boolean> = FP.pipe(
       needApprovement,
-      // `None` if needApprovement is `false`, no request then
-      O.fromPredicate((v) => !!v)
+      // Keep the existing Option<boolean>, no need for O.fromPredicate
+      O.map((v) => !!v)
     )
 
     return FP.pipe(
@@ -577,11 +605,11 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
         contractAddress: tokenAddress,
         fromAddress: walletAddress,
         walletIndex,
-        walletType,
-        hdMode
+        hdMode,
+        walletType
       }))
     )
-  }, [oPoolAddress, sourceAsset, needApprovement, oSourceAssetWB, network])
+  }, [needApprovement, network, oPoolAddress, oSourceAssetWB, sourceAsset, sourceChain])
 
   const renderFeeError = useCallback(
     (fee: BaseAmount, amount: BaseAmount, asset: Asset) => {
@@ -653,7 +681,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
 
   const isApproveFeeError = useMemo(() => {
     // ignore error check if we don't need to check allowance
-    if (!needApprovement) return false
+    if (O.isNone(needApprovement)) return false
 
     return FP.pipe(
       oChainAssetBalance,
@@ -693,14 +721,14 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
   }, [setShowLedgerModal, useLedger]) // Dependencies array inside the useCallback hook
 
   const checkIsApproved = useMemo(() => {
-    if (!needApprovement) return false
+    if (O.isNone(needApprovement)) return false
     // ignore initial + loading states for `isApprovedState`
     return RD.isPending(isApprovedState)
   }, [isApprovedState, needApprovement])
 
   const checkIsApprovedError = useMemo(() => {
     // ignore error check if we don't need to check allowance
-    if (!needApprovement) return false
+    if (O.isNone(needApprovement)) return false
 
     return RD.isFailure(isApprovedState)
   }, [needApprovement, isApprovedState])
@@ -752,7 +780,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
 
   const isApproved = useMemo(
     () =>
-      !needApprovement ||
+      O.isNone(needApprovement) ||
       RD.isSuccess(approveState) ||
       FP.pipe(
         isApprovedState,

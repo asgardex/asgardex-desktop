@@ -24,7 +24,7 @@ import { DEPOSIT_EXPIRATION_OFFSET } from '../../../shared/bsc/const'
 import { ROUTER_ABI } from '../../../shared/evm/abi'
 import { getBlocktime } from '../../../shared/evm/provider'
 import { isError, isEvmHDMode, isLedgerWallet } from '../../../shared/utils/guard'
-import { addressInERC20Whitelist, getBscAssetAddress } from '../../helpers/assetHelper'
+import { addressInBscWhitelist, getBscAssetAddress } from '../../helpers/assetHelper'
 import { sequenceSOption } from '../../helpers/fpHelpers'
 import { LiveData } from '../../helpers/rx/liveData'
 import { Network$ } from '../app/types'
@@ -57,7 +57,6 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       )
 
     const provider = client.getProvider()
-
     return FP.pipe(
       sequenceSOption({ address: getBscAssetAddress(params.asset), router: params.router }),
       O.fold(
@@ -267,7 +266,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
   const approveERC20Token$ = (params: ApproveParams): TxHashLD => {
     const { contractAddress, network, walletType } = params
     // check contract address before approving
-    if (network === 'mainnet' && !addressInERC20Whitelist(contractAddress))
+    if (network === 'mainnet' && !addressInBscWhitelist(contractAddress))
       return Rx.of(
         RD.failure({
           msg: `Contract address ${contractAddress} is black listed`,

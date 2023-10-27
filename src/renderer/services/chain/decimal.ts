@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { MidgardQuery } from '@xchainjs/xchain-midgard-query'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { Asset } from '@xchainjs/xchain-util'
@@ -6,6 +7,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isEnabledChain } from '../../../shared/utils/chain'
+import { isBscChain } from '../../helpers/chainHelper'
 import { AssetWithDecimalLD } from './types'
 // gets asset decimal from midgard-query
 const getDecimal = (asset: Asset): Promise<number> => {
@@ -13,6 +15,10 @@ const getDecimal = (asset: Asset): Promise<number> => {
 
   if (!isEnabledChain(chain)) {
     return Promise.reject(new Error(`${chain} is not supported for 'getDecimal'`))
+  }
+  // @St0rmzy find out why bsc.bnb on midgard -1 instead of being the correct decimals.
+  if (isBscChain(chain)) {
+    return Promise.resolve(BSC_GAS_ASSET_DECIMAL)
   }
 
   const midgardQuery = new MidgardQuery()

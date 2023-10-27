@@ -2,6 +2,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
+import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { CryptoAmount, EstimateAddSaver, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
@@ -35,7 +38,13 @@ import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import {
   convertBaseAmountDecimal,
+  getAvaxTokenAddress,
+  getBscTokenAddress,
   getEthTokenAddress,
+  isAvaxAsset,
+  isAvaxTokenAsset,
+  isBscAsset,
+  isBscTokenAsset,
   isEthAsset,
   isEthTokenAsset,
   isUSDAsset,
@@ -377,26 +386,46 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       ),
     [oChainAssetBalance]
   )
-  const needApprovement = useMemo(() => {
-    // Other chains than ETH do not need an approvement
-    if (!isEthChain(asset.asset.chain)) return false
-    // ETH does not need to be approved
-    if (isEthAsset(asset.asset)) return false
-    // ERC20 token does need approvement only
-    return isEthTokenAsset(asset.asset)
-  }, [asset])
+  const needApprovement: O.Option<boolean> = useMemo(() => {
+    // not needed for users with locked or not imported wallets
+    if (!hasImportedKeystore(keystore) || isLocked(keystore)) return O.some(false)
+
+    // ERC20 token does need approval only
+    switch (sourceChain) {
+      case ETHChain:
+        return isEthAsset(asset.asset) ? O.some(false) : O.some(isEthTokenAsset(asset.asset))
+      case AVAXChain:
+        return isAvaxAsset(asset.asset) ? O.some(false) : O.some(isAvaxTokenAsset(asset.asset))
+      case BSCChain:
+        return isBscAsset(asset.asset) ? O.some(false) : O.some(isBscTokenAsset(asset.asset))
+      default:
+        return O.none
+    }
+  }, [keystore, asset.asset, sourceChain])
 
   const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
     const oRouterAddress: O.Option<Address> = FP.pipe(
       oPoolAddress,
       O.chain(({ router }) => router)
     )
-    const oTokenAddress: O.Option<string> = getEthTokenAddress(asset.asset)
+
+    const oTokenAddress: O.Option<string> = (() => {
+      switch (sourceChain) {
+        case ETHChain:
+          return getEthTokenAddress(asset.asset)
+        case AVAXChain:
+          return getAvaxTokenAddress(asset.asset)
+        case BSCChain:
+          return getBscTokenAddress(asset.asset)
+        default:
+          return O.none
+      }
+    })()
 
     const oNeedApprovement: O.Option<boolean> = FP.pipe(
       needApprovement,
-      // `None` if needApprovement is `false`, no request then
-      O.fromPredicate((v) => !!v)
+      // Keep the existing Option<boolean>, no need for O.fromPredicate
+      O.map((v) => !!v)
     )
 
     return FP.pipe(
@@ -407,12 +436,11 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
         contractAddress: tokenAddress,
         fromAddress: walletAddress,
         walletIndex,
-        walletType,
-        hdMode
+        hdMode,
+        walletType
       }))
     )
-  }, [oPoolAddress, asset, needApprovement, oSourceAssetWB, network])
-
+  }, [needApprovement, network, oPoolAddress, oSourceAssetWB, asset.asset, sourceChain])
   // Boolean on if amount to send is zero
   const isZeroAmountToSend = useMemo(() => amountToSendMax1e8.amount().isZero(), [amountToSendMax1e8])
   const minAmountError = useMemo(() => {
@@ -549,7 +577,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
 
   const isApproveFeeError = useMemo(() => {
     // ignore error check if we don't need to check allowance
-    if (!needApprovement) return false
+    if (O.isNone(needApprovement)) return false
 
     return FP.pipe(
       oChainAssetBalance,
@@ -865,7 +893,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
 
   const isApproved = useMemo(
     () =>
-      !needApprovement ||
+      O.isNone(needApprovement) ||
       RD.isSuccess(approveState) ||
       FP.pipe(
         isApprovedState,
@@ -904,14 +932,14 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
   }, [setShowLedgerModal, useLedger]) // Dependencies array inside the useCallback hook
 
   const checkIsApproved = useMemo(() => {
-    if (!needApprovement) return false
+    if (O.isNone(needApprovement)) return false
     // ignore initial + loading states for `isApprovedState`
     return RD.isPending(isApprovedState)
   }, [isApprovedState, needApprovement])
 
   const checkIsApprovedError = useMemo(() => {
     // ignore error check if we don't need to check allowance
-    if (!needApprovement) return false
+    if (O.isNone(needApprovement)) return false
 
     return RD.isFailure(isApprovedState)
   }, [needApprovement, isApprovedState])

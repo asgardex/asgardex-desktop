@@ -53,6 +53,8 @@ import {
   DEFAULT_PRICE_ASSETS,
   USD_PRICE_ASSETS
 } from '../const'
+import { AVAX_TOKEN_WHITELIST } from '../types/generated/thorchain/avaxerc20whitelist'
+import { BSC_TOKEN_WHITELIST } from '../types/generated/thorchain/bscerc20whitelist'
 import { ERC20_WHITELIST } from '../types/generated/thorchain/erc20whitelist'
 import { PricePoolAsset } from '../views/pools/Pools.types'
 import { getAvaxChecksumAddress, getBscChecksumAddress, getEthChecksumAddress } from './addressHelper'
@@ -216,7 +218,45 @@ export const iconUrlInERC20Whitelist = (asset: Asset): O.Option<string> =>
     A.findFirst(({ asset: assetInList }) => eqAsset.equals(assetInList, asset)),
     O.chain(({ iconUrl }) => iconUrl)
   )
+/**
+ * Checks whether an ERC20 asset is white listed or not
+ */
+export const assetInAVAXERC20Whitelist = (asset: Asset): boolean =>
+  FP.pipe(
+    AVAX_TOKEN_WHITELIST,
+    A.map(({ asset }) => asset),
+    assetInList(asset)
+  )
 
+/**
+ * Get's icon url from white list
+ */
+export const iconUrlInAVAXERC20Whitelist = (asset: Asset): O.Option<string> =>
+  FP.pipe(
+    AVAX_TOKEN_WHITELIST,
+    A.findFirst(({ asset: assetInList }) => eqAsset.equals(assetInList, asset)),
+    O.chain(({ iconUrl }) => iconUrl)
+  )
+
+/**
+ * Checks whether an ERC20 asset is white listed or not
+ */
+export const assetInBSCERC20Whitelist = (asset: Asset): boolean =>
+  FP.pipe(
+    BSC_TOKEN_WHITELIST,
+    A.map(({ asset }) => asset),
+    assetInList(asset)
+  )
+
+/**
+ * Get's icon url from white list
+ */
+export const iconUrlInBSCERC20Whitelist = (asset: Asset): O.Option<string> =>
+  FP.pipe(
+    BSC_TOKEN_WHITELIST,
+    A.findFirst(({ asset: assetInList }) => eqAsset.equals(assetInList, asset)),
+    O.chain(({ iconUrl }) => iconUrl)
+  )
 /**
  * Checks whether ETH/ERC20 asset is whitelisted or not
  * based on following rules:
@@ -228,26 +268,24 @@ export const validAssetForETH = (asset: Asset /* ETH or ERC20 asset */, network:
   network !== 'mainnet' /* (1) */ || isEthAsset(asset) /* (2) */ || assetInERC20Whitelist(asset)
 
 /**
+ * Checks whether AVAX/ERC20 asset is whitelisted or not
+ * based on following rules:
+ * (1) Check on `mainnet` only
+ * (2) Always accept AVAX
+ * (3) ERC20 asset needs to be listed in `AVAXERC20Whitelist`
+ */
+export const validAssetForAVAX = (asset: Asset /* AVAX or ERC20 asset */, network: Network): boolean =>
+  network !== 'mainnet' /* (1) */ || isAvaxAsset(asset) /* (2) */ || assetInAVAXERC20Whitelist(asset)
+
+/**
  * Checks whether ETH/ERC20 asset is whitelisted or not
  * based on following rules:
  * (1) Check on `mainnet` only
  * (2) Always accept ETH
  * (3) ERC20 asset needs to be listed in `ERC20Whitelist`
  */
-export const validAssetForAVAX = (asset: Asset /* ETH or ERC20 asset */, network: Network): boolean =>
-  network !== 'mainnet' /* (1) */ || isAvaxAsset(asset) /* (2)  || assetInERC20Whitelist(asset)/*
-
-
-  /**
- * Checks whether ETH/ERC20 asset is whitelisted or not
- * based on following rules:
- * (1) Check on `mainnet` only
- * (2) Always accept ETH
- * (3) ERC20 asset needs to be listed in `ERC20Whitelist`
- */
-export const validAssetForBSC = (asset: Asset /* ETH or ERC20 asset */, network: Network): boolean =>
-  network !== 'mainnet' /* (1) */ || isBscAsset(asset) /* (2)  || assetInERC20Whitelist(asset)/*
-
+export const validAssetForBSC = (asset: Asset /* BSC or ERC20 asset */, network: Network): boolean =>
+  network !== 'mainnet' /* (1) */ || isBscAsset(asset) /* (2) */ || assetInBSCERC20Whitelist(asset)
 
 /**
  * Checks whether an ERC20 address is black listed or not
@@ -272,10 +310,30 @@ const erc20WhiteListAssetOnly = FP.pipe(
   ERC20_WHITELIST,
   A.map(({ asset }) => asset)
 )
+
+const avaxTokenWhiteListAssetOnly = FP.pipe(
+  AVAX_TOKEN_WHITELIST,
+  A.map(({ asset }) => asset)
+)
+
+const bscTokenWhiteListAssetOnly = FP.pipe(
+  BSC_TOKEN_WHITELIST,
+  A.map(({ asset }) => asset)
+)
 /**
  * Checks whether an ERC20 address is white listed or not
  */
 export const addressInERC20Whitelist = (address: Address): boolean => addressInList(address, erc20WhiteListAssetOnly)
+
+/**
+ * Checks whether an ERC20 address is white listed or not
+ */
+export const addressInAvaxWhitelist = (address: Address): boolean => addressInList(address, avaxTokenWhiteListAssetOnly)
+
+/**
+ * Checks whether an ERC20 address is white listed or not
+ */
+export const addressInBscWhitelist = (address: Address): boolean => addressInList(address, bscTokenWhiteListAssetOnly)
 
 /**
  * Checks whether an asset is black listed for Binance or not
@@ -343,6 +401,16 @@ export const getBscAssetAddress = (asset: Asset): O.Option<Address> =>
  * Check whether an asset is an ERC20 asset
  */
 export const isEthTokenAsset: (asset: Asset) => boolean = FP.flow(getEthTokenAddress, O.isSome)
+
+/**
+ * Check whether an asset is an ERC20 asset
+ */
+export const isAvaxTokenAsset: (asset: Asset) => boolean = FP.flow(getAvaxTokenAddress, O.isSome)
+
+/**
+ * Check whether an asset is an ERC20 asset
+ */
+export const isBscTokenAsset: (asset: Asset) => boolean = FP.flow(getBscTokenAddress, O.isSome)
 
 // Type guard for `PricePoolAsset`
 export const isPricePoolAsset = (asset: Asset): asset is PricePoolAsset =>

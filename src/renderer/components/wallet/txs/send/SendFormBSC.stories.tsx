@@ -14,7 +14,7 @@ import { THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
 import { mockWalletBalance } from '../../../../helpers/test/testWalletHelper'
 import { FeesRD, SendTxStateHandler } from '../../../../services/chain/types'
 import { ApiError, ErrorId, WalletBalance } from '../../../../services/wallet/types'
-import { SendFormETH as Component } from './SendFormETH'
+import { SendFormBSC as Component } from './SendFormBSC'
 
 type Args = {
   txRDStatus: RDStatus

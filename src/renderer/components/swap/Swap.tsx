@@ -8,6 +8,9 @@ import {
   MagnifyingGlassMinusIcon,
   MagnifyingGlassPlusIcon
 } from '@heroicons/react/24/outline'
+import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import {
   CryptoAmount,
@@ -53,9 +56,24 @@ import {
   THORCHAIN_DECIMAL,
   isUSDAsset,
   isChainAsset,
-  isRuneNativeAsset
+  isRuneNativeAsset,
+  isAvaxTokenAsset,
+  isBscTokenAsset,
+  getAvaxTokenAddress,
+  getBscTokenAddress,
+  isAvaxAsset,
+  isBscAsset
 } from '../../helpers/assetHelper'
-import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isEthChain, isLtcChain } from '../../helpers/chainHelper'
+import {
+  getChainAsset,
+  isAvaxChain,
+  isBchChain,
+  isBscChain,
+  isBtcChain,
+  isDogeChain,
+  isEthChain,
+  isLtcChain
+} from '../../helpers/chainHelper'
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqOApproveParams, eqAddress } from '../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
@@ -721,7 +739,8 @@ export const Swap = ({
         O.map(([sourceAddress, destinationAddress]) => {
           const fromAsset = sourceAsset
           const destinationAsset = targetAsset
-          const amount = new CryptoAmount(amountToSwapMax1e8, sourceAsset)
+          const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
+          console.log(amount.formatedAssetString())
           const address = destinationAddress
           const walletAddress = sourceAddress
           const streamingInt = isStreaming ? streamingInterval : 0
@@ -747,6 +766,7 @@ export const Swap = ({
       sourceAsset,
       targetAsset,
       amountToSwapMax1e8,
+      sourceAssetDecimal,
       isStreaming,
       streamingInterval,
       streamingQuantity,
@@ -958,7 +978,6 @@ export const Swap = ({
       ),
     [oPoolAddress, oSourceAssetWB, sourceAsset, amountToSwapMax1e8, sourceAssetDecimal, oQuote] // Include both quote dependencies
   )
-
   // Check to see slippage greater than tolerance
   // This is handled by thornode
   const isCausedSlippage = useMemo(() => {
@@ -998,15 +1017,21 @@ export const Swap = ({
     }
   }, [rateDirection, sourceAsset, sourceAssetPrice, targetAsset, targetAssetPrice])
 
-  const needApprovement = useMemo(() => {
+  const needApprovement: O.Option<boolean> = useMemo(() => {
     // not needed for users with locked or not imported wallets
-    if (!hasImportedKeystore(keystore) || isLocked(keystore)) return false
-    // Other chains than ETH do not need an approvement
-    if (!isEthChain(sourceChain)) return false
-    // ETH does not need to be approved
-    if (isEthAsset(sourceAsset)) return false
-    // ERC20 token does need approvement only
-    return isEthTokenAsset(sourceAsset)
+    if (!hasImportedKeystore(keystore) || isLocked(keystore)) return O.some(false)
+
+    // ERC20 token does need approval only
+    switch (sourceChain) {
+      case ETHChain:
+        return isEthAsset(sourceAsset) ? O.some(false) : O.some(isEthTokenAsset(sourceAsset))
+      case AVAXChain:
+        return isAvaxAsset(sourceAsset) ? O.some(false) : O.some(isAvaxTokenAsset(sourceAsset))
+      case BSCChain:
+        return isBscAsset(sourceAsset) ? O.some(false) : O.some(isBscTokenAsset(sourceAsset))
+      default:
+        return O.none
+    }
   }, [keystore, sourceAsset, sourceChain])
 
   const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
@@ -1014,12 +1039,24 @@ export const Swap = ({
       oPoolAddress,
       O.chain(({ router }) => router)
     )
-    const oTokenAddress: O.Option<string> = getEthTokenAddress(sourceAsset)
+
+    const oTokenAddress: O.Option<string> = (() => {
+      switch (sourceChain) {
+        case ETHChain:
+          return getEthTokenAddress(sourceAsset)
+        case AVAXChain:
+          return getAvaxTokenAddress(sourceAsset)
+        case BSCChain:
+          return getBscTokenAddress(sourceAsset)
+        default:
+          return O.none
+      }
+    })()
 
     const oNeedApprovement: O.Option<boolean> = FP.pipe(
       needApprovement,
-      // `None` if needApprovement is `false`, no request then
-      O.fromPredicate((v) => !!v)
+      // Keep the existing Option<boolean>, no need for O.fromPredicate
+      O.map((v) => !!v)
     )
 
     return FP.pipe(
@@ -1034,7 +1071,7 @@ export const Swap = ({
         walletType
       }))
     )
-  }, [needApprovement, network, oPoolAddress, oSourceAssetWB, sourceAsset])
+  }, [needApprovement, network, oPoolAddress, oSourceAssetWB, sourceAsset, sourceChain])
 
   // Reload balances at `onMount`
   useEffect(() => {
@@ -1079,6 +1116,66 @@ export const Swap = ({
     [approveFeeRD]
   )
 
+  const priceApproveFee: CryptoAmount = useMemo(() => {
+    const assetAmount = new CryptoAmount(approveFee, swapFees.inFee.asset)
+
+    return FP.pipe(
+      PoolHelpers.getPoolPriceValue({
+        balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
+        poolDetails,
+        pricePool,
+        network
+      }),
+      O.fold(
+        () => new CryptoAmount(baseAmount(0), pricePool.asset), // Default value if None
+        (amount) => new CryptoAmount(amount, pricePool.asset) // Value if Some
+      )
+    )
+  }, [approveFee, swapFees.inFee.asset, poolDetails, pricePool, network])
+
+  const priceApproveFeeLabel = useMemo(
+    () =>
+      FP.pipe(
+        approveFeeRD,
+        RD.fold(
+          () => loadingString,
+          () => loadingString,
+          () => noDataString,
+          (_) =>
+            FP.pipe(
+              O.some(approveFee),
+              O.fold(
+                () => '',
+                (outFee: BaseAmount) => {
+                  const fee = formatAssetAmountCurrency({
+                    amount: baseToAsset(outFee),
+                    asset: sourceChainAsset,
+                    decimal: isUSDAsset(sourceChainAsset) ? 2 : 6,
+                    trimZeros: !isUSDAsset(sourceChainAsset)
+                  })
+                  const price = FP.pipe(
+                    O.some(priceApproveFee),
+                    O.map((cryptoAmount: CryptoAmount) =>
+                      eqAsset.equals(sourceAsset, cryptoAmount.asset)
+                        ? ''
+                        : formatAssetAmountCurrency({
+                            amount: cryptoAmount.assetAmount,
+                            asset: cryptoAmount.asset,
+                            decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
+                            trimZeros: !isUSDAsset(cryptoAmount.asset)
+                          })
+                    ),
+                    O.getOrElse(() => '')
+                  )
+                  return price ? `${price} (${fee})` : fee
+                }
+              )
+            )
+        )
+      ),
+    [approveFeeRD, approveFee, sourceChainAsset, priceApproveFee, sourceAsset]
+  )
+
   // State for values of `isApprovedERC20Token$`
   const {
     state: isApprovedState,
@@ -1098,14 +1195,13 @@ export const Swap = ({
     },
     [isApprovedERC20Token$, subscribeIsApprovedState]
   )
-
   // whenever `oApproveParams` has been updated,
   // `approveFeeParamsUpdated` needs to be called to update `approveFeesRD`
   // + `checkApprovedStatus` needs to be called
   useEffect(() => {
     FP.pipe(
       oApproveParams,
-      // Do nothing if prev. and current router a the same
+      // Do nothing if prev. and current router are the same
       O.filter((params) => !eqOApproveParams.equals(O.some(params), prevApproveParams.current)),
       // update ref
       O.map((params) => {
@@ -1579,7 +1675,11 @@ export const Swap = ({
       // Note: As long as we link to `viewblock` to open tx details in a browser,
       // `0x` needs to be removed from tx hash in case of ETH
       // @see https://github.com/thorchain/asgardex-electron/issues/1787#issuecomment-931934508
-      O.map((txHash) => (isEthChain(sourceChain) ? txHash.replace(/0x/i, '') : txHash))
+      O.map((txHash) =>
+        isEthChain(sourceChain) || isAvaxChain(sourceChain) || isBscChain(sourceChain)
+          ? txHash.replace(/0x/i, '')
+          : txHash
+      )
     )
 
     return (
@@ -1793,7 +1893,7 @@ export const Swap = ({
 
   const isApproveFeeError = useMemo(() => {
     // ignore error check if we don't need to check allowance
-    if (!needApprovement) return false
+    if (O.isNone(needApprovement)) return false
 
     return sourceChainAssetAmount.lt(approveFee)
   }, [needApprovement, sourceChainAssetAmount, approveFee])
@@ -1852,7 +1952,7 @@ export const Swap = ({
 
   const isApproved = useMemo(
     () =>
-      !needApprovement ||
+      O.isNone(needApprovement) ||
       RD.isSuccess(approveState) ||
       FP.pipe(
         isApprovedState,
@@ -1863,17 +1963,15 @@ export const Swap = ({
       ),
     [approveState, isApprovedState, needApprovement]
   )
-
   const checkIsApproved = useMemo(() => {
-    if (!needApprovement) return false
+    if (O.isNone(needApprovement)) return false
     // ignore initial + loading states for `isApprovedState`
     return RD.isPending(isApprovedState)
   }, [isApprovedState, needApprovement])
 
   const checkIsApprovedError = useMemo(() => {
     // ignore error check if we don't need to check allowance
-    if (!needApprovement) return false
-
+    if (O.isNone(needApprovement)) return false
     return RD.isFailure(isApprovedState)
   }, [needApprovement, isApprovedState])
 
@@ -2335,6 +2433,10 @@ export const Swap = ({
 
                 {showDetails && (
                   <>
+                    <div className="flex w-full justify-between pl-10px text-[12px]">
+                      <div>{intl.formatMessage({ id: 'common.approve' })}</div>
+                      <div>{priceApproveFeeLabel}</div>
+                    </div>
                     <div className="flex w-full justify-between pl-10px text-[12px]">
                       <div>{intl.formatMessage({ id: 'common.fee.inbound' })}</div>
                       <div>{priceSwapInFeeLabel}</div>

@@ -31,7 +31,7 @@ export const ViewTxButton: React.FC<Props> = ({
   const handleTxTracker = useCallback(() => {
     FP.pipe(
       oTxHash,
-      O.map((txHash) => window.apiUrl.openExternal(`https://track.ninerealms.com/${txHash}?asgardex.png`))
+      O.map((txHash) => window.apiUrl.openExternal(`https://track.ninerealms.com/${txHash}?logo=asgardex.png`))
     )
   }, [oTxHash])
 
@@ -40,6 +40,9 @@ export const ViewTxButton: React.FC<Props> = ({
       <Styled.Wrapper className={`${className} flex-col`}>
         <Styled.ViewTxButton onClick={onClickHandler} disabled={O.isNone(oTxHash)}>
           {label || intl.formatMessage({ id: 'common.viewTransaction' })}
+        </Styled.ViewTxButton>
+        <Styled.ViewTxButton onClick={handleTxTracker} disabled={O.isNone(oTxHash)}>
+          {label || intl.formatMessage({ id: 'common.trackTransaction' })}
         </Styled.ViewTxButton>
         <div>
           {' '}
@@ -54,12 +57,7 @@ export const ViewTxButton: React.FC<Props> = ({
                 O.toUndefined
               ) || false
             }></Styled.CopyLabel>
-          <Styled.Text>{intl.formatMessage({ id: 'common.copyTxUrl' })}</Styled.Text>
         </div>
-
-        <Styled.ViewTxButton onClick={handleTxTracker} disabled={O.isNone(oTxHash)}>
-          {label || intl.formatMessage({ id: 'common.trackTransaction' })}
-        </Styled.ViewTxButton>
       </Styled.Wrapper>
     </div>
   )

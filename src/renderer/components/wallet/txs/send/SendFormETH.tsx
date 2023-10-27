@@ -435,9 +435,9 @@ export const SendFormETH: React.FC<Props> = (props): JSX.Element => {
     () =>
       FP.pipe(
         feesRD,
-        RD.map((fees) => [{ asset: asset, amount: fees[selectedFeeOption] }])
+        RD.map((fees) => [{ asset: AssetETH, amount: fees[selectedFeeOption] }])
       ),
-    [feesRD, asset, selectedFeeOption]
+    [feesRD, selectedFeeOption]
   )
 
   const addMaxAmountHandler = useCallback(() => setAmountToSend(O.some(maxAmount)), [maxAmount])
