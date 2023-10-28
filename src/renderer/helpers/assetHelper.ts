@@ -46,6 +46,7 @@ import {
   AssetTGTERC20,
   AssetUSDC,
   AssetUSDCAVAX,
+  AssetUSDT62E,
   AssetUSDTDAC,
   AssetXRune,
   AssetXRuneTestnet,
@@ -180,7 +181,8 @@ const assetMap: { [symbol: string]: Asset } = {
   [AssetDOGE.symbol]: AssetDOGE,
   [AssetETH.symbol]: AssetETH,
   [AssetUSDTDAC.symbol]: AssetUSDTDAC,
-  [AssetUSDCAVAX.symbol]: AssetUSDCAVAX
+  [AssetUSDCAVAX.symbol]: AssetUSDCAVAX,
+  [AssetUSDT62E.symbol]: AssetUSDT62E
 }
 
 export const getAssetFromSymbol = (symbol: string): Asset | null => {
