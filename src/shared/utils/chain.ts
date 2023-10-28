@@ -50,7 +50,7 @@ export const chainToString = (chain: Chain): string => {
     case BCHChain:
       return 'Bitcoin Cash'
     case BNBChain:
-      return 'Binance Chain'
+      return 'BNB Beacon Chain'
     case BTCChain:
       return 'Bitcoin'
     case GAIAChain:
@@ -66,6 +66,6 @@ export const chainToString = (chain: Chain): string => {
     case AVAXChain:
       return 'Avax'
     case BSCChain:
-      return 'Binance Smart Chain'
+      return 'BNB Chain (BSC)'
   }
 }
