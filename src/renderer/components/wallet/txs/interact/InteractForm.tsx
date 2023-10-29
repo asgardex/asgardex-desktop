@@ -62,6 +62,7 @@ type FormValues = {
   chainAddress: string
   chain: string
   preferredAsset: string
+  expiry: number
 }
 
 type Props = {
@@ -134,6 +135,7 @@ export const InteractForm: React.FC<Props> = (props) => {
   const [oThorname, setThorname] = useState<O.Option<ThornameDetails>>(O.none)
   const [thornameAvailable, setThornameAvailable] = useState<boolean>(false) // if thorname is available
   const [thornameUpdate, setThornameUpdate] = useState<boolean>(false) // allow to update
+  const [thornameRegister, setThornameRegister] = useState<boolean>(false) // allow to update
   const [thornameQuoteValid, setThornameQuoteValid] = useState<boolean>(false) // if the quote is valid then allow to buy
   const [isOwner, setIsOwner] = useState<boolean>(false) // if the thorname.owner is the wallet address then allow to update
   const [preferredAsset, setPreferredAsset] = useState<Asset>()
@@ -246,6 +248,7 @@ export const InteractForm: React.FC<Props> = (props) => {
           setShowDetails(true)
           setThornameAvailable(thornameDetails.owner === '' || balance.walletAddress === thornameDetails.owner)
           setThornameUpdate(thorname === thornameDetails.name && thornameDetails.owner === '')
+          setThornameRegister(thornameDetails.name === '')
           setIsOwner(balance.walletAddress === thornameDetails.owner)
         }
       } catch (error) {
@@ -277,19 +280,20 @@ export const InteractForm: React.FC<Props> = (props) => {
   const estimateThornameHandler = useCallback(() => {
     form.validateFields()
     const thorname = form.getFieldValue('thorname')
-    const chain = form.getFieldValue('aliasChain')
-    const chainAddress = form.getFieldValue('aliasAddress')
+    const chain = thornameRegister ? form.getFieldValue('chain') : form.getFieldValue('aliasChain')
+    const expirity = form.getFieldValue('expiry') === 1 ? undefined : expireDate
+    const chainAddress = thornameRegister ? form.getFieldValue('chainAddress') : form.getFieldValue('aliasAddress')
     const owner = balance.walletAddress
     if (thorname !== undefined && chain !== undefined && chainAddress !== undefined) {
       const fetchThornameQuote = async () => {
         try {
           const params: QuoteThornameParams = {
             thorname,
-            chain: aliasChain,
+            chain: chain,
             chainAddress,
             owner,
             preferredAsset,
-            expirity: expireDate,
+            expirity: expirity,
             isUpdate: thornameUpdate
           }
 
@@ -306,7 +310,7 @@ export const InteractForm: React.FC<Props> = (props) => {
       }
       fetchThornameQuote()
     }
-  }, [aliasChain, balance.walletAddress, expireDate, form, preferredAsset, thorchainQuery, thornameUpdate])
+  }, [balance.walletAddress, expireDate, form, preferredAsset, thorchainQuery, thornameRegister, thornameUpdate])
 
   const handleRadioAssetChange = useCallback((e: RadioChangeEvent) => {
     const asset = e.target.value
@@ -578,10 +582,10 @@ export const InteractForm: React.FC<Props> = (props) => {
     }
   }, [])
 
-  const setThornameUpdateHandler = useCallback(() => {
-    setThornameUpdate((thornameUpdate) => !thornameUpdate)
-    setThornameQuoteValid(false)
-  }, [])
+  // const setThornameUpdateHandler = useCallback(() => {
+  //   setThornameUpdate((thornameUpdate) => !thornameUpdate)
+  //   setThornameQuoteValid(false)
+  // }, [])
 
   const onClickHasProviderAddress = useCallback(() => {
     // clean address
@@ -611,7 +615,12 @@ export const InteractForm: React.FC<Props> = (props) => {
     <Styled.Form
       form={form}
       onFinish={() => setShowConfirmationModal(true)}
-      initialValues={{ thorAddress: '', amount: bn(0) }}>
+      initialValues={{
+        thorAddress: '',
+        amount: bn(0),
+        chain: THORChain,
+        chainAddress: balance.walletAddress
+      }}>
       <>
         {/* Memo input (CUSTOM only) */}
         {interactType === 'custom' && (
@@ -791,77 +800,124 @@ export const InteractForm: React.FC<Props> = (props) => {
                   {intl.formatMessage({ id: 'common.isUpdate' })}
                 </CheckButton>
               ) : (
-                <CheckButton checked={thornameUpdate} clickHandler={setThornameUpdateHandler} disabled={isLoading}>
-                  {intl.formatMessage({ id: 'common.isUpdate' })}
-                </CheckButton>
+                <></>
               )}
-
-              <div className="flex w-full items-center text-[12px]">
-                <Styled.InputLabel>{intl.formatMessage({ id: 'common.preferredAsset' })}</Styled.InputLabel>
-              </div>
-              <Styled.FormItem
-                name="preferredAsset"
-                rules={[
-                  {
-                    required: false
-                  }
-                ]}>
-                <StyledR.Radio.Group onChange={handleRadioAssetChange} value={preferredAsset}>
-                  <StyledR.Radio value={AssetRuneNative}>RUNE</StyledR.Radio>
-                  <StyledR.Radio value={AssetBTC}>BTC</StyledR.Radio>
-                  <StyledR.Radio value={AssetETH}>ETH</StyledR.Radio>
-                  <StyledR.Radio value={AssetUSDTDAC}>USDT</StyledR.Radio>
-                </StyledR.Radio.Group>
-              </Styled.FormItem>
-              {/* Add input fields for aliasChain, aliasAddress, and expiry */}
-              <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasChain' })}</Styled.InputLabel>
-              <Styled.FormItem
-                name="aliasChain"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please provide an alias chain.'
-                  }
-                ]}>
-                <StyledR.Radio.Group onChange={handleRadioChainChange} value={aliasChain}>
-                  <StyledR.Radio value={AssetAVAX.chain}>AVAX</StyledR.Radio>
-                  <StyledR.Radio value={AssetBTC.chain}>BTC</StyledR.Radio>
-                  <StyledR.Radio value={AssetETH.chain}>ETH</StyledR.Radio>
-                  <StyledR.Radio value={AssetBNB.chain}>BNB</StyledR.Radio>
-                </StyledR.Radio.Group>
-              </Styled.FormItem>
-              <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasAddress' })}</Styled.InputLabel>
-              <Styled.FormItem
-                name="aliasAddress"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please provide an alias address.'
-                  }
-                ]}>
-                <Styled.Input disabled={isLoading} size="middle" />
-              </Styled.FormItem>
-              <Styled.InputLabel>{intl.formatMessage({ id: 'common.expiry' })}</Styled.InputLabel>
-              <Styled.FormItem
-                name="expiry"
-                rules={[
-                  {
-                    required: false
-                  }
-                ]}>
-                <StyledR.Radio.Group onChange={handleRadioChange} value={expireDate}>
-                  <StyledR.Radio value={1}>1 year</StyledR.Radio>
-                  <StyledR.Radio value={2}>2 years</StyledR.Radio>
-                  <StyledR.Radio value={3}>3 years</StyledR.Radio>
-                  <StyledR.Radio value={5}>5 years</StyledR.Radio>
-                </StyledR.Radio.Group>
-              </Styled.FormItem>
+              {!thornameRegister ? (
+                <>
+                  {' '}
+                  <div className="flex w-full items-center text-[12px]">
+                    <Styled.InputLabel>{intl.formatMessage({ id: 'common.preferredAsset' })}</Styled.InputLabel>
+                  </div>
+                  <Styled.FormItem
+                    name="preferredAsset"
+                    rules={[
+                      {
+                        required: false
+                      }
+                    ]}>
+                    <StyledR.Radio.Group onChange={handleRadioAssetChange} value={preferredAsset}>
+                      <StyledR.Radio value={AssetRuneNative}>RUNE</StyledR.Radio>
+                      <StyledR.Radio value={AssetBTC}>BTC</StyledR.Radio>
+                      <StyledR.Radio value={AssetETH}>ETH</StyledR.Radio>
+                      <StyledR.Radio value={AssetUSDTDAC}>USDT</StyledR.Radio>
+                    </StyledR.Radio.Group>
+                  </Styled.FormItem>
+                  {/* Add input fields for aliasChain, aliasAddress, and expiry */}
+                  <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasChain' })}</Styled.InputLabel>
+                  <Styled.FormItem
+                    name="chain"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please provide an alias chain.'
+                      }
+                    ]}>
+                    <StyledR.Radio.Group onChange={handleRadioChainChange} value={aliasChain}>
+                      <StyledR.Radio value={AssetAVAX.chain}>AVAX</StyledR.Radio>
+                      <StyledR.Radio value={AssetBTC.chain}>BTC</StyledR.Radio>
+                      <StyledR.Radio value={AssetETH.chain}>ETH</StyledR.Radio>
+                      <StyledR.Radio value={AssetBNB.chain}>BNB</StyledR.Radio>
+                    </StyledR.Radio.Group>
+                  </Styled.FormItem>
+                  <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasAddress' })}</Styled.InputLabel>
+                  <Styled.FormItem
+                    name="aliasAddress"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please provide an alias address.'
+                      }
+                    ]}>
+                    <Styled.Input disabled={isLoading} size="middle" />
+                  </Styled.FormItem>
+                  <Styled.InputLabel>{intl.formatMessage({ id: 'common.expiry' })}</Styled.InputLabel>
+                  <Styled.FormItem
+                    name="expiry"
+                    rules={[
+                      {
+                        required: false
+                      }
+                    ]}>
+                    <StyledR.Radio.Group onChange={handleRadioChange} value={expireDate}>
+                      <StyledR.Radio value={1}>1 year</StyledR.Radio>
+                      <StyledR.Radio value={2}>2 years</StyledR.Radio>
+                      <StyledR.Radio value={3}>3 years</StyledR.Radio>
+                      <StyledR.Radio value={5}>5 years</StyledR.Radio>
+                    </StyledR.Radio.Group>
+                  </Styled.FormItem>
+                </>
+              ) : (
+                <>
+                  {' '}
+                  {/* Initial values needed for tns register */}
+                  <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasChain' })}</Styled.InputLabel>
+                  <Styled.FormItem
+                    name="chain"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please provide an alias chain.'
+                      }
+                    ]}>
+                    <StyledR.Radio.Group>
+                      <StyledR.Radio value={AssetRuneNative.chain}>THOR</StyledR.Radio>
+                    </StyledR.Radio.Group>
+                  </Styled.FormItem>
+                  <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasAddress' })}</Styled.InputLabel>
+                  <Styled.FormItem
+                    name="chainAddress"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please provide an alias address.'
+                      }
+                    ]}>
+                    <Styled.Input disabled={isLoading} size="middle" />
+                  </Styled.FormItem>
+                  <Styled.InputLabel>{intl.formatMessage({ id: 'common.expiry' })}</Styled.InputLabel>
+                  <Styled.FormItem
+                    name="expiry"
+                    rules={[
+                      {
+                        required: false
+                      }
+                    ]}>
+                    <StyledR.Radio.Group onChange={handleRadioChange} value={expireDate}>
+                      <StyledR.Radio value={1}>1 year</StyledR.Radio>
+                      <StyledR.Radio value={2}>2 years</StyledR.Radio>
+                      <StyledR.Radio value={3}>3 years</StyledR.Radio>
+                      <StyledR.Radio value={5}>5 years</StyledR.Radio>
+                    </StyledR.Radio.Group>
+                  </Styled.FormItem>
+                </>
+              )}
               <Styled.Fees
                 className="mt-10px"
                 fees={thorNamefees}
                 reloadFees={reloadFeesHandler}
                 disabled={isLoading}
               />
+
               <FlatButton
                 className="mt-10px min-w-[200px]"
                 loading={isLoading}

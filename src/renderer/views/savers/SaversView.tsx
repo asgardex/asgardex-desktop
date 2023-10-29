@@ -88,6 +88,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   const { getSaverProvider$, reloadSaverProvider } = useThorchainContext()
 
   const { assetWithDecimal$, addressByChain$, reloadSaverDepositFee, saverDeposit$, saverWithdraw$ } = useChainContext()
+
   const { approveERC20Token$, isApprovedERC20Token$, approveFee$, reloadApproveFee } = useEvmContext(chain)
   const {
     balancesState$,
