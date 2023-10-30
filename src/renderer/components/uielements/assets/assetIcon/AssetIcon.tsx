@@ -1,6 +1,10 @@
 import React, { useMemo, useCallback } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BNBChain } from '@xchainjs/xchain-binance'
+import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { Asset, isSynthAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -52,6 +56,21 @@ export type ComponentProps = {
 }
 
 type Props = ComponentProps & React.HTMLAttributes<HTMLDivElement>
+
+const chainIconMap = (asset: Asset): string | null => {
+  switch (asset.chain) {
+    case ETHChain:
+      return ethIcon
+    case AVAXChain:
+      return avaxIcon
+    case BSCChain:
+      return bscIcon
+    case BNBChain:
+      return bnbIcon
+    default:
+      return null // return null if no chain matches
+  }
+}
 
 export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = '', network }): JSX.Element => {
   const imgUrl = useMemo(() => {
@@ -165,14 +184,18 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
   const isSynth = isSynthAsset(asset)
 
   const renderIcon = useCallback(
-    (src: string) => (
-      <Styled.IconWrapper size={size} isSynth={isSynth} className={className}>
-        <Styled.Icon src={src} isSynth={isSynth} size={size} />
-      </Styled.IconWrapper>
-    ),
-    [className, isSynth, size]
-  )
+    (src: string) => {
+      const overlayIconSrc = chainIconMap(asset)
 
+      return (
+        <Styled.IconWrapper size={size} isSynth={isSynth} className={className}>
+          <Styled.Icon src={src} isSynth={isSynth} size={size} />
+          {overlayIconSrc && asset.chain !== asset.symbol && <Styled.OverlayIcon src={overlayIconSrc} size={size} />}
+        </Styled.IconWrapper>
+      )
+    },
+    [size, isSynth, className, asset]
+  )
   const renderPendingIcon = useCallback(() => {
     return (
       <Styled.IconWrapper size={size} isSynth={isSynth} className={className}>

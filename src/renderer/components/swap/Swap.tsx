@@ -740,7 +740,6 @@ export const Swap = ({
           const fromAsset = sourceAsset
           const destinationAsset = targetAsset
           const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
-          console.log(amount.formatedAssetString())
           const address = destinationAddress
           const walletAddress = sourceAddress
           const streamingInt = isStreaming ? streamingInterval : 0

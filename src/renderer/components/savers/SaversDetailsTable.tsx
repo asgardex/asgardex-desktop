@@ -22,7 +22,7 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
     },
     {
       title: 'Asset',
-      dataIndex: 'key',
+      dataIndex: 'assetTicker',
       key: 'asset'
     },
     {
@@ -93,6 +93,7 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       asset: priceAsset,
       decimal: isUSDAsset(priceAsset) ? 2 : 6
     })
+    const assetTicker = asset.ticker
 
     const percentLabel = `${formatBN(percent.gt(0) ? percent : ZERO_BN, 4)}%`
     return {
@@ -104,7 +105,8 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       growthValue,
       growthValueLabel,
       percentLabel,
-      priceGrowthLabel
+      priceGrowthLabel,
+      assetTicker
     }
   })
 

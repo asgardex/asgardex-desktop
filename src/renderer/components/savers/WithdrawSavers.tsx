@@ -48,7 +48,7 @@ import {
   isUSDAsset,
   max1e8BaseAmount
 } from '../../helpers/assetHelper'
-import { getChainAsset, isEthChain } from '../../helpers/chainHelper'
+import { getChainAsset, isAvaxChain, isBscChain, isEthChain } from '../../helpers/chainHelper'
 import { eqBaseAmount, eqOApproveParams, eqOAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
@@ -922,18 +922,16 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       (id) => intl.formatMessage({ id })
     )
 
-    const extraResult = (
-      <div className="flex flex-col items-center justify-between">
-        {FP.pipe(withdrawTx, RD.toOption, (oTxHash) => (
-          <ViewTxButton
-            className="pb-20px"
-            txHash={oTxHash}
-            onClick={goToTransaction}
-            txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
-            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: sourceAsset.ticker })}
-          />
-        ))}
-      </div>
+    const oTxHash = FP.pipe(
+      RD.toOption(withdrawTx),
+      // Note: As long as we link to `viewblock` to open tx details in a browser,
+      // `0x` needs to be removed from tx hash in case of ETH
+      // @see https://github.com/thorchain/asgardex-electron/issues/1787#issuecomment-931934508
+      O.map((txHash) =>
+        isEthChain(sourceChain) || isAvaxChain(sourceChain) || isBscChain(sourceChain)
+          ? txHash.replace(/0x/i, '')
+          : txHash
+      )
     )
 
     return (
@@ -944,7 +942,14 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
         startTime={withdrawStartTime}
         txRD={withdrawRD}
         timerValue={timerValue}
-        extraResult={extraResult}
+        extraResult={
+          <ViewTxButton
+            txHash={oTxHash}
+            onClick={goToTransaction}
+            txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
+            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: sourceAsset.ticker })}
+          />
+        }
         extra={txModalExtraContent}
       />
     )
@@ -953,11 +958,12 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     onCloseTxModal,
     onFinishTxModal,
     withdrawStartTime,
-    txModalExtraContent,
-    intl,
     goToTransaction,
     getExplorerTxUrl,
-    sourceAsset.ticker
+    intl,
+    sourceAsset.ticker,
+    txModalExtraContent,
+    sourceChain
   ])
   // sumbit to withdraw state submit tx
   const submitWithdrawTx = useCallback(() => {

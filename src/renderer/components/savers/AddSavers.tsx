@@ -50,7 +50,7 @@ import {
   isUSDAsset,
   max1e8BaseAmount
 } from '../../helpers/assetHelper'
-import { getChainAsset, isEthChain } from '../../helpers/chainHelper'
+import { getChainAsset, isAvaxChain, isBscChain, isEthChain } from '../../helpers/chainHelper'
 import { eqBaseAmount, eqOApproveParams, eqOAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
@@ -790,18 +790,16 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       (id) => intl.formatMessage({ id })
     )
 
-    const extraResult = (
-      <div className="flex flex-col items-center justify-between">
-        {FP.pipe(depositTx, RD.toOption, (oTxHash) => (
-          <ViewTxButton
-            className="pb-20px"
-            txHash={oTxHash}
-            onClick={goToTransaction}
-            txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
-            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: asset.asset.ticker })}
-          />
-        ))}
-      </div>
+    const oTxHash = FP.pipe(
+      RD.toOption(depositTx),
+      // Note: As long as we link to `viewblock` to open tx details in a browser,
+      // `0x` needs to be removed from tx hash in case of ETH
+      // @see https://github.com/thorchain/asgardex-electron/issues/1787#issuecomment-931934508
+      O.map((txHash) =>
+        isEthChain(sourceChain) || isAvaxChain(sourceChain) || isBscChain(sourceChain)
+          ? txHash.replace(/0x/i, '')
+          : txHash
+      )
     )
 
     return (
@@ -812,7 +810,14 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
         startTime={depositStartTime}
         txRD={depositRD}
         timerValue={timerValue}
-        extraResult={extraResult}
+        extraResult={
+          <ViewTxButton
+            txHash={oTxHash}
+            onClick={goToTransaction}
+            txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
+            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: asset.asset.ticker })}
+          />
+        }
         extra={txModalExtraContent}
       />
     )
@@ -821,11 +826,12 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     onCloseTxModal,
     onFinishTxModal,
     depositStartTime,
-    txModalExtraContent,
-    intl,
     goToTransaction,
     getExplorerTxUrl,
-    asset.asset.ticker
+    intl,
+    asset.asset.ticker,
+    txModalExtraContent,
+    sourceChain
   ])
 
   const submitDepositTx = useCallback(() => {
