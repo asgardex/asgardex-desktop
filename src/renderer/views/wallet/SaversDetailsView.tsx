@@ -140,7 +140,7 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
               if (depositValue.amount().isZero() && redeemValue.amount().isZero()) {
                 return null
               }
-              const asset = getAssetFromSymbol(assetSymbol)
+              const asset = getAssetFromSymbol(assetSymbol.toUpperCase())
               if (asset === null) {
                 // handle error case
                 return null

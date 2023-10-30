@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
@@ -34,7 +34,7 @@ import { CheckButton } from '../../../uielements/button/CheckButton'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { TooltipAddress } from '../../../uielements/common/Common.styles'
 import { UIFeesRD } from '../../../uielements/fees'
-import { Input, InputBigNumber } from '../../../uielements/input'
+import { InputBigNumber } from '../../../uielements/input'
 import { AccountSelector } from '../../account'
 import * as H from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
@@ -155,32 +155,29 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
     },
     500 // Adjust the debounce delay (in milliseconds) as needed
   )
-  const handleAddressInput = useCallback(() => {
+  const handleAddressInput = useCallback(async () => {
     const recipient = form.getFieldValue('recipient')
-    // Check if initialRecipient has a value before making the request
-    if (thornameSend && recipient.length <= 30 && recipient !== '') {
-      const fetchThorname = async () => {
-        try {
-          const thornameDetails = await thorchainQuery.getThornameDetails(recipient)
-          if (thornameDetails) {
-            setThorname(O.some(thornameDetails))
-            setRecipientAddress(thornameDetails.owner)
-            setThornameSend(true)
-            setShowDetails(true)
-          }
-        } catch (error) {
-          // Handle errors if the promise is rejected
-          setThorname(O.none)
-          return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
-        }
-      }
 
-      fetchThorname() // Call the async function to fetch Thorname
-    } else {
+    if (!recipient || recipient.length > 30) {
       setThornameSend(false)
-      debouncedAddressValidator(undefined, form.getFieldValue('recipient'))
+      debouncedAddressValidator(undefined, recipient)
+      setRecipientAddress(recipient)
+      return
     }
-  }, [form, thornameSend, thorchainQuery, setShowDetails, intl, debouncedAddressValidator])
+
+    try {
+      const thornameDetails = await thorchainQuery.getThornameDetails(recipient)
+      if (thornameDetails) {
+        setThorname(O.some(thornameDetails))
+        setRecipientAddress(thornameDetails.owner)
+        setShowDetails(true)
+      }
+    } catch (error) {
+      setThorname(O.none)
+
+      return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
+    }
+  }, [form, thorchainQuery, setShowDetails, intl, debouncedAddressValidator])
 
   // max amount for RuneNative
   const maxAmount: BaseAmount = useMemo(() => {
@@ -198,13 +195,6 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
     )
     return isRuneNativeAsset(asset) ? maxRuneAmount : balance.amount
   }, [oFee, oRuneNativeAmount, asset, balance.amount])
-
-  useEffect(() => {
-    // Whenever `amountToSend` has been updated, we put it back into input field
-    form.setFieldsValue({
-      amount: baseToAsset(amountToSend).amount()
-    })
-  }, [amountToSend, form])
 
   const amountValidator = useCallback(
     async (_: unknown, value: BigNumber) => {
@@ -227,6 +217,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
   const submitTx = useCallback(() => {
     setSendTxStartTime(Date.now())
     const recipient = O.isSome(oThorname) ? oThorname.value.owner : recipientAddress
+
     subscribeSendTxState(
       transfer$({
         walletType,
@@ -371,7 +362,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
             </div>
 
             <Form.Item rules={[{ required: true }]} name="recipient">
-              <Input color="primary" size="large" disabled={isLoading} onChange={handleAddressInput} />
+              <Styled.Input color="primary" size="large" disabled={isLoading} onChange={handleAddressInput} />
             </Form.Item>
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
             <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">
@@ -394,7 +385,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
             {renderFeeError}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
             <Form.Item name="memo">
-              <Input size="large" disabled={isLoading} />
+              <Styled.Input size="large" disabled={isLoading} />
             </Form.Item>
           </Styled.SubForm>
           <FlatButton
@@ -427,7 +418,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
                     oThorname,
                     O.map((thorname) => (
                       <TooltipAddress title={thorname.owner} key="tooltip-target-addr">
-                        {thornameSend ? thorname.owner : recipientAddress}
+                        {recipientAddress}
                       </TooltipAddress>
                     )),
                     O.getOrElse(() => <>{noDataString}</>)

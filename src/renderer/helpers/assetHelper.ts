@@ -184,7 +184,7 @@ const assetMap: { [symbol: string]: Asset } = {
 }
 
 export const getAssetFromSymbol = (symbol: string): Asset | null => {
-  return assetMap[symbol.toLowerCase()] ?? null
+  return assetMap[symbol] ?? null
 }
 
 /**
