@@ -193,7 +193,6 @@ export const InteractForm: React.FC<Props> = (props) => {
       ),
     [oFee, balance.amount]
   )
-
   const amountValidator = useCallback(
     async (_: unknown, value: BigNumber) => {
       switch (interactType) {
@@ -289,12 +288,12 @@ export const InteractForm: React.FC<Props> = (props) => {
         try {
           const params: QuoteThornameParams = {
             thorname,
-            chain: chain,
+            chain,
             chainAddress,
             owner,
             preferredAsset,
             expirity: expirity,
-            isUpdate: thornameUpdate
+            isUpdate: thornameUpdate || isOwner
           }
 
           const thornameQuote = await thorchainQuery.estimateThorname(params)
@@ -305,12 +304,21 @@ export const InteractForm: React.FC<Props> = (props) => {
             setThornameQuoteValid(true)
           }
         } catch (error) {
-          // console.error('Error fetching fetchThornameQuote:', error)
+          console.error('Error fetching fetchThornameQuote:', error)
         }
       }
       fetchThornameQuote()
     }
-  }, [balance.walletAddress, expireDate, form, preferredAsset, thorchainQuery, thornameRegister, thornameUpdate])
+  }, [
+    balance.walletAddress,
+    expireDate,
+    form,
+    isOwner,
+    preferredAsset,
+    thorchainQuery,
+    thornameRegister,
+    thornameUpdate
+  ])
 
   const handleRadioAssetChange = useCallback((e: RadioChangeEvent) => {
     const asset = e.target.value
@@ -539,13 +547,13 @@ export const InteractForm: React.FC<Props> = (props) => {
       case 'custom':
         return intl.formatMessage({ id: 'wallet.action.send' })
       case 'thorname':
-        if (thornameUpdate) {
+        if (isOwner) {
           return intl.formatMessage({ id: 'common.isUpdate' })
         } else {
           return intl.formatMessage({ id: 'deposit.interact.actions.buyThorname' })
         }
     }
-  }, [interactType, hasProviderAddress, intl, thornameUpdate])
+  }, [interactType, hasProviderAddress, intl, isOwner])
 
   const uiFeesRD: UIFeesRD = useMemo(
     () =>
@@ -581,11 +589,6 @@ export const InteractForm: React.FC<Props> = (props) => {
       setExpireDate(undefined)
     }
   }, [])
-
-  // const setThornameUpdateHandler = useCallback(() => {
-  //   setThornameUpdate((thornameUpdate) => !thornameUpdate)
-  //   setThornameQuoteValid(false)
-  // }, [])
 
   const onClickHasProviderAddress = useCallback(() => {
     // clean address
@@ -825,7 +828,7 @@ export const InteractForm: React.FC<Props> = (props) => {
                   {/* Add input fields for aliasChain, aliasAddress, and expiry */}
                   <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasChain' })}</Styled.InputLabel>
                   <Styled.FormItem
-                    name="chain"
+                    name="aliasChain"
                     rules={[
                       {
                         required: true,
@@ -872,7 +875,7 @@ export const InteractForm: React.FC<Props> = (props) => {
                   {/* Initial values needed for tns register */}
                   <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasChain' })}</Styled.InputLabel>
                   <Styled.FormItem
-                    name="chain"
+                    name="aliasChain"
                     rules={[
                       {
                         required: true,

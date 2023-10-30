@@ -99,7 +99,7 @@ export const AssetUSDTDC8: Asset = { chain: BNBChain, symbol: 'USDT-DC8', ticker
 // ETH.USDT mainnet
 export const AssetUSDTDAC: Asset = {
   chain: ETHChain,
-  symbol: 'USDT-0xdAC17F958D2ee523a2206206994597C13D831ec7',
+  symbol: 'USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7',
   ticker: 'USDT',
   synth: false
 }

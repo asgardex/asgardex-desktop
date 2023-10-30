@@ -93,7 +93,10 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
         <div>
           <Row justify="space-between">
             <BackLinkButton />
-            <RefreshButton onClick={reloadBalancesByChain(selectedAsset.asset.chain)}></RefreshButton>
+            <RefreshButton
+              onClick={reloadBalancesByChain(
+                selectedAsset.asset.synth ? THORChain : selectedAsset.asset.chain
+              )}></RefreshButton>
           </Row>
           {renderSendView(selectedAsset)}
         </div>
