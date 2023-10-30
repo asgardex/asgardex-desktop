@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
@@ -195,6 +195,13 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
     )
     return isRuneNativeAsset(asset) ? maxRuneAmount : balance.amount
   }, [oFee, oRuneNativeAmount, asset, balance.amount])
+
+  useEffect(() => {
+    // Whenever `amountToSend` has been updated, we put it back into input field
+    form.setFieldsValue({
+      amount: baseToAsset(amountToSend).amount()
+    })
+  }, [amountToSend, form])
 
   const amountValidator = useCallback(
     async (_: unknown, value: BigNumber) => {
