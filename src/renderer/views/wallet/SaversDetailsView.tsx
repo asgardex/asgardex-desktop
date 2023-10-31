@@ -19,7 +19,6 @@ import { AssetsNav } from '../../components/wallet/assets'
 import { useChainContext } from '../../contexts/ChainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
-import { getAssetFromSymbol } from '../../helpers/assetHelper'
 import { sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { addressFromOptionalWalletAddress } from '../../helpers/walletHelper'
@@ -115,7 +114,7 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
               saverProvider._tag === 'RemoteSuccess' &&
               saverProvider.value.depositValue.amount().gt(0)
             ) {
-              setAllSaverProviders((prev) => ({ ...prev, [asset.symbol]: saverProvider }))
+              setAllSaverProviders((prev) => ({ ...prev, [`${asset.chain}.${asset.symbol}`]: saverProvider }))
             }
           })
       })
@@ -128,8 +127,9 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
 
   useEffect(() => {
     const assetDetails: AssetProps[] = Object.keys(allSaverProviders)
-      .map((assetSymbol) => {
-        const saverProviderRD = allSaverProviders[assetSymbol]
+      .map((assetString) => {
+        const saverProviderRD = allSaverProviders[assetString]
+
         return FP.pipe(
           sequenceTRD(poolsStateRD, saverProviderRD),
           RD.fold(
@@ -140,7 +140,8 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
               if (depositValue.amount().isZero() && redeemValue.amount().isZero()) {
                 return null
               }
-              const asset = getAssetFromSymbol(assetSymbol)
+
+              const asset = assetFromStringEx(assetString) // get the second string to return asset
               if (asset === null) {
                 // handle error case
                 return null

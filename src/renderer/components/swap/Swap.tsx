@@ -1818,16 +1818,29 @@ export const Swap = ({
     ) {
       return <></>
     }
-
     // Select first error
     const error = oQuote.value.txEstimate.errors[0].split(':')
 
+    // Extract numerical value from error string
+    const match = error[1].match(/(\d+)/)
+    const numberString = match ? match[1] : null
+    const remainingText = error[1].replace(/\d+/g, '').trim()
+
+    const assetAmount = numberString
+      ? new CryptoAmount(baseAmount(numberString, amountToSwapMax1e8.decimal), sourceAsset)
+      : new CryptoAmount(baseAmount(amountToSwapMax1e8.amount()), sourceAsset)
+
     return (
       <ErrorLabel>
-        {intl.formatMessage({ id: 'swap.errors.amount.thornodeQuoteError' }, { error: error[1] })}
+        {numberString
+          ? intl.formatMessage(
+              { id: 'swap.errors.amount.thornodeQuoteError' },
+              { error: `${assetAmount.formatedAssetString()} ${remainingText}` }
+            )
+          : intl.formatMessage({ id: 'swap.errors.amount.thornodeQuoteError' }, { error: error[1] })}
       </ErrorLabel>
     )
-  }, [oQuote, intl])
+  }, [oQuote, sourceAsset, amountToSwapMax1e8, intl])
 
   const sourceChainFeeErrorLabel: JSX.Element = useMemo(() => {
     if (!sourceChainFeeError) {
