@@ -1,13 +1,21 @@
-# 1.20.6 (2023-10-24)
+# 1.21.6 (2023-11-01)
+
+## Add
+
+- THORName Support
+- Show IP address [#29](https://github.com/asgardex/asgardex-desktop/issues/28)
+- ADD: AVAX & BSC #4 [#4](https://github.com/asgardex/asgardex-desktop/issues/4)
+- Add THORName Support for sending Tx [#6](https://github.com/asgardex/asgardex-desktop/issues/6) (thor addresses only)
 
 ## Update / Fix
 
 - Ledger tx gives 403 Error [#62](https://github.com/asgardex/asgardex-desktop/issues/62)
-- Add THORName Support for sending Tx [#6](https://github.com/asgardex/asgardex-desktop/issues/6)
 - Update Bond and Unbond to support pooled Nodes[#43](https://github.com/asgardex/asgardex-desktop/issues/43)
-- USDC dollar value not displayed [#51](https://github.com/asgardex/asgardex-desktop/issues/51)
-- ADD: AVAX & BSC #4 (BSC Only)[#4](https://github.com/asgardex/asgardex-desktop/issues/4)
+- USDC dollar value not displayed [#51](https://github.com/asgardex/asgardex-desktop/issues/51) (Swap page)
 - Bug: Cannot add ETH via Ledger to savers [#48](https://github.com/asgardex/asgardex-desktop/issues/48)
+- BUG: Saver % 100x too low [#58](https://github.com/asgardex/asgardex-desktop/issues/58)
+- Stable savers do not appear [#61](https://github.com/asgardex/asgardex-desktop/issues/61)
+- BTC Client won't sent max amount [#56](https://github.com/asgardex/asgardex-desktop/issues/61)
 
 ## Internal
 
