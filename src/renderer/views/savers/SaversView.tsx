@@ -196,21 +196,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
     },
     [navigate]
   )
-  const [oSourceLedgerAddress, updateSourceLedgerAddress$] = useObservableState<O.Option<Address>, UpdateAddress>(
-    (sourceLedgerAddressChain$) =>
-      FP.pipe(
-        sourceLedgerAddressChain$,
-        RxOp.distinctUntilChanged(eqUpdateAddress.equals),
-        RxOp.switchMap(({ chain }) => getLedgerAddress$(chain)),
-        RxOp.map(O.map(ledgerAddressToWalletAddress)),
-        RxOp.map(addressFromOptionalWalletAddress)
-      ),
-    O.none
-  )
-
-  useEffect(() => {
-    updateSourceLedgerAddress$({ chain, network, walletType })
-  }, [network, chain, updateSourceLedgerAddress$, walletType])
 
   const matchAddRoute = useMatch({
     path: saversRoutes.earn.path({ asset: assetToString(asset), walletType }),
@@ -296,7 +281,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         goToTransaction={openExplorerTxUrl}
                         getExplorerTxUrl={getExplorerTxUrl}
                         sourceWalletType={walletType}
-                        sourceLedgerAddress={oSourceLedgerAddress}
                         poolDetails={poolDetails}
                         poolAssets={poolAssets}
                         walletBalances={balancesState}
@@ -331,7 +315,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         pricePool={pricePool}
                         fees$={saverWithdrawFee$}
                         address={address}
-                        sourceLedgerAddress={oSourceLedgerAddress}
                         validatePassword$={validatePassword$}
                         goToTransaction={openExplorerTxUrl}
                         getExplorerTxUrl={getExplorerTxUrl}

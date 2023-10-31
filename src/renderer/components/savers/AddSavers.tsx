@@ -118,7 +118,6 @@ export type AddProps = {
   poolDetails: PoolDetails
   asset: CryptoAmount
   address: Address
-  sourceLedgerAddress: O.Option<Address>
   network: Network
   pricePool: PricePool
   poolAddress: O.Option<PoolAddress>
@@ -148,7 +147,6 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     poolDetails,
     asset,
     sourceWalletType: initialSourceWalletType,
-    sourceLedgerAddress: oSourceLedgerAddress,
     walletBalances,
     network,
     pricePool,
@@ -233,15 +231,6 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     })
     return result
   }, [asset, allBalances, sourceWalletType])
-
-  const oWalletAddress: O.Option<Address> = useMemo(() => {
-    return FP.pipe(
-      sequenceTOption(oSourceAssetWB),
-      O.map(([{ walletAddress }]) => walletAddress)
-    )
-  }, [oSourceAssetWB])
-
-  const oSourceWalletAddress = useLedger ? oSourceLedgerAddress : oWalletAddress
 
   // User balance for source asset
   const sourceAssetAmount: BaseAmount = useMemo(
@@ -1219,6 +1208,13 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     return calculateTransactionTime(sourceChain)
   }, [sourceChain])
 
+  const oWalletAddress: O.Option<Address> = useMemo(() => {
+    return FP.pipe(
+      sequenceTOption(oSourceAssetWB),
+      O.map(([{ walletAddress }]) => walletAddress)
+    )
+  }, [oSourceAssetWB])
+
   const [showDetails, setShowDetails] = useState<boolean>(false)
 
   return (
@@ -1391,7 +1387,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
                     <div>{intl.formatMessage({ id: 'common.sender' })}</div>
                     <div className="truncate pl-20px text-[13px] normal-case leading-normal">
                       {FP.pipe(
-                        oSourceWalletAddress,
+                        oWalletAddress,
                         O.map((address) => (
                           <TooltipAddress title={address} key="tooltip-sender-addr">
                             {address}
