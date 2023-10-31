@@ -366,6 +366,45 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       ),
     [oSaversQuote, asset]
   )
+
+  // store affiliate fee
+  const [liquidityPriceValue, setAffiliatePriceValue] = useState<CryptoAmount>(
+    new CryptoAmount(baseAmount(0, asset.baseAmount.decimal), asset.asset)
+  )
+
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const fetchData = async () => {
+      setAffiliatePriceValue(await thorchainQuery.convert(liquidityFee, pricePool.asset))
+    }
+
+    fetchData()
+  }, [thorchainQuery, liquidityFee, pricePool.asset])
+
+  const formatAmount = (cryptoAmount: CryptoAmount) =>
+    formatAssetAmountCurrency({
+      amount: cryptoAmount.assetAmount,
+      asset: cryptoAmount.asset,
+      decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
+      trimZeros: !isUSDAsset(cryptoAmount.asset)
+    })
+
+  const priceLiquidityFeeLabel = useMemo(() => {
+    const getFormattedFee = () => (liquidityFee ? formatAmount(liquidityFee) : '')
+
+    const getFormattedPrice = () =>
+      FP.pipe(
+        O.fromNullable(liquidityPriceValue),
+        O.map((cryptoAmount: CryptoAmount) => formatAmount(cryptoAmount)),
+        O.getOrElse(() => '')
+      )
+
+    const fee = getFormattedFee()
+    const price = getFormattedPrice()
+
+    return price ? `${price} (${fee})` : fee
+  }, [liquidityFee, liquidityPriceValue])
+
   const oChainAssetBalance: O.Option<BaseAmount> = useMemo(() => {
     const chainAsset = getChainAsset(sourceChain)
     return FP.pipe(
@@ -1349,13 +1388,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
                   </div>
                   <div className="flex w-full justify-between pl-10px text-[12px]">
                     <div>{intl.formatMessage({ id: 'common.liquidity' })}</div>
-                    <div>
-                      {formatAssetAmountCurrency({
-                        amount: liquidityFee.assetAmount,
-                        asset: pricePool.asset,
-                        decimal: 0
-                      })}
-                    </div>
+                    <div>{priceLiquidityFeeLabel}</div>
                   </div>
                 </>
               )}
