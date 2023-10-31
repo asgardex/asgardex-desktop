@@ -359,7 +359,8 @@ export const InteractForm: React.FC<Props> = (props) => {
 
   const getMemo = useCallback(() => {
     const thorAddress = form.getFieldValue('thorAddress')
-    const providerAddress = form.getFieldValue('providerAddress')
+    const providerAddress =
+      form.getFieldValue('providerAddress') === undefined ? '' : form.getFieldValue('providerAddress')
     const nodeOperatorFee = form.getFieldValue('operatorFee')
     const feeInBasisPoints = nodeOperatorFee ? nodeOperatorFee * 100 : undefined
 

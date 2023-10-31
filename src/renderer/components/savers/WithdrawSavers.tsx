@@ -115,6 +115,7 @@ export type WithDrawProps = {
   poolDetails: PoolDetails
   asset: CryptoAmount
   address: Address
+  sourceLedgerAddress: O.Option<Address>
   network: Network
   pricePool: PricePool
   poolAddress: O.Option<PoolAddress>
@@ -145,6 +146,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     poolDetails,
     asset,
     sourceWalletType: initialSourceWalletType,
+    sourceLedgerAddress: oSourceLedgerAddress,
     walletBalances,
     network,
     pricePool,
@@ -298,6 +300,15 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     })
     return result
   }, [allBalances, sourceAsset, sourceWalletType])
+
+  const oWalletAddress: O.Option<Address> = useMemo(() => {
+    return FP.pipe(
+      sequenceTOption(oSourceAssetWB),
+      O.map(([{ walletAddress }]) => walletAddress)
+    )
+  }, [oSourceAssetWB])
+
+  const oSourceWalletAddress = useLedger ? oSourceLedgerAddress : oWalletAddress
 
   // User balance for source asset
   const sourceAssetAmount: BaseAmount = useMemo(
@@ -1238,12 +1249,6 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     )
   }, [amountToWithdrawMax1e8, disableSaverAction, reloadFeesHandler, saverAssetAmount, setAmountToWithdrawMax1e8])
 
-  const oWalletAddress: O.Option<Address> = useMemo(() => {
-    return FP.pipe(
-      sequenceTOption(oSourceAssetWB),
-      O.map(([{ walletAddress }]) => walletAddress)
-    )
-  }, [oSourceAssetWB])
   const [showDetails, setShowDetails] = useState<boolean>(false)
 
   return (
@@ -1427,7 +1432,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
                     <div>{intl.formatMessage({ id: 'common.sender' })}</div>
                     <div className="truncate pl-20px text-[13px] normal-case leading-normal">
                       {FP.pipe(
-                        oWalletAddress,
+                        oSourceWalletAddress,
                         O.map((address) => (
                           <TooltipAddress title={address} key="tooltip-sender-addr">
                             {address}
