@@ -948,6 +948,19 @@ export const InteractForm: React.FC<Props> = (props) => {
           </div>
         </>
       )}
+
+      <div>
+        {interactType !== 'thorname' && (
+          <FlatButton
+            className="mt-10px min-w-[200px]"
+            loading={isLoading}
+            disabled={isLoading || !!form.getFieldsError().filter(({ errors }) => errors.length).length}
+            type="submit"
+            size="large">
+            {submitLabel}
+          </FlatButton>
+        )}
+      </div>
       <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
         {/* memo */}
         <div className={`my-20px w-full font-main text-[12px] uppercase dark:border-gray1d`}>
