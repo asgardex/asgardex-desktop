@@ -1827,8 +1827,8 @@ export const Swap = ({
     const remainingText = error[1].replace(/\d+/g, '').trim()
 
     const assetAmount = numberString
-      ? new CryptoAmount(baseAmount(numberString, amountToSwapMax1e8.decimal), sourceAsset)
-      : new CryptoAmount(baseAmount(amountToSwapMax1e8.amount()), sourceAsset)
+      ? new CryptoAmount(convertBaseAmountDecimal(baseAmount(numberString), sourceAssetDecimal), sourceAsset)
+      : new CryptoAmount(baseAmount(0), sourceAsset)
 
     return (
       <ErrorLabel>
@@ -1840,7 +1840,7 @@ export const Swap = ({
           : intl.formatMessage({ id: 'swap.errors.amount.thornodeQuoteError' }, { error: error[1] })}
       </ErrorLabel>
     )
-  }, [oQuote, sourceAsset, amountToSwapMax1e8, intl])
+  }, [oQuote, sourceAsset, sourceAssetDecimal, intl])
 
   const sourceChainFeeErrorLabel: JSX.Element = useMemo(() => {
     if (!sourceChainFeeError) {
