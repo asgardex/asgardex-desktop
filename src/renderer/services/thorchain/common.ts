@@ -15,7 +15,7 @@ import * as C from '../clients'
 import { getStorageState, getStorageState$, modifyStorage } from '../storage/common'
 import { keystoreService } from '../wallet/keystore'
 import { getPhrase } from '../wallet/util'
-import { INITIAL_CHAIN_IDS, DEFAULT_CLIENT_URL, DEFAULT_EXPLORER_URLS } from './const'
+import { INITIAL_CHAIN_IDS, DEFAULT_CLIENT_URL } from './const'
 import { Client$, ClientState, ClientState$, ClientUrl$ } from './types'
 
 // `TriggerStream` to reload ClientUrl
@@ -92,8 +92,8 @@ const clientState$: ClientState$ = FP.pipe(
                     clientUrl,
                     network,
                     phrase,
-                    chainIds: { ...INITIAL_CHAIN_IDS, [network]: chainId },
-                    explorerUrls: DEFAULT_EXPLORER_URLS
+                    chainIds: { ...INITIAL_CHAIN_IDS, [network]: chainId }
+                    // explorerUrls: DEFAULT_EXPLORER_URLS
                   })
                   return RD.success(client)
                 } catch (error) {

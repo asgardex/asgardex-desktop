@@ -8,6 +8,9 @@ import {
   MagnifyingGlassMinusIcon,
   MagnifyingGlassPlusIcon
 } from '@heroicons/react/24/outline'
+import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import {
   CryptoAmount,
@@ -53,9 +56,24 @@ import {
   THORCHAIN_DECIMAL,
   isUSDAsset,
   isChainAsset,
-  isRuneNativeAsset
+  isRuneNativeAsset,
+  isAvaxTokenAsset,
+  isBscTokenAsset,
+  getAvaxTokenAddress,
+  getBscTokenAddress,
+  isAvaxAsset,
+  isBscAsset
 } from '../../helpers/assetHelper'
-import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isEthChain, isLtcChain } from '../../helpers/chainHelper'
+import {
+  getChainAsset,
+  isAvaxChain,
+  isBchChain,
+  isBscChain,
+  isBtcChain,
+  isDogeChain,
+  isEthChain,
+  isLtcChain
+} from '../../helpers/chainHelper'
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqOApproveParams, eqAddress } from '../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
@@ -91,7 +109,7 @@ import {
   IsApprovedRD,
   IsApproveParams,
   LoadApproveFeeHandler
-} from '../../services/ethereum/types'
+} from '../../services/evm/types'
 import { PoolAddress, PoolDetails, PoolsDataMap } from '../../services/midgard/types'
 import {
   ApiError,
@@ -273,6 +291,8 @@ export const Swap = ({
   const prevTargetAsset = useRef<O.Option<Asset>>(O.none)
 
   const [customAddressEditActive, setCustomAddressEditActive] = useState(false)
+  const [currentDate, setCurrentDate] = useState(new Date())
+  const [quoteExpired, setQuoteExpired] = useState<boolean>(false)
 
   /**
    * All balances based on available assets to swap
@@ -719,7 +739,7 @@ export const Swap = ({
         O.map(([sourceAddress, destinationAddress]) => {
           const fromAsset = sourceAsset
           const destinationAsset = targetAsset
-          const amount = new CryptoAmount(amountToSwapMax1e8, sourceAsset)
+          const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
           const address = destinationAddress
           const walletAddress = sourceAddress
           const streamingInt = isStreaming ? streamingInterval : 0
@@ -745,6 +765,7 @@ export const Swap = ({
       sourceAsset,
       targetAsset,
       amountToSwapMax1e8,
+      sourceAssetDecimal,
       isStreaming,
       streamingInterval,
       streamingQuantity,
@@ -833,6 +854,18 @@ export const Swap = ({
         O.fold(
           () => 0, // default affiliate fee asset amount return as number not as BP
           (txDetails) => txDetails.txEstimate.streamingSlipBasisPoints / 100
+        )
+      ),
+    [oQuote]
+  )
+  // Quote expiry returned as a date
+  const swapExpiry: Date = useMemo(
+    () =>
+      FP.pipe(
+        oQuote,
+        O.fold(
+          () => new Date(), // default to false
+          (txDetails) => txDetails.expiry
         )
       ),
     [oQuote]
@@ -944,7 +977,6 @@ export const Swap = ({
       ),
     [oPoolAddress, oSourceAssetWB, sourceAsset, amountToSwapMax1e8, sourceAssetDecimal, oQuote] // Include both quote dependencies
   )
-
   // Check to see slippage greater than tolerance
   // This is handled by thornode
   const isCausedSlippage = useMemo(() => {
@@ -984,15 +1016,21 @@ export const Swap = ({
     }
   }, [rateDirection, sourceAsset, sourceAssetPrice, targetAsset, targetAssetPrice])
 
-  const needApprovement = useMemo(() => {
+  const needApprovement: O.Option<boolean> = useMemo(() => {
     // not needed for users with locked or not imported wallets
-    if (!hasImportedKeystore(keystore) || isLocked(keystore)) return false
-    // Other chains than ETH do not need an approvement
-    if (!isEthChain(sourceChain)) return false
-    // ETH does not need to be approved
-    if (isEthAsset(sourceAsset)) return false
-    // ERC20 token does need approvement only
-    return isEthTokenAsset(sourceAsset)
+    if (!hasImportedKeystore(keystore) || isLocked(keystore)) return O.some(false)
+
+    // ERC20 token does need approval only
+    switch (sourceChain) {
+      case ETHChain:
+        return isEthAsset(sourceAsset) ? O.some(false) : O.some(isEthTokenAsset(sourceAsset))
+      case AVAXChain:
+        return isAvaxAsset(sourceAsset) ? O.some(false) : O.some(isAvaxTokenAsset(sourceAsset))
+      case BSCChain:
+        return isBscAsset(sourceAsset) ? O.some(false) : O.some(isBscTokenAsset(sourceAsset))
+      default:
+        return O.none
+    }
   }, [keystore, sourceAsset, sourceChain])
 
   const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
@@ -1000,12 +1038,24 @@ export const Swap = ({
       oPoolAddress,
       O.chain(({ router }) => router)
     )
-    const oTokenAddress: O.Option<string> = getEthTokenAddress(sourceAsset)
+
+    const oTokenAddress: O.Option<string> = (() => {
+      switch (sourceChain) {
+        case ETHChain:
+          return getEthTokenAddress(sourceAsset)
+        case AVAXChain:
+          return getAvaxTokenAddress(sourceAsset)
+        case BSCChain:
+          return getBscTokenAddress(sourceAsset)
+        default:
+          return O.none
+      }
+    })()
 
     const oNeedApprovement: O.Option<boolean> = FP.pipe(
       needApprovement,
-      // `None` if needApprovement is `false`, no request then
-      O.fromPredicate((v) => !!v)
+      // Keep the existing Option<boolean>, no need for O.fromPredicate
+      O.map((v) => !!v)
     )
 
     return FP.pipe(
@@ -1020,7 +1070,7 @@ export const Swap = ({
         walletType
       }))
     )
-  }, [needApprovement, network, oPoolAddress, oSourceAssetWB, sourceAsset])
+  }, [needApprovement, network, oPoolAddress, oSourceAssetWB, sourceAsset, sourceChain])
 
   // Reload balances at `onMount`
   useEffect(() => {
@@ -1065,6 +1115,66 @@ export const Swap = ({
     [approveFeeRD]
   )
 
+  const priceApproveFee: CryptoAmount = useMemo(() => {
+    const assetAmount = new CryptoAmount(approveFee, swapFees.inFee.asset)
+
+    return FP.pipe(
+      PoolHelpers.getPoolPriceValue({
+        balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
+        poolDetails,
+        pricePool,
+        network
+      }),
+      O.fold(
+        () => new CryptoAmount(baseAmount(0), pricePool.asset), // Default value if None
+        (amount) => new CryptoAmount(amount, pricePool.asset) // Value if Some
+      )
+    )
+  }, [approveFee, swapFees.inFee.asset, poolDetails, pricePool, network])
+
+  const priceApproveFeeLabel = useMemo(
+    () =>
+      FP.pipe(
+        approveFeeRD,
+        RD.fold(
+          () => loadingString,
+          () => loadingString,
+          () => noDataString,
+          (_) =>
+            FP.pipe(
+              O.some(approveFee),
+              O.fold(
+                () => '',
+                (outFee: BaseAmount) => {
+                  const fee = formatAssetAmountCurrency({
+                    amount: baseToAsset(outFee),
+                    asset: sourceChainAsset,
+                    decimal: isUSDAsset(sourceChainAsset) ? 2 : 6,
+                    trimZeros: !isUSDAsset(sourceChainAsset)
+                  })
+                  const price = FP.pipe(
+                    O.some(priceApproveFee),
+                    O.map((cryptoAmount: CryptoAmount) =>
+                      eqAsset.equals(sourceAsset, cryptoAmount.asset)
+                        ? ''
+                        : formatAssetAmountCurrency({
+                            amount: cryptoAmount.assetAmount,
+                            asset: cryptoAmount.asset,
+                            decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
+                            trimZeros: !isUSDAsset(cryptoAmount.asset)
+                          })
+                    ),
+                    O.getOrElse(() => '')
+                  )
+                  return price ? `${price} (${fee})` : fee
+                }
+              )
+            )
+        )
+      ),
+    [approveFeeRD, approveFee, sourceChainAsset, priceApproveFee, sourceAsset]
+  )
+
   // State for values of `isApprovedERC20Token$`
   const {
     state: isApprovedState,
@@ -1084,14 +1194,13 @@ export const Swap = ({
     },
     [isApprovedERC20Token$, subscribeIsApprovedState]
   )
-
   // whenever `oApproveParams` has been updated,
   // `approveFeeParamsUpdated` needs to be called to update `approveFeesRD`
   // + `checkApprovedStatus` needs to be called
   useEffect(() => {
     FP.pipe(
       oApproveParams,
-      // Do nothing if prev. and current router a the same
+      // Do nothing if prev. and current router are the same
       O.filter((params) => !eqOApproveParams.equals(O.some(params), prevApproveParams.current)),
       // update ref
       O.map((params) => {
@@ -1370,10 +1479,38 @@ export const Swap = ({
     )
   }, [maxStreamingQuantity, streamingQuantity, streamingInterval])
 
+  // swap expiry progress bar
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentDate(new Date())
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [])
+
+  const renderSwapExpiry = useMemo(() => {
+    const quoteValidTime = 15 * 60 * 1000 // 15 minutes in milliseconds
+
+    const remainingTime = swapExpiry.getTime() - currentDate.getTime()
+    const remainingTimeInMinutes = Math.floor(remainingTime / (60 * 1000))
+
+    const progress = Math.max(0, (remainingTime / quoteValidTime) * 100)
+    setQuoteExpired(remainingTimeInMinutes < 1)
+    const expiryLabel =
+      remainingTimeInMinutes < 0 ? `Quote Expired` : `Quote expiring in ${remainingTimeInMinutes} minutes`
+
+    return (
+      <ProgressBar
+        key={'Quote expiry progress bar'}
+        percent={progress}
+        withLabel={true}
+        labels={[`${expiryLabel}`, ``]}
+      />
+    )
+  }, [swapExpiry, currentDate])
+
   // Progress bar for swap return comparison
   const renderStreamerReturns = useMemo(() => {
-    // calculate difference=(swapCount−1)/swapCount
-    //const priceExecution = streamingQuantity === 0 ? maxStreamingQuantity : streamingQuantity
     // Initialize percentageDifference
     let percentageDifference = 0
 
@@ -1537,7 +1674,11 @@ export const Swap = ({
       // Note: As long as we link to `viewblock` to open tx details in a browser,
       // `0x` needs to be removed from tx hash in case of ETH
       // @see https://github.com/thorchain/asgardex-electron/issues/1787#issuecomment-931934508
-      O.map((txHash) => (isEthChain(sourceChain) ? txHash.replace(/0x/i, '') : txHash))
+      O.map((txHash) =>
+        isEthChain(sourceChain) || isAvaxChain(sourceChain) || isBscChain(sourceChain)
+          ? txHash.replace(/0x/i, '')
+          : txHash
+      )
     )
 
     return (
@@ -1677,16 +1818,29 @@ export const Swap = ({
     ) {
       return <></>
     }
-
     // Select first error
     const error = oQuote.value.txEstimate.errors[0].split(':')
 
+    // Extract numerical value from error string
+    const match = error[1].match(/(\d+)/)
+    const numberString = match ? match[1] : null
+    const remainingText = error[1].replace(/\d+/g, '').trim()
+
+    const assetAmount = numberString
+      ? new CryptoAmount(convertBaseAmountDecimal(baseAmount(numberString), sourceAssetDecimal), sourceAsset)
+      : new CryptoAmount(baseAmount(0), sourceAsset)
+
     return (
       <ErrorLabel>
-        {intl.formatMessage({ id: 'swap.errors.amount.thornodeQuoteError' }, { error: error[1] })}
+        {numberString
+          ? intl.formatMessage(
+              { id: 'swap.errors.amount.thornodeQuoteError' },
+              { error: `${assetAmount.formatedAssetString()} ${remainingText}` }
+            )
+          : intl.formatMessage({ id: 'swap.errors.amount.thornodeQuoteError' }, { error: error[1] })}
       </ErrorLabel>
     )
-  }, [oQuote, intl])
+  }, [oQuote, sourceAsset, sourceAssetDecimal, intl])
 
   const sourceChainFeeErrorLabel: JSX.Element = useMemo(() => {
     if (!sourceChainFeeError) {
@@ -1751,7 +1905,7 @@ export const Swap = ({
 
   const isApproveFeeError = useMemo(() => {
     // ignore error check if we don't need to check allowance
-    if (!needApprovement) return false
+    if (O.isNone(needApprovement)) return false
 
     return sourceChainAssetAmount.lt(approveFee)
   }, [needApprovement, sourceChainAssetAmount, approveFee])
@@ -1810,7 +1964,7 @@ export const Swap = ({
 
   const isApproved = useMemo(
     () =>
-      !needApprovement ||
+      O.isNone(needApprovement) ||
       RD.isSuccess(approveState) ||
       FP.pipe(
         isApprovedState,
@@ -1821,17 +1975,15 @@ export const Swap = ({
       ),
     [approveState, isApprovedState, needApprovement]
   )
-
   const checkIsApproved = useMemo(() => {
-    if (!needApprovement) return false
+    if (O.isNone(needApprovement)) return false
     // ignore initial + loading states for `isApprovedState`
     return RD.isPending(isApprovedState)
   }, [isApprovedState, needApprovement])
 
   const checkIsApprovedError = useMemo(() => {
     // ignore error check if we don't need to check allowance
-    if (!needApprovement) return false
-
+    if (O.isNone(needApprovement)) return false
     return RD.isFailure(isApprovedState)
   }, [needApprovement, isApprovedState])
 
@@ -1927,7 +2079,8 @@ export const Swap = ({
       swapResultAmountMax.baseAmount.lte(zeroTargetBaseAmountMax1e8) ||
       O.isNone(oRecipientAddress) ||
       !canSwap ||
-      customAddressEditActive,
+      customAddressEditActive ||
+      quoteExpired,
     [
       disableSwapAction,
       lockedWallet,
@@ -1942,7 +2095,8 @@ export const Swap = ({
       zeroTargetBaseAmountMax1e8,
       oRecipientAddress,
       canSwap,
-      customAddressEditActive
+      customAddressEditActive,
+      quoteExpired
     ]
   )
 
@@ -2250,7 +2404,7 @@ export const Swap = ({
                 )}
               </>
             )}
-
+            <div className="w-full px-20px pb-10px">{renderSwapExpiry}</div>
             <div className={`mx-50px w-full px-10px font-main text-[12px] uppercase dark:border-gray1d`}>
               <BaseButton
                 className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
@@ -2291,6 +2445,10 @@ export const Swap = ({
 
                 {showDetails && (
                   <>
+                    <div className="flex w-full justify-between pl-10px text-[12px]">
+                      <div>{intl.formatMessage({ id: 'common.approve' })}</div>
+                      <div>{priceApproveFeeLabel}</div>
+                    </div>
                     <div className="flex w-full justify-between pl-10px text-[12px]">
                       <div>{intl.formatMessage({ id: 'common.fee.inbound' })}</div>
                       <div>{priceSwapInFeeLabel}</div>
@@ -2567,7 +2725,6 @@ export const Swap = ({
           </>
         )}
       </div>
-
       {renderPasswordConfirmationModal}
       {renderLedgerConfirmationModal}
       {renderTxModal}

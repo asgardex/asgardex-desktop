@@ -53,27 +53,27 @@ export const DEFAULT_CLIENT_URL: ClientUrl = {
     rpc: DEFAULT_THORNODE_RPC_URLS.mainnet
   }
 }
-const DEFAULT_URL_DOMAIN = 'thorchain.net'
-const DEFAULT_HTTPS = 'https://'
+// const DEFAULT_URL_DOMAIN = 'track.ninerealms.com'
+// const DEFAULT_HTTPS = 'https://'
 
-const buildExplorerUrl = (subdomain = '', path = '') => {
-  return `${DEFAULT_HTTPS}${subdomain ? `${subdomain}.` : ''}${DEFAULT_URL_DOMAIN}${path}`
-}
+// const buildExplorerUrl = (subdomain = '', path = '') => {
+//   return `${DEFAULT_HTTPS}${subdomain ? `${subdomain}.` : ''}${DEFAULT_URL_DOMAIN}${path}`
+// }
 
-export const DEFAULT_EXPLORER_URLS = {
-  root: {
-    [Network.Testnet]: buildExplorerUrl(),
-    [Network.Stagenet]: buildExplorerUrl('stagenet'),
-    [Network.Mainnet]: buildExplorerUrl()
-  },
-  tx: {
-    [Network.Testnet]: buildExplorerUrl('', '/tx'),
-    [Network.Stagenet]: buildExplorerUrl('stagenet', '/tx'),
-    [Network.Mainnet]: buildExplorerUrl('', '/tx')
-  },
-  address: {
-    [Network.Testnet]: buildExplorerUrl('', '/address'),
-    [Network.Stagenet]: buildExplorerUrl('stagenet', '/address'),
-    [Network.Mainnet]: buildExplorerUrl('', '/address')
-  }
-}
+// export const DEFAULT_EXPLORER_URLS = {
+//   root: {
+//     [Network.Testnet]: buildExplorerUrl(),
+//     [Network.Stagenet]: buildExplorerUrl('stagenet'),
+//     [Network.Mainnet]: buildExplorerUrl()
+//   },
+//   tx: {
+//     [Network.Testnet]: buildExplorerUrl('', '/tx'),
+//     [Network.Stagenet]: buildExplorerUrl('stagenet', '/tx'),
+//     [Network.Mainnet]: buildExplorerUrl('', '/tx')
+//   },
+//   address: {
+//     [Network.Testnet]: buildExplorerUrl('', '/address'),
+//     [Network.Stagenet]: buildExplorerUrl('stagenet', '/address'),
+//     [Network.Mainnet]: buildExplorerUrl('', '/address')
+//   }
+// }

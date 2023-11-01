@@ -56,6 +56,11 @@ export const HeaderTitleWrapper = styled.div`
   `}
 `
 
+export const Input = styled(A.Input)`
+  background: inherit !important;
+  color: ${palette('text', 0)};
+`
+
 export const HeaderTitle = styled(UILabel)`
   text-transform: uppercase;
   font-size: 24px;

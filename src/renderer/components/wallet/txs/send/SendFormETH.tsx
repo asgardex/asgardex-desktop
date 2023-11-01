@@ -124,7 +124,7 @@ export const SendFormETH: React.FC<Props> = (props): JSX.Element => {
     [oFees, selectedFeeOption]
   )
 
-  const oEthAmount: O.Option<BaseAmount> = useMemo(() => {
+  const oAssetAmount: O.Option<BaseAmount> = useMemo(() => {
     // return balance of current asset (if ETH)
     if (isEthAsset(asset)) {
       return O.some(balance.amount)
@@ -132,23 +132,22 @@ export const SendFormETH: React.FC<Props> = (props): JSX.Element => {
     // or check list of other assets to get eth balance
     return FP.pipe(balances, getEthAmountFromBalances, O.map(assetToBase))
   }, [asset, balance.amount, balances])
-
   const isFeeError = useMemo(() => {
     return FP.pipe(
-      sequenceTOption(selectedFee, oEthAmount),
+      sequenceTOption(selectedFee, oAssetAmount),
       O.fold(
         // Missing (or loading) fees does not mean we can't sent something. No error then.
         () => false,
-        ([fee, ethAmount]) => ethAmount.lt(fee)
+        ([fee, assetAmount]) => assetAmount.lt(fee)
       )
     )
-  }, [oEthAmount, selectedFee])
+  }, [oAssetAmount, selectedFee])
 
   const renderFeeError = useMemo(() => {
     if (!isFeeError) return <></>
 
     const amount: BaseAmount = FP.pipe(
-      oEthAmount,
+      oAssetAmount,
       // no eth asset == zero amount
       O.getOrElse(() => ZERO_BASE_AMOUNT)
     )
@@ -169,7 +168,7 @@ export const SendFormETH: React.FC<Props> = (props): JSX.Element => {
         {msg}
       </Styled.Label>
     )
-  }, [oEthAmount, intl, isFeeError])
+  }, [oAssetAmount, intl, isFeeError])
 
   const feeOptionsLabel: Record<FeeOption, string> = useMemo(
     () => ({
@@ -219,18 +218,18 @@ export const SendFormETH: React.FC<Props> = (props): JSX.Element => {
   // max amount for eth
   const maxAmount: BaseAmount = useMemo(() => {
     const maxEthAmount: BigNumber = FP.pipe(
-      sequenceTOption(selectedFee, oEthAmount),
+      sequenceTOption(selectedFee, oAssetAmount),
       O.fold(
         // Set maxAmount to zero if we dont know anything about eth and fee amounts
         () => ZERO_BN,
-        ([fee, ethAmount]) => {
-          const max = ethAmount.amount().minus(fee.amount())
+        ([fee, assetAmount]) => {
+          const max = assetAmount.amount().minus(fee.amount())
           return max.isGreaterThan(0) ? max : ZERO_BN
         }
       )
     )
     return isEthAsset(asset) ? baseAmount(maxEthAmount, balance.amount.decimal) : balance.amount
-  }, [selectedFee, oEthAmount, asset, balance.amount])
+  }, [selectedFee, oAssetAmount, asset, balance.amount])
 
   useEffect(() => {
     FP.pipe(

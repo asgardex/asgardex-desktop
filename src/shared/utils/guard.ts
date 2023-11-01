@@ -5,7 +5,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as IOG from 'io-ts/Guard'
 
 import { Network } from '../api/types'
-import { EthHDMode } from '../ethereum/types'
+import { EvmHDMode } from '../evm/types'
 import { HDMode, WalletType } from '../wallet/types'
 import { EnabledChain, isEnabledChain } from './chain'
 
@@ -34,9 +34,9 @@ export const isWalletType = (u: unknown): u is WalletType => u === 'keystore' ||
 export const isLedgerWallet = (walletType: WalletType): boolean => walletType === 'ledger'
 export const isKeystoreWallet = (walletType: WalletType): boolean => walletType === 'keystore'
 
-export const isEthHDMode = (u: unknown): u is EthHDMode => u === 'legacy' || u === 'ledgerlive' || u === 'metamask'
+export const isEvmHDMode = (u: unknown): u is EvmHDMode => u === 'legacy' || u === 'ledgerlive' || u === 'metamask'
 
-export const isHDMode = (u: unknown): u is HDMode => u === 'default' || isEthHDMode(u)
+export const isHDMode = (u: unknown): u is HDMode => u === 'default' || isEvmHDMode(u)
 
 const assetGuard = IOG.struct({ symbol: nonEmptyStringGuard, ticker: nonEmptyStringGuard, chain: chainGuard })
 

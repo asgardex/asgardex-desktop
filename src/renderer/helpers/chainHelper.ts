@@ -1,23 +1,15 @@
-import { BNBChain } from '@xchainjs/xchain-binance'
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
-import { BCHChain } from '@xchainjs/xchain-bitcoincash'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
-import { DOGEChain } from '@xchainjs/xchain-doge'
-import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
+import { AssetBNB, BNBChain } from '@xchainjs/xchain-binance'
+import { AssetBTC, BTCChain } from '@xchainjs/xchain-bitcoin'
+import { AssetBCH, BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { AssetBSC, BSCChain } from '@xchainjs/xchain-bsc'
+import { AssetATOM, GAIAChain } from '@xchainjs/xchain-cosmos'
+import { AssetDOGE, DOGEChain } from '@xchainjs/xchain-doge'
+import { AssetETH, ETHChain } from '@xchainjs/xchain-ethereum'
+import { AssetLTC, LTCChain } from '@xchainjs/xchain-litecoin'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Chain } from '@xchainjs/xchain-util'
 
-import {
-  AssetATOM,
-  AssetBCH,
-  AssetBNB,
-  AssetBTC,
-  AssetDOGE,
-  AssetETH,
-  AssetLTC,
-  AssetRuneNative
-} from '../../shared/utils/asset'
 import { isEnabledChain } from '../../shared/utils/chain'
 import { eqChain } from './fp/eq'
 
@@ -31,6 +23,10 @@ export const getChainAsset = (chain: Chain): Asset => {
       return AssetBTC
     case ETHChain:
       return AssetETH
+    case AVAXChain:
+      return AssetAVAX
+    case BSCChain:
+      return AssetBSC
     case THORChain:
       return AssetRuneNative
     case GAIAChain:
@@ -68,6 +64,16 @@ export const isBnbChain = (chain: Chain): boolean => eqChain.equals(chain, BNBCh
  * Check whether chain is ETH chain
  */
 export const isEthChain = (chain: Chain): boolean => eqChain.equals(chain, ETHChain)
+
+/**
+ * Check whether chain is AVAX chain
+ */
+export const isAvaxChain = (chain: Chain): boolean => eqChain.equals(chain, AVAXChain)
+
+/**
+ * Check whether chain is BSC chain
+ */
+export const isBscChain = (chain: Chain): boolean => eqChain.equals(chain, BSCChain)
 
 /**
  * Check whether chain is BCH chain

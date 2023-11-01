@@ -1,6 +1,8 @@
+import { AssetAVAX } from '@xchainjs/xchain-avax'
 import { AssetBNB } from '@xchainjs/xchain-binance'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { AssetBCH } from '@xchainjs/xchain-bitcoincash'
+import { AssetBSC } from '@xchainjs/xchain-bsc'
 import { AssetATOM } from '@xchainjs/xchain-cosmos'
 import { AssetDOGE } from '@xchainjs/xchain-doge'
 import { AssetETH } from '@xchainjs/xchain-ethereum'
@@ -30,6 +32,8 @@ export {
   AssetATOM,
   AssetLTC,
   AssetDOGE,
+  AssetBSC,
+  AssetAVAX,
   AssetETH,
   AssetSynthEth,
   AssetRune67C,

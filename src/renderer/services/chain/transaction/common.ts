@@ -1,14 +1,15 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { TxHash } from '@xchainjs/xchain-client'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { THORChain } from '@xchainjs/xchain-thorchain'
-import { AssetRuneNative } from '@xchainjs/xchain-thorchain-query'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import { Chain } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
@@ -18,9 +19,11 @@ import * as Rx from 'rxjs'
 import { isEnabledChain } from '../../../../shared/utils/chain'
 import { DEFAULT_FEE_OPTION } from '../../../components/wallet/txs/send/Send.const'
 import { LiveData, liveData } from '../../../helpers/rx/liveData'
+import * as AVAX from '../../avax'
 import * as BNB from '../../binance'
 import * as BTC from '../../bitcoin'
 import * as BCH from '../../bitcoincash'
+import * as BSC from '../../bsc'
 import * as COSMOS from '../../cosmos'
 import * as DOGE from '../../doge'
 import * as ETH from '../../ethereum'
@@ -71,6 +74,12 @@ export const sendTx$ = ({
 
     case ETHChain:
       return ETH.sendTx({ walletType, asset, recipient, amount, memo, feeOption, walletIndex, hdMode })
+
+    case AVAXChain:
+      return AVAX.sendTx({ walletType, asset, recipient, amount, memo, feeOption, walletIndex, hdMode })
+
+    case BSCChain:
+      return BSC.sendTx({ walletType, asset, recipient, amount, memo, feeOption, walletIndex, hdMode })
 
     case THORChain:
       return THOR.sendTx({ walletType, amount, asset, memo, recipient, walletIndex, hdMode })
@@ -173,6 +182,30 @@ export const sendPoolTx$ = ({
         hdMode,
         feeOption
       })
+    case AVAXChain:
+      return AVAX.sendPoolTx$({
+        walletType,
+        router,
+        recipient,
+        asset,
+        amount,
+        memo,
+        walletIndex,
+        hdMode,
+        feeOption
+      })
+    case BSCChain:
+      return BSC.sendPoolTx$({
+        walletType,
+        router,
+        recipient,
+        asset,
+        amount,
+        memo,
+        walletIndex,
+        hdMode,
+        feeOption
+      })
 
     case THORChain:
       return THOR.sendPoolTx$({ walletType, amount, asset, memo, walletIndex, hdMode })
@@ -204,6 +237,10 @@ export const txStatusByChain$ = ({ txHash, chain }: { txHash: TxHash; chain: Cha
       return BTC.txStatus$(txHash, O.none)
     case ETHChain:
       return ETH.txStatus$(txHash, O.none)
+    case AVAXChain:
+      return AVAX.txStatus$(txHash, O.none)
+    case BSCChain:
+      return BSC.txStatus$(txHash, O.none)
     case THORChain:
       return THOR.txStatus$(txHash, O.none)
     case GAIAChain:
@@ -238,6 +275,10 @@ export const poolTxStatusByChain$ = ({
   switch (chain) {
     case ETHChain:
       return ETH.txStatus$(txHash, oAssetAddress)
+    case AVAXChain:
+      return AVAX.txStatus$(txHash, oAssetAddress)
+    case BSCChain:
+      return BSC.txStatus$(txHash, oAssetAddress)
     case BNBChain:
     case BTCChain:
     case THORChain:

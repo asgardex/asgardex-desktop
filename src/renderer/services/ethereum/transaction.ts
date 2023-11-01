@@ -19,27 +19,26 @@ import {
   ipcLedgerSendTxParamsIO
 } from '../../../shared/api/io'
 import { LedgerError, Network } from '../../../shared/api/types'
-import { ROUTER_ABI } from '../../../shared/ethereum/abi'
 import { DEPOSIT_EXPIRATION_OFFSET, ETHAddress } from '../../../shared/ethereum/const'
-import { getBlocktime } from '../../../shared/ethereum/provider'
-import { isError, isEthHDMode, isLedgerWallet } from '../../../shared/utils/guard'
+import { ROUTER_ABI } from '../../../shared/evm/abi'
+import { getBlocktime } from '../../../shared/evm/provider'
+import { isError, isEvmHDMode, isLedgerWallet } from '../../../shared/utils/guard'
 import { addressInERC20Whitelist, getEthAssetAddress } from '../../helpers/assetHelper'
 import { sequenceSOption } from '../../helpers/fpHelpers'
 import { LiveData } from '../../helpers/rx/liveData'
 import { Network$ } from '../app/types'
 import { ChainTxFeeOption } from '../chain/const'
 import * as C from '../clients'
-import { ApiError, ErrorId, TxHashLD } from '../wallet/types'
 import {
   ApproveParams,
-  Client$,
-  Client as EthClient,
   TransactionService,
   IsApprovedLD,
   SendPoolTxParams,
   IsApproveParams,
   SendTxParams
-} from './types'
+} from '../evm/types'
+import { ApiError, ErrorId, TxHashLD } from '../wallet/types'
+import { Client$, Client as EthClient } from './types'
 
 export const createTransactionService = (client$: Client$, network$: Network$): TransactionService => {
   const common = C.createTransactionService(client$)
@@ -116,17 +115,16 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       chain: ETHChain,
       network,
       asset: params.asset,
-      router: O.toUndefined(params.router),
       amount: params.amount,
-      memo: params.memo,
+      router: O.toUndefined(params.router),
       recipient: params.recipient,
+      memo: params.memo,
       walletIndex: params.walletIndex,
       feeOption: params.feeOption,
       nodeUrl: undefined,
       hdMode: params.hdMode
     }
     const encoded = ipcLedgerDepositTxParamsIO.encode(ipcParams)
-
     return FP.pipe(
       Rx.from(window.apiHDWallet.depositLedgerTx(encoded)),
       RxOp.switchMap(
@@ -216,7 +214,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     walletIndex,
     hdMode
   }: ApproveParams): TxHashLD => {
-    if (!isEthHDMode(hdMode)) {
+    if (!isEvmHDMode(hdMode)) {
       return Rx.of(
         RD.failure({
           errorId: ErrorId.APPROVE_LEDGER_TX,
@@ -230,7 +228,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       contractAddress,
       spenderAddress,
       walletIndex,
-      ethHdMode: hdMode
+      evmHdMode: hdMode
     }
     const encoded = ipcLedgerApproveERC20TokenParamsIO.encode(ipcParams)
 
@@ -343,6 +341,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       nodeUrl: undefined,
       hdMode: params.hdMode
     }
+
     const encoded = ipcLedgerSendTxParamsIO.encode(ipcParams)
 
     return FP.pipe(

@@ -11,12 +11,13 @@ import * as RxOp from 'rxjs/operators'
 
 import { ErrorView } from '../../../components/shared/error'
 import { LoadingView } from '../../../components/shared/loading'
-import { BackLinkButton } from '../../../components/uielements/button'
+import { BackLinkButton, RefreshButton } from '../../../components/uielements/button'
 import { Interact } from '../../../components/wallet/txs/interact'
 import { getInteractTypeFromNullableString } from '../../../components/wallet/txs/interact/Interact.helpers'
 import { InteractType } from '../../../components/wallet/txs/interact/Interact.types'
 import { InteractForm } from '../../../components/wallet/txs/interact/InteractForm'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
+import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { eqOSelectedWalletAsset } from '../../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../../helpers/fpHelpers'
@@ -27,6 +28,7 @@ import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import * as walletRoutes from '../../../routes/wallet'
 import { FeeRD } from '../../../services/chain/types'
+import { reloadBalancesByChain } from '../../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAssetRD } from '../../../services/wallet/types'
 import * as Styled from './InteractView.styles'
@@ -68,6 +70,7 @@ export const InteractView: React.FC = () => {
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(THORChain))
 
   const { validateAddress } = useValidateAddress(THORChain)
+  const { thorchainQuery } = useThorchainQueryContext()
 
   const oWalletBalance = useMemo(() => {
     return FP.pipe(
@@ -98,6 +101,9 @@ export const InteractView: React.FC = () => {
       ),
     RD.initial
   )
+  const reloadBalance = useCallback(() => {
+    reloadBalancesByChain(THORChain) // only chain thor should be here
+  }, [])
 
   const interactTypeChanged = useCallback(
     (type: InteractType) => {
@@ -109,6 +115,9 @@ export const InteractView: React.FC = () => {
     },
     [navigate]
   )
+  const reloadHandler = useCallback(() => {
+    reloadBalance()
+  }, [reloadBalance])
 
   return FP.pipe(
     sequenceTRD(interactTypeRD, selectedAssetRD),
@@ -129,6 +138,7 @@ export const InteractView: React.FC = () => {
               <Col>
                 <BackLinkButton />
               </Col>
+              <RefreshButton className="absolute right-0" onClick={reloadHandler} />
             </Row>
           </div>
 
@@ -156,6 +166,7 @@ export const InteractView: React.FC = () => {
                       fee={feeRD}
                       reloadFeesHandler={reloadFees}
                       validatePassword$={validatePassword$}
+                      thorchainQuery={thorchainQuery}
                       network={network}
                     />
                   </Interact>

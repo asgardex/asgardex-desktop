@@ -159,19 +159,25 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
     () => ({
       render: ({ asset, amount }: WalletBalance) => {
         const balance = formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, decimal: 3 })
-        const price = FP.pipe(
-          getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool, network }),
-          O.map((price) => {
-            const priceAmount = baseAmount(price.amount(), amount.decimal)
-            return formatAssetAmountCurrency({
-              amount: baseToAsset(priceAmount),
-              asset: pricePool.asset,
-              decimal: isUSDAsset(pricePool.asset) ? 2 : 4
-            })
-          }),
-          // "empty" label if we don't get a price value
-          O.getOrElse(() => noDataString)
-        )
+        let price: string
+        if (isUSDAsset(asset)) {
+          price = balance.toString()
+        } else {
+          price = FP.pipe(
+            getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool, network }),
+            O.map((price) => {
+              const priceAmount = baseAmount(price.amount(), amount.decimal)
+
+              return formatAssetAmountCurrency({
+                amount: baseToAsset(priceAmount),
+                asset: pricePool.asset,
+                decimal: isUSDAsset(pricePool.asset) ? 2 : 4
+              })
+            }),
+            // "empty" label if we don't get a price value
+            O.getOrElse(() => noDataString)
+          )
+        }
         return (
           <div className="flex flex-col items-end justify-center font-main">
             <div className="text-16 text-text0 dark:text-text0d">{hidePrivateData ? hiddenString : balance}</div>
@@ -445,6 +451,9 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
             if (filterByValue) {
               sortedBalances = sortedBalances.filter(({ amount, asset }) => {
+                if (isUSDAsset(asset) && !asset.synth && amount.amount().gt(1)) {
+                  return true
+                }
                 const usdValue = getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool, network })
                 return (
                   O.isSome(usdValue) &&

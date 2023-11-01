@@ -22,7 +22,7 @@ import { ErrorView } from '../../components/shared/error'
 import { Spin } from '../../components/shared/loading'
 import { BackLinkButton, FlatButton, RefreshButton } from '../../components/uielements/button'
 import { useChainContext } from '../../contexts/ChainContext'
-import { useEthereumContext } from '../../contexts/EthereumContext'
+import { useEvmContext } from '../../contexts/EvmContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useThorchainQueryContext } from '../../contexts/ThorchainQueryContext'
@@ -88,7 +88,8 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   const { getSaverProvider$, reloadSaverProvider } = useThorchainContext()
 
   const { assetWithDecimal$, addressByChain$, reloadSaverDepositFee, saverDeposit$, saverWithdraw$ } = useChainContext()
-  const { approveERC20Token$, isApprovedERC20Token$, approveFee$, reloadApproveFee } = useEthereumContext()
+
+  const { approveERC20Token$, isApprovedERC20Token$, approveFee$, reloadApproveFee } = useEvmContext(chain)
   const {
     balancesState$,
     reloadBalancesByChain,

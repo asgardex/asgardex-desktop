@@ -1,49 +1,34 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { BNBChain } from '@xchainjs/xchain-binance'
-import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
-import { BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
-import { BCHChain } from '@xchainjs/xchain-bitcoincash'
-import { COSMOS_DECIMAL } from '@xchainjs/xchain-cosmos'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
-import { DOGE_DECIMAL } from '@xchainjs/xchain-doge'
-import { DOGEChain } from '@xchainjs/xchain-doge'
-import { ETHChain, ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
-import { LTC_DECIMAL } from '@xchainjs/xchain-litecoin'
-import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
+import { MidgardQuery } from '@xchainjs/xchain-midgard-query'
+import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { Asset } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isEnabledChain } from '../../../shared/utils/chain'
-import { BNB_DECIMAL, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
-// import { getERC20Decimal } from '../ethereum/common'
+import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
+import { isBscChain, isThorChain } from '../../helpers/chainHelper'
 import { AssetWithDecimalLD } from './types'
-
+// gets asset decimal from midgard-query
 const getDecimal = (asset: Asset): Promise<number> => {
   const { chain } = asset.synth ? AssetRuneNative : asset
 
-  if (!isEnabledChain(chain)) return Promise.reject(`${chain} is not supported for 'getDecimal'`)
-
-  switch (chain) {
-    case BNBChain:
-      return Promise.resolve(BNB_DECIMAL)
-    case BTCChain:
-      return Promise.resolve(BTC_DECIMAL)
-    case ETHChain:
-      return Promise.resolve(ETH_GAS_ASSET_DECIMAL)
-    case THORChain:
-      return Promise.resolve(THORCHAIN_DECIMAL)
-    case DOGEChain:
-      return Promise.resolve(DOGE_DECIMAL)
-    case GAIAChain:
-      return Promise.resolve(COSMOS_DECIMAL)
-    case BCHChain:
-      return Promise.resolve(BCH_DECIMAL)
-    case LTCChain:
-      return Promise.resolve(LTC_DECIMAL)
+  if (!isEnabledChain(chain)) {
+    return Promise.reject(new Error(`${chain} is not supported for 'getDecimal'`))
   }
+  // @St0rmzy find out why bsc.bnb on midgard -1 instead of being the correct decimals.
+  if (isBscChain(chain)) {
+    return Promise.resolve(BSC_GAS_ASSET_DECIMAL)
+  }
+  // @St0rmzy find out why bsc.bnb on midgard -1 instead of being the correct decimals.
+  if (isThorChain(chain)) {
+    return Promise.resolve(THORCHAIN_DECIMAL)
+  }
+
+  const midgardQuery = new MidgardQuery()
+
+  return Rx.from(midgardQuery.getDecimalForAsset(asset)).toPromise()
 }
 
 export const assetWithDecimal$ = (asset: Asset): AssetWithDecimalLD =>

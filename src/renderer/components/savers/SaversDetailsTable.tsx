@@ -6,13 +6,26 @@ import { ZERO_BN } from '../../const'
 import { isUSDAsset } from '../../helpers/assetHelper'
 import { ParentProps } from '../../views/wallet/SaversDetailsView'
 import * as Styled from '../PoolShares/PoolShares.styles'
+import { AssetIcon } from '../uielements/assets/assetIcon'
 import { SaversButton } from '../uielements/button/SaversButton'
 
 export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX.Element => {
   const columns = [
     {
-      title: 'Asset',
+      title: 'Chain',
       dataIndex: 'key',
+      key: 'key',
+      render: (key: string) => {
+        const assetSplit = key.split('.')
+        const assetDetail = assetDetails.find(
+          (detail) => detail.asset.chain === assetSplit[0] && detail.asset.symbol === assetSplit[1]
+        )
+        return assetDetail ? <AssetIcon asset={assetDetail.asset} size="small" network={assetDetail.network} /> : 'N/A'
+      }
+    },
+    {
+      title: 'Asset',
+      dataIndex: 'assetTicker',
       key: 'asset'
     },
     {
@@ -49,7 +62,10 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       title: 'Manage',
       key: 'manage',
       render: (record: typeof dataSource[0]) => {
-        const assetDetail = assetDetails.find((detail) => detail.asset.symbol === record.key)
+        const assetDetail = assetDetails.find(
+          (detail) =>
+            detail.asset.chain === record.key.split('.')[0] && detail.asset.symbol === record.key.split('.')[1]
+        )
         return assetDetail ? <SaversButton asset={assetDetail.asset} isTextView={true}></SaversButton> : 'N/A'
       }
     }
@@ -83,10 +99,11 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       asset: priceAsset,
       decimal: isUSDAsset(priceAsset) ? 2 : 6
     })
+    const assetTicker = asset.ticker
 
     const percentLabel = `${formatBN(percent.gt(0) ? percent : ZERO_BN, 4)}%`
     return {
-      key: asset.symbol,
+      key: `${asset.chain}.${asset.symbol}`,
       depositValueLabel,
       redeemValueLabel,
       priceDepositLabel,
@@ -94,8 +111,8 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       growthValue,
       growthValueLabel,
       percentLabel,
-      priceGrowthLabel
-      // your formatted labels and values
+      priceGrowthLabel,
+      assetTicker
     }
   })
 

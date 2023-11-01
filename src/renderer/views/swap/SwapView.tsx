@@ -27,7 +27,7 @@ import { Button, RefreshButton } from '../../components/uielements/button'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useAppContext } from '../../contexts/AppContext'
 import { useChainContext } from '../../contexts/ChainContext'
-import { useEthereumContext } from '../../contexts/EthereumContext'
+import { useEvmContext } from '../../contexts/EvmContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useThorchainQueryContext } from '../../contexts/ThorchainQueryContext'
@@ -108,7 +108,8 @@ const SuccessRouteView: React.FC<Props> = ({
   const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
   const { mimirHalt } = useMimirHalt()
 
-  const { reloadApproveFee, approveFee$, approveERC20Token$, isApprovedERC20Token$ } = useEthereumContext()
+  // switches sourcechain context eth | avax | bsc - needed for approve
+  const { reloadApproveFee, approveFee$, approveERC20Token$, isApprovedERC20Token$ } = useEvmContext(sourceChain)
 
   const keystore = useObservableState(keystoreState$, O.none)
 
@@ -347,7 +348,6 @@ const SuccessRouteView: React.FC<Props> = ({
               if (!hasRuneAsset) {
                 assetDetails = [{ asset: AssetRuneNative, assetPrice: bn(1) }, ...assetDetails]
               }
-
               const sourceAssetDetail = FP.pipe(Utils.pickPoolAsset(assetDetails, sourceAsset.asset), O.toNullable)
               // Make sure sourceAsset is available in pools
               if (!sourceAssetDetail)

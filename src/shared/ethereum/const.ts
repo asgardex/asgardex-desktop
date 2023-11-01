@@ -5,7 +5,6 @@ import { EtherscanProvider } from '@xchainjs/xchain-evm-providers'
 import { BigNumber, ethers } from 'ethers'
 
 import { envOrDefault } from '../utils/env'
-import { EthHDMode } from './types'
 
 export const DEFAULT_APPROVE_GAS_LIMIT_FALLBACK = '65000'
 
@@ -18,8 +17,6 @@ export const FEE_BOUNDS: Record<Network, FeeBounds | undefined> = {
     upper: 150_000_000_000_000_0000 // 1.5 ETH (in case testnet gas fees are going to be crazy)
   }
 }
-
-export const DEFAULT_ETH_HD_MODE: EthHDMode = 'ledgerlive'
 
 export const DEPOSIT_EXPIRATION_OFFSET = 15 * 60 // 15min in seconds
 

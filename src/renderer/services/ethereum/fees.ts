@@ -15,7 +15,8 @@ import { observableState } from '../../helpers/stateHelper'
 import { FeeLD } from '../chain/types'
 import * as C from '../clients'
 import { FeesLD } from '../clients'
-import { FeesService, Client$, PollInTxFeeParams, ApproveFeeHandler, ApproveParams } from './types'
+import { FeesService, PollInTxFeeParams, ApproveFeeHandler, ApproveParams } from '../evm/types'
+import { Client$ } from './types'
 
 export const ETH_OUT_TX_GAS_LIMIT = ethers.BigNumber.from('35609')
 export const ERC20_OUT_TX_GAS_LIMIT = ethers.BigNumber.from('49610')

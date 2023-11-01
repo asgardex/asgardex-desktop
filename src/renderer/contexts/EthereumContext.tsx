@@ -5,8 +5,7 @@ import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { DEFAULT_ETH_HD_MODE } from '../../shared/ethereum/const'
-import { EthHDMode } from '../../shared/ethereum/types'
+import { DEFAULT_EVM_HD_MODE, EvmHDMode } from '../../shared/evm/types'
 import {
   client$,
   clientState$,
@@ -46,23 +45,23 @@ export type EthereumContextValue = {
   isApprovedERC20Token$: typeof isApprovedERC20Token$
   approveFee$: typeof approveFee$
   reloadApproveFee: typeof reloadApproveFee
-  ethHDMode$: Rx.Observable<EthHDMode>
-  updateEthHDMode: (m: EthHDMode) => void
+  ethHDMode$: Rx.Observable<EvmHDMode>
+  updateEvmHDMode: (m: EvmHDMode) => void
 }
 
 const ethHDMode$ = FP.pipe(
   getStorageState$,
   RxOp.map(
     FP.flow(
-      O.map(({ ethDerivationMode }) => ethDerivationMode),
-      O.getOrElse(() => DEFAULT_ETH_HD_MODE)
+      O.map(({ evmDerivationMode }) => evmDerivationMode),
+      O.getOrElse(() => DEFAULT_EVM_HD_MODE)
     )
   ),
   RxOp.distinctUntilChanged()
 )
 
-const updateEthHDMode = (mode: EthHDMode) => {
-  modifyStorage(O.some({ ethDerivationMode: mode }))
+const updateEvmHDMode = (mode: EvmHDMode) => {
+  modifyStorage(O.some({ evmDerivationMode: mode }))
 }
 
 const initialContext: EthereumContextValue = {
@@ -84,7 +83,7 @@ const initialContext: EthereumContextValue = {
   approveFee$,
   reloadApproveFee,
   ethHDMode$,
-  updateEthHDMode
+  updateEvmHDMode
 }
 
 const EthereumContext = createContext<EthereumContextValue | null>(null)

@@ -35,7 +35,10 @@ const EXTERNALS_WHITELIST = [
   'stagenet-thornode.ninerealms.com',
   'stagenet-rpc.ninerealms.com',
   'cosmos.bigdipper.live',
-  'explorer.theta-testnet.polypore.xyz'
+  'explorer.theta-testnet.polypore.xyz',
+  'snowtrace.io',
+  'bscscan.com',
+  'track.ninerealms.com'
 ]
 
 export const openExternal = (target: string) => {

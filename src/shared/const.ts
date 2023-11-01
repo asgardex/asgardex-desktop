@@ -1,6 +1,6 @@
 import { PoolsStorageEncoded } from './api/io'
 import { StoreFilesContent, UserNodesStorage } from './api/types'
-import { DEFAULT_ETH_HD_MODE } from './ethereum/const'
+import { DEFAULT_EVM_HD_MODE } from './evm/types'
 import { DEFAULT_LOCALE } from './i18n/const'
 import { DEFAULT_MIDGARD_URLS } from './midgard/const'
 import { DEFAULT_THORNODE_API_URLS, DEFAULT_THORNODE_RPC_URLS } from './thorchain/const'
@@ -55,7 +55,7 @@ const COMMON_STORAGE_VERSION = '1'
 export const DEFAULT_STORAGES: StoreFilesContent = {
   common: {
     version: COMMON_STORAGE_VERSION,
-    ethDerivationMode: DEFAULT_ETH_HD_MODE,
+    evmDerivationMode: DEFAULT_EVM_HD_MODE,
     locale: DEFAULT_LOCALE,
     midgard: DEFAULT_MIDGARD_URLS,
     thornodeApi: DEFAULT_THORNODE_API_URLS,

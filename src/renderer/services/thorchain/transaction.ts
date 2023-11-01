@@ -56,7 +56,6 @@ export const createTransactionService = (
       hdMode: params.hdMode
     }
     const encoded = ipcLedgerDepositTxParamsIO.encode(depositLedgerTxParams)
-
     return FP.pipe(
       Rx.from(window.apiHDWallet.depositLedgerTx(encoded)),
       RxOp.switchMap(

@@ -8,6 +8,7 @@ import * as Rx from 'rxjs'
 import { getMockRDValueFactory, RDStatus } from '../../../../../shared/mock/rdByStatus'
 import { mockValidatePassword$ } from '../../../../../shared/mock/wallet'
 import { WalletType } from '../../../../../shared/wallet/types'
+import { useThorchainQueryContext } from '../../../../contexts/ThorchainQueryContext'
 import { mockWalletBalance } from '../../../../helpers/test/testWalletHelper'
 import { FeeRD } from '../../../../services/chain/types'
 import { InteractStateHandler } from '../../../../services/thorchain/types'
@@ -53,6 +54,7 @@ const Template = ({ interactType, txRDStatus, feeRDStatus, balance, validAddress
       )
     })
   }
+  const { thorchainQuery } = useThorchainQueryContext()
 
   const feeRD: FeeRD = FP.pipe(
     feeRDStatus,
@@ -79,6 +81,7 @@ const Template = ({ interactType, txRDStatus, feeRDStatus, balance, validAddress
       reloadFeesHandler={() => console.log('reload fees')}
       validatePassword$={mockValidatePassword$}
       network="testnet"
+      thorchainQuery={thorchainQuery}
       openExplorerTxUrl={(txHash: TxHash) => {
         console.log(`Open explorer - tx hash ${txHash}`)
         return Promise.resolve(true)

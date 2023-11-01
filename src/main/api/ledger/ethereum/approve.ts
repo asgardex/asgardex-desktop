@@ -5,7 +5,7 @@ import * as ETH from '@xchainjs/xchain-ethereum'
 
 import { IPCLedgerApproveERC20TokenParams } from '../../../../shared/api/io'
 import { FEE_BOUNDS, defaultEthParams } from '../../../../shared/ethereum/const'
-import { getDerivationPath } from '../../../../shared/ethereum/ledger'
+import { getDerivationPath } from '../../../../shared/evm/ledger'
 import { toClientNetwork } from '../../../../shared/utils/client'
 import { LedgerSigner } from './LedgerSigner'
 
@@ -14,7 +14,7 @@ export const approveLedgerERC20Token = async ({
   contractAddress,
   spenderAddress,
   walletIndex,
-  ethHdMode
+  evmHdMode
 }: IPCLedgerApproveERC20TokenParams): Promise<TxHash> => {
   const clientNetwork = toClientNetwork(network)
 
@@ -22,7 +22,7 @@ export const approveLedgerERC20Token = async ({
 
   const transport = await TransportNodeHidSingleton.open()
   const app = new EthApp(transport)
-  const path = getDerivationPath(walletIndex, ethHdMode)
+  const path = getDerivationPath(walletIndex, evmHdMode)
   const provider = client.getProvider()
   const signer = new LedgerSigner({ provider, path, app })
 

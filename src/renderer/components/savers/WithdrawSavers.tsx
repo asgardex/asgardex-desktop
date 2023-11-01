@@ -2,6 +2,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
+import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { CryptoAmount, EstimateWithdrawSaver, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
@@ -33,13 +36,20 @@ import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import {
+  convertBaseAmountDecimal,
+  getAvaxTokenAddress,
+  getBscTokenAddress,
   getEthTokenAddress,
+  isAvaxAsset,
+  isAvaxTokenAsset,
+  isBscAsset,
+  isBscTokenAsset,
   isEthAsset,
   isEthTokenAsset,
   isUSDAsset,
   max1e8BaseAmount
 } from '../../helpers/assetHelper'
-import { getChainAsset, isEthChain } from '../../helpers/chainHelper'
+import { getChainAsset, isAvaxChain, isBscChain, isEthChain } from '../../helpers/chainHelper'
 import { eqBaseAmount, eqOApproveParams, eqOAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
@@ -71,7 +81,7 @@ import {
   IsApprovedRD,
   IsApproveParams,
   LoadApproveFeeHandler
-} from '../../services/ethereum/types'
+} from '../../services/evm/types'
 import { PoolAddress } from '../../services/midgard/types'
 import { SaverProviderLD } from '../../services/thorchain/types'
 import {
@@ -207,15 +217,22 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     [oChainAssetBalance]
   )
 
-  const needApprovement = useMemo(() => {
-    // Other chains than ETH do not need an approvement
-    if (!isEthChain(sourceAsset.chain)) return false
-    // ETH does not need to be approved
-    if (isEthAsset(sourceAsset)) return false
-    // ERC20 token does need approvement only
-    return isEthTokenAsset(sourceAsset)
-  }, [sourceAsset])
+  const needApprovement: O.Option<boolean> = useMemo(() => {
+    // not needed for users with locked or not imported wallets
+    if (!hasImportedKeystore(keystore) || isLocked(keystore)) return O.some(false)
 
+    // ERC20 token does need approval only
+    switch (sourceChain) {
+      case ETHChain:
+        return isEthAsset(sourceAsset) ? O.some(false) : O.some(isEthTokenAsset(sourceAsset))
+      case AVAXChain:
+        return isAvaxAsset(sourceAsset) ? O.some(false) : O.some(isAvaxTokenAsset(sourceAsset))
+      case BSCChain:
+        return isBscAsset(sourceAsset) ? O.some(false) : O.some(isBscTokenAsset(sourceAsset))
+      default:
+        return O.none
+    }
+  }, [keystore, sourceAsset, sourceChain])
   /**
    * Selectable source assets to add to savers.
    * Based on savers the address has
@@ -271,7 +288,6 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       ),
     [saverFeesRD, zeroSaverFees]
   )
-
   // `oSourceAssetWB` of source asset - which might be none (user has no balances for this asset or wallet is locked)
   const oSourceAssetWB: O.Option<WalletBalance> = useMemo(() => {
     const oWalletBalances = NEA.fromArray(allBalances)
@@ -282,6 +298,9 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     })
     return result
   }, [allBalances, sourceAsset, sourceWalletType])
+
+  // source chain asset
+  const sourceChainAsset: Asset = useMemo(() => getChainAsset(sourceChain), [sourceChain])
 
   // User balance for source asset
   const sourceAssetAmount: BaseAmount = useMemo(
@@ -363,6 +382,44 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       ),
     [oSaverWithdrawQuote, sourceAsset]
   )
+  const [sourceChainAssetDecimals, setSourceChainAssetDecimals] = useState<number>(0)
+
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const fetchData = async () => {
+      setSourceChainAssetDecimals(await thorchainQuery.thorchainCache.midgardQuery.getDecimalForAsset(sourceChainAsset))
+    }
+
+    fetchData()
+  }, [thorchainQuery, sourceChainAsset])
+
+  const dustAmount: BaseAmount = useMemo(
+    () =>
+      FP.pipe(
+        oSaverWithdrawQuote,
+        O.fold(
+          () => baseAmount(0), // default value if oSaverWithdrawQuote is None
+          (txDetails) => {
+            const amount = convertBaseAmountDecimal(txDetails.dustAmount.baseAmount, sourceChainAssetDecimals)
+            return amount
+          }
+        )
+      ),
+    [oSaverWithdrawQuote, sourceChainAssetDecimals]
+  )
+
+  const memoInvalid: boolean = useMemo(
+    () =>
+      FP.pipe(
+        oSaverWithdrawQuote,
+        O.fold(
+          () => false, // default value if oSaverWithdrawQuote is None
+          (txDetails) => txDetails.memo === ''
+        )
+      ),
+    [oSaverWithdrawQuote]
+  )
+
   // price of amount to withdraw
   const priceAmountToWithdrawMax1e8: CryptoAmount = useMemo(() => {
     const result = FP.pipe(
@@ -391,32 +448,39 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     return inFee.gt(chainAssetBalance) || dustThreshold.baseAmount.gt(chainAssetBalance)
   }, [amountToWithdrawMax1e8, saverFees, chainAssetBalance, dustThreshold.baseAmount])
 
-  const [withdrawBps, setWithdrawBps] = useState(0) // init state
+  const [oWithdrawBps, setWithdrawBps] = useState<O.Option<number>>(O.none) // init state
 
   // Disables the submit button
   const disableSubmit = useMemo(
-    () => sourceChainFeeError || isZeroAmountToSend || lockedWallet || walletBalancesLoading,
-    [sourceChainFeeError, isZeroAmountToSend, lockedWallet, walletBalancesLoading]
+    () =>
+      sourceChainFeeError ||
+      isZeroAmountToSend ||
+      lockedWallet ||
+      walletBalancesLoading ||
+      !O.isSome(oSaverWithdrawQuote) ||
+      memoInvalid,
+    [sourceChainFeeError, isZeroAmountToSend, lockedWallet, walletBalancesLoading, oSaverWithdrawQuote, memoInvalid]
   )
 
   const debouncedEffect = useRef(
-    debounce((withdrawBps, asset, address) => {
+    debounce((asset, address, withdrawBps) => {
       thorchainQuery
-        .estimateWithdrawSaver({ asset: sourceAsset, address: address, withdrawBps: Number(withdrawBps) })
+        .estimateWithdrawSaver({ asset: asset, address: address, withdrawBps: Number(withdrawBps) })
         .then((quote) => {
-          setSaverWithdrawQuote(O.some(quote)) // Wrapping the quote in an Option
+          setSaverWithdrawQuote(O.some(quote))
         })
         .catch((error) => {
           console.error('Failed to get quote:', error)
+          setSaverWithdrawQuote(O.none)
         })
     }, 500)
   )
 
   useEffect(() => {
-    if (withdrawBps !== 0 && !disableSubmit) {
-      debouncedEffect.current(withdrawBps, sourceAsset, address)
+    if (O.isSome(oWithdrawBps) && !sourceChainFeeError) {
+      debouncedEffect.current(sourceAsset, address, oWithdrawBps.value)
     }
-  }, [withdrawBps, disableSubmit, sourceAsset, address])
+  }, [oWithdrawBps, sourceChainFeeError, sourceAsset, address])
 
   // Outbound fee in for use later
   const outboundFee: CryptoAmount = useMemo(
@@ -541,12 +605,24 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       oPoolAddress,
       O.chain(({ router }) => router)
     )
-    const oTokenAddress: O.Option<string> = getEthTokenAddress(sourceAsset)
+
+    const oTokenAddress: O.Option<string> = (() => {
+      switch (sourceChain) {
+        case ETHChain:
+          return getEthTokenAddress(sourceAsset)
+        case AVAXChain:
+          return getAvaxTokenAddress(sourceAsset)
+        case BSCChain:
+          return getBscTokenAddress(sourceAsset)
+        default:
+          return O.none
+      }
+    })()
 
     const oNeedApprovement: O.Option<boolean> = FP.pipe(
       needApprovement,
-      // `None` if needApprovement is `false`, no request then
-      O.fromPredicate((v) => !!v)
+      // Keep the existing Option<boolean>, no need for O.fromPredicate
+      O.map((v) => !!v)
     )
 
     return FP.pipe(
@@ -557,11 +633,11 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
         contractAddress: tokenAddress,
         fromAddress: walletAddress,
         walletIndex,
-        walletType,
-        hdMode
+        hdMode,
+        walletType
       }))
     )
-  }, [oPoolAddress, sourceAsset, needApprovement, oSourceAssetWB, network])
+  }, [needApprovement, network, oPoolAddress, oSourceAssetWB, sourceAsset, sourceChain])
 
   const renderFeeError = useCallback(
     (fee: BaseAmount, amount: BaseAmount, asset: Asset) => {
@@ -633,7 +709,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
 
   const isApproveFeeError = useMemo(() => {
     // ignore error check if we don't need to check allowance
-    if (!needApprovement) return false
+    if (O.isNone(needApprovement)) return false
 
     return FP.pipe(
       oChainAssetBalance,
@@ -673,14 +749,14 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
   }, [setShowLedgerModal, useLedger]) // Dependencies array inside the useCallback hook
 
   const checkIsApproved = useMemo(() => {
-    if (!needApprovement) return false
+    if (O.isNone(needApprovement)) return false
     // ignore initial + loading states for `isApprovedState`
     return RD.isPending(isApprovedState)
   }, [isApprovedState, needApprovement])
 
   const checkIsApprovedError = useMemo(() => {
     // ignore error check if we don't need to check allowance
-    if (!needApprovement) return false
+    if (O.isNone(needApprovement)) return false
 
     return RD.isFailure(isApprovedState)
   }, [needApprovement, isApprovedState])
@@ -732,7 +808,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
 
   const isApproved = useMemo(
     () =>
-      !needApprovement ||
+      O.isNone(needApprovement) ||
       RD.isSuccess(approveState) ||
       FP.pipe(
         isApprovedState,
@@ -755,6 +831,8 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       resetApproveState()
       // reload fees
       reloadFeesHandler()
+      // Set quote to none
+      setSaverWithdrawQuote(O.none)
     }
   }, [
     sourceAsset,
@@ -770,10 +848,11 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     return FP.pipe(
       sequenceTOption(oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote),
       O.map(([poolAddress, { walletType, walletIndex, hdMode }, saversWithdrawQuote]) => {
+        // const sourceChainAsset =
         const result = {
           poolAddress,
-          asset: sourceAsset,
-          amount: saversWithdrawQuote.dustAmount.baseAmount,
+          asset: sourceChainAsset,
+          amount: dustAmount,
           memo: saversWithdrawQuote.memo,
           network,
           walletType,
@@ -784,9 +863,20 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
         return result
       })
     )
-  }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceAsset, network, address])
+  }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceChainAsset, dustAmount, network, address])
 
-  const onClickUseLedger = useCallback(() => {}, [])
+  const resetEnteredAmounts = useCallback(() => {
+    setAmountToWithdrawMax1e8(initialAmountToWithdrawMax1e8)
+  }, [setAmountToWithdrawMax1e8, initialAmountToWithdrawMax1e8])
+
+  const onClickUseLedger = useCallback(
+    (useLedger: boolean) => {
+      const walletType: WalletType = useLedger ? 'ledger' : 'keystore'
+      onChangeAsset({ source: asset.asset, sourceWalletType: walletType })
+      resetEnteredAmounts()
+    },
+    [asset.asset, onChangeAsset, resetEnteredAmounts]
+  )
 
   const txModalExtraContent = useMemo(() => {
     const stepDescriptions = [
@@ -861,18 +951,16 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       (id) => intl.formatMessage({ id })
     )
 
-    const extraResult = (
-      <div className="flex flex-col items-center justify-between">
-        {FP.pipe(withdrawTx, RD.toOption, (oTxHash) => (
-          <ViewTxButton
-            className="pb-20px"
-            txHash={oTxHash}
-            onClick={goToTransaction}
-            txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
-            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: sourceAsset.ticker })}
-          />
-        ))}
-      </div>
+    const oTxHash = FP.pipe(
+      RD.toOption(withdrawTx),
+      // Note: As long as we link to `viewblock` to open tx details in a browser,
+      // `0x` needs to be removed from tx hash in case of ETH
+      // @see https://github.com/thorchain/asgardex-electron/issues/1787#issuecomment-931934508
+      O.map((txHash) =>
+        isEthChain(sourceChain) || isAvaxChain(sourceChain) || isBscChain(sourceChain)
+          ? txHash.replace(/0x/i, '')
+          : txHash
+      )
     )
 
     return (
@@ -883,7 +971,14 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
         startTime={withdrawStartTime}
         txRD={withdrawRD}
         timerValue={timerValue}
-        extraResult={extraResult}
+        extraResult={
+          <ViewTxButton
+            txHash={oTxHash}
+            onClick={goToTransaction}
+            txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
+            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: sourceAsset.ticker })}
+          />
+        }
         extra={txModalExtraContent}
       />
     )
@@ -892,11 +987,12 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     onCloseTxModal,
     onFinishTxModal,
     withdrawStartTime,
-    txModalExtraContent,
-    intl,
     goToTransaction,
     getExplorerTxUrl,
-    sourceAsset.ticker
+    intl,
+    sourceAsset.ticker,
+    txModalExtraContent,
+    sourceChain
   ])
   // sumbit to withdraw state submit tx
   const submitWithdrawTx = useCallback(() => {
@@ -958,14 +1054,14 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
   }, [showPasswordModal, submitWithdrawTx, validatePassword$])
 
   const renderLedgerConfirmationModal = useMemo(() => {
-    if (showLedgerModal === 'none') return <></>
+    const visible = showLedgerModal === 'withdraw' || showLedgerModal === 'approve'
 
     const onClose = () => {
       setShowLedgerModal('none')
     }
 
     const onSucceess = () => {
-      if (showLedgerModal === 'withdraw') setShowPasswordModal('withdraw')
+      if (showLedgerModal === 'withdraw') submitWithdrawTx()
       if (showLedgerModal === 'approve') submitApproveTx()
       setShowLedgerModal('none')
     }
@@ -1006,7 +1102,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       <LedgerConfirmationModal
         onSuccess={onSucceess}
         onClose={onClose}
-        visible
+        visible={visible}
         chain={sourceChain}
         network={network}
         description1={description1}
@@ -1014,7 +1110,17 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
         addresses={addresses}
       />
     )
-  }, [showLedgerModal, sourceChain, intl, sourceAsset, oWithdrawSaverParams, network, submitApproveTx, useLedger])
+  }, [
+    showLedgerModal,
+    sourceChain,
+    intl,
+    sourceAsset,
+    oWithdrawSaverParams,
+    network,
+    submitWithdrawTx,
+    submitApproveTx,
+    useLedger
+  ])
 
   // Price of asset IN fee
   const oPriceAssetInFee: O.Option<CryptoAmount> = useMemo(() => {
@@ -1144,7 +1250,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     }
     // Update withdrawBps based on the selected percentage
     const newWithdrawBps = Math.floor(percentage * 100)
-    setWithdrawBps(newWithdrawBps)
+    setWithdrawBps(O.some(newWithdrawBps))
 
     return (
       <Slider
@@ -1223,7 +1329,19 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
               />
             )}
             {isApproved ? (
-              <></>
+              <>
+                {' '}
+                <div className="flex flex-col items-center justify-center">
+                  <FlatButton
+                    className="my-30px min-w-[200px]"
+                    size="large"
+                    color="primary"
+                    onClick={onSubmit}
+                    disabled={disableSubmit}>
+                    {intl.formatMessage({ id: 'common.withdraw' })}
+                  </FlatButton>
+                </div>
+              </>
             ) : (
               <>
                 {renderApproveFeeError}
@@ -1243,16 +1361,6 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
                 )}
               </>
             )}
-          </div>
-          <div className="flex flex-col items-center justify-center">
-            <FlatButton
-              className="my-30px min-w-[200px]"
-              size="large"
-              color="primary"
-              onClick={onSubmit}
-              disabled={disableSubmit}>
-              {intl.formatMessage({ id: 'common.withdraw' })}
-            </FlatButton>
           </div>
 
           <div className="w-full px-10px font-main text-[12px] uppercase dark:border-gray1d">

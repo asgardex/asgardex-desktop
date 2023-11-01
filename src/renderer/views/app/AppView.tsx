@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import { SyncOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
@@ -226,6 +226,20 @@ export const AppView: React.FC = (): JSX.Element => {
     )
   }, [ledgerAddressesPersistentRD, reloadPersistentLedgerAddresses, intl])
 
+  const getPublicIP = async () => {
+    const response = await fetch('https://api.ipify.org?format=json')
+    const data = await response.json()
+    return data.ip
+  }
+
+  const [publicIP, setPublicIP] = useState('')
+
+  useEffect(() => {
+    getPublicIP()
+      .then((ip) => setPublicIP(ip))
+      .catch((err) => console.error(err))
+  }, [])
+
   return (
     <Styled.AppWrapper>
       <Styled.AppLayout>
@@ -238,7 +252,7 @@ export const AppView: React.FC = (): JSX.Element => {
           {renderHaltedChainsWarning}
           <ViewRoutes />
         </View>
-        <Footer commitHash={envOrDefault($COMMIT_HASH, '')} isDev={$IS_DEV} />
+        <Footer commitHash={envOrDefault($COMMIT_HASH, '')} isDev={$IS_DEV} publicIP={publicIP} />
       </Styled.AppLayout>
     </Styled.AppWrapper>
   )
