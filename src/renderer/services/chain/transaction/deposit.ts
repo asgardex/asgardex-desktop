@@ -1,5 +1,8 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { TxHash } from '@xchainjs/xchain-client'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
@@ -8,7 +11,15 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
-import { getEthAssetAddress, isEthAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
+import {
+  getAvaxAssetAddress,
+  getBscAssetAddress,
+  getEthAssetAddress,
+  isAvaxAsset,
+  isBscAsset,
+  isEthAsset,
+  isRuneNativeAsset
+} from '../../../helpers/assetHelper'
 import { isEthChain } from '../../../helpers/chainHelper'
 import { sequenceSOption } from '../../../helpers/fpHelpers'
 import { liveData } from '../../../helpers/rx/liveData'
@@ -103,8 +114,18 @@ export const saverDeposit$ = ({
         deposit: RD.progress({ loaded: 75, total })
       })
       // 3. check tx finality by polling its tx data
-      const assetAddress: O.Option<Address> =
-        isEthChain(chain) && !isEthAsset(asset) ? getEthAssetAddress(asset) : O.none
+      const assetAddress: O.Option<Address> = (() => {
+        switch (chain) {
+          case ETHChain:
+            return !isEthAsset(asset) ? getEthAssetAddress(asset) : O.none
+          case AVAXChain:
+            return !isAvaxAsset(asset) ? getAvaxAssetAddress(asset) : O.none
+          case BSCChain:
+            return !isBscAsset(asset) ? getBscAssetAddress(asset) : O.none
+          default:
+            return O.none
+        }
+      })()
       return poolTxStatusByChain$({ txHash, chain, assetAddress })
     }),
     // Update state

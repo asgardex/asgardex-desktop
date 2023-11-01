@@ -407,6 +407,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
 
   const oChainAssetBalance: O.Option<BaseAmount> = useMemo(() => {
     const chainAsset = getChainAsset(sourceChain)
+
     return FP.pipe(
       WalletHelper.getWalletBalanceByAssetAndWalletType({
         oWalletBalances,
@@ -1312,7 +1313,19 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
               />
             )}
             {isApproved ? (
-              <></>
+              <>
+                {' '}
+                <div className="flex flex-col items-center justify-center">
+                  <FlatButton
+                    className="my-30px min-w-[200px]"
+                    size="large"
+                    color="primary"
+                    onClick={onSubmit}
+                    disabled={disableSubmit}>
+                    {intl.formatMessage({ id: 'common.earn' })}
+                  </FlatButton>
+                </div>
+              </>
             ) : (
               <>
                 {renderApproveFeeError}
@@ -1332,17 +1345,6 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
                 )}
               </>
             )}
-          </div>
-
-          <div className="flex flex-col items-center justify-center">
-            <FlatButton
-              className="my-30px min-w-[200px]"
-              size="large"
-              color="primary"
-              onClick={onSubmit}
-              disabled={disableSubmit}>
-              {intl.formatMessage({ id: 'common.earn' })}
-            </FlatButton>
           </div>
 
           <div className="w-full px-10px font-main text-[12px] uppercase dark:border-gray1d">

@@ -36,6 +36,7 @@ import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import {
+  convertBaseAmountDecimal,
   getAvaxTokenAddress,
   getBscTokenAddress,
   getEthTokenAddress,
@@ -287,7 +288,6 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       ),
     [saverFeesRD, zeroSaverFees]
   )
-
   // `oSourceAssetWB` of source asset - which might be none (user has no balances for this asset or wallet is locked)
   const oSourceAssetWB: O.Option<WalletBalance> = useMemo(() => {
     const oWalletBalances = NEA.fromArray(allBalances)
@@ -298,6 +298,9 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     })
     return result
   }, [allBalances, sourceAsset, sourceWalletType])
+
+  // source chain asset
+  const sourceChainAsset: Asset = useMemo(() => getChainAsset(sourceChain), [sourceChain])
 
   // User balance for source asset
   const sourceAssetAmount: BaseAmount = useMemo(
@@ -379,6 +382,31 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       ),
     [oSaverWithdrawQuote, sourceAsset]
   )
+  const [sourceChainAssetDecimals, setSourceChainAssetDecimals] = useState<number>(0)
+
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const fetchData = async () => {
+      setSourceChainAssetDecimals(await thorchainQuery.thorchainCache.midgardQuery.getDecimalForAsset(sourceChainAsset))
+    }
+
+    fetchData()
+  }, [thorchainQuery, sourceChainAsset])
+
+  const dustAmount: BaseAmount = useMemo(
+    () =>
+      FP.pipe(
+        oSaverWithdrawQuote,
+        O.fold(
+          () => baseAmount(0), // default value if oSaverWithdrawQuote is None
+          (txDetails) => {
+            const amount = convertBaseAmountDecimal(txDetails.dustAmount.baseAmount, sourceChainAssetDecimals)
+            return amount
+          }
+        )
+      ),
+    [oSaverWithdrawQuote, sourceChainAssetDecimals]
+  )
 
   const memoInvalid: boolean = useMemo(
     () =>
@@ -420,7 +448,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     return inFee.gt(chainAssetBalance) || dustThreshold.baseAmount.gt(chainAssetBalance)
   }, [amountToWithdrawMax1e8, saverFees, chainAssetBalance, dustThreshold.baseAmount])
 
-  const [withdrawBps, setWithdrawBps] = useState(0) // init state
+  const [oWithdrawBps, setWithdrawBps] = useState<O.Option<number>>(O.none) // init state
 
   // Disables the submit button
   const disableSubmit = useMemo(
@@ -449,10 +477,10 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
   )
 
   useEffect(() => {
-    if (withdrawBps !== 0 && !sourceChainFeeError) {
-      debouncedEffect.current(sourceAsset, address, withdrawBps)
+    if (O.isSome(oWithdrawBps) && !sourceChainFeeError) {
+      debouncedEffect.current(sourceAsset, address, oWithdrawBps.value)
     }
-  }, [withdrawBps, sourceChainFeeError, sourceAsset, address])
+  }, [oWithdrawBps, sourceChainFeeError, sourceAsset, address])
 
   // Outbound fee in for use later
   const outboundFee: CryptoAmount = useMemo(
@@ -820,10 +848,11 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     return FP.pipe(
       sequenceTOption(oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote),
       O.map(([poolAddress, { walletType, walletIndex, hdMode }, saversWithdrawQuote]) => {
+        // const sourceChainAsset =
         const result = {
           poolAddress,
-          asset: sourceAsset,
-          amount: saversWithdrawQuote.dustAmount.baseAmount,
+          asset: sourceChainAsset,
+          amount: dustAmount,
           memo: saversWithdrawQuote.memo,
           network,
           walletType,
@@ -834,7 +863,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
         return result
       })
     )
-  }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceAsset, network, address])
+  }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceChainAsset, dustAmount, network, address])
 
   const resetEnteredAmounts = useCallback(() => {
     setAmountToWithdrawMax1e8(initialAmountToWithdrawMax1e8)
@@ -1221,7 +1250,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     }
     // Update withdrawBps based on the selected percentage
     const newWithdrawBps = Math.floor(percentage * 100)
-    setWithdrawBps(newWithdrawBps)
+    setWithdrawBps(O.some(newWithdrawBps))
 
     return (
       <Slider
@@ -1300,7 +1329,19 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
               />
             )}
             {isApproved ? (
-              <></>
+              <>
+                {' '}
+                <div className="flex flex-col items-center justify-center">
+                  <FlatButton
+                    className="my-30px min-w-[200px]"
+                    size="large"
+                    color="primary"
+                    onClick={onSubmit}
+                    disabled={disableSubmit}>
+                    {intl.formatMessage({ id: 'common.withdraw' })}
+                  </FlatButton>
+                </div>
+              </>
             ) : (
               <>
                 {renderApproveFeeError}
@@ -1320,16 +1361,6 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
                 )}
               </>
             )}
-          </div>
-          <div className="flex flex-col items-center justify-center">
-            <FlatButton
-              className="my-30px min-w-[200px]"
-              size="large"
-              color="primary"
-              onClick={onSubmit}
-              disabled={disableSubmit}>
-              {intl.formatMessage({ id: 'common.withdraw' })}
-            </FlatButton>
           </div>
 
           <div className="w-full px-10px font-main text-[12px] uppercase dark:border-gray1d">

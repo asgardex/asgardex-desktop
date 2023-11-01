@@ -56,6 +56,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       )
 
     const provider = client.getProvider()
+
     return FP.pipe(
       sequenceSOption({ address: getEthAssetAddress(params.asset), router: params.router }),
       O.fold(
