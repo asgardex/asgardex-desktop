@@ -1,21 +1,28 @@
-# 1.21.6 (2023-11-01)
+# 1.20.6 (2023-11-01)
 
 ## Add
 
-- THORName Support
-- Show IP address [#29](https://github.com/asgardex/asgardex-desktop/issues/28)
-- ADD: AVAX & BSC #4 [#4](https://github.com/asgardex/asgardex-desktop/issues/4)
+- Show IP address [#28](https://github.com/asgardex/asgardex-desktop/issues/28)
+- ADD: AVAX & BSC [#4](https://github.com/asgardex/asgardex-desktop/issues/4)
 - Add THORName Support for sending Tx [#6](https://github.com/asgardex/asgardex-desktop/issues/6) (thor addresses only)
+- USDC not displayed for Savers (or non native assets - e.g. Savers) [#52](https://github.com/asgardex/asgardex-desktop/issues/52)
+- Savers with Ledger [#40](https://github.com/asgardex/asgardex-desktop/issues/40) ETH Only
+- ADD Thorname management[#65](https://github.com/asgardex/asgardex-desktop/issues/65)
 
 ## Update / Fix
 
 - Ledger tx gives 403 Error [#62](https://github.com/asgardex/asgardex-desktop/issues/62)
-- Update Bond and Unbond to support pooled Nodes[#43](https://github.com/asgardex/asgardex-desktop/issues/43)
+- Update Bond and Unbond to support pooled Nodes [#43](https://github.com/asgardex/asgardex-desktop/issues/43)
 - USDC dollar value not displayed [#51](https://github.com/asgardex/asgardex-desktop/issues/51) (Swap page)
 - Bug: Cannot add ETH via Ledger to savers [#48](https://github.com/asgardex/asgardex-desktop/issues/48)
 - BUG: Saver % 100x too low [#58](https://github.com/asgardex/asgardex-desktop/issues/58)
 - Stable savers do not appear [#61](https://github.com/asgardex/asgardex-desktop/issues/61)
-- BTC Client won't sent max amount [#56](https://github.com/asgardex/asgardex-desktop/issues/61)
+- BTC Client won't send max amount [#56](https://github.com/asgardex/asgardex-desktop/issues/56)
+- Add USD amount for Approve [#46](https://github.com/asgardex/asgardex-desktop/issues/46)
+- Add check for quote endpoint expiry [#32](https://github.com/asgardex/asgardex-desktop/issues/32)
+- USDC dollar value not displayed [#51](https://github.com/asgardex/asgardex-desktop/issues/51)
+- BUG: Unbond no amount in memo [#57](https://github.com/asgardex/asgardex-desktop/issues/57)
+- Ledger tx gives 403 Error [#62](https://github.com/asgardex/asgardex-desktop/issues/62)
 
 ## Internal
 

@@ -58,7 +58,9 @@
     "ethereum",
     "binance chain",
     "doge",
-    "cosmos"
+    "cosmos",
+    "bsc",
+    "avax"
   ],
   "homepage": "https://thorchain.org",
   "dependencies": {
