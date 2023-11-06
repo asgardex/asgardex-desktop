@@ -16,9 +16,9 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       dataIndex: 'key',
       key: 'key',
       render: (key: string) => {
-        const assetSplit = key.split('.')
+        const [chain, symbol, walletType] = key.split('.')
         const assetDetail = assetDetails.find(
-          (detail) => detail.asset.chain === assetSplit[0] && detail.asset.symbol === assetSplit[1]
+          (detail) => detail.asset.chain === chain && detail.asset.symbol === symbol && detail.walletType === walletType
         )
         return assetDetail ? <AssetIcon asset={assetDetail.asset} size="small" network={assetDetail.network} /> : 'N/A'
       }
@@ -103,7 +103,7 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
 
     const percentLabel = `${formatBN(percent.gt(0) ? percent : ZERO_BN, 4)}%`
     return {
-      key: `${asset.chain}.${asset.symbol}`,
+      key: `${asset.chain}.${asset.symbol}.${walletType}`,
       depositValueLabel,
       redeemValueLabel,
       priceDepositLabel,
