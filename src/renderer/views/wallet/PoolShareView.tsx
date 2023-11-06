@@ -80,7 +80,6 @@ export const PoolShareView: React.FC = (): JSX.Element => {
       A.filter((chain) => !isThorChain(chain)),
       A.map(addressByChain$)
     )
-
     // ledger addresses
     const ledgerAddresses$ = (): WalletAddress$[] =>
       FP.pipe(
@@ -108,8 +107,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
           /**
            * We have to get a new stake-stream for every new asset
            * @description /src/renderer/services/midgard/shares.ts
-           */
-          allSharesByAddresses$
+           */ allSharesByAddresses$
         )
       )
     )

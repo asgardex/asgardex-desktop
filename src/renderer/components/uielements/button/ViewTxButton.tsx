@@ -13,6 +13,7 @@ type Props = {
   txUrl: O.Option<string>
   onClick: (txHash: string) => void
   className?: string
+  trackable?: boolean
 }
 
 export const ViewTxButton: React.FC<Props> = ({
@@ -20,7 +21,8 @@ export const ViewTxButton: React.FC<Props> = ({
   txHash: oTxHash,
   txUrl: oTxUrl,
   label,
-  className
+  className,
+  trackable = false
 }): JSX.Element => {
   const intl = useIntl()
 
@@ -41,9 +43,11 @@ export const ViewTxButton: React.FC<Props> = ({
         <Styled.ViewTxButton onClick={onClickHandler} disabled={O.isNone(oTxHash)}>
           {label || intl.formatMessage({ id: 'common.viewTransaction' })}
         </Styled.ViewTxButton>
-        <Styled.ViewTxButton onClick={handleTxTracker} disabled={O.isNone(oTxHash)}>
-          {label || intl.formatMessage({ id: 'common.trackTransaction' })}
-        </Styled.ViewTxButton>
+        {trackable && (
+          <Styled.ViewTxButton onClick={handleTxTracker} disabled={O.isNone(oTxHash)}>
+            {label || intl.formatMessage({ id: 'common.trackTransaction' })}
+          </Styled.ViewTxButton>
+        )}
         <div>
           {' '}
           <Styled.CopyLabel

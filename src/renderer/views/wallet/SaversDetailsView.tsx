@@ -97,7 +97,7 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
     // If poolAsset is Some, destructure and use its value
     if (poolAsset) {
       const subscriptions = poolAsset.map((asset) => {
-        return addressByChain$(asset.chain) // assuming chain value is still needed here
+        return addressByChain$(asset.chain)
           .pipe(
             RxOp.map(addressFromOptionalWalletAddress),
             RxOp.switchMap((addressOpt) => {

@@ -263,8 +263,8 @@ export const Swap = ({
   // For normal quotes
   const [oQuote, setQuote] = useState<O.Option<TxDetails>>(O.none)
 
-  // Default Streaming interval set to 0 blocks
-  const [streamingInterval, setStreamingInterval] = useState<number>(3)
+  // Default Streaming interval set to 1 blocks
+  const [streamingInterval, setStreamingInterval] = useState<number>(1)
   // Default Streaming quantity set to 0 network computes the optimum
   const [streamingQuantity, setStreamingQuantity] = useState<number>(0)
   // Slide use state
@@ -1407,7 +1407,7 @@ export const Swap = ({
 
   // Function to reset the slider to default position
   const resetToDefault = () => {
-    setStreamingInterval(3) // Default position
+    setStreamingInterval(1) // Default position
     setStreamingQuantity(0) // thornode decides the swap quantity
     setSlider(30)
     setIsStreaming(true)
@@ -1417,12 +1417,13 @@ export const Swap = ({
   const renderStreamerInterval = useMemo(() => {
     const setInterval = (slider: number) => {
       setSlider(slider)
-      const streamingIntervalValue = Math.floor(slider / 10) // Mapping slider value to range 0 to 10
+      const streamingIntervalValue = Math.floor((slider / 100) * 3) // Mapping slider value to range 0 to 3
       setStreamingInterval(streamingIntervalValue)
       setStreamingQuantity(0)
       setIsStreaming(streamingIntervalValue !== 0)
     }
-    const tipFormatter = slider === 0 ? 'Instant swap' : `${Math.floor(slider / 10)} Block interval between swaps`
+    const tipFormatter =
+      slider === 0 ? 'Instant swap' : `${Math.floor((slider / 100) * 3)} Block interval between swaps`
     const labelMin = slider <= 0 ? `Instant Swap` : `` || slider < 50 ? 'Time Optimised' : `Price Optimised`
 
     return (
@@ -1693,6 +1694,7 @@ export const Swap = ({
             txHash={oTxHash}
             onClick={goToTransaction}
             txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
+            trackable={true}
           />
         }
         timerValue={timerValue}
