@@ -1,7 +1,6 @@
 import { ComponentMeta } from '@storybook/react'
-import { AVAX_DECIMAL } from '@xchainjs/xchain-avax'
 import { Fees, FeeType, TxHash } from '@xchainjs/xchain-client'
-import { AssetAVAX } from '@xchainjs/xchain-thorchain-query'
+import { ETH_GAS_ASSET_DECIMAL as ETH_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -9,12 +8,13 @@ import * as Rx from 'rxjs'
 
 import { getMockRDValueFactory, RDStatus } from '../../../../../shared/mock/rdByStatus'
 import { mockValidatePassword$ } from '../../../../../shared/mock/wallet'
+import { AssetETH } from '../../../../../shared/utils/asset'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
 import { mockWalletBalance } from '../../../../helpers/test/testWalletHelper'
 import { FeesRD, SendTxStateHandler } from '../../../../services/chain/types'
 import { ApiError, ErrorId, WalletBalance } from '../../../../services/wallet/types'
-import { SendFormAVAX as Component } from './SendFormAVAX'
+import { SendFormEVM as Component } from './SendFormEVM'
 
 type Args = {
   txRDStatus: RDStatus
@@ -39,10 +39,10 @@ const Template = ({ txRDStatus, feeRDStatus, balance, walletType }: Args) => {
       )
     })
 
-  const avaxBalance: WalletBalance = mockWalletBalance({
-    asset: AssetAVAX,
-    amount: assetToBase(assetAmount(balance, AVAX_DECIMAL)),
-    walletAddress: 'AVAX wallet address'
+  const ethBalance: WalletBalance = mockWalletBalance({
+    asset: AssetETH,
+    amount: assetToBase(assetAmount(balance, ETH_DECIMAL)),
+    walletAddress: 'ETH wallet address'
   })
 
   const runeBalance: WalletBalance = mockWalletBalance({
@@ -54,9 +54,9 @@ const Template = ({ txRDStatus, feeRDStatus, balance, walletType }: Args) => {
     getMockRDValueFactory<Error, Fees>(
       () => ({
         type: FeeType.PerByte,
-        fastest: assetToBase(assetAmount(0.002499, AVAX_DECIMAL)),
-        fast: assetToBase(assetAmount(0.002079, AVAX_DECIMAL)),
-        average: assetToBase(assetAmount(0.001848, AVAX_DECIMAL))
+        fastest: assetToBase(assetAmount(0.002499, ETH_DECIMAL)),
+        fast: assetToBase(assetAmount(0.002079, ETH_DECIMAL)),
+        average: assetToBase(assetAmount(0.001848, ETH_DECIMAL))
       }),
       () => Error('getting fees failed')
     )
@@ -64,10 +64,10 @@ const Template = ({ txRDStatus, feeRDStatus, balance, walletType }: Args) => {
 
   return (
     <Component
-      asset={{ asset: AssetAVAX, walletAddress: 'avax-address', walletType, walletIndex: 0, hdMode: 'default' }}
+      asset={{ asset: AssetETH, walletAddress: 'eth-address', walletType, walletIndex: 0, hdMode: 'default' }}
       transfer$={transfer$}
-      balances={[avaxBalance, runeBalance]}
-      balance={avaxBalance}
+      balances={[ethBalance, runeBalance]}
+      balance={ethBalance}
       fees={feesRD}
       reloadFeesHandler={() => console.log('reload fees')}
       validatePassword$={mockValidatePassword$}
@@ -84,7 +84,7 @@ export const Default = Template.bind({})
 
 const meta: ComponentMeta<typeof Template> = {
   component: Component,
-  title: 'Wallet/SendFormAVAX',
+  title: 'Wallet/SendFormETH',
   argTypes: {
     txRDStatus: {
       control: { type: 'select', options: ['pending', 'error', 'success'] }

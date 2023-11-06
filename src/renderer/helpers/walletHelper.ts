@@ -130,6 +130,9 @@ export const getBnbAmountFromBalances = (balances: WalletBalances): O.Option<Ass
 export const getEthAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
   getAssetAmountFromBalances(balances, isEthAsset)
 
+export const getEVMAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
+  getAssetAmountFromBalances(balances, isEthAsset || isAvaxAsset || isBscAsset)
+
 export const getAvaxAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
   getAssetAmountFromBalances(balances, isAvaxAsset)
 
