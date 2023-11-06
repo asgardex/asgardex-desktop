@@ -268,7 +268,7 @@ export const Swap = ({
   // Default Streaming quantity set to 0 network computes the optimum
   const [streamingQuantity, setStreamingQuantity] = useState<number>(0)
   // Slide use state
-  const [slider, setSlider] = useState<number>(30)
+  const [slider, setSlider] = useState<number>(26)
 
   const [oTargetWalletType, setTargetWalletType] = useState<O.Option<WalletType>>(oInitialTargetWalletType)
 
@@ -1409,21 +1409,26 @@ export const Swap = ({
   const resetToDefault = () => {
     setStreamingInterval(1) // Default position
     setStreamingQuantity(0) // thornode decides the swap quantity
-    setSlider(30)
+    setSlider(26)
     setIsStreaming(true)
   }
 
   // Streaming Interval slider
   const renderStreamerInterval = useMemo(() => {
+    const calculateStreamingInterval = (slider: number) => {
+      if (slider >= 75) return 3
+      if (slider >= 50) return 2
+      if (slider >= 25) return 1
+      return 0
+    }
+    const streamingIntervalValue = calculateStreamingInterval(slider)
     const setInterval = (slider: number) => {
       setSlider(slider)
-      const streamingIntervalValue = Math.floor((slider / 100) * 3) // Mapping slider value to range 0 to 3
       setStreamingInterval(streamingIntervalValue)
       setStreamingQuantity(0)
       setIsStreaming(streamingIntervalValue !== 0)
     }
-    const tipFormatter =
-      slider === 0 ? 'Instant swap' : `${Math.floor((slider / 100) * 3)} Block interval between swaps`
+    const tipFormatter = slider === 0 ? 'Instant swap' : `${streamingIntervalValue} Block interval between swaps`
     const labelMin = slider <= 0 ? `Instant Swap` : `` || slider < 50 ? 'Time Optimised' : `Price Optimised`
 
     return (
