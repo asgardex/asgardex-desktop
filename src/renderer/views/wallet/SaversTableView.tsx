@@ -15,6 +15,7 @@ import { from } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { ENABLED_CHAINS } from '../../../shared/utils/chain'
+import { WalletType } from '../../../shared/wallet/types'
 import { SaversDetailsTable } from '../../components/savers/SaversDetailsTable'
 import { RefreshButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
@@ -39,6 +40,7 @@ type AssetProps = {
   redeem: { amount: BaseAmount; price: BaseAmount }
   percent: BigNumber
   network: Network
+  walletType: WalletType
 }
 export type ParentProps = {
   assetDetails: AssetProps[]
@@ -129,7 +131,8 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
         RxOp.map((walletAddresses) =>
           walletAddresses.map((walletAddress) => ({
             chain: walletAddress.chain, // Assuming these fields exist on the emitted WalletAddress objects
-            address: walletAddress.address
+            address: walletAddress.address,
+            type: walletAddress.type
           }))
         )
       )
@@ -140,10 +143,11 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
             RxOp.switchMap((walletAddresses) => {
               // Filter only the addresses that match the asset's chain
               const addressesForAssetChain = walletAddresses.filter((wa) => wa.chain === asset.chain)
-
               if (addressesForAssetChain.length > 0) {
                 return Rx.combineLatest(
-                  addressesForAssetChain.map((walletAddress) => getSaverProvider$(asset, walletAddress.address))
+                  addressesForAssetChain.map((walletAddress) =>
+                    getSaverProvider$(asset, walletAddress.address, walletAddress.type)
+                  )
                 )
               }
               return from([null])
@@ -176,18 +180,16 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
     const assetDetails: AssetProps[] = Object.keys(allSaverProviders)
       .map((assetString) => {
         const saverProviderRD = allSaverProviders[assetString]
-
         return FP.pipe(
           sequenceTRD(poolsStateRD, saverProviderRD),
           RD.fold(
             () => null,
             () => null,
             (_) => null,
-            ([{ poolDetails }, { depositValue, redeemValue, growthPercent }]) => {
+            ([{ poolDetails }, { depositValue, redeemValue, growthPercent, walletType }]) => {
               if (depositValue.amount().isZero() && redeemValue.amount().isZero()) {
                 return null
               }
-
               const asset = assetFromStringEx(assetString) // get the second string to return asset
               if (asset === null) {
                 // handle error case
@@ -218,7 +220,8 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
                 priceAsset: pricePool.asset,
                 deposit: { amount: depositValue, price: depositPrice },
                 redeem: { amount: redeemValue, price: redeemPrice },
-                percent: growthPercent
+                percent: growthPercent,
+                walletType
               }
             }
           )

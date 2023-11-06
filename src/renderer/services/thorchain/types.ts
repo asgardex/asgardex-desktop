@@ -182,6 +182,7 @@ export type SaverProvider = {
   growthPercent: BigNumber
   addHeight: O.Option<number>
   withdrawHeight: O.Option<number>
+  walletType?: WalletType
 }
 
 export type SaverProviderRD = RD.RemoteData<Error, SaverProvider>
