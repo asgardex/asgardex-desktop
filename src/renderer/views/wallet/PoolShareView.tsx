@@ -74,17 +74,18 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   )
 
   const [allSharesRD] = useObservableState<PoolSharesRD, Network>(() => {
+    const EXCLUDED_CHAINS: readonly string[] = ['BSC', 'AVAX'] // simple exclude for bsc and avax.
     // keystore addresses
     const addresses$: WalletAddress$[] = FP.pipe(
       [...ENABLED_CHAINS],
-      A.filter((chain) => !isThorChain(chain)),
+      A.filter((chain) => !EXCLUDED_CHAINS.includes(chain) && !isThorChain(chain)),
       A.map(addressByChain$)
     )
     // ledger addresses
     const ledgerAddresses$ = (): WalletAddress$[] =>
       FP.pipe(
         [...ENABLED_CHAINS],
-        A.filter((chain) => !isThorChain(chain)),
+        A.filter((chain) => !EXCLUDED_CHAINS.includes(chain) && !isThorChain(chain)),
         A.map((chain) => getLedgerAddress$(chain)),
         A.map(RxOp.map(FP.flow(O.map(ledgerAddressToWalletAddress))))
       )
