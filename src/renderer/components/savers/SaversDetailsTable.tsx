@@ -55,8 +55,8 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
     },
     {
       title: 'Price Growth',
-      dataIndex: 'priceGrowthLabel',
-      key: 'priceGrowth'
+      dataIndex: 'percentLabel',
+      key: 'percentLabel'
     },
     {
       title: 'Manage',
@@ -94,11 +94,6 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       decimal: isUSDAsset(asset) ? 2 : 6
     })
 
-    const priceGrowthLabel = formatAssetAmountCurrency({
-      amount: baseToAsset(growthValue.gt(0) ? growthValue : baseAmount(0, deposit.price.decimal)),
-      asset: priceAsset,
-      decimal: isUSDAsset(priceAsset) ? 2 : 6
-    })
     const assetTicker = asset.ticker
 
     const percentLabel = `${formatBN(percent.gt(0) ? percent : ZERO_BN, 4)}%`
@@ -111,7 +106,6 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       growthValue,
       growthValueLabel,
       percentLabel,
-      priceGrowthLabel,
       assetTicker
     }
   })
