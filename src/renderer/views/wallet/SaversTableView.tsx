@@ -219,7 +219,7 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
                 priceAsset: pricePool.asset,
                 deposit: { amount: depositValue, price: depositPrice },
                 redeem: { amount: redeemValue, price: redeemPrice },
-                percent: growthPercent,
+                percent: growthPercent.times(100),
                 walletType
               }
             }

@@ -44,7 +44,7 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       key: 'redeemValue'
     },
     {
-      title: 'Redeem Deposit Amount',
+      title: 'Redeem Amount',
       dataIndex: 'redeemDepositLabel',
       key: 'redeemDeposit'
     },
