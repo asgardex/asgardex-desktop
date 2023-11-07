@@ -162,7 +162,7 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
                   saverProvider._tag === 'RemoteSuccess' &&
                   saverProvider.value.depositValue.amount().gt(0)
                 ) {
-                  const key = `${asset.chain}.${asset.symbol}`
+                  const key = `${asset.chain}.${asset.symbol}.${saverProvider.value.walletType}`
                   setAllSaverProviders((prev) => ({ ...prev, [key]: saverProvider }))
                 }
               })
@@ -213,7 +213,6 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
                 }),
                 O.getOrElse(() => baseAmount(0, depositValue.decimal))
               )
-
               return {
                 key: pricePool.asset.chain,
                 asset,

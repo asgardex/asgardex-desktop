@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { assetUSDC } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
@@ -209,7 +208,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           {
             label: intl.formatMessage({ id: 'common.refresh' }),
             callback: () => {
-              const lazyReload = reloadBalancesByChain(ETHChain)
+              const lazyReload = reloadBalancesByChain(chain)
               lazyReload() // Invoke the lazy function
             }
           }
