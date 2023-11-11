@@ -1,9 +1,11 @@
 import React, { useCallback } from 'react'
 
 import { Balance } from '@xchainjs/xchain-client'
+import { CryptoAmount } from '@xchainjs/xchain-thorchain-query'
 import { BaseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { useIntl } from 'react-intl'
 
+import { isUSDAsset } from '../../../helpers/assetHelper'
 import { hiddenString } from '../../../helpers/stringHelper'
 import { InfoIcon } from '../info'
 import { TextButton, Props as ButtonProps } from './TextButton'
@@ -11,6 +13,7 @@ import { TextButton, Props as ButtonProps } from './TextButton'
 export type ComponentProps = {
   balance: Balance
   maxInfoText?: string
+  maxDollarValue: CryptoAmount
   onClick: (amount: BaseAmount) => void
   disabled?: boolean
   className?: string
@@ -25,6 +28,7 @@ export type Props = ComponentProps & Omit<ButtonProps, 'onClick'>
 export const MaxBalanceButton: React.FC<Props> = (props): JSX.Element => {
   const {
     balance,
+    maxDollarValue,
     onClick,
     disabled = false,
     maxInfoText = '',
@@ -41,6 +45,24 @@ export const MaxBalanceButton: React.FC<Props> = (props): JSX.Element => {
 
   const onClickHandler = useCallback(() => onClick(amount), [amount, onClick])
 
+  const valueLabel =
+    amount === maxDollarValue.baseAmount
+      ? formatAssetAmountCurrency({
+          amount: baseToAsset(amount),
+          asset,
+          trimZeros: true
+        })
+      : `${formatAssetAmountCurrency({
+          amount: baseToAsset(amount),
+          asset,
+          trimZeros: true
+        })} (${formatAssetAmountCurrency({
+          amount: maxDollarValue.assetAmount,
+          asset: maxDollarValue.asset,
+          decimal: isUSDAsset(maxDollarValue.asset) ? 2 : 6,
+          trimZeros: !isUSDAsset(maxDollarValue.asset)
+        })})`
+
   return (
     <div className={`space-between flex items-center ${className}`}>
       <TextButton
@@ -51,13 +73,7 @@ export const MaxBalanceButton: React.FC<Props> = (props): JSX.Element => {
         className={`mr-5px w-auto !p-0 ${classNameButton} whitespace-nowrap`}>
         <span className="pr-5px underline">{intl.formatMessage({ id: 'common.max' })}:</span>
         &nbsp;
-        {hidePrivateData
-          ? hiddenString
-          : formatAssetAmountCurrency({
-              amount: baseToAsset(amount),
-              asset,
-              trimZeros: true
-            })}
+        {hidePrivateData ? hiddenString : `${valueLabel}`}
       </TextButton>
 
       {maxInfoText && <InfoIcon tooltip={maxInfoText} className={classNameIcon} />}

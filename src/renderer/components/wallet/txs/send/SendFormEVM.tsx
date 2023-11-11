@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { FeeOption, Fees, TxParams } from '@xchainjs/xchain-client'
 import { validateAddress } from '@xchainjs/xchain-evm'
+import { CryptoAmount, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   bn,
   baseToAsset,
@@ -24,7 +25,7 @@ import { Network } from '../../../../../shared/api/types'
 import { chainToString } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
-import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../../const'
+import { AssetUSDC, ZERO_BASE_AMOUNT, ZERO_BN } from '../../../../const'
 import { isAvaxAsset, isBscAsset, isEthAsset } from '../../../../helpers/assetHelper'
 import { getChainAsset } from '../../../../helpers/chainHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
@@ -64,6 +65,7 @@ export type Props = {
   fees: FeesRD
   reloadFeesHandler: (params: TxParams) => void
   validatePassword$: ValidatePasswordHandler
+  thorchainQuery: ThorchainQuery
   network: Network
 }
 
@@ -78,6 +80,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     fees: feesRD,
     reloadFeesHandler,
     validatePassword$,
+    thorchainQuery,
     network
   } = props
 
@@ -230,6 +233,19 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     )
     return isEthAsset(asset) ? baseAmount(maxEthAmount, balance.amount.decimal) : balance.amount
   }, [selectedFee, oAssetAmount, asset, balance.amount])
+
+  // store maxAmountValue
+  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
+    const fetchData = async () => {
+      setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, AssetUSDC))
+    }
+
+    fetchData()
+  }, [asset, thorchainQuery, maxAmount])
 
   useEffect(() => {
     FP.pipe(
@@ -499,6 +515,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
               className="mb-10px"
               color="neutral"
               balance={{ amount: maxAmount, asset }}
+              maxDollarValue={maxAmmountPriceValue}
               onClick={addMaxAmountHandler}
               disabled={isLoading}
             />

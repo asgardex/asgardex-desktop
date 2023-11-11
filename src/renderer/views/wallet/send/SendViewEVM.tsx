@@ -12,6 +12,7 @@ import { LoadingView } from '../../../components/shared/loading'
 import { SendFormEVM } from '../../../components/wallet/txs/send'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useEvmContext } from '../../../contexts/EvmContext'
+import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
@@ -52,7 +53,7 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
       ),
     [asset, oBalances]
   )
-
+  const { thorchainQuery } = useThorchainQueryContext()
   const { transfer$ } = useChainContext()
 
   const { fees$, reloadFees } = useEvmContext(asset.asset.chain)
@@ -90,6 +91,7 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
             getExplorerTxUrl={getExplorerTxUrl}
             reloadFeesHandler={reloadFees}
             validatePassword$={validatePassword$}
+            thorchainQuery={thorchainQuery}
             network={network}
           />
         </Styled.Container>

@@ -341,6 +341,22 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     return new CryptoAmount(result.amount, result.asset)
   }, [amountToSendMax1e8, network, poolDetails, pricePool, asset])
 
+  // price of amount to send
+  const priceAmountMax1e8: CryptoAmount = useMemo(() => {
+    const result = FP.pipe(
+      PoolHelpers.getPoolPriceValue({
+        balance: { asset: asset.asset, amount: maxAmountToSendMax1e8 },
+        poolDetails,
+        pricePool,
+        network
+      }),
+      O.getOrElse(() => baseAmount(0, amountToSendMax1e8.decimal)),
+      (amount) => ({ asset: pricePool.asset, amount })
+    )
+
+    return new CryptoAmount(result.amount, result.asset)
+  }, [asset.asset, maxAmountToSendMax1e8, poolDetails, pricePool, network, amountToSendMax1e8.decimal])
+
   // Reccommend amount in for use later
   const reccommendedAmountIn: CryptoAmount = useMemo(
     () =>
@@ -367,15 +383,15 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     [oSaversQuote, asset]
   )
 
-  // store affiliate fee
-  const [liquidityPriceValue, setAffiliatePriceValue] = useState<CryptoAmount>(
+  // store liquidity fee
+  const [liquidityPriceValue, setLiquidityPriceValue] = useState<CryptoAmount>(
     new CryptoAmount(baseAmount(0, asset.baseAmount.decimal), asset.asset)
   )
 
   // useEffect to fetch data from query
   useEffect(() => {
     const fetchData = async () => {
-      setAffiliatePriceValue(await thorchainQuery.convert(liquidityFee, pricePool.asset))
+      setLiquidityPriceValue(await thorchainQuery.convert(liquidityFee, pricePool.asset))
     }
 
     fetchData()
@@ -951,7 +967,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     [approveState, isApprovedState, needApprovement]
   )
 
-  useEffect(() => {
+  const reset = useCallback(() => {
     if (!eqOAsset.equals(prevAsset.current, O.some(asset.asset))) {
       prevAsset.current = O.some(asset.asset)
       // reset deposit state
@@ -963,7 +979,25 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       // reload fees
       reloadFeesHandler()
     }
-  }, [asset, reloadFeesHandler, resetApproveState, resetIsApprovedState, reloadSelectedPoolDetail, resetDepositState])
+  }, [asset, reloadFeesHandler, resetApproveState, resetIsApprovedState, resetDepositState])
+
+  /**
+   * Callback whenever assets have been changed
+   */
+  useEffect(() => {
+    let doReset = false
+    // reset data whenever source asset has been changed
+    if (!eqOAsset.equals(prevAsset.current, O.some(asset.asset))) {
+      prevAsset.current = O.some(asset.asset)
+      doReset = true
+    }
+
+    // reset only once
+    if (doReset) reset()
+
+    // Note: useEffect does depend on `sourceAssetProp`, `targetAssetProp` - ignore other values
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [asset.asset])
 
   type ModalState = 'deposit' | 'approve' | 'none'
   const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
@@ -1287,6 +1321,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
                   }
                   size="medium"
                   balance={{ amount: maxAmountToSendMax1e8, asset: asset.asset }}
+                  maxDollarValue={priceAmountMax1e8}
                   onClick={() => setAmountToSendMax1e8(maxAmountToSendMax1e8)}
                   maxInfoText={maxBalanceInfoTxt}
                 />

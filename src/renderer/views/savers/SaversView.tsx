@@ -166,7 +166,8 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   const poolsStateRD = useObservableState(poolsState$, RD.initial)
 
   const reloadHandler = useCallback(() => {
-    reloadBalancesByChain(chain)
+    const lazyReload = reloadBalancesByChain(chain)
+    lazyReload()
     reloadSaverProvider()
   }, [chain, reloadBalancesByChain, reloadSaverProvider])
 

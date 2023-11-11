@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Address, BNBChain } from '@xchainjs/xchain-binance'
+import { CryptoAmount, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   formatAssetAmountCurrency,
   assetAmount,
@@ -21,7 +22,7 @@ import { Network } from '../../../../../shared/api/types'
 import { AssetBNB } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
-import { ZERO_BASE_AMOUNT } from '../../../../const'
+import { AssetUSDC, ZERO_BASE_AMOUNT } from '../../../../const'
 import { BNB_DECIMAL, isBnbAsset } from '../../../../helpers/assetHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import { getBnbAmountFromBalances } from '../../../../helpers/walletHelper'
@@ -59,6 +60,7 @@ export type Props = {
   fee: FeeRD
   reloadFeesHandler: FP.Lazy<void>
   validatePassword$: ValidatePasswordHandler
+  thorchainQuery: ThorchainQuery
   network: Network
 }
 
@@ -74,6 +76,7 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
     fee: feeRD,
     reloadFeesHandler,
     validatePassword$,
+    thorchainQuery,
     network
   } = props
 
@@ -165,6 +168,18 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
     )
     return isBnbAsset(asset) ? maxBnbAmount : balance.amount
   }, [oFee, oBnbAmount, asset, balance.amount])
+  // store maxAmountValue
+  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
+    const fetchData = async () => {
+      setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, AssetUSDC))
+    }
+
+    fetchData()
+  }, [asset, maxAmount, thorchainQuery])
 
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field
@@ -331,6 +346,7 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
               className="mb-10px"
               color="neutral"
               balance={{ amount: maxAmount, asset }}
+              maxDollarValue={maxAmmountPriceValue}
               onClick={addMaxAmountHandler}
               disabled={isLoading}
             />

@@ -10,6 +10,7 @@ import { LoadingView } from '../../../components/shared/loading'
 import { SendFormLTC } from '../../../components/wallet/txs/send/'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useLitecoinContext } from '../../../contexts/LitecoinContext'
+import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { getWalletBalanceByAddress } from '../../../helpers/walletHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
@@ -39,6 +40,8 @@ export const SendViewLTC: React.FC<Props> = (props): JSX.Element => {
     () => balancesState$(DEFAULT_BALANCES_FILTER),
     INITIAL_BALANCES_STATE
   )
+
+  const { thorchainQuery } = useThorchainQueryContext()
 
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(LTCChain))
 
@@ -80,6 +83,7 @@ export const SendViewLTC: React.FC<Props> = (props): JSX.Element => {
             feesWithRates={feesWithRatesRD}
             reloadFeesHandler={reloadFeesWithRates}
             validatePassword$={validatePassword$}
+            thorchainQuery={thorchainQuery}
             network={network}
           />
         </Styled.Container>

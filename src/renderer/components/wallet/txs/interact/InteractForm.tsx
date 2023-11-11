@@ -3,11 +3,18 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { AssetAVAX, QuoteThornameParams, ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
+import {
+  AssetAVAX,
+  CryptoAmount,
+  QuoteThornameParams,
+  ThorchainQuery,
+  ThornameDetails
+} from '@xchainjs/xchain-thorchain-query'
 import {
   Asset,
   assetAmount,
   assetToBase,
+  baseAmount,
   BaseAmount,
   baseToAsset,
   bn,
@@ -27,7 +34,7 @@ import { AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../../../../sh
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../shared/wallet/types'
 import * as StyledR from '../../../../components/shared/form/Radio.styles'
-import { AssetUSDTDAC, ZERO_BASE_AMOUNT } from '../../../../const'
+import { AssetUSDC, AssetUSDTDAC, ZERO_BASE_AMOUNT } from '../../../../const'
 import { THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
 import { getBondMemo, getLeaveMemo, getUnbondMemo } from '../../../../helpers/memoHelper'
@@ -193,6 +200,19 @@ export const InteractForm: React.FC<Props> = (props) => {
       ),
     [oFee, balance.amount]
   )
+
+  // store maxAmountValue
+  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
+    const fetchData = async () => {
+      setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, AssetUSDC))
+    }
+
+    fetchData()
+  }, [asset, maxAmmountPriceValue, maxAmount, thorchainQuery])
   const amountValidator = useCallback(
     async (_: unknown, value: BigNumber) => {
       switch (interactType) {
@@ -711,6 +731,7 @@ export const InteractForm: React.FC<Props> = (props) => {
                     className="mb-10px"
                     color="neutral"
                     balance={{ amount: maxAmount, asset: asset }}
+                    maxDollarValue={maxAmmountPriceValue}
                     onClick={() => addMaxAmountHandler(maxAmount)}
                     disabled={isLoading}
                     onChange={() => getMemo()}

@@ -1320,6 +1320,20 @@ export const Swap = ({
     [amountToSwapMax1e8, maxAmountToSwapMax1e8, sourceAssetAmountMax1e8]
   )
 
+  const priceAmountMax1e8: CryptoAmount = useMemo(() => {
+    const result = FP.pipe(
+      PoolHelpers.getPoolPriceValue({
+        balance: { asset: sourceAsset, amount: maxAmountToSwapMax1e8 },
+        poolDetails,
+        pricePool,
+        network
+      }),
+      O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal)),
+      (amount) => ({ asset: pricePool.asset, amount })
+    )
+    return new CryptoAmount(result.amount, result.asset)
+  }, [amountToSwapMax1e8.decimal, maxAmountToSwapMax1e8, network, poolDetails, pricePool, sourceAsset])
+
   /**
    * Selectable source assets to swap from.
    *
@@ -1637,6 +1651,12 @@ export const Swap = ({
     network
   ])
 
+  const onCloseTxModal = useCallback(() => {
+    resetSwapState()
+    reloadBalances()
+    setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
+  }, [resetSwapState, reloadBalances, setAmountToSwapMax1e8, initialAmountToSwapMax1e8])
+
   const onFinishTxModal = useCallback(() => {
     resetSwapState()
     reloadBalances()
@@ -1690,7 +1710,7 @@ export const Swap = ({
     return (
       <TxModal
         title={txModalTitle}
-        onClose={resetSwapState}
+        onClose={onCloseTxModal}
         onFinish={onFinishTxModal}
         startTime={swapStartTime}
         txRD={swap}
@@ -1708,7 +1728,6 @@ export const Swap = ({
     )
   }, [
     swapState,
-    resetSwapState,
     onFinishTxModal,
     swapStartTime,
     goToTransaction,
@@ -2274,6 +2293,7 @@ export const Swap = ({
                 }
                 size="medium"
                 balance={{ amount: maxAmountToSwapMax1e8, asset: sourceAsset }}
+                maxDollarValue={priceAmountMax1e8}
                 onClick={() => setAmountToSwapMax1e8(maxAmountToSwapMax1e8)}
                 maxInfoText={maxBalanceInfoTxt}
                 hidePrivateData={hidePrivateData}
