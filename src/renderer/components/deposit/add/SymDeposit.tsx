@@ -761,8 +761,8 @@ export const SymDeposit: React.FC<Props> = (props) => {
               asset: convertBaseAmountDecimal(assetAmountToDepositMax1e8, assetDecimal)
             },
             memos: {
-              asset: getDepositMemo({ asset, address: runeAddress }).concat(`::${ASGARDEX_THORNAME}:0`),
-              rune: getDepositMemo({ asset, address: assetAddress }).concat(`::${ASGARDEX_THORNAME}:0`)
+              asset: getDepositMemo({ asset, address: runeAddress }).concat(`:${ASGARDEX_THORNAME}:0`),
+              rune: getDepositMemo({ asset, address: assetAddress }).concat(`:${ASGARDEX_THORNAME}:0`)
             },
             runeWalletType: runeWB.walletType,
             runeWalletIndex: runeWB.walletIndex,
