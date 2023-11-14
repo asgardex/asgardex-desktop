@@ -928,15 +928,6 @@ export const InteractForm: React.FC<Props> = (props) => {
                 </>
               )}
               <Styled.Fees className="mt-10px" fees={thorNamefees} disabled={isLoading} />
-
-              {/* <FlatButton
-                className="mt-10px min-w-[200px]"
-                loading={isLoading}
-                disabled={thornameQuoteValid}
-                size="large"
-                onClick={() => estimateThornameHandler()}>
-                Estimate
-              </FlatButton> */}
             </Styled.InputContainer>
           )}
         </>
