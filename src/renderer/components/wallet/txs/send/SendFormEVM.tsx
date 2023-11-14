@@ -317,6 +317,20 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     return false
   }, [amountToSend, sendAddress, reloadFeesHandler, asset, form])
 
+  // only render memo field for chain asset.
+  const renderMemo = useMemo(() => {
+    if (isEthAsset(asset) || isAvaxAsset(asset) || isBscAsset(asset)) {
+      return (
+        <>
+          <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
+          <Form.Item name="memo">
+            <Styled.Input size="large" disabled={isLoading} onBlur={reloadFees} />
+          </Form.Item>
+        </>
+      )
+    }
+  }, [asset, intl, isLoading, reloadFees])
+
   // Send tx start time
   const [sendTxStartTime, setSendTxStartTime] = useState<number>(0)
 
@@ -521,10 +535,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
             />
             <Styled.Fees fees={uiFeesRD} reloadFees={reloadFees} disabled={isLoading} />
             {renderFeeError}
-            <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
-            <Form.Item name="memo">
-              <Styled.Input size="large" disabled={isLoading} onBlur={reloadFees} />
-            </Form.Item>
+            {renderMemo}
             <Form.Item name="fee">{renderFeeOptions}</Form.Item>
           </Styled.SubForm>
           <FlatButton
