@@ -11,7 +11,7 @@ import { MsgSend } from 'cosmos-client/x/bank'
 import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId, Network } from '../../../../shared/api/types'
-import { AssetRuneNative } from '../../../../shared/utils/asset'
+// import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
 import { fromLedgerErrorType, getDerivationPath } from './common'
@@ -169,12 +169,14 @@ export const deposit = async ({
   transport,
   network,
   amount,
+  asset,
   memo,
   walletIndex,
   nodeUrl
 }: {
   transport: Transport
   amount: BaseAmount
+  asset: Asset
   network: Network
   memo: string
   walletIndex: number
@@ -205,7 +207,7 @@ export const deposit = async ({
     const msgNativeTx: Legacy.MsgNativeTx = Legacy.msgNativeTxFromJson({
       coins: [
         {
-          asset: assetToString(AssetRuneNative),
+          asset: assetToString(asset),
           amount: amount.amount().toString()
         }
       ],
