@@ -1728,6 +1728,7 @@ export const Swap = ({
     )
   }, [
     swapState,
+    onCloseTxModal,
     onFinishTxModal,
     swapStartTime,
     goToTransaction,
