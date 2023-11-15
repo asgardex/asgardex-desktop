@@ -279,7 +279,7 @@ export const deposit = async ({
               msg: `"nodeUrl" needs to be defined to send Ledger transaction on ${chainToString(chain)}`
             })
           } else {
-            res = await THOR.deposit({ transport, network, amount, memo, walletIndex, nodeUrl })
+            res = await THOR.deposit({ transport, network, amount, asset, memo, walletIndex, nodeUrl })
           }
           break
         case ETHChain:
