@@ -10,7 +10,6 @@ import { Form } from 'antd'
 import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
-import debounce from 'lodash/debounce'
 import { useIntl } from 'react-intl'
 
 import { Network } from '../../../../../shared/api/types'
@@ -144,40 +143,40 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
   const [thornameSend, setThornameSend] = useState<boolean>(false)
   const [showDetails, setShowDetails] = useState<boolean>(false)
 
-  const debouncedAddressValidator = debounce(
+  const addressValidator = useCallback(
     async (_: unknown, value: string) => {
       if (!value) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.empty' }))
       }
-      if (!addressValidation(value.toLowerCase())) {
+
+      if (!addressValidation(value) && !thornameSend) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
     },
-    500 // Adjust the debounce delay (in milliseconds) as needed
+    [addressValidation, intl, thornameSend]
   )
   const handleAddressInput = useCallback(async () => {
     const recipient = form.getFieldValue('recipient')
 
-    if (!recipient || (recipient.length > 30 && !thornameSend)) {
-      setThornameSend(false)
-      debouncedAddressValidator(undefined, recipient)
+    if (!recipient || !thornameSend) {
       setRecipientAddress(recipient)
-      return
     }
 
     try {
-      const thornameDetails = await thorchainQuery.getThornameDetails(recipient)
-      if (thornameDetails && thornameSend) {
-        setThorname(O.some(thornameDetails))
-        setRecipientAddress(thornameDetails.owner)
-        setShowDetails(true)
+      if (thornameSend) {
+        const thornameDetails = await thorchainQuery.getThornameDetails(recipient)
+        if (thornameDetails) {
+          setThorname(O.some(thornameDetails))
+          setRecipientAddress(thornameDetails.owner)
+          setShowDetails(true)
+        }
       }
     } catch (error) {
       setThorname(O.none)
 
       return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
     }
-  }, [form, thornameSend, debouncedAddressValidator, thorchainQuery, intl])
+  }, [form, thornameSend, thorchainQuery, intl])
 
   // max amount for RuneNative
   const maxAmount: BaseAmount = useMemo(() => {
@@ -381,7 +380,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
               </CheckButton>
             </div>
 
-            <Form.Item rules={[{ required: true }]} name="recipient">
+            <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
               <Styled.Input color="primary" size="large" disabled={isLoading} onChange={handleAddressInput} />
             </Form.Item>
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
