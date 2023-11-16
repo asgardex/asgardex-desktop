@@ -722,9 +722,13 @@ export const Swap = ({
           (_) =>
             FP.pipe(
               oPriceSwapFees1e8,
-              O.map(({ amount, asset }) =>
-                formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, decimal: isUSDAsset(asset) ? 2 : 6 })
-              ),
+              O.map(({ amount, asset }) => {
+                return formatAssetAmountCurrency({
+                  amount: baseToAsset(amount),
+                  asset,
+                  decimal: isUSDAsset(asset) ? 2 : 6
+                })
+              }),
               O.getOrElse(() => noDataString)
             )
         )
@@ -745,6 +749,7 @@ export const Swap = ({
           const streamingInt = isStreaming ? streamingInterval : 0
           const streaminQuant = isStreaming ? streamingQuantity : 0
           const toleranceBps = isStreaming ? 10000 : slipTolerance * 100 // convert to basis points
+
           return {
             fromAsset: fromAsset,
             destinationAsset: destinationAsset,
@@ -772,6 +777,7 @@ export const Swap = ({
       slipTolerance
     ]
   )
+
   const debouncedEffect = useRef(
     debounce((quoteSwapData) => {
       // Include isStreaming as a parameter
@@ -792,11 +798,23 @@ export const Swap = ({
       oQuoteSwapData,
       O.fold(
         () => {
-          console.log('No quoteSwapData available')
+          const estimateSwap: QuoteSwapParams = {
+            fromAsset: sourceAsset,
+            destinationAsset: targetAsset,
+            amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset),
+            streamingInterval: isStreaming ? streamingInterval : 0,
+            streamingQuantity: isStreaming ? streamingQuantity : 0,
+            toleranceBps: isStreaming ? 10000 : slipTolerance * 100, // convert to basis points
+            affiliateAddress: ASGARDEX_THORNAME,
+            affiliateBps: ASGARDEX_AFFILIATE_FEE
+          }
+          if (!estimateSwap.amount.baseAmount.eq(baseAmount(0))) {
+            currentDebouncedEffect(estimateSwap)
+          }
         },
         (quoteSwapData) => {
           if (!quoteSwapData.amount.baseAmount.eq(baseAmount(0)) && !disableSwapAction) {
-            currentDebouncedEffect(quoteSwapData) // Pass the isStreaming flag
+            currentDebouncedEffect(quoteSwapData)
           }
         }
       )
@@ -805,7 +823,18 @@ export const Swap = ({
     return () => {
       currentDebouncedEffect.cancel()
     }
-  }, [oQuoteSwapData, disableSwapAction])
+  }, [
+    oQuoteSwapData,
+    disableSwapAction,
+    sourceAsset,
+    targetAsset,
+    amountToSwapMax1e8,
+    sourceAssetDecimal,
+    isStreaming,
+    streamingInterval,
+    streamingQuantity,
+    slipTolerance
+  ])
 
   // Swap boolean for use later
   const canSwap: boolean = useMemo(
@@ -2750,6 +2779,36 @@ export const Swap = ({
                 ? intl.formatMessage({ id: 'wallet.add.label' })
                 : isLocked(keystore) && intl.formatMessage({ id: 'wallet.unlock.label' })}
             </FlatButton>
+            <>
+              <div className={`mx-50px w-full px-10px font-main text-[12px] uppercase dark:border-gray1d`}>
+                <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
+                  {/* Rate */}
+                  <div className={`flex w-full justify-between font-mainBold text-[14px]`}>
+                    <BaseButton
+                      className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                      onClick={() =>
+                        // toggle rate
+                        setRateDirection((current) => (current === 'fromSource' ? 'fromTarget' : 'fromSource'))
+                      }>
+                      {intl.formatMessage({ id: 'common.rate' })}
+                      <ArrowsRightLeftIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                    </BaseButton>
+                    <div>{rateLabel}</div>
+                  </div>
+                  {/* fees */}
+                  <div className="flex w-full items-center justify-between font-mainBold">
+                    <BaseButton
+                      disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
+                      className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                      onClick={reloadFeesHandler}>
+                      {intl.formatMessage({ id: 'common.fees.estimated' })}
+                      <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                    </BaseButton>
+                    <div>{priceSwapFeesLabel}</div>
+                  </div>
+                </div>
+              </div>
+            </>
           </>
         )}
       </div>
