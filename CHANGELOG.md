@@ -7,6 +7,9 @@
 - Savers Withdraw Outbound time not displayed [#69](https://github.com/asgardex/asgardex-desktop/issues/69)
 - Update xhcainjs clients [#76](https://github.com/asgardex/asgardex-desktop/issues/76)
 - Change Block Interveral Range [#78](https://github.com/asgardex/asgardex-desktop/issues/78)
+- Ledger issue, swaping synths [#93](https://github.com/asgardex/asgardex-desktop/issues/93)
+- Delimiter for THORNames memo in Thorchain-query [#90](https://github.com/asgardex/asgardex-desktop/issues/90)
+- ETH Error when low eth balance[#86](https://github.com/asgardex/asgardex-desktop/issues/86)
 
 # 1.20.6 (2023-11-01)
 
