@@ -432,7 +432,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
           {showDetails && (
             <>
               {/* recipient address */}
-              <div className="flex w-full items-center justify-between pl-10px text-[12px]">
+              <div className="flex w-full items-center justify-between pl-10px text-[12px] dark:text-text2d">
                 <div>{intl.formatMessage({ id: 'common.recipient' })}</div>
                 <div className="truncate pl-20px text-[13px] normal-case leading-normal">
                   {FP.pipe(
