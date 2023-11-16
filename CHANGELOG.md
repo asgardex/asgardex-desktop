@@ -1,4 +1,4 @@
-# 1.20.7 (2023-11-15)
+# 1.20.7 (2023-11-16)
 
 ## Update / Fix
 
@@ -10,6 +10,7 @@
 - Ledger issue, swaping synths [#93](https://github.com/asgardex/asgardex-desktop/issues/93)
 - Delimiter for THORNames memo in Thorchain-query [#90](https://github.com/asgardex/asgardex-desktop/issues/90)
 - ETH Error when low eth balance[#86](https://github.com/asgardex/asgardex-desktop/issues/86)
+- Estimate Swap without un-locking wallet [#94](https://github.com/asgardex/asgardex-desktop/issues/94)
 
 # 1.20.6 (2023-11-01)
 
