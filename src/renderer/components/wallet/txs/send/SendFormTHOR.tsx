@@ -167,7 +167,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
 
     try {
       const thornameDetails = await thorchainQuery.getThornameDetails(recipient)
-      if (thornameDetails) {
+      if (thornameDetails && thornameSend) {
         setThorname(O.some(thornameDetails))
         setRecipientAddress(thornameDetails.owner)
         setShowDetails(true)
@@ -177,7 +177,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
 
       return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
     }
-  }, [form, thorchainQuery, setShowDetails, intl, debouncedAddressValidator])
+  }, [form, thornameSend, debouncedAddressValidator, thorchainQuery, intl])
 
   // max amount for RuneNative
   const maxAmount: BaseAmount = useMemo(() => {
