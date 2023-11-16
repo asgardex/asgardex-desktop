@@ -158,7 +158,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
   const handleAddressInput = useCallback(async () => {
     const recipient = form.getFieldValue('recipient')
 
-    if (!recipient || recipient.length > 30) {
+    if (!recipient || (recipient.length > 30 && !thornameSend)) {
       setThornameSend(false)
       debouncedAddressValidator(undefined, recipient)
       setRecipientAddress(recipient)
