@@ -760,7 +760,7 @@ export const Swap = ({
             fromAddress: fromAsset.synth ? walletAddress : undefined,
             toleranceBps: toleranceBps,
             affiliateAddress: ASGARDEX_THORNAME,
-            affiliateBps: ASGARDEX_AFFILIATE_FEE
+            affiliateBps: network === 'stagenet' ? 0 : ASGARDEX_AFFILIATE_FEE
           }
         })
       ),
@@ -774,7 +774,8 @@ export const Swap = ({
       isStreaming,
       streamingInterval,
       streamingQuantity,
-      slipTolerance
+      slipTolerance,
+      network
     ]
   )
 
@@ -2805,6 +2806,18 @@ export const Swap = ({
                       <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
                     </BaseButton>
                     <div>{priceSwapFeesLabel}</div>
+                  </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'common.fee.inbound' })}</div>
+                    <div>{priceSwapInFeeLabel}</div>
+                  </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'common.fee.outbound' })}</div>
+                    <div>{priceSwapOutFeeLabel}</div>
+                  </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
+                    <div>{priceAffiliateFeeLabel}</div>
                   </div>
                 </div>
               </div>
