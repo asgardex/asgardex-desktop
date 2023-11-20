@@ -246,8 +246,8 @@ export const SendFormBCH: React.FC<Props> = (props): JSX.Element => {
       FP.pipe(
         selectedFee,
         O.alt(() => prevSelectedFeeRef.current),
-        O.map((fee) => {
-          const max = balance.amount.minus(fee)
+        O.map(() => {
+          const max = balance.amount
           const zero = baseAmount(0, max.decimal)
           return max.gt(zero) ? max : zero
         }),
