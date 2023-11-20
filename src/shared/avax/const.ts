@@ -8,7 +8,7 @@ import {
 } from '@xchainjs/xchain-avax'
 import { ExplorerProvider, FeeBounds, Network } from '@xchainjs/xchain-client'
 import { EVMClientParams } from '@xchainjs/xchain-evm'
-import { EtherscanProvider } from '@xchainjs/xchain-evm-providers'
+import { EtherscanProvider, RoutescanProvider } from '@xchainjs/xchain-evm-providers'
 import { BigNumber, ethers } from 'ethers'
 
 import { envOrDefault } from '../utils/env'
@@ -40,7 +40,7 @@ const ethersJSProviders = {
 
 const AVAX_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
   AVALANCHE_TESTNET_ETHERS_PROVIDER,
-  'https://api-testnet.snowtrace.io',
+  'https://api-testnet.snowtrace.dev',
   envOrDefault(process.env['REACT_APP_SNOWTRACE_API_KEY'], ''),
   AVAXChain,
   AssetAVAX,
@@ -48,7 +48,7 @@ const AVAX_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
 )
 const AVAX_ONLINE_PROVIDER_MAINNET = new EtherscanProvider(
   AVALANCHE_MAINNET_ETHERS_PROVIDER,
-  'https://api.snowtrace.io',
+  'https://api.snowtrace.dev',
   envOrDefault(process.env['REACT_APP_SNOWTRACE_API_KEY'], ''),
   AVAXChain,
   AssetAVAX,
@@ -59,18 +59,40 @@ const avaxProviders = {
   [Network.Testnet]: AVAX_ONLINE_PROVIDER_TESTNET,
   [Network.Stagenet]: AVAX_ONLINE_PROVIDER_MAINNET
 }
+const ROUTESCAN_PROVIDER_MAINNET = new RoutescanProvider(
+  AVALANCHE_MAINNET_ETHERS_PROVIDER,
+  'https://api.routescan.io',
+  43114,
+  AssetAVAX,
+  AVAX_DECIMAL
+)
+
+const ROUTESCAN_PROVIDER_TESTNET = new RoutescanProvider(
+  AVALANCHE_TESTNET_ETHERS_PROVIDER,
+  'https://api.routescan.io',
+  43113,
+  AssetAVAX,
+  AVAX_DECIMAL,
+  true
+)
+
+const routescanProviders = {
+  [Network.Mainnet]: ROUTESCAN_PROVIDER_MAINNET,
+  [Network.Testnet]: ROUTESCAN_PROVIDER_TESTNET,
+  [Network.Stagenet]: ROUTESCAN_PROVIDER_MAINNET
+}
 // =====ONLINE providers=====
 
 // =====Explorers=====
 const AVAX_MAINNET_EXPLORER = new ExplorerProvider(
-  'https://snowtrace.io/',
-  'https://snowtrace.io/address/%%ADDRESS%%',
-  'https://snowtrace.io/tx/%%TX_ID%%'
+  'https://snowtrace.dev/',
+  'https://snowtrace.dev/address/%%ADDRESS%%',
+  'https://snowtrace.dev/tx/%%TX_ID%%'
 )
 const AVAX_TESTNET_EXPLORER = new ExplorerProvider(
-  'https://testnet.snowtrace.io/',
-  'https://testnet.snowtrace.io/address/%%ADDRESS%%',
-  'https://testnet.snowtrace.io/tx/%%TX_ID%%'
+  'https://testnet.snowtrace.dev/',
+  'https://testnet.snowtrace.dev/address/%%ADDRESS%%',
+  'https://testnet.snowtrace.dev/tx/%%TX_ID%%'
 )
 const avaxExplorerProviders = {
   [Network.Mainnet]: AVAX_MAINNET_EXPLORER,
@@ -112,7 +134,7 @@ export const defaultAvaxParams: EVMClientParams = {
   defaults,
   providers: ethersJSProviders,
   explorerProviders: avaxExplorerProviders,
-  dataProviders: [avaxProviders],
+  dataProviders: [avaxProviders, routescanProviders],
   network: Network.Testnet,
   feeBounds: {
     lower: LOWER_FEE_BOUND,

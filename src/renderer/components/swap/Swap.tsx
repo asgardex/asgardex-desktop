@@ -806,7 +806,7 @@ export const Swap = ({
             affiliateAddress: ASGARDEX_THORNAME,
             affiliateBps: ASGARDEX_AFFILIATE_FEE
           }
-          if (!estimateSwap.amount.baseAmount.eq(baseAmount(0))) {
+          if (!estimateSwap.amount.baseAmount.eq(baseAmount(0)) && lockedWallet) {
             currentDebouncedEffect(estimateSwap)
           }
         },
@@ -831,7 +831,8 @@ export const Swap = ({
     isStreaming,
     streamingInterval,
     streamingQuantity,
-    slipTolerance
+    slipTolerance,
+    lockedWallet
   ])
 
   // Swap boolean for use later
