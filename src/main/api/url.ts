@@ -26,6 +26,7 @@ const EXTERNALS_WHITELIST = [
   'stagenet.thorswap.finance',
   'app.thorswap.finance',
   'viewblock.io',
+  'runescan.io',
   'testnet.midgard.thorchain.info',
   'stagenet-midgard.ninerealms.com',
   'testnet-rpc.ninerealms.com',
@@ -37,6 +38,7 @@ const EXTERNALS_WHITELIST = [
   'cosmos.bigdipper.live',
   'explorer.theta-testnet.polypore.xyz',
   'snowtrace.io',
+  'routescan.io',
   'bscscan.com',
   'track.ninerealms.com'
 ]

@@ -739,13 +739,12 @@ export const Swap = ({
   const oQuoteSwapData: O.Option<QuoteSwapParams> = useMemo(
     () =>
       FP.pipe(
-        sequenceTOption(oSourceWalletAddress, oRecipientAddress),
-        O.map(([sourceAddress, destinationAddress]) => {
+        sequenceTOption(oRecipientAddress),
+        O.map(([destinationAddress]) => {
           const fromAsset = sourceAsset
           const destinationAsset = targetAsset
           const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
           const address = destinationAddress
-          const walletAddress = sourceAddress
           const streamingInt = isStreaming ? streamingInterval : 0
           const streaminQuant = isStreaming ? streamingQuantity : 0
           const toleranceBps = isStreaming ? 10000 : slipTolerance * 100 // convert to basis points
@@ -757,7 +756,6 @@ export const Swap = ({
             destinationAddress: address,
             streamingInterval: streamingInt,
             streamingQuantity: streaminQuant,
-            fromAddress: fromAsset.synth ? walletAddress : undefined,
             toleranceBps: toleranceBps,
             affiliateAddress: ASGARDEX_THORNAME,
             affiliateBps: network === 'stagenet' ? 0 : ASGARDEX_AFFILIATE_FEE
@@ -765,7 +763,6 @@ export const Swap = ({
         })
       ),
     [
-      oSourceWalletAddress,
       oRecipientAddress,
       sourceAsset,
       targetAsset,
