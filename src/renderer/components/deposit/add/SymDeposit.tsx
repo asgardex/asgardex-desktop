@@ -4,6 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon } from '@heroicons/react/20/solid'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { CryptoAmount } from '@xchainjs/xchain-thorchain-query'
 import { Address, Asset, baseAmount, BaseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/lib/Array'
@@ -16,6 +17,7 @@ import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
 import { Network } from '../../../../shared/api/types'
+import { ASGARDEX_THORNAME } from '../../../../shared/const'
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString } from '../../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../../shared/utils/guard'
@@ -759,8 +761,8 @@ export const SymDeposit: React.FC<Props> = (props) => {
               asset: convertBaseAmountDecimal(assetAmountToDepositMax1e8, assetDecimal)
             },
             memos: {
-              asset: getDepositMemo({ asset, address: runeAddress }),
-              rune: getDepositMemo({ asset, address: assetAddress })
+              asset: getDepositMemo({ asset, address: runeAddress }).concat(`:${ASGARDEX_THORNAME}:0`),
+              rune: getDepositMemo({ asset, address: assetAddress }).concat(`:${ASGARDEX_THORNAME}:0`)
             },
             runeWalletType: runeWB.walletType,
             runeWalletIndex: runeWB.walletIndex,
@@ -908,6 +910,34 @@ export const SymDeposit: React.FC<Props> = (props) => {
     })
     return max1e8BaseAmount(maxAmount)
   }, [asset, assetBalance, depositFees, poolData, runeBalance])
+
+  const priceAmountToSwapMax1e8: CryptoAmount = useMemo(() => {
+    const result = FP.pipe(
+      PoolHelpers.getPoolPriceValue({
+        balance: { asset: asset, amount: maxAssetAmountToDepositMax1e8 },
+        poolDetails,
+        pricePool,
+        network
+      }),
+      O.getOrElse(() => baseAmount(0, maxAssetAmountToDepositMax1e8.decimal)),
+      (amount) => ({ asset: pricePool.asset, amount })
+    )
+    return new CryptoAmount(result.amount, result.asset)
+  }, [maxAssetAmountToDepositMax1e8, network, poolDetails, pricePool, asset])
+
+  const priceRuneAmountToDepsoitMax1e8: CryptoAmount = useMemo(() => {
+    const result = FP.pipe(
+      PoolHelpers.getPoolPriceValue({
+        balance: { asset: AssetRuneNative, amount: maxRuneAmountToDeposit },
+        poolDetails,
+        pricePool,
+        network
+      }),
+      O.getOrElse(() => baseAmount(0, maxRuneAmountToDeposit.decimal)),
+      (amount) => ({ asset: pricePool.asset, amount })
+    )
+    return new CryptoAmount(result.amount, result.asset)
+  }, [maxRuneAmountToDeposit, network, poolDetails, pricePool])
 
   const setAssetAmountToDepositMax1e8 = useCallback(
     (amountToDeposit: BaseAmount) => {
@@ -1837,6 +1867,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
           }
           size="medium"
           balance={{ amount: maxRuneAmountToDeposit, asset: AssetRuneNative }}
+          maxDollarValue={priceRuneAmountToDepsoitMax1e8}
           onClick={() => {
             updateRuneAmount(maxRuneAmountToDeposit)
           }}
@@ -1862,6 +1893,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
       maxRuneAmountToDeposit,
       minRuneAmountError,
       minRuneAmountToDeposit,
+      priceRuneAmountToDepsoitMax1e8,
       renderMinAmount,
       runeBalanceLabel,
       runeFeeLabel,
@@ -1883,6 +1915,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
           }
           size="medium"
           balance={{ amount: maxAssetAmountToDepositMax1e8, asset }}
+          maxDollarValue={priceAmountToSwapMax1e8}
           onClick={() => {
             updateAssetAmount(maxAssetAmountToDepositMax1e8)
           }}
@@ -1908,6 +1941,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     [
       maxAssetAmountToDepositMax1e8,
       asset,
+      priceAmountToSwapMax1e8,
       intl,
       assetBalanceLabel,
       assetFeeLabel,

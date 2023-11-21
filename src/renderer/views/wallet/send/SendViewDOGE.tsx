@@ -10,6 +10,7 @@ import { LoadingView } from '../../../components/shared/loading'
 import { SendFormDOGE } from '../../../components/wallet/txs/send/'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useDogeContext } from '../../../contexts/DogeContext'
+import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { getWalletBalanceByAddress } from '../../../helpers/walletHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
@@ -51,6 +52,8 @@ export const SendViewDOGE: React.FC<Props> = (props): JSX.Element => {
   )
   const { transfer$ } = useChainContext()
 
+  const { thorchainQuery } = useThorchainQueryContext()
+
   const { feesWithRates$, reloadFeesWithRates } = useDogeContext()
 
   const feesWithRatesLD: FeesWithRatesLD = useMemo(() => feesWithRates$(), [feesWithRates$])
@@ -78,6 +81,7 @@ export const SendViewDOGE: React.FC<Props> = (props): JSX.Element => {
             feesWithRates={feesWithRatesRD}
             reloadFeesHandler={reloadFeesWithRates}
             validatePassword$={validatePassword$}
+            thorchainQuery={thorchainQuery}
             network={network}
           />
         </Styled.Container>

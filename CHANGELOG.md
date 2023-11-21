@@ -1,3 +1,21 @@
+# 1.20.7 (2023-11-21)
+
+## Updates/Fixes
+
+- Display Savers From a Ledger [#40](https://github.com/asgardex/asgardex-desktop/issues/40)
+- Savers page not showing ledger saver [#68](https://github.com/asgardex/asgardex-desktop/issues/68)
+- Savers Withdraw Outbound time not displayed [#69](https://github.com/asgardex/asgardex-desktop/issues/69)
+- Update xhcainjs clients [#76](https://github.com/asgardex/asgardex-desktop/issues/76)
+- Change Block Interval Range [#78](https://github.com/asgardex/asgardex-desktop/issues/78)
+- Ledger issue, swapping synths [#93](https://github.com/asgardex/asgardex-desktop/issues/93)
+- Delimiter for THORNames memo in Thorchain-query [#90](https://github.com/asgardex/asgardex-desktop/issues/90)
+- ETH Error when low ETH balance [#86](https://github.com/asgardex/asgardex-desktop/issues/86)
+- Estimate Swap without unlocking wallet [#94](https://github.com/asgardex/asgardex-desktop/issues/94)
+- Force-click Thorname when sending to a Thorname. [#95](https://github.com/asgardex/asgardex-desktop/issues/95)
+- Snowtrace will be discontinued [#89](https://github.com/asgardex/asgardex-desktop/issues/89)
+- Track transactions [#67](https://github.com/asgardex/asgardex-desktop/issues/67)
+- Update send screen [#85](https://github.com/asgardex/asgardex-desktop/issues/85) - Amount in USD
+
 # 1.20.6 (2023-11-01)
 
 ## Add
@@ -97,8 +115,7 @@
 ## Internal
 
 - xchainjs/xchain-thorchain-query dependency updated
-- xchainjs/xchain-thornode dependency updated to use latest version of THORNode. 
-
+- xchainjs/xchain-thornode dependency updated to use latest version of THORNode.
 
 # 1.20.2 (2023-08-21)
 
@@ -111,7 +128,7 @@
 ## Internal
 
 - Slider works on interval only, as follows
-  - Slider < 1 % `:Limit/0/0` is used. Normal swap with limit, no streaming. 
+  - Slider < 1 % `:Limit/0/0` is used. Normal swap with limit, no streaming.
   - Slider > 1 and < 70 % `:0/1/0` is used. No limit, THORNode works out swap quantity.
   - Slider >= 70 and <= 100 % `:0/5/0` is used. No limit, THORNode works out swap quantity.
 - force electron version 20.3.8 for node-hid
@@ -152,7 +169,7 @@
 - Updated routing to support synths, utilising `replace('/', '_synth_')`.
 - Upgraded and activated Savers Routing for Earn and Withdrawal.
 - Adjusted Asgard Midgard to comprehend Synths.
-- Replaced Inbound and Outbound fees with references to Inbound_address or the Quote endpoint, and removed the flat 3 * inbound fee.
+- Replaced Inbound and Outbound fees with references to Inbound_address or the Quote endpoint, and removed the flat 3 \* inbound fee.
 - Enhanced the Mimir detection logic to identify functionality pauses more effectively.
 - Added Affiliate Fee is 30 bps and uses THORName dx
 

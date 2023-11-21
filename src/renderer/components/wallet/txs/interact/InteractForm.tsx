@@ -3,7 +3,13 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { AssetAVAX, QuoteThornameParams, ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
+import {
+  AssetAVAX,
+  CryptoAmount,
+  QuoteThornameParams,
+  ThorchainQuery,
+  ThornameDetails
+} from '@xchainjs/xchain-thorchain-query'
 import {
   Asset,
   assetAmount,
@@ -27,7 +33,7 @@ import { AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../../../../sh
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../shared/wallet/types'
 import * as StyledR from '../../../../components/shared/form/Radio.styles'
-import { AssetUSDTDAC, ZERO_BASE_AMOUNT } from '../../../../const'
+import { AssetUSDC, AssetUSDTDAC, ZERO_BASE_AMOUNT } from '../../../../const'
 import { THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
 import { getBondMemo, getLeaveMemo, getUnbondMemo } from '../../../../helpers/memoHelper'
@@ -43,7 +49,7 @@ import { SendAsset } from '../../../modal/tx/extra/SendAsset'
 import { BaseButton, FlatButton, ViewTxButton } from '../../../uielements/button'
 import { CheckButton } from '../../../uielements/button/CheckButton'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
-import { UIFeesRD } from '../../../uielements/fees'
+import { UIFees, UIFeesRD } from '../../../uielements/fees'
 import { InfoIcon } from '../../../uielements/info'
 import { InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
@@ -105,7 +111,7 @@ export const InteractForm: React.FC<Props> = (props) => {
   const [hasProviderAddress, setHasProviderAddress] = useState(false)
 
   const [_amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
-  const [expireDate, setExpireDate] = useState<Date | undefined>()
+
   const [memo, setMemo] = useState<string>('')
   const amountToSend = useMemo(() => {
     switch (interactType) {
@@ -193,6 +199,26 @@ export const InteractForm: React.FC<Props> = (props) => {
       ),
     [oFee, balance.amount]
   )
+
+  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(maxAmount, asset)) // Initial state can be null or a suitable default
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
+        const convertedValue = await thorchainQuery.convert(maxCryptoAmount, AssetUSDC)
+        setMaxAmountPriceValue(convertedValue)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+        // Handle error appropriately
+      }
+    }
+
+    if ((maxAmount && interactType === 'bond') || interactType === 'custom') {
+      fetchData()
+    }
+  }, [asset, interactType, maxAmount, thorchainQuery])
+
   const amountValidator = useCallback(
     async (_: unknown, value: BigNumber) => {
       switch (interactType) {
@@ -229,6 +255,13 @@ export const InteractForm: React.FC<Props> = (props) => {
     },
     [interactType, intl, maxAmount]
   )
+
+  // const expireDate = (value: number) => {
+  //   const yearsToAdd = value
+
+  //   return newDate
+  // }
+
   const debouncedFetch = debounce(
     async (
       thorname,
@@ -277,10 +310,16 @@ export const InteractForm: React.FC<Props> = (props) => {
   }, [balance, debouncedFetch, form, thorchainQuery])
 
   const estimateThornameHandler = useCallback(() => {
+    const currentDate = new Date()
+
     form.validateFields()
     const thorname = form.getFieldValue('thorname')
     const chain = thornameRegister ? form.getFieldValue('chain') : form.getFieldValue('aliasChain')
-    const expirity = form.getFieldValue('expiry') === 1 ? undefined : expireDate
+    const yearsToAdd = form.getFieldValue('expiry')
+    const expirity =
+      yearsToAdd === 1
+        ? undefined
+        : new Date(currentDate.getFullYear() + yearsToAdd, currentDate.getMonth(), currentDate.getDate())
     const chainAddress = thornameRegister ? form.getFieldValue('chainAddress') : form.getFieldValue('aliasAddress')
     const owner = balance.walletAddress
     if (thorname !== undefined && chain !== undefined && chainAddress !== undefined) {
@@ -309,16 +348,7 @@ export const InteractForm: React.FC<Props> = (props) => {
       }
       fetchThornameQuote()
     }
-  }, [
-    balance.walletAddress,
-    expireDate,
-    form,
-    isOwner,
-    preferredAsset,
-    thorchainQuery,
-    thornameRegister,
-    thornameUpdate
-  ])
+  }, [balance.walletAddress, form, isOwner, preferredAsset, thorchainQuery, thornameRegister, thornameUpdate])
 
   const handleRadioAssetChange = useCallback((e: RadioChangeEvent) => {
     const asset = e.target.value
@@ -360,7 +390,7 @@ export const InteractForm: React.FC<Props> = (props) => {
   const getMemo = useCallback(() => {
     const thorAddress = form.getFieldValue('thorAddress')
     const providerAddress =
-      form.getFieldValue('providerAddress') === undefined ? '' : form.getFieldValue('providerAddress')
+      form.getFieldValue('providerAddress') === undefined ? undefined : form.getFieldValue('providerAddress')
     const nodeOperatorFee = form.getFieldValue('operatorFee')
     const feeInBasisPoints = nodeOperatorFee ? nodeOperatorFee * 100 : undefined
 
@@ -565,31 +595,6 @@ export const InteractForm: React.FC<Props> = (props) => {
 
     [feeRD]
   )
-  const thorNamefees: UIFeesRD = useMemo(
-    () =>
-      FP.pipe(
-        feeRD,
-        RD.map((fee) => [{ asset: AssetRuneNative, amount: fee.plus(amountToSend) }])
-      ),
-
-    [amountToSend, feeRD]
-  )
-
-  const handleRadioChange = useCallback((e: RadioChangeEvent) => {
-    const value = e.target.value
-    const yearsToAdd = Number(value) ?? 0
-
-    // Calculate the new date by adding years to the current date
-    if (yearsToAdd > 0) {
-      const currentDate = new Date()
-      const newDate = new Date(currentDate.getFullYear() + yearsToAdd, currentDate.getMonth(), currentDate.getDate())
-      setExpireDate(newDate)
-      setThornameQuoteValid(false)
-    } else {
-      // Handle the case when no option is selected
-      setExpireDate(undefined)
-    }
-  }, [])
 
   const onClickHasProviderAddress = useCallback(() => {
     // clean address
@@ -607,6 +612,11 @@ export const InteractForm: React.FC<Props> = (props) => {
     })
   }, [_amountToSend, form])
 
+  const thorNamefees: UIFeesRD = useMemo(() => {
+    const fees: UIFees = [{ asset: AssetRuneNative, amount: _amountToSend }]
+    return RD.success(fees)
+  }, [_amountToSend])
+
   // Reset values whenever interactType has been changed (an user clicks on navigation tab)
   useEffect(() => {
     reset()
@@ -623,7 +633,8 @@ export const InteractForm: React.FC<Props> = (props) => {
         thorAddress: '',
         amount: bn(0),
         chain: THORChain,
-        chainAddress: balance.walletAddress
+        chainAddress: balance.walletAddress,
+        expiry: 0
       }}>
       <>
         {/* Memo input (CUSTOM only) */}
@@ -711,6 +722,7 @@ export const InteractForm: React.FC<Props> = (props) => {
                     className="mb-10px"
                     color="neutral"
                     balance={{ amount: maxAmount, asset: asset }}
+                    maxDollarValue={maxAmmountPriceValue}
                     onClick={() => addMaxAmountHandler(maxAmount)}
                     disabled={isLoading}
                     onChange={() => getMemo()}
@@ -862,7 +874,7 @@ export const InteractForm: React.FC<Props> = (props) => {
                         required: false
                       }
                     ]}>
-                    <StyledR.Radio.Group onChange={handleRadioChange} value={expireDate}>
+                    <StyledR.Radio.Group onChange={() => estimateThornameHandler()}>
                       <StyledR.Radio value={1}>1 year</StyledR.Radio>
                       <StyledR.Radio value={2}>2 years</StyledR.Radio>
                       <StyledR.Radio value={3}>3 years</StyledR.Radio>
@@ -876,7 +888,7 @@ export const InteractForm: React.FC<Props> = (props) => {
                   {/* Initial values needed for tns register */}
                   <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasChain' })}</Styled.InputLabel>
                   <Styled.FormItem
-                    name="aliasChain"
+                    name="chain"
                     rules={[
                       {
                         required: true,
@@ -903,10 +915,10 @@ export const InteractForm: React.FC<Props> = (props) => {
                     name="expiry"
                     rules={[
                       {
-                        required: false
+                        required: true
                       }
                     ]}>
-                    <StyledR.Radio.Group onChange={handleRadioChange} value={expireDate}>
+                    <StyledR.Radio.Group onChange={() => estimateThornameHandler()}>
                       <StyledR.Radio value={1}>1 year</StyledR.Radio>
                       <StyledR.Radio value={2}>2 years</StyledR.Radio>
                       <StyledR.Radio value={3}>3 years</StyledR.Radio>
@@ -915,21 +927,7 @@ export const InteractForm: React.FC<Props> = (props) => {
                   </Styled.FormItem>
                 </>
               )}
-              <Styled.Fees
-                className="mt-10px"
-                fees={thorNamefees}
-                reloadFees={reloadFeesHandler}
-                disabled={isLoading}
-              />
-
-              <FlatButton
-                className="mt-10px min-w-[200px]"
-                loading={isLoading}
-                disabled={thornameQuoteValid}
-                size="large"
-                onClick={() => estimateThornameHandler()}>
-                Estimate
-              </FlatButton>
+              <Styled.Fees className="mt-10px" fees={thorNamefees} disabled={isLoading} />
             </Styled.InputContainer>
           )}
         </>

@@ -144,9 +144,21 @@ const createSharesService = (midgardUrl$: MidgardUrlLD, getMidgardDefaultApi: (b
   const loadCombineSharesByAddresses$ = (addresses: Address[]): PoolSharesLD =>
     FP.pipe(addresses, A.map(combineShares$), liveData.sequenceArray, liveData.map(A.flatten))
 
-  // Loads `asym` + `sym` `PoolShare`'s by given addresses
+  const uniqueByCompositeKey = (shares: PoolShare[]): PoolShare[] =>
+    Array.from(
+      new Map(
+        shares.map((share) => [`${share.asset.chain}.${share.asset.symbol}.${share.asset.ticker}`, share])
+      ).values()
+    )
+
   const loadAllSharesByAddresses$ = (addresses: Address[]): PoolSharesLD =>
-    FP.pipe(addresses, A.map(shares$), liveData.sequenceArray, liveData.map(A.flatten))
+    FP.pipe(
+      addresses,
+      A.map(shares$),
+      liveData.sequenceArray,
+      liveData.map(A.flatten),
+      liveData.map(uniqueByCompositeKey) // Add this line to deduplicate
+    )
 
   // `TriggerStream` to reload `symSharesByAddresses`
   const { stream$: reloadSymSharesByAddresses$, trigger: reloadSymSharesByAddresses } = triggerStream()

@@ -35,7 +35,6 @@ export const getAddress = async ({
   try {
     let res: E.Either<LedgerError, WalletAddress>
     const transport = await TransportNodeHidSingleton.open()
-
     if (!isEnabledChain(chain)) {
       res = E.left({
         errorId: LedgerErrorId.NOT_IMPLEMENTED,

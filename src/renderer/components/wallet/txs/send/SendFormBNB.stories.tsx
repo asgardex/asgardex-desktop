@@ -9,6 +9,7 @@ import { getMockRDValueFactory, RDStatus } from '../../../../../shared/mock/rdBy
 import { mockValidatePassword$ } from '../../../../../shared/mock/wallet'
 import { AssetBNB, AssetRune67C } from '../../../../../shared/utils/asset'
 import { WalletType } from '../../../../../shared/wallet/types'
+import { useThorchainQueryContext } from '../../../../contexts/ThorchainQueryContext'
 import { mockWalletBalance } from '../../../../helpers/test/testWalletHelper'
 import { FeeRD, SendTxStateHandler } from '../../../../services/chain/types'
 import { ApiError, ErrorId, WalletBalance } from '../../../../services/wallet/types'
@@ -57,6 +58,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
     amount: assetToBase(assetAmount(234)),
     walletAddress: 'AssetRune67C wallet address'
   })
+  const { thorchainQuery } = useThorchainQueryContext()
   return (
     <Component
       asset={{ asset: AssetBNB, walletAddress: 'bnb-address', walletType, walletIndex: 0, hdMode: 'default' }}
@@ -67,6 +69,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
       fee={feeRD}
       reloadFeesHandler={() => console.log('reload fees')}
       validatePassword$={mockValidatePassword$}
+      thorchainQuery={thorchainQuery}
       network="testnet"
       openExplorerTxUrl={(txHash: TxHash) => {
         console.log(`Open explorer - tx hash ${txHash}`)

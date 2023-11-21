@@ -101,9 +101,6 @@ export const InteractView: React.FC = () => {
       ),
     RD.initial
   )
-  const reloadBalance = useCallback(() => {
-    reloadBalancesByChain(THORChain) // only chain thor should be here
-  }, [])
 
   const interactTypeChanged = useCallback(
     (type: InteractType) => {
@@ -116,8 +113,9 @@ export const InteractView: React.FC = () => {
     [navigate]
   )
   const reloadHandler = useCallback(() => {
-    reloadBalance()
-  }, [reloadBalance])
+    const lazyReload = reloadBalancesByChain(THORChain)
+    lazyReload() // Invoke the lazy function
+  }, [])
 
   return FP.pipe(
     sequenceTRD(interactTypeRD, selectedAssetRD),

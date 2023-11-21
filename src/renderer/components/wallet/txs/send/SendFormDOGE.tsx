@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { FeeOption, FeesWithRates } from '@xchainjs/xchain-client'
 import { DOGEChain, DOGE_DECIMAL } from '@xchainjs/xchain-doge'
+import { CryptoAmount, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
   assetAmount,
@@ -24,7 +25,7 @@ import { Network } from '../../../../../shared/api/types'
 import { AssetDOGE } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
-import { ZERO_BASE_AMOUNT } from '../../../../const'
+import { AssetUSDC, ZERO_BASE_AMOUNT } from '../../../../const'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { FeesWithRatesRD } from '../../../../services/bitcoin/types'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
@@ -64,6 +65,7 @@ export type Props = {
   feesWithRates: FeesWithRatesRD
   reloadFeesHandler: (memo?: Memo) => void
   validatePassword$: ValidatePasswordHandler
+  thorchainQuery: ThorchainQuery
   network: Network
 }
 
@@ -79,6 +81,7 @@ export const SendFormDOGE: React.FC<Props> = (props): JSX.Element => {
     feesWithRates: feesWithRatesRD,
     reloadFeesHandler,
     validatePassword$,
+    thorchainQuery,
     network
   } = props
 
@@ -219,6 +222,19 @@ export const SendFormDOGE: React.FC<Props> = (props): JSX.Element => {
       ),
     [balance.amount, selectedFee]
   )
+
+  // store maxAmountValue
+  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
+    const fetchData = async () => {
+      setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, AssetUSDC))
+    }
+
+    fetchData()
+  }, [asset, maxAmount, thorchainQuery])
 
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field
@@ -467,6 +483,7 @@ export const SendFormDOGE: React.FC<Props> = (props): JSX.Element => {
               <MaxBalanceButton
                 color="neutral"
                 balance={{ amount: maxAmount, asset: AssetDOGE }}
+                maxDollarValue={maxAmmountPriceValue}
                 onClick={addMaxAmountHandler}
                 disabled={isMaxButtonDisabled}
               />

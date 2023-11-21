@@ -3,21 +3,20 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
+import { CryptoAmount, ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
 import { Address, baseAmount } from '@xchainjs/xchain-util'
 import { formatAssetAmountCurrency, assetAmount, bn, assetToBase, BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
 import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
-import debounce from 'lodash/debounce'
 import { useIntl } from 'react-intl'
 
 import { Network } from '../../../../../shared/api/types'
 import { AssetRuneNative } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
-import { ZERO_BASE_AMOUNT } from '../../../../const'
+import { AssetUSDC, ZERO_BASE_AMOUNT } from '../../../../const'
 import { isRuneNativeAsset, THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import { noDataString } from '../../../../helpers/stringHelper'
@@ -144,40 +143,40 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
   const [thornameSend, setThornameSend] = useState<boolean>(false)
   const [showDetails, setShowDetails] = useState<boolean>(false)
 
-  const debouncedAddressValidator = debounce(
+  const addressValidator = useCallback(
     async (_: unknown, value: string) => {
       if (!value) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.empty' }))
       }
-      if (!addressValidation(value.toLowerCase())) {
+
+      if (!addressValidation(value) && !thornameSend) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
     },
-    500 // Adjust the debounce delay (in milliseconds) as needed
+    [addressValidation, intl, thornameSend]
   )
   const handleAddressInput = useCallback(async () => {
     const recipient = form.getFieldValue('recipient')
 
-    if (!recipient || recipient.length > 30) {
-      setThornameSend(false)
-      debouncedAddressValidator(undefined, recipient)
+    if (!recipient || !thornameSend) {
       setRecipientAddress(recipient)
-      return
     }
 
     try {
-      const thornameDetails = await thorchainQuery.getThornameDetails(recipient)
-      if (thornameDetails) {
-        setThorname(O.some(thornameDetails))
-        setRecipientAddress(thornameDetails.owner)
-        setShowDetails(true)
+      if (thornameSend) {
+        const thornameDetails = await thorchainQuery.getThornameDetails(recipient)
+        if (thornameDetails) {
+          setThorname(O.some(thornameDetails))
+          setRecipientAddress(thornameDetails.owner)
+          setShowDetails(true)
+        }
       }
     } catch (error) {
       setThorname(O.none)
 
       return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
     }
-  }, [form, thorchainQuery, setShowDetails, intl, debouncedAddressValidator])
+  }, [form, thornameSend, thorchainQuery, intl])
 
   // max amount for RuneNative
   const maxAmount: BaseAmount = useMemo(() => {
@@ -195,6 +194,19 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
     )
     return isRuneNativeAsset(asset) ? maxRuneAmount : balance.amount
   }, [oFee, oRuneNativeAmount, asset, balance.amount])
+
+  // store maxAmountValue
+  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
+    const fetchData = async () => {
+      setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, AssetUSDC))
+    }
+
+    fetchData()
+  }, [asset, maxAmount, thorchainQuery])
 
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field
@@ -368,7 +380,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
               </CheckButton>
             </div>
 
-            <Form.Item rules={[{ required: true }]} name="recipient">
+            <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
               <Styled.Input color="primary" size="large" disabled={isLoading} onChange={handleAddressInput} />
             </Form.Item>
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
@@ -385,6 +397,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
               className="mb-10px "
               color="neutral"
               balance={{ amount: maxAmount, asset: asset }}
+              maxDollarValue={maxAmmountPriceValue}
               onClick={addMaxAmountHandler}
               disabled={isLoading}
             />
@@ -418,7 +431,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
           {showDetails && (
             <>
               {/* recipient address */}
-              <div className="flex w-full items-center justify-between pl-10px text-[12px]">
+              <div className="flex w-full items-center justify-between pl-10px text-[12px] dark:text-text2d">
                 <div>{intl.formatMessage({ id: 'common.recipient' })}</div>
                 <div className="truncate pl-20px text-[13px] normal-case leading-normal">
                   {FP.pipe(

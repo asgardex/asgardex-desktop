@@ -34,7 +34,7 @@ import { Network } from '../../../shared/api/types'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
-import { ZERO_BASE_AMOUNT } from '../../const'
+import { AssetUSDC, ZERO_BASE_AMOUNT } from '../../const'
 import {
   convertBaseAmountDecimal,
   getAvaxTokenAddress,
@@ -355,6 +355,21 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
 
     return saverAssetAmountMax1e8
   }, [lockedWallet, saverAssetAmountMax1e8])
+
+  // store maxAmountValue
+  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(
+    new CryptoAmount(baseAmount(0), sourceAsset)
+  )
+
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const maxCryptoAmount = new CryptoAmount(maxAmountToWithdrawMax1e8, sourceAsset)
+    const fetchData = async () => {
+      setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, AssetUSDC))
+    }
+
+    fetchData()
+  }, [sourceAsset, maxAmmountPriceValue, maxAmountToWithdrawMax1e8, thorchainQuery])
 
   // Set amount to send
   const setAmountToWithdrawMax1e8 = useCallback(
@@ -1304,6 +1319,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
                   }
                   size="medium"
                   balance={{ amount: maxAmountToWithdrawMax1e8, asset: sourceAsset }}
+                  maxDollarValue={maxAmmountPriceValue}
                   onClick={() => setAmountToWithdrawMax1e8(maxAmountToWithdrawMax1e8)}
                   maxInfoText={maxBalanceInfoTxt}
                 />

@@ -3,7 +3,7 @@ import type Transport from '@ledgerhq/hw-transport'
 import THORChainApp, { extractSignatureFromTLV, LedgerErrorType } from '@thorchain/ledger-thorchain'
 import { TxHash } from '@xchainjs/xchain-client'
 import { CosmosSDKClient } from '@xchainjs/xchain-cosmos'
-import { DEFAULT_GAS_LIMIT_VALUE, getChainId, getDenom, getPrefix } from '@xchainjs/xchain-thorchain'
+import { AssetRuneNative, DEFAULT_GAS_LIMIT_VALUE, getChainId, getDenom, getPrefix } from '@xchainjs/xchain-thorchain'
 import { Address, Asset, assetToString, BaseAmount, delay } from '@xchainjs/xchain-util'
 import { AccAddress, PubKeySecp256k1, Msg, CosmosSDK } from 'cosmos-client'
 import { StdTx, auth, BaseAccount } from 'cosmos-client/x/auth'
@@ -11,7 +11,7 @@ import { MsgSend } from 'cosmos-client/x/bank'
 import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId, Network } from '../../../../shared/api/types'
-import { AssetRuneNative } from '../../../../shared/utils/asset'
+// import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
 import { fromLedgerErrorType, getDerivationPath } from './common'
@@ -169,12 +169,14 @@ export const deposit = async ({
   transport,
   network,
   amount,
+  asset,
   memo,
   walletIndex,
   nodeUrl
 }: {
   transport: Transport
   amount: BaseAmount
+  asset?: Asset
   network: Network
   memo: string
   walletIndex: number
@@ -202,10 +204,12 @@ export const deposit = async ({
 
     const signer = AccAddress.fromBech32(bech32Address)
 
+    const assetNative = asset === undefined ? AssetRuneNative : asset
+
     const msgNativeTx: Legacy.MsgNativeTx = Legacy.msgNativeTxFromJson({
       coins: [
         {
-          asset: assetToString(AssetRuneNative),
+          asset: assetToString(assetNative),
           amount: amount.amount().toString()
         }
       ],

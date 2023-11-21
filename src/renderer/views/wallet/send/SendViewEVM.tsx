@@ -9,9 +9,10 @@ import { useObservableState } from 'observable-hooks'
 
 import { ETHAddress } from '../../../../shared/ethereum/const'
 import { LoadingView } from '../../../components/shared/loading'
-import { SendFormETH } from '../../../components/wallet/txs/send'
+import { SendFormEVM } from '../../../components/wallet/txs/send'
 import { useChainContext } from '../../../contexts/ChainContext'
-import { useEthereumContext } from '../../../contexts/EthereumContext'
+import { useEvmContext } from '../../../contexts/EvmContext'
+import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
@@ -25,7 +26,7 @@ type Props = {
   asset: SelectedWalletAsset
 }
 
-export const SendViewETH: React.FC<Props> = (props): JSX.Element => {
+export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
   const { asset } = props
 
   const { network } = useNetwork()
@@ -52,10 +53,10 @@ export const SendViewETH: React.FC<Props> = (props): JSX.Element => {
       ),
     [asset, oBalances]
   )
-
+  const { thorchainQuery } = useThorchainQueryContext()
   const { transfer$ } = useChainContext()
 
-  const { fees$, reloadFees } = useEthereumContext()
+  const { fees$, reloadFees } = useEvmContext(asset.asset.chain)
 
   const [feesRD] = useObservableState<FeesRD>(
     // First fees are based on "default" values
@@ -77,7 +78,7 @@ export const SendViewETH: React.FC<Props> = (props): JSX.Element => {
       () => <LoadingView size="large" />,
       (walletBalance) => (
         <Styled.Container>
-          <SendFormETH
+          <SendFormEVM
             asset={asset}
             balance={walletBalance}
             balances={FP.pipe(
@@ -90,6 +91,7 @@ export const SendViewETH: React.FC<Props> = (props): JSX.Element => {
             getExplorerTxUrl={getExplorerTxUrl}
             reloadFeesHandler={reloadFees}
             validatePassword$={validatePassword$}
+            thorchainQuery={thorchainQuery}
             network={network}
           />
         </Styled.Container>

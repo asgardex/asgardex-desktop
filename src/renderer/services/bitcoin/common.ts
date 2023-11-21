@@ -30,6 +30,9 @@ const testnetHaskoinProvider = new HaskoinProvider(
   HaskoinNetwork.BTCTEST
 )
 
+const LOWER_FEE_BOUND = 1
+const UPPER_FEE_BOUND = 900
+
 const mainnetHaskoinProvider = new HaskoinProvider('https://api.haskoin.com', BTCChain, AssetBTC, 8, HaskoinNetwork.BTC)
 const HaskoinDataProviders: UtxoOnlineDataProviders = {
   [Network.Testnet]: testnetHaskoinProvider,
@@ -83,7 +86,11 @@ const clientState$: ClientState$ = FP.pipe(
                 ...defaultBTCParams,
                 phrase: phrase,
                 network: network,
-                dataProviders: [BlockcypherDataProviders, HaskoinDataProviders]
+                dataProviders: [BlockcypherDataProviders, HaskoinDataProviders],
+                feeBounds: {
+                  lower: LOWER_FEE_BOUND,
+                  upper: UPPER_FEE_BOUND
+                }
               }
               const client = new BitcoinClient(btcInitParams)
               return RD.success(client)

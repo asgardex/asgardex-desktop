@@ -17,6 +17,7 @@ import * as AVAX from '../avax'
 import * as BNB from '../binance'
 import * as BTC from '../bitcoin'
 import * as BCH from '../bitcoincash'
+import * as BSC from '../bsc'
 import { address$, WalletAddress$ } from '../clients'
 import * as COSMOS from '../cosmos'
 import * as DOGE from '../doge'
@@ -26,7 +27,7 @@ import * as THOR from '../thorchain'
 import { client$ } from './client'
 
 /**
- * Returns keystore addresses by givven chain
+ * Returns keystore addresses by given chain
  */
 const addressByChain$ = (chain: Chain): WalletAddress$ => {
   if (!isEnabledChain(chain)) return Rx.of(O.none)
@@ -41,7 +42,7 @@ const addressByChain$ = (chain: Chain): WalletAddress$ => {
     case AVAXChain:
       return AVAX.address$
     case BSCChain:
-      return AVAX.address$
+      return BSC.address$
     case THORChain:
       return THOR.address$
     case GAIAChain:

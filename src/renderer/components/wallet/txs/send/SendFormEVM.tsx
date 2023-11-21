@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { AssetAVAX, AVAXChain } from '@xchainjs/xchain-avax'
 import { FeeOption, Fees, TxParams } from '@xchainjs/xchain-client'
 import { validateAddress } from '@xchainjs/xchain-evm'
+import { CryptoAmount, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   bn,
   baseToAsset,
@@ -25,10 +25,11 @@ import { Network } from '../../../../../shared/api/types'
 import { chainToString } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
-import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../../const'
-import { isAvaxAsset } from '../../../../helpers/assetHelper'
+import { AssetUSDC, ZERO_BASE_AMOUNT, ZERO_BN } from '../../../../const'
+import { isAvaxAsset, isBscAsset, isEthAsset } from '../../../../helpers/assetHelper'
+import { getChainAsset } from '../../../../helpers/chainHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
-import { getAvaxAmountFromBalances } from '../../../../helpers/walletHelper'
+import { getEVMAmountFromBalances } from '../../../../helpers/walletHelper'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import { SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
@@ -64,10 +65,11 @@ export type Props = {
   fees: FeesRD
   reloadFeesHandler: (params: TxParams) => void
   validatePassword$: ValidatePasswordHandler
+  thorchainQuery: ThorchainQuery
   network: Network
 }
 
-export const SendFormAVAX: React.FC<Props> = (props): JSX.Element => {
+export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   const {
     asset: { walletType, walletIndex, hdMode, walletAddress },
     balances,
@@ -78,6 +80,7 @@ export const SendFormAVAX: React.FC<Props> = (props): JSX.Element => {
     fees: feesRD,
     reloadFeesHandler,
     validatePassword$,
+    thorchainQuery,
     network
   } = props
 
@@ -125,14 +128,13 @@ export const SendFormAVAX: React.FC<Props> = (props): JSX.Element => {
   )
 
   const oAssetAmount: O.Option<BaseAmount> = useMemo(() => {
-    // return balance of current asset (if avax)
-    if (isAvaxAsset(asset)) {
+    // return balance of current asset
+    if (isEthAsset(asset) || isAvaxAsset(asset) || isBscAsset(asset)) {
       return O.some(balance.amount)
     }
-    // or check list of other assets to get avax balance
-    return FP.pipe(balances, getAvaxAmountFromBalances, O.map(assetToBase))
+    // or check list of other assets to get eth balance
+    return FP.pipe(balances, getEVMAmountFromBalances, O.map(assetToBase))
   }, [asset, balance.amount, balances])
-
   const isFeeError = useMemo(() => {
     return FP.pipe(
       sequenceTOption(selectedFee, oAssetAmount),
@@ -149,7 +151,7 @@ export const SendFormAVAX: React.FC<Props> = (props): JSX.Element => {
 
     const amount: BaseAmount = FP.pipe(
       oAssetAmount,
-      // no avax asset == zero amount
+      // no eth asset == zero amount
       O.getOrElse(() => ZERO_BASE_AMOUNT)
     )
 
@@ -158,7 +160,7 @@ export const SendFormAVAX: React.FC<Props> = (props): JSX.Element => {
       {
         balance: formatAssetAmountCurrency({
           amount: baseToAsset(amount),
-          asset: AssetAVAX,
+          asset: getChainAsset(asset.chain),
           trimZeros: true
         })
       }
@@ -169,7 +171,7 @@ export const SendFormAVAX: React.FC<Props> = (props): JSX.Element => {
         {msg}
       </Styled.Label>
     )
-  }, [oAssetAmount, intl, isFeeError])
+  }, [isFeeError, oAssetAmount, intl, asset.chain])
 
   const feeOptionsLabel: Record<FeeOption, string> = useMemo(
     () => ({
@@ -216,12 +218,12 @@ export const SendFormAVAX: React.FC<Props> = (props): JSX.Element => {
     [intl]
   )
 
-  // max amount for avax
+  // max amount for eth
   const maxAmount: BaseAmount = useMemo(() => {
-    const maxAvaxAmount: BigNumber = FP.pipe(
+    const maxEthAmount: BigNumber = FP.pipe(
       sequenceTOption(selectedFee, oAssetAmount),
       O.fold(
-        // Set maxAmount to zero if we dont know anything about avax and fee amounts
+        // Set maxAmount to zero if we dont know anything about eth and fee amounts
         () => ZERO_BN,
         ([fee, assetAmount]) => {
           const max = assetAmount.amount().minus(fee.amount())
@@ -229,8 +231,21 @@ export const SendFormAVAX: React.FC<Props> = (props): JSX.Element => {
         }
       )
     )
-    return isAvaxAsset(asset) ? baseAmount(maxAvaxAmount, balance.amount.decimal) : balance.amount
+    return isEthAsset(asset) ? baseAmount(maxEthAmount, balance.amount.decimal) : balance.amount
   }, [selectedFee, oAssetAmount, asset, balance.amount])
+
+  // store maxAmountValue
+  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
+    const fetchData = async () => {
+      setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, AssetUSDC))
+    }
+
+    fetchData()
+  }, [asset, thorchainQuery, maxAmount])
 
   useEffect(() => {
     FP.pipe(
@@ -256,7 +271,7 @@ export const SendFormAVAX: React.FC<Props> = (props): JSX.Element => {
       const errors = {
         msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
         msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterThan' }, { amount: '0' }),
-        msg3: isAvaxAsset(asset)
+        msg3: isEthAsset(asset)
           ? intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalanceAndFee' })
           : intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalance' })
       }
@@ -301,6 +316,20 @@ export const SendFormAVAX: React.FC<Props> = (props): JSX.Element => {
 
     return false
   }, [amountToSend, sendAddress, reloadFeesHandler, asset, form])
+
+  // only render memo field for chain asset.
+  const renderMemo = useMemo(() => {
+    if (isEthAsset(asset) || isAvaxAsset(asset) || isBscAsset(asset)) {
+      return (
+        <>
+          <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
+          <Form.Item name="memo">
+            <Styled.Input size="large" disabled={isLoading} onBlur={reloadFees} />
+          </Form.Item>
+        </>
+      )
+    }
+  }, [asset, intl, isLoading, reloadFees])
 
   // Send tx start time
   const [sendTxStartTime, setSendTxStartTime] = useState<number>(0)
@@ -363,23 +392,24 @@ export const SendFormAVAX: React.FC<Props> = (props): JSX.Element => {
       )
     }
     if (isLedgerWallet(walletType)) {
-      const avaxChainString = chainToString(AVAXChain)
+      const evmChainString = chainToString(asset.chain)
       const txtNeedsConnected = intl.formatMessage(
         {
           id: 'ledger.needsconnected'
         },
-        { chain: avaxChainString }
+        { chain: evmChainString }
       )
 
       // extended description for ERC20 tokens only
-      const description1 = !isAvaxAsset(asset)
-        ? `${txtNeedsConnected} ${intl.formatMessage(
-            {
-              id: 'ledger.blindsign'
-            },
-            { chain: avaxChainString }
-          )}`
-        : txtNeedsConnected
+      const description1 =
+        !isEthAsset(asset) || !isAvaxAsset(asset) || !isBscAsset(asset)
+          ? `${txtNeedsConnected} ${intl.formatMessage(
+              {
+                id: 'ledger.blindsign'
+              },
+              { chain: evmChainString }
+            )}`
+          : txtNeedsConnected
 
       const description2 = intl.formatMessage({ id: 'ledger.sign' })
 
@@ -389,7 +419,7 @@ export const SendFormAVAX: React.FC<Props> = (props): JSX.Element => {
           onSuccess={onSuccessHandler}
           onClose={onCloseHandler}
           visible={showConfirmationModal}
-          chain={AVAXChain}
+          chain={asset.chain} // not sure about this
           description1={description1}
           description2={description2}
           addresses={O.none}
@@ -436,9 +466,9 @@ export const SendFormAVAX: React.FC<Props> = (props): JSX.Element => {
     () =>
       FP.pipe(
         feesRD,
-        RD.map((fees) => [{ asset: asset, amount: fees[selectedFeeOption] }])
+        RD.map((fees) => [{ asset: getChainAsset(asset.chain), amount: fees[selectedFeeOption] }])
       ),
-    [feesRD, asset, selectedFeeOption]
+    [asset.chain, feesRD, selectedFeeOption]
   )
 
   const addMaxAmountHandler = useCallback(() => setAmountToSend(O.some(maxAmount)), [maxAmount])
@@ -499,15 +529,13 @@ export const SendFormAVAX: React.FC<Props> = (props): JSX.Element => {
               className="mb-10px"
               color="neutral"
               balance={{ amount: maxAmount, asset }}
+              maxDollarValue={maxAmmountPriceValue}
               onClick={addMaxAmountHandler}
               disabled={isLoading}
             />
             <Styled.Fees fees={uiFeesRD} reloadFees={reloadFees} disabled={isLoading} />
             {renderFeeError}
-            <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
-            <Form.Item name="memo">
-              <Styled.Input size="large" disabled={isLoading} onBlur={reloadFees} />
-            </Form.Item>
+            {renderMemo}
             <Form.Item name="fee">{renderFeeOptions}</Form.Item>
           </Styled.SubForm>
           <FlatButton

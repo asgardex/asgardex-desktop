@@ -29,6 +29,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { AssetRuneNative } from '../../../shared/utils/asset'
 import { isEnabledChain } from '../../../shared/utils/chain'
+import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { sequenceTOption } from '../../helpers/fpHelpers'
@@ -338,7 +339,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
 
   const { stream$: reloadSaverProvider$, trigger: reloadSaverProvider } = triggerStream()
 
-  const getSaverProvider$ = (asset: Asset, address: Address): SaverProviderLD =>
+  const getSaverProvider$ = (asset: Asset, address: Address, walletType?: WalletType): SaverProviderLD =>
     FP.pipe(
       reloadSaverProvider$,
       RxOp.debounceTime(300),
@@ -360,7 +361,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
             redeemValue,
             growthPercent,
             addHeight,
-            withdrawHeight
+            withdrawHeight,
+            walletType
           }
         }
       ),

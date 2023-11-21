@@ -263,12 +263,12 @@ export const Swap = ({
   // For normal quotes
   const [oQuote, setQuote] = useState<O.Option<TxDetails>>(O.none)
 
-  // Default Streaming interval set to 0 blocks
-  const [streamingInterval, setStreamingInterval] = useState<number>(3)
+  // Default Streaming interval set to 1 blocks
+  const [streamingInterval, setStreamingInterval] = useState<number>(1)
   // Default Streaming quantity set to 0 network computes the optimum
   const [streamingQuantity, setStreamingQuantity] = useState<number>(0)
   // Slide use state
-  const [slider, setSlider] = useState<number>(30)
+  const [slider, setSlider] = useState<number>(26)
 
   const [oTargetWalletType, setTargetWalletType] = useState<O.Option<WalletType>>(oInitialTargetWalletType)
 
@@ -722,9 +722,13 @@ export const Swap = ({
           (_) =>
             FP.pipe(
               oPriceSwapFees1e8,
-              O.map(({ amount, asset }) =>
-                formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, decimal: isUSDAsset(asset) ? 2 : 6 })
-              ),
+              O.map(({ amount, asset }) => {
+                return formatAssetAmountCurrency({
+                  amount: baseToAsset(amount),
+                  asset,
+                  decimal: isUSDAsset(asset) ? 2 : 6
+                })
+              }),
               O.getOrElse(() => noDataString)
             )
         )
@@ -735,16 +739,16 @@ export const Swap = ({
   const oQuoteSwapData: O.Option<QuoteSwapParams> = useMemo(
     () =>
       FP.pipe(
-        sequenceTOption(oSourceWalletAddress, oRecipientAddress),
-        O.map(([sourceAddress, destinationAddress]) => {
+        sequenceTOption(oRecipientAddress),
+        O.map(([destinationAddress]) => {
           const fromAsset = sourceAsset
           const destinationAsset = targetAsset
           const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
           const address = destinationAddress
-          const walletAddress = sourceAddress
           const streamingInt = isStreaming ? streamingInterval : 0
           const streaminQuant = isStreaming ? streamingQuantity : 0
           const toleranceBps = isStreaming ? 10000 : slipTolerance * 100 // convert to basis points
+
           return {
             fromAsset: fromAsset,
             destinationAsset: destinationAsset,
@@ -752,15 +756,13 @@ export const Swap = ({
             destinationAddress: address,
             streamingInterval: streamingInt,
             streamingQuantity: streaminQuant,
-            fromAddress: fromAsset.synth ? walletAddress : undefined,
             toleranceBps: toleranceBps,
             affiliateAddress: ASGARDEX_THORNAME,
-            affiliateBps: ASGARDEX_AFFILIATE_FEE
+            affiliateBps: network === 'stagenet' ? 0 : ASGARDEX_AFFILIATE_FEE
           }
         })
       ),
     [
-      oSourceWalletAddress,
       oRecipientAddress,
       sourceAsset,
       targetAsset,
@@ -769,9 +771,11 @@ export const Swap = ({
       isStreaming,
       streamingInterval,
       streamingQuantity,
-      slipTolerance
+      slipTolerance,
+      network
     ]
   )
+
   const debouncedEffect = useRef(
     debounce((quoteSwapData) => {
       // Include isStreaming as a parameter
@@ -792,11 +796,23 @@ export const Swap = ({
       oQuoteSwapData,
       O.fold(
         () => {
-          console.log('No quoteSwapData available')
+          const estimateSwap: QuoteSwapParams = {
+            fromAsset: sourceAsset,
+            destinationAsset: targetAsset,
+            amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset),
+            streamingInterval: isStreaming ? streamingInterval : 0,
+            streamingQuantity: isStreaming ? streamingQuantity : 0,
+            toleranceBps: isStreaming ? 10000 : slipTolerance * 100, // convert to basis points
+            affiliateAddress: ASGARDEX_THORNAME,
+            affiliateBps: ASGARDEX_AFFILIATE_FEE
+          }
+          if (!estimateSwap.amount.baseAmount.eq(baseAmount(0)) && lockedWallet) {
+            currentDebouncedEffect(estimateSwap)
+          }
         },
         (quoteSwapData) => {
           if (!quoteSwapData.amount.baseAmount.eq(baseAmount(0)) && !disableSwapAction) {
-            currentDebouncedEffect(quoteSwapData) // Pass the isStreaming flag
+            currentDebouncedEffect(quoteSwapData)
           }
         }
       )
@@ -805,7 +821,19 @@ export const Swap = ({
     return () => {
       currentDebouncedEffect.cancel()
     }
-  }, [oQuoteSwapData, disableSwapAction])
+  }, [
+    oQuoteSwapData,
+    disableSwapAction,
+    sourceAsset,
+    targetAsset,
+    amountToSwapMax1e8,
+    sourceAssetDecimal,
+    isStreaming,
+    streamingInterval,
+    streamingQuantity,
+    slipTolerance,
+    lockedWallet
+  ])
 
   // Swap boolean for use later
   const canSwap: boolean = useMemo(
@@ -1320,6 +1348,20 @@ export const Swap = ({
     [amountToSwapMax1e8, maxAmountToSwapMax1e8, sourceAssetAmountMax1e8]
   )
 
+  const priceAmountMax1e8: CryptoAmount = useMemo(() => {
+    const result = FP.pipe(
+      PoolHelpers.getPoolPriceValue({
+        balance: { asset: sourceAsset, amount: maxAmountToSwapMax1e8 },
+        poolDetails,
+        pricePool,
+        network
+      }),
+      O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal)),
+      (amount) => ({ asset: pricePool.asset, amount })
+    )
+    return new CryptoAmount(result.amount, result.asset)
+  }, [amountToSwapMax1e8.decimal, maxAmountToSwapMax1e8, network, poolDetails, pricePool, sourceAsset])
+
   /**
    * Selectable source assets to swap from.
    *
@@ -1407,22 +1449,28 @@ export const Swap = ({
 
   // Function to reset the slider to default position
   const resetToDefault = () => {
-    setStreamingInterval(3) // Default position
+    setStreamingInterval(1) // Default position
     setStreamingQuantity(0) // thornode decides the swap quantity
-    setSlider(30)
+    setSlider(26)
     setIsStreaming(true)
   }
 
   // Streaming Interval slider
   const renderStreamerInterval = useMemo(() => {
+    const calculateStreamingInterval = (slider: number) => {
+      if (slider >= 75) return 3
+      if (slider >= 50) return 2
+      if (slider >= 25) return 1
+      return 0
+    }
+    const streamingIntervalValue = calculateStreamingInterval(slider)
     const setInterval = (slider: number) => {
       setSlider(slider)
-      const streamingIntervalValue = Math.floor(slider / 10) // Mapping slider value to range 0 to 10
       setStreamingInterval(streamingIntervalValue)
       setStreamingQuantity(0)
       setIsStreaming(streamingIntervalValue !== 0)
     }
-    const tipFormatter = slider === 0 ? 'Instant swap' : `${Math.floor(slider / 10)} Block interval between swaps`
+    const tipFormatter = slider === 0 ? 'Instant swap' : `${streamingIntervalValue} Block interval between swaps`
     const labelMin = slider <= 0 ? `Instant Swap` : `` || slider < 50 ? 'Time Optimised' : `Price Optimised`
 
     return (
@@ -1631,6 +1679,12 @@ export const Swap = ({
     network
   ])
 
+  const onCloseTxModal = useCallback(() => {
+    resetSwapState()
+    reloadBalances()
+    setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
+  }, [resetSwapState, reloadBalances, setAmountToSwapMax1e8, initialAmountToSwapMax1e8])
+
   const onFinishTxModal = useCallback(() => {
     resetSwapState()
     reloadBalances()
@@ -1684,7 +1738,7 @@ export const Swap = ({
     return (
       <TxModal
         title={txModalTitle}
-        onClose={resetSwapState}
+        onClose={onCloseTxModal}
         onFinish={onFinishTxModal}
         startTime={swapStartTime}
         txRD={swap}
@@ -1693,6 +1747,7 @@ export const Swap = ({
             txHash={oTxHash}
             onClick={goToTransaction}
             txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
+            trackable={true}
           />
         }
         timerValue={timerValue}
@@ -1701,7 +1756,7 @@ export const Swap = ({
     )
   }, [
     swapState,
-    resetSwapState,
+    onCloseTxModal,
     onFinishTxModal,
     swapStartTime,
     goToTransaction,
@@ -2267,6 +2322,7 @@ export const Swap = ({
                 }
                 size="medium"
                 balance={{ amount: maxAmountToSwapMax1e8, asset: sourceAsset }}
+                maxDollarValue={priceAmountMax1e8}
                 onClick={() => setAmountToSwapMax1e8(maxAmountToSwapMax1e8)}
                 maxInfoText={maxBalanceInfoTxt}
                 hidePrivateData={hidePrivateData}
@@ -2722,6 +2778,48 @@ export const Swap = ({
                 ? intl.formatMessage({ id: 'wallet.add.label' })
                 : isLocked(keystore) && intl.formatMessage({ id: 'wallet.unlock.label' })}
             </FlatButton>
+            <>
+              <div className={`mx-50px w-full px-10px font-main text-[12px] uppercase dark:border-gray1d`}>
+                <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
+                  {/* Rate */}
+                  <div className={`flex w-full justify-between font-mainBold text-[14px]`}>
+                    <BaseButton
+                      className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                      onClick={() =>
+                        // toggle rate
+                        setRateDirection((current) => (current === 'fromSource' ? 'fromTarget' : 'fromSource'))
+                      }>
+                      {intl.formatMessage({ id: 'common.rate' })}
+                      <ArrowsRightLeftIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                    </BaseButton>
+                    <div>{rateLabel}</div>
+                  </div>
+                  {/* fees */}
+                  <div className="flex w-full items-center justify-between font-mainBold">
+                    <BaseButton
+                      disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
+                      className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                      onClick={reloadFeesHandler}>
+                      {intl.formatMessage({ id: 'common.fees.estimated' })}
+                      <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                    </BaseButton>
+                    <div>{priceSwapFeesLabel}</div>
+                  </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'common.fee.inbound' })}</div>
+                    <div>{priceSwapInFeeLabel}</div>
+                  </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'common.fee.outbound' })}</div>
+                    <div>{priceSwapOutFeeLabel}</div>
+                  </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
+                    <div>{priceAffiliateFeeLabel}</div>
+                  </div>
+                </div>
+              </div>
+            </>
           </>
         )}
       </div>

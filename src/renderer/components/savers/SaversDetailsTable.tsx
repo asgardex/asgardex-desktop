@@ -4,7 +4,7 @@ import { baseToAsset, formatAssetAmountCurrency, baseAmount, formatBN } from '@x
 
 import { ZERO_BN } from '../../const'
 import { isUSDAsset } from '../../helpers/assetHelper'
-import { ParentProps } from '../../views/wallet/SaversDetailsView'
+import { ParentProps } from '../../views/wallet/SaversTableView'
 import * as Styled from '../PoolShares/PoolShares.styles'
 import { AssetIcon } from '../uielements/assets/assetIcon'
 import { SaversButton } from '../uielements/button/SaversButton'
@@ -16,9 +16,9 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       dataIndex: 'key',
       key: 'key',
       render: (key: string) => {
-        const assetSplit = key.split('.')
+        const [chain, symbol, walletType] = key.split('.')
         const assetDetail = assetDetails.find(
-          (detail) => detail.asset.chain === assetSplit[0] && detail.asset.symbol === assetSplit[1]
+          (detail) => detail.asset.chain === chain && detail.asset.symbol === symbol && detail.walletType === walletType
         )
         return assetDetail ? <AssetIcon asset={assetDetail.asset} size="small" network={assetDetail.network} /> : 'N/A'
       }
@@ -44,7 +44,7 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       key: 'redeemValue'
     },
     {
-      title: 'Redeem Deposit Amount',
+      title: 'Redeem Amount',
       dataIndex: 'redeemDepositLabel',
       key: 'redeemDeposit'
     },
@@ -55,8 +55,13 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
     },
     {
       title: 'Price Growth',
-      dataIndex: 'priceGrowthLabel',
-      key: 'priceGrowth'
+      dataIndex: 'percentLabel',
+      key: 'percentLabel'
+    },
+    {
+      title: 'Wallet Type',
+      dataIndex: 'walletType',
+      key: 'walletType'
     },
     {
       title: 'Manage',
@@ -71,7 +76,7 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
     }
   ]
 
-  const dataSource = assetDetails.map(({ asset, deposit, redeem, priceAsset, percent }) => {
+  const dataSource = assetDetails.map(({ asset, deposit, redeem, priceAsset, percent, walletType }) => {
     const depositValueLabel = formatAssetAmountCurrency({ amount: baseToAsset(deposit.amount), asset, decimal: 3 })
 
     const priceDepositLabel = formatAssetAmountCurrency({
@@ -94,16 +99,11 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       decimal: isUSDAsset(asset) ? 2 : 6
     })
 
-    const priceGrowthLabel = formatAssetAmountCurrency({
-      amount: baseToAsset(growthValue.gt(0) ? growthValue : baseAmount(0, deposit.price.decimal)),
-      asset: priceAsset,
-      decimal: isUSDAsset(priceAsset) ? 2 : 6
-    })
     const assetTicker = asset.ticker
 
     const percentLabel = `${formatBN(percent.gt(0) ? percent : ZERO_BN, 4)}%`
     return {
-      key: `${asset.chain}.${asset.symbol}`,
+      key: `${asset.chain}.${asset.symbol}.${walletType}`,
       depositValueLabel,
       redeemValueLabel,
       priceDepositLabel,
@@ -111,8 +111,8 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       growthValue,
       growthValueLabel,
       percentLabel,
-      priceGrowthLabel,
-      assetTicker
+      assetTicker,
+      walletType
     }
   })
 

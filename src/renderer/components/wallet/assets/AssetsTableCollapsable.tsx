@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetUSDC } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
@@ -191,7 +191,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
   const renderActionColumn = useCallback(
     ({ asset, amount, walletAddress, walletIndex, walletType, hdMode }: WalletBalance) => {
-      const { chain } = asset
+      const chain = asset.synth ? THORChain : asset.chain
       const walletAsset: SelectedWalletAsset = { asset, walletAddress, walletIndex, walletType, hdMode }
       const normalizedAssetString = assetToString(asset).toUpperCase()
       const hasActivePool: boolean = FP.pipe(O.fromNullable(poolsData[normalizedAssetString]), O.isSome)
@@ -209,7 +209,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           {
             label: intl.formatMessage({ id: 'common.refresh' }),
             callback: () => {
-              const lazyReload = reloadBalancesByChain(ETHChain)
+              const lazyReload = reloadBalancesByChain(chain)
               lazyReload() // Invoke the lazy function
             }
           }
