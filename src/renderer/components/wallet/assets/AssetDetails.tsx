@@ -12,7 +12,7 @@ import { Network } from '../../../../shared/api/types'
 import { chainToString } from '../../../../shared/utils/chain'
 import { WalletType } from '../../../../shared/wallet/types'
 import * as AssetHelper from '../../../helpers/assetHelper'
-import { isCosmosChain } from '../../../helpers/chainHelper'
+import { isCosmosChain, isThorChain } from '../../../helpers/chainHelper'
 import * as walletRoutes from '../../../routes/wallet'
 import { OpenExplorerTxUrl, TxsPageRD } from '../../../services/clients'
 import { MAX_ITEMS_PER_PAGE } from '../../../services/const'
@@ -169,7 +169,7 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
             as long as an external API can't provide it - currently `https://lcd-cosmoshub.keplr.app`
             See https://github.com/thorchain/asgardex-electron/pull/2405
            */}
-          {isCosmosChain(chain) ? (
+          {isCosmosChain(chain) || isThorChain(chain) || walletType === 'ledger' ? (
             <WarningView
               subTitle={intl.formatMessage({ id: 'wallet.txs.history.disabled' }, { chain: chainToString(chain) })}
               extra={

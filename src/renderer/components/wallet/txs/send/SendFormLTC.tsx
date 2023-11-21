@@ -237,8 +237,8 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
       FP.pipe(
         selectedFee,
         O.alt(() => prevSelectedFeeRef.current),
-        O.map(() => {
-          const max = balance.amount
+        O.map((fee) => {
+          const max = balance.amount.minus(fee)
           const zero = baseAmount(0, max.decimal)
           return max.gt(zero) ? max : zero
         }),

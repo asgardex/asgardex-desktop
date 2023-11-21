@@ -56,6 +56,7 @@ export const saverDeposit$ = ({
   asset,
   amount,
   memo,
+  sender,
   walletType,
   walletIndex,
   hdMode
@@ -94,6 +95,7 @@ export const saverDeposit$ = ({
       setState({ ...getState(), step: 2, deposit: RD.progress({ loaded: 50, total }) })
       // 2. send deposit tx
       return sendPoolTx$({
+        sender,
         walletType,
         walletIndex,
         hdMode,

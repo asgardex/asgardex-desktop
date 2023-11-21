@@ -53,7 +53,6 @@ export const sendTx$ = ({
   hdMode
 }: SendTxParams): TxHashLD => {
   const { chain } = asset.synth ? AssetRuneNative : asset
-
   if (!isEnabledChain(chain)) return txFailure$(`${chain} is not supported for 'sendTx$'`)
 
   switch (chain) {

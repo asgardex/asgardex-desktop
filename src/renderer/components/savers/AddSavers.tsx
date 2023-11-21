@@ -99,6 +99,7 @@ import { PricePool } from '../../views/pools/Pools.types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
 import { TxModal } from '../modal/tx'
 import { DepositAsset } from '../modal/tx/extra/DepositAsset'
+import { ErrorLabel } from '../settings/AppSettings.styles'
 import { LoadingView } from '../shared/loading'
 import { AssetInput } from '../uielements/assets/assetInput'
 import { BaseButton, FlatButton, ViewTxButton } from '../uielements/button'
@@ -526,6 +527,25 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       ),
     [oSaversQuote]
   )
+  // memo check disable submit if no memo
+  const quoteError: JSX.Element = useMemo(() => {
+    if (
+      !O.isSome(oSaversQuote) ||
+      oSaversQuote.value.canAddSaver ||
+      !oSaversQuote.value.errors ||
+      oSaversQuote.value.errors.length === 0
+    ) {
+      return <></>
+    }
+    // Select first error
+    const error = oSaversQuote.value.errors[0].split(':')
+
+    return (
+      <ErrorLabel>
+        {intl.formatMessage({ id: 'swap.errors.amount.thornodeQuoteError' }, { error: `${error}` })}
+      </ErrorLabel>
+    )
+  }, [oSaversQuote, intl])
 
   // Disables the submit button
   const disableSubmit = useMemo(
@@ -753,7 +773,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
           poolAddress,
           asset: asset.asset,
           amount: convertBaseAmountDecimal(amountToSendMax1e8, asset.baseAmount.decimal),
-          memo: saversQuote.memo.concat(`::${ASGARDEX_THORNAME}:0`), // add tracking,
+          memo: saversQuote.memo !== '' ? saversQuote.memo.concat(`::${ASGARDEX_THORNAME}:0`) : '', // add tracking,
           walletType,
           sender: walletAddress,
           walletIndex,
@@ -1359,6 +1379,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
                     disabled={disableSubmit}>
                     {intl.formatMessage({ id: 'common.earn' })}
                   </FlatButton>
+                  {quoteError}
                 </div>
               </>
             ) : (
