@@ -1,16 +1,20 @@
-# 1.20.7 (2023-11-16)
+# 1.20.7 (2023-11-21)
 
-## Update / Fix
+## Updates/Fixes
 
 - Display Savers From a Ledger [#40](https://github.com/asgardex/asgardex-desktop/issues/40)
 - Savers page not showing ledger saver [#68](https://github.com/asgardex/asgardex-desktop/issues/68)
 - Savers Withdraw Outbound time not displayed [#69](https://github.com/asgardex/asgardex-desktop/issues/69)
 - Update xhcainjs clients [#76](https://github.com/asgardex/asgardex-desktop/issues/76)
-- Change Block Interveral Range [#78](https://github.com/asgardex/asgardex-desktop/issues/78)
-- Ledger issue, swaping synths [#93](https://github.com/asgardex/asgardex-desktop/issues/93)
+- Change Block Interval Range [#78](https://github.com/asgardex/asgardex-desktop/issues/78)
+- Ledger issue, swapping synths [#93](https://github.com/asgardex/asgardex-desktop/issues/93)
 - Delimiter for THORNames memo in Thorchain-query [#90](https://github.com/asgardex/asgardex-desktop/issues/90)
-- ETH Error when low eth balance[#86](https://github.com/asgardex/asgardex-desktop/issues/86)
-- Estimate Swap without un-locking wallet [#94](https://github.com/asgardex/asgardex-desktop/issues/94)
+- ETH Error when low ETH balance [#86](https://github.com/asgardex/asgardex-desktop/issues/86)
+- Estimate Swap without unlocking wallet [#94](https://github.com/asgardex/asgardex-desktop/issues/94)
+- Force-click Thorname when sending to a Thorname. [#95](https://github.com/asgardex/asgardex-desktop/issues/95)
+- Snowtrace will be discontinued [#89](https://github.com/asgardex/asgardex-desktop/issues/89)
+- Track transactions [#67](https://github.com/asgardex/asgardex-desktop/issues/67)
+- Update send screen [#85](https://github.com/asgardex/asgardex-desktop/issues/85) - Amount in USD
 
 # 1.20.6 (2023-11-01)
 
