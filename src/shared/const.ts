@@ -1,20 +1,26 @@
 import { PoolsStorageEncoded } from './api/io'
 import { StoreFilesContent, UserNodesStorage } from './api/types'
-import { DEFAULT_ETH_HD_MODE } from './ethereum/const'
+import { DEFAULT_EVM_HD_MODE } from './evm/types'
 import { DEFAULT_LOCALE } from './i18n/const'
 import { DEFAULT_MIDGARD_URLS } from './midgard/const'
 import { DEFAULT_THORNODE_API_URLS, DEFAULT_THORNODE_RPC_URLS } from './thorchain/const'
 
 export const ASGARDEX_IDENTIFIER = 999
 
+// Thorname for affialiate address
+export const ASGARDEX_THORNAME = 'dx'
+
+// Affilaite Fee in basis points
+export const ASGARDEX_AFFILIATE_FEE = 10
+
 // Header key for 9R endpoints
 export const NINE_REALMS_CLIENT_HEADER = 'x-client-id'
 
 export enum ExternalUrl {
   DOCS = 'https://docs.thorchain.org',
-  DISCORD = 'https://discord.gg/pHcS67yX7Z',
-  GITHUB_REPO = `https://github.com/thorchain/asgardex-electron`,
-  GITHUB_RELEASE = `https://github.com/thorchain/asgardex-electron/releases/tag/v`,
+  DISCORD = 'https://discord.gg/XjV3Hnud',
+  GITHUB_REPO = `https://github.com/asgardex/asgardex-desktop`,
+  GITHUB_RELEASE = `https://github.com/asgardex/asgardex-desktop/releases/tag/v`,
   TWITTER = 'https://twitter.com/asgardex'
 }
 
@@ -49,7 +55,7 @@ const COMMON_STORAGE_VERSION = '1'
 export const DEFAULT_STORAGES: StoreFilesContent = {
   common: {
     version: COMMON_STORAGE_VERSION,
-    ethDerivationMode: DEFAULT_ETH_HD_MODE,
+    evmDerivationMode: DEFAULT_EVM_HD_MODE,
     locale: DEFAULT_LOCALE,
     midgard: DEFAULT_MIDGARD_URLS,
     thornodeApi: DEFAULT_THORNODE_API_URLS,

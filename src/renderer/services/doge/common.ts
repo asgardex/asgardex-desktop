@@ -1,11 +1,14 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Client as DogeClient, defaultDogeParams, DOGEChain } from '@xchainjs/xchain-doge'
+import { Network, UtxoOnlineDataProviders } from '@xchainjs/xchain-client'
+import { Client as DogeClient, defaultDogeParams, DOGEChain, AssetDOGE } from '@xchainjs/xchain-doge'
+import { BlockcypherNetwork, BlockcypherProvider } from '@xchainjs/xchain-utxo-providers'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import { Observable } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { blockcypherApiKey, blockcypherUrl } from '../../../shared/api/blockcypher'
 import { isError } from '../../../shared/utils/guard'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
@@ -29,9 +32,31 @@ const clientState$: ClientState$ = FP.pipe(
           getPhrase(keystore),
           O.map<string, ClientState>((phrase) => {
             try {
+              const testnetBlockcypherProvider = new BlockcypherProvider(
+                blockcypherUrl,
+                DOGEChain,
+                AssetDOGE,
+                8,
+                BlockcypherNetwork.DOGE,
+                blockcypherApiKey || ''
+              )
+              const mainnetBlockcypherProvider = new BlockcypherProvider(
+                blockcypherUrl,
+                DOGEChain,
+                AssetDOGE,
+                8,
+                BlockcypherNetwork.DOGE,
+                blockcypherApiKey || ''
+              )
+              const BlockcypherDataProviders: UtxoOnlineDataProviders = {
+                [Network.Testnet]: testnetBlockcypherProvider,
+                [Network.Stagenet]: mainnetBlockcypherProvider,
+                [Network.Mainnet]: mainnetBlockcypherProvider
+              }
               const dogeInitParams = {
                 ...defaultDogeParams,
                 network: network,
+                dataProviders: [BlockcypherDataProviders],
                 phrase: phrase
               }
               const client = new DogeClient(dogeInitParams)

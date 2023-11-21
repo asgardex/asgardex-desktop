@@ -1,6 +1,18 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { PoolData } from '@thorchain/asgardex-util'
 import { TxHash } from '@xchainjs/xchain-client'
+import {
+  Network as NetworkInfo,
+  PoolDetail,
+  Health,
+  PoolStatsDetail,
+  LiquidityHistory,
+  SwapHistory,
+  EarningsHistory,
+  EarningsHistoryItemPool,
+  DepthHistory,
+  DepthHistoryItem,
+  SwapHistoryItem
+} from '@xchainjs/xchain-midgard'
 import { Address, Asset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/lib/function'
@@ -10,25 +22,7 @@ import * as Rx from 'rxjs'
 
 import { LiveData } from '../../helpers/rx/liveData'
 import { AssetWithAmount, DepositType } from '../../types/asgardex'
-import {
-  Network as NetworkInfo,
-  PoolDetail,
-  Health,
-  PoolStatsDetail,
-  LiquidityHistory,
-  GetLiquidityHistoryIntervalEnum,
-  SwapHistory,
-  GetSwapHistoryRequest,
-  EarningsHistory,
-  EarningsHistoryItemPool,
-  GetDepthHistoryRequest,
-  DepthHistory,
-  DepthHistoryItem,
-  SwapHistoryItem,
-  GetLiquidityHistoryRequest,
-  GetPoolsPeriodEnum
-} from '../../types/generated/midgard'
-import { PricePools, PricePoolAsset, PricePool } from '../../views/pools/Pools.types'
+import { PricePools, PricePoolAsset, PricePool, PoolData } from '../../views/pools/Pools.types'
 import { Memo, PoolFeeLD } from '../chain/types'
 import { ApiError } from '../wallet/types'
 
@@ -61,6 +55,131 @@ export type PoolsDataMapRD = RD.RemoteData<Error, PoolsDataMap>
 
 export type PriceDataIndex = {
   [symbol: string]: BigNumber
+}
+/**
+ * @export
+ * @enum {string}
+ */
+export enum GetPoolsPeriodEnum {
+  _1h = '1h',
+  _24h = '24h',
+  _7d = '7d',
+  _14d = '14d',
+  _30d = '30d',
+  _90d = '90d',
+  _100d = '100d',
+  _180d = '180d',
+  _365d = '365d',
+  All = 'all'
+}
+export enum GetPoolPeriodEnum {
+  _1h = '1h',
+  _24h = '24h',
+  _7d = '7d',
+  _14d = '14d',
+  _30d = '30d',
+  _90d = '90d',
+  _100d = '100d',
+  _180d = '180d',
+  _365d = '365d',
+  All = 'all'
+}
+/**
+ * @export
+ * @enum {string}
+ */
+export enum GetSaversHistoryIntervalEnum {
+  _5min = '5min',
+  Hour = 'hour',
+  Day = 'day',
+  Week = 'week',
+  Month = 'month',
+  Quarter = 'quarter',
+  Year = 'year'
+}
+/**
+ * @export
+ * @enum {string}
+ */
+export enum GetSwapHistoryIntervalEnum {
+  _5min = '5min',
+  Hour = 'hour',
+  Day = 'day',
+  Week = 'week',
+  Month = 'month',
+  Quarter = 'quarter',
+  Year = 'year'
+}
+/**
+ * @export
+ * @enum {string}
+ */
+export enum GetTVLHistoryIntervalEnum {
+  _5min = '5min',
+  Hour = 'hour',
+  Day = 'day',
+  Week = 'week',
+  Month = 'month',
+  Quarter = 'quarter',
+  Year = 'year'
+}
+/**
+ * @export
+ * @enum {string}
+ */
+export enum GetEarningsHistoryIntervalEnum {
+  _5min = '5min',
+  Hour = 'hour',
+  Day = 'day',
+  Week = 'week',
+  Month = 'month',
+  Quarter = 'quarter',
+  Year = 'year'
+}
+/**
+ * @export
+ * @enum {string}
+ */
+export enum GetLiquidityHistoryIntervalEnum {
+  _5min = '5min',
+  Hour = 'hour',
+  Day = 'day',
+  Week = 'week',
+  Month = 'month',
+  Quarter = 'quarter',
+  Year = 'year'
+}
+
+export enum GetPoolStatsPeriodEnum {
+  _1h = '1h',
+  _24h = '24h',
+  _7d = '7d',
+  _14d = '14d',
+  _30d = '30d',
+  _90d = '90d',
+  _100d = '100d',
+  _180d = '180d',
+  _365d = '365d',
+  All = 'all'
+}
+/**
+ * @export
+ * @enum {string}
+ */
+export enum GetDepthHistoryIntervalEnum {
+  _5min = '5min',
+  Hour = 'hour',
+  Day = 'day',
+  Week = 'week',
+  Month = 'month',
+  Quarter = 'quarter',
+  Year = 'year'
+}
+
+export enum GetPoolsStatusEnum {
+  Available = 'available',
+  Staged = 'staged',
+  Suspended = 'suspended'
 }
 
 export type PoolsState = {
@@ -273,10 +392,25 @@ export type ActionsPage = {
   actions: Actions
 }
 
+export interface GetPoolRequest {
+  asset: string
+  period?: GetPoolPeriodEnum
+}
+
+export interface GetPoolStatsRequest {
+  asset: string
+  period?: GetPoolStatsPeriodEnum
+}
+
+export interface GetPoolsRequest {
+  status?: GetPoolsStatusEnum
+  period?: GetPoolsPeriodEnum
+}
+
 export type ActionsPageRD = RD.RemoteData<ApiError, ActionsPage>
 export type ActionsPageLD = LiveData<ApiError, ActionsPage>
 
-const staticPoolFilters = ['__base__', '__usd__', '__bep2__', '__erc20__', '__watched__'] as const
+const staticPoolFilters = ['__base__', '__usd__', '__bep2__', '__erc20__', '__synth__', '__watched__'] as const
 export type StaticPoolFilter = typeof staticPoolFilters[number]
 
 /**
@@ -296,4 +430,32 @@ export type LoadActionsParams = {
   asset?: string
   type?: TxType | 'ALL'
   itemsPerPage: number
+}
+export interface GetEarningsHistoryRequest {
+  interval?: GetEarningsHistoryIntervalEnum
+  count?: number
+  to?: number
+  from?: number
+}
+
+export interface GetLiquidityHistoryRequest {
+  pool?: string
+  interval?: GetLiquidityHistoryIntervalEnum
+  count?: number
+  to?: number
+  from?: number
+}
+export interface GetDepthHistoryRequest {
+  pool: string
+  interval?: GetDepthHistoryIntervalEnum
+  count?: number
+  to?: number
+  from?: number
+}
+export interface GetSwapHistoryRequest {
+  pool?: string
+  interval?: GetSwapHistoryIntervalEnum
+  count?: number
+  to?: number
+  from?: number
 }

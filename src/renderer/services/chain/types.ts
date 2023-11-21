@@ -13,7 +13,7 @@ import { AssetWithAmount } from '../../types/asgardex'
 import { PoolAddress } from '../midgard/types'
 import { ApiError, TxHashRD } from '../wallet/types'
 
-export type TxTypes = 'DEPOSIT' | 'SWAP' | 'WITHDRAW' | 'UPGRADE' | 'APPROVE' | 'SEND'
+export type TxTypes = 'DEPOSIT' | 'SWAP' | 'WITHDRAW' | 'APPROVE' | 'SEND'
 
 export type Chain$ = Rx.Observable<O.Option<Chain>>
 
@@ -40,6 +40,27 @@ export type SymDepositAddresses = {
 
 export type DepositFees = { inFee: BaseAmount; outFee: BaseAmount; refundFee: BaseAmount }
 export type DepositAssetFees = DepositFees & { asset: Asset }
+
+/**
+ * Saver deposit fees
+ *
+ */
+export type SaverDepositFees = {
+  /** fee for asset txs */
+  readonly asset: DepositAssetFees
+}
+
+export type SaverDepositFeesRD = RD.RemoteData<Error, SaverDepositFees>
+export type SaverDepositFeesLD = LiveData<Error, SaverDepositFees>
+
+export type SaverDepositFeesParams = {
+  readonly asset: Asset
+}
+
+export type SaverDepositFeesHandler = (asset: Asset) => SaverDepositFeesLD
+
+export type ReloadSaverDepositFeesHandler = (asset: Asset) => void
+
 /**
  * Sym. deposit fees
  *
@@ -61,11 +82,12 @@ export type SymDepositFeesParams = {
 export type SymDepositFeesHandler = (asset: Asset) => SymDepositFeesLD
 export type ReloadSymDepositFeesHandler = (asset: Asset) => void
 
-export type AsymDepositParams = {
+export type SaverDepositParams = {
   readonly poolAddress: PoolAddress
   readonly asset: Asset
   readonly amount: BaseAmount
   readonly memo: string
+  readonly sender: Address
   readonly walletIndex: number
   readonly walletType: WalletType
   readonly hdMode: HDMode
@@ -173,9 +195,9 @@ export type SwapFeesHandler = (p: SwapFeesParams) => SwapFeesLD
 export type ReloadSwapFeesHandler = (p: SwapFeesParams) => void
 
 /**
- * State to reflect status of an asym. deposit by doing different requests
+ * State to reflect status of an Saver deposit by doing different requests
  */
-export type AsymDepositState = {
+export type SaverDepositState = {
   // Number of current step
   readonly step: number
   // Constant total amount of steps
@@ -186,9 +208,9 @@ export type AsymDepositState = {
   readonly deposit: RD.RemoteData<ApiError, boolean>
 }
 
-export type AsymDepositState$ = Rx.Observable<AsymDepositState>
+export type SaverDepositState$ = Rx.Observable<SaverDepositState>
 
-export type AsymDepositStateHandler = (p: AsymDepositParams) => AsymDepositState$
+export type SaverDepositStateHandler = (p: SaverDepositParams) => SaverDepositState$
 
 export type SymDepositValidationResult = { pool: boolean; node: boolean }
 export type SymDepositTxs = { rune: TxHashRD; asset: TxHashRD }
@@ -218,10 +240,7 @@ export type WithdrawFees = {
   /** Outbound tx fee */
   outFee: BaseAmount
 }
-export type WithdrawAssetFees = WithdrawFees & {
-  /** fee asset */
-  asset: Asset
-}
+
 /**
  * Withdraw fees
  */
@@ -237,7 +256,19 @@ export type SymWithdrawFeesHandler = (asset: Asset) => SymWithdrawFeesLD
 export type ReloadWithdrawFeesHandler = (asset: Asset) => void
 
 /**
- * State to reflect status of a sym. deposit by doing different requests
+ * Saver Withdraw Fees
+ */
+export type WithdrawAssetFees = WithdrawFees & {
+  /** fee asset */
+  asset: Asset
+}
+
+export type SaverWithdrawFeesRD = RD.RemoteData<Error, WithdrawAssetFees>
+export type SaverWithdrawFeesLD = LiveData<Error, WithdrawAssetFees>
+export type SaverWithdrawFeesHandler = (asset: Asset) => SaverWithdrawFeesLD
+
+/**
+ * State to reflect status of a sym / saver. withdraw by doing different requests
  */
 export type WithdrawState = {
   // Number of current step
@@ -262,47 +293,19 @@ export type SymWithdrawParams = {
 
 export type SymWithdrawStateHandler = (p: SymWithdrawParams) => WithdrawState$
 
-export type AsymWithdrawParams = {
+export type SaverWithdrawParams = {
   readonly poolAddress: PoolAddress
   readonly asset: Asset
+  readonly amount: BaseAmount
   readonly memo: Memo
   readonly network: Network
   readonly walletType: WalletType
   readonly walletIndex: number
+  readonly sender: Address
   readonly hdMode: HDMode
 }
 
-export type AsymWithdrawStateHandler = (p: AsymWithdrawParams) => WithdrawState$
-
-export type UpgradeRuneParams = {
-  readonly walletAddress: string
-  readonly walletType: WalletType
-  readonly walletIndex: number
-  readonly hdMode: HDMode
-  readonly poolAddress: PoolAddress
-  readonly asset: Asset
-  readonly amount: BaseAmount
-  readonly memo: string
-  readonly network: Network
-}
-
-/**
- * State to reflect status for upgrading Rune
- *
- * Three steps are needed:
- * 1. Health check (pool address)
- * 1. Send tx
- * 2. Check status of tx
- *
- */
-export type UpgradeRuneTxState = {
-  // State of steps (current step + total number of steps)
-  readonly steps: { current: number; readonly total: 3 }
-  // RD of all steps
-  readonly status: TxHashRD
-}
-
-export type UpgradeRuneTxState$ = Rx.Observable<UpgradeRuneTxState>
+export type SaverWithdrawStateHandler = (p: SaverWithdrawParams) => WithdrawState$
 
 /**
  * State to reflect status for sending

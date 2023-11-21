@@ -43,6 +43,12 @@ export const poolShares: Route<void> = {
     return this.template
   }
 }
+export const savers: Route<void> = {
+  template: `${base.template}/savers`,
+  path() {
+    return this.template
+  }
+}
 
 export type InteractParams = {
   interactType: InteractType
@@ -70,13 +76,6 @@ export const assetDetail: Route<void> = {
 
 export const send: Route<void> = {
   template: `${assetDetail.template}/send`,
-  path() {
-    return this.template
-  }
-}
-
-export const upgradeRune: Route<void> = {
-  template: `${assetDetail.template}/upgrade`,
   path() {
     return this.template
   }

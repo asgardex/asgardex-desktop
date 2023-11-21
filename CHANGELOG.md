@@ -1,12 +1,187 @@
+# 1.20.7 (2023-11-21)
+
+## Updates/Fixes
+
+- Display Savers From a Ledger [#40](https://github.com/asgardex/asgardex-desktop/issues/40)
+- Savers page not showing ledger saver [#68](https://github.com/asgardex/asgardex-desktop/issues/68)
+- Savers Withdraw Outbound time not displayed [#69](https://github.com/asgardex/asgardex-desktop/issues/69)
+- Update xhcainjs clients [#76](https://github.com/asgardex/asgardex-desktop/issues/76)
+- Change Block Interval Range [#78](https://github.com/asgardex/asgardex-desktop/issues/78)
+- Ledger issue, swapping synths [#93](https://github.com/asgardex/asgardex-desktop/issues/93)
+- Delimiter for THORNames memo in Thorchain-query [#90](https://github.com/asgardex/asgardex-desktop/issues/90)
+- ETH Error when low ETH balance [#86](https://github.com/asgardex/asgardex-desktop/issues/86)
+- Estimate Swap without unlocking wallet [#94](https://github.com/asgardex/asgardex-desktop/issues/94)
+- Force-click Thorname when sending to a Thorname. [#95](https://github.com/asgardex/asgardex-desktop/issues/95)
+- Snowtrace will be discontinued [#89](https://github.com/asgardex/asgardex-desktop/issues/89)
+- Track transactions [#67](https://github.com/asgardex/asgardex-desktop/issues/67)
+- Update send screen [#85](https://github.com/asgardex/asgardex-desktop/issues/85) - Amount in USD
+
+# 1.20.6 (2023-11-01)
+
+## Add
+
+- Show IP address [#28](https://github.com/asgardex/asgardex-desktop/issues/28)
+- ADD: AVAX & BSC [#4](https://github.com/asgardex/asgardex-desktop/issues/4)
+- Add THORName Support for sending Tx [#6](https://github.com/asgardex/asgardex-desktop/issues/6) (thor addresses only)
+- USDC not displayed for Savers (or non native assets - e.g. Savers) [#52](https://github.com/asgardex/asgardex-desktop/issues/52)
+- Savers with Ledger [#40](https://github.com/asgardex/asgardex-desktop/issues/40) ETH Only
+- ADD Thorname management[#65](https://github.com/asgardex/asgardex-desktop/issues/65)
+
+## Update / Fix
+
+- Ledger tx gives 403 Error [#62](https://github.com/asgardex/asgardex-desktop/issues/62)
+- Update Bond and Unbond to support pooled Nodes [#43](https://github.com/asgardex/asgardex-desktop/issues/43)
+- USDC dollar value not displayed [#51](https://github.com/asgardex/asgardex-desktop/issues/51) (Swap page)
+- Bug: Cannot add ETH via Ledger to savers [#48](https://github.com/asgardex/asgardex-desktop/issues/48)
+- BUG: Saver % 100x too low [#58](https://github.com/asgardex/asgardex-desktop/issues/58)
+- Stable savers do not appear [#61](https://github.com/asgardex/asgardex-desktop/issues/61)
+- BTC Client won't send max amount [#56](https://github.com/asgardex/asgardex-desktop/issues/56)
+- Add USD amount for Approve [#46](https://github.com/asgardex/asgardex-desktop/issues/46)
+- Add check for quote endpoint expiry [#32](https://github.com/asgardex/asgardex-desktop/issues/32)
+- USDC dollar value not displayed [#51](https://github.com/asgardex/asgardex-desktop/issues/51)
+- BUG: Unbond no amount in memo [#57](https://github.com/asgardex/asgardex-desktop/issues/57)
+- Ledger tx gives 403 Error [#62](https://github.com/asgardex/asgardex-desktop/issues/62)
+
+## Internal
+
+- Update xchainjs packages
+
+# 1.20.5 (2023-10-03)
+
+## Update / Fix
+
+- Bond and Unbond not looking at RUNE balance [#44](https://github.com/asgardex/asgardex-desktop/issues/44)
+- Implement Updated Transaction Tracking [#23](https://github.com/asgardex/asgardex-desktop/issues/23)
+- Add: Deposit and Savers Option on wallet view [#30](https://github.com/asgardex/asgardex-desktop/issues/30)
+- FIX: USDC swap before quote shows wrong fee decimals [#39](https://github.com/asgardex/asgardex-desktop/issues/39)
+- Add liquidity fee for earn [#35](https://github.com/asgardex/asgardex-desktop/issues/35)
+- Change refresh function on wallet [#47](https://github.com/asgardex/asgardex-desktop/issues/47)
+- Format Wallet: Savers position# [34](https://github.com/asgardex/asgardex-desktop/issues/34)
+- BUG: High fee issue with BTC swaps from a Ledger address [#45](https://github.com/asgardex/asgardex-desktop/issues/45)
+- BUG: 24 Vol not being displayed (was working in prev version) [#50](https://github.com/asgardex/asgardex-desktop/issues/50)
+- BUG: Get 404 when looking at LP Shares [#53](https://github.com/asgardex/asgardex-desktop/issues/53)
+
+## Internal
+
+- Add new blockcypher API Key [#49](https://github.com/asgardex/asgardex-desktop/issues/49)
+- Remove dependency on @thorchain/asgardex-util [#33](https://github.com/asgardex/asgardex-desktop/issues/33)
+- Remove Asym references from AsgardEx [#36](https://github.com/asgardex/asgardex-desktop/issues/36)
+- REMOVE: Asgardex-midgard replace with xchain-midgard [#13](https://github.com/asgardex/asgardex-desktop/issues/33)
+- Update packages [#42](https://github.com/asgardex/asgardex-desktop/issues/42)
+- Updates to MsgDeposit page
+
+# 1.20.4 (2023-09-08)
+
+## Add
+
+- [ADD: Savers withdraw] [#20](https://github.com/asgardex/asgardex-desktop/issues/20)
+- [Add Affiliate tracking for Savers] [#22](https://github.com/asgardex/asgardex-desktop/issues/22)
+- [Add: Savers Tab] [#31](https://github.com/asgardex/asgardex-desktop/issues/31)
+
+## Update / Fix
+
+- [ADD: Better TX Page View/Copy] [#15](https://github.com/asgardex/asgardex-desktop/issues/15)
+- 'Shares' renamed to 'LP Shares'
+- [Wallet View no function for USDC] [#21](https://github.com/asgardex/asgardex-desktop/issues/21)
+- Updated Swap Details and Earn / Withdraw Details
+- [Update Swap SS price efficiency and bar to reflect user input] [#26](https://github.com/asgardex/asgardex-desktop/issues/26)
+- [Error NO PROVIDER ABLE TO GET BALANCE] [#19](https://github.com/asgardex/asgardex-desktop/issues/19)
+
+## Internal
+
+- [REMOVE: Upgrade function] [#24](https://github.com/asgardex/asgardex-desktop/issues/24)
+- Add sliders to Savers Earn and Withdraw
+- Changed default exploer from viewblock to thorchain.net
+- Note: Ledger not fully supported for Savers [#15](https://github.com/asgardex/asgardex-desktop/issues/15)
+
+# 1.20.3 (2023-08-26)
+
+## Add
+
+- [Savers] [#3](https://github.com/asgardex/asgardex-desktop/issues/3) - Earn only. No Affiliate.
+
+## Update
+
+- Streaming interface improvements
+  - Slider Interval / Max 10 blocks. Default is 3.
+  - Slider Quantity > Sub swap selection.
+  - More details around Streaming Info, e.g. Swap time.
+
+## Fix
+
+- Streaming Dark mode style adjustment - On loading new wallet and not connected to internet display thor address.
+- Error producing THORNode address with no Internet connection.
+
+## Internal
+
+- xchainjs/xchain-thorchain-query dependency updated
+- xchainjs/xchain-thornode dependency updated to use latest version of THORNode.
+
+# 1.20.2 (2023-08-21)
+
+## Add
+
+- [Streaming Swaps] (Add) [#2](https://github.com/asgardex/asgardex-desktop/issues/2)
+  - User can now add to any of the savers pools
+  - Including the stables e.g USDC
+
+## Internal
+
+- Slider works on interval only, as follows
+  - Slider < 1 % `:Limit/0/0` is used. Normal swap with limit, no streaming.
+  - Slider > 1 and < 70 % `:0/1/0` is used. No limit, THORNode works out swap quantity.
+  - Slider >= 70 and <= 100 % `:0/5/0` is used. No limit, THORNode works out swap quantity.
+- force electron version 20.3.8 for node-hid
+- xchainjs/xchain-thorchain dependency updated
+- Updated affiliate fee to dosplay price and amount
+- Fixed 'AJAX ERROR 803' in Shares by adding 500 ms delay
+
+# 1.20.1 (2023-08-14)
+
+## Update
+
+- Fixed [Sending Synths Issue] [#5](https://github.com/asgardex/asgardex-desktop/issues/5)
+- Reduced Affiliate Fee to 10 bps
+- Fixed Slip Issue
+- Fixed Issues in Swap Details.
+
+# 1.20.0 (2023-08-11)
+
+## Add
+
+- [Synths Support] [#2545](https://github.com/thorchain/asgardex-electron/issues/2545)
+- Affiliate Fee of 30 bps
+
+## Update
+
+- Quotes are now fetched from the Quote Endpoint using the xchainjs query package.
+- Upgraded to the latest thorchain and cosmos xchain client packages..
+- Added Synths to the asset list.
+- Introduced Slip tolerance to quote request for enhanced price protection.
+- Enabled [Savers UI] [#2485](https://github.com/thorchain/asgardex-electron/pull/2485) - read-only access.
+- Changed 2 to 4 decimal points on the output amount.
+
+## Internal
+
+- Integrated xchain-thorchain-query and its related dependencies to fetch data from the quote endpoint.
+- Integrated latest xchain-thornode to utilise the latest THORNode version (v116).
+- Adjusted routing to accommodate synths, which is essential for [Savers] [#2431](https://github.com/thorchain/asgardex-electron/issues/2431).
+- Updated routing to support synths, utilising `replace('/', '_synth_')`.
+- Upgraded and activated Savers Routing for Earn and Withdrawal.
+- Adjusted Asgard Midgard to comprehend Synths.
+- Replaced Inbound and Outbound fees with references to Inbound_address or the Quote endpoint, and removed the flat 3 \* inbound fee.
+- Enhanced the Mimir detection logic to identify functionality pauses more effectively.
+- Added Affiliate Fee is 30 bps and uses THORName dx
+
 # 1.19.2 (2023-06-30)
 
-# Internal
+## Internal
 
 -Updates xchain-thorchain package due to gas issue.
 
-# 1.19.1 (2023-04-XX)
+# 1.19.1 (2023-04-11)
 
-# Internal
+## Internal
 
 -Updates/refactor to support latest xchain updates for UTXO support. Keystore clients and ledger code updated.
 

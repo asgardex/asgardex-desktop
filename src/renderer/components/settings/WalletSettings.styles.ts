@@ -13,10 +13,9 @@ import {
   ExternalLinkIcon as ExternalLinkIconUI,
   WalletTypeLabel as WalletTypeLabelUI
 } from '../uielements/common/Common.styles'
-import { Input as InputUI } from '../uielements/input'
 import { Label as UILabel } from '../uielements/label'
 
-export const Input = styled(InputUI)`
+export const Input = styled(A.Input)`
   border-color: ${palette('gray', 1)};
   max-width: 300px;
 

@@ -36,7 +36,7 @@ const meta: ComponentMeta<typeof Component> = {
         callback: () => {
           console.log('savers')
         },
-        disabled: true
+        disabled: false
       },
       {
         label: 'send',
@@ -51,13 +51,6 @@ const meta: ComponentMeta<typeof Component> = {
           console.log('deposit')
         },
         disabled: false
-      },
-      {
-        label: 'upgrade',
-        callback: () => {
-          console.log('upgrade')
-        },
-        disabled: true
       }
     ],
     disabled: false,

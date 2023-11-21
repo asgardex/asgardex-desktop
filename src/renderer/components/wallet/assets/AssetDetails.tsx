@@ -1,7 +1,7 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import { Address } from '@xchainjs/xchain-util'
-import { Asset, AssetAmount, assetToBase, BaseAmount } from '@xchainjs/xchain-util'
+import { Asset } from '@xchainjs/xchain-util'
 import { Row, Col } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -12,14 +12,12 @@ import { Network } from '../../../../shared/api/types'
 import { chainToString } from '../../../../shared/utils/chain'
 import { WalletType } from '../../../../shared/wallet/types'
 import * as AssetHelper from '../../../helpers/assetHelper'
-import { isCosmosChain } from '../../../helpers/chainHelper'
-import { eqAsset, eqString } from '../../../helpers/fp/eq'
-import { getWalletAssetAmountFromBalances } from '../../../helpers/walletHelper'
+import { isCosmosChain, isThorChain } from '../../../helpers/chainHelper'
 import * as walletRoutes from '../../../routes/wallet'
 import { OpenExplorerTxUrl, TxsPageRD } from '../../../services/clients'
 import { MAX_ITEMS_PER_PAGE } from '../../../services/const'
 import { EMPTY_LOAD_TXS_HANDLER } from '../../../services/wallet/const'
-import { LoadTxsHandler, NonEmptyWalletBalances, WalletBalances } from '../../../services/wallet/types'
+import { LoadTxsHandler, NonEmptyWalletBalances } from '../../../services/wallet/types'
 import { WarningView } from '../../shared/warning'
 import { AssetInfo } from '../../uielements/assets/assetInfo'
 import { BackLinkButton } from '../../uielements/button'
@@ -38,7 +36,6 @@ type Props = {
   loadTxsHandler?: LoadTxsHandler
   walletAddress: Address
   disableSend: boolean
-  disableUpgrade: boolean
   network: Network
 }
 
@@ -54,7 +51,6 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
     openExplorerAddressUrl,
     walletAddress,
     disableSend,
-    disableUpgrade,
     network
   } = props
 
@@ -76,16 +72,6 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
     navigate(path)
   }, [navigate])
 
-  const isNonNativeRuneAsset: boolean = useMemo(
-    () => AssetHelper.isNonNativeRuneAsset(asset, network),
-    [asset, network]
-  )
-
-  const walletActionUpgradeNonNativeRuneClick = useCallback(() => {
-    const path = walletRoutes.upgradeRune.path()
-    navigate(path)
-  }, [navigate])
-
   const reloadTxs = useCallback(() => {
     loadTxsHandler({ limit: MAX_ITEMS_PER_PAGE, offset: (currentPage - 1) * MAX_ITEMS_PER_PAGE })
   }, [currentPage, loadTxsHandler])
@@ -103,46 +89,8 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
     [loadTxsHandler]
   )
 
-  const oNoneNativeRuneAsset: O.Option<Asset> = useMemo(
-    () =>
-      FP.pipe(
-        asset,
-        O.fromPredicate((asset) => AssetHelper.isNonNativeRuneAsset(asset, network))
-      ),
-    [asset, network]
-  )
-
-  const getNonNativeRuneBalance: O.Option<(balances: WalletBalances) => O.Option<AssetAmount>> = useMemo(
-    () =>
-      FP.pipe(
-        oNoneNativeRuneAsset,
-        O.map((asset) =>
-          getWalletAssetAmountFromBalances(
-            (balance) => eqString.equals(balance.walletAddress, walletAddress) && eqAsset.equals(balance.asset, asset)
-          )
-        )
-      ),
-    [oNoneNativeRuneAsset, walletAddress]
-  )
-
-  const oNonNativeRuneAmount: O.Option<BaseAmount> = useMemo(
-    () => FP.pipe(getNonNativeRuneBalance, O.ap(oBalances), O.flatten, O.map(assetToBase)),
-    [getNonNativeRuneBalance, oBalances]
-  )
-
   const actionColSpanDesktop = 12
   const actionColSpanMobile = 24
-
-  const runeUpgradeDisabled: boolean = useMemo(() => {
-    return (
-      disableUpgrade &&
-      FP.pipe(
-        oNonNativeRuneAmount,
-        O.map((amount) => amount.lt(0)),
-        O.getOrElse<boolean>(() => true)
-      )
-    )
-  }, [disableUpgrade, oNonNativeRuneAmount])
 
   return (
     <>
@@ -185,22 +133,6 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
               </Row>
             </Styled.ActionWrapper>
           </Styled.ActionCol>
-          {isNonNativeRuneAsset && (
-            <Styled.ActionCol sm={{ span: actionColSpanMobile }} md={{ span: actionColSpanDesktop }}>
-              <Styled.ActionWrapper>
-                <Row justify="center">
-                  <BorderButton
-                    className="min-w-[200px]"
-                    size="large"
-                    color="warning"
-                    onClick={runeUpgradeDisabled ? undefined : walletActionUpgradeNonNativeRuneClick}
-                    disabled={runeUpgradeDisabled}>
-                    {intl.formatMessage({ id: 'wallet.action.upgrade' })}
-                  </BorderButton>
-                </Row>
-              </Styled.ActionWrapper>
-            </Styled.ActionCol>
-          )}
           {AssetHelper.isRuneNativeAsset(asset) && (
             <Styled.ActionCol sm={{ span: actionColSpanMobile }} md={{ span: actionColSpanDesktop }}>
               <Styled.ActionWrapper>
@@ -237,7 +169,7 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
             as long as an external API can't provide it - currently `https://lcd-cosmoshub.keplr.app`
             See https://github.com/thorchain/asgardex-electron/pull/2405
            */}
-          {isCosmosChain(chain) ? (
+          {isCosmosChain(chain) || isThorChain(chain) || walletType === 'ledger' ? (
             <WarningView
               subTitle={intl.formatMessage({ id: 'wallet.txs.history.disabled' }, { chain: chainToString(chain) })}
               extra={

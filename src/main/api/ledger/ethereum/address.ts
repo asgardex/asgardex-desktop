@@ -4,27 +4,27 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
-import { getDerivationPath } from '../../../../shared/ethereum/ledger'
-import { EthHDMode } from '../../../../shared/ethereum/types'
+import { getDerivationPath } from '../../../../shared/evm/ledger'
+import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
 
 export const getAddress = async ({
   transport,
   walletIndex,
-  ethHdMode
+  evmHdMode
 }: {
   transport: Transport
   walletIndex: number
-  ethHdMode: EthHDMode
+  evmHdMode: EvmHDMode
 }): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
     const app = new EthApp(transport)
-    const path = getDerivationPath(walletIndex, ethHdMode)
+    const path = getDerivationPath(walletIndex, evmHdMode)
     const { address } = await app.getAddress(path)
 
     if (address) {
-      return E.right({ address, chain: ETHChain, type: 'ledger', walletIndex, hdMode: ethHdMode })
+      return E.right({ address, chain: ETHChain, type: 'ledger', walletIndex, hdMode: evmHdMode })
     } else {
       return E.left({
         errorId: LedgerErrorId.INVALID_PUBKEY,
@@ -42,14 +42,14 @@ export const getAddress = async ({
 export const verifyAddress = async ({
   transport,
   walletIndex,
-  ethHdMode
+  evmHdMode
 }: {
   transport: Transport
   walletIndex: number
-  ethHdMode: EthHDMode
+  evmHdMode: EvmHDMode
 }) => {
   const app = new EthApp(transport)
-  const path = getDerivationPath(walletIndex, ethHdMode)
+  const path = getDerivationPath(walletIndex, evmHdMode)
   const _ = await app.getAddress(path, true)
   return true
 }

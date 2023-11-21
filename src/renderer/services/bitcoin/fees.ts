@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { BTCChain, Client as BitcoinClient, getDefaultFeesWithRates } from '@xchainjs/xchain-bitcoin'
+import { BTCChain, Client as BitcoinClient } from '@xchainjs/xchain-bitcoin'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -21,10 +21,10 @@ export const createFeesService = (client$: Client$): FeesService => {
    * Observable to load transaction fees
    */
   const loadFees$ = (client: BitcoinClient, memo?: string): FeesWithRatesLD =>
-    Rx.from(client.getFeesWithRates(memo)).pipe(
-      RxOp.map(RD.success),
-      RxOp.catchError(() => Rx.of(RD.success(getDefaultFeesWithRates()))),
-      RxOp.startWith(RD.pending)
+    Rx.from(client.getFeesWithRates({ memo: memo })).pipe(
+      RxOp.mergeMap((feesWithRates) => Rx.of(RD.success(feesWithRates))),
+      RxOp.catchError((error) => Rx.of(RD.failure(error))),
+      RxOp.startWith(RD.pending) //
     )
 
   /**

@@ -10,6 +10,7 @@ import { LoadingView } from '../../../components/shared/loading'
 import { SendFormCOSMOS } from '../../../components/wallet/txs/send'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useCosmosContext } from '../../../contexts/CosmosContext'
+import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { liveData } from '../../../helpers/rx/liveData'
 import { getWalletBalanceByAddress } from '../../../helpers/walletHelper'
@@ -20,6 +21,7 @@ import { FeeRD } from '../../../services/chain/types'
 import { WalletBalances } from '../../../services/clients'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAsset } from '../../../services/wallet/types'
+import * as Styled from '../Interact/InteractView.styles'
 
 type Props = {
   asset: SelectedWalletAsset
@@ -52,6 +54,8 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
 
   const { transfer$ } = useChainContext()
 
+  const { thorchainQuery } = useThorchainQueryContext()
+
   const { fees$, reloadFees } = useCosmosContext()
 
   const [feeRD] = useObservableState<FeeRD>(
@@ -70,22 +74,25 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
     O.fold(
       () => <LoadingView size="large" />,
       (walletBalance) => (
-        <SendFormCOSMOS
-          asset={asset}
-          balances={FP.pipe(
-            oBalances,
-            O.getOrElse<WalletBalances>(() => [])
-          )}
-          balance={walletBalance}
-          transfer$={transfer$}
-          openExplorerTxUrl={openExplorerTxUrl}
-          getExplorerTxUrl={getExplorerTxUrl}
-          addressValidation={validateAddress}
-          fee={feeRD}
-          reloadFeesHandler={reloadFees}
-          validatePassword$={validatePassword$}
-          network={network}
-        />
+        <Styled.Container>
+          <SendFormCOSMOS
+            asset={asset}
+            balances={FP.pipe(
+              oBalances,
+              O.getOrElse<WalletBalances>(() => [])
+            )}
+            balance={walletBalance}
+            transfer$={transfer$}
+            openExplorerTxUrl={openExplorerTxUrl}
+            getExplorerTxUrl={getExplorerTxUrl}
+            addressValidation={validateAddress}
+            fee={feeRD}
+            reloadFeesHandler={reloadFees}
+            validatePassword$={validatePassword$}
+            thorchainQuery={thorchainQuery}
+            network={network}
+          />
+        </Styled.Container>
       )
     )
   )

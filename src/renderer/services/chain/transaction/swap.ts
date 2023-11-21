@@ -1,12 +1,23 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Address } from '@xchainjs/xchain-util'
+import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
+import { Address, isSynthAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { getEthAssetAddress, isEthAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
-import { isEthChain } from '../../../helpers/chainHelper'
+import {
+  getAvaxAssetAddress,
+  getBscAssetAddress,
+  getEthAssetAddress,
+  isAvaxAsset,
+  isBscAsset,
+  isEthAsset,
+  isRuneNativeAsset
+} from '../../../helpers/assetHelper'
 import { liveData } from '../../../helpers/rx/liveData'
 import { observableState } from '../../../helpers/stateHelper'
 import { service as midgardService } from '../../midgard/service'
@@ -38,8 +49,7 @@ export const swap$ = ({
 }: SwapTxParams): SwapState$ => {
   // total of progress
   const total = O.some(100)
-
-  const { chain } = asset
+  const { chain } = asset.synth ? AssetRuneNative : asset
 
   // Observable state of loading process
   // we start with progress of 25%
@@ -58,7 +68,7 @@ export const swap$ = ({
     // 1. validate pool address or node (for `RuneNative` only)
     RxOp.switchMap((poolAddresses) =>
       Rx.iif(
-        () => isRuneNativeAsset(asset),
+        () => isRuneNativeAsset(asset) || isSynthAsset(asset),
         // We don't have a RUNE pool, so we just validate current connected node
         validateNode$(),
         // in other case we have to validate pool address
@@ -85,8 +95,19 @@ export const swap$ = ({
       // Update state
       setState({ ...getState(), step: 3, swapTx: RD.success(txHash), swap: RD.progress({ loaded: 75, total }) })
       // 3. check tx finality by polling its tx data
-      const assetAddress: O.Option<Address> =
-        isEthChain(chain) && !isEthAsset(asset) ? getEthAssetAddress(asset) : O.none
+      const assetAddress: O.Option<Address> = (() => {
+        switch (chain) {
+          case ETHChain:
+            return !isEthAsset(asset) ? getEthAssetAddress(asset) : O.none
+          case AVAXChain:
+            return !isAvaxAsset(asset) ? getAvaxAssetAddress(asset) : O.none
+          case BSCChain:
+            return !isBscAsset(asset) ? getBscAssetAddress(asset) : O.none
+          default:
+            return O.none
+        }
+      })()
+
       return poolTxStatusByChain$({ txHash, chain, assetAddress })
     }),
     // Update state

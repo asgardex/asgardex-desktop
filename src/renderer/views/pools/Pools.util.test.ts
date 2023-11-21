@@ -1,5 +1,5 @@
-import { PoolData } from '@thorchain/asgardex-util'
 import { BNBChain } from '@xchainjs/xchain-binance'
+import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -8,10 +8,9 @@ import { ASSETS_TESTNET, ERC20_TESTNET } from '../../../shared/mock/assets'
 import { AssetBCH, AssetBNB, AssetBTC, AssetETH, AssetLTC, AssetRuneNative } from '../../../shared/utils/asset'
 import { AssetUSDTERC20Testnet } from '../../const'
 import { eqBaseAmount } from '../../helpers/fp/eq'
+import { GetPoolsStatusEnum } from '../../services/midgard/types'
 import { LastblockItems } from '../../services/thorchain/types'
-import { PoolDetail } from '../../types/generated/midgard'
-import { GetPoolsStatusEnum } from '../../types/generated/midgard'
-import { PoolTableRowData } from './Pools.types'
+import { PoolData, PoolTableRowData } from './Pools.types'
 import {
   getPoolTableRowData,
   getBlocksLeftForPendingPool,

@@ -11,22 +11,24 @@ import * as RxOp from 'rxjs/operators'
 
 import { ErrorView } from '../../../components/shared/error'
 import { LoadingView } from '../../../components/shared/loading'
-import { BackLinkButton } from '../../../components/uielements/button'
+import { BackLinkButton, RefreshButton } from '../../../components/uielements/button'
 import { Interact } from '../../../components/wallet/txs/interact'
 import { getInteractTypeFromNullableString } from '../../../components/wallet/txs/interact/Interact.helpers'
 import { InteractType } from '../../../components/wallet/txs/interact/Interact.types'
 import { InteractForm } from '../../../components/wallet/txs/interact/InteractForm'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
+import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { eqOSelectedWalletAsset } from '../../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../../helpers/fpHelpers'
 import { liveData } from '../../../helpers/rx/liveData'
-import { getWalletBalanceByAddress } from '../../../helpers/walletHelper'
+import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import * as walletRoutes from '../../../routes/wallet'
 import { FeeRD } from '../../../services/chain/types'
+import { reloadBalancesByChain } from '../../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAssetRD } from '../../../services/wallet/types'
 import * as Styled from './InteractView.styles'
@@ -68,17 +70,24 @@ export const InteractView: React.FC = () => {
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(THORChain))
 
   const { validateAddress } = useValidateAddress(THORChain)
+  const { thorchainQuery } = useThorchainQueryContext()
 
-  const oWalletBalance = useMemo(
-    () =>
-      FP.pipe(
-        selectedAssetRD,
-        RD.toOption,
-        (oSelectedAsset) => sequenceTOption(oBalances, oSelectedAsset),
-        O.chain(([balances, { walletAddress }]) => getWalletBalanceByAddress(balances, walletAddress))
-      ),
-    [oBalances, selectedAssetRD]
-  )
+  const oWalletBalance = useMemo(() => {
+    return FP.pipe(
+      selectedAssetRD,
+      RD.toOption, // Convert RemoteData to Option
+      O.chain((selectedAsset) => {
+        // Combine oBalances and oSelectedAsset into a single Option
+        return FP.pipe(
+          sequenceTOption(oBalances, O.some(selectedAsset)),
+          // Extract balance for the given walletAddress and asset
+          O.chain(([balances, { walletAddress }]) =>
+            getWalletBalanceByAddressAndAsset({ balances, address: walletAddress, asset: selectedAsset.asset })
+          )
+        )
+      })
+    )
+  }, [oBalances, selectedAssetRD])
 
   const { interact$ } = useThorchainContext()
 
@@ -103,6 +112,10 @@ export const InteractView: React.FC = () => {
     },
     [navigate]
   )
+  const reloadHandler = useCallback(() => {
+    const lazyReload = reloadBalancesByChain(THORChain)
+    lazyReload() // Invoke the lazy function
+  }, [])
 
   return FP.pipe(
     sequenceTRD(interactTypeRD, selectedAssetRD),
@@ -117,11 +130,16 @@ export const InteractView: React.FC = () => {
       ),
       ([interactType, { walletType, walletIndex, hdMode }]) => (
         <>
-          <Row justify="space-between">
-            <Col>
-              <BackLinkButton />
-            </Col>
-          </Row>
+          <div className="relative mb-20px flex items-center justify-between">
+            {' '}
+            <Row justify="space-between">
+              <Col>
+                <BackLinkButton />
+              </Col>
+              <RefreshButton className="absolute right-0" onClick={reloadHandler} />
+            </Row>
+          </div>
+
           <Styled.Container>
             {FP.pipe(
               oWalletBalance,
@@ -146,6 +164,7 @@ export const InteractView: React.FC = () => {
                       fee={feeRD}
                       reloadFeesHandler={reloadFees}
                       validatePassword$={validatePassword$}
+                      thorchainQuery={thorchainQuery}
                       network={network}
                     />
                   </Interact>

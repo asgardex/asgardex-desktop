@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { THORChain } from '@xchainjs/xchain-thorchain'
+import { assetUSDC } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
   Asset,
@@ -8,6 +10,7 @@ import {
   assetToString,
   baseAmount,
   baseToAsset,
+  CryptoAmount,
   formatAssetAmountCurrency,
   isSynthAsset
 } from '@xchainjs/xchain-util'
@@ -25,7 +28,7 @@ import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
-import { disableRuneUpgrade, isNonNativeRuneAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
+import { isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
 import { hiddenString, noDataString } from '../../../helpers/stringHelper'
@@ -33,6 +36,7 @@ import * as poolsRoutes from '../../../routes/pools'
 import { WalletBalancesRD } from '../../../services/clients'
 import { PoolDetails, PoolsDataMap } from '../../../services/midgard/types'
 import { MimirHaltRD } from '../../../services/thorchain/types'
+import { reloadBalancesByChain } from '../../../services/wallet'
 import {
   ApiError,
   ChainBalance,
@@ -51,9 +55,10 @@ import * as Styled from './AssetsTableCollapsable.styles'
 
 const { Panel } = Collapse
 
-export type AssetAction = 'send' | 'upgrade' | 'deposit'
+export type AssetAction = 'send' | 'deposit'
 
 type Props = {
+  disableRefresh: boolean
   chainBalances: ChainBalances
   pricePool: PricePool
   poolDetails: PoolDetails
@@ -67,13 +72,13 @@ type Props = {
 
 export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
   const {
+    disableRefresh,
     chainBalances = [],
     pricePool,
     poolDetails,
     poolsData,
     selectAssetHandler,
     assetHandler,
-    mimirHalt: mimirHaltRD,
     network,
     hidePrivateData
   } = props
@@ -84,6 +89,15 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
   const [showQRModal, setShowQRModal] = useState<O.Option<{ asset: Asset; address: Address }>>(O.none)
 
+  const [filterByValue, setFilterByValue] = useState(() => {
+    const cachedValue = localStorage.getItem('filterByValue')
+    return cachedValue ? JSON.parse(cachedValue) : false
+  })
+
+  useEffect(() => {
+    localStorage.setItem('filterByValue', JSON.stringify(filterByValue))
+  }, [filterByValue])
+
   // State to store open panel keys
   const [openPanelKeys, setOpenPanelKeys] = useState<string[]>()
   // State track that user has changed collpase state
@@ -92,15 +106,15 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
   // store previous data of asset data to render these while reloading
   const previousAssetsTableData = useRef<WalletBalances[]>([])
 
-  // get halt status from Mimir
-  const { haltThorChain, haltEthChain, haltBnbChain } = useMemo(
-    () =>
-      FP.pipe(
-        mimirHaltRD,
-        RD.getOrElse(() => ({ haltThorChain: true, haltEthChain: true, haltBnbChain: true }))
-      ),
-    [mimirHaltRD]
-  )
+  // // get halt status from Mimir
+  // const { haltTHORChain, haltETHChain, haltBNGChain } = useMemo(
+  //   () =>
+  //     FP.pipe(
+  //       mimirHaltRD,
+  //       RD.getOrElse(() => ({ haltTHORChain: true, haltETHChain: true, haltBNBChain: true }))
+  //     ),
+  //   [mimirHaltRD]
+  // )
 
   const onRowHandler = useCallback(
     ({ asset, walletAddress, walletType, walletIndex, hdMode }: WalletBalance) => ({
@@ -145,19 +159,25 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
     () => ({
       render: ({ asset, amount }: WalletBalance) => {
         const balance = formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, decimal: 3 })
-        const price = FP.pipe(
-          getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool, network }),
-          O.map((price) => {
-            const priceAmount = baseAmount(price.amount(), amount.decimal)
-            return formatAssetAmountCurrency({
-              amount: baseToAsset(priceAmount),
-              asset: pricePool.asset,
-              decimal: isUSDAsset(pricePool.asset) ? 2 : 4
-            })
-          }),
-          // "empty" label if we don't get a price value
-          O.getOrElse(() => noDataString)
-        )
+        let price: string
+        if (isUSDAsset(asset)) {
+          price = balance.toString()
+        } else {
+          price = FP.pipe(
+            getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool, network }),
+            O.map((price) => {
+              const priceAmount = baseAmount(price.amount(), amount.decimal)
+
+              return formatAssetAmountCurrency({
+                amount: baseToAsset(priceAmount),
+                asset: pricePool.asset,
+                decimal: isUSDAsset(pricePool.asset) ? 2 : 4
+              })
+            }),
+            // "empty" label if we don't get a price value
+            O.getOrElse(() => noDataString)
+          )
+        }
         return (
           <div className="flex flex-col items-end justify-center font-main">
             <div className="text-16 text-text0 dark:text-text0d">{hidePrivateData ? hiddenString : balance}</div>
@@ -170,57 +190,34 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
   )
 
   const renderActionColumn = useCallback(
-    ({ asset, walletAddress, walletIndex, walletType, hdMode }: WalletBalance) => {
-      const { chain } = asset
+    ({ asset, amount, walletAddress, walletIndex, walletType, hdMode }: WalletBalance) => {
+      const chain = asset.synth ? THORChain : asset.chain
       const walletAsset: SelectedWalletAsset = { asset, walletAddress, walletIndex, walletType, hdMode }
-      const hasActivePool: boolean = FP.pipe(O.fromNullable(poolsData[assetToString(asset)]), O.isSome)
+      const normalizedAssetString = assetToString(asset).toUpperCase()
+      const hasActivePool: boolean = FP.pipe(O.fromNullable(poolsData[normalizedAssetString]), O.isSome)
+
       const deepestPoolAsset = FP.pipe(
         getDeepestPool(poolDetails),
         O.chain(({ asset }) => O.fromNullable(assetFromString(asset))),
         O.toNullable
       )
+      const isZeroBalance = amount.amount().isZero()
+      let actions: ActionButtonAction[] = []
 
-      const actions: ActionButtonAction[] = FP.pipe(
-        // 'swap' for RUNE
-        isRuneNativeAsset(asset) && deepestPoolAsset !== null
-          ? [
-              {
-                label: intl.formatMessage({ id: 'common.swap' }),
-                callback: () => {
-                  navigate(
-                    poolsRoutes.swap.path({
-                      source: assetToString(asset),
-                      target: assetToString(deepestPoolAsset),
-                      sourceWalletType: walletType,
-                      targetWalletType: DEFAULT_WALLET_TYPE
-                    })
-                  )
-                }
-              }
-            ]
-          : [],
-        // 'add' LP RUNE
-        A.concatW<ActionButtonAction>(
+      if (isZeroBalance) {
+        actions = [
+          {
+            label: intl.formatMessage({ id: 'common.refresh' }),
+            callback: () => {
+              const lazyReload = reloadBalancesByChain(chain)
+              lazyReload() // Invoke the lazy function
+            }
+          }
+        ]
+      } else {
+        actions = FP.pipe(
+          // 'swap' for RUNE
           isRuneNativeAsset(asset) && deepestPoolAsset !== null
-            ? [
-                {
-                  label: intl.formatMessage({ id: 'common.add' }),
-                  callback: () => {
-                    navigate(
-                      poolsRoutes.deposit.path({
-                        asset: assetToString(deepestPoolAsset),
-                        assetWalletType: DEFAULT_WALLET_TYPE,
-                        runeWalletType: walletType
-                      })
-                    )
-                  }
-                }
-              ]
-            : []
-        ),
-        // 'swap' for assets of active pools only
-        A.concatW<ActionButtonAction>(
-          hasActivePool
             ? [
                 {
                   label: intl.formatMessage({ id: 'common.swap' }),
@@ -228,7 +225,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
                     navigate(
                       poolsRoutes.swap.path({
                         source: assetToString(asset),
-                        target: assetToString(AssetRuneNative),
+                        target: assetToString(deepestPoolAsset),
                         sourceWalletType: walletType,
                         targetWalletType: DEFAULT_WALLET_TYPE
                       })
@@ -236,70 +233,146 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
                   }
                 }
               ]
-            : []
-        ),
-        // 'add' LP for assets of active pools only
-        A.concatW<ActionButtonAction>(
-          hasActivePool
-            ? [
-                {
-                  label: intl.formatMessage({ id: 'common.add' }),
-                  callback: () => {
-                    navigate(
-                      poolsRoutes.deposit.path({
-                        asset: assetToString(asset),
-                        assetWalletType: walletType,
-                        runeWalletType: DEFAULT_WALLET_TYPE
-                      })
-                    )
+            : [],
+          // 'add' LP RUNE
+          A.concatW<ActionButtonAction>(
+            isRuneNativeAsset(asset) && deepestPoolAsset !== null
+              ? [
+                  {
+                    label: intl.formatMessage({ id: 'common.add' }),
+                    callback: () => {
+                      navigate(
+                        poolsRoutes.deposit.path({
+                          asset: assetToString(deepestPoolAsset),
+                          assetWalletType: DEFAULT_WALLET_TYPE,
+                          runeWalletType: walletType
+                        })
+                      )
+                    }
                   }
-                }
-              ]
-            : []
-        ),
-        A.concat([
-          {
-            label: intl.formatMessage({ id: 'wallet.action.send' }),
-            callback: () => {
-              assetHandler(walletAsset, 'send')
+                ]
+              : []
+          ),
+          // 'swap' for synths assets of active pools only
+          A.concatW<ActionButtonAction>(
+            isSynthAsset(asset)
+              ? [
+                  {
+                    label: intl.formatMessage({ id: 'common.swap' }),
+                    callback: () => {
+                      navigate(
+                        poolsRoutes.swap.path({
+                          source: `${asset.chain}/${asset.symbol}`,
+                          target: assetToString(AssetRuneNative),
+                          sourceWalletType: walletType,
+                          targetWalletType: DEFAULT_WALLET_TYPE
+                        })
+                      )
+                    }
+                  }
+                ]
+              : []
+          ),
+          // 'swap' for assets of active pools only
+          A.concatW<ActionButtonAction>(
+            hasActivePool
+              ? [
+                  {
+                    label: intl.formatMessage({ id: 'common.swap' }),
+                    callback: () => {
+                      navigate(
+                        poolsRoutes.swap.path({
+                          source: assetToString(asset),
+                          target: assetToString(AssetRuneNative),
+                          sourceWalletType: walletType,
+                          targetWalletType: DEFAULT_WALLET_TYPE
+                        })
+                      )
+                    }
+                  }
+                ]
+              : []
+          ),
+          // 'Earn' for assets of active pools only
+          A.concatW<ActionButtonAction>(
+            hasActivePool
+              ? [
+                  {
+                    label: intl.formatMessage({ id: 'common.earn' }),
+                    callback: () => {
+                      navigate(
+                        poolsRoutes.earn.path({
+                          asset: assetToString(asset),
+                          walletType: walletType
+                        })
+                      )
+                    }
+                  }
+                ]
+              : []
+          ),
+          // 'add' LP for assets of active pools only
+          A.concatW<ActionButtonAction>(
+            hasActivePool
+              ? [
+                  {
+                    label: intl.formatMessage({ id: 'common.add' }),
+                    callback: () => {
+                      navigate(
+                        poolsRoutes.deposit.path({
+                          asset: assetToString(asset),
+                          assetWalletType: walletType,
+                          runeWalletType: DEFAULT_WALLET_TYPE
+                        })
+                      )
+                    }
+                  }
+                ]
+              : []
+          ),
+          A.concat([
+            {
+              label: intl.formatMessage({ id: 'wallet.action.send' }),
+              callback: () => {
+                assetHandler(walletAsset, 'send')
+              }
+            },
+            {
+              label: intl.formatMessage({ id: 'wallet.action.receive' }),
+              callback: () => {
+                setShowQRModal(O.some({ asset: getChainAsset(chain), address: walletAddress }))
+              }
             }
-          },
-          {
-            label: intl.formatMessage({ id: 'wallet.action.receive' }),
-            callback: () => {
-              setShowQRModal(O.some({ asset: getChainAsset(chain), address: walletAddress }))
-            }
-          }
-        ]),
-        // 'deposit'  for RuneNativeAsset only
-        A.concatW<ActionButtonAction>(
-          isRuneNativeAsset(asset)
-            ? [
-                {
-                  label: intl.formatMessage({ id: 'wallet.action.deposit' }),
-                  callback: () => {
-                    assetHandler(walletAsset, 'deposit')
+          ]),
+          // 'deposit'  for RuneNativeAsset only
+          A.concatW<ActionButtonAction>(
+            isRuneNativeAsset(asset)
+              ? [
+                  {
+                    label: intl.formatMessage({ id: 'wallet.action.deposit' }),
+                    callback: () => {
+                      assetHandler(walletAsset, 'deposit')
+                    }
                   }
-                }
-              ]
-            : []
-        ),
-        // 'upgrade' for non-RuneNativeAsset only
-        A.concatW<ActionButtonAction>(
-          isNonNativeRuneAsset(asset, network)
-            ? [
-                {
-                  label: intl.formatMessage({ id: 'wallet.action.upgrade' }),
-                  // Disable UPGRADE button if needed
-                  disabled: disableRuneUpgrade({ asset, haltThorChain, haltEthChain, haltBnbChain, network }),
-                  callback: () => {
-                    assetHandler(walletAsset, 'upgrade')
+                ]
+              : []
+          ),
+          // Reload Balance
+          A.concatW<ActionButtonAction>(
+            !disableRefresh
+              ? [
+                  {
+                    label: intl.formatMessage({ id: 'common.refresh' }),
+                    callback: () => {
+                      const lazyReload = reloadBalancesByChain(chain)
+                      lazyReload() // Invoke the lazy function
+                    }
                   }
-                }
-              ]
-            : []
+                ]
+              : []
+          )
         )
-      )
+      }
 
       return (
         <div className="flex justify-center">
@@ -307,7 +380,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         </div>
       )
     },
-    [assetHandler, haltBnbChain, haltEthChain, haltThorChain, intl, navigate, network, poolDetails, poolsData]
+    [assetHandler, intl, navigate, poolDetails, poolsData, disableRefresh]
   )
 
   const actionColumn: ColumnType<WalletBalance> = useMemo(
@@ -372,17 +445,33 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           },
           // success state
           (balances) => {
-            const prev = previousAssetsTableData.current
-            prev[index] = balances
+            let sortedBalances = balances.sort((a, b) => {
+              return b.amount.amount().minus(a.amount.amount()).toNumber()
+            })
+
+            if (filterByValue) {
+              sortedBalances = sortedBalances.filter(({ amount, asset }) => {
+                if (isUSDAsset(asset) && !asset.synth && amount.amount().gt(1)) {
+                  return true
+                }
+                const usdValue = getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool, network })
+                return (
+                  O.isSome(usdValue) &&
+                  new CryptoAmount(baseAmount(usdValue.value.amount()), assetUSDC).assetAmount.gt(1)
+                )
+              })
+            }
+
+            previousAssetsTableData.current[index] = sortedBalances
             return renderAssetsTable({
-              tableData: balances,
+              tableData: sortedBalances,
               loading: false
             })
           }
         )
       )
     },
-    [renderAssetsTable]
+    [filterByValue, network, poolDetails, pricePool, renderAssetsTable]
   )
 
   // Panel
@@ -511,15 +600,20 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
   }, [showQRModal, network, closeQrModal])
 
   return (
-    <Styled.Collapse
-      expandIcon={({ isActive }) => <Styled.ExpandIcon rotate={isActive ? 90 : 0} />}
-      defaultActiveKey={openPanelKeys}
-      activeKey={openPanelKeys}
-      expandIconPosition="end"
-      onChange={onChangeCollapseHandler}
-      ghost>
-      {chainBalances.map(renderPanel)}
-      {renderQRCodeModal}
-    </Styled.Collapse>
+    <>
+      <Styled.FilterCheckbox checked={filterByValue} onChange={(e) => setFilterByValue(e.target.checked)}>
+        Filter out assets below $1
+      </Styled.FilterCheckbox>
+      <Styled.Collapse
+        expandIcon={({ isActive }) => <Styled.ExpandIcon rotate={isActive ? 90 : 0} />}
+        defaultActiveKey={openPanelKeys}
+        activeKey={openPanelKeys}
+        expandIconPosition="end"
+        onChange={onChangeCollapseHandler}
+        ghost>
+        {chainBalances.map(renderPanel)}
+        {renderQRCodeModal}
+      </Styled.Collapse>
+    </>
   )
 }

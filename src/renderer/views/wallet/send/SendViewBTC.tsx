@@ -10,6 +10,7 @@ import { LoadingView } from '../../../components/shared/loading'
 import { SendFormBTC } from '../../../components/wallet/txs/send/'
 import { useBitcoinContext } from '../../../contexts/BitcoinContext'
 import { useChainContext } from '../../../contexts/ChainContext'
+import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { getWalletBalanceByAddress } from '../../../helpers/walletHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
@@ -19,6 +20,7 @@ import { FeesWithRatesLD } from '../../../services/bitcoin/types'
 import { WalletBalances } from '../../../services/clients'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAsset } from '../../../services/wallet/types'
+import * as Styled from '../Interact/InteractView.styles'
 
 type Props = {
   asset: SelectedWalletAsset
@@ -52,6 +54,8 @@ export const SendViewBTC: React.FC<Props> = (props): JSX.Element => {
 
   const { transfer$ } = useChainContext()
 
+  const { thorchainQuery } = useThorchainQueryContext()
+
   const { feesWithRates$, reloadFeesWithRates } = useBitcoinContext()
 
   const feesWithRatesLD: FeesWithRatesLD = useMemo(() => feesWithRates$(), [feesWithRates$])
@@ -64,22 +68,25 @@ export const SendViewBTC: React.FC<Props> = (props): JSX.Element => {
     O.fold(
       () => <LoadingView size="large" />,
       (walletBalance) => (
-        <SendFormBTC
-          asset={asset}
-          balances={FP.pipe(
-            oBalances,
-            O.getOrElse<WalletBalances>(() => [])
-          )}
-          balance={walletBalance}
-          transfer$={transfer$}
-          openExplorerTxUrl={openExplorerTxUrl}
-          getExplorerTxUrl={getExplorerTxUrl}
-          addressValidation={validateAddress}
-          feesWithRates={feesWithRatesRD}
-          reloadFeesHandler={reloadFeesWithRates}
-          validatePassword$={validatePassword$}
-          network={network}
-        />
+        <Styled.Container>
+          <SendFormBTC
+            asset={asset}
+            balances={FP.pipe(
+              oBalances,
+              O.getOrElse<WalletBalances>(() => [])
+            )}
+            balance={walletBalance}
+            transfer$={transfer$}
+            openExplorerTxUrl={openExplorerTxUrl}
+            getExplorerTxUrl={getExplorerTxUrl}
+            addressValidation={validateAddress}
+            feesWithRates={feesWithRatesRD}
+            reloadFeesHandler={reloadFeesWithRates}
+            validatePassword$={validatePassword$}
+            thorchainQuery={thorchainQuery}
+            network={network}
+          />
+        </Styled.Container>
       )
     )
   )

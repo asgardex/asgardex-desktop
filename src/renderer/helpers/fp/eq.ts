@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { PoolData } from '@thorchain/asgardex-util'
 import { Balance } from '@xchainjs/xchain-client'
 import { Address, Asset, AssetAmount, assetToString, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -13,11 +12,11 @@ import * as S from 'fp-ts/lib/string'
 import { ApiUrls, KeystoreId, LedgerError, Network } from '../../../shared/api/types'
 import { HDMode, WalletAddress, WalletType } from '../../../shared/wallet/types'
 import { DepositAssetFees, DepositFees, SwapFeesParams, SymDepositAddresses } from '../../services/chain/types'
-import { ApproveParams } from '../../services/ethereum/types'
+import { ApproveParams } from '../../services/evm/types'
 import { PoolAddress, PoolShare } from '../../services/midgard/types'
 import { ApiError, LedgerAddress, SelectedWalletAsset, WalletBalance } from '../../services/wallet/types'
 import { AssetWithAmount } from '../../types/asgardex'
-import { PricePool } from '../../views/pools/Pools.types'
+import { PoolData, PricePool } from '../../views/pools/Pools.types'
 
 export const eqString = S.Eq
 
@@ -139,10 +138,16 @@ export const eqPoolShare = Eq.struct<PoolShare>({
 
 export const eqPoolShares = A.getEq(eqPoolShare)
 
+export const eqStringCaseInsensitive: Eq.Eq<string> = {
+  equals: (x: string, y: string) => x.toLowerCase() === y.toLowerCase()
+}
+
+const eqOptionStringCaseInsensitive = O.getEq(eqStringCaseInsensitive)
+
 export const eqPoolAddresses = Eq.struct<PoolAddress>({
-  chain: eqChain,
-  address: eqAddress,
-  router: eqOAddress,
+  chain: eqStringCaseInsensitive,
+  address: eqStringCaseInsensitive,
+  router: eqOptionStringCaseInsensitive,
   halted: eqBoolean
 })
 

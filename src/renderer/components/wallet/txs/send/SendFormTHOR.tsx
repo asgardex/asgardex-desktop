@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { CryptoAmount, ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
 import { Address, baseAmount } from '@xchainjs/xchain-util'
 import { formatAssetAmountCurrency, assetAmount, bn, assetToBase, BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
-import { Row, Form } from 'antd'
+import { Form } from 'antd'
 import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -14,9 +16,10 @@ import { Network } from '../../../../../shared/api/types'
 import { AssetRuneNative } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
-import { ZERO_BASE_AMOUNT } from '../../../../const'
+import { AssetUSDC, ZERO_BASE_AMOUNT } from '../../../../const'
 import { isRuneNativeAsset, THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
+import { noDataString } from '../../../../helpers/stringHelper'
 import { getRuneNativeAmountFromBalances } from '../../../../helpers/walletHelper'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
@@ -25,10 +28,12 @@ import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances 
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
-import { FlatButton } from '../../../uielements/button'
+import { BaseButton, FlatButton } from '../../../uielements/button'
+import { CheckButton } from '../../../uielements/button/CheckButton'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
+import { TooltipAddress } from '../../../uielements/common/Common.styles'
 import { UIFeesRD } from '../../../uielements/fees'
-import { Input, InputBigNumber } from '../../../uielements/input'
+import { InputBigNumber } from '../../../uielements/input'
 import { AccountSelector } from '../../account'
 import * as H from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
@@ -52,6 +57,7 @@ export type Props = {
   fee: FeeRD
   reloadFeesHandler: FP.Lazy<void>
   validatePassword$: ValidatePasswordHandler
+  thorchainQuery: ThorchainQuery
   network: Network
 }
 
@@ -68,15 +74,14 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
     fee: feeRD,
     reloadFeesHandler,
     validatePassword$,
+    thorchainQuery,
     network
   } = props
 
   const intl = useIntl()
 
   const { asset } = balance
-
   const [amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
-
   const {
     state: sendTxState,
     reset: resetSendTxState,
@@ -132,17 +137,46 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
     )
   }, [oRuneNativeAmount, intl, isFeeError])
 
+  // state variable for thornames
+  const [oThorname, setThorname] = useState<O.Option<ThornameDetails>>(O.none)
+  const [recipientAddress, setRecipientAddress] = useState<Address>('')
+  const [thornameSend, setThornameSend] = useState<boolean>(false)
+  const [showDetails, setShowDetails] = useState<boolean>(false)
+
   const addressValidator = useCallback(
     async (_: unknown, value: string) => {
       if (!value) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.empty' }))
       }
-      if (!addressValidation(value.toLowerCase())) {
+
+      if (!addressValidation(value) && !thornameSend) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
     },
-    [addressValidation, intl]
+    [addressValidation, intl, thornameSend]
   )
+  const handleAddressInput = useCallback(async () => {
+    const recipient = form.getFieldValue('recipient')
+
+    if (!recipient || !thornameSend) {
+      setRecipientAddress(recipient)
+    }
+
+    try {
+      if (thornameSend) {
+        const thornameDetails = await thorchainQuery.getThornameDetails(recipient)
+        if (thornameDetails) {
+          setThorname(O.some(thornameDetails))
+          setRecipientAddress(thornameDetails.owner)
+          setShowDetails(true)
+        }
+      }
+    } catch (error) {
+      setThorname(O.none)
+
+      return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
+    }
+  }, [form, thornameSend, thorchainQuery, intl])
 
   // max amount for RuneNative
   const maxAmount: BaseAmount = useMemo(() => {
@@ -160,6 +194,19 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
     )
     return isRuneNativeAsset(asset) ? maxRuneAmount : balance.amount
   }, [oFee, oRuneNativeAmount, asset, balance.amount])
+
+  // store maxAmountValue
+  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
+    const fetchData = async () => {
+      setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, AssetUSDC))
+    }
+
+    fetchData()
+  }, [asset, maxAmount, thorchainQuery])
 
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field
@@ -188,19 +235,31 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
 
   const submitTx = useCallback(() => {
     setSendTxStartTime(Date.now())
+    const recipient = O.isSome(oThorname) ? oThorname.value.owner : recipientAddress
 
     subscribeSendTxState(
       transfer$({
         walletType,
         walletIndex,
-        recipient: form.getFieldValue('recipient'),
+        recipient,
         asset,
         amount: amountToSend,
         memo: form.getFieldValue('memo'),
         hdMode
       })
     )
-  }, [subscribeSendTxState, transfer$, walletType, walletIndex, hdMode, form, asset, amountToSend])
+  }, [
+    subscribeSendTxState,
+    transfer$,
+    walletType,
+    walletIndex,
+    oThorname,
+    recipientAddress,
+    asset,
+    amountToSend,
+    form,
+    hdMode
+  ])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
 
@@ -288,11 +347,6 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
 
   const addMaxAmountHandler = useCallback(() => setAmountToSend(maxAmount), [maxAmount])
 
-  const [recipientAddress, setRecipientAddress] = useState<Address>('')
-  const handleOnKeyUp = useCallback(() => {
-    setRecipientAddress(form.getFieldValue('recipient'))
-  }, [form])
-
   const oMatchedWalletType: O.Option<WalletType> = useMemo(
     () => H.matchedWalletType(balances, recipientAddress),
     [balances, recipientAddress]
@@ -300,59 +354,101 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
 
   const renderWalletType = useMemo(() => H.renderedWalletType(oMatchedWalletType), [oMatchedWalletType])
 
+  const useThornameAddress = useCallback(() => {
+    setThornameSend((prevThornameSend) => !prevThornameSend)
+    setThorname(O.none)
+    form.setFieldsValue({ recipient: undefined })
+  }, [form])
+
   return (
     <>
-      <Row>
-        <Styled.Col span={24}>
-          <AccountSelector selectedWallet={balance} network={network} />
-          <Styled.Form
-            form={form}
-            initialValues={{ amount: bn(0) }}
-            onFinish={() => setShowConfirmationModal(true)}
-            labelCol={{ span: 24 }}>
-            <Styled.SubForm>
+      <Styled.Container>
+        <AccountSelector selectedWallet={balance} network={network} />
+        <Styled.Form
+          form={form}
+          initialValues={{ amount: bn(0) }}
+          onFinish={() => setShowConfirmationModal(true)}
+          labelCol={{ span: 24 }}>
+          <Styled.SubForm>
+            <div className="flex">
               <Styled.CustomLabel size="big">
                 {intl.formatMessage({ id: 'common.address' })}
                 {renderWalletType}
               </Styled.CustomLabel>
-              <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
-                <Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
-              </Form.Item>
-              <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
-              <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">
-                <InputBigNumber
-                  min={0}
-                  size="large"
-                  disabled={isLoading}
-                  decimal={THORCHAIN_DECIMAL}
-                  onChange={onChangeInput}
-                />
-              </Styled.FormItem>
-              <MaxBalanceButton
-                className="mb-10px "
-                color="neutral"
-                balance={{ amount: maxAmount, asset: asset }}
-                onClick={addMaxAmountHandler}
+              <CheckButton checked={thornameSend} clickHandler={useThornameAddress} disabled={isLoading}>
+                {intl.formatMessage({ id: 'common.thorname' })}
+              </CheckButton>
+            </div>
+
+            <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
+              <Styled.Input color="primary" size="large" disabled={isLoading} onChange={handleAddressInput} />
+            </Form.Item>
+            <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
+            <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">
+              <InputBigNumber
+                min={0}
+                size="large"
                 disabled={isLoading}
+                decimal={THORCHAIN_DECIMAL}
+                onChange={onChangeInput}
               />
-              <Styled.Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} disabled={isLoading} />
-              {renderFeeError}
-              <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
-              <Form.Item name="memo">
-                <Input size="large" disabled={isLoading} />
-              </Form.Item>
-            </Styled.SubForm>
-            <FlatButton
-              className="mt-40px min-w-[200px]"
-              loading={isLoading}
-              disabled={isFeeError}
-              type="submit"
-              size="large">
-              {intl.formatMessage({ id: 'wallet.action.send' })}
-            </FlatButton>
-          </Styled.Form>
-        </Styled.Col>
-      </Row>
+            </Styled.FormItem>
+            <MaxBalanceButton
+              className="mb-10px "
+              color="neutral"
+              balance={{ amount: maxAmount, asset: asset }}
+              maxDollarValue={maxAmmountPriceValue}
+              onClick={addMaxAmountHandler}
+              disabled={isLoading}
+            />
+            <Styled.Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} disabled={isLoading} />
+            {renderFeeError}
+            <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
+            <Form.Item name="memo">
+              <Styled.Input size="large" disabled={isLoading} />
+            </Form.Item>
+          </Styled.SubForm>
+          <FlatButton
+            className="mt-40px min-w-[200px]"
+            loading={isLoading}
+            disabled={isFeeError}
+            type="submit"
+            size="large">
+            {intl.formatMessage({ id: 'wallet.action.send' })}
+          </FlatButton>
+          <div className={`w-full pt-10 font-main text-[12px] uppercase dark:border-gray1d`}>
+            <BaseButton
+              className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+              onClick={() => setShowDetails((current) => !current)}>
+              {intl.formatMessage({ id: 'common.details' })}
+              {showDetails ? (
+                <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+              ) : (
+                <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
+              )}
+            </BaseButton>
+          </div>
+          {showDetails && (
+            <>
+              {/* recipient address */}
+              <div className="flex w-full items-center justify-between pl-10px text-[12px] dark:text-text2d">
+                <div>{intl.formatMessage({ id: 'common.recipient' })}</div>
+                <div className="truncate pl-20px text-[13px] normal-case leading-normal">
+                  {FP.pipe(
+                    oThorname,
+                    O.map((thorname) => (
+                      <TooltipAddress title={thorname.owner} key="tooltip-target-addr">
+                        {recipientAddress}
+                      </TooltipAddress>
+                    )),
+                    O.getOrElse(() => <>{noDataString}</>)
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </Styled.Form>
+      </Styled.Container>
       {showConfirmationModal && renderConfirmationModal}
       {renderTxModal}
     </>

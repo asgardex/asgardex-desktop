@@ -1,25 +1,64 @@
 import AppBTC from '@ledgerhq/hw-app-btc'
 import { Transaction } from '@ledgerhq/hw-app-btc/lib/types'
 import Transport from '@ledgerhq/hw-transport'
-import {
-  AssetBTC,
-  BTCChain,
-  Client,
-  defaultBTCParams,
-  LOWER_FEE_BOUND,
-  UPPER_FEE_BOUND
-} from '@xchainjs/xchain-bitcoin'
-import { checkFeeBounds, FeeRate, TxHash } from '@xchainjs/xchain-client'
+import { AssetBTC, BTCChain, Client as BitcoinClient, defaultBTCParams } from '@xchainjs/xchain-bitcoin'
+import { checkFeeBounds, FeeRate, Network, TxHash, UtxoOnlineDataProviders } from '@xchainjs/xchain-client'
 import { Address, BaseAmount } from '@xchainjs/xchain-util'
-import { HaskoinProvider, HaskoinNetwork } from '@xchainjs/xchain-utxo-providers'
+import {
+  HaskoinProvider,
+  HaskoinNetwork,
+  BlockcypherProvider,
+  BlockcypherNetwork
+} from '@xchainjs/xchain-utxo-providers'
 import * as Bitcoin from 'bitcoinjs-lib'
 import * as E from 'fp-ts/lib/Either'
 
-import { getHaskoinBTCApiUrl } from '../../../../shared/api/haskoin'
-import { LedgerError, LedgerErrorId, Network } from '../../../../shared/api/types'
+import { blockcypherApiKey } from '../../../../shared/api/blockcypher'
+import { LedgerError, LedgerErrorId, Network as LedgerNetwork } from '../../../../shared/api/types'
 import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
 import { getDerivationPath } from './common'
+
+const testnetHaskoinProvider = new HaskoinProvider(
+  'https://api.haskoin.com',
+  BTCChain,
+  AssetBTC,
+  8,
+  HaskoinNetwork.BTCTEST
+)
+
+const mainnetHaskoinProvider = new HaskoinProvider('https://api.haskoin.com', BTCChain, AssetBTC, 8, HaskoinNetwork.BTC)
+const HaskoinDataProviders: UtxoOnlineDataProviders = {
+  [Network.Testnet]: testnetHaskoinProvider,
+  [Network.Stagenet]: mainnetHaskoinProvider,
+  [Network.Mainnet]: mainnetHaskoinProvider
+}
+
+//======================
+// Blockcypher
+//======================
+const testnetBlockcypherProvider = new BlockcypherProvider(
+  'https://api.blockcypher.com/v1',
+  BTCChain,
+  AssetBTC,
+  8,
+  BlockcypherNetwork.BTCTEST,
+  blockcypherApiKey || ''
+)
+
+const mainnetBlockcypherProvider = new BlockcypherProvider(
+  'https://api.blockcypher.com/v1',
+  BTCChain,
+  AssetBTC,
+  8,
+  BlockcypherNetwork.BTC,
+  blockcypherApiKey || ''
+)
+const BlockcypherDataProviders: UtxoOnlineDataProviders = {
+  [Network.Testnet]: testnetBlockcypherProvider,
+  [Network.Stagenet]: mainnetBlockcypherProvider,
+  [Network.Mainnet]: mainnetBlockcypherProvider
+}
 
 /**
  * Sends BTC tx using Ledger
@@ -35,7 +74,7 @@ export const send = async ({
   walletIndex
 }: {
   transport: Transport
-  network: Network
+  network: LedgerNetwork
   sender?: Address
   recipient: Address
   amount: BaseAmount
@@ -51,6 +90,8 @@ export const send = async ({
   }
 
   try {
+    const LOWER_FEE_BOUND = 1
+    const UPPER_FEE_BOUND = 900
     // safety check for fees, similar to handling in `Client.transfer`
     // @see https://github.com/xchainjs/xchainjs-lib/blob/21e1f65288b994de8b98cb779550e08c15f96314/packages/xchain-bitcoin/src/client.ts#L296
     checkFeeBounds({ lower: LOWER_FEE_BOUND, upper: UPPER_FEE_BOUND }, feeRate)
@@ -72,11 +113,12 @@ export const send = async ({
 
     const btcInitParams = {
       ...defaultBTCParams,
-      network: clientNetwork
+      network: clientNetwork,
+      dataProviders: [BlockcypherDataProviders, HaskoinDataProviders]
     }
-    const btcClient = new Client(btcInitParams)
+    const client = new BitcoinClient(btcInitParams)
 
-    const { psbt, utxos } = await btcClient.buildTx({
+    const { psbt, inputs: filteredUtxos } = await client.buildTx({
       amount,
       recipient,
       memo,
@@ -84,25 +126,26 @@ export const send = async ({
       sender,
       spendPendingUTXO
     })
-
-    const inputs: Array<[Transaction, number, string | null, number | null]> = utxos.map(({ txHex, hash, index }) => {
-      if (!txHex) {
-        throw Error(`Missing 'txHex' for UTXO (txHash ${hash})`)
+    // Uses inputs: filteredUtxos, which are the UTXOs actually used in the generated PSBT.
+    const ledgerInputs: [Transaction, number, string | null, number | null][] = filteredUtxos.map(
+      ({ txHex, hash, index }) => {
+        if (!txHex) {
+          throw Error(`Missing 'txHex' for UTXO (txHash ${hash})`)
+        }
+        const utxoTx = Bitcoin.Transaction.fromHex(txHex)
+        const splittedTx = app.splitTransaction(txHex, utxoTx.hasWitnesses())
+        return [splittedTx, index, null, null]
       }
-      const utxoTx = Bitcoin.Transaction.fromHex(txHex)
-      const splittedTx = app.splitTransaction(txHex, utxoTx.hasWitnesses())
-      return [splittedTx, index, null, null]
-    })
+    )
 
-    const associatedKeysets: string[] = inputs.map((_) => derivePath)
+    const associatedKeysets = ledgerInputs.map(() => derivePath)
 
-    const newTxHex = psbt.data.globalMap.unsignedTx.toBuffer().toString('hex')
-    const newTx: Transaction = app.splitTransaction(newTxHex, true)
-
+    const unsignedHex = psbt.data.globalMap.unsignedTx.toBuffer().toString('hex')
+    const newTx = app.splitTransaction(unsignedHex, true)
     const outputScriptHex = app.serializeTransactionOutputs(newTx).toString('hex')
 
     const txHex = await app.createPaymentTransaction({
-      inputs,
+      inputs: ledgerInputs,
       associatedKeysets,
       outputScriptHex,
       segwit: true,
@@ -110,10 +153,7 @@ export const send = async ({
       additionals: ['bech32']
     })
 
-    const haskoinUrl = getHaskoinBTCApiUrl()[network] //https://haskoin.ninerealms.com
-    const haskoinProvider = new HaskoinProvider(haskoinUrl, BTCChain, AssetBTC, 8, HaskoinNetwork.BTC)
-
-    const txHash = await haskoinProvider.broadcastTx(txHex)
+    const txHash = await client.broadcastTx(txHex)
 
     if (!txHash) {
       return E.left({

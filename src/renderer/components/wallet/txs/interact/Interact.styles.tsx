@@ -14,6 +14,7 @@ import { Label as UILabel } from '../../../uielements/label'
 export const Container = styled('div')`
   min-height: 100%;
   width: 100%;
+  max-width: 630px;
   display: flex;
   flex-direction: column;
   padding: 10px;
@@ -53,6 +54,11 @@ export const HeaderTitleWrapper = styled.div`
   ${media.sm`
     justify-content: start;
   `}
+`
+
+export const Input = styled(A.Input)`
+  background: inherit !important;
+  color: ${palette('text', 0)};
 `
 
 export const HeaderTitle = styled(UILabel)`
@@ -188,6 +194,7 @@ export const SubmitButton = styled(UIButton).attrs({
 `
 
 export const InputContainer = styled('div')`
+  width: 100%;
   ${media.sm`
     max-width: 630px;
   `}

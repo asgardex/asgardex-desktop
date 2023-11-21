@@ -38,7 +38,6 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       hdMode: 'default'
     }
     const encoded = ipcLedgerSendTxParamsIO.encode(sendLedgerTxParams)
-
     return FP.pipe(
       Rx.from(window.apiHDWallet.sendLedgerTx(encoded)),
       RxOp.switchMap(

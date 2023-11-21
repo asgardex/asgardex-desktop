@@ -1,4 +1,4 @@
-import { ETH_DECIMAL } from '@xchainjs/xchain-ethereum'
+import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
 
 import { AssetBNB, AssetETH } from '../../../../shared/utils/asset'
@@ -114,7 +114,7 @@ describe('stake/Withdraw.helper', () => {
       const params = {
         fees: {
           asset: AssetETH,
-          amount: assetToBase(assetAmount(0.03, ETH_DECIMAL))
+          amount: assetToBase(assetAmount(0.03, ETH_GAS_ASSET_DECIMAL))
         },
         asset: AssetUSDTERC20Testnet,
         assetDecimal: withdrawAssetDecimal,

@@ -1,24 +1,21 @@
 import EthApp from '@ledgerhq/hw-app-eth'
 import type Transport from '@ledgerhq/hw-transport'
 import { FeeOption, TxHash } from '@xchainjs/xchain-client'
-import * as ETH from '@xchainjs/xchain-ethereum'
+import * as ETH from '@xchainjs/xchain-evm'
 import { Address, Asset, assetToString, BaseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
 
-import { getEtherscanApiKey } from '../../../../shared/api/etherscan'
-import { getEthplorerCreds } from '../../../../shared/api/ethplorer'
-import { getInfuraCreds } from '../../../../shared/api/infura'
+import { isEthAsset } from '../../../../renderer/helpers/assetHelper'
 import { LedgerError, LedgerErrorId, Network } from '../../../../shared/api/types'
-import { ROUTER_ABI } from '../../../../shared/ethereum/abi'
-import { DEPOSIT_EXPIRATION_OFFSET, FEE_BOUNDS } from '../../../../shared/ethereum/const'
-import { getDerivationPath } from '../../../../shared/ethereum/ledger'
-import { getBlocktime } from '../../../../shared/ethereum/provider'
-import { EthHDMode } from '../../../../shared/ethereum/types'
+import { DEPOSIT_EXPIRATION_OFFSET, ETHAddress, FEE_BOUNDS, defaultEthParams } from '../../../../shared/ethereum/const'
+import { ROUTER_ABI } from '../../../../shared/evm/abi'
+import { getDerivationPath } from '../../../../shared/evm/ledger'
+import { getBlocktime } from '../../../../shared/evm/provider'
+import { EvmHDMode } from '../../../../shared/evm/types'
 import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
 import { LedgerSigner } from './LedgerSigner'
-
 /**
  * Sends ETH tx using Ledger
  */
@@ -31,7 +28,7 @@ export const send = async ({
   recipient,
   feeOption,
   walletIndex,
-  ethHDMode
+  evmHDMode
 }: {
   asset: Asset
   transport: Transport
@@ -41,26 +38,15 @@ export const send = async ({
   memo?: string
   feeOption: FeeOption
   walletIndex: number
-  ethHDMode: EthHDMode
+  evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const { ethplorerApiKey, ethplorerUrl } = getEthplorerCreds()
-
-    const infuraCreds = getInfuraCreds()
     const clientNetwork = toClientNetwork(network)
-    const etherscanApiKey = getEtherscanApiKey()
 
-    const client = new ETH.Client({
-      network: clientNetwork,
-      etherscanApiKey,
-      ethplorerApiKey,
-      ethplorerUrl,
-      infuraCreds,
-      feeBounds: FEE_BOUNDS[clientNetwork]
-    })
+    const client = new ETH.Client({ ...defaultEthParams, network: clientNetwork, feeBounds: FEE_BOUNDS[clientNetwork] })
 
     const app = new EthApp(transport)
-    const path = getDerivationPath(walletIndex, ethHDMode)
+    const path = getDerivationPath(walletIndex, evmHDMode)
     const provider = client.getProvider()
     const signer = new LedgerSigner({ provider, path, app })
 
@@ -102,7 +88,7 @@ export const deposit = async ({
   recipient,
   walletIndex,
   feeOption,
-  ethHDMode
+  evmHDMode
 }: {
   asset: Asset
   router: Address
@@ -113,10 +99,10 @@ export const deposit = async ({
   memo?: string
   walletIndex: number
   feeOption: FeeOption
-  ethHDMode: EthHDMode
+  evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const address = ETH.getAssetAddress(asset)
+    const address = !isEthAsset(asset) ? ETH.getTokenAddress(asset) : ETHAddress
 
     if (!address) {
       return E.left({
@@ -125,25 +111,14 @@ export const deposit = async ({
       })
     }
 
-    const isETHAddress = address === ETH.ETHAddress
+    const isETHAddress = address === ETHAddress
 
-    const { ethplorerApiKey, ethplorerUrl } = getEthplorerCreds()
-
-    const infuraCreds = getInfuraCreds()
     const clientNetwork = toClientNetwork(network)
-    const etherscanApiKey = getEtherscanApiKey()
 
-    const client = new ETH.Client({
-      network: clientNetwork,
-      etherscanApiKey,
-      ethplorerApiKey,
-      ethplorerUrl,
-      infuraCreds,
-      feeBounds: FEE_BOUNDS[clientNetwork]
-    })
+    const client = new ETH.Client({ ...defaultEthParams, network: clientNetwork, feeBounds: FEE_BOUNDS[clientNetwork] })
 
     const app = new EthApp(transport)
-    const path = getDerivationPath(walletIndex, ethHDMode)
+    const path = getDerivationPath(walletIndex, evmHDMode)
     const provider = client.getProvider()
     const signer = new LedgerSigner({ provider, path, app })
 

@@ -3,7 +3,6 @@ import { useCallback, useMemo, useRef } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import {
   Asset,
-  assetFromString,
   assetToString,
   BaseAmount,
   baseToAsset,
@@ -26,7 +25,6 @@ import { PoolsPeriodSelector } from '../../components/uielements/pools/PoolsPeri
 import { Table } from '../../components/uielements/table'
 import { DEFAULT_GET_POOLS_PERIOD, DEFAULT_WALLET_TYPE } from '../../const'
 import { useMidgardContext } from '../../contexts/MidgardContext'
-import { isChainAsset } from '../../helpers/assetHelper'
 import { ordBigNumber } from '../../helpers/fp/ord'
 import { sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
@@ -36,9 +34,8 @@ import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
 import { useSynthConstants } from '../../hooks/useSynthConstants'
 import * as poolsRoutes from '../../routes/pools'
 import * as saversRoutes from '../../routes/pools/savers'
-import { PoolDetails, PoolsState } from '../../services/midgard/types'
+import { GetPoolsPeriodEnum, PoolDetails, PoolsState } from '../../services/midgard/types'
 import type { MimirHalt } from '../../services/thorchain/types'
-import { GetPoolsPeriodEnum } from '../../types/generated/midgard'
 import * as Shared from '../pools/PoolsOverview.shared'
 import type { SaversTableRowData, SaversTableRowsData } from './Savers.types'
 
@@ -167,7 +164,6 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
         mimirHalt
       })
 
-      // TODO(@veado) Enable savers
       const _disabled = disableAllPoolActions || disableTradingActions || disablePoolActions || walletLocked
 
       const onClickHandler = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
@@ -178,12 +174,9 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
 
       return (
         <div className="relative flex flex-col items-center justify-center">
-          <FlatButton className="min-w-[120px]" disabled={true} size="normal" onClick={onClickHandler}>
-            {intl.formatMessage({ id: 'common.manage' })}
+          <FlatButton className="min-w-[120px]" disabled={false} size="normal" onClick={onClickHandler}>
+            {intl.formatMessage({ id: 'common.earn' })}
           </FlatButton>
-          <div className="absolute translate-y-[-50%] rotate-[-30deg] rounded-sm bg-bg0 px-10px font-mainSemiBold text-[10px] uppercase text-warning0 shadow-md dark:bg-bg0d dark:text-warning0d">
-            coming soon
-          </div>
         </div>
       )
     },
@@ -283,15 +276,7 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
             // filter chain assets
             const poolDetailsFiltered: PoolDetails = FP.pipe(
               poolDetails,
-              A.filter(({ asset: assetString }) =>
-                FP.pipe(
-                  assetString,
-                  assetFromString,
-                  O.fromNullable,
-                  O.map(isChainAsset),
-                  O.getOrElse(() => false)
-                )
-              )
+              A.filter(({ saversDepth }) => Number(saversDepth) > 0)
             )
 
             const poolViewData = getSaversTableRowsData({

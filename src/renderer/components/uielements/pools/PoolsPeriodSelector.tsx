@@ -7,7 +7,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
-import { GetPoolsPeriodEnum } from '../../../types/generated/midgard'
+import { GetPoolsPeriodEnum } from '../../../services/midgard/types'
 
 type PeriodItem = { value: GetPoolsPeriodEnum; label: string }
 

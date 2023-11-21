@@ -27,9 +27,10 @@ import { Button, RefreshButton } from '../../components/uielements/button'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useAppContext } from '../../contexts/AppContext'
 import { useChainContext } from '../../contexts/ChainContext'
-import { useEthereumContext } from '../../contexts/EthereumContext'
+import { useEvmContext } from '../../contexts/EvmContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
+import { useThorchainQueryContext } from '../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { assetInList, getAssetFromNullableString } from '../../helpers/assetHelper'
 import { eqChain, eqNetwork } from '../../helpers/fp/eq'
@@ -73,8 +74,8 @@ const SuccessRouteView: React.FC<Props> = ({
   targetWalletType: oTargetWalletType,
   recipientAddress: oRecipientAddress
 }): JSX.Element => {
-  const { chain: sourceChain } = sourceAsset
-  const { chain: targetChain } = targetAsset
+  const { chain: sourceChain } = sourceAsset.synth ? AssetRuneNative : sourceAsset
+  const { chain: targetChain } = targetAsset.synth ? AssetRuneNative : targetAsset
 
   const intl = useIntl()
   const navigate = useNavigate()
@@ -85,6 +86,7 @@ const SuccessRouteView: React.FC<Props> = ({
   const { network } = useNetwork()
 
   const { reloadInboundAddresses } = useThorchainContext()
+  const { thorchainQuery } = useThorchainQueryContext()
 
   const { service: midgardService } = useMidgardContext()
   const {
@@ -106,7 +108,8 @@ const SuccessRouteView: React.FC<Props> = ({
   const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
   const { mimirHalt } = useMimirHalt()
 
-  const { reloadApproveFee, approveFee$, approveERC20Token$, isApprovedERC20Token$ } = useEthereumContext()
+  // switches sourcechain context eth | avax | bsc - needed for approve
+  const { reloadApproveFee, approveFee$, approveERC20Token$, isApprovedERC20Token$ } = useEvmContext(sourceChain)
 
   const keystore = useObservableState(keystoreState$, O.none)
 
@@ -129,15 +132,15 @@ const SuccessRouteView: React.FC<Props> = ({
   }, [reloadInboundAddresses])
 
   const sourceAssetDecimal$: AssetWithDecimalLD = useMemo(
-    () => assetWithDecimal$(sourceAsset, network),
-    [assetWithDecimal$, network, sourceAsset]
+    () => assetWithDecimal$(sourceAsset),
+    [assetWithDecimal$, sourceAsset]
   )
 
   const sourceAssetRD: AssetWithDecimalRD = useObservableState(sourceAssetDecimal$, RD.initial)
 
   const targetAssetDecimal$: AssetWithDecimalLD = useMemo(
-    () => assetWithDecimal$(targetAsset, network),
-    [assetWithDecimal$, network, targetAsset]
+    () => assetWithDecimal$(targetAsset),
+    [assetWithDecimal$, targetAsset]
   )
 
   const targetAssetRD: AssetWithDecimalRD = useObservableState(targetAssetDecimal$, RD.initial)
@@ -250,6 +253,7 @@ const SuccessRouteView: React.FC<Props> = ({
         O.getOrElse<SwapRouteTargetWalletType>(() => 'custom')
       )
       const recipient = FP.pipe(oRecipientAddress, O.toUndefined)
+
       const path = swap.path({
         source: assetToString(source),
         sourceWalletType,
@@ -344,7 +348,6 @@ const SuccessRouteView: React.FC<Props> = ({
               if (!hasRuneAsset) {
                 assetDetails = [{ asset: AssetRuneNative, assetPrice: bn(1) }, ...assetDetails]
               }
-
               const sourceAssetDetail = FP.pipe(Utils.pickPoolAsset(assetDetails, sourceAsset.asset), O.toNullable)
               // Make sure sourceAsset is available in pools
               if (!sourceAssetDetail)
@@ -358,7 +361,6 @@ const SuccessRouteView: React.FC<Props> = ({
                 assetDetails,
                 A.map(({ asset }) => asset)
               )
-
               const disableAllPoolActions = (chain: Chain) =>
                 PoolHelpers.disableAllActions({ chain, haltedChains, mimirHalt })
 
@@ -367,10 +369,10 @@ const SuccessRouteView: React.FC<Props> = ({
 
               const checkDisableSwapAction = () => {
                 return (
-                  disableAllPoolActions(sourceChain) ||
-                  disableTradingPoolActions(sourceChain) ||
-                  disableAllPoolActions(targetChain) ||
-                  disableTradingPoolActions(targetChain)
+                  disableAllPoolActions(sourceAsset.asset.chain) ||
+                  disableTradingPoolActions(sourceAsset.asset.chain) ||
+                  disableAllPoolActions(targetAsset.asset.chain) ||
+                  disableTradingPoolActions(targetAsset.asset.chain)
                 )
               }
 
@@ -415,6 +417,7 @@ const SuccessRouteView: React.FC<Props> = ({
                   addressValidator={validateSwapAddress}
                   // TODO (@veado) Handle private data
                   hidePrivateData={false}
+                  thorchainQuery={thorchainQuery}
                 />
               )
             }
@@ -433,8 +436,18 @@ export const SwapView: React.FC = (): JSX.Element => {
     targetWalletType: routeTargetWalletType,
     recipient
   } = useParams<SwapRouteParams>()
-  const oSourceAsset: O.Option<Asset> = useMemo(() => getAssetFromNullableString(source), [source])
-  const oTargetAsset: O.Option<Asset> = useMemo(() => getAssetFromNullableString(target), [target])
+  const sourceAssetString = source && source.match('_synth_') ? source.replace('_synth_', '/') : source
+  const targetAssetString = target && target.match('_synth_') ? target.replace('_synth_', '/') : target
+
+  const oSourceAsset: O.Option<Asset> = useMemo(
+    () => getAssetFromNullableString(sourceAssetString),
+    [sourceAssetString]
+  )
+  const oTargetAsset: O.Option<Asset> = useMemo(() => {
+    const asset = getAssetFromNullableString(targetAssetString)
+    return asset
+  }, [targetAssetString])
+
   const oRecipientAddress: O.Option<Address> = useMemo(() => getWalletAddressFromNullableString(recipient), [recipient])
   const sourceWalletType = routeSourceWalletType || DEFAULT_WALLET_TYPE
   const oTargetWalletType = FP.pipe(routeTargetWalletType, O.fromPredicate(isWalletType))

@@ -13,7 +13,7 @@ import { Action as ActionButtonAction, ActionButton } from '../../components/uie
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { loadingString } from '../../helpers/stringHelper'
 import * as poolsRoutes from '../../routes/pools'
-// import * as saversRoutes from '../../routes/pools/savers'
+import * as saversRoutes from '../../routes/pools/savers'
 import { AssetIcon } from '../uielements/assets/assetIcon'
 import * as Styled from './PoolTitle.styles'
 
@@ -95,15 +95,14 @@ export const PoolTitle: React.FC<Props> = ({
             })
           )
         }
+      },
+      {
+        label: intl.formatMessage({ id: 'common.earn' }),
+        disabled: !isAvailablePool,
+        callback: () => {
+          navigate(saversRoutes.earn.path({ asset: assetToString(asset), walletType: DEFAULT_WALLET_TYPE }))
+        }
       }
-      // TODO(@veado) Enable savers
-      // {
-      //   label: intl.formatMessage({ id: 'common.savers' }),
-      //   disabled: !isAvailablePool || disableAllPoolActions || disableTradingPoolAction,
-      //   callback: () => {
-      //     navigate(saversRoutes.earn.path({ asset: assetToString(asset), walletType: DEFAULT_WALLET_TYPE }))
-      //   }
-      // }
     ]
 
     return <ActionButton size={isDesktopView ? 'large' : 'normal'} actions={actions} />

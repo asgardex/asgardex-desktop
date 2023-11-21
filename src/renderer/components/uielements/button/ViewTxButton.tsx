@@ -13,6 +13,7 @@ type Props = {
   txUrl: O.Option<string>
   onClick: (txHash: string) => void
   className?: string
+  trackable?: boolean
 }
 
 export const ViewTxButton: React.FC<Props> = ({
@@ -20,7 +21,8 @@ export const ViewTxButton: React.FC<Props> = ({
   txHash: oTxHash,
   txUrl: oTxUrl,
   label,
-  className
+  className,
+  trackable = false
 }): JSX.Element => {
   const intl = useIntl()
 
@@ -28,23 +30,39 @@ export const ViewTxButton: React.FC<Props> = ({
     FP.pipe(oTxHash, O.fold(FP.constUndefined, onClick))
   }, [oTxHash, onClick])
 
+  const handleTxTracker = useCallback(() => {
+    FP.pipe(
+      oTxHash,
+      O.map((txHash) => window.apiUrl.openExternal(`https://track.ninerealms.com/${txHash}?logo=asgardex.png`))
+    )
+  }, [oTxHash])
+
   return (
-    <Styled.Wrapper className={className}>
-      <Styled.ViewTxButton onClick={onClickHandler} disabled={O.isNone(oTxHash)}>
-        {label || intl.formatMessage({ id: 'common.viewTransaction' })}
-      </Styled.ViewTxButton>
-      <Styled.CopyLabel
-        copyable={
-          FP.pipe(
-            oTxUrl,
-            O.map((url) => ({
-              text: url,
-              tooltips: intl.formatMessage({ id: 'common.copyTxUrl' })
-            })),
-            O.toUndefined
-          ) || false
-        }
-      />
-    </Styled.Wrapper>
+    <div className="flex flex-col">
+      <Styled.Wrapper className={`${className} flex-col`}>
+        <Styled.ViewTxButton onClick={onClickHandler} disabled={O.isNone(oTxHash)}>
+          {label || intl.formatMessage({ id: 'common.viewTransaction' })}
+        </Styled.ViewTxButton>
+        {trackable && (
+          <Styled.ViewTxButton onClick={handleTxTracker} disabled={O.isNone(oTxHash)}>
+            {label || intl.formatMessage({ id: 'common.trackTransaction' })}
+          </Styled.ViewTxButton>
+        )}
+        <div>
+          {' '}
+          <Styled.CopyLabel
+            copyable={
+              FP.pipe(
+                oTxUrl,
+                O.map((url) => ({
+                  text: url,
+                  tooltips: intl.formatMessage({ id: 'common.copyTxUrl' })
+                })),
+                O.toUndefined
+              ) || false
+            }></Styled.CopyLabel>
+        </div>
+      </Styled.Wrapper>
+    </div>
   )
 }

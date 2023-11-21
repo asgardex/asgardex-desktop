@@ -1,29 +1,17 @@
-import { getDoubleSwapOutput, getDoubleSwapSlip, getSwapOutput, getSwapSlip } from '@thorchain/asgardex-util'
-import { Asset, assetToString, bn, BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
-import BigNumber from 'bignumber.js'
+import { Asset, BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
 import * as E from 'fp-ts/Either'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 
-import { ASGARDEX_IDENTIFIER } from '../../../shared/const'
 import { isLedgerWallet } from '../../../shared/utils/guard'
-import { ZERO_BASE_AMOUNT } from '../../const'
-import {
-  isChainAsset,
-  isRuneNativeAsset,
-  isUtxoAssetChain,
-  max1e8BaseAmount,
-  to1e8BaseAmount
-} from '../../helpers/assetHelper'
+import { isChainAsset, isRuneNativeAsset, isUtxoAssetChain, max1e8BaseAmount } from '../../helpers/assetHelper'
 import { eqAsset, eqChain } from '../../helpers/fp/eq'
-import { sequenceTOption } from '../../helpers/fpHelpers'
 import { priceFeeAmountForAsset } from '../../services/chain/fees/utils'
 import { SwapFees } from '../../services/chain/types'
 import { PoolAssetDetail, PoolAssetDetails, PoolsDataMap } from '../../services/midgard/types'
 import { WalletBalances } from '../../services/wallet/types'
-import { SlipTolerance } from '../../types/asgardex'
-import { AssetsToSwap, SwapData } from './Swap.types'
+import { AssetsToSwap } from './Swap.types'
 /**
  * @returns none - neither sourceAsset neither targetAsset is RUNE
  *          some(true) - targetAsset is RUNE
@@ -41,127 +29,24 @@ export const isRuneSwap = (sourceAsset: Asset, targetAsset: Asset) => {
   return O.none
 }
 
-export const getSlipPercent = ({
-  sourceAsset,
-  targetAsset,
-  amountToSwap,
-  poolsData
-}: {
-  sourceAsset: Asset
-  targetAsset: Asset
-  amountToSwap: BaseAmount
-  poolsData: PoolsDataMap
-}): BigNumber => {
-  // pool data provided by Midgard are always 1e8 decimal based
-  // that's why we have to convert `amountToSwap into `1e8` decimal as well
-  const inputAmount = to1e8BaseAmount(amountToSwap)
-  return FP.pipe(
-    isRuneSwap(sourceAsset, targetAsset),
-    O.chain((toRune) =>
-      FP.pipe(
-        O.fromNullable(poolsData[assetToString(isRuneNativeAsset(targetAsset) ? sourceAsset : targetAsset)]),
-        O.map((targetPoolData) => getSwapSlip(inputAmount, targetPoolData, toRune))
-      )
-    ),
-    O.alt(() =>
-      FP.pipe(
-        sequenceTOption(
-          O.fromNullable(poolsData[assetToString(sourceAsset)]),
-          O.fromNullable(poolsData[assetToString(targetAsset)])
-        ),
-        O.map(([source, target]) => getDoubleSwapSlip(inputAmount, source, target))
-      )
-    ),
-    O.map((slip) => slip.times(100)),
-    O.getOrElse(() => bn(0))
-  )
-}
-
 /**
- * Result of swap
- *
- * Note: Returned `amountToSwap` is `1e8` decimal based
- */
-export const getSwapResult = ({
-  sourceAsset,
-  targetAsset,
-  amountToSwap,
-  poolsData
-}: {
-  sourceAsset: Asset
-  targetAsset: Asset
-  amountToSwap: BaseAmount
-  poolsData: PoolsDataMap
-}): BaseAmount => {
-  // pool data provided by Midgard are always 1e8 decimal based,
-  // that's why we have to convert `amountToSwap into `1e8` as well
-  const inputAmount = to1e8BaseAmount(amountToSwap)
-  return FP.pipe(
-    isRuneSwap(sourceAsset, targetAsset),
-    O.chain((toRune) => {
-      const assetSymbol = assetToString(toRune ? sourceAsset : targetAsset)
-      return FP.pipe(
-        O.fromNullable(poolsData[assetSymbol]),
-        O.map((poolData) => getSwapOutput(inputAmount, poolData, toRune))
-      )
-    }),
-    O.alt(() =>
-      FP.pipe(
-        sequenceTOption(
-          O.fromNullable(poolsData[assetToString(sourceAsset)]),
-          O.fromNullable(poolsData[assetToString(targetAsset)])
-        ),
-        O.map(([source, target]) => getDoubleSwapOutput(inputAmount, source, target))
-      )
-    ),
-    O.getOrElse(() => ZERO_BASE_AMOUNT)
-  )
-}
-
-/**
- * Returns `SwapData`
- *
- * Note: `amountToSwap` of `swapResult` is `1e8` decimal based
- */
-export const getSwapData = ({
-  amountToSwap,
-  sourceAsset,
-  targetAsset,
-  poolsData
-}: {
-  amountToSwap: BaseAmount
-  sourceAsset: Asset
-  targetAsset: Asset
-  poolsData: PoolsDataMap
-}): SwapData => {
-  const slip = getSlipPercent({ sourceAsset, targetAsset, amountToSwap, poolsData })
-  const swapResult = getSwapResult({ sourceAsset, targetAsset, amountToSwap, poolsData })
-  return {
-    slip,
-    swapResult
-  }
-}
-
-/**
- * Returns `BaseAmount` with asgardex identifier counted into the limit
+ * Returns `BaseAmount` with asgardex identifier - is now a affiliate address/thorname
  * It's always `1e8` based (default by THORChain)
  */
-export const getSwapLimit1e8 = (swapResultAmountMax1e8: BaseAmount, slipTolerance: SlipTolerance): BaseAmount => {
-  const swapLimit: BaseAmount = swapResultAmountMax1e8.times(1.0 - slipTolerance * 0.01)
-  const swapLimit1e8: BaseAmount = to1e8BaseAmount(swapLimit)
-  const swapLimitWithIdentifier =
-    +swapLimit1e8.amount().toString().slice(0, -3).concat(ASGARDEX_IDENTIFIER.toString()) - 1000
-
-  return baseAmount(
-    bn(swapLimitWithIdentifier <= ASGARDEX_IDENTIFIER ? ASGARDEX_IDENTIFIER : swapLimitWithIdentifier),
-    swapLimit1e8.decimal
-  )
+export const getSwapLimit1e8 = (memo: string): BaseAmount => {
+  const swapLimitFromMemo = baseAmount(memo.split(':')[3])
+  return swapLimitFromMemo
 }
 
 export const pickPoolAsset = (assets: PoolAssetDetails, asset: Asset): O.Option<PoolAssetDetail> =>
   FP.pipe(
     assets,
-    A.findFirst(({ asset: availableAsset }) => eqAsset.equals(availableAsset, asset)),
+    A.findFirst(
+      ({ asset: availableAsset }) =>
+        availableAsset.chain === asset.chain &&
+        availableAsset.symbol === asset.symbol &&
+        availableAsset.ticker === asset.ticker
+    ),
     O.alt(() => FP.pipe(assets, A.head))
   )
 

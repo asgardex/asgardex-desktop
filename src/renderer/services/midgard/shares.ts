@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { DefaultApi, MemberPool } from '@xchainjs/xchain-midgard'
 import { Address, Asset, assetFromString, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
@@ -10,8 +11,6 @@ import { optionFromNullableString } from '../../../shared/utils/fp'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { liveData } from '../../helpers/rx/liveData'
 import { triggerStream, observableState } from '../../helpers/stateHelper'
-import { MemberPool } from '../../types/generated/midgard'
-import { DefaultApi } from '../../types/generated/midgard/apis'
 import { MidgardUrlLD, PoolShare, PoolShareLD, PoolSharesLD } from './types'
 import { combineShares, combineSharesByAsset, getSharesByAssetAndType, getSymSharesByAddress } from './utils'
 
@@ -50,8 +49,8 @@ const createSharesService = (midgardUrl$: MidgardUrlLD, getMidgardDefaultApi: (b
       ),
       liveData.chain((api) =>
         FP.pipe(
-          api.getMemberDetail({ address }),
-          RxOp.map(RD.success),
+          Rx.from(api.getMemberDetail(address)),
+          RxOp.map((response) => RD.success(response.data)),
           liveData.map(({ pools }) => pools),
           liveData.mapLeft(() => Error('No pool found')),
           RxOp.catchError((e) => {
@@ -61,7 +60,7 @@ const createSharesService = (midgardUrl$: MidgardUrlLD, getMidgardDefaultApi: (b
              * 2. User has no any stake units for the pool
              * In both cases return empty array as `No Data` identifier
              */
-            if ('status' in e && e.status === 404) {
+            if ('response' in e && 'status' in e.response && (e.response.status === 404 || e.response.status === 503)) {
               return Rx.of(RD.success([]))
             }
 
@@ -145,9 +144,21 @@ const createSharesService = (midgardUrl$: MidgardUrlLD, getMidgardDefaultApi: (b
   const loadCombineSharesByAddresses$ = (addresses: Address[]): PoolSharesLD =>
     FP.pipe(addresses, A.map(combineShares$), liveData.sequenceArray, liveData.map(A.flatten))
 
-  // Loads `asym` + `sym` `PoolShare`'s by given addresses
+  const uniqueByCompositeKey = (shares: PoolShare[]): PoolShare[] =>
+    Array.from(
+      new Map(
+        shares.map((share) => [`${share.asset.chain}.${share.asset.symbol}.${share.asset.ticker}`, share])
+      ).values()
+    )
+
   const loadAllSharesByAddresses$ = (addresses: Address[]): PoolSharesLD =>
-    FP.pipe(addresses, A.map(shares$), liveData.sequenceArray, liveData.map(A.flatten))
+    FP.pipe(
+      addresses,
+      A.map(shares$),
+      liveData.sequenceArray,
+      liveData.map(A.flatten),
+      liveData.map(uniqueByCompositeKey) // Add this line to deduplicate
+    )
 
   // `TriggerStream` to reload `symSharesByAddresses`
   const { stream$: reloadSymSharesByAddresses$, trigger: reloadSymSharesByAddresses } = triggerStream()
@@ -189,7 +200,7 @@ const createSharesService = (midgardUrl$: MidgardUrlLD, getMidgardDefaultApi: (b
 
   return {
     shares$,
-    reloadShares: (delayTime = 0) => reloadSharesWithTimer(delayTime),
+    reloadShares: (delayTime = 500) => reloadSharesWithTimer(delayTime),
     symShareByAsset$,
     asymShareByAsset$,
     combineShares$,

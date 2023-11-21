@@ -12,7 +12,7 @@ import { WalletAddress, WalletType } from '../../shared/wallet/types'
 import { ZERO_ASSET_AMOUNT } from '../const'
 import { WalletBalances } from '../services/clients'
 import { NonEmptyWalletBalances, WalletBalance } from '../services/wallet/types'
-import { isBnbAsset, isEthAsset, isLtcAsset, isRuneNativeAsset } from './assetHelper'
+import { isAvaxAsset, isBnbAsset, isBscAsset, isEthAsset, isLtcAsset, isRuneNativeAsset } from './assetHelper'
 import { isBchChain, isDogeChain, isLtcChain, isThorChain } from './chainHelper'
 import { eqAddress, eqAsset, eqWalletType } from './fp/eq'
 
@@ -87,7 +87,7 @@ export const getWalletBalanceByAddressAndAsset = ({
     balances,
     A.findFirst(
       ({ walletAddress: addressInList, asset: assetInList }) =>
-        eqAddress.equals(addressInList, address) && eqAddress.equals(assetInList.ticker, asset.ticker)
+        eqAddress.equals(addressInList, address) && eqAddress.equals(assetInList.symbol, asset.symbol)
     )
   )
 
@@ -127,8 +127,8 @@ export const getAssetAmountFromBalances = (
 export const getBnbAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
   getAssetAmountFromBalances(balances, isBnbAsset)
 
-export const getEthAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
-  getAssetAmountFromBalances(balances, isEthAsset)
+export const getEVMAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
+  getAssetAmountFromBalances(balances, isEthAsset || isAvaxAsset || isBscAsset)
 
 export const getLtcAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
   getAssetAmountFromBalances(balances, isLtcAsset)
@@ -137,7 +137,15 @@ export const getRuneNativeAmountFromBalances = (balances: WalletBalances): O.Opt
   getAssetAmountFromBalances(balances, isRuneNativeAsset)
 
 export const filterWalletBalancesByAssets = (balances: NonEmptyWalletBalances, assets: Asset[]): WalletBalances => {
-  return balances.filter((balance) => assets.findIndex((asset) => eqAsset.equals(asset, balance.asset)) >= 0)
+  return balances.filter((balance) => {
+    const assetIndex = assets.findIndex(
+      (asset) =>
+        asset.chain === balance.asset.chain &&
+        asset.symbol.toUpperCase() === balance.asset.symbol.toUpperCase() && // Convert to uppercase for comparison
+        asset.ticker === balance.asset.ticker
+    )
+    return assetIndex >= 0
+  })
 }
 
 export const addressFromWalletAddress = ({ address }: Pick<WalletAddress, 'address'>): Address => address

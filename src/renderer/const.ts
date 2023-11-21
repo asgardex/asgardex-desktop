@@ -1,7 +1,8 @@
-import { PoolData } from '@thorchain/asgardex-util'
+import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { AssetBSC, BSCChain } from '@xchainjs/xchain-bsc'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -13,8 +14,8 @@ import { Network } from '../shared/api/types'
 import { AssetBTC, AssetETH, AssetRune67C, AssetRuneERC20Testnet, AssetRuneNative } from '../shared/utils/asset'
 import { EnabledChain } from '../shared/utils/chain'
 import { WalletType } from '../shared/wallet/types'
-import { GetPoolsPeriodEnum } from './types/generated/midgard'
-import { PricePoolCurrencyWeights, PricePoolAssets } from './views/pools/Pools.types'
+import { GetPoolsPeriodEnum } from './services/midgard/types'
+import { PricePoolCurrencyWeights, PricePoolAssets, PoolData } from './views/pools/Pools.types'
 
 //
 // ERC-20 assets
@@ -62,6 +63,8 @@ export const AssetTGTERC20: Asset = {
 // This hardcode list is for testnet only
 export const ERC20AssetsTestnet = [AssetUSDTERC20Testnet, AssetXRuneTestnet, AssetRuneERC20Testnet]
 export const ETHAssetsTestnet = [AssetETH, ...ERC20AssetsTestnet]
+export const AvaxAssetsTestnet = [AssetAVAX]
+export const BscAssetsTestnet = [AssetBSC]
 
 // UNIH (exploit contract)
 // https://etherscan.io/address/0x4bf5dc91E2555449293D7824028Eb8Fe5879B689
@@ -96,7 +99,7 @@ export const AssetUSDTDC8: Asset = { chain: BNBChain, symbol: 'USDT-DC8', ticker
 // ETH.USDT mainnet
 export const AssetUSDTDAC: Asset = {
   chain: ETHChain,
-  symbol: 'USDT-0xdAC17F958D2ee523a2206206994597C13D831ec7',
+  symbol: 'USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7',
   ticker: 'USDT',
   synth: false
 }
@@ -110,7 +113,15 @@ export const AssetUSDT62E: Asset = {
 // ETH.USDC mainnet
 export const AssetUSDC: Asset = {
   chain: ETHChain,
-  symbol: 'USDC-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+  symbol: 'USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48',
+  ticker: 'USDC',
+  synth: false
+}
+
+// AVAX.USDC mainnet
+export const AssetUSDCAVAX: Asset = {
+  chain: AVAXChain,
+  symbol: 'USDC-0XB97EF9EF8734C71904D8002F8B6BC66DD9C48A6E',
   ticker: 'USDC',
   synth: false
 }
@@ -139,7 +150,9 @@ export const CHAIN_WEIGHTS: Record<EnabledChain, number> = {
   [ETHChain]: 4,
   [BNBChain]: 5,
   [GAIAChain]: 6,
-  [DOGEChain]: 7
+  [AVAXChain]: 7,
+  [BSCChain]: 8,
+  [DOGEChain]: 9
 }
 
 // Weight of currencies needed for pricing

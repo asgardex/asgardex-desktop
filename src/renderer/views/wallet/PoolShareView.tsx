@@ -74,18 +74,18 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   )
 
   const [allSharesRD] = useObservableState<PoolSharesRD, Network>(() => {
+    const EXCLUDED_CHAINS: readonly string[] = ['BSC', 'AVAX'] // simple exclude for bsc and avax.
     // keystore addresses
     const addresses$: WalletAddress$[] = FP.pipe(
       [...ENABLED_CHAINS],
-      A.filter((chain) => !isThorChain(chain)),
+      A.filter((chain) => !EXCLUDED_CHAINS.includes(chain) && !isThorChain(chain)),
       A.map(addressByChain$)
     )
-
     // ledger addresses
     const ledgerAddresses$ = (): WalletAddress$[] =>
       FP.pipe(
         [...ENABLED_CHAINS],
-        A.filter((chain) => !isThorChain(chain)),
+        A.filter((chain) => !EXCLUDED_CHAINS.includes(chain) && !isThorChain(chain)),
         A.map((chain) => getLedgerAddress$(chain)),
         A.map(RxOp.map(FP.flow(O.map(ledgerAddressToWalletAddress))))
       )
@@ -108,8 +108,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
           /**
            * We have to get a new stake-stream for every new asset
            * @description /src/renderer/services/midgard/shares.ts
-           */
-          allSharesByAddresses$
+           */ allSharesByAddresses$
         )
       )
     )
@@ -128,6 +127,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   const openExternalShareInfo = useCallback(() => {
     // `thoryield.com` does not support testnet, we ignore it here
     const oMainnet = O.fromPredicate<Network>(() => network === 'mainnet')(network)
+
     return FP.pipe(
       sequenceTOption(oRuneNativeAddress, oMainnet),
       O.map(([thorAddress, _]) => `https://app.thoryield.com/accounts?thor=${thorAddress}`),

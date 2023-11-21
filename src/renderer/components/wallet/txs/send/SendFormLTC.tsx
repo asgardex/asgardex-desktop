@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { FeeOption, FeesWithRates } from '@xchainjs/xchain-client'
 import { LTCChain, LTC_DECIMAL } from '@xchainjs/xchain-litecoin'
+import { CryptoAmount, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
   assetAmount,
@@ -13,7 +14,7 @@ import {
   bn,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
-import { Row, Form } from 'antd'
+import { Form } from 'antd'
 import { RadioChangeEvent } from 'antd/lib/radio'
 import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/lib/function'
@@ -24,7 +25,7 @@ import { Network } from '../../../../../shared/api/types'
 import { AssetLTC } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
-import { ZERO_BASE_AMOUNT } from '../../../../const'
+import { AssetUSDC, ZERO_BASE_AMOUNT } from '../../../../const'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import { Memo, SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
@@ -63,6 +64,7 @@ export type Props = {
   feesWithRates: FeesWithRatesRD
   reloadFeesHandler: (memo?: Memo) => void
   validatePassword$: ValidatePasswordHandler
+  thorchainQuery: ThorchainQuery
   network: Network
 }
 
@@ -78,6 +80,7 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
     feesWithRates: feesWithRatesRD,
     reloadFeesHandler,
     validatePassword$,
+    thorchainQuery,
     network
   } = props
 
@@ -244,6 +247,19 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
       ),
     [balance.amount, selectedFee]
   )
+
+  // store maxAmountValue
+  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
+    const fetchData = async () => {
+      setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, AssetUSDC))
+    }
+
+    fetchData()
+  }, [asset, maxAmount, thorchainQuery])
 
   const isMaxButtonDisabled = useMemo(
     () =>
@@ -414,63 +430,62 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
 
   return (
     <>
-      <Row>
-        <Styled.Col span={24}>
-          <AccountSelector selectedWallet={balance} network={network} />
-          <Styled.Form
-            form={form}
-            initialValues={{
-              // default value for BigNumberInput
-              amount: bn(0),
-              // Default value for RadioGroup of feeOptions
-              feeRate: DEFAULT_FEE_OPTION
-            }}
-            onFinish={() => setShowConfirmationModal(true)}
-            labelCol={{ span: 24 }}>
-            <Styled.SubForm>
-              <Styled.CustomLabel size="big">
-                {intl.formatMessage({ id: 'common.address' })}
-                {renderWalletType}
-              </Styled.CustomLabel>
-              <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
-                <Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
-              </Form.Item>
-              <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
-              <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">
-                <InputBigNumber
-                  min={0}
-                  size="large"
-                  disabled={isLoading}
-                  decimal={LTC_DECIMAL}
-                  onChange={onChangeInput}
-                />
-              </Styled.FormItem>
-              <MaxBalanceButton
-                className="mb-10px"
-                color="neutral"
-                balance={{ amount: maxAmount, asset: AssetLTC }}
-                onClick={addMaxAmountHandler}
-                disabled={isMaxButtonDisabled}
+      <Styled.Container>
+        <AccountSelector selectedWallet={balance} network={network} />
+        <Styled.Form
+          form={form}
+          initialValues={{
+            // default value for BigNumberInput
+            amount: bn(0),
+            // Default value for RadioGroup of feeOptions
+            feeRate: DEFAULT_FEE_OPTION
+          }}
+          onFinish={() => setShowConfirmationModal(true)}
+          labelCol={{ span: 24 }}>
+          <Styled.SubForm>
+            <Styled.CustomLabel size="big">
+              {intl.formatMessage({ id: 'common.address' })}
+              {renderWalletType}
+            </Styled.CustomLabel>
+            <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
+              <Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
+            </Form.Item>
+            <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
+            <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">
+              <InputBigNumber
+                min={0}
+                size="large"
+                disabled={isLoading}
+                decimal={LTC_DECIMAL}
+                onChange={onChangeInput}
               />
-              <Styled.Fees fees={uiFeesRD} reloadFees={reloadFees} disabled={isLoading} />
-              {renderFeeError}
-              <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
-              <Form.Item name="memo">
-                <Input size="large" disabled={isLoading} />
-              </Form.Item>
-              <Form.Item name="feeRate">{renderFeeOptions}</Form.Item>
-            </Styled.SubForm>
-            <FlatButton
-              className="mt-40px min-w-[200px]"
-              loading={isLoading}
-              disabled={!feesAvailable || isLoading}
-              type="submit"
-              size="large">
-              {intl.formatMessage({ id: 'wallet.action.send' })}
-            </FlatButton>
-          </Styled.Form>
-        </Styled.Col>
-      </Row>
+            </Styled.FormItem>
+            <MaxBalanceButton
+              className="mb-10px"
+              color="neutral"
+              balance={{ amount: maxAmount, asset: AssetLTC }}
+              maxDollarValue={maxAmmountPriceValue}
+              onClick={addMaxAmountHandler}
+              disabled={isMaxButtonDisabled}
+            />
+            <Styled.Fees fees={uiFeesRD} reloadFees={reloadFees} disabled={isLoading} />
+            {renderFeeError}
+            <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
+            <Form.Item name="memo">
+              <Input size="large" disabled={isLoading} />
+            </Form.Item>
+            <Form.Item name="feeRate">{renderFeeOptions}</Form.Item>
+          </Styled.SubForm>
+          <FlatButton
+            className="mt-40px min-w-[200px]"
+            loading={isLoading}
+            disabled={!feesAvailable || isLoading}
+            type="submit"
+            size="large">
+            {intl.formatMessage({ id: 'wallet.action.send' })}
+          </FlatButton>
+        </Styled.Form>
+      </Styled.Container>
       {showConfirmationModal && renderConfirmationModal}
       {renderTxModal}
     </>

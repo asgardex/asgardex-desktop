@@ -1,12 +1,11 @@
+import { DepthHistoryItem, LiquidityHistoryItem, SwapHistoryItem } from '@xchainjs/xchain-midgard'
 import { baseAmount, baseToAsset, bnOrZero } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
 import { ChartDataType, ChartDetails, ChartTimeFrame } from '../../components/uielements/chart/PoolDetailsChart.types'
-import { GetDepthHistoryParams } from '../../services/midgard/types'
-import { DepthHistoryItem, LiquidityHistoryItem, SwapHistoryItem } from '../../types/generated/midgard'
-import { GetDepthHistoryIntervalEnum } from '../../types/generated/midgard'
+import { GetDepthHistoryIntervalEnum, GetDepthHistoryParams } from '../../services/midgard/types'
 import { CachedChartData } from './PoolChartView.types'
 
 type PartialDepthHistoryItem = Pick<DepthHistoryItem, 'startTime' | 'runeDepth'>

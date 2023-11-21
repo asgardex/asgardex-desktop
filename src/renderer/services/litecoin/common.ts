@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Client, LTCChain, defaultLTCParams } from '@xchainjs/xchain-litecoin'
+import { Client, LTCChain, defaultLtcParams } from '@xchainjs/xchain-litecoin'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
@@ -29,7 +29,7 @@ const clientState$: ClientState$ = FP.pipe(
           O.map<string, ClientState>((phrase) => {
             try {
               const ltcInitParams = {
-                ...defaultLTCParams,
+                ...defaultLtcParams,
                 phrase: phrase,
                 network: network
               }

@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { getWithdrawMemo } from '@thorchain/asgardex-util'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Asset,
@@ -26,6 +25,7 @@ import { WalletAddress } from '../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../const'
 import { getTwoSigfigAssetAmount, THORCHAIN_DECIMAL, to1e8BaseAmount } from '../../../helpers/assetHelper'
 import { eqAsset } from '../../../helpers/fp/eq'
+import { getWithdrawMemo } from '../../../helpers/memoHelper'
 import * as PoolHelpers from '../../../helpers/poolHelper'
 import { liveData } from '../../../helpers/rx/liveData'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'

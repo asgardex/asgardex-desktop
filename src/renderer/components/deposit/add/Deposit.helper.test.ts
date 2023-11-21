@@ -1,7 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { PoolData } from '@thorchain/asgardex-util'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
-import { ETH_DECIMAL } from '@xchainjs/xchain-ethereum'
+import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/Option'
 
@@ -10,6 +9,7 @@ import { AssetBUSD74E, AssetUSDTERC20Testnet } from '../../../const'
 import { BNB_DECIMAL, THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { eqBaseAmount, eqODepositAssetFees, eqODepositFees } from '../../../helpers/fp/eq'
 import { DepositAssetFees, DepositFees, SymDepositFees, SymDepositFeesRD } from '../../../services/chain/types'
+import { PoolData } from '../../../views/pools/Pools.types'
 import {
   getAssetAmountToDeposit,
   getRuneAmountToDeposit,
@@ -129,7 +129,7 @@ describe('deposit/Deposit.helper', () => {
       const runeBalance = baseAmount(20000)
       const assetBalance = { asset: AssetBUSD74E, amount: baseAmount(10000) }
       const result = maxAssetAmountToDeposit({ poolData, assetBalance, runeBalance, fees })
-      console.log('result', result.amount().toString())
+      // console.log('result', result.amount().toString())
       // R = 200000 (rune pool)
       // A = 100000 (asset pool)
       // r = 20000 (rune balance)
@@ -336,9 +336,9 @@ describe('deposit/Deposit.helper', () => {
       const params = {
         fees: {
           asset: AssetETH,
-          inFee: assetToBase(assetAmount(0.01, ETH_DECIMAL)),
-          outFee: assetToBase(assetAmount(0.03, ETH_DECIMAL)),
-          refundFee: assetToBase(assetAmount(0.03, ETH_DECIMAL))
+          inFee: assetToBase(assetAmount(0.01, ETH_GAS_ASSET_DECIMAL)),
+          outFee: assetToBase(assetAmount(0.03, ETH_GAS_ASSET_DECIMAL)),
+          refundFee: assetToBase(assetAmount(0.03, ETH_GAS_ASSET_DECIMAL))
         },
         asset: AssetUSDTERC20Testnet,
         assetDecimal: depositAssetDecimal,

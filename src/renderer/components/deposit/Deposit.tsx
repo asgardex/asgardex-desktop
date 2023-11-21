@@ -20,7 +20,7 @@ import { Props as WidthdrawContentProps } from '../../views/deposit/withdraw/Wit
 import { AddWallet } from '../wallet/add'
 import * as Styled from './Deposit.styles'
 
-type TabKey = 'deposit-sym' | 'deposit-asym' | 'withdraw-sym' | 'withdraw-asym-asset'
+type TabKey = 'deposit-sym' | 'deposit-saver' | 'withdraw-sym' | 'withdraw-saver-asset'
 
 type Tab = {
   key: TabKey
@@ -41,18 +41,8 @@ export type Props = {
     smallWidth?: boolean
     poolDetail: PoolDetailRD
   }>
-  // TODO (@Veado) Temporary disabled #827
-  // AsymDepositContent: React.ComponentType<{ asset: Asset; poolDetail: PoolDetailRD; haltedChains: Chain[] }>
   SymDepositContent: React.ComponentType<SymDepositContentProps>
   WidthdrawContent: React.ComponentType<WidthdrawContentProps>
-  // TODO (@Veado) Temporary disabled #827
-  // AsymWidthdrawContent: React.ComponentType<{
-  //   asset: Asset
-  //   poolShare: PoolShareRD
-  //   poolDetail: PoolDetailRD
-  //   haltedChains: Chain[]
-  //   mimirHalt: MimirHalt
-  // }>
   keystoreState: KeystoreState
   runeWalletAddress: WalletAddress
   assetWalletAddress: WalletAddress
@@ -64,12 +54,8 @@ export const Deposit: React.FC<Props> = (props) => {
     ShareContent,
     haltedChains,
     mimirHalt,
-    // TODO (@Veado) Temporary disabled #827
-    // AsymDepositContent,
     SymDepositContent,
     WidthdrawContent,
-    // TODO (@Veado) Temporary disabled #827
-    // AsymWidthdrawContent,
     keystoreState,
     shares: poolSharesRD,
     poolDetail: poolDetailRD,
@@ -113,29 +99,11 @@ export const Deposit: React.FC<Props> = (props) => {
     [asset, assetWalletAddress, poolSharesRD, runeWalletAddress]
   )
 
-  // TODO (@Veado) Temporary disabled #827
-  const _asymPoolShareAsset = useMemo(
-    () =>
-      FP.pipe(
-        poolSharesRD,
-        RD.map((shares) => getSharesByAssetAndType({ shares, asset, type: 'asym' }))
-      ),
-    [asset, poolSharesRD]
-  )
-
   const hasPoolShare = (poolShare: PoolShareRD): boolean => FP.pipe(poolShare, RD.toOption, O.flatten, O.isSome)
   const hasSymPoolShare: boolean = useMemo(() => hasPoolShare(symPoolShare), [symPoolShare])
-  // TODO (@Veado) Temporary disabled #827
-  // const hasAsymPoolShareAsset: boolean = useMemo(() => hasPoolShare(asymPoolShareAsset), [asymPoolShareAsset])
 
   const tabs = useMemo(
     (): Tab[] => [
-      // {
-      //   key: 'deposit-asym',
-      //   disabled: false,
-      //   label: intl.formatMessage({ id: 'deposit.add.asym' }, { asset: asset.ticker }),
-      //   content: <AsymDepositContent asset={asset} haltedChains={haltedChains} />
-      // },
       {
         key: 'deposit-sym',
         disabled: false,
@@ -167,12 +135,6 @@ export const Deposit: React.FC<Props> = (props) => {
           />
         )
       }
-      // {
-      //   key: 'withdraw-asym-asset',
-      //   disabled: !hasAsymPoolShareAsset,
-      //   label: intl.formatMessage({ id: 'deposit.withdraw.asym' }, { asset: asset.ticker }),
-      //   content: <AsymWidthdrawContent asset={asset} poolShare={asymPoolShareAsset} haltedChains={haltedChains} />
-      // }
     ],
     [
       intl,

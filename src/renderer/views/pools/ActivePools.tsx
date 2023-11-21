@@ -36,10 +36,9 @@ import { usePoolFilter } from '../../hooks/usePoolFilter'
 import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
 import { useProtocolLimit } from '../../hooks/useProtocolLimit'
 import * as poolsRoutes from '../../routes/pools'
-// import * as saversRoutes from '../../routes/pools/savers'
+import * as saversRoutes from '../../routes/pools/savers'
 import { DEFAULT_NETWORK } from '../../services/const'
-import { PoolsState, DEFAULT_POOL_FILTERS } from '../../services/midgard/types'
-import { GetPoolsPeriodEnum } from '../../types/generated/midgard'
+import { PoolsState, DEFAULT_POOL_FILTERS, GetPoolsPeriodEnum } from '../../services/midgard/types'
 import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
 import { filterTableData } from './Pools.utils'
 import * as Shared from './PoolsOverview.shared'
@@ -107,15 +106,14 @@ export const ActivePools: React.FC = (): JSX.Element => {
               })
             )
           }
-        }
+        },
         // TODO(@veado) Enable savers
-        // {
-        //   label: intl.formatMessage({ id: 'common.earn' }),
-        //   disabled: disableAllPoolActions || disableTradingActions,
-        //   callback: () => {
-        //     navigate(saversRoutes.earn.path({ asset: assetToString(asset), walletType: DEFAULT_WALLET_TYPE }))
-        //   }
-        // }
+        {
+          label: intl.formatMessage({ id: 'common.earn' }),
+          callback: () => {
+            navigate(saversRoutes.earn.path({ asset: assetToString(asset), walletType: DEFAULT_WALLET_TYPE }))
+          }
+        }
       ]
 
       return (

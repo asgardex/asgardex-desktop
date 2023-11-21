@@ -20,14 +20,13 @@ import { useNetwork } from '../../hooks/useNetwork'
 import { usePricePool } from '../../hooks/usePricePool'
 import { PoolDetails } from '../../services/midgard/types'
 import { SaverProviderRD } from '../../services/thorchain/types'
+import { UpdateSaverProvider } from './Savers.types'
 
 type Props = {
   asset: Asset
   address: Address
   poolDetails: PoolDetails
 }
-
-type UpdateSaverProvider = { address: Address; asset: Asset }
 
 const eqUpdateSaverProvider = Eq.struct<UpdateSaverProvider>({
   address: eqString,
@@ -107,7 +106,7 @@ export const SaversDetailsView: React.FC<Props> = (props): JSX.Element => {
             priceAsset={pricePool.asset}
             deposit={{ amount: depositValue, price: depositPrice }}
             redeem={{ amount: redeemValue, price: redeemPrice }}
-            percent={growthPercent}
+            percent={growthPercent.times(100)}
           />
         )
       }

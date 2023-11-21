@@ -1,13 +1,15 @@
+import { AVAXChain, AVAX_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { BSCChain, BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { COSMOS_DECIMAL } from '@xchainjs/xchain-cosmos'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGE_DECIMAL } from '@xchainjs/xchain-doge'
 import { DOGEChain } from '@xchainjs/xchain-doge'
-import { ETH_DECIMAL } from '@xchainjs/xchain-ethereum'
+import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTC_DECIMAL } from '@xchainjs/xchain-litecoin'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
@@ -37,7 +39,13 @@ export const smallestAmountToSent = (chain: Chain, _network: Network): BaseAmoun
       return baseAmount(0, THOR_DECIMAL)
     case ETHChain:
       // zero for ETH
-      return baseAmount(0, ETH_DECIMAL)
+      return baseAmount(0, ETH_GAS_ASSET_DECIMAL)
+    case AVAXChain:
+      // zero for Avax
+      return baseAmount(0, AVAX_GAS_ASSET_DECIMAL)
+    case BSCChain:
+      // zero for Avax
+      return baseAmount(0, BSC_GAS_ASSET_DECIMAL)
     case GAIAChain:
       return baseAmount(1, COSMOS_DECIMAL)
     case DOGEChain:

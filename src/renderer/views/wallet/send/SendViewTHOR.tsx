@@ -10,9 +10,10 @@ import { LoadingView } from '../../../components/shared/loading'
 import { SendFormTHOR } from '../../../components/wallet/txs/send/'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
+import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { liveData } from '../../../helpers/rx/liveData'
-import { getWalletBalanceByAddress } from '../../../helpers/walletHelper'
+import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
@@ -20,6 +21,7 @@ import { FeeRD } from '../../../services/chain/types'
 import { WalletBalances } from '../../../services/clients'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAsset } from '../../../services/wallet/types'
+import * as Styled from '../Interact/InteractView.styles'
 
 type Props = {
   asset: SelectedWalletAsset
@@ -45,12 +47,16 @@ export const SendViewTHOR: React.FC<Props> = (props): JSX.Element => {
     () =>
       FP.pipe(
         oBalances,
-        O.chain((balances) => getWalletBalanceByAddress(balances, asset.walletAddress))
+        O.chain((balances) =>
+          getWalletBalanceByAddressAndAsset({ balances, address: asset.walletAddress, asset: asset.asset })
+        )
       ),
-    [asset.walletAddress, oBalances]
+    [asset, oBalances]
   )
 
   const { transfer$ } = useChainContext()
+
+  const { thorchainQuery } = useThorchainQueryContext()
 
   const { fees$, reloadFees } = useThorchainContext()
 
@@ -70,22 +76,25 @@ export const SendViewTHOR: React.FC<Props> = (props): JSX.Element => {
     O.fold(
       () => <LoadingView size="large" />,
       (walletBalance) => (
-        <SendFormTHOR
-          asset={asset}
-          balances={FP.pipe(
-            oBalances,
-            O.getOrElse<WalletBalances>(() => [])
-          )}
-          balance={walletBalance}
-          transfer$={transfer$}
-          openExplorerTxUrl={openExplorerTxUrl}
-          getExplorerTxUrl={getExplorerTxUrl}
-          addressValidation={validateAddress}
-          fee={feeRD}
-          reloadFeesHandler={reloadFees}
-          validatePassword$={validatePassword$}
-          network={network}
-        />
+        <Styled.Container>
+          <SendFormTHOR
+            asset={asset}
+            balances={FP.pipe(
+              oBalances,
+              O.getOrElse<WalletBalances>(() => [])
+            )}
+            balance={walletBalance}
+            transfer$={transfer$}
+            openExplorerTxUrl={openExplorerTxUrl}
+            getExplorerTxUrl={getExplorerTxUrl}
+            addressValidation={validateAddress}
+            fee={feeRD}
+            reloadFeesHandler={reloadFees}
+            validatePassword$={validatePassword$}
+            thorchainQuery={thorchainQuery}
+            network={network}
+          />
+        </Styled.Container>
       )
     )
   )

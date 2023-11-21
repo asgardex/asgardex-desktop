@@ -37,7 +37,7 @@ export const SliderWrapper = styled(Slider)<SliderSingleProps & { error: boolean
 
       &-tooltip {
         padding: 0;
-        color: inherit;
+        color: ${palette('text', 2)};
 
         .ant {
           &-tooltip {
@@ -51,7 +51,7 @@ export const SliderWrapper = styled(Slider)<SliderSingleProps & { error: boolean
               min-height: auto;
               background-color: transparent;
               box-shadow: none;
-              color: inherit;
+              color: ${palette('text', 2)};
             }
           }
         }
@@ -62,6 +62,22 @@ export const SliderWrapper = styled(Slider)<SliderSingleProps & { error: boolean
   &:hover {
     .ant-slider-track {
       background: ${({ error }) => (error ? palette('error', 0) : palette('primary', 0))};
+    }
+  }
+
+  .ant-slider-mark {
+    color: ${palette('text', 2)}; /* Define text color */
+    font-size: 12px; /* Define font size */
+    padding-top: 8px;
+
+    &-text {
+      /* Additional styling for mark text, if needed */
+      font-family: inherit;
+    }
+
+    &-text-active {
+      /* Styling for the active mark, if needed */
+      font-weight: bold; /* Example: make the active mark bold */
     }
   }
 `

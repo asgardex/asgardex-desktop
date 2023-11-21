@@ -13,10 +13,15 @@ const swap: SwapMessages = {
   'swap.slip.tolerance.info':
     'The higher the percentage, the more slippage you will accept. More slippage includes also a wider range for covering estimated fees to avoid aborted swaps.',
   'swap.slip.tolerance.ledger-disabled.info': 'Slippage tolerance has been disabled due technical issues with Ledger.',
+  'swap.streaming.interval': 'Interval',
+  'swap.streaming.interval.info': 'Interval between swaps, 10 blocks is 1 minute interval',
+  'swap.streaming.quantity': 'Quanity',
+  'swap.streaming.quantity.info': 'The quantity of mini swaps overall done per interval',
   'swap.errors.amount.balanceShouldCoverChainFee':
     'Transaction fee {fee} needs to be covered by your balance (currently {balance}).',
   'swap.errors.amount.outputShouldCoverChainFee':
     'Outbounding fee of {fee} needs to be covered by receiving amount (currently {amount}).',
+  'swap.errors.amount.thornodeQuoteError': '{error} : Adjust slip or Input Amount',
   'swap.note.lockedWallet': 'You need to unlock your wallet to swap',
   'swap.note.nowallet': 'Create or import a wallet to swap',
   'swap.errors.asset.missingSourceAsset': 'Missing source asset',

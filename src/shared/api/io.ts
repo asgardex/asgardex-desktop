@@ -6,7 +6,7 @@ import * as t from 'io-ts'
 import * as IOD from 'io-ts/Decoder'
 import * as IOG from 'io-ts/Guard'
 
-import { enabledChainGuard, isAsset, isBaseAmount, isEthHDMode, isFeeOption, isHDMode, isNetwork } from '../utils/guard'
+import { enabledChainGuard, isAsset, isBaseAmount, isEvmHDMode, isFeeOption, isHDMode, isNetwork } from '../utils/guard'
 
 const assetDecoder: IOD.Decoder<unknown, Asset> = FP.pipe(
   IOD.string,
@@ -77,11 +77,11 @@ export const networkIO = new t.Type(
   t.identity
 )
 
-export const ethHDModeIO = new t.Type(
-  'EthHDMode',
-  isEthHDMode,
+export const evmHDModeIO = new t.Type(
+  'EvmHDMode',
+  isEvmHDMode,
   (u, c) => {
-    if (isEthHDMode(u)) return t.success(u)
+    if (isEvmHDMode(u)) return t.success(u)
     return t.failure(u, c, `Can't decode EthHDMode from ${u}`)
   },
   t.identity
@@ -112,7 +112,7 @@ export const ipcLedgerSendTxParamsIO = t.type({
   network: networkIO,
   sender: t.union([t.string, t.undefined]),
   recipient: t.string,
-  asset: t.union([assetIO, t.undefined]),
+  asset: assetIO,
   feeAsset: t.union([assetIO, t.undefined]),
   amount: baseAmountIO,
   memo: t.union([t.string, t.undefined]),
@@ -147,7 +147,7 @@ export const ipcLedgerApproveERC20TokenParamsIO = t.type({
   contractAddress: t.string,
   spenderAddress: t.string,
   walletIndex: t.number,
-  ethHdMode: ethHDModeIO
+  evmHdMode: evmHDModeIO
 })
 
 export type IPCLedgerApproveERC20TokenParams = t.TypeOf<typeof ipcLedgerApproveERC20TokenParamsIO>

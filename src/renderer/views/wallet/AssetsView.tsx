@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { Row } from 'antd'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -22,6 +21,7 @@ import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useTotalWalletBalance } from '../../hooks/useWalletBalance'
 import * as walletRoutes from '../../routes/wallet'
+import { reloadBalancesByChain } from '../../services/wallet'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ChainBalances, SelectedWalletAsset } from '../../services/wallet/types'
 
@@ -29,7 +29,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
   const navigate = useNavigate()
   const intl = useIntl()
 
-  const { chainBalances$, balancesState$, setSelectedAsset, reloadBalances } = useWalletContext()
+  const { chainBalances$, balancesState$, setSelectedAsset } = useWalletContext()
 
   const { network } = useNetwork()
 
@@ -41,15 +41,15 @@ export const AssetsView: React.FC = (): JSX.Element => {
           FP.pipe(
             chainBalances,
             // we show all balances
-            A.filter(({ balancesType }) => balancesType === 'all'),
+            A.filter(({ balancesType }) => balancesType === 'all')
             // accept balances > 0 only
-            A.map((chainBalance) => ({
-              ...chainBalance,
-              balances: FP.pipe(
-                chainBalance.balances,
-                RD.map((balances) => balances.filter((balance) => balance.amount.gt(0)))
-              )
-            }))
+            // A.map((chainBalance) => ({
+            //   ...chainBalance,
+            //   balances: FP.pipe(
+            //     chainBalance.balances,
+            //     RD.map((balances) => balances.filter((balance) => balance.amount.gt(0)))
+            //   )
+            // }))
           )
         )
       ),
@@ -62,7 +62,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
   )
   const {
     service: {
-      pools: { poolsState$, selectedPricePool$, reloadAllPools }
+      pools: { poolsState$, selectedPricePool$ }
     }
   } = useMidgardContext()
 
@@ -87,9 +87,6 @@ export const AssetsView: React.FC = (): JSX.Element => {
         case 'send':
           navigate(walletRoutes.send.path())
           break
-        case 'upgrade':
-          navigate(walletRoutes.upgradeRune.path())
-          break
         case 'deposit':
           navigate(walletRoutes.interact.path({ interactType: 'bond' }))
           break
@@ -105,16 +102,27 @@ export const AssetsView: React.FC = (): JSX.Element => {
 
   const disableRefresh = useMemo(() => RD.isPending(poolsRD) || loadingBalances, [loadingBalances, poolsRD])
 
+  const chains = useMemo(
+    () =>
+      FP.pipe(
+        chainBalances,
+        A.map(({ chain }) => chain)
+      ),
+    [chainBalances]
+  )
+
   const refreshHandler = useCallback(() => {
-    reloadAllPools()
-    reloadBalances()
-  }, [reloadAllPools, reloadBalances])
+    chains.forEach((chain) => {
+      const lazyReload = reloadBalancesByChain(chain)
+      lazyReload() // Invoke the lazy function
+    })
+  }, [chains])
 
   return (
     <>
-      <Row justify="end" style={{ marginBottom: '20px' }}>
-        <RefreshButton onClick={refreshHandler} disabled={disableRefresh} />
-      </Row>
+      <div className="flex w-full justify-end pb-10px">
+        <RefreshButton onClick={refreshHandler}></RefreshButton>
+      </div>
       <AssetsNav />
       <TotalValue
         total={totalWalletBalances}
@@ -124,7 +132,9 @@ export const AssetsView: React.FC = (): JSX.Element => {
         // TODO (@veado) Handle private data
         hidePrivateData={false}
       />
+
       <AssetsTableCollapsable
+        disableRefresh={disableRefresh}
         chainBalances={chainBalances}
         pricePool={selectedPricePool}
         poolDetails={poolDetails}

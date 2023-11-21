@@ -93,6 +93,7 @@ const clientState$: ClientState$ = FP.pipe(
                     network,
                     phrase,
                     chainIds: { ...INITIAL_CHAIN_IDS, [network]: chainId }
+                    // explorerUrls: DEFAULT_EXPLORER_URLS
                   })
                   return RD.success(client)
                 } catch (error) {
@@ -104,8 +105,26 @@ const clientState$: ClientState$ = FP.pipe(
             )
           )
         ),
-        RxOp.catchError((error) =>
-          Rx.of(RD.failure<Error>(new Error(`Failed to get THORChain's chain id (${error?.msg ?? error.toString()})`)))
+        RxOp.catchError(() =>
+          Rx.of(
+            FP.pipe(
+              getPhrase(keystore),
+              O.map<string, ClientState>((phrase) => {
+                try {
+                  const client = new Client({
+                    clientUrl,
+                    network,
+                    phrase,
+                    chainIds: { ...INITIAL_CHAIN_IDS, [network]: INITIAL_CHAIN_IDS }
+                  })
+                  return RD.success(client)
+                } catch (error) {
+                  return RD.failure<Error>(isError(error) ? error : new Error('Failed to create THOR client'))
+                }
+              }),
+              O.getOrElse<ClientState>(() => RD.initial)
+            )
+          )
         ),
         RxOp.startWith(RD.pending)
       )

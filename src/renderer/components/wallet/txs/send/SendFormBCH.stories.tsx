@@ -10,6 +10,7 @@ import { getMockRDValueFactory, RDStatus } from '../../../../../shared/mock/rdBy
 import { mockValidatePassword$ } from '../../../../../shared/mock/wallet'
 import { AssetBCH } from '../../../../../shared/utils/asset'
 import { WalletType } from '../../../../../shared/wallet/types'
+import { useThorchainQueryContext } from '../../../../contexts/ThorchainQueryContext'
 import { THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
 import { mockWalletBalance } from '../../../../helpers/test/testWalletHelper'
 import { FeesWithRatesRD } from '../../../../services/bitcoin/types'
@@ -70,6 +71,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
       () => Error('getting fees failed')
     )
   )
+  const { thorchainQuery } = useThorchainQueryContext()
 
   return (
     <Component
@@ -81,6 +83,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
       feesWithRates={feesWithRates}
       reloadFeesHandler={() => console.log('reload fees')}
       validatePassword$={mockValidatePassword$}
+      thorchainQuery={thorchainQuery}
       network="testnet"
       openExplorerTxUrl={(txHash: TxHash) => {
         console.log(`Open explorer - tx hash ${txHash}`)

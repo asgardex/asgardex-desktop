@@ -26,6 +26,7 @@ const EXTERNALS_WHITELIST = [
   'stagenet.thorswap.finance',
   'app.thorswap.finance',
   'viewblock.io',
+  'runescan.io',
   'testnet.midgard.thorchain.info',
   'stagenet-midgard.ninerealms.com',
   'testnet-rpc.ninerealms.com',
@@ -35,7 +36,11 @@ const EXTERNALS_WHITELIST = [
   'stagenet-thornode.ninerealms.com',
   'stagenet-rpc.ninerealms.com',
   'cosmos.bigdipper.live',
-  'explorer.theta-testnet.polypore.xyz'
+  'explorer.theta-testnet.polypore.xyz',
+  'snowtrace.dev',
+  'routescan.io',
+  'bscscan.com',
+  'track.ninerealms.com'
 ]
 
 export const openExternal = (target: string) => {

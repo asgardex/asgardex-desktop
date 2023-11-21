@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { DefaultApi } from '@xchainjs/xchain-midgard'
 import { Asset, assetFromString, assetToString, bn, Chain, currencySymbolByAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/Array'
@@ -18,16 +19,6 @@ import { sequenceTOption } from '../../helpers/fpHelpers'
 import { LiveData, liveData } from '../../helpers/rx/liveData'
 import { observableState, triggerStream, TriggerStream$ } from '../../helpers/stateHelper'
 import { roundUnixTimestampToMinutes } from '../../helpers/timeHelper'
-import {
-  DefaultApi,
-  GetEarningsHistoryRequest,
-  GetLiquidityHistoryRequest,
-  GetPoolsPeriodEnum,
-  GetPoolsRequest,
-  GetPoolsStatusEnum,
-  GetPoolStatsPeriodEnum,
-  GetPoolStatsRequest
-} from '../../types/generated/midgard/apis'
 import { PricePool, PricePoolAsset, PricePools } from '../../views/pools/Pools.types'
 import { network$ } from '../app/service'
 import { PoolFeeLD } from '../chain/types'
@@ -64,7 +55,14 @@ import {
   HaltedChainsLD,
   SelectedPoolAsset,
   PoolType,
-  MidgardUrlLD
+  MidgardUrlLD,
+  GetPoolsPeriodEnum,
+  GetPoolsRequest,
+  GetPoolStatsRequest,
+  GetPoolStatsPeriodEnum,
+  GetEarningsHistoryRequest,
+  GetLiquidityHistoryRequest,
+  GetPoolsStatusEnum
 } from './types'
 import {
   getPoolAddressesByChain,
@@ -128,31 +126,35 @@ const createPoolsService = ({
   const apiGetPools$ = (request: GetPoolsRequest, reload$: TriggerStream$): PoolDetailsLD =>
     FP.pipe(
       Rx.combineLatest([midgardDefaultApi$, poolsPeriod$, reload$]),
-      RxOp.map(([apiRD, period, _]) =>
+      RxOp.switchMap(([apiRD, period, _]) =>
         FP.pipe(
           apiRD,
-          RD.map((api) => ({ api, period }))
-        )
-      ),
-      liveData.chain(({ api, period }) =>
-        FP.pipe(
-          api.getPools({ ...request, period }),
-          RxOp.map(RD.success),
-          // Filter `PoolDetails`by using enabled chains only
-          liveData.map(
-            A.filter(({ asset }) =>
+          RD.fold(
+            () => Rx.EMPTY,
+            () => Rx.EMPTY,
+            (error: Error) => Rx.of(RD.failure(error)),
+            (api: DefaultApi) =>
               FP.pipe(
-                asset,
-                midgardAssetFromString,
-                O.fold(
-                  () => false,
-                  ({ chain }) => isEnabledChain(chain)
-                )
+                Rx.from(api.getPools(request.status, period)),
+                RxOp.map((response) => RD.success(response.data)), // Extract data from AxiosResponse
+                RxOp.map(
+                  RD.map(
+                    A.filter(({ asset }) =>
+                      FP.pipe(
+                        asset,
+                        midgardAssetFromString,
+                        O.fold(
+                          () => false,
+                          ({ chain }) => isEnabledChain(chain)
+                        )
+                      )
+                    )
+                  )
+                ),
+                RxOp.startWith(RD.pending),
+                RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
               )
-            )
-          ),
-          RxOp.startWith(RD.pending),
-          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+          )
         )
       ),
       RxOp.shareReplay(1)
@@ -232,8 +234,8 @@ const createPoolsService = ({
       ),
       liveData.chain(({ api, period }) => {
         return FP.pipe(
-          api.getPool({ asset: assetToString(asset), period: poolsPeriodToPoolPeriod(period) }),
-          RxOp.map(RD.success),
+          Rx.from(api.getPool(assetToString(asset), poolsPeriodToPoolPeriod(period))),
+          RxOp.map((response) => RD.success(response.data)), // Extract data from AxiosResponse
           RxOp.startWith(RD.pending),
           RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
         )
@@ -642,8 +644,8 @@ const createPoolsService = ({
       midgardDefaultApi$,
       liveData.chain((api) =>
         FP.pipe(
-          api.getPoolStats(request),
-          RxOp.map(RD.success),
+          Rx.from(api.getPoolStats(request.asset, request.period)),
+          RxOp.map((response) => RD.success(response.data)), // Extract data from AxiosResponse
           RxOp.startWith(RD.pending),
           RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
         )
@@ -676,12 +678,14 @@ const createPoolsService = ({
       midgardDefaultApi$,
       liveData.chain((api) =>
         FP.pipe(
-          api.getEarningsHistory({
-            from: O.toUndefined(roundToFiveMinutes(from)),
-            to: O.toUndefined(roundToFiveMinutes(to)),
-            ...request
-          }),
-          RxOp.map(RD.success),
+          Rx.from(
+            api.getEarningsHistory(
+              request.interval,
+              O.toUndefined(roundToFiveMinutes(from)),
+              O.toUndefined(roundToFiveMinutes(to))
+            )
+          ),
+          RxOp.map((response) => RD.success(response.data)), // Extract data from AxiosResponse
           RxOp.startWith(RD.pending),
           RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
         )
@@ -722,14 +726,18 @@ const createPoolsService = ({
       RxOp.map(([api, _]) => api),
       liveData.chain((api) =>
         FP.pipe(
-          api.getLiquidityHistory({
-            from: O.toUndefined(roundToFiveMinutes(from)),
-            to: O.toUndefined(roundToFiveMinutes(to)),
-            ...request
-          }),
-          RxOp.map((result) =>
-            result /* result can be null - for whatever reason */
-              ? RD.success(result)
+          Rx.from(
+            api.getLiquidityHistory(
+              request.pool,
+              request.interval,
+              request.count,
+              O.toUndefined(roundToFiveMinutes(from)),
+              O.toUndefined(roundToFiveMinutes(to))
+            )
+          ),
+          RxOp.map((response) =>
+            response.data /* response.data is the actual LiquidityHistory object */
+              ? RD.success(response.data)
               : RD.failure(Error('Failed to load liquidity history from Midgard'))
           ),
           RxOp.startWith(RD.pending),
@@ -745,11 +753,7 @@ const createPoolsService = ({
           selectedPoolAsset,
           O.fold(
             () => Rx.of(RD.initial),
-            (asset) =>
-              apiGetLiquidityHistory$({
-                pool: assetToString(asset),
-                ...params
-              })
+            (asset) => apiGetLiquidityHistory$({ pool: assetToString(asset), from: params.from, to: params.to })
           )
         )
       ),
@@ -760,22 +764,22 @@ const createPoolsService = ({
   const apiGetSwapHistory$ = (params: ApiGetSwapHistoryParams): SwapHistoryLD => {
     const { poolAsset, from, to, ...otherParams } = params
     const pool = FP.pipe(poolAsset, O.fromNullable, O.map(assetToString), O.toUndefined)
-
     return FP.pipe(
       midgardDefaultApi$,
       liveData.chain((api) =>
         FP.pipe(
-          api.getSwapHistory({
-            pool,
-            from: O.toUndefined(roundToFiveMinutes(from)),
-            to: O.toUndefined(roundToFiveMinutes(to)),
-            ...otherParams
-          }),
-          RxOp.map((result) =>
-            result /* result can be null - for whatever reason */
-              ? RD.success(result)
-              : RD.failure(Error('Failed to load swap history from Midgard'))
+          Rx.from(
+            api.getSwapHistory(
+              pool,
+              otherParams.interval,
+              otherParams.count,
+              O.toUndefined(roundToFiveMinutes(from)),
+              O.toUndefined(roundToFiveMinutes(to))
+            )
           ),
+          RxOp.map((response) => {
+            return RD.success(response.data)
+          }), // Extract data from AxiosResponse
           RxOp.startWith(RD.pending),
           RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
         )
@@ -814,17 +818,18 @@ const createPoolsService = ({
       midgardDefaultApi$,
       liveData.chain((api) =>
         FP.pipe(
-          api.getDepthHistory({
-            pool: assetToString(poolAsset),
-            from: O.toUndefined(roundToFiveMinutes(from)),
-            to: O.toUndefined(roundToFiveMinutes(to)),
-            ...otherParams
-          }),
-          RxOp.map((result) =>
-            result /* result can be null - for whatever reason */
-              ? RD.success(result)
-              : RD.failure(Error('Failed to load depth history from Midgard'))
+          Rx.from(
+            api.getDepthHistory(
+              assetToString(poolAsset),
+              otherParams.interval,
+              otherParams.count,
+              O.toUndefined(roundToFiveMinutes(from)),
+              O.toUndefined(roundToFiveMinutes(to))
+            )
           ),
+          RxOp.map((response) =>
+            response.data ? RD.success(response.data) : RD.failure(Error('Failed to load depth history from Midgard'))
+          ), // Extract data from AxiosResponse
           RxOp.startWith(RD.pending),
           RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
         )

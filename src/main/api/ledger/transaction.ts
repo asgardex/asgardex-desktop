@@ -1,7 +1,9 @@
 import TransportNodeHidSingleton from '@ledgerhq/hw-transport-node-hid-singleton'
+import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { TxHash } from '@xchainjs/xchain-client'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
@@ -13,12 +15,14 @@ import * as E from 'fp-ts/Either'
 import { IPCLedgerDepositTxParams, IPCLedgerSendTxParams } from '../../../shared/api/io'
 import { LedgerError, LedgerErrorId } from '../../../shared/api/types'
 import { chainToString, isEnabledChain } from '../../../shared/utils/chain'
-import { isError, isEthHDMode } from '../../../shared/utils/guard'
+import { isError, isEvmHDMode } from '../../../shared/utils/guard'
 import * as BNB from './binance/transaction'
 import * as BTC from './bitcoin/transaction'
 import * as BCH from './bitcoincash/transaction'
 import * as COSMOS from './cosmos/transaction'
 import * as DOGE from './doge/transaction'
+import * as BSC from './ethereum/transaction'
+import * as AVAX from './ethereum/transaction'
 import * as ETH from './ethereum/transaction'
 import * as LTC from './litecoin/transaction'
 import * as THOR from './thorchain/transaction'
@@ -41,7 +45,6 @@ export const sendTx = async ({
   try {
     const transport = await TransportNodeHidSingleton.open()
     let res: E.Either<LedgerError, string>
-
     if (!isEnabledChain(chain)) {
       res = E.left({
         errorId: LedgerErrorId.NOT_IMPLEMENTED,
@@ -59,6 +62,7 @@ export const sendTx = async ({
             res = await THOR.send({
               transport,
               network,
+              asset,
               recipient,
               amount,
               memo,
@@ -129,7 +133,7 @@ export const sendTx = async ({
               errorId: LedgerErrorId.INVALID_DATA,
               msg: `Fee option needs to be set to send Ledger transaction on ${chainToString(chain)}`
             })
-          } else if (!isEthHDMode(hdMode)) {
+          } else if (!isEvmHDMode(hdMode)) {
             res = E.left({
               errorId: LedgerErrorId.INVALID_DATA,
               msg: `Invalid EthHDMode set - needed to send Ledger transaction on ${chainToString(chain)}`
@@ -144,7 +148,67 @@ export const sendTx = async ({
               memo,
               walletIndex,
               feeOption,
-              ethHDMode: hdMode
+              evmHDMode: hdMode
+            })
+          }
+          break
+        case AVAXChain:
+          if (!asset) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(chain)}`
+            })
+          } else if (!feeOption) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Fee option needs to be set to send Ledger transaction on ${chainToString(chain)}`
+            })
+          } else if (!isEvmHDMode(hdMode)) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(chain)}`
+            })
+          } else {
+            res = await AVAX.send({
+              asset,
+              transport,
+              network,
+              recipient,
+              amount,
+              memo,
+              walletIndex,
+              feeOption,
+              evmHDMode: hdMode
+            })
+          }
+          break
+        case BSCChain:
+          if (!asset) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(chain)}`
+            })
+          } else if (!feeOption) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Fee option needs to be set to send Ledger transaction on ${chainToString(chain)}`
+            })
+          } else if (!isEvmHDMode(hdMode)) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(chain)}`
+            })
+          } else {
+            res = await BSC.send({
+              asset,
+              transport,
+              network,
+              recipient,
+              amount,
+              memo,
+              walletIndex,
+              feeOption,
+              evmHDMode: hdMode
             })
           }
           break
@@ -215,7 +279,7 @@ export const deposit = async ({
               msg: `"nodeUrl" needs to be defined to send Ledger transaction on ${chainToString(chain)}`
             })
           } else {
-            res = await THOR.deposit({ transport, network, amount, memo, walletIndex, nodeUrl })
+            res = await THOR.deposit({ transport, network, amount, asset, memo, walletIndex, nodeUrl })
           }
           break
         case ETHChain:
@@ -239,7 +303,7 @@ export const deposit = async ({
               errorId: LedgerErrorId.INVALID_DATA,
               msg: `Fee option needs to be defined to send Ledger transaction on ${chainToString(chain)}`
             })
-          } else if (!isEthHDMode(hdMode)) {
+          } else if (!isEvmHDMode(hdMode)) {
             res = E.left({
               errorId: LedgerErrorId.INVALID_DATA,
               msg: `Invalid EthHDMode set - needed to send Ledger transaction on ${chainToString(chain)}`
@@ -255,7 +319,7 @@ export const deposit = async ({
               walletIndex,
               recipient,
               feeOption,
-              ethHDMode: hdMode
+              evmHDMode: hdMode
             })
           }
           break
@@ -265,6 +329,8 @@ export const deposit = async ({
         case BCHChain:
         case DOGEChain:
         case GAIAChain:
+        case AVAXChain:
+        case BSCChain:
           res = notSupportedError
           break
       }

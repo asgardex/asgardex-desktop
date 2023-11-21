@@ -35,3 +35,9 @@ export const CopyLabel = styled(A.Typography.Text)`
     width: ${ICON_SIZE}px;
   }
 `
+
+export const Text = styled(A.Typography.Text)`
+  color: ${palette('primary', 0)};
+  padding-right: 5px;
+  margin-left: 10px;
+`

@@ -2,7 +2,6 @@ import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
-import { media } from '../../../helpers/styleHelper'
 import { ExternalLinkIcon as ExternalLinkIconUI } from '../../uielements/common/Common.styles'
 import { Label as UILabel } from '../../uielements/label'
 
@@ -50,16 +49,4 @@ export const TableHeadlineLinkIcon = styled(ExternalLinkIconUI)`
   svg {
     color: inherit;
   }
-`
-
-export const UpgradeFeeErrorLabel = styled(UILabel).attrs({
-  color: 'error',
-  textTransform: 'uppercase',
-  align: 'center'
-})`
-  padding: 10px 50px 0 50px;
-
-  ${media.md`
-      padding: 10px 0 0 0;
-  `};
 `

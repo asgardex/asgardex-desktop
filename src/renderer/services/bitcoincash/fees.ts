@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { BCHChain, Client as BitcoinCashClient, getDefaultFeesWithRates } from '@xchainjs/xchain-bitcoincash'
+import { BCHChain, Client as BitcoinCashClient } from '@xchainjs/xchain-bitcoincash'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
@@ -18,10 +18,10 @@ export const createFeesService = (client$: Client$): FeesService => {
   const { get$: reloadFeesWithRates$, set: reloadFeesWithRates } = observableState<Memo | undefined>(undefined)
 
   const loadFees$ = (client: BitcoinCashClient, memo?: string): FeesWithRatesLD =>
-    Rx.from(client.getFeesWithRates(memo)).pipe(
-      RxOp.map(RD.success),
-      RxOp.catchError(() => Rx.of(RD.success(getDefaultFeesWithRates()))),
-      RxOp.startWith(RD.pending)
+    Rx.from(client.getFeesWithRates({ memo: memo })).pipe(
+      RxOp.mergeMap((feesWithRates) => Rx.of(RD.success(feesWithRates))),
+      RxOp.catchError((error) => Rx.of(RD.failure(error))),
+      RxOp.startWith(RD.pending) //
     )
 
   const feesWithRates$ = (memo?: Memo): FeesWithRatesLD =>

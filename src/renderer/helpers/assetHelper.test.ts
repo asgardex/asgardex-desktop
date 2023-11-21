@@ -1,5 +1,5 @@
 import { BNBChain } from '@xchainjs/xchain-binance'
-import { ETHAddress, ETHChain } from '@xchainjs/xchain-ethereum'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { assetAmount, baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -49,7 +49,6 @@ import {
   to1e8BaseAmount,
   getTwoSigfigAssetAmount,
   isXRuneAsset,
-  disableRuneUpgrade,
   assetInBinanceBlacklist,
   isRuneEthAsset,
   assetInERC20Whitelist,
@@ -61,6 +60,7 @@ import {
   assetInList
 } from './assetHelper'
 import { eqAsset, eqAssetAmount, eqBaseAmount, eqOAsset } from './fp/eq'
+import { ETHAddress } from '../../shared/ethereum/const'
 
 describe('helpers/assetHelper', () => {
   describe('isRuneBnbAsset', () => {
@@ -461,98 +461,6 @@ describe('helpers/assetHelper', () => {
     it('returns two sigfig amount in case the value is less than 1', () => {
       const result = getTwoSigfigAssetAmount(assetAmount('0.0123'))
       expect(eqAssetAmount.equals(result, assetAmount('0.012'))).toBeTruthy()
-    })
-  })
-
-  describe('disableRuneUpgrade', () => {
-    it('disabled for BNB.RUNE + halted THORChain', () => {
-      expect(
-        disableRuneUpgrade({
-          asset: AssetRune67C,
-          haltThorChain: true,
-          haltEthChain: false,
-          haltBnbChain: false,
-          network: 'testnet'
-        })
-      ).toBeTruthy()
-    })
-    it('enabled for BNB.RUNE + halted ETH chain', () => {
-      expect(
-        disableRuneUpgrade({
-          asset: AssetRune67C,
-          haltThorChain: false,
-          haltEthChain: true,
-          haltBnbChain: false,
-          network: 'testnet'
-        })
-      ).toBeFalsy()
-    })
-
-    it('disabled for BNB.RUNE + halted BNB chain', () => {
-      expect(
-        disableRuneUpgrade({
-          asset: AssetRune67C,
-          haltThorChain: false,
-          haltEthChain: false,
-          haltBnbChain: true,
-          network: 'testnet'
-        })
-      ).toBeTruthy()
-    })
-    it('enabled for BNB.RUNE + no halted chains', () => {
-      expect(
-        disableRuneUpgrade({
-          asset: AssetRune67C,
-          haltThorChain: false,
-          haltEthChain: false,
-          haltBnbChain: false,
-          network: 'testnet'
-        })
-      ).toBeFalsy()
-    })
-    it('disabled for ETH.RUNE + halted ETH chain', () => {
-      expect(
-        disableRuneUpgrade({
-          asset: AssetRuneERC20,
-          haltThorChain: false,
-          haltEthChain: true,
-          haltBnbChain: false,
-          network: 'mainnet'
-        })
-      ).toBeTruthy()
-    })
-    it('enabled for ETH.RUNE + halted BNB chain', () => {
-      expect(
-        disableRuneUpgrade({
-          asset: AssetRuneERC20,
-          haltThorChain: false,
-          haltEthChain: false,
-          haltBnbChain: true,
-          network: 'mainnet'
-        })
-      ).toBeFalsy()
-    })
-    it('disabled for ETH.RUNE + halted THORChain', () => {
-      expect(
-        disableRuneUpgrade({
-          asset: AssetRuneERC20,
-          haltThorChain: true,
-          haltEthChain: false,
-          haltBnbChain: false,
-          network: 'mainnet'
-        })
-      ).toBeTruthy()
-    })
-    it('enable for ETH.RUNE + no halted chains', () => {
-      expect(
-        disableRuneUpgrade({
-          asset: AssetRuneERC20,
-          haltThorChain: false,
-          haltEthChain: false,
-          haltBnbChain: false,
-          network: 'mainnet'
-        })
-      ).toBeFalsy()
     })
   })
 

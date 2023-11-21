@@ -1,6 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Fees, FeeType, TxParams } from '@xchainjs/xchain-client'
-import { getFee, getDefaultFees, ETHAddress, GasPrices } from '@xchainjs/xchain-ethereum'
+import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
+import { getFee, GasPrices } from '@xchainjs/xchain-evm'
 import { Asset, baseAmount } from '@xchainjs/xchain-util'
 import { ethers } from 'ethers'
 import * as FP from 'fp-ts/lib/function'
@@ -8,12 +9,14 @@ import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { ETHAddress } from '../../../shared/ethereum/const'
 import { isEthAsset } from '../../helpers/assetHelper'
 import { observableState } from '../../helpers/stateHelper'
 import { FeeLD } from '../chain/types'
 import * as C from '../clients'
 import { FeesLD } from '../clients'
-import { FeesService, Client$, PollInTxFeeParams, ApproveFeeHandler, ApproveParams } from './types'
+import { FeesService, PollInTxFeeParams, ApproveFeeHandler, ApproveParams } from '../evm/types'
+import { Client$ } from './types'
 
 export const ETH_OUT_TX_GAS_LIMIT = ethers.BigNumber.from('35609')
 export const ERC20_OUT_TX_GAS_LIMIT = ethers.BigNumber.from('49610')
@@ -36,7 +39,7 @@ export const createFeesService = (client$: Client$): FeesService => {
         )
       ),
       RxOp.map(RD.success),
-      RxOp.catchError((_) => Rx.of(RD.success(getDefaultFees()))),
+      RxOp.catchError((error) => Rx.of(RD.failure(error))),
       RxOp.startWith(RD.pending)
     )
 
@@ -57,12 +60,12 @@ export const createFeesService = (client$: Client$): FeesService => {
               ]).pipe(
                 RxOp.map<[ethers.BigNumber, GasPrices], Fees>(([gasLimit, gasPrices]) => ({
                   type: FeeType.PerByte,
-                  average: getFee({ gasPrice: gasPrices.average, gasLimit }),
-                  fast: getFee({ gasPrice: gasPrices.fast, gasLimit }),
-                  fastest: getFee({ gasPrice: gasPrices.fastest, gasLimit })
+                  average: getFee({ gasPrice: gasPrices.average, gasLimit, decimals: ETH_GAS_ASSET_DECIMAL }),
+                  fast: getFee({ gasPrice: gasPrices.fast, gasLimit, decimals: ETH_GAS_ASSET_DECIMAL }),
+                  fastest: getFee({ gasPrice: gasPrices.fastest, gasLimit, decimals: ETH_GAS_ASSET_DECIMAL })
                 })),
                 RxOp.map(RD.success),
-                RxOp.catchError((_) => Rx.of(RD.success(getDefaultFees()))),
+                RxOp.catchError((error) => Rx.of(RD.failure(error))),
                 RxOp.startWith(RD.pending)
               )
           )
@@ -85,12 +88,12 @@ export const createFeesService = (client$: Client$): FeesService => {
               return Rx.from(client.estimateGasPrices()).pipe(
                 RxOp.map<GasPrices, Fees>((gasPrices) => ({
                   type: FeeType.PerByte,
-                  average: getFee({ gasPrice: gasPrices.average, gasLimit }),
-                  fast: getFee({ gasPrice: gasPrices.fast, gasLimit }),
-                  fastest: getFee({ gasPrice: gasPrices.fastest, gasLimit })
+                  average: getFee({ gasPrice: gasPrices.average, gasLimit, decimals: ETH_GAS_ASSET_DECIMAL }),
+                  fast: getFee({ gasPrice: gasPrices.fast, gasLimit, decimals: ETH_GAS_ASSET_DECIMAL }),
+                  fastest: getFee({ gasPrice: gasPrices.fastest, gasLimit, decimals: ETH_GAS_ASSET_DECIMAL })
                 })),
                 RxOp.map(RD.success),
-                RxOp.catchError((_) => Rx.of(RD.success(getDefaultFees()))),
+                RxOp.catchError((error) => Rx.of(RD.failure(error))),
                 RxOp.startWith(RD.pending)
               )
             }
@@ -114,9 +117,11 @@ export const createFeesService = (client$: Client$): FeesService => {
                 client.estimateApprove({ contractAddress, spenderAddress, fromAddress }),
                 client.estimateGasPrices()
               ]).pipe(
-                RxOp.map(([gasLimit, gasPrices]) => getFee({ gasPrice: gasPrices.fast, gasLimit })),
+                RxOp.map(([gasLimit, gasPrices]) =>
+                  getFee({ gasPrice: gasPrices.fast, gasLimit, decimals: ETH_GAS_ASSET_DECIMAL })
+                ),
                 RxOp.map(RD.success),
-                RxOp.catchError((_) => Rx.of(RD.success(getDefaultFees().fast))),
+                RxOp.catchError((error) => Rx.of(RD.failure(error))),
                 RxOp.startWith(RD.pending)
               )
           )

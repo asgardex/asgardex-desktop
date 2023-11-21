@@ -9,7 +9,7 @@ const {
 
 /**
  * Middleware to add custom header to requests (9R endpoints only)
- *
+ *x
  * @param request RequestArgs (rxjs/ajax) | AxiosRequestConfig (axios)
  * @returns RequestArgs (rxjs/ajax) | AxiosRequestConfig (axios)
  */

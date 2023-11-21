@@ -52,11 +52,11 @@ export const useNetwork = (): { network: Network; changeNetwork: ChangeNetworkHa
   const oWalletRedirectPath: O.Option<string> = matchPaths(
     [
       walletRoutes.send.template,
-      walletRoutes.upgradeRune.template,
       walletRoutes.assetDetail.template,
       walletRoutes.bonds.template,
       walletRoutes.history.template,
       walletRoutes.poolShares.template,
+      walletRoutes.savers.template,
       walletRoutes.interact.template
     ],
     pathname

@@ -1,6 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { TxHash, XChainClient } from '@xchainjs/xchain-client'
-import { ETHChain, getTokenAddress } from '@xchainjs/xchain-ethereum'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
+import * as ETH from '@xchainjs/xchain-evm'
 import { Address } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
@@ -23,9 +24,10 @@ export const loadTxs$ = ({
 }: {
   client: XChainClient
 } & TxsParams): TxsPageLD => {
+  // To do, fix filter by assets for avax and bsc
   const txAsset = FP.pipe(
     oAsset,
-    O.map((asset) => (asset.chain === ETHChain ? getTokenAddress(asset) || undefined : asset.symbol)),
+    O.map((asset) => (asset.chain === ETHChain ? ETH.getTokenAddress(asset) || undefined : undefined)),
     O.toUndefined
   )
 
@@ -37,14 +39,16 @@ export const loadTxs$ = ({
 
   return Rx.from(
     client.getTransactions({
-      asset: txAsset,
       address,
+      asset: txAsset,
       limit,
       offset
     })
   ).pipe(
+    // Use the tap operator to log the response
     RxOp.map(RD.success),
     RxOp.catchError((error) => {
+      console.error('getTransactions error:', error) // Also log the error
       return Rx.of(
         RD.failure<ApiError>({
           errorId: ErrorId.GET_ASSET_TXS,

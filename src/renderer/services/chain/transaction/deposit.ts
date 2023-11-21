@@ -1,5 +1,8 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { TxHash } from '@xchainjs/xchain-client'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
@@ -8,18 +11,26 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
-import { getEthAssetAddress, isEthAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
+import {
+  getAvaxAssetAddress,
+  getBscAssetAddress,
+  getEthAssetAddress,
+  isAvaxAsset,
+  isBscAsset,
+  isEthAsset,
+  isRuneNativeAsset
+} from '../../../helpers/assetHelper'
 import { isEthChain } from '../../../helpers/chainHelper'
 import { sequenceSOption } from '../../../helpers/fpHelpers'
 import { liveData } from '../../../helpers/rx/liveData'
 import { observableState } from '../../../helpers/stateHelper'
 import { service as midgardService } from '../../midgard/service'
 import { ApiError, ErrorId } from '../../wallet/types'
-import { ChainTxFeeOption, INITIAL_ASYM_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../const'
+import { ChainTxFeeOption, INITIAL_SAVER_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../const'
 import {
-  AsymDepositParams,
-  AsymDepositState,
-  AsymDepositState$,
+  SaverDepositParams,
+  SaverDepositState,
+  SaverDepositState$,
   SymDepositFinalityResult,
   SymDepositParams,
   SymDepositState,
@@ -31,24 +42,25 @@ import { sendPoolTx$, poolTxStatusByChain$ } from './common'
 const { pools: midgardPoolsService, validateNode$ } = midgardService
 
 /**
- * Asym deposit stream does 3 steps:
+ * Saver deposit stream does 3 steps:
  *
  * 1. Validate pool address
  * 2. Send deposit transaction
  * 3. Check status of deposit transaction
  *
- * @returns AsymDepositState$ - Observable state to reflect loading status. It provides all data we do need to display status in `TxModul`
+ * @returns SaverDepositState$ - Observable state to reflect loading status. It provides all data we do need to display status in `TxModul`
  *
  */
-export const asymDeposit$ = ({
+export const saverDeposit$ = ({
   poolAddress,
   asset,
   amount,
   memo,
+  sender,
   walletType,
   walletIndex,
   hdMode
-}: AsymDepositParams): AsymDepositState$ => {
+}: SaverDepositParams): SaverDepositState$ => {
   // total of progress
   const total = O.some(100)
 
@@ -60,13 +72,13 @@ export const asymDeposit$ = ({
     get$: getState$,
     get: getState,
     set: setState
-  } = observableState<AsymDepositState>({
-    ...INITIAL_ASYM_DEPOSIT_STATE,
+  } = observableState<SaverDepositState>({
+    ...INITIAL_SAVER_DEPOSIT_STATE,
     deposit: RD.progress({ loaded: 25, total })
   })
 
   // All requests will be done in a sequence
-  // and `AsymDepositState` will be updated step by step
+  // and `SaverDepositState` will be updated step by step
   const requests$ = Rx.of(poolAddress).pipe(
     // 1. validate pool address or node
     RxOp.switchMap((poolAddresses) =>
@@ -83,6 +95,7 @@ export const asymDeposit$ = ({
       setState({ ...getState(), step: 2, deposit: RD.progress({ loaded: 50, total }) })
       // 2. send deposit tx
       return sendPoolTx$({
+        sender,
         walletType,
         walletIndex,
         hdMode,
@@ -103,8 +116,18 @@ export const asymDeposit$ = ({
         deposit: RD.progress({ loaded: 75, total })
       })
       // 3. check tx finality by polling its tx data
-      const assetAddress: O.Option<Address> =
-        isEthChain(chain) && !isEthAsset(asset) ? getEthAssetAddress(asset) : O.none
+      const assetAddress: O.Option<Address> = (() => {
+        switch (chain) {
+          case ETHChain:
+            return !isEthAsset(asset) ? getEthAssetAddress(asset) : O.none
+          case AVAXChain:
+            return !isAvaxAsset(asset) ? getAvaxAssetAddress(asset) : O.none
+          case BSCChain:
+            return !isBscAsset(asset) ? getBscAssetAddress(asset) : O.none
+          default:
+            return O.none
+        }
+      })()
       return poolTxStatusByChain$({ txHash, chain, assetAddress })
     }),
     // Update state
@@ -139,7 +162,7 @@ export const asymDeposit$ = ({
               RxOp.map(() =>
                 FP.pipe(
                   oProgress,
-                  O.map(({ loaded }): AsymDepositState => {
+                  O.map(({ loaded }): SaverDepositState => {
                     // From 75 to 97 we count progress with small steps, but stop it at 98
                     const updatedLoaded = loaded >= 75 && loaded <= 97 ? loaded++ : loaded
                     return { ...state, deposit: RD.progress({ loaded: updatedLoaded, total }) }

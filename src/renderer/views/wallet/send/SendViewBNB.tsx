@@ -10,6 +10,7 @@ import { LoadingView } from '../../../components/shared/loading'
 import { SendFormBNB } from '../../../components/wallet/txs/send'
 import { useBinanceContext } from '../../../contexts/BinanceContext'
 import { useChainContext } from '../../../contexts/ChainContext'
+import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { liveData } from '../../../helpers/rx/liveData'
 import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
@@ -20,6 +21,7 @@ import { FeeRD } from '../../../services/chain/types'
 import { WalletBalances } from '../../../services/clients'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAsset } from '../../../services/wallet/types'
+import * as Styled from '../Interact/InteractView.styles'
 
 type Props = {
   asset: SelectedWalletAsset
@@ -54,6 +56,7 @@ export const SendViewBNB: React.FC<Props> = (props): JSX.Element => {
   )
 
   const { transfer$ } = useChainContext()
+  const { thorchainQuery } = useThorchainQueryContext()
 
   const { fees$, reloadFees } = useBinanceContext()
 
@@ -73,22 +76,25 @@ export const SendViewBNB: React.FC<Props> = (props): JSX.Element => {
     O.fold(
       () => <LoadingView size="large" />,
       (walletBalance) => (
-        <SendFormBNB
-          asset={asset}
-          balances={FP.pipe(
-            oBalances,
-            O.getOrElse<WalletBalances>(() => [])
-          )}
-          balance={walletBalance}
-          transfer$={transfer$}
-          openExplorerTxUrl={openExplorerTxUrl}
-          getExplorerTxUrl={getExplorerTxUrl}
-          addressValidation={validateAddress}
-          fee={feeRD}
-          reloadFeesHandler={reloadFees}
-          validatePassword$={validatePassword$}
-          network={network}
-        />
+        <Styled.Container>
+          <SendFormBNB
+            asset={asset}
+            balances={FP.pipe(
+              oBalances,
+              O.getOrElse<WalletBalances>(() => [])
+            )}
+            balance={walletBalance}
+            transfer$={transfer$}
+            openExplorerTxUrl={openExplorerTxUrl}
+            getExplorerTxUrl={getExplorerTxUrl}
+            addressValidation={validateAddress}
+            fee={feeRD}
+            reloadFeesHandler={reloadFees}
+            validatePassword$={validatePassword$}
+            thorchainQuery={thorchainQuery}
+            network={network}
+          />
+        </Styled.Container>
       )
     )
   )

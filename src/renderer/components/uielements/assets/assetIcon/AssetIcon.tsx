@@ -1,17 +1,19 @@
 import React, { useMemo, useCallback } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BNBChain } from '@xchainjs/xchain-binance'
+import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { Asset, isSynthAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
 import { Network } from '../../../../../shared/api/types'
 import {
-  getEthTokenAddress,
   iconUrlInERC20Whitelist,
   isBchAsset,
   isBnbAsset,
-  isBnbAssetSynth,
   isBtcAsset,
   isDogeAsset,
   isEthAsset,
@@ -20,13 +22,21 @@ import {
   isRuneNativeAsset,
   isTgtERC20Asset,
   isXRuneAsset,
-  isAtomAsset
+  isAtomAsset,
+  isBnbAssetSynth,
+  isBtcAssetSynth,
+  isAvaxAsset,
+  isBscAsset,
+  iconUrlInAVAXERC20Whitelist,
+  iconUrlInBSCERC20Whitelist
 } from '../../../../helpers/assetHelper'
-import { isBnbChain, isEthChain } from '../../../../helpers/chainHelper'
+import { isAvaxChain, isBnbChain, isBscChain, isEthChain } from '../../../../helpers/chainHelper'
 import { getIntFromName, rainbowStop } from '../../../../helpers/colorHelpers'
 import { useRemoteImage } from '../../../../hooks/useRemoteImage'
 import {
   atomIcon,
+  avaxIcon,
+  bscIcon,
   bnbIcon,
   btcIcon,
   dogeIcon,
@@ -47,15 +57,38 @@ export type ComponentProps = {
 
 type Props = ComponentProps & React.HTMLAttributes<HTMLDivElement>
 
-export const AssetIcon: React.FC<Props> = ({ asset, size = 'normal', className = '', network }): JSX.Element => {
+const chainIconMap = (asset: Asset): string | null => {
+  switch (asset.chain) {
+    case ETHChain:
+      return ethIcon
+    case AVAXChain:
+      return avaxIcon
+    case BSCChain:
+      return bscIcon
+    case BNBChain:
+      return bnbIcon
+    default:
+      return null // return null if no chain matches
+  }
+}
+
+export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = '', network }): JSX.Element => {
   const imgUrl = useMemo(() => {
     // BTC
-    if (isBtcAsset(asset)) {
+    if (isBtcAsset(asset) || isBtcAssetSynth(asset)) {
       return btcIcon
     }
     // ETH
     if (isEthAsset(asset)) {
       return ethIcon
+    }
+    // AVAX
+    if (isAvaxAsset(asset)) {
+      return avaxIcon
+    }
+    // AVAX
+    if (isBscAsset(asset)) {
+      return bscIcon
     }
     // RUNE
     if (isRuneNativeAsset(asset)) {
@@ -105,20 +138,39 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'normal', className =
 
       // Since we've already checked ETH.ETH before,
       // we know any asset is ERC20 here - no need to run expensive `isEthTokenAsset`
+      // @St0mrzy trust wallet url doesnt work
       if (isEthChain(asset.chain)) {
         return FP.pipe(
           // Try to get url from ERC20Whitelist first
           iconUrlInERC20Whitelist(asset),
           // Or use `trustwallet`
-          O.alt(() =>
-            FP.pipe(
-              getEthTokenAddress(asset),
-              O.map(
-                (tokenAddress) =>
-                  `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${tokenAddress}/logo.png`
-              )
-            )
-          ),
+          // O.alt(() =>
+          //   FP.pipe(
+          //     getEthTokenAddress(asset),
+          //     O.map(
+          //       (tokenAddress) =>
+          //         `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${tokenAddress}/logo.png`
+          //     )
+          //   )
+          // ),
+          O.getOrElse(() => '')
+        )
+      }
+      // Since we've already checked AVAX.AVAX before,
+      // we know any asset is ERC20 here - no need to run expensive `isAvaxTokenAsset`
+      if (isAvaxChain(asset.chain)) {
+        return FP.pipe(
+          // Try to get url from ERC20Whitelist first
+          iconUrlInAVAXERC20Whitelist(asset),
+          O.getOrElse(() => '')
+        )
+      }
+      // Since we've already checked BSC.BNB before,
+      // we know any asset is ERC20 here - no need to run expensive `isBscTokenAsset`
+      if (isBscChain(asset.chain)) {
+        return FP.pipe(
+          // Try to get url from ERC20Whitelist first
+          iconUrlInBSCERC20Whitelist(asset),
           O.getOrElse(() => '')
         )
       }
@@ -132,14 +184,18 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'normal', className =
   const isSynth = isSynthAsset(asset)
 
   const renderIcon = useCallback(
-    (src: string) => (
-      <Styled.IconWrapper size={size} isSynth={isSynth} className={className}>
-        <Styled.Icon src={src} isSynth={isSynth} size={size} />{' '}
-      </Styled.IconWrapper>
-    ),
-    [className, isSynth, size]
-  )
+    (src: string) => {
+      const overlayIconSrc = chainIconMap(asset)
 
+      return (
+        <Styled.IconWrapper size={size} isSynth={isSynth} className={className}>
+          <Styled.Icon src={src} isSynth={isSynth} size={size} />
+          {overlayIconSrc && asset.chain !== asset.symbol && <Styled.OverlayIcon src={overlayIconSrc} size={size} />}
+        </Styled.IconWrapper>
+      )
+    },
+    [size, isSynth, className, asset]
+  )
   const renderPendingIcon = useCallback(() => {
     return (
       <Styled.IconWrapper size={size} isSynth={isSynth} className={className}>
@@ -162,5 +218,7 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'normal', className =
     )
   }, [asset, isSynth, className, size])
 
-  return RD.fold(() => <></>, renderPendingIcon, renderFallbackIcon, renderIcon)(remoteIconImage)
+  return isSynth
+    ? renderFallbackIcon()
+    : RD.fold(() => <></>, renderPendingIcon, renderFallbackIcon, renderIcon)(remoteIconImage)
 }

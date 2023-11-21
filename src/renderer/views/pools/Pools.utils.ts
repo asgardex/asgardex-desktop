@@ -1,4 +1,4 @@
-import { PoolData, getValueOfAsset1InAsset2, getValueOfRuneInAsset } from '@thorchain/asgardex-util'
+import { type PoolDetail } from '@xchainjs/xchain-midgard'
 import {
   baseAmount,
   assetFromString,
@@ -7,7 +7,8 @@ import {
   assetAmount,
   BaseAmount,
   bnOrZero,
-  assetToString
+  assetToString,
+  baseToAsset
 } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/lib/function'
@@ -20,11 +21,10 @@ import { isBtcAsset, isChainAsset, isEthAsset, isUSDAsset, isEthTokenAsset } fro
 import { isBnbChain, isEthChain } from '../../helpers/chainHelper'
 import { eqString, eqAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
-import { PoolFilter } from '../../services/midgard/types'
+import { GetPoolsStatusEnum, PoolFilter } from '../../services/midgard/types'
 import { toPoolData } from '../../services/midgard/utils'
 import { LastblockItem } from '../../services/thorchain/types'
-import { GetPoolsStatusEnum, type PoolDetail } from '../../types/generated/midgard'
-import { PoolTableRowData } from './Pools.types'
+import { PoolData, PoolTableRowData } from './Pools.types'
 
 export const stringToGetPoolsStatus = (status: string): GetPoolsStatusEnum => {
   switch (status) {
@@ -38,6 +38,35 @@ export const stringToGetPoolsStatus = (status: string): GetPoolsStatusEnum => {
     default:
       return GetPoolsStatusEnum.Suspended
   }
+}
+
+export const getValueOfAssetInRune = (inputAsset: BaseAmount, pool: PoolData): BaseAmount => {
+  // formula: ((a * R) / A) => R per A (Runeper$)
+  const t = inputAsset.amount()
+  const R = pool.runeBalance.amount()
+  const A = pool.assetBalance.amount()
+  const result = t.times(R).div(A)
+  return baseAmount(result)
+}
+
+export const getValueOfRuneInAsset = (inputRune: BaseAmount, pool: PoolData): BaseAmount => {
+  // formula: ((r * A) / R) => A per R ($perRune)
+  const r = inputRune.amount()
+  const R = pool.runeBalance.amount()
+  const A = pool.assetBalance.amount()
+  const result = r.times(A).div(R)
+  return baseAmount(result)
+}
+
+export const getValueOfAsset1InAsset2 = (inputAsset: BaseAmount, pool1: PoolData, pool2: PoolData): BaseAmount => {
+  // formula: (A2 / R) * (R / A1) => A2/A1 => A2 per A1 ($ per Asset)
+  const oneAsset = assetToBase(assetAmount(1))
+  // Note: All calculation needs to be done in `AssetAmount` (not `BaseAmount`)
+  const A2perR = baseToAsset(getValueOfRuneInAsset(oneAsset, pool2))
+  const RperA1 = baseToAsset(getValueOfAssetInRune(inputAsset, pool1))
+  const result = A2perR.amount().times(RperA1.amount())
+  // transform result back from `AssetAmount` into `BaseAmount`
+  return assetToBase(assetAmount(result))
 }
 
 export const getPoolTableRowData = ({

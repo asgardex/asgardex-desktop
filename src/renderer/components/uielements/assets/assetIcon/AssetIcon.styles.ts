@@ -6,7 +6,7 @@ import { Size, Sizes, FontSizes } from './AssetIcon.types'
 
 type IconProps = {
   size: Size
-  isSynth: boolean
+  isSynth?: boolean
 }
 
 const fontSizes: FontSizes = {
@@ -59,7 +59,6 @@ export const IconBG = styled.div<IconProps>`
 export const IconFallback = styled.div<IconProps>`
   width: ${({ size, isSynth }) => `${sizes[size] - (isSynth ? 2 : 0) * borders[size]}px`};
   height: ${({ size, isSynth }) => `${sizes[size] - (isSynth ? 2 : 0) * borders[size]}px`};
-  position: absolute;
   left: 0;
   top: 0;
   border-radius: 50%;
@@ -72,10 +71,21 @@ export const IconFallback = styled.div<IconProps>`
 
 export const Icon = styled.img<IconProps>`
   position: absolute;
-  left: ${({ size, isSynth }) => `${isSynth ? borders[size] : 0}px`};
-  top: ${({ size, isSynth }) => `${isSynth ? borders[size] : 0}px`};
+  left: ${({ isSynth }) => `${isSynth ? borders : 0}px`}; // adjusted calculation
+  top: ${({ isSynth }) => `${isSynth ? borders : 0}px`}; // adjusted calculation
   width: ${({ size, isSynth }) => `${sizes[size] - (isSynth ? 2 : 0) * borders[size]}px`};
   height: ${({ size, isSynth }) => `${sizes[size] - (isSynth ? 2 : 0) * borders[size]}px`};
   border-radius: 50%;
   max-width: auto; // overridden to avoid max-w-100% (default)
+`
+
+export const OverlayIcon = styled.img<IconProps>`
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: ${({ size }) => `${sizes[size] * 0.4}px`};
+  height: ${({ size }) => `${sizes[size] * 0.4}px`};
+  border-radius: 50%;
+  z-index: 2;
+  background-color: rgba(255, 255, 255, 0.5);
 `

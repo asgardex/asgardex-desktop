@@ -29,10 +29,11 @@ const FooterIcon: React.FC<IconProps> = (props: IconProps): JSX.Element => {
 export type Props = {
   commitHash?: string
   isDev: boolean
+  publicIP: string
 }
 
 export const Footer: React.FC<Props> = (props): JSX.Element => {
-  const { commitHash, isDev } = props
+  const { commitHash, isDev, publicIP } = props
 
   const navigate = useNavigate()
   const screens = Grid.useBreakpoint()
@@ -51,6 +52,7 @@ export const Footer: React.FC<Props> = (props): JSX.Element => {
             <FooterIcon url={ExternalUrl.DOCS} onClick={clickIconHandler}>
               <ThorChainIcon />
             </FooterIcon>
+            {publicIP && <div className=" px-20px text-[14px] text-gray2 dark:text-gray2d">Public IP: {publicIP}</div>}
           </Row>
         </Col>
         <Col span={24} md={12}>

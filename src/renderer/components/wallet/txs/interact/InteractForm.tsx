@@ -1,23 +1,42 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { getBondMemo, getLeaveMemo, getUnbondMemo } from '@thorchain/asgardex-util'
+import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { assetAmount, assetToBase, BaseAmount, baseToAsset, bn, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
-import { Form } from 'antd'
+import {
+  AssetAVAX,
+  CryptoAmount,
+  QuoteThornameParams,
+  ThorchainQuery,
+  ThornameDetails
+} from '@xchainjs/xchain-thorchain-query'
+import {
+  Asset,
+  assetAmount,
+  assetToBase,
+  BaseAmount,
+  baseToAsset,
+  bn,
+  formatAssetAmountCurrency
+} from '@xchainjs/xchain-util'
+import { Form, Tooltip } from 'antd'
+import { RadioChangeEvent } from 'antd/lib/radio'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/lib/Option'
+import { debounce } from 'lodash'
 import { useIntl } from 'react-intl'
 
 import { Network } from '../../../../../shared/api/types'
-import { AssetRuneNative } from '../../../../../shared/utils/asset'
+import { AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../shared/wallet/types'
-import { ZERO_BASE_AMOUNT } from '../../../../const'
+import * as StyledR from '../../../../components/shared/form/Radio.styles'
+import { AssetUSDC, AssetUSDTDAC, ZERO_BASE_AMOUNT } from '../../../../const'
 import { THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
+import { getBondMemo, getLeaveMemo, getUnbondMemo } from '../../../../helpers/memoHelper'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { FeeRD } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../services/clients'
@@ -27,18 +46,30 @@ import { ValidatePasswordHandler, WalletBalance } from '../../../../services/wal
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
 import { TxModal } from '../../../modal/tx'
 import { SendAsset } from '../../../modal/tx/extra/SendAsset'
-import { FlatButton, ViewTxButton } from '../../../uielements/button'
+import { BaseButton, FlatButton, ViewTxButton } from '../../../uielements/button'
 import { CheckButton } from '../../../uielements/button/CheckButton'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
-import { UIFeesRD } from '../../../uielements/fees'
-import { Input, InputBigNumber } from '../../../uielements/input'
+import { UIFees, UIFeesRD } from '../../../uielements/fees'
+import { InfoIcon } from '../../../uielements/info'
+import { InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
 import * as Styled from './Interact.styles'
 import { InteractType } from './Interact.types'
 
-type FormValues = { memo: string; thorAddress: string; providerAddress: string; amount: BigNumber }
+type FormValues = {
+  memo: string
+  thorAddress: string
+  providerAddress: string
+  operatorFee: number
+  amount: BigNumber
+  thorname: string
+  chainAddress: string
+  chain: string
+  preferredAsset: string
+  expiry: number
+}
 
 type Props = {
   interactType: InteractType
@@ -53,6 +84,7 @@ type Props = {
   reloadFeesHandler: FP.Lazy<void>
   addressValidation: AddressValidation
   validatePassword$: ValidatePasswordHandler
+  thorchainQuery: ThorchainQuery
   network: Network
 }
 export const InteractForm: React.FC<Props> = (props) => {
@@ -69,6 +101,7 @@ export const InteractForm: React.FC<Props> = (props) => {
     fee: feeRD,
     reloadFeesHandler,
     validatePassword$,
+    thorchainQuery,
     network
   } = props
   const intl = useIntl()
@@ -79,13 +112,15 @@ export const InteractForm: React.FC<Props> = (props) => {
 
   const [_amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
 
+  const [memo, setMemo] = useState<string>('')
   const amountToSend = useMemo(() => {
     switch (interactType) {
       case 'bond':
       case 'custom':
+      case 'unbond':
+      case 'thorname':
         return _amountToSend
       case 'leave':
-      case 'unbond':
         return ZERO_BASE_AMOUNT
     }
   }, [_amountToSend, interactType])
@@ -102,6 +137,15 @@ export const InteractForm: React.FC<Props> = (props) => {
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
 
+  // state variable for thornames
+  const [oThorname, setThorname] = useState<O.Option<ThornameDetails>>(O.none)
+  const [thornameAvailable, setThornameAvailable] = useState<boolean>(false) // if thorname is available
+  const [thornameUpdate, setThornameUpdate] = useState<boolean>(false) // allow to update
+  const [thornameRegister, setThornameRegister] = useState<boolean>(false) // allow to update
+  const [thornameQuoteValid, setThornameQuoteValid] = useState<boolean>(false) // if the quote is valid then allow to buy
+  const [isOwner, setIsOwner] = useState<boolean>(false) // if the thorname.owner is the wallet address then allow to update
+  const [preferredAsset, setPreferredAsset] = useState<Asset>()
+  const [aliasChain, setAliasChain] = useState<string>('')
   const isFeeError = useMemo(
     () =>
       FP.pipe(
@@ -133,6 +177,15 @@ export const InteractForm: React.FC<Props> = (props) => {
     [intl, balance.amount]
   )
 
+  const renderThornameError = useMemo(
+    () => (
+      <Label size="big" color="error">
+        {intl.formatMessage({ id: 'common.thornameError' })}
+      </Label>
+    ),
+    [intl]
+  )
+
   // max amount for RuneNative
   const maxAmount: BaseAmount = useMemo(
     () =>
@@ -146,6 +199,25 @@ export const InteractForm: React.FC<Props> = (props) => {
       ),
     [oFee, balance.amount]
   )
+
+  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(maxAmount, asset)) // Initial state can be null or a suitable default
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
+        const convertedValue = await thorchainQuery.convert(maxCryptoAmount, AssetUSDC)
+        setMaxAmountPriceValue(convertedValue)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+        // Handle error appropriately
+      }
+    }
+
+    if ((maxAmount && interactType === 'bond') || interactType === 'custom') {
+      fetchData()
+    }
+  }, [asset, interactType, maxAmount, thorchainQuery])
 
   const amountValidator = useCallback(
     async (_: unknown, value: BigNumber) => {
@@ -184,21 +256,116 @@ export const InteractForm: React.FC<Props> = (props) => {
     [interactType, intl, maxAmount]
   )
 
-  const onChangeInput = useCallback(
-    async (value: BigNumber) => {
-      // we have to validate input before storing into the state
-      amountValidator(undefined, value)
-        .then(() => {
-          if (interactType === 'bond' || interactType === 'custom') {
-            setAmountToSend(assetToBase(assetAmount(value, THORCHAIN_DECIMAL)))
-          }
-        })
-        .catch(() => {}) // do nothing, Ant' form does the job for us to show an error message
+  // const expireDate = (value: number) => {
+  //   const yearsToAdd = value
+
+  //   return newDate
+  // }
+
+  const debouncedFetch = debounce(
+    async (
+      thorname,
+      setThorname,
+      setShowDetails,
+      setThornameAvailable,
+      setThornameUpdate,
+      setIsOwner,
+      thorchainQuery,
+      balance
+    ) => {
+      try {
+        const thornameDetails = await thorchainQuery.getThornameDetails(thorname)
+        if (thornameDetails) {
+          setThorname(O.some(thornameDetails))
+          setShowDetails(true)
+          setThornameAvailable(thornameDetails.owner === '' || balance.walletAddress === thornameDetails.owner)
+          setThornameUpdate(thorname === thornameDetails.name && thornameDetails.owner === '')
+          setThornameRegister(thornameDetails.name === '')
+          setIsOwner(balance.walletAddress === thornameDetails.owner)
+        }
+      } catch (error) {
+        setThornameAvailable(true)
+      }
+      // setThorname(O.none)
     },
-    [amountValidator, interactType]
+    500
   )
 
-  const addMaxAmountHandler = useCallback(() => setAmountToSend(maxAmount), [maxAmount])
+  const thornameHandler = useCallback(() => {
+    const thorname = form.getFieldValue('thorname')
+    setThornameQuoteValid(false)
+    setMemo('')
+    if (thorname !== '') {
+      debouncedFetch(
+        thorname,
+        setThorname,
+        setShowDetails,
+        setThornameAvailable,
+        setThornameUpdate,
+        setIsOwner,
+        thorchainQuery,
+        balance
+      )
+    }
+  }, [balance, debouncedFetch, form, thorchainQuery])
+
+  const estimateThornameHandler = useCallback(() => {
+    const currentDate = new Date()
+
+    form.validateFields()
+    const thorname = form.getFieldValue('thorname')
+    const chain = thornameRegister ? form.getFieldValue('chain') : form.getFieldValue('aliasChain')
+    const yearsToAdd = form.getFieldValue('expiry')
+    const expirity =
+      yearsToAdd === 1
+        ? undefined
+        : new Date(currentDate.getFullYear() + yearsToAdd, currentDate.getMonth(), currentDate.getDate())
+    const chainAddress = thornameRegister ? form.getFieldValue('chainAddress') : form.getFieldValue('aliasAddress')
+    const owner = balance.walletAddress
+    if (thorname !== undefined && chain !== undefined && chainAddress !== undefined) {
+      const fetchThornameQuote = async () => {
+        try {
+          const params: QuoteThornameParams = {
+            thorname,
+            chain,
+            chainAddress,
+            owner,
+            preferredAsset,
+            expirity: expirity,
+            isUpdate: thornameUpdate || isOwner
+          }
+
+          const thornameQuote = await thorchainQuery.estimateThorname(params)
+
+          if (thornameQuote) {
+            setMemo(thornameQuote.memo)
+            setAmountToSend(thornameQuote.value.baseAmount)
+            setThornameQuoteValid(true)
+          }
+        } catch (error) {
+          console.error('Error fetching fetchThornameQuote:', error)
+        }
+      }
+      fetchThornameQuote()
+    }
+  }, [balance.walletAddress, form, isOwner, preferredAsset, thorchainQuery, thornameRegister, thornameUpdate])
+
+  const handleRadioAssetChange = useCallback((e: RadioChangeEvent) => {
+    const asset = e.target.value
+    setPreferredAsset(asset)
+  }, [])
+
+  const handleRadioChainChange = useCallback((e: RadioChangeEvent) => {
+    const chain = e.target.value
+    setAliasChain(chain)
+  }, [])
+
+  const addMaxAmountHandler = useCallback(
+    (maxAmount: BaseAmount) => {
+      setAmountToSend(maxAmount)
+    },
+    [setAmountToSend]
+  )
 
   const addressValidator = useCallback(
     async (_: unknown, value: string) =>
@@ -222,25 +389,56 @@ export const InteractForm: React.FC<Props> = (props) => {
 
   const getMemo = useCallback(() => {
     const thorAddress = form.getFieldValue('thorAddress')
-    const providerAddress = form.getFieldValue('providerAddress')
+    const providerAddress =
+      form.getFieldValue('providerAddress') === undefined ? undefined : form.getFieldValue('providerAddress')
+    const nodeOperatorFee = form.getFieldValue('operatorFee')
+    const feeInBasisPoints = nodeOperatorFee ? nodeOperatorFee * 100 : undefined
+
+    let createMemo = ''
+
     switch (interactType) {
       case 'bond': {
-        const memo = getBondMemo(thorAddress)
-        return hasProviderAddress ? `${memo}:${providerAddress}` : memo
+        createMemo = getBondMemo(thorAddress, providerAddress, feeInBasisPoints)
+        break
       }
       case 'unbond': {
-        const memo = getUnbondMemo(
-          thorAddress,
-          assetToBase(assetAmount(form.getFieldValue('amount'), THORCHAIN_DECIMAL))
-        )
-        return hasProviderAddress ? `${memo}:${providerAddress}` : memo
+        createMemo = getUnbondMemo(thorAddress, amountToSend, providerAddress)
+        break
       }
-      case 'leave':
-        return getLeaveMemo(thorAddress)
-      case 'custom':
-        return form.getFieldValue('memo')
+      case 'leave': {
+        createMemo = getLeaveMemo(thorAddress)
+        break
+      }
+      case 'custom': {
+        createMemo = form.getFieldValue('memo')
+        break
+      }
+      case 'thorname': {
+        createMemo = memo
+        break
+      }
     }
-  }, [form, hasProviderAddress, interactType])
+    setMemo(createMemo)
+    return createMemo
+  }, [amountToSend, form, interactType, memo])
+
+  const onChangeInput = useCallback(
+    async (value: BigNumber) => {
+      // we have to validate input before storing into the state
+      amountValidator(undefined, value)
+        .then(() => {
+          const newAmountToSend = assetToBase(assetAmount(value, THORCHAIN_DECIMAL))
+          setAmountToSend(newAmountToSend)
+        })
+        .catch(() => {})
+      // do nothing, Ant' form does the job for us to show an error message
+    },
+    [amountValidator]
+  )
+  useEffect(() => {
+    // This code will run after the state has been updated
+    getMemo()
+  }, [amountToSend, getMemo])
 
   const submitTx = useCallback(() => {
     setSendTxStartTime(Date.now())
@@ -262,7 +460,13 @@ export const InteractForm: React.FC<Props> = (props) => {
     resetInteractState()
     form.resetFields()
     setHasProviderAddress(false)
+    setMemo('')
     setAmountToSend(ZERO_BASE_AMOUNT)
+    setThorname(O.none)
+    setIsOwner(false)
+    setThornameQuoteValid(false)
+    setThornameUpdate(false)
+    setThornameAvailable(false)
   }, [form, resetInteractState])
 
   const renderConfirmationModal = useMemo(() => {
@@ -350,18 +554,37 @@ export const InteractForm: React.FC<Props> = (props) => {
     )
   }, [interactState, intl, reset, sendTxStartTime, openExplorerTxUrl, getExplorerTxUrl, asset, amountToSend, network])
 
+  const memoLabel = useMemo(
+    () => (
+      <Tooltip title={memo} key="tooltip-memo">
+        {memo}
+      </Tooltip>
+    ),
+    [memo]
+  )
+
   const submitLabel = useMemo(() => {
     switch (interactType) {
       case 'bond':
-        return intl.formatMessage({ id: 'deposit.interact.actions.bond' })
+        if (hasProviderAddress) {
+          return intl.formatMessage({ id: 'deposit.interact.actions.addBondProvider' })
+        } else {
+          return intl.formatMessage({ id: 'deposit.interact.actions.bond' })
+        }
       case 'unbond':
         return intl.formatMessage({ id: 'deposit.interact.actions.unbond' })
       case 'leave':
         return intl.formatMessage({ id: 'deposit.interact.actions.leave' })
       case 'custom':
         return intl.formatMessage({ id: 'wallet.action.send' })
+      case 'thorname':
+        if (isOwner) {
+          return intl.formatMessage({ id: 'common.isUpdate' })
+        } else {
+          return intl.formatMessage({ id: 'deposit.interact.actions.buyThorname' })
+        }
     }
-  }, [interactType, intl])
+  }, [interactType, hasProviderAddress, intl, isOwner])
 
   const uiFeesRD: UIFeesRD = useMemo(
     () =>
@@ -375,10 +598,12 @@ export const InteractForm: React.FC<Props> = (props) => {
 
   const onClickHasProviderAddress = useCallback(() => {
     // clean address
-    form.setFieldsValue({ providerAddress: '' })
+    form.setFieldsValue({ providerAddress: undefined })
+    form.setFieldsValue({ operatorFee: undefined })
     // toggle
     setHasProviderAddress((v) => !v)
-  }, [form])
+    getMemo()
+  }, [form, getMemo])
 
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field
@@ -387,16 +612,30 @@ export const InteractForm: React.FC<Props> = (props) => {
     })
   }, [_amountToSend, form])
 
+  const thorNamefees: UIFeesRD = useMemo(() => {
+    const fees: UIFees = [{ asset: AssetRuneNative, amount: _amountToSend }]
+    return RD.success(fees)
+  }, [_amountToSend])
+
   // Reset values whenever interactType has been changed (an user clicks on navigation tab)
   useEffect(() => {
     reset()
+    setMemo('')
   }, [interactType, reset])
+
+  const [showDetails, setShowDetails] = useState<boolean>(false)
 
   return (
     <Styled.Form
       form={form}
       onFinish={() => setShowConfirmationModal(true)}
-      initialValues={{ thorAddress: '', amount: bn(0) }}>
+      initialValues={{
+        thorAddress: '',
+        amount: bn(0),
+        chain: THORChain,
+        chainAddress: balance.walletAddress,
+        expiry: 0
+      }}>
       <>
         {/* Memo input (CUSTOM only) */}
         {interactType === 'custom' && (
@@ -410,7 +649,7 @@ export const InteractForm: React.FC<Props> = (props) => {
                   message: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
                 }
               ]}>
-              <Input disabled={isLoading} size="large" />
+              <Styled.Input disabled={isLoading} onChange={() => getMemo()} size="large" />
             </Form.Item>
           </Styled.InputContainer>
         )}
@@ -427,7 +666,7 @@ export const InteractForm: React.FC<Props> = (props) => {
                   validator: addressValidator
                 }
               ]}>
-              <Input disabled={isLoading} size="large" />
+              <Styled.Input disabled={isLoading} onChange={() => getMemo()} size="large" />
             </Form.Item>
           </Styled.InputContainer>
         )}
@@ -449,7 +688,7 @@ export const InteractForm: React.FC<Props> = (props) => {
                       validator: addressValidator
                     }
                   ]}>
-                  <Input disabled={isLoading} size="large" />
+                  <Styled.Input disabled={isLoading} onChange={() => getMemo()} size="large" />
                 </Form.Item>
               </>
             )}
@@ -457,44 +696,336 @@ export const InteractForm: React.FC<Props> = (props) => {
         )}
 
         {/* Amount input (BOND/UNBOND/CUSTOM only) */}
-        {(interactType === 'bond' || interactType === 'unbond' || interactType === 'custom') && (
-          <Styled.InputContainer>
-            <Styled.InputLabel>{intl.formatMessage({ id: 'common.amount' })}</Styled.InputLabel>
-            <Styled.FormItem
-              name="amount"
-              rules={[
-                {
-                  required: true,
-                  validator: amountValidator
-                }
-              ]}>
-              <InputBigNumber disabled={isLoading} size="large" decimal={THORCHAIN_DECIMAL} onChange={onChangeInput} />
-            </Styled.FormItem>
-            {/* max. amount button (BOND/CUSTOM only) */}
-            {(interactType === 'bond' || interactType === 'custom') && (
-              <MaxBalanceButton
-                className="mb-10px"
-                color="neutral"
-                balance={{ amount: maxAmount, asset: asset }}
-                onClick={addMaxAmountHandler}
-                disabled={isLoading}
-              />
+        {!hasProviderAddress && (
+          <>
+            {(interactType === 'bond' || interactType === 'unbond' || interactType === 'custom') && (
+              <Styled.InputContainer>
+                <Styled.InputLabel>{intl.formatMessage({ id: 'common.amount' })}</Styled.InputLabel>
+                <Styled.FormItem
+                  name="amount"
+                  rules={[
+                    {
+                      required: true,
+                      validator: amountValidator
+                    }
+                  ]}>
+                  <InputBigNumber
+                    disabled={isLoading}
+                    size="large"
+                    decimal={THORCHAIN_DECIMAL}
+                    onChange={onChangeInput}
+                  />
+                </Styled.FormItem>
+                {/* max. amount button (BOND/CUSTOM only) */}
+                {(interactType === 'bond' || interactType === 'custom') && (
+                  <MaxBalanceButton
+                    className="mb-10px"
+                    color="neutral"
+                    balance={{ amount: maxAmount, asset: asset }}
+                    maxDollarValue={maxAmmountPriceValue}
+                    onClick={() => addMaxAmountHandler(maxAmount)}
+                    disabled={isLoading}
+                    onChange={() => getMemo()}
+                  />
+                )}
+                <Styled.Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} disabled={isLoading} />
+                {isFeeError && renderFeeError}
+              </Styled.InputContainer>
             )}
-            <Styled.Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} disabled={isLoading} />
-            {isFeeError && renderFeeError}
-          </Styled.InputContainer>
+          </>
         )}
+        {hasProviderAddress && (
+          <>
+            {interactType === 'unbond' && (
+              <Styled.InputContainer>
+                <Styled.InputLabel>{intl.formatMessage({ id: 'common.amount' })}</Styled.InputLabel>
+                <Styled.FormItem
+                  name="amount"
+                  rules={[
+                    {
+                      required: true,
+                      validator: amountValidator
+                    }
+                  ]}>
+                  <InputBigNumber
+                    disabled={isLoading}
+                    size="large"
+                    decimal={THORCHAIN_DECIMAL}
+                    onChange={onChangeInput}
+                  />
+                </Styled.FormItem>
+                <Styled.Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} disabled={isLoading} />
+                {isFeeError && renderFeeError}
+              </Styled.InputContainer>
+            )}
+          </>
+        )}
+
+        {/* Fee input (BOND/UNBOND/CUSTOM only) */}
+        {hasProviderAddress && (
+          <>
+            {interactType === 'bond' && (
+              <Styled.InputContainer>
+                <Styled.InputLabel>{intl.formatMessage({ id: 'common.fee.nodeOperator' })}</Styled.InputLabel>
+                <Styled.FormItem
+                  name="operatorFee"
+                  rules={[
+                    {
+                      required: true
+                    }
+                  ]}>
+                  <Styled.Input disabled={isLoading} size="large" onChange={() => getMemo()} />
+                </Styled.FormItem>
+              </Styled.InputContainer>
+            )}
+          </>
+        )}
+        {/* Thorname Button and Details*/}
+        <>
+          {interactType === 'thorname' && (
+            <Styled.InputContainer>
+              <div className="flex w-full items-center text-[12px]">
+                <Styled.InputLabel>{intl.formatMessage({ id: 'common.thorname' })}</Styled.InputLabel>
+                <InfoIcon
+                  className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                  tooltip={intl.formatMessage({ id: 'common.thornameRegistrationSpecifics' })}
+                  color="primary"
+                />
+              </div>
+
+              <Styled.FormItem
+                name="thorname"
+                rules={[
+                  {
+                    required: true
+                  }
+                ]}>
+                <Styled.Input disabled={isLoading} size="large" onChange={() => thornameHandler()} />
+              </Styled.FormItem>
+              {O.isSome(oThorname) && !thornameAvailable && !isOwner && renderThornameError}
+            </Styled.InputContainer>
+          )}
+          {/** Form item for unregistered thorname */}
+          {thornameAvailable && (
+            <Styled.InputContainer>
+              {isOwner ? (
+                <CheckButton
+                  checked={thornameUpdate || isOwner}
+                  clickHandler={() => setThornameUpdate(true)}
+                  disabled={isLoading}>
+                  {intl.formatMessage({ id: 'common.isUpdate' })}
+                </CheckButton>
+              ) : (
+                <></>
+              )}
+              {!thornameRegister ? (
+                <>
+                  {' '}
+                  <div className="flex w-full items-center text-[12px]">
+                    <Styled.InputLabel>{intl.formatMessage({ id: 'common.preferredAsset' })}</Styled.InputLabel>
+                  </div>
+                  <Styled.FormItem
+                    name="preferredAsset"
+                    rules={[
+                      {
+                        required: false
+                      }
+                    ]}>
+                    <StyledR.Radio.Group onChange={handleRadioAssetChange} value={preferredAsset}>
+                      <StyledR.Radio value={AssetRuneNative}>RUNE</StyledR.Radio>
+                      <StyledR.Radio value={AssetBTC}>BTC</StyledR.Radio>
+                      <StyledR.Radio value={AssetETH}>ETH</StyledR.Radio>
+                      <StyledR.Radio value={AssetUSDTDAC}>USDT</StyledR.Radio>
+                    </StyledR.Radio.Group>
+                  </Styled.FormItem>
+                  {/* Add input fields for aliasChain, aliasAddress, and expiry */}
+                  <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasChain' })}</Styled.InputLabel>
+                  <Styled.FormItem
+                    name="aliasChain"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please provide an alias chain.'
+                      }
+                    ]}>
+                    <StyledR.Radio.Group onChange={handleRadioChainChange} value={aliasChain}>
+                      <StyledR.Radio value={AssetAVAX.chain}>AVAX</StyledR.Radio>
+                      <StyledR.Radio value={AssetBTC.chain}>BTC</StyledR.Radio>
+                      <StyledR.Radio value={AssetETH.chain}>ETH</StyledR.Radio>
+                      <StyledR.Radio value={AssetBNB.chain}>BNB</StyledR.Radio>
+                    </StyledR.Radio.Group>
+                  </Styled.FormItem>
+                  <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasAddress' })}</Styled.InputLabel>
+                  <Styled.FormItem
+                    name="aliasAddress"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please provide an alias address.'
+                      }
+                    ]}>
+                    <Styled.Input disabled={isLoading} size="middle" />
+                  </Styled.FormItem>
+                  <Styled.InputLabel>{intl.formatMessage({ id: 'common.expiry' })}</Styled.InputLabel>
+                  <Styled.FormItem
+                    name="expiry"
+                    rules={[
+                      {
+                        required: false
+                      }
+                    ]}>
+                    <StyledR.Radio.Group onChange={() => estimateThornameHandler()}>
+                      <StyledR.Radio value={1}>1 year</StyledR.Radio>
+                      <StyledR.Radio value={2}>2 years</StyledR.Radio>
+                      <StyledR.Radio value={3}>3 years</StyledR.Radio>
+                      <StyledR.Radio value={5}>5 years</StyledR.Radio>
+                    </StyledR.Radio.Group>
+                  </Styled.FormItem>
+                </>
+              ) : (
+                <>
+                  {' '}
+                  {/* Initial values needed for tns register */}
+                  <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasChain' })}</Styled.InputLabel>
+                  <Styled.FormItem
+                    name="chain"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please provide an alias chain.'
+                      }
+                    ]}>
+                    <StyledR.Radio.Group>
+                      <StyledR.Radio value={AssetRuneNative.chain}>THOR</StyledR.Radio>
+                    </StyledR.Radio.Group>
+                  </Styled.FormItem>
+                  <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasAddress' })}</Styled.InputLabel>
+                  <Styled.FormItem
+                    name="chainAddress"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please provide an alias address.'
+                      }
+                    ]}>
+                    <Styled.Input disabled={isLoading} size="middle" />
+                  </Styled.FormItem>
+                  <Styled.InputLabel>{intl.formatMessage({ id: 'common.expiry' })}</Styled.InputLabel>
+                  <Styled.FormItem
+                    name="expiry"
+                    rules={[
+                      {
+                        required: true
+                      }
+                    ]}>
+                    <StyledR.Radio.Group onChange={() => estimateThornameHandler()}>
+                      <StyledR.Radio value={1}>1 year</StyledR.Radio>
+                      <StyledR.Radio value={2}>2 years</StyledR.Radio>
+                      <StyledR.Radio value={3}>3 years</StyledR.Radio>
+                      <StyledR.Radio value={5}>5 years</StyledR.Radio>
+                    </StyledR.Radio.Group>
+                  </Styled.FormItem>
+                </>
+              )}
+              <Styled.Fees className="mt-10px" fees={thorNamefees} disabled={isLoading} />
+            </Styled.InputContainer>
+          )}
+        </>
       </>
+      {thornameQuoteValid && (
+        <>
+          {' '}
+          <div>
+            <FlatButton
+              className="mt-10px min-w-[200px]"
+              loading={isLoading}
+              disabled={isLoading || !!form.getFieldsError().filter(({ errors }) => errors.length).length}
+              type="submit"
+              size="large">
+              {submitLabel}
+            </FlatButton>
+          </div>
+        </>
+      )}
 
       <div>
-        <FlatButton
-          className="mt-10px min-w-[200px]"
-          loading={isLoading}
-          disabled={isLoading || !!form.getFieldsError().filter(({ errors }) => errors.length).length}
-          type="submit"
-          size="large">
-          {submitLabel}
-        </FlatButton>
+        {interactType !== 'thorname' && (
+          <FlatButton
+            className="mt-10px min-w-[200px]"
+            loading={isLoading}
+            disabled={isLoading || !!form.getFieldsError().filter(({ errors }) => errors.length).length}
+            type="submit"
+            size="large">
+            {submitLabel}
+          </FlatButton>
+        )}
+      </div>
+      <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
+        {/* memo */}
+        <div className={`my-20px w-full font-main text-[12px] uppercase dark:border-gray1d`}>
+          <BaseButton
+            className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+            onClick={() => setShowDetails((current) => !current)}>
+            {intl.formatMessage({ id: 'common.details' })}
+            {showDetails ? (
+              <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+            ) : (
+              <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
+            )}
+          </BaseButton>
+          {showDetails && (
+            <>
+              {FP.pipe(
+                oThorname,
+                O.map(({ owner, name, aliases, preferredAsset, expireBlockHeight }) => {
+                  if (owner || name || aliases || preferredAsset || expireBlockHeight) {
+                    return (
+                      <>
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          <div>{intl.formatMessage({ id: 'common.thorname' })}</div>
+                          <div>{name}</div>
+                        </div>
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          {intl.formatMessage({ id: 'common.owner' })}
+                          <div>{owner}</div>
+                        </div>
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          <div>{intl.formatMessage({ id: 'common.expirationBlock' })}</div>
+                          <div>{expireBlockHeight}</div>
+                        </div>
+
+                        {aliases &&
+                          aliases.map((alias, index) => (
+                            <div key={index}>
+                              <div className="flex w-full justify-between pl-10px text-[12px]">
+                                {intl.formatMessage({ id: 'common.aliasChain' })}
+                                <div>{alias.chain}</div>
+                              </div>
+                              <div className="flex w-full justify-between pl-10px text-[12px]">
+                                {intl.formatMessage({ id: 'common.aliasAddress' })}
+                                <div>{alias.address}</div>
+                              </div>
+                            </div>
+                          ))}
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          {intl.formatMessage({ id: 'common.preferredAsset' })}
+                          <div>{preferredAsset}</div>
+                        </div>
+                      </>
+                    )
+                  }
+                  return null
+                }),
+                O.toNullable
+              )}
+
+              <div className="ml-[-2px] flex w-full items-start pt-10px font-mainBold text-[14px]">
+                {intl.formatMessage({ id: 'common.memo' })}
+              </div>
+              <div className="truncate pl-10px font-main text-[12px]">{memoLabel}</div>
+            </>
+          )}
+        </div>
       </div>
       {showConfirmationModal && renderConfirmationModal}
       {renderTxModal}

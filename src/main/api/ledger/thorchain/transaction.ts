@@ -1,15 +1,17 @@
+import cosmosclient from '@cosmos-client/core'
 import type Transport from '@ledgerhq/hw-transport'
 import THORChainApp, { extractSignatureFromTLV, LedgerErrorType } from '@thorchain/ledger-thorchain'
 import { TxHash } from '@xchainjs/xchain-client'
-import { DEFAULT_GAS_LIMIT_VALUE, getChainId, getDenom, getPrefix } from '@xchainjs/xchain-thorchain'
-import { Address, assetToString, BaseAmount, delay } from '@xchainjs/xchain-util'
+import { CosmosSDKClient } from '@xchainjs/xchain-cosmos'
+import { AssetRuneNative, DEFAULT_GAS_LIMIT_VALUE, getChainId, getDenom, getPrefix } from '@xchainjs/xchain-thorchain'
+import { Address, Asset, assetToString, BaseAmount, delay } from '@xchainjs/xchain-util'
 import { AccAddress, PubKeySecp256k1, Msg, CosmosSDK } from 'cosmos-client'
 import { StdTx, auth, BaseAccount } from 'cosmos-client/x/auth'
 import { MsgSend } from 'cosmos-client/x/bank'
 import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId, Network } from '../../../../shared/api/types'
-import { AssetRuneNative } from '../../../../shared/utils/asset'
+// import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
 import { fromLedgerErrorType, getDerivationPath } from './common'
@@ -23,6 +25,7 @@ import * as Legacy from './transaction-legacy'
 export const send = async ({
   transport,
   network,
+  asset,
   amount,
   memo,
   recipient,
@@ -32,6 +35,7 @@ export const send = async ({
   transport: Transport
   amount: BaseAmount
   network: Network
+  asset: Asset
   recipient: Address
   memo?: string
   walletIndex: number
@@ -55,20 +59,25 @@ export const send = async ({
 
     const chainId = await getChainId(nodeUrl)
 
-    const sdk = new CosmosSDK(nodeUrl, chainId)
+    const cosmos = new CosmosSDKClient({ server: nodeUrl, chainId, prefix })
 
-    const signer = AccAddress.fromBech32(bech32Address)
-    const denom = getDenom(AssetRuneNative)
+    const accAddress = cosmosclient.AccAddress.fromString(bech32Address)
+
+    const denom = getDenom(asset)
 
     Legacy.registerCodecs(prefix)
-    // get account number + sequence from signer account
-    let {
-      data: { result: account }
-    } = await auth.accountsAddressGet(sdk, signer)
-    // Note: Cosmos API has been changed - result has another JSON structure now !!
-    // Code is copied from xchain-cosmos -> SDKClient -> signAndBroadcast
-    if (account.account_number === undefined) {
-      account = BaseAccount.fromJSON((account as Legacy.BaseAccountResponse).value)
+    // get account number + sequence from signer account // fetches using cosmosClient for headers to be added
+    const account = await cosmosclient.rest.auth
+      .account(cosmos.sdk, accAddress)
+      .then((res) =>
+        cosmosclient.codec.protoJSONToInstance(cosmosclient.codec.castProtoJSONOfProtoAny(res.data.account))
+      )
+      .catch((_) => undefined)
+    if (!(account instanceof cosmosclient.proto.cosmos.auth.v1beta1.BaseAccount)) {
+      return E.left({
+        errorId: fromLedgerErrorType(returnCode),
+        msg: `Failed to get acount`
+      })
     }
 
     const { account_number, sequence } = account
@@ -131,8 +140,8 @@ export const send = async ({
     )
 
     // Send signed StdTx
-    const { data } = await Legacy.txsPost(nodeUrl, stdTx, sequence)
-    // console.log('data:', data)
+    const { data } = await Legacy.txsPost(nodeUrl, stdTx, sequence.toNumber())
+
     const { txhash } = data
 
     if (!txhash) {
@@ -160,12 +169,14 @@ export const deposit = async ({
   transport,
   network,
   amount,
+  asset,
   memo,
   walletIndex,
   nodeUrl
 }: {
   transport: Transport
   amount: BaseAmount
+  asset?: Asset
   network: Network
   memo: string
   walletIndex: number
@@ -193,10 +204,12 @@ export const deposit = async ({
 
     const signer = AccAddress.fromBech32(bech32Address)
 
+    const assetNative = asset === undefined ? AssetRuneNative : asset
+
     const msgNativeTx: Legacy.MsgNativeTx = Legacy.msgNativeTxFromJson({
       coins: [
         {
-          asset: assetToString(AssetRuneNative),
+          asset: assetToString(assetNative),
           amount: amount.amount().toString()
         }
       ],
