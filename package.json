@@ -1,7 +1,7 @@
 {
   "name": "asgardex",
   "productName": "ASGARDEX",
-  "version": "1.20.7",
+  "version": "1.20.8",
   "description": "WALLET AND EXCHANGE CLIENT FOR THORCHAIN",
   "main": "index.js",
   "scripts": {
@@ -98,6 +98,8 @@
     "@xchainjs/xchain-evm": "^0.4.1",
     "@xchainjs/xchain-evm-providers": "^0.1.3",
     "@xchainjs/xchain-litecoin": "^0.13.4",
+    "@xchainjs/xchain-mayachain": "0.2.11",
+    "@xchainjs/xchain-mayanode": "0.1.2",
     "@xchainjs/xchain-midgard": "0.5.3",
     "@xchainjs/xchain-midgard-query": "0.1.6",
     "@xchainjs/xchain-thorchain": "^0.28.13",

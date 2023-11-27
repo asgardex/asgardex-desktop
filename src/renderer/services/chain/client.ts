@@ -7,6 +7,7 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Chain } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
@@ -24,6 +25,7 @@ import * as COSMOS from '../cosmos'
 import * as DOGE from '../doge'
 import * as ETH from '../ethereum'
 import * as LTC from '../litecoin'
+import * as MAYA from '../mayachain'
 import { selectedPoolChain$ } from '../midgard/common'
 import * as THOR from '../thorchain'
 import type { Chain$ } from './types'
@@ -45,6 +47,8 @@ export const clientByChain$ = (chain: Chain): XChainClient$ => {
       return BSC.client$
     case THORChain:
       return THOR.client$
+    case MAYAChain:
+      return MAYA.client$
     case LTCChain:
       return LTC.client$
     case DOGEChain:
@@ -71,6 +75,8 @@ export const clientByAsset$ = (asset: Asset): XChainClient$ => {
       return asset.synth ? THOR.client$ : BSC.client$
     case THORChain:
       return THOR.client$
+    case MAYAChain:
+      return MAYA.client$
     case LTCChain:
       return asset.synth ? THOR.client$ : LTC.client$
     case DOGEChain:

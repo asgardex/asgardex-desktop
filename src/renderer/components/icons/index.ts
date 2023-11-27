@@ -9,8 +9,10 @@ import bnbRuneIcon from '!file-loader!../../assets/svg/asset-bnb-rune.svg'
 import bnbIcon from '!file-loader!../../assets/svg/asset-bnb.svg'
 import bscIcon from '!file-loader!../../assets/svg/asset-bsc.svg'
 import btcIcon from '!file-loader!../../assets/svg/asset-btc.svg'
+import cacaoIcon from '!file-loader!../../assets/svg/asset-cacao.svg'
 import ethIcon from '!file-loader!../../assets/svg/asset-eth.svg'
 import lunaIcon from '!file-loader!../../assets/svg/asset-luna.svg'
+import mayaIcon from '!file-loader!../../assets/svg/asset-maya.svg'
 import runeIcon from '!file-loader!../../assets/svg/asset-rune.svg'
 import ustIcon from '!file-loader!../../assets/svg/asset-ust.svg'
 import xRuneIcon from '!file-loader!../../assets/svg/asset-xrune.svg'
@@ -29,6 +31,7 @@ import { ReactComponent as LedgerIcon } from '../../assets/svg/ledger.svg'
 export {
   atomIcon,
   bnbIcon,
+  cacaoIcon,
   avaxIcon,
   bscIcon,
   btcIcon,
@@ -48,5 +51,6 @@ export {
   EyeIcon,
   EyeHideIcon,
   LockIcon,
+  mayaIcon,
   UnlockIcon
 }

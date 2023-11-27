@@ -38,7 +38,9 @@ import {
   AssetSynthBnb,
   AssetSynthBtc,
   AssetSynthBusd,
-  AssetSynthEth
+  AssetSynthEth,
+  AssetCacao,
+  AssetMaya
 } from '../../shared/utils/asset'
 import { isEnabledChain } from '../../shared/utils/chain'
 import {
@@ -68,6 +70,8 @@ import { sequenceTOption } from './fpHelpers'
  *
  * */
 export const THORCHAIN_DECIMAL = 8
+
+export const CACAO_DECIMAL = 10
 
 /**
  * Number of decimals for Binance chain assets
@@ -115,6 +119,16 @@ export const isBchAsset = (asset: Asset): boolean => eqAsset.equals(asset, Asset
  * Checks whether an asset is a BNB asset
  */
 export const isBnbAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetBNB)
+
+/**
+ * Checks whether an asset is a BNB asset
+ */
+export const isCacaoAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetCacao)
+
+/**
+ * Checks whether an asset is a BNB asset
+ */
+export const isMayaAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetMaya)
 
 /**
  * Checks whether an asset is a BNB synthetic asset

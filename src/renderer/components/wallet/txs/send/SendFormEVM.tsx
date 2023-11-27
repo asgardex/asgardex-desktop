@@ -193,14 +193,14 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
     return (
       <StyledR.Radio.Group onChange={onChangeHandler} value={selectedFeeOption} disabled={disabled}>
-        <StyledR.Radio value="fastest" key="fastest">
-          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['fastest']}</StyledR.RadioLabel>
+        <StyledR.Radio value="average" key="average">
+          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['average']}</StyledR.RadioLabel>
         </StyledR.Radio>
         <StyledR.Radio value="fast" key="fast">
           <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['fast']}</StyledR.RadioLabel>
         </StyledR.Radio>
-        <StyledR.Radio value="average" key="average">
-          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['average']}</StyledR.RadioLabel>
+        <StyledR.Radio value="fastest" key="fastest">
+          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['fastest']}</StyledR.RadioLabel>
         </StyledR.Radio>
       </StyledR.Radio.Group>
     )

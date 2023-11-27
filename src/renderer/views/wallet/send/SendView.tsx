@@ -9,6 +9,7 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Row } from 'antd'
 import * as FP from 'fp-ts/lib/function'
@@ -30,6 +31,7 @@ import {
   SendViewDOGE,
   SendViewTHOR,
   SendViewLTC,
+  SendViewMAYA,
   SendViewCOSMOS
 } from './index'
 
@@ -70,6 +72,8 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
           return <SendViewEVM asset={asset} />
         case THORChain:
           return <SendViewTHOR asset={asset} />
+        case MAYAChain:
+          return <SendViewMAYA asset={asset} />
         case LTCChain:
           return <SendViewLTC asset={asset} />
         case DOGEChain:

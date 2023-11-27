@@ -1140,7 +1140,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
   // Price of asset IN fee
   const oPriceAssetInFee: O.Option<CryptoAmount> = useMemo(() => {
     const asset = saverFees.asset
-    const amount = saverFees.inFee.plus(liquidityFee.baseAmount).plus(outboundFee.baseAmount)
+    const amount = saverFees.inFee
 
     return FP.pipe(
       PoolHelpers.getPoolPriceValue({
@@ -1149,9 +1149,11 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
         pricePool,
         network
       }),
-      O.map((amount) => new CryptoAmount(amount, pricePool.asset))
+      O.map((amount) => {
+        return new CryptoAmount(amount, pricePool.asset)
+      })
     )
-  }, [liquidityFee, network, outboundFee, poolDetails, pricePool, saverFees.asset, saverFees.inFee])
+  }, [network, poolDetails, pricePool, saverFees.asset, saverFees.inFee])
 
   // Price fee label
   const priceFeesLabel = useMemo(

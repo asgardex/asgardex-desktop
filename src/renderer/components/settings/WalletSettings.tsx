@@ -11,6 +11,7 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Address, Chain } from '@xchainjs/xchain-util'
 import { List, Collapse, RadioChangeEvent } from 'antd'
@@ -164,7 +165,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     [GAIAChain]: 0,
     [DOGEChain]: 0,
     [AVAXChain]: 0,
-    [BSCChain]: 0
+    [BSCChain]: 0,
+    [MAYAChain]: 0
   })
 
   const {

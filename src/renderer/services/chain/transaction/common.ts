@@ -9,6 +9,7 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import { Chain } from '@xchainjs/xchain-util'
@@ -28,6 +29,7 @@ import * as COSMOS from '../../cosmos'
 import * as DOGE from '../../doge'
 import * as ETH from '../../ethereum'
 import * as LTC from '../../litecoin'
+import * as MAYA from '../../mayachain'
 import * as THOR from '../../thorchain'
 import { ApiError, ErrorId, TxHashLD, TxLD } from '../../wallet/types'
 import { SendPoolTxParams, SendTxParams } from '../types'
@@ -82,6 +84,8 @@ export const sendTx$ = ({
 
     case THORChain:
       return THOR.sendTx({ walletType, amount, asset, memo, recipient, walletIndex, hdMode })
+    case MAYAChain:
+      return MAYA.sendTx({ walletType, amount, asset, memo, recipient, walletIndex, hdMode })
 
     case GAIAChain:
       return FP.pipe(
@@ -209,6 +213,9 @@ export const sendPoolTx$ = ({
     case THORChain:
       return THOR.sendPoolTx$({ walletType, amount, asset, memo, walletIndex, hdMode })
 
+    case MAYAChain:
+      return MAYA.sendPoolTx$({ walletType, amount, asset, memo, walletIndex, hdMode })
+
     case BNBChain:
     case BTCChain:
     case BCHChain:
@@ -242,6 +249,8 @@ export const txStatusByChain$ = ({ txHash, chain }: { txHash: TxHash; chain: Cha
       return BSC.txStatus$(txHash, O.none)
     case THORChain:
       return THOR.txStatus$(txHash, O.none)
+    case MAYAChain:
+      return MAYA.txStatus$(txHash, O.none)
     case GAIAChain:
       return COSMOS.txStatus$(txHash, O.none)
     case DOGEChain:
@@ -281,6 +290,7 @@ export const poolTxStatusByChain$ = ({
     case BNBChain:
     case BTCChain:
     case THORChain:
+    case MAYAChain:
     case GAIAChain:
     case DOGEChain:
     case BCHChain:

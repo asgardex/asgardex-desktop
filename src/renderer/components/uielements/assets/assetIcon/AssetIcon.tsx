@@ -28,9 +28,11 @@ import {
   isAvaxAsset,
   isBscAsset,
   iconUrlInAVAXERC20Whitelist,
-  iconUrlInBSCERC20Whitelist
+  iconUrlInBSCERC20Whitelist,
+  isCacaoAsset,
+  isMayaAsset
 } from '../../../../helpers/assetHelper'
-import { isAvaxChain, isBnbChain, isBscChain, isEthChain } from '../../../../helpers/chainHelper'
+import { isAvaxChain, isBnbChain, isBscChain, isEthChain, isMayaChain } from '../../../../helpers/chainHelper'
 import { getIntFromName, rainbowStop } from '../../../../helpers/colorHelpers'
 import { useRemoteImage } from '../../../../hooks/useRemoteImage'
 import {
@@ -38,13 +40,15 @@ import {
   avaxIcon,
   bscIcon,
   bnbIcon,
+  mayaIcon,
   btcIcon,
   dogeIcon,
   ethIcon,
   runeIcon,
   bnbRuneIcon,
   xRuneIcon,
-  tgtIcon
+  tgtIcon,
+  cacaoIcon
 } from '../../../icons'
 import * as Styled from './AssetIcon.styles'
 import { Size } from './AssetIcon.types'
@@ -93,6 +97,10 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     // RUNE
     if (isRuneNativeAsset(asset)) {
       return runeIcon
+    }
+    // Cacao
+    if (isCacaoAsset(asset)) {
+      return cacaoIcon
     }
     // BNB RUNE
     if (isRuneBnbAsset(asset, network)) {
@@ -173,6 +181,11 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
           iconUrlInBSCERC20Whitelist(asset),
           O.getOrElse(() => '')
         )
+      }
+      // Since we've already checked BSC.BNB before,
+      // we know any asset is ERC20 here - no need to run expensive `isBscTokenAsset`
+      if (isMayaChain(asset.chain) && isMayaAsset(asset)) {
+        return mayaIcon
       }
     }
 

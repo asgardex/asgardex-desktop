@@ -2,6 +2,14 @@
 
 ## Updates/Fixes
 
+- Add Hindi language support [#]()
+- ADD: Mayachain (wallet send & Receive)
+- Fix Savers Fill Cap [#]()
+
+# 1.20.7 (2023-11-21)
+
+## Updates/Fixes
+
 - Display Savers From a Ledger [#40](https://github.com/asgardex/asgardex-desktop/issues/40)
 - Savers page not showing ledger saver [#68](https://github.com/asgardex/asgardex-desktop/issues/68)
 - Savers Withdraw Outbound time not displayed [#69](https://github.com/asgardex/asgardex-desktop/issues/69)

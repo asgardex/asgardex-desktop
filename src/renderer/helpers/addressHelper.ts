@@ -14,6 +14,8 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { getPrefix as getEvmPrefix } from '@xchainjs/xchain-evm'
 import { getPrefix as getLitecoinPrefix } from '@xchainjs/xchain-litecoin'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { getPrefix as getMayachainPrefix } from '@xchainjs/xchain-mayachain'
 import { getPrefix as getThorchainPrefix } from '@xchainjs/xchain-thorchain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Chain } from '@xchainjs/xchain-util'
@@ -55,6 +57,8 @@ export const getAddressPrefixLength = (chain: Chain, network: Network): number =
       return getDogePrefix(clientNetwork).length
     case THORChain:
       return getThorchainPrefix(clientNetwork).length
+    case MAYAChain:
+      return getMayachainPrefix(clientNetwork).length
     case LTCChain:
       return getLitecoinPrefix(clientNetwork).length
     case BCHChain:

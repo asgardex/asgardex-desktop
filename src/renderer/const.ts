@@ -7,6 +7,7 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, bn, Asset, assetToString, baseAmount, Chain } from '@xchainjs/xchain-util'
 
@@ -152,7 +153,8 @@ export const CHAIN_WEIGHTS: Record<EnabledChain, number> = {
   [GAIAChain]: 6,
   [AVAXChain]: 7,
   [BSCChain]: 8,
-  [DOGEChain]: 9
+  [DOGEChain]: 9,
+  [MAYAChain]: 10
 }
 
 // Weight of currencies needed for pricing

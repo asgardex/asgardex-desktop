@@ -13,6 +13,7 @@ import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTC_DECIMAL } from '@xchainjs/xchain-litecoin'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RUNE_DECIMAL as THOR_DECIMAL } from '@xchainjs/xchain-thorchain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { BaseAmount, baseAmount } from '@xchainjs/xchain-util'
@@ -20,7 +21,7 @@ import { Chain } from '@xchainjs/xchain-util'
 
 import { Network } from '../../../../shared/api/types'
 import { isEnabledChain } from '../../../../shared/utils/chain'
-import { BNB_DECIMAL } from '../../../helpers/assetHelper'
+import { BNB_DECIMAL, CACAO_DECIMAL } from '../../../helpers/assetHelper'
 
 /**
  * Returns minimal amount (threshold) needed to send a tx on given chain
@@ -37,6 +38,9 @@ export const smallestAmountToSent = (chain: Chain, _network: Network): BaseAmoun
     case THORChain:
       // 0 thor
       return baseAmount(0, THOR_DECIMAL)
+    case MAYAChain:
+      // 0 cacao
+      return baseAmount(0, CACAO_DECIMAL)
     case ETHChain:
       // zero for ETH
       return baseAmount(0, ETH_GAS_ASSET_DECIMAL)

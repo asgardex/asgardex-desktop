@@ -11,7 +11,7 @@ import {
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import {
   CryptoAmount,
   QuoteSwapParams,
@@ -2654,7 +2654,10 @@ export const Swap = ({
                       </div>
                       <div className="flex w-full justify-between pl-10px text-[12px]">
                         <div className={`flex items-center`}>
-                          {intl.formatMessage({ id: 'common.confirmation.time' }, { chain: targetAsset.chain })}
+                          {intl.formatMessage(
+                            { id: 'common.confirmation.time' },
+                            { chain: targetAsset.synth ? THORChain : targetAsset.chain }
+                          )}
                         </div>
                         <div>{formatSwapTime(Number(transactionTime.confirmation))}</div>
                       </div>
