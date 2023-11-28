@@ -64,7 +64,7 @@ export const AssetData: React.FC<Props> = (props): JSX.Element => {
       </Styled.AssetIconContainer>
       {!noTicker && (
         <Styled.LabelContainer>
-          <Styled.TickerLabel>{asset.ticker}</Styled.TickerLabel>
+          <Styled.TickerLabel>{`${asset.ticker}`}</Styled.TickerLabel>
           <Styled.ChainLabelWrapper>
             {!isSynthAsset(asset) && <Styled.ChainLabel>{asset.chain}</Styled.ChainLabel>}
             {isSynthAsset(asset) && <Styled.AssetSynthLabel>synth</Styled.AssetSynthLabel>}

@@ -60,7 +60,6 @@ const swapFees$: SwapFeesHandler = (initialParams) => {
         oReloadParams,
         O.getOrElse(() => initialParams)
       )
-
       return liveData.sequenceS({
         inFee: poolInboundFee$(inAsset),
         outFee: poolOutboundFee$(outAsset)

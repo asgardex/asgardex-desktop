@@ -40,7 +40,15 @@ import {
   AssetSynthBusd,
   AssetSynthEth,
   AssetCacao,
-  AssetMaya
+  AssetMaya,
+  AssetSynthLTC,
+  AssetSynthAVAX,
+  AssetSynthBSC,
+  AssetSynthDOGE,
+  AssetSynthATOM,
+  AssetSynthBCH,
+  AssetSynthAVAXUSDC,
+  AssetSynthEthUsdc
 } from '../../shared/utils/asset'
 import { isEnabledChain } from '../../shared/utils/chain'
 import {
@@ -111,9 +119,19 @@ export const isRuneAsset = (asset: Asset, network: Network): boolean =>
 export const isLtcAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetLTC)
 
 /**
+ * Checks whether an asset is a LTC asset
+ */
+export const isLtcSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthLTC)
+
+/**
  * Checks whether an asset is a BCH asset
  */
 export const isBchAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetBCH)
+
+/**
+ * Checks whether an asset is a BCH synth asset
+ */
+export const isBchSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthBCH)
 
 /**
  * Checks whether an asset is a BNB asset
@@ -133,7 +151,7 @@ export const isMayaAsset = (asset: Asset): boolean => eqAsset.equals(asset, Asse
 /**
  * Checks whether an asset is a BNB synthetic asset
  */
-export const isBnbAssetSynth = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthBnb)
+export const isBnbAssetSynth = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthBnb || AssetSynthBusd)
 
 /**
  * Checks whether an asset is a BTC asset
@@ -146,10 +164,6 @@ export const isBtcAsset = (asset: Asset): boolean => eqAsset.equals(asset, Asset
 export const isBtcAssetSynth = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthBtc)
 
 /**
- * Checks whether an asset is a Btc synthetic asset
- */
-export const isBusdAssetSynth = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthBusd)
-/**
  * Checks whether an asset is an ETH asset
  */
 export const isEthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetETH)
@@ -159,9 +173,18 @@ export const isEthAsset = (asset: Asset): boolean => eqAsset.equals(asset, Asset
  */
 export const isAvaxAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetAVAX)
 /**
+ * Checks whether an asset is an AVAX synth asset
+ */
+export const isAvaxSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthAVAX || AssetSynthAVAXUSDC)
+
+/**
  * Checks whether an asset is an BSC asset
  */
 export const isBscAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetBSC)
+/**
+ * Checks whether an asset is an BSC synth asset
+ */
+export const isBscSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthBSC)
 
 /**
  * Checks whether an asset is an ETH synthetic
@@ -169,14 +192,28 @@ export const isBscAsset = (asset: Asset): boolean => eqAsset.equals(asset, Asset
 export const isEthSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthEth)
 
 /**
+ * Checks whether an asset is an ETH synthetic
+ */
+export const isEthSynthUSDCAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthEthUsdc)
+
+/**
  * Checks whether an asset is a DOGE asset
  */
 export const isDogeAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetDOGE)
+/**
+ * Checks whether an asset is a DOGE synth asset
+ */
+export const isDogeSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthDOGE)
 
 /**
  * Checks whether an asset is a ATOM asset
  */
 export const isAtomAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetATOM)
+
+/**
+ * Checks whether an asset is a ATOM synth asset
+ */
+export const isAtomSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthATOM)
 
 /**
  * Check whether an asset is in a list

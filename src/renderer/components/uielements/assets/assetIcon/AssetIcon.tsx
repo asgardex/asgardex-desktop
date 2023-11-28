@@ -30,7 +30,14 @@ import {
   iconUrlInAVAXERC20Whitelist,
   iconUrlInBSCERC20Whitelist,
   isCacaoAsset,
-  isMayaAsset
+  isMayaAsset,
+  isLtcSynthAsset,
+  isEthSynthAsset,
+  isAvaxSynthAsset,
+  isBscSynthAsset,
+  isAtomSynthAsset,
+  isDogeSynthAsset,
+  isBchSynthAsset
 } from '../../../../helpers/assetHelper'
 import { isAvaxChain, isBnbChain, isBscChain, isEthChain, isMayaChain } from '../../../../helpers/chainHelper'
 import { getIntFromName, rainbowStop } from '../../../../helpers/colorHelpers'
@@ -48,7 +55,8 @@ import {
   bnbRuneIcon,
   xRuneIcon,
   tgtIcon,
-  cacaoIcon
+  cacaoIcon,
+  usdpIcon
 } from '../../../icons'
 import * as Styled from './AssetIcon.styles'
 import { Size } from './AssetIcon.types'
@@ -86,12 +94,16 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     if (isEthAsset(asset)) {
       return ethIcon
     }
+    // ETH synth
+    if (isEthSynthAsset(asset)) {
+      return ethIcon
+    }
     // AVAX
-    if (isAvaxAsset(asset)) {
+    if (isAvaxAsset(asset) || isAvaxSynthAsset(asset)) {
       return avaxIcon
     }
     // AVAX
-    if (isBscAsset(asset)) {
+    if (isBscAsset(asset) || isBscSynthAsset(asset)) {
       return bscIcon
     }
     // RUNE
@@ -113,11 +125,11 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
       return bnbIcon
     }
     // LTC
-    if (isLtcAsset(asset)) {
+    if (isLtcAsset(asset) || isLtcSynthAsset(asset)) {
       return `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/litecoin/info/logo.png`
     }
     // BCH
-    if (isBchAsset(asset)) {
+    if (isBchAsset(asset) || isBchSynthAsset(asset)) {
       return `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/bitcoincash/info/logo.png`
     }
 
@@ -130,13 +142,17 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     }
 
     // DOGE
-    if (isDogeAsset(asset)) {
+    if (isDogeAsset(asset) || isDogeSynthAsset(asset)) {
       return dogeIcon
     }
 
     // Atom
-    if (isAtomAsset(asset)) {
+    if (isAtomAsset(asset) || isAtomSynthAsset(asset)) {
       return atomIcon
+    }
+    // Hack for USDP // 1inch doesn't supply
+    if (asset.symbol === 'USDP-0X8E870D67F660D95D5BE530380D0EC0BD388289E1') {
+      return usdpIcon
     }
 
     if (network !== 'testnet') {
@@ -151,16 +167,6 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
         return FP.pipe(
           // Try to get url from ERC20Whitelist first
           iconUrlInERC20Whitelist(asset),
-          // Or use `trustwallet`
-          // O.alt(() =>
-          //   FP.pipe(
-          //     getEthTokenAddress(asset),
-          //     O.map(
-          //       (tokenAddress) =>
-          //         `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${tokenAddress}/logo.png`
-          //     )
-          //   )
-          // ),
           O.getOrElse(() => '')
         )
       }
@@ -218,20 +224,18 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
   }, [size, isSynth, className])
 
   const renderFallbackIcon = useCallback(() => {
-    const { ticker } = asset
-    const numbers = getIntFromName(ticker)
+    const { chain } = asset
+    const numbers = getIntFromName(chain)
     const backgroundImage = `linear-gradient(45deg,${rainbowStop(numbers[0])},${rainbowStop(numbers[1])})`
 
     return (
       <Styled.IconWrapper isSynth={isSynth} size={size} className={className}>
         <Styled.IconFallback isSynth={isSynth} size={size} style={{ backgroundImage }}>
-          {ticker}
+          {chain}
         </Styled.IconFallback>
       </Styled.IconWrapper>
     )
   }, [asset, isSynth, className, size])
 
-  return isSynth
-    ? renderFallbackIcon()
-    : RD.fold(() => <></>, renderPendingIcon, renderFallbackIcon, renderIcon)(remoteIconImage)
+  return RD.fold(() => <></>, renderPendingIcon, renderFallbackIcon, renderIcon)(remoteIconImage)
 }

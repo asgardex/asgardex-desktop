@@ -3228,6 +3228,17 @@ export const BSC_TOKEN_WHITELIST: {
   {
     asset: {
       chain: BSCChain,
+      symbol: "USDC-0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+      ticker: "USDC",
+      synth: true,
+    },
+    iconUrl: O.some(
+      "https://tokens.pancakeswap.finance/images/0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
       symbol: "USDT-0x55d398326f99059fF775485246999027B3197955",
       ticker: "USDT",
       synth: false,

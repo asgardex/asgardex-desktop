@@ -18,6 +18,7 @@ import ustIcon from '!file-loader!../../assets/svg/asset-ust.svg'
 import xRuneIcon from '!file-loader!../../assets/svg/asset-xrune.svg'
 import dogeIcon from '../../assets/png/asset-doge.png'
 import tgtIcon from '../../assets/png/asset-tgt.png'
+import usdpIcon from '../../assets/png/asset-usdp.png'
 import { ReactComponent as CurrencyIcon } from '../../assets/svg/currency-icon.svg'
 import { ReactComponent as AttentionIcon } from '../../assets/svg/icon-attention.svg'
 import { ReactComponent as DownIcon } from '../../assets/svg/icon-down.svg'
@@ -52,5 +53,6 @@ export {
   EyeHideIcon,
   LockIcon,
   mayaIcon,
-  UnlockIcon
+  UnlockIcon,
+  usdpIcon
 }
