@@ -49,13 +49,20 @@ export const headerNetStatusColor = ({
 export const appOnlineStatusColor = ({
   onlineStatus,
   midgardStatus,
-  thorchainStatus
+  thorchainStatus,
+  mayachainStatus
 }: {
   onlineStatus: OnlineStatus
   midgardStatus: OnlineStatus
   thorchainStatus: OnlineStatus
+  mayachainStatus: OnlineStatus
 }): HeaderNetStatusColor => {
   if (onlineStatus === OnlineStatus.OFF) return 'red'
-  if (midgardStatus === OnlineStatus.OFF || thorchainStatus === OnlineStatus.OFF) return 'yellow'
+  if (
+    midgardStatus === OnlineStatus.OFF ||
+    thorchainStatus === OnlineStatus.OFF ||
+    mayachainStatus === OnlineStatus.OFF
+  )
+    return 'yellow'
   return 'green'
 }

@@ -28,7 +28,7 @@ import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
-import { isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
+import { isCacaoAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
 import { hiddenString, noDataString } from '../../../helpers/stringHelper'
@@ -346,7 +346,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           ]),
           // 'deposit'  for RuneNativeAsset only
           A.concatW<ActionButtonAction>(
-            isRuneNativeAsset(asset)
+            isRuneNativeAsset(asset) || isCacaoAsset(asset)
               ? [
                   {
                     label: intl.formatMessage({ id: 'wallet.action.deposit' }),

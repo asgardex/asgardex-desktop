@@ -3,6 +3,7 @@ import { CommonMessages } from '../types'
 const common: CommonMessages = {
   'common.stats': 'आँकड़े',
   'common.network': 'नेटवर्क',
+  'common.dex': 'Dex',
   'common.faqs': 'सामान्य प्रश्न',
   'common.greeting': 'स्वागत है, {name}',
   'common.copyright': '©',
@@ -13,6 +14,7 @@ const common: CommonMessages = {
   'common.thornameRegistrationSpecifics':
     'THORNames हर किसी को 1-30 हेक्साडेसिमल वर्णों का उपयोग करके क्रॉस-चेन वॉलेट पते पंजीकृत करने की अनुमति देते हैं, विशेष प्रतीक -+ को शामिल करते हुए। THORNames को 30 वर्णों तक सीमित किया गया है, जिसमें ^[a-zA-Z0-9+-]+$ शामिल है।',
   'common.thornameError': 'THORName उपलब्ध नहीं है',
+  'common.mayaname': 'MAYAName',
   'common.owner': 'मालिक',
   'common.preferredAsset': 'पसंदीदा संपत्ति',
   'common.expirationBlock': 'समाप्ति ब्लॉक',

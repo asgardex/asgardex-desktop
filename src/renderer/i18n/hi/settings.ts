@@ -25,7 +25,13 @@ const settings: SettingMessages = {
   'setting.thornode.rpc.error.url': 'THORNode RPC URL अमान्य है। कृपया पुनः जांच करें और प्रयास करें',
   'setting.thornode.rpc.error.unhealthy': 'THORNode RPC "{endpoint}" की जाँच करते समय अस्वस्थ प्रतीत होता है',
   'setting.thornode.node.valid': 'मान्य THORNode API URL',
-  'setting.thornode.rpc.valid': 'मान्य THORNode RPC URL'
+  'setting.thornode.rpc.valid': 'मान्य THORNode RPC URL',
+  'setting.mayanode.node.error.unhealthy': 'MAYANode API "{endpoint}" की जाँच करते समय अस्वस्थ प्रतीत होता है',
+  'setting.mayanode.node.error.url': 'MAYANode API URL अमान्य है। कृपया पुनः जांच करें और प्रयास करें',
+  'setting.mayanode.rpc.error.url': 'MAYANode RPC URL अमान्य है। कृपया पुनः जांच करें और प्रयास करें',
+  'setting.mayanode.rpc.error.unhealthy': 'MAYANode RPC "{endpoint}" की जाँच करते समय अस्वस्थ प्रतीत होता है',
+  'setting.mayanode.node.valid': 'मान्य MAYANode API URL',
+  'setting.mayanode.rpc.valid': 'मान्य MAYANode RPC URL'
 }
 
 export default settings

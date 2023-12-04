@@ -157,10 +157,10 @@ export type PendingAssets = AssetsWithAmount1e8
 export type PendingAssetsRD = RD.RemoteData<Error, PendingAssets>
 
 export type LiquidityProvider = {
-  runeAddress: O.Option<Address>
+  cacaoAddress: O.Option<Address>
   assetAddress: O.Option<Address>
 
-  pendingRune: O.Option<PendingAsset>
+  pendingCacao: O.Option<PendingAsset>
   pendingAsset: O.Option<PendingAsset>
 }
 
@@ -169,10 +169,10 @@ export type LiquidityProviderLD = LiveData<Error, O.Option<LiquidityProvider>>
 export type LiquidityProviderRD = RD.RemoteData<Error, O.Option<LiquidityProvider>>
 export type LiquidityProvidersRD = RD.RemoteData<Error, LiquidityProvider[]>
 
-export type LiquidityProviderHasAsymAssets = { rune: boolean; asset: boolean }
+export type LiquidityProviderHasAsymAssets = { cacao: boolean; asset: boolean }
 export type LiquidityProviderHasAsymAssetsRD = RD.RemoteData<Error, LiquidityProviderHasAsymAssets>
 
-export type LiquidityProviderAssetMismatch = O.Option<{ runeAddress: Address; assetAddress: Address }>
+export type LiquidityProviderAssetMismatch = O.Option<{ cacaoAddress: Address; assetAddress: Address }>
 export type LiquidityProviderAssetMismatchRD = RD.RemoteData<Error, LiquidityProviderAssetMismatch>
 
 // export type SaverProvider = {

@@ -15,6 +15,7 @@ const Template = ({ interactType, walletType }: Args) => (
     interactTypeChanged={(type) => console.log('Interact type changed ', type)}
     network="testnet"
     walletType={walletType}
+    chain="THOR"
   />
 )
 export const Default = Template.bind({})

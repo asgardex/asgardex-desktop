@@ -5,6 +5,7 @@ export type CommonMessageKey =
   | 'common.copyright'
   | 'common.stats'
   | 'common.network'
+  | 'common.dex'
   | 'common.faqs'
   | 'common.type'
   | 'common.address'
@@ -12,6 +13,7 @@ export type CommonMessageKey =
   | 'common.thorname'
   | 'common.thornameRegistrationSpecifics'
   | 'common.thornameError'
+  | 'common.mayaname'
   | 'common.owner'
   | 'common.preferredAsset'
   | 'common.aliasChain'
@@ -277,6 +279,7 @@ type WalletMessageKey =
   | 'wallet.errors.asset.notExist'
   | 'wallet.errors.address.empty'
   | 'wallet.errors.address.invalid'
+  | 'wallet.errors.address.inbound'
   | 'wallet.errors.address.couldNotFind'
   | 'wallet.errors.amount.shouldBeNumber'
   | 'wallet.errors.amount.shouldBeGreaterThan'
@@ -378,6 +381,12 @@ type SettingMessageKey =
   | 'setting.thornode.rpc.error.unhealthy'
   | 'setting.thornode.node.valid'
   | 'setting.thornode.rpc.valid'
+  | 'setting.mayanode.node.error.url'
+  | 'setting.mayanode.node.error.unhealthy'
+  | 'setting.mayanode.rpc.error.url'
+  | 'setting.mayanode.rpc.error.unhealthy'
+  | 'setting.mayanode.node.valid'
+  | 'setting.mayanode.rpc.valid'
 
 export type SettingMessages = { [key in SettingMessageKey]: string }
 

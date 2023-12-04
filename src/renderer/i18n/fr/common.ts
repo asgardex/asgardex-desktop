@@ -3,6 +3,7 @@ import { CommonMessages } from '../types'
 const common: CommonMessages = {
   'common.stats': 'Statistiques',
   'common.network': 'Réseau',
+  'common.dex': 'Dex',
   'common.faqs': 'FAQ',
   'common.greeting': 'Bonjour {name}',
   'common.copyright': '©',
@@ -12,6 +13,7 @@ const common: CommonMessages = {
   'common.thorname': 'THORName',
   'common.thornameRegistrationSpecifics': `Les THORNames permettent à quiconque d'enregistrer des adresses de portefeuille inter-chaînes sous forme d'une chaîne de 1 à 30 caractères hexadécimaux, y compris les caractères spéciaux -+. Les THORNames sont limités à 30 caractères, y compris ^[a-zA-Z0-9+-]+$.`,
   'common.thornameError': 'THORName non disponible',
+  'common.mayaname': 'MAYAName',
   'common.owner': 'Propriétaire',
   'common.preferredAsset': 'Actif préféré',
   'common.expirationBlock': `Bloc d'expiration`,

@@ -25,7 +25,13 @@ const settings: SettingMessages = {
   'setting.thornode.rpc.error.url': 'Неверный URL RPC THORNode. Пожалуйста, перепроверьте и попробуйте еще раз',
   'setting.thornode.rpc.error.unhealthy': 'RPC THORNode кажется нездоровым при проверке "{endpoint}"',
   'setting.thornode.node.valid': 'Действительный URL API THORNode',
-  'setting.thornode.rpc.valid': 'Действительный URL RPC THORNode'
+  'setting.thornode.rpc.valid': 'Действительный URL RPC THORNode',
+  'setting.mayanode.node.error.unhealthy': 'API MAYANode кажется нездоровым при проверке "{endpoint}"',
+  'setting.mayanode.node.error.url': 'Неверный URL API MAYANode. Пожалуйста, перепроверьте и попробуйте еще раз',
+  'setting.mayanode.rpc.error.url': 'Неверный URL RPC MAYANode. Пожалуйста, перепроверьте и попробуйте еще раз',
+  'setting.mayanode.rpc.error.unhealthy': 'RPC MAYANode кажется нездоровым при проверке "{endpoint}"',
+  'setting.mayanode.node.valid': 'Действительный URL API MAYANode',
+  'setting.mayanode.rpc.valid': 'Действительный URL RPC MAYANode'
 }
 
 export default settings

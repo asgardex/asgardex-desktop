@@ -11,11 +11,14 @@ import { useI18nContext } from '../../contexts/I18nContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useAppUpdate } from '../../hooks/useAppUpdate'
 import { useCollapsedSetting } from '../../hooks/useCollapsedSetting'
+import { useDex } from '../../hooks/useDex'
+import { useMayachainClientUrl } from '../../hooks/useMayachainClientUrl'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useThorchainClientUrl } from '../../hooks/useThorchainClientUrl'
 
 export const AppSettingsView: React.FC = (): JSX.Element => {
   const { network, changeNetwork } = useNetwork()
+  const { dex, changeDex } = useDex()
   const { appUpdater, checkForUpdates } = useAppUpdate()
   const {
     service: { apiEndpoint$, setMidgardUrl, checkMidgardUrl$ }
@@ -32,6 +35,15 @@ export const AppSettingsView: React.FC = (): JSX.Element => {
     checkRpc$: checkThornodeRpcUrl$,
     checkNode$: checkThornodeNodeUrl$
   } = useThorchainClientUrl()
+
+  const {
+    node: mayanodeNodeUrl,
+    rpc: mayanodeRpcUrl,
+    setRpc: setMayanodeRpcUrl,
+    setNode: setMayanodeNodeUrl,
+    checkRpc$: checkMayanodeRpcUrl$,
+    checkNode$: checkMayanodeNodeUrl$
+  } = useMayachainClientUrl()
 
   const { changeLocale, locale$ } = useI18nContext()
   const currentLocale = useObservableState(locale$, DEFAULT_LOCALE)
@@ -53,7 +65,9 @@ export const AppSettingsView: React.FC = (): JSX.Element => {
       locale={currentLocale}
       changeLocale={changeLocale}
       network={network}
+      dex={dex}
       changeNetwork={changeNetwork}
+      changeDex={changeDex}
       version={envOrDefault($VERSION, '-')}
       appUpdateState={appUpdater}
       checkForUpdates={checkForUpdates}
@@ -64,11 +78,17 @@ export const AppSettingsView: React.FC = (): JSX.Element => {
       onChangeMidgardUrl={updateMidgardUrlHandler}
       onChangeThornodeNodeUrl={setThornodeNodeUrl}
       onChangeThornodeRpcUrl={setThornodeRpcUrl}
+      onChangeMayanodeNodeUrl={setMayanodeNodeUrl}
+      onChangeMayanodeRpcUrl={setMayanodeRpcUrl}
       checkMidgardUrl$={checkMidgardUrl$}
       thornodeRpcUrl={thornodeRpcUrl}
       thornodeNodeUrl={thornodeNodeUrl}
       checkThornodeRpcUrl$={checkThornodeRpcUrl$}
       checkThornodeNodeUrl$={checkThornodeNodeUrl$}
+      mayanodeRpcUrl={mayanodeRpcUrl}
+      mayanodeNodeUrl={mayanodeNodeUrl}
+      checkMayanodeRpcUrl$={checkMayanodeRpcUrl$}
+      checkMayanodeNodeUrl$={checkMayanodeNodeUrl$}
     />
   )
 }

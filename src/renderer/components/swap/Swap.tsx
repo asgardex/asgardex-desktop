@@ -9,6 +9,7 @@ import {
   MagnifyingGlassPlusIcon
 } from '@heroicons/react/24/outline'
 import { AVAXChain } from '@xchainjs/xchain-avax'
+import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
@@ -688,43 +689,8 @@ export const Swap = ({
       O.getOrElse(() => '')
     )
 
-    return price ? `${price} (${fee})` : fee
+    return price ? `${price} (${fee}) ${ASGARDEX_AFFILIATE_FEE / 100}%` : fee
   }, [swapFees, affiliateFee, affiliatePriceValue, sourceAsset])
-
-  /**
-   * Price sum of swap fees (IN + OUT) and affiliate
-   */
-  const oPriceSwapFees1e8: O.Option<AssetWithAmount> = useMemo(
-    () =>
-      FP.pipe(
-        sequenceSOption({
-          inFee: oPriceSwapInFee,
-          outFee: O.some(outFeePriceValue),
-          affiliateFee: O.some(affiliatePriceValue)
-        }),
-        O.map(({ inFee, outFee, affiliateFee }) => {
-          const in1e8 = to1e8BaseAmount(inFee.baseAmount)
-          const out1e8 = to1e8BaseAmount(outFee.baseAmount)
-          const affiliate = to1e8BaseAmount(affiliateFee.baseAmount)
-          return { asset: inFee.asset, amount: in1e8.plus(out1e8).plus(affiliate) }
-        })
-      ),
-    [oPriceSwapInFee, outFeePriceValue, affiliatePriceValue]
-  )
-
-  const priceSwapFeesLabel = useMemo(() => {
-    return FP.pipe(
-      oPriceSwapFees1e8,
-      O.map(({ amount, asset }) => {
-        return formatAssetAmountCurrency({
-          amount: baseToAsset(amount),
-          asset,
-          decimal: isUSDAsset(asset) ? 2 : 6
-        })
-      }),
-      O.getOrElse(() => noDataString)
-    )
-  }, [oPriceSwapFees1e8])
 
   const oQuoteSwapData: O.Option<QuoteSwapParams> = useMemo(
     () =>
@@ -955,6 +921,42 @@ export const Swap = ({
       network
     ]
   )
+
+  /**
+   * Price sum of swap fees (IN + OUT) and affiliate
+   */
+  const oPriceSwapFees1e8: O.Option<AssetWithAmount> = useMemo(
+    () =>
+      FP.pipe(
+        sequenceSOption({
+          inFee: oPriceSwapInFee,
+          outFee: O.some(outFeePriceValue),
+          affiliateFee: O.some(affiliatePriceValue)
+        }),
+        O.map(({ inFee, outFee, affiliateFee }) => {
+          const in1e8 = to1e8BaseAmount(inFee.baseAmount)
+          const out1e8 = to1e8BaseAmount(outFee.baseAmount)
+          const affiliate = to1e8BaseAmount(affiliateFee.baseAmount)
+          const slip = to1e8BaseAmount(priceAmountToSwapMax1e8.baseAmount.times(swapSlippage / 100)) // adding slip costs to total fees
+          return { asset: inFee.asset, amount: in1e8.plus(out1e8).plus(affiliate).plus(slip) }
+        })
+      ),
+    [oPriceSwapInFee, outFeePriceValue, affiliatePriceValue, priceAmountToSwapMax1e8.baseAmount, swapSlippage]
+  )
+
+  const priceSwapFeesLabel = useMemo(() => {
+    return FP.pipe(
+      oPriceSwapFees1e8,
+      O.map(({ amount, asset }) => {
+        return formatAssetAmountCurrency({
+          amount: baseToAsset(amount),
+          asset,
+          decimal: isUSDAsset(asset) ? 2 : 6
+        })
+      }),
+      O.getOrElse(() => noDataString)
+    )
+  }, [oPriceSwapFees1e8])
 
   // Disable slippage selection temporary for Ledger/BTC (see https://github.com/thorchain/asgardex-electron/issues/2068)
   const disableSlippage = useMemo(
@@ -1305,17 +1307,33 @@ export const Swap = ({
     [intl, minAmountError, sourceAsset, reccommendedAmountIn]
   )
 
+  const [lockedAssetAmount, setLockedAssetAmount] = useState<CryptoAmount>(
+    new CryptoAmount(baseAmount(0, sourceAssetDecimal), sourceAsset)
+  )
+
+  useEffect(() => {
+    if (lockedWallet) {
+      const fetchData = async () => {
+        const OneBitcoin = new CryptoAmount(assetToBase(assetAmount(1)), AssetBTC)
+        setLockedAssetAmount(await thorchainQuery.convert(OneBitcoin, sourceAsset))
+      }
+      fetchData()
+    }
+  }, [lockedWallet, sourceAsset, thorchainQuery])
+
   // Max amount to swap == users balances of source asset
   // Decimal always <= 1e8 based
   const maxAmountToSwapMax1e8: BaseAmount = useMemo(() => {
-    if (lockedWallet) return assetToBase(assetAmount(10000, sourceAssetAmountMax1e8.decimal))
+    if (lockedWallet) {
+      return lockedAssetAmount.baseAmount
+    }
 
     return Utils.maxAmountToSwapMax1e8({
       asset: sourceAsset,
       balanceAmountMax1e8: sourceAssetAmountMax1e8,
       feeAmount: swapFees.inFee.amount
     })
-  }, [lockedWallet, sourceAsset, sourceAssetAmountMax1e8, swapFees.inFee.amount])
+  }, [lockedAssetAmount.baseAmount, lockedWallet, sourceAsset, sourceAssetAmountMax1e8, swapFees.inFee.amount])
 
   const setAmountToSwapMax1e8 = useCallback(
     (amountToSwap: BaseAmount) => {
@@ -2803,17 +2821,6 @@ export const Swap = ({
                     <div>{priceSwapInFeeLabel}</div>
                   </div>
                   <div className="flex w-full justify-between pl-10px text-[12px]">
-                    <div>{intl.formatMessage({ id: 'common.fee.outbound' })}</div>
-                    <div>{priceSwapOutFeeLabel}</div>
-                  </div>
-                  <div className="flex w-full justify-between pl-10px text-[12px]">
-                    <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
-                    <div>{priceAffiliateFeeLabel}</div>
-                  </div>
-                  <div
-                    className={`flex w-full justify-between ${showDetails ? 'pt-10px' : ''} font-mainBold text-[14px] ${
-                      isCausedSlippage ? 'text-error0 dark:text-error0d' : ''
-                    }`}>
                     <div>{intl.formatMessage({ id: 'swap.slip.title' })}</div>
                     <div>
                       {formatAssetAmountCurrency({
@@ -2824,6 +2831,15 @@ export const Swap = ({
                       }) + ` (${swapSlippage.toFixed(2)}%)`}
                     </div>
                   </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'common.fee.outbound' })}</div>
+                    <div>{priceSwapOutFeeLabel}</div>
+                  </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
+                    <div>{priceAffiliateFeeLabel}</div>
+                  </div>
+
                   {/* Transaction time */}
                   <>
                     <div

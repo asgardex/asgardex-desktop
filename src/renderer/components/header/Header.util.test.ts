@@ -113,7 +113,8 @@ describe('header/util', () => {
       const result = appOnlineStatusColor({
         onlineStatus: OnlineStatus.OFF,
         midgardStatus: OnlineStatus.ON,
-        thorchainStatus: OnlineStatus.ON
+        thorchainStatus: OnlineStatus.ON,
+        mayachainStatus: OnlineStatus.ON
       })
       expect(result).toEqual('red')
     })
@@ -121,7 +122,8 @@ describe('header/util', () => {
       const result = appOnlineStatusColor({
         onlineStatus: OnlineStatus.ON,
         midgardStatus: OnlineStatus.OFF,
-        thorchainStatus: OnlineStatus.ON
+        thorchainStatus: OnlineStatus.ON,
+        mayachainStatus: OnlineStatus.ON
       })
       expect(result).toEqual('yellow')
     })
@@ -129,7 +131,17 @@ describe('header/util', () => {
       const result = appOnlineStatusColor({
         onlineStatus: OnlineStatus.ON,
         midgardStatus: OnlineStatus.ON,
-        thorchainStatus: OnlineStatus.OFF
+        thorchainStatus: OnlineStatus.OFF,
+        mayachainStatus: OnlineStatus.OFF
+      })
+      expect(result).toEqual('yellow')
+    })
+    it('only mayachain not reachable', () => {
+      const result = appOnlineStatusColor({
+        onlineStatus: OnlineStatus.ON,
+        midgardStatus: OnlineStatus.ON,
+        thorchainStatus: OnlineStatus.ON,
+        mayachainStatus: OnlineStatus.OFF
       })
       expect(result).toEqual('yellow')
     })
@@ -137,7 +149,8 @@ describe('header/util', () => {
       const result = appOnlineStatusColor({
         onlineStatus: OnlineStatus.OFF,
         midgardStatus: OnlineStatus.OFF,
-        thorchainStatus: OnlineStatus.OFF
+        thorchainStatus: OnlineStatus.OFF,
+        mayachainStatus: OnlineStatus.OFF
       })
       expect(result).toEqual('red')
     })
@@ -145,7 +158,8 @@ describe('header/util', () => {
       const result = appOnlineStatusColor({
         onlineStatus: OnlineStatus.ON,
         midgardStatus: OnlineStatus.ON,
-        thorchainStatus: OnlineStatus.ON
+        thorchainStatus: OnlineStatus.ON,
+        mayachainStatus: OnlineStatus.ON
       })
       expect(result).toEqual('green')
     })

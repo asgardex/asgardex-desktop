@@ -6,8 +6,10 @@ import { useObservableState } from 'observable-hooks'
 
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
+import { useDex } from '../../hooks/useDex'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
 import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
+import { useMayachainClientUrl } from '../../hooks/useMayachainClientUrl'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePricePools } from '../../hooks/usePricePools'
 import { useRunePrice } from '../../hooks/useRunePrice'
@@ -29,6 +31,7 @@ export const Header: React.FC = (): JSX.Element => {
   } = midgardService
 
   const { network } = useNetwork()
+  const { dex } = useDex()
 
   const oSelectedPricePoolAsset = useObservableState<SelectedPricePoolAsset>(selectedPricePoolAsset$, O.none)
 
@@ -41,9 +44,11 @@ export const Header: React.FC = (): JSX.Element => {
 
   const midgardUrlRD = useObservableState(apiEndpoint$, RD.initial)
   const { node: thorchainNodeUrl, rpc: thorchainRpcUrl } = useThorchainClientUrl()
+  const { node: mayachainNodeUrl, rpc: mayachainRpcUrl } = useMayachainClientUrl()
 
   return (
     <HeaderComponent
+      dex={dex}
       network={network}
       keystore={keystoreState}
       wallets={walletsUI}
@@ -61,6 +66,8 @@ export const Header: React.FC = (): JSX.Element => {
       midgardUrl={midgardUrlRD}
       thorchainNodeUrl={thorchainNodeUrl}
       thorchainRpcUrl={thorchainRpcUrl}
+      mayachainNodeUrl={mayachainNodeUrl}
+      mayachainRpcUrl={mayachainRpcUrl}
     />
   )
 }

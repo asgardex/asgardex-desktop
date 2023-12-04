@@ -3,6 +3,7 @@ import { CommonMessages } from '../types'
 const common: CommonMessages = {
   'common.stats': 'Статистика',
   'common.network': 'Сеть',
+  'common.dex': 'Dex',
   'common.faqs': 'ЧаВо',
   'common.greeting': 'Добро пожаловать, {name}',
   'common.copyright': '©',
@@ -13,6 +14,7 @@ const common: CommonMessages = {
   'common.thornameRegistrationSpecifics':
     'THORNames позволяют каждому зарегистрировать кросс-цепочечные адреса кошельков с использованием строки из 1-30 шестнадцатеричных символов, включая специальные символы -+. THORNames ограничены 30 символами, включая ^[a-zA-Z0-9+-]+$.',
   'common.thornameError': 'THORName недоступен',
+  'common.mayaname': 'MAYAName',
   'common.owner': 'Владелец',
   'common.preferredAsset': 'Предпочтительный актив',
   'common.expirationBlock': 'блок истечения',

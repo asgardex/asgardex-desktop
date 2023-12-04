@@ -6,7 +6,7 @@ import * as Rx from 'rxjs'
 
 import { Locale } from '../../../shared/i18n/types'
 import { getMockRDValueFactory, RDStatus, rdStatusOptions } from '../../../shared/mock/rdByStatus'
-import { ChangeNetworkHandler, OnlineStatus } from '../../services/app/types'
+import { ChangeDexHandler, ChangeNetworkHandler, OnlineStatus } from '../../services/app/types'
 import { AppSettings as Component } from './AppSettings'
 
 type StoryArgs = {
@@ -18,18 +18,24 @@ type StoryArgs = {
   onChangeMidgardUrl: (url: string) => void
   onChangeThornodeNodeUrl: (url: string) => void
   onChangeThornodeRpcUrl: (url: string) => void
+  onChangeMayanodeNodeUrl: (url: string) => void
+  onChangeMayanodeRpcUrl: (url: string) => void
   changeNetwork: ChangeNetworkHandler
+  changeDex: ChangeDexHandler
   collapsed: boolean
 }
 
 const Template = ({
   changeNetwork,
+  changeDex,
   updateDataRD,
   checkForUpdates,
   goToReleasePage,
   onChangeMidgardUrl,
   onChangeThornodeRpcUrl,
   onChangeThornodeNodeUrl,
+  onChangeMayanodeRpcUrl,
+  onChangeMayanodeNodeUrl,
   changeLocale,
   collapsed
 }: StoryArgs) => {
@@ -43,6 +49,8 @@ const Template = ({
       version={'1.0.0'}
       network="testnet"
       changeNetwork={changeNetwork}
+      dex="THOR"
+      changeDex={changeDex}
       appUpdateState={appUpdateState}
       checkForUpdates={checkForUpdates}
       goToReleasePage={goToReleasePage}
@@ -53,12 +61,18 @@ const Template = ({
       midgardUrl={RD.pending}
       thornodeNodeUrl="thornode-node-url"
       thornodeRpcUrl="thornode-rpc-url"
+      mayanodeNodeUrl="mayanode-node-url"
+      mayanodeRpcUrl="mayanode-rpc-url"
       onChangeMidgardUrl={onChangeMidgardUrl}
       onChangeThornodeRpcUrl={onChangeThornodeRpcUrl}
       onChangeThornodeNodeUrl={onChangeThornodeNodeUrl}
+      onChangeMayanodeRpcUrl={onChangeMayanodeRpcUrl}
+      onChangeMayanodeNodeUrl={onChangeMayanodeNodeUrl}
       checkMidgardUrl$={(url, _) => Rx.of(RD.success(url))}
       checkThornodeNodeUrl$={(url, _) => Rx.of(RD.success(url))}
       checkThornodeRpcUrl$={(url, _) => Rx.of(RD.success(url))}
+      checkMayanodeNodeUrl$={(url, _) => Rx.of(RD.success(url))}
+      checkMayanodeRpcUrl$={(url, _) => Rx.of(RD.success(url))}
     />
   )
 }
@@ -92,6 +106,12 @@ const meta: ComponentMeta<typeof Template> = {
     },
     onChangeThornodeRpcUrl: {
       action: 'onChangeThornodeRpcUrl'
+    },
+    onChangeMayanodeNodeUrl: {
+      action: 'onChangeMayanodeNodeUrl'
+    },
+    onChangeMayanodeRpcUrl: {
+      action: 'onChangeMayanodeRpcUrl'
     }
   },
   args: { onlineStatus: OnlineStatus.ON, updateDataRD: 'initial', collapsed: false }

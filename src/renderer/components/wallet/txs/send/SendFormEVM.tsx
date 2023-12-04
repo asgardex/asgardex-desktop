@@ -109,6 +109,18 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
   const feesAvailable = useMemo(() => O.isSome(oFees), [oFees])
 
+  const [InboundAddress, setInboundAddress] = useState<string>('')
+
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const fetchData = async () => {
+      const inboundDetails = await thorchainQuery.thorchainCache.getInboundDetails()
+      setInboundAddress(inboundDetails[asset.chain].address)
+    }
+
+    fetchData()
+  }, [asset.chain, thorchainQuery])
+
   // Store latest fees as `ref`
   // needed to display previous fee while reloading
   useEffect(() => {
@@ -214,8 +226,11 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       if (!validateAddress(value.toLowerCase())) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
+      if (InboundAddress === value) {
+        return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.inbound' }))
+      }
     },
-    [intl]
+    [intl, InboundAddress]
   )
 
   // max amount for eth

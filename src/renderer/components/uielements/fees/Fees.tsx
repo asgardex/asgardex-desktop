@@ -75,6 +75,7 @@ export const Fees: React.FC<Props> = ({ fees, reloadFees, disabled = false, clas
         <Styled.ReloadFeeButton
           onClick={(e) => {
             e.preventDefault()
+            console.log('here')
             reloadFees()
           }}
           disabled={RD.isPending(fees) || disabled}

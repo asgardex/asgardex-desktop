@@ -18,19 +18,19 @@ import {
   resetTx,
   subscribeTx,
   interact$,
-  // getNodeInfos$,
-  // reloadNodeInfos,
-  explorerUrl$
-  // mimir$,
-  // reloadMimir,
-  // inboundAddressesShared$,
-  // reloadInboundAddresses,
-  // reloadThorchainConstants,
-  // thorchainConstantsState$,
-  // thorchainLastblockState$,
-  // reloadThorchainLastblock,
-  // getLiquidityProviders,
-  // reloadLiquidityProviders
+  getNodeInfos$,
+  reloadNodeInfos,
+  explorerUrl$,
+  mimir$,
+  reloadMimir,
+  inboundAddressesShared$,
+  reloadInboundAddresses,
+  reloadMayachainConstants,
+  mayachainConstantsState$,
+  mayachainLastblockState$,
+  reloadMayachainLastblock,
+  getLiquidityProviders,
+  reloadLiquidityProviders
 } from '../services/mayachain'
 
 export type MayachainContextValue = {
@@ -51,19 +51,19 @@ export type MayachainContextValue = {
   sendTx: typeof sendTx
   txRD$: typeof txRD$
   interact$: typeof interact$
-  // getNodeInfos$: typeof getNodeInfos$
+  getNodeInfos$: typeof getNodeInfos$
   explorerUrl$: typeof explorerUrl$
-  //   reloadNodeInfos: typeof reloadNodeInfos
-  //   mimir$: typeof mimir$
-  //   reloadMimir: typeof reloadMimir
-  //   inboundAddressesShared$: typeof inboundAddressesShared$
-  //   reloadInboundAddresses: typeof reloadInboundAddresses
-  //   thorchainConstantsState$: typeof thorchainConstantsState$
-  //   reloadThorchainConstants: typeof reloadThorchainConstants
-  //   thorchainLastblockState$: typeof thorchainLastblockState$
-  //   reloadThorchainLastblock: typeof reloadThorchainLastblock
-  //   getLiquidityProviders: typeof getLiquidityProviders
-  //   reloadLiquidityProviders: typeof reloadLiquidityProviders
+  reloadNodeInfos: typeof reloadNodeInfos
+  mimir$: typeof mimir$
+  reloadMimir: typeof reloadMimir
+  inboundAddressesShared$: typeof inboundAddressesShared$
+  reloadInboundAddresses: typeof reloadInboundAddresses
+  mayachainConstantsState$: typeof mayachainConstantsState$
+  reloadMayachainConstants: typeof reloadMayachainConstants
+  mayachainLastblockState$: typeof mayachainLastblockState$
+  reloadMayachainLastblock: typeof reloadMayachainLastblock
+  getLiquidityProviders: typeof getLiquidityProviders
+  reloadLiquidityProviders: typeof reloadLiquidityProviders
   //   getSaverProvider$: typeof getSaverProvider$
   //   reloadSaverProvider: typeof reloadSaverProvider
 }
@@ -86,19 +86,19 @@ const initialContext: MayachainContextValue = {
   reloadFees,
   fees$,
   interact$,
-  // getNodeInfos$,
-  explorerUrl$
-  // reloadNodeInfos,
-  // mimir$,
-  // reloadMimir,
-  // inboundAddressesShared$,
-  // reloadInboundAddresses,
-  // reloadThorchainConstants,
-  // thorchainConstantsState$,
-  // thorchainLastblockState$,
-  // reloadThorchainLastblock,
-  // getLiquidityProviders,
-  // reloadLiquidityProviders,
+  getNodeInfos$,
+  explorerUrl$,
+  reloadNodeInfos,
+  mimir$,
+  reloadMimir,
+  inboundAddressesShared$,
+  reloadInboundAddresses,
+  reloadMayachainConstants,
+  mayachainConstantsState$,
+  mayachainLastblockState$,
+  reloadMayachainLastblock,
+  getLiquidityProviders,
+  reloadLiquidityProviders
   // getSaverProvider$,
   // reloadSaverProvider
 }

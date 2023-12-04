@@ -35,6 +35,8 @@ export type Props = {
   midgardUrl: MidgardUrlRD
   thorchainNodeUrl: string
   thorchainRpcUrl: string
+  mayachainNodeUrl: string
+  mayachainRpcUrl: string
 }
 
 export const HeaderNetStatus: React.FC<Props> = (props): JSX.Element => {
@@ -44,7 +46,9 @@ export const HeaderNetStatus: React.FC<Props> = (props): JSX.Element => {
     mimirStatus: mimirStatusRD,
     midgardUrl: midgardUrlRD,
     thorchainNodeUrl,
-    thorchainRpcUrl
+    thorchainRpcUrl,
+    mayachainNodeUrl,
+    mayachainRpcUrl
   } = props
   const intl = useIntl()
 
@@ -89,14 +93,39 @@ export const HeaderNetStatus: React.FC<Props> = (props): JSX.Element => {
       ),
     [mimirStatusRD]
   )
+  const prevMayachainStatus = useRef<OnlineStatus>(OnlineStatus.OFF)
+  const mayachainStatus: OnlineStatus = useMemo(
+    () =>
+      FP.pipe(
+        mimirStatusRD,
+        RD.fold(
+          () => prevMayachainStatus.current,
+          () => prevMayachainStatus.current,
+          () => {
+            prevMayachainStatus.current = OnlineStatus.OFF
+            return prevMayachainStatus.current
+          },
+          () => {
+            prevMayachainStatus.current = OnlineStatus.ON
+            return prevMayachainStatus.current
+          }
+        )
+      ),
+    [mimirStatusRD]
+  )
 
   const { onlineStatus$ } = useAppContext()
   const onlineStatus = useObservableState<OnlineStatus>(onlineStatus$, OnlineStatus.OFF)
   const appOnlineStatusColor = useMemo(() => {
     if (onlineStatus === OnlineStatus.OFF) return 'red'
-    if (midgardStatus === OnlineStatus.OFF || thorchainStatus === OnlineStatus.OFF) return 'yellow'
+    if (
+      midgardStatus === OnlineStatus.OFF ||
+      thorchainStatus === OnlineStatus.OFF ||
+      mayachainStatus === OnlineStatus.OFF
+    )
+      return 'yellow'
     return 'green'
-  }, [midgardStatus, onlineStatus, thorchainStatus])
+  }, [midgardStatus, onlineStatus, thorchainStatus, mayachainStatus])
 
   const menuItems = useMemo((): MenuItem[] => {
     const notConnectedTxt = intl.formatMessage({ id: 'setting.notconnected' })
@@ -141,9 +170,44 @@ export const HeaderNetStatus: React.FC<Props> = (props): JSX.Element => {
           notConnectedTxt
         }),
         color: headerNetStatusColor({ onlineStatus: onlineStatus, clientStatus: thorchainStatus })
+      },
+      {
+        key: 'mayachain',
+        headline: 'Mayachain API',
+        url: `${mayachainNodeUrl}/mayachain/doc/`,
+        subheadline: headerNetStatusSubheadline({
+          url: O.some(mayachainNodeUrl),
+          onlineStatus: onlineStatus,
+          clientStatus: mayachainStatus,
+          notConnectedTxt
+        }),
+        color: headerNetStatusColor({ onlineStatus: onlineStatus, clientStatus: mayachainStatus })
+      },
+      {
+        key: 'mayachain-rpc',
+        headline: 'Mayachain RPC',
+        url: `${mayachainRpcUrl}`,
+        subheadline: headerNetStatusSubheadline({
+          url: O.some(mayachainRpcUrl),
+          onlineStatus: onlineStatus,
+          clientStatus: mayachainStatus,
+          notConnectedTxt
+        }),
+        color: headerNetStatusColor({ onlineStatus: onlineStatus, clientStatus: mayachainStatus })
       }
     ]
-  }, [intl, midgardUrlRD, thorchainNodeUrl, thorchainRpcUrl, onlineStatus, midgardStatus, thorchainStatus])
+  }, [
+    intl,
+    midgardUrlRD,
+    onlineStatus,
+    midgardStatus,
+    thorchainNodeUrl,
+    thorchainStatus,
+    thorchainRpcUrl,
+    mayachainNodeUrl,
+    mayachainStatus,
+    mayachainRpcUrl
+  ])
 
   const desktopMenu = useMemo(() => {
     return (

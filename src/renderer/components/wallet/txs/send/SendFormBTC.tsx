@@ -100,6 +100,8 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
 
   const [selectedFeeOption, setSelectedFeeOption] = useState<FeeOption>(DEFAULT_FEE_OPTION)
 
+  const [InboundAddress, setInboundAddress] = useState<string>('')
+
   const [form] = Form.useForm<FormValues>()
 
   const prevFeesWithRatesRef = useRef<O.Option<FeesWithRates>>(O.none)
@@ -119,6 +121,16 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
   )
 
   const feesAvailable = useMemo(() => O.isSome(oFeesWithRates), [oFeesWithRates])
+
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const fetchData = async () => {
+      const inboundDetails = await thorchainQuery.thorchainCache.getInboundDetails()
+      setInboundAddress(inboundDetails[BTCChain].address)
+    }
+
+    fetchData()
+  }, [thorchainQuery])
 
   // Store latest fees as `ref`
   // needed to display previous fee while reloading
@@ -237,8 +249,11 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
       if (!addressValidation(value)) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
+      if (InboundAddress === value) {
+        return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.inbound' }))
+      }
     },
-    [addressValidation, intl]
+    [addressValidation, intl, InboundAddress]
   )
 
   const maxAmount: BaseAmount = useMemo(

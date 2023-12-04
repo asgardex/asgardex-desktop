@@ -79,6 +79,7 @@ const wallet: WalletMessages = {
   'wallet.errors.asset.notExist': 'Asset ({asset}) existiert nicht',
   'wallet.errors.address.empty': 'Keine Addresse angegeben',
   'wallet.errors.address.invalid': 'Addresse ist nicht valide',
+  'wallet.errors.address.inbound': 'Inkomend adres gedetecteerd, ga voorzichtig te werk',
   'wallet.errors.address.couldNotFind': 'Addresse vom {pool} Pool konnte nicht gefunden werden',
   'wallet.errors.amount.shouldBeNumber': 'Der eingegebene Wert sollte eine Nummer sein',
   'wallet.errors.amount.shouldBeGreaterThan': 'Der eingegebene Betrag sollte höher als {amount} betragen',

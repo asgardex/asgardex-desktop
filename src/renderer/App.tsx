@@ -15,6 +15,7 @@ import { EthereumProvider } from './contexts/EthereumContext'
 import { I18nProvider } from './contexts/I18nContext'
 import { LitecoinProvider } from './contexts/LitecoinContext'
 import { MayachainProvider } from './contexts/MayachainContext'
+import { MayachainQueryProvider } from './contexts/MayachainQueryContext'
 import { MidgardProvider } from './contexts/MidgardContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { ThorchainProvider } from './contexts/ThorchainContext'
@@ -41,15 +42,17 @@ export const App: React.FC = (): JSX.Element => {
                               <MidgardProvider>
                                 <ThorchainQueryProvider>
                                   <MayachainProvider>
-                                    <UserNodesProvider>
-                                      <I18nProvider>
-                                        <Router>
-                                          <ThemeProvider>
-                                            <AppView />
-                                          </ThemeProvider>
-                                        </Router>
-                                      </I18nProvider>
-                                    </UserNodesProvider>
+                                    <MayachainQueryProvider>
+                                      <UserNodesProvider>
+                                        <I18nProvider>
+                                          <Router>
+                                            <ThemeProvider>
+                                              <AppView />
+                                            </ThemeProvider>
+                                          </Router>
+                                        </I18nProvider>
+                                      </UserNodesProvider>
+                                    </MayachainQueryProvider>
                                   </MayachainProvider>
                                 </ThorchainQueryProvider>
                               </MidgardProvider>

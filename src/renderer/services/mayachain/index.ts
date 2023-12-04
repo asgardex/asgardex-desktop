@@ -15,26 +15,26 @@ import {
 } from './common'
 import { createFeesService } from './fees'
 import { createInteractService$ } from './interact'
-// import { createMayanodeService$ } from './mayanode'
+import { createMayanodeService$ } from './mayanode'
 import { createTransactionService } from './transaction'
 
-// const {
-//   mayanodeUrl$,
-//   reloadMayanodeUrl,
-//   getNodeInfos$,
-//   reloadNodeInfos,
-//   reloadMayachainConstants,
-//   mayachainConstantsState$,
-//   mayachainLastblockState$,
-//   reloadMayachainLastblock,
-//   inboundAddressesShared$,
-//   loadInboundAddresses$,
-//   reloadInboundAddresses,
-//   mimir$,
-//   reloadMimir,
-//   getLiquidityProviders,
-//   reloadLiquidityProviders
-// } = createMayanodeService$(network$, clientUrl$)
+const {
+  mayanodeUrl$,
+  reloadMayanodeUrl,
+  getNodeInfos$,
+  reloadNodeInfos,
+  reloadMayachainConstants,
+  mayachainConstantsState$,
+  mayachainLastblockState$,
+  reloadMayachainLastblock,
+  inboundAddressesShared$,
+  loadInboundAddresses$,
+  reloadInboundAddresses,
+  mimir$,
+  reloadMimir,
+  getLiquidityProviders,
+  reloadLiquidityProviders
+} = createMayanodeService$(network$, clientUrl$)
 
 const { txs$, tx$, txStatus$, subscribeTx, resetTx, sendTx, txRD$, sendPoolTx$ } = createTransactionService(
   client$,
@@ -45,11 +45,11 @@ const { reloadFees, fees$ } = createFeesService({ client$, chain: MAYAChain })
 const interact$ = createInteractService$(sendPoolTx$, txStatus$)
 
 export {
-  // mayanodeUrl$,
-  // reloadMayanodeUrl,
-  // inboundAddressesShared$,
-  // reloadInboundAddresses,
-  // loadInboundAddresses$,
+  mayanodeUrl$,
+  reloadMayanodeUrl,
+  inboundAddressesShared$,
+  reloadInboundAddresses,
+  loadInboundAddresses$,
   client$,
   clientState$,
   clientUrl$,
@@ -74,15 +74,15 @@ export {
   sendTx,
   txRD$,
   sendPoolTx$,
-  interact$
-  // getNodeInfos$,
-  // reloadNodeInfos,
-  // reloadMayachainConstants,
-  // mayachainConstantsState$,
-  // mayachainLastblockState$,
-  // reloadMayachainLastblock,
-  // mimir$,
-  // reloadMimir,
-  // getLiquidityProviders,
-  // reloadLiquidityProviders
+  interact$,
+  getNodeInfos$,
+  reloadNodeInfos,
+  reloadMayachainConstants,
+  mayachainConstantsState$,
+  mayachainLastblockState$,
+  reloadMayachainLastblock,
+  mimir$,
+  reloadMimir,
+  getLiquidityProviders,
+  reloadLiquidityProviders
 }

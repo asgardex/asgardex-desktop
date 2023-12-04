@@ -56,7 +56,7 @@ export const SendViewMAYA: React.FC<Props> = (props): JSX.Element => {
 
   const { transfer$ } = useChainContext()
 
-  //const { thorchainQuery } = useThorchainQueryContext()
+  //const { mayachainQuery } = useMayachainQueryContext()
 
   const { fees$, reloadFees } = useMayachainContext()
 
