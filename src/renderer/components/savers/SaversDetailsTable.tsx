@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { baseToAsset, formatAssetAmountCurrency, baseAmount, formatBN } from '@xchainjs/xchain-util'
+import { useIntl } from 'react-intl'
 
 import { ZERO_BN } from '../../const'
 import { isUSDAsset } from '../../helpers/assetHelper'
@@ -10,6 +11,7 @@ import { AssetIcon } from '../uielements/assets/assetIcon'
 import { SaversButton } from '../uielements/button/SaversButton'
 
 export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX.Element => {
+  const intl = useIntl()
   const columns = [
     {
       title: 'Chain',
@@ -24,37 +26,37 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       }
     },
     {
-      title: 'Asset',
+      title: intl.formatMessage({ id: 'common.asset' }),
       dataIndex: 'assetTicker',
       key: 'asset'
     },
     {
-      title: 'Deposit Value',
+      title: intl.formatMessage({ id: 'savers.detail.current.title' }),
       dataIndex: 'priceDepositLabel',
       key: 'priceDeposit'
     },
     {
-      title: 'Asset Amount',
+      title: intl.formatMessage({ id: 'savers.detail.assetAmount' }),
       dataIndex: 'depositValueLabel',
       key: 'assetValue'
     },
     {
-      title: 'Redeem Value',
+      title: intl.formatMessage({ id: 'savers.detail.redeem.title' }),
       dataIndex: 'redeemValueLabel',
       key: 'redeemValue'
     },
     {
-      title: 'Redeem Amount',
+      title: intl.formatMessage({ id: 'savers.detail.percent' }),
       dataIndex: 'redeemDepositLabel',
       key: 'redeemDeposit'
     },
     {
-      title: 'Growth Value',
+      title: intl.formatMessage({ id: 'savers.detail.percent' }),
       dataIndex: 'growthValueLabel',
       key: 'growthValue'
     },
     {
-      title: 'Price Growth',
+      title: intl.formatMessage({ id: 'savers.detail.priceGrowth' }),
       dataIndex: 'percentLabel',
       key: 'percentLabel'
     },
@@ -64,7 +66,7 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       key: 'walletType'
     },
     {
-      title: 'Manage',
+      title: intl.formatMessage({ id: 'common.manage' }),
       key: 'manage',
       render: (record: typeof dataSource[0]) => {
         const assetDetail = assetDetails.find(

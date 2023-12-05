@@ -1092,12 +1092,6 @@ export const Swap = ({
     )
   }, [needApprovement, network, oPoolAddress, oSourceAssetWB, sourceAsset, sourceChain])
 
-  // Reload balances at `onMount`
-  useEffect(() => {
-    reloadBalances()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   const reloadFeesHandler = useCallback(() => {
     reloadFees({
       inAsset: sourceAsset,
@@ -1697,6 +1691,8 @@ export const Swap = ({
     resetSwapState()
     reloadBalances()
     setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
+    setQuoteExpired(true)
+    setQuote(O.none)
   }, [resetSwapState, reloadBalances, setAmountToSwapMax1e8, initialAmountToSwapMax1e8])
 
   const renderTxModal = useMemo(() => {
@@ -2333,6 +2329,7 @@ export const Swap = ({
                 maxDollarValue={priceAmountMax1e8}
                 onClick={() => setAmountToSwapMax1e8(maxAmountToSwapMax1e8)}
                 maxInfoText={maxBalanceInfoTxt}
+                disabled={walletBalancesLoading}
                 hidePrivateData={hidePrivateData}
               />
               {minAmountError && renderMinAmount}

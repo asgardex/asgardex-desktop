@@ -81,9 +81,9 @@ export const DexLabel = styled(Text)<{ dex: Dex }>`
   color: ${({ dex }) => {
     switch (dex) {
       case 'THOR':
-        return palette('primary', 5)
+        return palette('primary', 0)
       case 'MAYA':
-        return palette('primary', 5)
+        return palette('primary', 0)
       default:
         return palette('text', 2)
     }

@@ -49,7 +49,6 @@ export const ViewTxButton: React.FC<Props> = ({
           </Styled.ViewTxButton>
         )}
         <div>
-          {' '}
           <Styled.CopyLabel
             copyable={
               FP.pipe(

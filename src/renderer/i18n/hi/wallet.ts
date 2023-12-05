@@ -77,7 +77,7 @@ const wallet: WalletMessages = {
   'wallet.errors.asset.notExist': '{asset} संपत्ति नहीं है',
   'wallet.errors.address.empty': 'पता खाली नहीं हो सकता',
   'wallet.errors.address.invalid': 'पता अमान्य है',
-  'wallet.errors.address.inbound': 'इनबाउंड पता का पता चला, सावधानी से आगे बढ़ें',
+  'wallet.errors.address.inbound': 'सावधानीपूर्वक आने वाला पता पता लगाया गया',
   'wallet.errors.address.couldNotFind': '{pool} पूल पता नहीं मिल सका',
   'wallet.errors.amount.shouldBeNumber': 'राशि एक संख्या होनी चाहिए',
   'wallet.errors.amount.shouldBeGreaterThan': 'राशि {amount} से अधिक होनी चाहिए',

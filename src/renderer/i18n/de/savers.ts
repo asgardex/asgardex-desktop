@@ -6,6 +6,8 @@ const savers: SaversMessages = {
   'savers.detail.current.title': 'Eingezahlter Betrag',
   'savers.detail.redeem.title': 'Auszahlbarer Betrag',
   'savers.detail.percent': 'Zuwachs',
+  'savers.detail.assetAmount': 'Actief Bedrag',
+  'savers.detail.priceGrowth': 'Prijsstijging',
   'savers.info.max.redeem.value': 'Maximale waarde om in te wisselen',
   'savers.info.max.balance': 'Maximaal saldo',
   'savers.add.state.sending': 'Versturen van toevoegtransactie spaarder',

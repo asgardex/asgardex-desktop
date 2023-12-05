@@ -40,7 +40,9 @@ const EXTERNALS_WHITELIST = [
   'snowtrace.dev',
   'routescan.io',
   'bscscan.com',
-  'track.ninerealms.com'
+  'track.ninerealms.com',
+  'mayascan.org',
+  'explorer.mayachain.info'
 ]
 
 export const openExternal = (target: string) => {

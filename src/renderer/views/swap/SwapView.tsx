@@ -4,7 +4,6 @@ import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Asset, assetToString, bn, Chain } from '@xchainjs/xchain-util'
-import { Spin } from 'antd'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
 import * as Eq from 'fp-ts/lib/Eq'
@@ -90,7 +89,14 @@ const SuccessRouteView: React.FC<Props> = ({
 
   const { service: midgardService } = useMidgardContext()
   const {
-    pools: { poolsState$, reloadPools, selectedPoolAddress$, selectedPricePool$, haltedChains$ },
+    pools: {
+      poolsState$,
+      reloadPools,
+      reloadSelectedPoolDetail,
+      selectedPoolAddress$,
+      selectedPricePool$,
+      haltedChains$
+    },
     setSelectedPoolAsset
   } = midgardService
 
@@ -208,16 +214,16 @@ const SuccessRouteView: React.FC<Props> = ({
     }
   }, [sourceChain, targetChain, reloadBalancesByChain])
 
-  useEffect(() => {
-    // reload balances, whenever sourceAsset and targetAsset have been changed (both are properties of `reloadBalances` )
-    reloadBalances()
-  }, [reloadBalances])
+  // useEffect(() => {
+  //   // reload balances, whenever sourceAsset and targetAsset have been changed (both are properties of `reloadBalances` )
+  //   reloadBalances()
+  // }, [reloadBalances])
 
   const reloadHandler = useCallback(() => {
     reloadBalances()
-    reloadPools()
+    reloadSelectedPoolDetail()
     reloadInboundAddresses()
-  }, [reloadBalances, reloadInboundAddresses, reloadPools])
+  }, [reloadBalances, reloadInboundAddresses, reloadSelectedPoolDetail])
 
   const getStoredSlipTolerance = (): SlipTolerance =>
     FP.pipe(
@@ -333,11 +339,7 @@ const SuccessRouteView: React.FC<Props> = ({
           sequenceTRD(poolsState, sourceAssetRD, targetAssetRD),
           RD.fold(
             () => <></>,
-            () => (
-              <div className="flex min-h-[600px] w-full items-center justify-center">
-                <Spin size="large" />
-              </div>
-            ),
+            () => <></>,
             renderError,
             ([{ assetDetails, poolsData, poolDetails }, sourceAsset, targetAsset]) => {
               const hasRuneAsset = FP.pipe(

@@ -353,51 +353,55 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
             </div>
             {advancedActive && (
               <>
-                <Section className="mt-20px" title="Midgard">
-                  <EditableUrl
-                    className="w-full xl:w-3/4"
-                    url={midgardUrl}
-                    onChange={onChangeMidgardUrl}
-                    loading={RD.isPending(midgardUrlRD)}
-                    checkUrl$={checkMidgardUrl$}
-                    successMsg={intl.formatMessage({ id: 'midgard.url.valid' })}
-                  />
+                <Section className="mt-20px" title="Thorchain URls ">
+                  <Section className="ml-20px mt-10px" title="Midgard">
+                    <EditableUrl
+                      className="w-full xl:w-3/4"
+                      url={midgardUrl}
+                      onChange={onChangeMidgardUrl}
+                      loading={RD.isPending(midgardUrlRD)}
+                      checkUrl$={checkMidgardUrl$}
+                      successMsg={intl.formatMessage({ id: 'midgard.url.valid' })}
+                    />
+                  </Section>
+                  <Section className="ml-20px" title="THORNode API">
+                    <EditableUrl
+                      className="w-full xl:w-3/4"
+                      url={thornodeNodeUrl}
+                      onChange={onChangeThornodeNodeUrl}
+                      checkUrl$={checkThornodeNodeUrl$}
+                      successMsg={intl.formatMessage({ id: 'setting.thornode.node.valid' })}
+                    />
+                  </Section>
+                  <Section className="ml-20px" title="THORNode RPC">
+                    <EditableUrl
+                      className="w-full xl:w-3/4"
+                      url={thornodeRpcUrl}
+                      onChange={onChangeThornodeRpcUrl}
+                      checkUrl$={checkThornodeRpcUrl$}
+                      successMsg={intl.formatMessage({ id: 'setting.thornode.rpc.valid' })}
+                    />
+                  </Section>
                 </Section>
-                <Section title="THORNode API">
-                  <EditableUrl
-                    className="w-full xl:w-3/4"
-                    url={thornodeNodeUrl}
-                    onChange={onChangeThornodeNodeUrl}
-                    checkUrl$={checkThornodeNodeUrl$}
-                    successMsg={intl.formatMessage({ id: 'setting.thornode.node.valid' })}
-                  />
-                </Section>
-                <Section title="MayaNode API">
-                  <EditableUrl
-                    className="w-full xl:w-3/4"
-                    url={mayanodeNodeUrl}
-                    onChange={onChangeMayanodeNodeUrl}
-                    checkUrl$={checkMayanodeNodeUrl$}
-                    successMsg={intl.formatMessage({ id: 'setting.mayanode.node.valid' })}
-                  />
-                </Section>
-                <Section title="THORNode RPC">
-                  <EditableUrl
-                    className="w-full xl:w-3/4"
-                    url={thornodeRpcUrl}
-                    onChange={onChangeThornodeRpcUrl}
-                    checkUrl$={checkThornodeRpcUrl$}
-                    successMsg={intl.formatMessage({ id: 'setting.thornode.rpc.valid' })}
-                  />
-                </Section>
-                <Section title="MAYANode RPC">
-                  <EditableUrl
-                    className="w-full xl:w-3/4"
-                    url={mayanodeRpcUrl}
-                    onChange={onChangeMayanodeRpcUrl}
-                    checkUrl$={checkMayanodeRpcUrl$}
-                    successMsg={intl.formatMessage({ id: 'setting.mayanode.rpc.valid' })}
-                  />
+                <Section className="mt-20px" title="Mayachain URls ">
+                  <Section className="ml-20px mt-10px" title="MayaNode API">
+                    <EditableUrl
+                      className="w-full xl:w-3/4"
+                      url={mayanodeNodeUrl}
+                      onChange={onChangeMayanodeNodeUrl}
+                      checkUrl$={checkMayanodeNodeUrl$}
+                      successMsg={intl.formatMessage({ id: 'setting.mayanode.node.valid' })}
+                    />
+                  </Section>
+                  <Section className="ml-20px" title="MAYANode RPC">
+                    <EditableUrl
+                      className="w-full xl:w-3/4"
+                      url={mayanodeRpcUrl}
+                      onChange={onChangeMayanodeRpcUrl}
+                      checkUrl$={checkMayanodeRpcUrl$}
+                      successMsg={intl.formatMessage({ id: 'setting.mayanode.rpc.valid' })}
+                    />
+                  </Section>
                 </Section>
               </>
             )}
