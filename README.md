@@ -9,7 +9,7 @@
 ![Test](https://github.com/asgardex/asgardex-desktop/workflows/Test/badge.svg)
 ![Electron build](https://github.com/asgardex/asgardex-desktop/workflows/Electron%20build/badge.svg)
 
-[![Discord](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/pHcS67yX7Z)
+[![Discord](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/hkeJxHS7d7)
 [![Follow on Twitter](https://img.shields.io/twitter/follow/asgardex?style=social)](https://twitter.com/asgardex)
 
 ## Feature list
