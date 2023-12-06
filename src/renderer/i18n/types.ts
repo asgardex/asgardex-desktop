@@ -419,6 +419,7 @@ type SwapMessageKey =
   | 'swap.errors.amount.balanceShouldCoverChainFee'
   | 'swap.errors.amount.outputShouldCoverChainFee'
   | 'swap.errors.amount.thornodeQuoteError'
+  | 'swap.errors.pool.notAvailable'
   | 'swap.note.lockedWallet'
   | 'swap.note.nowallet'
   | 'swap.min.amount.info'

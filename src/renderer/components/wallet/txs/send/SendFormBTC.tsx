@@ -114,6 +114,7 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
 
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
+  const [warningMessage, setWarningMessage] = useState<string>('')
   const feeRD: FeeRD = useMemo(
     () =>
       FP.pipe(
@@ -259,7 +260,7 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
       if (InboundAddress === value) {
-        return intl.formatMessage({ id: 'wallet.errors.address.inbound' })
+        setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }))
       }
     },
     [addressValidation, intl, InboundAddress]
@@ -515,6 +516,7 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
             <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
               <Styled.Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
             </Form.Item>
+            {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d ">{warningMessage}</div>}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
             <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">
               <InputBigNumber
@@ -565,7 +567,7 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
             </BaseButton>
             {showDetails && (
               <>
-                <div className="flex w-full items-center justify-between text-[14px]">
+                <div className="flex w-full items-center justify-between text-[14px] text-gray2 dark:text-gray2d">
                   <div className="font-mainBold ">{intl.formatMessage({ id: 'common.recipient' })}</div>
                   <div className="truncate text-[13px] normal-case leading-normal">
                     {form.getFieldValue('recipient')}
@@ -575,7 +577,7 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
                   <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.fee' })}</div>
                   <div>{priceFeeLabel}</div>
                 </div>
-                <div className="flex w-full items-center justify-between font-mainBold text-[14px]">
+                <div className="flex w-full items-center justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
                   {intl.formatMessage({ id: 'common.memo' })}
                   <div className="truncate pl-10px font-main text-[12px] leading-normal">
                     {form.getFieldValue('memo')}

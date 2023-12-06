@@ -2,11 +2,11 @@ import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { Spin } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 
-import { LoadingView } from '../../../components/shared/loading'
 import { SendFormBCH } from '../../../components/wallet/txs/send'
 import { useBitcoinCashContext } from '../../../contexts/BitcoinCashContext'
 import { useChainContext } from '../../../contexts/ChainContext'
@@ -19,15 +19,15 @@ import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import { FeesWithRatesLD } from '../../../services/bitcoincash/types'
 import { WalletBalances } from '../../../services/clients'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
-import { SelectedWalletAsset } from '../../../services/wallet/types'
+import { SelectedWalletAsset, WalletBalance } from '../../../services/wallet/types'
 import * as Styled from '../Interact/InteractView.styles'
 
 type Props = {
   asset: SelectedWalletAsset
+  emptyBalance: WalletBalance
 }
-
 export const SendViewBCH: React.FC<Props> = (props): JSX.Element => {
-  const { asset } = props
+  const { asset, emptyBalance } = props
 
   const { network } = useNetwork()
 
@@ -63,7 +63,29 @@ export const SendViewBCH: React.FC<Props> = (props): JSX.Element => {
   return FP.pipe(
     oWalletBalance,
     O.fold(
-      () => <LoadingView size="large" />,
+      () => (
+        <Spin>
+          <Styled.Container>
+            <SendFormBCH
+              asset={asset}
+              balances={FP.pipe(
+                oBalances,
+                O.getOrElse<WalletBalances>(() => [])
+              )}
+              balance={emptyBalance}
+              transfer$={transfer$}
+              openExplorerTxUrl={openExplorerTxUrl}
+              getExplorerTxUrl={getExplorerTxUrl}
+              addressValidation={validateAddress}
+              feesWithRates={feesWithRatesRD}
+              reloadFeesHandler={reloadFeesWithRates}
+              validatePassword$={validatePassword$}
+              thorchainQuery={thorchainQuery}
+              network={network}
+            />
+          </Styled.Container>
+        </Spin>
+      ),
       (walletBalance) => (
         <Styled.Container>
           <SendFormBCH

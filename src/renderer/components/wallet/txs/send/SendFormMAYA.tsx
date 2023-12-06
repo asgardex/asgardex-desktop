@@ -388,12 +388,21 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
           </div>
           {showDetails && (
             <>
-              {' '}
               {/* recipient address */}
-              <div className="flex w-full items-center justify-between pl-10px text-[12px] dark:text-text2d">
-                <div>{intl.formatMessage({ id: 'common.recipient' })}</div>
+              <div className="flex w-full items-center justify-between text-[12px] text-gray2 dark:text-gray2d">
+                <div className="font-mainBold ">{intl.formatMessage({ id: 'common.recipient' })}</div>
                 <div className="truncate pl-20px text-[13px] normal-case leading-normal">
                   <TooltipAddress key="tooltip-target-addr">{recipientAddress}</TooltipAddress>
+                </div>
+              </div>
+              {/* <div className="flex w-full justify-between ">
+                <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.fee' })}</div>
+                <div>{priceFeeLabel}</div>
+              </div> */}
+              <div className="flex w-full items-center justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                {intl.formatMessage({ id: 'common.memo' })}
+                <div className="truncate pl-10px font-main text-[12px] leading-normal">
+                  {form.getFieldValue('memo')}
                 </div>
               </div>
             </>

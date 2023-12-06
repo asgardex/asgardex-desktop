@@ -2,15 +2,14 @@ import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { Spin } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 
-import { LoadingView } from '../../../components/shared/loading'
 import { SendFormMAYA } from '../../../components/wallet/txs/send/'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useMayachainContext } from '../../../contexts/MayachainContext'
-//import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { liveData } from '../../../helpers/rx/liveData'
 import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
@@ -20,15 +19,16 @@ import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import { FeeRD } from '../../../services/chain/types'
 import { WalletBalances } from '../../../services/clients'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
-import { SelectedWalletAsset } from '../../../services/wallet/types'
+import { SelectedWalletAsset, WalletBalance } from '../../../services/wallet/types'
 import * as Styled from '../Interact/InteractView.styles'
 
 type Props = {
   asset: SelectedWalletAsset
+  emptyBalance: WalletBalance
 }
 
 export const SendViewMAYA: React.FC<Props> = (props): JSX.Element => {
-  const { asset } = props
+  const { asset, emptyBalance } = props
 
   const { network } = useNetwork()
   const {
@@ -74,7 +74,28 @@ export const SendViewMAYA: React.FC<Props> = (props): JSX.Element => {
   return FP.pipe(
     oWalletBalance,
     O.fold(
-      () => <LoadingView size="large" />,
+      () => (
+        <Spin>
+          <Styled.Container>
+            <SendFormMAYA
+              asset={asset}
+              balances={FP.pipe(
+                oBalances,
+                O.getOrElse<WalletBalances>(() => [])
+              )}
+              balance={emptyBalance}
+              transfer$={transfer$}
+              openExplorerTxUrl={openExplorerTxUrl}
+              getExplorerTxUrl={getExplorerTxUrl}
+              addressValidation={validateAddress}
+              fee={feeRD}
+              reloadFeesHandler={reloadFees}
+              validatePassword$={validatePassword$}
+              network={network}
+            />
+          </Styled.Container>
+        </Spin>
+      ),
       (walletBalance) => (
         <Styled.Container>
           <SendFormMAYA

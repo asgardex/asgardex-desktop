@@ -492,7 +492,8 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
   )
 
   useEffect(() => {
-    if (O.isSome(oWithdrawBps) && !sourceChainFeeError) {
+    // Check if oWithdrawBps is Some and its value is not 0, and also if there's no sourceChainFeeError
+    if (O.isSome(oWithdrawBps) && oWithdrawBps.value !== 0 && !sourceChainFeeError) {
       debouncedEffect.current(sourceAsset, address, oWithdrawBps.value)
     }
   }, [oWithdrawBps, sourceChainFeeError, sourceAsset, address])
@@ -503,15 +504,15 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       FP.pipe(
         oSaverWithdrawQuote,
         O.fold(
-          () => new CryptoAmount(baseAmount(0, asset.baseAmount.decimal), sourceAsset), // default value if oQuote is None
+          () => new CryptoAmount(saverFees.outFee, sourceChainAsset), // default value if oQuote is None
           (txDetails) =>
             new CryptoAmount(
-              convertBaseAmountDecimal(txDetails.fee.outbound.baseAmount, asset.baseAmount.decimal),
-              sourceAsset
+              convertBaseAmountDecimal(txDetails.fee.outbound.baseAmount, sourceChainAssetDecimals),
+              sourceChainAsset
             ) // already of type cryptoAmount
         )
       ),
-    [asset.baseAmount.decimal, oSaverWithdrawQuote, sourceAsset]
+    [oSaverWithdrawQuote, saverFees.outFee, sourceChainAsset, sourceChainAssetDecimals]
   )
   // Outbound fee in for use later
   const liquidityFee: CryptoAmount = useMemo(
@@ -519,15 +520,15 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       FP.pipe(
         oSaverWithdrawQuote,
         O.fold(
-          () => new CryptoAmount(baseAmount(0, asset.baseAmount.decimal), sourceAsset), // default value if oQuote is None
+          () => new CryptoAmount(baseAmount(0, saverFees.inFee.decimal), sourceChainAsset), // default value if oQuote is None
           (txDetails) =>
             new CryptoAmount(
-              convertBaseAmountDecimal(txDetails.fee.liquidity.baseAmount, asset.baseAmount.decimal),
-              sourceAsset
+              convertBaseAmountDecimal(txDetails.fee.liquidity.baseAmount, sourceChainAssetDecimals),
+              sourceChainAsset
             )
         )
       ),
-    [asset.baseAmount.decimal, oSaverWithdrawQuote, sourceAsset]
+    [oSaverWithdrawQuote, saverFees.inFee.decimal, sourceChainAsset, sourceChainAssetDecimals]
   )
 
   // Boolean on if amount to send is zero
@@ -1165,20 +1166,22 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
 
   // Price fees total
   const oPriceAssetFeeTotal: O.Option<CryptoAmount> = useMemo(() => {
-    const amount = liquidityFee.plus(outboundFee)
+    const inBoundFee = new CryptoAmount(dustAmount, sourceChainAsset)
+    const fees = inBoundFee.plus(liquidityFee.plus(outboundFee))
 
     return FP.pipe(
       PoolHelpers.getPoolPriceValue({
-        balance: { asset: amount.asset, amount: amount.baseAmount.plus(saverFees.inFee) },
+        balance: { asset: fees.asset, amount: fees.baseAmount },
         poolDetails,
         pricePool,
         network
       }),
       O.map((amount) => {
-        return new CryptoAmount(amount, pricePool.asset)
+        const priceAmount = new CryptoAmount(amount, pricePool.asset)
+        return priceAmount
       })
     )
-  }, [liquidityFee, network, outboundFee, poolDetails, pricePool, saverFees.inFee])
+  }, [liquidityFee, network, outboundFee, poolDetails, pricePool, dustAmount, sourceChainAsset])
 
   // Price fee label
   const priceFeesLabel = useMemo(
@@ -1294,7 +1297,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     }
     // Update withdrawBps based on the selected percentage
     const newWithdrawBps = Math.floor(percentage * 100)
-    setWithdrawBps(O.some(newWithdrawBps))
+    setWithdrawBps(O.some(newWithdrawBps > 0 ? newWithdrawBps : 0))
 
     return (
       <Slider

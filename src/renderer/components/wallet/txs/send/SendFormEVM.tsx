@@ -96,6 +96,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   const [amountToSend, setAmountToSend] = useState<O.Option<BaseAmount>>(O.none)
   const [sendAddress, setSendAddress] = useState<O.Option<Address>>(O.none)
 
+  const [warningMessage, setWarningMessage] = useState<string>('')
   const {
     state: sendTxState,
     reset: resetSendTxState,
@@ -206,32 +207,9 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     [intl]
   )
 
-  const renderFeeOptions = useMemo(() => {
-    const onChangeHandler = (e: RadioChangeEvent) => {
-      // Change amount back to `none` (ZERO) whenever selected fee is changed
-      // Just to avoid using a previous `max` value, which can be invalid now
-      setAmountToSend(O.none)
-      setSelectedFeeOption(e.target.value)
-    }
-    const disabled = !feesAvailable || isLoading
-
-    return (
-      <StyledR.Radio.Group onChange={onChangeHandler} value={selectedFeeOption} disabled={disabled}>
-        <StyledR.Radio value="average" key="average">
-          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['average']}</StyledR.RadioLabel>
-        </StyledR.Radio>
-        <StyledR.Radio value="fast" key="fast">
-          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['fast']}</StyledR.RadioLabel>
-        </StyledR.Radio>
-        <StyledR.Radio value="fastest" key="fastest">
-          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['fastest']}</StyledR.RadioLabel>
-        </StyledR.Radio>
-      </StyledR.Radio.Group>
-    )
-  }, [feeOptionsLabel, feesAvailable, isLoading, selectedFeeOption])
-
   const addressValidator = useCallback(
     async (_: unknown, value: string) => {
+      setWarningMessage('')
       if (!value) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.empty' }))
       }
@@ -239,7 +217,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
       if (InboundAddress === value || routerAddress === value) {
-        return intl.formatMessage({ id: 'wallet.errors.address.inbound' })
+        setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }))
       }
     },
     [InboundAddress, routerAddress, intl]
@@ -353,9 +331,11 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   const onChangeAddress = useCallback(
     async ({ target }: React.ChangeEvent<HTMLInputElement>) => {
       const address = target.value
+
       // we have to validate input before storing into the state
       addressValidator(undefined, address)
         .then(() => {
+          setShowDetails(true)
           setSendAddress(O.some(address))
         })
         .catch(() => setSendAddress(O.none))
@@ -526,12 +506,39 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     () =>
       FP.pipe(
         feesRD,
-        RD.map((fees) => [{ asset: getChainAsset(asset.chain), amount: fees[selectedFeeOption] }])
+        RD.map((fees) => [{ asset: getChainAsset(asset.chain), amount: fees[selectedFeeOption] }]),
+        RD.mapLeft((error) => {
+          // Assuming 'error' here is of a type that can be converted to 'Error'
+          // Adjust the following line to properly transform 'error' into an 'Error' object
+          return new Error(`Error: ${error.toString()}`) // Example transformation
+        })
       ),
     [asset.chain, feesRD, selectedFeeOption]
   )
 
   const addMaxAmountHandler = useCallback(() => setAmountToSend(O.some(maxAmount)), [maxAmount])
+
+  const renderFeeOptions = useMemo(() => {
+    const onChangeHandler = (e: RadioChangeEvent) => {
+      setSelectedFeeOption(e.target.value)
+      setAmountToSend(O.some(maxAmount))
+    }
+    const disabled = !feesAvailable || isLoading
+
+    return (
+      <StyledR.Radio.Group onChange={onChangeHandler} value={selectedFeeOption} disabled={disabled}>
+        <StyledR.Radio value="average" key="average">
+          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['average']}</StyledR.RadioLabel>
+        </StyledR.Radio>
+        <StyledR.Radio value="fast" key="fast">
+          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['fast']}</StyledR.RadioLabel>
+        </StyledR.Radio>
+        <StyledR.Radio value="fastest" key="fastest">
+          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['fastest']}</StyledR.RadioLabel>
+        </StyledR.Radio>
+      </StyledR.Radio.Group>
+    )
+  }, [feeOptionsLabel, feesAvailable, isLoading, maxAmount, selectedFeeOption])
 
   const [recipientAddress, setRecipientAddress] = useState<Address>('')
   const handleOnKeyUp = useCallback(() => {
@@ -574,6 +581,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
                 onKeyUp={handleOnKeyUp}
               />
             </Form.Item>
+            {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d ">{warningMessage}</div>}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
             <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">
               <InputBigNumber
@@ -622,7 +630,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
             </BaseButton>
             {showDetails && (
               <>
-                <div className="flex w-full items-center justify-between text-[14px]">
+                <div className="flex w-full items-center justify-between text-[14px] text-gray2 dark:text-gray2d">
                   <div className="font-mainBold ">{intl.formatMessage({ id: 'common.recipient' })}</div>
                   <div className="truncate text-[13px] normal-case leading-normal">
                     {form.getFieldValue('recipient')}
@@ -632,7 +640,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
                   <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.fee' })}</div>
                   <div>{priceFeeLabel}</div>
                 </div>
-                <div className="flex w-full items-center justify-between font-mainBold text-[14px]">
+                <div className="flex w-full items-center justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
                   {intl.formatMessage({ id: 'common.memo' })}
                   <div className="truncate pl-10px font-main text-[12px] leading-normal">
                     {form.getFieldValue('memo')}

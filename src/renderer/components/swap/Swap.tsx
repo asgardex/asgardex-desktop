@@ -1877,8 +1877,12 @@ export const Swap = ({
     ) {
       return <></>
     }
-    // Select first error
+
     const error = oQuote.value.txEstimate.errors[0].split(':')
+
+    if (error[2].includes('pool') && error[2].includes('not available')) {
+      return <ErrorLabel>{intl.formatMessage({ id: 'swap.errors.pool.notAvailable' }, { pool: error[2] })}</ErrorLabel>
+    }
 
     // Extract numerical value from error string
     const match = error[1].match(/(\d+)/)

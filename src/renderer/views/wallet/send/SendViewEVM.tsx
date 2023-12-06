@@ -3,12 +3,12 @@ import React, { useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 // import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { baseAmount } from '@xchainjs/xchain-util'
+import { Spin } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 
 import { ETHAddress } from '../../../../shared/ethereum/const'
-import { LoadingView } from '../../../components/shared/loading'
 import { SendFormEVM } from '../../../components/wallet/txs/send'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useEvmContext } from '../../../contexts/EvmContext'
@@ -19,15 +19,16 @@ import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { FeesRD, WalletBalances } from '../../../services/clients'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
-import { SelectedWalletAsset } from '../../../services/wallet/types'
+import { SelectedWalletAsset, WalletBalance } from '../../../services/wallet/types'
 import * as Styled from '../Interact/InteractView.styles'
 
 type Props = {
   asset: SelectedWalletAsset
+  emptyBalance: WalletBalance
 }
 
 export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
-  const { asset } = props
+  const { asset, emptyBalance } = props
 
   const { network } = useNetwork()
 
@@ -43,16 +44,15 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
 
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(asset.asset.chain))
 
-  const oWalletBalance = useMemo(
-    () =>
-      FP.pipe(
-        oBalances,
-        O.chain((balances) =>
-          getWalletBalanceByAddressAndAsset({ balances, address: asset.walletAddress, asset: asset.asset })
-        )
-      ),
-    [asset, oBalances]
-  )
+  const oWalletBalance = useMemo(() => {
+    return FP.pipe(
+      oBalances,
+      O.chain((balances) =>
+        getWalletBalanceByAddressAndAsset({ balances, address: asset.walletAddress, asset: asset.asset })
+      )
+    )
+  }, [asset.asset, asset.walletAddress, oBalances])
+
   const { thorchainQuery } = useThorchainQueryContext()
   const { transfer$ } = useChainContext()
 
@@ -75,7 +75,28 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
   return FP.pipe(
     oWalletBalance,
     O.fold(
-      () => <LoadingView size="large" />,
+      () => (
+        <Spin>
+          <Styled.Container>
+            <SendFormEVM
+              asset={asset}
+              balance={emptyBalance}
+              balances={FP.pipe(
+                oBalances,
+                O.getOrElse<WalletBalances>(() => [])
+              )}
+              fees={feesRD}
+              transfer$={transfer$}
+              openExplorerTxUrl={openExplorerTxUrl}
+              getExplorerTxUrl={getExplorerTxUrl}
+              reloadFeesHandler={reloadFees}
+              validatePassword$={validatePassword$}
+              thorchainQuery={thorchainQuery}
+              network={network}
+            />
+          </Styled.Container>
+        </Spin>
+      ),
       (walletBalance) => (
         <Styled.Container>
           <SendFormEVM

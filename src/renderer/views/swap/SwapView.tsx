@@ -4,6 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Asset, assetToString, bn, Chain } from '@xchainjs/xchain-util'
+import { Spin } from 'antd'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
 import * as Eq from 'fp-ts/lib/Eq'
@@ -95,7 +96,8 @@ const SuccessRouteView: React.FC<Props> = ({
       reloadSelectedPoolDetail,
       selectedPoolAddress$,
       selectedPricePool$,
-      haltedChains$
+      haltedChains$,
+      pendingPoolsState$
     },
     setSelectedPoolAsset
   } = midgardService
@@ -120,6 +122,7 @@ const SuccessRouteView: React.FC<Props> = ({
   const keystore = useObservableState(keystoreState$, O.none)
 
   const poolsState = useObservableState(poolsState$, RD.initial)
+  const pendingPoolsState = useObservableState(pendingPoolsState$, RD.initial)
 
   useEffect(() => {
     // Source asset is the asset of the pool we need to interact with
@@ -336,19 +339,25 @@ const SuccessRouteView: React.FC<Props> = ({
 
       <div className="flex justify-center bg-bg0 dark:bg-bg0d">
         {FP.pipe(
-          sequenceTRD(poolsState, sourceAssetRD, targetAssetRD),
+          sequenceTRD(poolsState, sourceAssetRD, targetAssetRD, pendingPoolsState),
           RD.fold(
             () => <></>,
-            () => <></>,
+            () => (
+              <div className="my-50px flex w-full max-w-[500px] flex-col justify-between">
+                <Spin />
+              </div>
+            ),
             renderError,
-            ([{ assetDetails, poolsData, poolDetails }, sourceAsset, targetAsset]) => {
+            ([{ assetDetails, poolsData, poolDetails }, sourceAsset, targetAsset, pendingPools]) => {
+              const combinedAssetDetails = [...assetDetails, ...pendingPools.assetDetails]
+
               const hasRuneAsset = FP.pipe(
-                assetDetails,
+                combinedAssetDetails,
                 A.map(({ asset }) => asset),
                 assetInList(AssetRuneNative)
               )
               if (!hasRuneAsset) {
-                assetDetails = [{ asset: AssetRuneNative, assetPrice: bn(1) }, ...assetDetails]
+                assetDetails = [{ asset: AssetRuneNative, assetPrice: bn(1) }, ...combinedAssetDetails]
               }
               const sourceAssetDetail = FP.pipe(Utils.pickPoolAsset(assetDetails, sourceAsset.asset), O.toNullable)
               // Make sure sourceAsset is available in pools

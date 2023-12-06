@@ -11,6 +11,7 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { baseAmount } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
@@ -18,7 +19,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
 import { isEnabledChain } from '../../../../shared/utils/chain'
-import { LoadingView } from '../../../components/shared/loading'
 import { BackLinkButton, RefreshButton } from '../../../components/uielements/button'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { reloadBalancesByChain } from '../../../services/wallet'
@@ -59,27 +59,36 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
           </h1>
         )
       }
+      const DEFAULT_WALLET_BALANCE = {
+        walletAddress: asset.walletAddress, // default wallet address
+        walletType: asset.walletType, // default wallet type
+        walletIndex: asset.walletIndex, // default wallet index
+        hdMode: asset.hdMode, // default hd mode
+        amount: baseAmount(0), // default balance amount
+        asset: asset.asset // default asset
+      }
+
       switch (chain) {
         case BNBChain:
-          return <SendViewBNB asset={asset} />
+          return <SendViewBNB asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
         case BCHChain:
-          return <SendViewBCH asset={asset} />
+          return <SendViewBCH asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
         case BTCChain:
-          return <SendViewBTC asset={asset} />
+          return <SendViewBTC asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
         case ETHChain:
         case AVAXChain:
         case BSCChain:
-          return <SendViewEVM asset={asset} />
+          return <SendViewEVM asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
         case THORChain:
-          return <SendViewTHOR asset={asset} />
+          return <SendViewTHOR asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
         case MAYAChain:
-          return <SendViewMAYA asset={asset} />
+          return <SendViewMAYA asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
         case LTCChain:
-          return <SendViewLTC asset={asset} />
+          return <SendViewLTC asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
         case DOGEChain:
-          return <SendViewDOGE asset={asset} />
+          return <SendViewDOGE asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
         case GAIAChain:
-          return <SendViewCOSMOS asset={asset} />
+          return <SendViewCOSMOS asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
       }
     },
     [intl]
@@ -88,7 +97,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
   return FP.pipe(
     oSelectedAsset,
     O.fold(
-      () => <LoadingView size="large" />,
+      () => <></>,
       (selectedAsset) => (
         <div>
           <Row justify="space-between">
@@ -98,7 +107,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
                 selectedAsset.asset.synth ? THORChain : selectedAsset.asset.chain
               )}></RefreshButton>
           </Row>
-          {renderSendView(selectedAsset)}
+          <div className="flex flex-col justify-center"> {renderSendView(selectedAsset)}</div>
         </div>
       )
     )
