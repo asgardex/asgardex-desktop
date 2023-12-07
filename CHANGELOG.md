@@ -1,10 +1,20 @@
-# 1.20.7 (2023-11-21)
+# 1.20.8 (2023-12-07)
+
+## Add
+
+- Add Hindi language support [#101](https://github.com/asgardex/asgardex-desktop/issues/101)
+- Add Maya Chain Support - Wallet functions only [#92](https://github.com/asgardex/asgardex-desktop/issues/92)
 
 ## Updates/Fixes
 
-- Add Hindi language support [#]()
-- ADD: Mayachain (wallet send & Receive)
-- Fix Savers Fill Cap [#]()
+- Approve is not shown when changing coins [#59](https://github.com/asgardex/asgardex-desktop/issues/59)
+- Avalanche not loading in Asgardex [#97](https://github.com/asgardex/asgardex-desktop/issues/97)
+- Estimate Swap without un-locking wallet [#94](https://github.com/asgardex/asgardex-desktop/issues/94)
+- Estimate Swap without wallet bug [#98](https://github.com/asgardex/asgardex-desktop/issues/98)
+- BTC Value min value does not match the estimated fee [#99](https://github.com/asgardex/asgardex-desktop/issues/99)
+- Add translations for Savers Screen [#108](https://github.com/asgardex/asgardex-desktop/issues/108)
+- Make Synths more visible in drop-down [#102](https://github.com/asgardex/asgardex-desktop/issues/102)
+- Fix ledger send and deposit functions [#72](https://github.com/asgardex/asgardex-desktop/issues/72)
 
 # 1.20.7 (2023-11-21)
 
