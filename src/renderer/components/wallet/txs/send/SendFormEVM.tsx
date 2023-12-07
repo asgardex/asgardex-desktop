@@ -216,9 +216,13 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       if (!validateAddress(value.toLowerCase())) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
-      if (InboundAddress === value || routerAddress === value) {
-        const type = InboundAddress === value ? 'Inbound' : 'Router'
+      if (InboundAddress === value) {
+        const type = 'Inbound'
         setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
+      }
+      if (routerAddress === value) {
+        const type = 'Router'
+        return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
       }
     },
     [InboundAddress, routerAddress, intl]
@@ -345,15 +349,17 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   )
 
   const reloadFees = useCallback(() => {
-    FP.pipe(
+    //const checkMemo = form.getFieldValue('memo')
+    const result = FP.pipe(
       sequenceTOption(amountToSend, sendAddress),
       O.map(([amount, recipient]) => {
-        reloadFeesHandler({ asset, amount, recipient, memo: form.getFieldValue('memo') })
+        reloadFeesHandler({ amount, recipient, asset, memo: form.getFieldValue('memo') })
         return true
-      })
+      }),
+      O.getOrElse(() => false)
     )
 
-    return false
+    return result
   }, [amountToSend, sendAddress, reloadFeesHandler, asset, form])
 
   // only render memo field for chain asset.
@@ -509,13 +515,23 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         feesRD,
         RD.map((fees) => [{ asset: getChainAsset(asset.chain), amount: fees[selectedFeeOption] }]),
         RD.mapLeft((error) => {
-          // Assuming 'error' here is of a type that can be converted to 'Error'
-          // Adjust the following line to properly transform 'error' into an 'Error' object
-          return new Error(`Error: ${error.toString()}`) // Example transformation
+          // Transform the error but do not perform side effects here
+          return new Error(`${error.message.split(':')[0]}`) // Example transformation
         })
       ),
     [asset.chain, feesRD, selectedFeeOption]
   )
+
+  // Use useEffect to handle the side effect based on the error state
+  useEffect(() => {
+    if (RD.isFailure(uiFeesRD)) {
+      // Perform the side effect when there is an error
+      setSendAddress(O.none)
+      setAmountToSend(O.none)
+      reloadFees()
+    }
+    // Add uiFeesRD as a dependency to trigger the effect when it changes
+  }, [uiFeesRD, form, asset.chain, reloadFees])
 
   const addMaxAmountHandler = useCallback(() => setAmountToSend(O.some(maxAmount)), [maxAmount])
 

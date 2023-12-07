@@ -1329,7 +1329,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
           <AssetInput
             className="w-full"
             amount={{ amount: amountToWithdrawMax1e8, asset: sourceAsset }}
-            priceAmount={{ amount: priceAmountToWithdrawMax1e8.baseAmount, asset: sourceAsset }}
+            priceAmount={{ amount: priceAmountToWithdrawMax1e8.baseAmount, asset: priceAmountToWithdrawMax1e8.asset }}
             assets={selectableAssets}
             network={network}
             onChangeAsset={setAsset}
