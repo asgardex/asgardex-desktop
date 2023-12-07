@@ -1864,7 +1864,6 @@ export const Swap = ({
     const {
       inFee: { amount: inFeeAmount }
     } = swapFees
-
     return inFeeAmount.gt(sourceChainAssetAmount)
   }, [isZeroAmountToSwap, minAmountError, swapFees, sourceChainAssetAmount])
 

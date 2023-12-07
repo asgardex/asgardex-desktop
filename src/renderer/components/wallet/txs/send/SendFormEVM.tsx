@@ -593,7 +593,6 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
                 color="primary"
                 size="large"
                 disabled={isLoading}
-                onBlur={reloadFees}
                 onChange={onChangeAddress}
                 onKeyUp={handleOnKeyUp}
               />
@@ -606,7 +605,6 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
                 size="large"
                 disabled={isLoading}
                 decimal={balance.amount.decimal}
-                onBlur={reloadFees}
                 onChange={onChangeInput}
               />
             </Styled.FormItem>

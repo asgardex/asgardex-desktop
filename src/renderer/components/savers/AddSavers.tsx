@@ -589,6 +589,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
   // Reload balances at `onMount`
   useEffect(() => {
     reloadBalances()
+    reloadFees(asset.asset)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
