@@ -50,11 +50,13 @@ export const MaxBalanceButton: React.FC<Props> = (props): JSX.Element => {
       ? formatAssetAmountCurrency({
           amount: baseToAsset(amount),
           asset,
+          decimal: 6,
           trimZeros: true
         })
       : `${formatAssetAmountCurrency({
           amount: baseToAsset(amount),
           asset,
+          decimal: 6,
           trimZeros: true
         })} (${formatAssetAmountCurrency({
           amount: maxDollarValue.assetAmount,

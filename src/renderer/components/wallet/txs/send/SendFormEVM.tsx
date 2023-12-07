@@ -217,7 +217,8 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
       if (InboundAddress === value || routerAddress === value) {
-        setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }))
+        const type = InboundAddress === value ? 'Inbound' : 'Router'
+        setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
       }
     },
     [InboundAddress, routerAddress, intl]
