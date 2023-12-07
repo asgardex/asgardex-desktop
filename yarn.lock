@@ -7183,18 +7183,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-thorchain@npm:^0.28.13":
-  version: 0.28.13
-  resolution: "@xchainjs/xchain-thorchain@npm:0.28.13"
+"@xchainjs/xchain-thorchain@npm:^0.28.14":
+  version: 0.28.14
+  resolution: "@xchainjs/xchain-thorchain@npm:0.28.14"
   peerDependencies:
     "@cosmos-client/core": 0.46.1
-    "@xchainjs/xchain-client": ^0.15.3
+    "@xchainjs/xchain-client": ^0.15.5
     "@xchainjs/xchain-cosmos": ^0.21.7
     "@xchainjs/xchain-crypto": ^0.3.0
     "@xchainjs/xchain-util": ^0.13.1
     axios: ^1.3.6
     bech32-buffer: ^0.2.0
-  checksum: 5b411e40df8b66138251371b555260851fb5354d4d15712f7afec6c9e6feb019930de0fc76077f446de10b7be1969458cd6df0b3137238e42dc3c7660bf479fe
+  checksum: f164f01325374595ad1dd1fce051a0694e63474408a247a60bd1c0aaedbb913c6867cf386cb8629aa4146d1397b75742ce03230be8ee0a8d55ef2b0429ecd2f5
   languageName: node
   linkType: hard
 
@@ -8036,7 +8036,7 @@ __metadata:
     "@xchainjs/xchain-mayanode": 0.1.2
     "@xchainjs/xchain-midgard": 0.5.3
     "@xchainjs/xchain-midgard-query": 0.1.7
-    "@xchainjs/xchain-thorchain": ^0.28.13
+    "@xchainjs/xchain-thorchain": ^0.28.14
     "@xchainjs/xchain-thorchain-query": 0.6.13
     "@xchainjs/xchain-thornode": 0.3.9
     "@xchainjs/xchain-util": ^0.13.2
