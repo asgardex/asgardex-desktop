@@ -66,7 +66,7 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       key: 'walletType'
     },
     {
-      title: intl.formatMessage({ id: 'common.manage' }),
+      title: intl.formatMessage({ id: 'common.managePosition' }),
       key: 'manage',
       render: (record: typeof dataSource[0]) => {
         const assetDetail = assetDetails.find(

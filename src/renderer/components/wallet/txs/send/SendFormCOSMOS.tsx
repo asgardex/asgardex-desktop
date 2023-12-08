@@ -29,7 +29,7 @@ import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { TooltipAddress } from '../../../uielements/common/Common.styles'
 import { UIFeesRD } from '../../../uielements/fees'
-import { Input, InputBigNumber } from '../../../uielements/input'
+import { InputBigNumber } from '../../../uielements/input'
 import { AccountSelector } from '../../account'
 import * as H from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
@@ -91,9 +91,23 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
 
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
+  const [InboundAddress, setInboundAddress] = useState<string>('')
+
+  const [warningMessage, setWarningMessage] = useState<string>('')
+
   const [form] = Form.useForm<FormValues>()
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
+
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const fetchData = async () => {
+      const inboundDetails = await thorchainQuery.thorchainCache.getInboundDetails()
+      setInboundAddress(inboundDetails[GAIAChain].address)
+    }
+
+    fetchData()
+  }, [thorchainQuery])
 
   const isFeeError = useMemo(() => {
     return FP.pipe(
@@ -135,8 +149,12 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
       if (!addressValidation(value.toLowerCase())) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
+      if (InboundAddress === value) {
+        const type = 'Inbound'
+        setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
+      }
     },
-    [addressValidation, intl]
+    [InboundAddress, addressValidation, intl]
   )
 
   // max amount for RuneNative
@@ -359,8 +377,9 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
               {renderWalletType}
             </Styled.CustomLabel>
             <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
-              <Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
+              <Styled.Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
             </Form.Item>
+            {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d ">{warningMessage}</div>}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
             <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">
               <InputBigNumber
@@ -383,7 +402,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
             {renderFeeError}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
             <Form.Item name="memo">
-              <Input size="large" disabled={isLoading} />
+              <Styled.Input size="large" disabled={isLoading} />
             </Form.Item>
           </Styled.SubForm>
           <FlatButton
@@ -395,37 +414,44 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
             {intl.formatMessage({ id: 'wallet.action.send' })}
           </FlatButton>
         </Styled.Form>
-        <div className={`w-full pt-10 font-main text-[12px] uppercase dark:border-gray1d`}>
-          <BaseButton
-            className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
-            onClick={() => setShowDetails((current) => !current)}>
-            {intl.formatMessage({ id: 'common.details' })}
-            {showDetails ? (
-              <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
-            ) : (
-              <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
+        <div className="w-full pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
+          {/* memo */}
+          <div className={`my-20px w-full font-main text-[12px] uppercase dark:border-gray1d`}>
+            <div className={`w-full pt-10 font-main text-[12px] uppercase dark:border-gray1d`}>
+              <BaseButton
+                className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+                onClick={() => setShowDetails((current) => !current)}>
+                {intl.formatMessage({ id: 'common.details' })}
+                {showDetails ? (
+                  <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+                ) : (
+                  <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
+                )}
+              </BaseButton>
+            </div>
+            {showDetails && (
+              <>
+                {/* recipient address */}
+                <div className="flex w-full items-center justify-between text-[14px] text-gray2 dark:text-gray2d">
+                  <div className="font-mainBold">{intl.formatMessage({ id: 'common.recipient' })}</div>
+                  <div className="truncate pl-20px text-[13px] normal-case leading-normal">
+                    <TooltipAddress key="tooltip-target-addr">{recipientAddress}</TooltipAddress>
+                  </div>
+                </div>
+                <div className="flex w-full justify-between ">
+                  <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.fee' })}</div>
+                  <div>{priceFeeLabel}</div>
+                </div>
+                <div className="flex w-full items-center justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                  {intl.formatMessage({ id: 'common.memo' })}
+                  <div className="truncate pl-10px font-main text-[12px] leading-normal">
+                    {form.getFieldValue('memo')}
+                  </div>
+                </div>
+              </>
             )}
-          </BaseButton>
+          </div>
         </div>
-        {showDetails && (
-          <>
-            {/* recipient address */}
-            <div className="flex w-full items-center justify-between pl-10px text-[12px] dark:text-text2d">
-              <div>{intl.formatMessage({ id: 'common.recipient' })}</div>
-              <div className="truncate pl-20px text-[13px] normal-case leading-normal">
-                <TooltipAddress key="tooltip-target-addr">{recipientAddress}</TooltipAddress>
-              </div>
-            </div>
-            <div className="flex w-full justify-between ">
-              <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.fee' })}</div>
-              <div>{priceFeeLabel}</div>
-            </div>
-            <div className="flex w-full items-center justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
-              {intl.formatMessage({ id: 'common.memo' })}
-              <div className="truncate pl-10px font-main text-[12px] leading-normal">{form.getFieldValue('memo')}</div>
-            </div>
-          </>
-        )}
       </Styled.Container>
       {showConfirmationModal && renderConfirmationModal}
       {renderTxModal}

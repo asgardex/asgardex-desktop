@@ -103,6 +103,10 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
 
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
+  const [InboundAddress, setInboundAddress] = useState<string>('')
+
+  const [warningMessage, setWarningMessage] = useState<string>('')
+
   const oBnbAmount: O.Option<BaseAmount> = useMemo(() => {
     // return balance of current asset (if BNB)
     if (isBnbAsset(asset)) {
@@ -124,6 +128,16 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
       )
     )
   }, [oBnbAmount, oFee])
+
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const fetchData = async () => {
+      const inboundDetails = await thorchainQuery.thorchainCache.getInboundDetails()
+      setInboundAddress(inboundDetails[BNBChain].address)
+    }
+
+    fetchData()
+  }, [thorchainQuery])
 
   const renderFeeError = useMemo(() => {
     if (!isFeeError) return <></>
@@ -155,6 +169,10 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
       }
       if (!addressValidation(value.toLowerCase())) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
+      }
+      if (InboundAddress === value) {
+        const type = 'Inbound'
+        setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
       }
     },
     [addressValidation, intl]
@@ -379,6 +397,7 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
             <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
               <Styled.Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
             </Form.Item>
+            {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d ">{warningMessage}</div>}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
             <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">
               <InputBigNumber min={0} size="large" disabled={isLoading} decimal={8} onChange={onChangeInput} />

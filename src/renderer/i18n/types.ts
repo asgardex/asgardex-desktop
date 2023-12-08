@@ -111,6 +111,7 @@ export type CommonMessageKey =
   | 'common.modal.confirmTitle'
   | 'common.value'
   | 'common.manage'
+  | 'common.managePosition'
   | 'common.detail'
   | 'common.details'
   | 'common.filter'

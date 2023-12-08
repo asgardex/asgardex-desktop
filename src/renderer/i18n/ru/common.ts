@@ -113,6 +113,7 @@ const common: CommonMessages = {
   'common.modal.confirmTitle': 'Подтвердите действие',
   'common.value': 'Количество',
   'common.manage': 'Управление Lp',
+  'common.managePosition': 'Управление Позицией',
   'common.analytics': 'Аналитика',
   'common.asset.base': 'Базовый',
   'common.asset.change': 'Сменить актив',

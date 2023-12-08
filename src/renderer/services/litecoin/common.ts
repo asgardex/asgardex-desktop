@@ -1,16 +1,45 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Client, LTCChain, defaultLtcParams } from '@xchainjs/xchain-litecoin'
+import { Network, UtxoOnlineDataProviders } from '@xchainjs/xchain-client'
+import { AssetLTC, Client, LTCChain, defaultLtcParams } from '@xchainjs/xchain-litecoin'
+import { BlockcypherNetwork, BlockcypherProvider } from '@xchainjs/xchain-utxo-providers'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { blockcypherApiKey } from '../../../shared/api/blockcypher'
 import { isError } from '../../../shared/utils/guard'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
 import { keystoreService } from '../wallet/keystore'
 import { getPhrase } from '../wallet/util'
 import { Client$, ClientState$, ClientState } from './types'
+
+//======================
+// Blockcypher
+//======================
+const testnetBlockcypherProvider = new BlockcypherProvider(
+  'https://api.blockcypher.com/v1',
+  LTCChain,
+  AssetLTC,
+  8,
+  BlockcypherNetwork.LTC,
+  blockcypherApiKey || ''
+)
+
+const mainnetBlockcypherProvider = new BlockcypherProvider(
+  'https://api.blockcypher.com/v1',
+  LTCChain,
+  AssetLTC,
+  8,
+  BlockcypherNetwork.LTC,
+  blockcypherApiKey || ''
+)
+const BlockcypherDataProviders: UtxoOnlineDataProviders = {
+  [Network.Testnet]: testnetBlockcypherProvider,
+  [Network.Stagenet]: mainnetBlockcypherProvider,
+  [Network.Mainnet]: mainnetBlockcypherProvider
+}
 
 /**
  * Stream to create an observable `LitecoinClient` depending on existing phrase in keystore
@@ -31,7 +60,8 @@ const clientState$: ClientState$ = FP.pipe(
               const ltcInitParams = {
                 ...defaultLtcParams,
                 phrase: phrase,
-                network: network
+                network: network,
+                dataProviders: [BlockcypherDataProviders]
               }
               const client = new Client(ltcInitParams)
               return RD.success(client)

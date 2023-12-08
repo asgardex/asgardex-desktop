@@ -256,7 +256,8 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
       if (InboundAddress === value) {
-        setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }))
+        const type = 'Inbound'
+        setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
       }
     },
     [InboundAddress, addressValidation, intl]

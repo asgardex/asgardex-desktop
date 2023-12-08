@@ -40,7 +40,6 @@ import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { addressFromOptionalWalletAddress, getWalletAddressFromNullableString } from '../../helpers/walletHelper'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
-import { useOpenAddressUrl } from '../../hooks/useOpenAddressUrl'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../hooks/useValidateAddress'
 import { swap } from '../../routes/pools'
@@ -325,7 +324,6 @@ const SuccessRouteView: React.FC<Props> = ({
   )
 
   const { validateSwapAddress } = useValidateAddress(targetChain)
-  const openAddressUrl = useOpenAddressUrl(targetChain)
 
   return (
     <>
@@ -424,7 +422,6 @@ const SuccessRouteView: React.FC<Props> = ({
                   approveERC20Token$={approveERC20Token$}
                   isApprovedERC20Token$={isApprovedERC20Token$}
                   importWalletHandler={importWalletHandler}
-                  clickAddressLinkHandler={openAddressUrl}
                   addressValidator={validateSwapAddress}
                   // TODO (@veado) Handle private data
                   hidePrivateData={false}

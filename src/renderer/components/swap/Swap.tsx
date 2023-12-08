@@ -203,7 +203,6 @@ export type SwapProps = {
   isApprovedERC20Token$: (params: IsApproveParams) => LiveData<ApiError, boolean>
   importWalletHandler: FP.Lazy<void>
   disableSwapAction: boolean
-  clickAddressLinkHandler: (address: Address) => void
   addressValidator: AddressValidationAsync
   hidePrivateData: boolean
 }
@@ -244,7 +243,6 @@ export const Swap = ({
   approveFee$,
   importWalletHandler,
   disableSwapAction,
-  clickAddressLinkHandler,
   addressValidator,
   hidePrivateData
 }: SwapProps) => {
@@ -571,11 +569,10 @@ export const Swap = ({
 
   // get outbound fee from quote response
   const oSwapOutFee: CryptoAmount = useMemo(() => {
-    const amount = swapFees.outFee.amount
     const result = FP.pipe(
       sequenceTOption(oQuote),
       O.fold(
-        () => new CryptoAmount(baseAmount(amount.amount(), targetAssetDecimal), targetAsset),
+        () => new CryptoAmount(swapFees.outFee.amount, targetAsset.synth ? AssetRuneNative : targetAsset),
         ([txDetails]) => {
           const txOutFee = txDetails.txEstimate.totalFees.outboundFee
           return txOutFee
@@ -583,10 +580,10 @@ export const Swap = ({
       )
     )
     return result
-  }, [oQuote, swapFees.outFee.amount, targetAsset, targetAssetDecimal])
+  }, [oQuote, swapFees.outFee.amount, targetAsset])
 
   const [outFeePriceValue, setOutFeePriceValue] = useState<CryptoAmount>(
-    new CryptoAmount(baseAmount(0, targetAssetDecimal), targetAsset)
+    new CryptoAmount(swapFees.outFee.amount, targetAsset)
   )
 
   // useEffect to fetch data from query
@@ -1127,66 +1124,6 @@ export const Swap = ({
         O.getOrElse(() => ZERO_BASE_AMOUNT)
       ),
     [approveFeeRD]
-  )
-
-  const priceApproveFee: CryptoAmount = useMemo(() => {
-    const assetAmount = new CryptoAmount(approveFee, swapFees.inFee.asset)
-
-    return FP.pipe(
-      PoolHelpers.getPoolPriceValue({
-        balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
-        poolDetails,
-        pricePool,
-        network
-      }),
-      O.fold(
-        () => new CryptoAmount(baseAmount(0), pricePool.asset), // Default value if None
-        (amount) => new CryptoAmount(amount, pricePool.asset) // Value if Some
-      )
-    )
-  }, [approveFee, swapFees.inFee.asset, poolDetails, pricePool, network])
-
-  const priceApproveFeeLabel = useMemo(
-    () =>
-      FP.pipe(
-        approveFeeRD,
-        RD.fold(
-          () => loadingString,
-          () => loadingString,
-          () => noDataString,
-          (_) =>
-            FP.pipe(
-              O.some(approveFee),
-              O.fold(
-                () => '',
-                (outFee: BaseAmount) => {
-                  const fee = formatAssetAmountCurrency({
-                    amount: baseToAsset(outFee),
-                    asset: sourceChainAsset,
-                    decimal: isUSDAsset(sourceChainAsset) ? 2 : 6,
-                    trimZeros: !isUSDAsset(sourceChainAsset)
-                  })
-                  const price = FP.pipe(
-                    O.some(priceApproveFee),
-                    O.map((cryptoAmount: CryptoAmount) =>
-                      eqAsset.equals(sourceAsset, cryptoAmount.asset)
-                        ? ''
-                        : formatAssetAmountCurrency({
-                            amount: cryptoAmount.assetAmount,
-                            asset: cryptoAmount.asset,
-                            decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
-                            trimZeros: !isUSDAsset(cryptoAmount.asset)
-                          })
-                    ),
-                    O.getOrElse(() => '')
-                  )
-                  return price ? `${price} (${fee})` : fee
-                }
-              )
-            )
-        )
-      ),
-    [approveFeeRD, approveFee, sourceChainAsset, priceApproveFee, sourceAsset]
   )
 
   // State for values of `isApprovedERC20Token$`
@@ -2067,6 +2004,68 @@ export const Swap = ({
     )
   }, [checkIsApprovedError, intl, isApprovedState, sourceAsset.ticker])
 
+  const priceApproveFee: CryptoAmount = useMemo(() => {
+    const assetAmount = isApproved
+      ? new CryptoAmount(approveFee, swapFees.inFee.asset)
+      : new CryptoAmount(baseAmount(0), swapFees.inFee.asset)
+
+    return FP.pipe(
+      PoolHelpers.getPoolPriceValue({
+        balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
+        poolDetails,
+        pricePool,
+        network
+      }),
+      O.fold(
+        () => new CryptoAmount(baseAmount(0), pricePool.asset), // Default value if None
+        (amount) => new CryptoAmount(amount, pricePool.asset) // Value if Some
+      )
+    )
+  }, [isApproved, approveFee, swapFees.inFee.asset, poolDetails, pricePool, network])
+
+  const priceApproveFeeLabel = useMemo(
+    () =>
+      FP.pipe(
+        approveFeeRD,
+        RD.fold(
+          () => loadingString,
+          () => loadingString,
+          () => noDataString,
+          (_) =>
+            FP.pipe(
+              O.some(approveFee),
+              O.fold(
+                () => '',
+                (outFee: BaseAmount) => {
+                  const fee = formatAssetAmountCurrency({
+                    amount: baseToAsset(outFee),
+                    asset: sourceChainAsset,
+                    decimal: isUSDAsset(sourceChainAsset) ? 2 : 6,
+                    trimZeros: !isUSDAsset(sourceChainAsset)
+                  })
+                  const price = FP.pipe(
+                    O.some(priceApproveFee),
+                    O.map((cryptoAmount: CryptoAmount) =>
+                      eqAsset.equals(sourceAsset, cryptoAmount.asset)
+                        ? ''
+                        : formatAssetAmountCurrency({
+                            amount: cryptoAmount.assetAmount,
+                            asset: cryptoAmount.asset,
+                            decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
+                            trimZeros: !isUSDAsset(cryptoAmount.asset)
+                          })
+                    ),
+                    O.getOrElse(() => '')
+                  )
+                  return price ? `${price} (${fee})` : fee
+                }
+              )
+            )
+        )
+      ),
+    [approveFeeRD, approveFee, sourceChainAsset, priceApproveFee, sourceAsset]
+  )
+
   const reset = useCallback(() => {
     // reset swap state
     resetSwapState()
@@ -2192,6 +2191,7 @@ export const Swap = ({
 
   const onClickUseSourceAssetLedger = useCallback(
     (useLedger: boolean) => {
+      setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
       onChangeAsset({
         source: sourceAsset,
         target: targetAsset,
@@ -2200,7 +2200,15 @@ export const Swap = ({
         recipientAddress: oRecipientAddress
       })
     },
-    [oRecipientAddress, oTargetWalletType, onChangeAsset, sourceAsset, targetAsset]
+    [
+      initialAmountToSwapMax1e8,
+      oRecipientAddress,
+      oTargetWalletType,
+      onChangeAsset,
+      setAmountToSwapMax1e8,
+      sourceAsset,
+      targetAsset
+    ]
   )
 
   const onClickUseTargetAssetLedger = useCallback(
@@ -2401,7 +2409,6 @@ export const Swap = ({
                   asset={targetAsset}
                   network={network}
                   address={address}
-                  onClickOpenAddress={(address) => clickAddressLinkHandler(address)}
                   onChangeAddress={onChangeRecipientAddress}
                   onChangeEditableAddress={onChangeEditableRecipientAddress}
                   onChangeEditableMode={(editModeActive) => setCustomAddressEditActive(editModeActive)}
