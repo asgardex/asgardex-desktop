@@ -7,7 +7,7 @@ import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { blockcypherApiKey } from '../../../shared/api/blockcypher'
+import { blockcypherApiKeyLtc } from '../../../shared/api/blockcypher'
 import { isError } from '../../../shared/utils/guard'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
@@ -24,7 +24,7 @@ const testnetBlockcypherProvider = new BlockcypherProvider(
   AssetLTC,
   8,
   BlockcypherNetwork.LTC,
-  blockcypherApiKey || ''
+  blockcypherApiKeyLtc || ''
 )
 
 const mainnetBlockcypherProvider = new BlockcypherProvider(
@@ -33,7 +33,7 @@ const mainnetBlockcypherProvider = new BlockcypherProvider(
   AssetLTC,
   8,
   BlockcypherNetwork.LTC,
-  blockcypherApiKey || ''
+  blockcypherApiKeyLtc || ''
 )
 const BlockcypherDataProviders: UtxoOnlineDataProviders = {
   [Network.Testnet]: testnetBlockcypherProvider,

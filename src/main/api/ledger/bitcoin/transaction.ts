@@ -13,7 +13,7 @@ import {
 import * as Bitcoin from 'bitcoinjs-lib'
 import * as E from 'fp-ts/lib/Either'
 
-import { blockcypherApiKey } from '../../../../shared/api/blockcypher'
+import { blockcypherApiKeyBtc } from '../../../../shared/api/blockcypher'
 import { LedgerError, LedgerErrorId, Network as LedgerNetwork } from '../../../../shared/api/types'
 import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
@@ -43,7 +43,7 @@ const testnetBlockcypherProvider = new BlockcypherProvider(
   AssetBTC,
   8,
   BlockcypherNetwork.BTCTEST,
-  blockcypherApiKey || ''
+  blockcypherApiKeyBtc || ''
 )
 
 const mainnetBlockcypherProvider = new BlockcypherProvider(
@@ -52,7 +52,7 @@ const mainnetBlockcypherProvider = new BlockcypherProvider(
   AssetBTC,
   8,
   BlockcypherNetwork.BTC,
-  blockcypherApiKey || ''
+  blockcypherApiKeyBtc || ''
 )
 const BlockcypherDataProviders: UtxoOnlineDataProviders = {
   [Network.Testnet]: testnetBlockcypherProvider,
