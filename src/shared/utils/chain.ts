@@ -7,6 +7,7 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 
@@ -24,7 +25,8 @@ export const ENABLED_CHAINS = [
   LTCChain,
   THORChain,
   AVAXChain,
-  BSCChain
+  BSCChain,
+  MAYAChain
 ] as const
 
 export type EnabledChain = typeof ENABLED_CHAINS[number]
@@ -67,5 +69,7 @@ export const chainToString = (chain: Chain): string => {
       return 'Avax'
     case BSCChain:
       return 'BNB Chain (BSC)'
+    case MAYAChain:
+      return 'MAYAChain'
   }
 }

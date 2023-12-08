@@ -42,14 +42,6 @@ export const AssetsView: React.FC = (): JSX.Element => {
             chainBalances,
             // we show all balances
             A.filter(({ balancesType }) => balancesType === 'all')
-            // accept balances > 0 only
-            // A.map((chainBalance) => ({
-            //   ...chainBalance,
-            //   balances: FP.pipe(
-            //     chainBalance.balances,
-            //     RD.map((balances) => balances.filter((balance) => balance.amount.gt(0)))
-            //   )
-            // }))
           )
         )
       ),
@@ -62,13 +54,14 @@ export const AssetsView: React.FC = (): JSX.Element => {
   )
   const {
     service: {
-      pools: { poolsState$, selectedPricePool$ }
+      pools: { poolsState$, selectedPricePool$, pendingPoolsState$ }
     }
   } = useMidgardContext()
 
   const { total: totalWalletBalances } = useTotalWalletBalance()
 
   const poolsRD = useObservableState(poolsState$, RD.pending)
+  const pendingPoolsRD = useObservableState(pendingPoolsState$, RD.pending)
 
   const selectedPricePool = useObservableState(selectedPricePool$, RUNE_PRICE_POOL)
 
@@ -97,6 +90,8 @@ export const AssetsView: React.FC = (): JSX.Element => {
 
   const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
   const poolsData = RD.toNullable(poolsRD)?.poolsData ?? {}
+
+  const pendingPoolsDetails = RD.toNullable(pendingPoolsRD)?.poolDetails ?? []
 
   const { mimirHaltRD } = useMimirHalt()
 
@@ -138,6 +133,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
         chainBalances={chainBalances}
         pricePool={selectedPricePool}
         poolDetails={poolDetails}
+        pendingPoolDetails={pendingPoolsDetails}
         poolsData={poolsData}
         selectAssetHandler={selectAssetHandler}
         assetHandler={assetHandler}

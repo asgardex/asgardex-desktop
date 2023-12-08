@@ -2,7 +2,6 @@ import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
-import { AssetRuneNative } from '../../../../../shared/utils/asset'
 import { media } from '../../../../helpers/styleHelper'
 import { InnerForm } from '../../../shared/form'
 import { AssetIcon as UIAssetIcon } from '../../../uielements/assets/assetIcon'
@@ -38,7 +37,7 @@ export const Header = styled('div')`
   `}
 `
 
-export const AssetIcon = styled(UIAssetIcon).attrs({ asset: AssetRuneNative, size: 'large' })`
+export const AssetIcon = styled(UIAssetIcon).attrs({ size: 'large' })`
   margin-bottom: 10px;
   ${media.sm`
     margin: 0 25px 0 0;

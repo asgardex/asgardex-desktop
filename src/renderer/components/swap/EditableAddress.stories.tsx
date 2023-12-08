@@ -12,7 +12,6 @@ const defaultProps: EditableAddressProps = {
   asset: AssetBNB,
   address: bnbAddress,
   network: 'testnet',
-  onClickOpenAddress: () => console.log('open address in explorer'),
   onChangeAddress: () => console.log('address changed'),
   onChangeEditableAddress: () => console.log('address changed'),
   onChangeEditableMode: () => console.log('edit mode changed'),

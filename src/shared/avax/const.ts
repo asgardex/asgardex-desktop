@@ -41,7 +41,7 @@ const ethersJSProviders = {
 const AVAX_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
   AVALANCHE_TESTNET_ETHERS_PROVIDER,
   'https://api-testnet.snowtrace.dev',
-  envOrDefault(process.env['REACT_APP_SNOWTRACE_API_KEY'], ''),
+  envOrDefault(process.env.REACT_APP_SNOWTRACE_API_KEY, ''),
   AVAXChain,
   AssetAVAX,
   AVAX_DECIMAL
@@ -49,7 +49,7 @@ const AVAX_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
 const AVAX_ONLINE_PROVIDER_MAINNET = new EtherscanProvider(
   AVALANCHE_MAINNET_ETHERS_PROVIDER,
   'https://api.snowtrace.dev',
-  envOrDefault(process.env['REACT_APP_SNOWTRACE_API_KEY'], ''),
+  envOrDefault(process.env.REACT_APP_SNOWTRACE_API_KEY, ''),
   AVAXChain,
   AssetAVAX,
   AVAX_DECIMAL
@@ -135,7 +135,7 @@ export const defaultAvaxParams: EVMClientParams = {
   providers: ethersJSProviders,
   explorerProviders: avaxExplorerProviders,
   dataProviders: [avaxProviders, routescanProviders],
-  network: Network.Testnet,
+  network: Network.Mainnet,
   feeBounds: {
     lower: LOWER_FEE_BOUND,
     upper: UPPER_FEE_BOUND

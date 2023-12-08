@@ -14,6 +14,7 @@ import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTC_DECIMAL } from '@xchainjs/xchain-litecoin'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
@@ -231,7 +232,7 @@ export const getOutboundAssetFeeByChain = (
     O.chain(O.fromPredicate(isValidBN)),
     // Convert fee values to `BaseAmount` to put into `AssetWithAmount`
     O.chain((value) => {
-      if (!isEnabledChain(chain)) return O.none
+      if (!isEnabledChain(chain) || chain === MAYAChain) return O.none
 
       switch (chain) {
         case BNBChain:

@@ -8,6 +8,7 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -27,6 +28,7 @@ import * as COSMOS from '../cosmos'
 import * as DOGE from '../doge'
 import * as ETH from '../ethereum'
 import * as LTC from '../litecoin'
+import * as MAYA from '../mayachain'
 import * as THOR from '../thorchain'
 import { client$, selectedAsset$ } from './common'
 import { INITIAL_LOAD_TXS_PROPS } from './const'
@@ -79,6 +81,8 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
                 return BSC.txs$({ asset: O.some(asset), limit, offset, walletAddress, walletIndex })
               case THORChain:
                 return THOR.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
+              case MAYAChain:
+                return MAYA.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
               case LTCChain:
                 return LTC.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
               case BCHChain:

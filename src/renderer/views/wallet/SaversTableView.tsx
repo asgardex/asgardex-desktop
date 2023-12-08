@@ -23,7 +23,7 @@ import { useChainContext } from '../../contexts/ChainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useWalletContext } from '../../contexts/WalletContext'
-import { isThorChain } from '../../helpers/chainHelper'
+import { isMayaChain, isThorChain } from '../../helpers/chainHelper'
 import { sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { useNetwork } from '../../hooks/useNetwork'
@@ -116,7 +116,7 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
       const ledgerAddresses$ = (): WalletAddress$[] =>
         FP.pipe(
           [...ENABLED_CHAINS],
-          A.filter((chain) => !isThorChain(chain)),
+          A.filter((chain) => !isThorChain(chain) || isMayaChain(chain)),
           A.map((chain) => getLedgerAddress$(chain)),
           A.map(RxOp.map(FP.flow(O.map(ledgerAddressToWalletAddress))))
         )

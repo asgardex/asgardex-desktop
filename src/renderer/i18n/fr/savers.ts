@@ -6,6 +6,8 @@ const savers: SaversMessages = {
   'savers.detail.current.title': 'Valeur du dépôt',
   'savers.detail.redeem.title': 'Valeur de rachat',
   'savers.detail.percent': 'Croissance',
+  'savers.detail.assetAmount': "Montant de l'actif",
+  'savers.detail.priceGrowth': 'Croissance du prix',
   'savers.info.max.redeem.value': 'Valeur maximale à échanger',
   'savers.info.max.balance': 'Solde maximal',
   'savers.add.state.sending': 'Envoi de la transaction d’ajout de l’épargnant',

@@ -7,6 +7,7 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
@@ -23,6 +24,7 @@ import * as COSMOS from '../cosmos'
 import * as DOGE from '../doge'
 import * as ETH from '../ethereum'
 import * as LTC from '../litecoin'
+import * as MAYA from '../mayachain'
 import * as THOR from '../thorchain'
 import { client$ } from './client'
 
@@ -45,6 +47,8 @@ const addressByChain$ = (chain: Chain): WalletAddress$ => {
       return BSC.address$
     case THORChain:
       return THOR.address$
+    case MAYAChain:
+      return MAYA.address$
     case GAIAChain:
       return COSMOS.address$
     case BCHChain:

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react'
 
-import { CheckCircleIcon, ArrowTopRightOnSquareIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import { CheckCircleIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline'
 import { Address, Asset } from '@xchainjs/xchain-util'
 import { Form, Tooltip } from 'antd'
 import * as FP from 'fp-ts/lib/function'
@@ -20,7 +20,6 @@ export type EditableAddressProps = {
   asset: Asset
   address: Address
   network: Network
-  onClickOpenAddress: (address: Address) => void
   onChangeAddress: (address: Address) => void
   onChangeEditableAddress: (address: Address) => void
   onChangeEditableMode: (editModeActive: boolean) => void
@@ -32,7 +31,6 @@ export const EditableAddress = ({
   address,
   onChangeAddress,
   onChangeEditableAddress,
-  onClickOpenAddress,
   onChangeEditableMode,
   addressValidator,
   network,
@@ -115,14 +113,10 @@ export const EditableAddress = ({
             }}
           />
           <CopyLabel className="text-gray2 dark:text-gray2d" textToCopy={address} />
-          <ArrowTopRightOnSquareIcon
-            className="ml-[5px] h-[20px] w-[20px] cursor-pointer text-gray2 dark:text-gray2d"
-            onClick={() => onClickOpenAddress(address)}
-          />
         </div>
       </div>
     )
-  }, [address, hidePrivateData, truncatedAddress, onChangeEditableMode, onClickOpenAddress])
+  }, [address, hidePrivateData, truncatedAddress, onChangeEditableMode])
 
   const renderEditableAddress = useCallback(
     (editableAddress: Address) => {

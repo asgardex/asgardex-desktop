@@ -13,8 +13,7 @@ import * as Rx from 'rxjs'
 import { Observable } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-// import { getHaskoinBTCApiUrl } from '../../../shared/api/haskoin'
-import { blockcypherApiKey } from '../../../shared/api/blockcypher'
+import { blockcypherApiKeyBtc } from '../../../shared/api/blockcypher'
 import { isError } from '../../../shared/utils/guard'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
@@ -49,7 +48,7 @@ const testnetBlockcypherProvider = new BlockcypherProvider(
   AssetBTC,
   8,
   BlockcypherNetwork.BTCTEST,
-  blockcypherApiKey || ''
+  blockcypherApiKeyBtc || ''
 )
 
 const mainnetBlockcypherProvider = new BlockcypherProvider(
@@ -58,7 +57,7 @@ const mainnetBlockcypherProvider = new BlockcypherProvider(
   AssetBTC,
   8,
   BlockcypherNetwork.BTC,
-  blockcypherApiKey || ''
+  blockcypherApiKeyBtc || ''
 )
 const BlockcypherDataProviders: UtxoOnlineDataProviders = {
   [Network.Testnet]: testnetBlockcypherProvider,

@@ -28,7 +28,7 @@ import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
-import { isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
+import { isCacaoAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
 import { hiddenString, noDataString } from '../../../helpers/stringHelper'
@@ -62,6 +62,7 @@ type Props = {
   chainBalances: ChainBalances
   pricePool: PricePool
   poolDetails: PoolDetails
+  pendingPoolDetails: PoolDetails
   poolsData: PoolsDataMap
   selectAssetHandler: (asset: SelectedWalletAsset) => void
   assetHandler: (asset: SelectedWalletAsset, action: AssetAction) => void
@@ -76,6 +77,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
     chainBalances = [],
     pricePool,
     poolDetails,
+    pendingPoolDetails,
     poolsData,
     selectAssetHandler,
     assetHandler,
@@ -154,30 +156,50 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
     }),
     []
   )
-
   const balanceColumn: ColumnType<WalletBalance> = useMemo(
     () => ({
       render: ({ asset, amount }: WalletBalance) => {
         const balance = formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, decimal: 3 })
-        let price: string
+        let price: string = noDataString // Default to "no data" string
+
         if (isUSDAsset(asset)) {
           price = balance.toString()
         } else {
-          price = FP.pipe(
-            getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool, network }),
-            O.map((price) => {
-              const priceAmount = baseAmount(price.amount(), amount.decimal)
-
-              return formatAssetAmountCurrency({
+          // First try to get the price from poolDetails
+          const priceOptionFromPoolDetails = getPoolPriceValue({
+            balance: { asset, amount },
+            poolDetails,
+            pricePool,
+            network
+          })
+          if (O.isSome(priceOptionFromPoolDetails)) {
+            const priceAmount = baseAmount(priceOptionFromPoolDetails.value.amount(), amount.decimal)
+            price = formatAssetAmountCurrency({
+              amount: baseToAsset(priceAmount),
+              asset: pricePool.asset,
+              decimal: isUSDAsset(pricePool.asset) ? 2 : 4
+            })
+          } else {
+            // If not available, try to get it from pendingPoolDetails
+            const priceOptionFromPendingPoolDetails = getPoolPriceValue({
+              balance: { asset, amount },
+              poolDetails: pendingPoolDetails,
+              pricePool,
+              network
+            })
+            if (O.isSome(priceOptionFromPendingPoolDetails)) {
+              const priceAmount = baseAmount(priceOptionFromPendingPoolDetails.value.amount(), amount.decimal)
+              price = formatAssetAmountCurrency({
                 amount: baseToAsset(priceAmount),
                 asset: pricePool.asset,
                 decimal: isUSDAsset(pricePool.asset) ? 2 : 4
               })
-            }),
-            // "empty" label if we don't get a price value
-            O.getOrElse(() => noDataString)
-          )
+            } else {
+              price = noDataString
+            }
+          }
         }
+
         return (
           <div className="flex flex-col items-end justify-center font-main">
             <div className="text-16 text-text0 dark:text-text0d">{hidePrivateData ? hiddenString : balance}</div>
@@ -186,7 +208,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         )
       }
     }),
-    [hidePrivateData, network, poolDetails, pricePool]
+    [hidePrivateData, poolDetails, pricePool, network, pendingPoolDetails]
   )
 
   const renderActionColumn = useCallback(
@@ -346,7 +368,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           ]),
           // 'deposit'  for RuneNativeAsset only
           A.concatW<ActionButtonAction>(
-            isRuneNativeAsset(asset)
+            isRuneNativeAsset(asset) || isCacaoAsset(asset)
               ? [
                   {
                     label: intl.formatMessage({ id: 'wallet.action.deposit' }),

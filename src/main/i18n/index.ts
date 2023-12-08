@@ -4,6 +4,7 @@ import { Locale } from '../../shared/i18n/types'
 import de from './de'
 import en from './en'
 import fr from './fr'
+import hi from './hi'
 import ru from './ru'
 import { Messages } from './types'
 
@@ -17,6 +18,8 @@ export const getMessagesByLocale = (l: Locale): Messages => {
       return fr
     case Locale.RU:
       return ru
+    case Locale.HI:
+      return hi
     default:
       return en
   }

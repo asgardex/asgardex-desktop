@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { COSMOS_DECIMAL, GAIAChain } from '@xchainjs/xchain-cosmos'
 import { ThorchainQuery, CryptoAmount } from '@xchainjs/xchain-thorchain-query'
-import { Address, baseAmount } from '@xchainjs/xchain-util'
+import { Address, baseAmount, eqAsset } from '@xchainjs/xchain-util'
 import { formatAssetAmountCurrency, assetAmount, bn, assetToBase, BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
 import BigNumber from 'bignumber.js'
@@ -12,11 +13,11 @@ import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
 import { Network } from '../../../../../shared/api/types'
-import { AssetRuneNative } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { AssetUSDC, ZERO_BASE_AMOUNT } from '../../../../const'
-import { isRuneNativeAsset } from '../../../../helpers/assetHelper'
+import { isRuneNativeAsset, isUSDAsset } from '../../../../helpers/assetHelper'
+import { loadingString } from '../../../../helpers/stringHelper'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import { FeeRD, SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
@@ -24,10 +25,11 @@ import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances 
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
-import { FlatButton } from '../../../uielements/button'
+import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
+import { TooltipAddress } from '../../../uielements/common/Common.styles'
 import { UIFeesRD } from '../../../uielements/fees'
-import { Input, InputBigNumber } from '../../../uielements/input'
+import { InputBigNumber } from '../../../uielements/input'
 import { AccountSelector } from '../../account'
 import * as H from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
@@ -85,9 +87,27 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
 
   const isLoading = useMemo(() => RD.isPending(sendTxState.status), [sendTxState.status])
 
+  const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+
+  const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+
+  const [InboundAddress, setInboundAddress] = useState<string>('')
+
+  const [warningMessage, setWarningMessage] = useState<string>('')
+
   const [form] = Form.useForm<FormValues>()
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
+
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const fetchData = async () => {
+      const inboundDetails = await thorchainQuery.thorchainCache.getInboundDetails()
+      setInboundAddress(inboundDetails[GAIAChain].address)
+    }
+
+    fetchData()
+  }, [thorchainQuery])
 
   const isFeeError = useMemo(() => {
     return FP.pipe(
@@ -108,7 +128,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
       {
         balance: formatAssetAmountCurrency({
           amount: baseToAsset(balance.amount),
-          asset: AssetRuneNative,
+          asset: asset,
           trimZeros: true
         })
       }
@@ -119,7 +139,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
         {msg}
       </Styled.Label>
     )
-  }, [isFeeError, intl, balance.amount])
+  }, [isFeeError, intl, balance.amount, asset])
 
   const addressValidator = useCallback(
     async (_: unknown, value: string) => {
@@ -129,8 +149,12 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
       if (!addressValidation(value.toLowerCase())) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
+      if (InboundAddress === value) {
+        const type = 'Inbound'
+        setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
+      }
     },
-    [addressValidation, intl]
+    [InboundAddress, addressValidation, intl]
   )
 
   // max amount for RuneNative
@@ -158,10 +182,41 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
     const fetchData = async () => {
       setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, AssetUSDC))
+      setFeePriceValue(await thorchainQuery.convert(assetFee, AssetUSDC))
     }
 
     fetchData()
-  }, [asset, maxAmount, thorchainQuery])
+  }, [asset, assetFee, maxAmount, thorchainQuery])
+
+  const priceFeeLabel = useMemo(() => {
+    if (!feePriceValue) {
+      return loadingString // or noDataString, depending on your needs
+    }
+
+    const fee = formatAssetAmountCurrency({
+      amount: assetFee.assetAmount,
+      asset: assetFee.asset,
+      decimal: isUSDAsset(assetFee.asset) ? 2 : 6,
+      trimZeros: !isUSDAsset(assetFee.asset)
+    })
+
+    const price = FP.pipe(
+      O.some(feePriceValue), // Assuming this is Option<CryptoAmount>
+      O.map((cryptoAmount: CryptoAmount) =>
+        eqAsset(asset, cryptoAmount.asset)
+          ? ''
+          : formatAssetAmountCurrency({
+              amount: cryptoAmount.assetAmount,
+              asset: cryptoAmount.asset,
+              decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
+              trimZeros: !isUSDAsset(cryptoAmount.asset)
+            })
+      ),
+      O.getOrElse(() => '')
+    )
+
+    return price ? `${price} (${fee}) ` : fee
+  }, [feePriceValue, assetFee, asset])
 
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field
@@ -270,10 +325,13 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     () =>
       FP.pipe(
         feeRD,
-        RD.map((fee) => [{ asset: AssetRuneNative, amount: fee }])
+        RD.map((fee) => {
+          setAssetFee(new CryptoAmount(fee, asset))
+          return [{ asset: asset, amount: fee }]
+        })
       ),
 
-    [feeRD]
+    [asset, feeRD]
   )
 
   const onChangeInput = useCallback(
@@ -301,7 +359,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   )
 
   const renderWalletType = useMemo(() => H.renderedWalletType(oMatchedWalletType), [oMatchedWalletType])
-
+  const [showDetails, setShowDetails] = useState<boolean>(false)
   const disableSubmit = useMemo(() => isFeeError || RD.isPending(feeRD), [feeRD, isFeeError])
 
   return (
@@ -319,8 +377,9 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
               {renderWalletType}
             </Styled.CustomLabel>
             <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
-              <Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
+              <Styled.Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
             </Form.Item>
+            {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d ">{warningMessage}</div>}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
             <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">
               <InputBigNumber
@@ -343,7 +402,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
             {renderFeeError}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
             <Form.Item name="memo">
-              <Input size="large" disabled={isLoading} />
+              <Styled.Input size="large" disabled={isLoading} />
             </Form.Item>
           </Styled.SubForm>
           <FlatButton
@@ -355,6 +414,44 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
             {intl.formatMessage({ id: 'wallet.action.send' })}
           </FlatButton>
         </Styled.Form>
+        <div className="w-full pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
+          {/* memo */}
+          <div className={`my-20px w-full font-main text-[12px] uppercase dark:border-gray1d`}>
+            <div className={`w-full pt-10 font-main text-[12px] uppercase dark:border-gray1d`}>
+              <BaseButton
+                className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+                onClick={() => setShowDetails((current) => !current)}>
+                {intl.formatMessage({ id: 'common.details' })}
+                {showDetails ? (
+                  <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+                ) : (
+                  <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
+                )}
+              </BaseButton>
+            </div>
+            {showDetails && (
+              <>
+                {/* recipient address */}
+                <div className="flex w-full items-center justify-between text-[14px] text-gray2 dark:text-gray2d">
+                  <div className="font-mainBold">{intl.formatMessage({ id: 'common.recipient' })}</div>
+                  <div className="truncate pl-20px text-[13px] normal-case leading-normal">
+                    <TooltipAddress key="tooltip-target-addr">{recipientAddress}</TooltipAddress>
+                  </div>
+                </div>
+                <div className="flex w-full justify-between ">
+                  <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.fee' })}</div>
+                  <div>{priceFeeLabel}</div>
+                </div>
+                <div className="flex w-full items-center justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                  {intl.formatMessage({ id: 'common.memo' })}
+                  <div className="truncate pl-10px font-main text-[12px] leading-normal">
+                    {form.getFieldValue('memo')}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </Styled.Container>
       {showConfirmationModal && renderConfirmationModal}
       {renderTxModal}

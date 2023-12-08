@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { FeeOption, Fees, TxParams } from '@xchainjs/xchain-client'
 import { validateAddress } from '@xchainjs/xchain-evm'
 import { CryptoAmount, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
@@ -12,7 +13,8 @@ import {
   assetAmount,
   Address,
   formatAssetAmountCurrency,
-  baseAmount
+  baseAmount,
+  eqAsset
 } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
 import { RadioChangeEvent } from 'antd/lib/radio'
@@ -26,9 +28,10 @@ import { chainToString } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { AssetUSDC, ZERO_BASE_AMOUNT, ZERO_BN } from '../../../../const'
-import { isAvaxAsset, isBscAsset, isEthAsset } from '../../../../helpers/assetHelper'
+import { isAvaxAsset, isBscAsset, isEthAsset, isUSDAsset } from '../../../../helpers/assetHelper'
 import { getChainAsset } from '../../../../helpers/chainHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
+import { loadingString } from '../../../../helpers/stringHelper'
 import { getEVMAmountFromBalances } from '../../../../helpers/walletHelper'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
@@ -38,7 +41,7 @@ import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../servic
 import { WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
 import * as StyledR from '../../../shared/form/Radio.styles'
-import { FlatButton } from '../../../uielements/button'
+import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { UIFeesRD } from '../../../uielements/fees'
 import { InputBigNumber } from '../../../uielements/input'
@@ -93,6 +96,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   const [amountToSend, setAmountToSend] = useState<O.Option<BaseAmount>>(O.none)
   const [sendAddress, setSendAddress] = useState<O.Option<Address>>(O.none)
 
+  const [warningMessage, setWarningMessage] = useState<string>('')
   const {
     state: sendTxState,
     reset: resetSendTxState,
@@ -107,7 +111,25 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
   const oFees: O.Option<Fees> = useMemo(() => FP.pipe(feesRD, RD.toOption), [feesRD])
 
+  const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+
+  const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+
   const feesAvailable = useMemo(() => O.isSome(oFees), [oFees])
+
+  const [InboundAddress, setInboundAddress] = useState<string>('')
+  const [routerAddress, setRouterAddress] = useState<string | undefined>(undefined)
+
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const fetchData = async () => {
+      const inboundDetails = await thorchainQuery.thorchainCache.getInboundDetails()
+      setInboundAddress(inboundDetails[asset.chain].address)
+      setRouterAddress(inboundDetails[asset.chain].router)
+    }
+
+    fetchData()
+  }, [asset.chain, thorchainQuery])
 
   // Store latest fees as `ref`
   // needed to display previous fee while reloading
@@ -122,9 +144,12 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     () =>
       FP.pipe(
         oFees,
-        O.map((fees) => fees[selectedFeeOption])
+        O.map((fees) => {
+          setAssetFee(new CryptoAmount(fees[selectedFeeOption], asset))
+          return fees[selectedFeeOption]
+        })
       ),
-    [oFees, selectedFeeOption]
+    [asset, oFees, selectedFeeOption]
   )
 
   const oAssetAmount: O.Option<BaseAmount> = useMemo(() => {
@@ -182,40 +207,25 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     [intl]
   )
 
-  const renderFeeOptions = useMemo(() => {
-    const onChangeHandler = (e: RadioChangeEvent) => {
-      // Change amount back to `none` (ZERO) whenever selected fee is changed
-      // Just to avoid using a previous `max` value, which can be invalid now
-      setAmountToSend(O.none)
-      setSelectedFeeOption(e.target.value)
-    }
-    const disabled = !feesAvailable || isLoading
-
-    return (
-      <StyledR.Radio.Group onChange={onChangeHandler} value={selectedFeeOption} disabled={disabled}>
-        <StyledR.Radio value="fastest" key="fastest">
-          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['fastest']}</StyledR.RadioLabel>
-        </StyledR.Radio>
-        <StyledR.Radio value="fast" key="fast">
-          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['fast']}</StyledR.RadioLabel>
-        </StyledR.Radio>
-        <StyledR.Radio value="average" key="average">
-          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['average']}</StyledR.RadioLabel>
-        </StyledR.Radio>
-      </StyledR.Radio.Group>
-    )
-  }, [feeOptionsLabel, feesAvailable, isLoading, selectedFeeOption])
-
   const addressValidator = useCallback(
     async (_: unknown, value: string) => {
+      setWarningMessage('')
       if (!value) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.empty' }))
       }
       if (!validateAddress(value.toLowerCase())) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
+      if (InboundAddress === value) {
+        const type = 'Inbound'
+        setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
+      }
+      if (routerAddress === value) {
+        const type = 'Router'
+        return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
+      }
     },
-    [intl]
+    [InboundAddress, routerAddress, intl]
   )
 
   // max amount for eth
@@ -242,10 +252,41 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
     const fetchData = async () => {
       setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, AssetUSDC))
+      setFeePriceValue(await thorchainQuery.convert(assetFee, AssetUSDC))
     }
 
     fetchData()
-  }, [asset, thorchainQuery, maxAmount])
+  }, [asset, thorchainQuery, maxAmount, assetFee])
+
+  const priceFeeLabel = useMemo(() => {
+    if (!feePriceValue) {
+      return loadingString // or noDataString, depending on your needs
+    }
+
+    const fee = formatAssetAmountCurrency({
+      amount: assetFee.assetAmount,
+      asset: assetFee.asset,
+      decimal: isUSDAsset(assetFee.asset) ? 2 : 6,
+      trimZeros: !isUSDAsset(assetFee.asset)
+    })
+
+    const price = FP.pipe(
+      O.some(feePriceValue), // Assuming this is Option<CryptoAmount>
+      O.map((cryptoAmount: CryptoAmount) =>
+        eqAsset(asset, cryptoAmount.asset)
+          ? ''
+          : formatAssetAmountCurrency({
+              amount: cryptoAmount.assetAmount,
+              asset: cryptoAmount.asset,
+              decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
+              trimZeros: !isUSDAsset(cryptoAmount.asset)
+            })
+      ),
+      O.getOrElse(() => '')
+    )
+
+    return price ? `${price} (${fee}) ` : fee
+  }, [feePriceValue, assetFee, asset])
 
   useEffect(() => {
     FP.pipe(
@@ -295,9 +336,11 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   const onChangeAddress = useCallback(
     async ({ target }: React.ChangeEvent<HTMLInputElement>) => {
       const address = target.value
+
       // we have to validate input before storing into the state
       addressValidator(undefined, address)
         .then(() => {
+          setShowDetails(true)
           setSendAddress(O.some(address))
         })
         .catch(() => setSendAddress(O.none))
@@ -306,15 +349,17 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   )
 
   const reloadFees = useCallback(() => {
-    FP.pipe(
+    //const checkMemo = form.getFieldValue('memo')
+    const result = FP.pipe(
       sequenceTOption(amountToSend, sendAddress),
       O.map(([amount, recipient]) => {
-        reloadFeesHandler({ asset, amount, recipient, memo: form.getFieldValue('memo') })
+        reloadFeesHandler({ amount, recipient, asset, memo: form.getFieldValue('memo') })
         return true
-      })
+      }),
+      O.getOrElse(() => false)
     )
 
-    return false
+    return result
   }, [amountToSend, sendAddress, reloadFeesHandler, asset, form])
 
   // only render memo field for chain asset.
@@ -333,6 +378,8 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
   // Send tx start time
   const [sendTxStartTime, setSendTxStartTime] = useState<number>(0)
+
+  const [showDetails, setShowDetails] = useState<boolean>(false)
 
   // State for visibility of Modal to confirm tx
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
@@ -466,12 +513,49 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     () =>
       FP.pipe(
         feesRD,
-        RD.map((fees) => [{ asset: getChainAsset(asset.chain), amount: fees[selectedFeeOption] }])
+        RD.map((fees) => [{ asset: getChainAsset(asset.chain), amount: fees[selectedFeeOption] }]),
+        RD.mapLeft((error) => {
+          // Transform the error but do not perform side effects here
+          return new Error(`${error.message.split(':')[0]}`) // Example transformation
+        })
       ),
     [asset.chain, feesRD, selectedFeeOption]
   )
 
+  // Use useEffect to handle the side effect based on the error state
+  useEffect(() => {
+    if (RD.isFailure(uiFeesRD)) {
+      // Perform the side effect when there is an error
+      setSendAddress(O.none)
+      setAmountToSend(O.none)
+      reloadFees()
+    }
+    // Add uiFeesRD as a dependency to trigger the effect when it changes
+  }, [uiFeesRD, form, asset.chain, reloadFees])
+
   const addMaxAmountHandler = useCallback(() => setAmountToSend(O.some(maxAmount)), [maxAmount])
+
+  const renderFeeOptions = useMemo(() => {
+    const onChangeHandler = (e: RadioChangeEvent) => {
+      setSelectedFeeOption(e.target.value)
+      setAmountToSend(O.some(maxAmount))
+    }
+    const disabled = !feesAvailable || isLoading
+
+    return (
+      <StyledR.Radio.Group onChange={onChangeHandler} value={selectedFeeOption} disabled={disabled}>
+        <StyledR.Radio value="average" key="average">
+          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['average']}</StyledR.RadioLabel>
+        </StyledR.Radio>
+        <StyledR.Radio value="fast" key="fast">
+          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['fast']}</StyledR.RadioLabel>
+        </StyledR.Radio>
+        <StyledR.Radio value="fastest" key="fastest">
+          <StyledR.RadioLabel disabled={disabled}>{feeOptionsLabel['fastest']}</StyledR.RadioLabel>
+        </StyledR.Radio>
+      </StyledR.Radio.Group>
+    )
+  }, [feeOptionsLabel, feesAvailable, isLoading, maxAmount, selectedFeeOption])
 
   const [recipientAddress, setRecipientAddress] = useState<Address>('')
   const handleOnKeyUp = useCallback(() => {
@@ -509,11 +593,11 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
                 color="primary"
                 size="large"
                 disabled={isLoading}
-                onBlur={reloadFees}
                 onChange={onChangeAddress}
                 onKeyUp={handleOnKeyUp}
               />
             </Form.Item>
+            {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d ">{warningMessage}</div>}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
             <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">
               <InputBigNumber
@@ -521,7 +605,6 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
                 size="large"
                 disabled={isLoading}
                 decimal={balance.amount.decimal}
-                onBlur={reloadFees}
                 onChange={onChangeInput}
               />
             </Styled.FormItem>
@@ -547,7 +630,43 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
             {intl.formatMessage({ id: 'wallet.action.send' })}
           </FlatButton>
         </Styled.Form>
+        <div className="w-full pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
+          {/* memo */}
+          <div className={`my-20px w-full font-main text-[12px] uppercase dark:border-gray1d`}>
+            <BaseButton
+              className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+              onClick={() => setShowDetails((current) => !current)}>
+              {intl.formatMessage({ id: 'common.details' })}
+              {showDetails ? (
+                <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+              ) : (
+                <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
+              )}
+            </BaseButton>
+            {showDetails && (
+              <>
+                <div className="flex w-full items-center justify-between text-[14px] text-gray2 dark:text-gray2d">
+                  <div className="font-mainBold ">{intl.formatMessage({ id: 'common.recipient' })}</div>
+                  <div className="truncate text-[13px] normal-case leading-normal">
+                    {form.getFieldValue('recipient')}
+                  </div>
+                </div>
+                <div className="flex w-full justify-between ">
+                  <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.fee' })}</div>
+                  <div>{priceFeeLabel}</div>
+                </div>
+                <div className="flex w-full items-center justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                  {intl.formatMessage({ id: 'common.memo' })}
+                  <div className="truncate pl-10px font-main text-[12px] leading-normal">
+                    {form.getFieldValue('memo')}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </Styled.Container>
+
       {showConfirmationModal && renderConfirmationModal}
       {renderTxModal}
     </>

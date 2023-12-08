@@ -6,6 +6,8 @@ const savers: SaversMessages = {
   'savers.detail.current.title': 'Сколько внесено',
   'savers.detail.redeem.title': 'Сколько заберёшь',
   'savers.detail.percent': 'Рост',
+  'savers.detail.assetAmount': 'Сумма Актива',
+  'savers.detail.priceGrowth': 'Рост цены',
   'savers.info.max.redeem.value': 'Максимальная сумма для вывода',
   'savers.info.max.balance': 'Максимальный баланс',
   'savers.add.state.sending': 'Отправка транзакции на добавление сберегателя',

@@ -40,7 +40,6 @@ import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { addressFromOptionalWalletAddress, getWalletAddressFromNullableString } from '../../helpers/walletHelper'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
-import { useOpenAddressUrl } from '../../hooks/useOpenAddressUrl'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../hooks/useValidateAddress'
 import { swap } from '../../routes/pools'
@@ -90,7 +89,15 @@ const SuccessRouteView: React.FC<Props> = ({
 
   const { service: midgardService } = useMidgardContext()
   const {
-    pools: { poolsState$, reloadPools, selectedPoolAddress$, selectedPricePool$, haltedChains$ },
+    pools: {
+      poolsState$,
+      reloadPools,
+      reloadSelectedPoolDetail,
+      selectedPoolAddress$,
+      selectedPricePool$,
+      haltedChains$,
+      pendingPoolsState$
+    },
     setSelectedPoolAsset
   } = midgardService
 
@@ -114,6 +121,7 @@ const SuccessRouteView: React.FC<Props> = ({
   const keystore = useObservableState(keystoreState$, O.none)
 
   const poolsState = useObservableState(poolsState$, RD.initial)
+  const pendingPoolsState = useObservableState(pendingPoolsState$, RD.initial)
 
   useEffect(() => {
     // Source asset is the asset of the pool we need to interact with
@@ -208,16 +216,16 @@ const SuccessRouteView: React.FC<Props> = ({
     }
   }, [sourceChain, targetChain, reloadBalancesByChain])
 
-  useEffect(() => {
-    // reload balances, whenever sourceAsset and targetAsset have been changed (both are properties of `reloadBalances` )
-    reloadBalances()
-  }, [reloadBalances])
+  // useEffect(() => {
+  //   // reload balances, whenever sourceAsset and targetAsset have been changed (both are properties of `reloadBalances` )
+  //   reloadBalances()
+  // }, [reloadBalances])
 
   const reloadHandler = useCallback(() => {
     reloadBalances()
-    reloadPools()
+    reloadSelectedPoolDetail()
     reloadInboundAddresses()
-  }, [reloadBalances, reloadInboundAddresses, reloadPools])
+  }, [reloadBalances, reloadInboundAddresses, reloadSelectedPoolDetail])
 
   const getStoredSlipTolerance = (): SlipTolerance =>
     FP.pipe(
@@ -316,7 +324,6 @@ const SuccessRouteView: React.FC<Props> = ({
   )
 
   const { validateSwapAddress } = useValidateAddress(targetChain)
-  const openAddressUrl = useOpenAddressUrl(targetChain)
 
   return (
     <>
@@ -330,23 +337,25 @@ const SuccessRouteView: React.FC<Props> = ({
 
       <div className="flex justify-center bg-bg0 dark:bg-bg0d">
         {FP.pipe(
-          sequenceTRD(poolsState, sourceAssetRD, targetAssetRD),
+          sequenceTRD(poolsState, sourceAssetRD, targetAssetRD, pendingPoolsState),
           RD.fold(
             () => <></>,
             () => (
-              <div className="flex min-h-[600px] w-full items-center justify-center">
-                <Spin size="large" />
+              <div className="my-50px flex w-full max-w-[500px] flex-col justify-between">
+                <Spin />
               </div>
             ),
             renderError,
-            ([{ assetDetails, poolsData, poolDetails }, sourceAsset, targetAsset]) => {
+            ([{ assetDetails, poolsData, poolDetails }, sourceAsset, targetAsset, pendingPools]) => {
+              const combinedAssetDetails = [...assetDetails, ...pendingPools.assetDetails]
+
               const hasRuneAsset = FP.pipe(
-                assetDetails,
+                combinedAssetDetails,
                 A.map(({ asset }) => asset),
                 assetInList(AssetRuneNative)
               )
               if (!hasRuneAsset) {
-                assetDetails = [{ asset: AssetRuneNative, assetPrice: bn(1) }, ...assetDetails]
+                assetDetails = [{ asset: AssetRuneNative, assetPrice: bn(1) }, ...combinedAssetDetails]
               }
               const sourceAssetDetail = FP.pipe(Utils.pickPoolAsset(assetDetails, sourceAsset.asset), O.toNullable)
               // Make sure sourceAsset is available in pools
@@ -413,7 +422,6 @@ const SuccessRouteView: React.FC<Props> = ({
                   approveERC20Token$={approveERC20Token$}
                   isApprovedERC20Token$={isApprovedERC20Token$}
                   importWalletHandler={importWalletHandler}
-                  clickAddressLinkHandler={openAddressUrl}
                   addressValidator={validateSwapAddress}
                   // TODO (@veado) Handle private data
                   hidePrivateData={false}

@@ -2,7 +2,7 @@ import { DepositMessages } from '../types'
 
 const deposit: DepositMessages = {
   'deposit.interact.title': 'Deposit',
-  'deposit.interact.subtitle': 'Interact with THORchain',
+  'deposit.interact.subtitle': 'Interact with {chain}Chain',
   'deposit.interact.label.bondprovider': 'Bond provider (optional)',
   'deposit.interact.actions.bond': 'Bond',
   'deposit.interact.actions.unbond': 'Unbond',

@@ -1,10 +1,12 @@
 import React, { useMemo } from 'react'
 
+import { Chain } from '@xchainjs/xchain-util'
 import { useIntl } from 'react-intl'
 
 import { Network } from '../../../../../shared/api/types'
 import { isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
+import { getChainAsset, isThorChain } from '../../../../helpers/chainHelper'
 import * as Styled from './Interact.styles'
 import { InteractType } from './Interact.types'
 
@@ -14,26 +16,35 @@ type Props = {
   interactTypeChanged: (type: InteractType) => void
   walletType: WalletType
   network: Network
+  chain: Chain
 }
 
-export const Interact: React.FC<Props> = ({ interactType, interactTypeChanged, network, walletType, children }) => {
+export const Interact: React.FC<Props> = ({
+  interactType,
+  interactTypeChanged,
+  network,
+  walletType,
+  chain,
+  children
+}) => {
   const intl = useIntl()
-
+  const name = isThorChain(chain) ? 'thorname' : 'mayaname'
   const tabs: Array<{ type: InteractType; label: string }> = useMemo(
     () => [
       { type: 'bond', label: intl.formatMessage({ id: 'deposit.interact.actions.bond' }) },
       { type: 'unbond', label: intl.formatMessage({ id: 'deposit.interact.actions.unbond' }) },
       { type: 'leave', label: intl.formatMessage({ id: 'deposit.interact.actions.leave' }) },
       { type: 'custom', label: intl.formatMessage({ id: 'common.custom' }) },
-      { type: 'thorname', label: intl.formatMessage({ id: 'common.thorname' }) }
+      { type: `${name}`, label: intl.formatMessage({ id: `common.${name}` }) }
     ],
-    [intl]
+    [intl, name]
   )
+  const asset = getChainAsset(chain)
 
   return (
     <Styled.Container>
       <Styled.Header>
-        <Styled.AssetIcon network={network} />
+        <Styled.AssetIcon network={network} asset={asset} />
         <div>
           <Styled.HeaderTitleWrapper>
             <Styled.HeaderTitle>{intl.formatMessage({ id: 'deposit.interact.title' })}</Styled.HeaderTitle>
@@ -41,7 +52,9 @@ export const Interact: React.FC<Props> = ({ interactType, interactTypeChanged, n
               <Styled.WalletTypeLabel>{intl.formatMessage({ id: 'ledger.title' })}</Styled.WalletTypeLabel>
             )}
           </Styled.HeaderTitleWrapper>
-          <Styled.HeaderSubtitle>{intl.formatMessage({ id: 'deposit.interact.subtitle' })}</Styled.HeaderSubtitle>
+          <Styled.HeaderSubtitle>
+            {intl.formatMessage({ id: 'deposit.interact.subtitle' }, { chain: chain })}
+          </Styled.HeaderSubtitle>
         </div>
       </Styled.Header>
       <Styled.FormWrapper>

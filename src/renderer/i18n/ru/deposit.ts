@@ -8,7 +8,7 @@ const deposit: DepositMessages = {
   'deposit.interact.actions.checkThorname': 'Проверить доступность',
   'deposit.interact.actions.addBondProvider': 'Добавить поставщика обеспечения',
   'deposit.interact.title': 'Вклад',
-  'deposit.interact.subtitle': 'Взаимодействие с THORСhain',
+  'deposit.interact.subtitle': 'Взаимодействие с {chain}Chain',
   'deposit.interact.label.bondprovider': 'Поставщик бондов (опционально)',
   'deposit.share.title': 'Ваша общая доля в пуле',
   'deposit.share.units': 'Единицы ликвидности',

@@ -3,6 +3,7 @@ import { CommonMessages } from '../types'
 const common: CommonMessages = {
   'common.stats': 'Stats',
   'common.network': 'Network',
+  'common.dex': 'Dex',
   'common.faqs': 'FAQs',
   'common.greeting': 'Hello {name}',
   'common.copyright': '©',
@@ -13,6 +14,7 @@ const common: CommonMessages = {
   'common.thornameRegistrationSpecifics':
     'THORNames allow anyone to register cross-chain wallet addresses to a 1-30 long string of hexadecimal characters which include special characters -_+. THORNames are limited to 30 characters, including ^[a-zA-Z0-9+_-]+$',
   'common.thornameError': 'THORName not available',
+  'common.mayaname': 'MAYAName',
   'common.owner': 'Owner',
   'common.preferredAsset': 'Preferred Asset',
   'common.expirationBlock': 'Expiry Block',
@@ -111,6 +113,7 @@ const common: CommonMessages = {
   'common.modal.confirmTitle': 'Confirm action',
   'common.value': 'Value',
   'common.manage': 'Manage Lp',
+  'common.managePosition': 'Manage Position',
   'common.analytics': 'Analytics',
   'common.asset.base': 'Base',
   'common.asset.change': 'Change asset',

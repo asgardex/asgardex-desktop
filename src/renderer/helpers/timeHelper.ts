@@ -1,3 +1,4 @@
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { DefaultChainAttributes } from '@xchainjs/xchain-thorchain-query'
 import { Asset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
@@ -37,7 +38,9 @@ export const calculateTransactionTime = (sourceChain: string, txDetails?: QuoteD
     outbound: txDetails ? txDetails.outboundDelaySeconds : 0,
     totalSwap: txDetails ? txDetails.totalTransactionSeconds : 0,
     streaming: txDetails ? txDetails.streamingTransactionSeconds : 0,
-    confirmation: targetAsset ? DefaultChainAttributes[targetAsset.chain].avgBlockTimeInSecs : 0
+    confirmation: targetAsset
+      ? DefaultChainAttributes[targetAsset.synth ? THORChain : targetAsset.chain].avgBlockTimeInSecs
+      : 0
   }
 }
 

@@ -44,7 +44,14 @@ export const ViewRoutes: React.FC<{}> = (): JSX.Element => {
 
       <Route path={poolsRoutes.detail.template} element={<PoolDetailsView />} />
       <Route path={poolsRoutes.swap.template} element={<SwapView />} />
-      <Route path={saversRoutes.earn.template} element={<SaversView />} />
+      <Route
+        path={saversRoutes.earn.template}
+        element={
+          <WalletAuth>
+            <SaversView />
+          </WalletAuth>
+        }
+      />
       <Route path={saversRoutes.withdraw.template} element={<SaversView />} />
       <Route
         path={poolsRoutes.deposit.template}

@@ -7,6 +7,7 @@ import { AssetATOM, GAIAChain } from '@xchainjs/xchain-cosmos'
 import { AssetDOGE, DOGEChain } from '@xchainjs/xchain-doge'
 import { AssetETH, ETHChain } from '@xchainjs/xchain-ethereum'
 import { AssetLTC, LTCChain } from '@xchainjs/xchain-litecoin'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Chain } from '@xchainjs/xchain-util'
 
@@ -29,6 +30,8 @@ export const getChainAsset = (chain: Chain): Asset => {
       return AssetBSC
     case THORChain:
       return AssetRuneNative
+    case MAYAChain:
+      return AssetCacao
     case GAIAChain:
       return AssetATOM
     case BCHChain:
@@ -54,6 +57,11 @@ export const isLtcChain = (chain: Chain): boolean => eqChain.equals(chain, LTCCh
  * Check whether chain is THOR chain
  */
 export const isThorChain = (chain: Chain): boolean => eqChain.equals(chain, THORChain)
+
+/**
+ * Check whether chain is MAYA chain
+ */
+export const isMayaChain = (chain: Chain): boolean => eqChain.equals(chain, MAYAChain)
 
 /**
  * Check whether chain is BNB chain

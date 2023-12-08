@@ -59,13 +59,23 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
     () =>
       FP.pipe(
         assets,
-        A.filter((asset) =>
-          searchValue
-            ? searchValue.toLowerCase() === 'synth?'
-              ? asset.synth
-              : assetToString(asset).toLowerCase().includes(searchValue.toLowerCase())
-            : true
-        )
+        A.filter((asset) => {
+          // Check if a search value is entered
+          if (searchValue) {
+            const lowerSearchValue = searchValue.toLowerCase()
+            // Check if the search value starts with 'synth'
+            if (lowerSearchValue.startsWith('synth')) {
+              // Extract the term after 'synth' keyword
+              const searchTerm = lowerSearchValue.replace('synth', '').trim()
+              // Check if the asset is synthetic and if it includes the search term
+              return asset.synth && (searchTerm ? assetToString(asset).toLowerCase().includes(searchTerm) : true)
+            }
+            // If the search value doesn't start with 'synth', perform a normal search
+            return assetToString(asset).toLowerCase().includes(lowerSearchValue)
+          }
+          // If there's no search value, return all assets
+          return true
+        })
       ),
     [assets, searchValue]
   )
@@ -98,6 +108,7 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
                       onClick={() => handleChangeAsset(assetInList)}
                       disabled={selected}>
                       <AssetData asset={assetInList} network={network} className="" />
+
                       {selected && <CheckIcon className="h-20px w-20px  text-turquoise" />}
                     </BaseButton>
                   )

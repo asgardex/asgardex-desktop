@@ -9,7 +9,7 @@ import { useIntl } from 'react-intl'
 import { useMatch, Link, useNavigate, useLocation } from 'react-router-dom'
 import { palette, size } from 'styled-theme'
 
-import { Network } from '../../../shared/api/types'
+import { Dex, Network } from '../../../shared/api/types'
 import { ReactComponent as CloseIcon } from '../../assets/svg/icon-close.svg'
 import { ReactComponent as MenuIcon } from '../../assets/svg/icon-menu.svg'
 import { ReactComponent as SwapIcon } from '../../assets/svg/icon-swap.svg'
@@ -49,6 +49,7 @@ export type Props = {
   keystore: KeystoreState
   wallets: KeystoreWalletsUI
   network: Network
+  dex: Dex
   lockHandler: FP.Lazy<void>
   changeWalletHandler$: ChangeKeystoreWalletHandler
   setSelectedPricePool: (asset: PricePoolAsset) => void
@@ -63,6 +64,8 @@ export type Props = {
   midgardUrl: MidgardUrlRD
   thorchainNodeUrl: string
   thorchainRpcUrl: string
+  mayachainNodeUrl: string
+  mayachainRpcUrl: string
 }
 
 export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
@@ -70,6 +73,7 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
     keystore,
     wallets,
     network,
+    dex,
     pricePools: oPricePools,
     runePrice: runePriceRD,
     midgardStatus: midgardStatusRD,
@@ -83,7 +87,9 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
     setSelectedPricePool,
     midgardUrl: midgardUrlRD,
     thorchainNodeUrl,
-    thorchainRpcUrl
+    thorchainRpcUrl,
+    mayachainNodeUrl,
+    mayachainRpcUrl
   } = props
 
   const intl = useIntl()
@@ -256,9 +262,20 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
         midgardUrl={midgardUrlRD}
         thorchainNodeUrl={thorchainNodeUrl}
         thorchainRpcUrl={thorchainRpcUrl}
+        mayachainNodeUrl={mayachainNodeUrl}
+        mayachainRpcUrl={mayachainRpcUrl}
       />
     ),
-    [midgardStatusRD, isDesktopView, midgardUrlRD, mimirRD, thorchainNodeUrl, thorchainRpcUrl]
+    [
+      isDesktopView,
+      midgardStatusRD,
+      mimirRD,
+      midgardUrlRD,
+      thorchainNodeUrl,
+      thorchainRpcUrl,
+      mayachainNodeUrl,
+      mayachainRpcUrl
+    ]
   )
 
   const iconStyle = { fontSize: '1.5em', marginRight: '20px' }
@@ -291,10 +308,11 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
     () => (
       <Styled.LogoWrapper>
         <Styled.AsgardexLogo />
+        <Styled.DexLabel dex={dex}>{dex}</Styled.DexLabel>
         <Styled.NetworkLabel network={network}>{network}</Styled.NetworkLabel>
       </Styled.LogoWrapper>
     ),
-    [network]
+    [network, dex]
   )
   return (
     <>

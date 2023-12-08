@@ -2,6 +2,7 @@ import { PoolsStorageEncoded } from './api/io'
 import { StoreFilesContent, UserNodesStorage } from './api/types'
 import { DEFAULT_EVM_HD_MODE } from './evm/types'
 import { DEFAULT_LOCALE } from './i18n/const'
+import { DEFAULT_MAYANODE_API_URLS, DEFAULT_MAYANODE_RPC_URLS } from './mayachain/const'
 import { DEFAULT_MIDGARD_URLS } from './midgard/const'
 import { DEFAULT_THORNODE_API_URLS, DEFAULT_THORNODE_RPC_URLS } from './thorchain/const'
 
@@ -18,7 +19,7 @@ export const NINE_REALMS_CLIENT_HEADER = 'x-client-id'
 
 export enum ExternalUrl {
   DOCS = 'https://docs.thorchain.org',
-  DISCORD = 'https://discord.gg/XjV3Hnud',
+  DISCORD = 'https://discord.gg/hkeJxHS7d7',
   GITHUB_REPO = `https://github.com/asgardex/asgardex-desktop`,
   GITHUB_RELEASE = `https://github.com/asgardex/asgardex-desktop/releases/tag/v`,
   TWITTER = 'https://twitter.com/asgardex'
@@ -59,7 +60,9 @@ export const DEFAULT_STORAGES: StoreFilesContent = {
     locale: DEFAULT_LOCALE,
     midgard: DEFAULT_MIDGARD_URLS,
     thornodeApi: DEFAULT_THORNODE_API_URLS,
-    thornodeRpc: DEFAULT_THORNODE_RPC_URLS
+    thornodeRpc: DEFAULT_THORNODE_RPC_URLS,
+    mayanodeApi: DEFAULT_MAYANODE_API_URLS,
+    mayanodeRpc: DEFAULT_MAYANODE_RPC_URLS
   },
   userNodes: USER_NODES_STORAGE_DEFAULT,
   pools: POOLS_STORAGE_DEFAULT

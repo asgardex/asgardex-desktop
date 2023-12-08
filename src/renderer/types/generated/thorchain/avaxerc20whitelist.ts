@@ -366,6 +366,17 @@ export const AVAX_TOKEN_WHITELIST: {
   {
     asset: {
       chain: AVAXChain,
+      symbol: "USDC-0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
+      ticker: "USDC",
+      synth: true,
+    },
+    iconUrl: O.some(
+      "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: AVAXChain,
       symbol: "H2O-0x026187BdbC6b751003517bcb30Ac7817D5B766f8",
       ticker: "H2O",
       synth: false,

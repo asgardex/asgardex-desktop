@@ -12,7 +12,15 @@ import { WalletAddress, WalletType } from '../../shared/wallet/types'
 import { ZERO_ASSET_AMOUNT } from '../const'
 import { WalletBalances } from '../services/clients'
 import { NonEmptyWalletBalances, WalletBalance } from '../services/wallet/types'
-import { isAvaxAsset, isBnbAsset, isBscAsset, isEthAsset, isLtcAsset, isRuneNativeAsset } from './assetHelper'
+import {
+  isAvaxAsset,
+  isBnbAsset,
+  isBscAsset,
+  isEthAsset,
+  isLtcAsset,
+  isRuneNativeAsset,
+  isCacaoAsset
+} from './assetHelper'
 import { isBchChain, isDogeChain, isLtcChain, isThorChain } from './chainHelper'
 import { eqAddress, eqAsset, eqWalletType } from './fp/eq'
 
@@ -135,6 +143,9 @@ export const getLtcAmountFromBalances = (balances: WalletBalances): O.Option<Ass
 
 export const getRuneNativeAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
   getAssetAmountFromBalances(balances, isRuneNativeAsset)
+
+export const getCacaoAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
+  getAssetAmountFromBalances(balances, isCacaoAsset)
 
 export const filterWalletBalancesByAssets = (balances: NonEmptyWalletBalances, assets: Asset[]): WalletBalances => {
   return balances.filter((balance) => {

@@ -39,6 +39,7 @@ export const useTotalWalletBalance = () => {
             A.filter(({ balancesType }) => balancesType === 'all'),
             // Get balances from `ChainBalance`
             A.map(({ balances }) => balances),
+
             // Get sequence of all balances
             (walletBalances) => sequenceTRDFromArray(walletBalances),
             // Transform error `ApiError` -> `Error`

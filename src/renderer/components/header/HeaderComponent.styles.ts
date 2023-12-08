@@ -3,7 +3,7 @@ import Text from 'antd/lib/typography/Text'
 import styled from 'styled-components'
 import { palette, size } from 'styled-theme'
 
-import { Network } from '../../../shared/api/types'
+import { Dex, Network } from '../../../shared/api/types'
 import { ReactComponent as UIAsgardexLogo } from '../../assets/svg/logo-asgardex.svg'
 import { media } from '../../helpers/styleHelper'
 
@@ -67,6 +67,27 @@ export const HeaderContainer = styled(Layout.Header)`
 
 export const AsgardexLogo = styled(UIAsgardexLogo)`
   margin-top: 8px;
+`
+
+export const DexLabel = styled(Text)<{ dex: Dex }>`
+  position: absolute;
+  left: 88px;
+  bottom: -13px;
+  text-transform: uppercase;
+  padding: 0;
+  font-family: 'MainFontRegular';
+  font-size: 12px;
+
+  color: ${({ dex }) => {
+    switch (dex) {
+      case 'THOR':
+        return palette('primary', 0)
+      case 'MAYA':
+        return palette('primary', 0)
+      default:
+        return palette('text', 2)
+    }
+  }};
 `
 
 export const NetworkLabel = styled(Text)<{ network: Network }>`

@@ -13,6 +13,8 @@ import { IPCLedgerAddressesIO, KeystoreWallets, PoolsStorageEncoded } from './io
 
 export type Network = 'testnet' | 'stagenet' | 'mainnet'
 
+export type Dex = 'THOR' | 'MAYA'
+
 // A version number starting from `1` to avoid to load deprecated files
 export type StorageVersion = { version: string }
 export type ApiUrls = Record<Network, string>
@@ -24,6 +26,8 @@ export type CommonStorage = Readonly<
     midgard: ApiUrls
     thornodeRpc: ApiUrls
     thornodeApi: ApiUrls
+    mayanodeRpc: ApiUrls
+    mayanodeApi: ApiUrls
   } & StorageVersion
 >
 

@@ -27,6 +27,7 @@ const swap: SwapMessages = {
   'swap.note.nowallet': 'Créez ou importez un portefeuille pour échanger',
   'swap.errors.asset.missingSourceAsset': 'Actif source manquant',
   'swap.errors.asset.missingTargetAsset': 'Actif cible manquant',
+  'swap.errors.pool.notAvailable': 'Pool non disponible',
   'swap.min.amount.info':
     'Valeur minimale à échanger pour couvrir tous les frais des transactions entrantes et sortantes.',
   'swap.min.result.info':

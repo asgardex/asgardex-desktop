@@ -49,6 +49,7 @@ export const Table = styled(UITable)`
       background: none !important;
       color: ${palette('gray', 2)};
       font-weight: 300;
+      text-align: center;
 
       &:hover {
         background: none !important;

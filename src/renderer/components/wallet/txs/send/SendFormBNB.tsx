@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { Address, BNBChain } from '@xchainjs/xchain-binance'
 import { CryptoAmount, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
@@ -10,7 +11,8 @@ import {
   baseToAsset,
   assetToBase,
   BaseAmount,
-  baseAmount
+  baseAmount,
+  eqAsset
 } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
 import BigNumber from 'bignumber.js'
@@ -23,8 +25,9 @@ import { AssetBNB } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { AssetUSDC, ZERO_BASE_AMOUNT } from '../../../../const'
-import { BNB_DECIMAL, isBnbAsset } from '../../../../helpers/assetHelper'
+import { BNB_DECIMAL, isBnbAsset, isUSDAsset } from '../../../../helpers/assetHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
+import { loadingString } from '../../../../helpers/stringHelper'
 import { getBnbAmountFromBalances } from '../../../../helpers/walletHelper'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
@@ -33,10 +36,10 @@ import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances 
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
-import { FlatButton } from '../../../uielements/button'
+import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { UIFeesRD } from '../../../uielements/fees'
-import { Input, InputBigNumber } from '../../../uielements/input'
+import { InputBigNumber } from '../../../uielements/input'
 import { AccountSelector } from '../../account'
 import * as H from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
@@ -95,6 +98,14 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
   const isLoading = useMemo(() => RD.isPending(sendTxState.status), [sendTxState.status])
 
   const [form] = Form.useForm<FormValues>()
+  const [showDetails, setShowDetails] = useState<boolean>(false)
+  const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+
+  const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+
+  const [InboundAddress, setInboundAddress] = useState<string>('')
+
+  const [warningMessage, setWarningMessage] = useState<string>('')
 
   const oBnbAmount: O.Option<BaseAmount> = useMemo(() => {
     // return balance of current asset (if BNB)
@@ -117,6 +128,16 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
       )
     )
   }, [oBnbAmount, oFee])
+
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const fetchData = async () => {
+      const inboundDetails = await thorchainQuery.thorchainCache.getInboundDetails()
+      setInboundAddress(inboundDetails[BNBChain].address)
+    }
+
+    fetchData()
+  }, [thorchainQuery])
 
   const renderFeeError = useMemo(() => {
     if (!isFeeError) return <></>
@@ -149,6 +170,10 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
       if (!addressValidation(value.toLowerCase())) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
+      if (InboundAddress === value) {
+        const type = 'Inbound'
+        setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
+      }
     },
     [addressValidation, intl]
   )
@@ -176,10 +201,41 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
     const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
     const fetchData = async () => {
       setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, AssetUSDC))
+      setFeePriceValue(await thorchainQuery.convert(assetFee, AssetUSDC))
     }
 
     fetchData()
-  }, [asset, maxAmount, thorchainQuery])
+  }, [asset, assetFee, maxAmount, thorchainQuery])
+
+  const priceFeeLabel = useMemo(() => {
+    if (!feePriceValue) {
+      return loadingString // or noDataString, depending on your needs
+    }
+
+    const fee = formatAssetAmountCurrency({
+      amount: assetFee.assetAmount,
+      asset: assetFee.asset,
+      decimal: isUSDAsset(assetFee.asset) ? 2 : 6,
+      trimZeros: !isUSDAsset(assetFee.asset)
+    })
+
+    const price = FP.pipe(
+      O.some(feePriceValue), // Assuming this is Option<CryptoAmount>
+      O.map((cryptoAmount: CryptoAmount) =>
+        eqAsset(asset, cryptoAmount.asset)
+          ? ''
+          : formatAssetAmountCurrency({
+              amount: cryptoAmount.assetAmount,
+              asset: cryptoAmount.asset,
+              decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
+              trimZeros: !isUSDAsset(cryptoAmount.asset)
+            })
+      ),
+      O.getOrElse(() => '')
+    )
+
+    return price ? `${price} (${fee}) ` : fee
+  }, [feePriceValue, assetFee, asset])
 
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field
@@ -289,10 +345,13 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
     () =>
       FP.pipe(
         feeRD,
-        RD.map((fee) => [{ asset: AssetBNB, amount: fee }])
+        RD.map((fee) => {
+          setAssetFee(new CryptoAmount(fee, asset))
+          return [{ asset, amount: fee }]
+        })
       ),
 
-    [feeRD]
+    [asset, feeRD]
   )
 
   const onChangeInput = useCallback(
@@ -336,8 +395,9 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
               {renderWalletType}
             </Styled.CustomLabel>
             <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
-              <Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
+              <Styled.Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
             </Form.Item>
+            {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d ">{warningMessage}</div>}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
             <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">
               <InputBigNumber min={0} size="large" disabled={isLoading} decimal={8} onChange={onChangeInput} />
@@ -354,7 +414,7 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
             {renderFeeError}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
             <Form.Item name="memo">
-              <Input size="large" disabled={isLoading} />
+              <Styled.Input size="large" disabled={isLoading} />
             </Form.Item>
           </Styled.SubForm>
           <FlatButton
@@ -365,6 +425,41 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
             size="large">
             {intl.formatMessage({ id: 'wallet.action.send' })}
           </FlatButton>
+          <div className="w-full pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
+            {/* memo */}
+            <div className={`my-20px w-full font-main text-[12px] uppercase dark:border-gray1d`}>
+              <BaseButton
+                className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+                onClick={() => setShowDetails((current) => !current)}>
+                {intl.formatMessage({ id: 'common.details' })}
+                {showDetails ? (
+                  <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+                ) : (
+                  <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
+                )}
+              </BaseButton>
+              {showDetails && (
+                <>
+                  <div className="flex w-full items-center justify-between text-[14px] text-gray2 dark:text-gray2d">
+                    <div className="font-mainBold ">{intl.formatMessage({ id: 'common.recipient' })}</div>
+                    <div className="truncate text-[13px] normal-case leading-normal">
+                      {form.getFieldValue('recipient')}
+                    </div>
+                  </div>
+                  <div className="flex w-full justify-between ">
+                    <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.fee' })}</div>
+                    <div>{priceFeeLabel}</div>
+                  </div>
+                  <div className="flex w-full items-center justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                    {intl.formatMessage({ id: 'common.memo' })}
+                    <div className="truncate pl-10px font-main text-[12px] leading-normal">
+                      {form.getFieldValue('memo')}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </Styled.Form>
       </Styled.Container>
       {showConfirmationModal && renderConfirmationModal}

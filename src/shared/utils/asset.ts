@@ -7,6 +7,7 @@ import { AssetATOM } from '@xchainjs/xchain-cosmos'
 import { AssetDOGE } from '@xchainjs/xchain-doge'
 import { AssetETH } from '@xchainjs/xchain-ethereum'
 import { AssetLTC } from '@xchainjs/xchain-litecoin'
+import { AssetCacao, AssetMaya } from '@xchainjs/xchain-mayachain'
 import {
   AssetRune67C,
   AssetRuneB1A,
@@ -20,13 +21,32 @@ const AssetSynthBtc = assetFromStringEx('BTC/BTC')
 const AssetSynthBnb = assetFromStringEx('BNB/BNB')
 const AssetSynthBusd = assetFromStringEx('BNB/BUSD-BD1')
 const AssetSynthEth = assetFromStringEx('ETH/ETH')
+const AssetSynthEthUsdc = assetFromStringEx('ETH/USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48')
+const AssetSynthLTC = assetFromStringEx('LTC/LTC')
+const AssetSynthAVAX = assetFromStringEx('AVAX/AVAX')
+const AssetSynthAVAXUSDC = assetFromStringEx('AVAX/USDC-0XB97EF9EF8734C71904D8002F8B6BC66DD9C48A6E')
+const AssetSynthATOM = assetFromStringEx('GAIA/ATOM')
+const AssetSynthDOGE = assetFromStringEx('DOGE/DOGE')
+const AssetSynthBCH = assetFromStringEx('BCH/BCH')
+const AssetSynthBSC = assetFromStringEx('BSC/BNB')
 
 // Re-export to have asset definition at one place only to handle xchain-* changes easily in the future
 export {
   AssetBTC,
+  AssetCacao,
+  AssetMaya,
   AssetSynthBtc,
   AssetSynthBnb,
   AssetSynthBusd,
+  AssetSynthLTC,
+  AssetSynthAVAX,
+  AssetSynthAVAXUSDC,
+  AssetSynthDOGE,
+  AssetSynthEth,
+  AssetSynthEthUsdc,
+  AssetSynthBCH,
+  AssetSynthATOM,
+  AssetSynthBSC,
   AssetBNB,
   AssetBCH,
   AssetATOM,
@@ -35,7 +55,6 @@ export {
   AssetBSC,
   AssetAVAX,
   AssetETH,
-  AssetSynthEth,
   AssetRune67C,
   AssetRuneB1A,
   AssetRuneNative,

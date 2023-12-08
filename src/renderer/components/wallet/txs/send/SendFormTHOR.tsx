@@ -4,7 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { CryptoAmount, ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
-import { Address, baseAmount } from '@xchainjs/xchain-util'
+import { Address, baseAmount, eqAsset } from '@xchainjs/xchain-util'
 import { formatAssetAmountCurrency, assetAmount, bn, assetToBase, BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
 import BigNumber from 'bignumber.js'
@@ -17,9 +17,9 @@ import { AssetRuneNative } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { AssetUSDC, ZERO_BASE_AMOUNT } from '../../../../const'
-import { isRuneNativeAsset, THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
+import { isRuneNativeAsset, isUSDAsset, THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
-import { noDataString } from '../../../../helpers/stringHelper'
+import { loadingString, noDataString } from '../../../../helpers/stringHelper'
 import { getRuneNativeAmountFromBalances } from '../../../../helpers/walletHelper'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
@@ -89,6 +89,10 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
   } = useSubscriptionState<SendTxState>(INITIAL_SEND_STATE)
 
   const isLoading = useMemo(() => RD.isPending(sendTxState.status), [sendTxState.status])
+
+  const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+
+  const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
   const [form] = Form.useForm<FormValues>()
 
@@ -203,10 +207,41 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
     const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
     const fetchData = async () => {
       setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, AssetUSDC))
+      setFeePriceValue(await thorchainQuery.convert(assetFee, AssetUSDC))
     }
 
     fetchData()
-  }, [asset, maxAmount, thorchainQuery])
+  }, [asset, assetFee, maxAmount, thorchainQuery])
+
+  const priceFeeLabel = useMemo(() => {
+    if (!feePriceValue) {
+      return loadingString // or noDataString, depending on your needs
+    }
+
+    const fee = formatAssetAmountCurrency({
+      amount: assetFee.assetAmount,
+      asset: assetFee.asset,
+      decimal: isUSDAsset(assetFee.asset) ? 2 : 6,
+      trimZeros: !isUSDAsset(assetFee.asset)
+    })
+
+    const price = FP.pipe(
+      O.some(feePriceValue), // Assuming this is Option<CryptoAmount>
+      O.map((cryptoAmount: CryptoAmount) =>
+        eqAsset(asset, cryptoAmount.asset)
+          ? ''
+          : formatAssetAmountCurrency({
+              amount: cryptoAmount.assetAmount,
+              asset: cryptoAmount.asset,
+              decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
+              trimZeros: !isUSDAsset(cryptoAmount.asset)
+            })
+      ),
+      O.getOrElse(() => '')
+    )
+
+    return price ? `${price} (${fee}) ` : fee
+  }, [feePriceValue, assetFee, asset])
 
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field
@@ -327,7 +362,10 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
     () =>
       FP.pipe(
         feeRD,
-        RD.map((fee) => [{ asset: AssetRuneNative, amount: fee }])
+        RD.map((fee) => {
+          setAssetFee(new CryptoAmount(fee, AssetRuneNative))
+          return [{ asset: AssetRuneNative, amount: fee }]
+        })
       ),
 
     [feeRD]
@@ -416,37 +454,49 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
             size="large">
             {intl.formatMessage({ id: 'wallet.action.send' })}
           </FlatButton>
-          <div className={`w-full pt-10 font-main text-[12px] uppercase dark:border-gray1d`}>
-            <BaseButton
-              className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
-              onClick={() => setShowDetails((current) => !current)}>
-              {intl.formatMessage({ id: 'common.details' })}
-              {showDetails ? (
-                <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
-              ) : (
-                <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
-              )}
-            </BaseButton>
-          </div>
-          {showDetails && (
-            <>
-              {/* recipient address */}
-              <div className="flex w-full items-center justify-between pl-10px text-[12px] dark:text-text2d">
-                <div>{intl.formatMessage({ id: 'common.recipient' })}</div>
-                <div className="truncate pl-20px text-[13px] normal-case leading-normal">
-                  {FP.pipe(
-                    oThorname,
-                    O.map((thorname) => (
-                      <TooltipAddress title={thorname.owner} key="tooltip-target-addr">
-                        {recipientAddress}
-                      </TooltipAddress>
-                    )),
-                    O.getOrElse(() => <>{noDataString}</>)
-                  )}
+          <div className="w-full pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
+            <div className={`w-full pt-10 font-main text-[12px] uppercase dark:border-gray1d`}>
+              <BaseButton
+                className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+                onClick={() => setShowDetails((current) => !current)}>
+                {intl.formatMessage({ id: 'common.details' })}
+                {showDetails ? (
+                  <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+                ) : (
+                  <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
+                )}
+              </BaseButton>
+            </div>
+            {showDetails && (
+              <>
+                {/* recipient address */}
+                <div className="flex w-full items-center justify-between text-[14px] text-gray2 dark:text-gray2d">
+                  <div className="font-mainBold">{intl.formatMessage({ id: 'common.recipient' })}</div>
+                  <div className="truncate pl-20px text-[13px] normal-case leading-normal">
+                    {FP.pipe(
+                      oThorname,
+                      O.map((thorname) => (
+                        <TooltipAddress title={thorname.owner} key="tooltip-target-addr">
+                          {recipientAddress}
+                        </TooltipAddress>
+                      )),
+                      O.getOrElse(() => <>{noDataString}</>)
+                    )}
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+                <div className="flex w-full justify-between text-[14px] text-gray2 dark:text-gray2d ">
+                  <div className="font-mainBold ">{intl.formatMessage({ id: 'common.fee' })}</div>
+                  <div>{priceFeeLabel}</div>
+                </div>
+                <div className="flex w-full items-center justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                  {intl.formatMessage({ id: 'common.memo' })}
+                  <div className="truncate pl-10px font-main text-[12px] leading-normal">
+                    {form.getFieldValue('memo')}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </Styled.Form>
       </Styled.Container>
       {showConfirmationModal && renderConfirmationModal}

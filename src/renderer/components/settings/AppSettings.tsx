@@ -9,10 +9,11 @@ import * as A from 'fp-ts/lib/Array'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
-import { Network } from '../../../shared/api/types'
+import { Dex, Network } from '../../../shared/api/types'
 import { Locale } from '../../../shared/i18n/types'
 import { LOCALES } from '../../i18n'
-import { AVAILABLE_NETWORKS } from '../../services/const'
+import { AVAILABLE_DEXS, AVAILABLE_NETWORKS } from '../../services/const'
+import { CheckMayanodeNodeUrlHandler, CheckMayanodeRpcUrlHandler } from '../../services/mayachain/types'
 import { CheckMidgardUrlHandler, MidgardUrlRD } from '../../services/midgard/types'
 import { CheckThornodeNodeUrlHandler, CheckThornodeRpcUrlHandler } from '../../services/thorchain/types'
 import { DownIcon } from '../icons'
@@ -28,7 +29,9 @@ export type Props = {
   locale: Locale
   changeLocale: (locale: Locale) => void
   network: Network
+  dex: Dex
   changeNetwork: (network: Network) => void
+  changeDex: (dex: Dex) => void
   appUpdateState: RD.RemoteData<Error, O.Option<string>>
   checkForUpdates: FP.Lazy<void>
   goToReleasePage: (version: string) => void
@@ -38,11 +41,17 @@ export type Props = {
   onChangeMidgardUrl: (url: string) => void
   checkMidgardUrl$: CheckMidgardUrlHandler
   checkThornodeNodeUrl$: CheckThornodeNodeUrlHandler
+  checkMayanodeNodeUrl$: CheckMayanodeNodeUrlHandler
   onChangeThornodeNodeUrl: (url: string) => void
+  onChangeMayanodeNodeUrl: (url: string) => void
   checkThornodeRpcUrl$: CheckThornodeRpcUrlHandler
+  checkMayanodeRpcUrl$: CheckMayanodeRpcUrlHandler
   thornodeRpcUrl: string
+  mayanodeRpcUrl: string
   thornodeNodeUrl: string
+  mayanodeNodeUrl: string
   onChangeThornodeRpcUrl: (url: string) => void
+  onChangeMayanodeRpcUrl: (url: string) => void
 }
 
 type SectionProps = {
@@ -62,7 +71,9 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
   const {
     appUpdateState = RD.initial,
     changeNetwork = FP.constVoid,
+    changeDex = FP.constVoid,
     network,
+    dex,
     checkForUpdates,
     goToReleasePage = FP.constVoid,
     version,
@@ -74,11 +85,17 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
     onChangeMidgardUrl,
     checkMidgardUrl$,
     onChangeThornodeNodeUrl,
+    onChangeMayanodeNodeUrl,
     checkThornodeNodeUrl$,
+    checkMayanodeNodeUrl$,
     checkThornodeRpcUrl$,
+    checkMayanodeRpcUrl$,
     onChangeThornodeRpcUrl,
+    onChangeMayanodeRpcUrl,
     thornodeRpcUrl,
-    thornodeNodeUrl
+    thornodeNodeUrl,
+    mayanodeNodeUrl,
+    mayanodeRpcUrl
   } = props
 
   const intl = useIntl()
@@ -131,6 +148,12 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
     },
     [changeNetwork]
   )
+  const changeDexHandler: MenuProps['onClick'] = useCallback(
+    ({ key }: { key: string }) => {
+      changeDex(key as Dex)
+    },
+    [changeDex]
+  )
 
   const networkTextColor = useCallback((network: Network) => {
     switch (network) {
@@ -140,6 +163,16 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
         return 'text-error1 dark:text-error1d'
       case 'testnet':
         return 'text-warning0 dark:text-warning0'
+      default:
+        return 'text-text2 dark:text-text2'
+    }
+  }, [])
+  const dexTextColor = useCallback((dex: Dex) => {
+    switch (dex) {
+      case 'THOR':
+        return 'text-turquoise'
+      case 'MAYA':
+        return 'text-cyanblue'
       default:
         return 'text-text2 dark:text-text2'
     }
@@ -167,6 +200,28 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
     )
   }, [changeNetworkHandler, network, networkTextColor])
 
+  const dexMenu = useMemo(() => {
+    return (
+      <Menu
+        onClick={changeDexHandler}
+        items={FP.pipe(
+          AVAILABLE_DEXS,
+          A.map<Dex, ItemType>((n: Dex) => ({
+            label: (
+              <div
+                className={`flex items-center py-[8px] px-10px ${dexTextColor(n)} text-16 uppercase ${
+                  n === dex ? 'font-mainSemiBold' : 'font-main'
+                }`}>
+                {n}
+              </div>
+            ),
+            key: n
+          }))
+        )}
+      />
+    )
+  }, [changeDexHandler, dex, dexTextColor])
+
   const renderNetworkMenu = useMemo(
     () => (
       <Dropdown overlay={networkMenu} trigger={['click']} placement="bottom">
@@ -177,6 +232,17 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
       </Dropdown>
     ),
     [networkMenu, networkTextColor, network]
+  )
+  const renderDexMenu = useMemo(
+    () => (
+      <Dropdown overlay={dexMenu} trigger={['click']} placement="bottom">
+        <div className="flex cursor-pointer justify-center ">
+          <h3 className={`font-main text-16 uppercase ${dexTextColor(dex)}`}>{dex}</h3>
+          <DownIcon />
+        </div>
+      </Dropdown>
+    ),
+    [dexMenu, dexTextColor, dex]
   )
 
   const checkUpdatesProps = useMemo(() => {
@@ -264,6 +330,7 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
               {intl.formatMessage({ id: 'common.general' })}
             </h1>
             <Section title={intl.formatMessage({ id: 'common.network' })}>{renderNetworkMenu}</Section>
+            <Section title={intl.formatMessage({ id: 'common.dex' })}>{renderDexMenu}</Section>
             <Section title={intl.formatMessage({ id: 'setting.language' })}>{renderLangMenu}</Section>
             <Section title={intl.formatMessage({ id: 'setting.version' })}>
               <>
@@ -286,33 +353,55 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
             </div>
             {advancedActive && (
               <>
-                <Section className="mt-20px" title="Midgard">
-                  <EditableUrl
-                    className="w-full xl:w-3/4"
-                    url={midgardUrl}
-                    onChange={onChangeMidgardUrl}
-                    loading={RD.isPending(midgardUrlRD)}
-                    checkUrl$={checkMidgardUrl$}
-                    successMsg={intl.formatMessage({ id: 'midgard.url.valid' })}
-                  />
+                <Section className="mt-20px" title="Thorchain URls ">
+                  <Section className="ml-20px mt-10px" title="Midgard">
+                    <EditableUrl
+                      className="w-full xl:w-3/4"
+                      url={midgardUrl}
+                      onChange={onChangeMidgardUrl}
+                      loading={RD.isPending(midgardUrlRD)}
+                      checkUrl$={checkMidgardUrl$}
+                      successMsg={intl.formatMessage({ id: 'midgard.url.valid' })}
+                    />
+                  </Section>
+                  <Section className="ml-20px" title="THORNode API">
+                    <EditableUrl
+                      className="w-full xl:w-3/4"
+                      url={thornodeNodeUrl}
+                      onChange={onChangeThornodeNodeUrl}
+                      checkUrl$={checkThornodeNodeUrl$}
+                      successMsg={intl.formatMessage({ id: 'setting.thornode.node.valid' })}
+                    />
+                  </Section>
+                  <Section className="ml-20px" title="THORNode RPC">
+                    <EditableUrl
+                      className="w-full xl:w-3/4"
+                      url={thornodeRpcUrl}
+                      onChange={onChangeThornodeRpcUrl}
+                      checkUrl$={checkThornodeRpcUrl$}
+                      successMsg={intl.formatMessage({ id: 'setting.thornode.rpc.valid' })}
+                    />
+                  </Section>
                 </Section>
-                <Section title="THORNode API">
-                  <EditableUrl
-                    className="w-full xl:w-3/4"
-                    url={thornodeNodeUrl}
-                    onChange={onChangeThornodeNodeUrl}
-                    checkUrl$={checkThornodeNodeUrl$}
-                    successMsg={intl.formatMessage({ id: 'setting.thornode.node.valid' })}
-                  />
-                </Section>
-                <Section title="THORNode RPC">
-                  <EditableUrl
-                    className="w-full xl:w-3/4"
-                    url={thornodeRpcUrl}
-                    onChange={onChangeThornodeRpcUrl}
-                    checkUrl$={checkThornodeRpcUrl$}
-                    successMsg={intl.formatMessage({ id: 'setting.thornode.rpc.valid' })}
-                  />
+                <Section className="mt-20px" title="Mayachain URls ">
+                  <Section className="ml-20px mt-10px" title="MayaNode API">
+                    <EditableUrl
+                      className="w-full xl:w-3/4"
+                      url={mayanodeNodeUrl}
+                      onChange={onChangeMayanodeNodeUrl}
+                      checkUrl$={checkMayanodeNodeUrl$}
+                      successMsg={intl.formatMessage({ id: 'setting.mayanode.node.valid' })}
+                    />
+                  </Section>
+                  <Section className="ml-20px" title="MAYANode RPC">
+                    <EditableUrl
+                      className="w-full xl:w-3/4"
+                      url={mayanodeRpcUrl}
+                      onChange={onChangeMayanodeRpcUrl}
+                      checkUrl$={checkMayanodeRpcUrl$}
+                      successMsg={intl.formatMessage({ id: 'setting.mayanode.rpc.valid' })}
+                    />
+                  </Section>
                 </Section>
               </>
             )}

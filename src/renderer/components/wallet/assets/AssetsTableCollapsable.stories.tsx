@@ -173,6 +173,7 @@ const Template = (args: Partial<Record<EnabledChain, RDStatus>>) => {
         A.flatten
       )}
       poolDetails={[]}
+      pendingPoolDetails={[]}
       poolsData={{}}
       pricePool={RUNE_PRICE_POOL}
       network="testnet"

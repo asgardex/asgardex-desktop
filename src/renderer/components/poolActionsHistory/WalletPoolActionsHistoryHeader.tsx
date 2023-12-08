@@ -54,7 +54,7 @@ export const WalletPoolActionsHistoryHeader: React.FC<Props> = (props) => {
       </Styled.FilterContainer>
       <Styled.LinkContainer>
         <Styled.Headline onClick={onClickAddressIcon}>
-          viewblock <Styled.ExplorerLinkIcon />
+          RuneScan <Styled.ExplorerLinkIcon />
         </Styled.Headline>
       </Styled.LinkContainer>
     </>

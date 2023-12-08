@@ -34,6 +34,7 @@ module.exports = {
       // Dark theme https://gitlab.com/thorchain/asgardex-common/asgardex-theme/-/blob/master/src/dark.ts
       colors: {
         turquoise: '#23DCC8', //'#50E3C2'
+        cyanblue: '#1fb6ff',
         red: '#FF4954',
         // text
         text0: t.light.palette.text[0],

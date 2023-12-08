@@ -27,6 +27,7 @@ const swap: SwapMessages = {
   'swap.note.nowallet': 'Erstelle oder importiere eine Wallet um zu Swappen',
   'swap.errors.asset.missingSourceAsset': 'Ursprungs-Asset nicht vorhanden',
   'swap.errors.asset.missingTargetAsset': 'Ziel-Asset nicht vorhanden',
+  'swap.errors.pool.notAvailable': 'Pool niet beschikbaar',
   'swap.min.amount.info':
     'Erforderlicher Mindestwert für ein Swap um die Gebühren der Ein- und Auszahlungstransaktionen zu decken.',
   'swap.min.result.info':

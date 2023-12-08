@@ -14,7 +14,7 @@ import { FeeRD } from '../../../../services/chain/types'
 import { InteractStateHandler } from '../../../../services/thorchain/types'
 import { ApiError, ErrorId, WalletBalance } from '../../../../services/wallet/types'
 import { InteractType } from './Interact.types'
-import { InteractForm as Component } from './InteractForm'
+import { InteractFormThor as Component } from './InteractFormThor'
 
 type Args = {
   interactType: InteractType

@@ -3,18 +3,19 @@ import * as Rx from 'rxjs'
 import { startWith, mapTo, distinctUntilChanged } from 'rxjs/operators'
 import * as RxOp from 'rxjs/operators'
 
-import { Network } from '../../../shared/api/types'
+import { Dex, Network } from '../../../shared/api/types'
 import { toClientNetwork } from '../../../shared/utils/client'
 import { observableState } from '../../helpers/stateHelper'
 import { SlipTolerance } from '../../types/asgardex'
-import { DEFAULT_NETWORK, DEFAULT_SLIP_TOLERANCE } from '../const'
+import { DEFAULT_DEX, DEFAULT_NETWORK, DEFAULT_SLIP_TOLERANCE } from '../const'
 import {
   Network$,
   SlipTolerance$,
   OnlineStatus,
   CollapsableSettings,
   SettingType,
-  ToggleCollapsableSetting
+  ToggleCollapsableSetting,
+  Dex$
 } from './types'
 
 // Check online status
@@ -29,10 +30,20 @@ const onlineStatus$ = Rx.merge(online$, offline$).pipe(startWith(navigator.onLin
  */
 const { get$: getNetwork$, set: changeNetwork, get: getCurrentNetworkState } = observableState<Network>(DEFAULT_NETWORK)
 
+/**
+ * State of `DEX`
+ */
+const { get$: getDex$, set: changeDex, get: getCurrentDexState } = observableState<Dex>(DEFAULT_DEX)
+
 // Since `network$` based on `observableState` and it takes an initial value,
 // it might emit same values, we don't interested in.
 // So we do need a simple "dirty check" to provide "real" changes of selected network
 const network$: Network$ = getNetwork$.pipe(distinctUntilChanged())
+
+// Since `network$` based on `observableState` and it takes an initial value,
+// it might emit same values, we don't interested in.
+// So we do need a simple "dirty check" to provide "real" changes of selected network
+const dex$: Dex$ = getDex$.pipe(distinctUntilChanged())
 
 const clientNetwork$: Rx.Observable<Client.Network> = network$.pipe(RxOp.map(toClientNetwork))
 
@@ -64,6 +75,9 @@ export {
   onlineStatus$,
   network$,
   changeNetwork,
+  dex$,
+  changeDex,
+  getCurrentDexState,
   getCurrentNetworkState,
   clientNetwork$,
   slipTolerance$,

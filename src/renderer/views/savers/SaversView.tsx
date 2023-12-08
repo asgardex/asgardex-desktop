@@ -81,11 +81,10 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   const navigate = useNavigate()
 
   const { network } = useNetwork()
-  const { reloadInboundAddresses } = useThorchainContext()
 
   const { thorchainQuery } = useThorchainQueryContext()
 
-  const { getSaverProvider$, reloadSaverProvider } = useThorchainContext()
+  const { getSaverProvider$, reloadSaverProvider, reloadInboundAddresses } = useThorchainContext()
 
   const { assetWithDecimal$, addressByChain$, reloadSaverDepositFee, saverDeposit$, saverWithdraw$ } = useChainContext()
 
@@ -231,15 +230,27 @@ const Content: React.FC<Props> = (props): JSX.Element => {
     [intl]
   )
 
-  const renderLoading = useMemo(
+  // Important note:
+  // DON'T use `INITIAL_KEYSTORE_STATE` as default value for `keystoreState`
+  // Because `useObservableState` will set its state NOT before first rendering loop,
+  // and `AddWallet` would be rendered for the first time,
+  // before a check of `keystoreState` can be done
+  const keystoreState = useObservableState(keystoreState$, undefined)
+
+  const renderLoadingContent = useMemo(
     () => (
-      <div className="flex min-h-full items-center justify-center">
+      <div className="flex h-screen w-full items-center justify-center bg-bg0 dark:bg-bg0d">
         <Spin size="large" />
       </div>
     ),
     []
   )
 
+  // Special case: `keystoreState` is `undefined` in first render loop
+  // (see comment at its definition using `useObservableState`)
+  if (keystoreState === undefined) {
+    return <>{renderLoadingContent}</>
+  }
   return (
     <>
       <div className=" relative mb-20px flex items-center justify-between">
@@ -254,8 +265,8 @@ const Content: React.FC<Props> = (props): JSX.Element => {
         {FP.pipe(
           sequenceTRD(poolsStateRD, assetRD, addressRD),
           RD.fold(
-            () => renderLoading,
-            () => renderLoading,
+            () => renderLoadingContent,
+            () => renderLoadingContent,
             renderError,
             ([{ poolDetails, assetDetails }, assetWD, address]) => {
               const poolAssets: Asset[] = FP.pipe(

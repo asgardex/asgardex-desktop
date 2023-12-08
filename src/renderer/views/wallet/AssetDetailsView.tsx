@@ -12,7 +12,6 @@ import * as RxOp from 'rxjs/operators'
 
 import { LoadingView } from '../../components/shared/loading'
 import { AssetDetails } from '../../components/wallet/assets'
-//import { useChainContext } from '../../contexts/ChainContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { isRuneNativeAsset } from '../../helpers/assetHelper'
 import { isCosmosChain } from '../../helpers/chainHelper'
@@ -27,8 +26,6 @@ import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/
 import { SelectedWalletAsset } from '../../services/wallet/types'
 
 export const AssetDetailsView: React.FC = (): JSX.Element => {
-  //const { clientByChain$ } = useChainContext()
-
   const {
     mimirHalt: { haltTHORChain }
   } = useMimirHalt()

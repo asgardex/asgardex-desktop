@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { FeeOption, FeesWithRates } from '@xchainjs/xchain-client'
 import { LTCChain, LTC_DECIMAL } from '@xchainjs/xchain-litecoin'
 import { CryptoAmount, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
@@ -12,6 +13,7 @@ import {
   baseAmount,
   baseToAsset,
   bn,
+  eqAsset,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
@@ -26,6 +28,8 @@ import { AssetLTC } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { AssetUSDC, ZERO_BASE_AMOUNT } from '../../../../const'
+import { isUSDAsset } from '../../../../helpers/assetHelper'
+import { loadingString } from '../../../../helpers/stringHelper'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import { Memo, SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
@@ -35,10 +39,10 @@ import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../servic
 import { WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
 import * as StyledR from '../../../shared/form/Radio.styles'
-import { FlatButton } from '../../../uielements/button'
+import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { UIFeesRD } from '../../../uielements/fees'
-import { Input, InputBigNumber } from '../../../uielements/input'
+import { InputBigNumber } from '../../../uielements/input'
 import { AccountSelector } from '../../account'
 import * as H from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
@@ -100,6 +104,14 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
 
   const [selectedFeeOption, setSelectedFeeOption] = useState<FeeOption>(DEFAULT_FEE_OPTION)
 
+  const [InboundAddress, setInboundAddress] = useState<string>('')
+
+  const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+
+  const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+
+  const [warningMessage, setWarningMessage] = useState<string>('')
+
   const [form] = Form.useForm<FormValues>()
 
   const prevFeesWithRatesRef = useRef<O.Option<FeesWithRates>>(O.none)
@@ -110,6 +122,16 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
   )
 
   const feesAvailable = useMemo(() => O.isSome(oFeesWithRates), [oFeesWithRates])
+
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const fetchData = async () => {
+      const inboundDetails = await thorchainQuery.thorchainCache.getInboundDetails()
+      setInboundAddress(inboundDetails[LTCChain].address)
+    }
+
+    fetchData()
+  }, [thorchainQuery])
 
   // Store latest fees as `ref`
   // needed to display previous fee while reloading
@@ -139,9 +161,14 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
     () =>
       FP.pipe(
         oFeesWithRates,
-        O.map(({ fees }) => fees[selectedFeeOption])
+        O.map(({ fees }) => {
+          const fee = fees[selectedFeeOption]
+          prevSelectedFeeRef.current = O.some(fee)
+          setAssetFee(new CryptoAmount(fees[selectedFeeOption], asset))
+          return fee
+        })
       ),
-    [oFeesWithRates, selectedFeeOption]
+    [asset, oFeesWithRates, selectedFeeOption]
   )
 
   const isFeeError = useMemo(() => {
@@ -228,8 +255,12 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
       if (!addressValidation(value)) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
+      if (InboundAddress === value) {
+        const type = 'Inbound'
+        setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
+      }
     },
-    [addressValidation, intl]
+    [InboundAddress, addressValidation, intl]
   )
 
   const maxAmount: BaseAmount = useMemo(
@@ -256,10 +287,41 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
     const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
     const fetchData = async () => {
       setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, AssetUSDC))
+      setFeePriceValue(await thorchainQuery.convert(assetFee, AssetUSDC))
     }
 
     fetchData()
-  }, [asset, maxAmount, thorchainQuery])
+  }, [asset, assetFee, maxAmount, thorchainQuery])
+
+  const priceFeeLabel = useMemo(() => {
+    if (!feePriceValue) {
+      return loadingString // or noDataString, depending on your needs
+    }
+
+    const fee = formatAssetAmountCurrency({
+      amount: assetFee.assetAmount,
+      asset: assetFee.asset,
+      decimal: isUSDAsset(assetFee.asset) ? 2 : 6,
+      trimZeros: !isUSDAsset(assetFee.asset)
+    })
+
+    const price = FP.pipe(
+      O.some(feePriceValue), // Assuming this is Option<CryptoAmount>
+      O.map((cryptoAmount: CryptoAmount) =>
+        eqAsset(asset, cryptoAmount.asset)
+          ? ''
+          : formatAssetAmountCurrency({
+              amount: cryptoAmount.assetAmount,
+              asset: cryptoAmount.asset,
+              decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
+              trimZeros: !isUSDAsset(cryptoAmount.asset)
+            })
+      ),
+      O.getOrElse(() => '')
+    )
+
+    return price ? `${price} (${fee}) ` : fee
+  }, [feePriceValue, assetFee, asset])
 
   const isMaxButtonDisabled = useMemo(
     () =>
@@ -425,7 +487,7 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
     () => H.matchedWalletType(balances, recipientAddress),
     [balances, recipientAddress]
   )
-
+  const [showDetails, setShowDetails] = useState<boolean>(false)
   const renderWalletType = useMemo(() => H.renderedWalletType(oMatchedWalletType), [oMatchedWalletType])
 
   return (
@@ -448,8 +510,9 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
               {renderWalletType}
             </Styled.CustomLabel>
             <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
-              <Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
+              <Styled.Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
             </Form.Item>
+            {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d ">{warningMessage}</div>}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
             <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">
               <InputBigNumber
@@ -472,7 +535,7 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
             {renderFeeError}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
             <Form.Item name="memo">
-              <Input size="large" disabled={isLoading} />
+              <Styled.Input size="large" disabled={isLoading} />
             </Form.Item>
             <Form.Item name="feeRate">{renderFeeOptions}</Form.Item>
           </Styled.SubForm>
@@ -485,6 +548,41 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
             {intl.formatMessage({ id: 'wallet.action.send' })}
           </FlatButton>
         </Styled.Form>
+        <div className="w-full pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
+          {/* memo */}
+          <div className={`my-20px w-full font-main text-[12px] uppercase dark:border-gray1d`}>
+            <BaseButton
+              className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+              onClick={() => setShowDetails((current) => !current)}>
+              {intl.formatMessage({ id: 'common.details' })}
+              {showDetails ? (
+                <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+              ) : (
+                <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
+              )}
+            </BaseButton>
+            {showDetails && (
+              <>
+                <div className="flex w-full items-center justify-between text-[14px] text-gray2 dark:text-gray2d">
+                  <div className="font-mainBold ">{intl.formatMessage({ id: 'common.recipient' })}</div>
+                  <div className="truncate text-[13px] normal-case leading-normal">
+                    {form.getFieldValue('recipient')}
+                  </div>
+                </div>
+                <div className="flex w-full justify-between ">
+                  <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.fee' })}</div>
+                  <div>{priceFeeLabel}</div>
+                </div>
+                <div className="flex w-full items-center justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                  {intl.formatMessage({ id: 'common.memo' })}
+                  <div className="truncate pl-10px font-main text-[12px] leading-normal">
+                    {form.getFieldValue('memo')}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </Styled.Container>
       {showConfirmationModal && renderConfirmationModal}
       {renderTxModal}

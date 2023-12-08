@@ -492,7 +492,8 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
   )
 
   useEffect(() => {
-    if (O.isSome(oWithdrawBps) && !sourceChainFeeError) {
+    // Check if oWithdrawBps is Some and its value is not 0, and also if there's no sourceChainFeeError
+    if (O.isSome(oWithdrawBps) && oWithdrawBps.value !== 0 && !sourceChainFeeError) {
       debouncedEffect.current(sourceAsset, address, oWithdrawBps.value)
     }
   }, [oWithdrawBps, sourceChainFeeError, sourceAsset, address])
@@ -503,11 +504,15 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       FP.pipe(
         oSaverWithdrawQuote,
         O.fold(
-          () => new CryptoAmount(baseAmount(0), sourceAsset), // default value if oQuote is None
-          (txDetails) => txDetails.fee.outbound // already of type cryptoAmount
+          () => new CryptoAmount(saverFees.outFee, sourceChainAsset), // default value if oQuote is None
+          (txDetails) =>
+            new CryptoAmount(
+              convertBaseAmountDecimal(txDetails.fee.outbound.baseAmount, sourceChainAssetDecimals),
+              sourceChainAsset
+            ) // already of type cryptoAmount
         )
       ),
-    [oSaverWithdrawQuote, sourceAsset]
+    [oSaverWithdrawQuote, saverFees.outFee, sourceChainAsset, sourceChainAssetDecimals]
   )
   // Outbound fee in for use later
   const liquidityFee: CryptoAmount = useMemo(
@@ -515,11 +520,15 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       FP.pipe(
         oSaverWithdrawQuote,
         O.fold(
-          () => new CryptoAmount(baseAmount(0), sourceAsset), // default value if oQuote is None
-          (txDetails) => txDetails.fee.liquidity // already of type cryptoAmount
+          () => new CryptoAmount(baseAmount(0, saverFees.inFee.decimal), sourceChainAsset), // default value if oQuote is None
+          (txDetails) =>
+            new CryptoAmount(
+              convertBaseAmountDecimal(txDetails.fee.liquidity.baseAmount, sourceChainAssetDecimals),
+              sourceChainAsset
+            )
         )
       ),
-    [oSaverWithdrawQuote, sourceAsset]
+    [oSaverWithdrawQuote, saverFees.inFee.decimal, sourceChainAsset, sourceChainAssetDecimals]
   )
 
   // Boolean on if amount to send is zero
@@ -1140,7 +1149,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
   // Price of asset IN fee
   const oPriceAssetInFee: O.Option<CryptoAmount> = useMemo(() => {
     const asset = saverFees.asset
-    const amount = saverFees.inFee.plus(liquidityFee.baseAmount).plus(outboundFee.baseAmount)
+    const amount = saverFees.inFee
 
     return FP.pipe(
       PoolHelpers.getPoolPriceValue({
@@ -1149,9 +1158,30 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
         pricePool,
         network
       }),
-      O.map((amount) => new CryptoAmount(amount, pricePool.asset))
+      O.map((amount) => {
+        return new CryptoAmount(amount, pricePool.asset)
+      })
     )
-  }, [liquidityFee, network, outboundFee, poolDetails, pricePool, saverFees.asset, saverFees.inFee])
+  }, [network, poolDetails, pricePool, saverFees.asset, saverFees.inFee])
+
+  // Price fees total
+  const oPriceAssetFeeTotal: O.Option<CryptoAmount> = useMemo(() => {
+    const inBoundFee = new CryptoAmount(dustAmount, sourceChainAsset)
+    const fees = inBoundFee.plus(liquidityFee.plus(outboundFee))
+
+    return FP.pipe(
+      PoolHelpers.getPoolPriceValue({
+        balance: { asset: fees.asset, amount: fees.baseAmount },
+        poolDetails,
+        pricePool,
+        network
+      }),
+      O.map((amount) => {
+        const priceAmount = new CryptoAmount(amount, pricePool.asset)
+        return priceAmount
+      })
+    )
+  }, [liquidityFee, network, outboundFee, poolDetails, pricePool, dustAmount, sourceChainAsset])
 
   // Price fee label
   const priceFeesLabel = useMemo(
@@ -1163,7 +1193,9 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
           () => loadingString,
           () => noDataString,
           ({ asset: feeAsset, inFee }) => {
-            const fees = inFee.plus(liquidityFee.baseAmount).plus(outboundFee.baseAmount)
+            const inbound = liquidityFee.baseAmount
+            const outbound = outboundFee.baseAmount
+            const fees = inFee.plus(inbound).plus(outbound)
             const fee = formatAssetAmountCurrency({
               amount: baseToAsset(fees),
               asset: feeAsset,
@@ -1171,7 +1203,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
               trimZeros: !isUSDAsset(feeAsset)
             })
             const price = FP.pipe(
-              oPriceAssetInFee,
+              oPriceAssetFeeTotal,
               O.map(({ assetAmount, asset: priceAsset }) =>
                 eqAsset(feeAsset, priceAsset)
                   ? emptyString
@@ -1190,7 +1222,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
         )
       ),
 
-    [saverFeesRD, liquidityFee, outboundFee, oPriceAssetInFee]
+    [saverFeesRD, liquidityFee.baseAmount, outboundFee.baseAmount, oPriceAssetFeeTotal]
   )
   // label for Price in fee
   const priceInFeeLabel = useMemo(
@@ -1265,7 +1297,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     }
     // Update withdrawBps based on the selected percentage
     const newWithdrawBps = Math.floor(percentage * 100)
-    setWithdrawBps(O.some(newWithdrawBps))
+    setWithdrawBps(O.some(newWithdrawBps > 0 ? newWithdrawBps : 0))
 
     return (
       <Slider
@@ -1297,7 +1329,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
           <AssetInput
             className="w-full"
             amount={{ amount: amountToWithdrawMax1e8, asset: sourceAsset }}
-            priceAmount={{ amount: priceAmountToWithdrawMax1e8.baseAmount, asset: sourceAsset }}
+            priceAmount={{ amount: priceAmountToWithdrawMax1e8.baseAmount, asset: priceAmountToWithdrawMax1e8.asset }}
             assets={selectableAssets}
             network={network}
             onChangeAsset={setAsset}
