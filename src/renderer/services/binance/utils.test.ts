@@ -17,7 +17,7 @@ describe('services/binance/utils/', () => {
     it('creates a RUNE `Asset`', () => {
       const result = FP.pipe(
         bncSymbolToAsset('RUNE-B1A'),
-        O.getOrElse(() => ({ chain: BNBChain, symbol: 'invalid', ticker: 'invalid' } as Asset))
+        O.getOrElse(() => ({ chain: BNBChain, symbol: 'invalid', ticker: 'invalid' }) as Asset)
       )
       expect(result).toEqual({
         chain: BNBChain,

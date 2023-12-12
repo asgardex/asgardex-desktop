@@ -1446,8 +1446,8 @@ export const Swap = ({
         quantity === 0
           ? `Thornode decides the swap count`
           : `` || quantity === maxStreamingQuantity
-          ? `Max sub swaps ${maxStreamingQuantity}`
-          : ''
+            ? `Max sub swaps ${maxStreamingQuantity}`
+            : ''
     }
     return (
       <div>
@@ -2431,8 +2431,8 @@ export const Swap = ({
             checkIsApproved
               ? intl.formatMessage({ id: 'common.approve.checking' }, { asset: sourceAsset.ticker })
               : walletBalancesLoading
-              ? intl.formatMessage({ id: 'common.balance.loading' })
-              : undefined
+                ? intl.formatMessage({ id: 'common.balance.loading' })
+                : undefined
           }
         />
       )}
@@ -2752,13 +2752,13 @@ export const Swap = ({
                         {walletBalancesLoading
                           ? loadingString
                           : hidePrivateData
-                          ? hiddenString
-                          : formatAssetAmountCurrency({
-                              amount: baseToAsset(sourceAssetAmountMax1e8),
-                              asset: sourceAsset,
-                              decimal: 8,
-                              trimZeros: true
-                            })}
+                            ? hiddenString
+                            : formatAssetAmountCurrency({
+                                amount: baseToAsset(sourceAssetAmountMax1e8),
+                                asset: sourceAsset,
+                                decimal: 8,
+                                trimZeros: true
+                              })}
                       </div>
                     </div>
                     {/* recipient balance */}

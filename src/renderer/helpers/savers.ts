@@ -116,7 +116,7 @@ export const getSaversTableRowsData = ({
               ...poolTableRowData,
               key: poolDetail?.asset || index.toString(),
               deepest
-            } as SaversTableRowData)
+            }) as SaversTableRowData
         )
       )
     }),

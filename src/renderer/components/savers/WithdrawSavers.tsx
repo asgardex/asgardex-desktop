@@ -1371,8 +1371,8 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
                   checkIsApproved
                     ? intl.formatMessage({ id: 'common.approve.checking' }, { asset: sourceAsset.ticker })
                     : walletBalancesLoading
-                    ? intl.formatMessage({ id: 'common.balance.loading' })
-                    : undefined
+                      ? intl.formatMessage({ id: 'common.balance.loading' })
+                      : undefined
                 }
               />
             )}

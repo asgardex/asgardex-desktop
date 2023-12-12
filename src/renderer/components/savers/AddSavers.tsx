@@ -1363,8 +1363,8 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
                   checkIsApproved
                     ? intl.formatMessage({ id: 'common.approve.checking' }, { asset: asset.asset.ticker })
                     : walletBalancesLoading
-                    ? intl.formatMessage({ id: 'common.balance.loading' })
-                    : undefined
+                      ? intl.formatMessage({ id: 'common.balance.loading' })
+                      : undefined
                 }
               />
             )}

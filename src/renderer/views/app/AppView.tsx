@@ -123,8 +123,8 @@ export const AppView: React.FC = (): JSX.Element => {
                 ? `${msg} ${intl.formatMessage({ id: 'halt.chain' }, { chain: haltedChains[0] })}
                 ${intl.formatMessage({ id: 'halt.chain.synth' }, { chain: haltedChains[0] })}`
                 : haltedChains.length > 1
-                ? `${msg} ${intl.formatMessage({ id: 'halt.chains' }, { chains: haltedChains.join(', ') })}`
-                : `${msg}`
+                  ? `${msg} ${intl.formatMessage({ id: 'halt.chains' }, { chains: haltedChains.join(', ') })}`
+                  : `${msg}`
 
             const haltedTradingChains = haltedChainsState
               .filter(({ haltedTrading }) => haltedTrading)
@@ -142,8 +142,8 @@ export const AppView: React.FC = (): JSX.Element => {
               pausedLPs.length > 0
                 ? `${msg} ${intl.formatMessage({ id: 'halt.chain.pause' }, { chains: pausedLPs.join(', ') })}`
                 : mimirHalt.pauseLp
-                ? `${msg} ${intl.formatMessage({ id: 'halt.chain.pauseall' })}`
-                : `${msg}`
+                  ? `${msg} ${intl.formatMessage({ id: 'halt.chain.pauseall' })}`
+                  : `${msg}`
           }
 
           return msg ? <Styled.Alert key={'halted warning'} type="warning" message={msg} /> : <></>
