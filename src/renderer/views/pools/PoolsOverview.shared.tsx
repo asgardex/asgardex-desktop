@@ -89,16 +89,15 @@ export const poolColumnMobile = <T extends { network: Network; asset: Asset }>(t
 
 const renderPriceColumn =
   (pricePoolAsset: Asset) =>
-  ({ poolPrice }: { poolPrice: BaseAmount }) =>
-    (
-      <Styled.Label align="right" nowrap>
-        {formatAssetAmountCurrency({
-          amount: baseToAsset(poolPrice),
-          asset: pricePoolAsset,
-          decimal: 3
-        })}
-      </Styled.Label>
-    )
+  ({ poolPrice }: { poolPrice: BaseAmount }) => (
+    <Styled.Label align="right" nowrap>
+      {formatAssetAmountCurrency({
+        amount: baseToAsset(poolPrice),
+        asset: pricePoolAsset,
+        decimal: 3
+      })}
+    </Styled.Label>
+  )
 
 const sortPriceColumn = (a: { poolPrice: BaseAmount }, b: { poolPrice: BaseAmount }) =>
   ordBaseAmount.compare(a.poolPrice, b.poolPrice)
@@ -117,25 +116,24 @@ export const priceColumn = <T extends { poolPrice: BaseAmount }>(
 
 const renderDepthColumn =
   (pricePoolAsset: Asset) =>
-  ({ asset, depthPrice, depthAmount }: { asset: Asset; depthPrice: BaseAmount; depthAmount: BaseAmount }) =>
-    (
-      <div className="flex flex-col items-end justify-center font-main">
-        <div className="whitespace-nowrap text-16 text-text0 dark:text-text0d">
-          {formatAssetAmountCurrency({
-            amount: baseToAsset(depthAmount),
-            asset,
-            decimal: 2
-          })}
-        </div>
-        <div className="whitespace-nowrap text-14 text-gray2 dark:text-gray2d">
-          {formatAssetAmountCurrency({
-            amount: baseToAsset(depthPrice),
-            asset: pricePoolAsset,
-            decimal: 2
-          })}
-        </div>
+  ({ asset, depthPrice, depthAmount }: { asset: Asset; depthPrice: BaseAmount; depthAmount: BaseAmount }) => (
+    <div className="flex flex-col items-end justify-center font-main">
+      <div className="whitespace-nowrap text-16 text-text0 dark:text-text0d">
+        {formatAssetAmountCurrency({
+          amount: baseToAsset(depthAmount),
+          asset,
+          decimal: 2
+        })}
       </div>
-    )
+      <div className="whitespace-nowrap text-14 text-gray2 dark:text-gray2d">
+        {formatAssetAmountCurrency({
+          amount: baseToAsset(depthPrice),
+          asset: pricePoolAsset,
+          decimal: 2
+        })}
+      </div>
+    </div>
+  )
 
 export const depthColumn = <T extends { depthPrice: BaseAmount }>(
   title: string,
@@ -169,10 +167,9 @@ export const renderRefreshBtnColTitle = ({
   </div>
 )
 
-export const renderTableError = (reloadBtnLabel: string, reloadBtnAction: FP.Lazy<void>) => (error: Error) =>
-  (
-    <ErrorView
-      title={error?.toString() ?? ''}
-      extra={<ReloadButton label={reloadBtnLabel} onClick={reloadBtnAction} />}
-    />
-  )
+export const renderTableError = (reloadBtnLabel: string, reloadBtnAction: FP.Lazy<void>) => (error: Error) => (
+  <ErrorView
+    title={error?.toString() ?? ''}
+    extra={<ReloadButton label={reloadBtnLabel} onClick={reloadBtnAction} />}
+  />
+)

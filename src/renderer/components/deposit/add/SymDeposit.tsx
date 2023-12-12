@@ -1019,10 +1019,10 @@ export const SymDeposit: React.FC<Props> = (props) => {
       !hasAssetBalance && !hasRuneBalance
         ? noRuneAndAssetBalancesMsg
         : // no rune balance
-        !hasRuneBalance
-        ? noRuneBalancesMsg
-        : // no balance of pool asset
-          noAssetBalancesMsg
+          !hasRuneBalance
+          ? noRuneBalancesMsg
+          : // no balance of pool asset
+            noAssetBalancesMsg
 
     const title = intl.formatMessage({ id: 'deposit.add.error.nobalances' })
 
@@ -2022,8 +2022,8 @@ export const SymDeposit: React.FC<Props> = (props) => {
                 checkIsApproved
                   ? intl.formatMessage({ id: 'common.approve.checking' }, { asset: asset.ticker })
                   : walletBalancesLoading
-                  ? intl.formatMessage({ id: 'common.balance.loading' })
-                  : undefined
+                    ? intl.formatMessage({ id: 'common.balance.loading' })
+                    : undefined
               }
             />
           )}

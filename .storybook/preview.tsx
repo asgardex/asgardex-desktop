@@ -1,7 +1,6 @@
 import React from 'react'
-import { INITIAL_VIEWPORTS } from '@storybook/addon-viewport';
-import {
-  MemoryRouter, Route, Routes } from 'react-router-dom'
+import { INITIAL_VIEWPORTS } from '@storybook/addon-viewport'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
 import { AppProvider } from '../src/renderer/contexts/AppContext'
 import { ThemeProvider, themes } from '../src/renderer/contexts/ThemeContext'
@@ -11,9 +10,9 @@ import { IntlProvider } from 'react-intl'
 import { getMessagesByLocale } from '../src/renderer/i18n'
 
 import * as mockApi from '../src/shared/mock/api'
-import type { DecoratorFn } from '@storybook/react';
+import type { DecoratorFn } from '@storybook/react'
 
-import "../src/renderer/index.css"
+import '../src/renderer/index.css'
 
 // Mock api provided by main renderer
 window.apiHDWallet = { ...mockApi.apiHDWallet }
@@ -31,7 +30,9 @@ const providerDecorator: DecoratorFn = (Story) => (
     {/* We use IntlProvider instead of our our custom I18nProvider to provide messages, but w/o dependencies to Electron/Node source, which can't run in storybook */}
     <IntlProvider locale={locale} messages={messages} defaultLocale={locale}>
       <ThemeProvider theme={lightTheme}>
-        <Styled.AppWrapper><Story/></Styled.AppWrapper>
+        <Styled.AppWrapper>
+          <Story />
+        </Styled.AppWrapper>
       </ThemeProvider>
     </IntlProvider>
   </AppProvider>
@@ -46,14 +47,13 @@ const reactRouterDecorator: DecoratorFn = (Story) => {
         <Route path="/*" element={<Story />} />
       </Routes>
     </MemoryRouter>
-  );
-};
+  )
+}
 
-
-export const decorators = [providerDecorator, reactRouterDecorator];
+export const decorators = [providerDecorator, reactRouterDecorator]
 
 export const parameters = {
   viewport: {
     viewports: INITIAL_VIEWPORTS
   }
-};
+}

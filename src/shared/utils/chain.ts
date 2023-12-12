@@ -29,7 +29,7 @@ export const ENABLED_CHAINS = [
   MAYAChain
 ] as const
 
-export type EnabledChain = typeof ENABLED_CHAINS[number]
+export type EnabledChain = (typeof ENABLED_CHAINS)[number]
 
 /**
  * Type guard
