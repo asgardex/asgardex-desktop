@@ -23,7 +23,7 @@ type StoryArgs = {
   changeNetwork: ChangeNetworkHandler
   changeDex: ChangeDexHandler
   togglePrivate: () => void
-  isPrivate: Boolean
+  isPrivate: boolean
   collapsed: boolean
 }
 

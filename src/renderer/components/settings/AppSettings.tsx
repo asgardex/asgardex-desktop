@@ -33,7 +33,7 @@ export type Props = {
   changeNetwork: (network: Network) => void
   changeDex: (dex: Dex) => void
   togglePrivate: (isPrivate: boolean) => void
-  isPrivate: Boolean
+  isPrivate: boolean
   appUpdateState: RD.RemoteData<Error, O.Option<string>>
   checkForUpdates: FP.Lazy<void>
   goToReleasePage: (version: string) => void
@@ -361,7 +361,7 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
                   }`}>
                   {intl.formatMessage({ id: 'common.privateData' })}
                 </TextButton>
-                <SwitchButton onChange={togglePrivate}></SwitchButton>
+                <SwitchButton active={isPrivate} onChange={togglePrivate}></SwitchButton>
               </div>
 
               {advancedActive && (
