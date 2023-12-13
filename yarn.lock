@@ -3560,7 +3560,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-transport-node-hid-singleton@npm:^6.28.5":
+"@ledgerhq/hw-transport-node-hid-singleton@npm:6.28.5":
   version: 6.28.5
   resolution: "@ledgerhq/hw-transport-node-hid-singleton@npm:6.28.5"
   dependencies:
@@ -3617,6 +3617,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/hw-transport@npm:6.27.8, @ledgerhq/hw-transport@npm:^6.27.8":
+  version: 6.27.8
+  resolution: "@ledgerhq/hw-transport@npm:6.27.8"
+  dependencies:
+    "@ledgerhq/devices": ^7.0.5
+    "@ledgerhq/errors": ^6.12.1
+    events: ^3.3.0
+  checksum: 28f923833edaf1c3a0560d21ffed507c0a9117d8f4f0789027d409a38bbe6229f8315019c5560ab2b15cb7ba34adafe0f3711c1989110f0dd805baa293cc690b
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/hw-transport@npm:^5.34.0, @ledgerhq/hw-transport@npm:^5.51.1":
   version: 5.51.1
   resolution: "@ledgerhq/hw-transport@npm:5.51.1"
@@ -3636,17 +3647,6 @@ __metadata:
     "@ledgerhq/errors": ^6.10.1
     events: ^3.3.0
   checksum: ab0acb420493bafeb55351adf8f294f04765e2ab8f81507018e418cab2129530389720ba200488e80fed975319042832c82b852bd521ad872b539ac05bf11473
-  languageName: node
-  linkType: hard
-
-"@ledgerhq/hw-transport@npm:^6.27.8":
-  version: 6.27.8
-  resolution: "@ledgerhq/hw-transport@npm:6.27.8"
-  dependencies:
-    "@ledgerhq/devices": ^7.0.5
-    "@ledgerhq/errors": ^6.12.1
-    events: ^3.3.0
-  checksum: 28f923833edaf1c3a0560d21ffed507c0a9117d8f4f0789027d409a38bbe6229f8315019c5560ab2b15cb7ba34adafe0f3711c1989110f0dd805baa293cc690b
   languageName: node
   linkType: hard
 
@@ -6241,9 +6241,9 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:^16.11.26":
-  version: 16.18.39
-  resolution: "@types/node@npm:16.18.39"
-  checksum: eac9b202b76013256cb517ca8d3e3f61df206edb1615ca8d8df4c80616e92879fe4d3f8570a11d60f4216a82724a3265d5888b24c6994c80b057a0423c9ff1d2
+  version: 16.18.68
+  resolution: "@types/node@npm:16.18.68"
+  checksum: 094ae9ed80eed2af4bd34d551467e307f2ecb6efb0f8b872feebfb9da5ea4b446c5883c9abe2349f8ea2b78bdacd8726a946c27c2a246676c4c330e41ccb9284
   languageName: node
   linkType: hard
 
@@ -6563,7 +6563,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/yargs@npm:^17.0.1, @types/yargs@npm:^17.0.8":
+"@types/yargs@npm:^17.0.1":
+  version: 17.0.32
+  resolution: "@types/yargs@npm:17.0.32"
+  dependencies:
+    "@types/yargs-parser": "*"
+  checksum: 4505bdebe8716ff383640c6e928f855b5d337cb3c68c81f7249fc6b983d0aa48de3eee26062b84f37e0d75a5797bc745e0c6e76f42f81771252a758c638f36ba
+  languageName: node
+  linkType: hard
+
+"@types/yargs@npm:^17.0.8":
   version: 17.0.11
   resolution: "@types/yargs@npm:17.0.11"
   dependencies:
@@ -7227,6 +7236,13 @@ __metadata:
     "@xchainjs/xchain-util": ^0.13.1
     axios: ^1.3.6
   checksum: f5a4a9f6e1fac7ee49b0d04af87119dcc78a2b4f568cb002e278dce50d6a2d342d642d4d932f541621f91dd33c6b1d44ebd577321870d630c4a04a5fdc98b367
+  languageName: node
+  linkType: hard
+
+"@xmldom/xmldom@npm:^0.8.8":
+  version: 0.8.10
+  resolution: "@xmldom/xmldom@npm:0.8.10"
+  checksum: 4c136aec31fb3b49aaa53b6fcbfe524d02a1dc0d8e17ee35bd3bf35e9ce1344560481cd1efd086ad1a4821541482528672306d5e37cdbd187f33d7fadd3e2cf0
   languageName: node
   linkType: hard
 
@@ -7987,8 +8003,8 @@ __metadata:
     "@ledgerhq/hw-app-btc": ^9.1.0
     "@ledgerhq/hw-app-cosmos": ^6.27.8
     "@ledgerhq/hw-app-eth": ^6.30.2
-    "@ledgerhq/hw-transport": ^6.27.8
-    "@ledgerhq/hw-transport-node-hid-singleton": ^6.28.5
+    "@ledgerhq/hw-transport": 6.27.8
+    "@ledgerhq/hw-transport-node-hid-singleton": 6.28.5
     "@openapitools/openapi-generator-cli": ^2.5.1
     "@psf/bitcoincashjs-lib": ^4.0.2
     "@storybook/addon-essentials": ^7.0.0-alpha.13
@@ -11945,7 +11961,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ejs@npm:^3.1.5, ejs@npm:^3.1.6, ejs@npm:^3.1.7, ejs@npm:^3.1.8":
+"ejs@npm:^3.1.5, ejs@npm:^3.1.6, ejs@npm:^3.1.8":
   version: 3.1.8
   resolution: "ejs@npm:3.1.8"
   dependencies:
@@ -11953,6 +11969,17 @@ __metadata:
   bin:
     ejs: bin/cli.js
   checksum: 1d40d198ad52e315ccf37e577bdec06e24eefdc4e3c27aafa47751a03a0c7f0ec4310254c9277a5f14763c3cd4bbacce27497332b2d87c74232b9b1defef8efc
+  languageName: node
+  linkType: hard
+
+"ejs@npm:^3.1.7":
+  version: 3.1.9
+  resolution: "ejs@npm:3.1.9"
+  dependencies:
+    jake: ^10.8.5
+  bin:
+    ejs: bin/cli.js
+  checksum: af6f10eb815885ff8a8cfacc42c6b6cf87daf97a4884f87a30e0c3271fedd85d76a3a297d9c33a70e735b97ee632887f85e32854b9cdd3a2d97edf931519a35f
   languageName: node
   linkType: hard
 
@@ -20606,7 +20633,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"plist@npm:^3.0.1, plist@npm:^3.0.4":
+"plist@npm:^3.0.1":
+  version: 3.1.0
+  resolution: "plist@npm:3.1.0"
+  dependencies:
+    "@xmldom/xmldom": ^0.8.8
+    base64-js: ^1.5.1
+    xmlbuilder: ^15.1.1
+  checksum: c8ea013da8646d4c50dff82f9be39488054621cc229957621bb00add42b5d4ce3657cf58d4b10c50f7dea1a81118f825838f838baeb4e6f17fab453ecf91d424
+  languageName: node
+  linkType: hard
+
+"plist@npm:^3.0.4":
   version: 3.0.6
   resolution: "plist@npm:3.0.6"
   dependencies:
@@ -28321,8 +28359,8 @@ __metadata:
   linkType: hard
 
 "yargs@npm:^17.5.1":
-  version: 17.6.2
-  resolution: "yargs@npm:17.6.2"
+  version: 17.7.2
+  resolution: "yargs@npm:17.7.2"
   dependencies:
     cliui: ^8.0.1
     escalade: ^3.1.1
@@ -28331,7 +28369,7 @@ __metadata:
     string-width: ^4.2.3
     y18n: ^5.0.5
     yargs-parser: ^21.1.1
-  checksum: 47da1b0d854fa16d45a3ded57b716b013b2179022352a5f7467409da5a04a1eef5b3b3d97a2dfc13e8bbe5f2ffc0afe3bc6a4a72f8254e60f5a4bd7947138643
+  checksum: 73b572e863aa4a8cbef323dd911d79d193b772defd5a51aab0aca2d446655216f5002c42c5306033968193bdbf892a7a4c110b0d77954a7fdf563e653967b56a
   languageName: node
   linkType: hard
 

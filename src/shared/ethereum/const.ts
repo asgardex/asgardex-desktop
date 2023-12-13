@@ -4,7 +4,7 @@ import { EVMClientParams } from '@xchainjs/xchain-evm'
 import { EtherscanProvider } from '@xchainjs/xchain-evm-providers'
 import { BigNumber, ethers } from 'ethers'
 
-import { envOrDefault } from '../utils/env'
+import { etherscanApiKey } from '../api/etherscan'
 
 export const DEFAULT_APPROVE_GAS_LIMIT_FALLBACK = '65000'
 
@@ -22,10 +22,7 @@ export const DEPOSIT_EXPIRATION_OFFSET = 15 * 60 // 15min in seconds
 
 export const ETHAddress = '0x0000000000000000000000000000000000000000'
 
-const ETH_MAINNET_ETHERS_PROVIDER = new ethers.providers.EtherscanProvider(
-  'homestead',
-  envOrDefault(process.env['REACT_APP_ETHERSCAN_API_KEY'], '')
-)
+const ETH_MAINNET_ETHERS_PROVIDER = new ethers.providers.EtherscanProvider('homestead', etherscanApiKey)
 const network = ethers.providers.getNetwork('sepolia')
 const ETH_TESTNET_ETHERS_PROVIDER = new ethers.providers.EtherscanProvider(network)
 
@@ -40,7 +37,7 @@ const ethersJSProviders = {
 const ETH_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
   ETH_TESTNET_ETHERS_PROVIDER,
   'https://api-sepolia.etherscan.io/',
-  envOrDefault(process.env['REACT_APP_ETHERSCAN_API_KEY'], ''),
+  etherscanApiKey,
   ETHChain,
   AssetETH,
   ETH_GAS_ASSET_DECIMAL
@@ -49,7 +46,7 @@ const ETH_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
 const ETH_ONLINE_PROVIDER_MAINNET = new EtherscanProvider(
   ETH_MAINNET_ETHERS_PROVIDER,
   'https://api.etherscan.io/',
-  envOrDefault(process.env['REACT_APP_ETHERSCAN_API_KEY'], ''),
+  etherscanApiKey,
   ETHChain,
   AssetETH,
   ETH_GAS_ASSET_DECIMAL

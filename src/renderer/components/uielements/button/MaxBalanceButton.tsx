@@ -19,7 +19,6 @@ export type ComponentProps = {
   className?: string
   classNameButton?: string
   classNameIcon?: string
-  // TODO (@veado) Make it default (not) optional to handle private data everyhere properly
   hidePrivateData?: boolean
 }
 

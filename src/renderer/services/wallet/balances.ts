@@ -734,7 +734,7 @@ export const createBalancesService = ({
       ledgerChainBalance$({
         chain: AVAXChain,
         walletBalanceType: 'all',
-        getBalanceByAddress$: ETH.getBalanceByAddress$(network)
+        getBalanceByAddress$: AVAX.getBalanceByAddress$(network)
       })
     )
   )

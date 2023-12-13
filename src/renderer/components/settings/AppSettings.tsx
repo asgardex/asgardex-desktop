@@ -32,6 +32,8 @@ export type Props = {
   dex: Dex
   changeNetwork: (network: Network) => void
   changeDex: (dex: Dex) => void
+  togglePrivate: (isPrivate: boolean) => void
+  isPrivate: Boolean
   appUpdateState: RD.RemoteData<Error, O.Option<string>>
   checkForUpdates: FP.Lazy<void>
   goToReleasePage: (version: string) => void
@@ -74,6 +76,8 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
     changeDex = FP.constVoid,
     network,
     dex,
+    togglePrivate,
+    isPrivate,
     checkForUpdates,
     goToReleasePage = FP.constVoid,
     version,
@@ -315,7 +319,7 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
   const [advancedActive, setAdvancedActive] = useState(false)
 
   return (
-    <div className="mt-50px bg-bg0 py-10px px-40px dark:bg-bg0d">
+    <div className="mt-50px flex-row bg-bg0 py-10px px-40px dark:bg-bg0d">
       <CStyled.Collapse
         expandIcon={({ isActive }) => <CStyled.ExpandIcon rotate={isActive ? 90 : 0} />}
         activeKey={collapsed ? '0' : '1'}
@@ -325,86 +329,96 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
         <Collapse.Panel
           header={<CStyled.Title>{intl.formatMessage({ id: 'setting.app.title' })}</CStyled.Title>}
           key={'1'}>
-          <div className="card my-20px w-full p-[44px]">
-            <h1 className="pb-20px font-main text-18 uppercase text-text0 dark:text-text0d">
-              {intl.formatMessage({ id: 'common.general' })}
-            </h1>
-            <Section title={intl.formatMessage({ id: 'common.network' })}>{renderNetworkMenu}</Section>
-            <Section title={intl.formatMessage({ id: 'common.dex' })}>{renderDexMenu}</Section>
-            <Section title={intl.formatMessage({ id: 'setting.language' })}>{renderLangMenu}</Section>
-            <Section title={intl.formatMessage({ id: 'setting.version' })}>
-              <>
-                <Styled.Label>v{version}</Styled.Label>
-                <BorderButton size="normal" className="mt-10px" {...checkUpdatesProps} />
-                {renderVersionUpdateResult}
-              </>
-            </Section>
-          </div>
-          <div className="card mb-20px w-full p-40px">
-            <div className="flex items-center">
-              <TextButton
-                className={`mb-0 !py-0 !pr-10px !pl-0  font-main !text-18 uppercase text-text0 dark:text-text0d ${
-                  advancedActive ? 'opacity-100' : 'opacity-60'
-                }`}
-                onClick={() => setAdvancedActive((v) => !v)}>
-                {intl.formatMessage({ id: 'common.advanced' })}
-              </TextButton>
-              <SwitchButton active={advancedActive} onChange={(active) => setAdvancedActive(active)}></SwitchButton>
+          <div className="flex flex-col md:flex-row md:space-x-4">
+            <div className="card my-20px p-[44px] md:w-1/2">
+              <h1 className="pb-20px font-main text-18 uppercase text-text0 dark:text-text0d">
+                {intl.formatMessage({ id: 'common.general' })}
+              </h1>
+              <Section title={intl.formatMessage({ id: 'common.network' })}>{renderNetworkMenu}</Section>
+              <Section title={intl.formatMessage({ id: 'common.dex' })}>{renderDexMenu}</Section>
+              <Section title={intl.formatMessage({ id: 'setting.language' })}>{renderLangMenu}</Section>
+              <Section title={intl.formatMessage({ id: 'setting.version' })}>
+                <>
+                  <Styled.Label>v{version}</Styled.Label>
+                  <BorderButton size="normal" className="mt-10px" {...checkUpdatesProps} />
+                  {renderVersionUpdateResult}
+                </>
+              </Section>
             </div>
-            {advancedActive && (
-              <>
-                <Section className="mt-20px" title="Thorchain URls ">
-                  <Section className="ml-20px mt-10px" title="Midgard">
-                    <EditableUrl
-                      className="w-full xl:w-3/4"
-                      url={midgardUrl}
-                      onChange={onChangeMidgardUrl}
-                      loading={RD.isPending(midgardUrlRD)}
-                      checkUrl$={checkMidgardUrl$}
-                      successMsg={intl.formatMessage({ id: 'midgard.url.valid' })}
-                    />
+            <div className="card p-44px my-20px md:w-1/2">
+              <div className="flex items-center">
+                <TextButton
+                  className={`mb-0 !py-0 !pr-10px !pl-0 font-main !text-18 uppercase text-text0 dark:text-text0d ${
+                    advancedActive ? 'opacity-100' : 'opacity-60'
+                  }`}
+                  onClick={() => setAdvancedActive((v) => !v)}>
+                  {intl.formatMessage({ id: 'common.advanced' })}
+                </TextButton>
+                <SwitchButton active={advancedActive} onChange={(active) => setAdvancedActive(active)}></SwitchButton>
+                <TextButton
+                  className={`mb-0 pr-10px font-main !text-18 uppercase text-text0 dark:text-text0d ${
+                    isPrivate ? 'opacity-100' : 'opacity-60'
+                  }`}>
+                  {intl.formatMessage({ id: 'common.privateData' })}
+                </TextButton>
+                <SwitchButton onChange={togglePrivate}></SwitchButton>
+              </div>
+
+              {advancedActive && (
+                <>
+                  <Section className="mt-20px" title="Thorchain URls ">
+                    <Section className="ml-20px mt-10px" title="Midgard">
+                      <EditableUrl
+                        className="w-full xl:w-3/4"
+                        url={midgardUrl}
+                        onChange={onChangeMidgardUrl}
+                        loading={RD.isPending(midgardUrlRD)}
+                        checkUrl$={checkMidgardUrl$}
+                        successMsg={intl.formatMessage({ id: 'midgard.url.valid' })}
+                      />
+                    </Section>
+                    <Section className="ml-20px" title="THORNode API">
+                      <EditableUrl
+                        className="w-full xl:w-3/4"
+                        url={thornodeNodeUrl}
+                        onChange={onChangeThornodeNodeUrl}
+                        checkUrl$={checkThornodeNodeUrl$}
+                        successMsg={intl.formatMessage({ id: 'setting.thornode.node.valid' })}
+                      />
+                    </Section>
+                    <Section className="ml-20px" title="THORNode RPC">
+                      <EditableUrl
+                        className="w-full xl:w-3/4"
+                        url={thornodeRpcUrl}
+                        onChange={onChangeThornodeRpcUrl}
+                        checkUrl$={checkThornodeRpcUrl$}
+                        successMsg={intl.formatMessage({ id: 'setting.thornode.rpc.valid' })}
+                      />
+                    </Section>
                   </Section>
-                  <Section className="ml-20px" title="THORNode API">
-                    <EditableUrl
-                      className="w-full xl:w-3/4"
-                      url={thornodeNodeUrl}
-                      onChange={onChangeThornodeNodeUrl}
-                      checkUrl$={checkThornodeNodeUrl$}
-                      successMsg={intl.formatMessage({ id: 'setting.thornode.node.valid' })}
-                    />
+                  <Section className="mt-20px" title="Mayachain URls ">
+                    <Section className="ml-20px mt-10px" title="MayaNode API">
+                      <EditableUrl
+                        className="w-full xl:w-3/4"
+                        url={mayanodeNodeUrl}
+                        onChange={onChangeMayanodeNodeUrl}
+                        checkUrl$={checkMayanodeNodeUrl$}
+                        successMsg={intl.formatMessage({ id: 'setting.mayanode.node.valid' })}
+                      />
+                    </Section>
+                    <Section className="ml-20px" title="MAYANode RPC">
+                      <EditableUrl
+                        className="w-full xl:w-3/4"
+                        url={mayanodeRpcUrl}
+                        onChange={onChangeMayanodeRpcUrl}
+                        checkUrl$={checkMayanodeRpcUrl$}
+                        successMsg={intl.formatMessage({ id: 'setting.mayanode.rpc.valid' })}
+                      />
+                    </Section>
                   </Section>
-                  <Section className="ml-20px" title="THORNode RPC">
-                    <EditableUrl
-                      className="w-full xl:w-3/4"
-                      url={thornodeRpcUrl}
-                      onChange={onChangeThornodeRpcUrl}
-                      checkUrl$={checkThornodeRpcUrl$}
-                      successMsg={intl.formatMessage({ id: 'setting.thornode.rpc.valid' })}
-                    />
-                  </Section>
-                </Section>
-                <Section className="mt-20px" title="Mayachain URls ">
-                  <Section className="ml-20px mt-10px" title="MayaNode API">
-                    <EditableUrl
-                      className="w-full xl:w-3/4"
-                      url={mayanodeNodeUrl}
-                      onChange={onChangeMayanodeNodeUrl}
-                      checkUrl$={checkMayanodeNodeUrl$}
-                      successMsg={intl.formatMessage({ id: 'setting.mayanode.node.valid' })}
-                    />
-                  </Section>
-                  <Section className="ml-20px" title="MAYANode RPC">
-                    <EditableUrl
-                      className="w-full xl:w-3/4"
-                      url={mayanodeRpcUrl}
-                      onChange={onChangeMayanodeRpcUrl}
-                      checkUrl$={checkMayanodeRpcUrl$}
-                      successMsg={intl.formatMessage({ id: 'setting.mayanode.rpc.valid' })}
-                    />
-                  </Section>
-                </Section>
-              </>
-            )}
+                </>
+              )}
+            </div>
           </div>
         </Collapse.Panel>
       </CStyled.Collapse>

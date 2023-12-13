@@ -175,7 +175,7 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
         setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
       }
     },
-    [addressValidation, intl]
+    [InboundAddress, addressValidation, intl]
   )
 
   const maxAmount: BaseAmount = useMemo(() => {

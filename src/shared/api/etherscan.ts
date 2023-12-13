@@ -4,3 +4,4 @@ import { envOrDefault } from '../utils/env'
 require('dotenv').config()
 
 export const getEtherscanApiKey = () => envOrDefault(process.env.REACT_APP_ETHERSCAN_API_KEY, '')
+export const etherscanApiKey = envOrDefault(process.env.REACT_APP_ETHERSCAN_API_KEY, '')

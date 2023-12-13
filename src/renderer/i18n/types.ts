@@ -34,6 +34,7 @@ export type CommonMessageKey =
   | 'common.back'
   | 'common.general'
   | 'common.advanced'
+  | 'common.privateData'
   | 'common.keystore'
   | 'common.keystorePassword'
   | 'common.ledger'

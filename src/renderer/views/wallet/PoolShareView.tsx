@@ -29,6 +29,7 @@ import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { addressFromOptionalWalletAddress, addressFromWalletAddress } from '../../helpers/walletHelper'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
+import { usePrivateData } from '../../hooks/usePrivateData'
 import { WalletAddress$ } from '../../services/clients/types'
 import { PoolSharesRD } from '../../services/midgard/types'
 import { ledgerAddressToWalletAddress } from '../../services/wallet/util'
@@ -62,6 +63,8 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   const { addressByChain$ } = useChainContext()
 
   const { getLedgerAddress$ } = useWalletContext()
+
+  const { isPrivate } = usePrivateData()
 
   useEffect(() => {
     reloadAllPools()
@@ -178,11 +181,10 @@ export const PoolShareView: React.FC = (): JSX.Element => {
         total={sharesTotalRD}
         pricePool={selectedPricePool}
         title={intl.formatMessage({ id: 'wallet.shares.total' })}
-        // TODO (@veado) Handle private data
-        hidePrivateData={false}
+        hidePrivateData={isPrivate}
       />
     )
-  }, [allSharesRD, intl, poolDetailsRD, pricePoolData, selectedPricePool])
+  }, [allSharesRD, intl, isPrivate, poolDetailsRD, pricePoolData, selectedPricePool])
 
   const renderShares = useMemo(
     () =>

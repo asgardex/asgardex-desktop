@@ -296,7 +296,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
               </div>
 
               {isEthChain(chain) ||
-                (isAvaxChain(chain) && (
+                isAvaxChain(chain) ||
+                (isBscChain(chain) && (
                   <StyledR.Radio.Group
                     className="!flex flex-col items-start lg:flex-row lg:items-center lg:!pl-30px"
                     onChange={onChangeEvmDerivationMode}

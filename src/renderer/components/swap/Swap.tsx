@@ -647,7 +647,7 @@ export const Swap = ({
 
   // store affiliate fee
   const [affiliatePriceValue, setAffiliatePriceValue] = useState<CryptoAmount>(
-    new CryptoAmount(baseAmount(0, targetAssetDecimal), targetAsset)
+    new CryptoAmount(baseAmount(0, sourceAssetDecimal), sourceAsset)
   )
 
   // useEffect to fetch data from query
@@ -934,11 +934,21 @@ export const Swap = ({
           const in1e8 = to1e8BaseAmount(inFee.baseAmount)
           const out1e8 = to1e8BaseAmount(outFee.baseAmount)
           const affiliate = to1e8BaseAmount(affiliateFee.baseAmount)
-          const slip = to1e8BaseAmount(priceAmountToSwapMax1e8.baseAmount.times(swapSlippage / 100)) // adding slip costs to total fees
+          const slipbps = isStreaming ? swapStreamingSlippage : swapSlippage
+          const slip = priceAmountToSwapMax1e8.baseAmount.times(slipbps / 100)
+          // adding slip costs to total fees
           return { asset: inFee.asset, amount: in1e8.plus(out1e8).plus(affiliate).plus(slip) }
         })
       ),
-    [oPriceSwapInFee, outFeePriceValue, affiliatePriceValue, priceAmountToSwapMax1e8.baseAmount, swapSlippage]
+    [
+      oPriceSwapInFee,
+      outFeePriceValue,
+      affiliatePriceValue,
+      isStreaming,
+      swapStreamingSlippage,
+      swapSlippage,
+      priceAmountToSwapMax1e8.baseAmount
+    ]
   )
 
   const priceSwapFeesLabel = useMemo(() => {
@@ -1816,7 +1826,7 @@ export const Swap = ({
 
     const error = oQuote.value.txEstimate.errors[0].split(':')
 
-    if (error[2].includes('pool') && error[2].includes('not available')) {
+    if (!isLocked && error[2].includes('pool') && error[2].includes('not available')) {
       return <ErrorLabel>{intl.formatMessage({ id: 'swap.errors.pool.notAvailable' }, { pool: error[2] })}</ErrorLabel>
     }
 

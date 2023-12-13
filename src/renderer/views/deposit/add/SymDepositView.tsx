@@ -29,6 +29,7 @@ import { useLedgerAddresses } from '../../../hooks/useLedgerAddresses'
 import { useLiquidityProviders } from '../../../hooks/useLiquidityProviders'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
+import { usePrivateData } from '../../../hooks/usePrivateData'
 import { useProtocolLimit } from '../../../hooks/useProtocolLimit'
 import * as poolsRoutes from '../../../routes/pools'
 import { PoolAddress, PoolAssetsRD } from '../../../services/midgard/types'
@@ -50,6 +51,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
   const intl = useIntl()
 
   const { network } = useNetwork()
+  const { isPrivate } = usePrivateData()
 
   const { reloadInboundAddresses } = useThorchainContext()
 
@@ -216,8 +218,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
           openAsymDepositTool={openAsymDepositTool}
           assetWalletType={assetWalletAddress.type}
           runeWalletType={runeWalletAddress.type}
-          // TODO (@veado) Handle private data
-          hidePrivateData={false}
+          hidePrivateData={isPrivate}
         />
       </>
     ),
@@ -244,7 +245,8 @@ export const SymDepositView: React.FC<Props> = (props) => {
       openRecoveryTool,
       openAsymDepositTool,
       assetWalletAddress.type,
-      runeWalletAddress.type
+      runeWalletAddress.type,
+      isPrivate
     ]
   )
 
@@ -300,8 +302,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
               openAsymDepositTool={openAsymDepositTool}
               assetWalletType={assetWalletAddress.type}
               runeWalletType={runeWalletAddress.type}
-              // TODO (@veado) Handle private data
-              hidePrivateData={false}
+              hidePrivateData={isPrivate}
             />
           </>
         )

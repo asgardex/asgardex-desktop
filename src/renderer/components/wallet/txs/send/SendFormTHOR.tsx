@@ -94,7 +94,17 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
 
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
+  const [currentMemo, setCurrentMemo] = useState('')
+
   const [form] = Form.useForm<FormValues>()
+
+  const handleMemo = useCallback(() => {
+    const memoValue = form.getFieldValue('memo') as string
+
+    // Update the state with the adjusted memo value
+    setCurrentMemo(memoValue)
+    setShowDetails(true)
+  }, [form])
 
   const oRuneNativeAmount: O.Option<BaseAmount> = useMemo(() => {
     // return balance of current asset (if RuneNative)
@@ -279,20 +289,20 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
         recipient,
         asset,
         amount: amountToSend,
-        memo: form.getFieldValue('memo'),
+        memo: currentMemo,
         hdMode
       })
     )
   }, [
+    oThorname,
+    recipientAddress,
     subscribeSendTxState,
     transfer$,
     walletType,
     walletIndex,
-    oThorname,
-    recipientAddress,
     asset,
     amountToSend,
-    form,
+    currentMemo,
     hdMode
   ])
 
@@ -443,7 +453,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
             {renderFeeError}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
             <Form.Item name="memo">
-              <Styled.Input size="large" disabled={isLoading} />
+              <Styled.Input size="large" disabled={isLoading} onChange={handleMemo} />
             </Form.Item>
           </Styled.SubForm>
           <FlatButton
@@ -490,9 +500,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
                 </div>
                 <div className="flex w-full items-center justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
                   {intl.formatMessage({ id: 'common.memo' })}
-                  <div className="truncate pl-10px font-main text-[12px] leading-normal">
-                    {form.getFieldValue('memo')}
-                  </div>
+                  <div className="truncate pl-10px font-main text-[12px] leading-normal">{currentMemo}</div>
                 </div>
               </>
             )}

@@ -45,6 +45,7 @@ import { UIFeesRD } from '../../../uielements/fees'
 import { InputBigNumber } from '../../../uielements/input'
 import { AccountSelector } from '../../account'
 import * as H from '../TxForm.helpers'
+import { checkMemo } from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
 import { validateTxAmountInput } from '../TxForm.util'
 import { DEFAULT_FEE_OPTION } from './Send.const'
@@ -113,6 +114,10 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
   const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+  const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
+
+  const [currentMemo, setCurrentMemo] = useState('')
+  const [affiliateTracking, setAffiliateTracking] = useState<string>('')
 
   const [warningMessage, setWarningMessage] = useState<string>('')
   const feeRD: FeeRD = useMemo(
@@ -130,6 +135,37 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
   )
 
   const feesAvailable = useMemo(() => O.isSome(oFeesWithRates), [oFeesWithRates])
+
+  const handleMemo = useCallback(() => {
+    let memoValue = form.getFieldValue('memo') as string
+
+    // Check if a swap memo is detected
+    if (checkMemo(memoValue)) {
+      const suffixPattern = /:dx:\d+$/ // Regex to match ':dx:' followed by any number
+
+      // Check if memo ends with the suffix pattern
+      if (!suffixPattern.test(memoValue)) {
+        // Remove any partial ':dx:' pattern before appending
+        memoValue = memoValue.replace(/:dx:\d*$/, '')
+
+        // Append ':dx:0'
+        memoValue += ':dx:0'
+      }
+
+      setSwapMemoDetected(true)
+      setAffiliateTracking(
+        memoValue.endsWith(':dx:10')
+          ? `Swap memo detected`
+          : `Swap memo detected affiliate tracking applied (:dx:0) or donate (:dx:1-9)`
+      )
+    } else {
+      setSwapMemoDetected(false)
+    }
+
+    // Update the state with the adjusted memo value
+    setCurrentMemo(memoValue)
+    setShowDetails(true)
+  }, [form])
 
   // useEffect to fetch data from query
   useEffect(() => {
@@ -364,7 +400,7 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
         asset: asset,
         amount: amountToSend,
         feeOption: selectedFeeOption,
-        memo: form.getFieldValue('memo')
+        memo: currentMemo
       })
     )
   }, [
@@ -377,7 +413,8 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
     form,
     asset,
     amountToSend,
-    selectedFeeOption
+    selectedFeeOption,
+    currentMemo
   ])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
@@ -540,8 +577,9 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
             {renderFeeError}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
             <Form.Item name="memo">
-              <Styled.Input size="large" disabled={isLoading} />
+              <Styled.Input size="large" disabled={isLoading} onChange={handleMemo} />
             </Form.Item>
+            {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
             <Form.Item name="feeRate">{renderFeeOptions}</Form.Item>
           </Styled.SubForm>
           <FlatButton
@@ -580,9 +618,7 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
                 </div>
                 <div className="flex w-full items-center justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
                   {intl.formatMessage({ id: 'common.memo' })}
-                  <div className="truncate pl-10px font-main text-[12px] leading-normal">
-                    {form.getFieldValue('memo')}
-                  </div>
+                  <div className="truncate pl-10px font-main text-[12px] leading-normal">{currentMemo}</div>
                 </div>
               </>
             )}

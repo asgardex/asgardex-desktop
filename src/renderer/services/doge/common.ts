@@ -8,7 +8,7 @@ import * as Rx from 'rxjs'
 import { Observable } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { blockcypherApiKeyDoge, blockcypherUrl } from '../../../shared/api/blockcypher'
+import { blockcypherApiKey, blockcypherUrl } from '../../../shared/api/blockcypher'
 import { isError } from '../../../shared/utils/guard'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
@@ -38,7 +38,7 @@ const clientState$: ClientState$ = FP.pipe(
                 AssetDOGE,
                 8,
                 BlockcypherNetwork.DOGE,
-                blockcypherApiKeyDoge || ''
+                blockcypherApiKey || ''
               )
               const mainnetBlockcypherProvider = new BlockcypherProvider(
                 blockcypherUrl,
@@ -46,7 +46,7 @@ const clientState$: ClientState$ = FP.pipe(
                 AssetDOGE,
                 8,
                 BlockcypherNetwork.DOGE,
-                blockcypherApiKeyDoge || ''
+                blockcypherApiKey || ''
               )
               const BlockcypherDataProviders: UtxoOnlineDataProviders = {
                 [Network.Testnet]: testnetBlockcypherProvider,

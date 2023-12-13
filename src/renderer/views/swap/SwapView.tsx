@@ -41,6 +41,7 @@ import { addressFromOptionalWalletAddress, getWalletAddressFromNullableString } 
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
+import { usePrivateData } from '../../hooks/usePrivateData'
 import { useValidateAddress } from '../../hooks/useValidateAddress'
 import { swap } from '../../routes/pools'
 import { SwapRouteParams, SwapRouteTargetWalletType } from '../../routes/pools/swap'
@@ -86,6 +87,7 @@ const SuccessRouteView: React.FC<Props> = ({
 
   const { reloadInboundAddresses } = useThorchainContext()
   const { thorchainQuery } = useThorchainQueryContext()
+  const { isPrivate } = usePrivateData()
 
   const { service: midgardService } = useMidgardContext()
   const {
@@ -423,8 +425,7 @@ const SuccessRouteView: React.FC<Props> = ({
                   isApprovedERC20Token$={isApprovedERC20Token$}
                   importWalletHandler={importWalletHandler}
                   addressValidator={validateSwapAddress}
-                  // TODO (@veado) Handle private data
-                  hidePrivateData={false}
+                  hidePrivateData={isPrivate}
                   thorchainQuery={thorchainQuery}
                 />
               )

@@ -36,6 +36,7 @@ import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { usePricePool } from '../../hooks/usePricePool'
+import { usePrivateData } from '../../hooks/usePrivateData'
 import * as poolsRoutes from '../../routes/pools'
 import { SaversRouteParams } from '../../routes/pools/savers'
 import * as saversRoutes from '../../routes/pools/savers'
@@ -83,7 +84,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   const { network } = useNetwork()
 
   const { thorchainQuery } = useThorchainQueryContext()
-
+  const { isPrivate } = usePrivateData()
   const { getSaverProvider$, reloadSaverProvider, reloadInboundAddresses } = useThorchainContext()
 
   const { assetWithDecimal$, addressByChain$, reloadSaverDepositFee, saverDeposit$, saverWithdraw$ } = useChainContext()
@@ -310,7 +311,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         approveERC20Token$={approveERC20Token$}
                         poolAddress={oPoolAddress}
                         saverDeposit$={saverDeposit$}
-                        hidePrivateData={false}
+                        hidePrivateData={isPrivate}
                         onChangeAsset={onChangeAssetHandler}
                         disableSaverAction={checkDisableSaverAction()}
                       />
@@ -341,7 +342,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         approveERC20Token$={approveERC20Token$}
                         poolAddress={oPoolAddress}
                         saverWithdraw$={saverWithdraw$}
-                        hidePrivateData={false}
+                        hidePrivateData={isPrivate}
                         onChangeAsset={onChangeAssetHandler}
                         saverPosition={getSaverProvider$}
                         disableSaverAction={checkDisableSaverAction()}

@@ -6,6 +6,8 @@ import {
   changeNetwork,
   dex$,
   changeDex,
+  privateData$,
+  changePrivateData,
   clientNetwork$,
   slipTolerance$,
   changeSlipTolerance,
@@ -24,6 +26,8 @@ type AppContextValue = {
   network$: typeof network$
   dex$: typeof dex$
   changeDex: ChangeDexHandler
+  privateData$: typeof privateData$
+  changePrivateData: (value: boolean) => void
   changeNetwork: ChangeNetworkHandler
   clientNetwork$: typeof clientNetwork$
   slipTolerance$: typeof slipTolerance$
@@ -36,6 +40,8 @@ const initialContext: AppContextValue = {
   network$,
   dex$,
   changeDex,
+  privateData$,
+  changePrivateData,
   changeNetwork,
   clientNetwork$,
   slipTolerance$,
