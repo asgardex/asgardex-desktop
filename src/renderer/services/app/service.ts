@@ -15,7 +15,8 @@ import {
   CollapsableSettings,
   SettingType,
   ToggleCollapsableSetting,
-  Dex$
+  Dex$,
+  PrivateData$
 } from './types'
 
 // Check online status
@@ -35,15 +36,23 @@ const { get$: getNetwork$, set: changeNetwork, get: getCurrentNetworkState } = o
  */
 const { get$: getDex$, set: changeDex, get: getCurrentDexState } = observableState<Dex>(DEFAULT_DEX)
 
+/**
+ * State of private Data
+ */
+const {
+  get$: getPrivateData$,
+  set: changePrivateData,
+  get: getCurrentPrivateDataState
+} = observableState<boolean>(false)
+
 // Since `network$` based on `observableState` and it takes an initial value,
 // it might emit same values, we don't interested in.
 // So we do need a simple "dirty check" to provide "real" changes of selected network
 const network$: Network$ = getNetwork$.pipe(distinctUntilChanged())
 
-// Since `network$` based on `observableState` and it takes an initial value,
-// it might emit same values, we don't interested in.
-// So we do need a simple "dirty check" to provide "real" changes of selected network
 const dex$: Dex$ = getDex$.pipe(distinctUntilChanged())
+
+const privateData$: PrivateData$ = getPrivateData$.pipe(distinctUntilChanged())
 
 const clientNetwork$: Rx.Observable<Client.Network> = network$.pipe(RxOp.map(toClientNetwork))
 
@@ -79,6 +88,9 @@ export {
   changeDex,
   getCurrentDexState,
   getCurrentNetworkState,
+  privateData$,
+  changePrivateData,
+  getCurrentPrivateDataState,
   clientNetwork$,
   slipTolerance$,
   changeSlipTolerance,

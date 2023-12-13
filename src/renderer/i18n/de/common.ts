@@ -34,6 +34,7 @@ const common: CommonMessages = {
   'common.back': 'Zurück',
   'common.general': 'Allgemein',
   'common.advanced': 'Erweitert',
+  'common.privateData': 'Privégegevens',
   'common.date': 'Datum',
   'common.remove': 'Entfernen',
   'common.keystore': 'Keystore',

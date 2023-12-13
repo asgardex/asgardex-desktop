@@ -19,6 +19,7 @@ import { useWalletContext } from '../../contexts/WalletContext'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
+import { usePrivateData } from '../../hooks/usePrivateData'
 import { useTotalWalletBalance } from '../../hooks/useWalletBalance'
 import * as walletRoutes from '../../routes/wallet'
 import { reloadBalancesByChain } from '../../services/wallet'
@@ -32,6 +33,8 @@ export const AssetsView: React.FC = (): JSX.Element => {
   const { chainBalances$, balancesState$, setSelectedAsset } = useWalletContext()
 
   const { network } = useNetwork()
+
+  const { isPrivate } = usePrivateData()
 
   const [chainBalances] = useObservableState(
     () =>
@@ -124,8 +127,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
         pricePool={selectedPricePool}
         title={intl.formatMessage({ id: 'wallet.balance.total.poolAssets' })}
         info={intl.formatMessage({ id: 'wallet.balance.total.poolAssets.info' })}
-        // TODO (@veado) Handle private data
-        hidePrivateData={false}
+        hidePrivateData={isPrivate}
       />
 
       <AssetsTableCollapsable
@@ -139,8 +141,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
         assetHandler={assetHandler}
         mimirHalt={mimirHaltRD}
         network={network}
-        // TODO (@veado) Handle private data
-        hidePrivateData={false}
+        hidePrivateData={isPrivate}
       />
     </>
   )

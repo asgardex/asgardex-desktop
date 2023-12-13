@@ -564,6 +564,26 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     [memo]
   )
 
+  const renderRadioGroup = useMemo(
+    () => (
+      <StyledR.Radio.Group onChange={() => estimateThornameHandler()}>
+        <StyledR.Radio className="text-gray2 dark:text-gray2d" value={1}>
+          1 year
+        </StyledR.Radio>
+        <StyledR.Radio className="text-gray2 dark:text-gray2d" value={2}>
+          2 years
+        </StyledR.Radio>
+        <StyledR.Radio className="text-gray2 dark:text-gray2d" value={3}>
+          3 years
+        </StyledR.Radio>
+        <StyledR.Radio className="text-gray2 dark:text-gray2d" value={5}>
+          5 years
+        </StyledR.Radio>
+      </StyledR.Radio.Group>
+    ),
+    [estimateThornameHandler]
+  )
+
   const submitLabel = useMemo(() => {
     switch (interactType) {
       case 'bond':
@@ -821,7 +841,6 @@ export const InteractFormThor: React.FC<Props> = (props) => {
               )}
               {!thornameRegister ? (
                 <>
-                  {' '}
                   <div className="flex w-full items-center text-[12px]">
                     <Styled.InputLabel>{intl.formatMessage({ id: 'common.preferredAsset' })}</Styled.InputLabel>
                   </div>
@@ -833,10 +852,18 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                       }
                     ]}>
                     <StyledR.Radio.Group onChange={handleRadioAssetChange} value={preferredAsset}>
-                      <StyledR.Radio value={AssetRuneNative}>RUNE</StyledR.Radio>
-                      <StyledR.Radio value={AssetBTC}>BTC</StyledR.Radio>
-                      <StyledR.Radio value={AssetETH}>ETH</StyledR.Radio>
-                      <StyledR.Radio value={AssetUSDTDAC}>USDT</StyledR.Radio>
+                      <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetBNB}>
+                        BNB
+                      </StyledR.Radio>
+                      <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetBTC}>
+                        BTC
+                      </StyledR.Radio>
+                      <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetETH}>
+                        ETH
+                      </StyledR.Radio>
+                      <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetUSDTDAC}>
+                        USDT
+                      </StyledR.Radio>
                     </StyledR.Radio.Group>
                   </Styled.FormItem>
                   {/* Add input fields for aliasChain, aliasAddress, and expiry */}
@@ -850,10 +877,18 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                       }
                     ]}>
                     <StyledR.Radio.Group onChange={handleRadioChainChange} value={aliasChain}>
-                      <StyledR.Radio value={AssetAVAX.chain}>AVAX</StyledR.Radio>
-                      <StyledR.Radio value={AssetBTC.chain}>BTC</StyledR.Radio>
-                      <StyledR.Radio value={AssetETH.chain}>ETH</StyledR.Radio>
-                      <StyledR.Radio value={AssetBNB.chain}>BNB</StyledR.Radio>
+                      <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetAVAX.chain}>
+                        AVAX
+                      </StyledR.Radio>
+                      <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.chain}>
+                        BTC
+                      </StyledR.Radio>
+                      <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetETH.chain}>
+                        ETH
+                      </StyledR.Radio>
+                      <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetBNB.chain}>
+                        BNB
+                      </StyledR.Radio>
                     </StyledR.Radio.Group>
                   </Styled.FormItem>
                   <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasAddress' })}</Styled.InputLabel>
@@ -875,17 +910,11 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                         required: false
                       }
                     ]}>
-                    <StyledR.Radio.Group onChange={() => estimateThornameHandler()}>
-                      <StyledR.Radio value={1}>1 year</StyledR.Radio>
-                      <StyledR.Radio value={2}>2 years</StyledR.Radio>
-                      <StyledR.Radio value={3}>3 years</StyledR.Radio>
-                      <StyledR.Radio value={5}>5 years</StyledR.Radio>
-                    </StyledR.Radio.Group>
+                    {renderRadioGroup}
                   </Styled.FormItem>
                 </>
               ) : (
                 <>
-                  {' '}
                   {/* Initial values needed for tns register */}
                   <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasChain' })}</Styled.InputLabel>
                   <Styled.FormItem
@@ -919,12 +948,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                         required: true
                       }
                     ]}>
-                    <StyledR.Radio.Group onChange={() => estimateThornameHandler()}>
-                      <StyledR.Radio value={1}>1 year</StyledR.Radio>
-                      <StyledR.Radio value={2}>2 years</StyledR.Radio>
-                      <StyledR.Radio value={3}>3 years</StyledR.Radio>
-                      <StyledR.Radio value={5}>5 years</StyledR.Radio>
-                    </StyledR.Radio.Group>
+                    {renderRadioGroup}
                   </Styled.FormItem>
                 </>
               )}
@@ -935,7 +959,6 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       </>
       {thornameQuoteValid && (
         <>
-          {' '}
           <div>
             <FlatButton
               className="mt-10px min-w-[200px]"

@@ -72,3 +72,12 @@ export const getSendTxDescription = ({
 
 export const hasFormErrors = (form: FormInstance) =>
   !!form.getFieldsError().filter(({ errors }) => errors.length).length
+
+// detecting a swap memo
+export function checkMemo(memo: string): boolean {
+  // Check if the memo is not empty and starts with '=' or 'SWAP'
+  if (memo.startsWith('=') || memo.startsWith('SWAP')) {
+    return true
+  }
+  return false
+}

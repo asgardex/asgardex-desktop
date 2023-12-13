@@ -1,4 +1,17 @@
-# 1.20.8 (2023-12-07)
+# 1.20.9 (2023-12-13)
+
+## Add
+
+- Fix ledger send and deposit functions [#72](https://github.com/asgardex/asgardex-desktop/issues/72) - AVAX and BSC
+- Add: Privacy mode [#113](https://github.com/asgardex/asgardex-desktop/issues/113) (Savers to be added)
+
+## Updates/Fixes
+
+- Add up Savers Total Value, like LP Total Value[#81](https://github.com/asgardex/asgardex-desktop/issues/81)
+- API key fix
+- Minior Bugs fixes
+
+# 1.20.8 (2023-12-13)
 
 ## Add
 

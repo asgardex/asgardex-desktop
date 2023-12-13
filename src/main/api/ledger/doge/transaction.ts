@@ -14,7 +14,7 @@ import { Address, BaseAmount } from '@xchainjs/xchain-util'
 import { BlockcypherProvider, BlockcypherNetwork } from '@xchainjs/xchain-utxo-providers'
 import * as E from 'fp-ts/lib/Either'
 
-import { blockcypherApiKeyDoge } from '../../../../shared/api/blockcypher'
+import { blockcypherApiKey } from '../../../../shared/api/blockcypher'
 import { LedgerError, LedgerErrorId, Network as LedgerNetwork } from '../../../../shared/api/types'
 import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
@@ -29,7 +29,7 @@ const testnetBlockcypherProvider = new BlockcypherProvider(
   AssetDOGE,
   8,
   BlockcypherNetwork.DOGE,
-  blockcypherApiKeyDoge || ''
+  blockcypherApiKey || ''
 )
 
 const mainnetBlockcypherProvider = new BlockcypherProvider(
@@ -38,7 +38,7 @@ const mainnetBlockcypherProvider = new BlockcypherProvider(
   AssetDOGE,
   8,
   BlockcypherNetwork.DOGE,
-  blockcypherApiKeyDoge || ''
+  blockcypherApiKey || ''
 )
 const BlockcypherDataProviders: UtxoOnlineDataProviders = {
   [Network.Testnet]: testnetBlockcypherProvider,

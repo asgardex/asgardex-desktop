@@ -14,6 +14,7 @@ import { useCollapsedSetting } from '../../hooks/useCollapsedSetting'
 import { useDex } from '../../hooks/useDex'
 import { useMayachainClientUrl } from '../../hooks/useMayachainClientUrl'
 import { useNetwork } from '../../hooks/useNetwork'
+import { usePrivateData } from '../../hooks/usePrivateData'
 import { useThorchainClientUrl } from '../../hooks/useThorchainClientUrl'
 
 export const AppSettingsView: React.FC = (): JSX.Element => {
@@ -24,6 +25,8 @@ export const AppSettingsView: React.FC = (): JSX.Element => {
     service: { apiEndpoint$, setMidgardUrl, checkMidgardUrl$ }
   } = useMidgardContext()
   const midgardUrl = useObservableState(apiEndpoint$, RD.initial)
+
+  const { isPrivate, changePrivateData } = usePrivateData()
 
   const { collapsed, toggle: toggleCollapse } = useCollapsedSetting('app')
 
@@ -68,6 +71,8 @@ export const AppSettingsView: React.FC = (): JSX.Element => {
       dex={dex}
       changeNetwork={changeNetwork}
       changeDex={changeDex}
+      togglePrivate={changePrivateData}
+      isPrivate={isPrivate}
       version={envOrDefault($VERSION, '-')}
       appUpdateState={appUpdater}
       checkForUpdates={checkForUpdates}

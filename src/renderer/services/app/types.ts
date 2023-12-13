@@ -10,8 +10,10 @@ export enum OnlineStatus {
 
 export type ChangeNetworkHandler = (network: Network) => void
 export type ChangeDexHandler = (dex: Dex) => void
+export type ChangePrivateDataHandler = (value: boolean) => void
 export type Network$ = Rx.Observable<Network>
 export type Dex$ = Rx.Observable<Dex>
+export type PrivateData$ = Rx.Observable<boolean>
 
 export type ChangeSlipToleranceHandler = (slip: SlipTolerance) => void
 export type SlipTolerance$ = Rx.Observable<SlipTolerance>

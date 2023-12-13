@@ -22,12 +22,16 @@ type StoryArgs = {
   onChangeMayanodeRpcUrl: (url: string) => void
   changeNetwork: ChangeNetworkHandler
   changeDex: ChangeDexHandler
+  togglePrivate: () => void
+  isPrivate: boolean
   collapsed: boolean
 }
 
 const Template = ({
   changeNetwork,
   changeDex,
+  togglePrivate,
+  isPrivate,
   updateDataRD,
   checkForUpdates,
   goToReleasePage,
@@ -51,6 +55,8 @@ const Template = ({
       changeNetwork={changeNetwork}
       dex="THOR"
       changeDex={changeDex}
+      togglePrivate={togglePrivate}
+      isPrivate={isPrivate}
       appUpdateState={appUpdateState}
       checkForUpdates={checkForUpdates}
       goToReleasePage={goToReleasePage}

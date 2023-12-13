@@ -21,7 +21,7 @@ import {
   isRuneNativeAsset,
   isCacaoAsset
 } from './assetHelper'
-import { isBchChain, isDogeChain, isLtcChain, isThorChain } from './chainHelper'
+import { isBchChain, isDogeChain, isLtcChain, isMayaChain, isThorChain } from './chainHelper'
 import { eqAddress, eqAsset, eqWalletType } from './fp/eq'
 
 /**
@@ -181,6 +181,8 @@ export const isEnabledLedger = (chain: Chain, network: Network) => {
   if (isBchChain(chain) && network === 'testnet') return false
   // No DOGE support on `testnet`
   if (isDogeChain(chain) && network === 'testnet') return false
+  // Disable for these chains
+  if (isMayaChain(chain)) return false
   return true
 }
 

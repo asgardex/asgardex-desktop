@@ -47,6 +47,7 @@ import { UIFeesRD } from '../../../uielements/fees'
 import { InputBigNumber } from '../../../uielements/input'
 import { AccountSelector } from '../../account'
 import * as H from '../TxForm.helpers'
+import { checkMemo } from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
 import { validateTxAmountInput } from '../TxForm.util'
 import { DEFAULT_FEE_OPTION } from './Send.const'
@@ -119,6 +120,42 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
   const [InboundAddress, setInboundAddress] = useState<string>('')
   const [routerAddress, setRouterAddress] = useState<string | undefined>(undefined)
+
+  const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
+
+  const [currentMemo, setCurrentMemo] = useState('')
+  const [affiliateTracking, setAffiliateTracking] = useState<string>('')
+
+  const handleMemo = useCallback(() => {
+    let memoValue = form.getFieldValue('memo') as string
+
+    // Check if a swap memo is detected
+    if (checkMemo(memoValue)) {
+      const suffixPattern = /:dx:\d+$/ // Regex to match ':dx:' followed by any number
+
+      // Check if memo ends with the suffix pattern
+      if (!suffixPattern.test(memoValue)) {
+        // Remove any partial ':dx:' pattern before appending
+        memoValue = memoValue.replace(/:dx:\d*$/, '')
+
+        // Append ':dx:0'
+        memoValue += ':dx:0'
+      }
+
+      setSwapMemoDetected(true)
+      setAffiliateTracking(
+        memoValue.endsWith(':dx:10')
+          ? `Swap memo detected`
+          : `Swap memo detected affiliate tracking applied (:dx:0) or donate (:dx:1-9)`
+      )
+    } else {
+      setSwapMemoDetected(false)
+    }
+
+    // Update the state with the adjusted memo value
+    setCurrentMemo(memoValue)
+    setShowDetails(true)
+  }, [form])
 
   // useEffect to fetch data from query
   useEffect(() => {
@@ -369,12 +406,12 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         <>
           <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
           <Form.Item name="memo">
-            <Styled.Input size="large" disabled={isLoading} onBlur={reloadFees} />
+            <Styled.Input size="large" disabled={isLoading} onBlur={reloadFees} onChange={handleMemo} />
           </Form.Item>
         </>
       )
     }
-  }, [asset, intl, isLoading, reloadFees])
+  }, [asset, handleMemo, intl, isLoading, reloadFees])
 
   // Send tx start time
   const [sendTxStartTime, setSendTxStartTime] = useState<number>(0)
@@ -400,7 +437,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
               asset,
               amount,
               feeOption: selectedFeeOption,
-              memo: form.getFieldValue('memo')
+              memo: currentMemo
             })
           )
           return true
@@ -417,7 +454,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       walletAddress,
       asset,
       selectedFeeOption,
-      form
+      currentMemo
     ]
   )
 
@@ -619,6 +656,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
             <Styled.Fees fees={uiFeesRD} reloadFees={reloadFees} disabled={isLoading} />
             {renderFeeError}
             {renderMemo}
+            {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
             <Form.Item name="fee">{renderFeeOptions}</Form.Item>
           </Styled.SubForm>
           <FlatButton
@@ -657,9 +695,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
                 </div>
                 <div className="flex w-full items-center justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
                   {intl.formatMessage({ id: 'common.memo' })}
-                  <div className="truncate pl-10px font-main text-[12px] leading-normal">
-                    {form.getFieldValue('memo')}
-                  </div>
+                  <div className="truncate pl-10px font-main text-[12px] leading-normal">{currentMemo}</div>
                 </div>
               </>
             )}

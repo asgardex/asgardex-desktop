@@ -3,13 +3,23 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
-import { Asset, assetFromStringEx, BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
+import {
+  Asset,
+  assetFromStringEx,
+  BaseAmount,
+  baseAmount,
+  Chain,
+  formatAssetAmountCurrency,
+  baseToAsset,
+  assetAmount
+} from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
+import { useIntl } from 'react-intl'
 import * as Rx from 'rxjs'
 import { from } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -19,10 +29,12 @@ import { WalletType } from '../../../shared/wallet/types'
 import { SaversDetailsTable } from '../../components/savers/SaversDetailsTable'
 import { RefreshButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
+import * as Styled from '../../components/wallet/assets/TotalValue.styles'
 import { useChainContext } from '../../contexts/ChainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useWalletContext } from '../../contexts/WalletContext'
+import { isUSDAsset } from '../../helpers/assetHelper'
 import { isMayaChain, isThorChain } from '../../helpers/chainHelper'
 import { sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
@@ -47,7 +59,7 @@ export type ParentProps = {
 }
 
 export const SaversDetailsView: React.FC = (): JSX.Element => {
-  //const intl = useIntl()
+  const intl = useIntl()
 
   const { network } = useNetwork()
   const {
@@ -231,6 +243,30 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
     setAssetDetailsArray(assetDetails)
   }, [allSaverProviders, network, poolsStateRD, pricePool])
 
+  const totalRedeemPrice = useMemo(() => {
+    const sum = assetDetailsArray.reduce((acc, item) => {
+      return acc + baseToAsset(item.redeem.price).amount().toNumber()
+    }, 0)
+    const formattedTotal = formatAssetAmountCurrency({
+      amount: assetAmount(sum),
+      asset: pricePool.asset,
+      decimal: isUSDAsset(pricePool.asset) ? 2 : 6
+    })
+
+    return formattedTotal
+  }, [assetDetailsArray, pricePool])
+
+  const renderSaversTotal = useMemo(() => {
+    return (
+      <Styled.Container>
+        <Styled.TitleContainer>
+          <Styled.BalanceTitle>{intl.formatMessage({ id: 'wallet.shares.total' })}</Styled.BalanceTitle>
+        </Styled.TitleContainer>
+        <Styled.BalanceLabel>{totalRedeemPrice}</Styled.BalanceLabel>
+      </Styled.Container>
+    )
+  }, [intl, totalRedeemPrice])
+
   const refreshHandler = useCallback(() => {
     reloadAllPools()
     reloadSaverProvider()
@@ -241,6 +277,7 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
         <RefreshButton onClick={refreshHandler} disabled={false} />
       </Row>
       <AssetsNav />
+      {renderSaversTotal}
       <SaversDetailsTable assetDetails={assetDetailsArray} />
     </div>
   )
