@@ -17,7 +17,7 @@ import { SymDeposit } from '../../../components/deposit/add'
 import { Alert } from '../../../components/uielements/alert'
 import { ASYM_DEPOSIT_TOOL_URL, RECOVERY_TOOL_URL, ZERO_POOL_DATA } from '../../../const'
 import { useChainContext } from '../../../contexts/ChainContext'
-import { useEthereumContext } from '../../../contexts/EthereumContext'
+import { useEvmContext } from '../../../contexts/EvmContext'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
@@ -78,7 +78,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
 
   const { data: protocolLimitRD } = useProtocolLimit()
 
-  const { approveERC20Token$, isApprovedERC20Token$, approveFee$, reloadApproveFee } = useEthereumContext()
+  const { approveERC20Token$, isApprovedERC20Token$, approveFee$, reloadApproveFee } = useEvmContext(asset.chain)
 
   // reload inbound addresses at `onMount` to get always latest `pool address` + `feeRates`
   useEffect(() => {

@@ -30,7 +30,7 @@ const testnetHaskoinProvider = new HaskoinProvider(
 )
 
 const LOWER_FEE_BOUND = 1
-const UPPER_FEE_BOUND = 900
+const UPPER_FEE_BOUND = 2000
 
 const mainnetHaskoinProvider = new HaskoinProvider('https://api.haskoin.com', BTCChain, AssetBTC, 8, HaskoinNetwork.BTC)
 const HaskoinDataProviders: UtxoOnlineDataProviders = {
