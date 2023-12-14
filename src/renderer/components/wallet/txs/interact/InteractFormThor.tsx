@@ -33,7 +33,7 @@ import { AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../../../../sh
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../shared/wallet/types'
 import { AssetUSDC, AssetUSDTDAC, ZERO_BASE_AMOUNT } from '../../../../const'
-import { THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
+import { THORCHAIN_DECIMAL, isUSDAsset } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
 import { getBondMemo, getLeaveMemo, getUnbondMemo } from '../../../../helpers/memoHelper'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
@@ -117,11 +117,11 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     switch (interactType) {
       case 'bond':
       case 'custom':
-      case 'unbond':
       case 'thorname':
       case 'mayaname':
         return _amountToSend
       case 'leave':
+      case 'unbond':
         return ZERO_BASE_AMOUNT
     }
   }, [_amountToSend, interactType])
@@ -1042,6 +1042,17 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                 }),
                 O.toNullable
               )}
+              <div className="ml-[-2px] flex w-full items-start pt-10px font-mainBold text-[14px]">
+                {intl.formatMessage({ id: 'common.amount' })}
+              </div>
+              <div className="truncate pl-10px font-main text-[12px]">
+                {formatAssetAmountCurrency({
+                  amount: baseToAsset(_amountToSend), // Find the value of swap slippage
+                  asset: AssetRuneNative,
+                  decimal: isUSDAsset(AssetRuneNative) ? 2 : 6,
+                  trimZeros: !isUSDAsset(AssetRuneNative)
+                })}
+              </div>
 
               <div className="ml-[-2px] flex w-full items-start pt-10px font-mainBold text-[14px]">
                 {intl.formatMessage({ id: 'common.memo' })}

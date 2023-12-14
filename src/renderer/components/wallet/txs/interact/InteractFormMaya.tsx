@@ -110,10 +110,10 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
     switch (interactType) {
       case 'bond':
       case 'custom':
-      case 'unbond':
       case 'mayaname':
       case 'thorname':
         return _amountToSend
+      case 'unbond':
       case 'leave':
         return ZERO_BASE_AMOUNT
     }
