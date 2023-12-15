@@ -1340,7 +1340,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       })
     )
   }, [oSourceAssetWB])
-  const [showDetails, setShowDetails] = useState<boolean>(false)
+  const [showDetails, setShowDetails] = useState<boolean>(true)
 
   return (
     <div className="flex w-full max-w-[500px] flex-col justify-between py-[60px]">

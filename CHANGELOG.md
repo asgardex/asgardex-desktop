@@ -1,5 +1,14 @@
 # 1.20.9 (2023-12-13)
 
+
+## Updates/Fixes
+
+- Fix Unbond bug 
+- Fix AVAX and BSC Ledger send & Deposit
+- Update Send screen
+
+# 1.20.9 (2023-12-13)
+
 ## Add
 
 - Fix ledger send and deposit functions [#72](https://github.com/asgardex/asgardex-desktop/issues/72) - AVAX and BSC

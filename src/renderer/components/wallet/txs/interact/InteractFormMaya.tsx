@@ -585,7 +585,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
     setMemo('')
   }, [interactType, reset])
 
-  const [showDetails, setShowDetails] = useState<boolean>(false)
+  const [showDetails, setShowDetails] = useState<boolean>(true)
 
   return (
     <Styled.Form

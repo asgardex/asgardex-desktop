@@ -17,8 +17,9 @@ import { AssetCacao } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
-import { isCacaoAsset, CACAO_DECIMAL } from '../../../../helpers/assetHelper'
+import { isCacaoAsset, CACAO_DECIMAL, isUSDAsset } from '../../../../helpers/assetHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
+import { loadingString } from '../../../../helpers/stringHelper'
 import { getCacaoAmountFromBalances } from '../../../../helpers/walletHelper'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
@@ -29,9 +30,10 @@ import { WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
 import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
-import { TooltipAddress } from '../../../uielements/common/Common.styles'
 import { UIFeesRD } from '../../../uielements/fees'
 import { InputBigNumber } from '../../../uielements/input'
+import { ShowDetails } from '../../../uielements/showDetails'
+import { Slider } from '../../../uielements/slider'
 import { AccountSelector } from '../../account'
 import * as H from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
@@ -86,8 +88,19 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
 
   const isLoading = useMemo(() => RD.isPending(sendTxState.status), [sendTxState.status])
 
+  const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+  const [feePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+
   const [form] = Form.useForm<FormValues>()
-  const [showDetails, setShowDetails] = useState<boolean>(false)
+  const [showDetails, setShowDetails] = useState<boolean>(true)
+  const [currentMemo, setCurrentMemo] = useState('')
+
+  const handleMemo = useCallback(() => {
+    const memoValue = form.getFieldValue('memo') as string
+
+    // Update the state with the adjusted memo value
+    setCurrentMemo(memoValue)
+  }, [form])
 
   const oCacaoAmount: O.Option<BaseAmount> = useMemo(() => {
     // return balance of current asset (if Cacao)
@@ -106,7 +119,7 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
       O.fold(
         // Missing (or loading) fees does not mean we can't sent something. No error then.
         () => !O.isNone(oFee),
-        ([fee, runeAmount]) => runeAmount.amount().isLessThan(fee.amount())
+        ([fee, cacaoAmount]) => cacaoAmount.amount().isLessThan(fee.amount())
       )
     )
   }, [oCacaoAmount, oFee])
@@ -186,6 +199,66 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
   //   fetchData()
   // }, [asset, maxAmount])
 
+  const priceFeeLabel = useMemo(() => {
+    if (!feePriceValue) {
+      return loadingString // or noDataString, depending on your needs
+    }
+
+    const fee = formatAssetAmountCurrency({
+      amount: assetFee.assetAmount,
+      asset: assetFee.asset,
+      decimal: isUSDAsset(assetFee.asset) ? 2 : 6,
+      trimZeros: !isUSDAsset(assetFee.asset)
+    })
+
+    // const price = FP.pipe(
+    //   O.some(feePriceValue), // Assuming this is Option<CryptoAmount>
+    //   O.map((cryptoAmount: CryptoAmount) =>
+    //     eqAsset(asset, cryptoAmount.asset)
+    //       ? ''
+    //       : formatAssetAmountCurrency({
+    //           amount: cryptoAmount.assetAmount,
+    //           asset: cryptoAmount.asset,
+    //           decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
+    //           trimZeros: !isUSDAsset(cryptoAmount.asset)
+    //         })
+    //   ),
+    //   O.getOrElse(() => '')
+    // )
+
+    return fee
+  }, [feePriceValue, assetFee])
+
+  const amountLabel = useMemo(() => {
+    if (!amountToSend) {
+      return loadingString // or noDataString, depending on your needs
+    }
+
+    const amount = formatAssetAmountCurrency({
+      amount: baseToAsset(amountToSend), // Find the value of swap slippage
+      asset: asset,
+      decimal: isUSDAsset(asset) ? 2 : 6,
+      trimZeros: !isUSDAsset(asset)
+    })
+
+    // const price = FP.pipe(
+    //   O.some(amountPriceValue), // Assuming this is Option<CryptoAmount>
+    //   O.map((cryptoAmount: CryptoAmount) =>
+    //     eqAsset(asset, cryptoAmount.asset)
+    //       ? ''
+    //       : formatAssetAmountCurrency({
+    //           amount: cryptoAmount.assetAmount,
+    //           asset: cryptoAmount.asset,
+    //           decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
+    //           trimZeros: !isUSDAsset(cryptoAmount.asset)
+    //         })
+    //   ),
+    //   O.getOrElse(() => '')
+    // )
+
+    return amount
+  }, [amountToSend, asset])
+
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field
     form.setFieldsValue({
@@ -207,6 +280,34 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
     },
     [asset, intl, maxAmount]
   )
+
+  const renderSlider = useMemo(() => {
+    const percentage = amountToSend
+      .amount()
+      .dividedBy(maxAmount.amount())
+      .multipliedBy(100)
+      // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
+      .decimalPlaces(0, BigNumber.ROUND_DOWN)
+      .toNumber()
+
+    const setAmountToSendFromPercentValue = (percents: number) => {
+      const amountFromPercentage = maxAmount.amount().multipliedBy(percents / 100)
+      return setAmountToSend(baseAmount(amountFromPercentage, maxAmount.decimal))
+    }
+
+    return (
+      <Slider
+        key={'Send percentage slider'}
+        value={percentage}
+        onChange={setAmountToSendFromPercentValue}
+        tooltipVisible
+        tipFormatter={(value) => `${value}%`}
+        withLabel
+        tooltipPlacement={'top'}
+        disabled={isLoading}
+      />
+    )
+  }, [amountToSend, maxAmount, isLoading])
 
   // Send tx start time
   const [sendTxStartTime, setSendTxStartTime] = useState<number>(0)
@@ -294,7 +395,10 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
     () =>
       FP.pipe(
         feeRD,
-        RD.map((fee) => [{ asset: AssetCacao, amount: fee }])
+        RD.map((fee) => {
+          setAssetFee(new CryptoAmount(fee, AssetCacao))
+          return [{ asset: AssetCacao, amount: fee }]
+        })
       ),
 
     [feeRD]
@@ -359,11 +463,12 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
               onClick={addMaxAmountHandler}
               disabled={isLoading}
             />
+            <div className="w-full px-20px pb-10px">{renderSlider}</div>
             <Styled.Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} disabled={isLoading} />
             {renderFeeError}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
             <Form.Item name="memo">
-              <Styled.Input size="large" disabled={isLoading} />
+              <Styled.Input size="large" disabled={isLoading} onChange={handleMemo} />
             </Form.Item>
           </Styled.SubForm>
           <FlatButton
@@ -374,39 +479,32 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
             size="large">
             {intl.formatMessage({ id: 'wallet.action.send' })}
           </FlatButton>
-          <div className={`w-full pt-10 font-main text-[12px] uppercase dark:border-gray1d`}>
-            <BaseButton
-              className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
-              onClick={() => setShowDetails((current) => !current)}>
-              {intl.formatMessage({ id: 'common.details' })}
-              {showDetails ? (
-                <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
-              ) : (
-                <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
+          <div className="w-full pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
+            <div className={`my-20px w-full font-main text-[12px] uppercase dark:border-gray1d`}>
+              <BaseButton
+                className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+                onClick={() => setShowDetails((current) => !current)}>
+                {intl.formatMessage({ id: 'common.details' })}
+                {showDetails ? (
+                  <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+                ) : (
+                  <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
+                )}
+              </BaseButton>
+
+              {showDetails && (
+                <>
+                  <ShowDetails
+                    recipient={recipientAddress}
+                    amountLabel={amountLabel}
+                    priceFeeLabel={priceFeeLabel}
+                    currentMemo={currentMemo}
+                    asset={asset}
+                  />
+                </>
               )}
-            </BaseButton>
+            </div>
           </div>
-          {showDetails && (
-            <>
-              {/* recipient address */}
-              <div className="flex w-full items-center justify-between text-[12px] text-gray2 dark:text-gray2d">
-                <div className="font-mainBold ">{intl.formatMessage({ id: 'common.recipient' })}</div>
-                <div className="truncate pl-20px text-[13px] normal-case leading-normal">
-                  <TooltipAddress key="tooltip-target-addr">{recipientAddress}</TooltipAddress>
-                </div>
-              </div>
-              {/* <div className="flex w-full justify-between ">
-                <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.fee' })}</div>
-                <div>{priceFeeLabel}</div>
-              </div> */}
-              <div className="flex w-full items-center justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
-                {intl.formatMessage({ id: 'common.memo' })}
-                <div className="truncate pl-10px font-main text-[12px] leading-normal">
-                  {form.getFieldValue('memo')}
-                </div>
-              </div>
-            </>
-          )}
         </Styled.Form>
       </Styled.Container>
       {showConfirmationModal && renderConfirmationModal}

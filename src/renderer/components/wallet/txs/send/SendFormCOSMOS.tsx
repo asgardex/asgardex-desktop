@@ -18,6 +18,7 @@ import { WalletType } from '../../../../../shared/wallet/types'
 import { AssetUSDC, ZERO_BASE_AMOUNT } from '../../../../const'
 import { isRuneNativeAsset, isUSDAsset } from '../../../../helpers/assetHelper'
 import { loadingString } from '../../../../helpers/stringHelper'
+import { usePricePool } from '../../../../hooks/usePricePool'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import { FeeRD, SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
@@ -27,9 +28,10 @@ import { WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
 import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
-import { TooltipAddress } from '../../../uielements/common/Common.styles'
 import { UIFeesRD } from '../../../uielements/fees'
 import { InputBigNumber } from '../../../uielements/input'
+import { ShowDetails } from '../../../uielements/showDetails'
+import { Slider } from '../../../uielements/slider'
 import { AccountSelector } from '../../account'
 import * as H from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
@@ -77,6 +79,8 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
 
   const { asset } = balance
 
+  const pricePool = usePricePool()
+
   const [amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
 
   const {
@@ -88,6 +92,8 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   const isLoading = useMemo(() => RD.isPending(sendTxState.status), [sendTxState.status])
 
   const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+
+  const [amountPriceValue, setAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
@@ -180,13 +186,15 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   // useEffect to fetch data from query
   useEffect(() => {
     const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
+    const amount = new CryptoAmount(amountToSend, asset)
     const fetchData = async () => {
       setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, AssetUSDC))
       setFeePriceValue(await thorchainQuery.convert(assetFee, AssetUSDC))
+      setAmountPriceValue(await thorchainQuery.convert(amount, pricePool.asset))
     }
 
     fetchData()
-  }, [asset, assetFee, maxAmount, thorchainQuery])
+  }, [amountToSend, asset, assetFee, maxAmount, pricePool.asset, thorchainQuery])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {
@@ -225,6 +233,36 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     })
   }, [amountToSend, form])
 
+  const amountLabel = useMemo(() => {
+    if (!amountToSend) {
+      return loadingString // or noDataString, depending on your needs
+    }
+
+    const amount = formatAssetAmountCurrency({
+      amount: baseToAsset(amountToSend), // Find the value of swap slippage
+      asset: asset,
+      decimal: isUSDAsset(asset) ? 2 : 6,
+      trimZeros: !isUSDAsset(asset)
+    })
+
+    const price = FP.pipe(
+      O.some(amountPriceValue), // Assuming this is Option<CryptoAmount>
+      O.map((cryptoAmount: CryptoAmount) =>
+        eqAsset(asset, cryptoAmount.asset)
+          ? ''
+          : formatAssetAmountCurrency({
+              amount: cryptoAmount.assetAmount,
+              asset: cryptoAmount.asset,
+              decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
+              trimZeros: !isUSDAsset(cryptoAmount.asset)
+            })
+      ),
+      O.getOrElse(() => '')
+    )
+
+    return price ? `${price} (${amount}) ` : amount
+  }, [amountPriceValue, amountToSend, asset])
+
   const amountValidator = useCallback(
     async (_: unknown, value: BigNumber) => {
       // error messages
@@ -239,6 +277,34 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     },
     [asset, intl, maxAmount]
   )
+
+  const renderSlider = useMemo(() => {
+    const percentage = amountToSend
+      .amount()
+      .dividedBy(maxAmount.amount())
+      .multipliedBy(100)
+      // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
+      .decimalPlaces(0, BigNumber.ROUND_DOWN)
+      .toNumber()
+
+    const setAmountToSendFromPercentValue = (percents: number) => {
+      const amountFromPercentage = maxAmount.amount().multipliedBy(percents / 100)
+      return setAmountToSend(baseAmount(amountFromPercentage, maxAmount.decimal))
+    }
+
+    return (
+      <Slider
+        key={'Send percentage slider'}
+        value={percentage}
+        onChange={setAmountToSendFromPercentValue}
+        tooltipVisible
+        tipFormatter={(value) => `${value}%`}
+        withLabel
+        tooltipPlacement={'top'}
+        disabled={isLoading}
+      />
+    )
+  }, [amountToSend, maxAmount, isLoading])
 
   // Send tx start time
   const [sendTxStartTime, setSendTxStartTime] = useState<number>(0)
@@ -359,7 +425,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   )
 
   const renderWalletType = useMemo(() => H.renderedWalletType(oMatchedWalletType), [oMatchedWalletType])
-  const [showDetails, setShowDetails] = useState<boolean>(false)
+  const [showDetails, setShowDetails] = useState<boolean>(true)
   const disableSubmit = useMemo(() => isFeeError || RD.isPending(feeRD), [feeRD, isFeeError])
 
   return (
@@ -398,6 +464,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
               onClick={addMaxAmountHandler}
               disabled={isLoading}
             />
+            <div className="w-full px-20px pb-10px">{renderSlider}</div>
             <Styled.Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} disabled={isLoading} />
             {renderFeeError}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
@@ -431,23 +498,13 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
             </div>
             {showDetails && (
               <>
-                {/* recipient address */}
-                <div className="flex w-full items-center justify-between text-[14px] text-gray2 dark:text-gray2d">
-                  <div className="font-mainBold">{intl.formatMessage({ id: 'common.recipient' })}</div>
-                  <div className="truncate pl-20px text-[13px] normal-case leading-normal">
-                    <TooltipAddress key="tooltip-target-addr">{recipientAddress}</TooltipAddress>
-                  </div>
-                </div>
-                <div className="flex w-full justify-between ">
-                  <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.fee' })}</div>
-                  <div>{priceFeeLabel}</div>
-                </div>
-                <div className="flex w-full items-center justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
-                  {intl.formatMessage({ id: 'common.memo' })}
-                  <div className="truncate pl-10px font-main text-[12px] leading-normal">
-                    {form.getFieldValue('memo')}
-                  </div>
-                </div>
+                <ShowDetails
+                  recipient={recipientAddress}
+                  amountLabel={amountLabel}
+                  priceFeeLabel={priceFeeLabel}
+                  currentMemo={form.getFieldValue('memo')}
+                  asset={asset}
+                />
               </>
             )}
           </div>

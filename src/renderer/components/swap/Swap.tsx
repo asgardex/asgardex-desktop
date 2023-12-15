@@ -2357,7 +2357,7 @@ export const Swap = ({
             </div>
           }
         />
-        <div className="w-full px-20px">{renderSlider}</div>
+        <div className="w-full p-20px">{renderSlider}</div>
         <div>
           <div className="flex w-full pt-20px pb-20px">
             <div className="w-full ">

@@ -278,7 +278,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         const thornameDetails = await thorchainQuery.getThornameDetails(thorname)
         if (thornameDetails) {
           setThorname(O.some(thornameDetails))
-          setShowDetails(true)
+
           setThornameAvailable(thornameDetails.owner === '' || balance.walletAddress === thornameDetails.owner)
           setThornameUpdate(thorname === thornameDetails.name && thornameDetails.owner === '')
           setThornameRegister(thornameDetails.name === '')
@@ -644,7 +644,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     setMemo('')
   }, [interactType, reset])
 
-  const [showDetails, setShowDetails] = useState<boolean>(false)
+  const [showDetails, setShowDetails] = useState<boolean>(true)
 
   return (
     <Styled.Form
