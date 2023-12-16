@@ -264,16 +264,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   // }
 
   const debouncedFetch = debounce(
-    async (
-      thorname,
-      setThorname,
-      setShowDetails,
-      setThornameAvailable,
-      setThornameUpdate,
-      setIsOwner,
-      thorchainQuery,
-      balance
-    ) => {
+    async (thorname, setThorname, setThornameAvailable, setThornameUpdate, setIsOwner, thorchainQuery, balance) => {
       try {
         const thornameDetails = await thorchainQuery.getThornameDetails(thorname)
         if (thornameDetails) {
@@ -300,7 +291,6 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       debouncedFetch(
         thorname,
         setThorname,
-        setShowDetails,
         setThornameAvailable,
         setThornameUpdate,
         setIsOwner,
@@ -403,7 +393,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         break
       }
       case 'unbond': {
-        createMemo = getUnbondMemo(thorAddress, amountToSend, providerAddress)
+        createMemo = getUnbondMemo(thorAddress, _amountToSend, providerAddress)
         break
       }
       case 'leave': {
@@ -421,7 +411,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     }
     setMemo(createMemo)
     return createMemo
-  }, [amountToSend, form, interactType, memo])
+  }, [_amountToSend, form, interactType, memo])
 
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
@@ -1042,22 +1032,22 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                 }),
                 O.toNullable
               )}
-              <div className="ml-[-2px] flex w-full items-start pt-10px font-mainBold text-[14px]">
+              <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
                 {intl.formatMessage({ id: 'common.amount' })}
-              </div>
-              <div className="truncate pl-10px font-main text-[12px]">
-                {formatAssetAmountCurrency({
-                  amount: baseToAsset(_amountToSend), // Find the value of swap slippage
-                  asset: AssetRuneNative,
-                  decimal: isUSDAsset(AssetRuneNative) ? 2 : 6,
-                  trimZeros: !isUSDAsset(AssetRuneNative)
-                })}
+                <div className="truncate pl-10px font-main text-[12px]">
+                  {formatAssetAmountCurrency({
+                    amount: baseToAsset(_amountToSend), // Find the value of swap slippage
+                    asset: AssetRuneNative,
+                    decimal: isUSDAsset(AssetRuneNative) ? 2 : 6,
+                    trimZeros: !isUSDAsset(AssetRuneNative)
+                  })}
+                </div>
               </div>
 
-              <div className="ml-[-2px] flex w-full items-start pt-10px font-mainBold text-[14px]">
+              <div className="ml-[-2px] flex w-full justify-between  pt-10px font-mainBold text-[14px]">
                 {intl.formatMessage({ id: 'common.memo' })}
+                <div className="truncate pl-10px font-main text-[12px]">{memoLabel}</div>
               </div>
-              <div className="truncate pl-10px font-main text-[12px]">{memoLabel}</div>
             </>
           )}
         </div>

@@ -598,16 +598,6 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
     [isLoading, selectedFee]
   )
 
-  const expectedTxMined = (feeOption: FeeOption) => {
-    const timeEstimates = {
-      [FeeOption.Fastest]: ' ~ 20 mins',
-      [FeeOption.Fast]: ' ~ 1 hr',
-      [FeeOption.Average]: ' ~ 6 hrs'
-    }
-    const time = timeEstimates[feeOption]
-    return time
-  }
-
   const [recipientAddress, setRecipientAddress] = useState<Address>('')
   const handleOnKeyUp = useCallback(() => {
     setRecipientAddress(form.getFieldValue('recipient'))
@@ -727,7 +717,6 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
                   priceFeeLabel={priceFeeLabel}
                   upperFeeBound={UPPER_FEE_BOUND}
                   feeRate={feeRate}
-                  expectedTxMined={expectedTxMined(selectedFeeOption)}
                   currentMemo={currentMemo}
                   asset={asset}
                 />
