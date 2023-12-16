@@ -2,6 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { AssetBTC, BTCChain, Client as BitcoinClient, defaultBTCParams } from '@xchainjs/xchain-bitcoin'
 import { Network, UtxoOnlineDataProviders } from '@xchainjs/xchain-client'
 import {
+  BitgoProvider,
   BlockcypherNetwork,
   BlockcypherProvider,
   HaskoinNetwork,
@@ -37,6 +38,20 @@ const HaskoinDataProviders: UtxoOnlineDataProviders = {
   [Network.Testnet]: testnetHaskoinProvider,
   [Network.Stagenet]: mainnetHaskoinProvider,
   [Network.Mainnet]: mainnetHaskoinProvider
+}
+
+//======================
+// Bitgo
+//======================
+const mainnetBitgoProvider = new BitgoProvider({
+  baseUrl: 'https://app.bitgo.com',
+  chain: BTCChain
+})
+
+export const BitgoProviders: UtxoOnlineDataProviders = {
+  [Network.Testnet]: undefined,
+  [Network.Stagenet]: mainnetBitgoProvider,
+  [Network.Mainnet]: mainnetBitgoProvider
 }
 
 //======================
@@ -85,7 +100,7 @@ const clientState$: ClientState$ = FP.pipe(
                 ...defaultBTCParams,
                 phrase: phrase,
                 network: network,
-                dataProviders: [BlockcypherDataProviders, HaskoinDataProviders],
+                dataProviders: [BlockcypherDataProviders, HaskoinDataProviders, BitgoProviders],
                 feeBounds: {
                   lower: LOWER_FEE_BOUND,
                   upper: UPPER_FEE_BOUND

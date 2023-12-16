@@ -2276,6 +2276,7 @@ export const Swap = ({
             calculateTransactionTime(
               sourceChain,
               {
+                inboundConfSeconds: txDetails.txEstimate.inboundConfirmationSeconds,
                 outboundDelaySeconds: txDetails.txEstimate.outboundDelaySeconds,
                 totalTransactionSeconds: txDetails.txEstimate.totalSwapSeconds,
                 streamingTransactionSeconds: txDetails.txEstimate.streamingSwapSeconds
@@ -2659,9 +2660,7 @@ export const Swap = ({
                   <div
                     className={`flex w-full justify-between ${showDetails ? 'pt-10px' : ''} font-mainBold text-[14px]`}>
                     <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
-                    <div>
-                      {formatSwapTime(Number(transactionTime.totalSwap) + Number(transactionTime.confirmation))}
-                    </div>
+                    <div>{formatSwapTime(Number(transactionTime.totalSwap))}</div>
                   </div>
                   {showDetails && (
                     <>
@@ -2864,9 +2863,7 @@ export const Swap = ({
                         showDetails ? 'pt-10px' : ''
                       } font-mainBold text-[14px]`}>
                       <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
-                      <div>
-                        {formatSwapTime(Number(transactionTime.totalSwap) + Number(transactionTime.confirmation))}
-                      </div>
+                      <div>{formatSwapTime(Number(transactionTime.totalSwap))}</div>
                     </div>
                     <div className="flex w-full justify-between pl-10px text-[12px]">
                       <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.inbound.time' })}</div>

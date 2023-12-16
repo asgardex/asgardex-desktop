@@ -27,20 +27,39 @@ export type Time = {
 }
 
 type QuoteDetails = {
+  inboundConfSeconds?: number
   outboundDelaySeconds?: number
   totalTransactionSeconds?: number
   streamingTransactionSeconds?: number
 }
 
 export const calculateTransactionTime = (sourceChain: string, txDetails?: QuoteDetails, targetAsset?: Asset): Time => {
-  return {
-    inbound: DefaultChainAttributes[sourceChain].avgBlockTimeInSecs,
-    outbound: txDetails ? txDetails.outboundDelaySeconds : 0,
-    totalSwap: txDetails ? txDetails.totalTransactionSeconds : 0,
-    streaming: txDetails ? txDetails.streamingTransactionSeconds : 0,
-    confirmation: targetAsset
-      ? DefaultChainAttributes[targetAsset.synth ? THORChain : targetAsset.chain].avgBlockTimeInSecs
+  const inboundTime =
+    txDetails && txDetails.inboundConfSeconds
+      ? txDetails.inboundConfSeconds
+      : DefaultChainAttributes[sourceChain].avgBlockTimeInSecs
+  const outboundTime =
+    txDetails && targetAsset
+      ? targetAsset.synth || targetAsset?.chain === THORChain
+        ? 0
+        : txDetails.outboundDelaySeconds
       : 0
+  const confirmationTime = targetAsset ? DefaultChainAttributes[targetAsset.chain].avgBlockTimeInSecs : 0
+  const streamingTime = txDetails && txDetails.streamingTransactionSeconds ? txDetails.streamingTransactionSeconds : 0
+
+  const totalSwapTime = Math.max(
+    txDetails && targetAsset
+      ? targetAsset.synth || targetAsset?.chain === THORChain
+        ? Number(inboundTime) + confirmationTime + streamingTime
+        : Number(txDetails.totalTransactionSeconds) + Number(inboundTime) + confirmationTime + streamingTime
+      : Number(inboundTime) + confirmationTime
+  )
+  return {
+    inbound: inboundTime,
+    outbound: outboundTime,
+    totalSwap: totalSwapTime,
+    streaming: streamingTime,
+    confirmation: confirmationTime
   }
 }
 
