@@ -1,7 +1,7 @@
 {
   "name": "asgardex",
   "productName": "ASGARDEX",
-  "version": "1.20.9",
+  "version": "1.21.0",
   "description": "WALLET AND EXCHANGE CLIENT FOR THORCHAIN",
   "main": "index.js",
   "scripts": {
@@ -66,7 +66,6 @@
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
     "@binance-chain/javascript-sdk": "^4.2.0",
-    "@cosmjs/proto-signing": "^0.31.1",
     "@cosmjs/stargate": "^0.28.10",
     "@cosmos-client/core": "0.46.1",
     "@craco/craco": "^7.0.0",
@@ -187,7 +186,7 @@
     "cross-env": "^7.0.3",
     "crypto-browserify": "^3.12.0",
     "electron": "20.3.8",
-    "electron-builder": "^23.6.0",
+    "electron-builder": "^24.9.1",
     "electron-devtools-installer": "^3.2.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",

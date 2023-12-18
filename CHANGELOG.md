@@ -1,3 +1,11 @@
+# 1.21.0 (2023-12-18)
+
+## Updates/Fixes
+
+- Unbond sends amount in RUNE [#121](https://github.com/asgardex/asgardex-desktop/issues/121)
+- Update send screen [#85](https://github.com/asgardex/asgardex-desktop/issues/85)
+- Minior Bugs fixes
+
 # 1.20.9 (2023-12-13)
 
 ## Add

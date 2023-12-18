@@ -1953,7 +1953,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     ]
   )
 
-  const [showDetails, setShowDetails] = useState<boolean>(false)
+  const [showDetails, setShowDetails] = useState<boolean>(true)
 
   return (
     <div className="flex min-h-full w-full flex-col items-center justify-between">

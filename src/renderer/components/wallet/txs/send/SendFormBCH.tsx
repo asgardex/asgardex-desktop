@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
-import { BCHChain, BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
+import { BCHChain, BCH_DECIMAL, UPPER_FEE_BOUND } from '@xchainjs/xchain-bitcoincash'
 import { FeeOption, FeesWithRates } from '@xchainjs/xchain-client'
 import { CryptoAmount, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
@@ -27,9 +27,10 @@ import { Network } from '../../../../../shared/api/types'
 import { AssetBCH } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
-import { AssetUSDC, ZERO_BASE_AMOUNT } from '../../../../const'
+import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { isUSDAsset } from '../../../../helpers/assetHelper'
 import { loadingString } from '../../../../helpers/stringHelper'
+import { usePricePool } from '../../../../hooks/usePricePool'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { FeesWithRatesRD } from '../../../../services/bitcoincash/types'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
@@ -43,6 +44,8 @@ import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
 import { UIFeesRD } from '../../../uielements/fees'
 import { InputBigNumber } from '../../../uielements/input'
+import { ShowDetails } from '../../../uielements/showDetails'
+import { Slider } from '../../../uielements/slider'
 import { AccountSelector } from '../../account'
 import { matchedWalletType, renderedWalletType } from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
@@ -94,6 +97,8 @@ export const SendFormBCH: React.FC<Props> = (props): JSX.Element => {
 
   const [amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
 
+  const pricePool = usePricePool()
+
   const {
     state: sendTxState,
     reset: resetSendTxState,
@@ -102,19 +107,30 @@ export const SendFormBCH: React.FC<Props> = (props): JSX.Element => {
 
   const isLoading = useMemo(() => RD.isPending(sendTxState.status), [sendTxState.status])
 
+  const [recipientAddress, setRecipientAddress] = useState<Address>('')
+
   const [selectedFeeOptionKey, setSelectedFeeOptionKey] = useState<FeeOption>(DEFAULT_FEE_OPTION)
 
   const [InboundAddress, setInboundAddress] = useState<string>('')
 
   const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+  const [feeRate, setFeeRate] = useState<number>(0)
+  const [amountPriceValue, setAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
   const [warningMessage, setWarningMessage] = useState<string>('')
-  const [showDetails, setShowDetails] = useState<boolean>(false)
+  const [showDetails, setShowDetails] = useState<boolean>(true)
+  const [currentMemo, setCurrentMemo] = useState('')
 
   const [form] = Form.useForm<FormValues>()
 
+  const handleMemo = useCallback(() => {
+    const memoValue = form.getFieldValue('memo') as string
+
+    // Update the state with the adjusted memo value
+    setCurrentMemo(memoValue)
+  }, [form])
   const prevFeesWithRatesRef = useRef<O.Option<FeesWithRates>>(O.none)
 
   const feeRD: FeeRD = useMemo(
@@ -158,9 +174,10 @@ export const SendFormBCH: React.FC<Props> = (props): JSX.Element => {
     () =>
       FP.pipe(
         oFeesWithRates,
-        O.map(({ fees }) => {
+        O.map(({ fees, rates }) => {
           const fee = fees[selectedFeeOptionKey]
           prevSelectedFeeRef.current = O.some(fee)
+          setFeeRate(rates[selectedFeeOptionKey])
           setAssetFee(new CryptoAmount(fees[selectedFeeOptionKey], asset))
           return fee
         })
@@ -290,13 +307,15 @@ export const SendFormBCH: React.FC<Props> = (props): JSX.Element => {
   // useEffect to fetch data from query
   useEffect(() => {
     const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
+    const amount = new CryptoAmount(amountToSend, asset)
     const fetchData = async () => {
-      setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, AssetUSDC))
-      setFeePriceValue(await thorchainQuery.convert(assetFee, AssetUSDC))
+      setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, pricePool.asset))
+      setFeePriceValue(await thorchainQuery.convert(assetFee, pricePool.asset))
+      setAmountPriceValue(await thorchainQuery.convert(amount, pricePool.asset))
     }
 
     fetchData()
-  }, [asset, assetFee, maxAmount, thorchainQuery])
+  }, [amountToSend, asset, assetFee, maxAmount, pricePool.asset, thorchainQuery])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {
@@ -328,6 +347,36 @@ export const SendFormBCH: React.FC<Props> = (props): JSX.Element => {
     return price ? `${price} (${fee}) ` : fee
   }, [feePriceValue, assetFee, asset])
 
+  const amountLabel = useMemo(() => {
+    if (!amountToSend) {
+      return loadingString // or noDataString, depending on your needs
+    }
+
+    const amount = formatAssetAmountCurrency({
+      amount: baseToAsset(amountToSend), // Find the value of swap slippage
+      asset: asset,
+      decimal: isUSDAsset(asset) ? 2 : 6,
+      trimZeros: !isUSDAsset(asset)
+    })
+
+    const price = FP.pipe(
+      O.some(amountPriceValue), // Assuming this is Option<CryptoAmount>
+      O.map((cryptoAmount: CryptoAmount) =>
+        eqAsset(asset, cryptoAmount.asset)
+          ? ''
+          : formatAssetAmountCurrency({
+              amount: cryptoAmount.assetAmount,
+              asset: cryptoAmount.asset,
+              decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
+              trimZeros: !isUSDAsset(cryptoAmount.asset)
+            })
+      ),
+      O.getOrElse(() => '')
+    )
+
+    return price ? `${price} (${amount}) ` : amount
+  }, [amountPriceValue, amountToSend, asset])
+
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field
     form.setFieldsValue({
@@ -348,6 +397,34 @@ export const SendFormBCH: React.FC<Props> = (props): JSX.Element => {
     [intl, maxAmount]
   )
 
+  const renderSlider = useMemo(() => {
+    const percentage = amountToSend
+      .amount()
+      .dividedBy(maxAmount.amount())
+      .multipliedBy(100)
+      // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
+      .decimalPlaces(0, BigNumber.ROUND_DOWN)
+      .toNumber()
+
+    const setAmountToSendFromPercentValue = (percents: number) => {
+      const amountFromPercentage = maxAmount.amount().multipliedBy(percents / 100)
+      return setAmountToSend(baseAmount(amountFromPercentage, maxAmount.decimal))
+    }
+
+    return (
+      <Slider
+        key={'Send percentage slider'}
+        value={percentage}
+        onChange={setAmountToSendFromPercentValue}
+        tooltipVisible
+        tipFormatter={(value) => `${value}%`}
+        withLabel
+        tooltipPlacement={'top'}
+        disabled={isLoading}
+      />
+    )
+  }, [amountToSend, maxAmount, isLoading])
+
   // Send tx start time
   const [sendTxStartTime, setSendTxStartTime] = useState<number>(0)
 
@@ -360,11 +437,11 @@ export const SendFormBCH: React.FC<Props> = (props): JSX.Element => {
         walletIndex,
         hdMode,
         sender: walletAddress,
-        recipient: form.getFieldValue('recipient'),
+        recipient: recipientAddress,
         asset,
         amount: amountToSend,
         feeOption: selectedFeeOptionKey,
-        memo: form.getFieldValue('memo')
+        memo: currentMemo
       })
     )
   }, [
@@ -374,10 +451,11 @@ export const SendFormBCH: React.FC<Props> = (props): JSX.Element => {
     walletIndex,
     hdMode,
     walletAddress,
-    form,
+    recipientAddress,
     asset,
     amountToSend,
-    selectedFeeOptionKey
+    selectedFeeOptionKey,
+    currentMemo
   ])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
@@ -465,8 +543,13 @@ export const SendFormBCH: React.FC<Props> = (props): JSX.Element => {
   )
 
   const reloadFees = useCallback(() => {
-    reloadFeesHandler(form.getFieldValue('memo'))
-  }, [form, reloadFeesHandler])
+    reloadFeesHandler(currentMemo)
+  }, [currentMemo, reloadFeesHandler])
+
+  // whenever the memo is updated call reload fees
+  useEffect(() => {
+    reloadFees()
+  }, [feeRate, currentMemo, reloadFees])
 
   const addMaxAmountHandler = useCallback(() => setAmountToSend(maxAmount), [maxAmount])
 
@@ -483,7 +566,6 @@ export const SendFormBCH: React.FC<Props> = (props): JSX.Element => {
     [isLoading, selectedFee]
   )
 
-  const [recipientAddress, setRecipientAddress] = useState<Address>('')
   const handleOnKeyUp = useCallback(() => {
     setRecipientAddress(form.getFieldValue('recipient'))
   }, [form])
@@ -536,11 +618,12 @@ export const SendFormBCH: React.FC<Props> = (props): JSX.Element => {
               onClick={addMaxAmountHandler}
               disabled={isMaxButtonDisabled}
             />
+            <div className="w-full px-20px pb-10px">{renderSlider}</div>
             <Styled.Fees fees={uiFeesRD} reloadFees={reloadFees} disabled={isLoading} />
             {renderFeeError}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
             <Form.Item name="memo">
-              <Styled.Input size="large" disabled={isLoading} />
+              <Styled.Input size="large" disabled={isLoading} onChange={handleMemo} />
             </Form.Item>
             <Form.Item name="feeRate">{renderFeeOptions}</Form.Item>
           </Styled.SubForm>
@@ -568,22 +651,15 @@ export const SendFormBCH: React.FC<Props> = (props): JSX.Element => {
             </BaseButton>
             {showDetails && (
               <>
-                <div className="flex w-full items-center justify-between text-[14px] text-gray2 dark:text-gray2d">
-                  <div className="font-mainBold ">{intl.formatMessage({ id: 'common.recipient' })}</div>
-                  <div className="truncate text-[13px] normal-case leading-normal">
-                    {form.getFieldValue('recipient')}
-                  </div>
-                </div>
-                <div className="flex w-full justify-between ">
-                  <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.fee' })}</div>
-                  <div>{priceFeeLabel}</div>
-                </div>
-                <div className="flex w-full items-center justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
-                  {intl.formatMessage({ id: 'common.memo' })}
-                  <div className="truncate pl-10px font-main text-[12px] leading-normal">
-                    {form.getFieldValue('memo')}
-                  </div>
-                </div>
+                <ShowDetails
+                  recipient={recipientAddress}
+                  amountLabel={amountLabel}
+                  priceFeeLabel={priceFeeLabel}
+                  upperFeeBound={UPPER_FEE_BOUND}
+                  feeRate={feeRate}
+                  currentMemo={currentMemo}
+                  asset={asset}
+                />
               </>
             )}
           </div>

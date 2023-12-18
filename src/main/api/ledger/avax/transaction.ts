@@ -6,7 +6,7 @@ import { Address, Asset, assetToString, BaseAmount } from '@xchainjs/xchain-util
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
 
-import { isEthAsset } from '../../../../renderer/helpers/assetHelper'
+import { isAvaxAsset } from '../../../../renderer/helpers/assetHelper'
 import { LedgerError, LedgerErrorId, Network } from '../../../../shared/api/types'
 import {
   DEPOSIT_EXPIRATION_OFFSET,
@@ -111,7 +111,7 @@ export const deposit = async ({
   evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const address = !isEthAsset(asset) ? AVAX.getTokenAddress(asset) : AvaxZeroAddress
+    const address = !isAvaxAsset(asset) ? AVAX.getTokenAddress(asset) : AvaxZeroAddress
 
     if (!address) {
       return E.left({

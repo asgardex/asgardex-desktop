@@ -6,7 +6,7 @@ import { Address, Asset, assetToString, BaseAmount } from '@xchainjs/xchain-util
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
 
-import { isEthAsset } from '../../../../renderer/helpers/assetHelper'
+import { isBscAsset } from '../../../../renderer/helpers/assetHelper'
 import { LedgerError, LedgerErrorId, Network } from '../../../../shared/api/types'
 import { DEPOSIT_EXPIRATION_OFFSET, BscZeroAddress, FEE_BOUNDS, defaultBscParams } from '../../../../shared/bsc/const'
 import { ROUTER_ABI } from '../../../../shared/evm/abi'
@@ -17,7 +17,7 @@ import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
 import { LedgerSigner } from '../ethereum/LedgerSigner'
 /**
- * Sends ETH tx using Ledger
+ * Sends BSC tx using Ledger
  */
 export const send = async ({
   asset,
@@ -106,7 +106,7 @@ export const deposit = async ({
   evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const address = !isEthAsset(asset) ? BSC.getTokenAddress(asset) : BscZeroAddress
+    const address = !isBscAsset(asset) ? BSC.getTokenAddress(asset) : BscZeroAddress
 
     if (!address) {
       return E.left({

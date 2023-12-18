@@ -4,6 +4,7 @@ import { assetAmount, baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
+import { ETHAddress } from '../../shared/ethereum/const'
 import { ERC20_TESTNET } from '../../shared/mock/assets'
 import {
   AssetATOM,
@@ -60,7 +61,6 @@ import {
   assetInList
 } from './assetHelper'
 import { eqAsset, eqAssetAmount, eqBaseAmount, eqOAsset } from './fp/eq'
-import { ETHAddress } from '../../shared/ethereum/const'
 
 describe('helpers/assetHelper', () => {
   describe('isRuneBnbAsset', () => {

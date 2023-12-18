@@ -33,7 +33,7 @@ import { AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../../../../sh
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../shared/wallet/types'
 import { AssetUSDC, AssetUSDTDAC, ZERO_BASE_AMOUNT } from '../../../../const'
-import { THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
+import { THORCHAIN_DECIMAL, isUSDAsset } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
 import { getBondMemo, getLeaveMemo, getUnbondMemo } from '../../../../helpers/memoHelper'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
@@ -117,11 +117,11 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     switch (interactType) {
       case 'bond':
       case 'custom':
-      case 'unbond':
       case 'thorname':
       case 'mayaname':
         return _amountToSend
       case 'leave':
+      case 'unbond':
         return ZERO_BASE_AMOUNT
     }
   }, [_amountToSend, interactType])
@@ -264,21 +264,12 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   // }
 
   const debouncedFetch = debounce(
-    async (
-      thorname,
-      setThorname,
-      setShowDetails,
-      setThornameAvailable,
-      setThornameUpdate,
-      setIsOwner,
-      thorchainQuery,
-      balance
-    ) => {
+    async (thorname, setThorname, setThornameAvailable, setThornameUpdate, setIsOwner, thorchainQuery, balance) => {
       try {
         const thornameDetails = await thorchainQuery.getThornameDetails(thorname)
         if (thornameDetails) {
           setThorname(O.some(thornameDetails))
-          setShowDetails(true)
+
           setThornameAvailable(thornameDetails.owner === '' || balance.walletAddress === thornameDetails.owner)
           setThornameUpdate(thorname === thornameDetails.name && thornameDetails.owner === '')
           setThornameRegister(thornameDetails.name === '')
@@ -300,7 +291,6 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       debouncedFetch(
         thorname,
         setThorname,
-        setShowDetails,
         setThornameAvailable,
         setThornameUpdate,
         setIsOwner,
@@ -403,7 +393,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         break
       }
       case 'unbond': {
-        createMemo = getUnbondMemo(thorAddress, amountToSend, providerAddress)
+        createMemo = getUnbondMemo(thorAddress, _amountToSend, providerAddress)
         break
       }
       case 'leave': {
@@ -421,7 +411,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     }
     setMemo(createMemo)
     return createMemo
-  }, [amountToSend, form, interactType, memo])
+  }, [_amountToSend, form, interactType, memo])
 
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
@@ -644,7 +634,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     setMemo('')
   }, [interactType, reset])
 
-  const [showDetails, setShowDetails] = useState<boolean>(false)
+  const [showDetails, setShowDetails] = useState<boolean>(true)
 
   return (
     <Styled.Form
@@ -1042,11 +1032,22 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                 }),
                 O.toNullable
               )}
-
-              <div className="ml-[-2px] flex w-full items-start pt-10px font-mainBold text-[14px]">
-                {intl.formatMessage({ id: 'common.memo' })}
+              <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
+                {intl.formatMessage({ id: 'common.amount' })}
+                <div className="truncate pl-10px font-main text-[12px]">
+                  {formatAssetAmountCurrency({
+                    amount: baseToAsset(_amountToSend), // Find the value of swap slippage
+                    asset: AssetRuneNative,
+                    decimal: isUSDAsset(AssetRuneNative) ? 2 : 6,
+                    trimZeros: !isUSDAsset(AssetRuneNative)
+                  })}
+                </div>
               </div>
-              <div className="truncate pl-10px font-main text-[12px]">{memoLabel}</div>
+
+              <div className="ml-[-2px] flex w-full justify-between  pt-10px font-mainBold text-[14px]">
+                {intl.formatMessage({ id: 'common.memo' })}
+                <div className="truncate pl-10px font-main text-[12px]">{memoLabel}</div>
+              </div>
             </>
           )}
         </div>
