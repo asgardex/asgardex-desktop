@@ -36,9 +36,6 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Rebuild native modules for Electron
-        run: yarn electron-rebuild
-
       - name: Publish macOS binaries
         run: yarn package:ci
         env:
