@@ -66,7 +66,6 @@
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
     "@binance-chain/javascript-sdk": "^4.2.0",
-    "@cosmjs/proto-signing": "^0.31.1",
     "@cosmjs/stargate": "^0.28.10",
     "@cosmos-client/core": "0.46.1",
     "@craco/craco": "^7.0.0",
