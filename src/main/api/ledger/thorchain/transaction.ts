@@ -1,6 +1,6 @@
 import cosmosclient from '@cosmos-client/core'
 import type Transport from '@ledgerhq/hw-transport'
-import THORChainApp, { extractSignatureFromTLV, LedgerErrorType } from '@thorchain/ledger-thorchain'
+import THORChainApp, { extractSignatureFromTLV, LedgerErrorType } from '@xchainjs/ledger-thorchain'
 import { TxHash } from '@xchainjs/xchain-client'
 import { CosmosSDKClient } from '@xchainjs/xchain-cosmos'
 import { AssetRuneNative, DEFAULT_GAS_LIMIT_VALUE, getChainId, getDenom, getPrefix } from '@xchainjs/xchain-thorchain'

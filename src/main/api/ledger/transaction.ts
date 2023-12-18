@@ -44,7 +44,7 @@ export const sendTx = async ({
   hdMode
 }: IPCLedgerSendTxParams): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const transport = await TransportNodeHidSingleton.open()
+    const transport = await TransportNodeHidSingleton.create()
     let res: E.Either<LedgerError, string>
     if (!isEnabledChain(chain) || chain === MAYAChain) {
       res = E.left({
@@ -263,7 +263,7 @@ export const deposit = async ({
   hdMode
 }: IPCLedgerDepositTxParams): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const transport = await TransportNodeHidSingleton.open()
+    const transport = await TransportNodeHidSingleton.create()
     let res: E.Either<LedgerError, string>
     const notSupportedError = E.left({
       errorId: LedgerErrorId.NOT_IMPLEMENTED,
