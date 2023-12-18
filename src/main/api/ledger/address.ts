@@ -35,7 +35,7 @@ export const getAddress = async ({
 }: IPCLedgerAdddressParams): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
     let res: E.Either<LedgerError, WalletAddress>
-    const transport = await TransportNodeHidSingleton.open()
+    const transport = await TransportNodeHidSingleton.create()
     if (!isEnabledChain(chain) || chain === MAYAChain) {
       res = E.left({
         errorId: LedgerErrorId.NOT_IMPLEMENTED,
@@ -110,7 +110,7 @@ export const getAddress = async ({
 }
 
 export const verifyLedgerAddress = async ({ chain, network, walletIndex, hdMode }: IPCLedgerAdddressParams) => {
-  const transport = await TransportNodeHidSingleton.open()
+  const transport = await TransportNodeHidSingleton.create()
   let result = false
 
   if (!isEnabledChain(chain)) throw Error(`${chain} is not supported for 'verifyAddress'`)

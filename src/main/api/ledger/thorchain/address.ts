@@ -1,5 +1,5 @@
 import type Transport from '@ledgerhq/hw-transport'
-import THORChainApp, { LedgerErrorType } from '@thorchain/ledger-thorchain'
+import THORChainApp, { LedgerErrorType } from '@xchainjs/ledger-thorchain'
 import { getPrefix, THORChain } from '@xchainjs/xchain-thorchain'
 import * as E from 'fp-ts/Either'
 
