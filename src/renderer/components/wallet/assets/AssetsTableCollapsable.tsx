@@ -437,7 +437,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           showHeader={false}
           dataSource={tableData}
           loading={loading}
-          rowKey={({ asset }) => asset.symbol}
+          rowKey={({ asset }) => `${asset.chain}.${asset.symbol}`}
           onRow={onRowHandler}
           columns={columns}
         />

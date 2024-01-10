@@ -85,7 +85,7 @@ const SuccessRouteView: React.FC<Props> = ({
 
   const { network } = useNetwork()
 
-  const { reloadInboundAddresses } = useThorchainContext()
+  const { reloadInboundAddresses, reloadTxStatus } = useThorchainContext()
   const { thorchainQuery } = useThorchainQueryContext()
   const { isPrivate } = usePrivateData()
 
@@ -218,10 +218,14 @@ const SuccessRouteView: React.FC<Props> = ({
     }
   }, [sourceChain, targetChain, reloadBalancesByChain])
 
-  // useEffect(() => {
-  //   // reload balances, whenever sourceAsset and targetAsset have been changed (both are properties of `reloadBalances` )
-  //   reloadBalances()
-  // }, [reloadBalances])
+  const reloadSwapTxStatus = useCallback(() => {
+    reloadTxStatus()
+  }, [reloadTxStatus])
+
+  useEffect(() => {
+    // reload balances, whenever sourceAsset and targetAsset have been changed (both are properties of `reloadBalances` )
+    reloadBalances()
+  }, [reloadBalances])
 
   const reloadHandler = useCallback(() => {
     reloadBalances()
@@ -427,6 +431,7 @@ const SuccessRouteView: React.FC<Props> = ({
                   addressValidator={validateSwapAddress}
                   hidePrivateData={isPrivate}
                   thorchainQuery={thorchainQuery}
+                  reloadTxStatus={reloadSwapTxStatus}
                 />
               )
             }

@@ -410,6 +410,7 @@ type SwapMessageKey =
   | 'swap.slip.tolerance.info'
   | 'swap.slip.tolerance.ledger-disabled.info'
   | 'swap.streaming.interval'
+  | 'swap.streaming.title'
   | 'swap.streaming.interval.info'
   | 'swap.streaming.quantity'
   | 'swap.streaming.quantity.info'

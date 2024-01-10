@@ -66,7 +66,8 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
       return fees$({
         asset: asset.asset,
         amount: baseAmount(1),
-        recipient: ETHAddress
+        recipient: ETHAddress,
+        from: asset.walletAddress
       })
     },
     RD.initial

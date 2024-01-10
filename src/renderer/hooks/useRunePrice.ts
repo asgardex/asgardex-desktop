@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
-import { CryptoAmount } from '@xchainjs/xchain-thorchain-query'
+import { CryptoAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'

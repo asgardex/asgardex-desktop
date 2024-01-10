@@ -4,7 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { BTCChain, BTC_DECIMAL, UPPER_FEE_BOUND } from '@xchainjs/xchain-bitcoin'
 import { FeeOption, FeesWithRates } from '@xchainjs/xchain-client'
-import { CryptoAmount, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
+import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
   assetAmount,
@@ -13,6 +13,7 @@ import {
   baseAmount,
   baseToAsset,
   bn,
+  CryptoAmount,
   eqAsset,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'

@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { FeeOption, TxParams } from '@xchainjs/xchain-client'
+import { FeeOption } from '@xchainjs/xchain-client'
 import { FeesWithGasPricesAndLimits } from '@xchainjs/xchain-evm'
 import { Address, Asset, BaseAmount } from '@xchainjs/xchain-util'
 import { ethers } from 'ethers'
@@ -66,6 +66,15 @@ export type TransactionService = {
   approveERC20Token$: (params: ApproveParams) => TxHashLD
   isApprovedERC20Token$: (params: IsApproveParams) => LiveData<ApiError, boolean>
 } & C.TransactionService<SendTxParams>
+
+export type TxParams = {
+  walletIndex?: number
+  asset?: Asset
+  amount: BaseAmount
+  recipient: Address
+  memo?: string
+  from?: Address
+}
 
 export type FeesService = {
   poolInTxFees$: (params: PollInTxFeeParams) => C.FeesLD

@@ -13,14 +13,7 @@ import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
-import {
-  CryptoAmount,
-  InboundDetail,
-  QuoteSwapParams,
-  ThorchainQuery,
-  TxDetails
-  // ChainAttributes
-} from '@xchainjs/xchain-thorchain-query'
+import { InboundDetail, QuoteSwapParams, ThorchainQuery, TxDetails } from '@xchainjs/xchain-thorchain-query'
 import {
   Asset,
   baseToAsset,
@@ -31,7 +24,8 @@ import {
   assetToBase,
   assetAmount,
   Address,
-  isSynthAsset
+  isSynthAsset,
+  CryptoAmount
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/Array'
@@ -90,20 +84,19 @@ import {
   getWalletTypeLabel,
   hasLedgerInBalancesByAsset
 } from '../../helpers/walletHelper'
-// import { useMimirConstants } from '../../hooks/useMimirConstants'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
 import { ChangeSlipToleranceHandler } from '../../services/app/types'
 import { INITIAL_SWAP_STATE } from '../../services/chain/const'
 import { getZeroSwapFees } from '../../services/chain/fees/swap'
 import {
-  SwapState,
   SwapTxParams,
-  SwapStateHandler,
   SwapFeesHandler,
   ReloadSwapFeesHandler,
   SwapFeesRD,
   SwapFees,
-  FeeRD
+  FeeRD,
+  SwapHandler,
+  SwapTxState
 } from '../../services/chain/types'
 import { AddressValidationAsync, GetExplorerTxUrl, OpenExplorerTxUrl } from '../../services/clients'
 import {
@@ -167,7 +160,8 @@ export type SwapProps = {
   sourceWalletType: WalletType
   targetWalletType: O.Option<WalletType>
   poolAddress: O.Option<PoolAddress>
-  swap$: SwapStateHandler
+  swap$: SwapHandler
+  reloadTxStatus: FP.Lazy<void>
   poolsData: PoolsDataMap
   pricePool: PricePool
   poolDetails: PoolDetails
@@ -436,7 +430,7 @@ export const Swap = ({
     state: swapState,
     reset: resetSwapState,
     subscribe: subscribeSwapState
-  } = useSubscriptionState<SwapState>(INITIAL_SWAP_STATE)
+  } = useSubscriptionState<SwapTxState>(INITIAL_SWAP_STATE)
 
   const initialAmountToSwapMax1e8 = useMemo(
     () => baseAmount(0, sourceAssetAmountMax1e8.decimal),
@@ -972,7 +966,7 @@ export const Swap = ({
       useSourceAssetLedger,
     [useSourceAssetLedger, sourceChain]
   )
-  // not sure how accurate this is
+
   const swapLimit1e8: O.Option<BaseAmount> = useMemo(() => {
     return FP.pipe(
       oQuote,
@@ -998,11 +992,12 @@ export const Swap = ({
             walletType,
             sender: walletAddress,
             walletIndex,
-            hdMode
+            hdMode,
+            thorchainQuery
           }
         })
       ),
-    [oPoolAddress, oSourceAssetWB, sourceAsset, amountToSwapMax1e8, sourceAssetDecimal, oQuote] // Include both quote dependencies
+    [oPoolAddress, oSourceAssetWB, oQuote, sourceAsset, amountToSwapMax1e8, sourceAssetDecimal, thorchainQuery] // Include both quote dependencies
   )
   // Check to see slippage greater than tolerance
   // This is handled by thornode
@@ -1046,7 +1041,6 @@ export const Swap = ({
   const needApprovement: O.Option<boolean> = useMemo(() => {
     // not needed for users with locked or not imported wallets
     if (!hasImportedKeystore(keystore) || isLocked(keystore)) return O.some(false)
-
     // ERC20 token does need approval only
     switch (sourceChain) {
       case ETHChain:
@@ -1155,6 +1149,7 @@ export const Swap = ({
     },
     [isApprovedERC20Token$, subscribeIsApprovedState]
   )
+
   // whenever `oApproveParams` has been updated,
   // `approveFeeParamsUpdated` needs to be called to update `approveFeesRD`
   // + `checkApprovedStatus` needs to be called
@@ -1343,8 +1338,6 @@ export const Swap = ({
     (): Asset[] =>
       FP.pipe(
         poolAssets,
-        // Remove source assets from List
-        A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
         // Create synth version of assets (excluding assetRuneNative)
         A.chain((asset) =>
           isRuneNativeAsset(asset)
@@ -1357,6 +1350,9 @@ export const Swap = ({
                 }
               ]
         ),
+        // Remove source assets from List
+        A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
+
         // Merge duplications
         (assets) => unionAssets(assets)(assets)
       ),
@@ -1543,6 +1539,7 @@ export const Swap = ({
         // set start time
         setSwapStartTime(Date.now())
         // subscribe to swap$
+
         subscribeSwapState(swap$(swapParams))
 
         return true
@@ -1584,21 +1581,16 @@ export const Swap = ({
   }, [setShowLedgerModal, useSourceAssetLedger])
 
   const extraTxModalContent = useMemo(() => {
-    const stepLabels = [
-      intl.formatMessage({ id: 'common.tx.healthCheck' }),
-      intl.formatMessage({ id: 'common.tx.sending' }),
-      intl.formatMessage({ id: 'common.tx.checkResult' })
-    ]
+    const { swapTx } = swapState
+    // don't render TxModal in initial state
+    if (RD.isInitial(swapTx)) return <></>
     const stepLabel = FP.pipe(
-      swapState.swap,
+      swapState.swapTx,
       RD.fold(
         () => '',
-        () =>
-          `${intl.formatMessage({ id: 'common.step' }, { current: swapState.step, total: swapState.stepsTotal })}: ${
-            stepLabels[swapState.step - 1]
-          }`,
+        () => `${intl.formatMessage({ id: 'common.tx.sending' })}`,
         () => '',
-        () => 'Done!'
+        () => 'Sent!'
       )
     )
 
@@ -1615,17 +1607,15 @@ export const Swap = ({
       />
     )
   }, [
-    intl,
-    swapState.swap,
-    swapState.step,
-    swapState.stepsTotal,
+    swapState,
     sourceAsset,
     amountToSwapMax1e8,
     targetAsset,
     isStreaming,
     swapStreamingNetOutput.baseAmount,
     swapResultAmountMax.baseAmount,
-    network
+    network,
+    intl
   ])
 
   const onCloseTxModal = useCallback(() => {
@@ -1643,14 +1633,14 @@ export const Swap = ({
   }, [resetSwapState, reloadBalances, setAmountToSwapMax1e8, initialAmountToSwapMax1e8])
 
   const renderTxModal = useMemo(() => {
-    const { swapTx, swap } = swapState
+    const { swapTx } = swapState
 
     // don't render TxModal in initial state
-    if (RD.isInitial(swap)) return <></>
+    if (RD.isInitial(swapTx)) return <></>
 
     // Get timer value
     const timerValue = FP.pipe(
-      swap,
+      swapTx,
       RD.fold(
         () => 0,
         FP.flow(
@@ -1664,7 +1654,7 @@ export const Swap = ({
 
     // title
     const txModalTitle = FP.pipe(
-      swap,
+      swapTx,
       RD.fold(
         () => 'swap.state.sending',
         () => 'swap.state.pending',
@@ -1686,13 +1676,17 @@ export const Swap = ({
       )
     )
 
+    const txRDasBoolean = FP.pipe(
+      swapTx,
+      RD.map((txHash) => !!txHash)
+    )
     return (
       <TxModal
         title={txModalTitle}
         onClose={onCloseTxModal}
         onFinish={onFinishTxModal}
         startTime={swapStartTime}
-        txRD={swap}
+        txRD={txRDasBoolean}
         extraResult={
           <ViewTxButton
             txHash={oTxHash}
@@ -1922,6 +1916,8 @@ export const Swap = ({
   const renderApproveFeeError: JSX.Element = useMemo(() => {
     if (
       !isApproveFeeError ||
+      // Don't render anything if chainAssetBalance is not available (still loading)
+      O.isNone(oSourceAssetWB) ||
       // Don't render error if walletBalances are still loading
       walletBalancesLoading
     ) {
@@ -1947,7 +1943,15 @@ export const Swap = ({
         )}
       </ErrorLabel>
     )
-  }, [isApproveFeeError, walletBalancesLoading, intl, sourceChainAsset, sourceChainAssetAmount, approveFee])
+  }, [
+    isApproveFeeError,
+    oSourceAssetWB,
+    walletBalancesLoading,
+    intl,
+    sourceChainAsset,
+    sourceChainAssetAmount,
+    approveFee
+  ])
 
   const onApprove = useCallback(() => {
     if (useSourceAssetLedger) {
@@ -1984,6 +1988,7 @@ export const Swap = ({
       ),
     [approveState, isApprovedState, needApprovement]
   )
+
   const checkIsApproved = useMemo(() => {
     if (O.isNone(needApprovement)) return false
     // ignore initial + loading states for `isApprovedState`
@@ -2076,47 +2081,33 @@ export const Swap = ({
     [approveFeeRD, approveFee, sourceChainAsset, priceApproveFee, sourceAsset]
   )
 
-  const reset = useCallback(() => {
-    // reset swap state
-    resetSwapState()
-    // reset isApproved state
-    resetIsApprovedState()
-    // reset approve state
-    resetApproveState()
-    // zero amount to swap
-    setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
-    // reload fees
-    reloadFeesHandler()
+  useEffect(() => {
+    // reset data whenever source asset has been changed
+    if (!eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
+      prevSourceAsset.current = O.some(sourceAsset)
+      reloadFeesHandler()
+      // reset swap state
+      resetSwapState()
+      resetIsApprovedState()
+      resetApproveState()
+      setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
+    }
+    // reset data whenever target asset has been changed
+    if (!eqOAsset.equals(prevTargetAsset.current, O.some(targetAsset))) {
+      prevTargetAsset.current = O.some(targetAsset)
+      // reset swap state
+      resetSwapState()
+    }
   }, [
     initialAmountToSwapMax1e8,
     reloadFeesHandler,
     resetApproveState,
     resetIsApprovedState,
     resetSwapState,
-    setAmountToSwapMax1e8
+    setAmountToSwapMax1e8,
+    sourceAsset,
+    targetAsset
   ])
-
-  /**
-   * Callback whenever assets have been changed
-   */
-  useEffect(() => {
-    let doReset = false
-    // reset data whenever source asset has been changed
-    if (!eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
-      prevSourceAsset.current = O.some(sourceAsset)
-      doReset = true
-    }
-    // reset data whenever target asset has been changed
-    if (!eqOAsset.equals(prevTargetAsset.current, O.some(targetAsset))) {
-      prevTargetAsset.current = O.some(targetAsset)
-      doReset = true
-    }
-    // reset only once
-    if (doReset) reset()
-
-    // Note: useEffect does depend on `sourceAssetProp`, `targetAssetProp` - ignore other values
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sourceAsset, targetAsset])
 
   const onSwitchAssets = useCallback(async () => {
     // delay to avoid render issues while switching
@@ -2320,7 +2311,6 @@ export const Swap = ({
     <div className="my-50px flex w-full max-w-[500px] flex-col justify-between">
       <div>
         {/* Note: Input value is shown as AssetAmount */}
-
         <AssetInput
           className="w-full"
           title={intl.formatMessage({ id: 'swap.input' })}

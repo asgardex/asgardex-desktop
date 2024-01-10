@@ -11,6 +11,7 @@ import { LiveData } from '../../helpers/rx/liveData'
 import { AssetWithDecimal } from '../../types/asgardex'
 import { AssetWithAmount } from '../../types/asgardex'
 import { PoolAddress } from '../midgard/types'
+import { TxStagesRD } from '../thorchain/types'
 import { ApiError, TxHashRD } from '../wallet/types'
 
 export type TxTypes = 'DEPOSIT' | 'SWAP' | 'WITHDRAW' | 'APPROVE' | 'SEND'
@@ -147,6 +148,15 @@ export type SwapState = {
 
 export type SwapState$ = Rx.Observable<SwapState>
 
+export type SwapTxState = {
+  readonly swapTx: TxHashRD
+}
+export type StreamingTxState = {
+  readonly streamingTx: TxStagesRD
+}
+export type StreamingTxState$ = Rx.Observable<StreamingTxState>
+export type SwapTxState$ = Rx.Observable<SwapTxState>
+
 /**
  * Parameters to send swap tx into (IN) a pool
  */
@@ -162,6 +172,7 @@ export type SwapTxParams = {
 }
 
 export type SwapStateHandler = (p: SwapTxParams) => SwapState$
+export type SwapHandler = (p: SwapTxParams) => SwapTxState$
 
 /**
  * Types of swap txs

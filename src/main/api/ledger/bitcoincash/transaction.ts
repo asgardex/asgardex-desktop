@@ -9,9 +9,9 @@ import {
   LOWER_FEE_BOUND,
   UPPER_FEE_BOUND
 } from '@xchainjs/xchain-bitcoincash'
-import { checkFeeBounds, FeeRate, Network, TxHash, UtxoOnlineDataProviders } from '@xchainjs/xchain-client'
+import { checkFeeBounds, FeeRate, Network, TxHash } from '@xchainjs/xchain-client'
 import { Address, BaseAmount } from '@xchainjs/xchain-util'
-import { HaskoinProvider, HaskoinNetwork } from '@xchainjs/xchain-utxo-providers'
+import { HaskoinProvider, HaskoinNetwork, UtxoOnlineDataProviders } from '@xchainjs/xchain-utxo-providers'
 import * as Bitcoin from 'bitcoinjs-lib'
 import * as E from 'fp-ts/lib/Either'
 

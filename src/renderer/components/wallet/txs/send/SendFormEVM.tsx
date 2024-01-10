@@ -2,9 +2,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
-import { FeeOption, Fees, TxParams } from '@xchainjs/xchain-client'
+import { FeeOption, Fees } from '@xchainjs/xchain-client'
 import { validateAddress } from '@xchainjs/xchain-evm'
-import { CryptoAmount, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
+import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   bn,
   baseToAsset,
@@ -14,7 +14,8 @@ import {
   Address,
   formatAssetAmountCurrency,
   baseAmount,
-  eqAsset
+  eqAsset,
+  CryptoAmount
 } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
 import { RadioChangeEvent } from 'antd/lib/radio'
@@ -38,6 +39,7 @@ import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import { SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
 import { FeesRD, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../../../services/clients'
+import { TxParams } from '../../../../services/evm/types'
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
@@ -464,18 +466,17 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   )
 
   const reloadFees = useCallback(() => {
-    //const checkMemo = form.getFieldValue('memo')
     const result = FP.pipe(
       sequenceTOption(amountToSend, sendAddress),
       O.map(([amount, recipient]) => {
-        reloadFeesHandler({ amount, recipient, asset, memo: form.getFieldValue('memo') })
+        reloadFeesHandler({ amount, recipient, asset, memo: currentMemo, from: walletAddress })
         return true
       }),
       O.getOrElse(() => false)
     )
 
     return result
-  }, [amountToSend, sendAddress, reloadFeesHandler, asset, form])
+  }, [amountToSend, sendAddress, reloadFeesHandler, asset, currentMemo, walletAddress])
 
   // only render memo field for chain asset.
   const renderMemo = useMemo(() => {

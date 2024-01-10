@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { Address, BNBChain } from '@xchainjs/xchain-binance'
-import { CryptoAmount, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
+import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   formatAssetAmountCurrency,
   assetAmount,
@@ -12,7 +12,8 @@ import {
   assetToBase,
   BaseAmount,
   baseAmount,
-  eqAsset
+  eqAsset,
+  CryptoAmount
 } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
 import BigNumber from 'bignumber.js'

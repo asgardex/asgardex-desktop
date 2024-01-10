@@ -188,6 +188,42 @@ export type SaverProvider = {
 export type SaverProviderRD = RD.RemoteData<Error, SaverProvider>
 export type SaverProviderLD = LiveData<Error, SaverProvider>
 
+export type TxStages = {
+  inboundObserved: {
+    finalCount: number | undefined
+    completed: boolean
+  }
+  inboundConfirmationCounted: {
+    remainingConfirmationSeconds: number | undefined
+    completed: boolean
+  }
+  inboundFinalised: {
+    completed: boolean
+  }
+  swapStatus: {
+    pending: boolean | undefined
+    streaming: {
+      interval: number | undefined
+      quantity: number | undefined
+      count: number | undefined
+    }
+  }
+  outBoundDelay: {
+    remainingDelayBlocks: number | undefined
+    remainDelaySeconds: number | undefined
+    completed: boolean | undefined
+  }
+  outboundSigned: {
+    scheduledOutboundHeight: number | undefined
+    blocksSinceScheduled: number | undefined
+    completed: boolean | undefined
+  }
+  swapFinalised: boolean
+}
+
+export type TxStagesRD = RD.RemoteData<Error, TxStages>
+export type TxStagesLD = LiveData<Error, TxStages>
+
 export const erc20WhitelistTokenIO = t.type({
   chainId: t.number,
   address: t.string,

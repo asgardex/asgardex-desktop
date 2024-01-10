@@ -5,9 +5,9 @@ import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/re
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { MayaChain, MayachainQuery } from '@xchainjs/xchain-mayachain-query'
 import { MAYANameDetails } from '@xchainjs/xchain-mayamidgard-query'
-import { CryptoAmount } from '@xchainjs/xchain-thorchain-query'
 import {
   BaseAmount,
+  CryptoAmount,
   assetAmount,
   assetToBase,
   baseAmount,

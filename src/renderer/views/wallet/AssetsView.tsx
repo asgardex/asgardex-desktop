@@ -109,11 +109,17 @@ export const AssetsView: React.FC = (): JSX.Element => {
     [chainBalances]
   )
 
-  const refreshHandler = useCallback(() => {
-    chains.forEach((chain) => {
+  const refreshHandler = useCallback(async () => {
+    const delay = 1000 // Delay in milliseconds
+
+    for (const [index, chain] of chains.entries()) {
+      if (index > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delay))
+      }
+
       const lazyReload = reloadBalancesByChain(chain)
       lazyReload() // Invoke the lazy function
-    })
+    }
   }, [chains])
 
   return (

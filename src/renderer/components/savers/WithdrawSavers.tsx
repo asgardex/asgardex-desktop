@@ -6,7 +6,7 @@ import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
-import { CryptoAmount, EstimateWithdrawSaver, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
+import { EstimateWithdrawSaver, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
   Asset,
@@ -18,7 +18,8 @@ import {
   assetToBase,
   delay,
   formatAssetAmountCurrency,
-  eqAsset
+  eqAsset,
+  CryptoAmount
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/Array'

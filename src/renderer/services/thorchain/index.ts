@@ -35,7 +35,9 @@ const {
   getLiquidityProviders,
   reloadLiquidityProviders,
   getSaverProvider$,
-  reloadSaverProvider
+  reloadSaverProvider,
+  getTxStatus$,
+  reloadTxStatus
 } = createThornodeService$(network$, clientUrl$)
 
 const { txs$, tx$, txStatus$, subscribeTx, resetTx, sendTx, txRD$, sendPoolTx$ } = createTransactionService(
@@ -88,5 +90,7 @@ export {
   getLiquidityProviders,
   reloadLiquidityProviders,
   getSaverProvider$,
-  reloadSaverProvider
+  reloadSaverProvider,
+  getTxStatus$,
+  reloadTxStatus
 }

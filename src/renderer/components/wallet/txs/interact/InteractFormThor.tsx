@@ -3,13 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import {
-  AssetAVAX,
-  CryptoAmount,
-  QuoteThornameParams,
-  ThorchainQuery,
-  ThornameDetails
-} from '@xchainjs/xchain-thorchain-query'
+import { QuoteThornameParams, ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
 import {
   Asset,
   assetAmount,
@@ -17,6 +11,7 @@ import {
   BaseAmount,
   baseToAsset,
   bn,
+  CryptoAmount,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
 import { Form, Tooltip } from 'antd'
@@ -29,7 +24,7 @@ import { debounce } from 'lodash'
 import { useIntl } from 'react-intl'
 
 import { Network } from '../../../../../shared/api/types'
-import { AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../../../../shared/utils/asset'
+import { AssetAVAX, AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../shared/wallet/types'
 import { AssetUSDC, AssetUSDTDAC, ZERO_BASE_AMOUNT } from '../../../../const'

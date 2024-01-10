@@ -41,7 +41,13 @@ const defaultProps: SwapProps = {
     Rx.of(params).pipe(
       RxOp.tap((params) => console.log('swap$ ', params)),
       RxOp.switchMap((_) =>
-        Rx.of<SwapState>({ ...INITIAL_SWAP_STATE, step: 3, swapTx: RD.success('tx-hash'), swap: RD.success(true) })
+        Rx.of<SwapState>({
+          ...INITIAL_SWAP_STATE,
+          step: 3,
+          swapTx: RD.success('tx-hash'),
+          swap: RD.success(true),
+          stepsTotal: 3
+        })
       )
     ),
   poolsData: {
@@ -111,7 +117,8 @@ const defaultProps: SwapProps = {
   importWalletHandler: () => console.log('import wallet'),
   addressValidator: () => Promise.resolve(true),
   hidePrivateData: false,
-  thorchainQuery: new ThorchainQuery()
+  thorchainQuery: new ThorchainQuery(),
+  reloadTxStatus: () => console.log('reloadBalances')
 }
 
 export const Default: StoryFn = () => <Component {...defaultProps} />

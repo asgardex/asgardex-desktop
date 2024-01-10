@@ -1,8 +1,7 @@
 import React, { useCallback } from 'react'
 
 import { Balance } from '@xchainjs/xchain-client'
-import { CryptoAmount } from '@xchainjs/xchain-thorchain-query'
-import { BaseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import { BaseAmount, CryptoAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { useIntl } from 'react-intl'
 
 import { isUSDAsset } from '../../../helpers/assetHelper'

@@ -1,4 +1,4 @@
-import { Row } from 'antd'
+import { Button, Row } from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
@@ -55,4 +55,24 @@ export const ResultButton = styled(UIButton)`
 
 export const ErrorView = styled(UIErrorView)`
   padding: 0px;
+`
+// Style for displaying the status of each stage in the transaction
+export const StageStatus = styled.div`
+  margin-bottom: 10px; // Space between each status
+  font-size: 16px; // Adjust font size as needed
+  color: ${palette('text', 0)}; // Adjust color as needed
+`
+
+// Style for the close button at the bottom of the modal
+export const CloseButton = styled(Button)`
+  margin-top: 20px; // Space above the button
+  width: 100%; // Full width button
+  height: 40px; // Height of the button
+  background-color: ${palette('primary', 0)}; // Primary color for the button
+  color: ${palette('contrast', 0)}; // Text color for the button
+
+  &:hover,
+  &:focus {
+    background-color: ${palette('primary', 1)}; // Slightly different color on hover/focus
+  }
 `
