@@ -31,9 +31,11 @@ import { DEFAULT_WALLET_TYPE } from '../../../const'
 import { isCacaoAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
+import { getPoolPriceValue as getPoolPriceValueM } from '../../../helpers/poolHelperMaya'
 import { hiddenString, noDataString } from '../../../helpers/stringHelper'
 import * as poolsRoutes from '../../../routes/pools'
 import { WalletBalancesRD } from '../../../services/clients'
+import { PoolDetails as PoolDetailsMaya } from '../../../services/mayaMigard/types'
 import { PoolDetails, PoolsDataMap } from '../../../services/midgard/types'
 import { MimirHaltRD } from '../../../services/thorchain/types'
 import { reloadBalancesByChain } from '../../../services/wallet'
@@ -61,7 +63,9 @@ type Props = {
   disableRefresh: boolean
   chainBalances: ChainBalances
   pricePool: PricePool
+  mayaPricePool: PricePool
   poolDetails: PoolDetails
+  poolDetailsMaya: PoolDetailsMaya
   pendingPoolDetails: PoolDetails
   poolsData: PoolsDataMap
   selectAssetHandler: (asset: SelectedWalletAsset) => void
@@ -76,6 +80,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
     disableRefresh,
     chainBalances = [],
     pricePool,
+    mayaPricePool,
     poolDetails,
     pendingPoolDetails,
     poolsData,
@@ -164,6 +169,20 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
         if (isUSDAsset(asset)) {
           price = balance.toString()
+        } else if (isCacaoAsset(asset)) {
+          // First try to get the price from poolDetails
+          const priceOptionFromPoolDetails = getPoolPriceValueM({
+            balance: { asset, amount },
+            poolDetails,
+            pricePool: mayaPricePool
+          })
+          if (O.isSome(priceOptionFromPoolDetails)) {
+            price = formatAssetAmountCurrency({
+              amount: baseToAsset(priceOptionFromPoolDetails.value),
+              asset: mayaPricePool.asset,
+              decimal: isUSDAsset(mayaPricePool.asset) ? 2 : 4
+            })
+          }
         } else {
           // First try to get the price from poolDetails
           const priceOptionFromPoolDetails = getPoolPriceValue({
@@ -173,9 +192,8 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
             network
           })
           if (O.isSome(priceOptionFromPoolDetails)) {
-            const priceAmount = baseAmount(priceOptionFromPoolDetails.value.amount(), amount.decimal)
             price = formatAssetAmountCurrency({
-              amount: baseToAsset(priceAmount),
+              amount: baseToAsset(priceOptionFromPoolDetails.value),
               asset: pricePool.asset,
               decimal: isUSDAsset(pricePool.asset) ? 2 : 4
             })
@@ -188,9 +206,8 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
               network
             })
             if (O.isSome(priceOptionFromPendingPoolDetails)) {
-              const priceAmount = baseAmount(priceOptionFromPendingPoolDetails.value.amount(), amount.decimal)
               price = formatAssetAmountCurrency({
-                amount: baseToAsset(priceAmount),
+                amount: baseToAsset(priceOptionFromPendingPoolDetails.value),
                 asset: pricePool.asset,
                 decimal: isUSDAsset(pricePool.asset) ? 2 : 4
               })
@@ -208,7 +225,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         )
       }
     }),
-    [hidePrivateData, poolDetails, pricePool, network, pendingPoolDetails]
+    [hidePrivateData, mayaPricePool, pricePool, poolDetails, network, pendingPoolDetails]
   )
 
   const renderActionColumn = useCallback(
@@ -256,6 +273,26 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
                 }
               ]
             : [],
+          // 'swap' for cacao
+          A.concatW<ActionButtonAction>(
+            isCacaoAsset(asset) && deepestPoolAsset !== null
+              ? [
+                  {
+                    label: intl.formatMessage({ id: 'common.swap' }),
+                    callback: () => {
+                      navigate(
+                        poolsRoutes.swap.path({
+                          source: assetToString(asset),
+                          target: assetToString(deepestPoolAsset),
+                          sourceWalletType: walletType,
+                          targetWalletType: DEFAULT_WALLET_TYPE
+                        })
+                      )
+                    }
+                  }
+                ]
+              : []
+          ),
           // 'add' LP RUNE
           A.concatW<ActionButtonAction>(
             isRuneNativeAsset(asset) && deepestPoolAsset !== null

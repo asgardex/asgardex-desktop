@@ -14,13 +14,11 @@ export type PoolData = {
   assetBalance: BaseAmount
   runeBalance: BaseAmount
 }
-
 // TODO (@asgdx-team) Move all PricePool* types into `src/renderer/services/midgard/types.ts`
 export type PricePool = {
   readonly asset: PricePoolAsset
   readonly poolData: PoolData
 }
-
 export type PricePools = NonEmptyArray<PricePool>
 
 export type PoolTableRowData = {

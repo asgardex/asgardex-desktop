@@ -3,6 +3,7 @@ import { ComponentMeta, StoryFn } from '@storybook/react'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { TxHash } from '@xchainjs/xchain-client'
+import { MayachainQuery } from '@xchainjs/xchain-mayachain-query'
 import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import { assetAmount, assetToBase, assetToString, baseAmount, bn } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
@@ -118,7 +119,9 @@ const defaultProps: SwapProps = {
   addressValidator: () => Promise.resolve(true),
   hidePrivateData: false,
   thorchainQuery: new ThorchainQuery(),
-  reloadTxStatus: () => console.log('reloadBalances')
+  mayachainQuery: new MayachainQuery(),
+  reloadTxStatus: () => console.log('reloadBalances'),
+  dex: 'THOR'
 }
 
 export const Default: StoryFn = () => <Component {...defaultProps} />

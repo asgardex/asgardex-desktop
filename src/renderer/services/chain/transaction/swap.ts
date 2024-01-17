@@ -1,11 +1,13 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { AssetCacao } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { isSynthAsset } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { isRuneNativeAsset } from '../../../helpers/assetHelper'
+import { isCacaoAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { liveData } from '../../../helpers/rx/liveData'
+import { service as mayaMidgardService } from '../../mayaMigard/service'
 import { service as midgardService } from '../../midgard/service'
 import { getTxStatus$ } from '../../thorchain'
 import { ChainTxFeeOption } from '../const'
@@ -13,6 +15,7 @@ import { StreamingTxState, StreamingTxState$, SwapTxParams, SwapTxState$ } from 
 import { sendPoolTx$ } from './common'
 
 const { pools: midgardPoolsService, validateNode$ } = midgardService
+const { pools: mayaMidgardPoolsService, validateNode$: mayaValidateNode$ } = mayaMidgardService
 
 /**
  * Swap does 2 steps:
@@ -28,17 +31,22 @@ export const swap$ = ({
   walletType,
   sender,
   walletIndex,
-  hdMode
+  hdMode,
+  dex
 }: SwapTxParams): SwapTxState$ => {
-  const { chain } = asset.synth ? AssetRuneNative : asset
+  // udpate this to suit mayaChainSwap
+  const { chain } = asset.synth ? (dex === 'THOR' ? AssetRuneNative : AssetCacao) : asset
 
   const requests$ = Rx.of(poolAddresses).pipe(
     // 1. Validate pool address or node
     RxOp.switchMap((poolAddresses) =>
       Rx.iif(
-        () => isRuneNativeAsset(asset) || isSynthAsset(asset),
-        validateNode$(),
-        midgardPoolsService.validatePool$(poolAddresses, chain)
+        () =>
+          dex === 'THOR' ? isRuneNativeAsset(asset) || isSynthAsset(asset) : isCacaoAsset(asset) || isSynthAsset(asset),
+        dex === 'THOR' ? validateNode$() : mayaValidateNode$(),
+        dex === 'THOR'
+          ? midgardPoolsService.validatePool$(poolAddresses, chain)
+          : mayaMidgardPoolsService.validatePool$(poolAddresses, chain)
       )
     ),
     // 2. Send swap transaction
@@ -53,7 +61,8 @@ export const swap$ = ({
         feeOption: ChainTxFeeOption.SWAP,
         sender,
         walletIndex,
-        hdMode
+        hdMode,
+        dex
       })
     ),
     // Map the result to the expected SwapTx structure

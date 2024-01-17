@@ -5,7 +5,6 @@
 /* eslint-disable import/no-webpack-loader-syntax */
 import atomIcon from '!file-loader!../../assets/svg/asset-atom.svg'
 import avaxIcon from '!file-loader!../../assets/svg/asset-avax.svg'
-import bnbRuneIcon from '!file-loader!../../assets/svg/asset-bnb-rune.svg'
 import bnbIcon from '!file-loader!../../assets/svg/asset-bnb.svg'
 import bscIcon from '!file-loader!../../assets/svg/asset-bsc.svg'
 import btcIcon from '!file-loader!../../assets/svg/asset-btc.svg'
@@ -41,7 +40,6 @@ export {
   lunaIcon,
   runeIcon,
   ustIcon,
-  bnbRuneIcon,
   xRuneIcon,
   tgtIcon,
   CurrencyIcon,

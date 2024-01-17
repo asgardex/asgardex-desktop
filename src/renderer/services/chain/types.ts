@@ -5,7 +5,7 @@ import BigNumber from 'bignumber.js'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 
-import { Network } from '../../../shared/api/types'
+import { Dex, Network } from '../../../shared/api/types'
 import { WalletType, WalletAddress, HDMode } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
 import { AssetWithDecimal } from '../../types/asgardex'
@@ -124,6 +124,7 @@ export type SendTxParams = {
   gasLimit?: BigNumber
   feeAmount?: BaseAmount
   hdMode: HDMode
+  dex?: Dex
 }
 
 export type SendPoolTxParams = SendTxParams & {
@@ -169,6 +170,7 @@ export type SwapTxParams = {
   readonly sender: Address
   readonly walletIndex: number
   readonly hdMode: HDMode
+  readonly dex: Dex
 }
 
 export type SwapStateHandler = (p: SwapTxParams) => SwapState$

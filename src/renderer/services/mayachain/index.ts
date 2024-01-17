@@ -31,9 +31,9 @@ const {
   loadInboundAddresses$,
   reloadInboundAddresses,
   mimir$,
-  reloadMimir,
-  getLiquidityProviders,
-  reloadLiquidityProviders
+  reloadMimir
+  // getLiquidityProviders,
+  // reloadLiquidityProviders
 } = createMayanodeService$(network$, clientUrl$)
 
 const { txs$, tx$, txStatus$, subscribeTx, resetTx, sendTx, txRD$, sendPoolTx$ } = createTransactionService(
@@ -82,7 +82,7 @@ export {
   mayachainLastblockState$,
   reloadMayachainLastblock,
   mimir$,
-  reloadMimir,
-  getLiquidityProviders,
-  reloadLiquidityProviders
+  reloadMimir
+  // getLiquidityProviders,
+  // reloadLiquidityProviders
 }

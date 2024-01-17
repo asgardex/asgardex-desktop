@@ -11,7 +11,6 @@ import { MsgSend } from 'cosmos-client/x/bank'
 import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId, Network } from '../../../../shared/api/types'
-// import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
 import { fromLedgerErrorType, getDerivationPath } from './common'

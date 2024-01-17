@@ -5,26 +5,26 @@ import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { ONE_RUNE_BASE_AMOUNT } from '../../shared/mock/amount'
-import { useMidgardContext } from '../contexts/MidgardContext'
+import { ONE_MAYA_BASE_AMOUNT } from '../../shared/mock/amount'
+import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
 import { sequenceTOption } from '../helpers/fpHelpers'
-import { PriceRD } from '../services/midgard/types'
-import { pricePoolSelector } from '../services/midgard/utils'
+import { PriceRD } from '../services/mayaMigard/types'
+import { pricePoolSelector } from '../services/mayaMigard/utils'
 import { getValueOfRuneInAsset } from '../views/pools/Pools.utils'
 
-export const useRunePrice = () => {
+export const useMayaPrice = () => {
   const {
     service: {
       pools: { poolsState$, selectedPricePoolAsset$, reloadPools }
     }
-  } = useMidgardContext()
+  } = useMidgardMayaContext()
 
-  const reloadRunePrice = () => {
-    // reload pools triggers changes of poolsState$, with it changes of `runePriceRD`
+  const reloadMayaPrice = () => {
+    // reload pools triggers changes of poolsState$, with it changes of `mayaPriceRD`
     reloadPools()
   }
 
-  const [runePriceRD] = useObservableState<PriceRD>(
+  const [mayaPriceRD] = useObservableState<PriceRD>(
     () =>
       Rx.combineLatest([poolsState$, selectedPricePoolAsset$]).pipe(
         RxOp.map(([poolsState, oSelectedPricePoolAsset]) =>
@@ -37,11 +37,11 @@ export const useRunePrice = () => {
                   const { poolData } = pricePoolSelector(pricePools, O.some(pricePoolAsset))
                   return {
                     asset: pricePoolAsset,
-                    amount: getValueOfRuneInAsset(ONE_RUNE_BASE_AMOUNT, poolData)
+                    amount: getValueOfRuneInAsset(ONE_MAYA_BASE_AMOUNT, poolData)
                   }
                 }),
-                (oRunePrice) =>
-                  RD.fromOption(oRunePrice, () => Error('Could not get price for RUNE from selected price pool'))
+                (oMayaPrice) =>
+                  RD.fromOption(oMayaPrice, () => Error('Could not get price for MAYA from selected price pool'))
               )
             )
           )
@@ -50,5 +50,5 @@ export const useRunePrice = () => {
     RD.initial
   )
 
-  return { runePriceRD, reloadRunePrice }
+  return { mayaPriceRD, reloadMayaPrice }
 }

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
+import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
 import { Address, baseAmount, CryptoAmount, eqAsset } from '@xchainjs/xchain-util'
@@ -19,6 +20,7 @@ import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { isRuneNativeAsset, isUSDAsset, THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
+import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { loadingString } from '../../../../helpers/stringHelper'
 import { getRuneNativeAmountFromBalances } from '../../../../helpers/walletHelper'
 import { usePricePool } from '../../../../hooks/usePricePool'
@@ -61,12 +63,13 @@ export type Props = {
   validatePassword$: ValidatePasswordHandler
   thorchainQuery: ThorchainQuery
   network: Network
+  poolDetails: PoolDetails
 }
 
 export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
   const {
     asset: { walletType, walletIndex, hdMode },
-
+    poolDetails,
     balances,
     balance,
     transfer$,
@@ -85,6 +88,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
   const { asset } = balance
 
   const pricePool = usePricePool()
+
   const [amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
   const {
     state: sendTxState,
@@ -217,16 +221,37 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
 
   // useEffect to fetch data from query
   useEffect(() => {
-    const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
-    const amount = new CryptoAmount(amountToSend, asset)
-    const fetchData = async () => {
-      setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, pricePool.asset))
-      setFeePriceValue(await thorchainQuery.convert(assetFee, pricePool.asset))
-      setAmountPriceValue(await thorchainQuery.convert(amount, pricePool.asset))
+    const maxAmountPrice = getPoolPriceValue({
+      balance: { asset, amount: maxAmount },
+      poolDetails,
+      pricePool,
+      network
+    })
+    const assetFeePrice = getPoolPriceValue({
+      balance: { asset, amount: assetFee.baseAmount },
+      poolDetails,
+      pricePool,
+      network
+    })
+    const amountPrice = getPoolPriceValue({
+      balance: { asset, amount: amountToSend },
+      poolDetails,
+      pricePool,
+      network
+    })
+    if (O.isSome(maxAmountPrice)) {
+      const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
+      setMaxAmountPriceValue(maxCryptoAmount)
     }
-
-    fetchData()
-  }, [amountToSend, asset, assetFee, maxAmount, pricePool.asset, thorchainQuery])
+    if (O.isSome(assetFeePrice)) {
+      const maxCryptoAmount = new CryptoAmount(assetFeePrice.value, pricePool.asset)
+      setFeePriceValue(maxCryptoAmount)
+    }
+    if (O.isSome(amountPrice)) {
+      const maxCryptoAmount = new CryptoAmount(amountPrice.value, pricePool.asset)
+      setAmountPriceValue(maxCryptoAmount)
+    }
+  }, [amountToSend, asset, assetFee, maxAmount, network, poolDetails, pricePool, pricePool.asset, thorchainQuery])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {

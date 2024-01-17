@@ -15,8 +15,10 @@ import { AssetsTableCollapsable } from '../../components/wallet/assets/AssetsTab
 import type { AssetAction } from '../../components/wallet/assets/AssetsTableCollapsable'
 import { TotalValue } from '../../components/wallet/assets/TotalValue'
 import { useMidgardContext } from '../../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
+import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePrivateData } from '../../hooks/usePrivateData'
@@ -60,6 +62,15 @@ export const AssetsView: React.FC = (): JSX.Element => {
       pools: { poolsState$, selectedPricePool$, pendingPoolsState$ }
     }
   } = useMidgardContext()
+  const {
+    service: {
+      pools: { poolsState$: mayaPoolsState$, selectedPricePool$: mayaSelectedPricePool$ }
+    }
+  } = useMidgardMayaContext()
+
+  const selectedPricePoolMaya = useObservableState(mayaSelectedPricePool$, MAYA_PRICE_POOL)
+
+  const poolsMayaRD = useObservableState(mayaPoolsState$, RD.pending)
 
   const { total: totalWalletBalances } = useTotalWalletBalance()
 
@@ -92,6 +103,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
   )
 
   const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
+  const poolDetailsMaya = RD.toNullable(poolsMayaRD)?.poolDetails ?? []
   const poolsData = RD.toNullable(poolsRD)?.poolsData ?? {}
 
   const pendingPoolsDetails = RD.toNullable(pendingPoolsRD)?.poolDetails ?? []
@@ -140,7 +152,9 @@ export const AssetsView: React.FC = (): JSX.Element => {
         disableRefresh={disableRefresh}
         chainBalances={chainBalances}
         pricePool={selectedPricePool}
+        mayaPricePool={selectedPricePoolMaya}
         poolDetails={poolDetails}
+        poolDetailsMaya={poolDetailsMaya}
         pendingPoolDetails={pendingPoolsDetails}
         poolsData={poolsData}
         selectAssetHandler={selectAssetHandler}

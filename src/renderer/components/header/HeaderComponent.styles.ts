@@ -83,14 +83,14 @@ export const DexLabel = styled(Text)<{ dex: Dex }>`
       case 'THOR':
         return palette('primary', 0)
       case 'MAYA':
-        return palette('primary', 0)
+        return palette('secondary', 0)
       default:
         return palette('text', 2)
     }
   }};
 `
 
-export const NetworkLabel = styled(Text)<{ network: Network }>`
+export const NetworkLabel = styled(Text)<{ network: Network; dex: Dex }>`
   position: absolute;
   right: 19px;
   bottom: -13px;
@@ -99,16 +99,29 @@ export const NetworkLabel = styled(Text)<{ network: Network }>`
   font-family: 'MainFontRegular';
   font-size: 12px;
 
-  color: ${({ network }) => {
-    switch (network) {
-      case 'mainnet':
-        return palette('primary', 0)
-      case 'stagenet':
-        return palette('danger', 1)
-      case 'testnet':
-        return palette('warning', 0)
-      default:
-        return palette('text', 2)
+  color: ${({ network, dex }) => {
+    if (dex === 'THOR') {
+      switch (network) {
+        case 'mainnet':
+          return palette('primary', 0)
+        case 'stagenet':
+          return palette('danger', 1)
+        case 'testnet':
+          return palette('warning', 0)
+        default:
+          return palette('text', 2)
+      }
+    } else {
+      switch (network) {
+        case 'mainnet':
+          return palette('secondary', 0)
+        case 'stagenet':
+          return palette('danger', 1)
+        case 'testnet':
+          return palette('warning', 0)
+        default:
+          return palette('text', 2)
+      }
     }
   }};
 `

@@ -13,6 +13,8 @@ import * as THOR from '../../thorchain'
 import { reloadInboundAddresses } from '../../thorchain'
 import { SymWithdrawFees, SymWithdrawFeesHandler } from '../types'
 import { poolOutboundFee$, poolInboundFee$ } from './common'
+
+// update this to suit MayaChainSwap
 /**
  * Returns zero withdraw fees
  * by given asset to withdraw

@@ -1,4 +1,4 @@
-import { ThemeType } from '@thorchain/asgardex-theme'
+import { ThemeType } from '@asgardex/asgardex-theme'
 
 import { initialContext } from './ThemeContext'
 

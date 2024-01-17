@@ -12,6 +12,8 @@ import { reloadInboundAddresses } from '../../thorchain'
 import { SaverDepositFeesHandler, SaverWithdrawFeesHandler, SymDepositFeesHandler } from '../types'
 import { poolOutboundFee$, poolInboundFee$ } from './common'
 
+// update this to suit MayaChainSwap
+
 // State to reload sym deposit fees
 const {
   get$: reloadSymDepositFees$,

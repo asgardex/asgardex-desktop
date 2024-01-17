@@ -3,7 +3,8 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { Address, baseAmount, CryptoAmount } from '@xchainjs/xchain-util'
+import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
+import { Address, baseAmount, CryptoAmount, eqAsset } from '@xchainjs/xchain-util'
 import { formatAssetAmountCurrency, assetAmount, bn, assetToBase, BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
 import BigNumber from 'bignumber.js'
@@ -18,6 +19,7 @@ import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { isCacaoAsset, CACAO_DECIMAL, isUSDAsset } from '../../../../helpers/assetHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
+import { getPoolPriceValue } from '../../../../helpers/poolHelperMaya'
 import { loadingString } from '../../../../helpers/stringHelper'
 import { getCacaoAmountFromBalances } from '../../../../helpers/walletHelper'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
@@ -26,6 +28,7 @@ import { FeeRD, SendTxState, SendTxStateHandler } from '../../../../services/cha
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../../../services/clients'
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
+import { PricePool } from '../../../../views/pools/Pools.types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
 import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
@@ -57,12 +60,15 @@ export type Props = {
   reloadFeesHandler: FP.Lazy<void>
   validatePassword$: ValidatePasswordHandler
   network: Network
+  poolDetails: PoolDetails
+  pricePool: PricePool
 }
 
 export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
   const {
     asset: { walletType, walletIndex, hdMode },
-
+    poolDetails,
+    pricePool,
     balances,
     balance,
     transfer$,
@@ -88,7 +94,8 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
   const isLoading = useMemo(() => RD.isPending(sendTxState.status), [sendTxState.status])
 
   const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
-  const [feePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+  const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+  const [amountPriceValue, setAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
   const [form] = Form.useForm<FormValues>()
   const [showDetails, setShowDetails] = useState<boolean>(true)
@@ -170,7 +177,7 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
 
   // max amount for Cacao
   const maxAmount: BaseAmount = useMemo(() => {
-    const maxRuneAmount = FP.pipe(
+    const maxCacaoAmount = FP.pipe(
       sequenceTOption(oFee, oCacaoAmount),
       O.fold(
         // Set maxAmount to zero if we dont know anything about Cacao and fee amounts
@@ -182,21 +189,46 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
         }
       )
     )
-    return isCacaoAsset(asset) ? maxRuneAmount : balance.amount
+    return isCacaoAsset(asset) ? maxCacaoAmount : balance.amount
   }, [oFee, oCacaoAmount, asset, balance.amount])
 
   // store maxAmountValue wrong CryptoAmount
-  const [maxAmmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(
+    new CryptoAmount(baseAmount(0, CACAO_DECIMAL), asset)
+  )
 
   // // useEffect to fetch data from query
-  // useEffect(() => {
-  //   const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
-  //   const fetchData = async () => {
-  //     setMaxAmountPriceValue(await mayachainQuery.convert(maxCryptoAmount, AssetUSDC))
-  //   }
+  // useEffect to fetch data from query
+  useEffect(() => {
+    const maxAmountPrice = getPoolPriceValue({
+      balance: { asset, amount: maxAmount },
+      poolDetails,
+      pricePool
+    })
 
-  //   fetchData()
-  // }, [asset, maxAmount])
+    const assetFeePrice = getPoolPriceValue({
+      balance: { asset, amount: assetFee.baseAmount },
+      poolDetails,
+      pricePool
+    })
+    const amountPrice = getPoolPriceValue({
+      balance: { asset, amount: amountToSend },
+      poolDetails,
+      pricePool
+    })
+    if (O.isSome(maxAmountPrice)) {
+      const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
+      setMaxAmountPriceValue(maxCryptoAmount)
+    }
+    if (O.isSome(assetFeePrice)) {
+      const maxCryptoAmount = new CryptoAmount(assetFeePrice.value, pricePool.asset)
+      setFeePriceValue(maxCryptoAmount)
+    }
+    if (O.isSome(amountPrice)) {
+      const maxCryptoAmount = new CryptoAmount(amountPrice.value, pricePool.asset)
+      setAmountPriceValue(maxCryptoAmount)
+    }
+  }, [amountToSend, asset, assetFee, maxAmount, pricePool, network, poolDetails])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {
@@ -210,23 +242,23 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
       trimZeros: !isUSDAsset(assetFee.asset)
     })
 
-    // const price = FP.pipe(
-    //   O.some(feePriceValue), // Assuming this is Option<CryptoAmount>
-    //   O.map((cryptoAmount: CryptoAmount) =>
-    //     eqAsset(asset, cryptoAmount.asset)
-    //       ? ''
-    //       : formatAssetAmountCurrency({
-    //           amount: cryptoAmount.assetAmount,
-    //           asset: cryptoAmount.asset,
-    //           decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
-    //           trimZeros: !isUSDAsset(cryptoAmount.asset)
-    //         })
-    //   ),
-    //   O.getOrElse(() => '')
-    // )
+    const price = FP.pipe(
+      O.some(feePriceValue), // Assuming this is Option<CryptoAmount>
+      O.map((cryptoAmount: CryptoAmount) =>
+        eqAsset(asset, cryptoAmount.asset)
+          ? ''
+          : formatAssetAmountCurrency({
+              amount: cryptoAmount.assetAmount,
+              asset: cryptoAmount.asset,
+              decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
+              trimZeros: !isUSDAsset(cryptoAmount.asset)
+            })
+      ),
+      O.getOrElse(() => '')
+    )
 
-    return fee
-  }, [feePriceValue, assetFee])
+    return price ? `${price} (${fee}) ` : fee
+  }, [feePriceValue, assetFee.assetAmount, assetFee.asset, asset])
 
   const amountLabel = useMemo(() => {
     if (!amountToSend) {
@@ -240,23 +272,23 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
       trimZeros: !isUSDAsset(asset)
     })
 
-    // const price = FP.pipe(
-    //   O.some(amountPriceValue), // Assuming this is Option<CryptoAmount>
-    //   O.map((cryptoAmount: CryptoAmount) =>
-    //     eqAsset(asset, cryptoAmount.asset)
-    //       ? ''
-    //       : formatAssetAmountCurrency({
-    //           amount: cryptoAmount.assetAmount,
-    //           asset: cryptoAmount.asset,
-    //           decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
-    //           trimZeros: !isUSDAsset(cryptoAmount.asset)
-    //         })
-    //   ),
-    //   O.getOrElse(() => '')
-    // )
+    const price = FP.pipe(
+      O.some(amountPriceValue), // Assuming this is Option<CryptoAmount>
+      O.map((cryptoAmount: CryptoAmount) =>
+        eqAsset(asset, cryptoAmount.asset)
+          ? ''
+          : formatAssetAmountCurrency({
+              amount: cryptoAmount.assetAmount,
+              asset: cryptoAmount.asset,
+              decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
+              trimZeros: !isUSDAsset(cryptoAmount.asset)
+            })
+      ),
+      O.getOrElse(() => '')
+    )
 
-    return amount
-  }, [amountToSend, asset])
+    return price ? `${price} (${amount}) ` : amount
+  }, [amountPriceValue, amountToSend, asset])
 
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field

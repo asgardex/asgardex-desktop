@@ -18,9 +18,12 @@ import { ProtocolLimit, IncentivePendulum } from '../../components/pool'
 import { ManageButton } from '../../components/uielements/button'
 import { Table } from '../../components/uielements/table'
 import { useAppContext } from '../../contexts/AppContext'
+import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { getPoolTableRowsData, RUNE_PRICE_POOL } from '../../helpers/poolHelper'
+import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
+import { useDex } from '../../hooks/useDex'
 import { useIncentivePendulum } from '../../hooks/useIncentivePendulum'
 import { usePoolCycle } from '../../hooks/usePoolCycle'
 import { usePoolFilter } from '../../hooks/usePoolFilter'
@@ -28,10 +31,15 @@ import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
 import { useProtocolLimit } from '../../hooks/useProtocolLimit'
 import * as poolsRoutes from '../../routes/pools'
 import { DEFAULT_NETWORK } from '../../services/const'
+import { MayachainLastblockRD } from '../../services/mayachain/types'
 import { PendingPoolsState, DEFAULT_POOL_FILTERS } from '../../services/midgard/types'
 import { ThorchainLastblockRD } from '../../services/thorchain/types'
 import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
-import { getBlocksLeftForPendingPoolAsString, isEmptyPool } from './Pools.utils'
+import {
+  getBlocksLeftForPendingPoolAsString,
+  getBlocksLeftForPendingPoolAsStringMaya,
+  isEmptyPool
+} from './Pools.utils'
 import { filterTableData } from './Pools.utils'
 import * as Shared from './PoolsOverview.shared'
 import { TableAction, BlockLeftLabel } from './PoolsOverview.styles'
@@ -40,7 +48,7 @@ import * as Styled from './PoolsOverview.styles'
 export const PendingPools: React.FC = (): JSX.Element => {
   const navigate = useNavigate()
   const intl = useIntl()
-
+  const { dex } = useDex()
   const { network$ } = useAppContext()
   const network = useObservableState<Network>(network$, DEFAULT_NETWORK)
 
@@ -49,14 +57,25 @@ export const PendingPools: React.FC = (): JSX.Element => {
       pools: { pendingPoolsState$, reloadPendingPools, selectedPricePool$ }
     }
   } = useMidgardContext()
+  const {
+    service: {
+      pools: {
+        pendingPoolsState$: pendingPoolStateMaya$,
+        reloadPendingPools: reloadPendingPoolsMaya,
+        selectedPricePool$: selectedPricePoolMaya$
+      }
+    }
+  } = useMidgardContext()
 
   const { thorchainLastblockState$ } = useThorchainContext()
+  const { mayachainLastblockState$ } = useMayachainContext()
 
   const { setFilter: setPoolFilter, filter: poolFilter } = usePoolFilter('pending')
   const { add: addPoolToWatchlist, remove: removePoolFromWatchlist, list: poolWatchList } = usePoolWatchlist()
 
-  const poolsRD = useObservableState(pendingPoolsState$, RD.pending)
+  const poolsRD = useObservableState(dex === 'THOR' ? pendingPoolsState$ : pendingPoolStateMaya$, RD.pending)
   const thorchainLastblockRD: ThorchainLastblockRD = useObservableState(thorchainLastblockState$, RD.pending)
+  const mayachainLastblockRD: MayachainLastblockRD = useObservableState(mayachainLastblockState$, RD.pending)
 
   const { reload: reloadLimit, data: limitRD } = useProtocolLimit()
   const { data: incentivePendulumRD } = useIncentivePendulum()
@@ -72,11 +91,15 @@ export const PendingPools: React.FC = (): JSX.Element => {
 
   const refreshHandler = useCallback(() => {
     reloadPendingPools()
+    reloadPendingPoolsMaya()
     reloadLimit()
     reloadPoolCycle()
-  }, [reloadLimit, reloadPendingPools, reloadPoolCycle])
+  }, [reloadLimit, reloadPendingPools, reloadPendingPoolsMaya, reloadPoolCycle])
 
-  const selectedPricePool = useObservableState(selectedPricePool$, RUNE_PRICE_POOL)
+  const selectedPricePool = useObservableState(
+    dex === 'THOR' ? selectedPricePool$ : selectedPricePoolMaya$,
+    dex === 'THOR' ? RUNE_PRICE_POOL : MAYA_PRICE_POOL
+  )
 
   const renderBtnPoolsColumn = useCallback(
     (_: string, { asset }: PoolTableRowData) => {
@@ -112,14 +135,19 @@ export const PendingPools: React.FC = (): JSX.Element => {
         RD.map((lastblockItems) => getBlocksLeftForPendingPoolAsString(lastblockItems, asset, oNewPoolCycle)),
         RD.getOrElse(() => '--')
       )
+      const blocksLeftMaya: string = FP.pipe(
+        mayachainLastblockRD,
+        RD.map((lastblockItems) => getBlocksLeftForPendingPoolAsStringMaya(lastblockItems, asset, oNewPoolCycle)),
+        RD.getOrElse(() => '--')
+      )
 
       return (
         <TableAction>
-          <BlockLeftLabel>{deepest ? blocksLeft : '--'}</BlockLeftLabel>
+          <BlockLeftLabel>{deepest ? (dex === 'THOR' ? blocksLeft : blocksLeftMaya) : '--'}</BlockLeftLabel>
         </TableAction>
       )
     },
-    [thorchainLastblockRD, oNewPoolCycle]
+    [thorchainLastblockRD, mayachainLastblockRD, dex, oNewPoolCycle]
   )
 
   const blockLeftColumn: ColumnType<PoolTableRowData> = useMemo(

@@ -9,7 +9,7 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import { Chain } from '@xchainjs/xchain-util'
@@ -168,9 +168,11 @@ export const sendPoolTx$ = ({
   recipient,
   amount,
   memo,
-  feeOption = DEFAULT_FEE_OPTION
+  feeOption = DEFAULT_FEE_OPTION,
+  dex
 }: SendPoolTxParams): TxHashLD => {
-  const { chain } = asset.synth ? AssetRuneNative : asset
+  // update this to suit MayaChainSwap
+  const { chain } = asset.synth ? (dex === 'THOR' ? AssetRuneNative : AssetCacao) : asset
   if (!isEnabledChain(chain)) return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)
   switch (chain) {
     case ETHChain:
@@ -211,7 +213,9 @@ export const sendPoolTx$ = ({
       })
 
     case THORChain:
-      return THOR.sendPoolTx$({ walletType, amount, asset, memo, walletIndex, hdMode })
+      return dex === 'THOR'
+        ? THOR.sendPoolTx$({ walletType, amount, asset, memo, walletIndex, hdMode })
+        : THOR.sendTx({ sender, walletType, asset, recipient, amount, memo, walletIndex, hdMode })
 
     case MAYAChain:
       return MAYA.sendPoolTx$({ walletType, amount, asset, memo, walletIndex, hdMode })

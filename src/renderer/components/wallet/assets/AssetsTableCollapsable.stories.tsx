@@ -15,6 +15,7 @@ import { AssetBNB, AssetBTC, AssetETH, AssetLTC, AssetRune67C, AssetRuneNative }
 import { EnabledChain, isEnabledChain } from '../../../../shared/utils/chain'
 import { WalletType } from '../../../../shared/wallet/types'
 import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
+import { MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
 import { WalletBalances } from '../../../services/clients'
 import { ApiError, ChainBalances, ErrorId, SelectedWalletAsset } from '../../../services/wallet/types'
 import { AssetsTableCollapsable } from './index'
@@ -173,9 +174,11 @@ const Template = (args: Partial<Record<EnabledChain, RDStatus>>) => {
         A.flatten
       )}
       poolDetails={[]}
+      poolDetailsMaya={[]}
       pendingPoolDetails={[]}
       poolsData={{}}
       pricePool={RUNE_PRICE_POOL}
+      mayaPricePool={MAYA_PRICE_POOL}
       network="testnet"
       mimirHalt={RD.initial}
       hidePrivateData={false}

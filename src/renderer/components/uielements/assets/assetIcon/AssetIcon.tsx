@@ -18,7 +18,6 @@ import {
   isDogeAsset,
   isEthAsset,
   isLtcAsset,
-  isRuneBnbAsset,
   isRuneNativeAsset,
   isTgtERC20Asset,
   isXRuneAsset,
@@ -52,7 +51,6 @@ import {
   dogeIcon,
   ethIcon,
   runeIcon,
-  bnbRuneIcon,
   xRuneIcon,
   tgtIcon,
   cacaoIcon,
@@ -114,10 +112,6 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     if (isCacaoAsset(asset)) {
       return cacaoIcon
     }
-    // BNB RUNE
-    if (isRuneBnbAsset(asset, network)) {
-      return bnbRuneIcon
-    }
     // BNB
     if (isBnbAsset(asset) || isBnbAssetSynth(asset)) {
       // Since BNB is blacklisted at TrustWallet's asset, we have to use "our" own BNB icon
@@ -162,7 +156,6 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
 
       // Since we've already checked ETH.ETH before,
       // we know any asset is ERC20 here - no need to run expensive `isEthTokenAsset`
-      // @St0mrzy trust wallet url doesnt work
       if (isEthChain(asset.chain)) {
         return FP.pipe(
           // Try to get url from ERC20Whitelist first

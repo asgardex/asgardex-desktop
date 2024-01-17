@@ -24,6 +24,7 @@ export type CommonStorage = Readonly<
     locale: Locale
     evmDerivationMode: EvmHDMode
     midgard: ApiUrls
+    midgardMaya: ApiUrls
     thornodeRpc: ApiUrls
     thornodeApi: ApiUrls
     mayanodeRpc: ApiUrls

@@ -12,7 +12,7 @@ import {
   DepthHistory,
   DepthHistoryItem,
   SwapHistoryItem
-} from '@xchainjs/xchain-midgard'
+} from '@xchainjs/xchain-mayamidgard'
 import { Address, Asset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/lib/function'
@@ -22,7 +22,7 @@ import * as Rx from 'rxjs'
 
 import { LiveData } from '../../helpers/rx/liveData'
 import { AssetWithAmount, DepositType } from '../../types/asgardex'
-import { PricePools, PricePoolAsset, PricePool, PoolData } from '../../views/pools/Pools.types'
+import { PricePoolAsset, PricePool, PricePools, PoolData } from '../../views/pools/Pools.types'
 import { Memo, PoolFeeLD } from '../chain/types'
 import { ApiError } from '../wallet/types'
 
@@ -152,7 +152,6 @@ export enum GetPoolStatsPeriodEnum {
   _1h = '1h',
   _24h = '24h',
   _7d = '7d',
-  _14d = '14d',
   _30d = '30d',
   _90d = '90d',
   _100d = '100d',
@@ -178,6 +177,15 @@ export enum GetPoolsStatusEnum {
   Available = 'available',
   Staged = 'staged',
   Suspended = 'suspended'
+}
+
+export enum ActionTypeEnum {
+  Swap = 'swap',
+  AddLiquidity = 'addLiquidity',
+  Withdraw = 'withdraw',
+  Donate = 'donate',
+  Refund = 'refund',
+  Switch = 'switch'
 }
 
 export type PoolsState = {
@@ -377,8 +385,11 @@ export type Action = {
   /**
    * Outbound transactions related to the action
    */
+  height: string
   out: Tx[]
   type: TxType
+  pools: string[]
+  status: string
   fees?: AssetWithAmount[]
   slip?: number
 }

@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useEffect } from 'react'
 
-import theme from '@thorchain/asgardex-theme'
+import theme from '@asgardex/asgardex-theme'
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar'
 
 import useInterval, { INACTIVE_INTERVAL } from '../../../hooks/useInterval'

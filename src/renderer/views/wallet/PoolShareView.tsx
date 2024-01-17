@@ -56,9 +56,29 @@ export const PoolShareView: React.FC = (): JSX.Element => {
     }
   } = useMidgardContext()
 
+  // const {
+  //   service: {
+  //     pools: {
+  //       allPoolDetails$: allPoolDetailsMaya$,
+  //       mayaPoolsState$,
+  //       selectedPricePool$: selectedPricePoolMaya$,
+  //       selectedPricePoolAsset$: selectedPricePoolMayaAsset$,
+  //       reloadAllPools: reloadAllMayaPools,
+  //       haltedChains$: haltedMayaChains$
+  //     },
+  //     reloadNetworkInfo: reloadMayaNetworkInfo,
+  //     shares: {
+  //       allSharesByAddresses$: allSharesByAddressesMaya$,
+  //       reloadAllSharesByAddresses: reloadAllSharesByAddressesMaya
+  //     }
+  //   }
+  // } = useMidgardMayaContext()
+
   const selectedPricePool = useObservableState(selectedPricePool$, RUNE_PRICE_POOL)
+  // const selectedPricePoolMaya = useObservableState(selectedPricePoolMaya$, MAYA_PRICE_POOL)
 
   const poolsRD = useObservableState(poolsState$, RD.pending)
+  // const poolsMayaRD = useObservableState(mayaPoolsState$, RD.pending)
 
   const { addressByChain$ } = useChainContext()
 

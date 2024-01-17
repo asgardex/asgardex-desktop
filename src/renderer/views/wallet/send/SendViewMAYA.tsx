@@ -10,7 +10,9 @@ import { useObservableState } from 'observable-hooks'
 import { SendFormMAYA } from '../../../components/wallet/txs/send/'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useMayachainContext } from '../../../contexts/MayachainContext'
+import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
+import { MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
 import { liveData } from '../../../helpers/rx/liveData'
 import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
@@ -40,6 +42,17 @@ export const SendViewMAYA: React.FC<Props> = (props): JSX.Element => {
     () => balancesState$(DEFAULT_BALANCES_FILTER),
     INITIAL_BALANCES_STATE
   )
+
+  const {
+    service: {
+      pools: { poolsState$, selectedPricePool$ }
+    }
+  } = useMidgardMayaContext()
+
+  const pricePool = useObservableState(selectedPricePool$, MAYA_PRICE_POOL)
+
+  const poolsRD = useObservableState(poolsState$, RD.pending)
+  const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
 
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(MAYAChain))
 
@@ -92,6 +105,8 @@ export const SendViewMAYA: React.FC<Props> = (props): JSX.Element => {
               reloadFeesHandler={reloadFees}
               validatePassword$={validatePassword$}
               network={network}
+              poolDetails={poolDetails}
+              pricePool={pricePool}
             />
           </Styled.Container>
         </Spin>
@@ -113,6 +128,8 @@ export const SendViewMAYA: React.FC<Props> = (props): JSX.Element => {
             reloadFeesHandler={reloadFees}
             validatePassword$={validatePassword$}
             network={network}
+            poolDetails={poolDetails}
+            pricePool={pricePool}
           />
         </Styled.Container>
       )

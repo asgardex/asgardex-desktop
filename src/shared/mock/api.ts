@@ -44,6 +44,11 @@ const commonStorageData: CommonStorage = {
     stagenet: 'midgard-url-stagenet',
     testnet: 'midgard-url-testnet'
   },
+  midgardMaya: {
+    mainnet: 'midgard-url-mainnet',
+    stagenet: 'midgard-url-stagenet',
+    testnet: 'midgard-url-testnet'
+  },
   thornodeRpc: {
     mainnet: 'thornode-rpc-mainnet',
     stagenet: 'thornode-rpc-stagenet',

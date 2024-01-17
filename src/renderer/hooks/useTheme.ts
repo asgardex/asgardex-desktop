@@ -1,5 +1,5 @@
-import type { Theme } from '@thorchain/asgardex-theme'
-import themes, { ThemeType } from '@thorchain/asgardex-theme'
+import type { Theme } from '@asgardex/asgardex-theme'
+import themes, { ThemeType } from '@asgardex/asgardex-theme'
 import * as FP from 'fp-ts/lib/function'
 import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'

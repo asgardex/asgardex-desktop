@@ -533,6 +533,9 @@ export const convertBaseAmountDecimal = (amount: BaseAmount, decimal: number): B
 export const max1e8BaseAmount = (amount: BaseAmount): BaseAmount =>
   amount.decimal <= THORCHAIN_DECIMAL ? amount : convertBaseAmountDecimal(amount, THORCHAIN_DECIMAL)
 
+export const max1e10BaseAmount = (amount: BaseAmount): BaseAmount =>
+  amount.decimal <= CACAO_DECIMAL ? amount : convertBaseAmountDecimal(amount, CACAO_DECIMAL)
+
 /**
  * Helper to convert a `BaseAmount`
  * into `1e8` decimal based `BaseAmount`

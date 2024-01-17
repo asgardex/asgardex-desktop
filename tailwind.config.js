@@ -1,4 +1,4 @@
-const t = require('@thorchain/asgardex-theme').default
+const t = require('@asgardex/asgardex-theme').default
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -30,8 +30,8 @@ module.exports = {
         20: ['20px', '23px']
       },
       // Custom colors based on `asgardex-theme`
-      // Light theme https://gitlab.com/thorchain/asgardex-common/asgardex-theme/-/blob/master/src/light.ts
-      // Dark theme https://gitlab.com/thorchain/asgardex-common/asgardex-theme/-/blob/master/src/dark.ts
+      // Light theme https://github.com/asgardex/asgardex-theme/-/blob/master/src/light.ts
+      // Dark theme https://github.com/asgardex/asgardex-theme/-/blob/master/src/dark.ts
       colors: {
         turquoise: '#23DCC8', //'#50E3C2'
         cyanblue: '#1fb6ff',
