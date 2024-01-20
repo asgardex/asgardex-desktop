@@ -75,7 +75,7 @@ export const chainToString = (chain: Chain): string => {
     case MAYAChain:
       return 'MAYAChain'
     case DASHChain:
-      return 'Dash'
+      return 'DASH'
   }
 }
 

@@ -233,7 +233,7 @@ export const getOutboundAssetFeeByChain = (
     O.chain(O.fromPredicate(isValidBN)),
     // Convert fee values to `BaseAmount` to put into `AssetWithAmount`
     O.chain((value) => {
-      if (!isEnabledChain(chain) || chain === MAYAChain || chain === DASHChain) return O.none
+      if (!isEnabledChain(chain)) return O.none
 
       switch (chain) {
         case BNBChain:
@@ -292,6 +292,8 @@ export const getOutboundAssetFeeByChain = (
         }
         // 'THORChain can be ignored - fees for asset side only
         case THORChain:
+        case DASHChain:
+        case MAYAChain:
           return O.none
       }
     })
