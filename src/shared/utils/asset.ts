@@ -22,6 +22,7 @@ const AssetSynthBnb = assetFromStringEx('BNB/BNB')
 const AssetSynthBusd = assetFromStringEx('BNB/BUSD-BD1')
 const AssetSynthEth = assetFromStringEx('ETH/ETH')
 const AssetSynthEthUsdc = assetFromStringEx('ETH/USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48')
+const AssetSynthEthUsdt = assetFromStringEx('ETH/USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7')
 const AssetSynthLTC = assetFromStringEx('LTC/LTC')
 const AssetSynthAVAX = assetFromStringEx('AVAX/AVAX')
 const AssetSynthAVAXUSDC = assetFromStringEx('AVAX/USDC-0XB97EF9EF8734C71904D8002F8B6BC66DD9C48A6E')
@@ -59,5 +60,6 @@ export {
   AssetRuneB1A,
   AssetRuneNative,
   AssetRuneERC20,
-  AssetRuneERC20Testnet
+  AssetRuneERC20Testnet,
+  AssetSynthEthUsdt
 }

@@ -8,6 +8,8 @@ import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { getPrefix as getCosmosPrefix } from '@xchainjs/xchain-cosmos'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
+import { DASHChain } from '@xchainjs/xchain-dash'
+import { getPrefix as getDashPrefix } from '@xchainjs/xchain-dash'
 import { getPrefix as getDogePrefix } from '@xchainjs/xchain-doge'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -61,6 +63,8 @@ export const getAddressPrefixLength = (chain: Chain, network: Network): number =
       return getMayachainPrefix(clientNetwork).length
     case LTCChain:
       return getLitecoinPrefix(clientNetwork).length
+    case DASHChain:
+      return getDashPrefix(clientNetwork).length
     case BCHChain:
       return getBCHPrefix().length
   }

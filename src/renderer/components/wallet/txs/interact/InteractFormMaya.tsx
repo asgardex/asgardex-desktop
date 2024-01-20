@@ -4,13 +4,13 @@ import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { MayaChain, MayachainQuery } from '@xchainjs/xchain-mayachain-query'
+import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
 import { MAYANameDetails } from '@xchainjs/xchain-mayamidgard-query'
 import {
   BaseAmount,
   CryptoAmount,
   assetAmount,
   assetToBase,
-  baseAmount,
   baseToAsset,
   bn,
   formatAssetAmountCurrency
@@ -30,6 +30,8 @@ import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { CACAO_DECIMAL } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
 import { getBondMemo, getLeaveMemo, getUnbondMemo } from '../../../../helpers/memoHelper'
+import { getPoolPriceValue } from '../../../../helpers/poolHelperMaya'
+import { usePricePoolMaya } from '../../../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { FeeRD } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../services/clients'
@@ -46,6 +48,7 @@ import { UIFeesRD } from '../../../uielements/fees'
 import { InfoIcon } from '../../../uielements/info'
 import { InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
+import { checkMemo } from '../TxForm.helpers'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
 import * as Styled from './Interact.styles'
@@ -79,10 +82,12 @@ type Props = {
   validatePassword$: ValidatePasswordHandler
   mayachainQuery: MayachainQuery
   network: Network
+  poolDetails: PoolDetails
 }
 export const InteractFormMaya: React.FC<Props> = (props) => {
   const {
     interactType,
+    poolDetails,
     balance,
     walletType,
     hdMode,
@@ -100,6 +105,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
   const intl = useIntl()
 
   const { asset } = balance
+  const pricePool = usePricePoolMaya()
 
   const [hasProviderAddress, setHasProviderAddress] = useState(false)
 
@@ -128,6 +134,9 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
   const isLoading = useMemo(() => RD.isPending(interactState.txRD), [interactState.txRD])
 
   const [form] = Form.useForm<FormValues>()
+  const [currentMemo, setCurrentMemo] = useState('')
+  const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
+  const [affiliateTracking, setAffiliateTracking] = useState<string>('')
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
 
@@ -152,6 +161,33 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
       ),
     [balance, oFee]
   )
+
+  const handleMemo = useCallback(() => {
+    let memoValue = form.getFieldValue('memo') as string
+
+    // Check if a swap memo is detected
+    if (checkMemo(memoValue)) {
+      const suffixPattern = /:dx:\d+$/ // Regex to match ':dx:' followed by any number
+
+      // Check if memo ends with the suffix pattern
+      if (!suffixPattern.test(memoValue)) {
+        // Remove any partial ':dx:' pattern before appending
+        memoValue = memoValue.replace(/:dx:\d*$/, '')
+
+        // Append ':dx:0'
+        memoValue += ':dx:1'
+      }
+
+      setSwapMemoDetected(true)
+      setAffiliateTracking(
+        memoValue.endsWith(':dx:10') ? `Swap memo detected` : `Swap memo detected affiliate fee applied (:dx:1)`
+      )
+    } else {
+      setSwapMemoDetected(false)
+    }
+    // Update the state with the adjusted memo value
+    setCurrentMemo(memoValue)
+  }, [form])
 
   const renderFeeError = useMemo(
     () => (
@@ -185,38 +221,22 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
     [oFee, balance.amount]
   )
 
-  const maxAmmountPriceValue: CryptoAmount = useMemo(
-    () =>
-      FP.pipe(
-        oFee,
-        O.fold(
-          // Set maxAmount to zero if we don't know anything about fees
-          () => new CryptoAmount(ZERO_BASE_AMOUNT, AssetCacao),
-          // Assuming fee is an object that can be subtracted from balance.amount
-          (fee) => new CryptoAmount(baseAmount(balance.amount.minus(fee).amount(), CACAO_DECIMAL), AssetCacao)
-        )
-      ),
-    [oFee, balance.amount]
-  )
+  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(maxAmount, asset)) // Initial state can be null or a suitable default
 
-  // const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(maxAmount, asset)) // Initial state can be null or a suitable default
+  useEffect(() => {
+    const maxAmountPrice = getPoolPriceValue({
+      balance: { asset, amount: maxAmount },
+      poolDetails,
+      pricePool
+    })
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
-  //       const convertedValue = await mayachainQuery.convert(maxCryptoAmount, AssetUSDC)
-  //       setMaxAmountPriceValue(convertedValue)
-  //     } catch (error) {
-  //       console.error('Error fetching data:', error)
-  //       // Handle error appropriately
-  //     }
-  //   }
-
-  //   if ((maxAmount && interactType === 'bond') || interactType === 'custom') {
-  //     fetchData()
-  //   }
-  // }, [asset, interactType, maxAmount, mayachainQuery])
+    if ((maxAmount && interactType === 'bond') || interactType === 'custom') {
+      if (O.isSome(maxAmountPrice)) {
+        const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
+        setMaxAmountPriceValue(maxCryptoAmount)
+      }
+    }
+  }, [asset, interactType, maxAmount, mayachainQuery, network, poolDetails, pricePool])
 
   const amountValidator = useCallback(
     async (_: unknown, value: BigNumber) => {
@@ -264,7 +284,6 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
   const debouncedFetch = debounce(async (mayaname, setMayaname, setShowDetails, mayachainQuery) => {
     try {
       const mayanameDetails = await mayachainQuery.getMAYANameDetails(mayaname)
-      console.log(mayanameDetails)
       if (mayanameDetails) {
         setMayaname(O.some(mayanameDetails))
         setShowDetails(true)
@@ -387,13 +406,13 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
         break
       }
       case 'custom': {
-        createMemo = form.getFieldValue('memo')
+        createMemo = currentMemo
         break
       }
     }
     setMemo(createMemo)
     return createMemo
-  }, [amountToSend, form, interactType])
+  }, [amountToSend, currentMemo, form, interactType])
 
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
@@ -611,8 +630,9 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
                   message: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
                 }
               ]}>
-              <Styled.Input disabled={isLoading} onChange={() => getMemo()} size="large" />
+              <Styled.Input disabled={isLoading} onChange={handleMemo} size="large" />
             </Form.Item>
+            {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
           </Styled.InputContainer>
         )}
 

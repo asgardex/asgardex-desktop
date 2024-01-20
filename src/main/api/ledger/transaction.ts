@@ -6,6 +6,7 @@ import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { TxHash } from '@xchainjs/xchain-client'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
+import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
@@ -46,7 +47,7 @@ export const sendTx = async ({
   try {
     const transport = await TransportNodeHidSingleton.create()
     let res: E.Either<LedgerError, string>
-    if (!isEnabledChain(chain) || chain === MAYAChain) {
+    if (!isEnabledChain(chain) || chain === MAYAChain || chain === DASHChain) {
       res = E.left({
         errorId: LedgerErrorId.NOT_IMPLEMENTED,
         msg: `${chain} is not supported for 'sendTx'`
@@ -269,7 +270,7 @@ export const deposit = async ({
       errorId: LedgerErrorId.NOT_IMPLEMENTED,
       msg: `${chain} is not supported for 'deposit'`
     })
-    if (!isEnabledChain(chain) || chain === MAYAChain) {
+    if (!isEnabledChain(chain) || chain === MAYAChain || chain === DASHChain) {
       res = notSupportedError
     } else {
       switch (chain) {

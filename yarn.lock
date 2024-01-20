@@ -2183,6 +2183,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@dashevo/dashcore-lib@npm:^0.19.41":
+  version: 0.19.44
+  resolution: "@dashevo/dashcore-lib@npm:0.19.44"
+  dependencies:
+    "@dashevo/x11-hash-js": ^1.0.2
+    "@types/node": ^12.12.47
+    bloom-filter: ^0.2.0
+    bls-signatures: ^0.2.5
+    bn.js: ^4.12.0
+    bs58: =4.0.1
+    elliptic: ^6.5.4
+    inherits: =2.0.1
+    lodash: ^4.17.20
+    ripemd160: ^2.0.2
+    unorm: ^1.6.0
+  checksum: 00fb3a109a34aaf1f9730389518329fd6e895798d6c68ba983a317e60e7c505e6055bf3bf78ff4c2faf3e186118580ec27ddc9d7679f4bd4dd1710976ea729bf
+  languageName: node
+  linkType: hard
+
+"@dashevo/x11-hash-js@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "@dashevo/x11-hash-js@npm:1.0.2"
+  checksum: a4856fb50f3d171d65492e1e72ef8cde2ea4e8a966fe8fc90d452db2e1a75e09a34e64918432ef9b207790fe51195b05b472c166ab809cf1bf8d3f69e0f57298
+  languageName: node
+  linkType: hard
+
 "@develar/schema-utils@npm:~2.6.5":
   version: 2.6.5
   resolution: "@develar/schema-utils@npm:2.6.5"
@@ -6189,7 +6215,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^12.20.10":
+"@types/node@npm:^12.12.47, @types/node@npm:^12.20.10":
   version: 12.20.55
   resolution: "@types/node@npm:12.20.55"
   checksum: e4f86785f4092706e0d3b0edff8dca5a13b45627e4b36700acd8dfe6ad53db71928c8dee914d4276c7fd3b6ccd829aa919811c9eb708a2c8e4c6eb3701178c37
@@ -6999,6 +7025,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@xchainjs/xchain-dash@npm:0.2.10":
+  version: 0.2.10
+  resolution: "@xchainjs/xchain-dash@npm:0.2.10"
+  dependencies:
+    "@dashevo/dashcore-lib": ^0.19.41
+  peerDependencies:
+    "@xchainjs/xchain-client": ^0.16.1
+    "@xchainjs/xchain-crypto": ^0.3.1
+    "@xchainjs/xchain-util": ^0.13.1
+    "@xchainjs/xchain-utxo": ^0.1.2
+    "@xchainjs/xchain-utxo-providers": ^0.2.11
+    axios: ^1.3.6
+    bitcoinjs-lib: ^5.2.0
+    coininfo: ^5.1.0
+    coinselect: ^3.1.12
+    wif: ^2.0.6
+  checksum: c036098fd280ed38905cf4d9f85e81d32f757b32e8a1c291d1af1c6e297b7069154e091d1b06e54867c4a0be16b0ccf48dd9a815b756ff03662aee19cfa8e37e
+  languageName: node
+  linkType: hard
+
 "@xchainjs/xchain-doge@npm:^0.7.9":
   version: 0.7.9
   resolution: "@xchainjs/xchain-doge@npm:0.7.9"
@@ -7092,18 +7138,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-mayachain@npm:0.2.13":
-  version: 0.2.13
-  resolution: "@xchainjs/xchain-mayachain@npm:0.2.13"
+"@xchainjs/xchain-mayachain@npm:0.2.15":
+  version: 0.2.15
+  resolution: "@xchainjs/xchain-mayachain@npm:0.2.15"
   peerDependencies:
     "@cosmos-client/core": 0.46.1
-    "@xchainjs/xchain-client": ^0.16.0
-    "@xchainjs/xchain-cosmos": ^0.21.9
-    "@xchainjs/xchain-crypto": ^0.3.0
+    "@xchainjs/xchain-client": ^0.16.1
+    "@xchainjs/xchain-cosmos": ^0.21.10
+    "@xchainjs/xchain-crypto": ^0.3.1
     "@xchainjs/xchain-util": ^0.13.1
     axios: ^1.3.6
     bech32-buffer: ^0.2.0
-  checksum: df385674347b07183a36b8de3f4d019a890b67db4f93992571ab4aea07bc64152014fa49b540f0df2af71e67c73fbd9d644506ade2e08b2a5ff868fed02908c0
+  checksum: cadb6503f415a289132232e6f6523426192522f76ace6a40ac3ae3178d15d561fdde3de186afb0d9d2f957df4a54498ed04861e8752ddf3e71b5c7d2bb1803bd
   languageName: node
   linkType: hard
 
@@ -8019,12 +8065,13 @@ __metadata:
     "@xchainjs/xchain-client": ^0.16.0
     "@xchainjs/xchain-cosmos": 0.21.9
     "@xchainjs/xchain-crypto": ^0.3.0
+    "@xchainjs/xchain-dash": 0.2.10
     "@xchainjs/xchain-doge": ^0.7.9
     "@xchainjs/xchain-ethereum": ^0.31.4
     "@xchainjs/xchain-evm": ^0.4.3
     "@xchainjs/xchain-evm-providers": ^0.1.5
     "@xchainjs/xchain-litecoin": ^0.13.8
-    "@xchainjs/xchain-mayachain": 0.2.13
+    "@xchainjs/xchain-mayachain": 0.2.15
     "@xchainjs/xchain-mayachain-query": 0.1.6
     "@xchainjs/xchain-mayamidgard": 0.1.1
     "@xchainjs/xchain-mayamidgard-query": 0.1.5
@@ -9019,6 +9066,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bloom-filter@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "bloom-filter@npm:0.2.0"
+  checksum: 0a19b85cbdbd44baf5511c85844b220a8f2a03591700bbffae223df1176f749aefe31d4afdd0bc647a8d17c49f36aa3577978792154e1e442a2b0e633aab2ab5
+  languageName: node
+  linkType: hard
+
+"bls-signatures@npm:^0.2.5":
+  version: 0.2.5
+  resolution: "bls-signatures@npm:0.2.5"
+  checksum: 472d697f09b1e7701311271150042b4923f0b1e1cd081ca2e7580242902e23ce0ecd97b3b448ea431114eee6a86081a226d80bd8a2a6aea73f9704da8e0dd668
+  languageName: node
+  linkType: hard
+
 "bluebird-lst@npm:^1.0.9":
   version: 1.0.9
   resolution: "bluebird-lst@npm:1.0.9"
@@ -9035,7 +9096,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bn.js@npm:^4.0.0, bn.js@npm:^4.1.0, bn.js@npm:^4.11.8, bn.js@npm:^4.11.9":
+"bn.js@npm:^4.0.0, bn.js@npm:^4.1.0, bn.js@npm:^4.11.8, bn.js@npm:^4.11.9, bn.js@npm:^4.12.0":
   version: 4.12.0
   resolution: "bn.js@npm:4.12.0"
   checksum: 39afb4f15f4ea537b55eaf1446c896af28ac948fdcf47171961475724d1bb65118cca49fa6e3d67706e4790955ec0e74de584e45c8f1ef89f46c812bee5b5a12
@@ -9313,7 +9374,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bs58@npm:^4.0.0, bs58@npm:^4.0.1":
+"bs58@npm:=4.0.1, bs58@npm:^4.0.0, bs58@npm:^4.0.1":
   version: 4.0.1
   resolution: "bs58@npm:4.0.1"
   dependencies:
@@ -15322,6 +15383,13 @@ __metadata:
   version: 2.0.3
   resolution: "inherits@npm:2.0.3"
   checksum: 78cb8d7d850d20a5e9a7f3620db31483aa00ad5f722ce03a55b110e5a723539b3716a3b463e2b96ce3fe286f33afc7c131fa2f91407528ba80cea98a7545d4c0
+  languageName: node
+  linkType: hard
+
+"inherits@npm:=2.0.1":
+  version: 2.0.1
+  resolution: "inherits@npm:2.0.1"
+  checksum: 6536b9377296d4ce8ee89c5c543cb75030934e61af42dba98a428e7d026938c5985ea4d1e3b87743a5b834f40ed1187f89c2d7479e9d59e41d2d1051aefba07b
   languageName: node
   linkType: hard
 
@@ -26812,6 +26880,13 @@ __metadata:
   version: 2.0.0
   resolution: "universalify@npm:2.0.0"
   checksum: 2406a4edf4a8830aa6813278bab1f953a8e40f2f63a37873ffa9a3bc8f9745d06cc8e88f3572cb899b7e509013f7f6fcc3e37e8a6d914167a5381d8440518c44
+  languageName: node
+  linkType: hard
+
+"unorm@npm:^1.6.0":
+  version: 1.6.0
+  resolution: "unorm@npm:1.6.0"
+  checksum: 9a86546256a45f855b6cfe719086785d6aada94f63778cecdecece8d814ac26af76cb6da70130da0a08b8803bbf0986e56c7ec4249038198f3de02607fffd811
   languageName: node
   linkType: hard
 

@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { COSMOS_DECIMAL, GAIAChain } from '@xchainjs/xchain-cosmos'
+import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import { Address, baseAmount, CryptoAmount, eqAsset } from '@xchainjs/xchain-util'
 import { formatAssetAmountCurrency, assetAmount, bn, assetToBase, BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
@@ -15,8 +16,9 @@ import { useIntl } from 'react-intl'
 import { Network } from '../../../../../shared/api/types'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
-import { AssetUSDC, ZERO_BASE_AMOUNT } from '../../../../const'
+import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { isRuneNativeAsset, isUSDAsset } from '../../../../helpers/assetHelper'
+import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { loadingString } from '../../../../helpers/stringHelper'
 import { usePricePool } from '../../../../hooks/usePricePool'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
@@ -34,6 +36,7 @@ import { ShowDetails } from '../../../uielements/showDetails'
 import { Slider } from '../../../uielements/slider'
 import { AccountSelector } from '../../account'
 import * as H from '../TxForm.helpers'
+import { checkMemo } from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as Shared from './Send.shared'
@@ -57,11 +60,13 @@ export type Props = {
   validatePassword$: ValidatePasswordHandler
   thorchainQuery: ThorchainQuery
   network: Network
+  poolDetails: PoolDetails
 }
 
 export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   const {
     asset: { walletType, walletIndex, hdMode },
+    poolDetails,
     balances,
     balance,
     transfer$,
@@ -90,18 +95,44 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   } = useSubscriptionState<SendTxState>(INITIAL_SEND_STATE)
 
   const isLoading = useMemo(() => RD.isPending(sendTxState.status), [sendTxState.status])
-
   const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
-
   const [amountPriceValue, setAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
-
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
-
   const [InboundAddress, setInboundAddress] = useState<string>('')
-
   const [warningMessage, setWarningMessage] = useState<string>('')
-
   const [form] = Form.useForm<FormValues>()
+
+  const [currentMemo, setCurrentMemo] = useState('')
+  const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
+  const [affiliateTracking, setAffiliateTracking] = useState<string>('')
+
+  const handleMemo = useCallback(() => {
+    let memoValue = form.getFieldValue('memo') as string
+
+    // Check if a swap memo is detected
+    if (checkMemo(memoValue)) {
+      const suffixPattern = /:dx:\d+$/ // Regex to match ':dx:' followed by any number
+
+      // Check if memo ends with the suffix pattern
+      if (!suffixPattern.test(memoValue)) {
+        // Remove any partial ':dx:' pattern before appending
+        memoValue = memoValue.replace(/:dx:\d*$/, '')
+
+        // Append ':dx:0'
+        memoValue += ':dx:5'
+      }
+
+      setSwapMemoDetected(true)
+      setAffiliateTracking(
+        memoValue.endsWith(':dx:10') ? `Swap memo detected` : `Swap memo detected affiliate fee applied (:dx:5)`
+      )
+    } else {
+      setSwapMemoDetected(false)
+    }
+
+    // Update the state with the adjusted memo value
+    setCurrentMemo(memoValue)
+  }, [form])
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
 
@@ -185,16 +216,37 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
 
   // useEffect to fetch data from query
   useEffect(() => {
-    const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
-    const amount = new CryptoAmount(amountToSend, asset)
-    const fetchData = async () => {
-      setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, AssetUSDC))
-      setFeePriceValue(await thorchainQuery.convert(assetFee, AssetUSDC))
-      setAmountPriceValue(await thorchainQuery.convert(amount, pricePool.asset))
+    const maxAmountPrice = getPoolPriceValue({
+      balance: { asset, amount: maxAmount },
+      poolDetails,
+      pricePool,
+      network
+    })
+    const amountPrice = getPoolPriceValue({
+      balance: { asset, amount: amountToSend },
+      poolDetails,
+      pricePool,
+      network
+    })
+    const assetFeePrice = getPoolPriceValue({
+      balance: { asset, amount: assetFee.baseAmount },
+      poolDetails,
+      pricePool,
+      network
+    })
+    if (O.isSome(assetFeePrice)) {
+      const maxCryptoAmount = new CryptoAmount(assetFeePrice.value, pricePool.asset)
+      setFeePriceValue(maxCryptoAmount)
     }
-
-    fetchData()
-  }, [amountToSend, asset, assetFee, maxAmount, pricePool.asset, thorchainQuery])
+    if (O.isSome(amountPrice)) {
+      const amountPriceAmount = new CryptoAmount(amountPrice.value, pricePool.asset)
+      setAmountPriceValue(amountPriceAmount)
+    }
+    if (O.isSome(maxAmountPrice)) {
+      const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
+      setMaxAmountPriceValue(maxCryptoAmount)
+    }
+  }, [amountToSend, asset, assetFee, maxAmount, network, poolDetails, pricePool, pricePool.asset, thorchainQuery])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {
@@ -320,10 +372,10 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
         recipient: form.getFieldValue('recipient'),
         asset,
         amount: amountToSend,
-        memo: form.getFieldValue('memo')
+        memo: currentMemo
       })
     )
-  }, [subscribeSendTxState, transfer$, walletType, walletIndex, hdMode, form, asset, amountToSend])
+  }, [subscribeSendTxState, transfer$, walletType, walletIndex, hdMode, form, asset, amountToSend, currentMemo])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
 
@@ -469,8 +521,9 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
             {renderFeeError}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
             <Form.Item name="memo">
-              <Styled.Input size="large" disabled={isLoading} />
+              <Styled.Input size="large" disabled={isLoading} onChange={handleMemo} />
             </Form.Item>
+            {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
           </Styled.SubForm>
           <FlatButton
             className="mt-40px min-w-[200px]"
@@ -502,7 +555,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
                   recipient={recipientAddress}
                   amountLabel={amountLabel}
                   priceFeeLabel={priceFeeLabel}
-                  currentMemo={form.getFieldValue('memo')}
+                  currentMemo={currentMemo}
                   asset={asset}
                 />
               </>

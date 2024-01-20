@@ -10,6 +10,7 @@ import { BitcoinProvider } from './contexts/BitcoinContext'
 import { BscProvider } from './contexts/BscContext'
 import { ChainProvider } from './contexts/ChainContext'
 import { CosmosProvider } from './contexts/CosmosContext'
+import { DashProvider } from './contexts/DashContext'
 import { DogeProvider } from './contexts/DogeContext'
 import { EthereumProvider } from './contexts/EthereumContext'
 import { I18nProvider } from './contexts/I18nContext'
@@ -39,27 +40,29 @@ export const App: React.FC = (): JSX.Element => {
                       <AvaxProvider>
                         <BscProvider>
                           <DogeProvider>
-                            <CosmosProvider>
-                              <MidgardProvider>
-                                <ThorchainQueryProvider>
-                                  <MayachainProvider>
-                                    <MayachainQueryProvider>
-                                      <MayaMidgardProvider>
-                                        <UserNodesProvider>
-                                          <I18nProvider>
-                                            <Router>
-                                              <ThemeProvider>
-                                                <AppView />
-                                              </ThemeProvider>
-                                            </Router>
-                                          </I18nProvider>
-                                        </UserNodesProvider>
-                                      </MayaMidgardProvider>
-                                    </MayachainQueryProvider>
-                                  </MayachainProvider>
-                                </ThorchainQueryProvider>
-                              </MidgardProvider>
-                            </CosmosProvider>
+                            <DashProvider>
+                              <CosmosProvider>
+                                <MidgardProvider>
+                                  <ThorchainQueryProvider>
+                                    <MayachainProvider>
+                                      <MayachainQueryProvider>
+                                        <MayaMidgardProvider>
+                                          <UserNodesProvider>
+                                            <I18nProvider>
+                                              <Router>
+                                                <ThemeProvider>
+                                                  <AppView />
+                                                </ThemeProvider>
+                                              </Router>
+                                            </I18nProvider>
+                                          </UserNodesProvider>
+                                        </MayaMidgardProvider>
+                                      </MayachainQueryProvider>
+                                    </MayachainProvider>
+                                  </ThorchainQueryProvider>
+                                </MidgardProvider>
+                              </CosmosProvider>
+                            </DashProvider>
                           </DogeProvider>
                         </BscProvider>
                       </AvaxProvider>

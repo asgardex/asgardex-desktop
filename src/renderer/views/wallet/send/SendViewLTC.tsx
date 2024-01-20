@@ -10,6 +10,7 @@ import { useObservableState } from 'observable-hooks'
 import { SendFormLTC } from '../../../components/wallet/txs/send/'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useLitecoinContext } from '../../../contexts/LitecoinContext'
+import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { getWalletBalanceByAddress } from '../../../helpers/walletHelper'
@@ -41,6 +42,14 @@ export const SendViewLTC: React.FC<Props> = (props): JSX.Element => {
     () => balancesState$(DEFAULT_BALANCES_FILTER),
     INITIAL_BALANCES_STATE
   )
+
+  const {
+    service: {
+      pools: { poolsState$ }
+    }
+  } = useMidgardContext()
+  const poolsRD = useObservableState(poolsState$, RD.pending)
+  const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
 
   const { thorchainQuery } = useThorchainQueryContext()
 
@@ -86,6 +95,7 @@ export const SendViewLTC: React.FC<Props> = (props): JSX.Element => {
               validatePassword$={validatePassword$}
               thorchainQuery={thorchainQuery}
               network={network}
+              poolDetails={poolDetails}
             />
           </Styled.Container>
         </Spin>
@@ -108,6 +118,7 @@ export const SendViewLTC: React.FC<Props> = (props): JSX.Element => {
             validatePassword$={validatePassword$}
             thorchainQuery={thorchainQuery}
             network={network}
+            poolDetails={poolDetails}
           />
         </Styled.Container>
       )

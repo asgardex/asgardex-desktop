@@ -6,10 +6,11 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
+// import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { baseAmount } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
@@ -21,6 +22,7 @@ import { useIntl } from 'react-intl'
 import { isEnabledChain } from '../../../../shared/utils/chain'
 import { BackLinkButton, RefreshButton } from '../../../components/uielements/button'
 import { useWalletContext } from '../../../contexts/WalletContext'
+import { useDex } from '../../../hooks/useDex'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { SelectedWalletAsset } from '../../../services/wallet/types'
 import {
@@ -42,11 +44,13 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
 
   const { selectedAsset$ } = useWalletContext()
 
+  const { dex } = useDex()
+
   const oSelectedAsset = useObservableState(selectedAsset$, O.none)
 
   const renderSendView = useCallback(
     (asset: SelectedWalletAsset) => {
-      const chain = asset.asset.synth ? AssetRuneNative.chain : asset.asset.chain
+      const chain = asset.asset.synth ? (dex === 'THOR' ? AssetRuneNative.chain : AssetCacao.chain) : asset.asset.chain
       if (!isEnabledChain(chain)) {
         return (
           <h1>
@@ -89,9 +93,11 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
           return <SendViewDOGE asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
         case GAIAChain:
           return <SendViewCOSMOS asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
+        // case DASHChain:
+        //   return <SendViewCOSMOS asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
       }
     },
-    [intl]
+    [dex, intl]
   )
 
   return FP.pipe(

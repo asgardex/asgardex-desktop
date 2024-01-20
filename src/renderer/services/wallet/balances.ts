@@ -5,6 +5,7 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
+import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
@@ -36,6 +37,7 @@ import * as BCH from '../bitcoincash'
 import * as BSC from '../bsc'
 import { WalletBalancesLD, WalletBalancesRD } from '../clients'
 import * as COSMOS from '../cosmos'
+import * as DASH from '../dash'
 import * as DOGE from '../doge'
 import * as ETH from '../ethereum'
 import * as LTC from '../litecoin'
@@ -69,6 +71,7 @@ export const createBalancesService = ({
   const reloadBalances: FP.Lazy<void> = () => {
     BNB.reloadBalances()
     BTC.reloadBalances()
+    DASH.reloadBalances()
     BCH.reloadBalances()
     ETH.reloadBalances()
     AVAX.reloadBalances()
@@ -89,6 +92,8 @@ export const createBalancesService = ({
         return BNB.reloadBalances
       case BTCChain:
         return BTC.reloadBalances
+      case DASHChain:
+        return DASH.reloadBalances
       case BCHChain:
         return BCH.reloadBalances
       case ETHChain:
@@ -148,6 +153,13 @@ export const createBalancesService = ({
           resetReloadBalances: BTC.resetReloadBalances,
           balances$: BTC.balances$({ walletType, walletIndex, walletBalanceType, hdMode }),
           reloadBalances$: BTC.reloadBalances$
+        }
+      case DASHChain:
+        return {
+          reloadBalances: DASH.reloadBalances,
+          resetReloadBalances: DASH.resetReloadBalances,
+          balances$: DASH.balances$({ walletType, walletIndex, hdMode }),
+          reloadBalances$: DASH.reloadBalances$
         }
       case BCHChain:
         return {
@@ -440,6 +452,37 @@ export const createBalancesService = ({
       balancesType: 'all'
     }))
   )
+
+  /**
+   * Transforms Dash balances into `ChainBalances`
+   */
+  const dashBalance$: ChainBalance$ = Rx.combineLatest([
+    DASH.addressUI$,
+    getChainBalance$({
+      chain: DASHChain,
+      walletType: 'keystore',
+      // walletIndex=0 (as long as we don't support HD wallets for keystore)
+      walletIndex: 0,
+      hdMode: 'default',
+      walletBalanceType: 'all'
+    })
+  ]).pipe(
+    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
+      walletType: 'keystore',
+      chain: DASHChain,
+      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      balances,
+      balancesType: 'all'
+    }))
+  )
+  /**
+   * DASH Ledger balances
+   */
+  const dashLedgerChainBalance$: ChainBalance$ = ledgerChainBalance$({
+    chain: DASHChain,
+    walletBalanceType: 'all',
+    getBalanceByAddress$: DASH.getBalanceByAddress$
+  })
 
   /**
    * LTC Ledger balances
@@ -766,6 +809,7 @@ export const createBalancesService = ({
         // for BTC we store `confirmed` or `all` (confirmed + unconfirmed) balances
         BTC: [btcChainBalance$, btcChainBalanceConfirmed$, btcLedgerChainBalance$, btcLedgerChainBalanceConfirmed$],
         BCH: [bchChainBalance$, bchLedgerChainBalance$],
+        DASH: [dashBalance$, dashLedgerChainBalance$],
         ETH: [ethChainBalance$, ethLedgerChainBalance$],
         AVAX: [avaxChainBalance$, avaxLedgerChainBalance$],
         BSC: [bscChainBalance$, bscLedgerChainBalance$],

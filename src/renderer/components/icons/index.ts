@@ -14,6 +14,7 @@ import runeIcon from '!file-loader!../../assets/svg/asset-rune.svg'
 import ustIcon from '!file-loader!../../assets/svg/asset-ust.svg'
 import xRuneIcon from '!file-loader!../../assets/svg/asset-xrune.svg'
 import cacaoIcon from '../../assets/png/asset-cacao.png'
+import dashIcon from '../../assets/png/asset-dash.png'
 import dogeIcon from '../../assets/png/asset-doge.png'
 import mayaIcon from '../../assets/png/asset-maya.png'
 import tgtIcon from '../../assets/png/asset-tgt.png'
@@ -52,5 +53,6 @@ export {
   LockIcon,
   mayaIcon,
   UnlockIcon,
-  usdpIcon
+  usdpIcon,
+  dashIcon
 }

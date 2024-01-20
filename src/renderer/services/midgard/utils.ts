@@ -8,6 +8,7 @@ import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC, BSC_GAS_ASSET_DECIMAL, BSCChain } from '@xchainjs/xchain-bsc'
 import { COSMOS_DECIMAL } from '@xchainjs/xchain-cosmos'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
+import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGE_DECIMAL } from '@xchainjs/xchain-doge'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
@@ -232,7 +233,7 @@ export const getOutboundAssetFeeByChain = (
     O.chain(O.fromPredicate(isValidBN)),
     // Convert fee values to `BaseAmount` to put into `AssetWithAmount`
     O.chain((value) => {
-      if (!isEnabledChain(chain) || chain === MAYAChain) return O.none
+      if (!isEnabledChain(chain) || chain === MAYAChain || chain === DASHChain) return O.none
 
       switch (chain) {
         case BNBChain:

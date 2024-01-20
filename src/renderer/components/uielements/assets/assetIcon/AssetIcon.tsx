@@ -36,7 +36,8 @@ import {
   isBscSynthAsset,
   isAtomSynthAsset,
   isDogeSynthAsset,
-  isBchSynthAsset
+  isBchSynthAsset,
+  isDashAsset
 } from '../../../../helpers/assetHelper'
 import { isAvaxChain, isBnbChain, isBscChain, isEthChain, isMayaChain } from '../../../../helpers/chainHelper'
 import { getIntFromName, rainbowStop } from '../../../../helpers/colorHelpers'
@@ -54,7 +55,8 @@ import {
   xRuneIcon,
   tgtIcon,
   cacaoIcon,
-  usdpIcon
+  usdpIcon,
+  dashIcon
 } from '../../../icons'
 import * as Styled from './AssetIcon.styles'
 import { Size } from './AssetIcon.types'
@@ -111,6 +113,10 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     // Cacao
     if (isCacaoAsset(asset)) {
       return cacaoIcon
+    }
+    // Dash
+    if (isDashAsset(asset)) {
+      return dashIcon
     }
     // BNB
     if (isBnbAsset(asset) || isBnbAssetSynth(asset)) {

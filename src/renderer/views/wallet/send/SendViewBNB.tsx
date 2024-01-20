@@ -10,6 +10,7 @@ import { useObservableState } from 'observable-hooks'
 import { SendFormBNB } from '../../../components/wallet/txs/send'
 import { useBinanceContext } from '../../../contexts/BinanceContext'
 import { useChainContext } from '../../../contexts/ChainContext'
+import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { liveData } from '../../../helpers/rx/liveData'
@@ -44,6 +45,13 @@ export const SendViewBNB: React.FC<Props> = (props): JSX.Element => {
     () => balancesState$(DEFAULT_BALANCES_FILTER),
     INITIAL_BALANCES_STATE
   )
+  const {
+    service: {
+      pools: { poolsState$ }
+    }
+  } = useMidgardContext()
+  const poolsRD = useObservableState(poolsState$, RD.pending)
+  const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
 
   const oWalletBalance = useMemo(
     () =>
@@ -94,6 +102,7 @@ export const SendViewBNB: React.FC<Props> = (props): JSX.Element => {
               validatePassword$={validatePassword$}
               thorchainQuery={thorchainQuery}
               network={network}
+              poolDetails={poolDetails}
             />
           </Styled.Container>
         </Spin>
@@ -116,6 +125,7 @@ export const SendViewBNB: React.FC<Props> = (props): JSX.Element => {
             validatePassword$={validatePassword$}
             thorchainQuery={thorchainQuery}
             network={network}
+            poolDetails={poolDetails}
           />
         </Styled.Container>
       )

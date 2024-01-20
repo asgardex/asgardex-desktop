@@ -8,6 +8,7 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
+import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
@@ -166,7 +167,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     [DOGEChain]: 0,
     [AVAXChain]: 0,
     [BSCChain]: 0,
-    [MAYAChain]: 0
+    [MAYAChain]: 0,
+    [DASHChain]: 0
   })
 
   const {

@@ -7,6 +7,7 @@ import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain, BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { COSMOS_DECIMAL } from '@xchainjs/xchain-cosmos'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
+import { DASHChain, DASH_DECIMAL } from '@xchainjs/xchain-dash'
 import { DOGE_DECIMAL } from '@xchainjs/xchain-doge'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
@@ -35,6 +36,9 @@ export const smallestAmountToSent = (chain: Chain, _network: Network): BaseAmoun
     case BTCChain:
       // 1000 satoshi
       return baseAmount(1000, BTC_DECIMAL)
+    case DASHChain:
+      // 1000 satoshi
+      return baseAmount(1000, DASH_DECIMAL)
     case THORChain:
       // 0 thor
       return baseAmount(0, THOR_DECIMAL)

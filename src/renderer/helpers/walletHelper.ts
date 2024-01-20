@@ -5,7 +5,7 @@ import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import { IntlShape } from 'react-intl'
 
-import { Network } from '../../shared/api/types'
+import { Dex, Network } from '../../shared/api/types'
 import { optionFromNullableString } from '../../shared/utils/fp'
 import { isLedgerWallet, isWalletType } from '../../shared/utils/guard'
 import { WalletAddress, WalletType } from '../../shared/wallet/types'
@@ -154,6 +154,28 @@ export const filterWalletBalancesByAssets = (balances: NonEmptyWalletBalances, a
         asset.chain === balance.asset.chain &&
         asset.symbol.toUpperCase() === balance.asset.symbol.toUpperCase() && // Convert to uppercase for comparison
         asset.ticker === balance.asset.ticker
+    )
+    return assetIndex >= 0
+  })
+}
+export const filterWalletBalancesByAssetsForDex = (
+  balances: NonEmptyWalletBalances,
+  assets: Asset[],
+  dex: Dex
+): WalletBalances => {
+  return balances.filter((balance) => {
+    // Check if the balance is a synthetic asset and filter based on dex
+
+    const walletAddressPrefix = balance.walletAddress.substring(0, 4).toUpperCase()
+    if (dex !== walletAddressPrefix && balance.asset.synth) {
+      return false
+    }
+
+    const assetIndex = assets.findIndex(
+      (asset) =>
+        asset.chain.toUpperCase() === balance.asset.chain.toUpperCase() &&
+        asset.symbol.toUpperCase() === balance.asset.symbol.toUpperCase() &&
+        asset.ticker.toUpperCase() === balance.asset.ticker.toUpperCase()
     )
     return assetIndex >= 0
   })

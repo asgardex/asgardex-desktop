@@ -4,6 +4,7 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
+import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
@@ -21,6 +22,7 @@ import * as BCH from '../bitcoincash'
 import * as BSC from '../bsc'
 import { address$, WalletAddress$ } from '../clients'
 import * as COSMOS from '../cosmos'
+import * as DASH from '../dash'
 import * as DOGE from '../doge'
 import * as ETH from '../ethereum'
 import * as LTC from '../litecoin'
@@ -39,6 +41,8 @@ const addressByChain$ = (chain: Chain): WalletAddress$ => {
       return BNB.address$
     case BTCChain:
       return BTC.address$
+    case DASHChain:
+      return DASH.address$
     case ETHChain:
       return ETH.address$
     case AVAXChain:

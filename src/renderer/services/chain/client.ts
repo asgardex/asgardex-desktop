@@ -4,6 +4,7 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
+import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
@@ -22,6 +23,7 @@ import * as BCH from '../bitcoincash'
 import * as BSC from '../bsc'
 import { XChainClient$ } from '../clients'
 import * as COSMOS from '../cosmos'
+import * as DASH from '../dash'
 import * as DOGE from '../doge'
 import * as ETH from '../ethereum'
 import * as LTC from '../litecoin'
@@ -38,6 +40,8 @@ export const clientByChain$ = (chain: Chain): XChainClient$ => {
       return BNB.client$
     case BTCChain:
       return BTC.client$
+    case DASHChain:
+      return DASH.client$
     case BCHChain:
       return BCH.client$
     case ETHChain:
@@ -58,6 +62,7 @@ export const clientByChain$ = (chain: Chain): XChainClient$ => {
       return COSMOS.client$
   }
 }
+// mayachainSwap
 export const clientByAsset$ = (asset: Asset): XChainClient$ => {
   const chain = asset.chain
   if (!isEnabledChain(chain)) return Rx.of(O.none)
@@ -66,6 +71,8 @@ export const clientByAsset$ = (asset: Asset): XChainClient$ => {
       return asset.synth ? THOR.client$ : BNB.client$
     case BTCChain:
       return asset.synth ? THOR.client$ : BTC.client$
+    case DASHChain:
+      return asset.synth ? MAYA.client$ : DASH.client$
     case BCHChain:
       return asset.synth ? THOR.client$ : BCH.client$
     case ETHChain:

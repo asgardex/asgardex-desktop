@@ -15,6 +15,7 @@ import { Interact } from '../../../components/wallet/txs/interact'
 import { getInteractTypeFromNullableString } from '../../../components/wallet/txs/interact/Interact.helpers'
 import { InteractType } from '../../../components/wallet/txs/interact/Interact.types'
 import { InteractFormThor } from '../../../components/wallet/txs/interact/InteractFormThor'
+import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
@@ -77,6 +78,13 @@ export const InteractViewTHOR: React.FC = () => {
     () => balancesState$(DEFAULT_BALANCES_FILTER),
     INITIAL_BALANCES_STATE
   )
+  const {
+    service: {
+      pools: { poolsState$ }
+    }
+  } = useMidgardContext()
+  const poolsRD = useObservableState(poolsState$, RD.pending)
+  const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
 
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(assetChain))
 
@@ -176,6 +184,7 @@ export const InteractViewTHOR: React.FC = () => {
                       validatePassword$={validatePassword$}
                       thorchainQuery={thorchainQuery}
                       network={network}
+                      poolDetails={poolDetails}
                     />
                   </Interact>
                 )

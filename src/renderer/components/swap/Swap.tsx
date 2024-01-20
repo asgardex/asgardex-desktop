@@ -13,7 +13,12 @@ import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { AssetCacao } from '@xchainjs/xchain-mayachain'
-import { MayachainQuery, QuoteSwap, QuoteSwapParams as QuoteSwapParamsMaya } from '@xchainjs/xchain-mayachain-query'
+import {
+  isCacaoAsset,
+  MayachainQuery,
+  QuoteSwap,
+  QuoteSwapParams as QuoteSwapParamsMaya
+} from '@xchainjs/xchain-mayachain-query'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { InboundDetail, QuoteSwapParams, ThorchainQuery, TxDetails } from '@xchainjs/xchain-thorchain-query'
 import {
@@ -83,7 +88,7 @@ import { liveData, LiveData } from '../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../helpers/stringHelper'
 import { calculateTransactionTime, formatSwapTime, Time } from '../../helpers/timeHelper'
 import {
-  filterWalletBalancesByAssets,
+  filterWalletBalancesByAssetsForDex,
   getWalletBalanceByAssetAndWalletType,
   getWalletTypeLabel,
   hasLedgerInBalancesByAsset
@@ -251,7 +256,7 @@ export const Swap = ({
 }: SwapProps) => {
   const intl = useIntl()
 
-  const { chain: sourceChain } = sourceAsset.synth ? AssetRuneNative : sourceAsset
+  const { chain: sourceChain } = sourceAsset.synth ? (dex === 'THOR' ? AssetRuneNative : AssetCacao) : sourceAsset
 
   const lockedWallet: boolean = useMemo(() => isLocked(keystore) || !hasImportedKeystore(keystore), [keystore])
 
@@ -300,25 +305,6 @@ export const Swap = ({
   const [currentDate, setCurrentDate] = useState(new Date())
   const [quoteExpired, setQuoteExpired] = useState<boolean>(false)
 
-  /**
-   * All balances based on available assets to swap
-   */
-  const allBalances: WalletBalances = useMemo(
-    () =>
-      FP.pipe(
-        oWalletBalances,
-        // filter wallet balances to include assets available to swap only including synth balances
-        O.map((balances) => filterWalletBalancesByAssets(balances, poolAssets)),
-        O.getOrElse<WalletBalances>(() => [])
-      ),
-    [poolAssets, oWalletBalances]
-  )
-
-  const hasSourceAssetLedger = useMemo(
-    () => hasLedgerInBalancesByAsset(sourceAsset, allBalances),
-    [sourceAsset, allBalances]
-  )
-
   const sourceWalletAddress = useMemo(() => {
     return FP.pipe(
       oSourceWalletAddress,
@@ -328,6 +314,25 @@ export const Swap = ({
       )
     )
   }, [oSourceWalletAddress])
+
+  /**
+   * All balances based on available assets to swap
+   */
+  const allBalances: WalletBalances = useMemo(
+    () =>
+      FP.pipe(
+        oWalletBalances,
+        // filter wallet balances to include assets available to swap only including synth balances
+        O.map((balances) => filterWalletBalancesByAssetsForDex(balances, poolAssets, dex)),
+        O.getOrElse<WalletBalances>(() => [])
+      ),
+    [dex, oWalletBalances, poolAssets]
+  )
+
+  const hasSourceAssetLedger = useMemo(
+    () => hasLedgerInBalancesByAsset(sourceAsset, allBalances),
+    [sourceAsset, allBalances]
+  )
 
   const hasTargetAssetLedger = useMemo(() => O.isSome(oTargetLedgerAddress), [oTargetLedgerAddress])
 
@@ -1016,21 +1021,27 @@ export const Swap = ({
     [oQuote]
   )
   // Quote expiry returned as a date
-  const swapExpiry: Date = useMemo(
-    () =>
-      FP.pipe(
-        oQuote,
-        O.fold(
-          () => {
-            const now = new Date()
-            now.setMinutes(now.getMinutes() + 15)
-            return now // default to current date plus 15 minutes
-          }, // default to false
-          (txDetails) => txDetails.expiry
-        )
-      ),
-    [oQuote]
-  )
+  const swapExpiry: Date = useMemo(() => {
+    const swapExpiryThor = FP.pipe(
+      oQuote,
+      O.fold(
+        () => new Date(), // default
+        (txDetails) => txDetails.expiry
+      )
+    )
+    const swapExpiryMaya = FP.pipe(
+      oQuoteMaya,
+      O.fold(
+        () => new Date(), // default
+        () => {
+          const now = new Date()
+          now.setMinutes(now.getMinutes() + 15)
+          return now
+        }
+      )
+    )
+    return dex === 'THOR' ? swapExpiryThor : swapExpiryMaya
+  }, [dex, oQuote, oQuoteMaya])
 
   // Swap result from thornode
   const swapResultAmountMax: CryptoAmount = useMemo(() => {
@@ -1574,7 +1585,7 @@ export const Swap = ({
         poolAssets,
         // Create synth version of assets (excluding assetRuneNative)
         A.chain((asset) =>
-          isRuneNativeAsset(asset)
+          isRuneNativeAsset(asset) || isCacaoAsset(asset)
             ? [asset]
             : [
                 asset,
@@ -1930,7 +1941,7 @@ export const Swap = ({
             txHash={oTxHash}
             onClick={goToTransaction}
             txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
-            trackable={true}
+            trackable={dex === 'THOR' ? true : false}
           />
         }
         timerValue={timerValue}
@@ -1944,6 +1955,7 @@ export const Swap = ({
     swapStartTime,
     goToTransaction,
     getExplorerTxUrl,
+    dex,
     extraTxModalContent,
     intl,
     sourceChain
@@ -2055,8 +2067,11 @@ export const Swap = ({
     ) {
       return <></>
     }
+    if (!O.isSome(oQuoteMaya) || !oQuoteMaya.value.errors || oQuoteMaya.value.errors.length === 0) {
+      return <></>
+    }
 
-    const error = oQuote.value.txEstimate.errors[0].split(':')
+    const error = dex === 'THOR' ? oQuote.value.txEstimate.errors[0].split(':') : oQuoteMaya.value.errors[0].split(':')
 
     if (!isLocked && error[2].includes('pool') && error[2].includes('not available')) {
       return <ErrorLabel>{intl.formatMessage({ id: 'swap.errors.pool.notAvailable' }, { pool: error[2] })}</ErrorLabel>
@@ -2081,7 +2096,7 @@ export const Swap = ({
           : intl.formatMessage({ id: 'swap.errors.amount.thornodeQuoteError' }, { error: error[1] })}
       </ErrorLabel>
     )
-  }, [oQuote, sourceAsset, sourceAssetDecimal, intl])
+  }, [oQuote, oQuoteMaya, dex, sourceAssetDecimal, sourceAsset, intl])
 
   const sourceChainFeeErrorLabel: JSX.Element = useMemo(() => {
     if (!sourceChainFeeError) {

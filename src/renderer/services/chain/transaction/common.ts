@@ -6,6 +6,7 @@ import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { TxHash } from '@xchainjs/xchain-client'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
+import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
@@ -26,6 +27,7 @@ import * as BTC from '../../bitcoin'
 import * as BCH from '../../bitcoincash'
 import * as BSC from '../../bsc'
 import * as COSMOS from '../../cosmos'
+import * as DASH from '../../dash'
 import * as DOGE from '../../doge'
 import * as ETH from '../../ethereum'
 import * as LTC from '../../litecoin'
@@ -155,6 +157,26 @@ export const sendTx$ = ({
           })
         })
       )
+    case DASHChain:
+      return FP.pipe(
+        DASH.feesWithRates$(memo),
+        liveData.mapLeft((error) => ({
+          errorId: ErrorId.GET_FEES,
+          msg: error?.message ?? error.toString()
+        })),
+        liveData.chain(({ rates }) => {
+          return DASH.sendTx({
+            walletType,
+            recipient,
+            amount,
+            feeRate: rates[feeOption],
+            memo,
+            walletIndex,
+            hdMode,
+            sender
+          })
+        })
+      )
   }
 }
 
@@ -225,6 +247,7 @@ export const sendPoolTx$ = ({
     case BCHChain:
     case DOGEChain:
     case LTCChain:
+    case DASHChain:
     case GAIAChain:
       return sendTx$({ sender, walletType, asset, recipient, amount, memo, feeOption, walletIndex, hdMode })
   }
@@ -263,6 +286,8 @@ export const txStatusByChain$ = ({ txHash, chain }: { txHash: TxHash; chain: Cha
       return BCH.txStatus$(txHash, O.none)
     case LTCChain:
       return LTC.txStatus$(txHash, O.none)
+    case DASHChain:
+      return DASH.txStatus$(txHash, O.none)
   }
 }
 
@@ -299,6 +324,7 @@ export const poolTxStatusByChain$ = ({
     case DOGEChain:
     case BCHChain:
     case LTCChain:
+    case DASHChain:
       return txStatusByChain$({ txHash, chain })
   }
 }

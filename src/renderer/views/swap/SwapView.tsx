@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
+import { MayaChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Asset, assetToString, bn, Chain } from '@xchainjs/xchain-util'
 import { Spin } from 'antd'
@@ -79,13 +80,13 @@ const SuccessRouteView: React.FC<Props> = ({
   targetWalletType: oTargetWalletType,
   recipientAddress: oRecipientAddress
 }): JSX.Element => {
-  const { chain: sourceChain } = sourceAsset.synth ? AssetRuneNative : sourceAsset
-  const { chain: targetChain } = targetAsset.synth ? AssetRuneNative : targetAsset
+  const { dex } = useDex()
+  const { chain: sourceChain } = sourceAsset.synth ? (dex === 'THOR' ? AssetRuneNative : AssetCacao) : sourceAsset
+  const { chain: targetChain } = targetAsset.synth ? (dex === 'THOR' ? AssetRuneNative : AssetCacao) : targetAsset
 
   const intl = useIntl()
   const navigate = useNavigate()
   const location = useLocation()
-  const { dex } = useDex()
 
   const { slipTolerance$, changeSlipTolerance } = useAppContext()
 
@@ -235,7 +236,9 @@ const SuccessRouteView: React.FC<Props> = ({
     updateTargetKeystoreAddress$(targetChain)
   }, [targetChain, updateTargetKeystoreAddress$])
 
-  const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(THORChain))
+  const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(
+    dex === 'THOR' ? O.some(THORChain) : O.some(MayaChain)
+  )
 
   const renderError = useCallback(
     (e: Error) => (
@@ -518,6 +521,7 @@ export const SwapView: React.FC = (): JSX.Element => {
     () => getAssetFromNullableString(sourceAssetString),
     [sourceAssetString]
   )
+
   const oTargetAsset: O.Option<Asset> = useMemo(() => {
     const asset = getAssetFromNullableString(targetAssetString)
     return asset

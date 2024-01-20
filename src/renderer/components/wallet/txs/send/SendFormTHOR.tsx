@@ -40,6 +40,7 @@ import { ShowDetails } from '../../../uielements/showDetails'
 import { Slider } from '../../../uielements/slider'
 import { AccountSelector } from '../../account'
 import * as H from '../TxForm.helpers'
+import { checkMemo } from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as Shared from './Send.shared'
@@ -104,12 +105,34 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
   const [amountPriceValue, setAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
   const [currentMemo, setCurrentMemo] = useState('')
+  const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
+  const [affiliateTracking, setAffiliateTracking] = useState<string>('')
 
   const [form] = Form.useForm<FormValues>()
 
   const handleMemo = useCallback(() => {
-    const memoValue = form.getFieldValue('memo') as string
+    let memoValue = form.getFieldValue('memo') as string
 
+    // Check if a swap memo is detected
+    if (checkMemo(memoValue)) {
+      const suffixPattern = /:dx:\d+$/ // Regex to match ':dx:' followed by any number
+
+      // Check if memo ends with the suffix pattern
+      if (!suffixPattern.test(memoValue)) {
+        // Remove any partial ':dx:' pattern before appending
+        memoValue = memoValue.replace(/:dx:\d*$/, '')
+
+        // Append ':dx:0'
+        memoValue += ':dx:5'
+      }
+
+      setSwapMemoDetected(true)
+      setAffiliateTracking(
+        memoValue.endsWith(':dx:10') ? `Swap memo detected` : `Swap memo detected affiliate fee applied (:dx:5)`
+      )
+    } else {
+      setSwapMemoDetected(false)
+    }
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
   }, [form])
@@ -244,12 +267,12 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
       setMaxAmountPriceValue(maxCryptoAmount)
     }
     if (O.isSome(assetFeePrice)) {
-      const maxCryptoAmount = new CryptoAmount(assetFeePrice.value, pricePool.asset)
-      setFeePriceValue(maxCryptoAmount)
+      const assetFeePriceAmount = new CryptoAmount(assetFeePrice.value, pricePool.asset)
+      setFeePriceValue(assetFeePriceAmount)
     }
     if (O.isSome(amountPrice)) {
-      const maxCryptoAmount = new CryptoAmount(amountPrice.value, pricePool.asset)
-      setAmountPriceValue(maxCryptoAmount)
+      const amountPriceAmount = new CryptoAmount(amountPrice.value, pricePool.asset)
+      setAmountPriceValue(amountPriceAmount)
     }
   }, [amountToSend, asset, assetFee, maxAmount, network, poolDetails, pricePool, pricePool.asset, thorchainQuery])
 
@@ -544,6 +567,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
             <Form.Item name="memo">
               <Styled.Input size="large" disabled={isLoading} onChange={handleMemo} />
             </Form.Item>
+            {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
           </Styled.SubForm>
           <FlatButton
             className="mt-40px min-w-[200px]"

@@ -1,3 +1,4 @@
+import { AssetDASH } from '@xchainjs/xchain-dash'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
 import {
   Address,
@@ -48,7 +49,8 @@ import {
   AssetSynthATOM,
   AssetSynthBCH,
   AssetSynthAVAXUSDC,
-  AssetSynthEthUsdc
+  AssetSynthEthUsdc,
+  AssetSynthEthUsdt
 } from '../../shared/utils/asset'
 import { isEnabledChain } from '../../shared/utils/chain'
 import {
@@ -129,6 +131,11 @@ export const isLtcSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, 
 export const isBchAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetBCH)
 
 /**
+ * Checks whether an asset is a Dash asset
+ */
+export const isDashAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetDASH)
+
+/**
  * Checks whether an asset is a BCH synth asset
  */
 export const isBchSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthBCH)
@@ -189,12 +196,31 @@ export const isBscSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, 
 /**
  * Checks whether an asset is an ETH synthetic
  */
-export const isEthSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthEth)
+export const isEthSynthAsset = (asset: Asset): boolean => {
+  const normalizedInputAsset = {
+    ...asset,
+    chain: asset.chain.toUpperCase(),
+    symbol: asset.symbol.toUpperCase(),
+    ticker: asset.ticker.toUpperCase()
+  }
+
+  return eqAsset.equals(normalizedInputAsset, AssetSynthEth)
+}
 
 /**
  * Checks whether an asset is an ETH synthetic
  */
 export const isEthSynthUSDCAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthEthUsdc)
+
+export const isEthSynthUSDTAsset = (asset: Asset): boolean => {
+  const normalizedInputAsset = {
+    ...asset,
+    chain: asset.chain.toUpperCase(),
+    symbol: asset.symbol.toUpperCase(),
+    ticker: asset.ticker.toUpperCase()
+  }
+  return eqAsset.equals(normalizedInputAsset, AssetSynthEthUsdt)
+}
 
 /**
  * Checks whether an asset is a DOGE asset
@@ -450,7 +476,7 @@ export const isChainAsset = (asset: Asset): boolean =>
   isEnabledChain(asset.chain) && eqAsset.equals(asset, getChainAsset(asset.chain))
 
 export const isUSDAsset = ({ ticker }: Asset): boolean =>
-  ticker.includes('USD') || ticker.includes('UST') || ticker.includes('DAI')
+  ticker.includes('USD') || ticker.includes('UST') || ticker.includes('DAI') || ticker.includes('usdt')
 
 export const isUtxoAssetChain = ({ chain }: Asset) =>
   isBtcChain(chain) || isBchChain(chain) || isLtcChain(chain) || isDogeChain(chain)

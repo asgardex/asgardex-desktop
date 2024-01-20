@@ -17,6 +17,7 @@ import { InteractType } from '../../../components/wallet/txs/interact/Interact.t
 import { InteractFormMaya } from '../../../components/wallet/txs/interact/InteractFormMaya'
 import { useMayachainContext } from '../../../contexts/MayachainContext'
 import { useMayachainQueryContext } from '../../../contexts/MayachainQueryContext'
+import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { eqOSelectedWalletAsset } from '../../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../../helpers/fpHelpers'
@@ -77,6 +78,13 @@ export const InteractViewMAYA: React.FC = () => {
     () => balancesState$(DEFAULT_BALANCES_FILTER),
     INITIAL_BALANCES_STATE
   )
+  const {
+    service: {
+      pools: { poolsState$ }
+    }
+  } = useMidgardMayaContext()
+  const poolsRD = useObservableState(poolsState$, RD.pending)
+  const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
 
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(assetChain))
 
@@ -177,6 +185,7 @@ export const InteractViewMAYA: React.FC = () => {
                       validatePassword$={validatePassword$}
                       mayachainQuery={mayachainQuery}
                       network={network}
+                      poolDetails={poolDetails}
                     />
                   </Interact>
                 )

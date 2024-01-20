@@ -6,6 +6,7 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
+import { AssetDASH, DASH_DECIMAL, DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -242,6 +243,11 @@ export const getOutboundAssetFeeByChain = (
           return O.some({
             amount: baseAmount(value, BTC_DECIMAL),
             asset: AssetBTC
+          })
+        case DASHChain:
+          return O.some({
+            amount: baseAmount(value, DASH_DECIMAL),
+            asset: AssetDASH
           })
         case ETHChain: {
           return O.some({

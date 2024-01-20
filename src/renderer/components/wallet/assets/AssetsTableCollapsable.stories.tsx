@@ -177,11 +177,13 @@ const Template = (args: Partial<Record<EnabledChain, RDStatus>>) => {
       poolDetailsMaya={[]}
       pendingPoolDetails={[]}
       poolsData={{}}
+      poolsDataMaya={{}}
       pricePool={RUNE_PRICE_POOL}
       mayaPricePool={MAYA_PRICE_POOL}
       network="testnet"
       mimirHalt={RD.initial}
       hidePrivateData={false}
+      dex="THOR"
     />
   )
 }

@@ -20,6 +20,7 @@ import { Table } from '../../components/uielements/table'
 import { useAppContext } from '../../contexts/AppContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { getPoolTableRowsData, RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
@@ -65,7 +66,7 @@ export const PendingPools: React.FC = (): JSX.Element => {
         selectedPricePool$: selectedPricePoolMaya$
       }
     }
-  } = useMidgardContext()
+  } = useMidgardMayaContext()
 
   const { thorchainLastblockState$ } = useThorchainContext()
   const { mayachainLastblockState$ } = useMayachainContext()

@@ -88,10 +88,14 @@ export const ActivePools: React.FC = (): JSX.Element => {
   const previousPools = useRef<O.Option<PoolTableRowsData>>(O.none)
 
   const refreshHandler = useCallback(() => {
-    reloadPools()
+    if (dex === 'THOR') {
+      reloadPools()
+    } else {
+      reloadMayaPools()
+    }
+
     reloadLimit()
-    reloadMayaPools()
-  }, [reloadPools, reloadLimit, reloadMayaPools])
+  }, [dex, reloadLimit, reloadPools, reloadMayaPools])
 
   const selectedPricePool = useObservableState(
     dex === 'THOR' ? selectedPricePool$ : selectedPricePoolMaya$,
@@ -100,39 +104,74 @@ export const ActivePools: React.FC = (): JSX.Element => {
 
   const renderBtnPoolsColumn = useCallback(
     (_: string, { asset }: { asset: Asset }) => {
-      const actions: ActionButtonAction[] = [
-        {
-          label: intl.formatMessage({ id: 'common.swap' }),
-          callback: () => {
-            navigate(
-              poolsRoutes.swap.path({
-                source: assetToString(dex === 'THOR' ? AssetRuneNative : AssetCacao),
-                target: assetToString(asset),
-                sourceWalletType: DEFAULT_WALLET_TYPE,
-                targetWalletType: DEFAULT_WALLET_TYPE
-              })
-            )
-          }
-        },
-        {
-          label: intl.formatMessage({ id: 'common.manage' }),
-          callback: () => {
-            navigate(
-              poolsRoutes.deposit.path({
-                asset: assetToString(asset),
-                assetWalletType: DEFAULT_WALLET_TYPE,
-                runeWalletType: DEFAULT_WALLET_TYPE
-              })
-            )
-          }
-        },
-        {
-          label: intl.formatMessage({ id: 'common.earn' }),
-          callback: () => {
-            navigate(saversRoutes.earn.path({ asset: assetToString(asset), walletType: DEFAULT_WALLET_TYPE }))
-          }
-        }
-      ]
+      const actions: ActionButtonAction[] =
+        dex === 'THOR'
+          ? [
+              {
+                label: intl.formatMessage({ id: 'common.swap' }),
+                callback: () => {
+                  navigate(
+                    poolsRoutes.swap.path({
+                      source: assetToString(AssetRuneNative),
+                      target: assetToString(asset),
+                      sourceWalletType: DEFAULT_WALLET_TYPE,
+                      targetWalletType: DEFAULT_WALLET_TYPE
+                    })
+                  )
+                }
+              },
+              {
+                label: intl.formatMessage({ id: 'common.manage' }),
+                callback: () => {
+                  navigate(
+                    poolsRoutes.deposit.path({
+                      asset: assetToString(asset),
+                      assetWalletType: DEFAULT_WALLET_TYPE,
+                      runeWalletType: DEFAULT_WALLET_TYPE
+                    })
+                  )
+                }
+              },
+              {
+                label: intl.formatMessage({ id: 'common.earn' }),
+                callback: () => {
+                  navigate(saversRoutes.earn.path({ asset: assetToString(asset), walletType: DEFAULT_WALLET_TYPE }))
+                }
+              }
+            ]
+          : [
+              {
+                label: intl.formatMessage({ id: 'common.swap' }),
+                callback: () => {
+                  navigate(
+                    poolsRoutes.swap.path({
+                      source: assetToString(AssetCacao),
+                      target: assetToString(asset),
+                      sourceWalletType: DEFAULT_WALLET_TYPE,
+                      targetWalletType: DEFAULT_WALLET_TYPE
+                    })
+                  )
+                }
+              }
+              // {
+              //   label: intl.formatMessage({ id: 'common.manage' }),
+              //   callback: () => {
+              //     navigate(
+              //       poolsRoutes.deposit.path({
+              //         asset: assetToString(asset),
+              //         assetWalletType: DEFAULT_WALLET_TYPE,
+              //         runeWalletType: DEFAULT_WALLET_TYPE
+              //       })
+              //     )
+              //   }
+              // },
+              // {
+              //   label: intl.formatMessage({ id: 'common.earn' }),
+              //   callback: () => {
+              //     navigate(saversRoutes.earn.path({ asset: assetToString(asset), walletType: DEFAULT_WALLET_TYPE }))
+              //   }
+              // }
+            ]
 
       return (
         <Styled.TableAction>

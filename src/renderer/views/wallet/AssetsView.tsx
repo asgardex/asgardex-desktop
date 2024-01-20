@@ -19,6 +19,7 @@ import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
+import { useDex } from '../../hooks/useDex'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePrivateData } from '../../hooks/usePrivateData'
@@ -35,6 +36,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
   const { chainBalances$, balancesState$, setSelectedAsset } = useWalletContext()
 
   const { network } = useNetwork()
+  const { dex } = useDex()
 
   const { isPrivate } = usePrivateData()
 
@@ -105,6 +107,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
   const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
   const poolDetailsMaya = RD.toNullable(poolsMayaRD)?.poolDetails ?? []
   const poolsData = RD.toNullable(poolsRD)?.poolsData ?? {}
+  const poolsDataMaya = RD.toNullable(poolsMayaRD)?.poolsData ?? {}
 
   const pendingPoolsDetails = RD.toNullable(pendingPoolsRD)?.poolDetails ?? []
 
@@ -157,11 +160,13 @@ export const AssetsView: React.FC = (): JSX.Element => {
         poolDetailsMaya={poolDetailsMaya}
         pendingPoolDetails={pendingPoolsDetails}
         poolsData={poolsData}
+        poolsDataMaya={poolsDataMaya}
         selectAssetHandler={selectAssetHandler}
         assetHandler={assetHandler}
         mimirHalt={mimirHaltRD}
         network={network}
         hidePrivateData={isPrivate}
+        dex={dex}
       />
     </>
   )
