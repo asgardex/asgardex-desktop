@@ -185,7 +185,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
 
       setSwapMemoDetected(true)
       setAffiliateTracking(
-        memoValue.endsWith(':dx:10') ? `Swap memo detected` : `Swap memo detected affiliate fee applied (:dx:1)`
+        memoValue.endsWith(':dx:10') ? `Swap memo detected` : `Swap memo detected 1bps affiliate fee applied`
       )
     } else {
       setSwapMemoDetected(false)

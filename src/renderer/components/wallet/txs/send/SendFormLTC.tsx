@@ -145,7 +145,7 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
 
       setSwapMemoDetected(true)
       setAffiliateTracking(
-        memoValue.endsWith(':dx:10') ? `Swap memo detected` : `Swap memo detected affiliate fee applied (:dx:5)`
+        memoValue.endsWith(':dx:10') ? `Swap memo detected` : `Swap memo detected 5bps affiliate fee applied`
       )
     } else {
       setSwapMemoDetected(false)

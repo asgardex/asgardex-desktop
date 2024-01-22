@@ -759,6 +759,21 @@ export const Swap = ({
     }
   }, [affiliateFee, dex, network, poolDetails, pricePool, pricePool.asset])
 
+  //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
+  const applyBps = useMemo(() => {
+    const affiliateFeePrice = priceAmountToSwapMax1e8.times(ASGARDEX_AFFILIATE_FEE / 10000)
+    return FP.pipe(
+      oPriceSwapInFee,
+      O.fold(
+        () => 10, // Default value in case oPriceSwapInFee is None
+        ({ assetAmount }) => {
+          const txFeeCovered = assetAmount.amount().toNumber() >= affiliateFeePrice.assetAmount.amount().toNumber()
+          return network === 'stagenet' || txFeeCovered ? 0 : ASGARDEX_AFFILIATE_FEE
+        }
+      )
+    )
+  }, [network, priceAmountToSwapMax1e8, oPriceSwapInFee])
+
   const priceAffiliateFeeLabel = useMemo(() => {
     if (!swapFees) {
       return loadingString // or noDataString, depending on your needs
@@ -786,8 +801,8 @@ export const Swap = ({
       O.getOrElse(() => '')
     )
 
-    return price ? `${price} (${fee}) ${ASGARDEX_AFFILIATE_FEE / 100}%` : fee
-  }, [swapFees, affiliateFee, affiliatePriceValue, sourceAsset])
+    return price ? `${price} (${fee}) ${applyBps / 100}%` : fee
+  }, [swapFees, affiliateFee.assetAmount, affiliateFee.asset, affiliatePriceValue, applyBps, sourceAsset])
 
   const oQuoteSwapData: O.Option<QuoteSwapParams> = useMemo(
     () =>
@@ -810,7 +825,7 @@ export const Swap = ({
             streamingQuantity: streaminQuant,
             toleranceBps: toleranceBps,
             affiliateAddress: ASGARDEX_THORNAME,
-            affiliateBps: network === 'stagenet' ? 0 : ASGARDEX_AFFILIATE_FEE
+            affiliateBps: applyBps
           }
         })
       ),
@@ -824,7 +839,7 @@ export const Swap = ({
       streamingInterval,
       streamingQuantity,
       slipTolerance,
-      network
+      applyBps
     ]
   )
   const oQuoteSwapDataMaya: O.Option<QuoteSwapParamsMaya> = useMemo(
@@ -846,7 +861,7 @@ export const Swap = ({
             fromAddress: fromAdd,
             toleranceBps: toleranceBps,
             affiliateAddress: ASGARDEX_THORNAME,
-            affiliateBps: network === 'stagenet' ? 0 : ASGARDEX_AFFILIATE_FEE
+            affiliateBps: applyBps
           }
         })
       ),
@@ -858,7 +873,7 @@ export const Swap = ({
       amountToSwapMax1e8,
       sourceAssetDecimal,
       isStreaming,
-      network
+      applyBps
     ]
   )
 

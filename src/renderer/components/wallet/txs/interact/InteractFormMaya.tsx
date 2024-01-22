@@ -174,13 +174,13 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
         // Remove any partial ':dx:' pattern before appending
         memoValue = memoValue.replace(/:dx:\d*$/, '')
 
-        // Append ':dx:0'
-        memoValue += ':dx:1'
+        // Append ':dx:5'
+        memoValue += ':dx:5'
       }
 
       setSwapMemoDetected(true)
       setAffiliateTracking(
-        memoValue.endsWith(':dx:10') ? `Swap memo detected` : `Swap memo detected affiliate fee applied (:dx:1)`
+        memoValue.endsWith(':dx:10') ? `Swap memo detected` : `Swap memo detected 5bps affiliate fee applied`
       )
     } else {
       setSwapMemoDetected(false)
