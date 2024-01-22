@@ -678,7 +678,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   const renderFeeOptions = useMemo(() => {
     const onChangeHandler = (e: RadioChangeEvent) => {
       setSelectedFeeOption(e.target.value)
-      setAmountToSend(O.some(maxAmount))
+      setAmountToSend(amountToSend)
     }
     const disabled = !feesAvailable || isLoading
 
@@ -695,7 +695,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         </StyledR.Radio>
       </StyledR.Radio.Group>
     )
-  }, [feeOptionsLabel, feesAvailable, isLoading, maxAmount, selectedFeeOption])
+  }, [amountToSend, feeOptionsLabel, feesAvailable, isLoading, selectedFeeOption])
 
   const [recipientAddress, setRecipientAddress] = useState<Address>('')
   const handleOnKeyUp = useCallback(() => {

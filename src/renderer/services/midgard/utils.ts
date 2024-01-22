@@ -167,9 +167,9 @@ export const getPoolDetail = (details: PoolDetails, asset: Asset): O.Option<Pool
         O.fromNullable,
         O.map(
           (detailAsset) =>
-            detailAsset.chain === asset.chain &&
-            detailAsset.symbol === asset.symbol &&
-            detailAsset.ticker === asset.ticker
+            detailAsset.chain === asset.chain.toUpperCase() &&
+            detailAsset.symbol === asset.symbol.toUpperCase() &&
+            detailAsset.ticker === asset.ticker.toUpperCase()
         ),
         O.getOrElse(() => false)
       )
