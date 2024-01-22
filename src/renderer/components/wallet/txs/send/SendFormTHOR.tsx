@@ -274,7 +274,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
       const amountPriceAmount = new CryptoAmount(amountPrice.value, pricePool.asset)
       setAmountPriceValue(amountPriceAmount)
     }
-  }, [amountToSend, asset, assetFee, maxAmount, network, poolDetails, pricePool, pricePool.asset, thorchainQuery])
+  }, [amountToSend, asset, assetFee, maxAmount, network, poolDetails, pricePool])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {

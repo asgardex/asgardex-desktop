@@ -336,7 +336,7 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
       const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
       setMaxAmountPriceValue(maxCryptoAmount)
     }
-  }, [amountToSend, asset, assetFee, maxAmount, network, poolDetails, pricePool, pricePool.asset, thorchainQuery])
+  }, [amountToSend, asset, assetFee, maxAmount, network, poolDetails, pricePool])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {

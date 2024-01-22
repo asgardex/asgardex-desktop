@@ -6,7 +6,7 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
-// import { DASHChain } from '@xchainjs/xchain-dash'
+import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
@@ -34,7 +34,8 @@ import {
   SendViewTHOR,
   SendViewLTC,
   SendViewMAYA,
-  SendViewCOSMOS
+  SendViewCOSMOS,
+  SendViewDASH
 } from './index'
 
 type Props = {}
@@ -93,8 +94,8 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
           return <SendViewDOGE asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
         case GAIAChain:
           return <SendViewCOSMOS asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
-        // case DASHChain:
-        //   return <SendViewCOSMOS asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
+        case DASHChain:
+          return <SendViewDASH asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
       }
     },
     [dex, intl]

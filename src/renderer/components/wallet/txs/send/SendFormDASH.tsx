@@ -3,9 +3,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { FeeOption, FeesWithRates } from '@xchainjs/xchain-client'
-import { LTCChain, LTC_DECIMAL } from '@xchainjs/xchain-litecoin'
-import { PoolDetails } from '@xchainjs/xchain-midgard'
-import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
+import { AssetDASH, DASH_DECIMAL, DASHChain, UPPER_FEE_BOUND } from '@xchainjs/xchain-dash'
+import { MayachainQuery } from '@xchainjs/xchain-mayachain-query'
+import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
 import {
   Address,
   assetAmount,
@@ -26,19 +26,18 @@ import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
 import { Network } from '../../../../../shared/api/types'
-import { AssetLTC } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { isUSDAsset } from '../../../../helpers/assetHelper'
 import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { loadingString } from '../../../../helpers/stringHelper'
-import { usePricePool } from '../../../../hooks/usePricePool'
+import { usePricePoolMaya } from '../../../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
-import { Memo, SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
+import { FeeRD, Memo, SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../../../services/clients'
-import { FeesWithRatesRD } from '../../../../services/litecoin/types'
+import { FeesWithRatesRD } from '../../../../services/dash/types'
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
@@ -75,12 +74,12 @@ export type Props = {
   feesWithRates: FeesWithRatesRD
   reloadFeesHandler: (memo?: Memo) => void
   validatePassword$: ValidatePasswordHandler
-  thorchainQuery: ThorchainQuery
+  mayachainQuery: MayachainQuery
   network: Network
   poolDetails: PoolDetails
 }
 
-export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
+export const SendFormDASH: React.FC<Props> = (props): JSX.Element => {
   const {
     asset: { walletType, walletIndex, hdMode, walletAddress },
     poolDetails,
@@ -93,14 +92,14 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
     feesWithRates: feesWithRatesRD,
     reloadFeesHandler,
     validatePassword$,
-    thorchainQuery,
+    mayachainQuery,
     network
   } = props
 
   const intl = useIntl()
 
   const { asset } = balance
-  const pricePool = usePricePool()
+  const pricePool = usePricePoolMaya()
 
   const [amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
 
@@ -116,46 +115,31 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
 
   const [InboundAddress, setInboundAddress] = useState<string>('')
 
+  const [form] = Form.useForm<FormValues>()
+
+  const prevFeesWithRatesRef = useRef<O.Option<FeesWithRates>>(O.none)
+
   const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+  const [feeRate, setFeeRate] = useState<number>(0)
 
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [amountPriceValue, setAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
-  const [warningMessage, setWarningMessage] = useState<string>('')
-  const [currentMemo, setCurrentMemo] = useState('')
   const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
+
+  const [currentMemo, setCurrentMemo] = useState<string>('')
   const [affiliateTracking, setAffiliateTracking] = useState<string>('')
 
-  const [form] = Form.useForm<FormValues>()
+  const [isApproved, setIsApproved] = useState(false)
 
-  const handleMemo = useCallback(() => {
-    let memoValue = form.getFieldValue('memo') as string
-
-    // Check if a swap memo is detected
-    if (checkMemo(memoValue)) {
-      const suffixPattern = /:dx:\d+$/ // Regex to match ':dx:' followed by any number
-
-      // Check if memo ends with the suffix pattern
-      if (!suffixPattern.test(memoValue)) {
-        // Remove any partial ':dx:' pattern before appending
-        memoValue = memoValue.replace(/:dx:\d*$/, '')
-
-        // Append ':dx:0'
-        memoValue += ':dx:5'
-      }
-
-      setSwapMemoDetected(true)
-      setAffiliateTracking(
-        memoValue.endsWith(':dx:10') ? `Swap memo detected` : `Swap memo detected affiliate fee applied (:dx:5)`
-      )
-    } else {
-      setSwapMemoDetected(false)
-    }
-
-    // Update the state with the adjusted memo value
-    setCurrentMemo(memoValue)
-  }, [form])
-
-  const prevFeesWithRatesRef = useRef<O.Option<FeesWithRates>>(O.none)
+  const [warningMessage, setWarningMessage] = useState<string>('')
+  const feeRD: FeeRD = useMemo(
+    () =>
+      FP.pipe(
+        feesWithRatesRD,
+        RD.map(({ fees }) => fees[selectedFeeOption])
+      ),
+    [feesWithRatesRD, selectedFeeOption]
+  )
 
   const oFeesWithRates: O.Option<FeesWithRates> = useMemo(
     () => FP.pipe(feesWithRatesRD, RD.toOption),
@@ -167,12 +151,12 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
   // useEffect to fetch data from query
   useEffect(() => {
     const fetchData = async () => {
-      const inboundDetails = await thorchainQuery.thorchainCache.getInboundDetails()
-      setInboundAddress(inboundDetails[LTCChain].address)
+      const inboundDetails = await mayachainQuery.getInboundDetails()
+      setInboundAddress(inboundDetails[DASHChain].address)
     }
 
     fetchData()
-  }, [thorchainQuery])
+  }, [mayachainQuery])
 
   // Store latest fees as `ref`
   // needed to display previous fee while reloading
@@ -189,27 +173,24 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
     () =>
       FP.pipe(
         oFeesWithRates,
-        O.map(({ fees }) => {
+        O.map(({ fees, rates }) => {
           const fee = fees[selectedFeeOption]
           prevSelectedFeeRef.current = O.some(fee)
+          setFeeRate(rates[selectedFeeOption])
+          setAssetFee(new CryptoAmount(fees[selectedFeeOption], asset))
           return fee
         })
       ),
-    [oFeesWithRates, selectedFeeOption]
+    [asset, oFeesWithRates, selectedFeeOption]
   )
 
   const oFeeBaseAmount: O.Option<BaseAmount> = useMemo(
     () =>
       FP.pipe(
         oFeesWithRates,
-        O.map(({ fees }) => {
-          const fee = fees[selectedFeeOption]
-          prevSelectedFeeRef.current = O.some(fee)
-          setAssetFee(new CryptoAmount(fees[selectedFeeOption], asset))
-          return fee
-        })
+        O.map(({ fees }) => fees[selectedFeeOption])
       ),
-    [asset, oFeesWithRates, selectedFeeOption]
+    [oFeesWithRates, selectedFeeOption]
   )
 
   const isFeeError = useMemo(() => {
@@ -231,7 +212,7 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
       {
         balance: formatAssetAmountCurrency({
           amount: baseToAsset(balance.amount),
-          asset: AssetLTC,
+          asset: AssetDASH,
           trimZeros: true
         })
       }
@@ -301,7 +282,7 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
         setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
       }
     },
-    [InboundAddress, addressValidation, intl]
+    [addressValidation, intl, InboundAddress]
   )
 
   const maxAmount: BaseAmount = useMemo(
@@ -319,7 +300,6 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
       ),
     [balance.amount, selectedFee]
   )
-
   // store maxAmountValue
   const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
@@ -417,18 +397,12 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
     return price ? `${price} (${amount}) ` : amount
   }, [amountPriceValue, amountToSend, asset])
 
-  const isMaxButtonDisabled = useMemo(
-    () =>
-      isLoading ||
-      FP.pipe(
-        selectedFee,
-        O.fold(
-          () => true,
-          () => false
-        )
-      ),
-    [isLoading, selectedFee]
-  )
+  useEffect(() => {
+    // Whenever `amountToSend` has been updated, we put it back into input field
+    form.setFieldsValue({
+      amount: baseToAsset(amountToSend).amount()
+    })
+  }, [amountToSend, form])
 
   const amountValidator = useCallback(
     async (_: unknown, value: BigNumber) => {
@@ -470,9 +444,10 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
       />
     )
   }, [amountToSend, maxAmount, isLoading])
-
   // Send tx start time
   const [sendTxStartTime, setSendTxStartTime] = useState<number>(0)
+
+  const [showDetails, setShowDetails] = useState<boolean>(true)
 
   const submitTx = useCallback(() => {
     setSendTxStartTime(Date.now())
@@ -484,7 +459,7 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
         hdMode,
         sender: walletAddress,
         recipient: form.getFieldValue('recipient'),
-        asset,
+        asset: asset,
         amount: amountToSend,
         feeOption: selectedFeeOption,
         memo: currentMemo
@@ -522,7 +497,7 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
           onSuccess={onSuccessHandler}
           onClose={onCloseHandler}
           visible={showConfirmationModal}
-          chain={LTCChain}
+          chain={DASHChain}
           description2={intl.formatMessage({ id: 'ledger.sign' })}
           addresses={O.none}
         />
@@ -569,42 +544,82 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
   const uiFeesRD: UIFeesRD = useMemo(
     () =>
       FP.pipe(
-        feesWithRatesRD,
-        RD.map((fees) => [{ asset: AssetLTC, amount: fees.fees[selectedFeeOption] }])
+        feeRD,
+        RD.map((fee) => [{ asset: AssetDASH, amount: fee }])
       ),
 
-    [feesWithRatesRD, selectedFeeOption]
+    [feeRD]
   )
 
   const reloadFees = useCallback(() => {
     reloadFeesHandler(currentMemo)
   }, [currentMemo, reloadFeesHandler])
 
-  const addMaxAmountHandler = useCallback(() => setAmountToSend(maxAmount), [maxAmount])
-
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
       // we have to validate input before storing into the state
       amountValidator(undefined, value)
         .then(() => {
-          setAmountToSend(assetToBase(assetAmount(value)))
+          setAmountToSend(assetToBase(assetAmount(value, DASH_DECIMAL)))
         })
         .catch(() => {}) // do nothing, Ant' form does the job for us to show an error message
     },
     [amountValidator]
   )
 
-  useEffect(() => {
-    // Whenever `amountToSend` has been updated, we put it back into input field
-    form.setFieldsValue({
-      amount: baseToAsset(amountToSend).amount()
-    })
-  }, [amountToSend, form])
+  const handleMemo = useCallback(() => {
+    let memoValue = form.getFieldValue('memo') as string
 
+    // Check if a swap memo is detected
+    if (checkMemo(memoValue)) {
+      const suffixPattern = /:dx:\d+$/ // Regex to match ':dx:' followed by any number
+
+      // Check if memo ends with the suffix pattern
+      if (!suffixPattern.test(memoValue)) {
+        // Remove any partial ':dx:' pattern before appending
+        memoValue = memoValue.replace(/:dx:\d*$/, '')
+
+        // Append ':dx:1'
+        memoValue += ':dx:5'
+      }
+
+      setSwapMemoDetected(true)
+      setAffiliateTracking(
+        memoValue.endsWith(':dx:10') ? `Swap memo detected` : `Swap memo detected affiliate fee applied (:dx:5)`
+      )
+    } else {
+      setSwapMemoDetected(false)
+    }
+
+    // Update the state with the adjusted memo value
+    setCurrentMemo(memoValue)
+    setShowDetails(true)
+  }, [form])
   // whenever the memo is updated call reload fees
   useEffect(() => {
     reloadFees()
-  }, [currentMemo, reloadFees])
+  }, [currentMemo, feeRate, reloadFees])
+
+  useEffect(() => {
+    if (feeRate > UPPER_FEE_BOUND) {
+      setIsApproved(false)
+    }
+  }, [feeRate])
+
+  const addMaxAmountHandler = useCallback(() => setAmountToSend(maxAmount), [maxAmount])
+
+  const isMaxButtonDisabled = useMemo(
+    () =>
+      isLoading ||
+      FP.pipe(
+        selectedFee,
+        O.fold(
+          () => true,
+          () => false
+        )
+      ),
+    [isLoading, selectedFee]
+  )
 
   const [recipientAddress, setRecipientAddress] = useState<Address>('')
   const handleOnKeyUp = useCallback(() => {
@@ -615,7 +630,7 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
     () => H.matchedWalletType(balances, recipientAddress),
     [balances, recipientAddress]
   )
-  const [showDetails, setShowDetails] = useState<boolean>(true)
+
   const renderWalletType = useMemo(() => H.renderedWalletType(oMatchedWalletType), [oMatchedWalletType])
 
   return (
@@ -647,14 +662,14 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
                 min={0}
                 size="large"
                 disabled={isLoading}
-                decimal={LTC_DECIMAL}
+                decimal={DASH_DECIMAL}
                 onChange={onChangeInput}
               />
             </Styled.FormItem>
             <MaxBalanceButton
               className="mb-10px"
               color="neutral"
-              balance={{ amount: maxAmount, asset: AssetLTC }}
+              balance={{ amount: maxAmount, asset: AssetDASH }}
               maxDollarValue={maxAmmountPriceValue}
               onClick={addMaxAmountHandler}
               disabled={isMaxButtonDisabled}
@@ -667,16 +682,42 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
               <Styled.Input size="large" disabled={isLoading} onChange={handleMemo} />
             </Form.Item>
             {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
+            {currentMemo.length > 80 && (
+              <div className="pb-20px text-warning0 dark:text-warning0d ">Memo exceeds 80 characters, tx will fail</div>
+            )}
             <Form.Item name="feeRate">{renderFeeOptions}</Form.Item>
           </Styled.SubForm>
-          <FlatButton
-            className="mt-40px min-w-[200px]"
-            loading={isLoading}
-            disabled={!feesAvailable || isLoading}
-            type="submit"
-            size="large">
-            {intl.formatMessage({ id: 'wallet.action.send' })}
-          </FlatButton>
+          {feeRate > UPPER_FEE_BOUND && (
+            <div className="text-error0 dark:text-error0">
+              Fee rate is greater than safe fee bounds...
+              <br />
+              Press accept to use this feeRate {feeRate} DASH per kB
+            </div>
+          )}
+          {!isApproved && feeRate > UPPER_FEE_BOUND ? (
+            <FlatButton
+              className="my-30px min-w-[200px]"
+              size="large"
+              color="warning"
+              onClick={() => setIsApproved(true)}>
+              {intl.formatMessage({ id: 'common.accept' })}
+            </FlatButton>
+          ) : (
+            <></>
+          )}
+          {
+            // Show the submit button in two cases:
+            (feeRate <= UPPER_FEE_BOUND || isApproved) && (
+              <FlatButton
+                className="mt-40px min-w-[200px]"
+                loading={isLoading}
+                disabled={!feesAvailable || isLoading}
+                type="submit"
+                size="large">
+                {intl.formatMessage({ id: 'wallet.action.send' })}
+              </FlatButton>
+            )
+          }
         </Styled.Form>
         <div className="w-full pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
           {/* memo */}
@@ -697,6 +738,8 @@ export const SendFormLTC: React.FC<Props> = (props): JSX.Element => {
                   recipient={recipientAddress}
                   amountLabel={amountLabel}
                   priceFeeLabel={priceFeeLabel}
+                  upperFeeBound={UPPER_FEE_BOUND}
+                  feeRate={feeRate}
                   currentMemo={currentMemo}
                   asset={asset}
                 />

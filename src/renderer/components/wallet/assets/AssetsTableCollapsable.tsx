@@ -30,7 +30,7 @@ import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
-import { isCacaoAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
+import { isCacaoAsset, isDashAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../helpers/poolHelperMaya'
@@ -86,6 +86,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
     pricePool,
     mayaPricePool,
     poolDetails,
+    poolDetailsMaya,
     pendingPoolDetails,
     poolsData,
     poolsDataMaya,
@@ -175,11 +176,11 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
         if (isUSDAsset(asset)) {
           price = balance.toString()
-        } else if (isCacaoAsset(asset)) {
+        } else if (isCacaoAsset(asset) || isDashAsset(asset)) {
           // First try to get the price from poolDetails
           const priceOptionFromPoolDetails = getPoolPriceValueM({
             balance: { asset, amount },
-            poolDetails,
+            poolDetails: poolDetailsMaya,
             pricePool: mayaPricePool
           })
           if (O.isSome(priceOptionFromPoolDetails)) {
@@ -231,7 +232,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         )
       }
     }),
-    [hidePrivateData, mayaPricePool, pricePool, poolDetails, network, pendingPoolDetails]
+    [hidePrivateData, poolDetailsMaya, mayaPricePool, poolDetails, pricePool, network, pendingPoolDetails]
   )
 
   const renderActionColumn = useCallback(
