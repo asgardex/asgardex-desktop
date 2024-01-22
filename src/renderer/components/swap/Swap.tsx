@@ -761,18 +761,12 @@ export const Swap = ({
 
   //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
   const applyBps = useMemo(() => {
-    const affiliateFeePrice = priceAmountToSwapMax1e8.times(ASGARDEX_AFFILIATE_FEE / 10000)
-    return FP.pipe(
-      oPriceSwapInFee,
-      O.fold(
-        () => 10, // Default value in case oPriceSwapInFee is None
-        ({ assetAmount }) => {
-          const txFeeCovered = assetAmount.amount().toNumber() >= affiliateFeePrice.assetAmount.amount().toNumber()
-          return network === 'stagenet' || txFeeCovered ? 0 : ASGARDEX_AFFILIATE_FEE
-        }
-      )
-    )
-  }, [network, priceAmountToSwapMax1e8, oPriceSwapInFee])
+    let applyBps: number
+    const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(100)
+    applyBps = network === 'stagenet' ? 0 : ASGARDEX_AFFILIATE_FEE
+    applyBps = txFeeCovered ? ASGARDEX_AFFILIATE_FEE : 0
+    return applyBps
+  }, [network, priceAmountToSwapMax1e8])
 
   const priceAffiliateFeeLabel = useMemo(() => {
     if (!swapFees) {
