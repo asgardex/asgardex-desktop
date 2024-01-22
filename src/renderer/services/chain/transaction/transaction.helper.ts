@@ -37,7 +37,7 @@ export const smallestAmountToSent = (chain: Chain, _network: Network): BaseAmoun
       // 1000 satoshi
       return baseAmount(1000, BTC_DECIMAL)
     case DASHChain:
-      // 1000 satoshi
+      // 1000 duff
       return baseAmount(1000, DASH_DECIMAL)
     case THORChain:
       // 0 thor
