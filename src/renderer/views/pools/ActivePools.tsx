@@ -25,11 +25,11 @@ import { ProtocolLimit, IncentivePendulum } from '../../components/pool'
 import { Action as ActionButtonAction, ActionButton } from '../../components/uielements/button/ActionButton'
 import { PoolsPeriodSelector } from '../../components/uielements/pools/PoolsPeriodSelector'
 import { Table } from '../../components/uielements/table'
-// import { DEFAULT_WALLET_TYPE } from '../../const'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useAppContext } from '../../contexts/AppContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
+import { useWalletContext } from '../../contexts/WalletContext'
 import { ordBaseAmount, ordNumber } from '../../helpers/fp/ord'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
@@ -43,6 +43,7 @@ import * as saversRoutes from '../../routes/pools/savers'
 import { DEFAULT_NETWORK } from '../../services/const'
 import { PoolsState, DEFAULT_POOL_FILTERS, GetPoolsPeriodEnum } from '../../services/midgard/types'
 import { PoolsState as MayaPoolState, GetPoolsPeriodEnum as GetPoolsPeriodEnumMaya } from '../../services/midgard/types'
+import { hasImportedKeystore } from '../../services/wallet/util'
 import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
 import { filterTableData } from './Pools.utils'
 import * as Shared from './PoolsOverview.shared'
@@ -54,7 +55,9 @@ export const ActivePools: React.FC = (): JSX.Element => {
   const { dex } = useDex()
   const { network$ } = useAppContext()
   const network = useObservableState<Network>(network$, DEFAULT_NETWORK)
-
+  const {
+    keystoreService: { keystoreState$ }
+  } = useWalletContext()
   const {
     service: {
       pools: { poolsState$, reloadPools, selectedPricePool$, poolsPeriod$, setPoolsPeriod }
@@ -75,6 +78,9 @@ export const ActivePools: React.FC = (): JSX.Element => {
   const { data: incentivePendulumRD } = useIncentivePendulum()
 
   const poolsPeriod = useObservableState(dex === 'THOR' ? poolsPeriod$ : poolsPeriodMaya$, GetPoolsPeriodEnum._30d)
+
+  const keystore = useObservableState(keystoreState$, O.none)
+  const hasKeystore = !hasImportedKeystore(keystore)
 
   const { setFilter: setPoolFilter, filter: poolFilter } = usePoolFilter('active')
   const { add: addPoolToWatchlist, remove: removePoolFromWatchlist, list: poolWatchList } = usePoolWatchlist()
@@ -112,9 +118,9 @@ export const ActivePools: React.FC = (): JSX.Element => {
                 callback: () => {
                   navigate(
                     poolsRoutes.swap.path({
-                      source: assetToString(AssetRuneNative),
-                      target: assetToString(asset),
-                      sourceWalletType: DEFAULT_WALLET_TYPE,
+                      source: assetToString(asset),
+                      target: assetToString(AssetRuneNative),
+                      sourceWalletType: hasKeystore ? DEFAULT_WALLET_TYPE : 'ledger',
                       targetWalletType: DEFAULT_WALLET_TYPE
                     })
                   )
@@ -145,8 +151,8 @@ export const ActivePools: React.FC = (): JSX.Element => {
                 callback: () => {
                   navigate(
                     poolsRoutes.swap.path({
-                      source: assetToString(AssetCacao),
-                      target: assetToString(asset),
+                      source: assetToString(asset),
+                      target: assetToString(AssetCacao),
                       sourceWalletType: DEFAULT_WALLET_TYPE,
                       targetWalletType: DEFAULT_WALLET_TYPE
                     })
@@ -180,7 +186,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
       )
     },
 
-    [dex, intl, navigate]
+    [dex, hasKeystore, intl, navigate]
   )
 
   const btnPoolsColumn = useCallback(

@@ -359,7 +359,9 @@ const SuccessRouteView: React.FC<Props> = ({
       FP.pipe(
         sourceLedgerAddressChain$,
         RxOp.distinctUntilChanged(eqUpdateLedgerAddress.equals),
-        RxOp.switchMap(({ chain }) => getLedgerAddress$(chain)),
+        RxOp.switchMap(({ chain }) => {
+          return getLedgerAddress$(chain)
+        }),
         RxOp.map(O.map(ledgerAddressToWalletAddress)),
         RxOp.map(addressFromOptionalWalletAddress)
       ),
@@ -530,7 +532,6 @@ export const SwapView: React.FC = (): JSX.Element => {
   const oRecipientAddress: O.Option<Address> = useMemo(() => getWalletAddressFromNullableString(recipient), [recipient])
   const sourceWalletType = routeSourceWalletType || DEFAULT_WALLET_TYPE
   const oTargetWalletType = FP.pipe(routeTargetWalletType, O.fromPredicate(isWalletType))
-
   const intl = useIntl()
 
   return FP.pipe(

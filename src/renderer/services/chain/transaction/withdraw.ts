@@ -153,6 +153,7 @@ export const saverWithdraw$ = ({
   amount,
   walletIndex,
   hdMode,
+  sender,
   walletType
 }: SaverWithdrawParams): WithdrawState$ => {
   // total of progress
@@ -196,6 +197,7 @@ export const saverWithdraw$ = ({
         recipient: poolAddress.address, // it will be empty string for RUNE
         amount: amount, // parse in value from thornode withdraw quote dustAmount
         memo,
+        sender,
         feeOption: ChainTxFeeOption.WITHDRAW
       })
     }),

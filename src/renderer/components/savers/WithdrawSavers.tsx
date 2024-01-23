@@ -484,7 +484,6 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
         .estimateWithdrawSaver({ asset: asset, address: address, withdrawBps: Number(withdrawBps) })
         .then((quote) => {
           setSaverWithdrawQuote(O.some(quote))
-          console.log(quote)
         })
         .catch((error) => {
           console.error('Failed to get quote:', error)
@@ -875,7 +874,6 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     return FP.pipe(
       sequenceTOption(oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote),
       O.map(([poolAddress, { walletType, walletIndex, hdMode }, saversWithdrawQuote]) => {
-        // const sourceChainAsset =
         const result = {
           poolAddress,
           asset: sourceChainAsset,
@@ -891,14 +889,6 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       })
     )
   }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceChainAsset, dustAmount, network, address])
-
-  // useEffect(() => {
-  //   if (O.isSome(oWithdrawSaverParams)) {
-  //     console.log('Value:', oWithdrawSaverParams.value)
-  //   } else {
-  //     console.log('No value (None)')
-  //   }
-  // }, [oWithdrawSaverParams])
 
   const resetEnteredAmounts = useCallback(() => {
     setAmountToWithdrawMax1e8(initialAmountToWithdrawMax1e8)
@@ -1336,7 +1326,6 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     return FP.pipe(
       sequenceTOption(oSourceAssetWB),
       O.map(([{ walletAddress }]) => {
-        console.log(walletAddress)
         return walletAddress
       })
     )

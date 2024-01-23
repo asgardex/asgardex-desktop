@@ -261,6 +261,7 @@ export const Swap = ({
   const lockedWallet: boolean = useMemo(() => isLocked(keystore) || !hasImportedKeystore(keystore), [keystore])
 
   const useSourceAssetLedger = isLedgerWallet(initialSourceWalletType)
+
   const oSourceWalletAddress = useSourceAssetLedger ? oSourceLedgerAddress : oInitialSourceKeystoreAddress
 
   const useTargetAssetLedger = FP.pipe(
@@ -910,7 +911,7 @@ export const Swap = ({
             streamingQuantity: isStreaming ? streamingQuantity : 0,
             toleranceBps: isStreaming ? 10000 : slipTolerance * 100, // convert to basis points
             affiliateAddress: ASGARDEX_THORNAME,
-            affiliateBps: ASGARDEX_AFFILIATE_FEE
+            affiliateBps: applyBps
           }
           const estimateMayaDexSwap: QuoteSwapParamsMaya = {
             fromAsset: sourceAsset,
@@ -919,7 +920,7 @@ export const Swap = ({
             amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset),
             toleranceBps: undefined,
             affiliateAddress: ASGARDEX_THORNAME,
-            affiliateBps: ASGARDEX_AFFILIATE_FEE
+            affiliateBps: applyBps
           }
           const estimateSwap = dex === 'THOR' ? estimateThorDexSwap : estimateMayaDexSwap
           if (!estimateSwap.amount.baseAmount.eq(baseAmount(0)) && lockedWallet) {
@@ -954,7 +955,8 @@ export const Swap = ({
     dex,
     oSourceAssetWB,
     oSourceWalletAddress,
-    sourceWalletAddress
+    sourceWalletAddress,
+    applyBps
   ])
 
   // Swap boolean for use later
