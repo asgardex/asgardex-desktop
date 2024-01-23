@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react'
 
+import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import { Asset } from '@xchainjs/xchain-util'
 import { Row, Col } from 'antd'
@@ -56,7 +57,7 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
 
   const [currentPage, setCurrentPage] = useState(1)
 
-  const { chain } = asset
+  const { chain } = asset.synth ? AssetRuneNative : asset
 
   const navigate = useNavigate()
   const intl = useIntl()
@@ -169,7 +170,7 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
             as long as an external API can't provide it - currently `https://lcd-cosmoshub.keplr.app`
             See https://github.com/thorchain/asgardex-electron/pull/2405
            */}
-          {isCosmosChain(chain) || isThorChain(chain) || walletType === 'ledger' ? (
+          {isCosmosChain(chain) || isThorChain(chain) || walletType === 'ledger' || asset.synth ? (
             <WarningView
               subTitle={intl.formatMessage({ id: 'wallet.txs.history.disabled' }, { chain: chainToString(chain) })}
               extra={

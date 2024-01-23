@@ -271,7 +271,6 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
   const clickAddressLinkHandler = (chain: Chain, address: Address) => {
     const openExplorerAddressUrl = (client: XChainClient) => {
       const url = client.getExplorerAddressUrl(address)
-      console.log(url)
       window.apiUrl.openExternal(url)
     }
 

@@ -892,13 +892,13 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     )
   }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceChainAsset, dustAmount, network, address])
 
-  useEffect(() => {
-    if (O.isSome(oWithdrawSaverParams)) {
-      console.log('Value:', oWithdrawSaverParams.value)
-    } else {
-      console.log('No value (None)')
-    }
-  }, [oWithdrawSaverParams])
+  // useEffect(() => {
+  //   if (O.isSome(oWithdrawSaverParams)) {
+  //     console.log('Value:', oWithdrawSaverParams.value)
+  //   } else {
+  //     console.log('No value (None)')
+  //   }
+  // }, [oWithdrawSaverParams])
 
   const resetEnteredAmounts = useCallback(() => {
     setAmountToWithdrawMax1e8(initialAmountToWithdrawMax1e8)

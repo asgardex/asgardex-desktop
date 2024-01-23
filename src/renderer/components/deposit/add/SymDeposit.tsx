@@ -852,8 +852,6 @@ export const SymDeposit: React.FC<Props> = (props) => {
       }),
       // Trigger update for `approveFeesRD` + `checkApprove`
       O.map((params) => {
-        console.log('checking approve')
-        console.log(params)
         approveFeesParamsUpdated(params)
         checkApprovedStatus(params)
         return true
