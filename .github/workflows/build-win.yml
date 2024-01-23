@@ -42,9 +42,7 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=7168
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REACT_APP_BLOCKCYPHER_API_KEY: ${{ secrets.REACT_APP_BLOCKCYPHER_API_KEY }}
-          REACT_APP_ETHPLORER_API_KEY: ${{ secrets.REACT_APP_ETHPLORER_API_KEY }}
           REACT_APP_ETHERSCAN_API_KEY: ${{ secrets.REACT_APP_ETHERSCAN_API_KEY }}
-          REACT_APP_SNOWTRACE_API_KEY: ${{ secrets.REACT_APP_SNOWTRACE_API_KEY }}
           REACT_APP_BSCSCAN_API_KEY: ${{ secrets.REACT_APP_BSCSCAN_API_KEY }}
 
       - name: Upload artifacts

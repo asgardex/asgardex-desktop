@@ -64,6 +64,7 @@ const common: CommonMessages = {
   'common.pools': 'Pools',
   'common.price': 'Price',
   'common.price.rune': 'RUNE price',
+  'common.price.maya': 'MAYA price',
   'common.transaction': 'Transaction',
   'common.transaction.short.rune': 'RUNE tx',
   'common.transaction.short.asset': 'Asset tx',

@@ -2,9 +2,10 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
+import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { CryptoAmount, ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
-import { Address, baseAmount, eqAsset } from '@xchainjs/xchain-util'
+import { ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
+import { Address, baseAmount, CryptoAmount, eqAsset } from '@xchainjs/xchain-util'
 import { formatAssetAmountCurrency, assetAmount, bn, assetToBase, BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
 import BigNumber from 'bignumber.js'
@@ -19,6 +20,7 @@ import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { isRuneNativeAsset, isUSDAsset, THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
+import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { loadingString } from '../../../../helpers/stringHelper'
 import { getRuneNativeAmountFromBalances } from '../../../../helpers/walletHelper'
 import { usePricePool } from '../../../../hooks/usePricePool'
@@ -38,6 +40,7 @@ import { ShowDetails } from '../../../uielements/showDetails'
 import { Slider } from '../../../uielements/slider'
 import { AccountSelector } from '../../account'
 import * as H from '../TxForm.helpers'
+import { checkMemo } from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as Shared from './Send.shared'
@@ -61,12 +64,13 @@ export type Props = {
   validatePassword$: ValidatePasswordHandler
   thorchainQuery: ThorchainQuery
   network: Network
+  poolDetails: PoolDetails
 }
 
 export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
   const {
     asset: { walletType, walletIndex, hdMode },
-
+    poolDetails,
     balances,
     balance,
     transfer$,
@@ -85,6 +89,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
   const { asset } = balance
 
   const pricePool = usePricePool()
+
   const [amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
   const {
     state: sendTxState,
@@ -100,12 +105,34 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
   const [amountPriceValue, setAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
   const [currentMemo, setCurrentMemo] = useState('')
+  const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
+  const [affiliateTracking, setAffiliateTracking] = useState<string>('')
 
   const [form] = Form.useForm<FormValues>()
 
   const handleMemo = useCallback(() => {
-    const memoValue = form.getFieldValue('memo') as string
+    let memoValue = form.getFieldValue('memo') as string
 
+    // Check if a swap memo is detected
+    if (checkMemo(memoValue)) {
+      const suffixPattern = /:dx:\d+$/ // Regex to match ':dx:' followed by any number
+
+      // Check if memo ends with the suffix pattern
+      if (!suffixPattern.test(memoValue)) {
+        // Remove any partial ':dx:' pattern before appending
+        memoValue = memoValue.replace(/:dx:\d*$/, '')
+
+        // Append ':dx:0'
+        memoValue += ':dx:5'
+      }
+
+      setSwapMemoDetected(true)
+      setAffiliateTracking(
+        memoValue.endsWith(':dx:10') ? `Swap memo detected` : `Swap memo detected 5bps affiliate fee applied`
+      )
+    } else {
+      setSwapMemoDetected(false)
+    }
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
   }, [form])
@@ -217,16 +244,37 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
 
   // useEffect to fetch data from query
   useEffect(() => {
-    const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
-    const amount = new CryptoAmount(amountToSend, asset)
-    const fetchData = async () => {
-      setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, pricePool.asset))
-      setFeePriceValue(await thorchainQuery.convert(assetFee, pricePool.asset))
-      setAmountPriceValue(await thorchainQuery.convert(amount, pricePool.asset))
+    const maxAmountPrice = getPoolPriceValue({
+      balance: { asset, amount: maxAmount },
+      poolDetails,
+      pricePool,
+      network
+    })
+    const assetFeePrice = getPoolPriceValue({
+      balance: { asset, amount: assetFee.baseAmount },
+      poolDetails,
+      pricePool,
+      network
+    })
+    const amountPrice = getPoolPriceValue({
+      balance: { asset, amount: amountToSend },
+      poolDetails,
+      pricePool,
+      network
+    })
+    if (O.isSome(maxAmountPrice)) {
+      const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
+      setMaxAmountPriceValue(maxCryptoAmount)
     }
-
-    fetchData()
-  }, [amountToSend, asset, assetFee, maxAmount, pricePool.asset, thorchainQuery])
+    if (O.isSome(assetFeePrice)) {
+      const assetFeePriceAmount = new CryptoAmount(assetFeePrice.value, pricePool.asset)
+      setFeePriceValue(assetFeePriceAmount)
+    }
+    if (O.isSome(amountPrice)) {
+      const amountPriceAmount = new CryptoAmount(amountPrice.value, pricePool.asset)
+      setAmountPriceValue(amountPriceAmount)
+    }
+  }, [amountToSend, asset, assetFee, maxAmount, network, poolDetails, pricePool])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {
@@ -519,6 +567,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
             <Form.Item name="memo">
               <Styled.Input size="large" disabled={isLoading} onChange={handleMemo} />
             </Form.Item>
+            {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
           </Styled.SubForm>
           <FlatButton
             className="mt-40px min-w-[200px]"

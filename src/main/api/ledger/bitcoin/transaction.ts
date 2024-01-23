@@ -2,13 +2,14 @@ import AppBTC from '@ledgerhq/hw-app-btc'
 import { Transaction } from '@ledgerhq/hw-app-btc/lib/types'
 import Transport from '@ledgerhq/hw-transport'
 import { AssetBTC, BTCChain, Client as BitcoinClient, defaultBTCParams } from '@xchainjs/xchain-bitcoin'
-import { checkFeeBounds, FeeRate, Network, TxHash, UtxoOnlineDataProviders } from '@xchainjs/xchain-client'
+import { checkFeeBounds, FeeRate, Network, TxHash } from '@xchainjs/xchain-client'
 import { Address, BaseAmount } from '@xchainjs/xchain-util'
 import {
   HaskoinProvider,
   HaskoinNetwork,
   BlockcypherProvider,
-  BlockcypherNetwork
+  BlockcypherNetwork,
+  UtxoOnlineDataProviders
 } from '@xchainjs/xchain-utxo-providers'
 import * as Bitcoin from 'bitcoinjs-lib'
 import * as E from 'fp-ts/lib/Either'

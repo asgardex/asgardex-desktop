@@ -10,10 +10,12 @@ import { useDex } from '../../hooks/useDex'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
 import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
 import { useMayachainClientUrl } from '../../hooks/useMayachainClientUrl'
+import { useMayaPrice } from '../../hooks/useMayaPrice'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePricePools } from '../../hooks/usePricePools'
 import { useRunePrice } from '../../hooks/useRunePrice'
 import { useThorchainClientUrl } from '../../hooks/useThorchainClientUrl'
+import { useVolume24PriceMaya } from '../../hooks/useVolume24HrPriceMaya'
 import { useVolume24Price } from '../../hooks/useVolume24Price'
 import { SelectedPricePoolAsset } from '../../services/midgard/types'
 import { HeaderComponent } from './HeaderComponent'
@@ -36,8 +38,11 @@ export const Header: React.FC = (): JSX.Element => {
   const oSelectedPricePoolAsset = useObservableState<SelectedPricePoolAsset>(selectedPricePoolAsset$, O.none)
 
   const { runePriceRD, reloadRunePrice } = useRunePrice()
+  const { mayaPriceRD, reloadMayaPrice } = useMayaPrice()
   const { volume24PriceRD, reloadVolume24Price } = useVolume24Price()
-
+  const { volume24PriceRD: volume24PriceMayaRD, reloadVolume24Price: reloadVolume24PriceMaya } = useVolume24PriceMaya()
+  const volume24HrRD = dex === 'THOR' ? volume24PriceRD : volume24PriceMayaRD
+  const reloadVolume24HrRD = dex === 'THOR' ? reloadVolume24Price : reloadVolume24PriceMaya
   const pricePools = usePricePools()
 
   const midgardStatusRD = useObservableState(healthStatus$, RD.initial)
@@ -58,8 +63,10 @@ export const Header: React.FC = (): JSX.Element => {
       setSelectedPricePool={setSelectedPricePool}
       runePrice={runePriceRD}
       reloadRunePrice={reloadRunePrice}
-      volume24Price={volume24PriceRD}
-      reloadVolume24Price={reloadVolume24Price}
+      mayaPrice={mayaPriceRD}
+      reloadMayaPrice={reloadMayaPrice}
+      volume24Price={volume24HrRD}
+      reloadVolume24Price={reloadVolume24HrRD}
       selectedPricePoolAsset={oSelectedPricePoolAsset}
       midgardStatus={midgardStatusRD}
       mimir={mimir}

@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macOS-11]
+        os: [macOS-12]
 
     steps:
       - name: Checkout git repo
@@ -47,9 +47,7 @@ jobs:
           SIGNING_APP_PASSWORD: ${{ secrets.SIGNING_APP_PASSWORD }}
           SIGNING_TEAM_ID: ${{secrets.SIGNING_TEAM_ID}}
           REACT_APP_BLOCKCYPHER_API_KEY: ${{ secrets.REACT_APP_BLOCKCYPHER_API_KEY }}
-          REACT_APP_ETHPLORER_API_KEY: ${{ secrets.REACT_APP_ETHPLORER_API_KEY }}
           REACT_APP_ETHERSCAN_API_KEY: ${{ secrets.REACT_APP_ETHERSCAN_API_KEY }}
-          REACT_APP_SNOWTRACE_API_KEY: ${{ secrets.REACT_APP_SNOWTRACE_API_KEY }}
           REACT_APP_BSCSCAN_API_KEY: ${{ secrets.REACT_APP_BSCSCAN_API_KEY }}
 
       - name: Upload artifacts

@@ -15,8 +15,11 @@ import { AssetsTableCollapsable } from '../../components/wallet/assets/AssetsTab
 import type { AssetAction } from '../../components/wallet/assets/AssetsTableCollapsable'
 import { TotalValue } from '../../components/wallet/assets/TotalValue'
 import { useMidgardContext } from '../../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
+import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
+import { useDex } from '../../hooks/useDex'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePrivateData } from '../../hooks/usePrivateData'
@@ -33,6 +36,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
   const { chainBalances$, balancesState$, setSelectedAsset } = useWalletContext()
 
   const { network } = useNetwork()
+  const { dex } = useDex()
 
   const { isPrivate } = usePrivateData()
 
@@ -60,6 +64,15 @@ export const AssetsView: React.FC = (): JSX.Element => {
       pools: { poolsState$, selectedPricePool$, pendingPoolsState$ }
     }
   } = useMidgardContext()
+  const {
+    service: {
+      pools: { poolsState$: mayaPoolsState$, selectedPricePool$: mayaSelectedPricePool$ }
+    }
+  } = useMidgardMayaContext()
+
+  const selectedPricePoolMaya = useObservableState(mayaSelectedPricePool$, MAYA_PRICE_POOL)
+
+  const poolsMayaRD = useObservableState(mayaPoolsState$, RD.pending)
 
   const { total: totalWalletBalances } = useTotalWalletBalance()
 
@@ -92,7 +105,9 @@ export const AssetsView: React.FC = (): JSX.Element => {
   )
 
   const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
+  const poolDetailsMaya = RD.toNullable(poolsMayaRD)?.poolDetails ?? []
   const poolsData = RD.toNullable(poolsRD)?.poolsData ?? {}
+  const poolsDataMaya = RD.toNullable(poolsMayaRD)?.poolsData ?? {}
 
   const pendingPoolsDetails = RD.toNullable(pendingPoolsRD)?.poolDetails ?? []
 
@@ -109,11 +124,17 @@ export const AssetsView: React.FC = (): JSX.Element => {
     [chainBalances]
   )
 
-  const refreshHandler = useCallback(() => {
-    chains.forEach((chain) => {
+  const refreshHandler = useCallback(async () => {
+    const delay = 1000 // Delay in milliseconds
+
+    for (const [index, chain] of chains.entries()) {
+      if (index > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delay))
+      }
+
       const lazyReload = reloadBalancesByChain(chain)
       lazyReload() // Invoke the lazy function
-    })
+    }
   }, [chains])
 
   return (
@@ -134,14 +155,18 @@ export const AssetsView: React.FC = (): JSX.Element => {
         disableRefresh={disableRefresh}
         chainBalances={chainBalances}
         pricePool={selectedPricePool}
+        mayaPricePool={selectedPricePoolMaya}
         poolDetails={poolDetails}
+        poolDetailsMaya={poolDetailsMaya}
         pendingPoolDetails={pendingPoolsDetails}
         poolsData={poolsData}
+        poolsDataMaya={poolsDataMaya}
         selectAssetHandler={selectAssetHandler}
         assetHandler={assetHandler}
         mimirHalt={mimirHaltRD}
         network={network}
         hidePrivateData={isPrivate}
+        dex={dex}
       />
     </>
   )

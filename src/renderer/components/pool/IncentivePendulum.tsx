@@ -19,7 +19,7 @@ export const IncentivePendulum: React.FC<Props> = (props): JSX.Element => {
   const { incentivePendulum: incentivePendulumRD } = props
 
   const intl = useIntl()
-
+  // update for mayachainswap
   const loading = (
     <Styled.ContentWrapper>
       {intl.formatMessage({ id: 'pools.incentivependulum.info' }, { percentage: '...' })}

@@ -1,4 +1,4 @@
-import { Theme } from '@thorchain/asgardex-theme'
+import { Theme } from '@asgardex/asgardex-theme'
 import { ChartDataset, TooltipItem } from 'chart.js'
 import type { ChartType } from 'chart.js'
 import dayjs from 'dayjs'

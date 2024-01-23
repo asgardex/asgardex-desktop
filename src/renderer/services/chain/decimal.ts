@@ -1,5 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
+import { DASH_DECIMAL } from '@xchainjs/xchain-dash'
+import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { MidgardQuery } from '@xchainjs/xchain-midgard-query'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { Asset } from '@xchainjs/xchain-util'
@@ -8,8 +10,9 @@ import * as RxOp from 'rxjs/operators'
 
 import { isEnabledChain } from '../../../shared/utils/chain'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
-import { isBscChain, isThorChain } from '../../helpers/chainHelper'
+import { isBscChain, isDashChain, isMayaChain, isThorChain } from '../../helpers/chainHelper'
 import { AssetWithDecimalLD } from './types'
+
 // gets asset decimal from midgard-query
 const getDecimal = (asset: Asset): Promise<number> => {
   const { chain } = asset.synth ? AssetRuneNative : asset
@@ -24,6 +27,13 @@ const getDecimal = (asset: Asset): Promise<number> => {
   // @St0rmzy find out why bsc.bnb on midgard -1 instead of being the correct decimals.
   if (isThorChain(chain)) {
     return Promise.resolve(THORCHAIN_DECIMAL)
+  }
+  if (isMayaChain(chain)) {
+    return Promise.resolve(CACAO_DECIMAL)
+  }
+
+  if (isDashChain(chain)) {
+    return Promise.resolve(DASH_DECIMAL)
   }
 
   const midgardQuery = new MidgardQuery()

@@ -4,12 +4,13 @@ import * as O from 'fp-ts/lib/Option'
 
 import {
   SaverDepositState,
-  SwapState,
   SymDepositState,
   WithdrawState,
   SendTxState,
   TxTypes,
-  SymDepositAddresses
+  SymDepositAddresses,
+  SwapTxState,
+  StreamingTxState
 } from './types'
 
 export const MAX_SWAP_STEPS = 3
@@ -25,11 +26,13 @@ export const ChainTxFeeOption: { [key in TxTypes]: FeeOption } = {
   SEND: FeeOption.Fast
 }
 
-export const INITIAL_SWAP_STATE: SwapState = {
-  step: 1,
-  swapTx: RD.initial,
-  stepsTotal: MAX_SWAP_STEPS,
-  swap: RD.initial
+// Initial state for streaming
+export const INITIAL_STREAMING_STATE: StreamingTxState = {
+  streamingTx: RD.initial
+}
+
+export const INITIAL_SWAP_STATE: SwapTxState = {
+  swapTx: RD.initial
 }
 
 export const INITIAL_SAVER_DEPOSIT_STATE: SaverDepositState = {

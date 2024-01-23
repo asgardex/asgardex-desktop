@@ -3,7 +3,8 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { Address, BNBChain } from '@xchainjs/xchain-binance'
-import { CryptoAmount, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
+import { PoolDetails } from '@xchainjs/xchain-midgard'
+import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   formatAssetAmountCurrency,
   assetAmount,
@@ -12,7 +13,8 @@ import {
   assetToBase,
   BaseAmount,
   baseAmount,
-  eqAsset
+  eqAsset,
+  CryptoAmount
 } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
 import BigNumber from 'bignumber.js'
@@ -24,9 +26,10 @@ import { Network } from '../../../../../shared/api/types'
 import { AssetBNB } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
-import { AssetUSDC, ZERO_BASE_AMOUNT } from '../../../../const'
+import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { BNB_DECIMAL, isBnbAsset, isUSDAsset } from '../../../../helpers/assetHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
+import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { loadingString } from '../../../../helpers/stringHelper'
 import { getBnbAmountFromBalances } from '../../../../helpers/walletHelper'
 import { usePricePool } from '../../../../hooks/usePricePool'
@@ -45,6 +48,7 @@ import { ShowDetails } from '../../../uielements/showDetails'
 import { Slider } from '../../../uielements/slider'
 import { AccountSelector } from '../../account'
 import * as H from '../TxForm.helpers'
+import { checkMemo } from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as Shared from './Send.shared'
@@ -68,6 +72,7 @@ export type Props = {
   validatePassword$: ValidatePasswordHandler
   thorchainQuery: ThorchainQuery
   network: Network
+  poolDetails: PoolDetails
 }
 
 export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
@@ -75,6 +80,7 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
     balances,
     balance,
     asset: { walletType, walletAddress, walletIndex, hdMode },
+    poolDetails,
     transfer$,
     openExplorerTxUrl,
     getExplorerTxUrl,
@@ -114,10 +120,34 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
 
   const [recipientAddress, setRecipientAddress] = useState<Address>('')
 
-  const [currentMemo, setCurrentMemo] = useState('')
+  const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
+
+  const [currentMemo, setCurrentMemo] = useState<string>('')
+  const [affiliateTracking, setAffiliateTracking] = useState<string>('')
 
   const handleMemo = useCallback(() => {
-    const memoValue = form.getFieldValue('memo') as string
+    let memoValue = form.getFieldValue('memo') as string
+
+    // Check if a swap memo is detected
+    if (checkMemo(memoValue)) {
+      const suffixPattern = /:dx:\d+$/ // Regex to match ':dx:' followed by any number
+
+      // Check if memo ends with the suffix pattern
+      if (!suffixPattern.test(memoValue)) {
+        // Remove any partial ':dx:' pattern before appending
+        memoValue = memoValue.replace(/:dx:\d*$/, '')
+
+        // Append ':dx:0'
+        memoValue += ':dx:5'
+      }
+
+      setSwapMemoDetected(true)
+      setAffiliateTracking(
+        memoValue.endsWith(':dx:10') ? `Swap memo detected` : `Swap memo detected 5bps affiliate fee applied`
+      )
+    } else {
+      setSwapMemoDetected(false)
+    }
 
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
@@ -214,16 +244,37 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
 
   // useEffect to fetch data from query
   useEffect(() => {
-    const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
-    const amount = new CryptoAmount(amountToSend, asset)
-    const fetchData = async () => {
-      setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, AssetUSDC))
-      setFeePriceValue(await thorchainQuery.convert(assetFee, AssetUSDC))
-      setAmountPriceValue(await thorchainQuery.convert(amount, pricePool.asset))
+    const maxAmountPrice = getPoolPriceValue({
+      balance: { asset, amount: maxAmount },
+      poolDetails,
+      pricePool,
+      network
+    })
+    const amountPrice = getPoolPriceValue({
+      balance: { asset, amount: amountToSend },
+      poolDetails,
+      pricePool,
+      network
+    })
+    const assetFeePrice = getPoolPriceValue({
+      balance: { asset, amount: assetFee.baseAmount },
+      poolDetails,
+      pricePool,
+      network
+    })
+    if (O.isSome(assetFeePrice)) {
+      const maxCryptoAmount = new CryptoAmount(assetFeePrice.value, pricePool.asset)
+      setFeePriceValue(maxCryptoAmount)
     }
-
-    fetchData()
-  }, [amountToSend, asset, assetFee, maxAmount, pricePool.asset, thorchainQuery])
+    if (O.isSome(amountPrice)) {
+      const amountPriceAmount = new CryptoAmount(amountPrice.value, pricePool.asset)
+      setAmountPriceValue(amountPriceAmount)
+    }
+    if (O.isSome(maxAmountPrice)) {
+      const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
+      setMaxAmountPriceValue(maxCryptoAmount)
+    }
+  }, [amountToSend, asset, assetFee, maxAmount, network, poolDetails, pricePool])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {
@@ -503,6 +554,7 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
             <Form.Item name="memo">
               <Styled.Input size="large" disabled={isLoading} onChange={handleMemo} />
             </Form.Item>
+            {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
           </Styled.SubForm>
           <FlatButton
             className="mt-40px min-w-[200px]"

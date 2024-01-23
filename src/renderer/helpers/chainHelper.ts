@@ -4,6 +4,7 @@ import { AssetBTC, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { AssetBCH, BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC, BSCChain } from '@xchainjs/xchain-bsc'
 import { AssetATOM, GAIAChain } from '@xchainjs/xchain-cosmos'
+import { AssetDASH, DASHChain } from '@xchainjs/xchain-dash'
 import { AssetDOGE, DOGEChain } from '@xchainjs/xchain-doge'
 import { AssetETH, ETHChain } from '@xchainjs/xchain-ethereum'
 import { AssetLTC, LTCChain } from '@xchainjs/xchain-litecoin'
@@ -40,13 +41,15 @@ export const getChainAsset = (chain: Chain): Asset => {
       return AssetLTC
     case DOGEChain:
       return AssetDOGE
+    case DASHChain:
+      return AssetDASH
   }
 }
 
 /**
  * Check whether chain is BTC chain
  */
-export const isBtcChain = (chain: Chain): boolean => eqChain.equals(chain, BTCChain)
+export const isBtcChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), BTCChain)
 
 /**
  * Check whether chain is LTC chain
@@ -56,12 +59,14 @@ export const isLtcChain = (chain: Chain): boolean => eqChain.equals(chain, LTCCh
 /**
  * Check whether chain is THOR chain
  */
-export const isThorChain = (chain: Chain): boolean => eqChain.equals(chain, THORChain)
+export const isThorChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), THORChain)
 
 /**
  * Check whether chain is MAYA chain
  */
 export const isMayaChain = (chain: Chain): boolean => eqChain.equals(chain, MAYAChain)
+
+export const isDashChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), DASHChain)
 
 /**
  * Check whether chain is BNB chain
@@ -71,7 +76,7 @@ export const isBnbChain = (chain: Chain): boolean => eqChain.equals(chain, BNBCh
 /**
  * Check whether chain is ETH chain
  */
-export const isEthChain = (chain: Chain): boolean => eqChain.equals(chain, ETHChain)
+export const isEthChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), ETHChain)
 
 /**
  * Check whether chain is AVAX chain

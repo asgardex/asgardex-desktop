@@ -1,6 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
-import { CryptoAmount } from '@xchainjs/xchain-thorchain-query'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
@@ -9,14 +7,12 @@ import * as RxOp from 'rxjs/operators'
 
 import { ONE_RUNE_BASE_AMOUNT } from '../../shared/mock/amount'
 import { useMidgardContext } from '../contexts/MidgardContext'
-import { useThorchainQueryContext } from '../contexts/ThorchainQueryContext'
 import { sequenceTOption } from '../helpers/fpHelpers'
 import { PriceRD } from '../services/midgard/types'
+import { pricePoolSelector } from '../services/midgard/utils'
+import { getValueOfRuneInAsset } from '../views/pools/Pools.utils'
 
 export const useRunePrice = () => {
-  const {
-    thorchainQuery: { thorchainCache }
-  } = useThorchainQueryContext()
   const {
     service: {
       pools: { poolsState$, selectedPricePoolAsset$, reloadPools }
@@ -27,33 +23,29 @@ export const useRunePrice = () => {
     // reload pools triggers changes of poolsState$, with it changes of `runePriceRD`
     reloadPools()
   }
-  const ONE_RUNE = new CryptoAmount(ONE_RUNE_BASE_AMOUNT, AssetRuneNative)
 
   const [runePriceRD] = useObservableState<PriceRD>(
     () =>
       Rx.combineLatest([poolsState$, selectedPricePoolAsset$]).pipe(
-        RxOp.switchMap(([poolsState, oSelectedPricePoolAsset]) => {
-          return FP.pipe(
+        RxOp.map(([poolsState, oSelectedPricePoolAsset]) =>
+          FP.pipe(
             poolsState,
-            RD.toOption,
-            O.chain(({ pricePools: oPricePools }) => sequenceTOption(oPricePools, oSelectedPricePoolAsset)),
-            O.fold(
-              () => Rx.of(RD.failure(new Error('No price pools found'))),
-              ([, pricePoolAsset]) => {
-                return Rx.from(thorchainCache.convert(ONE_RUNE, pricePoolAsset)).pipe(
-                  RxOp.map((runePrice) =>
-                    RD.success({
-                      asset: pricePoolAsset,
-                      amount: runePrice.baseAmount
-                    })
-                  ),
-                  RxOp.catchError((error) => Rx.of(RD.failure(error)))
-                )
-              }
+            RD.chain(({ pricePools: oPricePools }) =>
+              FP.pipe(
+                sequenceTOption(oPricePools, oSelectedPricePoolAsset),
+                O.map(([pricePools, pricePoolAsset]) => {
+                  const { poolData } = pricePoolSelector(pricePools, O.some(pricePoolAsset))
+                  return {
+                    asset: pricePoolAsset,
+                    amount: getValueOfRuneInAsset(ONE_RUNE_BASE_AMOUNT, poolData)
+                  }
+                }),
+                (oRunePrice) =>
+                  RD.fromOption(oRunePrice, () => Error('Could not get price for RUNE from selected price pool'))
+              )
             )
           )
-        }),
-        RxOp.startWith(RD.initial)
+        )
       ),
     RD.initial
   )

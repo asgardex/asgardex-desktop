@@ -1,4 +1,4 @@
-import { LedgerErrorType } from '@thorchain/ledger-thorchain'
+import { LedgerErrorType } from '@xchainjs/ledger-thorchain'
 
 import { LedgerErrorId } from '../../../../shared/api/types'
 

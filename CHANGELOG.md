@@ -1,3 +1,19 @@
+# 1.21.1 (2024-01-24)
+
+## Add
+
+- Maya Dex Integration  [#136](https://github.com/asgardex/asgardex-desktop/issues/136)
+- Add Dash Wallet Funcitons only [#127](https://github.com/asgardex/asgardex-desktop/issues/127)
+
+## Updates/Fixes
+
+- Update Electron and supported Nodejs version [#82](https://github.com/asgardex/asgardex-desktop/issues/82)
+- Multiple account/wallet support [#109](https://github.com/asgardex/asgardex-desktop/issues/109)
+- Swap: min affiliate threshold [#138](https://github.com/asgardex/asgardex-desktop/issues/138)
+- Send: force memo swap fees [#135](https://github.com/asgardex/asgardex-desktop/issues/135)
+- Swap to BTC.BTC to BTC/BTC [#137](https://github.com/asgardex/asgardex-desktop/issues/137)
+- usdt to wbtc or eth error [#133](https://github.com/asgardex/asgardex-desktop/issues/133)
+
 # 1.21.0 (2023-12-18)
 
 ## Updates/Fixes

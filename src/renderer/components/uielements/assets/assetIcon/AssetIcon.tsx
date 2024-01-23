@@ -18,7 +18,6 @@ import {
   isDogeAsset,
   isEthAsset,
   isLtcAsset,
-  isRuneBnbAsset,
   isRuneNativeAsset,
   isTgtERC20Asset,
   isXRuneAsset,
@@ -37,7 +36,8 @@ import {
   isBscSynthAsset,
   isAtomSynthAsset,
   isDogeSynthAsset,
-  isBchSynthAsset
+  isBchSynthAsset,
+  isDashAsset
 } from '../../../../helpers/assetHelper'
 import { isAvaxChain, isBnbChain, isBscChain, isEthChain, isMayaChain } from '../../../../helpers/chainHelper'
 import { getIntFromName, rainbowStop } from '../../../../helpers/colorHelpers'
@@ -52,11 +52,11 @@ import {
   dogeIcon,
   ethIcon,
   runeIcon,
-  bnbRuneIcon,
   xRuneIcon,
   tgtIcon,
   cacaoIcon,
-  usdpIcon
+  usdpIcon,
+  dashIcon
 } from '../../../icons'
 import * as Styled from './AssetIcon.styles'
 import { Size } from './AssetIcon.types'
@@ -114,9 +114,9 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     if (isCacaoAsset(asset)) {
       return cacaoIcon
     }
-    // BNB RUNE
-    if (isRuneBnbAsset(asset, network)) {
-      return bnbRuneIcon
+    // Dash
+    if (isDashAsset(asset)) {
+      return dashIcon
     }
     // BNB
     if (isBnbAsset(asset) || isBnbAssetSynth(asset)) {
@@ -162,7 +162,6 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
 
       // Since we've already checked ETH.ETH before,
       // we know any asset is ERC20 here - no need to run expensive `isEthTokenAsset`
-      // @St0mrzy trust wallet url doesnt work
       if (isEthChain(asset.chain)) {
         return FP.pipe(
           // Try to get url from ERC20Whitelist first

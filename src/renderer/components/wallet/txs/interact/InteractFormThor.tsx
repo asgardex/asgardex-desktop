@@ -2,14 +2,9 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
+import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import {
-  AssetAVAX,
-  CryptoAmount,
-  QuoteThornameParams,
-  ThorchainQuery,
-  ThornameDetails
-} from '@xchainjs/xchain-thorchain-query'
+import { QuoteThornameParams, ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
 import {
   Asset,
   assetAmount,
@@ -17,6 +12,7 @@ import {
   BaseAmount,
   baseToAsset,
   bn,
+  CryptoAmount,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
 import { Form, Tooltip } from 'antd'
@@ -29,13 +25,15 @@ import { debounce } from 'lodash'
 import { useIntl } from 'react-intl'
 
 import { Network } from '../../../../../shared/api/types'
-import { AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../../../../shared/utils/asset'
+import { AssetAVAX, AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../shared/wallet/types'
-import { AssetUSDC, AssetUSDTDAC, ZERO_BASE_AMOUNT } from '../../../../const'
+import { AssetUSDTDAC, ZERO_BASE_AMOUNT } from '../../../../const'
 import { THORCHAIN_DECIMAL, isUSDAsset } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
 import { getBondMemo, getLeaveMemo, getUnbondMemo } from '../../../../helpers/memoHelper'
+import { getPoolPriceValue } from '../../../../helpers/poolHelper'
+import { usePricePool } from '../../../../hooks/usePricePool'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { FeeRD } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../services/clients'
@@ -53,6 +51,7 @@ import { UIFees, UIFeesRD } from '../../../uielements/fees'
 import { InfoIcon } from '../../../uielements/info'
 import { InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
+import { checkMemo } from '../TxForm.helpers'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
 import * as Styled from './Interact.styles'
@@ -86,10 +85,12 @@ type Props = {
   validatePassword$: ValidatePasswordHandler
   thorchainQuery: ThorchainQuery
   network: Network
+  poolDetails: PoolDetails
 }
 export const InteractFormThor: React.FC<Props> = (props) => {
   const {
     interactType,
+    poolDetails,
     balance,
     walletType,
     hdMode,
@@ -107,6 +108,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   const intl = useIntl()
 
   const { asset } = balance
+  const pricePool = usePricePool()
 
   const [hasProviderAddress, setHasProviderAddress] = useState(false)
 
@@ -147,6 +149,11 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   const [isOwner, setIsOwner] = useState<boolean>(false) // if the thorname.owner is the wallet address then allow to update
   const [preferredAsset, setPreferredAsset] = useState<Asset>()
   const [aliasChain, setAliasChain] = useState<string>('')
+
+  const [currentMemo, setCurrentMemo] = useState('')
+  const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
+  const [affiliateTracking, setAffiliateTracking] = useState<string>('')
+
   const isFeeError = useMemo(
     () =>
       FP.pipe(
@@ -159,6 +166,33 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       ),
     [balance, oFee]
   )
+
+  const handleMemo = useCallback(() => {
+    let memoValue = form.getFieldValue('memo') as string
+
+    // Check if a swap memo is detected
+    if (checkMemo(memoValue)) {
+      const suffixPattern = /:dx:\d+$/ // Regex to match ':dx:' followed by any number
+
+      // Check if memo ends with the suffix pattern
+      if (!suffixPattern.test(memoValue)) {
+        // Remove any partial ':dx:' pattern before appending
+        memoValue = memoValue.replace(/:dx:\d*$/, '')
+
+        // Append ':dx:0'
+        memoValue += ':dx:1'
+      }
+
+      setSwapMemoDetected(true)
+      setAffiliateTracking(
+        memoValue.endsWith(':dx:10') ? `Swap memo detected` : `Swap memo detected 1bps affiliate fee applied`
+      )
+    } else {
+      setSwapMemoDetected(false)
+    }
+    // Update the state with the adjusted memo value
+    setCurrentMemo(memoValue)
+  }, [form])
 
   const renderFeeError = useMemo(
     () => (
@@ -204,21 +238,20 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(maxAmount, asset)) // Initial state can be null or a suitable default
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
-        const convertedValue = await thorchainQuery.convert(maxCryptoAmount, AssetUSDC)
-        setMaxAmountPriceValue(convertedValue)
-      } catch (error) {
-        console.error('Error fetching data:', error)
-        // Handle error appropriately
-      }
-    }
+    const maxAmountPrice = getPoolPriceValue({
+      balance: { asset, amount: maxAmount },
+      poolDetails,
+      pricePool,
+      network
+    })
 
     if ((maxAmount && interactType === 'bond') || interactType === 'custom') {
-      fetchData()
+      if (O.isSome(maxAmountPrice)) {
+        const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
+        setMaxAmountPriceValue(maxCryptoAmount)
+      }
     }
-  }, [asset, interactType, maxAmount, thorchainQuery])
+  }, [asset, interactType, maxAmount, network, poolDetails, pricePool])
 
   const amountValidator = useCallback(
     async (_: unknown, value: BigNumber) => {
@@ -401,7 +434,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         break
       }
       case 'custom': {
-        createMemo = form.getFieldValue('memo')
+        createMemo = currentMemo
         break
       }
       case 'thorname': {
@@ -411,7 +444,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     }
     setMemo(createMemo)
     return createMemo
-  }, [_amountToSend, form, interactType, memo])
+  }, [_amountToSend, currentMemo, form, interactType, memo])
 
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
@@ -660,8 +693,9 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                   message: intl.formatMessage({ id: 'wallet.validations.shouldNotBeEmpty' })
                 }
               ]}>
-              <Styled.Input disabled={isLoading} onChange={() => getMemo()} size="large" />
+              <Styled.Input disabled={isLoading} onChange={handleMemo} size="large" />
             </Form.Item>
+            {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
           </Styled.InputContainer>
         )}
 

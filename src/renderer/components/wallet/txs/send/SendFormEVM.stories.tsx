@@ -80,6 +80,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, walletType }: Args) => {
         return Promise.resolve(true)
       }}
       getExplorerTxUrl={(txHash: TxHash) => O.some(`url/asset-${txHash}`)}
+      poolDetails={[]}
     />
   )
 }

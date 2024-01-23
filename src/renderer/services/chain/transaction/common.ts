@@ -6,10 +6,11 @@ import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { TxHash } from '@xchainjs/xchain-client'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
+import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import { Chain } from '@xchainjs/xchain-util'
@@ -26,6 +27,7 @@ import * as BTC from '../../bitcoin'
 import * as BCH from '../../bitcoincash'
 import * as BSC from '../../bsc'
 import * as COSMOS from '../../cosmos'
+import * as DASH from '../../dash'
 import * as DOGE from '../../doge'
 import * as ETH from '../../ethereum'
 import * as LTC from '../../litecoin'
@@ -155,6 +157,26 @@ export const sendTx$ = ({
           })
         })
       )
+    case DASHChain:
+      return FP.pipe(
+        DASH.feesWithRates$(memo),
+        liveData.mapLeft((error) => ({
+          errorId: ErrorId.GET_FEES,
+          msg: error?.message ?? error.toString()
+        })),
+        liveData.chain(({ rates }) => {
+          return DASH.sendTx({
+            walletType,
+            recipient,
+            amount,
+            feeRate: rates[feeOption],
+            memo,
+            walletIndex,
+            hdMode,
+            sender
+          })
+        })
+      )
   }
 }
 
@@ -168,9 +190,11 @@ export const sendPoolTx$ = ({
   recipient,
   amount,
   memo,
-  feeOption = DEFAULT_FEE_OPTION
+  feeOption = DEFAULT_FEE_OPTION,
+  dex
 }: SendPoolTxParams): TxHashLD => {
-  const { chain } = asset.synth ? AssetRuneNative : asset
+  // update this to suit MayaChainSwap
+  const { chain } = asset.synth ? (dex === 'THOR' ? AssetRuneNative : AssetCacao) : asset
   if (!isEnabledChain(chain)) return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)
   switch (chain) {
     case ETHChain:
@@ -211,7 +235,9 @@ export const sendPoolTx$ = ({
       })
 
     case THORChain:
-      return THOR.sendPoolTx$({ walletType, amount, asset, memo, walletIndex, hdMode })
+      return dex === 'THOR'
+        ? THOR.sendPoolTx$({ walletType, amount, asset, memo, walletIndex, hdMode })
+        : THOR.sendTx({ sender, walletType, asset, recipient, amount, memo, walletIndex, hdMode })
 
     case MAYAChain:
       return MAYA.sendPoolTx$({ walletType, amount, asset, memo, walletIndex, hdMode })
@@ -221,6 +247,7 @@ export const sendPoolTx$ = ({
     case BCHChain:
     case DOGEChain:
     case LTCChain:
+    case DASHChain:
     case GAIAChain:
       return sendTx$({ sender, walletType, asset, recipient, amount, memo, feeOption, walletIndex, hdMode })
   }
@@ -259,6 +286,8 @@ export const txStatusByChain$ = ({ txHash, chain }: { txHash: TxHash; chain: Cha
       return BCH.txStatus$(txHash, O.none)
     case LTCChain:
       return LTC.txStatus$(txHash, O.none)
+    case DASHChain:
+      return DASH.txStatus$(txHash, O.none)
   }
 }
 
@@ -295,6 +324,7 @@ export const poolTxStatusByChain$ = ({
     case DOGEChain:
     case BCHChain:
     case LTCChain:
+    case DASHChain:
       return txStatusByChain$({ txHash, chain })
   }
 }

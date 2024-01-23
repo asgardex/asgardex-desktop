@@ -11,6 +11,9 @@ import { TestScheduler } from 'rxjs/testing'
 import { ApiKeystore, ApiLang, ApiUrl, ApiHDWallet } from './shared/api/types'
 import * as mockApi from './shared/mock/api'
 
+// Mock URL.createObjectURL globally for all tests
+global.URL.createObjectURL = jest.fn()
+
 type RunObservableCallback<T> = (helpers: RunHelpers) => T
 type RunObservable = <T>(callback: RunObservableCallback<T>) => T
 

@@ -1,3 +1,4 @@
+import { type PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { type PoolDetail } from '@xchainjs/xchain-midgard'
 import {
   baseAmount,
@@ -21,6 +22,7 @@ import { isBtcAsset, isChainAsset, isEthAsset, isUSDAsset, isEthTokenAsset } fro
 import { isBnbChain, isEthChain } from '../../helpers/chainHelper'
 import { eqString, eqAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
+import { LastblockItem as LastblockItemMaya } from '../../services/mayachain/types'
 import { GetPoolsStatusEnum, PoolFilter } from '../../services/midgard/types'
 import { toPoolData } from '../../services/midgard/utils'
 import { LastblockItem } from '../../services/thorchain/types'
@@ -125,6 +127,62 @@ export const getPoolTableRowData = ({
   )
 }
 
+export const getPoolTableRowDataMaya = ({
+  poolDetail,
+  pricePoolData,
+  watchlist,
+  network
+}: {
+  poolDetail: PoolDetailMaya
+  pricePoolData: PoolData
+  watchlist: PoolsWatchList
+  network: Network
+}): O.Option<PoolTableRowData> => {
+  return FP.pipe(
+    poolDetail.asset,
+    assetFromString,
+    O.fromNullable,
+    O.map((poolDetailAsset) => {
+      const poolData = toPoolData(poolDetail)
+      // convert string -> BN -> number - just for convenience
+      const apy = bnOrZero(poolDetail.poolAPY).multipliedBy(100).decimalPlaces(2).toNumber()
+
+      const poolPrice = getValueOfAsset1InAsset2(ONE_RUNE_BASE_AMOUNT, poolData, pricePoolData)
+
+      // `depthAmount` is one side only, but we do need to show depth of both sides (asset + rune depth)
+      const depthAmountInRune = baseAmount(poolDetail.runeDepth).times(2)
+      const depthPrice = getValueOfRuneInAsset(depthAmountInRune, pricePoolData)
+      const depthAmountInAsset = getValueOfRuneInAsset(depthAmountInRune, poolData)
+
+      const volumeAmount = baseAmount(poolDetail.volume24h)
+      const volumePrice = getValueOfRuneInAsset(volumeAmount, pricePoolData)
+      const volumeAmountInAsset = getValueOfRuneInAsset(volumeAmount, poolData)
+
+      const status = stringToGetPoolsStatus(poolDetail.status)
+
+      const watched: boolean = FP.pipe(
+        watchlist,
+        A.findFirst((poolInList) => eqAsset.equals(poolInList, poolDetailAsset)),
+        O.isSome
+      )
+
+      return {
+        asset: poolDetailAsset,
+        poolPrice,
+        depthAmount: depthAmountInAsset,
+        depthPrice,
+        volumePrice,
+        volumeAmount: volumeAmountInAsset,
+        status,
+        key: poolDetailAsset.ticker,
+        network,
+        apy,
+        watched
+      }
+    })
+  )
+}
+
 export const getBlocksLeftForPendingPool = (
   lastblocks: Array<Pick<LastblockItem, 'chain' | 'thorchain'>>,
   asset: Asset,
@@ -141,6 +199,22 @@ export const getBlocksLeftForPendingPool = (
     O.map(([newPoolCycle, lastHeight]) => newPoolCycle - (lastHeight % newPoolCycle))
   )
 }
+export const getBlocksLeftForPendingMayaPool = (
+  lastblocks: Array<Pick<LastblockItemMaya, 'chain' | 'mayachain'>>,
+  asset: Asset,
+  oNewPoolCycle: O.Option<number>
+): O.Option<number> => {
+  const oLastHeight = FP.pipe(
+    lastblocks,
+    A.findFirst((blockInfo) => eqString.equals(blockInfo.chain, asset.chain)),
+    O.map(({ mayachain }) => Number(mayachain))
+  )
+
+  return FP.pipe(
+    sequenceTOption(oNewPoolCycle, oLastHeight),
+    O.map(([newPoolCycle, lastHeight]) => newPoolCycle - (lastHeight % newPoolCycle))
+  )
+}
 
 export const getBlocksLeftForPendingPoolAsString = (
   lastblocks: Array<Pick<LastblockItem, 'chain' | 'thorchain'>>,
@@ -149,6 +223,19 @@ export const getBlocksLeftForPendingPoolAsString = (
 ): string => {
   return FP.pipe(
     getBlocksLeftForPendingPool(lastblocks, asset, poolCycle),
+    O.fold(
+      () => '',
+      (blocksLeft) => blocksLeft.toString()
+    )
+  )
+}
+export const getBlocksLeftForPendingPoolAsStringMaya = (
+  lastblocks: Array<Pick<LastblockItemMaya, 'chain' | 'mayachain'>>,
+  asset: Asset,
+  poolCycle: O.Option<number>
+): string => {
+  return FP.pipe(
+    getBlocksLeftForPendingMayaPool(lastblocks, asset, poolCycle),
     O.fold(
       () => '',
       (blocksLeft) => blocksLeft.toString()

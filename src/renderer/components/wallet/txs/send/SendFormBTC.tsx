@@ -4,7 +4,8 @@ import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { BTCChain, BTC_DECIMAL, UPPER_FEE_BOUND } from '@xchainjs/xchain-bitcoin'
 import { FeeOption, FeesWithRates } from '@xchainjs/xchain-client'
-import { CryptoAmount, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
+import { PoolDetails } from '@xchainjs/xchain-midgard'
+import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
   assetAmount,
@@ -13,6 +14,7 @@ import {
   baseAmount,
   baseToAsset,
   bn,
+  CryptoAmount,
   eqAsset,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
@@ -29,6 +31,7 @@ import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/gu
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { isUSDAsset } from '../../../../helpers/assetHelper'
+import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { loadingString } from '../../../../helpers/stringHelper'
 import { usePricePool } from '../../../../hooks/usePricePool'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
@@ -74,11 +77,13 @@ export type Props = {
   validatePassword$: ValidatePasswordHandler
   thorchainQuery: ThorchainQuery
   network: Network
+  poolDetails: PoolDetails
 }
 
 export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
   const {
     asset: { walletType, walletIndex, hdMode, walletAddress },
+    poolDetails,
     balances,
     balance,
     transfer$,
@@ -301,16 +306,37 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
 
   // useEffect to fetch data from query
   useEffect(() => {
-    const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
-    const amount = new CryptoAmount(amountToSend, asset)
-    const fetchData = async () => {
-      setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, pricePool.asset))
-      setFeePriceValue(await thorchainQuery.convert(assetFee, pricePool.asset))
-      setAmountPriceValue(await thorchainQuery.convert(amount, pricePool.asset))
+    const maxAmountPrice = getPoolPriceValue({
+      balance: { asset, amount: maxAmount },
+      poolDetails,
+      pricePool,
+      network
+    })
+    const amountPrice = getPoolPriceValue({
+      balance: { asset, amount: amountToSend },
+      poolDetails,
+      pricePool,
+      network
+    })
+    const assetFeePrice = getPoolPriceValue({
+      balance: { asset, amount: assetFee.baseAmount },
+      poolDetails,
+      pricePool,
+      network
+    })
+    if (O.isSome(assetFeePrice)) {
+      const maxCryptoAmount = new CryptoAmount(assetFeePrice.value, pricePool.asset)
+      setFeePriceValue(maxCryptoAmount)
     }
-
-    fetchData()
-  }, [amountToSend, asset, assetFee, maxAmount, pricePool.asset, thorchainQuery])
+    if (O.isSome(amountPrice)) {
+      const amountPriceAmount = new CryptoAmount(amountPrice.value, pricePool.asset)
+      setAmountPriceValue(amountPriceAmount)
+    }
+    if (O.isSome(maxAmountPrice)) {
+      const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
+      setMaxAmountPriceValue(maxCryptoAmount)
+    }
+  }, [amountToSend, asset, assetFee, maxAmount, network, poolDetails, pricePool])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {
@@ -554,15 +580,13 @@ export const SendFormBTC: React.FC<Props> = (props): JSX.Element => {
         // Remove any partial ':dx:' pattern before appending
         memoValue = memoValue.replace(/:dx:\d*$/, '')
 
-        // Append ':dx:0'
-        memoValue += ':dx:0'
+        // Append ':dx:1'
+        memoValue += ':dx:5'
       }
 
       setSwapMemoDetected(true)
       setAffiliateTracking(
-        memoValue.endsWith(':dx:10')
-          ? `Swap memo detected`
-          : `Swap memo detected affiliate tracking applied (:dx:0) or donate to Asgardex (:dx:1-9)`
+        memoValue.endsWith(':dx:10') ? `Swap memo detected` : `Swap memo detected 5bps affiliate fee applied`
       )
     } else {
       setSwapMemoDetected(false)

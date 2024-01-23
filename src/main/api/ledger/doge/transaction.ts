@@ -1,7 +1,7 @@
 import AppBTC from '@ledgerhq/hw-app-btc'
 import { Transaction } from '@ledgerhq/hw-app-btc/lib/types'
 import Transport from '@ledgerhq/hw-transport'
-import { checkFeeBounds, FeeRate, Network, TxHash, UtxoOnlineDataProviders } from '@xchainjs/xchain-client'
+import { checkFeeBounds, FeeRate, Network, TxHash } from '@xchainjs/xchain-client'
 import {
   AssetDOGE,
   Client,
@@ -11,7 +11,7 @@ import {
   defaultDogeParams
 } from '@xchainjs/xchain-doge'
 import { Address, BaseAmount } from '@xchainjs/xchain-util'
-import { BlockcypherProvider, BlockcypherNetwork } from '@xchainjs/xchain-utxo-providers'
+import { BlockcypherProvider, BlockcypherNetwork, UtxoOnlineDataProviders } from '@xchainjs/xchain-utxo-providers'
 import * as E from 'fp-ts/lib/Either'
 
 import { blockcypherApiKey } from '../../../../shared/api/blockcypher'

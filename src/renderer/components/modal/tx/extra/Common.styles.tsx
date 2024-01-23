@@ -23,6 +23,7 @@ export const DataWrapper = styled.div`
 
 export const StepBar = styled(UIStepBar)`
   justify-content: center;
+  padding: 2px;
 `
 
 export const AssetsContainer = styled.div`

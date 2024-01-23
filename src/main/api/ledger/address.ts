@@ -5,6 +5,7 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
+import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
@@ -35,8 +36,8 @@ export const getAddress = async ({
 }: IPCLedgerAdddressParams): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
     let res: E.Either<LedgerError, WalletAddress>
-    const transport = await TransportNodeHidSingleton.open()
-    if (!isEnabledChain(chain) || chain === MAYAChain) {
+    const transport = await TransportNodeHidSingleton.create()
+    if (!isEnabledChain(chain) || chain === MAYAChain || chain === DASHChain) {
       res = E.left({
         errorId: LedgerErrorId.NOT_IMPLEMENTED,
         msg: `${chain} is not supported for 'getAddress'`
@@ -110,7 +111,7 @@ export const getAddress = async ({
 }
 
 export const verifyLedgerAddress = async ({ chain, network, walletIndex, hdMode }: IPCLedgerAdddressParams) => {
-  const transport = await TransportNodeHidSingleton.open()
+  const transport = await TransportNodeHidSingleton.create()
   let result = false
 
   if (!isEnabledChain(chain)) throw Error(`${chain} is not supported for 'verifyAddress'`)

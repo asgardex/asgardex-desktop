@@ -122,7 +122,6 @@ export const createTransactionService = (
       RxOp.switchMap(([network, clientUrl]) => {
         if (isLedgerWallet(walletType))
           return depositLedgerTx({ network, clientUrl, params: { walletIndex, hdMode, asset, amount, memo } })
-
         return depositTx({ walletIndex, asset, amount, memo })
       })
     )

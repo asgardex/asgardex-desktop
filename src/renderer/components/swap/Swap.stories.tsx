@@ -3,6 +3,7 @@ import { ComponentMeta, StoryFn } from '@storybook/react'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { TxHash } from '@xchainjs/xchain-client'
+import { MayachainQuery } from '@xchainjs/xchain-mayachain-query'
 import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import { assetAmount, assetToBase, assetToString, baseAmount, bn } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
@@ -41,7 +42,13 @@ const defaultProps: SwapProps = {
     Rx.of(params).pipe(
       RxOp.tap((params) => console.log('swap$ ', params)),
       RxOp.switchMap((_) =>
-        Rx.of<SwapState>({ ...INITIAL_SWAP_STATE, step: 3, swapTx: RD.success('tx-hash'), swap: RD.success(true) })
+        Rx.of<SwapState>({
+          ...INITIAL_SWAP_STATE,
+          step: 3,
+          swapTx: RD.success('tx-hash'),
+          swap: RD.success(true),
+          stepsTotal: 3
+        })
       )
     ),
   poolsData: {
@@ -111,7 +118,10 @@ const defaultProps: SwapProps = {
   importWalletHandler: () => console.log('import wallet'),
   addressValidator: () => Promise.resolve(true),
   hidePrivateData: false,
-  thorchainQuery: new ThorchainQuery()
+  thorchainQuery: new ThorchainQuery(),
+  mayachainQuery: new MayachainQuery(),
+  reloadTxStatus: () => console.log('reloadBalances'),
+  dex: 'THOR'
 }
 
 export const Default: StoryFn = () => <Component {...defaultProps} />

@@ -56,6 +56,8 @@ export type Props = {
   pricePools: O.Option<PricePools>
   runePrice: PriceRD
   reloadRunePrice: FP.Lazy<void>
+  mayaPrice: PriceRD
+  reloadMayaPrice: FP.Lazy<void>
   volume24Price: PriceRD
   reloadVolume24Price: FP.Lazy<void>
   selectedPricePoolAsset: SelectedPricePoolAsset
@@ -76,9 +78,11 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
     dex,
     pricePools: oPricePools,
     runePrice: runePriceRD,
+    mayaPrice: mayaPriceRD,
     midgardStatus: midgardStatusRD,
     mimir: mimirRD,
     reloadRunePrice,
+    reloadMayaPrice,
     volume24Price: volume24PriceRD,
     reloadVolume24Price,
     selectedPricePoolAsset: oSelectedPricePoolAsset,
@@ -309,11 +313,28 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
       <Styled.LogoWrapper>
         <Styled.AsgardexLogo />
         <Styled.DexLabel dex={dex}>{dex}</Styled.DexLabel>
-        <Styled.NetworkLabel network={network}>{network}</Styled.NetworkLabel>
+        <Styled.NetworkLabel network={network} dex={dex}>
+          {network}
+        </Styled.NetworkLabel>
       </Styled.LogoWrapper>
     ),
     [network, dex]
   )
+
+  const dexPrice = useMemo(() => {
+    // Use 'dex' to determine which DEX prices to use
+    if (dex === 'THOR') {
+      return {
+        price: runePriceRD,
+        reloadPrice: reloadRunePrice
+      }
+    } else {
+      return {
+        price: mayaPriceRD,
+        reloadPrice: reloadMayaPrice
+      }
+    }
+  }, [dex, runePriceRD, reloadRunePrice, mayaPriceRD, reloadMayaPrice])
   return (
     <>
       <Styled.HeaderContainer>
@@ -324,8 +345,9 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
                 <Row justify="space-between" align="middle" style={{ height: headerHeight }}>
                   {renderLogo}
                   <HeaderStats
-                    runePrice={runePriceRD}
-                    reloadRunePrice={reloadRunePrice}
+                    dex={dex}
+                    runePrice={dexPrice.price}
+                    reloadRunePrice={dexPrice.reloadPrice}
                     volume24Price={volume24PriceRD}
                     reloadVolume24Price={reloadVolume24Price}
                   />
@@ -358,6 +380,7 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
               <Col flex={1}>
                 <Row>
                   <HeaderStats
+                    dex={dex}
                     runePrice={runePriceRD}
                     reloadRunePrice={reloadRunePrice}
                     volume24Price={volume24PriceRD}

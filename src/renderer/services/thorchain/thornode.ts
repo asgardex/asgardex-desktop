@@ -13,7 +13,9 @@ import {
   NodesApi,
   NodesResponse,
   Saver,
-  SaversApi
+  SaversApi,
+  TransactionsApi,
+  TxStagesResponse
 } from '@xchainjs/xchain-thornode'
 import { Address, Asset, assetFromString, assetToString, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
 import { AxiosResponse } from 'axios'
@@ -48,7 +50,9 @@ import {
   SaverProviderLD,
   SaverProvider,
   InboundAddresses,
-  InboundAddress
+  InboundAddress,
+  TxStagesLD,
+  TxStages
 } from './types'
 
 const height: number | undefined = undefined
@@ -180,7 +184,68 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       )
     )
   )
+  const { stream$: reloadTxStatus$, trigger: reloadTxStatus } = triggerStream()
+  /**
+   * Api call to `getTxStatus` endpoint
+   */
+  const apiGetTxStatus$ = (txHash: string) =>
+    FP.pipe(
+      thornodeUrl$,
+      liveData.chain((basePath) =>
+        FP.pipe(
+          Rx.from(new TransactionsApi(getThornodeAPIConfiguration(basePath)).txStages(txHash)),
+          RxOp.map((response: AxiosResponse<TxStagesResponse>) => RD.success(response.data)), // Extract data from AxiosResponse
+          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+        )
+      )
+    )
 
+  const getTxStatus$ = (txHash: string): TxStagesLD =>
+    FP.pipe(
+      reloadTxStatus$,
+      RxOp.debounceTime(500),
+      RxOp.switchMap((_) => apiGetTxStatus$(txHash)),
+      liveData.map(
+        // transform data -> TxStages
+        (txStages): TxStages => {
+          return {
+            inboundObserved: {
+              finalCount: txStages.inbound_observed.final_count,
+              completed: txStages.inbound_observed.completed
+            },
+            inboundConfirmationCounted: {
+              remainingConfirmationSeconds: txStages.inbound_confirmation_counted?.remaining_confirmation_seconds,
+              completed: txStages.inbound_confirmation_counted?.completed
+                ? txStages.inbound_confirmation_counted?.completed
+                : false
+            },
+            inboundFinalised: {
+              completed: txStages.inbound_finalised?.completed ? txStages.inbound_finalised?.completed : false
+            },
+            outBoundDelay: {
+              remainDelaySeconds: txStages.outbound_delay?.remaining_delay_seconds,
+              remainingDelayBlocks: txStages.outbound_delay?.remaining_delay_blocks,
+              completed: txStages.outbound_delay?.completed
+            },
+            outboundSigned: {
+              scheduledOutboundHeight: txStages.outbound_signed?.scheduled_outbound_height,
+              blocksSinceScheduled: txStages.outbound_signed?.blocks_since_scheduled,
+              completed: txStages.outbound_signed?.completed
+            },
+            swapStatus: {
+              pending: txStages.swap_status?.pending,
+              streaming: {
+                interval: txStages.swap_status?.streaming?.interval,
+                quantity: txStages.swap_status?.streaming?.quantity,
+                count: txStages.swap_status?.streaming?.count
+              }
+            },
+            swapFinalised: txStages.swap_finalised?.completed ? txStages.swap_finalised?.completed : false
+          }
+        }
+      ),
+      RxOp.catchError((): TxStagesLD => Rx.of(RD.failure(Error(`Failed to load info for ${txHash}`))))
+    )
   // `TriggerStream` to reload data of `ThorchainLastblock`
   const { stream$: reloadThorchainLastblock$, trigger: reloadThorchainLastblock } = triggerStream()
 
@@ -391,6 +456,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     getLiquidityProviders,
     reloadLiquidityProviders,
     getSaverProvider$,
-    reloadSaverProvider
+    reloadSaverProvider,
+    getTxStatus$,
+    reloadTxStatus
   }
 }

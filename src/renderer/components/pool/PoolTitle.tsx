@@ -37,7 +37,7 @@ export const PoolTitle: React.FC<Props> = ({
   isAvailablePool
 }) => {
   const isDesktopView = Grid.useBreakpoint()?.md ?? false
-
+  // update for mayachainSwap
   const intl = useIntl()
   const navigate = useNavigate()
 

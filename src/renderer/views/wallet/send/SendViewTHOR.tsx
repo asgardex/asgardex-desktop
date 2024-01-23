@@ -9,6 +9,7 @@ import { useObservableState } from 'observable-hooks'
 
 import { SendFormTHOR } from '../../../components/wallet/txs/send/'
 import { useChainContext } from '../../../contexts/ChainContext'
+import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
@@ -41,6 +42,13 @@ export const SendViewTHOR: React.FC<Props> = (props): JSX.Element => {
     () => balancesState$(DEFAULT_BALANCES_FILTER),
     INITIAL_BALANCES_STATE
   )
+  const {
+    service: {
+      pools: { poolsState$ }
+    }
+  } = useMidgardContext()
+  const poolsRD = useObservableState(poolsState$, RD.pending)
+  const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
 
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(THORChain))
 
@@ -94,6 +102,7 @@ export const SendViewTHOR: React.FC<Props> = (props): JSX.Element => {
               validatePassword$={validatePassword$}
               thorchainQuery={thorchainQuery}
               network={network}
+              poolDetails={poolDetails}
             />
           </Styled.Container>
         </Spin>
@@ -116,6 +125,7 @@ export const SendViewTHOR: React.FC<Props> = (props): JSX.Element => {
             validatePassword$={validatePassword$}
             thorchainQuery={thorchainQuery}
             network={network}
+            poolDetails={poolDetails}
           />
         </Styled.Container>
       )

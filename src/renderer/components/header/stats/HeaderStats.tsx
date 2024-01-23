@@ -6,6 +6,7 @@ import { Grid, Tooltip } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import { useIntl } from 'react-intl'
 
+import { Dex } from '../../../../shared/api/types'
 import { isUSDAsset } from '../../../helpers/assetHelper'
 import { abbreviateNumber } from '../../../helpers/numberHelper'
 import { loadingString } from '../../../helpers/stringHelper'
@@ -17,10 +18,11 @@ export type Props = {
   reloadRunePrice: FP.Lazy<void>
   volume24Price: PriceRD
   reloadVolume24Price: FP.Lazy<void>
+  dex: Dex
 }
 
 export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
-  const { runePrice: runePriceRD, reloadRunePrice, volume24Price: volume24PriceRD, reloadVolume24Price } = props
+  const { runePrice: runePriceRD, reloadRunePrice, volume24Price: volume24PriceRD, reloadVolume24Price, dex } = props
 
   const isSmallMobileView = Grid.useBreakpoint()?.xs ?? false
 
@@ -32,13 +34,14 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
     () =>
       FP.pipe(
         runePriceRD,
-        RD.map(({ asset, amount }) =>
-          formatAssetAmountCurrency({
+        RD.map(({ asset, amount }) => {
+          const price = formatAssetAmountCurrency({
             amount: baseToAsset(amount),
             asset,
             decimal: isUSDAsset(asset) ? 2 : 6
           })
-        ),
+          return price
+        }),
         RD.map((label) => {
           // store price label
           prevRunePriceLabel.current = label
@@ -55,7 +58,6 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
     [runePriceRD]
   )
   const prevVolume24PriceLabel = useRef<string>(loadingString)
-
   const volume24PriceLabel = useMemo(
     () =>
       FP.pipe(
@@ -94,10 +96,14 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
     }
   }, [reloadRunePrice, runePriceRD])
 
+  const label = useMemo(() => {
+    return dex === 'THOR' ? 'rune' : 'maya'
+  }, [dex])
+
   return (
     <Styled.Wrapper>
       <Styled.Container onClick={reloadRunePriceHandler} clickable={!RD.isPending(runePriceRD)}>
-        <Styled.Title>{intl.formatMessage({ id: 'common.price.rune' })}</Styled.Title>
+        <Styled.Title>{intl.formatMessage({ id: `common.price.${label}` })}</Styled.Title>
         <Styled.Label loading={RD.isPending(runePriceRD) ? 'true' : 'false'}>{runePriceLabel}</Styled.Label>
       </Styled.Container>
       {!isSmallMobileView && (

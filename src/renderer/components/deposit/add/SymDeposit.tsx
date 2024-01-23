@@ -4,8 +4,15 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon } from '@heroicons/react/20/solid'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { CryptoAmount } from '@xchainjs/xchain-thorchain-query'
-import { Address, Asset, baseAmount, BaseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import {
+  Address,
+  Asset,
+  baseAmount,
+  BaseAmount,
+  baseToAsset,
+  CryptoAmount,
+  formatAssetAmountCurrency
+} from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'

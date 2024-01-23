@@ -4,13 +4,13 @@ import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
-import { isRuneNativeAsset } from '../../../helpers/assetHelper'
+import { isCacaoAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { liveData } from '../../../helpers/rx/liveData'
 import * as BNB from '../../binance'
 import * as BTC from '../../bitcoin'
@@ -36,6 +36,11 @@ export const poolOutboundFee$ = (asset: Asset): PoolFeeLD => {
     return FP.pipe(
       THOR.fees$(),
       liveData.map((fees) => ({ amount: fees.fast.times(3), asset: AssetRuneNative }))
+    )
+  } else if (isCacaoAsset(asset) || asset.synth) {
+    return FP.pipe(
+      MAYA.fees$(),
+      liveData.map((fees) => ({ amount: fees.fast.times(3), asset: AssetCacao }))
     )
   } else {
     const { chain } = asset

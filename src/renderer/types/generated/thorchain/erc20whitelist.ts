@@ -639,6 +639,17 @@ export const ERC20_WHITELIST: { asset: Asset; iconUrl: O.Option<string> }[] = [
   {
     asset: {
       chain: ETHChain,
+      symbol: "LINK-0x514910771AF9Ca656af840dff83E8264EcF986CA",
+      ticker: "LINK",
+      synth: true,
+    },
+    iconUrl: O.some(
+      "https://tokens.1inch.io/0x514910771af9ca656af840dff83e8264ecf986ca.png"
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
       symbol: "GEN-0x543Ff227F64Aa17eA132Bf9886cAb5DB55DCAddf",
       ticker: "GEN",
       synth: false,

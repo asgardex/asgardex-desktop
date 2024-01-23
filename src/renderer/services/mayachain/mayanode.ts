@@ -1,18 +1,16 @@
 import * as RD from '@devexperts/remote-data-ts'
 import {
   Configuration,
-  LiquidityProvidersApi,
   MimirApi,
   NetworkApi,
   Node,
   NodesApi,
   NodesResponse,
-  LiquidityProviderResponse,
   LastBlockResponse,
   ConstantsResponse,
   InboundAddressesResponse
 } from '@xchainjs/xchain-mayanode'
-import { Asset, assetFromString, assetToString, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
+import { baseAmount } from '@xchainjs/xchain-util'
 import { AxiosResponse } from 'axios'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
@@ -21,20 +19,15 @@ import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { AssetCacao } from '../../../shared/utils/asset'
 import { isEnabledChain } from '../../../shared/utils/chain'
-import { ZERO_BASE_AMOUNT } from '../../const'
 import { CACAO_DECIMAL } from '../../helpers/assetHelper'
-import { sequenceTOption } from '../../helpers/fpHelpers'
-import { LiveData, liveData } from '../../helpers/rx/liveData'
+import { liveData } from '../../helpers/rx/liveData'
 import { triggerStream } from '../../helpers/stateHelper'
 import { Network$ } from '../app/types'
 import {
   Mimir,
   MimirLD,
   MayanodeApiUrlLD,
-  LiquidityProvidersLD,
-  LiquidityProvider,
   NodeInfosLD,
   NodeInfos,
   ClientUrl$,
@@ -221,61 +214,61 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     RxOp.shareReplay(1)
   )
 
-  const apiGetLiquidityProviders$ = (asset: Asset): LiveData<Error, LiquidityProviderResponse> =>
-    FP.pipe(
-      mayanodeUrl$,
-      liveData.chain((basePath) =>
-        FP.pipe(
-          Rx.from(
-            new LiquidityProvidersApi(getMayanodeAPIConfiguration(basePath)).liquidityProviders(assetToString(asset))
-          ),
-          RxOp.map((response: AxiosResponse<LiquidityProviderResponse>) => RD.success(response.data)), // Extract data from AxiosResponse
-          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
-        )
-      )
-    )
-  const { stream$: reloadLiquidityProviders$, trigger: reloadLiquidityProviders } = triggerStream()
+  // const apiGetLiquidityProviders$ = (asset: Asset): LiveData<Error, LiquidityProviderResponse> =>
+  //   FP.pipe(
+  //     mayanodeUrl$,
+  //     liveData.chain((basePath) =>
+  //       FP.pipe(
+  //         Rx.from(
+  //           new LiquidityProvidersApi(getMayanodeAPIConfiguration(basePath)).liquidityProviders(assetToString(asset))
+  //         ),
+  //         RxOp.map((response: AxiosResponse<LiquidityProviderResponse>) => RD.success(response.data)), // Extract data from AxiosResponse
+  //         RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+  //       )
+  //     )
+  //   )
+  // const { stream$: reloadLiquidityProviders$, trigger: reloadLiquidityProviders } = triggerStream()
 
-  const getLiquidityProviders = (asset: Asset): LiquidityProvidersLD =>
-    FP.pipe(
-      reloadLiquidityProviders$,
-      RxOp.debounceTime(300),
-      RxOp.switchMap((_) => apiGetLiquidityProviders$(asset)),
-      liveData.map(
-        A.map((provider): LiquidityProvider => {
-          const oAsset = O.fromNullable(assetFromString(provider.asset))
-          const pendingCacao = FP.pipe(
-            /* 1e8 decimal by default at MAYAChain */
-            baseAmount(bnOrZero(provider.pending_cacao), CACAO_DECIMAL),
-            O.fromPredicate((v) => v.gt(ZERO_BASE_AMOUNT)),
-            O.map((amount1e8) => ({
-              asset: AssetCacao,
-              amount1e8
-            }))
-          )
-          const oPendingAssetAmount = FP.pipe(
-            /* 1e8 decimal by default at MAYAChain */
-            baseAmount(bnOrZero(provider.pending_asset), CACAO_DECIMAL),
-            O.fromPredicate((v) => v.gt(ZERO_BASE_AMOUNT))
-          )
-          const pendingAsset = FP.pipe(
-            sequenceTOption(oAsset, oPendingAssetAmount),
-            O.map(([asset, amount1e8]) => ({ asset, amount1e8 }))
-          )
+  // const getLiquidityProviders = (asset: Asset): LiquidityProvidersLD =>
+  //   FP.pipe(
+  //     reloadLiquidityProviders$,
+  //     RxOp.debounceTime(300),
+  //     RxOp.switchMap((_) => apiGetLiquidityProviders$(asset)),
+  //     liveData.map(
+  //       A.map((provider): LiquidityProvider => {
+  //         const oAsset = O.fromNullable(assetFromString(provider.asset))
+  //         const pendingCacao = FP.pipe(
+  //           /* 1e8 decimal by default at MAYAChain */
+  //           baseAmount(bnOrZero(provider.pending_cacao), CACAO_DECIMAL),
+  //           O.fromPredicate((v) => v.gt(ZERO_BASE_AMOUNT)),
+  //           O.map((amount1e8) => ({
+  //             asset: AssetCacao,
+  //             amount1e8
+  //           }))
+  //         )
+  //         const oPendingAssetAmount = FP.pipe(
+  //           /* 1e8 decimal by default at MAYAChain */
+  //           baseAmount(bnOrZero(provider.pending_asset), CACAO_DECIMAL),
+  //           O.fromPredicate((v) => v.gt(ZERO_BASE_AMOUNT))
+  //         )
+  //         const pendingAsset = FP.pipe(
+  //           sequenceTOption(oAsset, oPendingAssetAmount),
+  //           O.map(([asset, amount1e8]) => ({ asset, amount1e8 }))
+  //         )
 
-          return {
-            cacaoAddress: O.fromNullable(provider.cacao_address),
-            assetAddress: O.fromNullable(provider.asset_address),
-            pendingCacao,
-            pendingAsset
-          }
-        })
-      ),
-      RxOp.catchError(
-        (): LiquidityProvidersLD => Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} pool`)))
-      ),
-      RxOp.startWith(RD.pending)
-    )
+  //         return {
+  //           cacaoAddress: O.fromNullable(provider.cacao_address),
+  //           assetAddress: O.fromNullable(provider.asset_address),
+  //           pendingCacao,
+  //           pendingAsset
+  //         }
+  //       })
+  //     ),
+  //     RxOp.catchError(
+  //       (): LiquidityProvidersLD => Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} pool`)))
+  //     ),
+  //     RxOp.startWith(RD.pending)
+  //   )
 
   const apiGetMimir$: MimirLD = FP.pipe(
     mayanodeUrl$,
@@ -375,9 +368,9 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     reloadInboundAddresses,
     loadInboundAddresses$,
     mimir$,
-    reloadMimir,
-    getLiquidityProviders,
-    reloadLiquidityProviders
+    reloadMimir
+    // getLiquidityProviders,
+    // reloadLiquidityProviders
     // getSaverProvider$,
     // reloadSaverProvider
   }

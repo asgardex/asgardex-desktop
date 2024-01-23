@@ -1,7 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { AVAX_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-avax'
-import { Fees, FeeType, TxParams } from '@xchainjs/xchain-client'
-import { getFee, GasPrices } from '@xchainjs/xchain-evm'
+import { Fees, FeeType } from '@xchainjs/xchain-client'
+import { getFee, GasPrices, Client } from '@xchainjs/xchain-evm'
 import { Asset, baseAmount } from '@xchainjs/xchain-util'
 import { ethers } from 'ethers'
 import * as FP from 'fp-ts/lib/function'
@@ -15,7 +15,7 @@ import { observableState } from '../../helpers/stateHelper'
 import { FeeLD } from '../chain/types'
 import * as C from '../clients'
 import { FeesLD } from '../clients'
-import { FeesService, PollInTxFeeParams, ApproveFeeHandler, ApproveParams } from '../evm/types'
+import { FeesService, PollInTxFeeParams, ApproveFeeHandler, ApproveParams, TxParams } from '../evm/types'
 import { Client$ } from './types'
 
 export const ETH_OUT_TX_GAS_LIMIT = ethers.BigNumber.from('35609')
@@ -34,7 +34,7 @@ export const createFeesService = (client$: Client$): FeesService => {
           oClient,
           O.fold(
             () => Rx.EMPTY,
-            (client) => Rx.from(client.getFees(reloadFeesParams || params))
+            (client) => Rx.from(estimateAndCalculateFees(client, reloadFeesParams || params))
           )
         )
       ),
@@ -42,6 +42,29 @@ export const createFeesService = (client$: Client$): FeesService => {
       RxOp.catchError((error) => Rx.of(RD.failure(error))),
       RxOp.startWith(RD.pending)
     )
+
+  async function estimateAndCalculateFees(client: Client, params: TxParams) {
+    // Estimate gas prices
+    const gasPrices = await client.estimateGasPrices()
+    const { fast: fastGP, fastest: fastestGP, average: averageGP } = gasPrices
+
+    // Estimate gas limit
+    const gasLimit = await client.estimateGasLimit({
+      from: params.from,
+      asset: params.asset,
+      amount: params.amount,
+      recipient: params.recipient,
+      memo: params.memo
+    })
+    const fees: Fees = {
+      type: FeeType.PerByte,
+      average: getFee({ gasPrice: averageGP, gasLimit, decimals: AVAX_GAS_ASSET_DECIMAL }),
+      fast: getFee({ gasPrice: fastGP, gasLimit, decimals: AVAX_GAS_ASSET_DECIMAL }),
+      fastest: getFee({ gasPrice: fastestGP, gasLimit, decimals: AVAX_GAS_ASSET_DECIMAL })
+    }
+    // Calculate fees
+    return fees
+  }
 
   /**
    * Fees for sending txs into pool on Avax

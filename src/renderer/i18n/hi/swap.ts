@@ -12,6 +12,7 @@ const swap: SwapMessages = {
   'swap.slip.tolerance': 'स्लिपेज सहिष्णुता',
   'swap.slip.tolerance.info':
     'प्रतिशत जितना अधिक होगा, उतनी अधिक स्लिपेज स्वीकार करेंगे। अधिक स्लिपेज में रद्द स्वैप्स से बचने के लिए अनुमानित शुल्कों को कवर करने के लिए भी व्यापक रेंज शामिल है।',
+  'swap.streaming.title': 'स्ट्रीमिंग स्थिति',
   'swap.slip.tolerance.ledger-disabled.info': 'तकनीकी समस्याओं के कारण Ledger के साथ स्लिपेज सहिष्णुता अक्षम की गई है।',
   'swap.streaming.interval': 'अंतराल',
   'swap.streaming.interval.info': 'स्वैप्स के बीच का अंतराल, 10 ब्लॉक 1 मिनट का अंतराल है',

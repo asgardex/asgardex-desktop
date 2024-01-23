@@ -1,12 +1,13 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { AssetBTC, BTCChain, Client as BitcoinClient, defaultBTCParams } from '@xchainjs/xchain-bitcoin'
-import { Network, UtxoOnlineDataProviders } from '@xchainjs/xchain-client'
+import { Network } from '@xchainjs/xchain-client'
 import {
   BitgoProvider,
   BlockcypherNetwork,
   BlockcypherProvider,
   HaskoinNetwork,
-  HaskoinProvider
+  HaskoinProvider,
+  UtxoOnlineDataProviders
 } from '@xchainjs/xchain-utxo-providers'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'

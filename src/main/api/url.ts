@@ -42,7 +42,8 @@ const EXTERNALS_WHITELIST = [
   'bscscan.com',
   'track.ninerealms.com',
   'mayascan.org',
-  'explorer.mayachain.info'
+  'explorer.mayachain.info',
+  'insight.dash.org'
 ]
 
 export const openExternal = (target: string) => {

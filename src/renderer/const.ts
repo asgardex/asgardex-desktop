@@ -4,10 +4,11 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC, BSCChain } from '@xchainjs/xchain-bsc'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
+import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, bn, Asset, assetToString, baseAmount, Chain } from '@xchainjs/xchain-util'
 
@@ -15,6 +16,7 @@ import { Network } from '../shared/api/types'
 import { AssetBTC, AssetETH, AssetRune67C, AssetRuneERC20Testnet, AssetRuneNative } from '../shared/utils/asset'
 import { EnabledChain } from '../shared/utils/chain'
 import { WalletType } from '../shared/wallet/types'
+import { GetPoolsPeriodEnum as GetPoolsPeriodEnumMaya } from './services/mayaMigard/types'
 import { GetPoolsPeriodEnum } from './services/midgard/types'
 import { PricePoolCurrencyWeights, PricePoolAssets, PoolData } from './views/pools/Pools.types'
 
@@ -127,7 +129,7 @@ export const AssetUSDCAVAX: Asset = {
   synth: false
 }
 
-export const DEFAULT_PRICE_ASSETS: PricePoolAssets = [AssetRuneNative, AssetETH, AssetBTC]
+export const DEFAULT_PRICE_ASSETS: PricePoolAssets = [AssetRuneNative, AssetETH, AssetBTC, AssetCacao]
 
 export const USD_PRICE_ASSETS: PricePoolAssets = [
   AssetBUSDBAF,
@@ -154,7 +156,8 @@ export const CHAIN_WEIGHTS: Record<EnabledChain, number> = {
   [AVAXChain]: 7,
   [BSCChain]: 8,
   [DOGEChain]: 9,
-  [MAYAChain]: 10
+  [MAYAChain]: 10,
+  [DASHChain]: 11
 }
 
 // Weight of currencies needed for pricing
@@ -211,5 +214,6 @@ export const SUPPORTED_LEDGER_APPS: Chain[] = [
 ]
 
 export const DEFAULT_GET_POOLS_PERIOD = GetPoolsPeriodEnum._30d
+export const DEFAULT_GET_POOLS_PERIOD_MAYA = GetPoolsPeriodEnumMaya._30d
 
 export const DEFAULT_WALLET_TYPE: WalletType = 'keystore'

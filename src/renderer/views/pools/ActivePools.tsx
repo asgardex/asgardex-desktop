@@ -20,17 +20,20 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { Network } from '../../../shared/api/types'
-import { AssetRuneNative } from '../../../shared/utils/asset'
+import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
 import { ProtocolLimit, IncentivePendulum } from '../../components/pool'
 import { Action as ActionButtonAction, ActionButton } from '../../components/uielements/button/ActionButton'
 import { PoolsPeriodSelector } from '../../components/uielements/pools/PoolsPeriodSelector'
 import { Table } from '../../components/uielements/table'
-// import { DEFAULT_WALLET_TYPE } from '../../const'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useAppContext } from '../../contexts/AppContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
+import { useWalletContext } from '../../contexts/WalletContext'
 import { ordBaseAmount, ordNumber } from '../../helpers/fp/ord'
 import * as PoolHelpers from '../../helpers/poolHelper'
+import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
+import { useDex } from '../../hooks/useDex'
 import { useIncentivePendulum } from '../../hooks/useIncentivePendulum'
 import { usePoolFilter } from '../../hooks/usePoolFilter'
 import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
@@ -39,6 +42,8 @@ import * as poolsRoutes from '../../routes/pools'
 import * as saversRoutes from '../../routes/pools/savers'
 import { DEFAULT_NETWORK } from '../../services/const'
 import { PoolsState, DEFAULT_POOL_FILTERS, GetPoolsPeriodEnum } from '../../services/midgard/types'
+import { PoolsState as MayaPoolState, GetPoolsPeriodEnum as GetPoolsPeriodEnumMaya } from '../../services/midgard/types'
+import { hasImportedKeystore } from '../../services/wallet/util'
 import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
 import { filterTableData } from './Pools.utils'
 import * as Shared from './PoolsOverview.shared'
@@ -47,24 +52,40 @@ import * as Styled from './PoolsOverview.styles'
 export const ActivePools: React.FC = (): JSX.Element => {
   const navigate = useNavigate()
   const intl = useIntl()
-
+  const { dex } = useDex()
   const { network$ } = useAppContext()
   const network = useObservableState<Network>(network$, DEFAULT_NETWORK)
-
+  const {
+    keystoreService: { keystoreState$ }
+  } = useWalletContext()
   const {
     service: {
       pools: { poolsState$, reloadPools, selectedPricePool$, poolsPeriod$, setPoolsPeriod }
     }
   } = useMidgardContext()
+  const {
+    service: {
+      pools: {
+        poolsState$: mayaPoolsState$,
+        reloadPools: reloadMayaPools,
+        selectedPricePool$: selectedPricePoolMaya$,
+        poolsPeriod$: poolsPeriodMaya$,
+        setPoolsPeriod: setPoolsPeriodMaya
+      }
+    }
+  } = useMidgardMayaContext()
   const { reload: reloadLimit, data: limitRD } = useProtocolLimit()
   const { data: incentivePendulumRD } = useIncentivePendulum()
 
-  const poolsPeriod = useObservableState(poolsPeriod$, GetPoolsPeriodEnum._30d)
+  const poolsPeriod = useObservableState(dex === 'THOR' ? poolsPeriod$ : poolsPeriodMaya$, GetPoolsPeriodEnum._30d)
+
+  const keystore = useObservableState(keystoreState$, O.none)
+  const hasKeystore = !hasImportedKeystore(keystore)
 
   const { setFilter: setPoolFilter, filter: poolFilter } = usePoolFilter('active')
   const { add: addPoolToWatchlist, remove: removePoolFromWatchlist, list: poolWatchList } = usePoolWatchlist()
 
-  const poolsRD = useObservableState(poolsState$, RD.pending)
+  const poolsRD = useObservableState(dex === 'THOR' ? poolsState$ : mayaPoolsState$, RD.pending)
 
   const isDesktopView = Grid.useBreakpoint()?.lg ?? false
   const isLargeScreen = Grid.useBreakpoint()?.xl ?? false
@@ -73,48 +94,90 @@ export const ActivePools: React.FC = (): JSX.Element => {
   const previousPools = useRef<O.Option<PoolTableRowsData>>(O.none)
 
   const refreshHandler = useCallback(() => {
-    reloadPools()
-    reloadLimit()
-  }, [reloadPools, reloadLimit])
+    if (dex === 'THOR') {
+      reloadPools()
+    } else {
+      reloadMayaPools()
+    }
 
-  const selectedPricePool = useObservableState(selectedPricePool$, PoolHelpers.RUNE_PRICE_POOL)
+    reloadLimit()
+  }, [dex, reloadLimit, reloadPools, reloadMayaPools])
+
+  const selectedPricePool = useObservableState(
+    dex === 'THOR' ? selectedPricePool$ : selectedPricePoolMaya$,
+    dex === 'THOR' ? PoolHelpers.RUNE_PRICE_POOL : MAYA_PRICE_POOL
+  )
 
   const renderBtnPoolsColumn = useCallback(
     (_: string, { asset }: { asset: Asset }) => {
-      const actions: ActionButtonAction[] = [
-        {
-          label: intl.formatMessage({ id: 'common.swap' }),
-          callback: () => {
-            navigate(
-              poolsRoutes.swap.path({
-                source: assetToString(AssetRuneNative),
-                target: assetToString(asset),
-                sourceWalletType: DEFAULT_WALLET_TYPE,
-                targetWalletType: DEFAULT_WALLET_TYPE
-              })
-            )
-          }
-        },
-        {
-          label: intl.formatMessage({ id: 'common.manage' }),
-          callback: () => {
-            navigate(
-              poolsRoutes.deposit.path({
-                asset: assetToString(asset),
-                assetWalletType: DEFAULT_WALLET_TYPE,
-                runeWalletType: DEFAULT_WALLET_TYPE
-              })
-            )
-          }
-        },
-        // TODO(@veado) Enable savers
-        {
-          label: intl.formatMessage({ id: 'common.earn' }),
-          callback: () => {
-            navigate(saversRoutes.earn.path({ asset: assetToString(asset), walletType: DEFAULT_WALLET_TYPE }))
-          }
-        }
-      ]
+      const actions: ActionButtonAction[] =
+        dex === 'THOR'
+          ? [
+              {
+                label: intl.formatMessage({ id: 'common.swap' }),
+                callback: () => {
+                  navigate(
+                    poolsRoutes.swap.path({
+                      source: assetToString(asset),
+                      target: assetToString(AssetRuneNative),
+                      sourceWalletType: hasKeystore ? DEFAULT_WALLET_TYPE : 'ledger',
+                      targetWalletType: DEFAULT_WALLET_TYPE
+                    })
+                  )
+                }
+              },
+              {
+                label: intl.formatMessage({ id: 'common.manage' }),
+                callback: () => {
+                  navigate(
+                    poolsRoutes.deposit.path({
+                      asset: assetToString(asset),
+                      assetWalletType: DEFAULT_WALLET_TYPE,
+                      runeWalletType: DEFAULT_WALLET_TYPE
+                    })
+                  )
+                }
+              },
+              {
+                label: intl.formatMessage({ id: 'common.earn' }),
+                callback: () => {
+                  navigate(saversRoutes.earn.path({ asset: assetToString(asset), walletType: DEFAULT_WALLET_TYPE }))
+                }
+              }
+            ]
+          : [
+              {
+                label: intl.formatMessage({ id: 'common.swap' }),
+                callback: () => {
+                  navigate(
+                    poolsRoutes.swap.path({
+                      source: assetToString(asset),
+                      target: assetToString(AssetCacao),
+                      sourceWalletType: DEFAULT_WALLET_TYPE,
+                      targetWalletType: DEFAULT_WALLET_TYPE
+                    })
+                  )
+                }
+              }
+              // {
+              //   label: intl.formatMessage({ id: 'common.manage' }),
+              //   callback: () => {
+              //     navigate(
+              //       poolsRoutes.deposit.path({
+              //         asset: assetToString(asset),
+              //         assetWalletType: DEFAULT_WALLET_TYPE,
+              //         runeWalletType: DEFAULT_WALLET_TYPE
+              //       })
+              //     )
+              //   }
+              // },
+              // {
+              //   label: intl.formatMessage({ id: 'common.earn' }),
+              //   callback: () => {
+              //     navigate(saversRoutes.earn.path({ asset: assetToString(asset), walletType: DEFAULT_WALLET_TYPE }))
+              //   }
+              // }
+            ]
 
       return (
         <Styled.TableAction>
@@ -123,7 +186,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
       )
     },
 
-    [intl, navigate]
+    [dex, hasKeystore, intl, navigate]
   )
 
   const btnPoolsColumn = useCallback(
@@ -193,23 +256,27 @@ export const ActivePools: React.FC = (): JSX.Element => {
   const sortAPYColumn = useCallback((a: { apy: number }, b: { apy: number }) => ordNumber.compare(a.apy, b.apy), [])
   const apyColumn = useCallback(
     <T extends { apy: number }>(
-      poolsPeriod: GetPoolsPeriodEnum,
-      setPoolsPeriod: (v: GetPoolsPeriodEnum) => void
-    ): ColumnType<T> => ({
-      key: 'apy',
-      align: 'center',
-      title: (
-        <div className="flex flex-col items-center">
-          <div className="font-main text-[12px]">{intl.formatMessage({ id: 'pools.apy' })}</div>
-          <PoolsPeriodSelector selectedValue={poolsPeriod} onChange={setPoolsPeriod} />
-        </div>
-      ),
+      poolsPeriod: GetPoolsPeriodEnum | GetPoolsPeriodEnumMaya,
+      dex: string // Add a parameter to accept the 'dex' value
+    ): ColumnType<T> => {
+      // Determine which setPoolsPeriod function to use based on the 'dex' value
+      const currentSetPoolsPeriod = dex === 'THOR' ? setPoolsPeriod : setPoolsPeriodMaya
 
-      render: renderAPYColumn,
-      sorter: sortAPYColumn,
-      sortDirections: ['descend', 'ascend']
-    }),
-    [intl, renderAPYColumn, sortAPYColumn]
+      return {
+        key: 'apy',
+        align: 'center',
+        title: (
+          <div className="flex flex-col items-center">
+            <div className="font-main text-[12px]">{intl.formatMessage({ id: 'pools.apy' })}</div>
+            <PoolsPeriodSelector selectedValue={poolsPeriod} onChange={currentSetPoolsPeriod} />
+          </div>
+        ),
+        render: renderAPYColumn,
+        sorter: sortAPYColumn,
+        sortDirections: ['descend', 'ascend']
+      }
+    },
+    [intl, renderAPYColumn, sortAPYColumn, setPoolsPeriod, setPoolsPeriodMaya] // Include both setPoolsPeriod functions in the dependency array
   )
 
   const desktopPoolsColumns: ColumnsType<PoolTableRowData> = useMemo(
@@ -229,7 +296,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
             )
           ),
           O.some(volumeColumn<PoolTableRowData>()),
-          isLargeScreen ? O.some(apyColumn<PoolTableRowData>(poolsPeriod, setPoolsPeriod)) : O.none,
+          isLargeScreen ? O.some(apyColumn<PoolTableRowData>(poolsPeriod, dex)) : O.none,
           O.some(btnPoolsColumn<PoolTableRowData>())
         ],
         A.filterMap(FP.identity)
@@ -243,7 +310,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
       isLargeScreen,
       apyColumn,
       poolsPeriod,
-      setPoolsPeriod,
+      dex,
       btnPoolsColumn
     ]
   )
@@ -308,15 +375,28 @@ export const ActivePools: React.FC = (): JSX.Element => {
         // render error state
         Shared.renderTableError(intl.formatMessage({ id: 'common.refresh' }), refreshHandler),
         // success state
-        ({ poolDetails }: PoolsState): JSX.Element => {
-          const poolViewData = PoolHelpers.getPoolTableRowsData({
-            poolDetails,
-            pricePoolData: selectedPricePool.poolData,
-            watchlist: poolWatchList,
-            network
-          })
-          previousPools.current = O.some(poolViewData)
-          return renderPoolsTable(poolViewData)
+        (poolsState) => {
+          if (dex === 'THOR') {
+            const { poolDetails } = poolsState as PoolsState // Cast to the correct type
+            const poolViewData = PoolHelpers.getPoolTableRowsData({
+              poolDetails,
+              pricePoolData: selectedPricePool.poolData,
+              watchlist: poolWatchList,
+              network
+            })
+            previousPools.current = O.some(poolViewData)
+            return renderPoolsTable(poolViewData)
+          } else {
+            const { poolDetails } = poolsState as MayaPoolState // Cast to the correct type
+            const poolViewData = PoolHelpers.getPoolTableRowsData({
+              poolDetails,
+              pricePoolData: selectedPricePool.poolData,
+              watchlist: poolWatchList,
+              network
+            })
+            previousPools.current = O.some(poolViewData)
+            return renderPoolsTable(poolViewData)
+          }
         }
       )(poolsRD)}
     </>

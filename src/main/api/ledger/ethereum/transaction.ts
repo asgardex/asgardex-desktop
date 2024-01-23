@@ -1,6 +1,6 @@
 import EthApp from '@ledgerhq/hw-app-eth'
 import type Transport from '@ledgerhq/hw-transport'
-import { FeeOption, TxHash } from '@xchainjs/xchain-client'
+import { FeeOption, Protocol, TxHash } from '@xchainjs/xchain-client'
 import * as ETH from '@xchainjs/xchain-evm'
 import { Address, Asset, assetToString, BaseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -122,7 +122,7 @@ export const deposit = async ({
     const provider = client.getProvider()
     const signer = new LedgerSigner({ provider, path, app })
 
-    const gasPrices = await client.estimateGasPrices()
+    const gasPrices = await client.estimateGasPrices(Protocol.THORCHAIN) // fetch gas prices from thorchain
     const gasPrice = gasPrices[feeOption].amount().toFixed(0) // no round down needed
     const blockTime = await getBlocktime(provider)
     const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET

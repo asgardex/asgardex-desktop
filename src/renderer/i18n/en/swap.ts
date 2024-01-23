@@ -14,6 +14,7 @@ const swap: SwapMessages = {
     'The higher the percentage, the more slippage you will accept. More slippage includes also a wider range for covering estimated fees to avoid aborted swaps.',
   'swap.slip.tolerance.ledger-disabled.info': 'Slippage tolerance has been disabled due technical issues with Ledger.',
   'swap.streaming.interval': 'Interval',
+  'swap.streaming.title': 'Streaming Status',
   'swap.streaming.interval.info': 'Interval between swaps, 10 blocks is 1 minute interval',
   'swap.streaming.quantity': 'Quanity',
   'swap.streaming.quantity.info': 'The quantity of mini swaps overall done per interval',

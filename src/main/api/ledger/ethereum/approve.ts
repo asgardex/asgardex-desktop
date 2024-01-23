@@ -20,7 +20,7 @@ export const approveLedgerERC20Token = async ({
 
   const client = new ETH.Client({ ...defaultEthParams, network: clientNetwork, feeBounds: FEE_BOUNDS[clientNetwork] })
 
-  const transport = await TransportNodeHidSingleton.open()
+  const transport = await TransportNodeHidSingleton.create()
   const app = new EthApp(transport)
   const path = getDerivationPath(walletIndex, evmHdMode)
   const provider = client.getProvider()

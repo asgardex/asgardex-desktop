@@ -69,6 +69,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
       }}
       thorchainQuery={thorchainQuery}
       getExplorerTxUrl={(txHash: TxHash) => O.some(`url/asset-${txHash}`)}
+      poolDetails={[]}
     />
   )
 }

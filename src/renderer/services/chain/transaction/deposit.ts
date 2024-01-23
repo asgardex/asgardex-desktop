@@ -271,7 +271,7 @@ export const symDeposit$ = ({
         walletIndex: runeWalletIndex,
         hdMode: runeHDMode,
         router: O.none, // no router for RUNE
-        asset: AssetRuneNative,
+        asset: AssetRuneNative, // update this to suit MayaChainSwap
         recipient: '', // no recipient for RUNE needed
         amount: amounts.rune,
         memo: memos.rune,

@@ -1,7 +1,12 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Network, UtxoOnlineDataProviders } from '@xchainjs/xchain-client'
+import { Network } from '@xchainjs/xchain-client'
 import { Client as DogeClient, defaultDogeParams, DOGEChain, AssetDOGE } from '@xchainjs/xchain-doge'
-import { BitgoProvider, BlockcypherNetwork, BlockcypherProvider } from '@xchainjs/xchain-utxo-providers'
+import {
+  BitgoProvider,
+  BlockcypherNetwork,
+  BlockcypherProvider,
+  UtxoOnlineDataProviders
+} from '@xchainjs/xchain-utxo-providers'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'

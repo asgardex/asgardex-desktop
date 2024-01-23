@@ -2,9 +2,10 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
-import { FeeOption, Fees, TxParams } from '@xchainjs/xchain-client'
+import { FeeOption, Fees } from '@xchainjs/xchain-client'
 import { validateAddress } from '@xchainjs/xchain-evm'
-import { CryptoAmount, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
+import { PoolDetails } from '@xchainjs/xchain-midgard'
+import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   bn,
   baseToAsset,
@@ -14,7 +15,8 @@ import {
   Address,
   formatAssetAmountCurrency,
   baseAmount,
-  eqAsset
+  eqAsset,
+  CryptoAmount
 } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
 import { RadioChangeEvent } from 'antd/lib/radio'
@@ -31,6 +33,7 @@ import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../../const'
 import { isAvaxAsset, isBscAsset, isEthAsset, isUSDAsset } from '../../../../helpers/assetHelper'
 import { getChainAsset } from '../../../../helpers/chainHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
+import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { loadingString } from '../../../../helpers/stringHelper'
 import { getEVMAmountFromBalances } from '../../../../helpers/walletHelper'
 import { usePricePool } from '../../../../hooks/usePricePool'
@@ -38,6 +41,7 @@ import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import { SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
 import { FeesRD, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../../../services/clients'
+import { TxParams } from '../../../../services/evm/types'
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
@@ -74,11 +78,13 @@ export type Props = {
   validatePassword$: ValidatePasswordHandler
   thorchainQuery: ThorchainQuery
   network: Network
+  poolDetails: PoolDetails
 }
 
 export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   const {
     asset: { walletType, walletIndex, hdMode, walletAddress },
+    poolDetails,
     balances,
     balance,
     transfer$,
@@ -94,6 +100,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   const intl = useIntl()
 
   const { asset } = balance
+  const sourceChainAsset = getChainAsset(asset.chain)
   const pricePool = usePricePool()
 
   const [selectedFeeOption, setSelectedFeeOption] = useState<FeeOption>(DEFAULT_FEE_OPTION)
@@ -143,14 +150,12 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         memoValue = memoValue.replace(/:dx:\d*$/, '')
 
         // Append ':dx:0'
-        memoValue += ':dx:0'
+        memoValue += ':dx:5'
       }
 
       setSwapMemoDetected(true)
       setAffiliateTracking(
-        memoValue.endsWith(':dx:10')
-          ? `Swap memo detected`
-          : `Swap memo detected affiliate tracking applied (:dx:0) or donate (:dx:1-9)`
+        memoValue.endsWith(':dx:10') ? `Swap memo detected` : `Swap memo detected 5bps affiliate fee applied`
       )
     } else {
       setSwapMemoDetected(false)
@@ -290,16 +295,37 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   // useEffect to fetch data from query
   useEffect(() => {
     const amountValue = O.getOrElse(() => ZERO_BASE_AMOUNT)(amountToSend)
-    const maxCryptoAmount = new CryptoAmount(maxAmount, asset)
-    const amount = new CryptoAmount(amountValue, asset)
-    const fetchData = async () => {
-      setMaxAmountPriceValue(await thorchainQuery.convert(maxCryptoAmount, pricePool.asset))
-      setFeePriceValue(await thorchainQuery.convert(assetFee, pricePool.asset))
-      setAmountPriceValue(await thorchainQuery.convert(amount, pricePool.asset))
+    const maxAmountPrice = getPoolPriceValue({
+      balance: { asset, amount: maxAmount },
+      poolDetails,
+      pricePool,
+      network
+    })
+    const amountPrice = getPoolPriceValue({
+      balance: { asset, amount: amountValue },
+      poolDetails,
+      pricePool,
+      network
+    })
+    const assetFeePrice = getPoolPriceValue({
+      balance: { asset: sourceChainAsset, amount: assetFee.baseAmount },
+      poolDetails,
+      pricePool,
+      network
+    })
+    if (O.isSome(assetFeePrice)) {
+      const maxCryptoAmount = new CryptoAmount(assetFeePrice.value, pricePool.asset)
+      setFeePriceValue(maxCryptoAmount)
     }
-
-    fetchData()
-  }, [asset, thorchainQuery, maxAmount, assetFee, amountToSend, pricePool.asset])
+    if (O.isSome(amountPrice)) {
+      const amountPriceAmount = new CryptoAmount(amountPrice.value, pricePool.asset)
+      setAmountPriceValue(amountPriceAmount)
+    }
+    if (O.isSome(maxAmountPrice)) {
+      const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
+      setMaxAmountPriceValue(maxCryptoAmount)
+    }
+  }, [asset, maxAmount, assetFee, amountToSend, pricePool.asset, pricePool, network, poolDetails, sourceChainAsset])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {
@@ -464,18 +490,17 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   )
 
   const reloadFees = useCallback(() => {
-    //const checkMemo = form.getFieldValue('memo')
     const result = FP.pipe(
       sequenceTOption(amountToSend, sendAddress),
       O.map(([amount, recipient]) => {
-        reloadFeesHandler({ amount, recipient, asset, memo: form.getFieldValue('memo') })
+        reloadFeesHandler({ amount, recipient, asset, memo: currentMemo, from: walletAddress })
         return true
       }),
       O.getOrElse(() => false)
     )
 
     return result
-  }, [amountToSend, sendAddress, reloadFeesHandler, asset, form])
+  }, [amountToSend, sendAddress, reloadFeesHandler, asset, currentMemo, walletAddress])
 
   // only render memo field for chain asset.
   const renderMemo = useMemo(() => {
@@ -653,7 +678,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   const renderFeeOptions = useMemo(() => {
     const onChangeHandler = (e: RadioChangeEvent) => {
       setSelectedFeeOption(e.target.value)
-      setAmountToSend(O.some(maxAmount))
+      setAmountToSend(amountToSend)
     }
     const disabled = !feesAvailable || isLoading
 
@@ -670,7 +695,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         </StyledR.Radio>
       </StyledR.Radio.Group>
     )
-  }, [feeOptionsLabel, feesAvailable, isLoading, maxAmount, selectedFeeOption])
+  }, [amountToSend, feeOptionsLabel, feesAvailable, isLoading, selectedFeeOption])
 
   const [recipientAddress, setRecipientAddress] = useState<Address>('')
   const handleOnKeyUp = useCallback(() => {

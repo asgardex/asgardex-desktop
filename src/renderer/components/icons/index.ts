@@ -5,10 +5,10 @@
 /* eslint-disable import/no-webpack-loader-syntax */
 import atomIcon from '!file-loader!../../assets/svg/asset-atom.svg'
 import avaxIcon from '!file-loader!../../assets/svg/asset-avax.svg'
-import bnbRuneIcon from '!file-loader!../../assets/svg/asset-bnb-rune.svg'
 import bnbIcon from '!file-loader!../../assets/svg/asset-bnb.svg'
 import bscIcon from '!file-loader!../../assets/svg/asset-bsc.svg'
 import btcIcon from '!file-loader!../../assets/svg/asset-btc.svg'
+import dashIcon from '!file-loader!../../assets/svg/asset-dash.svg'
 import ethIcon from '!file-loader!../../assets/svg/asset-eth.svg'
 import lunaIcon from '!file-loader!../../assets/svg/asset-luna.svg'
 import runeIcon from '!file-loader!../../assets/svg/asset-rune.svg'
@@ -41,7 +41,6 @@ export {
   lunaIcon,
   runeIcon,
   ustIcon,
-  bnbRuneIcon,
   xRuneIcon,
   tgtIcon,
   CurrencyIcon,
@@ -54,5 +53,6 @@ export {
   LockIcon,
   mayaIcon,
   UnlockIcon,
-  usdpIcon
+  usdpIcon,
+  dashIcon
 }

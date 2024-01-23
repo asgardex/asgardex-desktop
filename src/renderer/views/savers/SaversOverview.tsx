@@ -23,12 +23,15 @@ import { useNavigate } from 'react-router-dom'
 import { FlatButton } from '../../components/uielements/button'
 import { PoolsPeriodSelector } from '../../components/uielements/pools/PoolsPeriodSelector'
 import { Table } from '../../components/uielements/table'
-import { DEFAULT_GET_POOLS_PERIOD, DEFAULT_WALLET_TYPE } from '../../const'
+import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useMidgardContext } from '../../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { ordBigNumber } from '../../helpers/fp/ord'
 import { sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
+import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { getSaversTableRowsData, ordSaversByDepth } from '../../helpers/savers'
+import { useDex } from '../../hooks/useDex'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
 import { useSynthConstants } from '../../hooks/useSynthConstants'
@@ -50,25 +53,44 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
   const intl = useIntl()
   const navigate = useNavigate()
   const { network } = useNetwork()
+  const { dex } = useDex()
 
   const {
     service: {
       pools: { poolsState$, reloadPools, selectedPricePool$, poolsPeriod$, setPoolsPeriod }
     }
   } = useMidgardContext()
+  const {
+    service: {
+      pools: {
+        poolsState$: mayaPoolsState$,
+        reloadPools: reloadMayaPools,
+        selectedPricePool$: selectedPricePoolMaya$,
+        poolsPeriod$: poolsPeriodMaya$,
+        setPoolsPeriod: setPoolsPeriodMaya
+      }
+    }
+  } = useMidgardMayaContext()
 
-  const poolsPeriod = useObservableState(poolsPeriod$, DEFAULT_GET_POOLS_PERIOD)
+  const poolsPeriod = useObservableState(dex === 'THOR' ? poolsPeriod$ : poolsPeriodMaya$, GetPoolsPeriodEnum._30d)
 
   const { maxSynthPerPoolDepth: maxSynthPerPoolDepthRD, reloadConstants } = useSynthConstants()
 
   const refreshHandler = useCallback(() => {
-    reloadPools()
+    if (dex === 'THOR') {
+      reloadPools()
+    } else {
+      reloadMayaPools()
+    }
     reloadConstants()
-  }, [reloadConstants, reloadPools])
+  }, [dex, reloadConstants, reloadPools, reloadMayaPools])
 
-  const selectedPricePool = useObservableState(selectedPricePool$, PoolHelpers.RUNE_PRICE_POOL)
+  const selectedPricePool = useObservableState(
+    dex === 'THOR' ? selectedPricePool$ : selectedPricePoolMaya$,
+    dex === 'THOR' ? PoolHelpers.RUNE_PRICE_POOL : MAYA_PRICE_POOL
+  )
 
-  const poolsRD = useObservableState(poolsState$, RD.pending)
+  const poolsRD = useObservableState(dex === 'THOR' ? poolsState$ : mayaPoolsState$, RD.pending)
 
   // store previous data of pools to render these while reloading
   const previousSavers = useRef<O.Option<SaversTableRowsData>>(O.none)
@@ -110,22 +132,27 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
 
   const aprColumn = useCallback(
     <T extends { apr: BigNumber }>(
-      poolsPeriod: GetPoolsPeriodEnum,
-      setPoolsPeriod: (v: GetPoolsPeriodEnum) => void
-    ): ColumnType<T> => ({
-      key: 'apr',
-      align: 'center',
-      title: (
-        <div className="flex flex-col items-center">
-          <div className="font-main text-[12px]">{intl.formatMessage({ id: 'pools.apr' })}</div>
-          <PoolsPeriodSelector selectedValue={poolsPeriod} onChange={setPoolsPeriod} />
-        </div>
-      ),
-      render: ({ apr }: { apr: BigNumber }) => <div className="font-main text-16">{formatBN(apr, 2)}%</div>,
-      sorter: (a: { apr: BigNumber }, b: { apr: BigNumber }) => ordBigNumber.compare(a.apr, b.apr),
-      sortDirections: ['descend', 'ascend']
-    }),
-    [intl]
+      poolsPeriod: GetPoolsPeriodEnum | GetPoolsPeriodEnum,
+      dex: string // Add a parameter to accept the 'dex' value
+    ): ColumnType<T> => {
+      // Determine which setPoolsPeriod function to use based on the 'dex' value
+      const currentSetPoolsPeriod = dex === 'THOR' ? setPoolsPeriod : setPoolsPeriodMaya
+
+      return {
+        key: 'apr',
+        align: 'center',
+        title: (
+          <div className="flex flex-col items-center">
+            <div className="font-main text-[12px]">{intl.formatMessage({ id: 'pools.apr' })}</div>
+            <PoolsPeriodSelector selectedValue={poolsPeriod} onChange={currentSetPoolsPeriod} />
+          </div>
+        ),
+        render: ({ apr }: { apr: BigNumber }) => <div className="font-main text-16">{formatBN(apr, 2)}%</div>,
+        sorter: (a: { apr: BigNumber }, b: { apr: BigNumber }) => ordBigNumber.compare(a.apr, b.apr),
+        sortDirections: ['descend', 'ascend']
+      }
+    },
+    [intl, setPoolsPeriod, setPoolsPeriodMaya]
   )
 
   const filledColumn = useCallback(
@@ -164,7 +191,8 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
         mimirHalt
       })
 
-      const _disabled = disableAllPoolActions || disableTradingActions || disablePoolActions || walletLocked
+      const disabled =
+        disableAllPoolActions || disableTradingActions || disablePoolActions || walletLocked || dex === 'MAYA'
 
       const onClickHandler = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         event.preventDefault()
@@ -174,14 +202,14 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
 
       return (
         <div className="relative flex flex-col items-center justify-center">
-          <FlatButton className="min-w-[120px]" disabled={false} size="normal" onClick={onClickHandler}>
+          <FlatButton className="min-w-[120px]" disabled={disabled} size="normal" onClick={onClickHandler}>
             {intl.formatMessage({ id: 'common.earn' })}
           </FlatButton>
         </div>
       )
     },
 
-    [haltedChains, intl, mimirHalt, navigate, walletLocked]
+    [dex, haltedChains, intl, mimirHalt, navigate, walletLocked]
   )
 
   const btnColumn = useCallback(
@@ -205,7 +233,7 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
       Shared.assetColumn(intl.formatMessage({ id: 'common.asset' })),
       depthColumn<SaversTableRowData>(selectedPricePool.asset),
       filledColumn<SaversTableRowData>(),
-      aprColumn<SaversTableRowData>(poolsPeriod, setPoolsPeriod),
+      aprColumn<SaversTableRowData>(poolsPeriod, dex),
       btnColumn()
     ],
     [
@@ -218,7 +246,7 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
       intl,
       removePoolFromWatchlist,
       selectedPricePool.asset,
-      setPoolsPeriod
+      dex
     ]
   )
 

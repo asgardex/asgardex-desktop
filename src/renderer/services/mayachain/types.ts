@@ -3,6 +3,7 @@ import { Client, ClientUrl, DepositParam, NodeUrl } from '@xchainjs/xchain-mayac
 import type * as TN from '@xchainjs/xchain-mayanode'
 import { Address, Asset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 // import BigNumber from 'bignumber.js'
+import BigNumber from 'bignumber.js'
 import * as O from 'fp-ts/Option'
 import * as t from 'io-ts'
 import { IntlShape } from 'react-intl'
@@ -175,18 +176,18 @@ export type LiquidityProviderHasAsymAssetsRD = RD.RemoteData<Error, LiquidityPro
 export type LiquidityProviderAssetMismatch = O.Option<{ cacaoAddress: Address; assetAddress: Address }>
 export type LiquidityProviderAssetMismatchRD = RD.RemoteData<Error, LiquidityProviderAssetMismatch>
 
-// export type SaverProvider = {
-//   address: Address
-//   depositValue: BaseAmount
-//   redeemValue: BaseAmount
-//   growthPercent: BigNumber
-//   addHeight: O.Option<number>
-//   withdrawHeight: O.Option<number>
-//   walletType?: WalletType
-// }
+export type SaverProvider = {
+  address: Address
+  depositValue: BaseAmount
+  redeemValue: BaseAmount
+  growthPercent: BigNumber
+  addHeight: O.Option<number>
+  withdrawHeight: O.Option<number>
+  walletType?: WalletType
+}
 
-// export type SaverProviderRD = RD.RemoteData<Error, SaverProvider>
-// export type SaverProviderLD = LiveData<Error, SaverProvider>
+export type SaverProviderRD = RD.RemoteData<Error, SaverProvider>
+export type SaverProviderLD = LiveData<Error, SaverProvider>
 
 export const erc20WhitelistTokenIO = t.type({
   chainId: t.number,
