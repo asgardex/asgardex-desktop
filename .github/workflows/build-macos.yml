@@ -13,11 +13,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macOS-11]
+        os: [macOS-12]
 
     steps:
       - name: Checkout git repo
         uses: actions/checkout@v4
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
 
       # Cache Yarn dependencies
       - name: Cache Yarn dependencies
