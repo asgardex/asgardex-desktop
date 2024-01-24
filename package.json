@@ -10,7 +10,7 @@
     "force-rebuild-native-deps": "rimraf ./node_modules/prebuild-install",
     "dev:app": "cross-env BROWSER=none yarn start:web",
     "dev:electron": "wait-on tcp:127.0.0.1:3000 && nodemon -I --watch ./src/main/ --exec electron .",
-    "build": "cross-env NODE_OPTIONS='--max-old-space-size=4096' CI=false PUBLIC_URL=./ craco build",
+    "build": "cross-env NODE_OPTIONS='--max-old-space-size=7168' CI=false PUBLIC_URL=./ craco build",
     "prebuild": "./node_modules/.bin/webpack --config webpack.main.js --mode production",
     "test": "./node_modules/.bin/jest",
     "package": "yarn prebuild && yarn build && yarn package:electron",
