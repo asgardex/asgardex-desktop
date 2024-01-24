@@ -87,3 +87,31 @@ export function checkMemo(memo: string): boolean {
   }
   return false
 }
+
+export function memoCorrection(memo: string): string {
+  // Split the memoValue by ':'
+  let parts = memo.split(':')
+
+  // Remove any existing 'dx' parts and anything after it
+  const dxIndex = parts.findIndex((part) => part.startsWith('dx'))
+  if (dxIndex !== -1) {
+    parts = parts.slice(0, dxIndex)
+  }
+
+  // Remove empty trailing parts to handle cases like '::::'
+  while (parts[parts.length - 1] === '') {
+    parts.pop()
+  }
+
+  // Ensure that there are four parts before 'dx:5'
+  while (parts.length < 4) {
+    parts.push('')
+  }
+
+  // Append 'dx:5'
+  parts.push('dx:5')
+
+  // Reassemble the memoValue
+  const memocorrected = parts.join(':')
+  return memocorrected
+}

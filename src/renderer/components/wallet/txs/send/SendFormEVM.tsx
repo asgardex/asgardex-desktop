@@ -54,7 +54,7 @@ import { ShowDetails } from '../../../uielements/showDetails'
 import { Slider } from '../../../uielements/slider'
 import { AccountSelector } from '../../account'
 import * as H from '../TxForm.helpers'
-import { checkMemo } from '../TxForm.helpers'
+import { checkMemo, memoCorrection } from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
 import { validateTxAmountInput } from '../TxForm.util'
 import { DEFAULT_FEE_OPTION } from './Send.const'
@@ -142,21 +142,11 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
     // Check if a swap memo is detected
     if (checkMemo(memoValue)) {
-      const suffixPattern = /:dx:\d+$/ // Regex to match ':dx:' followed by any number
-
-      // Check if memo ends with the suffix pattern
-      if (!suffixPattern.test(memoValue)) {
-        // Remove any partial ':dx:' pattern before appending
-        memoValue = memoValue.replace(/:dx:\d*$/, '')
-
-        // Append ':dx:0'
-        memoValue += ':dx:5'
-      }
-
+      memoValue = memoCorrection(memoValue)
       setSwapMemoDetected(true)
-      setAffiliateTracking(
-        memoValue.endsWith(':dx:10') ? `Swap memo detected` : `Swap memo detected 5bps affiliate fee applied`
-      )
+
+      // Set affiliate tracking message
+      setAffiliateTracking(`Swap memo detected 5bps affiliate fee applied`)
     } else {
       setSwapMemoDetected(false)
     }
