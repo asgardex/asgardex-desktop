@@ -810,7 +810,7 @@ export const Swap = ({
           const address = destinationAddress
           const streamingInt = isStreaming ? streamingInterval : 0
           const streaminQuant = isStreaming ? streamingQuantity : 0
-          const toleranceBps = isStreaming ? 10000 : slipTolerance * 100 // convert to basis points
+          const toleranceBps = isStreaming || network === 'stagenet' ? 10000 : slipTolerance * 100 // convert to basis points
           return {
             fromAsset: fromAsset,
             destinationAsset: destinationAsset,
@@ -834,7 +834,8 @@ export const Swap = ({
       streamingInterval,
       streamingQuantity,
       slipTolerance,
-      applyBps
+      applyBps,
+      network
     ]
   )
   const oQuoteSwapDataMaya: O.Option<QuoteSwapParamsMaya> = useMemo(
@@ -909,7 +910,7 @@ export const Swap = ({
             amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset),
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
-            toleranceBps: isStreaming ? 10000 : slipTolerance * 100, // convert to basis points
+            toleranceBps: isStreaming || network === 'stagenet' ? 10000 : slipTolerance * 100, // convert to basis points
             affiliateAddress: ASGARDEX_THORNAME,
             affiliateBps: applyBps
           }
@@ -956,7 +957,8 @@ export const Swap = ({
     oSourceAssetWB,
     oSourceWalletAddress,
     sourceWalletAddress,
-    applyBps
+    applyBps,
+    network
   ])
 
   // Swap boolean for use later
@@ -1952,6 +1954,7 @@ export const Swap = ({
             txHash={oTxHash}
             onClick={goToTransaction}
             txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
+            network={network}
             trackable={dex === 'THOR' ? true : false}
           />
         }
@@ -1969,7 +1972,8 @@ export const Swap = ({
     dex,
     extraTxModalContent,
     intl,
-    sourceChain
+    sourceChain,
+    network
   ])
 
   const renderPasswordConfirmationModal = useMemo(() => {
@@ -2405,20 +2409,21 @@ export const Swap = ({
 
   const disableSubmit: boolean = useMemo(
     () =>
-      disableSwapAction ||
-      lockedWallet ||
-      isZeroAmountToSwap ||
-      walletBalancesLoading ||
-      sourceChainFeeError ||
-      RD.isPending(swapFeesRD) ||
-      RD.isPending(approveState) ||
-      minAmountError ||
-      isCausedSlippage ||
-      swapResultAmountMax.baseAmount.lte(zeroTargetBaseAmountMax1e8) ||
-      O.isNone(oRecipientAddress) ||
-      !canSwap ||
-      customAddressEditActive ||
-      quoteExpired,
+      network !== 'stagenet' &&
+      (disableSwapAction ||
+        lockedWallet ||
+        isZeroAmountToSwap ||
+        walletBalancesLoading ||
+        sourceChainFeeError ||
+        RD.isPending(swapFeesRD) ||
+        RD.isPending(approveState) ||
+        minAmountError ||
+        isCausedSlippage ||
+        swapResultAmountMax.baseAmount.lte(zeroTargetBaseAmountMax1e8) ||
+        O.isNone(oRecipientAddress) ||
+        !canSwap ||
+        customAddressEditActive ||
+        quoteExpired),
     [
       disableSwapAction,
       lockedWallet,
@@ -2434,7 +2439,8 @@ export const Swap = ({
       oRecipientAddress,
       canSwap,
       customAddressEditActive,
-      quoteExpired
+      quoteExpired,
+      network
     ]
   )
 

@@ -13,6 +13,7 @@ type Props = {
   txUrl: O.Option<string>
   onClick: (txHash: string) => void
   className?: string
+  network?: string
   trackable?: boolean
 }
 
@@ -22,6 +23,7 @@ export const ViewTxButton: React.FC<Props> = ({
   txUrl: oTxUrl,
   label,
   className,
+  network,
   trackable = false
 }): JSX.Element => {
   const intl = useIntl()
@@ -33,7 +35,9 @@ export const ViewTxButton: React.FC<Props> = ({
   const handleTxTracker = useCallback(() => {
     FP.pipe(
       oTxHash,
-      O.map((txHash) => window.apiUrl.openExternal(`https://track.ninerealms.com/${txHash}?logo=asgardex.png`))
+      O.map((txHash) =>
+        window.apiUrl.openExternal(`https://track.ninerealms.com/${txHash}?logo=asgardex.png&network=${network}`)
+      )
     )
   }, [oTxHash])
 
