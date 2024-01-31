@@ -3,6 +3,10 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon } from '@heroicons/react/20/solid'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
+import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { ThorChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
@@ -32,7 +36,13 @@ import { WalletType } from '../../../../shared/wallet/types'
 import { ZERO_ASSET_AMOUNT, ZERO_BASE_AMOUNT } from '../../../const'
 import {
   convertBaseAmountDecimal,
+  getAvaxTokenAddress,
+  getBscTokenAddress,
   getEthTokenAddress,
+  isAvaxAsset,
+  isAvaxTokenAsset,
+  isBscAsset,
+  isBscTokenAsset,
   isChainAsset,
   isEthAsset,
   isEthTokenAsset,
@@ -206,6 +216,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
   const prevAsset = useRef<O.Option<Asset>>(O.none)
 
   const isRuneLedger = isLedgerWallet(runeWalletType)
+
   const isAssetLedger = isLedgerWallet(assetWalletType)
 
   const { balances: oWalletBalances, loading: walletBalancesLoading } = walletBalances
@@ -389,13 +400,29 @@ export const SymDeposit: React.FC<Props> = (props) => {
     [oChainAssetBalance]
   )
 
+  // const needApprovement = useMemo(() => {
+  //   // Other chains than ETH do not need an approvement
+  //   if (!isEthChain(chain)) return false
+  //   // ETH does not need to be approved
+  //   if (isEthAsset(asset)) return false
+  //   // ERC20 token does need approvement only
+  //   return isEthTokenAsset(asset)
+  // }, [asset, chain])
+
   const needApprovement = useMemo(() => {
-    // Other chains than ETH do not need an approvement
-    if (!isEthChain(chain)) return false
-    // ETH does not need to be approved
-    if (isEthAsset(asset)) return false
-    // ERC20 token does need approvement only
-    return isEthTokenAsset(asset)
+    // not needed for users with locked or not imported wallets
+
+    // ERC20 token does need approval only
+    switch (chain) {
+      case ETHChain:
+        return isEthAsset(asset) ? O.some(false) : O.some(isEthTokenAsset(asset))
+      case AVAXChain:
+        return isAvaxAsset(asset) ? O.some(false) : O.some(isAvaxTokenAsset(asset))
+      case BSCChain:
+        return isBscAsset(asset) ? O.some(false) : O.some(isBscTokenAsset(asset))
+      default:
+        return O.none
+    }
   }, [asset, chain])
 
   const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
@@ -403,12 +430,23 @@ export const SymDeposit: React.FC<Props> = (props) => {
       oPoolAddress,
       O.chain(({ router }) => router)
     )
-    const oTokenAddress: O.Option<string> = getEthTokenAddress(asset)
+    const oTokenAddress: O.Option<string> = (() => {
+      switch (chain) {
+        case ETHChain:
+          return getEthTokenAddress(asset)
+        case AVAXChain:
+          return getAvaxTokenAddress(asset)
+        case BSCChain:
+          return getBscTokenAddress(asset)
+        default:
+          return O.none
+      }
+    })()
 
     const oNeedApprovement: O.Option<boolean> = FP.pipe(
       needApprovement,
-      // `None` if needApprovement is `false`, no request then
-      O.fromPredicate((v) => !!v)
+      // Keep the existing Option<boolean>, no need for O.fromPredicate
+      O.map((v) => !!v)
     )
 
     return FP.pipe(
@@ -423,7 +461,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
         hdMode
       }))
     )
-  }, [oPoolAddress, asset, needApprovement, oAssetWB, network])
+  }, [oPoolAddress, needApprovement, oAssetWB, chain, asset, network])
 
   const zeroDepositFees: SymDepositFees = useMemo(() => Helper.getZeroSymDepositFees(asset), [asset])
 
@@ -1685,13 +1723,13 @@ export const SymDeposit: React.FC<Props> = (props) => {
       setShowLedgerModal('none')
     }
 
-    const onSucceess = () => {
+    const onSuccess = () => {
       if (showLedgerModal === 'deposit') setShowPasswordModal('deposit')
       if (showLedgerModal === 'approve') submitApproveTx()
       setShowLedgerModal('none')
     }
 
-    const chainAsString = chainToString(chain)
+    const chainAsString = chainToString(isRuneLedger ? ThorChain : chain)
     const txtNeedsConnected = intl.formatMessage(
       {
         id: 'ledger.needsconnected'
@@ -1726,7 +1764,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
     return (
       <LedgerConfirmationModal
-        onSuccess={onSucceess}
+        onSuccess={onSuccess}
         onClose={onClose}
         visible
         chain={isRuneLedger ? THORChain : chain}
