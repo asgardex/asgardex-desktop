@@ -31,10 +31,6 @@ import {
   AssetAVAX,
   AssetBSC,
   AssetLTC,
-  AssetRune67C,
-  AssetRuneB1A,
-  AssetRuneERC20,
-  AssetRuneERC20Testnet,
   AssetRuneNative,
   AssetSynthBnb,
   AssetSynthBtc,
@@ -53,14 +49,7 @@ import {
   AssetSynthEthUsdt
 } from '../../shared/utils/asset'
 import { isEnabledChain } from '../../shared/utils/chain'
-import {
-  AssetTGTERC20,
-  AssetXRune,
-  AssetXRuneTestnet,
-  BinanceBlackList,
-  DEFAULT_PRICE_ASSETS,
-  USD_PRICE_ASSETS
-} from '../const'
+import { AssetTGTERC20, AssetXRune, AssetXRuneTestnet, DEFAULT_PRICE_ASSETS, USD_PRICE_ASSETS } from '../const'
 import { AVAX_TOKEN_WHITELIST } from '../types/generated/thorchain/avaxerc20whitelist'
 import { BSC_TOKEN_WHITELIST } from '../types/generated/thorchain/bscerc20whitelist'
 import { ERC20_WHITELIST } from '../types/generated/thorchain/erc20whitelist'
@@ -91,19 +80,6 @@ export const CACAO_DECIMAL = 10
  * */
 export const BNB_DECIMAL = 8
 
-export const getBnbRuneAsset = (network: Network = 'testnet'): Asset => {
-  return network === 'testnet' ? AssetRune67C : AssetRuneB1A
-}
-
-export const isRuneBnbAsset = (asset: Asset, network: Network): boolean =>
-  network === 'mainnet' ? eqAsset.equals(asset, AssetRuneB1A) : eqAsset.equals(asset, AssetRune67C)
-
-export const isRuneEthAsset = (asset: Asset, network: Network): boolean =>
-  network === 'mainnet' ? eqAsset.equals(asset, AssetRuneERC20) : eqAsset.equals(asset, AssetRuneERC20Testnet)
-
-export const isNonNativeRuneAsset = (asset: Asset, network: Network): boolean =>
-  isRuneBnbAsset(asset, network) || isRuneEthAsset(asset, network)
-
 /**
  * Checks whether an asset is an RuneNative asset
  */
@@ -112,8 +88,7 @@ export const isRuneNativeAsset = (asset: Asset): boolean => eqAsset.equals(asset
 /**
  * Checks whether an asset is a Rune (native or non-native) asset
  */
-export const isRuneAsset = (asset: Asset, network: Network): boolean =>
-  isRuneNativeAsset(asset) || isNonNativeRuneAsset(asset, network)
+export const isRuneAsset = (asset: Asset): boolean => isRuneNativeAsset(asset)
 
 /**
  * Checks whether an asset is a LTC asset

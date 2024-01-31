@@ -13,7 +13,7 @@ import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, bn, Asset, assetToString, baseAmount, Chain } from '@xchainjs/xchain-util'
 
 import { Network } from '../shared/api/types'
-import { AssetBTC, AssetETH, AssetRune67C, AssetRuneERC20Testnet, AssetRuneNative } from '../shared/utils/asset'
+import { AssetBTC, AssetETH, AssetRuneNative } from '../shared/utils/asset'
 import { EnabledChain } from '../shared/utils/chain'
 import { WalletType } from '../shared/wallet/types'
 import { GetPoolsPeriodEnum as GetPoolsPeriodEnumMaya } from './services/mayaMigard/types'
@@ -64,7 +64,7 @@ export const AssetTGTERC20: Asset = {
 }
 
 // This hardcode list is for testnet only
-export const ERC20AssetsTestnet = [AssetUSDTERC20Testnet, AssetXRuneTestnet, AssetRuneERC20Testnet]
+export const ERC20AssetsTestnet = [AssetUSDTERC20Testnet, AssetXRuneTestnet]
 export const ETHAssetsTestnet = [AssetETH, ...ERC20AssetsTestnet]
 export const AvaxAssetsTestnet = [AssetAVAX]
 export const BscAssetsTestnet = [AssetBSC]
@@ -78,14 +78,6 @@ export const AssetUniH: Asset = {
   symbol: `${AssetUniHSymbol}-${AssetUniHAddress}`,
   ticker: AssetUniHSymbol,
   synth: false
-}
-
-// Black listed BNB assets
-// For now `RUNE-67C` is blacklisted on `mainnet` only, see https://explorer.binance.org/asset/RUNE-67C
-export const BinanceBlackList: Record<Network, Array<Asset>> = {
-  mainnet: [AssetRune67C],
-  stagenet: [AssetRune67C],
-  testnet: []
 }
 
 //

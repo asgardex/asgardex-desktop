@@ -1,7 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { FeeRate, TxHash, TxParams } from '@xchainjs/xchain-client'
 import { Keystore } from '@xchainjs/xchain-crypto'
-import { NodeUrl } from '@xchainjs/xchain-thorchain'
 import { Address, Chain } from '@xchainjs/xchain-util'
 import * as E from 'fp-ts/lib/Either'
 import * as O from 'fp-ts/Option'
@@ -120,6 +119,11 @@ export type LedgerBNBTxParams = TxParams & {
 export type LedgerTHORTxParams = TxParams & {
   sender: Address
   nodeUrl: NodeUrl
+}
+
+export type NodeUrl = {
+  node: string
+  rpc: string
 }
 
 export type LedgerBTCTxInfo = Pick<TxParams, 'amount' | 'recipient'> & {
