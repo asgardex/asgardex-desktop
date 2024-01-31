@@ -23,6 +23,7 @@ import { useWalletContext } from '../../../contexts/WalletContext'
 import { getAssetPoolPrice } from '../../../helpers/poolHelper'
 import * as ShareHelpers from '../../../helpers/poolShareHelper'
 import { liveData } from '../../../helpers/rx/liveData'
+import { useDex } from '../../../hooks/useDex'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { DEFAULT_NETWORK } from '../../../services/const'
 import { PoolShare, PoolsDataMap } from '../../../services/midgard/types'
@@ -47,6 +48,8 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
       shares: { reloadShares }
     }
   } = useMidgardContext()
+
+  const { dex } = useDex()
 
   const { symWithdrawFee$, reloadWithdrawFees, symWithdraw$ } = useChainContext()
   const runePrice = useObservableState(priceRatio$, bn(1))
@@ -140,6 +143,7 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
         withdraw$={symWithdraw$}
         network={network}
         poolsData={{}}
+        dex={dex}
       />
     ),
     [
@@ -157,7 +161,8 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
       getRuneExplorerTxUrl,
       reloadBalancesAndShares,
       symWithdraw$,
-      network
+      network,
+      dex
     ]
   )
 
@@ -198,6 +203,7 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
         withdraw$={symWithdraw$}
         network={network}
         poolsData={poolsData}
+        dex={dex}
       />
     ),
     [
@@ -216,7 +222,8 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
       getRuneExplorerTxUrl,
       reloadBalancesAndShares,
       symWithdraw$,
-      network
+      network,
+      dex
     ]
   )
 

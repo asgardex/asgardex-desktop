@@ -195,6 +195,7 @@ export const sendPoolTx$ = ({
 }: SendPoolTxParams): TxHashLD => {
   // update this to suit MayaChainSwap
   const { chain } = asset.synth ? (dex === 'THOR' ? AssetRuneNative : AssetCacao) : asset
+
   if (!isEnabledChain(chain)) return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)
   switch (chain) {
     case ETHChain:

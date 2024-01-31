@@ -302,6 +302,7 @@ export type SymWithdrawParams = {
   readonly walletType: WalletType
   readonly walletIndex: number
   readonly hdMode: HDMode
+  readonly dex: Dex
 }
 
 export type SymWithdrawStateHandler = (p: SymWithdrawParams) => WithdrawState$

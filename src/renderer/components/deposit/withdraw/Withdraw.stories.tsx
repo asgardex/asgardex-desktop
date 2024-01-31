@@ -72,7 +72,8 @@ const defaultProps: WitdrawProps = {
       assetBalance: baseAmount(1),
       runeBalance: baseAmount(20)
     }
-  }
+  },
+  dex: 'THOR'
 }
 
 export const Default: Story = () => <Withdraw {...defaultProps} />
