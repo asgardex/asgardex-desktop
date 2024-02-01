@@ -19,7 +19,8 @@ import {
   isEthAsset,
   isLtcAsset,
   isRuneNativeAsset,
-  isCacaoAsset
+  isCacaoAsset,
+  isMayaAsset
 } from './assetHelper'
 import { isBchChain, isDashChain, isDogeChain, isLtcChain, isMayaChain, isThorChain } from './chainHelper'
 import { eqAddress, eqAsset, eqWalletType } from './fp/eq'
@@ -145,7 +146,9 @@ export const getRuneNativeAmountFromBalances = (balances: WalletBalances): O.Opt
   getAssetAmountFromBalances(balances, isRuneNativeAsset)
 
 export const getCacaoAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
-  getAssetAmountFromBalances(balances, isCacaoAsset)
+  getAssetAmountFromBalances(balances, isCacaoAsset || isMayaAsset)
+export const getMayaAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
+  getAssetAmountFromBalances(balances, isMayaAsset)
 
 export const filterWalletBalancesByAssets = (balances: NonEmptyWalletBalances, assets: Asset[]): WalletBalances => {
   return balances.filter((balance) => {
