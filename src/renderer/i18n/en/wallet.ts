@@ -23,7 +23,7 @@ const wallet: WalletMessages = {
   'wallet.action.deposit': 'Deposit',
   'wallet.balance.total.poolAssets': 'Total balance of pool assets',
   'wallet.balance.total.poolAssets.info':
-    'Total balance includes balances of assets available in pools at THORChain only. Pools are source of truth to determine prices at THORChain.',
+    'Total balance includes balances of assets available in pools at THORChain & MAYAChain. Pools are source of truth to determine prices at THORChain & MAYAchain',
   'wallet.shares.total': 'Total value',
   'wallet.connect.instruction': 'Please connect your wallet',
   'wallet.lock.label': 'Lock wallet',

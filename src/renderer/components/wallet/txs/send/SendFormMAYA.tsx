@@ -22,6 +22,7 @@ import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import { getPoolPriceValue } from '../../../../helpers/poolHelperMaya'
 import { loadingString } from '../../../../helpers/stringHelper'
 import { getCacaoAmountFromBalances } from '../../../../helpers/walletHelper'
+import { calculateMayaValueInUSD, MayaScanPriceRD } from '../../../../hooks/useMayascanPrice'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import { FeeRD, SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
@@ -62,6 +63,7 @@ export type Props = {
   network: Network
   poolDetails: PoolDetails
   pricePool: PricePool
+  mayaScanPrice: MayaScanPriceRD
 }
 
 export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
@@ -78,15 +80,19 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
     fee: feeRD,
     reloadFeesHandler,
     validatePassword$,
-    network
+    network,
+    mayaScanPrice
   } = props
 
   const intl = useIntl()
 
   const { asset } = balance
 
+  const mayascanPriceInUsd = calculateMayaValueInUSD(balance.amount, mayaScanPrice)
+
   const assetDecimal = isCacaoAsset(asset) ? CACAO_DECIMAL : MAYA_DECIMAL
   const [amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
+  const amountToSendMayaPrice = calculateMayaValueInUSD(amountToSend, mayaScanPrice)
   const {
     state: sendTxState,
     reset: resetSendTxState,
@@ -207,7 +213,7 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
   }, [oFee, asset, oCacaoAmount, oMayaAmount, balance.amount])
 
   // store maxAmountValue wrong CryptoAmount
-  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(
+  const [maxAmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(
     new CryptoAmount(baseAmount(0, assetDecimal), asset)
   )
 
@@ -242,7 +248,7 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
       const maxCryptoAmount = new CryptoAmount(amountPrice.value, pricePool.asset)
       setAmountPriceValue(maxCryptoAmount)
     }
-  }, [amountToSend, asset, assetFee, maxAmount, pricePool, network, poolDetails])
+  }, [amountToSend, asset, assetFee, maxAmount, pricePool, network, poolDetails, mayaScanPrice])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {
@@ -286,23 +292,32 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
       trimZeros: !isUSDAsset(asset)
     })
 
-    const price = FP.pipe(
-      O.some(amountPriceValue), // Assuming this is Option<CryptoAmount>
-      O.map((cryptoAmount: CryptoAmount) =>
-        eqAsset(asset, cryptoAmount.asset)
-          ? ''
-          : formatAssetAmountCurrency({
-              amount: cryptoAmount.assetAmount,
-              asset: cryptoAmount.asset,
-              decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
-              trimZeros: !isUSDAsset(cryptoAmount.asset)
-            })
-      ),
-      O.getOrElse(() => '')
-    )
+    const price = isCacaoAsset(asset)
+      ? FP.pipe(
+          O.some(amountPriceValue), // Assuming this is Option<CryptoAmount>
+          O.map((cryptoAmount: CryptoAmount) =>
+            eqAsset(asset, cryptoAmount.asset)
+              ? ''
+              : formatAssetAmountCurrency({
+                  amount: cryptoAmount.assetAmount,
+                  asset: cryptoAmount.asset,
+                  decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
+                  trimZeros: !isUSDAsset(cryptoAmount.asset)
+                })
+          ),
+          O.getOrElse(() => '')
+        )
+      : RD.isSuccess(amountToSendMayaPrice)
+      ? formatAssetAmountCurrency({
+          amount: amountToSendMayaPrice.value.assetAmount,
+          asset: amountToSendMayaPrice.value.asset,
+          decimal: isUSDAsset(amountToSendMayaPrice.value.asset) ? 2 : 6,
+          trimZeros: !isUSDAsset(amountToSendMayaPrice.value.asset)
+        })
+      : ''
 
     return price ? `${price} (${amount}) ` : amount
-  }, [amountPriceValue, amountToSend, asset])
+  }, [amountPriceValue, amountToSend, amountToSendMayaPrice, asset])
 
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field
@@ -504,7 +519,13 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
               className="mb-10px "
               color="neutral"
               balance={{ amount: maxAmount, asset: asset }}
-              maxDollarValue={maxAmmountPriceValue}
+              maxDollarValue={
+                isCacaoAsset(asset)
+                  ? maxAmountPriceValue
+                  : RD.isSuccess(mayascanPriceInUsd)
+                  ? mayascanPriceInUsd.value
+                  : maxAmountPriceValue
+              }
               onClick={addMaxAmountHandler}
               disabled={isLoading}
             />

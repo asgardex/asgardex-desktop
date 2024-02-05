@@ -148,6 +148,7 @@
     "react-router-dom": "^6.6.1",
     "react-scripts": "^5.0.1",
     "react-test-renderer": "^18.2.0",
+    "recharts": "^2.11.0",
     "rxjs": "^6.6.7",
     "sort-keys": "4.2.0",
     "styled-components": "^5.3.5",

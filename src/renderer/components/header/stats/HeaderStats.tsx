@@ -19,10 +19,18 @@ export type Props = {
   volume24Price: PriceRD
   reloadVolume24Price: FP.Lazy<void>
   dex: Dex
+  changeDexHandler: FP.Lazy<void>
 }
 
 export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
-  const { runePrice: runePriceRD, reloadRunePrice, volume24Price: volume24PriceRD, reloadVolume24Price, dex } = props
+  const {
+    runePrice: runePriceRD,
+    reloadRunePrice,
+    volume24Price: volume24PriceRD,
+    reloadVolume24Price,
+    dex,
+    changeDexHandler
+  } = props
 
   const isSmallMobileView = Grid.useBreakpoint()?.xs ?? false
 
@@ -97,11 +105,14 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
   }, [reloadRunePrice, runePriceRD])
 
   const label = useMemo(() => {
-    return dex === 'THOR' ? 'rune' : 'maya'
+    return dex === 'THOR' ? 'rune' : 'cacao'
   }, [dex])
 
   return (
     <Styled.Wrapper>
+      <Styled.Container onClick={changeDexHandler} clickable={true}>
+        <Styled.Dex dex={dex}>{dex}</Styled.Dex>
+      </Styled.Container>
       <Styled.Container onClick={reloadRunePriceHandler} clickable={!RD.isPending(runePriceRD)}>
         <Styled.Title>{intl.formatMessage({ id: `common.price.${label}` })}</Styled.Title>
         <Styled.Label loading={RD.isPending(runePriceRD) ? 'true' : 'false'}>{runePriceLabel}</Styled.Label>

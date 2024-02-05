@@ -30,11 +30,12 @@ import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
-import { isCacaoAsset, isDashAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
+import { isCacaoAsset, isDashAsset, isMayaAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../helpers/poolHelperMaya'
 import { hiddenString, noDataString } from '../../../helpers/stringHelper'
+import { calculateMayaValueInUSD, MayaScanPriceRD } from '../../../hooks/useMayascanPrice'
 import * as poolsRoutes from '../../../routes/pools'
 import { WalletBalancesRD } from '../../../services/clients'
 import { PoolDetails as PoolDetailsMaya } from '../../../services/mayaMigard/types'
@@ -77,6 +78,7 @@ type Props = {
   mimirHalt: MimirHaltRD
   hidePrivateData: boolean
   dex: Dex
+  mayaScanPrice: MayaScanPriceRD
 }
 
 export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
@@ -94,7 +96,8 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
     assetHandler,
     network,
     hidePrivateData,
-    dex
+    dex,
+    mayaScanPrice
   } = props
 
   const intl = useIntl()
@@ -221,9 +224,19 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
             } else {
               price = noDataString
             }
+            if (isMayaAsset(asset)) {
+              const mayaPrice = calculateMayaValueInUSD(amount, mayaScanPrice)
+              price = RD.isSuccess(mayaPrice)
+                ? formatAssetAmountCurrency({
+                    amount: mayaPrice.value.assetAmount,
+                    asset: mayaPrice.value.asset,
+                    decimal: isUSDAsset(mayaPrice.value.asset) ? 2 : 6,
+                    trimZeros: !isUSDAsset(mayaPrice.value.asset)
+                  })
+                : noDataString
+            }
           }
         }
-
         return (
           <div className="flex flex-col items-end justify-center font-main">
             <div className="text-16 text-text0 dark:text-text0d">{hidePrivateData ? hiddenString : balance}</div>
@@ -232,7 +245,16 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         )
       }
     }),
-    [hidePrivateData, poolDetailsMaya, mayaPricePool, poolDetails, pricePool, network, pendingPoolDetails]
+    [
+      hidePrivateData,
+      poolDetailsMaya,
+      mayaPricePool,
+      poolDetails,
+      pricePool,
+      network,
+      pendingPoolDetails,
+      mayaScanPrice
+    ]
   )
 
   const renderActionColumn = useCallback(

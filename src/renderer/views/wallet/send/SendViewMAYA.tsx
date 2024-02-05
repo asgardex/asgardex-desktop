@@ -15,6 +15,7 @@ import { useWalletContext } from '../../../contexts/WalletContext'
 import { MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
 import { liveData } from '../../../helpers/rx/liveData'
 import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
+import { useMayaScanPrice } from '../../../hooks/useMayascanPrice'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
@@ -50,6 +51,8 @@ export const SendViewMAYA: React.FC<Props> = (props): JSX.Element => {
   } = useMidgardMayaContext()
 
   const pricePool = useObservableState(selectedPricePool$, MAYA_PRICE_POOL)
+
+  const { mayaScanPriceRD } = useMayaScanPrice()
 
   const poolsRD = useObservableState(poolsState$, RD.pending)
   const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
@@ -107,6 +110,7 @@ export const SendViewMAYA: React.FC<Props> = (props): JSX.Element => {
               network={network}
               poolDetails={poolDetails}
               pricePool={pricePool}
+              mayaScanPrice={mayaScanPriceRD}
             />
           </Styled.Container>
         </Spin>
@@ -130,6 +134,7 @@ export const SendViewMAYA: React.FC<Props> = (props): JSX.Element => {
             network={network}
             poolDetails={poolDetails}
             pricePool={pricePool}
+            mayaScanPrice={mayaScanPriceRD}
           />
         </Styled.Container>
       )

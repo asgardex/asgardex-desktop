@@ -63,7 +63,7 @@ const common: CommonMessages = {
   'common.pools': 'Pools',
   'common.price': 'Prix',
   'common.price.rune': 'Prix du Rune',
-  'common.price.maya': 'Prix du Maya',
+  'common.price.cacao': 'Prix du Cacao',
   'common.transaction': 'Transaction',
   'common.transaction.short.rune': 'RUNE tx',
   'common.transaction.short.asset': 'Actif tx',

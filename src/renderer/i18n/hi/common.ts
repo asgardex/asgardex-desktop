@@ -64,7 +64,7 @@ const common: CommonMessages = {
   'common.pools': 'पूल्स',
   'common.price': 'मूल्य',
   'common.price.rune': 'RUNE का मूल्य',
-  'common.price.maya': 'MAYA का मूल्य',
+  'common.price.cacao': 'CACAO का मूल्य',
   'common.transaction': 'लेन-देन',
   'common.transaction.short.rune': 'RUNE लेन-देन',
   'common.transaction.short.asset': 'एसेट लेन-देन',

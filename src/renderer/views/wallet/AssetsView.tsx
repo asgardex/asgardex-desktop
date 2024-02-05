@@ -13,13 +13,14 @@ import { RefreshButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
 import { AssetsTableCollapsable } from '../../components/wallet/assets/AssetsTableCollapsable'
 import type { AssetAction } from '../../components/wallet/assets/AssetsTableCollapsable'
-import { TotalValue } from '../../components/wallet/assets/TotalValue'
+import { TotalAssetValue } from '../../components/wallet/assets/TotalAssetValue'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { useDex } from '../../hooks/useDex'
+import { useMayaScanPrice } from '../../hooks/useMayascanPrice'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePrivateData } from '../../hooks/usePrivateData'
@@ -37,6 +38,8 @@ export const AssetsView: React.FC = (): JSX.Element => {
 
   const { network } = useNetwork()
   const { dex } = useDex()
+
+  const { mayaScanPriceRD } = useMayaScanPrice()
 
   const { isPrivate } = usePrivateData()
 
@@ -74,7 +77,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
 
   const poolsMayaRD = useObservableState(mayaPoolsState$, RD.pending)
 
-  const { total: totalWalletBalances } = useTotalWalletBalance()
+  const { balancesByChain, errorsByChain } = useTotalWalletBalance()
 
   const poolsRD = useObservableState(poolsState$, RD.pending)
   const pendingPoolsRD = useObservableState(pendingPoolsState$, RD.pending)
@@ -143,9 +146,9 @@ export const AssetsView: React.FC = (): JSX.Element => {
         <RefreshButton onClick={refreshHandler}></RefreshButton>
       </div>
       <AssetsNav />
-      <TotalValue
-        total={totalWalletBalances}
-        pricePool={selectedPricePool}
+      <TotalAssetValue
+        balancesByChain={balancesByChain}
+        errorsByChain={errorsByChain}
         title={intl.formatMessage({ id: 'wallet.balance.total.poolAssets' })}
         info={intl.formatMessage({ id: 'wallet.balance.total.poolAssets.info' })}
         hidePrivateData={isPrivate}
@@ -167,6 +170,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
         network={network}
         hidePrivateData={isPrivate}
         dex={dex}
+        mayaScanPrice={mayaScanPriceRD}
       />
     </>
   )
