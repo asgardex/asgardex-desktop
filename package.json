@@ -2,7 +2,7 @@
   "name": "asgardex",
   "productName": "ASGARDEX",
   "version": "1.21.1",
-  "description": "WALLET AND EXCHANGE CLIENT FOR THORCHAIN",
+  "description": "WALLET AND EXCHANGE CLIENT FOR THORCHAIN AND MAYACHAIN",
   "main": "index.js",
   "scripts": {
     "start:web": "craco start",
@@ -35,7 +35,7 @@
   "author": {
     "name": "ASGARDEX Maintainers",
     "email": "accounts@thorchain.org",
-    "url": "https://thorchain.org"
+    "url": "https://asgardex.com/"
   },
   "contributors": [
     {
@@ -60,7 +60,8 @@
     "doge",
     "cosmos",
     "bsc",
-    "avax"
+    "avax",
+    "mayachain"
   ],
   "homepage": "https://thorchain.org",
   "dependencies": {
