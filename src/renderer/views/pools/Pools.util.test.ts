@@ -173,8 +173,8 @@ describe('views/pools/utils', () => {
       ])
     })
 
-    it('bep2', () => {
-      const result = filterTableData(O.some('__bep2__'))(tableData)
+    it('avax', () => {
+      const result = filterTableData(O.some('__avax__'))(tableData)
       expect(result).toEqual([tableData[4], tableData[9]])
     })
 

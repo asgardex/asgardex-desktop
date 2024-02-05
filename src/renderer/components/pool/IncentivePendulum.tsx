@@ -5,7 +5,8 @@ import { baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import { useIntl } from 'react-intl'
 
-import { AssetRuneNative } from '../../../shared/utils/asset'
+import { Dex } from '../../../shared/api/types'
+import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
 import { IncentivePendulumRD } from '../../hooks/useIncentivePendulum'
 import type { AlertIconColor } from '../uielements/alert/'
 import { Tooltip } from '../uielements/common/Common.styles'
@@ -13,13 +14,14 @@ import * as Styled from './IncentivePendulum.styles'
 
 export type Props = {
   incentivePendulum: IncentivePendulumRD
+  dex: Dex
 }
 
 export const IncentivePendulum: React.FC<Props> = (props): JSX.Element => {
-  const { incentivePendulum: incentivePendulumRD } = props
+  const { incentivePendulum: incentivePendulumRD, dex } = props
 
   const intl = useIntl()
-  // update for mayachainswap
+
   const loading = (
     <Styled.ContentWrapper>
       {intl.formatMessage({ id: 'pools.incentivependulum.info' }, { percentage: '...' })}
@@ -52,12 +54,12 @@ export const IncentivePendulum: React.FC<Props> = (props): JSX.Element => {
           {
             pooled: formatAssetAmountCurrency({
               amount: baseToAsset(totalPooledRuneAmount),
-              asset: AssetRuneNative,
+              asset: dex === 'THOR' ? AssetRuneNative : AssetCacao,
               decimal: 0
             }),
             bonded: formatAssetAmountCurrency({
               amount: baseToAsset(totalActiveBondAmount),
-              asset: AssetRuneNative,
+              asset: dex === 'THOR' ? AssetRuneNative : AssetCacao,
               decimal: 0
             })
           }

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react'
 
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
-import { useIntl } from 'react-intl'
+// import { useIntl } from 'react-intl'
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 
 import { hiddenString } from '../../../helpers/stringHelper'
@@ -20,7 +20,7 @@ type Props = {
 
 export const TotalAssetValue: React.FC<Props> = (props): JSX.Element => {
   const { balancesByChain, title, info, hidePrivateData, errorsByChain } = props
-  const intl = useIntl()
+  // const intl = useIntl()
 
   const [showDetails, setShowDetails] = useState<boolean>(false)
   const chartData = useMemo(() => {
@@ -55,9 +55,15 @@ export const TotalAssetValue: React.FC<Props> = (props): JSX.Element => {
   }, [balancesByChain, hidePrivateData])
 
   const hasErrors = Object.keys(errorsByChain).length > 0
-  if (hasErrors) {
-    console.log('There are errors.')
-  }
+  // Map over the keys to create error messages.
+  const chainErrors = useMemo(() => {
+    // Map over the keys to create React elements for each error.
+    const errorMessages = Object.keys(errorsByChain).map((chain) => (
+      <div key={chain}>{`${chain}: ${errorsByChain[chain].split('(')[0]}`}</div>
+    ))
+
+    return errorMessages // Return the array of React elements directly.
+  }, [errorsByChain])
 
   const totalBalanceDisplay = useMemo(() => {
     const total = chartData.reduce((acc, { value }) => acc + value, 0)
@@ -72,17 +78,18 @@ export const TotalAssetValue: React.FC<Props> = (props): JSX.Element => {
         <Styled.BalanceTitle>{title}</Styled.BalanceTitle>
         {info && <InfoIcon tooltip={info} color="primary" />}
       </Styled.TitleContainer>
-      {totalBalanceDisplay}
+
       <BaseButton
-        className="goup flex w-1/4 justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+        className="flex justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
         onClick={() => setShowDetails((current) => !current)}>
-        {intl.formatMessage({ id: 'common.details' })}
+        <div className="m-4">{totalBalanceDisplay}</div>
         {showDetails ? (
           <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
         ) : (
           <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
         )}
       </BaseButton>
+      {hasErrors && chainErrors}
       {showDetails && (
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>

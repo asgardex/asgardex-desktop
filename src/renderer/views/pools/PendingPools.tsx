@@ -193,7 +193,7 @@ export const PendingPools: React.FC = (): JSX.Element => {
         <>
           <Styled.AssetsFilter setFilter={setPoolFilter} activeFilter={poolFilter} poolFilters={DEFAULT_POOL_FILTERS} />
           <ProtocolLimit limit={limitRD} />
-          <IncentivePendulum incentivePendulum={incentivePendulumRD} />
+          <IncentivePendulum incentivePendulum={incentivePendulumRD} dex={dex} />
           <Table
             columns={columns}
             dataSource={dataSource}
@@ -218,6 +218,7 @@ export const PendingPools: React.FC = (): JSX.Element => {
       setPoolFilter,
       limitRD,
       incentivePendulumRD,
+      dex,
       navigate
     ]
   )

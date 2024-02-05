@@ -5,7 +5,7 @@ describe('views/pools/types', () => {
     it('true', () => {
       expect(isStaticPoolFilter('__usd__')).toBeTruthy()
       expect(isStaticPoolFilter('__base__')).toBeTruthy()
-      expect(isStaticPoolFilter('__bep2__')).toBeTruthy()
+      expect(isStaticPoolFilter('__avax__')).toBeTruthy()
       expect(isStaticPoolFilter('__erc20__')).toBeTruthy()
     })
     it('false', () => {

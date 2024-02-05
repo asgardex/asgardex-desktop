@@ -1,8 +1,13 @@
 {
   "name": "asgardex",
   "productName": "ASGARDEX",
+<<<<<<< Updated upstream
   "version": "1.21.1",
   "description": "WALLET AND EXCHANGE CLIENT FOR THORCHAIN AND MAYACHAIN",
+=======
+  "version": "1.21.2",
+  "description": "WALLET AND EXCHANGE CLIENT FOR THORCHAIN",
+>>>>>>> Stashed changes
   "main": "index.js",
   "scripts": {
     "start:web": "craco start",
