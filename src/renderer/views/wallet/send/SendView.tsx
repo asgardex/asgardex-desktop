@@ -9,6 +9,7 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
@@ -27,15 +28,12 @@ import { reloadBalancesByChain } from '../../../services/wallet'
 import { SelectedWalletAsset } from '../../../services/wallet/types'
 import {
   SendViewBNB,
-  SendViewBCH,
-  SendViewBTC,
   SendViewEVM,
-  SendViewDOGE,
   SendViewTHOR,
-  SendViewLTC,
   SendViewMAYA,
   SendViewCOSMOS,
-  SendViewDASH
+  SendViewUTXO,
+  SendViewKUJI
 } from './index'
 
 type Props = {}
@@ -77,9 +75,11 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
         case BNBChain:
           return <SendViewBNB asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
         case BCHChain:
-          return <SendViewBCH asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
         case BTCChain:
-          return <SendViewBTC asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
+        case DOGEChain:
+        case DASHChain:
+        case LTCChain:
+          return <SendViewUTXO asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
         case ETHChain:
         case AVAXChain:
         case BSCChain:
@@ -88,14 +88,10 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
           return <SendViewTHOR asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
         case MAYAChain:
           return <SendViewMAYA asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
-        case LTCChain:
-          return <SendViewLTC asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
-        case DOGEChain:
-          return <SendViewDOGE asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
         case GAIAChain:
           return <SendViewCOSMOS asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
-        case DASHChain:
-          return <SendViewDASH asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
+        case KUJIChain:
+          return <SendViewKUJI asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
       }
     },
     [dex, intl]

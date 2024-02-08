@@ -10,10 +10,11 @@ import * as RxOp from 'rxjs/operators'
 
 import { isEnabledChain } from '../../../shared/utils/chain'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
-import { isBscChain, isDashChain, isMayaChain, isThorChain } from '../../helpers/chainHelper'
+import { isBscChain, isDashChain, isKujiChain, isMayaChain, isThorChain } from '../../helpers/chainHelper'
+import { KUJI_DECIMAL } from '../kuji/const'
 import { AssetWithDecimalLD } from './types'
 
-// gets asset decimal from midgard-query
+// gets asset decimal from midgard-query tobefixed
 const getDecimal = (asset: Asset): Promise<number> => {
   const { chain } = asset.synth ? AssetRuneNative : asset
 
@@ -34,6 +35,9 @@ const getDecimal = (asset: Asset): Promise<number> => {
 
   if (isDashChain(chain)) {
     return Promise.resolve(DASH_DECIMAL)
+  }
+  if (isKujiChain(chain)) {
+    return Promise.resolve(KUJI_DECIMAL)
   }
 
   const midgardQuery = new MidgardQuery()

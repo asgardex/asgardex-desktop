@@ -14,6 +14,7 @@ import { getPrefix as getDogePrefix } from '@xchainjs/xchain-doge'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { getPrefix as getEvmPrefix } from '@xchainjs/xchain-evm'
+import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { getPrefix as getLitecoinPrefix } from '@xchainjs/xchain-litecoin'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
@@ -67,6 +68,8 @@ export const getAddressPrefixLength = (chain: Chain, network: Network): number =
       return getDashPrefix(clientNetwork).length
     case BCHChain:
       return getBCHPrefix().length
+    case KUJIChain:
+      return 'kujira'.length // tobefixed
   }
 }
 

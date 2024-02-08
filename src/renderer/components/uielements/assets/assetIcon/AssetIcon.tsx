@@ -37,7 +37,12 @@ import {
   isAtomSynthAsset,
   isDogeSynthAsset,
   isBchSynthAsset,
-  isDashAsset
+  isDashAsset,
+  isKujiAsset,
+  isKujiSynthAsset,
+  isUskAsset,
+  isUskSynthAsset,
+  isDashSynthAsset
 } from '../../../../helpers/assetHelper'
 import { isAvaxChain, isBnbChain, isBscChain, isEthChain, isMayaChain } from '../../../../helpers/chainHelper'
 import { getIntFromName, rainbowStop } from '../../../../helpers/colorHelpers'
@@ -56,7 +61,9 @@ import {
   tgtIcon,
   cacaoIcon,
   usdpIcon,
-  dashIcon
+  dashIcon,
+  kujiIcon,
+  uskIcon
 } from '../../../icons'
 import * as Styled from './AssetIcon.styles'
 import { Size } from './AssetIcon.types'
@@ -115,7 +122,7 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
       return cacaoIcon
     }
     // Dash
-    if (isDashAsset(asset)) {
+    if (isDashAsset(asset) || isDashSynthAsset(asset)) {
       return dashIcon
     }
     // BNB
@@ -144,6 +151,15 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     // DOGE
     if (isDogeAsset(asset) || isDogeSynthAsset(asset)) {
       return dogeIcon
+    }
+
+    // KUJI
+    if (isKujiAsset(asset) || isKujiSynthAsset(asset)) {
+      return kujiIcon
+    }
+    // USK
+    if (isUskAsset(asset) || isUskSynthAsset(asset)) {
+      return uskIcon
     }
 
     // Atom

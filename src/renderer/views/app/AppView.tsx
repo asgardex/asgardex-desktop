@@ -17,8 +17,10 @@ import { Header } from '../../components/header'
 import { BorderButton } from '../../components/uielements/button'
 import { useI18nContext } from '../../contexts/I18nContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { unionChains } from '../../helpers/fp/array'
 import { rdAltOnPending } from '../../helpers/fpHelpers'
+import { useDex } from '../../hooks/useDex'
 import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
 import { useLedgerAddresses } from '../../hooks/useLedgerAddresses'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
@@ -38,6 +40,8 @@ type HaltedChainsState = {
 }
 export const AppView: React.FC = (): JSX.Element => {
   const intl = useIntl()
+
+  const { dex } = useDex()
 
   const { locale$ } = useI18nContext()
   const currentLocale = useObservableState(locale$, DEFAULT_LOCALE)
@@ -66,10 +70,17 @@ export const AppView: React.FC = (): JSX.Element => {
       pools: { haltedChains$ }
     }
   } = useMidgardContext()
+  const {
+    service: {
+      apiEndpoint$: apiEndpointMaya$,
+      reloadApiEndpoint: reloadApiEndpointMaya,
+      pools: { haltedChains$: haltedChainsMaya$ }
+    }
+  } = useMidgardMayaContext()
+  const reloadDexEndpoint = dex === 'THOR' ? reloadApiEndpoint : reloadApiEndpointMaya
+  const apiEndpoint = useObservableState(dex === 'THOR' ? apiEndpoint$ : apiEndpointMaya$, RD.initial)
 
-  const apiEndpoint = useObservableState(apiEndpoint$, RD.initial)
-
-  const haltedChainsRD = useObservableState(haltedChains$, RD.initial)
+  const haltedChainsRD = useObservableState(dex === 'THOR' ? haltedChains$ : haltedChainsMaya$, RD.initial)
 
   const prevHaltedChains = useRef<Chain[]>([])
   const prevMimirHalt = useRef<MimirHalt>(DEFAULT_MIMIR_HALT)
@@ -166,7 +177,7 @@ export const AppView: React.FC = (): JSX.Element => {
             message={intl.formatMessage({ id: 'midgard.error.endpoint.title' })}
             description={e?.message ?? e.toString()}
             action={
-              <BorderButton onClick={reloadApiEndpoint} color="error" size="medium">
+              <BorderButton onClick={reloadDexEndpoint} color="error" size="medium">
                 <SyncOutlined className="mr-10px" />
                 {intl.formatMessage({ id: 'common.reload' })}
               </BorderButton>
@@ -176,7 +187,7 @@ export const AppView: React.FC = (): JSX.Element => {
         empty
       )
     )
-  }, [apiEndpoint, intl, reloadApiEndpoint])
+  }, [apiEndpoint, intl, reloadDexEndpoint])
 
   const renderImportKeystoreWalletsError = useMemo(() => {
     const empty = () => <></>

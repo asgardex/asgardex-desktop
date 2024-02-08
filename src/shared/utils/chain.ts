@@ -7,6 +7,7 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -15,7 +16,7 @@ import { Chain } from '@xchainjs/xchain-util'
 
 /**
  * All chains are currently supported by ASGDX
- * Whenever you want to support another chain, here is the first place to add it
+ * Whenever you want to support another chain, here is the first place to add it tobefixed
  */
 export const ENABLED_CHAINS = [
   BCHChain,
@@ -29,7 +30,8 @@ export const ENABLED_CHAINS = [
   AVAXChain,
   BSCChain,
   MAYAChain,
-  DASHChain
+  DASHChain,
+  KUJIChain
 ] as const
 
 export type EnabledChain = typeof ENABLED_CHAINS[number]
@@ -76,6 +78,8 @@ export const chainToString = (chain: Chain): string => {
       return 'MAYAChain'
     case DASHChain:
       return 'DASH'
+    case KUJIChain:
+      return 'KUJI'
   }
 }
 
@@ -127,5 +131,9 @@ export const DefaultChainAttributes: Record<Chain, ChainAttributes> = {
   DASH: {
     blockReward: 0,
     avgBlockTimeInSecs: 160
+  },
+  KUJI: {
+    blockReward: 0,
+    avgBlockTimeInSecs: 4
   }
 }

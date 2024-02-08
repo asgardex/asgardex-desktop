@@ -9,6 +9,7 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
@@ -30,6 +31,7 @@ import * as COSMOS from '../../cosmos'
 import * as DASH from '../../dash'
 import * as DOGE from '../../doge'
 import * as ETH from '../../ethereum'
+import * as KUJI from '../../kuji'
 import * as LTC from '../../litecoin'
 import * as MAYA from '../../mayachain'
 import * as THOR from '../../thorchain'
@@ -88,6 +90,8 @@ export const sendTx$ = ({
       return THOR.sendTx({ walletType, amount, asset, memo, recipient, walletIndex, hdMode })
     case MAYAChain:
       return MAYA.sendTx({ walletType, amount, asset, memo, recipient, walletIndex, hdMode })
+    case KUJIChain:
+      return KUJI.sendTx({ walletType, amount, asset, memo, recipient, walletIndex, hdMode })
 
     case GAIAChain:
       return FP.pipe(
@@ -250,6 +254,7 @@ export const sendPoolTx$ = ({
     case LTCChain:
     case DASHChain:
     case GAIAChain:
+    case KUJIChain:
       return sendTx$({ sender, walletType, asset, recipient, amount, memo, feeOption, walletIndex, hdMode })
   }
 }
@@ -289,6 +294,8 @@ export const txStatusByChain$ = ({ txHash, chain }: { txHash: TxHash; chain: Cha
       return LTC.txStatus$(txHash, O.none)
     case DASHChain:
       return DASH.txStatus$(txHash, O.none)
+    case KUJIChain:
+      return KUJI.txStatus$(txHash, O.none)
   }
 }
 
@@ -326,6 +333,7 @@ export const poolTxStatusByChain$ = ({
     case BCHChain:
     case LTCChain:
     case DASHChain:
+    case KUJIChain:
       return txStatusByChain$({ txHash, chain })
   }
 }

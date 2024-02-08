@@ -98,6 +98,7 @@
     "@xchainjs/xchain-ethereum": "^0.31.4",
     "@xchainjs/xchain-evm": "^0.4.3",
     "@xchainjs/xchain-evm-providers": "^0.1.5",
+    "@xchainjs/xchain-kujira": "0.1.10",
     "@xchainjs/xchain-litecoin": "^0.13.8",
     "@xchainjs/xchain-mayachain": "0.2.16",
     "@xchainjs/xchain-mayachain-query": "0.1.6",

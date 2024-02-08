@@ -8,6 +8,7 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -37,7 +38,7 @@ export const getAddress = async ({
   try {
     let res: E.Either<LedgerError, WalletAddress>
     const transport = await TransportNodeHidSingleton.create()
-    if (!isEnabledChain(chain) || chain === MAYAChain || chain === DASHChain) {
+    if (!isEnabledChain(chain) || chain === MAYAChain || chain === DASHChain || chain === KUJIChain) {
       res = E.left({
         errorId: LedgerErrorId.NOT_IMPLEMENTED,
         msg: `${chain} is not supported for 'getAddress'`
