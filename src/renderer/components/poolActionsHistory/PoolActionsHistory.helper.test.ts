@@ -144,7 +144,7 @@ describe('PoolActionsHistory.helper', () => {
           },
           1
         )
-      ).toEqual('inId-1')
+      ).toEqual('inId-SWAP')
 
       expect(
         getRowKey(
@@ -159,7 +159,7 @@ describe('PoolActionsHistory.helper', () => {
           },
           1
         )
-      ).toEqual('outId-1')
+      ).toEqual('outId-SWAP')
 
       expect(
         getRowKey(
@@ -180,12 +180,12 @@ describe('PoolActionsHistory.helper', () => {
           },
           1
         )
-      ).toEqual('inId-1')
+      ).toEqual('inId-SWAP')
     })
 
     it('should return default value in case there is no txId (`action.date-action.type`)', () => {
       // Date(0) is a default date property value for defaultPoolAction
-      expect(getRowKey(defaultPoolAction, 1)).toEqual(`${new Date(0)}-SWAP-1`)
+      expect(getRowKey(defaultPoolAction, 1)).toEqual(`${new Date(0)}-SWAP`)
     })
   })
 
