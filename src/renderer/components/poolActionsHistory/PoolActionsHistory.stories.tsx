@@ -160,6 +160,7 @@ const Template = ({ dataStatus }: { dataStatus: RDStatus }) => {
       onClickAddressIcon={() => {
         console.log('on click address icon')
       }}
+      dex="THOR"
     />
   )
 

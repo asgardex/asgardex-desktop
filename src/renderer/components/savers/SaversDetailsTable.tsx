@@ -5,6 +5,7 @@ import { useIntl } from 'react-intl'
 
 import { ZERO_BN } from '../../const'
 import { isUSDAsset } from '../../helpers/assetHelper'
+import { hiddenString } from '../../helpers/stringHelper'
 import { ParentProps } from '../../views/wallet/SaversTableView'
 import * as Styled from '../PoolShares/PoolShares.styles'
 import { AssetIcon } from '../uielements/assets/assetIcon'
@@ -78,32 +79,48 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
     }
   ]
 
-  const dataSource = assetDetails.map(({ asset, deposit, redeem, priceAsset, percent, walletType }) => {
-    const depositValueLabel = formatAssetAmountCurrency({ amount: baseToAsset(deposit.amount), asset, decimal: 3 })
+  const dataSource = assetDetails.map(({ asset, deposit, redeem, priceAsset, percent, walletType, privateData }) => {
+    const depositValueLabel = privateData
+      ? hiddenString
+      : formatAssetAmountCurrency({ amount: baseToAsset(deposit.amount), asset, decimal: 3 })
 
-    const priceDepositLabel = formatAssetAmountCurrency({
-      amount: baseToAsset(deposit.price),
-      asset: priceAsset,
-      decimal: isUSDAsset(priceAsset) ? 2 : 6
-    })
-    const redeemValueLabel = formatAssetAmountCurrency({ amount: baseToAsset(redeem.amount), asset, decimal: 3 })
+    const priceDepositLabel = privateData
+      ? hiddenString
+      : formatAssetAmountCurrency({
+          amount: baseToAsset(deposit.price),
+          asset: priceAsset,
+          decimal: isUSDAsset(priceAsset) ? 2 : 6
+        })
+    const redeemValueLabel = privateData
+      ? hiddenString
+      : formatAssetAmountCurrency({ amount: baseToAsset(redeem.amount), asset, decimal: 3 })
 
-    const redeemDepositLabel = formatAssetAmountCurrency({
-      amount: baseToAsset(redeem.price),
-      asset: priceAsset,
-      decimal: isUSDAsset(priceAsset) ? 2 : 6
-    })
-
-    const growthValue = redeem.amount.minus(deposit.amount)
-    const growthValueLabel = formatAssetAmountCurrency({
-      amount: baseToAsset(growthValue.gt(0) ? growthValue : baseAmount(0, deposit.amount.decimal)),
-      asset,
-      decimal: isUSDAsset(asset) ? 2 : 6
-    })
+    const redeemDepositLabel = privateData
+      ? hiddenString
+      : formatAssetAmountCurrency({
+          amount: baseToAsset(redeem.price),
+          asset: priceAsset,
+          decimal: isUSDAsset(priceAsset) ? 2 : 6
+        })
+    const gV = redeem.amount.minus(deposit.amount)
+    const growthValue = privateData
+      ? hiddenString
+      : formatAssetAmountCurrency({
+          amount: baseToAsset(gV),
+          asset: priceAsset,
+          decimal: isUSDAsset(priceAsset) ? 2 : 6
+        })
+    const growthValueLabel = privateData
+      ? hiddenString
+      : formatAssetAmountCurrency({
+          amount: baseToAsset(gV.gt(0) ? gV : baseAmount(0, deposit.amount.decimal)),
+          asset,
+          decimal: isUSDAsset(asset) ? 2 : 6
+        })
 
     const assetTicker = asset.ticker
 
-    const percentLabel = `${formatBN(percent.gt(0) ? percent : ZERO_BN, 4)}%`
+    const percentLabel = privateData ? hiddenString : `${formatBN(percent.gt(0) ? percent : ZERO_BN, 4)}%`
     return {
       key: `${asset.chain}.${asset.symbol}.${walletType}`,
       depositValueLabel,

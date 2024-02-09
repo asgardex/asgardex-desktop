@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Action, MidgardApi } from '@xchainjs/xchain-mayamidgard'
+import { Action, GetActions200Response, MidgardApi } from '@xchainjs/xchain-mayamidgard'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as Rx from 'rxjs'
@@ -10,15 +10,6 @@ import { liveData } from '../../helpers/rx/liveData'
 import { ErrorId } from '../wallet/types'
 import { getRequestType, mapAction } from './action.utils'
 import { LoadActionsParams, ActionsPageLD, MidgardUrlLD } from './types'
-
-interface InlineResponse200 {
-  actions: unknown[]
-  count: string
-  meta: {
-    nextPageToken: string
-    prevPageToken: string
-  }
-}
 
 export const createActionsService = (
   midgardUrl$: MidgardUrlLD,
@@ -37,31 +28,33 @@ export const createActionsService = (
         FP.pipe(
           from(
             api.getActions(
-              JSON.stringify({
-                ...params,
-                address: addresses ? addresses.join(',') : undefined,
-                type: getRequestType(type),
-                limit: itemsPerPage,
-                offset: itemsPerPage * page
-              })
+              addresses.join(','), // address parameter as a concatenated string
+              params.txid, // txid, assuming not used in this context
+              params.asset, // asset from the rest parameters if available
+              getRequestType(type), // type after processing
+              undefined, // affiliate, assuming not used in this context
+              itemsPerPage, // limit parameter
+              itemsPerPage * page // offset parameter
             )
           ),
           RxOp.catchError(
-            (): Rx.Observable<InlineResponse200> =>
+            (): Rx.Observable<GetActions200Response> =>
               Rx.of({ actions: [], count: '0', meta: { nextPageToken: '', prevPageToken: '' } })
           ),
           RxOp.switchMap((response) => Rx.of(RD.success(response))),
           liveData.map((response) => {
-            if ('actions' in response && 'count' in response) {
-              return {
-                actions: FP.pipe(response.actions as Action[], A.map(mapAction)),
-                total: parseInt(response.count || '', 10)
-              }
-            } else {
-              return {
-                actions: [],
-                total: 0
-              }
+            // Check if response is of AxiosResponse type and extract the data property if so
+            const responseData = 'data' in response ? response.data : response
+
+            // Now, responseData is guaranteed to be of type GetActions200Response
+            const { actions, count } = responseData
+
+            return {
+              actions: FP.pipe(
+                actions as Action[], // Ensure actions is treated as an array of Action; adjust the casting as necessary based on your types
+                A.map(mapAction) // Assuming mapAction correctly transforms each action
+              ),
+              total: parseInt(count || '0', 10) // Default to '0' if count is not provided
             }
           }),
           liveData.mapLeft(() => ({

@@ -156,12 +156,12 @@ export const isBchSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, 
 export const isBnbAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetBNB)
 
 /**
- * Checks whether an asset is a BNB asset
+ * Checks whether an asset is a Cacao asset
  */
 export const isCacaoAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetCacao)
 
 /**
- * Checks whether an asset is a BNB asset
+ * Checks whether an asset is a Maya asset
  */
 export const isMayaAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetMaya)
 

@@ -63,14 +63,13 @@ export const renderDate = (date: Date) => (
   </Styled.DateContainer>
 )
 
-export const getRowKey: GetRowKey<Action> = (action, index) =>
+export const getRowKey: GetRowKey<Action> = (action) =>
   FP.pipe(
     action,
     getTxId,
-    O.map((txHash) => `${txHash}-${index}`),
-    O.getOrElse(() => `${action.date.toString()}-${action.type}-${index}`)
+    O.map((txHash) => `${txHash}-${action.type}`),
+    O.getOrElse(() => `${action.date.toString()}-${action.type}`)
   )
-
 export const emptyData: ActionsPage = { total: 0, actions: [] as Actions }
 
 export const historyFilterToViewblockFilter = (filter: Filter) => {

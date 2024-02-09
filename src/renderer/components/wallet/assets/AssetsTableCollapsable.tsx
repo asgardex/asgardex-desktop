@@ -732,10 +732,10 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
     <>
       <Row>
         <Styled.FilterCheckbox checked={filterByValue} onChange={(e) => setFilterByValue(e.target.checked)}>
-          Filter out assets below $1
+          {intl.formatMessage({ id: 'common.filterValue' })}
         </Styled.FilterCheckbox>
         <Styled.FilterCheckbox checked={collapseAll} onChange={handleCollapseAll}>
-          Collapse all
+          {intl.formatMessage({ id: 'common.collapseAll' })}
         </Styled.FilterCheckbox>
       </Row>
 
