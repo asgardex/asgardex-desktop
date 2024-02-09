@@ -69,8 +69,6 @@ export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
   const { thorchainQuery } = useThorchainQueryContext()
   const { mayachainQuery } = useMayachainQueryContext()
 
-  // const { feesWithRates$, reloadFeesWithRates } = useChainContext()
-
   const feesWithRatesLD: FeesWithRatesLD = useMemo(
     () => utxoFeesWithRates$(asset.asset),
     [asset.asset, utxoFeesWithRates$]
