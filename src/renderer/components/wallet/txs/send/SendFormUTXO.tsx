@@ -125,6 +125,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
 
   const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [feeRate, setFeeRate] = useState<number>(0)
+  const [feeDeduction, setFeeDeduction] = useState<BaseAmount>(baseAmount(0))
   const [amountPriceValue, setAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
@@ -202,6 +203,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
           const fee = fees[selectedFeeOptionKey]
           prevSelectedFeeRef.current = O.some(fee)
           setFeeRate(rates[selectedFeeOptionKey])
+          setFeeDeduction(fees[FeeOption.Fastest])
           setAssetFee(new CryptoAmount(fees[selectedFeeOptionKey], asset))
           return fee
         })
@@ -315,15 +317,15 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
       FP.pipe(
         selectedFee,
         O.alt(() => prevSelectedFeeRef.current),
-        O.map((fee) => {
-          const max = balance.amount.minus(fee)
+        O.map(() => {
+          const max = balance.amount.minus(feeDeduction)
           const zero = baseAmount(0, max.decimal)
           return max.gt(zero) ? max : zero
         }),
         // Set maxAmount to zero as long as we dont have a feeRate
         O.getOrElse(() => ZERO_BASE_AMOUNT)
       ),
-    [balance.amount, selectedFee]
+    [balance.amount, feeDeduction, selectedFee]
   )
   // store maxAmountValue
   const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))

@@ -18,10 +18,15 @@ export const createFeesService: (client$: Client$) => FeesService = (client$) =>
   const { get$: reloadFeesWithRates$, set: reloadFeesWithRates } = observableState<Memo | undefined>(undefined)
 
   const loadFees$ = (client: LTCClient, memo?: string): FeesWithRatesLD =>
-    Rx.from(client.getFeesWithRates({ memo: memo })).pipe(
-      RxOp.mergeMap((feesWithRates) => Rx.of(RD.success(feesWithRates))),
-      RxOp.catchError((error) => Rx.of(RD.failure(error))),
-      RxOp.startWith(RD.pending) //
+    Rx.from(client.getAddressAsync()).pipe(
+      RxOp.switchMap((address) =>
+        Rx.from(client.getFeesWithRates({ memo, sender: address })).pipe(
+          RxOp.map(RD.success),
+          RxOp.catchError((error) => Rx.of(RD.failure(error))),
+          RxOp.startWith(RD.pending)
+        )
+      ),
+      RxOp.startWith(RD.pending)
     )
 
   /**

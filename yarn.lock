@@ -7237,22 +7237,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-bitcoincash@npm:^0.17.7":
-  version: 0.17.7
-  resolution: "@xchainjs/xchain-bitcoincash@npm:0.17.7"
+"@xchainjs/xchain-bitcoincash@npm:^0.17.8":
+  version: 0.17.8
+  resolution: "@xchainjs/xchain-bitcoincash@npm:0.17.8"
   dependencies:
     uniqid: ^5.4.0
   peerDependencies:
     "@psf/bitcoincashjs-lib": ^4.0.3
-    "@xchainjs/xchain-client": ^0.16.0
-    "@xchainjs/xchain-crypto": ^0.3.0
+    "@xchainjs/xchain-client": ^0.16.1
+    "@xchainjs/xchain-crypto": ^0.3.1
     "@xchainjs/xchain-util": ^0.13.1
-    "@xchainjs/xchain-utxo": ^0.1.1
-    "@xchainjs/xchain-utxo-providers": ^0.2.10
+    "@xchainjs/xchain-utxo": ^0.1.2
+    "@xchainjs/xchain-utxo-providers": ^0.2.11
     axios: ^1.3.6
     bchaddrjs: ^0.5.2
     coinselect: 3.1.12
-  checksum: b358a3539f37dddac28bbde1d15673100fadf5ba080493494b48c763a17ecff7bd7e34964f0b4398c0475f351509133a423d25f49e5f92cb36be0af1ac9ad7f2
+  checksum: e4deb982bf304ae7b201af40d768fe7ba3a4ac43d32031a2130c3c82f7bd0ad314c7561f79584b59a0d112669fff2260ee8555c8db305bc98e08f4295a5cdbaf
   languageName: node
   linkType: hard
 
@@ -8398,7 +8398,7 @@ __metadata:
     "@xchainjs/xchain-avax": 0.4.5
     "@xchainjs/xchain-binance": ^5.7.8
     "@xchainjs/xchain-bitcoin": ^0.23.9
-    "@xchainjs/xchain-bitcoincash": ^0.17.7
+    "@xchainjs/xchain-bitcoincash": ^0.17.8
     "@xchainjs/xchain-bsc": 0.4.4
     "@xchainjs/xchain-client": ^0.16.0
     "@xchainjs/xchain-cosmos": 0.21.10
