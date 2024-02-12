@@ -365,12 +365,6 @@ export const addressInAvaxWhitelist = (address: Address): boolean => addressInLi
 export const addressInBscWhitelist = (address: Address): boolean => addressInList(address, bscTokenWhiteListAssetOnly)
 
 /**
- * Checks whether an asset is black listed for Binance or not
- */
-export const assetInBinanceBlacklist = (network: Network, asset: Asset): boolean =>
-  FP.pipe(BinanceBlackList[network], assetInList(asset))
-
-/**
  * Check whether an asset is XRune asset
  */
 export const isXRuneAsset = (asset: Asset): boolean =>

@@ -1,4 +1,5 @@
-import { ChainId, DEPOSIT_GAS_LIMIT_VALUE, ThorchainDepositResponse } from '@xchainjs/xchain-thorchain'
+import cosmosclient from '@cosmos-client/core'
+import { DEPOSIT_GAS_LIMIT_VALUE } from '@xchainjs/xchain-thorchain'
 import axios from 'axios'
 import { AccAddress, Msg, codec } from 'cosmos-client'
 import { TransactionsApi } from 'cosmos-client/api'
@@ -9,10 +10,27 @@ import {
   // bank
 } from 'cosmos-client/x/bank'
 
+export type ChainId = string
 export type BaseAccountResponse = {
   type?: string
   value?: { account_number: string; sequence: string }
 }
+
+export type AminoWrapping<T> = {
+  type: string
+  value: T
+}
+export type ThorchainDepositResponse = AminoWrapping<{
+  msg: AminoWrapping<{
+    coins: MsgCoin[]
+    memo: string
+    signer: string
+  }>[]
+  fee: cosmosclient.proto.cosmos.tx.v1beta1.Fee
+  signatures: string[]
+  memo: string
+  timeout_height: string
+}>
 
 // MsgNativeTx (legacy)
 // Copied from (deprecated) xchain-thorchain@0.23.0

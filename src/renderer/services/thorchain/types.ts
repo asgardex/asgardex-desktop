@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Client, ClientUrl, DepositParam, NodeUrl } from '@xchainjs/xchain-thorchain'
+import { Client, DepositParam } from '@xchainjs/xchain-thorchain'
 import type * as TN from '@xchainjs/xchain-thornode'
 import { Address, Asset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -8,6 +8,7 @@ import * as t from 'io-ts'
 import { IntlShape } from 'react-intl'
 import * as Rx from 'rxjs'
 
+import { Network, NodeUrl } from '../../../shared/api/types'
 import { EnabledChain } from '../../../shared/utils/chain'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
@@ -42,6 +43,7 @@ export type Client$ = C.Client$<Client>
 export type ClientState = C.ClientState<Client>
 export type ClientState$ = C.ClientState$<Client>
 
+export type ClientUrl = Record<Network, NodeUrl>
 export type ClientUrl$ = Rx.Observable<ClientUrl>
 export type ClientUrlLD = LiveData<Error, ClientUrl>
 export type ClientUrlRD = RD.RemoteData<Error, ClientUrl>
