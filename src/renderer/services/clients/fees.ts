@@ -25,12 +25,19 @@ export const createFeesService = ({ client$ }: { client$: XChainClient$; chain: 
         FP.pipe(
           oClient,
           O.fold(
-            () => Rx.EMPTY,
-            (client) => Rx.from(client.getFees())
+            () => Rx.of(RD.failure(new Error('Client not found'))),
+            (client) =>
+              Rx.from(client.getAddressAsync()).pipe(
+                RxOp.switchMap((address) =>
+                  Rx.from(client.getFees({ sender: address })).pipe(
+                    RxOp.map(RD.success),
+                    RxOp.catchError((error) => Rx.of(RD.failure(error)))
+                  )
+                )
+              )
           )
         )
       ),
-      RxOp.map(RD.success),
       RxOp.startWith(RD.pending)
     )
 
