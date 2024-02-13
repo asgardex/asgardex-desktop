@@ -2,7 +2,7 @@ import cosmosclient from '@cosmos-client/core'
 import type Transport from '@ledgerhq/hw-transport'
 import THORChainApp, { extractSignatureFromTLV, LedgerErrorType } from '@xchainjs/ledger-thorchain'
 import { TxHash } from '@xchainjs/xchain-client'
-import { CosmosSDKClient } from '@xchainjs/xchain-cosmos'
+import { Client as CosmosSDKClient } from '@xchainjs/xchain-cosmos-sdk'
 import { AssetRuneNative, DEFAULT_GAS_LIMIT_VALUE, getChainId, getDenom, getPrefix } from '@xchainjs/xchain-thorchain'
 import { Address, Asset, assetToString, BaseAmount, delay } from '@xchainjs/xchain-util'
 import { AccAddress, PubKeySecp256k1, Msg, CosmosSDK } from 'cosmos-client'
@@ -58,7 +58,7 @@ export const send = async ({
 
     const chainId = await getChainId(nodeUrl)
 
-    const cosmos = new CosmosSDKClient({ server: nodeUrl, chainId, prefix })
+    const cosmos = new CosmosSDKClient({ ...CosmosSDKClient, chainId, prefix, network })
 
     const accAddress = cosmosclient.AccAddress.fromString(bech32Address)
 

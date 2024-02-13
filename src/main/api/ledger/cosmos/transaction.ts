@@ -3,15 +3,7 @@ import cosmosclient from '@cosmos-client/core'
 import CosmosApp from '@ledgerhq/hw-app-cosmos'
 import type Transport from '@ledgerhq/hw-transport'
 import { TxHash } from '@xchainjs/xchain-client'
-import {
-  Client,
-  DEFAULT_GAS_LIMIT,
-  getDenom,
-  protoFee,
-  protoAuthInfo,
-  protoMsgSend,
-  protoTxBody
-} from '@xchainjs/xchain-cosmos'
+import { Client, DEFAULT_GAS_LIMIT, getDenom } from '@xchainjs/xchain-cosmos'
 import { Address, Asset, assetToString, BaseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
@@ -20,7 +12,7 @@ import sortKeys from 'sort-keys'
 
 import { getChainId } from '../../../../shared/api/cosmos'
 import { LedgerError, LedgerErrorId, Network } from '../../../../shared/api/types'
-import { getClientUrls, INITIAL_CHAIN_IDS } from '../../../../shared/cosmos/client'
+import { getClientUrls } from '../../../../shared/cosmos/client'
 import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
 import { getDerivationPath } from './common'
@@ -95,11 +87,10 @@ export const send = async ({
 
     const client = new Client({
       network: clientNetwork,
-      clientUrls,
-      chainIds: { ...INITIAL_CHAIN_IDS, [network]: chainId }
+      clientUrls
     })
 
-    const sdk = client.getSDKClient()
+    const sdk = client
     const account = await sdk.getAccount(senderAcc)
     const { sequence, account_number } = account
     if (!sequence) throw Error(`Transfer failed - missing sequence`)
