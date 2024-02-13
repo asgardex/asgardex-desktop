@@ -518,6 +518,7 @@ type SaversMessageKey =
   | 'savers.detail.current.title'
   | 'savers.detail.redeem.title'
   | 'savers.detail.percent'
+  | 'savers.detail.totalGrowth'
   | 'savers.detail.priceGrowth'
   | 'savers.detail.assetAmount'
   | 'savers.info.max.redeem.value'

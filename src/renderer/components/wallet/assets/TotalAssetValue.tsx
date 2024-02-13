@@ -68,7 +68,7 @@ export const TotalAssetValue: React.FC<Props> = (props): JSX.Element => {
   const totalBalanceDisplay = useMemo(() => {
     const total = chartData.reduce((acc, { value }) => acc + value, 0)
     const formattedTotal = hidePrivateData ? hiddenString : total.toFixed(2)
-    return <div className="text-[16px] text-text2 hover:text-turquoise dark:text-text2d">{`$ ${formattedTotal}`}</div>
+    return <div className="text-[24px] text-text2 hover:text-turquoise dark:text-text2d">{`$ ${formattedTotal}`}</div>
   }, [chartData, hidePrivateData])
   const filteredChartData = chartData.filter((entry) => entry.value !== 0.0)
 

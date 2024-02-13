@@ -27,7 +27,7 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { Network } from '../../../../shared/api/types'
+import { Dex, Network } from '../../../../shared/api/types'
 import { ASGARDEX_THORNAME } from '../../../../shared/const'
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString } from '../../../../shared/utils/chain'
@@ -165,6 +165,7 @@ export type Props = {
   symAssetMismatch: LiquidityProviderAssetMismatchRD
   openAsymDepositTool: FP.Lazy<void>
   hidePrivateData: boolean
+  dex: Dex
 }
 
 type SelectedInput = 'asset' | 'rune' | 'none'
@@ -206,7 +207,8 @@ export const SymDeposit: React.FC<Props> = (props) => {
     hasAsymAssets: hasAsymAssetsRD,
     symAssetMismatch: symAssetMismatchRD,
     openAsymDepositTool,
-    hidePrivateData
+    hidePrivateData,
+    dex
   } = props
 
   const intl = useIntl()
@@ -816,11 +818,12 @@ export const SymDeposit: React.FC<Props> = (props) => {
             assetWalletType: assetWB.walletType,
             assetWalletIndex: assetWB.walletIndex,
             assetHDMode: assetWB.hdMode,
-            assetSender: assetAddress
+            assetSender: assetAddress,
+            dex: dex
           }
         })
       ),
-    [oPoolAddress, oRuneWB, oAssetWB, asset, runeAmountToDeposit, assetAmountToDepositMax1e8, assetDecimal]
+    [oPoolAddress, oRuneWB, oAssetWB, asset, runeAmountToDeposit, assetAmountToDepositMax1e8, assetDecimal, dex]
   )
 
   const reloadFeesHandler = useCallback(() => {

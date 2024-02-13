@@ -109,6 +109,7 @@ export type SymDepositParams = {
   readonly assetWalletType: WalletType
   readonly assetHDMode: HDMode
   readonly assetSender: Address
+  readonly dex: Dex
 }
 
 export type SendTxParams = {

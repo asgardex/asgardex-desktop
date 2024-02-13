@@ -47,7 +47,7 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       key: 'redeemValue'
     },
     {
-      title: intl.formatMessage({ id: 'savers.detail.percent' }),
+      title: intl.formatMessage({ id: 'savers.detail.totalGrowth' }),
       dataIndex: 'redeemDepositLabel',
       key: 'redeemDeposit'
     },

@@ -1465,7 +1465,7 @@ export const Swap = ({
     if (isZeroAmountToSwap) return false
     const minAmountIn = convertBaseAmountDecimal(reccommendedAmountIn.baseAmount, amountToSwapMax1e8.decimal)
     const swapFeesIn = swapFees.inFee.amount.times(3) // average swap fees
-    const reccomendedAmount = minAmountIn.gt(swapFeesIn) ? minAmountIn : swapFeesIn
+    const reccomendedAmount = reccommendedAmountIn ? minAmountIn : swapFeesIn
     return amountToSwapMax1e8.lt(reccomendedAmount)
   }, [amountToSwapMax1e8, isZeroAmountToSwap, reccommendedAmountIn, swapFees.inFee])
 
