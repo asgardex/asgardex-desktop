@@ -1,5 +1,6 @@
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
+import { AssetAVAX } from '@xchainjs/xchain-thorchain-query'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -127,7 +128,7 @@ describe('views/pools/utils', () => {
   describe('filterTableData', () => {
     const tableData: FilterTableData[] = [
       {
-        asset: AssetBNB
+        asset: AssetAVAX
       },
       {
         asset: AssetLTC
@@ -173,9 +174,9 @@ describe('views/pools/utils', () => {
       ])
     })
 
-    it('bep2', () => {
-      const result = filterTableData(O.some('__bep2__'))(tableData)
-      expect(result).toEqual([tableData[4], tableData[9]])
+    it('avax', () => {
+      const result = filterTableData(O.some('__avax__'))(tableData)
+      expect(result).toEqual([tableData[0]])
     })
 
     it('erc20', () => {

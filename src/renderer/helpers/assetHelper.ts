@@ -1,5 +1,6 @@
 import { AssetDASH } from '@xchainjs/xchain-dash'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
+import { AssetUSK } from '@xchainjs/xchain-kujira'
 import {
   Address,
   Asset,
@@ -50,7 +51,11 @@ import {
   AssetSynthBCH,
   AssetSynthAVAXUSDC,
   AssetSynthEthUsdc,
-  AssetSynthEthUsdt
+  AssetSynthEthUsdt,
+  AssetKUJI,
+  AssetSynthKuji,
+  AssetSynthUsk,
+  AssetSynthDash
 } from '../../shared/utils/asset'
 import { isEnabledChain } from '../../shared/utils/chain'
 import {
@@ -136,6 +141,11 @@ export const isBchAsset = (asset: Asset): boolean => eqAsset.equals(asset, Asset
 export const isDashAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetDASH)
 
 /**
+ * Checks whether an asset is a Dash asset
+ */
+export const isDashSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthDash)
+
+/**
  * Checks whether an asset is a BCH synth asset
  */
 export const isBchSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthBCH)
@@ -146,12 +156,12 @@ export const isBchSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, 
 export const isBnbAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetBNB)
 
 /**
- * Checks whether an asset is a BNB asset
+ * Checks whether an asset is a Cacao asset
  */
 export const isCacaoAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetCacao)
 
 /**
- * Checks whether an asset is a BNB asset
+ * Checks whether an asset is a Maya asset
  */
 export const isMayaAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetMaya)
 
@@ -227,10 +237,25 @@ export const isEthSynthUSDTAsset = (asset: Asset): boolean => {
  */
 export const isDogeAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetDOGE)
 /**
+ * Checks whether an asset is a DOGE asset
+ */
+export const isKujiAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetKUJI)
+
+export const isUskAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetUSK)
+/**
  * Checks whether an asset is a DOGE synth asset
  */
 export const isDogeSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthDOGE)
 
+/**
+ * Checks whether an asset is a Kuji synth asset
+ */
+export const isKujiSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthKuji)
+
+/**
+ * Checks whether an asset is a USK synth asset
+ */
+export const isUskSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthUsk)
 /**
  * Checks whether an asset is a ATOM asset
  */

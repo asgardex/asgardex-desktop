@@ -38,8 +38,10 @@ import { isUSDAsset } from '../../helpers/assetHelper'
 import { isMayaChain, isThorChain } from '../../helpers/chainHelper'
 import { sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
+import { hiddenString } from '../../helpers/stringHelper'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePricePool } from '../../hooks/usePricePool'
+import { usePrivateData } from '../../hooks/usePrivateData'
 import { WalletAddress$ } from '../../services/clients'
 import { SaverProviderRD } from '../../services/thorchain/types'
 import { ledgerAddressToWalletAddress } from '../../services/wallet/util'
@@ -53,6 +55,7 @@ type AssetProps = {
   percent: BigNumber
   network: Network
   walletType: WalletType
+  privateData: boolean
 }
 export type ParentProps = {
   assetDetails: AssetProps[]
@@ -60,6 +63,8 @@ export type ParentProps = {
 
 export const SaversDetailsView: React.FC = (): JSX.Element => {
   const intl = useIntl()
+
+  const { isPrivate } = usePrivateData()
 
   const { network } = useNetwork()
   const {
@@ -232,7 +237,8 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
                 deposit: { amount: depositValue, price: depositPrice },
                 redeem: { amount: redeemValue, price: redeemPrice },
                 percent: growthPercent.times(100),
-                walletType
+                walletType,
+                privateData: isPrivate
               }
             }
           )
@@ -241,7 +247,7 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
       .filter((item): item is AssetProps => item !== null)
 
     setAssetDetailsArray(assetDetails)
-  }, [allSaverProviders, network, poolsStateRD, pricePool])
+  }, [allSaverProviders, isPrivate, network, poolsStateRD, pricePool])
 
   const totalRedeemPrice = useMemo(() => {
     const sum = assetDetailsArray.reduce((acc, item) => {
@@ -262,10 +268,10 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
         <Styled.TitleContainer>
           <Styled.BalanceTitle>{intl.formatMessage({ id: 'wallet.shares.total' })}</Styled.BalanceTitle>
         </Styled.TitleContainer>
-        <Styled.BalanceLabel>{totalRedeemPrice}</Styled.BalanceLabel>
+        <Styled.BalanceLabel>{isPrivate ? hiddenString : totalRedeemPrice}</Styled.BalanceLabel>
       </Styled.Container>
     )
-  }, [intl, totalRedeemPrice])
+  }, [intl, isPrivate, totalRedeemPrice])
 
   const refreshHandler = useCallback(() => {
     reloadAllPools()

@@ -66,7 +66,7 @@ export const AccountAddressSelector: React.FC<Props> = (props) => {
                   )}
                 </Styled.MenuItemWrapper>
               ),
-              key: address
+              key: `${chain}:${address}`
             }
           })
         )}

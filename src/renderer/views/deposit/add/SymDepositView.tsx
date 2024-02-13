@@ -25,6 +25,7 @@ import { hasLedgerAddress } from '../../../helpers/addressHelper'
 import { sequenceTRD } from '../../../helpers/fpHelpers'
 import * as PoolHelpers from '../../../helpers/poolHelper'
 import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
+import { useDex } from '../../../hooks/useDex'
 import { useLedgerAddresses } from '../../../hooks/useLedgerAddresses'
 import { useLiquidityProviders } from '../../../hooks/useLiquidityProviders'
 import { useNetwork } from '../../../hooks/useNetwork'
@@ -52,6 +53,8 @@ export const SymDepositView: React.FC<Props> = (props) => {
 
   const { network } = useNetwork()
   const { isPrivate } = usePrivateData()
+
+  const { dex } = useDex()
 
   const { reloadInboundAddresses } = useThorchainContext()
 
@@ -219,6 +222,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
           assetWalletType={assetWalletAddress.type}
           runeWalletType={runeWalletAddress.type}
           hidePrivateData={isPrivate}
+          dex={dex}
         />
       </>
     ),
@@ -246,7 +250,8 @@ export const SymDepositView: React.FC<Props> = (props) => {
       openAsymDepositTool,
       assetWalletAddress.type,
       runeWalletAddress.type,
-      isPrivate
+      isPrivate,
+      dex
     ]
   )
 
@@ -303,6 +308,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
               assetWalletType={assetWalletAddress.type}
               runeWalletType={runeWalletAddress.type}
               hidePrivateData={isPrivate}
+              dex={dex}
             />
           </>
         )

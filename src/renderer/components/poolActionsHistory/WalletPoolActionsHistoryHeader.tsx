@@ -3,7 +3,7 @@ import React from 'react'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
-import { Network } from '../../../shared/api/types'
+import { Dex, Network } from '../../../shared/api/types'
 import { WalletAddress, WalletAddresses } from '../../../shared/wallet/types'
 import { AccountAddressSelector } from '../AccountAddressSelector'
 import { PoolActionsHistoryFilter } from './PoolActionsHistoryFilter'
@@ -20,6 +20,7 @@ export type Props = {
   onWalletAddressChanged: (address: WalletAddress) => void
   onClickAddressIcon: FP.Lazy<void>
   disabled?: boolean
+  dex: Dex
 }
 
 export const WalletPoolActionsHistoryHeader: React.FC<Props> = (props) => {
@@ -32,7 +33,8 @@ export const WalletPoolActionsHistoryHeader: React.FC<Props> = (props) => {
     setFilter,
     onClickAddressIcon,
     onWalletAddressChanged,
-    disabled = false
+    disabled = false,
+    dex
   } = props
 
   return (
@@ -54,7 +56,8 @@ export const WalletPoolActionsHistoryHeader: React.FC<Props> = (props) => {
       </Styled.FilterContainer>
       <Styled.LinkContainer>
         <Styled.Headline onClick={onClickAddressIcon}>
-          RuneScan <Styled.ExplorerLinkIcon />
+          {dex === 'THOR' ? `RuneScan` : 'MayaScan'}
+          <Styled.ExplorerLinkIcon />
         </Styled.Headline>
       </Styled.LinkContainer>
     </>

@@ -94,6 +94,7 @@ export const saverDeposit$ = ({
       // Update progress
       setState({ ...getState(), step: 2, deposit: RD.progress({ loaded: 50, total }) })
       // 2. send deposit tx
+      // doesn't need arg dex as rune is never a savers
       return sendPoolTx$({
         sender,
         walletType,
@@ -205,7 +206,8 @@ export const symDeposit$ = ({
   assetWalletType,
   assetWalletIndex,
   assetHDMode,
-  assetSender
+  assetSender,
+  dex
 }: SymDepositParams): SymDepositState$ => {
   // total of progress
   const total = O.some(100)
@@ -247,7 +249,8 @@ export const symDeposit$ = ({
         recipient: poolAddresses.address,
         amount: amounts.asset,
         memo: memos.asset,
-        feeOption: ChainTxFeeOption.DEPOSIT
+        feeOption: ChainTxFeeOption.DEPOSIT,
+        dex
       })
     }),
     // Add failures of asset deposit tx to state
@@ -275,7 +278,8 @@ export const symDeposit$ = ({
         recipient: '', // no recipient for RUNE needed
         amount: amounts.rune,
         memo: memos.rune,
-        feeOption: ChainTxFeeOption.DEPOSIT
+        feeOption: ChainTxFeeOption.DEPOSIT,
+        dex
       })
     }),
     // Add failures of RUNE deposit tx to state

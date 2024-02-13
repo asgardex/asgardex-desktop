@@ -83,7 +83,7 @@ export const useMidgardHistoryActions = (itemsPerPage = 10) => {
         Rx.combineLatest([
           requestParams$,
           reloadHistory$.pipe(
-            RxOp.debounceTime(300) // debounce reload time
+            RxOp.debounceTime(500) // debounce reload time
           )
         ]),
         RxOp.switchMap(([parameters]) => getActions$(parameters)),

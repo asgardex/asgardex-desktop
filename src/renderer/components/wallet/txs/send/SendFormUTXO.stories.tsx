@@ -10,13 +10,14 @@ import { getMockRDValueFactory, RDStatus } from '../../../../../shared/mock/rdBy
 import { mockValidatePassword$ } from '../../../../../shared/mock/wallet'
 import { AssetBTC } from '../../../../../shared/utils/asset'
 import { WalletType } from '../../../../../shared/wallet/types'
+import { useMayachainQueryContext } from '../../../../contexts/MayachainQueryContext'
 import { useThorchainQueryContext } from '../../../../contexts/ThorchainQueryContext'
 import { THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
 import { mockWalletBalance } from '../../../../helpers/test/testWalletHelper'
 import { FeesWithRatesRD } from '../../../../services/bitcoin/types'
 import { SendTxStateHandler } from '../../../../services/chain/types'
 import { ApiError, ErrorId, WalletBalance } from '../../../../services/wallet/types'
-import { SendFormBTC as Component } from './SendFormBTC'
+import { SendFormUTXO as Component } from './SendFormUTXO'
 
 type Args = {
   txRDStatus: RDStatus
@@ -73,6 +74,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
     )
   )
   const { thorchainQuery } = useThorchainQueryContext()
+  const { mayachainQuery } = useMayachainQueryContext()
 
   return (
     <Component
@@ -85,6 +87,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
       reloadFeesHandler={() => console.log('reload fees')}
       validatePassword$={mockValidatePassword$}
       thorchainQuery={thorchainQuery}
+      mayachainQuery={mayachainQuery}
       network="testnet"
       openExplorerTxUrl={(txHash: TxHash) => {
         console.log(`Open explorer - tx hash ${txHash}`)

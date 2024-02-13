@@ -10,6 +10,7 @@ import { AssetDASH, DASH_DECIMAL, DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-mayamidgard'
@@ -32,7 +33,7 @@ import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import * as O from 'fp-ts/lib/Option'
 import * as P from 'fp-ts/lib/Predicate'
 
-import { AssetBTC, AssetETH } from '../../../shared/utils/asset'
+import { AssetBTC, AssetETH, AssetKUJI } from '../../../shared/utils/asset'
 import { isEnabledChain } from '../../../shared/utils/chain'
 import { optionFromNullableString } from '../../../shared/utils/fp'
 import { convertBaseAmountDecimal, isUSDAsset, CACAO_DECIMAL, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
@@ -42,6 +43,7 @@ import { ordPricePool } from '../../helpers/fp/ord'
 import { getDeepestPool, MAYA_POOL_ADDRESS, MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { AssetWithAmount } from '../../types/asgardex'
 import { PricePoolAssets, PricePools, PricePoolAsset, PricePool, PoolData } from '../../views/pools/Pools.types'
+import { KUJI_DECIMAL } from '../kuji/const'
 import { InboundAddress } from '../mayachain/types'
 import {
   PoolAssetDetails as PoolAssetsDetail,
@@ -260,6 +262,11 @@ export const getOutboundAssetFeeByChain = (
           return O.some({
             amount: baseAmount(value, THORCHAIN_DECIMAL),
             asset: AssetRuneNative
+          })
+        case KUJIChain:
+          return O.some({
+            amount: baseAmount(value, KUJI_DECIMAL),
+            asset: AssetKUJI
           })
         // 'MAYAChain can be ignored - fees for asset side only
         case MAYAChain:

@@ -39,7 +39,7 @@ export const ViewTxButton: React.FC<Props> = ({
         window.apiUrl.openExternal(`https://track.ninerealms.com/${txHash}?logo=asgardex.png&network=${network}`)
       )
     )
-  }, [oTxHash])
+  }, [network, oTxHash])
 
   return (
     <div className="flex flex-col">

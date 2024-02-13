@@ -120,13 +120,23 @@ export const PoolActionsHistoryTable: React.FC<Props> = ({
 
   const renderTable = useCallback(
     ({ total, actions }: ActionsPage, loading = false) => {
+      const actionsWithIndex = actions.map((action, index) => ({
+        ...action,
+        uniqueIndex: index
+      }))
+
+      const logAndReturnRowKey = (action: Action & { uniqueIndex: number }) => {
+        // Use the uniqueIndex along with H.getRowKey to ensure uniqueness
+        const key = `${H.getRowKey(action)}-${action.uniqueIndex}`
+        return key
+      }
       return (
         <>
           <Styled.Table
             columns={columns}
-            dataSource={actions}
+            dataSource={actionsWithIndex}
             loading={loading}
-            rowKey={H.getRowKey}
+            rowKey={logAndReturnRowKey}
             showHeader={false}
           />
           {total > 0 && (

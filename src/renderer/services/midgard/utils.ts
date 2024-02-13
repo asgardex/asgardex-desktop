@@ -13,6 +13,7 @@ import { DOGE_DECIMAL } from '@xchainjs/xchain-doge'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTC_DECIMAL } from '@xchainjs/xchain-litecoin'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
@@ -291,9 +292,11 @@ export const getOutboundAssetFeeByChain = (
           })
         }
         // 'THORChain can be ignored - fees for asset side only
+        // Other chains can be ignored since they are for mayachain
         case THORChain:
         case DASHChain:
         case MAYAChain:
+        case KUJIChain:
           return O.none
       }
     })

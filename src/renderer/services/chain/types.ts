@@ -109,6 +109,7 @@ export type SymDepositParams = {
   readonly assetWalletType: WalletType
   readonly assetHDMode: HDMode
   readonly assetSender: Address
+  readonly dex: Dex
 }
 
 export type SendTxParams = {
@@ -302,6 +303,7 @@ export type SymWithdrawParams = {
   readonly walletType: WalletType
   readonly walletIndex: number
   readonly hdMode: HDMode
+  readonly dex: Dex
 }
 
 export type SymWithdrawStateHandler = (p: SymWithdrawParams) => WithdrawState$

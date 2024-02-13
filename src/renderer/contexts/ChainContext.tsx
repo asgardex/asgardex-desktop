@@ -18,7 +18,9 @@ import {
   symWithdraw$,
   saverWithdraw$,
   transfer$,
-  assetWithDecimal$
+  assetWithDecimal$,
+  utxoFeesWithRates$,
+  reloadUtxoFeesWithRates$
 } from '../services/chain'
 
 type ChainContextValue = {
@@ -40,6 +42,8 @@ type ChainContextValue = {
   saverWithdraw$: typeof saverWithdraw$
   transfer$: typeof transfer$
   assetWithDecimal$: typeof assetWithDecimal$
+  utxoFeesWithRates$: typeof utxoFeesWithRates$
+  reloadUtxoFeesWithRates$: typeof reloadUtxoFeesWithRates$
 }
 
 const initialContext: ChainContextValue = {
@@ -60,7 +64,9 @@ const initialContext: ChainContextValue = {
   symWithdraw$,
   saverWithdraw$,
   transfer$,
-  assetWithDecimal$
+  assetWithDecimal$,
+  utxoFeesWithRates$,
+  reloadUtxoFeesWithRates$
 }
 const ChainContext = createContext<ChainContextValue | null>(null)
 

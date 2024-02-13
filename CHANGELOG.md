@@ -1,3 +1,19 @@
+# 1.21.2 (2024-02-13)
+
+## Add
+
+- Add: Privacy mode for savers [#128](https://github.com/asgardex/asgardex-desktop/issues/128)
+- Add Kuji wallet function only [#144](https://github.com/asgardex/asgardex-desktop/issues/144)
+
+## Update/Fixes
+
+- Compress Send Screens [#145](https://github.com/asgardex/asgardex-desktop/issues/145)
+- Withdraw lp bug [#147](https://github.com/asgardex/asgardex-desktop/issues/147)
+- MAYATx route [#146](https://github.com/asgardex/asgardex-desktop/issues/146)
+- Maya.Maya Asset send bug [#152](https://github.com/asgardex/asgardex-desktop/issues/152)
+- Readme update
+- Package Updates
+
 # 1.21.1 (2024-01-24)
 
 ## Add

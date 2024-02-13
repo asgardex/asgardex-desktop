@@ -97,7 +97,8 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   )
 
   const [allSharesRD] = useObservableState<PoolSharesRD, Network>(() => {
-    const EXCLUDED_CHAINS: readonly string[] = ['BSC', 'AVAX'] // simple exclude for bsc and avax.
+    // for Thorchain need to exclude those chains that are not in the pools, tobefixed
+    const EXCLUDED_CHAINS: readonly string[] = ['BSC', 'AVAX', 'DASH', 'KUJI', 'MAYA'] // simple exclude for bsc and avax. same as ETH
     // keystore addresses
     const addresses$: WalletAddress$[] = FP.pipe(
       [...ENABLED_CHAINS],

@@ -1,23 +1,25 @@
 import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
+import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { Spin } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 
-import { SendFormBTC } from '../../../components/wallet/txs/send/'
-import { useBitcoinContext } from '../../../contexts/BitcoinContext'
+import { SendFormKUJI } from '../../../components/wallet/txs/send/'
 import { useChainContext } from '../../../contexts/ChainContext'
-import { useMidgardContext } from '../../../contexts/MidgardContext'
-import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
+import { useKujiContext } from '../../../contexts/KujiContext'
+import { useMayachainQueryContext } from '../../../contexts/MayachainQueryContext'
+import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
-import { getWalletBalanceByAddress } from '../../../helpers/walletHelper'
+import { MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
+import { liveData } from '../../../helpers/rx/liveData'
+import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
-import { FeesWithRatesLD } from '../../../services/bitcoin/types'
+import { FeeRD } from '../../../services/chain/types'
 import { WalletBalances } from '../../../services/clients'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAsset, WalletBalance } from '../../../services/wallet/types'
@@ -28,11 +30,10 @@ type Props = {
   emptyBalance: WalletBalance
 }
 
-export const SendViewBTC: React.FC<Props> = (props): JSX.Element => {
+export const SendViewKUJI: React.FC<Props> = (props): JSX.Element => {
   const { asset, emptyBalance } = props
 
   const { network } = useNetwork()
-
   const {
     balancesState$,
     keystoreService: { validatePassword$ }
@@ -45,33 +46,44 @@ export const SendViewBTC: React.FC<Props> = (props): JSX.Element => {
 
   const {
     service: {
-      pools: { poolsState$ }
+      pools: { poolsState$, selectedPricePool$ }
     }
-  } = useMidgardContext()
+  } = useMidgardMayaContext()
+
+  const pricePool = useObservableState(selectedPricePool$, MAYA_PRICE_POOL)
+
   const poolsRD = useObservableState(poolsState$, RD.pending)
   const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
 
-  const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(BTCChain))
+  const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(KUJIChain))
 
   const oWalletBalance = useMemo(
     () =>
       FP.pipe(
         oBalances,
-        O.chain((balances) => getWalletBalanceByAddress(balances, asset.walletAddress))
+        O.chain((balances) =>
+          getWalletBalanceByAddressAndAsset({ balances, address: asset.walletAddress, asset: asset.asset })
+        )
       ),
-    [asset.walletAddress, oBalances]
+    [asset, oBalances]
   )
 
   const { transfer$ } = useChainContext()
 
-  const { thorchainQuery } = useThorchainQueryContext()
+  const { mayachainQuery } = useMayachainQueryContext()
 
-  const { feesWithRates$, reloadFeesWithRates } = useBitcoinContext()
+  const { fees$, reloadFees } = useKujiContext()
 
-  const feesWithRatesLD: FeesWithRatesLD = useMemo(() => feesWithRates$(), [feesWithRates$])
-  const feesWithRatesRD = useObservableState(feesWithRatesLD, RD.initial)
+  const [feeRD] = useObservableState<FeeRD>(
+    () =>
+      FP.pipe(
+        fees$(),
+        liveData.map((fees) => fees.fast)
+      ),
+    RD.initial
+  )
 
-  const { validateAddress } = useValidateAddress(BTCChain)
+  const { validateAddress } = useValidateAddress(KUJIChain)
 
   return FP.pipe(
     oWalletBalance,
@@ -79,7 +91,7 @@ export const SendViewBTC: React.FC<Props> = (props): JSX.Element => {
       () => (
         <Spin>
           <Styled.Container>
-            <SendFormBTC
+            <SendFormKUJI
               asset={asset}
               balances={FP.pipe(
                 oBalances,
@@ -90,19 +102,20 @@ export const SendViewBTC: React.FC<Props> = (props): JSX.Element => {
               openExplorerTxUrl={openExplorerTxUrl}
               getExplorerTxUrl={getExplorerTxUrl}
               addressValidation={validateAddress}
-              feesWithRates={feesWithRatesRD}
-              reloadFeesHandler={reloadFeesWithRates}
+              fee={feeRD}
+              reloadFeesHandler={reloadFees}
               validatePassword$={validatePassword$}
-              thorchainQuery={thorchainQuery}
               network={network}
               poolDetails={poolDetails}
+              pricePool={pricePool}
+              mayachainQuery={mayachainQuery}
             />
           </Styled.Container>
         </Spin>
       ),
       (walletBalance) => (
         <Styled.Container>
-          <SendFormBTC
+          <SendFormKUJI
             asset={asset}
             balances={FP.pipe(
               oBalances,
@@ -113,12 +126,13 @@ export const SendViewBTC: React.FC<Props> = (props): JSX.Element => {
             openExplorerTxUrl={openExplorerTxUrl}
             getExplorerTxUrl={getExplorerTxUrl}
             addressValidation={validateAddress}
-            feesWithRates={feesWithRatesRD}
-            reloadFeesHandler={reloadFeesWithRates}
+            fee={feeRD}
+            reloadFeesHandler={reloadFees}
             validatePassword$={validatePassword$}
-            thorchainQuery={thorchainQuery}
             network={network}
             poolDetails={poolDetails}
+            pricePool={pricePool}
+            mayachainQuery={mayachainQuery}
           />
         </Styled.Container>
       )

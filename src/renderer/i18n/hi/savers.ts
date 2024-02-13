@@ -6,6 +6,7 @@ const savers: SaversMessages = {
   'savers.detail.current.title': 'जमा मूल्य',
   'savers.detail.redeem.title': 'भुनाने का मूल्य',
   'savers.detail.percent': 'वृद्धि',
+  'savers.detail.totalGrowth': 'वृद्धि Usd',
   'savers.detail.assetAmount': 'एसेट राशि',
   'savers.detail.priceGrowth': 'मूल्य वृद्धि',
   'savers.info.max.redeem.value': 'भुनाने के लिए अधिकतम मूल्य',

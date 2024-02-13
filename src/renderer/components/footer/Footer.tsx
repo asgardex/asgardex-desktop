@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 
-import Icon, { TwitterOutlined, BranchesOutlined, BugOutlined, GithubOutlined } from '@ant-design/icons'
+import Icon, { TwitterOutlined, BranchesOutlined, BugOutlined, GithubOutlined, GlobalOutlined } from '@ant-design/icons'
 import { Row, Col, Grid } from 'antd'
 import { useNavigate } from 'react-router-dom'
 
@@ -57,6 +57,9 @@ export const Footer: React.FC<Props> = (props): JSX.Element => {
         </Col>
         <Col span={24} md={12}>
           <Row justify={screens.md ? 'end' : 'center'} style={{ marginTop: screens.md ? '0' : '10px' }}>
+            <FooterIcon url={ExternalUrl.ASGARDEX} onClick={clickIconHandler}>
+              <GlobalOutlined />
+            </FooterIcon>
             <FooterIcon url={ExternalUrl.GITHUB_REPO} onClick={clickIconHandler}>
               <GithubOutlined />
             </FooterIcon>
@@ -66,6 +69,7 @@ export const Footer: React.FC<Props> = (props): JSX.Element => {
             <FooterIcon url={ExternalUrl.TWITTER} onClick={clickIconHandler}>
               <TwitterOutlined />
             </FooterIcon>
+
             {/* hidden in production build */}
             {isDev && commitHash && (
               <FooterIcon url={`${ExternalUrl.GITHUB_REPO}/commit/${commitHash}`} onClick={clickIconHandler}>

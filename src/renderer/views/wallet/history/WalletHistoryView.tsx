@@ -1,6 +1,7 @@
 import React, { useMemo, useCallback } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Row } from 'antd'
 import * as A from 'fp-ts/Array'
@@ -22,6 +23,8 @@ import { useChainContext } from '../../../contexts/ChainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { eqString } from '../../../helpers/fp/eq'
 import { ordWalletAddressByChain } from '../../../helpers/fp/ord'
+import { useDex } from '../../../hooks/useDex'
+import { useMayaMidgardHistoryActions } from '../../../hooks/useMayaMidgardHistoryActions'
 import { useMidgardHistoryActions } from '../../../hooks/useMidgardHistoryActions'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenAddressUrl } from '../../../hooks/useOpenAddressUrl'
@@ -32,11 +35,12 @@ const HISTORY_FILTERS: Filter[] = ['ALL', 'SWITCH', 'DEPOSIT', 'SWAP', 'WITHDRAW
 
 export const WalletHistoryView: React.FC = () => {
   const { network } = useNetwork()
+  const { dex } = useDex()
 
   const { addressByChain$ } = useChainContext()
 
   const {
-    requestParams,
+    requestParams: requestParamsThor,
     loadHistory,
     reloadHistory,
     historyPage,
@@ -47,7 +51,21 @@ export const WalletHistoryView: React.FC = () => {
     loading: loadingHistory
   } = useMidgardHistoryActions(10)
 
-  const { openExplorerTxUrl } = useOpenExplorerTxUrl(O.some(THORChain))
+  const {
+    requestParams: requestParamsMaya,
+    loadHistory: loadHistoryMaya,
+    reloadHistory: reloadHistoryMaya,
+    historyPage: historyPageMaya,
+    prevHistoryPage: prevHistoryPageMaya,
+    setFilter: setFilterMaya,
+    setAddress: setAddressMaya,
+    setPage: setPageMaya,
+    loading: loadingHistoryMaya
+  } = useMayaMidgardHistoryActions(10)
+
+  const requestParams = dex === 'THOR' ? requestParamsThor : requestParamsMaya
+
+  const { openExplorerTxUrl } = useOpenExplorerTxUrl(dex === 'THOR' ? O.some(THORChain) : O.some(MAYAChain))
 
   const keystoreAddresses$ = useMemo<Rx.Observable<WalletAddresses>>(
     () =>
@@ -85,13 +103,17 @@ export const WalletHistoryView: React.FC = () => {
           FP.pipe(
             addresses,
             // Get first address by default
-            A.head,
-            O.map(({ address }) => loadHistory({ addresses: [address] }))
+            A.findFirst((address) => address.chain === dex),
+            O.map(({ address }) => {
+              const hist =
+                dex === 'THOR' ? loadHistory({ addresses: [address] }) : loadHistoryMaya({ addresses: [address] })
+              return hist
+            })
           )
           return Rx.of(addresses)
         })
       ),
-    [keystoreAddresses$, ledgerAddresses$, loadHistory]
+    [dex, keystoreAddresses$, ledgerAddresses$, loadHistory, loadHistoryMaya]
   )
 
   const addresses = useObservableState(addresses$, [])
@@ -107,14 +129,17 @@ export const WalletHistoryView: React.FC = () => {
         O.chain((paramAddress) =>
           FP.pipe(
             addresses,
-            A.findFirst(({ address }) => eqString.equals(address, paramAddress))
+            A.findFirst(({ address }) => {
+              const addrs = eqString.equals(address, paramAddress)
+              return addrs
+            })
           )
         )
       ),
     [addresses, requestParams.addresses]
   )
 
-  const openAddressUrl = useOpenAddressUrl(THORChain)
+  const openAddressUrl = useOpenAddressUrl(dex === 'THOR' ? O.some(THORChain) : O.some(MAYAChain))
 
   const openAddressUrlHandler = useCallback(() => {
     FP.pipe(
@@ -136,39 +161,46 @@ export const WalletHistoryView: React.FC = () => {
         network={network}
         availableFilters={HISTORY_FILTERS}
         currentFilter={currentFilter}
-        setFilter={setFilter}
-        onWalletAddressChanged={setAddress}
+        setFilter={dex === 'THOR' ? setFilter : setFilterMaya}
+        onWalletAddressChanged={dex === 'THOR' ? setAddress : setAddressMaya}
         onClickAddressIcon={openAddressUrlHandler}
         disabled={!RD.isSuccess(historyPage)}
+        dex={dex}
       />
     ),
     [
       addresses,
       currentFilter,
+      dex,
       historyPage,
       network,
       oSelectedWalletAddress,
       openAddressUrlHandler,
       setAddress,
-      setFilter
+      setAddressMaya,
+      setFilter,
+      setFilterMaya
     ]
   )
 
   return (
     <>
       <Row justify="end" style={{ marginBottom: '20px' }}>
-        <RefreshButton onClick={reloadHistory} disabled={loadingHistory} />
+        <RefreshButton
+          onClick={dex === 'THOR' ? reloadHistory : reloadHistoryMaya}
+          disabled={loadingHistory || loadingHistoryMaya}
+        />
       </Row>
       <AssetsNav />
       <PoolActionsHistory
         network={network}
         headerContent={headerContent}
         currentPage={requestParams.page + 1}
-        historyPageRD={historyPage}
-        prevHistoryPage={prevHistoryPage}
+        historyPageRD={dex === 'THOR' ? historyPage : historyPageMaya}
+        prevHistoryPage={dex === 'THOR' ? prevHistoryPage : prevHistoryPageMaya}
         openExplorerTxUrl={openExplorerTxUrl}
-        changePaginationHandler={setPage}
-        reloadHistory={reloadHistory}
+        changePaginationHandler={dex === 'THOR' ? setPage : setPageMaya}
+        reloadHistory={dex === 'THOR' ? reloadHistory : reloadHistoryMaya}
       />
     </>
   )

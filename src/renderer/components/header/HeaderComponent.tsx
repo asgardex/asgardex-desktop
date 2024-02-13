@@ -50,6 +50,7 @@ export type Props = {
   wallets: KeystoreWalletsUI
   network: Network
   dex: Dex
+  changeDex: (dex: Dex) => void
   lockHandler: FP.Lazy<void>
   changeWalletHandler$: ChangeKeystoreWalletHandler
   setSelectedPricePool: (asset: PricePoolAsset) => void
@@ -76,6 +77,7 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
     wallets,
     network,
     dex,
+    changeDex = FP.constVoid,
     pricePools: oPricePools,
     runePrice: runePriceRD,
     mayaPrice: mayaPriceRD,
@@ -312,7 +314,6 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
     () => (
       <Styled.LogoWrapper>
         <Styled.AsgardexLogo />
-        <Styled.DexLabel dex={dex}>{dex}</Styled.DexLabel>
         <Styled.NetworkLabel network={network} dex={dex}>
           {network}
         </Styled.NetworkLabel>
@@ -335,6 +336,9 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
       }
     }
   }, [dex, runePriceRD, reloadRunePrice, mayaPriceRD, reloadMayaPrice])
+  const changeDexHandler = useCallback(() => {
+    changeDex(dex === 'THOR' ? 'MAYA' : 'THOR')
+  }, [changeDex, dex])
   return (
     <>
       <Styled.HeaderContainer>
@@ -346,6 +350,7 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
                   {renderLogo}
                   <HeaderStats
                     dex={dex}
+                    changeDexHandler={changeDexHandler}
                     runePrice={dexPrice.price}
                     reloadRunePrice={dexPrice.reloadPrice}
                     volume24Price={volume24PriceRD}
@@ -381,6 +386,7 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
                 <Row>
                   <HeaderStats
                     dex={dex}
+                    changeDexHandler={changeDexHandler}
                     runePrice={runePriceRD}
                     reloadRunePrice={reloadRunePrice}
                     volume24Price={volume24PriceRD}

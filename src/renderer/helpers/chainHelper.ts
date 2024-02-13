@@ -1,13 +1,14 @@
 import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
 import { AssetBNB, BNBChain } from '@xchainjs/xchain-binance'
-import { AssetBTC, BTCChain } from '@xchainjs/xchain-bitcoin'
-import { AssetBCH, BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { AssetBTC, BTCChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDBTC } from '@xchainjs/xchain-bitcoin'
+import { AssetBCH, BCHChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDBCH } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC, BSCChain } from '@xchainjs/xchain-bsc'
 import { AssetATOM, GAIAChain } from '@xchainjs/xchain-cosmos'
-import { AssetDASH, DASHChain } from '@xchainjs/xchain-dash'
-import { AssetDOGE, DOGEChain } from '@xchainjs/xchain-doge'
+import { AssetDASH, DASHChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDDASH } from '@xchainjs/xchain-dash'
+import { AssetDOGE, DOGEChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDDOGE } from '@xchainjs/xchain-doge'
 import { AssetETH, ETHChain } from '@xchainjs/xchain-ethereum'
-import { AssetLTC, LTCChain } from '@xchainjs/xchain-litecoin'
+import { AssetKUJI, KUJIChain } from '@xchainjs/xchain-kujira'
+import { AssetLTC, LTCChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDLTC } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Chain } from '@xchainjs/xchain-util'
@@ -43,6 +44,26 @@ export const getChainAsset = (chain: Chain): Asset => {
       return AssetDOGE
     case DASHChain:
       return AssetDASH
+    case KUJIChain:
+      return AssetKUJI
+  }
+}
+// TODO (@veado) Return Maybe<Asset> instead of throwing an error
+export const getChainFeeBounds = (chain: Chain): number => {
+  if (!isEnabledChain(chain)) throw Error(`${chain} is not supported for 'getChainAsset'`)
+  switch (chain) {
+    case BTCChain:
+      return UPPER_FEE_BOUNDBTC
+    case BCHChain:
+      return UPPER_FEE_BOUNDBCH
+    case LTCChain:
+      return UPPER_FEE_BOUNDLTC
+    case DOGEChain:
+      return UPPER_FEE_BOUNDDOGE
+    case DASHChain:
+      return UPPER_FEE_BOUNDDASH
+    default:
+      return 0
   }
 }
 
@@ -97,6 +118,11 @@ export const isBchChain = (chain: Chain): boolean => eqChain.equals(chain, BCHCh
  * Check whether chain is DOGE chain
  */
 export const isDogeChain = (chain: Chain): boolean => eqChain.equals(chain, DOGEChain)
+
+/**
+ * Check whether chain is KUJI chain
+ */
+export const isKujiChain = (chain: Chain): boolean => eqChain.equals(chain, KUJIChain)
 
 /**
  * Check whether chain is Cosmos (GAIA) chain

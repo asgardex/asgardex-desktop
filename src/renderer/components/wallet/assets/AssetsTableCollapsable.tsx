@@ -30,11 +30,19 @@ import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
-import { isCacaoAsset, isDashAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
+import {
+  isCacaoAsset,
+  isDashAsset,
+  isKujiAsset,
+  isMayaAsset,
+  isRuneNativeAsset,
+  isUSDAsset
+} from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../helpers/poolHelperMaya'
 import { hiddenString, noDataString } from '../../../helpers/stringHelper'
+import { calculateMayaValueInUSD, MayaScanPriceRD } from '../../../hooks/useMayascanPrice'
 import * as poolsRoutes from '../../../routes/pools'
 import { WalletBalancesRD } from '../../../services/clients'
 import { PoolDetails as PoolDetailsMaya } from '../../../services/mayaMigard/types'
@@ -54,6 +62,7 @@ import { PricePool } from '../../../views/pools/Pools.types'
 import { ErrorView } from '../../shared/error/'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { Action as ActionButtonAction, ActionButton } from '../../uielements/button/ActionButton'
+import { ReloadButton } from '../../uielements/button/ReloadButton'
 import { QRCodeModal } from '../../uielements/qrCodeModal/QRCodeModal'
 import * as Styled from './AssetsTableCollapsable.styles'
 
@@ -77,6 +86,7 @@ type Props = {
   mimirHalt: MimirHaltRD
   hidePrivateData: boolean
   dex: Dex
+  mayaScanPrice: MayaScanPriceRD
 }
 
 export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
@@ -94,7 +104,8 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
     assetHandler,
     network,
     hidePrivateData,
-    dex
+    dex,
+    mayaScanPrice
   } = props
 
   const intl = useIntl()
@@ -116,6 +127,26 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
   const [openPanelKeys, setOpenPanelKeys] = useState<string[]>()
   // State track that user has changed collpase state
   const [collapseChangedByUser, setCollapseChangedByUser] = useState(false)
+  const [collapseAll, setCollapseAll] = useState<boolean>(false)
+
+  const handleRefreshClick = (chain: Chain) => {
+    // Assuming reloadBalancesByChain is a function that returns another function
+    const lazyReload = reloadBalancesByChain(chain)
+    lazyReload() // Invoke the returned lazy function to perform the actual reload
+  }
+
+  const handleCollapseAll = useCallback(() => {
+    if (collapseAll) {
+      // If currently set to collapse all, this will open all panels
+      // Assuming panelKeys is an array of all panel identifiers you have
+      setOpenPanelKeys(openPanelKeys) // Replace panelKeys with your actual panel keys array
+    } else {
+      // If not set to collapse all, this will collapse all panels
+      setOpenPanelKeys([]) // Pass an empty array to collapse all
+    }
+    // Toggle the collapseAll state
+    setCollapseAll(!collapseAll)
+  }, [collapseAll, openPanelKeys])
 
   // store previous data of asset data to render these while reloading
   const previousAssetsTableData = useRef<WalletBalances[]>([])
@@ -176,7 +207,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
         if (isUSDAsset(asset)) {
           price = balance.toString()
-        } else if (isCacaoAsset(asset) || isDashAsset(asset)) {
+        } else if (isCacaoAsset(asset) || isDashAsset(asset) || isKujiAsset(asset)) {
           // First try to get the price from poolDetails
           const priceOptionFromPoolDetails = getPoolPriceValueM({
             balance: { asset, amount },
@@ -221,9 +252,19 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
             } else {
               price = noDataString
             }
+            if (isMayaAsset(asset)) {
+              const mayaPrice = calculateMayaValueInUSD(amount, mayaScanPrice)
+              price = RD.isSuccess(mayaPrice)
+                ? formatAssetAmountCurrency({
+                    amount: mayaPrice.value.assetAmount,
+                    asset: mayaPrice.value.asset,
+                    decimal: isUSDAsset(mayaPrice.value.asset) ? 2 : 6,
+                    trimZeros: !isUSDAsset(mayaPrice.value.asset)
+                  })
+                : noDataString
+            }
           }
         }
-
         return (
           <div className="flex flex-col items-end justify-center font-main">
             <div className="text-16 text-text0 dark:text-text0d">{hidePrivateData ? hiddenString : balance}</div>
@@ -232,7 +273,16 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         )
       }
     }),
-    [hidePrivateData, poolDetailsMaya, mayaPricePool, poolDetails, pricePool, network, pendingPoolDetails]
+    [
+      hidePrivateData,
+      poolDetailsMaya,
+      mayaPricePool,
+      poolDetails,
+      pricePool,
+      network,
+      pendingPoolDetails,
+      mayaScanPrice
+    ]
   )
 
   const renderActionColumn = useCallback(
@@ -607,8 +657,12 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
             </Styled.HeaderAddress>
           </Col>
           <Col xs={10} md={6} lg={10}>
-            <Styled.HeaderLabel
-              color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>{`${assetsTxt}`}</Styled.HeaderLabel>
+            <div className="row flex">
+              <Styled.HeaderLabel color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>
+                {`${assetsTxt}`}
+              </Styled.HeaderLabel>
+              <ReloadButton size="small" onClick={() => handleRefreshClick(chain)}></ReloadButton>
+            </div>
           </Col>
         </Styled.HeaderRow>
       )
@@ -676,9 +730,15 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
   return (
     <>
-      <Styled.FilterCheckbox checked={filterByValue} onChange={(e) => setFilterByValue(e.target.checked)}>
-        Filter out assets below $1
-      </Styled.FilterCheckbox>
+      <Row>
+        <Styled.FilterCheckbox checked={filterByValue} onChange={(e) => setFilterByValue(e.target.checked)}>
+          {intl.formatMessage({ id: 'common.filterValue' })}
+        </Styled.FilterCheckbox>
+        <Styled.FilterCheckbox checked={collapseAll} onChange={handleCollapseAll}>
+          {intl.formatMessage({ id: 'common.collapseAll' })}
+        </Styled.FilterCheckbox>
+      </Row>
+
       <Styled.Collapse
         expandIcon={({ isActive }) => <Styled.ExpandIcon rotate={isActive ? 90 : 0} />}
         defaultActiveKey={openPanelKeys}

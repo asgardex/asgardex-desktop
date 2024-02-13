@@ -9,7 +9,9 @@ import {
   symWithdrawFee$,
   reloadWithdrawFees,
   reloadSwapFees,
-  swapFees$
+  swapFees$,
+  utxoFeesWithRates$,
+  reloadUtxoFeesWithRates$
 } from './fees'
 import { swap$, saverDeposit$, symDeposit$, symWithdraw$, saverWithdraw$, transfer$ } from './transaction'
 
@@ -34,5 +36,7 @@ export {
   symWithdraw$,
   saverWithdraw$,
   transfer$,
-  assetWithDecimal$
+  assetWithDecimal$,
+  utxoFeesWithRates$,
+  reloadUtxoFeesWithRates$
 }

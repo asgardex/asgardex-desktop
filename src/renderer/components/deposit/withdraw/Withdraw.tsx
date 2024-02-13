@@ -18,7 +18,7 @@ import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
-import { Network } from '../../../../shared/api/types'
+import { Dex, Network } from '../../../../shared/api/types'
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { isLedgerWallet } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
@@ -84,6 +84,7 @@ export type Props = {
   poolsData: PoolsDataMap
   haltedChains: Chain[]
   mimirHalt: MimirHalt
+  dex: Dex
 }
 
 /**
@@ -112,7 +113,8 @@ export const Withdraw: React.FC<Props> = ({
   network,
   poolsData,
   haltedChains,
-  mimirHalt
+  mimirHalt,
+  dex
 }) => {
   const intl = useIntl()
 
@@ -372,10 +374,11 @@ export const Withdraw: React.FC<Props> = ({
         memo,
         walletType: runeWalletType,
         walletIndex: runeWalletIndex,
-        hdMode: runeHDMode
+        hdMode: runeHDMode,
+        dex
       })
     )
-  }, [subscribeWithdrawState, withdraw$, network, memo, runeWalletType, runeWalletIndex, runeHDMode])
+  }, [subscribeWithdrawState, withdraw$, network, memo, runeWalletType, runeWalletIndex, runeHDMode, dex])
 
   const uiFeesRD: UIFeesRD = useMemo(
     () =>

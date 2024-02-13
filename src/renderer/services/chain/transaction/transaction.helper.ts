@@ -12,6 +12,7 @@ import { DOGE_DECIMAL } from '@xchainjs/xchain-doge'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTC_DECIMAL } from '@xchainjs/xchain-litecoin'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
@@ -23,6 +24,7 @@ import { Chain } from '@xchainjs/xchain-util'
 import { Network } from '../../../../shared/api/types'
 import { isEnabledChain } from '../../../../shared/utils/chain'
 import { BNB_DECIMAL, CACAO_DECIMAL } from '../../../helpers/assetHelper'
+import { KUJI_DECIMAL } from '../../kuji/const'
 
 /**
  * Returns minimal amount (threshold) needed to send a tx on given chain
@@ -59,6 +61,8 @@ export const smallestAmountToSent = (chain: Chain, _network: Network): BaseAmoun
     case DOGEChain:
       // 1000 satoshi
       return baseAmount(1000, DOGE_DECIMAL)
+    case KUJIChain:
+      return baseAmount(5000, KUJI_DECIMAL)
     case BCHChain:
       // 1000 satoshi
       return baseAmount(1000, BCH_DECIMAL)

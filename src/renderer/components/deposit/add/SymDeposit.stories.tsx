@@ -126,7 +126,8 @@ const defaultProps: SymDepositProps = {
   symAssetMismatch: RD.initial,
   openRecoveryTool: () => console.log('openRecoveryTool'),
   openAsymDepositTool: () => console.log('openAsymDepositTool'),
-  hidePrivateData: false
+  hidePrivateData: false,
+  dex: 'THOR'
 }
 
 export const Default: Story = () => <SymDeposit {...defaultProps} />

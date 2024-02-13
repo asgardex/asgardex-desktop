@@ -6,6 +6,7 @@ import { AssetBSC } from '@xchainjs/xchain-bsc'
 import { AssetATOM } from '@xchainjs/xchain-cosmos'
 import { AssetDOGE } from '@xchainjs/xchain-doge'
 import { AssetETH } from '@xchainjs/xchain-ethereum'
+import { AssetKUJI } from '@xchainjs/xchain-kujira'
 import { AssetLTC } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, AssetMaya } from '@xchainjs/xchain-mayachain'
 import {
@@ -28,8 +29,11 @@ const AssetSynthAVAX = assetFromStringEx('AVAX/AVAX')
 const AssetSynthAVAXUSDC = assetFromStringEx('AVAX/USDC-0XB97EF9EF8734C71904D8002F8B6BC66DD9C48A6E')
 const AssetSynthATOM = assetFromStringEx('GAIA/ATOM')
 const AssetSynthDOGE = assetFromStringEx('DOGE/DOGE')
+const AssetSynthKuji = assetFromStringEx('KUJI/KUJI')
+const AssetSynthUsk = assetFromStringEx('KUJI/USK')
 const AssetSynthBCH = assetFromStringEx('BCH/BCH')
 const AssetSynthBSC = assetFromStringEx('BSC/BNB')
+const AssetSynthDash = assetFromStringEx('DASH/DASH')
 
 // Re-export to have asset definition at one place only to handle xchain-* changes easily in the future
 export {
@@ -43,6 +47,7 @@ export {
   AssetSynthAVAX,
   AssetSynthAVAXUSDC,
   AssetSynthDOGE,
+  AssetSynthKuji,
   AssetSynthEth,
   AssetSynthEthUsdc,
   AssetSynthBCH,
@@ -61,5 +66,8 @@ export {
   AssetRuneNative,
   AssetRuneERC20,
   AssetRuneERC20Testnet,
-  AssetSynthEthUsdt
+  AssetSynthEthUsdt,
+  AssetKUJI,
+  AssetSynthUsk,
+  AssetSynthDash
 }

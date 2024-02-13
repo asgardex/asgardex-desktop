@@ -33,7 +33,7 @@ export const Header: React.FC = (): JSX.Element => {
   } = midgardService
 
   const { network } = useNetwork()
-  const { dex } = useDex()
+  const { dex, changeDex } = useDex()
 
   const oSelectedPricePoolAsset = useObservableState<SelectedPricePoolAsset>(selectedPricePoolAsset$, O.none)
 
@@ -54,6 +54,7 @@ export const Header: React.FC = (): JSX.Element => {
   return (
     <HeaderComponent
       dex={dex}
+      changeDex={changeDex}
       network={network}
       keystore={keystoreState}
       wallets={walletsUI}

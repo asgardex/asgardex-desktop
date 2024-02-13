@@ -8,6 +8,7 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -40,6 +41,7 @@ import * as COSMOS from '../cosmos'
 import * as DASH from '../dash'
 import * as DOGE from '../doge'
 import * as ETH from '../ethereum'
+import * as KUJI from '../kuji'
 import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
 import * as THOR from '../thorchain'
@@ -81,6 +83,7 @@ export const createBalancesService = ({
     LTC.reloadBalances()
     DOGE.reloadBalances()
     COSMOS.reloadBalances()
+    KUJI.reloadBalances()
   }
 
   // Returns lazy functions to reload balances by given chain
@@ -110,6 +113,8 @@ export const createBalancesService = ({
         return LTC.reloadBalances
       case DOGEChain:
         return DOGE.reloadBalances
+      case KUJIChain:
+        return KUJI.reloadBalances
       case GAIAChain:
         return COSMOS.reloadBalances
     }
@@ -225,6 +230,13 @@ export const createBalancesService = ({
           resetReloadBalances: DOGE.resetReloadBalances,
           balances$: DOGE.balances$({ walletType, walletIndex, hdMode }),
           reloadBalances$: DOGE.reloadBalances$
+        }
+      case KUJIChain:
+        return {
+          reloadBalances: KUJI.reloadBalances,
+          resetReloadBalances: KUJI.resetReloadBalances,
+          balances$: KUJI.balances$({ walletType, walletIndex, hdMode }),
+          reloadBalances$: KUJI.reloadBalances$
         }
       case GAIAChain:
         return {
@@ -648,6 +660,36 @@ export const createBalancesService = ({
       balancesType: 'all'
     }))
   )
+  /**
+   * Transforms KUJI balances into `ChainBalance`
+   */
+  const kujiChainBalance$: ChainBalance$ = Rx.combineLatest([
+    KUJI.addressUI$,
+    getChainBalance$({
+      chain: KUJIChain,
+      walletType: 'keystore',
+      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
+      hdMode: 'default',
+      walletBalanceType: 'all'
+    })
+  ]).pipe(
+    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
+      walletType: 'keystore',
+      chain: KUJIChain,
+      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
+      balances,
+      balancesType: 'all'
+    }))
+  )
+  /**
+   * KUJI Ledger balances
+   */
+  const kujiLedgerChainBalance$: ChainBalance$ = ledgerChainBalance$({
+    chain: KUJIChain,
+    walletBalanceType: 'all',
+    getBalanceByAddress$: KUJI.getBalanceByAddress$
+  })
 
   /**
    * DOGE Ledger balances
@@ -816,7 +858,8 @@ export const createBalancesService = ({
         BNB: [bnbChainBalance$, bnbLedgerChainBalance$],
         LTC: [ltcBalance$, ltcLedgerChainBalance$],
         DOGE: [dogeChainBalance$, dogeLedgerChainBalance$],
-        GAIA: [cosmosChainBalance$, cosmosLedgerChainBalance$]
+        GAIA: [cosmosChainBalance$, cosmosLedgerChainBalance$],
+        KUJI: [kujiChainBalance$, kujiLedgerChainBalance$]
       })
     ),
     // we ignore all `ChainBalances` with state of `initial` balances

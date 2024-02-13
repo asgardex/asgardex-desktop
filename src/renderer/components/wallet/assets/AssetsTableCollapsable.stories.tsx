@@ -184,6 +184,7 @@ const Template = (args: Partial<Record<EnabledChain, RDStatus>>) => {
       mimirHalt={RD.initial}
       hidePrivateData={false}
       dex="THOR"
+      mayaScanPrice={RD.initial}
     />
   )
 }

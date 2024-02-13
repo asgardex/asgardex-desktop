@@ -1,0 +1,32 @@
+import * as RD from '@devexperts/remote-data-ts'
+import { FeeRate, FeesWithRates } from '@xchainjs/xchain-client'
+import { Address, BaseAmount } from '@xchainjs/xchain-util'
+
+import { HDMode, WalletType } from '../../../shared/wallet/types'
+import { LiveData } from '../../helpers/rx/liveData'
+import { Memo } from '../chain/types'
+import * as C from '../clients'
+
+export type FeeRateRD = RD.RemoteData<Error, FeeRate>
+export type FeeRateLD = LiveData<Error, FeeRate>
+
+export type FeesWithRatesRD = RD.RemoteData<Error, FeesWithRates>
+export type FeesWithRatesLD = LiveData<Error, FeesWithRates>
+
+export type SendTxParams = {
+  walletType: WalletType
+  sender?: Address
+  recipient: string // to address
+  amount: BaseAmount
+  feeRate: number
+  memo?: string
+  walletIndex: number
+  hdMode: HDMode
+}
+
+export type TransactionService = C.TransactionService<SendTxParams>
+
+export type FeesService = C.FeesService & {
+  feesWithRates$: (memo?: Memo) => FeesWithRatesLD
+  reloadFeesWithRates: (memo?: Memo) => void
+}

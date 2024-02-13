@@ -35,6 +35,7 @@ import * as PoolHelpers from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { useDex } from '../../hooks/useDex'
 import { useIncentivePendulum } from '../../hooks/useIncentivePendulum'
+import { useIncentivePendulumMaya } from '../../hooks/useIncentivePendulumMaya'
 import { usePoolFilter } from '../../hooks/usePoolFilter'
 import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
 import { useProtocolLimit } from '../../hooks/useProtocolLimit'
@@ -75,7 +76,10 @@ export const ActivePools: React.FC = (): JSX.Element => {
     }
   } = useMidgardMayaContext()
   const { reload: reloadLimit, data: limitRD } = useProtocolLimit()
-  const { data: incentivePendulumRD } = useIncentivePendulum()
+  const { data: incentivePendulumThorRD } = useIncentivePendulum()
+  const { data: incentivePendulumMayaRD } = useIncentivePendulumMaya()
+
+  const incentivePendulumRD = dex === 'THOR' ? incentivePendulumThorRD : incentivePendulumMayaRD
 
   const poolsPeriod = useObservableState(dex === 'THOR' ? poolsPeriod$ : poolsPeriodMaya$, GetPoolsPeriodEnum._30d)
 
@@ -333,7 +337,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
         <>
           <Styled.AssetsFilter activeFilter={poolFilter} setFilter={setPoolFilter} poolFilters={DEFAULT_POOL_FILTERS} />
           <ProtocolLimit limit={limitRD} />
-          <IncentivePendulum incentivePendulum={incentivePendulumRD} />
+          <IncentivePendulum incentivePendulum={incentivePendulumRD} dex={dex} />
           <Table
             columns={columns}
             dataSource={dataSource}
@@ -358,6 +362,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
       setPoolFilter,
       limitRD,
       incentivePendulumRD,
+      dex,
       navigate
     ]
   )

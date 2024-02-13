@@ -19,7 +19,7 @@ import { PoolsWatchList } from '../../../shared/api/io'
 import { Network } from '../../../shared/api/types'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { isBtcAsset, isChainAsset, isEthAsset, isUSDAsset, isEthTokenAsset } from '../../helpers/assetHelper'
-import { isBnbChain, isEthChain } from '../../helpers/chainHelper'
+import { isAvaxChain, isEthChain } from '../../helpers/chainHelper'
 import { eqString, eqAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { LastblockItem as LastblockItemMaya } from '../../services/mayachain/types'
@@ -275,9 +275,9 @@ export const filterTableData =
             if (value === '__erc20__') {
               return isEthChain(asset.chain) && !isChainAsset(asset) ? O.some(tableRow) : O.none
             }
-            // bep2
-            if (value === '__bep2__') {
-              return isBnbChain(asset.chain) && !isChainAsset(asset) ? O.some(tableRow) : O.none
+            // avax
+            if (value === '__avax__') {
+              return isAvaxChain(asset.chain) ? O.some(tableRow) : O.none
             }
             // custom
             if (value.length > 0) {

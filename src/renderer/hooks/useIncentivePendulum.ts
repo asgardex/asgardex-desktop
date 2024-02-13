@@ -22,7 +22,6 @@ export type IncentivePendulumRD = RD.RemoteData<Error, IncentivePendulum>
 export const getIncentivePendulum = (totalPooledRune: string, totalActiveBond: string): IncentivePendulum => {
   const totalActiveBondAmount = baseAmount(totalActiveBond, THORCHAIN_DECIMAL)
   const totalPooledRuneAmount = baseAmount(totalPooledRune, THORCHAIN_DECIMAL)
-
   const incentivePendulumAmount = totalActiveBondAmount.gt(0)
     ? totalPooledRuneAmount.times(200).div(totalActiveBondAmount)
     : totalActiveBondAmount // zero

@@ -1,12 +1,13 @@
 import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import { baseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as NEA from 'fp-ts/NonEmptyArray'
 import * as O from 'fp-ts/Option'
 
+import { CACAO_DECIMAL, isCacaoAsset } from '../../../helpers/assetHelper'
 import { Fees } from '../fees'
 import * as Styled from './TxDetail.styles'
 import { ActionProps } from './types'
@@ -25,10 +26,16 @@ export const TxDetail: React.FC<ActionProps> = ({
       FP.pipe(
         incomes,
         A.mapWithIndex((index, { asset, amount }) => (
-          <Styled.InOutValueContainer>
+          <Styled.InOutValueContainer key={`in-${index}`}>
             {isDesktopView && <Styled.AssetIcon size="xsmall" asset={asset} network={network} />}
-            <Styled.InOutValue key={`in-${index}`}>
-              {formatAssetAmountCurrency({ trimZeros: true, amount: baseToAsset(amount), asset })}
+            <Styled.InOutValue>
+              {formatAssetAmountCurrency({
+                trimZeros: false,
+                amount: baseToAsset(
+                  isCacaoAsset(asset) ? baseAmount(amount.amount().toNumber(), CACAO_DECIMAL) : amount
+                ),
+                asset
+              })}
             </Styled.InOutValue>
           </Styled.InOutValueContainer>
         ))
@@ -40,14 +47,22 @@ export const TxDetail: React.FC<ActionProps> = ({
     () =>
       FP.pipe(
         outgos,
-        A.mapWithIndex((index, { asset, amount }) => (
-          <Styled.InOutValueContainer>
-            {isDesktopView && <Styled.AssetIcon size="xsmall" asset={asset} network={network} />}
-            <Styled.InOutValue key={`out-${index}`}>
-              {formatAssetAmountCurrency({ trimZeros: true, amount: baseToAsset(amount), asset })}
-            </Styled.InOutValue>
-          </Styled.InOutValueContainer>
-        ))
+        A.mapWithIndex((index, { asset, amount }) => {
+          return (
+            <Styled.InOutValueContainer key={`out-${index}`}>
+              {isDesktopView && <Styled.AssetIcon size="xsmall" asset={asset} network={network} />}
+              <Styled.InOutValue>
+                {formatAssetAmountCurrency({
+                  trimZeros: false,
+                  amount: baseToAsset(
+                    isCacaoAsset(asset) ? baseAmount(amount.amount().toNumber(), CACAO_DECIMAL) : amount
+                  ),
+                  asset
+                })}
+              </Styled.InOutValue>
+            </Styled.InOutValueContainer>
+          )
+        })
       ),
     [outgos, network, isDesktopView]
   )
