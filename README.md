@@ -11,6 +11,8 @@
 
 [![Discord](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/hkeJxHS7d7)
 [![Follow on Twitter](https://img.shields.io/twitter/follow/asgardex?style=social)](https://twitter.com/asgardex)
+[![Check our Website](https://img.shields.io/badge/Visit-Our%20Website-blue)](https://asgardex.com)
+
 
 ## Feature list
 
