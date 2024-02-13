@@ -45,7 +45,8 @@ const EXTERNALS_WHITELIST = [
   'explorer.mayachain.info',
   'insight.dash.org',
   'finder.kujira.network',
-  'midgard.ninerealms.com'
+  'midgard.ninerealms.com',
+  'asgardex.com'
 ]
 
 export const openExternal = (target: string) => {
