@@ -1,3 +1,4 @@
+import { Network } from '@xchainjs/xchain-client'
 import { type PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { type PoolDetail } from '@xchainjs/xchain-midgard'
 import {
@@ -16,7 +17,6 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
 import { PoolsWatchList } from '../../../shared/api/io'
-import { Network } from '../../../shared/api/types'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { isBtcAsset, isChainAsset, isEthAsset, isUSDAsset, isEthTokenAsset } from '../../helpers/assetHelper'
 import { isAvaxChain, isEthChain } from '../../helpers/chainHelper'

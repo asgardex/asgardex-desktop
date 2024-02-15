@@ -1,4 +1,5 @@
 import { WS } from '@xchainjs/xchain-binance'
+import { Network } from '@xchainjs/xchain-client'
 import * as Rx from 'rxjs'
 import { map, mergeMap, switchMap } from 'rxjs/operators'
 import { webSocket } from 'rxjs/webSocket'
@@ -21,7 +22,7 @@ const BINANCE_MAINNET_WS_URI = envOrDefault(
  */
 const wsEndpoint$ = network$.pipe(
   mergeMap((network) => {
-    if (network === 'testnet') return Rx.of(BINANCE_TESTNET_WS_URI)
+    if (network === Network.Testnet) return Rx.of(BINANCE_TESTNET_WS_URI)
     // stage|mainnet will use Binance mainnet url
     return Rx.of(BINANCE_MAINNET_WS_URI)
   })

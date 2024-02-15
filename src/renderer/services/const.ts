@@ -1,8 +1,9 @@
 import * as Client from '@xchainjs/xchain-client'
+import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 
-import { Dex, Network } from '../../shared/api/types'
+import { Dex } from '../../shared/api/types'
 import { envOrDefault } from '../../shared/utils/env'
 import { isNetwork } from '../../shared/utils/guard'
 import { SlipTolerance } from '../types/asgardex'
@@ -35,7 +36,7 @@ const ENV_NETWORK = process.env.REACT_APP_DEFAULT_NETWORK
 export const DEFAULT_NETWORK: Network =
   process.env.NODE_ENV !== 'production' && isNetwork(ENV_NETWORK) && AVAILABLE_NETWORKS.includes(ENV_NETWORK)
     ? ENV_NETWORK
-    : 'mainnet'
+    : Network.Mainnet
 
 // Pagination: max. number of items
 export const MAX_ITEMS_PER_PAGE = 10

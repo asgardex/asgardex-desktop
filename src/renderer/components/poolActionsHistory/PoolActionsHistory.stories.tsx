@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import { ComponentMeta } from '@storybook/react'
-import { TxHash } from '@xchainjs/xchain-client'
+import { Network, TxHash } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 
@@ -150,7 +150,7 @@ const Template = ({ dataStatus }: { dataStatus: RDStatus }) => {
     <WalletPoolActionsHistoryHeader
       addresses={MOCK_WALLET_ADDRESSES}
       selectedAddress={O.none}
-      network="testnet"
+      network={Network.Testnet}
       availableFilters={['ALL', 'SWITCH', 'DEPOSIT', 'SWAP', 'WITHDRAW', 'DONATE', 'REFUND']}
       currentFilter={filter}
       setFilter={setFilter}
@@ -175,7 +175,7 @@ const Template = ({ dataStatus }: { dataStatus: RDStatus }) => {
       historyPageRD={res}
       changePaginationHandler={setCurrentPage}
       currentPage={currentPage}
-      network="testnet"
+      network={Network.Testnet}
     />
   )
 }

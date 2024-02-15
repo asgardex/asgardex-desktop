@@ -1,7 +1,7 @@
 import { ComponentMeta } from '@storybook/react'
 import { BNBChain } from '@xchainjs/xchain-binance'
+import { Network } from '@xchainjs/xchain-client'
 
-import { Network } from '../../../../shared/api/types'
 import { BNB_ADDRESS_MAINNET, BNB_ADDRESS_TESTNET } from '../../../../shared/mock/address'
 import * as AT from '../../../storybook/argTypes'
 import { AddressEllipsis as Component } from './index'
@@ -25,14 +25,14 @@ const meta: ComponentMeta<typeof Template> = {
   argTypes: {
     network: AT.network,
     address: {
-      options: ['testnet', 'mainnet'],
+      options: [Network.Testnet, Network.Mainnet],
       mapping: {
         testnet: BNB_ADDRESS_TESTNET,
         mainnet: BNB_ADDRESS_MAINNET
       }
     }
   },
-  args: { network: 'mainnet', address: BNB_ADDRESS_MAINNET }
+  args: { network: Network.Mainnet, address: BNB_ADDRESS_MAINNET }
 }
 
 export default meta

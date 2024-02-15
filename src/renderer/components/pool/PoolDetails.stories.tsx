@@ -1,5 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 import * as O from 'fp-ts/Option'
 
 import { AssetETH } from '../../../shared/utils/asset'
@@ -31,7 +32,7 @@ const meta: ComponentMeta<typeof Component> = {
     unwatch: { action: 'unwatch' }
   },
   args: {
-    network: 'mainnet',
+    network: Network.Mainnet,
     historyActions,
     poolDetail: RD.success(getEmptyPoolDetail()),
     reloadPoolDetail: () => console.log('reloadPoolDetail'),

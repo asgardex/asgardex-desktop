@@ -1,8 +1,8 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { TxParams } from '@xchainjs/xchain-client'
+import { Network, TxParams } from '@xchainjs/xchain-client'
 import * as Rx from 'rxjs'
 
-import { LedgerBNBTxParams, LedgerErrorId, Network } from '../../../shared/api/types'
+import { LedgerBNBTxParams, LedgerErrorId } from '../../../shared/api/types'
 import { observableState } from '../../helpers/stateHelper'
 import { LedgerTxHashLD, LedgerTxHashRD } from '../wallet/types'
 import { LedgerService } from './types'

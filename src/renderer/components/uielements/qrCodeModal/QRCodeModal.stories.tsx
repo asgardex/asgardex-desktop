@@ -1,7 +1,7 @@
 import { ComponentMeta } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 import * as FP from 'fp-ts/lib/function'
 
-import { Network } from '../../../../shared/api/types'
 import { BNB_ADDRESS_MAINNET, BNB_ADDRESS_TESTNET } from '../../../../shared/mock/address'
 import { AssetBNB } from '../../../../shared/utils/asset'
 import * as AT from '../../../storybook/argTypes'
@@ -17,7 +17,7 @@ type StoryArgs = {
 const Template = ({ network, visible, onCancelHandler, onOkHandler }: StoryArgs) => (
   <Component
     asset={AssetBNB}
-    address={network === 'testnet' ? BNB_ADDRESS_TESTNET : BNB_ADDRESS_MAINNET}
+    address={network === Network.Testnet ? BNB_ADDRESS_TESTNET : BNB_ADDRESS_MAINNET}
     network={network}
     visible={visible}
     onCancel={onCancelHandler}
@@ -38,7 +38,7 @@ const meta: ComponentMeta<typeof Template> = {
       action: 'onCancelHandler'
     }
   },
-  args: { network: 'mainnet', visible: true }
+  args: { network: Network.Mainnet, visible: true }
 }
 
 export default meta

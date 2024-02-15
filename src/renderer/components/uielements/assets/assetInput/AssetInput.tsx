@@ -1,5 +1,6 @@
 import React, { useRef, useCallback, useState } from 'react'
 
+import { Network } from '@xchainjs/xchain-client'
 import {
   Asset,
   assetAmount,
@@ -12,7 +13,6 @@ import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/lib/function'
 import { useIntl } from 'react-intl'
 
-import { Network } from '../../../../../shared/api/types'
 import { isUSDAsset } from '../../../../helpers/assetHelper'
 import { AssetWithAmount, FixmeType } from '../../../../types/asgardex'
 import { CheckButton } from '../../button/CheckButton'

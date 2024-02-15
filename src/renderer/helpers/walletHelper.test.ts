@@ -1,6 +1,7 @@
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { Network } from '@xchainjs/xchain-client'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
@@ -198,48 +199,48 @@ describe('walletHelper', () => {
 
   describe('isEnabledLedger', () => {
     it('THOR ledger stagenet -> false', () => {
-      expect(isEnabledLedger(THORChain, 'stagenet')).toBeFalsy()
+      expect(isEnabledLedger(THORChain, Network.Stagenet)).toBeFalsy()
     })
     it('THOR ledger mainnet/testnet -> true', () => {
-      expect(isEnabledLedger(THORChain, 'mainnet')).toBeTruthy()
-      expect(isEnabledLedger(THORChain, 'testnet')).toBeTruthy()
+      expect(isEnabledLedger(THORChain, Network.Mainnet)).toBeTruthy()
+      expect(isEnabledLedger(THORChain, Network.Testnet)).toBeTruthy()
     })
     it('LTC ledger testnet -> false', () => {
-      expect(isEnabledLedger(LTCChain, 'testnet')).toBeFalsy()
+      expect(isEnabledLedger(LTCChain, Network.Testnet)).toBeFalsy()
     })
     it('LTC ledger mainnet/stagenet -> true', () => {
-      expect(isEnabledLedger(LTCChain, 'mainnet')).toBeTruthy()
-      expect(isEnabledLedger(LTCChain, 'stagenet')).toBeTruthy()
+      expect(isEnabledLedger(LTCChain, Network.Mainnet)).toBeTruthy()
+      expect(isEnabledLedger(LTCChain, Network.Stagenet)).toBeTruthy()
     })
     it('BCH ledger testnet -> false', () => {
-      expect(isEnabledLedger(BCHChain, 'testnet')).toBeFalsy()
+      expect(isEnabledLedger(BCHChain, Network.Testnet)).toBeFalsy()
     })
     it('BCH ledger mainnet/stagenet -> true', () => {
-      expect(isEnabledLedger(BCHChain, 'mainnet')).toBeTruthy()
-      expect(isEnabledLedger(BCHChain, 'stagenet')).toBeTruthy()
+      expect(isEnabledLedger(BCHChain, Network.Mainnet)).toBeTruthy()
+      expect(isEnabledLedger(BCHChain, Network.Stagenet)).toBeTruthy()
     })
     it('BTC ledger -> true', () => {
-      expect(isEnabledLedger(BTCChain, 'mainnet')).toBeTruthy()
-      expect(isEnabledLedger(BTCChain, 'testnet')).toBeTruthy()
-      expect(isEnabledLedger(BTCChain, 'stagenet')).toBeTruthy()
+      expect(isEnabledLedger(BTCChain, Network.Mainnet)).toBeTruthy()
+      expect(isEnabledLedger(BTCChain, Network.Testnet)).toBeTruthy()
+      expect(isEnabledLedger(BTCChain, Network.Stagenet)).toBeTruthy()
     })
     it('BNB ledger -> true', () => {
-      expect(isEnabledLedger(BNBChain, 'mainnet')).toBeTruthy()
-      expect(isEnabledLedger(BNBChain, 'testnet')).toBeTruthy()
-      expect(isEnabledLedger(BNBChain, 'stagenet')).toBeTruthy()
+      expect(isEnabledLedger(BNBChain, Network.Mainnet)).toBeTruthy()
+      expect(isEnabledLedger(BNBChain, Network.Testnet)).toBeTruthy()
+      expect(isEnabledLedger(BNBChain, Network.Stagenet)).toBeTruthy()
     })
     it('DOGE ledger testnet - false', () => {
-      expect(isEnabledLedger(DOGEChain, 'testnet')).toBeFalsy()
+      expect(isEnabledLedger(DOGEChain, Network.Testnet)).toBeFalsy()
     })
     it('DOGE ledger mainnet/stagenet -> true', () => {
-      expect(isEnabledLedger(DOGEChain, 'mainnet')).toBeTruthy()
-      expect(isEnabledLedger(DOGEChain, 'stagenet')).toBeTruthy()
+      expect(isEnabledLedger(DOGEChain, Network.Mainnet)).toBeTruthy()
+      expect(isEnabledLedger(DOGEChain, Network.Stagenet)).toBeTruthy()
     })
 
     it('Cosmos ledger mainnet/stagenet/testnet -> true', () => {
-      expect(isEnabledLedger(GAIAChain, 'testnet')).toBeTruthy()
-      expect(isEnabledLedger(GAIAChain, 'mainnet')).toBeTruthy()
-      expect(isEnabledLedger(GAIAChain, 'stagenet')).toBeTruthy()
+      expect(isEnabledLedger(GAIAChain, Network.Testnet)).toBeTruthy()
+      expect(isEnabledLedger(GAIAChain, Network.Mainnet)).toBeTruthy()
+      expect(isEnabledLedger(GAIAChain, Network.Stagenet)).toBeTruthy()
     })
   })
 

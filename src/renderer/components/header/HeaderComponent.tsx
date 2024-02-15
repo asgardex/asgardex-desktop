@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useCallback, useRef } from 'react'
 
+import { Network } from '@xchainjs/xchain-client'
 import { Row, Col, Grid } from 'antd'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
@@ -9,7 +10,7 @@ import { useIntl } from 'react-intl'
 import { useMatch, Link, useNavigate, useLocation } from 'react-router-dom'
 import { palette, size } from 'styled-theme'
 
-import { Dex, Network } from '../../../shared/api/types'
+import { Dex } from '../../../shared/api/types'
 import { ReactComponent as CloseIcon } from '../../assets/svg/icon-close.svg'
 import { ReactComponent as MenuIcon } from '../../assets/svg/icon-menu.svg'
 import { ReactComponent as SwapIcon } from '../../assets/svg/icon-swap.svg'

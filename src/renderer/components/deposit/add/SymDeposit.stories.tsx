@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Story, Meta } from '@storybook/react'
-import { TxHash } from '@xchainjs/xchain-client'
+import { Network, TxHash } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase, baseAmount, Asset, assetToString } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -111,7 +111,7 @@ const defaultProps: SymDepositProps = {
         })
       )
     ),
-  network: 'testnet',
+  network: Network.Testnet,
   approveERC20Token$: () => Rx.of(RD.success('txHash')),
   isApprovedERC20Token$: () => Rx.of(RD.success(true)),
   protocolLimitReached: false,

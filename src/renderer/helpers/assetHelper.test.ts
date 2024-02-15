@@ -1,4 +1,5 @@
 import { BNBChain } from '@xchainjs/xchain-binance'
+import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { assetAmount, baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
@@ -6,19 +7,7 @@ import * as O from 'fp-ts/lib/Option'
 
 import { ETHAddress } from '../../shared/ethereum/const'
 import { ERC20_TESTNET } from '../../shared/mock/assets'
-import {
-  AssetATOM,
-  AssetBCH,
-  AssetBNB,
-  AssetBTC,
-  AssetETH,
-  AssetLTC,
-  AssetRune67C,
-  AssetRuneB1A,
-  AssetRuneERC20,
-  AssetRuneERC20Testnet,
-  AssetRuneNative
-} from '../../shared/utils/asset'
+import { AssetATOM, AssetBCH, AssetBNB, AssetBTC, AssetETH, AssetLTC, AssetRuneNative } from '../../shared/utils/asset'
 import {
   AssetBUSDBAF,
   AssetBUSDBD1,
@@ -39,7 +28,6 @@ import {
   isEthAsset,
   isLtcAsset,
   isPricePoolAsset,
-  isRuneBnbAsset,
   isRuneNativeAsset,
   getEthAssetAddress,
   midgardAssetFromString,
@@ -49,9 +37,6 @@ import {
   max1e8BaseAmount,
   to1e8BaseAmount,
   getTwoSigfigAssetAmount,
-  isXRuneAsset,
-  assetInBinanceBlacklist,
-  isRuneEthAsset,
   assetInERC20Whitelist,
   addressInERC20Whitelist,
   validAssetForETH,
@@ -63,41 +48,6 @@ import {
 import { eqAsset, eqAssetAmount, eqBaseAmount, eqOAsset } from './fp/eq'
 
 describe('helpers/assetHelper', () => {
-  describe('isRuneBnbAsset', () => {
-    it('checks rune asset on mainnet', () => {
-      expect(isRuneBnbAsset(AssetRuneB1A, 'mainnet')).toBeTruthy()
-    })
-
-    it('checks rune asset on testnet', () => {
-      expect(isRuneBnbAsset(AssetRune67C, 'testnet')).toBeTruthy()
-    })
-
-    it('returns false for any other asset than RUNE on mainnet', () => {
-      expect(isRuneBnbAsset(AssetBNB, 'mainnet')).toBeFalsy()
-    })
-
-    it('returns false for any other asset than RUNE on testnet', () => {
-      expect(isRuneBnbAsset(AssetBNB, 'testnet')).toBeFalsy()
-    })
-  })
-
-  describe('isRuneEthAsset', () => {
-    it('checks rune asset for mainnet', () => {
-      expect(isRuneEthAsset(AssetRuneERC20, 'mainnet')).toBeTruthy()
-    })
-
-    it('checks rune asset testnet', () => {
-      expect(isRuneEthAsset(AssetRuneERC20Testnet, 'testnet')).toBeTruthy()
-    })
-
-    it('returns false for any other asset than RUNE on mainnet', () => {
-      expect(isRuneEthAsset(AssetETH, 'mainnet')).toBeFalsy()
-    })
-    it('returns false for any other asset than RUNE on testnet', () => {
-      expect(isRuneEthAsset(AssetETH, 'testnet')).toBeFalsy()
-    })
-  })
-
   describe('isRuneNativeAsset', () => {
     it('checks rune native asset', () => {
       expect(isRuneNativeAsset(AssetRuneNative)).toBeTruthy()
@@ -110,52 +60,18 @@ describe('helpers/assetHelper', () => {
 
   describe('isRuneAsset', () => {
     it('AssetRuneNative', () => {
-      expect(isRuneAsset(AssetRuneNative, 'mainnet')).toBeTruthy()
-      expect(isRuneAsset(AssetRuneNative, 'testnet')).toBeTruthy()
-    })
-    it('AssetRune67C', () => {
-      expect(isRuneAsset(AssetRune67C, 'testnet')).toBeTruthy()
-      expect(isRuneAsset(AssetRune67C, 'mainnet')).toBeFalsy()
-    })
-
-    it('AssetRuneB1A', () => {
-      expect(isRuneAsset(AssetRuneB1A, 'mainnet')).toBeTruthy()
-      expect(isRuneAsset(AssetRuneB1A, 'testnet')).toBeFalsy()
-    })
-    it('AssetRuneERC20', () => {
-      expect(isRuneAsset(AssetRuneERC20, 'mainnet')).toBeTruthy()
-      expect(isRuneAsset(AssetRuneERC20, 'testnet')).toBeFalsy()
-    })
-    it('AssetRuneERC20', () => {
-      expect(isRuneAsset(AssetRuneERC20Testnet, 'testnet')).toBeTruthy()
-      expect(isRuneAsset(AssetRuneERC20Testnet, 'mainnet')).toBeFalsy()
+      expect(isRuneAsset(AssetRuneNative)).toBeTruthy()
+      expect(isRuneAsset(AssetRuneNative)).toBeTruthy()
     })
     it('AssetBTC', () => {
-      expect(isRuneAsset(AssetBTC, 'testnet')).toBeFalsy()
-      expect(isRuneAsset(AssetBTC, 'mainnet')).toBeFalsy()
-    })
-  })
-
-  describe('isXRuneAsset', () => {
-    it('checks XRUNE asset (mainnet)', () => {
-      expect(isXRuneAsset(AssetXRune)).toBeTruthy()
-    })
-    it('checks XRUNE asset (testnet)', () => {
-      expect(isXRuneAsset(AssetXRuneTestnet)).toBeTruthy()
-    })
-
-    it('returns false for any other asset than XRUNE', () => {
-      expect(isXRuneAsset(AssetBNB)).toBeFalsy()
+      expect(isRuneAsset(AssetBTC)).toBeFalsy()
+      expect(isRuneAsset(AssetBTC)).toBeFalsy()
     })
   })
 
   describe('isBnbAsset', () => {
     it('checks BNB asset', () => {
       expect(isBnbAsset(AssetBNB)).toBeTruthy()
-    })
-
-    it('returns false for any other asset than BNB', () => {
-      expect(isBnbAsset(AssetRuneB1A)).toBeFalsy()
     })
   })
 
@@ -183,19 +99,11 @@ describe('helpers/assetHelper', () => {
     it('checks BTC asset', () => {
       expect(isBtcAsset(AssetBTC)).toBeTruthy()
     })
-
-    it('returns false for any other asset than BTC', () => {
-      expect(isBnbAsset(AssetRuneB1A)).toBeFalsy()
-    })
   })
 
   describe('isEthAsset', () => {
     it('checks ETH asset', () => {
       expect(isEthAsset(AssetETH)).toBeTruthy()
-    })
-
-    it('returns false for any other asset than ETH', () => {
-      expect(isEthAsset(AssetRuneB1A)).toBeFalsy()
     })
   })
 
@@ -276,25 +184,25 @@ describe('helpers/assetHelper', () => {
 
   describe('validAssetForETH', () => {
     it('ETH - mainnet', () => {
-      expect(validAssetForETH(AssetETH, 'mainnet')).toBeTruthy()
+      expect(validAssetForETH(AssetETH, Network.Mainnet)).toBeTruthy()
     })
     it('ETH - testnet', () => {
-      expect(validAssetForETH(AssetETH, 'testnet')).toBeTruthy()
+      expect(validAssetForETH(AssetETH, Network.Testnet)).toBeTruthy()
     })
     it('XRUNE - mainnet', () => {
-      expect(validAssetForETH(AssetXRune, 'mainnet')).toBeTruthy()
+      expect(validAssetForETH(AssetXRune, Network.Mainnet)).toBeTruthy()
     })
     it('XRUNE - testnet', () => {
-      expect(validAssetForETH(AssetXRune, 'testnet')).toBeTruthy()
+      expect(validAssetForETH(AssetXRune, Network.Testnet)).toBeTruthy()
     })
     it('XRUNTestnet - mainnet', () => {
-      expect(validAssetForETH(AssetXRuneTestnet, 'mainnet')).toBeFalsy()
+      expect(validAssetForETH(AssetXRuneTestnet, Network.Mainnet)).toBeFalsy()
     })
     it('XRUNTestnet - testnet', () => {
-      expect(validAssetForETH(AssetXRuneTestnet, 'testnet')).toBeTruthy()
+      expect(validAssetForETH(AssetXRuneTestnet, Network.Testnet)).toBeTruthy()
     })
     it('UNIH - mainnet', () => {
-      expect(validAssetForETH(AssetUniH, 'mainnet')).toBeFalsy()
+      expect(validAssetForETH(AssetUniH, Network.Mainnet)).toBeFalsy()
     })
   })
 
@@ -307,23 +215,8 @@ describe('helpers/assetHelper', () => {
     it('AssetBTC', () => {
       expect(FP.pipe(list, assetInList(AssetBTC))).toBeTruthy()
     })
-    it('RUNE-67C', () => {
-      expect(FP.pipe(list, assetInList(AssetRune67C))).toBeFalsy()
-    })
     it('AssetETH', () => {
       expect(FP.pipe(list, assetInList(AssetETH))).toBeFalsy()
-    })
-  })
-
-  describe('assetInBinanceBlacklist', () => {
-    it('RUNE-67C is black listed on mainnet', () => {
-      expect(assetInBinanceBlacklist('mainnet', AssetRune67C)).toBeTruthy()
-    })
-    it('RUNE-B1A is not black listed on mainnet', () => {
-      expect(assetInBinanceBlacklist('mainnet', AssetRuneB1A)).toBeFalsy()
-    })
-    it('RUNE-67C is not black listed on testnet', () => {
-      expect(assetInBinanceBlacklist('testnet', AssetRune67C)).toBeFalsy()
     })
   })
 

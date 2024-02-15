@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { BaseStory } from '@storybook/addons'
-import { TxHash } from '@xchainjs/xchain-client'
+import { Network, TxHash } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
 
@@ -41,7 +41,7 @@ export const StoryBNB: BaseStory<never, JSX.Element> = () => (
     txsPageRD={RD.initial}
     balances={balances}
     asset={AssetBNB}
-    network="testnet"
+    network={Network.Testnet}
     openExplorerTxUrl={openExplorerTxUrl}
     disableSend={false}
   />
@@ -55,7 +55,7 @@ export const StoryRuneTxSuccess: BaseStory<never, JSX.Element> = () => (
     txsPageRD={RD.initial}
     balances={balances}
     asset={AssetRune67C}
-    network="testnet"
+    network={Network.Testnet}
     openExplorerTxUrl={openExplorerTxUrl}
     disableSend={false}
   />
@@ -69,7 +69,7 @@ export const StoryRuneNoSend: BaseStory<never, JSX.Element> = () => (
     txsPageRD={RD.initial}
     balances={balances}
     asset={AssetRune67C}
-    network="testnet"
+    network={Network.Testnet}
     openExplorerTxUrl={openExplorerTxUrl}
     disableSend={true}
   />
@@ -83,7 +83,7 @@ export const StoryRuneTxError: BaseStory<never, JSX.Element> = () => (
     txsPageRD={RD.initial}
     balances={balances}
     asset={AssetRune67C}
-    network="testnet"
+    network={Network.Testnet}
     openExplorerTxUrl={openExplorerTxUrl}
     disableSend={false}
   />
@@ -97,7 +97,7 @@ export const StoryRuneNoBalances: BaseStory<never, JSX.Element> = () => (
     txsPageRD={RD.initial}
     balances={getBalances([runeBalanceEmpty, bnbBalance])}
     asset={AssetRune67C}
-    network="testnet"
+    network={Network.Testnet}
     openExplorerTxUrl={openExplorerTxUrl}
     disableSend={false}
   />
@@ -111,7 +111,7 @@ export const StoryRuneFeeNotCovered: BaseStory<never, JSX.Element> = () => (
     txsPageRD={RD.initial}
     balances={getBalances([runeBnbBalance, bnbBalanceEmpty])}
     asset={AssetRune67C}
-    network="mainnet"
+    network={Network.Testnet}
     openExplorerTxUrl={openExplorerTxUrl}
     disableSend={false}
   />

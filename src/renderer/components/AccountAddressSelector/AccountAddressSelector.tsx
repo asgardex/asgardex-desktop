@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react'
 
+import { Network } from '@xchainjs/xchain-client'
 import { Dropdown } from 'antd'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
-import { Network } from '../../../shared/api/types'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletAddress, WalletAddresses } from '../../../shared/wallet/types'
 import { truncateAddress } from '../../helpers/addressHelper'

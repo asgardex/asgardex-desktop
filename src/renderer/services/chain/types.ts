@@ -1,11 +1,11 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { FeeOption, Fees, Tx } from '@xchainjs/xchain-client'
+import { FeeOption, Fees, Network, Tx } from '@xchainjs/xchain-client'
 import { Address, Asset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 
-import { Dex, Network } from '../../../shared/api/types'
+import { Dex } from '../../../shared/api/types'
 import { WalletType, WalletAddress, HDMode } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
 import { AssetWithDecimal } from '../../types/asgardex'

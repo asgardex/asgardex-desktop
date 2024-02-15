@@ -1,5 +1,5 @@
 import { ComponentMeta } from '@storybook/react'
-import { TxHash } from '@xchainjs/xchain-client'
+import { Network, TxHash } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase, BaseAmount, baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -62,7 +62,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
       fee={feeRD}
       reloadFeesHandler={() => console.log('reload fees')}
       validatePassword$={mockValidatePassword$}
-      network="testnet"
+      network={Network.Testnet}
       openExplorerTxUrl={(txHash: TxHash) => {
         console.log(`Open explorer - tx hash ${txHash}`)
         return Promise.resolve(true)

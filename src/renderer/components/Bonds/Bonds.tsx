@@ -1,13 +1,13 @@
 import React, { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { Network } from '@xchainjs/xchain-client'
 import { Address } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
-import { Network } from '../../../shared/api/types'
 import { AddressValidation } from '../../services/clients'
 import { NodeInfos, NodeInfosRD } from '../../services/thorchain/types'
 import { ErrorView } from '../shared/error'

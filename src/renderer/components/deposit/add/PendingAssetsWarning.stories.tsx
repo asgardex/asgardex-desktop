@@ -1,8 +1,8 @@
 import { ComponentMeta } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 
-import { Network } from '../../../../shared/api/types'
 import { AssetBNB, AssetBTC } from '../../../../shared/utils/asset'
 import * as AT from '../../../storybook/argTypes'
 import { AssetWithAmount1e8, AssetsWithAmount1e8 } from '../../../types/asgardex'
@@ -42,7 +42,7 @@ const meta: ComponentMeta<typeof Template> = {
     }
   },
   args: {
-    network: 'mainnet',
+    network: Network.Mainnet,
     loading: false
   }
 }

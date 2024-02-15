@@ -1,4 +1,5 @@
 import { Meta, StoryFn } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 
@@ -9,7 +10,7 @@ const defaultProps: DepositAssetsProps = {
   stepDescription: 'step 1',
   source: O.some({ asset: AssetRuneNative, amount: assetToBase(assetAmount(30)) }),
   target: { asset: AssetBNB, amount: assetToBase(assetAmount(1)) },
-  network: 'testnet'
+  network: Network.Testnet
 }
 
 export const Sym: StoryFn = () => <DepositAssets {...defaultProps} />

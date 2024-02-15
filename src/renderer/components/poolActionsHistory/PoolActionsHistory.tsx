@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { Network } from '@xchainjs/xchain-client'
 import { Grid } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
 
-import { Network } from '../../../shared/api/types'
 import { OpenExplorerTxUrl } from '../../services/clients'
 import { ActionsPage, ActionsPageRD } from '../../services/midgard/types'
 import * as Styled from './PoolActionsHistory.styles'

@@ -1,13 +1,13 @@
 import React, { useState, useMemo, useCallback } from 'react'
 
 import { CheckCircleIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import { Network } from '@xchainjs/xchain-client'
 import { Address, Asset } from '@xchainjs/xchain-util'
 import { Form, Tooltip } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
 import { useIntl } from 'react-intl'
 
-import { Network } from '../../../shared/api/types'
 import { truncateAddress } from '../../helpers/addressHelper'
 import { hiddenString } from '../../helpers/stringHelper'
 import { AddressValidationAsync } from '../../services/clients'

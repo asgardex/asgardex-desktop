@@ -1,3 +1,4 @@
+import { Network } from '@xchainjs/xchain-client'
 import { Address } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
@@ -5,7 +6,7 @@ import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { Network, UserNodesStorage } from '../../../shared/api/types'
+import { UserNodesStorage } from '../../../shared/api/types'
 import { USER_NODES_STORAGE_DEFAULT } from '../../../shared/const'
 import { eqString } from '../../helpers/fp/eq'
 import { observableState } from '../../helpers/stateHelper'

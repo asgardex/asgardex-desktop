@@ -1,7 +1,7 @@
 import React, { useMemo, useCallback, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { Tx, TxsPage } from '@xchainjs/xchain-client'
+import { Network, Tx, TxsPage } from '@xchainjs/xchain-client'
 import { Address, baseToAsset, Chain, formatAssetAmount } from '@xchainjs/xchain-util'
 import { Grid, Col, Row } from 'antd'
 import { ColumnsType, ColumnType } from 'antd/lib/table'
@@ -9,7 +9,6 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl, FormattedTime } from 'react-intl'
 
-import { Network } from '../../../../../shared/api/types'
 import { isBnbChain } from '../../../../helpers/chainHelper'
 import { TxsPageRD } from '../../../../services/clients'
 import { MAX_ITEMS_PER_PAGE } from '../../../../services/const'

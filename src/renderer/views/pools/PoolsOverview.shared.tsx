@@ -1,10 +1,10 @@
 import { SyncOutlined } from '@ant-design/icons'
+import { Network } from '@xchainjs/xchain-client'
 import { Asset, BaseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import { ColumnType } from 'antd/lib/table'
 import * as FP from 'fp-ts/function'
 
-import { Network } from '../../../shared/api/types'
 import { ErrorView } from '../../components/shared/error'
 import { AssetIcon } from '../../components/uielements/assets/assetIcon'
 import { AssetLabel } from '../../components/uielements/assets/assetLabel'

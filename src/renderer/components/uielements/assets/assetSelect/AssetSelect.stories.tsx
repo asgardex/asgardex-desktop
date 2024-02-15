@@ -1,9 +1,9 @@
 import { useState } from 'react'
 
 import { ComponentMeta } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 import { Asset } from '@xchainjs/xchain-util'
 
-import { Network } from '../../../../../shared/api/types'
 import {
   AssetBCH,
   AssetBNB,
@@ -51,7 +51,7 @@ const meta: ComponentMeta<typeof Template> = {
       action: 'onSelect'
     }
   },
-  args: { network: 'mainnet', dialogHeadline: 'Change asset' },
+  args: { network: Network.Mainnet, dialogHeadline: 'Change asset' },
   decorators: [
     (Story) => (
       <div className="flex min-h-full w-full flex-col items-center justify-center bg-white">

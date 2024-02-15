@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { Network } from '@xchainjs/xchain-client'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { assetToString } from '@xchainjs/xchain-util'
 import { Grid } from 'antd'
@@ -13,7 +14,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { Network } from '../../../shared/api/types'
 import { ProtocolLimit, IncentivePendulum } from '../../components/pool'
 import { ManageButton } from '../../components/uielements/button'
 import { Table } from '../../components/uielements/table'

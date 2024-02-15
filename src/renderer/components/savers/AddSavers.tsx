@@ -4,6 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { EstimateAddSaver, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
@@ -31,7 +32,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { Network } from '../../../shared/api/types'
 import { ASGARDEX_THORNAME } from '../../../shared/const'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
@@ -333,15 +333,14 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       PoolHelpers.getPoolPriceValue({
         balance: { asset: asset.asset, amount: amountToSendMax1e8 },
         poolDetails,
-        pricePool,
-        network
+        pricePool
       }),
       O.getOrElse(() => baseAmount(0, amountToSendMax1e8.decimal)),
       (amount) => ({ asset: pricePool.asset, amount })
     )
 
     return new CryptoAmount(result.amount, result.asset)
-  }, [amountToSendMax1e8, network, poolDetails, pricePool, asset])
+  }, [amountToSendMax1e8, poolDetails, pricePool, asset])
 
   // price of amount to send
   const priceAmountMax1e8: CryptoAmount = useMemo(() => {
@@ -349,15 +348,14 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       PoolHelpers.getPoolPriceValue({
         balance: { asset: asset.asset, amount: maxAmountToSendMax1e8 },
         poolDetails,
-        pricePool,
-        network
+        pricePool
       }),
       O.getOrElse(() => baseAmount(0, amountToSendMax1e8.decimal)),
       (amount) => ({ asset: pricePool.asset, amount })
     )
 
     return new CryptoAmount(result.amount, result.asset)
-  }, [asset.asset, maxAmountToSendMax1e8, poolDetails, pricePool, network, amountToSendMax1e8.decimal])
+  }, [asset.asset, maxAmountToSendMax1e8, poolDetails, pricePool, amountToSendMax1e8.decimal])
 
   // Reccommend amount in for use later
   const reccommendedAmountIn: CryptoAmount = useMemo(
@@ -1216,12 +1214,11 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       PoolHelpers.getPoolPriceValue({
         balance: { asset, amount },
         poolDetails,
-        pricePool,
-        network
+        pricePool
       }),
       O.map((amount) => ({ amount, asset: pricePool.asset }))
     )
-  }, [network, poolDetails, pricePool, saverFees])
+  }, [poolDetails, pricePool, saverFees])
 
   const priceFeesLabel = useMemo(
     () =>

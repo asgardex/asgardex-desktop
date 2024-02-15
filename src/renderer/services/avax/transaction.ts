@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { AVAXChain } from '@xchainjs/xchain-avax'
-import { TxHash } from '@xchainjs/xchain-client'
+import { Network, TxHash } from '@xchainjs/xchain-client'
 import { isApproved } from '@xchainjs/xchain-evm'
 import { baseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -18,7 +18,7 @@ import {
   IPCLedgerSendTxParams,
   ipcLedgerSendTxParamsIO
 } from '../../../shared/api/io'
-import { LedgerError, Network } from '../../../shared/api/types'
+import { LedgerError } from '../../../shared/api/types'
 import { AvaxZeroAddress, DEPOSIT_EXPIRATION_OFFSET } from '../../../shared/avax/const'
 import { ROUTER_ABI } from '../../../shared/evm/abi'
 import { getBlocktime } from '../../../shared/evm/provider'
@@ -266,7 +266,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
   const approveERC20Token$ = (params: ApproveParams): TxHashLD => {
     const { contractAddress, network, walletType } = params
     // check contract address before approving
-    if (network === 'mainnet' && !addressInAvaxWhitelist(contractAddress))
+    if (network === Network.Mainnet && !addressInAvaxWhitelist(contractAddress))
       return Rx.of(
         RD.failure({
           msg: `Contract address ${contractAddress} is black listed`,

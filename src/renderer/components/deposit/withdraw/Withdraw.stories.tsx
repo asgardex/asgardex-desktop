@@ -1,7 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Story, Meta } from '@storybook/react'
 import { BNBChain } from '@xchainjs/xchain-binance'
-import { TxHash } from '@xchainjs/xchain-client'
+import { Network, TxHash } from '@xchainjs/xchain-client'
 import { Asset, assetAmount, assetToBase, assetToString, baseAmount, bn } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -66,7 +66,7 @@ const defaultProps: WitdrawProps = {
         }
       })
     ),
-  network: 'testnet',
+  network: Network.Testnet,
   poolsData: {
     [assetToString(AssetBNB)]: {
       assetBalance: baseAmount(1),

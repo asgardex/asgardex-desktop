@@ -1,12 +1,12 @@
 import { useCallback } from 'react'
 
+import { Network } from '@xchainjs/xchain-client'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 import { useNavigate, matchPath, useLocation } from 'react-router-dom'
 
-import { Network } from '../../shared/api/types'
 import { useAppContext } from '../contexts/AppContext'
 import * as poolsRoutes from '../routes/pools'
 import * as walletRoutes from '../routes/wallet'

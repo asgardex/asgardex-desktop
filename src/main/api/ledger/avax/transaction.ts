@@ -1,13 +1,13 @@
 import EthApp from '@ledgerhq/hw-app-eth'
 import type Transport from '@ledgerhq/hw-transport'
-import { FeeOption, TxHash } from '@xchainjs/xchain-client'
+import { FeeOption, Network, TxHash } from '@xchainjs/xchain-client'
 import * as AVAX from '@xchainjs/xchain-evm'
 import { Address, Asset, assetToString, BaseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
 
 import { isAvaxAsset } from '../../../../renderer/helpers/assetHelper'
-import { LedgerError, LedgerErrorId, Network } from '../../../../shared/api/types'
+import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import {
   DEPOSIT_EXPIRATION_OFFSET,
   AvaxZeroAddress,
@@ -38,7 +38,7 @@ export const send = async ({
   asset: Asset
   transport: Transport
   amount: BaseAmount
-  network: Network
+  network: string
   recipient: Address
   memo?: string
   feeOption: FeeOption

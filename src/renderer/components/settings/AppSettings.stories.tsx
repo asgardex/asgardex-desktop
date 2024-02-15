@@ -1,5 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { ComponentMeta } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -51,7 +52,7 @@ const Template = ({
   return (
     <Component
       version={'1.0.0'}
-      network="testnet"
+      network={Network.Mainnet}
       changeNetwork={changeNetwork}
       dex="THOR"
       changeDex={changeDex}

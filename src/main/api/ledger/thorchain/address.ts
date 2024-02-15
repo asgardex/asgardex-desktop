@@ -1,9 +1,10 @@
 import type Transport from '@ledgerhq/hw-transport'
 import THORChainApp, { LedgerErrorType } from '@xchainjs/ledger-thorchain'
+import { Network } from '@xchainjs/xchain-client'
 import { getPrefix, THORChain } from '@xchainjs/xchain-thorchain'
 import * as E from 'fp-ts/Either'
 
-import { LedgerError, LedgerErrorId, Network } from '../../../../shared/api/types'
+import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'

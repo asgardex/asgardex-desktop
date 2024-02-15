@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react'
 
+import { Network } from '@xchainjs/xchain-client'
 import { Asset, baseAmount, baseToAsset, Chain, formatAssetAmountCurrency, formatBN } from '@xchainjs/xchain-util'
 import { Grid, Row } from 'antd'
 import { ColumnsType, ColumnType } from 'antd/lib/table'
 import * as FP from 'fp-ts/lib/function'
 import { useIntl } from 'react-intl'
 
-import { Network } from '../../../shared/api/types'
 import { AssetRuneNative } from '../../../shared/utils/asset'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { MimirHalt } from '../../services/thorchain/types'
@@ -171,7 +171,7 @@ export const PoolShares: React.FC<Props> = ({
   )
 
   const renderAnalyticsInfo = useMemo(() => {
-    return network !== 'testnet' ? (
+    return network !== Network.Testnet ? (
       <>
         <Styled.InfoButton onClick={openShareInfo}>
           <Styled.TextLabel>{intl.formatMessage({ id: 'common.analytics' })}</Styled.TextLabel> <Styled.InfoArrow />

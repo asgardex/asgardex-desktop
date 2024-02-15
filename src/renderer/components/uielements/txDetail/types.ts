@@ -1,6 +1,7 @@
 import React from 'react'
 
-import { Network } from '../../../../shared/api/types'
+import { Network } from '@xchainjs/xchain-client'
+
 import { TxType } from '../../../services/midgard/types'
 import { AssetWithAmount } from '../../../types/asgardex'
 

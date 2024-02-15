@@ -5,13 +5,13 @@ import { toClientNetwork } from './client'
 describe('shared/utils/client', () => {
   describe('getClientNetwork', () => {
     it('for testnet', () => {
-      expect(toClientNetwork('testnet')).toEqual(Network.Testnet)
+      expect(toClientNetwork(Network.Testnet)).toEqual(Network.Testnet)
     })
     it('for stagenet', () => {
-      expect(toClientNetwork('stagenet')).toEqual(Network.Stagenet)
+      expect(toClientNetwork(Network.Stagenet)).toEqual(Network.Stagenet)
     })
     it('for mainnent', () => {
-      expect(toClientNetwork('mainnet')).toEqual(Network.Mainnet)
+      expect(toClientNetwork(Network.Mainnet)).toEqual(Network.Mainnet)
     })
   })
 })

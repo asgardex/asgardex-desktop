@@ -1,3 +1,4 @@
+import { Network } from '@xchainjs/xchain-client'
 import { Asset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
@@ -14,7 +15,6 @@ import {
   PoolsWatchLists,
   poolsWatchListsIO
 } from '../../../shared/api/io'
-import { Network } from '../../../shared/api/types'
 import { eqAsset } from '../../helpers/fp/eq'
 import { observableState } from '../../helpers/stateHelper'
 import { network$ } from '../app/service'

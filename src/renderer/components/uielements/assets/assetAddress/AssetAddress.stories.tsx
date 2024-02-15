@@ -1,4 +1,5 @@
 import { ComponentMeta } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 
 import { BNB_ADDRESS_TESTNET } from '../../../../../shared/mock/address'
 import { AssetBNB } from '../../../../../shared/utils/asset'
@@ -11,7 +12,7 @@ type Args = {
 }
 const Template = ({ size, width }: Args) => (
   <div style={{ width }}>
-    <Component asset={AssetBNB} size={size} address={BNB_ADDRESS_TESTNET} network="mainnet" />
+    <Component asset={AssetBNB} size={size} address={BNB_ADDRESS_TESTNET} network={Network.Mainnet} />
   </div>
 )
 

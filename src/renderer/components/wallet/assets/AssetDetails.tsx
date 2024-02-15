@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react'
 
+import { Network } from '@xchainjs/xchain-client'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import { Asset } from '@xchainjs/xchain-util'
@@ -9,7 +10,6 @@ import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { Network } from '../../../../shared/api/types'
 import { chainToString } from '../../../../shared/utils/chain'
 import { WalletType } from '../../../../shared/wallet/types'
 import * as AssetHelper from '../../../helpers/assetHelper'

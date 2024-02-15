@@ -1,4 +1,5 @@
 import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 
 import { BNB_ADDRESS_TESTNET, RUNE_ADDRESS_TESTNET } from '../../../../shared/mock/address'
 import { AssetBNB, AssetRuneNative } from '../../../../shared/utils/asset'
@@ -21,7 +22,7 @@ const meta: ComponentMeta<typeof Component> = {
   },
   args: {
     assets: [bnb, rune],
-    network: 'mainnet'
+    network: Network.Mainnet
   }
 }
 

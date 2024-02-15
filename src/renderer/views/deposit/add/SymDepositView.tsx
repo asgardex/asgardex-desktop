@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
+import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, assetToString } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
@@ -157,7 +158,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
     () =>
       FP.pipe(
         protocolLimitRD,
-        RD.map(({ reached }) => reached && network !== 'testnet' /* ignore it on testnet */),
+        RD.map(({ reached }) => reached && network !== Network.Testnet /* ignore it on testnet */),
         RD.getOrElse(() => false)
       ),
     [network, protocolLimitRD]

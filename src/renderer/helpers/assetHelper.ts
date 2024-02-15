@@ -1,3 +1,4 @@
+import { Network } from '@xchainjs/xchain-client'
 import { AssetDASH } from '@xchainjs/xchain-dash'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
 import { AssetUSK } from '@xchainjs/xchain-kujira'
@@ -18,7 +19,6 @@ import * as O from 'fp-ts/lib/Option'
 import * as P from 'fp-ts/lib/Predicate'
 import * as S from 'fp-ts/lib/string'
 
-import { Network } from '../../shared/api/types'
 import { AvaxZeroAddress } from '../../shared/avax/const'
 import { BscZeroAddress } from '../../shared/bsc/const'
 import { ETHAddress } from '../../shared/ethereum/const'
@@ -32,10 +32,6 @@ import {
   AssetAVAX,
   AssetBSC,
   AssetLTC,
-  AssetRune67C,
-  AssetRuneB1A,
-  AssetRuneERC20,
-  AssetRuneERC20Testnet,
   AssetRuneNative,
   AssetSynthBnb,
   AssetSynthBtc,
@@ -58,14 +54,7 @@ import {
   AssetSynthDash
 } from '../../shared/utils/asset'
 import { isEnabledChain } from '../../shared/utils/chain'
-import {
-  AssetTGTERC20,
-  AssetXRune,
-  AssetXRuneTestnet,
-  BinanceBlackList,
-  DEFAULT_PRICE_ASSETS,
-  USD_PRICE_ASSETS
-} from '../const'
+import { AssetTGTERC20, DEFAULT_PRICE_ASSETS, USD_PRICE_ASSETS } from '../const'
 import { AVAX_TOKEN_WHITELIST } from '../types/generated/thorchain/avaxerc20whitelist'
 import { BSC_TOKEN_WHITELIST } from '../types/generated/thorchain/bscerc20whitelist'
 import { ERC20_WHITELIST } from '../types/generated/thorchain/erc20whitelist'
@@ -96,19 +85,6 @@ export const CACAO_DECIMAL = 10
  * */
 export const BNB_DECIMAL = 8
 
-export const getBnbRuneAsset = (network: Network = 'testnet'): Asset => {
-  return network === 'testnet' ? AssetRune67C : AssetRuneB1A
-}
-
-export const isRuneBnbAsset = (asset: Asset, network: Network): boolean =>
-  network === 'mainnet' ? eqAsset.equals(asset, AssetRuneB1A) : eqAsset.equals(asset, AssetRune67C)
-
-export const isRuneEthAsset = (asset: Asset, network: Network): boolean =>
-  network === 'mainnet' ? eqAsset.equals(asset, AssetRuneERC20) : eqAsset.equals(asset, AssetRuneERC20Testnet)
-
-export const isNonNativeRuneAsset = (asset: Asset, network: Network): boolean =>
-  isRuneBnbAsset(asset, network) || isRuneEthAsset(asset, network)
-
 /**
  * Checks whether an asset is an RuneNative asset
  */
@@ -117,8 +93,7 @@ export const isRuneNativeAsset = (asset: Asset): boolean => eqAsset.equals(asset
 /**
  * Checks whether an asset is a Rune (native or non-native) asset
  */
-export const isRuneAsset = (asset: Asset, network: Network): boolean =>
-  isRuneNativeAsset(asset) || isNonNativeRuneAsset(asset, network)
+export const isRuneAsset = (asset: Asset): boolean => isRuneNativeAsset(asset)
 
 /**
  * Checks whether an asset is a LTC asset
@@ -344,7 +319,7 @@ export const iconUrlInBSCERC20Whitelist = (asset: Asset): O.Option<string> =>
  * (3) ERC20 asset needs to be listed in `ERC20Whitelist`
  */
 export const validAssetForETH = (asset: Asset /* ETH or ERC20 asset */, network: Network): boolean =>
-  network !== 'mainnet' /* (1) */ || isEthAsset(asset) /* (2) */ || assetInERC20Whitelist(asset)
+  network !== Network.Mainnet /* (1) */ || isEthAsset(asset) /* (2) */ || assetInERC20Whitelist(asset)
 
 /**
  * Checks whether AVAX/ERC20 asset is whitelisted or not
@@ -354,7 +329,7 @@ export const validAssetForETH = (asset: Asset /* ETH or ERC20 asset */, network:
  * (3) ERC20 asset needs to be listed in `AVAXERC20Whitelist`
  */
 export const validAssetForAVAX = (asset: Asset /* AVAX or ERC20 asset */, network: Network): boolean =>
-  network !== 'mainnet' /* (1) */ || isAvaxAsset(asset) /* (2) */ || assetInAVAXERC20Whitelist(asset)
+  network !== Network.Mainnet /* (1) */ || isAvaxAsset(asset) /* (2) */ || assetInAVAXERC20Whitelist(asset)
 
 /**
  * Checks whether ETH/ERC20 asset is whitelisted or not
@@ -364,7 +339,7 @@ export const validAssetForAVAX = (asset: Asset /* AVAX or ERC20 asset */, networ
  * (3) ERC20 asset needs to be listed in `ERC20Whitelist`
  */
 export const validAssetForBSC = (asset: Asset /* BSC or ERC20 asset */, network: Network): boolean =>
-  network !== 'mainnet' /* (1) */ || isBscAsset(asset) /* (2) */ || assetInBSCERC20Whitelist(asset)
+  network !== Network.Mainnet /* (1) */ || isBscAsset(asset) /* (2) */ || assetInBSCERC20Whitelist(asset)
 
 /**
  * Checks whether an ERC20 address is black listed or not
@@ -413,18 +388,6 @@ export const addressInAvaxWhitelist = (address: Address): boolean => addressInLi
  * Checks whether an ERC20 address is white listed or not
  */
 export const addressInBscWhitelist = (address: Address): boolean => addressInList(address, bscTokenWhiteListAssetOnly)
-
-/**
- * Checks whether an asset is black listed for Binance or not
- */
-export const assetInBinanceBlacklist = (network: Network, asset: Asset): boolean =>
-  FP.pipe(BinanceBlackList[network], assetInList(asset))
-
-/**
- * Check whether an asset is XRune asset
- */
-export const isXRuneAsset = (asset: Asset): boolean =>
-  eqAsset.equals(asset, AssetXRune) || eqAsset.equals(asset, AssetXRuneTestnet)
 
 /**
  * Check whether an asset is TGT asset

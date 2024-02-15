@@ -4,7 +4,7 @@ import type Transport from '@ledgerhq/hw-transport'
 import { BNBChain, getDerivePath, getPrefix } from '@xchainjs/xchain-binance'
 import * as E from 'fp-ts/Either'
 
-import { LedgerError, LedgerErrorId, Network } from '../../../../shared/api/types'
+import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
@@ -12,7 +12,7 @@ import { VerifyAddressHandler } from '../types'
 
 export const getAddress = async (
   transport: Transport,
-  network: Network,
+  network: string,
   walletIndex: number
 ): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {

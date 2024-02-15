@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { Network } from '@xchainjs/xchain-client'
 import { Dropdown, Collapse } from 'antd'
 import { MenuProps } from 'antd/lib/menu'
 import { ItemType } from 'antd/lib/menu/hooks/useItems'
@@ -9,7 +10,7 @@ import * as A from 'fp-ts/lib/Array'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
-import { Dex, Network } from '../../../shared/api/types'
+import { Dex } from '../../../shared/api/types'
 import { Locale } from '../../../shared/i18n/types'
 import { LOCALES } from '../../i18n'
 import { AVAILABLE_DEXS, AVAILABLE_NETWORKS } from '../../services/const'
@@ -161,11 +162,11 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
 
   const networkTextColor = useCallback((network: Network) => {
     switch (network) {
-      case 'mainnet':
+      case Network.Mainnet:
         return 'text-turquoise'
-      case 'stagenet':
+      case Network.Stagenet:
         return 'text-error1 dark:text-error1d'
-      case 'testnet':
+      case Network.Testnet:
         return 'text-warning0 dark:text-warning0'
       default:
         return 'text-text2 dark:text-text2'

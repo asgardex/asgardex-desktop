@@ -1,3 +1,4 @@
+import { Network } from '@xchainjs/xchain-client'
 import { map, withLatestFrom } from 'rxjs/operators'
 
 import { envOrDefault } from '../../../shared/utils/env'
@@ -8,14 +9,16 @@ describe('services/app/service/', () => {
   describe('network$', () => {
     it('gets default network from env', () => {
       runObservable(({ expectObservable }) => {
-        expectObservable(network$).toBe('a', { a: envOrDefault(process.env.REACT_APP_DEFAULT_NETWORK, 'mainnet') })
+        expectObservable(network$).toBe('a', {
+          a: envOrDefault(process.env.REACT_APP_DEFAULT_NETWORK, Network.Mainnet)
+        })
       })
     })
 
     it('returns testnet ', () => {
       runObservable(({ expectObservable }) => {
-        changeNetwork('testnet')
-        expectObservable(network$).toBe('a', { a: 'testnet' })
+        changeNetwork(Network.Testnet)
+        expectObservable(network$).toBe('a', { a: Network.Testnet })
       })
     })
   })

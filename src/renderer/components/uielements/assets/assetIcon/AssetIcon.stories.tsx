@@ -1,4 +1,5 @@
 import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 
 import { AssetBCH, AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../../../../shared/utils/asset'
 import * as AT from '../../../../storybook/argTypes'
@@ -31,7 +32,7 @@ const meta: ComponentMeta<typeof Component> = {
       }
     }
   },
-  args: { network: 'mainnet', asset: AssetBTC, size: 'normal' }
+  args: { network: Network.Mainnet, asset: AssetBTC, size: 'normal' }
 }
 
 export default meta

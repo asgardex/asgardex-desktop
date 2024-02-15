@@ -7,6 +7,7 @@ import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { Network } from '@xchainjs/xchain-client'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
@@ -23,7 +24,7 @@ import * as O from 'fp-ts/lib/Option'
 import { FormattedMessage, useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { KeystoreId, Network } from '../../../shared/api/types'
+import { KeystoreId } from '../../../shared/api/types'
 import { getDerivationPath as getEvmDerivationPath } from '../../../shared/evm/ledger'
 import { EvmHDMode } from '../../../shared/evm/types'
 import { chainToString, EnabledChain, isEnabledChain } from '../../../shared/utils/chain'
@@ -503,7 +504,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
             renderItem={({ chain, accounts: { keystore, ledger: oLedger } }, i: number) => (
               <Styled.ListItem key={i}>
                 <div className="flex w-full items-center">
-                  <AssetIcon asset={getChainAsset(chain)} size="small" network="mainnet" />
+                  <AssetIcon asset={getChainAsset(chain)} size="small" network={Network.Mainnet} />
                   <Styled.AccountTitle>{chain}</Styled.AccountTitle>
                 </div>
                 <div className="mt-10px w-full">

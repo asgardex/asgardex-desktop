@@ -1,3 +1,4 @@
+import { Network } from '@xchainjs/xchain-client'
 import { Address, Chain } from '@xchainjs/xchain-util'
 import { Asset, AssetAmount, baseToAsset } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
@@ -5,7 +6,7 @@ import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import { IntlShape } from 'react-intl'
 
-import { Dex, Network } from '../../shared/api/types'
+import { Dex } from '../../shared/api/types'
 import { optionFromNullableString } from '../../shared/utils/fp'
 import { isLedgerWallet, isWalletType } from '../../shared/utils/guard'
 import { WalletAddress, WalletType } from '../../shared/wallet/types'
@@ -198,14 +199,14 @@ export const getWalletByAddress = (walletBalances: WalletBalances, address: Addr
 
 export const isEnabledLedger = (chain: Chain, network: Network) => {
   // Disable THORChain ledger wallets in stagenet
-  if (isThorChain(chain) && network === 'stagenet') return false
+  if (isThorChain(chain) && network === Network.Stagenet) return false
   // Disable LTC ledger wallets in testnet
   // It seems Ledger can not derive LTC addresses on Testnet properly
-  if (isLtcChain(chain) && network === 'testnet') return false
+  if (isLtcChain(chain) && network === Network.Testnet) return false
   // Same for BCH - no Ledger support for `testnet`
-  if (isBchChain(chain) && network === 'testnet') return false
+  if (isBchChain(chain) && network === Network.Testnet) return false
   // No DOGE support on `testnet`
-  if (isDogeChain(chain) && network === 'testnet') return false
+  if (isDogeChain(chain) && network === Network.Testnet) return false
   // Disable for these chains
   if (isMayaChain(chain)) return false
   if (isDashChain(chain)) return false

@@ -7218,22 +7218,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-bitcoin@npm:^0.23.9":
-  version: 0.23.9
-  resolution: "@xchainjs/xchain-bitcoin@npm:0.23.9"
+"@xchainjs/xchain-bitcoin@npm:^0.23.10":
+  version: 0.23.10
+  resolution: "@xchainjs/xchain-bitcoin@npm:0.23.10"
   dependencies:
     "@ledgerhq/hw-app-btc": ^10.1.0
   peerDependencies:
-    "@xchainjs/xchain-client": ^0.16.0
-    "@xchainjs/xchain-crypto": ^0.3.0
+    "@xchainjs/xchain-client": ^0.16.1
+    "@xchainjs/xchain-crypto": ^0.3.1
     "@xchainjs/xchain-util": ^0.13.1
-    "@xchainjs/xchain-utxo": ^0.1.1
-    "@xchainjs/xchain-utxo-providers": ^0.2.10
+    "@xchainjs/xchain-utxo": ^0.1.2
+    "@xchainjs/xchain-utxo-providers": ^0.2.11
     axios: ^1.3.6
     bitcoinjs-lib: 5.2.0
     coinselect: ^3.1.12
     wif: ^2.0.6
-  checksum: 3fbd1ca71c436fc9b55abb1753b97c9593a0a50e77e82c859cd2b01d5659f5abdd757ae3cae9f79db6b789ea3b0d7cf8a97075b06a83c1b9e9a25456e17137c0
+  checksum: f21a9818c0fae217e7dafdbdf8783e925665c0e8b722ce66b2db2ea53c5eccb074c20dd40bc7659bc5fd6cb06fcf6cc7ad194949bbfa633f2a08534df4dade19
   languageName: node
   linkType: hard
 
@@ -8397,7 +8397,7 @@ __metadata:
     "@xchainjs/ledger-thorchain": ^0.2.0
     "@xchainjs/xchain-avax": 0.4.5
     "@xchainjs/xchain-binance": ^5.7.8
-    "@xchainjs/xchain-bitcoin": ^0.23.9
+    "@xchainjs/xchain-bitcoin": ^0.23.10
     "@xchainjs/xchain-bitcoincash": ^0.17.8
     "@xchainjs/xchain-bsc": 0.4.4
     "@xchainjs/xchain-client": ^0.16.0

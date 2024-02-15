@@ -1,9 +1,10 @@
+import { Network } from '@xchainjs/xchain-client'
 import { Layout, Row, Drawer } from 'antd'
 import Text from 'antd/lib/typography/Text'
 import styled from 'styled-components'
 import { palette, size } from 'styled-theme'
 
-import { Dex, Network } from '../../../shared/api/types'
+import { Dex } from '../../../shared/api/types'
 import { ReactComponent as UIAsgardexLogo } from '../../assets/svg/logo-asgardex.svg'
 import { media } from '../../helpers/styleHelper'
 
@@ -102,22 +103,22 @@ export const NetworkLabel = styled(Text)<{ network: Network; dex: Dex }>`
   color: ${({ network, dex }) => {
     if (dex === 'THOR') {
       switch (network) {
-        case 'mainnet':
+        case Network.Mainnet:
           return palette('primary', 0)
-        case 'stagenet':
+        case Network.Stagenet:
           return palette('danger', 1)
-        case 'testnet':
+        case Network.Testnet:
           return palette('warning', 0)
         default:
           return palette('text', 2)
       }
     } else {
       switch (network) {
-        case 'mainnet':
+        case Network.Mainnet:
           return palette('secondary', 0)
-        case 'stagenet':
+        case Network.Stagenet:
           return palette('danger', 1)
-        case 'testnet':
+        case Network.Testnet:
           return palette('warning', 0)
         default:
           return palette('text', 2)

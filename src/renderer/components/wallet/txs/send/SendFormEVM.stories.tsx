@@ -1,5 +1,5 @@
 import { ComponentMeta } from '@storybook/react'
-import { Fees, FeeType, TxHash } from '@xchainjs/xchain-client'
+import { Fees, FeeType, Network, TxHash } from '@xchainjs/xchain-client'
 import { ETH_GAS_ASSET_DECIMAL as ETH_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
@@ -74,7 +74,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, walletType }: Args) => {
       reloadFeesHandler={() => console.log('reload fees')}
       validatePassword$={mockValidatePassword$}
       thorchainQuery={thorchainQuery}
-      network="testnet"
+      network={Network.Testnet}
       openExplorerTxUrl={(txHash: TxHash) => {
         console.log(`Open explorer - tx hash ${txHash}`)
         return Promise.resolve(true)

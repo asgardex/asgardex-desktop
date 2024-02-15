@@ -1,7 +1,7 @@
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
-import { Balance } from '@xchainjs/xchain-client'
+import { Balance, Network } from '@xchainjs/xchain-client'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -92,7 +92,7 @@ describe('helpers/poolHelper/', () => {
         poolDetails: pendingPoolDetails,
         pricePoolData,
         watchlist,
-        network: 'testnet'
+        network: Network.Testnet
       })
       expect(result.length).toEqual(2)
       // Note: `getPoolTableRowsData` reverses the order of given `poolDetails`
@@ -105,7 +105,7 @@ describe('helpers/poolHelper/', () => {
         poolDetails,
         pricePoolData,
         watchlist,
-        network: 'testnet'
+        network: Network.Testnet
       })
       expect(result.length).toEqual(2)
       // Note: `getPoolTableRowsData` reverses the order of given `poolDetails`
@@ -152,7 +152,7 @@ describe('helpers/poolHelper/', () => {
         asset: AssetBNB
       }
       const result = FP.pipe(
-        getPoolPriceValue({ balance, poolDetails, pricePool: usdPricePool, network: 'testnet' }),
+        getPoolPriceValue({ balance, poolDetails, pricePool: usdPricePool }),
         O.fold(
           () => 'failure',
           (price) => price.amount().toString()
@@ -167,7 +167,7 @@ describe('helpers/poolHelper/', () => {
         asset: AssetRuneNative
       }
       const result = FP.pipe(
-        getPoolPriceValue({ balance, poolDetails: [], pricePool: usdPricePool, network: 'testnet' }),
+        getPoolPriceValue({ balance, poolDetails: [], pricePool: usdPricePool }),
         O.fold(
           () => 'failure',
           (price) => price.amount().toString()
@@ -181,7 +181,7 @@ describe('helpers/poolHelper/', () => {
         amount: baseAmount('1'),
         asset: AssetBNB
       }
-      const result = getPoolPriceValue({ balance, poolDetails: [], pricePool: usdPricePool, network: 'testnet' })
+      const result = getPoolPriceValue({ balance, poolDetails: [], pricePool: usdPricePool })
       expect(result).toBeNone()
     })
   })

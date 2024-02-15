@@ -1,4 +1,5 @@
 import { ComponentMeta } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 import { assetAmount, assetFromString, assetToBase, assetToString } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
@@ -45,7 +46,7 @@ const Template = ({
 }: TemplateArgs) => {
   return (
     <TxDetail
-      network="mainnet"
+      network={Network.Mainnet}
       type={'SWAP'}
       date={<>12-12-3 1231</>}
       incomes={getValues(firstInAsset, secondInAsset, firstInValue, secondInValue)}

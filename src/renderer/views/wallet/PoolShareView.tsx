@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useRef, useEffect } from 'react'
 
 import { SyncOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
+import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Asset, Chain } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
@@ -13,7 +14,6 @@ import { useIntl } from 'react-intl'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { Network } from '../../../shared/api/types'
 import { ENABLED_CHAINS } from '../../../shared/utils/chain'
 import { PoolShares as PoolSharesTable } from '../../components/PoolShares'
 import { PoolShareTableRowData } from '../../components/PoolShares/PoolShares.types'
@@ -150,7 +150,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
 
   const openExternalShareInfo = useCallback(() => {
     // `thoryield.com` does not support testnet, we ignore it here
-    const oMainnet = O.fromPredicate<Network>(() => network === 'mainnet')(network)
+    const oMainnet = O.fromPredicate<Network>(() => network === Network.Mainnet)(network)
 
     return FP.pipe(
       sequenceTOption(oRuneNativeAddress, oMainnet),

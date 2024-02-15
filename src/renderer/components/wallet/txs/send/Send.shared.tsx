@@ -1,10 +1,10 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { Network } from '@xchainjs/xchain-client'
 import { Asset, BaseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { IntlShape } from 'react-intl'
 
-import { Network } from '../../../../../shared/api/types'
 import { SendTxState } from '../../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../services/clients'
 import { TxModal } from '../../../modal/tx'

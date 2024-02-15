@@ -11,6 +11,7 @@ import {
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { AssetCacao } from '@xchainjs/xchain-mayachain'
 import {
@@ -44,7 +45,7 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { Dex, Network } from '../../../shared/api/types'
+import { Dex } from '../../../shared/api/types'
 import { ASGARDEX_AFFILIATE_FEE, ASGARDEX_THORNAME } from '../../../shared/const'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
@@ -480,8 +481,7 @@ export const Swap = ({
             PoolHelpers.getPoolPriceValue({
               balance: { asset: sourceAsset, amount: amountToSwapMax1e8 },
               poolDetails,
-              pricePool,
-              network
+              pricePool
             }),
             O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal))
           )
@@ -495,7 +495,7 @@ export const Swap = ({
           )
 
     return new CryptoAmount(result, pricePool.asset)
-  }, [dex, amountToSwapMax1e8, network, poolDetails, pricePool, sourceAsset])
+  }, [dex, amountToSwapMax1e8, poolDetails, pricePool, sourceAsset])
 
   const isZeroAmountToSwap = useMemo(() => amountToSwapMax1e8.amount().isZero(), [amountToSwapMax1e8])
 
@@ -558,8 +558,7 @@ export const Swap = ({
           PoolHelpers.getPoolPriceValue({
             balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
             poolDetails,
-            pricePool,
-            network
+            pricePool
           }),
           O.map((amount) => {
             return new CryptoAmount(amount, pricePool.asset)
@@ -575,7 +574,7 @@ export const Swap = ({
             return new CryptoAmount(amount, pricePool.asset)
           })
         )
-  }, [dex, network, poolDetails, pricePool, swapFees.inFee.amount, swapFees.inFee.asset])
+  }, [dex, poolDetails, pricePool, swapFees.inFee.amount, swapFees.inFee.asset])
 
   const priceSwapInFeeLabel = useMemo(() => {
     // Ensure swapFees is defined before proceeding
@@ -648,8 +647,7 @@ export const Swap = ({
         ? PoolHelpers.getPoolPriceValue({
             balance: { asset: oSwapOutFee.asset, amount: oSwapOutFee.baseAmount },
             poolDetails,
-            pricePool,
-            network
+            pricePool
           })
         : getPoolPriceValueM({
             balance: { asset: oSwapOutFee.asset, amount: oSwapOutFee.baseAmount },
@@ -746,8 +744,7 @@ export const Swap = ({
         ? PoolHelpers.getPoolPriceValue({
             balance: { asset: affiliateFee.asset, amount: affiliateFee.baseAmount },
             poolDetails,
-            pricePool,
-            network
+            pricePool
           })
         : getPoolPriceValueM({
             balance: { asset: affiliateFee.asset, amount: affiliateFee.baseAmount },
@@ -764,7 +761,7 @@ export const Swap = ({
   const applyBps = useMemo(() => {
     let applyBps: number
     const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(100)
-    applyBps = network === 'stagenet' ? 0 : ASGARDEX_AFFILIATE_FEE
+    applyBps = network === Network.Stagenet ? 0 : ASGARDEX_AFFILIATE_FEE
     applyBps = txFeeCovered ? ASGARDEX_AFFILIATE_FEE : 0
     return applyBps
   }, [network, priceAmountToSwapMax1e8])
@@ -810,7 +807,7 @@ export const Swap = ({
           const address = destinationAddress
           const streamingInt = isStreaming ? streamingInterval : 0
           const streaminQuant = isStreaming ? streamingQuantity : 0
-          const toleranceBps = isStreaming || network === 'stagenet' ? 10000 : slipTolerance * 100 // convert to basis points
+          const toleranceBps = isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100 // convert to basis points
           return {
             fromAsset: fromAsset,
             destinationAsset: destinationAsset,
@@ -910,7 +907,7 @@ export const Swap = ({
             amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset),
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
-            toleranceBps: isStreaming || network === 'stagenet' ? 10000 : slipTolerance * 100, // convert to basis points
+            toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100, // convert to basis points
             affiliateAddress: ASGARDEX_THORNAME,
             affiliateBps: applyBps
           }
@@ -1112,8 +1109,7 @@ export const Swap = ({
               amount: isStreaming ? swapStreamingNetOutput.baseAmount : swapResultAmountMax.baseAmount
             },
             poolDetails,
-            pricePool,
-            network
+            pricePool
           }),
           O.getOrElse(() => baseAmount(0, THORCHAIN_DECIMAL)), // default decimal
           (amount) => ({ asset: pricePool.asset, amount })
@@ -1138,8 +1134,7 @@ export const Swap = ({
     isStreaming,
     swapStreamingNetOutput.baseAmount,
     poolDetails,
-    pricePool,
-    network // Include network if it's used in the THOR branch
+    pricePool
   ])
 
   /**
@@ -1548,8 +1543,7 @@ export const Swap = ({
             PoolHelpers.getPoolPriceValue({
               balance: { asset: sourceAsset, amount: maxAmountToSwapMax1e8 },
               poolDetails,
-              pricePool,
-              network
+              pricePool
             }),
             O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal)),
             (amount) => ({ asset: pricePool.asset, amount })
@@ -1564,7 +1558,7 @@ export const Swap = ({
             (amount) => ({ asset: pricePool.asset, amount })
           )
     return new CryptoAmount(result.amount, result.asset)
-  }, [amountToSwapMax1e8.decimal, dex, maxAmountToSwapMax1e8, network, poolDetails, pricePool, sourceAsset])
+  }, [amountToSwapMax1e8.decimal, dex, maxAmountToSwapMax1e8, poolDetails, pricePool, sourceAsset])
 
   /**
    * Selectable source assets to swap from.
@@ -2299,8 +2293,7 @@ export const Swap = ({
           PoolHelpers.getPoolPriceValue({
             balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
             poolDetails,
-            pricePool,
-            network
+            pricePool
           }),
           O.fold(
             () => new CryptoAmount(baseAmount(0), pricePool.asset), // Default value if None
@@ -2318,7 +2311,7 @@ export const Swap = ({
             (amount) => new CryptoAmount(amount, pricePool.asset) // Value if Some
           )
         )
-  }, [isApproved, approveFee, swapFees.inFee.asset, dex, poolDetails, pricePool, network])
+  }, [isApproved, approveFee, swapFees.inFee.asset, dex, poolDetails, pricePool])
 
   const priceApproveFeeLabel = useMemo(
     () =>
@@ -2396,7 +2389,7 @@ export const Swap = ({
 
   const disableSubmit: boolean = useMemo(
     () =>
-      network !== 'stagenet' &&
+      network !== Network.Stagenet &&
       (disableSwapAction ||
         lockedWallet ||
         isZeroAmountToSwap ||

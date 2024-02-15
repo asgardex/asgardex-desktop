@@ -13,11 +13,9 @@ import { useWalletContext } from '../contexts/WalletContext'
 import { to1e8BaseAmount } from '../helpers/assetHelper'
 import { getPoolPriceValue } from '../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../helpers/poolHelperMaya'
-import { useNetwork } from './useNetwork'
 
 export const useTotalWalletBalance = () => {
   const { chainBalances$ } = useWalletContext()
-  const { network } = useNetwork()
   const {
     service: {
       pools: { poolsState$, selectedPricePool$ }
@@ -62,8 +60,7 @@ export const useTotalWalletBalance = () => {
                   let value = getPoolPriceValue({
                     balance: { asset, amount },
                     poolDetails: RD.isSuccess(poolsStateRD) ? poolsStateRD.value.poolDetails : [],
-                    pricePool: selectedPricePool,
-                    network
+                    pricePool: selectedPricePool
                   })
                   if (O.isNone(value)) {
                     value = getPoolPriceValueM({

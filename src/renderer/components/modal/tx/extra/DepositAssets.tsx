@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react'
 
+import { Network } from '@xchainjs/xchain-client'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
-import { Network } from '../../../../../shared/api/types'
 import * as Styled from './Common.styles'
 import * as C from './Common.types'
 

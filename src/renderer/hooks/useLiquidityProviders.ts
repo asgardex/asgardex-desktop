@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { Network } from '@xchainjs/xchain-client'
 import { Address } from '@xchainjs/xchain-util'
 import { Asset } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
@@ -8,7 +9,6 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 
-import { Network } from '../../shared/api/types'
 import { useThorchainContext } from '../contexts/ThorchainContext'
 import { eqAddress, eqOString } from '../helpers/fp/eq'
 import { sequenceTOption } from '../helpers/fpHelpers'

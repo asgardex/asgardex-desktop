@@ -1,10 +1,10 @@
 import { ComponentMeta } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 import { assetFromString } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
-import { Network } from '../../../../shared/api/types'
 import * as AT from '../../../storybook/argTypes'
 import { AsymAssetsWarning } from './AsymAssetsWarning'
 
@@ -50,7 +50,7 @@ const meta: ComponentMeta<typeof Template> = {
     }
   },
   args: {
-    network: 'mainnet',
+    network: Network.Mainnet,
     loading: false,
     assets: 'BNB.BNB'
   }

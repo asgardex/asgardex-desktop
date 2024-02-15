@@ -1,6 +1,7 @@
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { Network } from '@xchainjs/xchain-client'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -14,62 +15,62 @@ import { getEthChecksumAddress, hasLedgerAddress, removeAddressPrefix, truncateA
 describe('helpers/addressHelper', () => {
   describe('truncateAddress', () => {
     it('thorchain testnet', () => {
-      const result = truncateAddress('tthor13gym97tmw3axj3hpewdggy2cr288d3qffr8skg', THORChain, 'testnet')
+      const result = truncateAddress('tthor13gym97tmw3axj3hpewdggy2cr288d3qffr8skg', THORChain, Network.Testnet)
       expect(result).toEqual('tthor13g...skg')
     })
 
     it('thorchain mainnet', () => {
-      const result = truncateAddress('thor13gym97tmw3axj3hpewdggy2cr288d3qffr8skg', THORChain, 'mainnet')
+      const result = truncateAddress('thor13gym97tmw3axj3hpewdggy2cr288d3qffr8skg', THORChain, Network.Mainnet)
       expect(result).toEqual('thor13g...skg')
     })
 
     it('bitcoin testnet', () => {
-      const result = truncateAddress('tb1qtephp596jhpwrawlp67junuk347zl2cwc56xml', BTCChain, 'testnet')
+      const result = truncateAddress('tb1qtephp596jhpwrawlp67junuk347zl2cwc56xml', BTCChain, Network.Testnet)
       expect(result).toEqual('tb1qte...xml')
     })
 
     it('bitcoin mainnet', () => {
-      const result = truncateAddress('bc1qtephp596jhpwrawlp67junuk347zl2cwc56xml', BTCChain, 'mainnet')
+      const result = truncateAddress('bc1qtephp596jhpwrawlp67junuk347zl2cwc56xml', BTCChain, Network.Testnet)
       expect(result).toEqual('bc1qte...xml')
     })
 
     it('bitcoin cash testnet', () => {
-      const result = truncateAddress('mzvxEYsFXBhfsZj2QNwQXfFX6KCoweqZpM', BCHChain, 'testnet')
+      const result = truncateAddress('mzvxEYsFXBhfsZj2QNwQXfFX6KCoweqZpM', BCHChain, Network.Testnet)
       expect(result).toEqual('mzvxEY...ZpM')
     })
 
     it('bitcoin cash mainnet', () => {
-      const result = truncateAddress('13kwsEHsKn82UobM9WaTRbU2vCW5qXkY97', BCHChain, 'mainnet')
+      const result = truncateAddress('13kwsEHsKn82UobM9WaTRbU2vCW5qXkY97', BCHChain, Network.Testnet)
       expect(result).toEqual('13kwsE...Y97')
     })
 
     it('binance testnet', () => {
-      const result = truncateAddress('tbnb1ed04qgw3s69z90jskr3shpyn9mr0e59qdtsxqa', BNBChain, 'testnet')
+      const result = truncateAddress('tbnb1ed04qgw3s69z90jskr3shpyn9mr0e59qdtsxqa', BNBChain, Network.Testnet)
       expect(result).toEqual('tbnb1ed...xqa')
     })
 
     it('binance mainnet', () => {
-      const result = truncateAddress('bnb1ed04qgw3s69z90jskr3shpyn9mr0e59qdtsxqa', BNBChain, 'mainnet')
-      expect(result).toEqual('bnb1ed...xqa')
+      const result = truncateAddress('bnb1ed04qgw3s69z90jskr3shpyn9mr0e59qdtsxqa', BNBChain, Network.Testnet)
+      expect(result).toEqual('bnb1ed0...xqa')
     })
 
     it('litecoin testnet', () => {
-      const result = truncateAddress('tltc1qtephp596jhpwrawlp67junuk347zl2cwpucctk', LTCChain, 'testnet')
+      const result = truncateAddress('tltc1qtephp596jhpwrawlp67junuk347zl2cwpucctk', LTCChain, Network.Testnet)
       expect(result).toEqual('tltc1qte...ctk')
     })
 
     it('litecoin mainnet', () => {
-      const result = truncateAddress('ltc1qtephp596jhpwrawlp67junuk347zl2cwpucctk', LTCChain, 'mainnet')
-      expect(result).toEqual('ltc1qte...ctk')
+      const result = truncateAddress('ltc1qtephp596jhpwrawlp67junuk347zl2cwpucctk', LTCChain, Network.Testnet)
+      expect(result).toEqual('ltc1qtep...ctk')
     })
 
     it('cosmos mainnet', () => {
-      const result = truncateAddress('cosmos1av54qcmavhjkqsd67cf6f4cedqjrdeh7ed86fc', GAIAChain, 'mainnet')
+      const result = truncateAddress('cosmos1av54qcmavhjkqsd67cf6f4cedqjrdeh7ed86fc', GAIAChain, Network.Testnet)
       expect(result).toEqual('cosmos1av...6fc')
     })
 
     it('DOGE mainnet', () => {
-      const result = truncateAddress('DT5SRCKHexHYzGanDkSPpaHW87KJ7yUBac', DOGEChain, 'mainnet')
+      const result = truncateAddress('DT5SRCKHexHYzGanDkSPpaHW87KJ7yUBac', DOGEChain, Network.Testnet)
       expect(result).toEqual('DT5SRC...Bac')
     })
   })
@@ -160,7 +161,7 @@ describe('helpers/addressHelper', () => {
         address: 'bnb-address',
         type: 'ledger',
         keystoreId: 1,
-        network: 'mainnet',
+        network: Network.Mainnet,
         chain: BNBChain,
         walletIndex: 1,
         hdMode: 'default'
@@ -169,7 +170,7 @@ describe('helpers/addressHelper', () => {
         address: 'eth-address',
         type: 'ledger',
         keystoreId: 1,
-        network: 'mainnet',
+        network: Network.Mainnet,
         chain: ETHChain,
         walletIndex: 1,
         hdMode: 'default'

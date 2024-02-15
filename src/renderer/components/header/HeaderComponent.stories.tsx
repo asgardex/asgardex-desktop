@@ -1,5 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 import * as O from 'fp-ts/lib/Option'
 
 import { AssetRuneNative } from '../../../shared/utils/asset'
@@ -32,7 +33,7 @@ const meta: ComponentMeta<typeof Component> = {
     midgardUrl: RD.success('midgard-url'),
     thorchainNodeUrl: 'thorchain-node-url',
     thorchainRpcUrl: 'thorchain-rpc-url',
-    network: 'mainnet'
+    network: Network.Mainnet
   }
 }
 

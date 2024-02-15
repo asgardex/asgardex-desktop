@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 
 import { ArrowTopRightOnSquareIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
+import { Network } from '@xchainjs/xchain-client'
 import { assetToString, baseToAsset, formatAssetAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import { FormattedMessage, useIntl } from 'react-intl'
 
-import { Network } from '../../../../shared/api/types'
 import { RECOVERY_TOOL_URL } from '../../../const'
 import { AssetWithAmount1e8, AssetsWithAmount1e8 } from '../../../types/asgardex'
 import { Alert } from '../../uielements/alert'

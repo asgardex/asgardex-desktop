@@ -1,6 +1,6 @@
 import { ComponentMeta } from '@storybook/react'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
-import { FeeRates, Fees, FeesWithRates, FeeType, TxHash } from '@xchainjs/xchain-client'
+import { FeeRates, Fees, FeesWithRates, FeeType, Network, TxHash } from '@xchainjs/xchain-client'
 import { Address, assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -88,7 +88,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
       validatePassword$={mockValidatePassword$}
       thorchainQuery={thorchainQuery}
       mayachainQuery={mayachainQuery}
-      network="testnet"
+      network={Network.Testnet}
       openExplorerTxUrl={(txHash: TxHash) => {
         console.log(`Open explorer - tx hash ${txHash}`)
         return Promise.resolve(true)

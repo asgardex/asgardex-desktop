@@ -1,4 +1,5 @@
 import { ComponentMeta } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 import { assetToBase, assetAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
@@ -17,7 +18,7 @@ export const Template = ({ address, balance }: Args) => {
       walletInfo={FP.pipe(
         address,
         O.fromPredicate((s) => !!s),
-        O.map((address) => ({ address, network: 'testnet', walletType: 'keystore' }))
+        O.map((address) => ({ address, network: Network.Testnet, walletType: 'keystore' }))
       )}
       asset={O.some(AssetRuneNative)}
       assetsWB={O.some([
@@ -25,7 +26,7 @@ export const Template = ({ address, balance }: Args) => {
           amount: assetToBase(assetAmount(balance))
         })
       ])}
-      network="testnet"
+      network={Network.Testnet}
     />
   )
 }

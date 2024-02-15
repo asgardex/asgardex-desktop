@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetUSDC } from '@xchainjs/xchain-thorchain-query'
@@ -25,7 +26,7 @@ import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router'
 
-import { Dex, Network } from '../../../../shared/api/types'
+import { Dex } from '../../../../shared/api/types'
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
@@ -226,8 +227,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           const priceOptionFromPoolDetails = getPoolPriceValue({
             balance: { asset, amount },
             poolDetails,
-            pricePool,
-            network
+            pricePool
           })
           if (O.isSome(priceOptionFromPoolDetails)) {
             price = formatAssetAmountCurrency({
@@ -240,8 +240,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
             const priceOptionFromPendingPoolDetails = getPoolPriceValue({
               balance: { asset, amount },
               poolDetails: pendingPoolDetails,
-              pricePool,
-              network
+              pricePool
             })
             if (O.isSome(priceOptionFromPendingPoolDetails)) {
               price = formatAssetAmountCurrency({
@@ -273,16 +272,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         )
       }
     }),
-    [
-      hidePrivateData,
-      poolDetailsMaya,
-      mayaPricePool,
-      poolDetails,
-      pricePool,
-      network,
-      pendingPoolDetails,
-      mayaScanPrice
-    ]
+    [hidePrivateData, poolDetailsMaya, mayaPricePool, poolDetails, pricePool, pendingPoolDetails, mayaScanPrice]
   )
 
   const renderActionColumn = useCallback(
@@ -573,7 +563,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
                 if (isUSDAsset(asset) && !asset.synth && amount.amount().gt(1)) {
                   return true
                 }
-                const usdValue = getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool, network })
+                const usdValue = getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool })
                 return (
                   O.isSome(usdValue) &&
                   new CryptoAmount(baseAmount(usdValue.value.amount()), assetUSDC).assetAmount.gt(1)
@@ -595,7 +585,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         )
       )
     },
-    [dex, filterByValue, network, poolDetails, pricePool, renderAssetsTable]
+    [dex, filterByValue, poolDetails, pricePool, renderAssetsTable]
   )
 
   // Panel

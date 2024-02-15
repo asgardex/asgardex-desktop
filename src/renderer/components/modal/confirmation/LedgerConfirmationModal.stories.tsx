@@ -1,4 +1,5 @@
 import { ComponentMeta } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 import { Chain } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 
@@ -18,7 +19,7 @@ const Template = ({ chain, visible, description }: Args) => {
       onSuccess={() => console.log('onSuccess')}
       chain={chain}
       description2={description}
-      network="mainnet"
+      network={Network.Mainnet}
       addresses={O.some({
         sender: 'qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a',
         recipient: 'qr95sy3j9xwd2ap32xkykttr4cvcu7as4y0qverfuy'

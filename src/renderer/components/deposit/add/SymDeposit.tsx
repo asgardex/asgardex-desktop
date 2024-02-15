@@ -5,6 +5,7 @@ import { ArrowPathIcon } from '@heroicons/react/20/solid'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { ThorChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -27,7 +28,7 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { Dex, Network } from '../../../../shared/api/types'
+import { Dex } from '../../../../shared/api/types'
 import { ASGARDEX_THORNAME } from '../../../../shared/const'
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString } from '../../../../shared/utils/chain'
@@ -338,13 +339,12 @@ export const SymDeposit: React.FC<Props> = (props) => {
         PoolHelpers.getPoolPriceValue({
           balance: { asset: AssetRuneNative, amount: runeAmountToDeposit },
           poolDetails,
-          pricePool,
-          network
+          pricePool
         }),
         O.getOrElse(() => ZERO_BASE_AMOUNT),
         (amount) => ({ asset: pricePool.asset, amount })
       ),
-    [network, poolDetails, pricePool, runeAmountToDeposit]
+    [poolDetails, pricePool, runeAmountToDeposit]
   )
 
   const [
@@ -542,12 +542,11 @@ export const SymDeposit: React.FC<Props> = (props) => {
       PoolHelpers.getPoolPriceValue({
         balance: { asset: AssetRuneNative, amount },
         poolDetails,
-        pricePool,
-        network
+        pricePool
       }),
       O.map((amount) => ({ amount, asset: pricePool.asset }))
     )
-  }, [network, poolDetails, pricePool, depositFees])
+  }, [poolDetails, pricePool, depositFees])
 
   const priceRuneInFeeLabel = useMemo(
     () =>
@@ -595,12 +594,11 @@ export const SymDeposit: React.FC<Props> = (props) => {
       PoolHelpers.getPoolPriceValue({
         balance: { asset: AssetRuneNative, amount },
         poolDetails,
-        pricePool,
-        network
+        pricePool
       }),
       O.map((amount) => ({ asset: pricePool.asset, amount }))
     )
-  }, [network, poolDetails, pricePool, depositFees])
+  }, [poolDetails, pricePool, depositFees])
 
   const priceRuneOutFeeLabel = useMemo(
     () =>
@@ -649,12 +647,11 @@ export const SymDeposit: React.FC<Props> = (props) => {
       PoolHelpers.getPoolPriceValue({
         balance: { asset, amount },
         poolDetails,
-        pricePool,
-        network
+        pricePool
       }),
       O.map((amount) => ({ amount, asset: pricePool.asset }))
     )
-  }, [network, poolDetails, pricePool, depositFees])
+  }, [poolDetails, pricePool, depositFees])
 
   const priceAssetInFeeLabel = useMemo(
     () =>
@@ -703,12 +700,11 @@ export const SymDeposit: React.FC<Props> = (props) => {
       PoolHelpers.getPoolPriceValue({
         balance: { asset, amount },
         poolDetails,
-        pricePool,
-        network
+        pricePool
       }),
       O.map((amount) => ({ asset: pricePool.asset, amount }))
     )
-  }, [network, poolDetails, pricePool, depositFees])
+  }, [poolDetails, pricePool, depositFees])
 
   const priceAssetOutFeeLabel = useMemo(
     () =>
@@ -964,28 +960,26 @@ export const SymDeposit: React.FC<Props> = (props) => {
       PoolHelpers.getPoolPriceValue({
         balance: { asset: asset, amount: maxAssetAmountToDepositMax1e8 },
         poolDetails,
-        pricePool,
-        network
+        pricePool
       }),
       O.getOrElse(() => baseAmount(0, maxAssetAmountToDepositMax1e8.decimal)),
       (amount) => ({ asset: pricePool.asset, amount })
     )
     return new CryptoAmount(result.amount, result.asset)
-  }, [maxAssetAmountToDepositMax1e8, network, poolDetails, pricePool, asset])
+  }, [maxAssetAmountToDepositMax1e8, poolDetails, pricePool, asset])
 
   const priceRuneAmountToDepsoitMax1e8: CryptoAmount = useMemo(() => {
     const result = FP.pipe(
       PoolHelpers.getPoolPriceValue({
         balance: { asset: AssetRuneNative, amount: maxRuneAmountToDeposit },
         poolDetails,
-        pricePool,
-        network
+        pricePool
       }),
       O.getOrElse(() => baseAmount(0, maxRuneAmountToDeposit.decimal)),
       (amount) => ({ asset: pricePool.asset, amount })
     )
     return new CryptoAmount(result.amount, result.asset)
-  }, [maxRuneAmountToDeposit, network, poolDetails, pricePool])
+  }, [maxRuneAmountToDeposit, poolDetails, pricePool])
 
   const setAssetAmountToDepositMax1e8 = useCallback(
     (amountToDeposit: BaseAmount) => {
@@ -1016,13 +1010,12 @@ export const SymDeposit: React.FC<Props> = (props) => {
         PoolHelpers.getPoolPriceValue({
           balance: { asset, amount: assetAmountToDepositMax1e8 },
           poolDetails,
-          pricePool,
-          network
+          pricePool
         }),
         O.getOrElse(() => baseAmount(0, assetAmountToDepositMax1e8.decimal)),
         (amount) => ({ asset: pricePool.asset, amount })
       ),
-    [asset, assetAmountToDepositMax1e8, network, poolDetails, pricePool]
+    [asset, assetAmountToDepositMax1e8, poolDetails, pricePool]
   )
 
   const hasAssetBalance = useMemo(() => assetBalance.gt(baseAmount(0, assetBalance.decimal)), [assetBalance])
