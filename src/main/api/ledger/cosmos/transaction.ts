@@ -1,4 +1,4 @@
-import { AminoMsgSend, AminoTypes, Coin } from '@cosmjs/stargate'
+import { AminoMsgSend, AminoTypes, Coin, StargateClient } from '@cosmjs/stargate'
 import cosmosclient from '@cosmos-client/core'
 import CosmosApp from '@ledgerhq/hw-app-cosmos'
 import type Transport from '@ledgerhq/hw-transport'
@@ -85,16 +85,13 @@ export const send = async ({
     const { publicKey, address: sender } = await app.getAddress(path, 'cosmos')
     const senderAcc = cosmosclient.AccAddress.fromString(sender)
 
-    const client = new Client({
-      network: clientNetwork,
-      clientUrls
-    })
-
-    const sdk = client
-    const account = await sdk.getAccount(senderAcc)
-    const { sequence, account_number } = account
+    const sdk = await StargateClient.connect(clientUrls[clientNetwork])
+    const account = await sdk.getAccount(sender)
+    // Check if account is null
+    if (!account) throw Error(`Transfer failed - account not found`)
+    const { sequence, accountNumber } = account
     if (!sequence) throw Error(`Transfer failed - missing sequence`)
-    if (!account_number) throw Error(`Transfer failed - missing account number`)
+    if (!accountNumber) throw Error(`Transfer failed - missing account number`)
 
     const sendMsg = protoMsgSend({ from: sender, to: recipient, amount, denom })
 
@@ -115,7 +112,7 @@ export const send = async ({
           memo: memo || '',
           msgs: [sendMsgAmino],
           sequence: sequence.toString(),
-          account_number: account_number.toString()
+          account_number: accountNumber.toString()
         },
         { deep: true }
       )
