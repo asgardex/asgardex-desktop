@@ -1,89 +1,15 @@
 import AppBTC from '@ledgerhq/hw-app-btc'
 import type Transport from '@ledgerhq/hw-transport'
-import {
-  AssetBTC,
-  BTCChain,
-  ClientLedger,
-  blockstreamExplorerProviders,
-  defaultBTCParams
-} from '@xchainjs/xchain-bitcoin'
-import { Network, Network as clientNetwork } from '@xchainjs/xchain-client'
-import { UtxoClientParams } from '@xchainjs/xchain-utxo'
-import {
-  BitgoProvider,
-  BlockcypherNetwork,
-  BlockcypherProvider,
-  HaskoinNetwork,
-  HaskoinProvider,
-  UtxoOnlineDataProviders
-} from '@xchainjs/xchain-utxo-providers'
+import { BTCChain, ClientLedger } from '@xchainjs/xchain-bitcoin'
+import { Network } from '@xchainjs/xchain-client'
 import * as E from 'fp-ts/Either'
 
-import { blockcypherApiKey } from '../../../../shared/api/blockcypher'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
 import { VerifyAddressHandler } from '../types'
-import { getDerivationPath } from './common'
-
-const testnetHaskoinProvider = new HaskoinProvider(
-  'https://api.haskoin.com',
-  BTCChain,
-  AssetBTC,
-  8,
-  HaskoinNetwork.BTCTEST
-)
-
-const LOWER_FEE_BOUND = 1
-const UPPER_FEE_BOUND = 2000
-
-const mainnetHaskoinProvider = new HaskoinProvider('https://api.haskoin.com', BTCChain, AssetBTC, 8, HaskoinNetwork.BTC)
-const HaskoinDataProviders: UtxoOnlineDataProviders = {
-  [clientNetwork.Testnet]: testnetHaskoinProvider,
-  [clientNetwork.Stagenet]: mainnetHaskoinProvider,
-  [clientNetwork.Mainnet]: mainnetHaskoinProvider
-}
-
-//======================
-// Bitgo
-//======================
-const mainnetBitgoProvider = new BitgoProvider({
-  baseUrl: 'https://app.bitgo.com',
-  chain: BTCChain
-})
-
-export const BitgoProviders: UtxoOnlineDataProviders = {
-  [clientNetwork.Testnet]: undefined,
-  [clientNetwork.Stagenet]: mainnetBitgoProvider,
-  [clientNetwork.Mainnet]: mainnetBitgoProvider
-}
-
-//======================
-// Blockcypher
-//======================
-const testnetBlockcypherProvider = new BlockcypherProvider(
-  'https://api.blockcypher.com/v1',
-  BTCChain,
-  AssetBTC,
-  8,
-  BlockcypherNetwork.BTCTEST,
-  blockcypherApiKey || ''
-)
-
-const mainnetBlockcypherProvider = new BlockcypherProvider(
-  'https://api.blockcypher.com/v1',
-  BTCChain,
-  AssetBTC,
-  8,
-  BlockcypherNetwork.BTC,
-  blockcypherApiKey || ''
-)
-const BlockcypherDataProviders: UtxoOnlineDataProviders = {
-  [clientNetwork.Testnet]: testnetBlockcypherProvider,
-  [clientNetwork.Stagenet]: mainnetBlockcypherProvider,
-  [clientNetwork.Mainnet]: mainnetBlockcypherProvider
-}
+import { btcInitParams, getDerivationPath } from './common'
 
 export const verifyAddress: VerifyAddressHandler = async ({ transport, network, walletIndex }) => {
   // Value of `currency` -> `GetAddressOptions` -> `currency` -> `id`
@@ -105,17 +31,7 @@ export const getAddress = async (
   walletIndex: number
 ): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
-    const btcInitParams: UtxoClientParams = {
-      ...defaultBTCParams,
-      network: network,
-      dataProviders: [BlockcypherDataProviders, HaskoinDataProviders, BitgoProviders],
-      explorerProviders: blockstreamExplorerProviders,
-      feeBounds: {
-        lower: LOWER_FEE_BOUND,
-        upper: UPPER_FEE_BOUND
-      }
-    }
-    const clientLedger = new ClientLedger({ transport, ...btcInitParams })
+    const clientLedger = new ClientLedger({ transport, ...btcInitParams, network: network })
     const address = await clientLedger.getAddressAsync()
     return E.right({ address: address, chain: BTCChain, type: 'ledger', walletIndex, hdMode: 'default' })
   } catch (error) {

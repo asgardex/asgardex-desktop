@@ -170,7 +170,7 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
             as long as an external API can't provide it - currently `https://lcd-cosmoshub.keplr.app`
             See https://github.com/thorchain/asgardex-electron/pull/2405
            */}
-          {isCosmosChain(chain) || isThorChain(chain) || walletType === 'ledger' || asset.synth ? (
+          {isCosmosChain(chain) || asset.synth || isThorChain(chain) ? (
             <WarningView
               subTitle={intl.formatMessage({ id: 'wallet.txs.history.disabled' }, { chain: chainToString(chain) })}
               extra={
