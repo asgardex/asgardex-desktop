@@ -33,6 +33,7 @@ import { eqChain, eqNetwork, eqWalletType } from '../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { addressFromOptionalWalletAddress } from '../../helpers/walletHelper'
+import { useDex } from '../../hooks/useDex'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
@@ -83,6 +84,8 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   const navigate = useNavigate()
 
   const { network } = useNetwork()
+
+  const { dex } = useDex()
 
   const { thorchainQuery } = useThorchainQueryContext()
   const { isPrivate } = usePrivateData()
@@ -315,6 +318,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         hidePrivateData={isPrivate}
                         onChangeAsset={onChangeAssetHandler}
                         disableSaverAction={checkDisableSaverAction()}
+                        dex={dex}
                       />
                     )
                   case TabIndex.WITHDRAW:
@@ -347,6 +351,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         onChangeAsset={onChangeAssetHandler}
                         saverPosition={getSaverProvider$}
                         disableSaverAction={checkDisableSaverAction()}
+                        dex={dex}
                       />
                     )
                   default:

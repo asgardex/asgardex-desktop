@@ -11,6 +11,8 @@ export const ASGARDEX_IDENTIFIER = 999
 
 // Thorname for affialiate address
 export const ASGARDEX_THORNAME = 'dx'
+// Asgardex full address
+export const ASGARDEX_ADDRESS = 'thor1rr6rahhd4sy76a7rdxkjaen2q4k4pw2g06w7qp'
 
 // Affilaite Fee in basis points
 export const ASGARDEX_AFFILIATE_FEE = 10

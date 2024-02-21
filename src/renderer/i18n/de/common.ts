@@ -95,6 +95,7 @@ const common: CommonMessages = {
   'common.reload': 'Neuladen',
   'common.action': 'Aktion',
   'common.add': 'Einzahlen',
+  'common.completeLp': 'voltooide Lp',
   'common.swap': 'Swap',
   'common.savers': 'Savers',
   'common.earn': 'Earn',

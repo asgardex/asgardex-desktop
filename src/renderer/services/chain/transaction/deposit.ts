@@ -20,7 +20,6 @@ import {
   isEthAsset,
   isRuneNativeAsset
 } from '../../../helpers/assetHelper'
-import { isEthChain } from '../../../helpers/chainHelper'
 import { sequenceSOption } from '../../../helpers/fpHelpers'
 import { liveData } from '../../../helpers/rx/liveData'
 import { observableState } from '../../../helpers/stateHelper'
@@ -59,7 +58,8 @@ export const saverDeposit$ = ({
   sender,
   walletType,
   walletIndex,
-  hdMode
+  hdMode,
+  dex
 }: SaverDepositParams): SaverDepositState$ => {
   // total of progress
   const total = O.some(100)
@@ -105,7 +105,8 @@ export const saverDeposit$ = ({
         recipient: poolAddress.address,
         amount,
         memo,
-        feeOption: ChainTxFeeOption.DEPOSIT
+        feeOption: ChainTxFeeOption.DEPOSIT,
+        dex
       })
     }),
     liveData.chain((txHash) => {
@@ -274,7 +275,7 @@ export const symDeposit$ = ({
         walletIndex: runeWalletIndex,
         hdMode: runeHDMode,
         router: O.none, // no router for RUNE
-        asset: AssetRuneNative, // update this to suit MayaChainSwap
+        asset: AssetRuneNative, //tobefixed
         recipient: '', // no recipient for RUNE needed
         amount: amounts.rune,
         memo: memos.rune,
@@ -310,8 +311,19 @@ export const symDeposit$ = ({
             ),
           // 4. check tx finality
           ({ runeTxHash, assetTxHash }) => {
-            const assetAddress: O.Option<Address> =
-              isEthChain(chain) && !isEthAsset(asset) ? getEthAssetAddress(asset) : O.none
+            // 3. check tx finality by polling its tx data
+            const assetAddress: O.Option<Address> = (() => {
+              switch (chain) {
+                case ETHChain:
+                  return !isEthAsset(asset) ? getEthAssetAddress(asset) : O.none
+                case AVAXChain:
+                  return !isAvaxAsset(asset) ? getAvaxAssetAddress(asset) : O.none
+                case BSCChain:
+                  return !isBscAsset(asset) ? getBscAssetAddress(asset) : O.none
+                default:
+                  return O.none
+              }
+            })()
 
             return liveData.sequenceS({
               asset: poolTxStatusByChain$({ txHash: assetTxHash, chain, assetAddress }),

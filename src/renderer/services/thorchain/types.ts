@@ -154,6 +154,7 @@ export type MimirHaltRD = RD.RemoteData<Error, MimirHalt>
 
 export type PendingAsset = AssetWithAmount1e8
 export type PendingAssets = AssetsWithAmount1e8
+export type FailedAssets = AssetsWithAmount1e8
 export type PendingAssetsRD = RD.RemoteData<Error, PendingAssets>
 
 export type LiquidityProvider = {

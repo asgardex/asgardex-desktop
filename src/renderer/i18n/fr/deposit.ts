@@ -39,8 +39,9 @@ const deposit: DepositMessages = {
   'deposit.add.pendingAssets.title': 'Actifs en attente trouvés',
   'deposit.add.pendingAssets.description':
     "Les actifs suivants ont été envoyés avec succès, mais la transaction de l'autre actif n'a pas été finalisée ou a échoué",
-  'deposit.add.pendingAssets.recoveryDescription':
-    "Remarque : les transactions d'une paire d'actifs peuvent prendre un temps différent en s'exécutant sur différentes blockchains. En cas d'échec, vous disposez d'un moyen de retirer les actifs en attente à l'aide de l'outil de récupération du site THORSwap à l'adresse {url}. Cette fonctionnalité n'est actuellement pas disponible avec ASGARDEX Dekstop.",
+  'deposit.add.failedAssets.description': `Échec de l'ajout de l'Asset ci-dessous, veuillez vérifier si cela est correct.`,
+  'deposit.add.pendingAssets.recoveryDescriptionRune': `Pour compléter l'ajout d'un LP Rune : Utilisez l'option de dépôt personnalisé dans le portefeuille pour déposer le montant de Rune avec le mémo`,
+  'deposit.add.pendingAssets.recoveryDescriptionAsset': `Pour compléter l'ajout d'un Asset LP : Utilisez l'option d'envoi dans le portefeuille pour envoyer le montant de l'Asset avec le mémo à l'adresse entrante`,
   'deposit.add.pendingAssets.recoveryTitle': "Ouvrir l'outil de récupération",
   'deposit.add.asymAssets.title': 'Dépôt asymétrique trouvé',
   'deposit.add.asymAssets.description':

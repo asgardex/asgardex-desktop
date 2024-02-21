@@ -38,8 +38,12 @@ const deposit: DepositMessages = {
   'deposit.add.pendingAssets.title': 'Pending Assets gefunden',
   'deposit.add.pendingAssets.description':
     'Folgende Assets wurden erfolgreich überwiesen, jedoch als "Pending" markiert, da die Transaktion des anderen Assets noch aussteht.',
-  'deposit.add.pendingAssets.recoveryDescription':
-    'Bitte beachte: Die Transaktionen der Assetpaare können aufgrund unterschiedlicher Blockchains unterschiedliche Zeit benötigen. Falls die Transaktion eines der Assets fehlgeschlagen sein sollte, kannst Du die bereits eingezahlten, auf "Pending" gesetzten Assets, über das Recovery Tool von THORSwap unter {url} zurücküberweisen. Dieses Feature ist derzeit noch nicht in ASGARDEX Desktop verfügbar.',
+  'deposit.add.failedAssets.description':
+    'Het toevoegen van het onderstaande Asset is mislukt, controleer of dit correct is.',
+  'deposit.add.pendingAssets.recoveryDescriptionRune':
+    'Om een Rune LP toevoeging te voltooien: Gebruik de aangepaste stortingsmogelijkheid in de portemonnee om het Rune-bedrag met de memo te storten',
+  'deposit.add.pendingAssets.recoveryDescriptionAsset':
+    'Om een Asset LP toe te voegen: Gebruik de verzendoptie in de portemonnee om het Asset-bedrag met de memo naar het inboundAddress te sturen',
   'deposit.add.pendingAssets.recoveryTitle': 'Öffne Recovery Tool',
   'deposit.add.asymAssets.title': 'Asymmetrisches Deposit gefunden',
   'deposit.add.asymAssets.description':

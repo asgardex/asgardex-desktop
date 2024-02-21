@@ -8,7 +8,7 @@ import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { ThorChain } from '@xchainjs/xchain-mayachain-query'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+import { isAssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
   Asset,
@@ -53,7 +53,7 @@ import {
   THORCHAIN_DECIMAL,
   to1e8BaseAmount
 } from '../../../helpers/assetHelper'
-import { getChainAsset, isEthChain } from '../../../helpers/chainHelper'
+import { getChainAsset, isAvaxChain, isBscChain, isEthChain } from '../../../helpers/chainHelper'
 import { unionAssets } from '../../../helpers/fp/array'
 import { eqBaseAmount, eqOAsset, eqOApproveParams, eqAsset } from '../../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../../helpers/fpHelpers'
@@ -63,7 +63,7 @@ import { liveData, LiveData } from '../../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../../helpers/stringHelper'
 import * as WalletHelper from '../../../helpers/walletHelper'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
-import { INITIAL_SYM_DEPOSIT_STATE } from '../../../services/chain/const'
+import { INITIAL_SAVER_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../../../services/chain/const'
 import {
   SymDepositState,
   SymDepositParams,
@@ -72,7 +72,10 @@ import {
   FeeRD,
   ReloadSymDepositFeesHandler,
   SymDepositFeesHandler,
-  SymDepositFeesRD
+  SymDepositFeesRD,
+  SaverDepositStateHandler,
+  SaverDepositState,
+  SaverDepositParams
 } from '../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../services/clients'
 import {
@@ -84,6 +87,7 @@ import {
 } from '../../../services/evm/types'
 import { PoolAddress, PoolDetails, PoolsDataMap } from '../../../services/midgard/types'
 import {
+  FailedAssets,
   LiquidityProviderAssetMismatch,
   LiquidityProviderAssetMismatchRD,
   LiquidityProviderHasAsymAssets,
@@ -100,21 +104,24 @@ import {
   WalletBalance,
   WalletBalances
 } from '../../../services/wallet/types'
-import { AssetWithAmount, AssetWithDecimal } from '../../../types/asgardex'
+import { AssetWithAmount, AssetsWithAmount1e8, AssetWithDecimal, AssetWithAmount1e8 } from '../../../types/asgardex'
 import { PoolData, PricePool } from '../../../views/pools/Pools.types'
-import { LedgerConfirmationModal } from '../../modal/confirmation'
+import { ConfirmationModal, LedgerConfirmationModal } from '../../modal/confirmation'
 import { WalletPasswordConfirmationModal } from '../../modal/confirmation'
 import { TxModal } from '../../modal/tx'
 import { DepositAssets } from '../../modal/tx/extra'
+import { DepositAsset } from '../../modal/tx/extra/DepositAsset'
 import { LoadingView } from '../../shared/loading'
 import { Alert } from '../../uielements/alert'
+import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { AssetInput } from '../../uielements/assets/assetInput'
+import { AssetLabel } from '../../uielements/assets/assetLabel'
 import { BaseButton, FlatButton, ViewTxButton } from '../../uielements/button'
 import { MaxBalanceButton } from '../../uielements/button/MaxBalanceButton'
 import { Tooltip, TooltipAddress } from '../../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../../uielements/fees'
 import { InfoIcon } from '../../uielements/info/InfoIcon'
-import { CopyLabel } from '../../uielements/label'
+import { CopyLabel, Label } from '../../uielements/label'
 import { Slider } from '../../uielements/slider'
 import { AssetMissmatchWarning } from './AssetMissmatchWarning'
 import { AsymAssetsWarning } from './AsymAssetsWarning'
@@ -154,6 +161,7 @@ export type Props = {
   disabled?: boolean
   poolData: PoolData
   deposit$: SymDepositStateHandler
+  asymDeposit$: SaverDepositStateHandler
   network: Network
   approveERC20Token$: (params: ApproveParams) => TxHashLD
   isApprovedERC20Token$: (params: IsApproveParams) => LiveData<ApiError, boolean>
@@ -161,7 +169,6 @@ export type Props = {
   poolsData: PoolsDataMap
   disableDepositAction: boolean
   symPendingAssets: PendingAssetsRD
-  openRecoveryTool: FP.Lazy<void>
   hasAsymAssets: LiquidityProviderHasAsymAssetsRD
   symAssetMismatch: LiquidityProviderAssetMismatchRD
   openAsymDepositTool: FP.Lazy<void>
@@ -195,6 +202,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     disabled = false,
     poolData,
     deposit$,
+    asymDeposit$,
     network,
     isApprovedERC20Token$,
     approveERC20Token$,
@@ -204,7 +212,6 @@ export const SymDeposit: React.FC<Props> = (props) => {
     poolsData,
     disableDepositAction,
     symPendingAssets: symPendingAssetsRD,
-    openRecoveryTool,
     hasAsymAssets: hasAsymAssetsRD,
     symAssetMismatch: symAssetMismatchRD,
     openAsymDepositTool,
@@ -221,6 +228,8 @@ export const SymDeposit: React.FC<Props> = (props) => {
   const isRuneLedger = isLedgerWallet(runeWalletType)
 
   const isAssetLedger = isLedgerWallet(assetWalletType)
+
+  const [oFailedAssetAmount, setFailedAssetAmount] = useState<O.Option<AssetWithAmount1e8>>(O.none)
 
   const { balances: oWalletBalances, loading: walletBalancesLoading } = walletBalances
 
@@ -368,6 +377,12 @@ export const SymDeposit: React.FC<Props> = (props) => {
     subscribe: subscribeDepositState
   } = useSubscriptionState<SymDepositState>(INITIAL_SYM_DEPOSIT_STATE)
 
+  const {
+    state: asymDepositState,
+    reset: resetAsymDepositState,
+    subscribe: subscribeAsymDepositState
+  } = useSubscriptionState<SaverDepositState>(INITIAL_SAVER_DEPOSIT_STATE)
+
   // Deposit start time
   const [depositStartTime, setDepositStartTime] = useState<number>(0)
 
@@ -401,15 +416,6 @@ export const SymDeposit: React.FC<Props> = (props) => {
       ),
     [oChainAssetBalance]
   )
-
-  // const needApprovement = useMemo(() => {
-  //   // Other chains than ETH do not need an approvement
-  //   if (!isEthChain(chain)) return false
-  //   // ETH does not need to be approved
-  //   if (isEthAsset(asset)) return false
-  //   // ERC20 token does need approvement only
-  //   return isEthTokenAsset(asset)
-  // }, [asset, chain])
 
   const needApprovement = useMemo(() => {
     // not needed for users with locked or not imported wallets
@@ -821,6 +827,27 @@ export const SymDeposit: React.FC<Props> = (props) => {
       ),
     [oPoolAddress, oRuneWB, oAssetWB, asset, runeAmountToDeposit, assetAmountToDepositMax1e8, assetDecimal, dex]
   )
+  const oAsymDepositParams: O.Option<SaverDepositParams> = useMemo(
+    () =>
+      FP.pipe(
+        sequenceTOption(oDepositParams, oFailedAssetAmount),
+        O.map(([params, { asset, amount1e8 }]) => {
+          const result = {
+            poolAddress: params.poolAddress,
+            asset: asset,
+            amount: amount1e8,
+            memo: isRuneNativeAsset(asset) ? params.memos.rune : params.memos.asset,
+            walletType: isRuneNativeAsset(asset) ? params.runeWalletType : params.assetWalletType,
+            sender: isRuneNativeAsset(asset) ? params.runeSender : params.assetSender,
+            walletIndex: isRuneNativeAsset(asset) ? params.runeWalletIndex : params.assetWalletIndex,
+            hdMode: isRuneNativeAsset(asset) ? params.runeHDMode : params.assetHDMode,
+            dex
+          }
+          return result
+        })
+      ),
+    [oDepositParams, oFailedAssetAmount, dex]
+  )
 
   const reloadFeesHandler = useCallback(() => {
     reloadFees(asset)
@@ -1193,9 +1220,10 @@ export const SymDeposit: React.FC<Props> = (props) => {
     }
   }, [reloadFeesHandler, selectedInput])
 
-  type ModalState = 'deposit' | 'approve' | 'none'
+  type ModalState = 'deposit' | 'approve' | 'none' | 'recover'
   const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
   const [showLedgerModal, setShowLedgerModal] = useState<ModalState>('none')
+  const [showCompleteLpModal, setShowCompleteLpModal] = useState<ModalState>('none')
 
   const onSubmit = () => {
     if (isAssetLedger || isRuneLedger) {
@@ -1203,6 +1231,9 @@ export const SymDeposit: React.FC<Props> = (props) => {
     } else {
       setShowPasswordModal('deposit')
     }
+  }
+  const onRecoverSubmit = () => {
+    setShowCompleteLpModal('recover')
   }
 
   const renderFeeError = useCallback(
@@ -1295,12 +1326,60 @@ export const SymDeposit: React.FC<Props> = (props) => {
         network={network}
       />
     )
-  }, [intl, asset, depositState, assetAmountToDepositMax1e8, runeAmountToDeposit, network])
+  }, [
+    intl,
+    asset,
+    depositState.deposit,
+    depositState.step,
+    depositState.stepsTotal,
+    runeAmountToDeposit,
+    assetAmountToDepositMax1e8,
+    network
+  ])
+
+  const txModalExtraContentAsym = useMemo(() => {
+    const source = FP.pipe(
+      oFailedAssetAmount,
+      O.fold(
+        // None case
+        () => ({ asset: AssetRuneNative, amount: ZERO_BASE_AMOUNT }),
+        // Some case
+        (failedAssetAmount) => ({ asset: failedAssetAmount.asset, amount: failedAssetAmount.amount1e8 })
+      )
+    )
+    const stepDescriptions = [
+      intl.formatMessage({ id: 'common.tx.healthCheck' }),
+      intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: source.asset.ticker }),
+      intl.formatMessage({ id: 'common.tx.checkResult' })
+    ]
+    const stepDescription = FP.pipe(
+      asymDepositState.deposit,
+      RD.fold(
+        () => '',
+        () =>
+          `${intl.formatMessage(
+            { id: 'common.step' },
+            { current: asymDepositState.step, total: asymDepositState.stepsTotal }
+          )}: ${stepDescriptions[asymDepositState.step - 1]}`,
+        () => '',
+        () => `${intl.formatMessage({ id: 'common.done' })}!`
+      )
+    )
+
+    return (
+      <DepositAsset
+        source={O.some({ asset: source.asset, amount: source.amount })}
+        stepDescription={stepDescription}
+        network={network}
+      />
+    )
+  }, [oFailedAssetAmount, intl, asymDepositState.deposit, asymDepositState.step, asymDepositState.stepsTotal, network])
 
   const onCloseTxModal = useCallback(() => {
     resetDepositState()
+    resetAsymDepositState()
     changePercentHandler(0)
-  }, [resetDepositState, changePercentHandler])
+  }, [resetDepositState, resetAsymDepositState, changePercentHandler])
 
   const onFinishTxModal = useCallback(() => {
     onCloseTxModal()
@@ -1388,6 +1467,79 @@ export const SymDeposit: React.FC<Props> = (props) => {
     openRuneExplorerTxUrl,
     getRuneExplorerTxUrl
   ])
+  const renderRecoverTxModal = useMemo(() => {
+    const { deposit: depositRD, depositTx } = asymDepositState
+
+    // don't render TxModal in initial state
+    if (RD.isInitial(depositRD)) return <></>
+
+    // Get timer value
+    const timerValue = FP.pipe(
+      depositRD,
+      RD.fold(
+        () => 0,
+        FP.flow(
+          O.map(({ loaded }) => loaded),
+          O.getOrElse(() => 0)
+        ),
+        () => 0,
+        () => 100
+      )
+    )
+
+    // title
+    const txModalTitle = FP.pipe(
+      depositRD,
+      RD.fold(
+        () => 'deposit.add.state.pending',
+        () => 'deposit.add.state.pending',
+        () => 'deposit.add.state.error',
+        () => 'deposit.add.state.success'
+      ),
+      (id) => intl.formatMessage({ id })
+    )
+
+    const oTxHash = FP.pipe(
+      RD.toOption(depositTx),
+      // Note: As long as we link to `viewblock` to open tx details in a browser,
+      // `0x` needs to be removed from tx hash in case of ETH
+      // @see https://github.com/thorchain/asgardex-electron/issues/1787#issuecomment-931934508
+      O.map((txHash) =>
+        isEthChain(chain) || isAvaxChain(chain) || isBscChain(chain) ? txHash.replace(/0x/i, '') : txHash
+      )
+    )
+
+    return (
+      <TxModal
+        title={txModalTitle}
+        onClose={onCloseTxModal}
+        onFinish={onFinishTxModal}
+        startTime={depositStartTime}
+        txRD={depositRD}
+        timerValue={timerValue}
+        extraResult={
+          <ViewTxButton
+            txHash={oTxHash}
+            onClick={getAssetExplorerTxUrl}
+            txUrl={FP.pipe(oTxHash, O.chain(getRuneExplorerTxUrl))}
+            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: asset.ticker })}
+          />
+        }
+        extra={txModalExtraContentAsym}
+      />
+    )
+  }, [
+    asymDepositState,
+    onCloseTxModal,
+    onFinishTxModal,
+    depositStartTime,
+    getAssetExplorerTxUrl,
+    getRuneExplorerTxUrl,
+    intl,
+    asset.ticker,
+    txModalExtraContentAsym,
+    chain
+  ])
 
   const submitDepositTx = useCallback(() => {
     FP.pipe(
@@ -1402,6 +1554,20 @@ export const SymDeposit: React.FC<Props> = (props) => {
       })
     )
   }, [oDepositParams, subscribeDepositState, deposit$])
+
+  const submitAsymDepositTx = useCallback(() => {
+    FP.pipe(
+      oAsymDepositParams,
+      O.map((params) => {
+        // set start time
+        setDepositStartTime(Date.now())
+        // subscribe to deposit$
+        subscribeAsymDepositState(asymDeposit$(params))
+
+        return true
+      })
+    )
+  }, [oAsymDepositParams, subscribeAsymDepositState, asymDeposit$])
 
   const inputOnBlur = useCallback(() => {
     setSelectedInput('none')
@@ -1571,14 +1737,14 @@ export const SymDeposit: React.FC<Props> = (props) => {
   const prevPendingAssets = useRef<PendingAssets>([])
 
   const renderPendingAssets = useMemo(() => {
-    const render = (pendingAssets: PendingAssets, loading: boolean) =>
+    const render = (pendingAssets: PendingAssets, missingAssets: FailedAssets, loading: boolean) =>
       pendingAssets.length && (
         <PendingAssetsWarning
           className="m-0 w-full xl:mr-20px"
           network={network}
-          assets={pendingAssets}
+          pendingAssets={pendingAssets}
+          failedAssets={missingAssets}
           loading={loading}
-          onClickRecovery={openRecoveryTool}
         />
       )
 
@@ -1586,15 +1752,27 @@ export const SymDeposit: React.FC<Props> = (props) => {
       symPendingAssetsRD,
       RD.fold(
         () => <></>,
-        () => render(prevPendingAssets.current, true),
+        () => render(prevPendingAssets.current, prevPendingAssets.current, true),
         () => <></>,
         (pendingAssets) => {
           prevPendingAssets.current = pendingAssets
-          return render(pendingAssets, false)
+          const missingAssets: AssetsWithAmount1e8 = pendingAssets.map((assetWB): AssetWithAmount1e8 => {
+            const amount = !isAssetRuneNative(assetWB.asset)
+              ? Helper.getRuneAmountToDeposit(assetWB.amount1e8, poolData)
+              : Helper.getAssetAmountToDeposit({ runeAmount: assetWB.amount1e8, poolData, assetDecimal })
+
+            const assetAmount: AssetWithAmount1e8 = {
+              asset: !isAssetRuneNative(assetWB.asset) ? AssetRuneNative : assetWB.asset,
+              amount1e8: amount
+            }
+            setFailedAssetAmount(O.some(assetAmount))
+            return assetAmount
+          })
+          return render(pendingAssets, missingAssets, false)
         }
       )
     )
-  }, [network, openRecoveryTool, symPendingAssetsRD])
+  }, [assetDecimal, network, poolData, symPendingAssetsRD])
 
   const prevHasAsymAssets = useRef<LiquidityProviderHasAsymAssets>({ rune: false, asset: false })
 
@@ -1700,6 +1878,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
     const onSuccess = () => {
       if (showPasswordModal === 'deposit') submitDepositTx()
+      if (showPasswordModal === 'recover') submitAsymDepositTx()
       if (showPasswordModal === 'approve') submitApproveTx()
       setShowPasswordModal('none')
     }
@@ -1710,7 +1889,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     return (
       <WalletPasswordConfirmationModal onSuccess={onSuccess} onClose={onClose} validatePassword$={validatePassword$} />
     )
-  }, [showPasswordModal, submitApproveTx, submitDepositTx, validatePassword$])
+  }, [showPasswordModal, submitApproveTx, submitAsymDepositTx, submitDepositTx, validatePassword$])
 
   const renderLedgerConfirmationModal = useMemo(() => {
     if (showLedgerModal === 'none') return <></>
@@ -1721,6 +1900,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
     const onSuccess = () => {
       if (showLedgerModal === 'deposit') setShowPasswordModal('deposit')
+      if (showLedgerModal === 'recover') submitAsymDepositTx()
       if (showLedgerModal === 'approve') submitApproveTx()
       setShowLedgerModal('none')
     }
@@ -1770,8 +1950,71 @@ export const SymDeposit: React.FC<Props> = (props) => {
         addresses={addresses}
       />
     )
-  }, [asset, chain, intl, isAssetLedger, isRuneLedger, network, oDepositParams, showLedgerModal, submitApproveTx])
+  }, [
+    asset,
+    chain,
+    intl,
+    isAssetLedger,
+    isRuneLedger,
+    network,
+    oDepositParams,
+    showLedgerModal,
+    submitApproveTx,
+    submitAsymDepositTx
+  ])
 
+  const renderCompleteLp = useMemo(() => {
+    if (showCompleteLpModal === 'none') return <></>
+
+    const onClose = () => {
+      setShowCompleteLpModal('none')
+    }
+
+    const onSuccess = () => {
+      if (isAssetLedger || isRuneLedger) {
+        setShowLedgerModal('recover')
+      } else {
+        setShowPasswordModal('recover')
+      }
+    }
+
+    const content = () => {
+      return FP.pipe(
+        oAsymDepositParams,
+        O.map((params) => (
+          <div key={params.sender}>
+            <div className="flex-col">
+              {intl.formatMessage({ id: 'common.tx.type.deposit' })}
+              <div className="items-left justify-left m-2 flex">
+                <AssetIcon className="flex-shrink-0" size="small" asset={params.asset} network={network} />
+                <AssetLabel className="mx-2 flex-shrink-0" asset={params.asset} />
+                <Label className="flex-shrink-0">
+                  {formatAssetAmountCurrency({
+                    asset: params.asset,
+                    amount: baseToAsset(params.amount),
+                    trimZeros: true
+                  })}
+                </Label>
+              </div>
+
+              <Label>{`With memo: ${params.memo}`}</Label>
+            </div>
+          </div>
+        )),
+        O.toNullable
+      )
+    }
+
+    return (
+      <ConfirmationModal
+        onClose={onClose}
+        onSuccess={onSuccess}
+        visible={true}
+        content={content()}
+        title={intl.formatMessage({ id: 'common.completeLp' })}
+      />
+    )
+  }, [intl, isAssetLedger, isRuneLedger, network, oAsymDepositParams, showCompleteLpModal])
   useEffect(() => {
     if (!eqOAsset.equals(prevAsset.current, O.some(asset))) {
       prevAsset.current = O.some(asset)
@@ -2004,52 +2247,56 @@ export const SymDeposit: React.FC<Props> = (props) => {
       {showBalanceError && <div className="w-full pb-20px xl:px-20px">{renderBalanceError}</div>}
 
       <div className="flex max-w-[500px] flex-col">
-        <AssetInput
-          className="w-full"
-          title={intl.formatMessage({ id: 'deposit.add.runeSide' })}
-          amount={{ amount: runeAmountToDeposit, asset: AssetRuneNative }}
-          priceAmount={priceRuneAmountToDepositMax1e8}
-          assets={[]}
-          network={network}
-          onChangeAsset={FP.constVoid}
-          onChange={runeAmountChangeHandler}
-          onBlur={inputOnBlur}
-          onFocus={() => setSelectedInput('rune')}
-          showError={minRuneAmountError}
-          useLedger={isRuneLedger}
-          hasLedger={hasRuneLedger}
-          useLedgerHandler={useRuneLedgerHandler}
-          extraContent={extraRuneContent}
-        />
-
-        <div className="w-full px-20px pt-20px pb-40px">
-          <Slider
-            onAfterChange={onAfterSliderChangeHandler}
-            disabled={disabledForm}
-            value={percentValueToDeposit}
-            onChange={changePercentHandler}
-            tooltipPlacement="top"
-            withLabel={true}
-          />
-        </div>
-
-        <AssetInput
-          className="w-full"
-          title={intl.formatMessage({ id: 'deposit.add.assetSide' })}
-          amount={{ amount: assetAmountToDepositMax1e8, asset }}
-          priceAmount={priceAssetAmountToDepositMax1e8}
-          assets={poolBasedBalancesAssets}
-          network={network}
-          onChangeAsset={onChangeAssetHandler}
-          onChange={assetAmountChangeHandler}
-          onBlur={inputOnBlur}
-          onFocus={() => setSelectedInput('asset')}
-          showError={minAssetAmountError}
-          useLedger={isAssetLedger}
-          hasLedger={hasAssetLedger}
-          useLedgerHandler={useAssetLedgerHandler}
-          extraContent={extraAssetContent}
-        />
+        {!hasPendingAssets && (
+          <div>
+            <AssetInput
+              className="w-full"
+              title={intl.formatMessage({ id: 'deposit.add.runeSide' })}
+              amount={{ amount: runeAmountToDeposit, asset: AssetRuneNative }}
+              priceAmount={priceRuneAmountToDepositMax1e8}
+              assets={[]}
+              network={network}
+              onChangeAsset={FP.constVoid}
+              onChange={runeAmountChangeHandler}
+              onBlur={inputOnBlur}
+              onFocus={() => setSelectedInput('rune')}
+              showError={minRuneAmountError}
+              useLedger={isRuneLedger}
+              hasLedger={hasRuneLedger}
+              useLedgerHandler={useRuneLedgerHandler}
+              extraContent={extraRuneContent}
+            />
+            <div className="w-full px-20px pt-20px pb-40px">
+              <Slider
+                onAfterChange={onAfterSliderChangeHandler}
+                disabled={disabledForm}
+                value={percentValueToDeposit}
+                onChange={changePercentHandler}
+                tooltipPlacement="top"
+                withLabel={true}
+              />
+            </div>
+            <>
+              <AssetInput
+                className="w-full"
+                title={intl.formatMessage({ id: 'deposit.add.assetSide' })}
+                amount={{ amount: assetAmountToDepositMax1e8, asset }}
+                priceAmount={priceAssetAmountToDepositMax1e8}
+                assets={poolBasedBalancesAssets}
+                network={network}
+                onChangeAsset={onChangeAssetHandler}
+                onChange={assetAmountChangeHandler}
+                onBlur={inputOnBlur}
+                onFocus={() => setSelectedInput('asset')}
+                showError={minAssetAmountError}
+                useLedger={isAssetLedger}
+                hasLedger={hasAssetLedger}
+                useLedgerHandler={useAssetLedgerHandler}
+                extraContent={extraAssetContent}
+              />
+            </>
+          </div>
+        )}
 
         <div className="flex flex-col items-center justify-between py-30px">
           {renderIsApprovedError}
@@ -2072,9 +2319,15 @@ export const SymDeposit: React.FC<Props> = (props) => {
             <>
               {renderAssetChainFeeError}
               {renderThorchainFeeError}
-              <FlatButton className="mb-20px min-w-[200px]" size="large" onClick={onSubmit} disabled={disableSubmit}>
-                {intl.formatMessage({ id: 'common.add' })}
-              </FlatButton>
+              {hasPendingAssets ? (
+                <FlatButton className="mb-20px min-w-[200px]" size="large" onClick={onRecoverSubmit}>
+                  {intl.formatMessage({ id: 'common.completeLp' })}
+                </FlatButton>
+              ) : (
+                <FlatButton className="mb-20px min-w-[200px]" size="large" onClick={onSubmit} disabled={disableSubmit}>
+                  {intl.formatMessage({ id: 'common.add' })}
+                </FlatButton>
+              )}
             </>
           ) : (
             <>
@@ -2302,6 +2555,8 @@ export const SymDeposit: React.FC<Props> = (props) => {
         {renderPasswordConfirmationModal}
         {renderLedgerConfirmationModal}
         {renderTxModal}
+        {renderRecoverTxModal}
+        {renderCompleteLp}
       </div>
     </div>
   )

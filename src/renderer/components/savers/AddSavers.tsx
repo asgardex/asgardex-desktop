@@ -32,6 +32,7 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
+import { Dex } from '../../../shared/api/types'
 import { ASGARDEX_THORNAME } from '../../../shared/const'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
@@ -140,6 +141,7 @@ export type AddProps = {
   reloadBalances: FP.Lazy<void>
   disableSaverAction: boolean
   hidePrivateData: boolean
+  dex: Dex
 }
 
 export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
@@ -167,7 +169,8 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     goToTransaction,
     getExplorerTxUrl,
     disableSaverAction,
-    hidePrivateData
+    hidePrivateData,
+    dex
   } = props
 
   const intl = useIntl()
@@ -777,12 +780,13 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
           walletType,
           sender: walletAddress,
           walletIndex,
-          hdMode
+          hdMode,
+          dex
         }
         return result
       })
     )
-  }, [oSourceAssetWB, amountToSendMax1e8, asset, oSaversQuote, oPoolAddress])
+  }, [oPoolAddress, oSourceAssetWB, oSaversQuote, asset.asset, asset.baseAmount.decimal, amountToSendMax1e8, dex])
 
   const onClickUseLedger = useCallback(
     (useLedger: boolean) => {

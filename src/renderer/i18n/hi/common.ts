@@ -95,6 +95,7 @@ const common: CommonMessages = {
   'common.reload': 'पुनः लोड करें',
   'common.action': 'क्रिया',
   'common.add': 'जोड़ें',
+  'common.completeLp': 'सामान्य Lp पूरा करें',
   'common.swap': 'स्वैप',
   'common.savers': 'बचत',
   'common.earn': 'कमाई',

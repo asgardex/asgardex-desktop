@@ -1,7 +1,6 @@
 import { ComponentMeta } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
-import * as FP from 'fp-ts/lib/function'
 
 import { AssetBNB, AssetBTC } from '../../../../shared/utils/asset'
 import * as AT from '../../../storybook/argTypes'
@@ -22,12 +21,11 @@ const assets: AssetsWithAmount1e8 = [bnbAsset, btcAsset]
 
 type Args = {
   network: Network
-  onClickRecovery: FP.Lazy<void>
   loading: boolean
 }
 
-const Template = ({ network, loading, onClickRecovery }: Args) => {
-  return <Component assets={assets} network={network} onClickRecovery={onClickRecovery} loading={loading} />
+const Template = ({ network, loading }: Args) => {
+  return <Component pendingAssets={assets} failedAssets={assets} network={network} loading={loading} />
 }
 
 export const Default = Template.bind({})
@@ -36,10 +34,7 @@ const meta: ComponentMeta<typeof Template> = {
   component: Template,
   title: 'Components/Deposit/PendingAssetsWarning',
   argTypes: {
-    network: AT.network,
-    onClickRecovery: {
-      action: 'onClickRecovery'
-    }
+    network: AT.network
   },
   args: {
     network: Network.Mainnet,

@@ -94,6 +94,7 @@ const common: CommonMessages = {
   'common.reload': 'Recharger',
   'common.action': 'Action',
   'common.add': 'Ajouter',
+  'common.completeLp': 'compléter LP',
   'common.swap': 'Échanger',
   'common.savers': 'Épargnants',
   'common.earn': 'Gagner',

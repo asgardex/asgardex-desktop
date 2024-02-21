@@ -16,7 +16,7 @@ import { isLedgerWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
 import { SymDeposit } from '../../../components/deposit/add'
 import { Alert } from '../../../components/uielements/alert'
-import { ASYM_DEPOSIT_TOOL_URL, RECOVERY_TOOL_URL, ZERO_POOL_DATA } from '../../../const'
+import { ASYM_DEPOSIT_TOOL_URL, ZERO_POOL_DATA } from '../../../const'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useEvmContext } from '../../../contexts/EvmContext'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
@@ -66,7 +66,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
     }
   } = useMidgardContext()
 
-  const { symDepositFees$, symDeposit$, reloadSymDepositFees } = useChainContext()
+  const { symDepositFees$, symDeposit$, reloadSymDepositFees, saverDeposit$: asymDeposit$ } = useChainContext()
 
   const poolsState = useObservableState(poolsState$, RD.initial)
 
@@ -170,11 +170,6 @@ export const SymDepositView: React.FC<Props> = (props) => {
     assetAddress: assetWalletAddress.address
   })
 
-  const openRecoveryTool = useCallback(
-    (): Promise<void> => window.apiUrl.openExternal(RECOVERY_TOOL_URL[network]),
-    [network]
-  )
-
   const openAsymDepositTool = useCallback(
     (): Promise<void> => window.apiUrl.openExternal(ASYM_DEPOSIT_TOOL_URL[network]),
     [network]
@@ -208,6 +203,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
           reloadSelectedPoolDetail={reloadSelectedPoolDetail}
           poolData={ZERO_POOL_DATA}
           deposit$={symDeposit$}
+          asymDeposit$={asymDeposit$}
           network={network}
           approveERC20Token$={approveERC20Token$}
           isApprovedERC20Token$={isApprovedERC20Token$}
@@ -216,7 +212,6 @@ export const SymDepositView: React.FC<Props> = (props) => {
           poolDetails={[]}
           poolsData={{}}
           symPendingAssets={RD.initial}
-          openRecoveryTool={openRecoveryTool}
           hasAsymAssets={RD.initial}
           symAssetMismatch={RD.initial}
           openAsymDepositTool={openAsymDepositTool}
@@ -243,11 +238,11 @@ export const SymDepositView: React.FC<Props> = (props) => {
       reloadShares,
       reloadSelectedPoolDetail,
       symDeposit$,
+      asymDeposit$,
       network,
       approveERC20Token$,
       isApprovedERC20Token$,
       protocolLimitReached,
-      openRecoveryTool,
       openAsymDepositTool,
       assetWalletAddress.type,
       runeWalletAddress.type,
@@ -295,6 +290,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
               reloadSelectedPoolDetail={reloadSelectedPoolDetail}
               availableAssets={availableAssets}
               deposit$={symDeposit$}
+              asymDeposit$={asymDeposit$}
               network={network}
               approveERC20Token$={approveERC20Token$}
               isApprovedERC20Token$={isApprovedERC20Token$}
@@ -302,7 +298,6 @@ export const SymDepositView: React.FC<Props> = (props) => {
               poolDetails={poolDetails}
               poolsData={poolsData}
               symPendingAssets={symPendingAssets}
-              openRecoveryTool={openRecoveryTool}
               hasAsymAssets={hasAsymAssets}
               symAssetMismatch={symAssetMismatch}
               openAsymDepositTool={openAsymDepositTool}

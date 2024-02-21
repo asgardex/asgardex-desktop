@@ -92,6 +92,7 @@ export type SaverDepositParams = {
   readonly walletIndex: number
   readonly walletType: WalletType
   readonly hdMode: HDMode
+  readonly dex: Dex
 }
 
 export type SymDepositAmounts = { rune: BaseAmount; asset: BaseAmount }
@@ -318,6 +319,7 @@ export type SaverWithdrawParams = {
   readonly walletIndex: number
   readonly sender: Address
   readonly hdMode: HDMode
+  readonly dex: Dex
 }
 
 export type SaverWithdrawStateHandler = (p: SaverWithdrawParams) => WithdrawState$

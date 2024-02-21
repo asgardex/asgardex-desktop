@@ -46,7 +46,7 @@ import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
 import { Dex } from '../../../shared/api/types'
-import { ASGARDEX_AFFILIATE_FEE, ASGARDEX_THORNAME } from '../../../shared/const'
+import { ASGARDEX_ADDRESS, ASGARDEX_AFFILIATE_FEE, ASGARDEX_THORNAME } from '../../../shared/const'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
@@ -799,12 +799,14 @@ export const Swap = ({
   const oQuoteSwapData: O.Option<QuoteSwapParams> = useMemo(
     () =>
       FP.pipe(
-        sequenceTOption(oRecipientAddress),
-        O.map(([destinationAddress]) => {
+        sequenceTOption(oRecipientAddress, oSourceAssetWB),
+        O.map(([destinationAddress, { walletAddress }]) => {
           const fromAsset = sourceAsset
           const destinationAsset = targetAsset
           const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
           const address = destinationAddress
+          const affiliate = ASGARDEX_ADDRESS === walletAddress ? undefined : ASGARDEX_THORNAME
+          const affiliateBps = ASGARDEX_ADDRESS === walletAddress ? undefined : applyBps
           const streamingInt = isStreaming ? streamingInterval : 0
           const streaminQuant = isStreaming ? streamingQuantity : 0
           const toleranceBps = isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100 // convert to basis points
@@ -816,23 +818,24 @@ export const Swap = ({
             streamingInterval: streamingInt,
             streamingQuantity: streaminQuant,
             toleranceBps: toleranceBps,
-            affiliateAddress: ASGARDEX_THORNAME,
-            affiliateBps: applyBps
+            affiliateAddress: affiliate,
+            affiliateBps
           }
         })
       ),
     [
       oRecipientAddress,
+      oSourceAssetWB,
       sourceAsset,
       targetAsset,
       amountToSwapMax1e8,
       sourceAssetDecimal,
+      applyBps,
       isStreaming,
       streamingInterval,
       streamingQuantity,
-      slipTolerance,
-      applyBps,
-      network
+      network,
+      slipTolerance
     ]
   )
   const oQuoteSwapDataMaya: O.Option<QuoteSwapParamsMaya> = useMemo(

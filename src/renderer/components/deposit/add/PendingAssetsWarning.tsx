@@ -1,17 +1,17 @@
 import React, { useState } from 'react'
 
-import { ArrowTopRightOnSquareIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
+import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import { Network } from '@xchainjs/xchain-client'
 import { assetToString, baseToAsset, formatAssetAmount } from '@xchainjs/xchain-util'
-import * as FP from 'fp-ts/lib/function'
-import { FormattedMessage, useIntl } from 'react-intl'
+import { index } from 'io-ts/lib/DecodeError'
+import { useIntl } from 'react-intl'
 
-import { RECOVERY_TOOL_URL } from '../../../const'
+import { isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { AssetWithAmount1e8, AssetsWithAmount1e8 } from '../../../types/asgardex'
 import { Alert } from '../../uielements/alert'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { AssetLabel } from '../../uielements/assets/assetLabel'
-import { BorderButton, TextButton } from '../../uielements/button'
+import { TextButton } from '../../uielements/button'
 import { Label } from '../../uielements/label'
 
 type AssetIconAmountProps = {
@@ -44,18 +44,18 @@ const AssetIconAmount: React.FC<AssetIconAmountProps> = (props): JSX.Element => 
 
 export type PendingAssetsProps = {
   network: Network
-  assets: AssetsWithAmount1e8
+  pendingAssets: AssetsWithAmount1e8
+  failedAssets: AssetsWithAmount1e8
   loading: boolean
-  onClickRecovery: FP.Lazy<void>
   className?: string
 }
 
 export const PendingAssetsWarning: React.FC<PendingAssetsProps> = (props): JSX.Element => {
-  const { assets, network, loading, onClickRecovery, className = '' } = props
+  const { pendingAssets, failedAssets, network, loading, className = '' } = props
 
   const intl = useIntl()
 
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(true)
 
   const Description: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => (
     <p className="p-0 pb-10px font-main text-[12px] uppercase leading-[17px]">{children}</p>
@@ -75,7 +75,7 @@ export const PendingAssetsWarning: React.FC<PendingAssetsProps> = (props): JSX.E
       {collapsed && (
         <>
           <Description>{intl.formatMessage({ id: 'deposit.add.pendingAssets.description' })}</Description>
-          {assets.map((assetWB, index) => (
+          {pendingAssets.map((assetWB, index) => (
             <AssetIconAmount
               network={network}
               assetWA={assetWB}
@@ -83,24 +83,22 @@ export const PendingAssetsWarning: React.FC<PendingAssetsProps> = (props): JSX.E
               key={`${assetToString(assetWB.asset)}-${index}`}
             />
           ))}
-          <Description>
-            <FormattedMessage
-              id="deposit.add.pendingAssets.recoveryDescription"
-              values={{
-                url: (
-                  <span
-                    className="cursor-pointer uppercase text-inherit underline hover:text-turquoise"
-                    onClick={onClickRecovery}>
-                    {RECOVERY_TOOL_URL[network]}
-                  </span>
-                )
-              }}
+          <Description>{intl.formatMessage({ id: 'deposit.add.failedAssets.description' })}</Description>
+          {failedAssets.map((assetWB, index) => (
+            <AssetIconAmount
+              network={network}
+              assetWA={assetWB}
+              loading={loading}
+              key={`${assetToString(assetWB.asset)}-${index}`}
             />
-          </Description>
-          <BorderButton color="warning" className="my-10px" onClick={onClickRecovery}>
-            {intl.formatMessage({ id: 'deposit.add.pendingAssets.recoveryTitle' })}
-            <ArrowTopRightOnSquareIcon className="ml-5px h-20px w-20px text-inherit" />
-          </BorderButton>
+          ))}
+          {failedAssets.map((assetWb) => (
+            <Description key={`${assetToString(assetWb.asset)}-${index}`}>
+              {isRuneNativeAsset(assetWb.asset)
+                ? intl.formatMessage({ id: 'deposit.add.pendingAssets.recoveryDescriptionRune' })
+                : intl.formatMessage({ id: 'deposit.add.pendingAssets.recoveryDescriptionAsset' })}
+            </Description>
+          ))}
         </>
       )}
     </>
