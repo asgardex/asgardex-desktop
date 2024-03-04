@@ -13,8 +13,8 @@ import { isLedgerWallet } from '../../../shared/utils/guard'
 import { Network$ } from '../app/types'
 import * as C from '../clients'
 import { ErrorId, TxHashLD } from '../wallet/types'
-import { Client$, SendTxParams } from './types'
 import { TransactionService } from './types'
+import { Client$, SendTxParams } from './types'
 
 export const createTransactionService = (client$: Client$, network$: Network$): TransactionService => {
   const common = C.createTransactionService(client$)

@@ -1,34 +1,39 @@
 import { SyncOutlined } from '@ant-design/icons'
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryObj } from '@storybook/react'
 
 import { Button } from '../../uielements/button'
 import { WarningView as Component, Props } from './WarningView'
 
-const Template: StoryFn<Props> = (args) => <Component {...args} />
-export const Default = Template.bind({})
-
-const renderActionButton = () => (
+// Define the action button directly within the component or story,
+// if it needs to be dynamically added based on story args.
+const ActionButton = () => (
   <Button onClick={() => console.log('action')} typevalue="outline">
     <SyncOutlined />
     Action Button
   </Button>
 )
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/WarningView',
+  // Removing `mapping` since dynamic JSX cannot be directly achieved this way
   argTypes: {
     extra: {
-      options: ['null', 'extra'],
-      mapping: {
-        null: null,
-        extra: renderActionButton()
-      }
+      options: ['none', 'extra'],
+      control: { type: 'select' }
     }
   },
   args: {
     title: 'Warning message!',
-    extra: null
+    extra: 'none' // Use 'none' to indicate no extra content by default
+  }
+}
+
+export const Default: StoryObj<Props> = {
+  render: (args: Props) => <Component {...args} extra={args.extra === 'extra' ? <ActionButton /> : null} />,
+  args: {
+    title: 'Warning message!',
+    extra: 'none' // Reflecting the control to toggle the action button
   }
 }
 

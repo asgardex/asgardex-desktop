@@ -1,4 +1,4 @@
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 
 import { AssetBCH, AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../../../../shared/utils/asset'
@@ -8,7 +8,7 @@ import { AssetIcon as Component, ComponentProps } from './AssetIcon'
 const Template: StoryFn<ComponentProps> = (args) => <Component {...args} />
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/Assets/AssetIcon',
   argTypes: {

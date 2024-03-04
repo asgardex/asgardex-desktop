@@ -15,19 +15,19 @@ import {
 describe('stake/Withdraw.helper', () => {
   describe('getWithdrawAmounts', () => {
     it('zero percentes', () => {
-      const withdraws = getWithdrawAmounts(baseAmount('193011422'), baseAmount('3202499'), 0)
+      const withdraws = getWithdrawAmounts(baseAmount('193011422'), baseAmount('3202499'), 0, 'THOR')
       expect(eqBaseAmount.equals(withdraws.rune, ZERO_BASE_AMOUNT)).toBeTruthy()
       expect(eqBaseAmount.equals(withdraws.asset, ZERO_BASE_AMOUNT)).toBeTruthy()
     })
 
     it('50 percentes', () => {
-      const withdraws = getWithdrawAmounts(baseAmount('193011422'), baseAmount('3202499'), 50)
+      const withdraws = getWithdrawAmounts(baseAmount('193011422'), baseAmount('3202499'), 50, 'THOR')
       expect(eqBaseAmount.equals(withdraws.rune, baseAmount(96505711))).toBeTruthy()
       expect(eqBaseAmount.equals(withdraws.asset, baseAmount(1601250))).toBeTruthy()
     })
 
     it('100 percentes', () => {
-      const withdraws = getWithdrawAmounts(baseAmount('193011422'), baseAmount('3202499'), 100)
+      const withdraws = getWithdrawAmounts(baseAmount('193011422'), baseAmount('3202499'), 100, 'THOR')
       expect(eqBaseAmount.equals(withdraws.rune, baseAmount(193011422))).toBeTruthy()
       expect(eqBaseAmount.equals(withdraws.asset, baseAmount(3202499))).toBeTruthy()
     })

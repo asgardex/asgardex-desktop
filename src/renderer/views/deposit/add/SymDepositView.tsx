@@ -3,6 +3,8 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { MayaChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, assetToString } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
@@ -19,18 +21,21 @@ import { Alert } from '../../../components/uielements/alert'
 import { ASYM_DEPOSIT_TOOL_URL, ZERO_POOL_DATA } from '../../../const'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useEvmContext } from '../../../contexts/EvmContext'
+import { useMayachainContext } from '../../../contexts/MayachainContext'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { hasLedgerAddress } from '../../../helpers/addressHelper'
 import { sequenceTRD } from '../../../helpers/fpHelpers'
 import * as PoolHelpers from '../../../helpers/poolHelper'
-import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
 import { useDex } from '../../../hooks/useDex'
 import { useLedgerAddresses } from '../../../hooks/useLedgerAddresses'
 import { useLiquidityProviders } from '../../../hooks/useLiquidityProviders'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
+import { usePricePool } from '../../../hooks/usePricePool'
+import { usePricePoolMaya } from '../../../hooks/usePricePoolMaya'
 import { usePrivateData } from '../../../hooks/usePrivateData'
 import { useProtocolLimit } from '../../../hooks/useProtocolLimit'
 import * as poolsRoutes from '../../../routes/pools'
@@ -57,20 +62,44 @@ export const SymDepositView: React.FC<Props> = (props) => {
 
   const { dex } = useDex()
 
-  const { reloadInboundAddresses } = useThorchainContext()
+  const { reloadInboundAddresses: reloadInboundAddressesThor } = useThorchainContext()
+  const { reloadInboundAddresses: reloadInboundAddressesMaya } = useMayachainContext()
 
+  const reloadInboundAddresses = dex === 'THOR' ? reloadInboundAddressesThor : reloadInboundAddressesMaya
   const {
     service: {
-      pools: { availableAssets$, reloadSelectedPoolDetail, selectedPoolAddress$, poolsState$, selectedPricePool$ },
+      pools: {
+        availableAssets$: availableAssetsThor$,
+        reloadSelectedPoolDetail: reloadSelectedPoolDetailThor,
+        selectedPoolAddress$,
+        poolsState$
+      },
       shares: { reloadShares }
     }
   } = useMidgardContext()
+  const {
+    service: {
+      pools: {
+        availableAssets$: availableAssetsMaya$,
+        reloadSelectedPoolDetail: reloadSelectedPoolDetailMaya,
+        selectedPoolAddress$: selectedPoolAddressMaya$,
+        poolsState$: poolsStateMaya$
+      },
+      shares: { reloadShares: reloadSharesMaya }
+    }
+  } = useMidgardMayaContext()
+
+  const availableAssets$ = dex === 'THOR' ? availableAssetsThor$ : availableAssetsMaya$
+  const reloadSelectedPoolDetail = dex === 'THOR' ? reloadSelectedPoolDetailThor : reloadSelectedPoolDetailMaya
 
   const { symDepositFees$, symDeposit$, reloadSymDepositFees, saverDeposit$: asymDeposit$ } = useChainContext()
 
-  const poolsState = useObservableState(poolsState$, RD.initial)
+  const poolsState = useObservableState(dex === 'THOR' ? poolsState$ : poolsStateMaya$, RD.initial)
 
-  const oPoolAddress: O.Option<PoolAddress> = useObservableState(selectedPoolAddress$, O.none)
+  const oPoolAddress: O.Option<PoolAddress> = useObservableState(
+    dex === 'THOR' ? selectedPoolAddress$ : selectedPoolAddressMaya$,
+    O.none
+  )
 
   const {
     balancesState$,
@@ -82,14 +111,17 @@ export const SymDepositView: React.FC<Props> = (props) => {
 
   const { data: protocolLimitRD } = useProtocolLimit()
 
+  const pricePoolThor = usePricePool()
+  const pricePoolMaya = usePricePoolMaya()
+
   const { approveERC20Token$, isApprovedERC20Token$, approveFee$, reloadApproveFee } = useEvmContext(asset.chain)
 
   // reload inbound addresses at `onMount` to get always latest `pool address` + `feeRates`
   useEffect(() => {
     reloadInboundAddresses()
-  }, [reloadInboundAddresses])
+  }, [dex, reloadInboundAddresses])
 
-  const pricePool = useObservableState(selectedPricePool$, RUNE_PRICE_POOL)
+  const pricePool = dex === 'THOR' ? pricePoolThor : pricePoolMaya
 
   const [balancesState] = useObservableState(
     () =>
@@ -102,8 +134,8 @@ export const SymDepositView: React.FC<Props> = (props) => {
 
   const reloadBalances = useCallback(() => {
     reloadBalancesByChain(assetWD.asset.chain)()
-    reloadBalancesByChain(THORChain)()
-  }, [assetWD.asset.chain, reloadBalancesByChain])
+    reloadBalancesByChain(dex === 'THOR' ? THORChain : MAYAChain)()
+  }, [assetWD.asset.chain, dex, reloadBalancesByChain])
 
   const onChangeAsset = useCallback(
     ({
@@ -144,6 +176,14 @@ export const SymDepositView: React.FC<Props> = (props) => {
     reloadBalances()
   }, [reloadBalances])
 
+  useEffect(() => {
+    if (dex === 'THOR') {
+      reloadSelectedPoolDetail()
+    } else {
+      reloadSelectedPoolDetailMaya()
+    }
+  }, [dex, reloadSelectedPoolDetail, reloadSelectedPoolDetailMaya])
+
   const poolAssetsRD: PoolAssetsRD = useObservableState(availableAssets$, RD.initial)
 
   const { openExplorerTxUrl: openAssetExplorerTxUrl, getExplorerTxUrl: getAssetExplorerTxUrl } = useOpenExplorerTxUrl(
@@ -151,7 +191,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
   )
 
   const { openExplorerTxUrl: openRuneExplorerTxUrl, getExplorerTxUrl: getRuneExplorerTxUrl } = useOpenExplorerTxUrl(
-    O.some(THORChain)
+    O.some(dex === 'THOR' ? THORChain : MayaChain)
   )
 
   const protocolLimitReached = useMemo(
@@ -166,8 +206,9 @@ export const SymDepositView: React.FC<Props> = (props) => {
 
   const { symPendingAssets, hasAsymAssets, symAssetMismatch } = useLiquidityProviders({
     asset,
-    runeAddress: runeWalletAddress.address,
-    assetAddress: assetWalletAddress.address
+    dexAssetAddress: runeWalletAddress.address,
+    assetAddress: assetWalletAddress.address,
+    dex
   })
 
   const openAsymDepositTool = useCallback(
@@ -199,8 +240,8 @@ export const SymDepositView: React.FC<Props> = (props) => {
           disabled={true}
           poolAddress={O.none}
           reloadBalances={reloadBalances}
-          reloadShares={reloadShares}
-          reloadSelectedPoolDetail={reloadSelectedPoolDetail}
+          reloadShares={dex === 'THOR' ? reloadShares : reloadSharesMaya}
+          reloadSelectedPoolDetail={dex === 'THOR' ? reloadSelectedPoolDetail : reloadSelectedPoolDetailMaya}
           poolData={ZERO_POOL_DATA}
           deposit$={symDeposit$}
           asymDeposit$={asymDeposit$}
@@ -235,8 +276,11 @@ export const SymDepositView: React.FC<Props> = (props) => {
       approveFee$,
       pricePool,
       reloadBalances,
+      dex,
       reloadShares,
+      reloadSharesMaya,
       reloadSelectedPoolDetail,
+      reloadSelectedPoolDetailMaya,
       symDeposit$,
       asymDeposit$,
       network,
@@ -246,8 +290,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
       openAsymDepositTool,
       assetWalletAddress.type,
       runeWalletAddress.type,
-      isPrivate,
-      dex
+      isPrivate
     ]
   )
 
@@ -259,7 +302,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
       (error) => renderDisabledAddDeposit(error),
       ([poolAssets, poolDetail, { poolsData, poolDetails }]) => {
         // Since RUNE is not part of pool assets, add it to the list of available assets
-        const availableAssets = [AssetRuneNative, ...poolAssets]
+        const availableAssets = [AssetRuneNative, AssetCacao, ...poolAssets]
         const { chain } = asset
         const disableDepositAction =
           PoolHelpers.disableAllActions({ chain, haltedChains, mimirHalt }) ||
@@ -286,7 +329,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
               reloadApproveFee={reloadApproveFee}
               pricePool={pricePool}
               reloadBalances={reloadBalances}
-              reloadShares={reloadShares}
+              reloadShares={dex === 'THOR' ? reloadShares : reloadSharesMaya}
               reloadSelectedPoolDetail={reloadSelectedPoolDetail}
               availableAssets={availableAssets}
               deposit$={symDeposit$}

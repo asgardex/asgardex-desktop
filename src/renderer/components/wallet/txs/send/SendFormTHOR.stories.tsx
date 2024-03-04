@@ -1,4 +1,4 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase, BaseAmount, baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
@@ -75,7 +75,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
 }
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Template> = {
+const meta: Meta<typeof Template> = {
   component: Template,
   title: 'Wallet/SendFormTHOR',
   argTypes: {

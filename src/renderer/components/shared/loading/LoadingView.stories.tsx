@@ -1,16 +1,19 @@
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryObj } from '@storybook/react'
 
 import { LoadingView as Component, Props } from './LoadingView'
 
-const Template: StoryFn<Props> = (args) => <Component {...args} />
-export const Default = Template.bind({})
-
-const meta: ComponentMeta<typeof Component> = {
-  component: Component,
-  title: 'Components/LoadingView',
+// Define the default story using StoryObj
+export const Default: StoryObj<Props> = {
+  render: (args: Props) => <Component {...args} />,
   args: {
-    label: 'Loading data!'
+    label: 'Loading data!' // Default args for this story
   }
+}
+
+// Define meta for Storybook
+const meta: Meta<typeof Component> = {
+  component: Component,
+  title: 'Components/LoadingView'
 }
 
 export default meta

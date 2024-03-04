@@ -1,4 +1,4 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 
 import { Button as Component } from './Button'
 import { ButtonProps } from './Button.types'
@@ -9,7 +9,7 @@ export const LegacyButton = ({ typevalue, sizevalue, color, focused, children }:
   </Component>
 )
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/button/ButtonLegacy',
   argTypes: {

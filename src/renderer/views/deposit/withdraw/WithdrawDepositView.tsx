@@ -19,6 +19,7 @@ import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../const'
 import { useAppContext } from '../../../contexts/AppContext'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { getAssetPoolPrice } from '../../../helpers/poolHelper'
 import * as ShareHelpers from '../../../helpers/poolShareHelper'
@@ -44,15 +45,27 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
   const { decimal: assetDecimal } = assetWD
   const {
     service: {
-      pools: { selectedPricePoolAsset$, priceRatio$, poolsState$ },
+      pools: { selectedPricePoolAsset$: selectedPricePoolAssetThor$, priceRatio$, poolsState$: poolsStateThor$ },
       shares: { reloadShares }
     }
   } = useMidgardContext()
 
-  const { dex } = useDex()
+  const {
+    service: {
+      pools: {
+        selectedPricePoolAsset$: selectedPricePoolAssetMaya$,
+        priceRatio$: priceRatioMaya$,
+        poolsState$: poolsStateMaya$
+      },
+      shares: { reloadShares: reloadSharesMaya }
+    }
+  } = useMidgardMayaContext()
 
+  const { dex } = useDex()
+  const selectedPricePoolAsset$ = dex === 'THOR' ? selectedPricePoolAssetThor$ : selectedPricePoolAssetMaya$
   const { symWithdrawFee$, reloadWithdrawFees, symWithdraw$ } = useChainContext()
-  const runePrice = useObservableState(priceRatio$, bn(1))
+  const poolsState$ = dex === 'THOR' ? poolsStateThor$ : poolsStateMaya$
+  const runePrice = useObservableState(dex === 'THOR' ? priceRatio$ : priceRatioMaya$, bn(1))
 
   const [selectedPriceAssetRD]: [RD.RemoteData<Error, Asset>, unknown] = useObservableState(
     () =>
@@ -117,8 +130,12 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
 
   const reloadBalancesAndShares = useCallback(() => {
     reloadBalances()
-    reloadShares(5000)
-  }, [reloadBalances, reloadShares])
+    if (dex === 'THOR') {
+      reloadShares(5000)
+    } else {
+      reloadSharesMaya(5000)
+    }
+  }, [dex, reloadBalances, reloadShares, reloadSharesMaya])
 
   const renderEmptyForm = useCallback(
     () => (
@@ -190,7 +207,7 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
         runeBalance={runeBalance}
         selectedPriceAsset={selectedPriceAsset}
         shares={{
-          rune: ShareHelpers.getRuneShare(liquidityUnits, poolDetail),
+          rune: ShareHelpers.getRuneShare(liquidityUnits, poolDetail, dex),
           asset: ShareHelpers.getAssetShare({ liquidityUnits, detail: poolDetail, assetDecimal })
         }}
         asset={assetWD}

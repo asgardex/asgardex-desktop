@@ -26,7 +26,7 @@ import { BorderButton, FlatButton, RefreshButton, TextButton } from '../../uiele
 import { TxsTable } from '../txs/table/TxsTable'
 import * as Styled from './AssetDetails.styles'
 
-type Props = {
+export type Props = {
   walletType: WalletType
   txsPageRD: TxsPageRD
   balances: O.Option<NonEmptyWalletBalances>
@@ -156,7 +156,7 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
       <Row>
         <Col span={24}>
           <TextButton
-            className="px-0 pt-40px pb-20px !font-mainSemiBold !text-18"
+            className="px-0 pb-20px pt-40px !font-mainSemiBold !text-18"
             size="large"
             color="neutral"
             onClick={openExplorerAddressUrl}>

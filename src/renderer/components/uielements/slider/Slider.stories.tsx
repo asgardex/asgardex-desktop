@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 
 import { Slider as Component } from './index'
 
@@ -28,7 +28,7 @@ const Template = () => {
 }
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Template> = {
+const meta: Meta<typeof Template> = {
   component: Template,
   title: 'Components/Slider'
 }

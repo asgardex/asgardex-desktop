@@ -18,7 +18,7 @@ const deposit: DepositMessages = {
   'deposit.totalEarnings': 'पूल से आपकी कुल कमाई',
   'deposit.add.sym': 'जोड़ें',
   'deposit.add.asym': '{asset} जोड़ें',
-  'deposit.add.runeSide': 'RUNE साइड',
+  'deposit.add.runeSide': '{dex} साइड',
   'deposit.add.assetSide': 'एसेट साइड',
   'deposit.add.min.info': 'सभी आवक और जावक लेन-देन शुल्कों को कवर करने के लिए न्यूनतम जमा राशि।',
   'deposit.add.max.infoWithFee': 'अनुमानित शुल्क ({fee}) को घटाकर बैलेंस ({balance}) के आधार पर अधिकतम जमा राशि।',

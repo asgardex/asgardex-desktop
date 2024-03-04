@@ -1,4 +1,4 @@
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { PaginationProps } from 'antd'
 
 import { Pagination as Component } from './index'
@@ -6,7 +6,7 @@ import { Pagination as Component } from './index'
 const Template: StoryFn<PaginationProps> = (args) => <Component {...args} />
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/Pagination',
   argTypes: {

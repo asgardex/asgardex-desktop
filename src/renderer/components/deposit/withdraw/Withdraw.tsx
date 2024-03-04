@@ -16,15 +16,19 @@ import { Col } from 'antd'
 import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/lib/Option'
-import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
 import { Dex } from '../../../../shared/api/types'
-import { AssetRuneNative } from '../../../../shared/utils/asset'
+import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
 import { isLedgerWallet } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../const'
-import { getTwoSigfigAssetAmount, THORCHAIN_DECIMAL, to1e8BaseAmount } from '../../../helpers/assetHelper'
+import {
+  CACAO_DECIMAL,
+  getTwoSigfigAssetAmount,
+  THORCHAIN_DECIMAL,
+  to1e8BaseAmount
+} from '../../../helpers/assetHelper'
 import { eqAsset } from '../../../helpers/fp/eq'
 import { getWithdrawMemo } from '../../../helpers/memoHelper'
 import * as PoolHelpers from '../../../helpers/poolHelper'
@@ -122,6 +126,9 @@ export const Withdraw: React.FC<Props> = ({
   const { asset, decimal: assetDecimal } = assetWD
   const { chain } = asset
 
+  const dexAsset = dex === 'THOR' ? AssetRuneNative : AssetCacao
+  const dexAssetDecimal = dex === 'THOR' ? THORCHAIN_DECIMAL : CACAO_DECIMAL
+
   const {
     type: runeWalletType,
     address: runeAddress,
@@ -153,10 +160,11 @@ export const Withdraw: React.FC<Props> = ({
   const { rune: runeAmountToWithdraw, asset: assetAmountToWithdraw } = Helper.getWithdrawAmounts(
     runeShare,
     assetShare,
-    withdrawPercent
+    withdrawPercent,
+    dex
   )
 
-  const zeroWithdrawFees: SymWithdrawFees = useMemo(() => getZeroWithdrawFees(AssetRuneNative), [])
+  const zeroWithdrawFees: SymWithdrawFees = useMemo(() => getZeroWithdrawFees(dexAsset), [dexAsset])
 
   const assetPriceToWithdraw1e8 = useMemo(() => {
     // Prices are always `1e8` based,
@@ -167,18 +175,19 @@ export const Withdraw: React.FC<Props> = ({
   }, [assetAmountToWithdraw, assetPrice])
 
   const prevWithdrawFees = useRef<O.Option<SymWithdrawFees>>(O.none)
+  const [withdrawFeesRD, setWithdrawFeesRD] = useState<SymWithdrawFeesRD>(RD.success(zeroWithdrawFees))
 
-  const [withdrawFeesRD] = useObservableState<SymWithdrawFeesRD>(
+  const feesObservable = useMemo(
     () =>
       FP.pipe(
-        fees$(asset),
+        fees$(asset, dex),
         liveData.map((fees) => {
           // store every successfully loaded fees
           prevWithdrawFees.current = O.some(fees)
           return fees
         })
       ),
-    RD.success(zeroWithdrawFees)
+    [asset, dex, fees$] // Dependencies
   )
 
   const withdrawFees: SymWithdrawFees = useMemo(
@@ -191,6 +200,14 @@ export const Withdraw: React.FC<Props> = ({
       ),
     [withdrawFeesRD, zeroWithdrawFees]
   )
+  useEffect(() => {
+    const subscription = feesObservable.subscribe({
+      next: setWithdrawFeesRD,
+      error: (error) => setWithdrawFeesRD(RD.failure(error))
+    })
+
+    return () => subscription.unsubscribe()
+  }, [feesObservable]) // Depend on the memoized observable
 
   const isInboundChainFeeError: boolean = useMemo(() => {
     if (zeroWithdrawPercent) return false
@@ -217,18 +234,18 @@ export const Withdraw: React.FC<Props> = ({
       {
         fee: formatAssetAmountCurrency({
           amount: baseToAsset(Helper.sumWithdrawFees(withdrawFees.rune)),
-          asset: AssetRuneNative,
+          asset: dexAsset,
           trimZeros: true
         }),
         balance: formatAssetAmountCurrency({
           amount: baseToAsset(runeBalance),
-          asset: AssetRuneNative,
+          asset: dexAsset,
           trimZeros: true
         })
       }
     )
     return <Styled.FeeErrorLabel key="fee-error">{msg}</Styled.FeeErrorLabel>
-  }, [isInboundChainFeeError, oRuneBalance, intl, withdrawFees])
+  }, [isInboundChainFeeError, oRuneBalance, intl, withdrawFees.rune, dexAsset])
 
   const minRuneAmountToWithdraw = useMemo(() => Helper.minRuneAmountToWithdraw(withdrawFees.rune), [withdrawFees.rune])
 
@@ -253,7 +270,7 @@ export const Withdraw: React.FC<Props> = ({
   const txModalExtraContent = useMemo(() => {
     const stepDescriptions = [
       intl.formatMessage({ id: 'common.tx.healthCheck' }),
-      intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: AssetRuneNative.ticker }),
+      intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: dexAsset.ticker }),
       intl.formatMessage({ id: 'common.tx.checkResult' })
     ]
     const stepDescription = FP.pipe(
@@ -273,12 +290,22 @@ export const Withdraw: React.FC<Props> = ({
     return (
       <DepositAssets
         target={{ asset, amount: assetAmountToWithdraw }}
-        source={O.some({ asset: AssetRuneNative, amount: runeAmountToWithdraw })}
+        source={O.some({ asset: dexAsset, amount: runeAmountToWithdraw })}
         stepDescription={stepDescription}
         network={network}
       />
     )
-  }, [intl, asset, withdrawState, assetAmountToWithdraw, runeAmountToWithdraw, network])
+  }, [
+    intl,
+    dexAsset,
+    withdrawState.withdraw,
+    withdrawState.step,
+    withdrawState.stepsTotal,
+    asset,
+    assetAmountToWithdraw,
+    runeAmountToWithdraw,
+    network
+  ])
 
   const onFinishTxModal = useCallback(() => {
     resetWithdrawState()
@@ -325,7 +352,7 @@ export const Withdraw: React.FC<Props> = ({
             txHash={oTxHash}
             onClick={openRuneExplorerTxUrl}
             txUrl={FP.pipe(oTxHash, O.chain(getRuneExplorerTxUrl))}
-            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: AssetRuneNative.ticker })}
+            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: dexAsset.ticker })}
           />
         ))}
       </Styled.ExtraContainer>
@@ -351,7 +378,8 @@ export const Withdraw: React.FC<Props> = ({
     txModalExtraContent,
     intl,
     openRuneExplorerTxUrl,
-    getRuneExplorerTxUrl
+    getRuneExplorerTxUrl,
+    dexAsset.ticker
   ])
 
   const [showPasswordModal, setShowPasswordModal] = useState(false)
@@ -376,30 +404,31 @@ export const Withdraw: React.FC<Props> = ({
         walletType: runeWalletType,
         walletIndex: runeWalletIndex,
         hdMode: runeHDMode,
+        dexAsset,
         dex
       })
     )
-  }, [subscribeWithdrawState, withdraw$, network, memo, runeWalletType, runeWalletIndex, runeHDMode, dex])
+  }, [subscribeWithdrawState, withdraw$, network, memo, runeWalletType, runeWalletIndex, runeHDMode, dexAsset, dex])
 
   const uiFeesRD: UIFeesRD = useMemo(
     () =>
       FP.pipe(
         withdrawFeesRD,
         RD.map(({ rune: runeFees, asset: assetFees }) => [
-          { asset: AssetRuneNative, amount: Helper.sumWithdrawFees(runeFees) },
+          { asset: dexAsset, amount: Helper.sumWithdrawFees(runeFees) },
           { asset: assetFees.asset, amount: assetFees.amount }
         ])
       ),
-    [withdrawFeesRD]
+    [dexAsset, withdrawFeesRD]
   )
 
   const reloadFeesHandler = useCallback(() => {
-    reloadFees(asset)
-  }, [reloadFees, asset])
+    reloadFees(asset, dex)
+  }, [reloadFees, asset, dex])
 
   // Load fees by every `onMount`
   useEffect(() => {
-    reloadFees(asset)
+    reloadFees(asset, dex)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -474,7 +503,7 @@ export const Withdraw: React.FC<Props> = ({
         <Styled.MinLabel color={minRuneAmountError ? 'error' : 'normal'}>
           {formatAssetAmountCurrency({
             amount: getTwoSigfigAssetAmount(baseToAsset(minRuneAmountToWithdraw)),
-            asset: AssetRuneNative,
+            asset: dexAsset,
             trimZeros: true
           })}
         </Styled.MinLabel>{' '}
@@ -499,8 +528,8 @@ export const Withdraw: React.FC<Props> = ({
       <Styled.AssetOutputContainer>
         <TooltipAddress title={runeAddress}>
           <Styled.AssetContainer>
-            <Styled.AssetIcon asset={AssetRuneNative} network={network} />
-            <Styled.AssetLabel asset={AssetRuneNative} />
+            <Styled.AssetIcon asset={dexAsset} network={network} />
+            <Styled.AssetLabel asset={dexAsset} />
             {isLedgerWallet(runeWalletType) && (
               <Styled.WalletTypeLabel>{intl.formatMessage({ id: 'ledger.title' })}</Styled.WalletTypeLabel>
             )}
@@ -510,16 +539,16 @@ export const Withdraw: React.FC<Props> = ({
           <Styled.OutputLabel>
             {formatAssetAmount({
               amount: getTwoSigfigAssetAmount(baseToAsset(runeAmountToWithdraw)),
-              decimal: THORCHAIN_DECIMAL,
+              decimal: dexAssetDecimal,
               trimZeros: true
             })}
           </Styled.OutputLabel>
           {/* show pricing if price asset is different only */}
-          {!eqAsset.equals(AssetRuneNative, selectedPriceAsset) && (
+          {!eqAsset.equals(dexAsset, selectedPriceAsset) && (
             <Styled.OutputUSDLabel>
               {formatAssetAmountCurrency({
                 amount: getTwoSigfigAssetAmount(
-                  baseToAsset(baseAmount(runeAmountToWithdraw.amount().times(runePrice), THORCHAIN_DECIMAL))
+                  baseToAsset(baseAmount(runeAmountToWithdraw.amount().times(runePrice), dexAssetDecimal))
                 ),
                 asset: selectedPriceAsset,
                 trimZeros: true

@@ -2,6 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
@@ -9,7 +10,6 @@ import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { AssetRuneNative } from '../../../../shared/utils/asset'
 import {
   getAvaxAssetAddress,
   getBscAssetAddress,
@@ -21,13 +21,15 @@ import {
 } from '../../../helpers/assetHelper'
 import { liveData } from '../../../helpers/rx/liveData'
 import { observableState } from '../../../helpers/stateHelper'
+import { service as mayaMidgardService } from '../../mayaMigard/service'
 import { service as midgardService } from '../../midgard/service'
 import { INITIAL_WITHDRAW_STATE, ChainTxFeeOption } from '../const'
 import { SaverWithdrawParams, SymWithdrawParams, WithdrawState, WithdrawState$ } from '../types'
 import { poolTxStatusByChain$, sendPoolTx$ } from './common'
 import { smallestAmountToSent } from './transaction.helper'
 
-const { pools: midgardPoolsService, validateNode$ } = midgardService
+const { pools: midgardPoolsService, validateNode$: validateNodeThor$ } = midgardService
+const { validateNode$: validateNodeMaya$ } = mayaMidgardService
 
 /**
  * Symetrical withdraw stream does 3 steps:
@@ -45,6 +47,7 @@ export const symWithdraw$ = ({
   walletType,
   walletIndex,
   hdMode,
+  dexAsset,
   dex
 }: SymWithdrawParams): WithdrawState$ => {
   // total of progress
@@ -61,7 +64,8 @@ export const symWithdraw$ = ({
     // we start with  a small progress
     withdraw: RD.progress({ loaded: 25, total })
   })
-
+  const validateNode$ = dex === 'THOR' ? validateNodeThor$ : validateNodeMaya$
+  const chain = dex === 'THOR' ? THORChain : MAYAChain
   // All requests will be done in a sequence
   // to update `SymWithdrawState` step by step
   // 1. validate node
@@ -73,10 +77,10 @@ export const symWithdraw$ = ({
         walletType,
         walletIndex,
         hdMode,
-        router: O.none, // no router for RUNE
-        asset: AssetRuneNative,
-        recipient: '', // empty for RUNE txs
-        amount: smallestAmountToSent(THORChain, network),
+        router: O.none, // no router for RUNE/MAYA
+        asset: dexAsset,
+        recipient: '', // empty for RUNE/MAYA txs
+        amount: smallestAmountToSent(chain, network),
         memo,
         feeOption: ChainTxFeeOption.WITHDRAW,
         dex
@@ -91,7 +95,7 @@ export const symWithdraw$ = ({
         withdrawTx: RD.success(txHash)
       })
       // 3. check tx finality by polling its tx data
-      return poolTxStatusByChain$({ txHash, chain: THORChain, assetAddress: O.none })
+      return poolTxStatusByChain$({ txHash, chain: chain, assetAddress: O.none })
     }),
     liveData.map((_) => setState({ ...getState(), withdraw: RD.success(true) })),
     // Add failures to state
@@ -167,7 +171,7 @@ export const saverWithdraw$ = ({
   // total of progress
   const total = O.some(100)
   const { chain } = asset
-
+  const validateNode$ = validateNodeThor$
   // Observable state of to reflect status of all needed steps
   const {
     get$: getState$,

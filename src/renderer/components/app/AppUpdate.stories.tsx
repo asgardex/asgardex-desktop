@@ -1,12 +1,8 @@
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryObj } from '@storybook/react'
 
 import { AppUpdate as Component, AppUpdateModalProps as Props } from './AppUpdate'
 
-const Template: StoryFn<Props> = (args) => <Component {...args} />
-
-export const Default = Template.bind({})
-
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/AppUpdate',
   argTypes: {
@@ -24,3 +20,7 @@ const meta: ComponentMeta<typeof Component> = {
 }
 
 export default meta
+
+export const Default: StoryObj<Props> = {
+  render: (args: Props) => <Component {...args} />
+}

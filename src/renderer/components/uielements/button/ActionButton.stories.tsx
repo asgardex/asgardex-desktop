@@ -1,11 +1,11 @@
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { ActionButton as Component, Props } from './ActionButton'
 
 const Template: StoryFn<Props> = (args) => <Component {...args} />
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   title: 'Components/button/ActionButton',
   argTypes: {
     size: {

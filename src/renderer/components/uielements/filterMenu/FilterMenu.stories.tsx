@@ -1,4 +1,4 @@
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 
@@ -34,7 +34,7 @@ const Template: StoryFn<ArgTypes> = (args) => <Component {...args} {...coinsProp
 export const Default = Template.bind({})
 
 // Coins example
-const Coins: ComponentMeta<typeof Component> = {
+const Coins: Meta<typeof Component> = {
   component: Component,
   title: 'Components/FilterMenu',
   argTypes: {

@@ -1,13 +1,13 @@
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { PoolShareCard as Component, Props } from './PoolShareCard'
 
-const Template: StoryFn<Props> = (args) => <Component {...args} />
+const Template: StoryFn<Props> = (args: Props) => <Component {...args} />
 export const Default = Template.bind({})
 
 const oneChild = <p>Some contents...</p>
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/PoolShareCard',
   argTypes: {

@@ -67,7 +67,7 @@ const loadBalances$ = <C extends XChainClientOverride>({
             }))
           ),
           catchError((error: Error) =>
-            Rx.of(RD.failure<ApiError>({ errorId: ErrorId.GET_BALANCES, msg: error?.message ?? '' }))
+            Rx.of(RD.failure<ApiError>({ errorId: ErrorId.GET_BALANCES, msg: error.message || 'Unknown error' }))
           ),
           startWith(RD.pending)
         )

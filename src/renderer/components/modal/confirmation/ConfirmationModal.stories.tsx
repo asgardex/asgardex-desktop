@@ -1,4 +1,4 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 
 import { ConfirmationModal } from './ConfirmationModal'
 
@@ -24,7 +24,7 @@ const Template = ({ title, message, okText, visible }: Args) => {
 
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Template> = {
+const meta: Meta<typeof Template> = {
   component: Template,
   title: 'Components/Modal/Confirmation',
   args: {

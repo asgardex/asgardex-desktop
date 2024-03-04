@@ -1,13 +1,18 @@
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryObj } from '@storybook/react'
 
 import { MOCK_PHRASE } from '../../../../shared/mock/wallet'
 import { PhraseCopyModal as Component, Props } from './PhraseCopyModal'
 
-const Template: StoryFn<Props> = (args) => <Component {...args} />
+// Define the default story using StoryObj
+export const Default: StoryObj<Props> = {
+  render: (args: Props) => <Component {...args} />,
+  args: {
+    visible: true,
+    phrase: MOCK_PHRASE
+  }
+}
 
-export const Default = Template.bind({})
-
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Wallet/PhraseCopyModal',
   argTypes: {
@@ -18,10 +23,6 @@ const meta: ComponentMeta<typeof Component> = {
       }
     },
     onClose: { action: 'onClose' }
-  },
-  args: {
-    visible: true,
-    phrase: MOCK_PHRASE
   }
 }
 

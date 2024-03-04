@@ -5,8 +5,7 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { MayaChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Address, Asset, assetToString, bn, Chain } from '@xchainjs/xchain-util'
-import { Spin } from 'antd'
+import { Address, Asset, assetToString, bn, Chain, baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
 import * as Eq from 'fp-ts/lib/Eq'
@@ -22,6 +21,7 @@ import { WalletType } from '../../../shared/wallet/types'
 import { ErrorView } from '../../components/shared/error/'
 import { Swap } from '../../components/swap'
 import { SLIP_TOLERANCE_KEY } from '../../components/swap/SelectableSlipTolerance'
+import { SwapAsset } from '../../components/swap/Swap.types'
 import * as Utils from '../../components/swap/Swap.utils'
 import { BackLinkButton } from '../../components/uielements/button'
 import { Button, RefreshButton } from '../../components/uielements/button'
@@ -402,11 +402,67 @@ const SuccessRouteView: React.FC<Props> = ({
           sequenceTRD(poolsStateRD, sourceAssetRD, targetAssetRD, pendingPoolsStateRD),
           RD.fold(
             () => <></>,
-            () => (
-              <div className="my-50px flex w-full max-w-[500px] flex-col justify-between">
-                <Spin />
-              </div>
-            ),
+            () => {
+              // Note: Ensure that `sourceAsset` and `targetAsset` are defined in your component's scope
+              const mockAssetSource: SwapAsset = {
+                asset: sourceAsset,
+                decimal: 18, // Assuming 18 as a placeholder, replace with actual decimal value
+                price: baseAmount(0).amount() // Using BigNumber constructor
+              }
+
+              const mockAssetTarget: SwapAsset = {
+                asset: targetAsset,
+                decimal: 18, // Assuming 18 as a placeholder, replace with actual decimal value
+                price: baseAmount(0).amount() // Using BigNumber constructor
+              }
+
+              return (
+                <Swap
+                  disableSwapAction={true}
+                  keystore={keystore}
+                  validatePassword$={validatePassword$}
+                  goToTransaction={openExplorerTxUrl}
+                  getExplorerTxUrl={getExplorerTxUrl}
+                  assets={{
+                    source: mockAssetSource,
+
+                    target: mockAssetTarget
+                  }}
+                  sourceKeystoreAddress={oSourceKeystoreAddress}
+                  sourceLedgerAddress={oSourceLedgerAddress}
+                  sourceWalletType={sourceWalletType}
+                  targetWalletType={oTargetWalletType}
+                  poolAddress={selectedPoolAddress}
+                  poolAssets={[]}
+                  poolsData={{}}
+                  pricePool={pricePool}
+                  poolDetails={[]}
+                  walletBalances={balancesState}
+                  reloadFees={reloadSwapFees}
+                  fees$={swapFees$}
+                  reloadApproveFee={reloadApproveFee}
+                  approveFee$={approveFee$}
+                  targetKeystoreAddress={oTargetKeystoreAddress}
+                  targetLedgerAddress={oTargetLedgerAddress}
+                  recipientAddress={oRecipient}
+                  swap$={swap$}
+                  reloadBalances={reloadBalances}
+                  onChangeAsset={onChangeAssetHandler}
+                  network={network}
+                  slipTolerance={slipTolerance}
+                  changeSlipTolerance={changeSlipTolerance}
+                  approveERC20Token$={approveERC20Token$}
+                  isApprovedERC20Token$={isApprovedERC20Token$}
+                  importWalletHandler={importWalletHandler}
+                  addressValidator={validateSwapAddress}
+                  hidePrivateData={isPrivate}
+                  thorchainQuery={thorchainQuery}
+                  mayachainQuery={mayachainQuery}
+                  reloadTxStatus={reloadSwapTxStatus}
+                  dex={dex}
+                />
+              )
+            },
             renderError,
             ([{ assetDetails, poolsData, poolDetails }, sourceAsset, targetAsset, pendingPools]) => {
               const combinedAssetDetails = [...assetDetails, ...pendingPools.assetDetails]

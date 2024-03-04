@@ -167,7 +167,7 @@ export const AssetInput: React.FC<Props> = (props): JSX.Element => {
           asset={asset}
           assets={assets}
           network={network}
-          dialogHeadline={intl.formatMessage({ id: 'common.asset.change' })}
+          dialogHeadline={intl.formatMessage({ id: 'common.asset.quickSelect' })}
           disabled={disabled}
         />
       </div>

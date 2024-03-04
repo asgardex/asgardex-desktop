@@ -16,8 +16,9 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
-import { AssetRuneNative } from '../../../../shared/utils/asset'
-import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
+import { Dex } from '../../../../shared/api/types'
+import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
+import { CACAO_DECIMAL, THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { AssetWithDecimal } from '../../../types/asgardex'
 import { TooltipAddress } from '../common/Common.styles'
 import * as Styled from './PoolShare.styles'
@@ -38,6 +39,7 @@ export type Props = {
   addresses: { rune: O.Option<Address>; asset: O.Option<Address> }
   smallWidth?: boolean
   loading?: boolean
+  dex: Dex
 }
 
 export const PoolShare: React.FC<Props> = (props): JSX.Element => {
@@ -51,10 +53,14 @@ export const PoolShare: React.FC<Props> = (props): JSX.Element => {
     assetPrice,
     poolShare,
     depositUnits,
-    smallWidth
+    smallWidth,
+    dex
   } = props
 
   const intl = useIntl()
+
+  const dexAsset = dex === 'THOR' ? AssetRuneNative : AssetCacao
+  const dexAssetDecimal = dex === 'THOR' ? THORCHAIN_DECIMAL : CACAO_DECIMAL
 
   const { asset } = assetWD
 
@@ -101,18 +107,18 @@ export const PoolShare: React.FC<Props> = (props): JSX.Element => {
             </TooltipAddress>
             <TooltipAddress title={runeAddress}>
               <Col span={12}>
-                <Styled.RedemptionAsset asset={AssetRuneNative} />
+                <Styled.RedemptionAsset asset={dexAsset} />
               </Col>
             </TooltipAddress>
           </Styled.CardRow>
         </Styled.RedemptionHeader>
         <Styled.CardRow>
           {renderRedemptionCol(assetShare, assetPrice, asset)}
-          {renderRedemptionCol(runeShare, runePrice, AssetRuneNative)}
+          {renderRedemptionCol(runeShare, runePrice, dexAsset)}
         </Styled.CardRow>
       </>
     ),
-    [runeAddress, assetAddress, asset, renderRedemptionCol, runeShare, runePrice, assetShare, assetPrice]
+    [assetAddress, asset, runeAddress, dexAsset, renderRedemptionCol, assetShare, assetPrice, runeShare, runePrice]
   )
 
   const renderRedemptionSmall = useMemo(
@@ -127,12 +133,12 @@ export const PoolShare: React.FC<Props> = (props): JSX.Element => {
             </Styled.CardRow>
           </TooltipAddress>
         </Styled.RedemptionHeader>
-        <Styled.CardRow>{renderRedemptionCol(runeShare, runePrice, AssetRuneNative)}</Styled.CardRow>
+        <Styled.CardRow>{renderRedemptionCol(runeShare, runePrice, dexAsset)}</Styled.CardRow>
         <Styled.RedemptionHeader>
           <TooltipAddress title={runeAddress}>
             <Styled.CardRow>
               <Col span={24}>
-                <Styled.RedemptionAsset asset={AssetRuneNative} />
+                <Styled.RedemptionAsset asset={dexAsset} />
               </Col>
             </Styled.CardRow>
           </TooltipAddress>
@@ -140,7 +146,7 @@ export const PoolShare: React.FC<Props> = (props): JSX.Element => {
         <Styled.CardRow>{renderRedemptionCol(assetShare, assetPrice, asset)}</Styled.CardRow>
       </>
     ),
-    [runeAddress, renderRedemptionCol, runeShare, runePrice, assetAddress, asset, assetShare, assetPrice]
+    [assetAddress, asset, renderRedemptionCol, runeShare, runePrice, dexAsset, runeAddress, assetShare, assetPrice]
   )
   const renderRedemption = useMemo(
     () => (smallWidth ? renderRedemptionSmall : renderRedemptionLarge),
@@ -149,10 +155,10 @@ export const PoolShare: React.FC<Props> = (props): JSX.Element => {
 
   const depositUnitsFormatted = useMemo(() => {
     // Convert `depositUnits` to `AssetAmount`
-    const amount = baseToAsset(baseAmount(depositUnits, THORCHAIN_DECIMAL))
+    const amount = baseToAsset(baseAmount(depositUnits, dexAssetDecimal))
     // and format it
     return formatAssetAmount({ amount, decimal: 2 })
-  }, [depositUnits])
+  }, [depositUnits, dexAssetDecimal])
 
   return (
     <Styled.PoolShareWrapper ref={ref}>

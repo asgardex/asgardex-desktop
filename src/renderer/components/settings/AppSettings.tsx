@@ -121,7 +121,7 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
           A.map<Locale, ItemType>((l: Locale) => ({
             label: (
               <div
-                className={`dark:text-1 flex items-center py-[8px] px-10px font-main text-16 uppercase text-text1 dark:text-text1d ${
+                className={`dark:text-1 flex items-center px-10px py-[8px] font-main text-16 uppercase text-text1 dark:text-text1d ${
                   l === locale ? 'font-mainSemiBold' : 'font-main'
                 }`}>
                 {l}
@@ -192,7 +192,7 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
           A.map<Network, ItemType>((n: Network) => ({
             label: (
               <div
-                className={`flex items-center py-[8px] px-10px ${networkTextColor(n)} text-16 uppercase ${
+                className={`flex items-center px-10px py-[8px] ${networkTextColor(n)} text-16 uppercase ${
                   n === network ? 'font-mainSemiBold' : 'font-main'
                 }`}>
                 {n}
@@ -214,7 +214,7 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
           A.map<Dex, ItemType>((n: Dex) => ({
             label: (
               <div
-                className={`flex items-center py-[8px] px-10px ${dexTextColor(n)} text-16 uppercase ${
+                className={`flex items-center px-10px py-[8px] ${dexTextColor(n)} text-16 uppercase ${
                   n === dex ? 'font-mainSemiBold' : 'font-main'
                 }`}>
                 {n}
@@ -320,7 +320,7 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
   const [advancedActive, setAdvancedActive] = useState(false)
 
   return (
-    <div className="mt-50px flex-row bg-bg0 py-10px px-40px dark:bg-bg0d">
+    <div className="mt-50px flex-row bg-bg0 px-40px py-10px dark:bg-bg0d">
       <CStyled.Collapse
         expandIcon={({ isActive }) => <CStyled.ExpandIcon rotate={isActive ? 90 : 0} />}
         activeKey={collapsed ? '0' : '1'}
@@ -349,7 +349,7 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
             <div className="card p-44px my-20px md:w-1/2">
               <div className="flex items-center">
                 <TextButton
-                  className={`mb-0 !py-0 !pr-10px !pl-0 font-main !text-18 uppercase text-text0 dark:text-text0d ${
+                  className={`mb-0 !py-0 !pl-0 !pr-10px font-main !text-18 uppercase text-text0 dark:text-text0d ${
                     advancedActive ? 'opacity-100' : 'opacity-60'
                   }`}
                   onClick={() => setAdvancedActive((v) => !v)}>

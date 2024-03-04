@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
@@ -182,7 +182,7 @@ const Template = ({ dataStatus }: { dataStatus: RDStatus }) => {
 
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Template> = {
+const meta: Meta<typeof Template> = {
   component: Template,
   title: 'Components/PoolActionsHistory',
   argTypes,

@@ -18,7 +18,7 @@ const deposit: DepositMessages = {
   'deposit.totalEarnings': 'Vos revenus totaux de la pool',
   'deposit.add.sym': 'Ajouter',
   'deposit.add.asym': 'Ajouter {asset}',
-  'deposit.add.runeSide': 'RUNE côté',
+  'deposit.add.runeSide': '{dex} côté',
   'deposit.add.assetSide': 'Actif côté',
   'deposit.add.min.info':
     'Valeur minimale à déposer pour couvrir tous les frais des transactions entrantes et sortantes.',

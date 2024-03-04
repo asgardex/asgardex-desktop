@@ -1,4 +1,4 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { assetFromString } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
@@ -33,7 +33,7 @@ const Template = ({ network, loading, onClickOpenAsymTool, assets }: Args) => {
 
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Template> = {
+const meta: Meta<typeof Template> = {
   component: Template,
   title: 'Components/Deposit/AsymAssetsWarning',
   argTypes: {

@@ -44,7 +44,7 @@ export type Props = {
   SymDepositContent: React.ComponentType<SymDepositContentProps>
   WidthdrawContent: React.ComponentType<WidthdrawContentProps>
   keystoreState: KeystoreState
-  runeWalletAddress: WalletAddress
+  dexWalletAddress: WalletAddress
   assetWalletAddress: WalletAddress
 }
 
@@ -59,7 +59,7 @@ export const Deposit: React.FC<Props> = (props) => {
     keystoreState,
     shares: poolSharesRD,
     poolDetail: poolDetailRD,
-    runeWalletAddress,
+    dexWalletAddress,
     assetWalletAddress
   } = props
 
@@ -82,7 +82,7 @@ export const Deposit: React.FC<Props> = (props) => {
             O.filter(({ runeAddress, assetAddress: oAssetAddress }) => {
               // use shares of current selected addresses only
               return (
-                eqOAddress.equals(runeAddress, O.some(runeWalletAddress.address)) &&
+                eqOAddress.equals(runeAddress, O.some(dexWalletAddress.address)) &&
                 FP.pipe(
                   oAssetAddress,
                   O.map((assetAddress) =>
@@ -96,7 +96,7 @@ export const Deposit: React.FC<Props> = (props) => {
           )
         )
       ),
-    [asset, assetWalletAddress, poolSharesRD, runeWalletAddress]
+    [asset, assetWalletAddress, poolSharesRD, dexWalletAddress]
   )
 
   const hasPoolShare = (poolShare: PoolShareRD): boolean => FP.pipe(poolShare, RD.toOption, O.flatten, O.isSome)
@@ -112,7 +112,7 @@ export const Deposit: React.FC<Props> = (props) => {
           <SymDepositContent
             poolDetail={poolDetailRD}
             asset={assetWD}
-            runeWalletAddress={runeWalletAddress}
+            runeWalletAddress={dexWalletAddress}
             assetWalletAddress={assetWalletAddress}
             haltedChains={haltedChains}
             mimirHalt={mimirHalt}
@@ -127,7 +127,7 @@ export const Deposit: React.FC<Props> = (props) => {
           <WidthdrawContent
             poolDetail={poolDetailRD}
             asset={assetWD}
-            runeWalletAddress={runeWalletAddress}
+            runeWalletAddress={dexWalletAddress}
             assetWalletAddress={assetWalletAddress}
             poolShare={symPoolShare}
             haltedChains={haltedChains}
@@ -141,7 +141,7 @@ export const Deposit: React.FC<Props> = (props) => {
       SymDepositContent,
       poolDetailRD,
       assetWD,
-      runeWalletAddress,
+      dexWalletAddress,
       assetWalletAddress,
       haltedChains,
       mimirHalt,

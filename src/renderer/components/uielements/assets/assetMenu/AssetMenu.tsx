@@ -3,18 +3,22 @@ import React, { useCallback, useState, useMemo, useRef, Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { ArchiveBoxXMarkIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { Asset, assetToString } from '@xchainjs/xchain-util'
+import { Asset, assetToString, Chain } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
+import { getChainAsset } from '../../../../helpers/chainHelper'
 import { eqAsset } from '../../../../helpers/fp/eq'
 import { emptyString } from '../../../../helpers/stringHelper'
+import { FilterCheckbox } from '../../../wallet/assets/AssetsTableCollapsable.styles'
 import { BaseButton } from '../../button'
 import { InputSearch } from '../../input'
+import { Label } from '../../label'
 import { AssetData } from '../assetData'
+import { AssetIcon } from '../assetIcon/AssetIcon'
 
 export type Props = {
   asset: Asset
@@ -40,6 +44,7 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
   } = props
 
   const [searchValue, setSearchValue] = useState<string>(emptyString)
+  const [excludeSynth, setExcludeSynth] = useState(false)
 
   const clearSearchValue = useCallback(() => {
     setSearchValue(emptyString)
@@ -60,7 +65,10 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
       FP.pipe(
         assets,
         A.filter((asset) => {
-          // Check if a search value is entered
+          // Exclude synthetic assets if excludeSynth is true
+          if (excludeSynth && asset.synth) {
+            return false
+          }
           if (searchValue) {
             const lowerSearchValue = searchValue.toLowerCase()
             // Check if the search value starts with 'synth'
@@ -77,7 +85,7 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
           return true
         })
       ),
-    [assets, searchValue]
+    [assets, excludeSynth, searchValue]
   )
 
   const renderAssets = useMemo(
@@ -133,10 +141,42 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
     }
   }, [filteredAssets, handleChangeAsset])
 
+  const handleChainSelect = useCallback(
+    (chain: Chain) => {
+      const asset = getChainAsset(chain)
+      handleChangeAsset(asset)
+    },
+    [handleChangeAsset]
+  )
+
   const onCloseMenu = useCallback(() => {
     clearSearchValue()
     onClose()
   }, [clearSearchValue, onClose])
+
+  const chainFilter = useMemo(() => {
+    const uniqueChains = assets.reduce((acc, asset) => {
+      // Only add the chain if the asset is not synthetic
+      if (!asset.synth) {
+        acc.add(asset.chain)
+      }
+      return acc
+    }, new Set<Chain>())
+
+    // Render unique chains as clickable icons in a horizontal row
+    return (
+      <div className="my-4 flex flex-row flex-wrap justify-center gap-4 ">
+        {/* Adjust Tailwind classes as needed */}
+        {Array.from(uniqueChains).map((chain) => (
+          <div key={chain} onClick={() => handleChainSelect(chain)} className="cursor-pointer">
+            <div className="rounded-full hover:shadow-lg dark:hover:shadow-turquoise">
+              <AssetIcon asset={getChainAsset(chain)} network={network} />
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }, [assets, handleChainSelect, network])
 
   // Ref to `InputSearch` - needed for intial focus in dialog
   // @see https://headlessui.com/react/dialog#managing-initial-focus
@@ -183,10 +223,11 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
                 <XMarkIcon className="h-20px w-20px text-inherit" />
               </BaseButton>
               {headline && (
-                <h1 className="my-0 px-5px text-center font-mainSemiBold text-[16px] uppercase text-text2 dark:text-text2d">
+                <h1 className="my-0 px-5px text-center text-[16px] uppercase text-text2 dark:text-text2d">
                   {headline}
                 </h1>
               )}
+              {chainFilter}
               <InputSearch
                 ref={inputSearchRef}
                 className="my-10px"
@@ -194,8 +235,20 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
                 onChange={searchHandler}
                 onCancel={clearSearchValue}
                 onEnter={onEnterHandler}
-                placeholder={intl.formatMessage({ id: 'common.search' })}
+                placeholder={intl.formatMessage({ id: 'common.searchAsset' })}
               />
+              <div className="flex items-center justify-start">
+                <Label className="mr-2 cursor-pointer text-sm font-medium text-text2 dark:text-text2d">
+                  {intl.formatMessage({ id: 'common.excludeSynth' })}
+                </Label>
+                <FilterCheckbox
+                  id="synth-toggle"
+                  type="checkbox"
+                  className="cursor-pointer rounded border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                  checked={excludeSynth}
+                  onChange={(e) => setExcludeSynth(e.target.checked)}
+                />
+              </div>
               {renderAssets}
             </Dialog.Panel>
           </Transition.Child>

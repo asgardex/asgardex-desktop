@@ -95,7 +95,7 @@ export const WalletSelector: React.FC<Props> = (props): JSX.Element => {
                         `flex w-full
                       select-none
                       items-center justify-between
-                      py-10px pr-10px pl-20px
+                      py-10px pl-20px pr-10px
                       ${selected && 'text-gray2 dark:text-gray2d'}
                       ${selected ? 'cursor-disabled' : 'cursor-pointer'}
                       font-main text-14 text-text0

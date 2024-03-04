@@ -1,4 +1,4 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { assetToBase, assetAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
@@ -31,7 +31,7 @@ export const Template = ({ address, balance }: Args) => {
   )
 }
 
-const meta: ComponentMeta<typeof Template> = {
+const meta: Meta<typeof Template> = {
   component: Template,
   title: 'Wallet/AssetInfo',
   argTypes: {

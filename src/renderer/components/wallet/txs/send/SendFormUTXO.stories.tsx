@@ -1,4 +1,4 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { FeeRates, Fees, FeesWithRates, FeeType, Network, TxHash } from '@xchainjs/xchain-client'
 import { Address, assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
@@ -100,7 +100,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
 }
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Template> = {
+const meta: Meta<typeof Template> = {
   component: Template,
   title: 'Wallet/SendFormBTC',
   argTypes: {

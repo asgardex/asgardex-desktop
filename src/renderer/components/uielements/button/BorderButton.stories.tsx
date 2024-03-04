@@ -1,28 +1,44 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta, StoryObj } from '@storybook/react'
 
-import baseMeta from './BaseButton.stories'
-import { BorderButton as Component, Props } from './BorderButton'
+import { BorderButton, Props } from './BorderButton'
 
-export const BorderButton = ({ children, ...otherProps }: Props) => <Component {...otherProps}>{children}</Component>
-
-const meta: ComponentMeta<typeof Component> = {
-  component: Component,
+const meta: Meta<typeof BorderButton> = {
   title: 'Components/button/BorderButton',
+  component: BorderButton,
   argTypes: {
-    ...baseMeta.argTypes,
     color: {
-      name: 'color',
-      control: {
-        type: 'select',
-        options: ['primary', 'warning', 'error', 'neutral']
-      }
+      control: 'select',
+      options: ['primary', 'warning', 'error', 'neutral']
+    },
+    size: {
+      control: 'select',
+      options: ['small', 'normal', 'large']
+    },
+    transparent: {
+      control: 'boolean'
+    },
+    disabled: {
+      control: 'boolean'
+    },
+    className: {
+      control: 'text'
     }
+    // Assuming BaseButtonProps includes onClick or other event handlers, define them here if necessary
   },
   args: {
-    ...baseMeta.args,
-    color: 'primary'
-  },
-  decorators: baseMeta.decorators
+    color: 'primary',
+    size: 'normal',
+    transparent: false,
+    disabled: false,
+    className: '',
+    children: 'Click Me' // Example default content
+  }
 }
 
 export default meta
+
+// Define the default story using StoryObj model
+export const Default: StoryObj<Props> = {
+  render: (args: Props) => <BorderButton {...args} />
+  // Args here match the `Props` structure
+}

@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { AssetBTC } from '@xchainjs/xchain-bitcoin'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Chain } from '@xchainjs/xchain-util'
+import { Asset, Chain } from '@xchainjs/xchain-util'
 import { Spin } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
@@ -17,13 +19,17 @@ import { ErrorView } from '../../components/shared/error'
 import { BackLinkButton, RefreshButton } from '../../components/uielements/button'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useChainContext } from '../../contexts/ChainContext'
+import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { getAssetFromNullableString } from '../../helpers/assetHelper'
 import { sequenceTOption } from '../../helpers/fpHelpers'
+import { useDex } from '../../hooks/useDex'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useSymDepositAddresses } from '../../hooks/useSymDepositAddresses'
+import { useSymDepositAddressesMaya } from '../../hooks/useSymDepositAddressesMaya'
 import { DepositRouteParams } from '../../routes/pools/deposit'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
 import { PoolDetailRD, PoolSharesLD, PoolSharesRD } from '../../services/midgard/types'
@@ -36,7 +42,12 @@ type Props = {}
 export const DepositView: React.FC<Props> = () => {
   const intl = useIntl()
 
-  const { reloadLiquidityProviders } = useThorchainContext()
+  const { dex } = useDex()
+
+  const { reloadLiquidityProviders: reloadLiquidityProvidersThor } = useThorchainContext()
+  const { reloadLiquidityProviders: reloadLiquidityProvidersMaya } = useMayachainContext()
+
+  const reloadLiquidityProviders = dex === 'THOR' ? reloadLiquidityProvidersThor : reloadLiquidityProvidersMaya
 
   const {
     asset: routeAsset,
@@ -46,11 +57,33 @@ export const DepositView: React.FC<Props> = () => {
   const {
     service: {
       setSelectedPoolAsset,
-      selectedPoolAsset$,
-      pools: { reloadSelectedPoolDetail, selectedPoolDetail$, haltedChains$ },
-      shares: { shares$, reloadShares }
+      selectedPoolAsset$: selectedPoolAssetThor$,
+      pools: {
+        reloadSelectedPoolDetail,
+        selectedPoolDetail$: selectedPoolDetailThor$,
+        haltedChains$: haltedChainsThor$
+      },
+      shares: { shares$: sharesThor$, reloadShares }
     }
   } = useMidgardContext()
+
+  const {
+    service: {
+      setSelectedPoolAsset: setSelectedPoolAssetMaya,
+      selectedPoolAsset$: selectedPoolAssetMaya$,
+      pools: {
+        reloadSelectedPoolDetail: reloadSelectedPoolDetailMaya,
+        selectedPoolDetail$: selectedPoolDetailMaya$,
+        haltedChains$: haltedChainsMaya$
+      },
+      shares: { shares$: sharesMaya$, reloadShares: reloadSharesMaya }
+    }
+  } = useMidgardMayaContext()
+
+  const selectedPoolAsset$ = dex === 'THOR' ? selectedPoolAssetThor$ : selectedPoolAssetMaya$
+  const selectedPoolDetail$ = dex === 'THOR' ? selectedPoolDetailThor$ : selectedPoolDetailMaya$
+  const haltedChains$ = dex === 'THOR' ? haltedChainsThor$ : haltedChainsMaya$
+  const shares$ = dex === 'THOR' ? sharesThor$ : sharesMaya$
 
   const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
   const { mimirHalt } = useMimirHalt()
@@ -62,15 +95,38 @@ export const DepositView: React.FC<Props> = () => {
   const assetWalletType = routeAssetWalletType || DEFAULT_WALLET_TYPE
   const runeWalletType = routeRuneWalletType || DEFAULT_WALLET_TYPE
 
+  // if the user switches dex to thor chain we don't want THOR on the asset side
+  const getAlternativeAsset = (): O.Option<Asset> => {
+    return O.some(AssetBTC)
+  }
+
   // Set selected pool asset whenever an asset in route has been changed
-  // Needed to get all data for this pool (pool details etc.)
   useEffect(() => {
-    setSelectedPoolAsset(oRouteAsset)
-    // Reset selectedPoolAsset on view's unmount to avoid effects with depending streams
+    // Function to determine if the dex and the asset's chain are equal
+    const isDexEqualAssetChain = (asset: Asset) => dex === asset.chain
+
+    O.fold(
+      () => {},
+      (asset: Asset) => {
+        if (isDexEqualAssetChain(asset)) {
+          // If dex and asset's chain are equal, set an alternative asset
+          const alternativeAsset = getAlternativeAsset()
+          O.fold(
+            () => {},
+            (altAsset: Asset) => {
+              dex === 'THOR' ? setSelectedPoolAsset(O.some(altAsset)) : setSelectedPoolAssetMaya(O.some(altAsset))
+            }
+          )(alternativeAsset)
+        } else {
+          dex === 'THOR' ? setSelectedPoolAsset(O.some(asset)) : setSelectedPoolAssetMaya(O.some(asset))
+        }
+      }
+    )(oRouteAsset)
+
     return () => {
-      setSelectedPoolAsset(O.none)
+      dex === 'THOR' ? setSelectedPoolAsset(O.none) : setSelectedPoolAssetMaya(O.none)
     }
-  }, [oRouteAsset, setSelectedPoolAsset])
+  }, [dex, oRouteAsset, setSelectedPoolAsset, setSelectedPoolAssetMaya])
 
   const assetWithDecimalLD: AssetWithDecimalLD = useMemo(
     () =>
@@ -94,12 +150,19 @@ export const DepositView: React.FC<Props> = () => {
   const oSelectedAssetWithDecimal = useMemo(() => RD.toOption(assetWithDecimalRD), [assetWithDecimalRD])
 
   const {
-    addresses: { rune: oRuneWalletAddress, asset: oAssetWalletAddress }
+    addresses: { rune: oRuneWalletAddress, asset: oAssetWalletAddressThor }
   } = useSymDepositAddresses({
     asset: oRouteAsset,
     assetWalletType,
     runeWalletType
   })
+
+  const {
+    addresses: { rune: oCacaoWalletAddress, asset: oAssetWalletAddressMaya }
+  } = useSymDepositAddressesMaya({ asset: oRouteAsset, assetWalletType, runeWalletType })
+  // needed as with Mayachain the rune addresss now becomes the Maya address
+  const oDexWalletAddress = dex === 'THOR' ? oRuneWalletAddress : oCacaoWalletAddress
+  const oAssetWalletAddress = dex === 'THOR' ? oAssetWalletAddressThor : oAssetWalletAddressMaya
   /**
    * We have to get a new shares$ stream for every new address
    * @description /src/renderer/services/midgard/shares.ts
@@ -108,13 +171,13 @@ export const DepositView: React.FC<Props> = () => {
     () =>
       FP.pipe(
         // re-load shares whenever selected asset or rune address has been changed
-        sequenceTOption(oAssetWalletAddress, oRuneWalletAddress),
+        sequenceTOption(oAssetWalletAddress, oDexWalletAddress),
         O.fold(
           () => Rx.EMPTY,
           ([{ address }, _]) => shares$(address)
         )
       ),
-    [oAssetWalletAddress, oRuneWalletAddress, shares$]
+    [oAssetWalletAddress, oDexWalletAddress, shares$]
   )
 
   const poolSharesRD = useObservableState<PoolSharesRD>(poolShares$, RD.initial)
@@ -135,18 +198,31 @@ export const DepositView: React.FC<Props> = () => {
       oSelectedAssetWithDecimal,
       O.map(({ asset: { chain } }) => {
         reloadBalancesByChain(chain)()
-        reloadBalancesByChain(THORChain)()
+        reloadBalancesByChain(dex === 'THOR' ? THORChain : MAYAChain)()
         return true
       })
     )
-  }, [oSelectedAssetWithDecimal, reloadBalancesByChain])
+  }, [dex, oSelectedAssetWithDecimal, reloadBalancesByChain])
 
   const reloadHandler = useCallback(() => {
     reloadChainAndRuneBalances()
-    reloadShares()
-    reloadSelectedPoolDetail()
-    reloadLiquidityProviders()
-  }, [reloadChainAndRuneBalances, reloadLiquidityProviders, reloadSelectedPoolDetail, reloadShares])
+    if (dex === 'THOR') {
+      reloadShares()
+      reloadLiquidityProviders()
+      reloadSelectedPoolDetail()
+    } else {
+      reloadSharesMaya()
+      reloadSelectedPoolDetailMaya()
+    }
+  }, [
+    dex,
+    reloadChainAndRuneBalances,
+    reloadLiquidityProviders,
+    reloadSelectedPoolDetail,
+    reloadSelectedPoolDetailMaya,
+    reloadShares,
+    reloadSharesMaya
+  ])
 
   // Important note:
   // DON'T use `INITIAL_KEYSTORE_STATE` as default value for `keystoreState`
@@ -194,10 +270,10 @@ export const DepositView: React.FC<Props> = () => {
     <>
       {renderTopContent}
       {FP.pipe(
-        sequenceTOption(oRuneWalletAddress, oAssetWalletAddress),
+        sequenceTOption(oDexWalletAddress, oAssetWalletAddress),
         O.fold(
           () => <ErrorView title={intl.formatMessage({ id: 'common.error' })} subTitle={'Could not get addresses'} />,
-          ([runeWalletAddress, assetWalletAddress]) =>
+          ([dexWalletAddress, assetWalletAddress]) =>
             FP.pipe(
               assetWithDecimalRD,
               RD.fold(
@@ -216,7 +292,7 @@ export const DepositView: React.FC<Props> = () => {
                     poolDetail={poolDetailRD}
                     asset={asset}
                     shares={poolSharesRD}
-                    runeWalletAddress={runeWalletAddress}
+                    dexWalletAddress={dexWalletAddress}
                     assetWalletAddress={assetWalletAddress}
                     keystoreState={keystoreState}
                     ShareContent={ShareView}

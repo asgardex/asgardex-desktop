@@ -18,7 +18,7 @@ const deposit: DepositMessages = {
   'deposit.totalEarnings': 'Ваш общий доход от пула',
   'deposit.add.sym': 'Добавить',
   'deposit.add.asym': 'Добавить {asset}',
-  'deposit.add.runeSide': 'Сторона RUNE',
+  'deposit.add.runeSide': 'Сторона {dex}',
   'deposit.add.assetSide': 'Сторона актива',
   'deposit.add.min.info': 'Минимальная сумма депозита для покрытия всех комиссий за входящие и исходящие транзакции.',
   'deposit.add.max.infoWithFee':

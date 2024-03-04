@@ -1,4 +1,4 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { assetAmount, assetFromString, assetToBase, assetToString } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
@@ -116,7 +116,7 @@ const argTypes = {
 
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Template> = {
+const meta: Meta<typeof Template> = {
   component: Template,
   title: 'Components/TxDetail',
   argTypes,

@@ -405,58 +405,6 @@ export const Swap = ({
     [oWalletBalances, sourceAssetDecimal, sourceChainAsset, sourceWalletType]
   )
 
-  // // Balance of target asset
-  // // Note: Users balances included in its wallet are checked only. Custom (not users) balances are ignored.
-  // const oTargetAssetAmount: O.Option<BaseAmount> = useMemo(
-  //   () =>
-  //     FP.pipe(
-  //       allBalances,
-  //       NEA.fromArray,
-  //       (oWalletBalances) =>
-  //         FP.pipe(
-  //           oTargetWalletType,
-  //           O.chain((walletType) =>
-  //             getWalletBalanceByAssetAndWalletType({
-  //               oWalletBalances,
-  //               asset: targetAsset,
-  //               walletType
-  //             })
-  //           )
-  //         ),
-  //       O.map(({ amount }) => amount)
-  //     ),
-  //   [allBalances, oTargetWalletType, targetAsset]
-  // )
-
-  // // Formatted balances of target asset.
-  // // Note: Users balances included in its wallet are checked only. Balances of custom (not users) balances are not shown.
-  // const targetAssetAmountLabel = useMemo(
-  //   () =>
-  //     FP.pipe(
-  //       oTargetAssetAmount,
-  //       O.map((amount) =>
-  //         formatAssetAmountCurrency({
-  //           amount: baseToAsset(amount),
-  //           asset: targetAsset,
-  //           decimal: 8,
-  //           trimZeros: true
-  //         })
-  //       ),
-  //       O.getOrElse(() =>
-  //         O.isSome(oTargetWalletType)
-  //           ? // Zero balances are hidden, but we show a zero amount for users wallets (ledger or keystore)
-  //             formatAssetAmountCurrency({
-  //               amount: assetAmount(0, targetAssetDecimal),
-  //               asset: targetAsset,
-  //               decimal: 0
-  //             })
-  //           : // for unknown recipient we show nothing (for privacy)
-  //             noDataString
-  //       )
-  //     ),
-  //   [oTargetAssetAmount, oTargetWalletType, targetAsset, targetAssetDecimal]
-  // )
-
   const {
     state: swapState,
     reset: resetSwapState,
@@ -1672,8 +1620,9 @@ export const Swap = ({
       setStreamingQuantity(0)
       setIsStreaming(streamingIntervalValue !== 0)
     }
-    const tipFormatter = slider === 0 ? 'Instant swap' : `${streamingIntervalValue} Block interval between swaps`
-    const labelMin = slider <= 0 ? `Instant Swap` : `` || slider < 50 ? 'Time Optimised' : `Price Optimised`
+    const tipFormatter =
+      slider === 0 ? 'Caution tx could be refunded' : `${streamingIntervalValue} Block interval between swaps`
+    const labelMin = slider <= 0 ? `Limit Swap` : `` || slider < 50 ? 'Time Optimised' : `Price Optimised`
 
     return (
       <div>
@@ -1701,7 +1650,7 @@ export const Swap = ({
     let quantityLabel: string[]
     let toolTip: string
     if (streamingInterval === 0) {
-      quantityLabel = [`Instant swap`]
+      quantityLabel = [`Limit swap`]
       toolTip = `No Streaming interval set`
     } else {
       quantityLabel = quantity === 0 ? [`Auto swap count`] : [`Sub swaps`, `${quantity}`]
@@ -1775,10 +1724,10 @@ export const Swap = ({
 
     // Check if percentageDifference is a number
     const isPercentageValid = !isNaN(percentageDifference) && isFinite(percentageDifference)
-
+    const streamingVal = isStreaming ? 'Streaming' : 'Limit'
     const streamerComparison = isPercentageValid
       ? percentageDifference <= 1
-        ? 'Instant swap'
+        ? `Instant ${streamingVal} swap `
         : `${percentageDifference.toFixed(2)}% Better swap execution via streaming`
       : 'Invalid or zero slippage' // Default message for invalid or zero slippage
 
@@ -2496,7 +2445,7 @@ export const Swap = ({
         oSwapParams,
         O.map(({ memo }) => memo),
         O.getOrElse(() => emptyString),
-        (memo) => (
+        (memo: string) => (
           <CopyLabel
             className="pl-0 !font-mainBold text-[14px] uppercase text-gray2 dark:text-gray2d"
             label={intl.formatMessage({ id: 'common.memo' })}
@@ -2631,7 +2580,7 @@ export const Swap = ({
         />
         <div className="w-full p-20px">{renderSlider}</div>
         <div>
-          <div className="flex w-full pt-20px pb-20px">
+          <div className="flex w-full pb-20px pt-20px">
             <div className="w-full ">
               <div className="w-9/10 px-20px pb-20px">{renderStreamerInterval}</div>
               <div className="w-9/10 px-20px pb-20px">{renderStreamerQuantity}</div>
@@ -3041,13 +2990,6 @@ export const Swap = ({
                             })}
                       </div>
                     </div>
-                    {/* recipient balance */}
-                    {/* <div className="flex w-full items-center justify-between pl-10px text-[12px]">
-                      <div>{intl.formatMessage({ id: 'common.recipient' })}</div>
-                      <div className="truncate pl-20px text-[13px] normal-case leading-normal">
-                        {walletBalancesLoading ? loadingString : targetAssetAmountLabel}
-                      </div>
-                    </div> */}
                   </>
                 )}
                 {/* memo */}

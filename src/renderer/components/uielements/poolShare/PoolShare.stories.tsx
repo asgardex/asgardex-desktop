@@ -1,4 +1,4 @@
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { bn, assetToBase, assetAmount } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 
@@ -11,7 +11,7 @@ const Template: StoryFn<Props> = (args) => <Component {...args} />
 
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/PoolShare',
   argTypes: {

@@ -1,4 +1,4 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import * as O from 'fp-ts/lib/Option'
 
@@ -14,7 +14,7 @@ export const Default = () => (
   />
 )
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/AccountAddressSelector'
 }

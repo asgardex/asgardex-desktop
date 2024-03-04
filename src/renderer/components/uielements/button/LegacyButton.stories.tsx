@@ -1,4 +1,4 @@
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { Button as Component } from './Button'
 import type { ButtonProps } from './Button.types'
@@ -6,7 +6,7 @@ import type { ButtonProps } from './Button.types'
 const Template: StoryFn<ButtonProps> = (args) => <Component {...args} />
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/LegacyButton',
   argTypes: {

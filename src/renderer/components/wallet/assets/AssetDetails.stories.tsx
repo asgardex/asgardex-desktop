@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { BaseStory } from '@storybook/addons'
+import { Meta, StoryObj } from '@storybook/react'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
@@ -9,7 +9,16 @@ import { ZERO_BASE_AMOUNT } from '../../../const'
 import { mockWalletBalance } from '../../../helpers/test/testWalletHelper'
 import { OpenExplorerTxUrl } from '../../../services/clients'
 import { WalletBalance, WalletBalances } from '../../../services/wallet/types'
-import { AssetDetails } from './index'
+import { AssetDetails, Props as AssetDetailsProps } from './AssetDetails'
+
+const meta: Meta<AssetDetailsProps> = {
+  title: 'Wallet/AssetDetails',
+  component: AssetDetails
+}
+
+export default meta
+
+// Define other stories following the same pattern
 
 const bnbBalance: WalletBalance = mockWalletBalance({
   asset: AssetBNB,
@@ -34,90 +43,98 @@ const openExplorerTxUrl: OpenExplorerTxUrl = (txHash: TxHash) => {
   return Promise.resolve(true)
 }
 
-export const StoryBNB: BaseStory<never, JSX.Element> = () => (
-  <AssetDetails
-    walletType="keystore"
-    walletAddress="bnb-address"
-    txsPageRD={RD.initial}
-    balances={balances}
-    asset={AssetBNB}
-    network={Network.Testnet}
-    openExplorerTxUrl={openExplorerTxUrl}
-    disableSend={false}
-  />
-)
-StoryBNB.storyName = 'BNB'
+// Example conversion for the StoryBNB story
+export const StoryBNB: StoryObj<AssetDetailsProps> = {
+  render: () => (
+    <AssetDetails
+      walletType="keystore"
+      walletAddress="bnb-address"
+      txsPageRD={RD.initial}
+      balances={balances}
+      asset={AssetBNB}
+      network={Network.Testnet}
+      openExplorerTxUrl={openExplorerTxUrl}
+      disableSend={false}
+    />
+  ),
+  name: 'BNB'
+}
+export const StoryRuneTxSuccess: StoryObj<AssetDetailsProps> = {
+  render: () => (
+    <AssetDetails
+      walletType="keystore"
+      walletAddress="thor-address"
+      txsPageRD={RD.initial}
+      balances={balances}
+      asset={AssetRune67C}
+      network={Network.Testnet}
+      openExplorerTxUrl={openExplorerTxUrl}
+      disableSend={false}
+    />
+  ),
+  name: 'RUNE - tx success'
+}
 
-export const StoryRuneTxSuccess: BaseStory<never, JSX.Element> = () => (
-  <AssetDetails
-    walletType="keystore"
-    walletAddress="thor-address"
-    txsPageRD={RD.initial}
-    balances={balances}
-    asset={AssetRune67C}
-    network={Network.Testnet}
-    openExplorerTxUrl={openExplorerTxUrl}
-    disableSend={false}
-  />
-)
-StoryRuneTxSuccess.storyName = 'RUNE - tx success'
+export const StoryRuneNoSend: StoryObj<AssetDetailsProps> = {
+  render: () => (
+    <AssetDetails
+      walletType="keystore"
+      walletAddress="thor-address"
+      txsPageRD={RD.initial}
+      balances={balances}
+      asset={AssetRune67C}
+      network={Network.Testnet}
+      openExplorerTxUrl={openExplorerTxUrl}
+      disableSend={true}
+    />
+  ),
+  name: 'RUNE - no send'
+}
 
-export const StoryRuneNoSend: BaseStory<never, JSX.Element> = () => (
-  <AssetDetails
-    walletType="keystore"
-    walletAddress="thor-address"
-    txsPageRD={RD.initial}
-    balances={balances}
-    asset={AssetRune67C}
-    network={Network.Testnet}
-    openExplorerTxUrl={openExplorerTxUrl}
-    disableSend={true}
-  />
-)
-StoryRuneNoSend.storyName = 'RUNE - no send'
+export const StoryRuneTxError: StoryObj<AssetDetailsProps> = {
+  render: () => (
+    <AssetDetails
+      walletType="keystore"
+      walletAddress="bnb-address"
+      txsPageRD={RD.initial}
+      balances={balances}
+      asset={AssetRune67C}
+      network={Network.Testnet}
+      openExplorerTxUrl={openExplorerTxUrl}
+      disableSend={false}
+    />
+  ),
+  name: 'RUNE - tx error'
+}
 
-export const StoryRuneTxError: BaseStory<never, JSX.Element> = () => (
-  <AssetDetails
-    walletType="keystore"
-    walletAddress="bnb-address"
-    txsPageRD={RD.initial}
-    balances={balances}
-    asset={AssetRune67C}
-    network={Network.Testnet}
-    openExplorerTxUrl={openExplorerTxUrl}
-    disableSend={false}
-  />
-)
-StoryRuneTxError.storyName = 'RUNE - tx error'
+export const StoryRuneNoBalances: StoryObj<AssetDetailsProps> = {
+  render: () => (
+    <AssetDetails
+      walletType="keystore"
+      walletAddress="bnb-address"
+      txsPageRD={RD.initial}
+      balances={getBalances([runeBalanceEmpty, bnbBalance])}
+      asset={AssetRune67C}
+      network={Network.Testnet}
+      openExplorerTxUrl={openExplorerTxUrl}
+      disableSend={false}
+    />
+  ),
+  name: 'RUNE - disabled - no balance'
+}
 
-export const StoryRuneNoBalances: BaseStory<never, JSX.Element> = () => (
-  <AssetDetails
-    walletType="keystore"
-    walletAddress="bnb-address"
-    txsPageRD={RD.initial}
-    balances={getBalances([runeBalanceEmpty, bnbBalance])}
-    asset={AssetRune67C}
-    network={Network.Testnet}
-    openExplorerTxUrl={openExplorerTxUrl}
-    disableSend={false}
-  />
-)
-StoryRuneNoBalances.storyName = 'RUNE - disabled - no balance'
-
-export const StoryRuneFeeNotCovered: BaseStory<never, JSX.Element> = () => (
-  <AssetDetails
-    walletType="keystore"
-    walletAddress="bnb-address"
-    txsPageRD={RD.initial}
-    balances={getBalances([runeBnbBalance, bnbBalanceEmpty])}
-    asset={AssetRune67C}
-    network={Network.Testnet}
-    openExplorerTxUrl={openExplorerTxUrl}
-    disableSend={false}
-  />
-)
-StoryRuneFeeNotCovered.storyName = 'RUNE - fee not covered'
-
-export default {
-  title: 'Wallet/AssetsDetails'
+export const StoryRuneFeeNotCovered: StoryObj<AssetDetailsProps> = {
+  render: () => (
+    <AssetDetails
+      walletType="keystore"
+      walletAddress="bnb-address"
+      txsPageRD={RD.initial}
+      balances={getBalances([runeBnbBalance, bnbBalanceEmpty])}
+      asset={AssetRune67C}
+      network={Network.Testnet}
+      openExplorerTxUrl={openExplorerTxUrl}
+      disableSend={false}
+    />
+  ),
+  name: 'RUNE - fee not covered'
 }

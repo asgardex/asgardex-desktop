@@ -16,6 +16,6 @@
     "jsx": "react-jsx",
     "isolatedModules": true
   },
-  "include": ["src/shared", "src/renderer", "src/setupTests.ts"],
+  "include": ["src/shared", "src/renderer", "src/setupTests.ts", "./jest-setup.ts"],
   "exclude": ["src/main/"]
 }

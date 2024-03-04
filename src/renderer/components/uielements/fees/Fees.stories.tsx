@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { baseAmount } from '@xchainjs/xchain-util'
 
 import { AssetBTC, AssetRuneNative } from '../../../../shared/utils/asset'
@@ -64,7 +64,7 @@ export const FeeError: StoryFn<FeesProps> = () => {
   return <Fees {...props} />
 }
 
-const meta: ComponentMeta<typeof Fees> = {
+const meta: Meta<typeof Fees> = {
   component: Fees,
   title: 'Components/Fees'
 }

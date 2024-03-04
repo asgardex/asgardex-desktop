@@ -1,4 +1,4 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 
 import { WalletType } from '../../../../../shared/wallet/types'
@@ -21,7 +21,7 @@ const Template = ({ interactType, walletType }: Args) => (
 )
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Template> = {
+const meta: Meta<typeof Template> = {
   component: Template,
   title: 'Wallet/Interact',
   argTypes: {

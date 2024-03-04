@@ -1,4 +1,4 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 import * as FP from 'fp-ts/lib/function'
 
 import { CheckButton } from './CheckButton'
@@ -20,7 +20,7 @@ const Template = ({ label, disabled, isChecked, onClicked }: Args) => {
 
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Template> = {
+const meta: Meta<typeof Template> = {
   component: Template,
   title: 'Components/button/CheckButton',
   argTypes: {

@@ -1,4 +1,4 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { Network } from '@xchainjs/xchain-client'
 
@@ -19,7 +19,7 @@ const Template = ({ address, network, width }: Args) => (
 )
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Template> = {
+const meta: Meta<typeof Template> = {
   component: Template,
   title: 'Components/AddressEllipsis',
   argTypes: {

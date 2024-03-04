@@ -6,7 +6,7 @@ import { getAssetShare, getPoolShare, getRuneShare } from './poolShareHelper'
 
 describe('poolShareHelpers', () => {
   it('getRuneShare', () => {
-    const result = getRuneShare(bn('300000000'), { runeDepth: '12', units: '2' })
+    const result = getRuneShare(bn('300000000'), { runeDepth: '12', units: '2' }, 'THOR')
     const expected = assetToBase(assetAmount(18))
     expect(eqBaseAmount.equals(result, expected)).toBeTruthy()
   })

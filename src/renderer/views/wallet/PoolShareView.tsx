@@ -22,11 +22,14 @@ import { Button, RefreshButton } from '../../components/uielements/button'
 import { AssetsNav, TotalValue } from '../../components/wallet/assets'
 import { useChainContext } from '../../contexts/ChainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { isThorChain } from '../../helpers/chainHelper'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
+import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { addressFromOptionalWalletAddress, addressFromWalletAddress } from '../../helpers/walletHelper'
+import { useDex } from '../../hooks/useDex'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePrivateData } from '../../hooks/usePrivateData'
@@ -38,47 +41,54 @@ import * as H from './PoolShareView.helper'
 
 export const PoolShareView: React.FC = (): JSX.Element => {
   const intl = useIntl()
-
+  const { dex } = useDex()
   const { network } = useNetwork()
 
   const {
     service: {
       pools: {
-        allPoolDetails$,
+        allPoolDetails$: allPoolDetailsThor$,
         poolsState$,
-        selectedPricePool$,
+        selectedPricePool$: selectedPricePoolThor$,
         selectedPricePoolAsset$,
         reloadAllPools,
-        haltedChains$
+        haltedChains$: haltedChainsThor$
       },
       reloadNetworkInfo,
-      shares: { allSharesByAddresses$, reloadAllSharesByAddresses }
+      shares: { allSharesByAddresses$: allSharesByAddressesThor$, reloadAllSharesByAddresses }
     }
   } = useMidgardContext()
 
-  // const {
-  //   service: {
-  //     pools: {
-  //       allPoolDetails$: allPoolDetailsMaya$,
-  //       mayaPoolsState$,
-  //       selectedPricePool$: selectedPricePoolMaya$,
-  //       selectedPricePoolAsset$: selectedPricePoolMayaAsset$,
-  //       reloadAllPools: reloadAllMayaPools,
-  //       haltedChains$: haltedMayaChains$
-  //     },
-  //     reloadNetworkInfo: reloadMayaNetworkInfo,
-  //     shares: {
-  //       allSharesByAddresses$: allSharesByAddressesMaya$,
-  //       reloadAllSharesByAddresses: reloadAllSharesByAddressesMaya
-  //     }
-  //   }
-  // } = useMidgardMayaContext()
+  const {
+    service: {
+      pools: {
+        allPoolDetails$: allPoolDetailsMaya$,
+        poolsState$: mayaPoolsState$,
+        selectedPricePool$: selectedPricePoolMaya$,
+        selectedPricePoolAsset$: selectedPricePoolMayaAsset$,
+        reloadAllPools: reloadAllMayaPools,
+        haltedChains$: haltedMayaChains$
+      },
+      reloadNetworkInfo: reloadMayaNetworkInfo,
+      shares: {
+        allSharesByAddresses$: allSharesByAddressesMaya$,
+        reloadAllSharesByAddresses: reloadAllSharesByAddressesMaya
+      }
+    }
+  } = useMidgardMayaContext()
 
-  const selectedPricePool = useObservableState(selectedPricePool$, RUNE_PRICE_POOL)
-  // const selectedPricePoolMaya = useObservableState(selectedPricePoolMaya$, MAYA_PRICE_POOL)
+  const selectedPricePool$ = useMemo(
+    () => (dex === 'THOR' ? selectedPricePoolThor$ : selectedPricePoolMaya$),
+    [dex, selectedPricePoolMaya$, selectedPricePoolThor$]
+  )
+  const [selectedPricePool] = useObservableState(
+    () => selectedPricePool$,
+    dex === 'THOR' ? RUNE_PRICE_POOL : MAYA_PRICE_POOL
+  )
+  const allPoolDetails$ = dex === 'THOR' ? allPoolDetailsThor$ : allPoolDetailsMaya$
+  const poolsRD = useObservableState(dex === 'THOR' ? poolsState$ : mayaPoolsState$, RD.pending)
 
-  const poolsRD = useObservableState(poolsState$, RD.pending)
-  // const poolsMayaRD = useObservableState(mayaPoolsState$, RD.pending)
+  const allSharesByAddresses$ = dex === 'THOR' ? allSharesByAddressesThor$ : allSharesByAddressesMaya$
 
   const { addressByChain$ } = useChainContext()
 
@@ -87,7 +97,11 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   const { isPrivate } = usePrivateData()
 
   useEffect(() => {
-    reloadAllPools()
+    if (dex === 'THOR') {
+      reloadAllPools()
+    } else {
+      reloadAllMayaPools()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -137,12 +151,15 @@ export const PoolShareView: React.FC = (): JSX.Element => {
       )
     )
   }, RD.initial)
-
+  const haltedChains$ = dex === 'THOR' ? haltedChainsThor$ : haltedMayaChains$
   const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
   const { mimirHalt } = useMimirHalt()
   const poolDetailsRD = useObservableState(allPoolDetails$, RD.pending)
   const { poolData: pricePoolData } = useObservableState(selectedPricePool$, RUNE_PRICE_POOL)
-  const oPriceAsset = useObservableState<O.Option<Asset>>(selectedPricePoolAsset$, O.none)
+  const oPriceAsset = useObservableState<O.Option<Asset>>(
+    dex === 'THOR' ? selectedPricePoolAsset$ : selectedPricePoolMayaAsset$,
+    O.none
+  )
   const priceAsset = FP.pipe(oPriceAsset, O.toUndefined)
 
   // store previous data of pools to render these while reloading
@@ -178,9 +195,14 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   )
 
   const clickRefreshHandler = useCallback(() => {
-    reloadAllPools()
-    reloadNetworkInfo()
-  }, [reloadNetworkInfo, reloadAllPools])
+    if (dex === 'THOR') {
+      reloadAllPools()
+      reloadNetworkInfo()
+    } else {
+      reloadAllMayaPools()
+      reloadMayaNetworkInfo()
+    }
+  }, [dex, reloadAllMayaPools, reloadAllPools, reloadMayaNetworkInfo, reloadNetworkInfo])
 
   const renderRefreshBtn = useMemo(
     () => (
@@ -195,7 +217,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   const renderSharesTotal = useMemo(() => {
     const sharesTotalRD: BaseAmountRD = FP.pipe(
       RD.combine(allSharesRD, poolDetailsRD),
-      RD.map(([poolShares, poolDetails]) => H.getSharesTotal(poolShares, poolDetails, pricePoolData))
+      RD.map(([poolShares, poolDetails]) => H.getSharesTotal(poolShares, poolDetails, pricePoolData, dex))
     )
     return (
       <TotalValue
@@ -205,7 +227,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
         hidePrivateData={isPrivate}
       />
     )
-  }, [allSharesRD, intl, isPrivate, poolDetailsRD, pricePoolData, selectedPricePool])
+  }, [allSharesRD, dex, intl, isPrivate, poolDetailsRD, pricePoolData, selectedPricePool])
 
   const renderShares = useMemo(
     () =>
@@ -229,21 +251,26 @@ export const PoolShareView: React.FC = (): JSX.Element => {
           },
           // success state
           ([poolShares, poolDetails]) => {
-            const data = H.getPoolShareTableData(poolShares, poolDetails, pricePoolData)
+            const data = H.getPoolShareTableData(poolShares, poolDetails, pricePoolData, dex)
             previousPoolShares.current = O.some(data)
             return renderPoolSharesTable(data, false)
           }
         )
       ),
-    [allSharesRD, poolDetailsRD, renderPoolSharesTable, renderRefreshBtn, pricePoolData]
+    [allSharesRD, poolDetailsRD, renderPoolSharesTable, renderRefreshBtn, pricePoolData, dex]
   )
 
   const disableRefresh = useMemo(() => RD.isPending(poolsRD) || RD.isPending(allSharesRD), [allSharesRD, poolsRD])
 
   const refreshHandler = useCallback(() => {
-    reloadAllPools()
-    reloadAllSharesByAddresses()
-  }, [reloadAllPools, reloadAllSharesByAddresses])
+    if (dex === 'THOR') {
+      reloadAllPools()
+      reloadAllSharesByAddresses()
+    } else {
+      reloadAllMayaPools()
+      reloadAllSharesByAddressesMaya()
+    }
+  }, [dex, reloadAllMayaPools, reloadAllPools, reloadAllSharesByAddresses, reloadAllSharesByAddressesMaya])
 
   return (
     <>

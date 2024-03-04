@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
@@ -191,7 +191,7 @@ const Template = (args: Partial<Record<EnabledChain, RDStatus>>) => {
 }
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Template> = {
+const meta: Meta<typeof Template> = {
   component: Template,
   title: 'Wallet/AssetsTableCollapsable',
   argTypes,

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 
 import { PoolActionsHistoryFilter } from './PoolActionsHistoryFilter'
 import { Filter as FilterType } from './types'
@@ -18,7 +18,7 @@ const Template = () => {
 
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Template> = {
+const meta: Meta<typeof Template> = {
   component: Template,
   title: 'Components/PoolActionsHistoryFilter'
 }

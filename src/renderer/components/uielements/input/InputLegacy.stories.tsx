@@ -1,8 +1,8 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 
 import { Input as Component, InputPassword, InputTextArea } from './Input.styles'
 
-const defaultInput: ComponentMeta<typeof InputPassword> = {
+const defaultInput: Meta<typeof InputPassword> = {
   component: InputPassword,
   title: 'Components/InputLegacy',
   decorators: [
@@ -42,13 +42,13 @@ const defaultInput: ComponentMeta<typeof InputPassword> = {
 
 export default defaultInput
 
-export const pwInput: ComponentMeta<typeof Component> = {
+export const pwInput: Meta<typeof Component> = {
   component: InputPassword,
   title: 'Components/InputPassword',
   argTypes: { ...defaultInput.argTypes }
 }
 
-export const textAreaInput: ComponentMeta<typeof Component> = {
+export const textAreaInput: Meta<typeof Component> = {
   component: InputTextArea,
   title: 'Components/InputTextArea',
   argTypes: { ...defaultInput.argTypes }

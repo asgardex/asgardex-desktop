@@ -1,44 +1,45 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta, StoryObj } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
-import * as FP from 'fp-ts/lib/function'
 
 import { BNB_ADDRESS_MAINNET, BNB_ADDRESS_TESTNET } from '../../../../shared/mock/address'
 import { AssetBNB } from '../../../../shared/utils/asset'
 import * as AT from '../../../storybook/argTypes'
-import { QRCodeModal as Component } from './QRCodeModal'
+import { QRCodeModal as Component, Props } from './QRCodeModal'
 
-type StoryArgs = {
-  network: Network
-  visible: boolean
-  onOkHandler: FP.Lazy<void>
-  onCancelHandler: FP.Lazy<void>
-}
-
-const Template = ({ network, visible, onCancelHandler, onOkHandler }: StoryArgs) => (
-  <Component
-    asset={AssetBNB}
-    address={network === Network.Testnet ? BNB_ADDRESS_TESTNET : BNB_ADDRESS_MAINNET}
-    network={network}
-    visible={visible}
-    onCancel={onCancelHandler}
-    onOk={onOkHandler}
-  />
-)
-export const Default = Template.bind({})
-
-const meta: ComponentMeta<typeof Template> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/QRCodeModal',
   argTypes: {
     network: AT.network,
-    onOkHandler: {
-      action: 'onOkHandler'
-    },
-    onCancelHandler: {
-      action: 'onCancelHandler'
-    }
+    visible: { control: 'boolean' },
+    onOk: { action: 'onOk' },
+    onCancel: { action: 'onCancel' }
   },
-  args: { network: Network.Mainnet, visible: true }
+  args: {
+    network: Network.Mainnet,
+    visible: true,
+    onOk: () => {},
+    onCancel: () => {}
+  }
 }
 
 export default meta
+
+// Define the default story using StoryObj model
+export const Default: StoryObj<Props> = {
+  render: (storyArgs: Props) => (
+    <Component
+      asset={AssetBNB}
+      address={storyArgs.network === Network.Testnet ? BNB_ADDRESS_TESTNET : BNB_ADDRESS_MAINNET}
+      network={storyArgs.network}
+      visible={storyArgs.visible}
+      onCancel={storyArgs.onCancel}
+      onOk={storyArgs.onOk}
+    />
+  ),
+  // Args setup directly within the StoryObj
+  args: {
+    network: Network.Mainnet,
+    visible: true
+  }
+}

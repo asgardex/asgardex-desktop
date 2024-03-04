@@ -36,15 +36,15 @@ import { MayachainLastblockRD } from '../../services/mayachain/types'
 import { PendingPoolsState, DEFAULT_POOL_FILTERS } from '../../services/midgard/types'
 import { ThorchainLastblockRD } from '../../services/thorchain/types'
 import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
+import { filterTableData } from './Pools.utils'
 import {
   getBlocksLeftForPendingPoolAsString,
   getBlocksLeftForPendingPoolAsStringMaya,
   isEmptyPool
 } from './Pools.utils'
-import { filterTableData } from './Pools.utils'
 import * as Shared from './PoolsOverview.shared'
-import { TableAction, BlockLeftLabel } from './PoolsOverview.styles'
 import * as Styled from './PoolsOverview.styles'
+import { TableAction, BlockLeftLabel } from './PoolsOverview.styles'
 
 export const PendingPools: React.FC = (): JSX.Element => {
   const navigate = useNavigate()

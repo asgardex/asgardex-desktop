@@ -162,19 +162,19 @@ export const ActivePools: React.FC = (): JSX.Element => {
                     })
                   )
                 }
+              },
+              {
+                label: intl.formatMessage({ id: 'common.manage' }),
+                callback: () => {
+                  navigate(
+                    poolsRoutes.deposit.path({
+                      asset: assetToString(asset),
+                      assetWalletType: DEFAULT_WALLET_TYPE,
+                      runeWalletType: DEFAULT_WALLET_TYPE
+                    })
+                  )
+                }
               }
-              // {
-              //   label: intl.formatMessage({ id: 'common.manage' }),
-              //   callback: () => {
-              //     navigate(
-              //       poolsRoutes.deposit.path({
-              //         asset: assetToString(asset),
-              //         assetWalletType: DEFAULT_WALLET_TYPE,
-              //         runeWalletType: DEFAULT_WALLET_TYPE
-              //       })
-              //     )
-              //   }
-              // },
               // {
               //   label: intl.formatMessage({ id: 'common.earn' }),
               //   callback: () => {

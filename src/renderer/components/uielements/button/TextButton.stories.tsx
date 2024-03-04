@@ -1,13 +1,16 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta, StoryObj } from '@storybook/react'
 
+import { BaseButtonProps } from './BaseButton'
 import baseMeta from './BaseButton.stories'
-import { TextButton as Component, Props } from './TextButton'
+import { TextButton as Component } from './TextButton'
 
-export const TextButton = ({ children, ...otherProps }: Props) => <Component {...otherProps}>{children}</Component>
+export type Props = BaseButtonProps & {
+  color?: 'primary' | 'warning' | 'error' | 'neutral'
+}
 
-const meta: ComponentMeta<typeof Component> = {
-  component: Component,
+const meta: Meta<typeof Component> = {
   title: 'Components/button/TextButton',
+  component: Component,
   argTypes: {
     ...baseMeta.argTypes,
     color: {
@@ -17,12 +20,15 @@ const meta: ComponentMeta<typeof Component> = {
         options: ['primary', 'warning', 'error', 'neutral']
       }
     }
-  },
-  args: {
-    ...baseMeta.args,
-    color: 'primary'
-  },
-  decorators: baseMeta.decorators
+  }
 }
 
 export default meta
+
+// Define the default story using StoryObj model.
+export const Default: StoryObj<Props> = {
+  args: {
+    ...baseMeta.args,
+    color: 'primary' // Ensure this matches the Props type for color
+  }
+}

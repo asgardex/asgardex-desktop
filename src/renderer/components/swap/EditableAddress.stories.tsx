@@ -1,4 +1,4 @@
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { Address } from '@xchainjs/xchain-util'
 
@@ -21,7 +21,7 @@ const defaultProps: EditableAddressProps = {
 }
 export const Default: StoryFn = () => <Component {...defaultProps} />
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/EditableAddress'
 }

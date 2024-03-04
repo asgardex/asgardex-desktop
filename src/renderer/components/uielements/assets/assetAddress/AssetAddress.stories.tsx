@@ -1,4 +1,4 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 
 import { BNB_ADDRESS_TESTNET } from '../../../../../shared/mock/address'
@@ -18,7 +18,7 @@ const Template = ({ size, width }: Args) => (
 
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Template> = {
+const meta: Meta<typeof Template> = {
   component: Template,
   title: 'Components/AssetAddress',
   argTypes: {

@@ -85,6 +85,9 @@ export const CACAO_DECIMAL = 10
  * */
 export const BNB_DECIMAL = 8
 
+export const isAssetInMayachainPools = (asset: Asset): boolean =>
+  eqAsset.equals(asset, AssetCacao || AssetDASH || AssetKUJI)
+
 /**
  * Checks whether an asset is an RuneNative asset
  */

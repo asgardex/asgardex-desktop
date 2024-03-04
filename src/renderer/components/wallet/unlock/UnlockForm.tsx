@@ -185,7 +185,7 @@ export const UnlockForm: React.FC<Props> = (props): JSX.Element => {
   return (
     <>
       <div className="relative flex justify-center">
-        <BackLinkButton className="absolute top-0 left-0" />
+        <BackLinkButton className="absolute left-0 top-0" />
         <h1
           className="mb-30px
           inline-block
@@ -198,15 +198,15 @@ export const UnlockForm: React.FC<Props> = (props): JSX.Element => {
         <div
           className="
         flex h-full
-        flex-col items-center justify-between bg-bg1 pt-[45px]
-        pr-30px pb-[35px] pl-30px dark:bg-bg1d sm:pt-[90px] sm:pr-[60px] sm:pb-[70px] sm:pl-[60px]">
+        flex-col items-center justify-between bg-bg1 pb-[35px]
+        pl-30px pr-30px pt-[45px] dark:bg-bg1d sm:pb-[70px] sm:pl-[60px] sm:pr-[60px] sm:pt-[90px]">
           <div className="w-full">
             <h2 className="mb-30px w-full text-center font-mainSemiBold uppercase text-text1 dark:text-text1d">
               {intl.formatMessage({ id: 'wallet.unlock.password' })}
             </h2>
             <InputPasswordTW
               id="password"
-              className="my-0 mx-auto mb-20px w-full max-w-[300px]"
+              className="mx-auto my-0 mb-20px w-full max-w-[300px]"
               {...register('password', { required: true })}
               placeholder={intl.formatMessage({ id: 'common.password' }).toUpperCase()}
               size="normal"

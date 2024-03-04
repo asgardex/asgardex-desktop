@@ -18,7 +18,7 @@ const deposit: DepositMessages = {
   'deposit.totalEarnings': 'Your total earnings from the pool',
   'deposit.add.sym': 'Add',
   'deposit.add.asym': 'Add {asset}',
-  'deposit.add.runeSide': 'RUNE side',
+  'deposit.add.runeSide': '{dex} side',
   'deposit.add.assetSide': 'Asset side',
   'deposit.add.min.info': 'Minimum value to deposit to cover all fees for inbound and outbound transactions.',
   'deposit.add.max.info': 'Maximum amount to deposit is based on balance ({balance}) in relation to other asset side.',

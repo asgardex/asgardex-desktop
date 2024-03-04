@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { Network, TxHash } from '@xchainjs/xchain-client'
@@ -126,7 +126,7 @@ const defaultProps: SwapProps = {
 
 export const Default: StoryFn = () => <Component {...defaultProps} />
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/Swap'
 }

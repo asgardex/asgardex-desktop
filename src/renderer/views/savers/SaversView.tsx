@@ -422,7 +422,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         </Tab.Panels>
                       </Tab.Group>
                     </div>
-                    <div className="min-h-auto mt-20px ml-0 flex w-full bg-bg0 dark:bg-bg0d xl:mt-0 xl:ml-20px xl:min-h-full xl:w-1/3">
+                    <div className="min-h-auto ml-0 mt-20px flex w-full bg-bg0 dark:bg-bg0d xl:ml-20px xl:mt-0 xl:min-h-full xl:w-1/3">
                       <SaversDetailsView asset={asset} address={address} poolDetails={poolDetails} />
                     </div>
                   </div>

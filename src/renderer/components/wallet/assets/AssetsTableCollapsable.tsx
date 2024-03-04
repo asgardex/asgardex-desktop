@@ -32,6 +32,7 @@ import { chainToString } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
 import {
+  isAssetInMayachainPools,
   isCacaoAsset,
   isDashAsset,
   isKujiAsset,
@@ -125,7 +126,18 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
   }, [filterByValue])
 
   // State to store open panel keys
-  const [openPanelKeys, setOpenPanelKeys] = useState<string[]>()
+  const [openPanelKeys, setOpenPanelKeys] = useState<string[]>(() => {
+    // Initialize from localStorage if available
+    const cachedKeys = localStorage.getItem('openPanelKeys')
+    return cachedKeys ? JSON.parse(cachedKeys) : []
+  })
+
+  // Effect to cache openPanelKeys changes
+  useEffect(() => {
+    localStorage.setItem('openPanelKeys', JSON.stringify(openPanelKeys))
+  }, [openPanelKeys])
+
+  const [allPanelKeys, setAllPanelKeys] = useState<string[]>()
   // State track that user has changed collpase state
   const [collapseChangedByUser, setCollapseChangedByUser] = useState(false)
   const [collapseAll, setCollapseAll] = useState<boolean>(false)
@@ -138,16 +150,19 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
   const handleCollapseAll = useCallback(() => {
     if (collapseAll) {
-      // If currently set to collapse all, this will open all panels
-      // Assuming panelKeys is an array of all panel identifiers you have
-      setOpenPanelKeys(openPanelKeys) // Replace panelKeys with your actual panel keys array
+      // Restore previously opened panels from cache
+      const cachedKeys = localStorage.getItem('openPanelKeys')
+      const previousOpenKeys = cachedKeys ? JSON.parse(cachedKeys) : allPanelKeys
+      setOpenPanelKeys(previousOpenKeys)
     } else {
-      // If not set to collapse all, this will collapse all panels
-      setOpenPanelKeys([]) // Pass an empty array to collapse all
+      // Cache current open keys before collapsing
+      localStorage.setItem('openPanelKeys', JSON.stringify(openPanelKeys))
+      // Collapse all panels
+      setOpenPanelKeys([])
     }
     // Toggle the collapseAll state
     setCollapseAll(!collapseAll)
-  }, [collapseAll, openPanelKeys])
+  }, [allPanelKeys, collapseAll, openPanelKeys])
 
   // store previous data of asset data to render these while reloading
   const previousAssetsTableData = useRef<WalletBalances[]>([])
@@ -563,7 +578,9 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
                 if (isUSDAsset(asset) && !asset.synth && amount.amount().gt(1)) {
                   return true
                 }
-                const usdValue = getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool })
+                const usdValue = !isAssetInMayachainPools(asset)
+                  ? getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool })
+                  : getPoolPriceValueM({ balance: { asset, amount }, poolDetails, pricePool })
                 return (
                   O.isSome(usdValue) &&
                   new CryptoAmount(baseAmount(usdValue.value.amount()), assetUSDC).assetAmount.gt(1)
@@ -684,7 +701,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
             : O.none
         )
       )
-      setOpenPanelKeys(keys)
+      setAllPanelKeys(keys)
     }
   }, [chainBalances, collapseChangedByUser])
 
