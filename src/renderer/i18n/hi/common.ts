@@ -29,6 +29,7 @@ const common: CommonMessages = {
   'common.address.self': 'स्वयं का',
   'common.coin': 'सिक्का',
   'common.collapseAll': 'सभी को संक्षिप्त करें',
+  'common.expandAll': 'सभी विस्तारित करें',
   'common.password': 'पासवर्ड',
   'common.memo': 'मेमो',
   'common.memos': 'मेमो',

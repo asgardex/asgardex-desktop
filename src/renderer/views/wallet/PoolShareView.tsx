@@ -14,7 +14,7 @@ import { useIntl } from 'react-intl'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { ENABLED_CHAINS } from '../../../shared/utils/chain'
+import { ENABLED_CHAINS, getChainsForDex } from '../../../shared/utils/chain'
 import { PoolShares as PoolSharesTable } from '../../components/PoolShares'
 import { PoolShareTableRowData } from '../../components/PoolShares/PoolShares.types'
 import { ErrorView } from '../../components/shared/error'
@@ -24,7 +24,7 @@ import { useChainContext } from '../../contexts/ChainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
-import { isThorChain } from '../../helpers/chainHelper'
+import { isMayaChain, isThorChain } from '../../helpers/chainHelper'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
@@ -112,18 +112,20 @@ export const PoolShareView: React.FC = (): JSX.Element => {
 
   const [allSharesRD] = useObservableState<PoolSharesRD, Network>(() => {
     // for Thorchain need to exclude those chains that are not in the pools, tobefixed
-    const EXCLUDED_CHAINS: readonly string[] = ['BSC', 'AVAX', 'DASH', 'KUJI', 'MAYA'] // simple exclude for bsc and avax. same as ETH
+    const INCLUDED_CHAINS = getChainsForDex(dex) // simple exclude for bsc and avax. same as ETH
     // keystore addresses
     const addresses$: WalletAddress$[] = FP.pipe(
       [...ENABLED_CHAINS],
-      A.filter((chain) => !EXCLUDED_CHAINS.includes(chain) && !isThorChain(chain)),
+      A.filter((chain) =>
+        INCLUDED_CHAINS.includes(chain) && dex === 'THOR' ? !isThorChain(chain) : !isMayaChain(chain)
+      ),
       A.map(addressByChain$)
     )
     // ledger addresses
     const ledgerAddresses$ = (): WalletAddress$[] =>
       FP.pipe(
         [...ENABLED_CHAINS],
-        A.filter((chain) => !EXCLUDED_CHAINS.includes(chain) && !isThorChain(chain)),
+        A.filter((chain) => INCLUDED_CHAINS.includes(chain) && !isThorChain(chain)),
         A.map((chain) => getLedgerAddress$(chain)),
         A.map(RxOp.map(FP.flow(O.map(ledgerAddressToWalletAddress))))
       )

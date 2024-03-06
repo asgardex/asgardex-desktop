@@ -29,6 +29,7 @@ const common: CommonMessages = {
   'common.amount': 'Betrag',
   'common.coin': 'Coin',
   'common.collapseAll': 'Alles inklappen',
+  'common.expandAll': 'Alles uitbreiden',
   'common.password': 'Passwort',
   'common.memo': 'Memo',
   'common.memos': 'Memos',

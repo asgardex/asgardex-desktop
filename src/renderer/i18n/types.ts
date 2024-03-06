@@ -27,6 +27,7 @@ export type CommonMessageKey =
   | 'common.amount'
   | 'common.coin'
   | 'common.collapseAll'
+  | 'common.expandAll'
   | 'common.password'
   | 'common.memo'
   | 'common.memos'

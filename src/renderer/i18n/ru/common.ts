@@ -29,6 +29,7 @@ const common: CommonMessages = {
   'common.address.self': 'Свой',
   'common.coin': 'Монета',
   'common.collapseAll': 'Свернуть все',
+  'common.expandAll': 'Развернуть все',
   'common.password': 'Пароль',
   'common.memo': 'Мемо',
   'common.memos': 'Мемо',

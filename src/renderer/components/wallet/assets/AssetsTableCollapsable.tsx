@@ -28,11 +28,10 @@ import { useNavigate } from 'react-router'
 
 import { Dex } from '../../../../shared/api/types'
 import { AssetRuneNative } from '../../../../shared/utils/asset'
-import { chainToString } from '../../../../shared/utils/chain'
+import { chainToString, isChainOfMaya } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
 import {
-  isAssetInMayachainPools,
   isCacaoAsset,
   isDashAsset,
   isKujiAsset,
@@ -150,18 +149,15 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
   const handleCollapseAll = useCallback(() => {
     if (collapseAll) {
-      // Restore previously opened panels from cache
-      const cachedKeys = localStorage.getItem('openPanelKeys')
-      const previousOpenKeys = cachedKeys ? JSON.parse(cachedKeys) : allPanelKeys
-      setOpenPanelKeys(previousOpenKeys)
-    } else {
       // Cache current open keys before collapsing
       localStorage.setItem('openPanelKeys', JSON.stringify(openPanelKeys))
-      // Collapse all panels
       setOpenPanelKeys([])
+    } else {
+      const previousOpenKeys = allPanelKeys ? allPanelKeys : ['0', '1', '2']
+      setOpenPanelKeys(previousOpenKeys)
     }
-    // Toggle the collapseAll state
     setCollapseAll(!collapseAll)
+    // Toggle the collapseAll state
   }, [allPanelKeys, collapseAll, openPanelKeys])
 
   // store previous data of asset data to render these while reloading
@@ -575,12 +571,14 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
             if (filterByValue) {
               sortedBalances = sortedBalances.filter(({ amount, asset }) => {
-                if (isUSDAsset(asset) && !asset.synth && amount.amount().gt(1)) {
+                if ((isUSDAsset(asset) && !asset.synth && amount.amount().gt(1)) || isMayaAsset(asset)) {
                   return true
                 }
-                const usdValue = !isAssetInMayachainPools(asset)
-                  ? getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool })
-                  : getPoolPriceValueM({ balance: { asset, amount }, poolDetails, pricePool })
+                const usdValue =
+                  isChainOfMaya(asset.chain) || isCacaoAsset(asset)
+                    ? getPoolPriceValueM({ balance: { asset, amount }, poolDetails: poolDetailsMaya, pricePool })
+                    : getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool })
+
                 return (
                   O.isSome(usdValue) &&
                   new CryptoAmount(baseAmount(usdValue.value.amount()), assetUSDC).assetAmount.gt(1)
@@ -602,7 +600,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         )
       )
     },
-    [dex, filterByValue, poolDetails, pricePool, renderAssetsTable]
+    [dex, filterByValue, poolDetails, poolDetailsMaya, pricePool, renderAssetsTable]
   )
 
   // Panel
@@ -737,13 +735,17 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
   return (
     <>
-      <Row>
+      <Row className="items-center">
         <Styled.FilterCheckbox checked={filterByValue} onChange={(e) => setFilterByValue(e.target.checked)}>
           {intl.formatMessage({ id: 'common.filterValue' })}
         </Styled.FilterCheckbox>
-        <Styled.FilterCheckbox checked={collapseAll} onChange={handleCollapseAll}>
-          {intl.formatMessage({ id: 'common.collapseAll' })}
-        </Styled.FilterCheckbox>
+        <div
+          className="rounded-md border border-solid border-turquoise p-1 text-14 text-gray2 dark:border-gray1d dark:text-gray2d"
+          onClick={handleCollapseAll}>
+          {collapseAll
+            ? intl.formatMessage({ id: 'common.collapseAll' })
+            : intl.formatMessage({ id: 'common.expandAll' })}
+        </div>
       </Row>
 
       <Styled.Collapse
