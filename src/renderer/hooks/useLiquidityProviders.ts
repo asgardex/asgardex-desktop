@@ -141,11 +141,11 @@ export const useLiquidityProviders = ({
               sequenceTOption(oDexAssetAddress, oAssetAddress),
               O.chain(([providerDexAssetAddress, providerAssetAddress]) =>
                 // check asset side for given RUNE address
-                (eqAddress.equals(providerDexAssetAddress, dexAssetAddress) &&
-                  !eqAddress.equals(providerAssetAddress, assetAddress)) ||
+                (eqAddress.equals(providerDexAssetAddress.toLowerCase(), dexAssetAddress) &&
+                  !eqAddress.equals(providerAssetAddress.toLowerCase(), assetAddress)) ||
                 // check rune side for given asset address
-                (eqAddress.equals(providerAssetAddress, assetAddress) &&
-                  !eqAddress.equals(providerDexAssetAddress, dexAssetAddress))
+                (eqAddress.equals(providerAssetAddress.toLowerCase(), assetAddress) &&
+                  !eqAddress.equals(providerDexAssetAddress.toLowerCase(), dexAssetAddress))
                   ? // If there is a missmatch, return this discovered pair (which is a previous deposit pair)
                     O.some({ dexAssetAddress: providerDexAssetAddress, assetAddress: providerAssetAddress })
                   : O.none
