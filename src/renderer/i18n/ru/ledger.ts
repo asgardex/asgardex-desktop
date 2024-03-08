@@ -12,7 +12,7 @@ const ledger: LedgerMessages = {
   'ledger.error.inuse': 'Это устройство используется в другом приложении',
   'ledger.error.appnotopened': 'Приложение Ledger не открыто',
   'ledger.error.noapp':
-    'Нет открытых Ledger приложений. Пожалуйста, откройте соответствующее приложение на устройстве.',
+    'Нет открытых приложений Ledger. Пожалуйста, откройте соответствующее приложение на устройстве.',
   'ledger.error.getaddressfailed': 'Добавление адреса из Ledger не удалось',
   'ledger.error.signfailed': 'Подпись транзакции с помощью Ledger не удалась',
   'ledger.error.sendfailed': 'Отправка транзакции с помощью Ledger не удалась',
@@ -20,7 +20,7 @@ const ledger: LedgerMessages = {
   'ledger.error.invalidpubkey': 'Недействительный открытый ключ для использования Ledger.',
   'ledger.error.invaliddata': 'Неверные данные.',
   'ledger.error.invalidresponse': 'Неверный ответ после отправки транзакции с помощью Ledger.',
-  'ledger.error.rejected': 'Действие на Ledger было отменено.',
+  'ledger.error.rejected': 'Действие было отменено на Ledger.',
   'ledger.error.timeout': 'Тайм-аут для обработки действия на Ledger.',
   'ledger.error.notimplemented': 'Действие не было выполнено с Ledger.',
   'ledger.error.denied': 'Вы отклонили запрос Ledger',
