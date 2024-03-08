@@ -708,7 +708,7 @@ export const Swap = ({
   //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
   const applyBps = useMemo(() => {
     let applyBps: number
-    const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(100)
+    const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(500)
     applyBps = network === Network.Stagenet ? 0 : ASGARDEX_AFFILIATE_FEE
     applyBps = txFeeCovered ? ASGARDEX_AFFILIATE_FEE : 0
     return applyBps
@@ -1410,10 +1410,8 @@ export const Swap = ({
   const minAmountError = useMemo(() => {
     if (isZeroAmountToSwap) return false
     const minAmountIn = convertBaseAmountDecimal(reccommendedAmountIn.baseAmount, amountToSwapMax1e8.decimal)
-    const swapFeesIn = swapFees.inFee.amount.times(3) // average swap fees
-    const reccomendedAmount = reccommendedAmountIn ? minAmountIn : swapFeesIn
-    return amountToSwapMax1e8.lt(reccomendedAmount)
-  }, [amountToSwapMax1e8, isZeroAmountToSwap, reccommendedAmountIn, swapFees.inFee])
+    return amountToSwapMax1e8.lt(minAmountIn)
+  }, [amountToSwapMax1e8, isZeroAmountToSwap, reccommendedAmountIn.baseAmount])
 
   const renderMinAmount = useMemo(
     () => (

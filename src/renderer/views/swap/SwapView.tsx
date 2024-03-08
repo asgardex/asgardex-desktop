@@ -169,15 +169,6 @@ const SuccessRouteView: React.FC<Props> = ({
     }
   }, [sourceAsset, setSelectedPoolAsset, setSelectedPoolAssetMaya, dex])
 
-  // reload inbound addresses at `onMount` to get always latest `pool address` + `feeRates`
-  useEffect(() => {
-    if (dex === 'THOR') {
-      reloadInboundAddresses()
-    } else {
-      reloadMayaInboundAddresses()
-    }
-  }, [dex, reloadInboundAddresses, reloadMayaInboundAddresses])
-
   const sourceAssetDecimal$: AssetWithDecimalLD = useMemo(
     () => assetWithDecimal$(sourceAsset),
     [assetWithDecimal$, sourceAsset]
@@ -252,13 +243,8 @@ const SuccessRouteView: React.FC<Props> = ({
   )
 
   const reloadBalances = useCallback(() => {
-    if (eqChain.equals(sourceChain, targetChain)) {
-      reloadBalancesByChain(sourceChain)()
-    } else {
-      reloadBalancesByChain(sourceChain)()
-      reloadBalancesByChain(targetChain)()
-    }
-  }, [sourceChain, targetChain, reloadBalancesByChain])
+    reloadBalancesByChain(sourceChain)()
+  }, [reloadBalancesByChain, sourceChain])
 
   const reloadSwapTxStatus = useCallback(() => {
     reloadTxStatus()
@@ -286,6 +272,17 @@ const SuccessRouteView: React.FC<Props> = ({
     reloadSelectedPoolDetail,
     reloadSelectedPoolDetailMaya
   ])
+
+  // reload inbound addresses at `onMount` to get always latest `pool address` + `feeRates`
+  useEffect(() => {
+    if (dex === 'THOR') {
+      reloadInboundAddresses()
+    } else {
+      reloadMayaInboundAddresses()
+    }
+    reloadBalances()
+    reloadHandler()
+  }, [dex, reloadBalances, reloadHandler, reloadInboundAddresses, reloadMayaInboundAddresses])
 
   const getStoredSlipTolerance = (): SlipTolerance =>
     FP.pipe(

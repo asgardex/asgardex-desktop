@@ -54,7 +54,7 @@ export const smallestAmountToSent = (chain: Chain, _network: Network): BaseAmoun
       // zero for Avax
       return baseAmount(0, AVAX_GAS_ASSET_DECIMAL)
     case BSCChain:
-      // zero for Avax
+      // zero for bsc
       return baseAmount(0, BSC_GAS_ASSET_DECIMAL)
     case GAIAChain:
       return baseAmount(1, COSMOS_DECIMAL)

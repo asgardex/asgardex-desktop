@@ -60,9 +60,9 @@ export const isChainOfMaya = (chain: Chain): boolean => {
   return mayaChains.includes(chain)
 }
 
-// Function to check if a chain is supported by MAYA DEX
+// Function to check if a chain is supported by THOR DEX
 export const isChainOfThor = (chain: Chain): boolean => {
-  const thorChains = DEX_CHAINS['THOR'] // Retrieve MAYA's chains from the mapping
+  const thorChains = DEX_CHAINS['THOR'] // Retrieve THOR's chains from the mapping
   return thorChains.includes(chain)
 }
 /**
