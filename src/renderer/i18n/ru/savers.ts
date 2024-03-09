@@ -6,21 +6,21 @@ const savers: SaversMessages = {
   'savers.detail.current.title': 'Сколько внесено',
   'savers.detail.redeem.title': 'Сколько заберёшь',
   'savers.detail.percent': 'Рост',
-  'savers.detail.totalGrowth': 'Рост Usd',
-  'savers.detail.assetAmount': 'Сумма Актива',
+  'savers.detail.totalGrowth': 'Рост в $',
+  'savers.detail.assetAmount': 'Сумма актива',
   'savers.detail.priceGrowth': 'Рост цены',
   'savers.info.max.redeem.value': 'Максимальная сумма для вывода',
   'savers.info.max.balance': 'Максимальный баланс',
-  'savers.add.state.sending': 'Отправка транзакции на добавление сберегателя',
+  'savers.add.state.sending': 'Отправка транзакции добавления сбережений',
   'savers.add.state.checkResults': 'Проверка результатов транзакции',
-  'savers.add.state.pending': 'Добавление сберегателя',
-  'savers.add.state.success': 'Успешное добавление сберегателя',
-  'savers.withdraw.state.sending': 'Отправка транзакции на снятие сберегателя',
+  'savers.add.state.pending': 'Добавление сбережений',
+  'savers.add.state.success': 'Успешное добавление сбережений',
+  'savers.withdraw.state.sending': 'Отправка транзакции снятия сбережений',
   'savers.withdraw.state.checkResults': 'Проверка результатов транзакции',
-  'savers.withdraw.state.pending': 'Снятие сберегателя',
-  'savers.withdraw.state.success': 'Успешное снятие сберегателя',
-  'savers.add.state.error': 'Ошибка при добавлении сберегателя',
-  'savers.withdraw.state.error': 'Ошибка при снятии сберегателя'
+  'savers.withdraw.state.pending': 'Снятие сбережений',
+  'savers.withdraw.state.success': 'Успешное снятие сбережений',
+  'savers.add.state.error': 'Ошибка при добавлении сбережений',
+  'savers.withdraw.state.error': 'Ошибка при снятии сбережений'
 }
 
 export default savers

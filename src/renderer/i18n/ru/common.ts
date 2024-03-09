@@ -77,7 +77,7 @@ const common: CommonMessages = {
   'common.copyTxHash': 'Скопировать tx hash',
   'common.fee': 'Комиссия',
   'common.feeRate': 'Ставка комиссии',
-  'common.fee.nodeOperator': 'Сбор оператора узла',
+  'common.fee.nodeOperator': 'Комиссия оператора узла',
   'common.fee.inbound': 'Входящая',
   'common.fee.inbound.rune': 'Вход {dex}',
   'common.fee.inbound.asset': 'Вход актива',

@@ -52,7 +52,7 @@ const deposit: DepositMessages = {
   'deposit.add.asymAssets.recoveryTitle': 'THORSwap',
   'deposit.add.assetMissmatch.title': 'Обнаружено несоответствие активов',
   'deposit.add.assetMissmatch.description':
-    'Один из текущих выбранных активов уже использовался в предыдущем вкладе с другим активом. Проверьте следующие адреса, чтобы увидеть предыдущую внесённую пару.',
+    'Одна из сторон текущего выбранного актива уже использовалась в предыдущем вкладе, но с другим активом. Проверьте следующие адреса, чтобы увидеть предыдущую пару.',
   'deposit.bond.state.error': 'Ошибка при вложении средств',
   'deposit.unbond.state.error': 'Ошибка при выводе',
   'deposit.leave.state.error': 'Ошибка при выходе',
