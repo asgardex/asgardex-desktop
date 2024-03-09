@@ -15,10 +15,10 @@ const swap: SwapMessages = {
   'swap.slip.tolerance.ledger-disabled.info':
     'La tolérance de slippage a été désactivée en raison de problèmes techniques avec Ledger.',
   'swap.streaming.title': 'Statut de Diffusion',
-  'swap.streaming.interval': 'Interval',
-  'swap.streaming.interval.info': 'Interval between swaps, 10 blocks is 1 minute interval',
-  'swap.streaming.quantity': 'Quanity',
-  'swap.streaming.quantity.info': 'The quantity of mini swaps overall done per interval',
+  'swap.streaming.interval': 'Intervalle',
+  'swap.streaming.interval.info': 'Intervalle entre les échanges, 10 blocs correspondent à un intervalle de 1 minute',
+  'swap.streaming.quantity': 'Quantité',
+  'swap.streaming.quantity.info': 'La quantité totale de mini-swaps effectuée par intervalle',
   'swap.errors.amount.balanceShouldCoverChainFee':
     '{fee} de frais de transaction doivent être couverts par votre solde (actuellement {balance}).',
   'swap.errors.amount.outputShouldCoverChainFee':

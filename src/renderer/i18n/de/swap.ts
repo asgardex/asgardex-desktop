@@ -17,7 +17,7 @@ const swap: SwapMessages = {
   'swap.streaming.title': 'Streamingstatus',
   'swap.streaming.interval': 'Interval',
   'swap.streaming.interval.info': 'Interval tussen swaps, 10 blokken is een interval van 1 minuut',
-  'swap.streaming.quantity': 'Quanity',
+  'swap.streaming.quantity': 'Menge',
   'swap.streaming.quantity.info': 'De hoeveelheid mini-swaps in totaal gedaan per interval',
   'swap.errors.amount.balanceShouldCoverChainFee':
     'Transaktionsgebühr in Höhe von {fee} ist nicht über Dein Guthaben {balance} gedeckt.',

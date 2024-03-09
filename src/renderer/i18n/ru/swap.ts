@@ -11,14 +11,14 @@ const swap: SwapMessages = {
   'swap.slip.title': 'Проскальзывание',
   'swap.slip.tolerance': 'Допуск по проскальзыванию',
   'swap.slip.tolerance.info':
-    'Чем выше процент, тем большее проскальзывание вы допускаете. Большее проскальзывание включает также более широкий диапазон расчёта комиссий во избежание прерывания обмена.',
+    'Чем выше процент, тем большее проскальзывание вы допускаете. Большее проскальзывание включает также более широкий диапазон покрытия расчётных комиссий во избежание прерывания обмена.',
   'swap.slip.tolerance.ledger-disabled.info':
     'Чувствительность к проскальзыванию была отключена из-за технических проблем с Ledger.',
-  'swap.streaming.title': 'Статус Стриминга',
-  'swap.streaming.interval': 'Interval',
-  'swap.streaming.interval.info': 'Интервал между обменами, 10 блоков равно 1-минутному интервалу',
-  'swap.streaming.quantity': 'Quanity',
-  'swap.streaming.quantity.info': 'Количество мини-обменов, выполненных за интервал',
+  'swap.streaming.title': 'Статус потокового обмена',
+  'swap.streaming.interval': 'Интервал',
+  'swap.streaming.interval.info': 'Интервал между обменами. 10 блоков равны 1-минутному интервалу',
+  'swap.streaming.quantity': 'Количество',
+  'swap.streaming.quantity.info': 'Количество мини-обменов, выполняемых за интервал',
   'swap.errors.amount.balanceShouldCoverChainFee':
     'Комиссия транзакции {fee} должна покрываться вашим балансом (сейчас {balance}).',
   'swap.errors.amount.outputShouldCoverChainFee':
@@ -28,7 +28,7 @@ const swap: SwapMessages = {
   'swap.note.nowallet': 'Для обмена создайте или импортируйте кошелек',
   'swap.errors.asset.missingSourceAsset': 'Исходный актив не поддерживается',
   'swap.errors.asset.missingTargetAsset': 'Целевой актив не поддерживается',
-  'swap.errors.pool.notAvailable': 'Бассейн недоступен',
+  'swap.errors.pool.notAvailable': 'Пул недоступен',
   'swap.min.amount.info':
     'Минимальное значение для обмена, чтобы покрыть все комиссии за входящие и исходящие транзакции.',
   'swap.min.result.info':
