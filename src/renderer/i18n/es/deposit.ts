@@ -33,7 +33,7 @@ const deposit: DepositMessages = {
   'deposit.add.state.error': 'Error de depósito',
   'deposit.add.error.chainFeeNotCovered': 'La tarifa necesaria de {fee} no está cubierta por tu saldo: {balance}',
   'deposit.add.error.nobalances': 'Sin saldos',
-  'deposit.add.error.nobalance1': 'No tienes saldo de {asset} en tu cartera para depositar.'',
+  'deposit.add.error.nobalance1': 'No tienes saldo de {asset} en tu cartera para depositar.',
   'deposit.add.error.nobalance2': 'No tienes ningún saldo de {asset1} y {asset2} en tu monedero para depositar.',
   'deposit.add.pendingAssets.title': 'Activos pendientes encontrados',
   'deposit.add.pendingAssets.description':

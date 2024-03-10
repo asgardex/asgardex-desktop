@@ -87,7 +87,7 @@ const wallet: WalletMessages = {
   'wallet.errors.amount.shouldBeLessThanBalanceAndFee': 'El importe debe ser inferior al saldo menos la comisión.',
   'wallet.errors.fee.notCovered': 'Las tasas no están cubiertas por su saldo ({balance})',
   'wallet.errors.invalidChain': 'Cadena inválida: {chain}',
-  'wallet.errors.memo.max': 'La longitud de la nota no puede ser superior a {max}'',
+  'wallet.errors.memo.max': 'La longitud de la nota no puede ser superior a {max}',
   'wallet.password.confirmation.title': 'Confirmación de la contraseña de la cartera',
   'wallet.password.confirmation.description': 'Por favor, introduzca la contraseña de su monedero.',
   'wallet.password.confirmation.pending': 'Validación de la contraseña',
