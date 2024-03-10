@@ -7,7 +7,7 @@ import ru from './ru'
 import es from './es'
 import { Messages } from './types'
 
-export const LOCALES = [Locale.EN, Locale.DE, Locale.FR, Locale.RU, Locale.HI, Locale.HI]
+export const LOCALES = [Locale.EN, Locale.DE, Locale.FR, Locale.RU, Locale.HI, Locale.ES]
 
 export const getLocaleFromString = (s: string): Locale => {
   switch (s) {
