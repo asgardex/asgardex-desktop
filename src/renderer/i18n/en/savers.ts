@@ -18,7 +18,7 @@ const savers: SaversMessages = {
   'savers.withdraw.state.sending': 'Sending withdraw saver transaction',
   'savers.withdraw.state.checkResults': 'Checking transaction results',
   'savers.withdraw.state.pending': 'Withdrawing Saver',
-  'savers.withdraw.state.success': 'Succesful saver withdraw',
+  'savers.withdraw.state.success': 'Successful saver withdraw',
   'savers.add.state.error': 'Error adding savers',
   'savers.withdraw.state.error': 'Error withdrawing savers'
 }

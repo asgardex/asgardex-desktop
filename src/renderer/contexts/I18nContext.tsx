@@ -54,6 +54,10 @@ const getAntdLocale = (locale: Locale) => {
       return frFR
     case Locale.RU:
       return ruRU
+    case Locale.HI:
+      return hiHI
+    case Locale.ES:
+      return esES
     default:
       return enUS
   }

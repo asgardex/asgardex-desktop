@@ -4,9 +4,10 @@ import en from './en'
 import fr from './fr'
 import hi from './hi'
 import ru from './ru'
+import es from './es'
 import { Messages } from './types'
 
-export const LOCALES = [Locale.EN, Locale.DE, Locale.FR, Locale.RU, Locale.HI]
+export const LOCALES = [Locale.EN, Locale.DE, Locale.FR, Locale.RU, Locale.HI, Locale.HI]
 
 export const getLocaleFromString = (s: string): Locale => {
   switch (s) {
@@ -20,6 +21,8 @@ export const getLocaleFromString = (s: string): Locale => {
       return Locale.RU
     case 'hi':
       return Locale.HI
+    case 'es':
+      return Locale.ES
     default:
       return Locale.EN
   }
@@ -37,6 +40,8 @@ export const getMessagesByLocale = (l: Locale): Messages => {
       return ru
     case Locale.HI:
       return hi
+    case Locale.ES:
+      return es
     default:
       return en
   }

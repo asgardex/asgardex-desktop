@@ -6,6 +6,7 @@ import en from './en'
 import fr from './fr'
 import hi from './hi'
 import ru from './ru'
+import es from './es'
 import { Messages } from './types'
 
 export const getMessagesByLocale = (l: Locale): Messages => {
@@ -16,10 +17,12 @@ export const getMessagesByLocale = (l: Locale): Messages => {
       return en
     case Locale.FR:
       return fr
-    case Locale.RU:
-      return ru
     case Locale.HI:
       return hi
+    case Locale.RU:
+      return ru
+    case Locale.ES:
+      return es
     default:
       return en
   }
