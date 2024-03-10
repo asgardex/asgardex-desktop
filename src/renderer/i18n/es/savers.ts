@@ -1,7 +1,7 @@
 import { SaversMessages } from '../types'
 
 const savers: SaversMessages = {
-  'savers.noSavings': "No tienes ahorros",
+  'savers.noSavings': 'No tienes ahorros',
   'savers.detail.title': 'Tus ahorros',
   'savers.detail.current.title': 'Valor del depósito',
   'savers.detail.redeem.title': 'Valor de rescate',

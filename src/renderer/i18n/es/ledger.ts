@@ -6,7 +6,8 @@ const ledger: LedgerMessages = {
   'ledger.sign': 'Haga clic en "Siguiente" para firmar la transacción en su dispositivo.',
   'ledger.blindsign':
     '"datos del contrato inteligente" o "firma ciega" debe estar habilitada para la aplicación {chain} en tu dispositivo Ledger.',
-  'ledger.needsconnected': 'Asegúrese de que su dispositivo Ledger está conectado y de que la aplicación {chain} está en funcionamiento.',
+  'ledger.needsconnected':
+    'Asegúrese de que su dispositivo Ledger está conectado y de que la aplicación {chain} está en funcionamiento.',
   'ledger.add.device': 'Añadir Ledger',
   'ledger.error.nodevice': 'Ningún dispositivo conectado',
   'ledger.error.inuse': 'Ledger ya se utiliza para otra aplicación',
@@ -27,7 +28,8 @@ const ledger: LedgerMessages = {
   'ledger.notsupported': 'No hay soporte Ledger para {chain}.',
   'ledger.notaddedorzerobalances': 'El ledger {chain} no se ha conectado o tiene saldos cero.',
   'ledger.deposit.oneside': 'Actualmente Ledger sólo es compatible con un lado de los activos.',
-  'ledger.legacyformat.note': 'Ledger muestra todas las direcciones de salida en formato "legacy", pero no en formato "CashAddr".',
+  'ledger.legacyformat.note':
+    'Ledger muestra todas las direcciones de salida en formato "legacy", pero no en formato "CashAddr".',
   'ledger.legacyformat.show': 'Mostrar direcciones',
   'ledger.legacyformat.hide': 'Ocultar direcciones'
 }

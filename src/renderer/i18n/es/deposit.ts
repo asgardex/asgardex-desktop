@@ -20,8 +20,10 @@ const deposit: DepositMessages = {
   'deposit.add.asym': 'Añadir {asset}',
   'deposit.add.runeSide': 'Lado del RUNE',
   'deposit.add.assetSide': 'Lado del activo',
-  'deposit.add.min.info': 'Valor mínimo a depositar para cubrir todas las comisiones de las transacciones entrantes y salientes.',
-  'deposit.add.max.info': 'La cantidad máxima a depositar se basa en el saldo ({balance}) en relación con el otro lado del activo.',
+  'deposit.add.min.info':
+    'Valor mínimo a depositar para cubrir todas las comisiones de las transacciones entrantes y salientes.',
+  'deposit.add.max.info':
+    'La cantidad máxima a depositar se basa en el saldo ({balance}) en relación con el otro lado del activo.',
   'deposit.add.max.infoWithFee':
     'La cantidad máxima a depositar se basa en el saldo ({balance}) menos las comisiones estimadas ({fee}) en relación con el otro lado del activo.',
   'deposit.add.state.sending': 'Enviar transacción de depósito',
@@ -31,8 +33,8 @@ const deposit: DepositMessages = {
   'deposit.add.state.error': 'Error de depósito',
   'deposit.add.error.chainFeeNotCovered': 'La tarifa necesaria de {fee} no está cubierta por tu saldo: {balance}',
   'deposit.add.error.nobalances': 'Sin saldos',
-  'deposit.add.error.nobalance1': "No tienes saldo de {asset} en tu cartera para depositar.",
-  'deposit.add.error.nobalance2': "No tienes ningún saldo de {asset1} y {asset2} en tu monedero para depositar.",
+  'deposit.add.error.nobalance1': 'No tienes saldo de {asset} en tu cartera para depositar.'',
+  'deposit.add.error.nobalance2': 'No tienes ningún saldo de {asset1} y {asset2} en tu monedero para depositar.',
   'deposit.add.pendingAssets.title': 'Activos pendientes encontrados',
   'deposit.add.pendingAssets.description':
     'Los siguientes activos se han enviado correctamente, pero la transacción del otro lado del activo no ha finalizado o ha fallado:',
@@ -66,7 +68,7 @@ const deposit: DepositMessages = {
   'deposit.poolDetails.apy': 'APY',
   'deposit.wallet.add': 'Añadir cartera',
   'deposit.wallet.connect': 'Conecte su monedero',
-  'deposit.pool.noShares': "Usted no tiene acciones en esta piscina",
+  'deposit.pool.noShares': 'Usted no tiene acciones en esta piscina',
   'deposit.withdraw.sym': 'Retirar',
   'deposit.withdraw.asym': 'Retirar {asset}',
   'deposit.withdraw.sym.title': 'Ajustar la retirada (simétrica)',

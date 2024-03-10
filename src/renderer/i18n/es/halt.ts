@@ -7,8 +7,10 @@ const halt: HaltMessages = {
   'halt.chain.synth': 'La negociación sintética para {chain} no está disponible mientras {chain} está parada',
   'halt.chains': '{chains} cadenas se han detenido temporalmente.',
   'halt.chain.trading': 'Se ha interrumpido temporalmente el comercio de {chains} cadena(s).',
-  'halt.chain.pause': 'Las actividades de liquidez (añadir/eliminar) para cadena(s) {chains} han sido desactivadas temporalmente.',
-  'halt.chain.pauseall': 'Se han desactivado temporalmente las actividades de liquidez (añadir/eliminar) para todas las cadenas.'
+  'halt.chain.pause':
+    'Las actividades de liquidez (añadir/eliminar) para cadena(s) {chains} han sido desactivadas temporalmente.',
+  'halt.chain.pauseall':
+    'Se han desactivado temporalmente las actividades de liquidez (añadir/eliminar) para todas las cadenas.'
 }
 
 export default halt
