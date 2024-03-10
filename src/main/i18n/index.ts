@@ -3,10 +3,10 @@ import { createIntlCache } from 'react-intl'
 import { Locale } from '../../shared/i18n/types'
 import de from './de'
 import en from './en'
+import es from './es'
 import fr from './fr'
 import hi from './hi'
 import ru from './ru'
-import es from './es'
 import { Messages } from './types'
 
 export const getMessagesByLocale = (l: Locale): Messages => {
