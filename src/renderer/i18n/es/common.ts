@@ -166,7 +166,11 @@ const common: CommonMessages = {
   'common.legacy': 'Legado',
   'common.ledgerlive': 'Ledger Live',
   'common.metamask': 'MetaMask',
-  'common.unknown': 'Desconocido'
+  'common.unknown': 'Desconocido',
+  'common.expandAll': 'Expandir todo',
+  'common.excludeSynth': 'Excluir Sintéticos',
+  'common.completeLp': 'Completar Lp',
+  'common.asset.quickSelect': 'Selección Rápida L1'
 }
 
 export default common
