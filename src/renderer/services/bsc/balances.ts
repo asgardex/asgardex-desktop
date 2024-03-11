@@ -1,8 +1,8 @@
+import { Network } from '@xchainjs/xchain-client'
 import { Asset } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 
-import { Network } from '../../../shared/api/types'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { BscAssetsTestnet } from '../../const'
 import { validAssetForBSC } from '../../helpers/assetHelper'
@@ -39,7 +39,7 @@ const balances$: ({
   hdMode: HDMode
 }) => C.WalletBalancesLD = ({ walletType, walletIndex, network, hdMode }) => {
   // For testnet we limit requests by using pre-defined assets only
-  const assets: Asset[] | undefined = network === 'testnet' ? BscAssetsTestnet : undefined
+  const assets: Asset[] | undefined = network === Network.Testnet ? BscAssetsTestnet : undefined
   return FP.pipe(
     C.balances$({
       client$,
@@ -57,7 +57,7 @@ const balances$: ({
 
 // State of balances loaded by Client and Address
 const getBalanceByAddress$ = (network: Network) => {
-  const assets: Asset[] | undefined = network === 'testnet' ? BscAssetsTestnet : undefined
+  const assets: Asset[] | undefined = network === Network.Testnet ? BscAssetsTestnet : undefined
   return C.balancesByAddress$({ client$, trigger$: reloadBalances$, assets, walletBalanceType: 'all' })
 }
 

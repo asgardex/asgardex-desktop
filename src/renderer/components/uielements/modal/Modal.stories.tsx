@@ -1,8 +1,8 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 
 import { Modal as Component } from './Modal'
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/Modal',
   argTypes: {

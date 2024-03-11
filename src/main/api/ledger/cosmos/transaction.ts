@@ -2,7 +2,7 @@ import { AminoMsgSend, AminoTypes, Coin } from '@cosmjs/stargate'
 import cosmosclient from '@cosmos-client/core'
 import CosmosApp from '@ledgerhq/hw-app-cosmos'
 import type Transport from '@ledgerhq/hw-transport'
-import { TxHash } from '@xchainjs/xchain-client'
+import { Network, TxHash } from '@xchainjs/xchain-client'
 import {
   Client,
   DEFAULT_GAS_LIMIT,
@@ -19,7 +19,7 @@ import secp256k1 from 'secp256k1'
 import sortKeys from 'sort-keys'
 
 import { getChainId } from '../../../../shared/api/cosmos'
-import { LedgerError, LedgerErrorId, Network } from '../../../../shared/api/types'
+import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { getClientUrls, INITIAL_CHAIN_IDS } from '../../../../shared/cosmos/client'
 import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'

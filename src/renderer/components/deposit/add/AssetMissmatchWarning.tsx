@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 
 import { ChevronRightIcon } from '@heroicons/react/20/solid'
+import { Network } from '@xchainjs/xchain-client'
 import { useIntl } from 'react-intl'
 
-import { Network } from '../../../../shared/api/types'
 import { AssetsWithAddress } from '../../../types/asgardex'
 import { Alert } from '../../uielements/alert'
 import { AssetAddress } from '../../uielements/assets/assetAddress'

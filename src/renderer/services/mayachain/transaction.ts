@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { TxHash } from '@xchainjs/xchain-client'
+import { Network, TxHash } from '@xchainjs/xchain-client'
 import { ClientUrl, DepositParam, MAYAChain } from '@xchainjs/xchain-mayachain'
 import * as E from 'fp-ts/lib/Either'
 import * as FP from 'fp-ts/lib/function'
@@ -13,15 +13,15 @@ import {
   IPCLedgerSendTxParams,
   ipcLedgerSendTxParamsIO
 } from '../../../shared/api/io'
-import { LedgerError, Network } from '../../../shared/api/types'
+import { LedgerError } from '../../../shared/api/types'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { retryRequest } from '../../helpers/rx/retryRequest'
 import { Network$ } from '../app/types'
 import * as C from '../clients'
 import { TxHashLD, ErrorId } from '../wallet/types'
-import { Client$, ClientUrl$, SendTxParams } from './types'
 import { TransactionService } from './types'
+import { Client$, ClientUrl$, SendTxParams } from './types'
 
 export const createTransactionService = (
   client$: Client$,

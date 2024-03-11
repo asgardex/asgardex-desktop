@@ -13,6 +13,7 @@ export type ComponentProps = {
   typevalue?: ButtonType
   focused?: boolean
   round?: ButtonRound
+  children?: React.ReactNode
   className?: string
 }
 

@@ -1,4 +1,4 @@
-import { Balance } from '@xchainjs/xchain-client'
+import { Balance, Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-mayamidgard'
 import { bnOrZero, assetFromString, BaseAmount, Chain } from '@xchainjs/xchain-util'
@@ -9,7 +9,6 @@ import * as O from 'fp-ts/lib/Option'
 import * as Ord from 'fp-ts/lib/Ord'
 
 import { PoolsWatchList } from '../../shared/api/io'
-import { Network } from '../../shared/api/types'
 import { ONE_MAYA_BASE_AMOUNT } from '../../shared/mock/amount'
 import { PoolAddress, PoolDetails } from '../services/mayaMigard/types'
 import { getPoolDetail, toPoolData } from '../services/mayaMigard/utils'

@@ -142,12 +142,12 @@ export const verifyLedgerAddress = async ({ chain, network, walletIndex, hdMode 
       break
     }
     case AVAXChain: {
-      if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for ETH to verify Ledger address`)
+      if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for AVAX to verify Ledger address`)
       result = await verifyAVAXAddress({ transport, walletIndex, evmHdMode: hdMode })
       break
     }
     case BSCChain: {
-      if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for ETH to verify Ledger address`)
+      if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for BSC to verify Ledger address`)
       result = await verifyBSCAddress({ transport, walletIndex, evmHdMode: hdMode })
       break
     }

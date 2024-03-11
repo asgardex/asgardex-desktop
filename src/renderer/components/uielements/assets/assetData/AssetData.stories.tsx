@@ -1,7 +1,7 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 
-import { Network } from '../../../../../shared/api/types'
 import { AssetBNB, AssetRuneNative } from '../../../../../shared/utils/asset'
 import { WalletType } from '../../../../../shared/wallet/types'
 import * as AT from '../../../../storybook/argTypes'
@@ -37,7 +37,7 @@ const Template = ({ network, size, noTicker, noPrice, walletType }: Args) => {
 
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Template> = {
+const meta: Meta<typeof Template> = {
   component: Template,
   title: 'Components/Assets/AssetData',
   argTypes: {
@@ -63,7 +63,7 @@ const meta: ComponentMeta<typeof Template> = {
     }
   },
   args: {
-    network: 'mainnet',
+    network: Network.Mainnet,
     walletType: 'ledger',
     size: 'small',
     noPrice: true,

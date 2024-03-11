@@ -1,16 +1,17 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 import * as O from 'fp-ts/lib/Option'
 
 import { AssetRuneNative } from '../../../shared/utils/asset'
 import * as AT from '../../storybook/argTypes'
 import { HeaderComponent as Component, Props } from './HeaderComponent'
 
-const Template: StoryFn<Props> = (args) => <Component {...args} />
+const Template: StoryFn<Props> = (args: Props) => <Component {...args} />
 
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/Header',
   argTypes: {
@@ -32,7 +33,7 @@ const meta: ComponentMeta<typeof Component> = {
     midgardUrl: RD.success('midgard-url'),
     thorchainNodeUrl: 'thorchain-node-url',
     thorchainRpcUrl: 'thorchain-rpc-url',
-    network: 'mainnet'
+    network: Network.Mainnet
   }
 }
 

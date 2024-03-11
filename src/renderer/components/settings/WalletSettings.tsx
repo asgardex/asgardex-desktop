@@ -7,6 +7,7 @@ import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { Network } from '@xchainjs/xchain-client'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
@@ -23,7 +24,7 @@ import * as O from 'fp-ts/lib/Option'
 import { FormattedMessage, useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { KeystoreId, Network } from '../../../shared/api/types'
+import { KeystoreId } from '../../../shared/api/types'
 import { getDerivationPath as getEvmDerivationPath } from '../../../shared/evm/ledger'
 import { EvmHDMode } from '../../../shared/evm/types'
 import { chainToString, EnabledChain, isEnabledChain } from '../../../shared/utils/chain'
@@ -364,10 +365,10 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
 
       return (
         <>
-          <WalletTypeLabel className="mt-10px ml-40px inline-block ">
+          <WalletTypeLabel className="ml-40px mt-10px inline-block ">
             {walletTypeToI18n('ledger', intl)}
           </WalletTypeLabel>
-          <div className="my-0 mx-40px w-full overflow-hidden ">
+          <div className="mx-40px my-0 w-full overflow-hidden ">
             {FP.pipe(oAddress, O.fold(renderAddAddress, renderAddress))}
           </div>
         </>
@@ -394,7 +395,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
       return (
         <>
           <Styled.WalletTypeLabel>{walletTypeToI18n('keystore', intl)}</Styled.WalletTypeLabel>
-          <div className="my-0 mx-40px w-full overflow-hidden ">
+          <div className="mx-40px my-0 w-full overflow-hidden ">
             <div className="flex w-full items-center">
               <Styled.AddressEllipsis address={address} chain={chain} network={network} enableCopy={true} />
               <Styled.QRCodeIcon onClick={() => setShowQRModal(O.some({ asset: getChainAsset(chain), address }))} />
@@ -503,7 +504,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
             renderItem={({ chain, accounts: { keystore, ledger: oLedger } }, i: number) => (
               <Styled.ListItem key={i}>
                 <div className="flex w-full items-center">
-                  <AssetIcon asset={getChainAsset(chain)} size="small" network="mainnet" />
+                  <AssetIcon asset={getChainAsset(chain)} size="small" network={Network.Mainnet} />
                   <Styled.AccountTitle>{chain}</Styled.AccountTitle>
                 </div>
                 <div className="mt-10px w-full">
@@ -598,7 +599,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
   )
 
   return (
-    <div className="mt-40px bg-bg0 py-10px px-40px dark:bg-bg0d">
+    <div className="mt-40px bg-bg0 px-40px py-10px dark:bg-bg0d">
       <CStyled.Collapse
         expandIcon={({ isActive }) => <CStyled.ExpandIcon rotate={isActive ? 90 : 0} />}
         activeKey={collapsed ? '0' : '1'}

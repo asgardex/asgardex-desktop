@@ -1,12 +1,12 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Network as ClientNetwork } from '@xchainjs/xchain-client'
+import { Network } from '@xchainjs/xchain-client'
 import { Client, getChainId, THORChain } from '@xchainjs/xchain-thorchain'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { ApiUrls, Network } from '../../../shared/api/types'
+import { ApiUrls } from '../../../shared/api/types'
 import { DEFAULT_THORNODE_API_URLS, DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
 import { isError } from '../../../shared/utils/guard'
 import { triggerStream } from '../../helpers/stateHelper'
@@ -30,15 +30,15 @@ const clientUrl$: ClientUrl$ = FP.pipe(
     FP.pipe(
       storage,
       O.map(({ thornodeApi, thornodeRpc }) => ({
-        [ClientNetwork.Testnet]: {
+        [Network.Testnet]: {
           node: thornodeApi.testnet,
           rpc: thornodeRpc.testnet
         },
-        [ClientNetwork.Stagenet]: {
+        [Network.Stagenet]: {
           node: thornodeApi.stagenet,
           rpc: thornodeRpc.stagenet
         },
-        [ClientNetwork.Mainnet]: {
+        [Network.Mainnet]: {
           node: thornodeApi.mainnet,
           rpc: thornodeRpc.mainnet
         }

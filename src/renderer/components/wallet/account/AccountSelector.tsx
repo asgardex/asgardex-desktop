@@ -1,11 +1,11 @@
 import React, { useCallback, useMemo } from 'react'
 
+import { Network } from '@xchainjs/xchain-client'
 import { Address } from '@xchainjs/xchain-util'
 import { Asset, formatAssetAmountCurrency, baseToAsset, assetToString } from '@xchainjs/xchain-util'
 import { Dropdown, Row, Col } from 'antd'
 import { useIntl } from 'react-intl'
 
-import { Network } from '../../../../shared/api/types'
 import { isLedgerWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
 import { WalletBalances } from '../../../services/clients'

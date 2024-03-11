@@ -1,10 +1,7 @@
-import * as A from 'fp-ts/lib/Array'
+import { Network } from '@xchainjs/xchain-client'
 import * as FP from 'fp-ts/lib/function'
 
-import { Network } from '../../../shared/api/types'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
-import { assetInBinanceBlacklist } from '../../helpers/assetHelper'
-import { liveData } from '../../helpers/rx/liveData'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
 import { client$ } from './common'
@@ -32,9 +29,7 @@ const balances$: (
   hdMode: HDMode
 ) => C.WalletBalancesLD = (walletType, network, walletIndex, hdMode) =>
   FP.pipe(
-    C.balances$({ client$, trigger$: reloadBalances$, walletType, walletIndex, hdMode, walletBalanceType: 'all' }),
-    // Filter out black listed assets
-    liveData.map(FP.flow(A.filter(({ asset }) => !assetInBinanceBlacklist(network, asset))))
+    C.balances$({ client$, trigger$: reloadBalances$, walletType, walletIndex, hdMode, walletBalanceType: 'all' })
   )
 
 const getBalanceByAddress$ = C.balancesByAddress$({ client$, trigger$: reloadBalances$, walletBalanceType: 'all' })

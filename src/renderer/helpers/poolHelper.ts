@@ -1,4 +1,4 @@
-import { Balance } from '@xchainjs/xchain-client'
+import { Balance, Network } from '@xchainjs/xchain-client'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { bnOrZero, assetFromString, BaseAmount, Chain } from '@xchainjs/xchain-util'
@@ -9,7 +9,6 @@ import * as O from 'fp-ts/lib/Option'
 import * as Ord from 'fp-ts/lib/Ord'
 
 import { PoolsWatchList } from '../../shared/api/io'
-import { Network } from '../../shared/api/types'
 import { ONE_RUNE_BASE_AMOUNT } from '../../shared/mock/amount'
 import { AssetRuneNative } from '../../shared/utils/asset'
 import { PoolAddress, PoolDetails } from '../services/midgard/types'
@@ -145,13 +144,11 @@ export const getAssetPoolPrice = (runePrice: BigNumber) => (poolDetail: Pick<Poo
 export const getPoolPriceValue = ({
   balance: { asset, amount },
   poolDetails,
-  pricePool: { asset: priceAsset, poolData: pricePoolData },
-  network
+  pricePool: { asset: priceAsset, poolData: pricePoolData }
 }: {
   balance: Balance
   poolDetails: PoolDetails
   pricePool: PricePool
-  network: Network
 }): O.Option<BaseAmount> => {
   // no pricing if balance asset === price pool asset
   if (eqAsset.equals(asset, priceAsset)) return O.some(amount)
@@ -165,7 +162,7 @@ export const getPoolPriceValue = ({
     O.map((poolData) => getValueOfAsset1InAsset2(amount1e8, poolData, pricePoolData)),
     O.alt(() => {
       // Calculate RUNE values based on `pricePoolData`
-      if (isRuneAsset(asset, network)) {
+      if (isRuneAsset(asset)) {
         return O.some(getValueOfRuneInAsset(amount1e8, pricePoolData))
       }
       // In all other cases we don't have any price pool and no price

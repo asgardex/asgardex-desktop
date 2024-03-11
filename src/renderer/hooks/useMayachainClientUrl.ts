@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { Network } from '@xchainjs/xchain-client'
 import { NodeUrl } from '@xchainjs/xchain-mayachain'
 import { HealthApi } from '@xchainjs/xchain-mayanode'
 import * as FP from 'fp-ts/lib/function'
@@ -10,7 +11,6 @@ import * as Rx from 'rxjs'
 import * as RxAjax from 'rxjs/ajax'
 import * as RxOp from 'rxjs/operators'
 
-import { Network } from '../../shared/api/types'
 import { useMayachainContext } from '../contexts/MayachainContext'
 import { LiveData } from '../helpers/rx/liveData'
 import { DEFAULT_CLIENT_URL } from '../services/mayachain/const'

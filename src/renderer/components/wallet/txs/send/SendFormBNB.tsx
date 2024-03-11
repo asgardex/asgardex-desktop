@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { Address, BNBChain } from '@xchainjs/xchain-binance'
+import { Network } from '@xchainjs/xchain-client'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
@@ -22,7 +23,6 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
-import { Network } from '../../../../../shared/api/types'
 import { AssetBNB } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
@@ -237,20 +237,17 @@ export const SendFormBNB: React.FC<Props> = (props): JSX.Element => {
     const maxAmountPrice = getPoolPriceValue({
       balance: { asset, amount: maxAmount },
       poolDetails,
-      pricePool,
-      network
+      pricePool
     })
     const amountPrice = getPoolPriceValue({
       balance: { asset, amount: amountToSend },
       poolDetails,
-      pricePool,
-      network
+      pricePool
     })
     const assetFeePrice = getPoolPriceValue({
       balance: { asset, amount: assetFee.baseAmount },
       poolDetails,
-      pricePool,
-      network
+      pricePool
     })
     if (O.isSome(assetFeePrice)) {
       const maxCryptoAmount = new CryptoAmount(assetFeePrice.value, pricePool.asset)

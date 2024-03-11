@@ -1,9 +1,9 @@
 import React, { useCallback, useState } from 'react'
 
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
+import { Network } from '@xchainjs/xchain-client'
 import { Asset } from '@xchainjs/xchain-util'
 
-import { Network } from '../../../../../shared/api/types'
 import { emptyString } from '../../../../helpers/stringHelper'
 import { BaseButton } from '../../button'
 import { AssetData } from '../assetData'
@@ -61,7 +61,7 @@ export const AssetSelect: React.FC<Props> = (props): JSX.Element => {
         network={network}
       />
       <BaseButton
-        className={`group py-[2px] px-10px ${!disableButton ? 'hover:shadow-full hover:dark:shadow-fulld' : ''}
+        className={`group px-10px py-[2px] ${!disableButton ? 'hover:shadow-full hover:dark:shadow-fulld' : ''}
         focus:outline-none ${className}`}
         disabled={disableButton}
         onClick={buttonClickHandler}>

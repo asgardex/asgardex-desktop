@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetUSDC } from '@xchainjs/xchain-thorchain-query'
@@ -25,9 +26,9 @@ import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router'
 
-import { Dex, Network } from '../../../../shared/api/types'
+import { Dex } from '../../../../shared/api/types'
 import { AssetRuneNative } from '../../../../shared/utils/asset'
-import { chainToString } from '../../../../shared/utils/chain'
+import { chainToString, isChainOfMaya } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
 import {
@@ -124,7 +125,18 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
   }, [filterByValue])
 
   // State to store open panel keys
-  const [openPanelKeys, setOpenPanelKeys] = useState<string[]>()
+  const [openPanelKeys, setOpenPanelKeys] = useState<string[]>(() => {
+    // Initialize from localStorage if available
+    const cachedKeys = localStorage.getItem('openPanelKeys')
+    return cachedKeys ? JSON.parse(cachedKeys) : []
+  })
+
+  // Effect to cache openPanelKeys changes
+  useEffect(() => {
+    localStorage.setItem('openPanelKeys', JSON.stringify(openPanelKeys))
+  }, [openPanelKeys])
+
+  const [allPanelKeys, setAllPanelKeys] = useState<string[]>()
   // State track that user has changed collpase state
   const [collapseChangedByUser, setCollapseChangedByUser] = useState(false)
   const [collapseAll, setCollapseAll] = useState<boolean>(false)
@@ -137,16 +149,16 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
   const handleCollapseAll = useCallback(() => {
     if (collapseAll) {
-      // If currently set to collapse all, this will open all panels
-      // Assuming panelKeys is an array of all panel identifiers you have
-      setOpenPanelKeys(openPanelKeys) // Replace panelKeys with your actual panel keys array
+      // Cache current open keys before collapsing
+      localStorage.setItem('openPanelKeys', JSON.stringify(openPanelKeys))
+      setOpenPanelKeys([])
     } else {
-      // If not set to collapse all, this will collapse all panels
-      setOpenPanelKeys([]) // Pass an empty array to collapse all
+      const previousOpenKeys = allPanelKeys ? allPanelKeys : ['0', '1', '2']
+      setOpenPanelKeys(previousOpenKeys)
     }
-    // Toggle the collapseAll state
     setCollapseAll(!collapseAll)
-  }, [collapseAll, openPanelKeys])
+    // Toggle the collapseAll state
+  }, [allPanelKeys, collapseAll, openPanelKeys])
 
   // store previous data of asset data to render these while reloading
   const previousAssetsTableData = useRef<WalletBalances[]>([])
@@ -226,8 +238,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           const priceOptionFromPoolDetails = getPoolPriceValue({
             balance: { asset, amount },
             poolDetails,
-            pricePool,
-            network
+            pricePool
           })
           if (O.isSome(priceOptionFromPoolDetails)) {
             price = formatAssetAmountCurrency({
@@ -240,8 +251,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
             const priceOptionFromPendingPoolDetails = getPoolPriceValue({
               balance: { asset, amount },
               poolDetails: pendingPoolDetails,
-              pricePool,
-              network
+              pricePool
             })
             if (O.isSome(priceOptionFromPendingPoolDetails)) {
               price = formatAssetAmountCurrency({
@@ -273,16 +283,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         )
       }
     }),
-    [
-      hidePrivateData,
-      poolDetailsMaya,
-      mayaPricePool,
-      poolDetails,
-      pricePool,
-      network,
-      pendingPoolDetails,
-      mayaScanPrice
-    ]
+    [hidePrivateData, poolDetailsMaya, mayaPricePool, poolDetails, pricePool, pendingPoolDetails, mayaScanPrice]
   )
 
   const renderActionColumn = useCallback(
@@ -570,10 +571,14 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
             if (filterByValue) {
               sortedBalances = sortedBalances.filter(({ amount, asset }) => {
-                if (isUSDAsset(asset) && !asset.synth && amount.amount().gt(1)) {
+                if ((isUSDAsset(asset) && !asset.synth && amount.amount().gt(1)) || isMayaAsset(asset)) {
                   return true
                 }
-                const usdValue = getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool, network })
+                const usdValue =
+                  isChainOfMaya(asset.chain) || isCacaoAsset(asset)
+                    ? getPoolPriceValueM({ balance: { asset, amount }, poolDetails: poolDetailsMaya, pricePool })
+                    : getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool })
+
                 return (
                   O.isSome(usdValue) &&
                   new CryptoAmount(baseAmount(usdValue.value.amount()), assetUSDC).assetAmount.gt(1)
@@ -595,7 +600,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         )
       )
     },
-    [dex, filterByValue, network, poolDetails, pricePool, renderAssetsTable]
+    [dex, filterByValue, poolDetails, poolDetailsMaya, pricePool, renderAssetsTable]
   )
 
   // Panel
@@ -694,7 +699,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
             : O.none
         )
       )
-      setOpenPanelKeys(keys)
+      setAllPanelKeys(keys)
     }
   }, [chainBalances, collapseChangedByUser])
 
@@ -730,13 +735,17 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
   return (
     <>
-      <Row>
+      <Row className="items-center">
         <Styled.FilterCheckbox checked={filterByValue} onChange={(e) => setFilterByValue(e.target.checked)}>
           {intl.formatMessage({ id: 'common.filterValue' })}
         </Styled.FilterCheckbox>
-        <Styled.FilterCheckbox checked={collapseAll} onChange={handleCollapseAll}>
-          {intl.formatMessage({ id: 'common.collapseAll' })}
-        </Styled.FilterCheckbox>
+        <div
+          className="rounded-md border border-solid border-turquoise p-1 text-14 text-gray2 dark:border-gray1d dark:text-gray2d"
+          onClick={handleCollapseAll}>
+          {collapseAll
+            ? intl.formatMessage({ id: 'common.collapseAll' })
+            : intl.formatMessage({ id: 'common.expandAll' })}
+        </div>
       </Row>
 
       <Styled.Collapse

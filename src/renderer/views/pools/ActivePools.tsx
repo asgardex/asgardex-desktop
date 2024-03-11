@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { Network } from '@xchainjs/xchain-client'
 import {
   Asset,
   assetToString,
@@ -19,7 +20,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { Network } from '../../../shared/api/types'
 import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
 import { ProtocolLimit, IncentivePendulum } from '../../components/pool'
 import { Action as ActionButtonAction, ActionButton } from '../../components/uielements/button/ActionButton'
@@ -162,19 +162,19 @@ export const ActivePools: React.FC = (): JSX.Element => {
                     })
                   )
                 }
+              },
+              {
+                label: intl.formatMessage({ id: 'common.manage' }),
+                callback: () => {
+                  navigate(
+                    poolsRoutes.deposit.path({
+                      asset: assetToString(asset),
+                      assetWalletType: DEFAULT_WALLET_TYPE,
+                      runeWalletType: DEFAULT_WALLET_TYPE
+                    })
+                  )
+                }
               }
-              // {
-              //   label: intl.formatMessage({ id: 'common.manage' }),
-              //   callback: () => {
-              //     navigate(
-              //       poolsRoutes.deposit.path({
-              //         asset: assetToString(asset),
-              //         assetWalletType: DEFAULT_WALLET_TYPE,
-              //         runeWalletType: DEFAULT_WALLET_TYPE
-              //       })
-              //     )
-              //   }
-              // },
               // {
               //   label: intl.formatMessage({ id: 'common.earn' }),
               //   callback: () => {

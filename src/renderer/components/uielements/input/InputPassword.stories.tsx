@@ -1,11 +1,11 @@
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { InputPassword as Component, PasswordProps } from './InputPassword'
 
 const Template: StoryFn<PasswordProps> = (args) => <Component {...args} />
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/InputPassword',
   argTypes: {

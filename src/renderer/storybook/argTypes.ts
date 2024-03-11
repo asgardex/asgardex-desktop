@@ -1,3 +1,4 @@
+import { Network } from '@xchainjs/xchain-client'
 import * as O from 'fp-ts/lib/Option'
 
 import { MOCK_PHRASE } from '../../shared/mock/wallet'
@@ -15,7 +16,7 @@ export const network = {
   name: 'Network',
   control: {
     type: 'radio',
-    options: ['mainnet', 'stagenet', 'testnet']
+    options: [Network.Mainnet, Network.Stagenet, Network.Testnet]
   }
 }
 

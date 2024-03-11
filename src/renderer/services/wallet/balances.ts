@@ -20,11 +20,8 @@ import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { Network } from '../../../shared/api/types'
-import { AssetBNB } from '../../../shared/utils/asset'
 import { isEnabledChain } from '../../../shared/utils/chain'
 import { HDMode, WalletAddress, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
-import { getBnbRuneAsset } from '../../helpers/assetHelper'
 import { filterEnabledChains } from '../../helpers/chainHelper'
 import { eqBalancesRD } from '../../helpers/fp/eq'
 import { sequenceTOptionFromArray } from '../../helpers/fpHelpers'
@@ -57,7 +54,6 @@ import {
   ChainBalance,
   GetLedgerAddressHandler
 } from './types'
-import { sortBalances } from './util'
 import { hasImportedKeystore } from './util'
 
 export const createBalancesService = ({
@@ -557,23 +553,17 @@ export const createBalancesService = ({
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
       walletBalanceType: 'all'
-    }),
-    network$
+    })
   ]).pipe(
-    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD, Network], ChainBalance>(
-      ([oWalletAddress, balances, network]) => ({
-        walletType: 'keystore',
-        chain: BNBChain,
-        walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-        walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
-        hdMode: 'default',
-        balances: FP.pipe(
-          balances,
-          RD.map((assets) => sortBalances(assets, [AssetBNB.ticker, getBnbRuneAsset(network).ticker]))
-        ),
-        balancesType: 'all'
-      })
-    )
+    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
+      walletType: 'keystore',
+      chain: BNBChain,
+      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
+      hdMode: 'default',
+      balances,
+      balancesType: 'all'
+    }))
   )
 
   /**

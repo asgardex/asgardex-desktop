@@ -18,7 +18,7 @@ const deposit: DepositMessages = {
   'deposit.totalEarnings': 'पूल से आपकी कुल कमाई',
   'deposit.add.sym': 'जोड़ें',
   'deposit.add.asym': '{asset} जोड़ें',
-  'deposit.add.runeSide': 'RUNE साइड',
+  'deposit.add.runeSide': '{dex} साइड',
   'deposit.add.assetSide': 'एसेट साइड',
   'deposit.add.min.info': 'सभी आवक और जावक लेन-देन शुल्कों को कवर करने के लिए न्यूनतम जमा राशि।',
   'deposit.add.max.infoWithFee': 'अनुमानित शुल्क ({fee}) को घटाकर बैलेंस ({balance}) के आधार पर अधिकतम जमा राशि।',
@@ -35,8 +35,12 @@ const deposit: DepositMessages = {
   'deposit.add.pendingAssets.title': 'लंबित एसेट्स का पता चला',
   'deposit.add.pendingAssets.description':
     'ये एसेट्स सफलतापूर्वक भेजे गए थे, लेकिन दूसरे एसेट के लिए लेन-देन पूरा नहीं हुआ या उसे भेजते समय त्रुटि हुई:',
-  'deposit.add.pendingAssets.recoveryDescription':
-    'ध्यान दें: विभिन्न ब्लॉकचेन पर चलाए जाने के कारण विभिन्न एसेट जोड़े के लिए लेन-देन समय भिन्न हो सकता है। त्रुटि की स्थिति में, आपके पास लंबित एसेट्स को THORSwap रिकवरी टूल का उपयोग करके निकालने का विकल्प है। यह सुविधा फिलहाल ASGARDEX के पीसी संस्करण में उपलब्ध नहीं है।',
+  'deposit.add.failedAssets.description':
+    'नीचे दिए गए एसेट को जोड़ने में विफल रहे, कृपया जांच लें कि यह सही है या नहीं।',
+  'deposit.add.pendingAssets.recoveryDescriptionRune':
+    'रून एलपी जोड़ने को पूरा करने के लिए: वॉलेट में कस्टम जमा विकल्प का उपयोग करके मेमो के साथ रून राशि जमा करें',
+  'deposit.add.pendingAssets.recoveryDescriptionAsset':
+    'एक एसेट एलपी जोड़ने के लिए: इनबाउंड एड्रेस पर मेमो के साथ एसेट राशि भेजने के लिए वॉलेट में भेजने का विकल्प उपयोग करें',
   'deposit.add.pendingAssets.recoveryTitle': 'रिकवरी टूल खोलें',
   'deposit.add.asymAssets.title': 'असममित जमा पाया गया',
   'deposit.add.asymAssets.description': 'पिछले असममित जमा के कारण सममित एसेट जोड़ी जोड़ना बंद है: ',

@@ -2,7 +2,7 @@
 // allows you to do things like:
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
-import '@testing-library/jest-dom/extend-expect'
+import '@testing-library/jest-dom'
 import { isLeft, Either } from 'fp-ts/lib/Either'
 import { Option, isNone } from 'fp-ts/lib/Option'
 import { RunHelpers } from 'rxjs/internal/testing/TestScheduler'

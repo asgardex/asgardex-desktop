@@ -4,6 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { EstimateWithdrawSaver, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
@@ -31,7 +32,7 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { Network } from '../../../shared/api/types'
+import { Dex } from '../../../shared/api/types'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
@@ -138,6 +139,7 @@ export type WithDrawProps = {
   reloadBalances: FP.Lazy<void>
   disableSaverAction: boolean
   hidePrivateData: boolean
+  dex: Dex
 }
 
 export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
@@ -167,7 +169,8 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     getExplorerTxUrl,
     saverWithdraw$,
     disableSaverAction,
-    hidePrivateData
+    hidePrivateData,
+    dex
   } = props
 
   const intl = useIntl()
@@ -442,15 +445,14 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       PoolHelpers.getPoolPriceValue({
         balance: { asset: sourceAsset, amount: amountToWithdrawMax1e8 },
         poolDetails,
-        pricePool,
-        network
+        pricePool
       }),
       O.getOrElse(() => baseAmount(0, amountToWithdrawMax1e8.decimal)),
       (amount) => ({ asset: pricePool.asset, amount })
     )
 
     return new CryptoAmount(result.amount, result.asset)
-  }, [amountToWithdrawMax1e8, network, poolDetails, pricePool, sourceAsset])
+  }, [amountToWithdrawMax1e8, poolDetails, pricePool, sourceAsset])
 
   // Boolean on if amount to send is zero
   const isZeroAmountToSend = useMemo(() => amountToWithdrawMax1e8.amount().isZero(), [amountToWithdrawMax1e8])
@@ -883,12 +885,13 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
           walletType,
           walletIndex,
           sender: address,
-          hdMode
+          hdMode,
+          dex
         }
         return result
       })
     )
-  }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceChainAsset, dustAmount, network, address])
+  }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceChainAsset, dustAmount, network, address, dex])
 
   const resetEnteredAmounts = useCallback(() => {
     setAmountToWithdrawMax1e8(initialAmountToWithdrawMax1e8)
@@ -1156,14 +1159,13 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       PoolHelpers.getPoolPriceValue({
         balance: { asset, amount },
         poolDetails,
-        pricePool,
-        network
+        pricePool
       }),
       O.map((amount) => {
         return new CryptoAmount(amount, pricePool.asset)
       })
     )
-  }, [network, poolDetails, pricePool, saverFees.asset, saverFees.inFee])
+  }, [poolDetails, pricePool, saverFees.asset, saverFees.inFee])
 
   const oPriceAssetOutFee: O.Option<CryptoAmount> = useMemo(() => {
     const fee = outboundFee.plus(liquidityFee)
@@ -1172,14 +1174,13 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       PoolHelpers.getPoolPriceValue({
         balance: { asset: fee.asset, amount: fee.baseAmount },
         poolDetails,
-        pricePool,
-        network
+        pricePool
       }),
       O.map((amount) => {
         return new CryptoAmount(amount, pricePool.asset)
       })
     )
-  }, [liquidityFee, network, poolDetails, pricePool, outboundFee])
+  }, [liquidityFee, poolDetails, pricePool, outboundFee])
 
   const oPriceAssetFeeTotal: O.Option<CryptoAmount> = useMemo(() => {
     return FP.pipe(

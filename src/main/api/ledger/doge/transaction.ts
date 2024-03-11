@@ -15,7 +15,7 @@ import { BlockcypherProvider, BlockcypherNetwork, UtxoOnlineDataProviders } from
 import * as E from 'fp-ts/lib/Either'
 
 import { blockcypherApiKey } from '../../../../shared/api/blockcypher'
-import { LedgerError, LedgerErrorId, Network as LedgerNetwork } from '../../../../shared/api/types'
+import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
 import { getDerivationPath } from './common'
@@ -60,7 +60,7 @@ export const send = async ({
   walletIndex
 }: {
   transport: Transport
-  network: LedgerNetwork
+  network: Network
   sender?: Address
   recipient: Address
   amount: BaseAmount

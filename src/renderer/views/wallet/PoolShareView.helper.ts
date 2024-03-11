@@ -3,6 +3,7 @@ import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
+import { Dex } from '../../../shared/api/types'
 import { PoolShareTableData } from '../../components/PoolShares/PoolShares.types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import * as ShareHelpers from '../../helpers/poolShareHelper'
@@ -11,7 +12,12 @@ import { getPoolDetail, toPoolData } from '../../services/midgard/utils'
 import { PoolData } from '../pools/Pools.types'
 import { getValueOfAsset1InAsset2, getValueOfRuneInAsset } from '../pools/Pools.utils'
 
-export const getSharesTotal = (shares: PoolShares, poolDetails: PoolDetails, pricePoolData: PoolData): BaseAmount =>
+export const getSharesTotal = (
+  shares: PoolShares,
+  poolDetails: PoolDetails,
+  pricePoolData: PoolData,
+  dex: Dex
+): BaseAmount =>
   FP.pipe(
     shares,
     A.filterMap(({ units, asset }) =>
@@ -19,7 +25,7 @@ export const getSharesTotal = (shares: PoolShares, poolDetails: PoolDetails, pri
         getPoolDetail(poolDetails, asset),
         O.map((poolDetail) => {
           // 1. get shares
-          const runeShare = ShareHelpers.getRuneShare(units, poolDetail)
+          const runeShare = ShareHelpers.getRuneShare(units, poolDetail, dex)
           const assetShare = ShareHelpers.getAssetShare({
             liquidityUnits: units,
             detail: poolDetail,
@@ -44,7 +50,8 @@ export const getSharesTotal = (shares: PoolShares, poolDetails: PoolDetails, pri
 export const getPoolShareTableData = (
   shares: PoolShares,
   poolDetails: PoolDetails,
-  pricePoolData: PoolData
+  pricePoolData: PoolData,
+  dex: Dex
 ): PoolShareTableData =>
   FP.pipe(
     shares,
@@ -52,7 +59,7 @@ export const getPoolShareTableData = (
       FP.pipe(
         getPoolDetail(poolDetails, asset),
         O.map((poolDetail) => {
-          const runeShare = ShareHelpers.getRuneShare(units, poolDetail)
+          const runeShare = ShareHelpers.getRuneShare(units, poolDetail, dex)
           // FIXME: (@Veado) Fix decimal
           // https://github.com/thorchain/asgardex-electron/issues/1163
           const assetShare = ShareHelpers.getAssetShare({

@@ -1,4 +1,4 @@
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { CopyLabel as Component } from './CopyLabel'
 
@@ -10,7 +10,7 @@ type ArgTypes = {
 const Template: StoryFn<ArgTypes> = (args) => <Component {...args} />
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/CopyLabel',
   args: {

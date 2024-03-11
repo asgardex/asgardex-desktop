@@ -38,8 +38,9 @@ const deposit: DepositMessages = {
   'deposit.add.pendingAssets.title': 'Activos pendientes encontrados',
   'deposit.add.pendingAssets.description':
     'Los siguientes activos se han enviado correctamente, pero la transacción del otro lado del activo no ha finalizado o ha fallado:',
-  'deposit.add.pendingAssets.recoveryDescription':
+  'deposit.add.pendingAssets.recoveryDescriptionRune':
     'Tenga en cuenta: Las transacciones de un par de activos pueden tardar un tiempo diferente al ejecutarse en diferentes blockchains. En caso de fallos, usted tiene una manera de retirar los activos pendientes utilizando la herramienta de recuperación de THORSwap en {url}. Esta característica no está disponible actualmente en ASGARDEX escritorio.',
+  'deposit.add.pendingAssets.recoveryDescriptionAsset': `Para completar una adición de LP de Asset: Usa la opción de enviar en la cartera para enviar la cantidad de Asset con la nota al inboundAddress`,
   'deposit.add.pendingAssets.recoveryTitle': 'Abrir la herramienta de recuperación',
   'deposit.add.asymAssets.title': 'Depósito asimétrico encontrado',
   'deposit.add.asymAssets.description':
@@ -81,7 +82,8 @@ const deposit: DepositMessages = {
   'deposit.withdraw.feeNote': 'Nota: El {fee} BNB se quedará en tu cartera por las comisiones de la transacción.',
   'deposit.withdraw.error.feeNotCovered':
     'La comisión por transacción {fee} debe estar cubierta por su saldo (actualmente {balance}).',
-  'deposit.ledger.sign': 'Haga clic en Siguiente para firmar la transacción de ingreso en su dispositivo.'
+  'deposit.ledger.sign': 'Haga clic en Siguiente para firmar la transacción de ingreso en su dispositivo.',
+  'deposit.add.failedAssets.description': 'Fallo al añadir el Asset abajo, por favor verifica si esto es correcto'
 }
 
 export default deposit

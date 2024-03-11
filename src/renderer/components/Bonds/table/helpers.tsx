@@ -1,13 +1,13 @@
 import React from 'react'
 
 import { StopOutlined } from '@ant-design/icons'
+import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { NodeStatusEnum } from '@xchainjs/xchain-thornode'
 import { Address, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { Col } from 'antd'
 import { useIntl } from 'react-intl'
 
-import { Network } from '../../../../shared/api/types'
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { NodeInfo } from '../../../services/thorchain/types'
 import * as Styled from './BondsTable.styles'

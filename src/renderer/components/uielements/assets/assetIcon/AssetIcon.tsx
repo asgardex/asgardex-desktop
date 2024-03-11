@@ -4,12 +4,12 @@ import * as RD from '@devexperts/remote-data-ts'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { Asset, isSynthAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
-import { Network } from '../../../../../shared/api/types'
 import {
   iconUrlInERC20Whitelist,
   isBchAsset,
@@ -20,7 +20,6 @@ import {
   isLtcAsset,
   isRuneNativeAsset,
   isTgtERC20Asset,
-  isXRuneAsset,
   isAtomAsset,
   isBnbAssetSynth,
   isBtcAssetSynth,
@@ -57,7 +56,6 @@ import {
   dogeIcon,
   ethIcon,
   runeIcon,
-  xRuneIcon,
   tgtIcon,
   cacaoIcon,
   usdpIcon,
@@ -140,10 +138,6 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
       return `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/bitcoincash/info/logo.png`
     }
 
-    if (isXRuneAsset(asset)) {
-      return xRuneIcon
-    }
-
     if (isTgtERC20Asset(asset)) {
       return tgtIcon
     }
@@ -171,7 +165,7 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
       return usdpIcon
     }
 
-    if (network !== 'testnet') {
+    if (network !== Network.Testnet) {
       if (isBnbChain(asset.chain)) {
         return `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/binance/assets/${asset.symbol}/logo.png`
       }

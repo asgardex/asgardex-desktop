@@ -18,7 +18,7 @@ const deposit: DepositMessages = {
   'deposit.totalEarnings': 'Your total earnings from the pool',
   'deposit.add.sym': 'Add',
   'deposit.add.asym': 'Add {asset}',
-  'deposit.add.runeSide': 'RUNE side',
+  'deposit.add.runeSide': '{dex} side',
   'deposit.add.assetSide': 'Asset side',
   'deposit.add.min.info': 'Minimum value to deposit to cover all fees for inbound and outbound transactions.',
   'deposit.add.max.info': 'Maximum amount to deposit is based on balance ({balance}) in relation to other asset side.',
@@ -36,8 +36,11 @@ const deposit: DepositMessages = {
   'deposit.add.pendingAssets.title': 'Pending assets found',
   'deposit.add.pendingAssets.description':
     'Following assets have been successfully sent, but the transaction of the other asset side has not been finalized or it was failed:',
-  'deposit.add.pendingAssets.recoveryDescription':
-    'Please note: Transactions of an asset pair might take different time by running on different blockchains. In case of failures, you have a way to withdraw pending assets using the Recovery Tool of THORSwap at {url}. This feature is currently not available in ASGARDEX desktop.',
+  'deposit.add.failedAssets.description': 'Failed adding the Asset below please check to see if this is correct.',
+  'deposit.add.pendingAssets.recoveryDescriptionRune':
+    'To complete a Rune LP add: Use the custom deposit option in wallet to deposit the Rune amount with the memo',
+  'deposit.add.pendingAssets.recoveryDescriptionAsset':
+    'To complete a Asset LP add: Use send option in wallet to send the Asset amount with the memo to the inboundAddress',
   'deposit.add.pendingAssets.recoveryTitle': 'Open Recovery Tool',
   'deposit.add.asymAssets.title': 'Asymmetrical deposit found',
   'deposit.add.asymAssets.description':

@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 import { Chain } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 
@@ -42,7 +42,7 @@ const Template = ({ validatePwVariant }: Args) => {
 
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Template> = {
+const meta: Meta<typeof Template> = {
   component: Template,
   title: 'Components/Modal/WalletPasswordConfirmation',
   argTypes: {
@@ -56,7 +56,7 @@ const meta: ComponentMeta<typeof Template> = {
     }
   },
   decorators: [
-    (Story) => (
+    (Story: React.FC) => (
       <div
         style={{
           display: 'flex',

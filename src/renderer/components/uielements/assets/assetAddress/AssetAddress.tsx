@@ -1,9 +1,9 @@
 import React from 'react'
 
+import { Network } from '@xchainjs/xchain-client'
 import { Address } from '@xchainjs/xchain-util'
 import { Asset } from '@xchainjs/xchain-util'
 
-import { Network } from '../../../../../shared/api/types'
 import { AssetIcon, Size } from '../assetIcon'
 import * as Styled from './AssetAddress.styles'
 

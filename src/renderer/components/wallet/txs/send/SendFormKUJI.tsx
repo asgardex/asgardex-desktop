@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
+import { Network } from '@xchainjs/xchain-client'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { MayachainQuery } from '@xchainjs/xchain-mayachain-query'
 import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
@@ -13,12 +14,11 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
-import { Network } from '../../../../../shared/api/types'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { isRuneNativeAsset, isUSDAsset } from '../../../../helpers/assetHelper'
-import { getPoolPriceValue } from '../../../../helpers/poolHelper'
+import { getPoolPriceValue } from '../../../../helpers/poolHelperMaya'
 import { loadingString } from '../../../../helpers/stringHelper'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
@@ -210,20 +210,17 @@ export const SendFormKUJI: React.FC<Props> = (props): JSX.Element => {
     const maxAmountPrice = getPoolPriceValue({
       balance: { asset, amount: maxAmount },
       poolDetails,
-      pricePool,
-      network
+      pricePool
     })
     const amountPrice = getPoolPriceValue({
       balance: { asset, amount: amountToSend },
       poolDetails,
-      pricePool,
-      network
+      pricePool
     })
     const assetFeePrice = getPoolPriceValue({
       balance: { asset, amount: assetFee.baseAmount },
       poolDetails,
-      pricePool,
-      network
+      pricePool
     })
     if (O.isSome(assetFeePrice)) {
       const maxCryptoAmount = new CryptoAmount(assetFeePrice.value, pricePool.asset)

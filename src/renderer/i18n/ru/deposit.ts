@@ -18,7 +18,7 @@ const deposit: DepositMessages = {
   'deposit.totalEarnings': 'Ваш общий доход от пула',
   'deposit.add.sym': 'Добавить',
   'deposit.add.asym': 'Добавить {asset}',
-  'deposit.add.runeSide': 'Сторона RUNE',
+  'deposit.add.runeSide': 'Сторона {dex}',
   'deposit.add.assetSide': 'Сторона актива',
   'deposit.add.min.info': 'Минимальная сумма депозита для покрытия всех комиссий за входящие и исходящие транзакции.',
   'deposit.add.max.infoWithFee':
@@ -37,9 +37,13 @@ const deposit: DepositMessages = {
   'deposit.add.pendingAssets.title': 'Обнаружены ожидающие активы',
   'deposit.add.pendingAssets.description':
     'Эти активы были успешно отправлены, но транзакция для другого актива не была завершена или возникла ошибка, при ее отправке:',
-  'deposit.add.pendingAssets.recoveryDescription':
-    'Обратите внимание: Транзакции для разных пар активов могут занимать разное время, так как запущены на разных блок-чейнах. В случае ошибки, у вас есть возможность изъять ожидающие активы с помощью утилиты возврата THORSwap по адресу {url}. Эта функция пока недоступна в ПК версии ASGARDEX.',
-  'deposit.add.pendingAssets.recoveryTitle': 'Открыть утилиту восстановления',
+  'deposit.add.failedAssets.description':
+    'Не удалось добавить указанный ниже Ассет, пожалуйста, проверьте, правильно ли это.',
+  'deposit.add.pendingAssets.recoveryDescriptionAsset':
+    'Чтобы завершить добавление Asset LP: Используйте опцию отправки в кошельке, чтобы отправить сумму Asset с пометкой на входящий адрес',
+  'deposit.add.pendingAssets.recoveryDescriptionRune':
+    'Чтобы завершить добавление Rune LP: Используйте пользовательскую опцию депозита в кошельке для внесения суммы Rune с пометкой',
+  'deposit.add.pendingAssets.recoveryTitle': 'Открыть утилиту для возврата',
   'deposit.add.asymAssets.title': 'Найден асимметричный вклад',
   'deposit.add.asymAssets.description':
     'Добавление симметричной пары активов отключено из-за предыдущего не симметричного депозита следующего(их) актива(ов):',

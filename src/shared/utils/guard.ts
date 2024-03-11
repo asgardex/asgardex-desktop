@@ -1,19 +1,20 @@
-import { FeeOption } from '@xchainjs/xchain-client'
+import { FeeOption, Network } from '@xchainjs/xchain-client'
 import { Asset, assetFromString, BaseAmount, Chain, isValidAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
-import * as FP from 'fp-ts/lib/function'
 import * as IOG from 'io-ts/Guard'
 
-import { Network } from '../api/types'
 import { EvmHDMode } from '../evm/types'
 import { HDMode, WalletType } from '../wallet/types'
 import { EnabledChain, isEnabledChain } from './chain'
 
-export const nonEmptyStringGuard = FP.pipe(
-  IOG.string,
-  IOG.refine((s): s is string => s.length > 0)
-)
-
+export const nonEmptyStringGuard: IOG.Guard<unknown, string> = {
+  is: (u: unknown): u is string => {
+    if (typeof u === 'string' && u.length > 0) {
+      return true
+    }
+    return false
+  }
+}
 export const enabledChainGuard: IOG.Guard<unknown, EnabledChain> = {
   is: (u: unknown): u is EnabledChain => nonEmptyStringGuard.is(u) && isEnabledChain(u)
 }
@@ -25,7 +26,8 @@ const chainGuard: IOG.Guard<unknown, Chain> = {
     isEnabledChain(u)
 }
 
-export const isNetwork = (u: unknown): u is Network => u === 'mainnet' || u === 'stagenet' || u === 'testnet'
+export const isNetwork = (u: unknown): u is Network =>
+  u === Network.Mainnet || u === Network.Stagenet || u === Network.Testnet
 
 export const isFeeOption = (u: unknown): u is FeeOption =>
   u === FeeOption.Average || u === FeeOption.Fast || u === FeeOption.Fastest

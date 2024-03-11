@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { AssetCacao } from '@xchainjs/xchain-mayachain'
 import {
   Configuration,
   MimirApi,
@@ -8,9 +9,12 @@ import {
   NodesResponse,
   LastBlockResponse,
   ConstantsResponse,
-  InboundAddressesResponse
+  InboundAddressesResponse,
+  LiquidityProvidersApi,
+  LiquidityProvider,
+  LiquidityProviderSummary
 } from '@xchainjs/xchain-mayanode'
-import { baseAmount } from '@xchainjs/xchain-util'
+import { Asset, assetFromString, assetToString, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
 import { AxiosResponse } from 'axios'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
@@ -20,10 +24,13 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isEnabledChain } from '../../../shared/utils/chain'
+import { ZERO_BASE_AMOUNT } from '../../const'
 import { CACAO_DECIMAL } from '../../helpers/assetHelper'
-import { liveData } from '../../helpers/rx/liveData'
+import { sequenceTOption } from '../../helpers/fpHelpers'
+import { LiveData, liveData } from '../../helpers/rx/liveData'
 import { triggerStream } from '../../helpers/stateHelper'
 import { Network$ } from '../app/types'
+import { LiquidityProvidersLD, LiquidityProvider as LiquidityProviderMaya } from '../thorchain/types'
 import {
   Mimir,
   MimirLD,
@@ -214,61 +221,78 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     RxOp.shareReplay(1)
   )
 
-  // const apiGetLiquidityProviders$ = (asset: Asset): LiveData<Error, LiquidityProviderResponse> =>
-  //   FP.pipe(
-  //     mayanodeUrl$,
-  //     liveData.chain((basePath) =>
-  //       FP.pipe(
-  //         Rx.from(
-  //           new LiquidityProvidersApi(getMayanodeAPIConfiguration(basePath)).liquidityProviders(assetToString(asset))
-  //         ),
-  //         RxOp.map((response: AxiosResponse<LiquidityProviderResponse>) => RD.success(response.data)), // Extract data from AxiosResponse
-  //         RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
-  //       )
-  //     )
-  //   )
-  // const { stream$: reloadLiquidityProviders$, trigger: reloadLiquidityProviders } = triggerStream()
+  const apiGetLiquidityProviders$ = (asset: Asset): LiveData<Error, LiquidityProviderSummary[]> =>
+    FP.pipe(
+      mayanodeUrl$,
+      liveData.chain((basePath) =>
+        FP.pipe(
+          Rx.from(
+            new LiquidityProvidersApi(getMayanodeAPIConfiguration(basePath)).liquidityProviders(assetToString(asset))
+          ),
+          RxOp.map((response: AxiosResponse<LiquidityProvider>) => {
+            // Assuming `response.data` is a single LiquidityProvider object, map it to a LiquidityProviderSummary object
+            const summary: LiquidityProviderSummary = {
+              asset: response.data.asset,
+              rune_address: response.data.cacao_address,
+              asset_address: response.data.asset_address,
+              last_add_height: response.data.last_add_height,
+              last_withdraw_height: response.data.last_withdraw_height,
+              units: response.data.units,
+              pending_rune: response.data.pending_cacao,
+              pending_asset: response.data.pending_asset,
+              pending_tx_id: response.data.pending_tx_id,
+              rune_deposit_value: response.data.cacao_deposit_value,
+              asset_deposit_value: response.data.asset_deposit_value
+            }
 
-  // const getLiquidityProviders = (asset: Asset): LiquidityProvidersLD =>
-  //   FP.pipe(
-  //     reloadLiquidityProviders$,
-  //     RxOp.debounceTime(300),
-  //     RxOp.switchMap((_) => apiGetLiquidityProviders$(asset)),
-  //     liveData.map(
-  //       A.map((provider): LiquidityProvider => {
-  //         const oAsset = O.fromNullable(assetFromString(provider.asset))
-  //         const pendingCacao = FP.pipe(
-  //           /* 1e8 decimal by default at MAYAChain */
-  //           baseAmount(bnOrZero(provider.pending_cacao), CACAO_DECIMAL),
-  //           O.fromPredicate((v) => v.gt(ZERO_BASE_AMOUNT)),
-  //           O.map((amount1e8) => ({
-  //             asset: AssetCacao,
-  //             amount1e8
-  //           }))
-  //         )
-  //         const oPendingAssetAmount = FP.pipe(
-  //           /* 1e8 decimal by default at MAYAChain */
-  //           baseAmount(bnOrZero(provider.pending_asset), CACAO_DECIMAL),
-  //           O.fromPredicate((v) => v.gt(ZERO_BASE_AMOUNT))
-  //         )
-  //         const pendingAsset = FP.pipe(
-  //           sequenceTOption(oAsset, oPendingAssetAmount),
-  //           O.map(([asset, amount1e8]) => ({ asset, amount1e8 }))
-  //         )
+            return RD.success([summary]) // Wrap summary in an array to match the expected LiveData<Error, LiquidityProviderSummary[]>
+          }),
+          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+        )
+      )
+    )
+  const { stream$: reloadLiquidityProviders$, trigger: reloadLiquidityProviders } = triggerStream()
 
-  //         return {
-  //           cacaoAddress: O.fromNullable(provider.cacao_address),
-  //           assetAddress: O.fromNullable(provider.asset_address),
-  //           pendingCacao,
-  //           pendingAsset
-  //         }
-  //       })
-  //     ),
-  //     RxOp.catchError(
-  //       (): LiquidityProvidersLD => Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} pool`)))
-  //     ),
-  //     RxOp.startWith(RD.pending)
-  //   )
+  const getLiquidityProviders = (asset: Asset): LiquidityProvidersLD =>
+    FP.pipe(
+      reloadLiquidityProviders$,
+      RxOp.debounceTime(300),
+      RxOp.switchMap((_) => apiGetLiquidityProviders$(asset)),
+      liveData.map(
+        A.map((provider): LiquidityProviderMaya => {
+          const oAsset = O.fromNullable(assetFromString(provider.asset))
+          const pendingDexAsset = FP.pipe(
+            /* 1e8 decimal by default at MAYAChain */
+            baseAmount(bnOrZero(provider.pending_rune), CACAO_DECIMAL),
+            O.fromPredicate((v) => v.gt(ZERO_BASE_AMOUNT)),
+            O.map((amount1e8) => ({
+              asset: AssetCacao,
+              amount1e8
+            }))
+          )
+          const oPendingAssetAmount = FP.pipe(
+            /* 1e8 decimal by default at MAYAChain */
+            baseAmount(bnOrZero(provider.pending_asset), CACAO_DECIMAL),
+            O.fromPredicate((v) => v.gt(ZERO_BASE_AMOUNT))
+          )
+          const pendingAsset = FP.pipe(
+            sequenceTOption(oAsset, oPendingAssetAmount),
+            O.map(([asset, amount1e8]) => ({ asset, amount1e8 }))
+          )
+
+          return {
+            dexAssetAddress: O.fromNullable(provider.rune_address),
+            assetAddress: O.fromNullable(provider.asset_address),
+            pendingDexAsset,
+            pendingAsset
+          }
+        })
+      ),
+      RxOp.catchError(
+        (): LiquidityProvidersLD => Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} pool`)))
+      ),
+      RxOp.startWith(RD.pending)
+    )
 
   const apiGetMimir$: MimirLD = FP.pipe(
     mayanodeUrl$,
@@ -368,9 +392,9 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     reloadInboundAddresses,
     loadInboundAddresses$,
     mimir$,
-    reloadMimir
-    // getLiquidityProviders,
-    // reloadLiquidityProviders
+    reloadMimir,
+    getLiquidityProviders,
+    reloadLiquidityProviders
     // getSaverProvider$,
     // reloadSaverProvider
   }

@@ -1,11 +1,12 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Transfer, Client } from '@xchainjs/xchain-binance'
 import { Address } from '@xchainjs/xchain-binance'
+import { Network } from '@xchainjs/xchain-client'
 import { Asset, AssetAmount, BaseAmount } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 
-import { LedgerBNBTxParams, Network } from '../../../shared/api/types'
+import { LedgerBNBTxParams } from '../../../shared/api/types'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
 import * as C from '../clients'

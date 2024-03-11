@@ -2,8 +2,9 @@ import { Asset, BaseAmount, baseAmount, bn } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
+import { Dex } from '../../../../shared/api/types'
 import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../const'
-import { isChainAsset, max1e8BaseAmount } from '../../../helpers/assetHelper'
+import { CACAO_DECIMAL, isChainAsset, max1e8BaseAmount, THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { priceFeeAmountForAsset } from '../../../services/chain/fees/utils'
 import { WithdrawFees } from '../../../services/chain/types'
 import { PoolsDataMap } from '../../../services/midgard/types'
@@ -12,10 +13,12 @@ import { AssetWithAmount } from '../../../types/asgardex'
 export const getWithdrawAmounts = (
   runeShare: BaseAmount,
   assetShare: BaseAmount,
-  percentAmount: number
+  percentAmount: number,
+  dex: Dex
 ): { rune: BaseAmount; asset: BaseAmount } => {
   const percentBn = bn(percentAmount / 100)
-  const rune = baseAmount(percentBn.multipliedBy(runeShare.amount()))
+  const dexAssetDecimal = dex === 'THOR' ? THORCHAIN_DECIMAL : CACAO_DECIMAL
+  const rune = baseAmount(percentBn.multipliedBy(runeShare.amount()), dexAssetDecimal)
   const asset = baseAmount(percentBn.multipliedBy(assetShare.amount()), assetShare.decimal)
 
   return {

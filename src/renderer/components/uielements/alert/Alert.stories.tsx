@@ -1,5 +1,5 @@
 import { SyncOutlined } from '@ant-design/icons'
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { Button } from '../button'
 import { ButtonColor } from '../button/Button.types'
@@ -20,7 +20,7 @@ const renderActionButton = (color: ButtonColor) => (
   </div>
 )
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/Alert',
   decorators: [

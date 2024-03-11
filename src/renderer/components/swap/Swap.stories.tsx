@@ -1,8 +1,8 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
-import { TxHash } from '@xchainjs/xchain-client'
+import { Network, TxHash } from '@xchainjs/xchain-client'
 import { MayachainQuery } from '@xchainjs/xchain-mayachain-query'
 import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import { assetAmount, assetToBase, assetToString, baseAmount, bn } from '@xchainjs/xchain-util'
@@ -110,7 +110,7 @@ const defaultProps: SwapProps = {
   targetWalletType: O.some('keystore'),
   onChangeAsset: ({ source, target, sourceWalletType, targetWalletType }) =>
     console.log('change asset', assetToString(source), sourceWalletType, assetToString(target), targetWalletType),
-  network: 'testnet',
+  network: Network.Testnet,
   slipTolerance: 5,
   changeSlipTolerance: () => console.log('changeSlipTolerance'),
   approveERC20Token$: () => Rx.of(RD.success('txHash')),
@@ -126,7 +126,7 @@ const defaultProps: SwapProps = {
 
 export const Default: StoryFn = () => <Component {...defaultProps} />
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/Swap'
 }

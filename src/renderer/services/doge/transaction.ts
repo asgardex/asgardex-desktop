@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { TxHash } from '@xchainjs/xchain-client'
+import { Network, TxHash } from '@xchainjs/xchain-client'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import * as E from 'fp-ts/lib/Either'
 import * as FP from 'fp-ts/lib/function'
@@ -7,14 +7,14 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { IPCLedgerSendTxParams, ipcLedgerSendTxParamsIO } from '../../../shared/api/io'
-import { LedgerError, Network } from '../../../shared/api/types'
+import { LedgerError } from '../../../shared/api/types'
 import { AssetDOGE } from '../../../shared/utils/asset'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { Network$ } from '../app/types'
 import * as C from '../clients'
 import { TxHashLD, ErrorId } from '../wallet/types'
-import { Client$, SendTxParams } from './types'
 import { TransactionService } from './types'
+import { Client$, SendTxParams } from './types'
 
 export const createTransactionService = (client$: Client$, network$: Network$): TransactionService => {
   const common = C.createTransactionService(client$)

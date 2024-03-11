@@ -1,6 +1,6 @@
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
-import { Balance } from '@xchainjs/xchain-client'
+import { Balance, Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, baseAmount, bn } from '@xchainjs/xchain-util'
 import { Chain } from '@xchainjs/xchain-util'
@@ -136,12 +136,12 @@ describe('helpers/fp/eq', () => {
 
   describe('eqNetwork', () => {
     it('equal', () => {
-      expect(eqNetwork.equals('testnet', 'testnet')).toBeTruthy()
-      expect(eqNetwork.equals('mainnet', 'mainnet')).toBeTruthy()
-      expect(eqNetwork.equals('stagenet', 'stagenet')).toBeTruthy()
+      expect(eqNetwork.equals(Network.Testnet, Network.Testnet)).toBeTruthy()
+      expect(eqNetwork.equals(Network.Mainnet, Network.Mainnet)).toBeTruthy()
+      expect(eqNetwork.equals(Network.Stagenet, Network.Stagenet)).toBeTruthy()
     })
     it('not equal', () => {
-      expect(eqNetwork.equals('stagenet', 'mainnet')).toBeFalsy()
+      expect(eqNetwork.equals(Network.Stagenet, Network.Mainnet)).toBeFalsy()
     })
   })
 

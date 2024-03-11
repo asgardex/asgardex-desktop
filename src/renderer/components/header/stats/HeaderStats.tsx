@@ -5,6 +5,7 @@ import { baseToAsset, formatAssetAmountCurrency, currencySymbolByAsset } from '@
 import { Grid, Tooltip } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import { useIntl } from 'react-intl'
+import { useLocation } from 'react-router-dom'
 
 import { Dex } from '../../../../shared/api/types'
 import { isUSDAsset } from '../../../helpers/assetHelper'
@@ -108,9 +109,16 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
     return dex === 'THOR' ? 'rune' : 'cacao'
   }, [dex])
 
+  const location = useLocation()
+  const isOnSwapPage = location.pathname.startsWith('/pools/swap/')
+  const isOnDepositPage = location.pathname.startsWith('/pools/deposit/')
+
+  // Combine the conditions to determine if it's clickable
+  const clickable = !(isOnSwapPage || isOnDepositPage) // Adjust '/swap' based on your swap page's route
+
   return (
     <Styled.Wrapper>
-      <Styled.Container onClick={changeDexHandler} clickable={true}>
+      <Styled.Container onClick={clickable ? changeDexHandler : undefined} clickable={clickable}>
         <Styled.Dex dex={dex}>{dex}</Styled.Dex>
       </Styled.Container>
       <Styled.Container onClick={reloadRunePriceHandler} clickable={!RD.isPending(runePriceRD)}>

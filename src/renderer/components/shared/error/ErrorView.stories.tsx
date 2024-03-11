@@ -1,10 +1,10 @@
 import { SyncOutlined } from '@ant-design/icons'
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { Button } from '../../uielements/button'
 import { ErrorView as Component, Props } from './ErrorView'
 
-const Template: StoryFn<Props> = (args) => <Component {...args} />
+const Template: StoryFn<Props> = (args: Props) => <Component {...args} />
 export const Default = Template.bind({})
 
 const renderActionButton = () => (
@@ -14,7 +14,7 @@ const renderActionButton = () => (
   </Button>
 )
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/ErrorView',
   argTypes: {

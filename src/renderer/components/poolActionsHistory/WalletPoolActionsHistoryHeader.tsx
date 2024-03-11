@@ -1,9 +1,10 @@
 import React from 'react'
 
+import { Network } from '@xchainjs/xchain-client'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
-import { Dex, Network } from '../../../shared/api/types'
+import { Dex } from '../../../shared/api/types'
 import { WalletAddress, WalletAddresses } from '../../../shared/wallet/types'
 import { AccountAddressSelector } from '../AccountAddressSelector'
 import { PoolActionsHistoryFilter } from './PoolActionsHistoryFilter'

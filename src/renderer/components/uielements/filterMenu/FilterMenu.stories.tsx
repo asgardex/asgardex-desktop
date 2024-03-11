@@ -1,4 +1,5 @@
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 
 import { ONE_RUNE_BASE_AMOUNT } from '../../../../shared/mock/amount'
@@ -15,7 +16,7 @@ const coinsProps: ComponentProps<AssetWithAmount> = {
   },
   cellRenderer: (data: AssetWithAmount) => {
     const { asset, amount } = data
-    const node = <AssetData asset={asset} price={amount} network="testnet" />
+    const node = <AssetData asset={asset} price={amount} network={Network.Testnet} />
     return { key: asset?.symbol ?? '', node }
   },
   asset: 'TOMOB-1E1',
@@ -33,7 +34,7 @@ const Template: StoryFn<ArgTypes> = (args) => <Component {...args} {...coinsProp
 export const Default = Template.bind({})
 
 // Coins example
-const Coins: ComponentMeta<typeof Component> = {
+const Coins: Meta<typeof Component> = {
   component: Component,
   title: 'Components/FilterMenu',
   argTypes: {

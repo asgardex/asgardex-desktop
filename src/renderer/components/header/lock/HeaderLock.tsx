@@ -128,8 +128,8 @@ export const HeaderLock: React.FC<Props> = (props): JSX.Element => {
                   <Listbox.Options
                     className="
                     absolute
-                    top-[35px]
                     left-[-100px]
+                    top-[35px]
                     z-[2000] mt-1 max-h-60
                     w-[200px]
                     overflow-auto

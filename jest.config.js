@@ -5,12 +5,15 @@ const { createJestConfig } = require('@craco/craco')
 const cracoConfig = require('./craco.config.js')
 
 let jestConfig = createJestConfig(cracoConfig)
-// Add `crypto` to avoid  "Crypto module not found" errors after adding `terra.js`
+
 jestConfig = {
   ...jestConfig,
-  globals: { ...jestConfig.globals, crypto: require('crypto') }
+  globals: { ...jestConfig.globals, crypto: require('crypto') },
+  extensionsToTreatAsEsm: ['.ts'],
+  transformIgnorePatterns: ['node_modules/(?!axios)'],
+  moduleNameMapper: {
+    '\\.(css|less)$': '<rootDir>/__mocks__/styleMock.js'
+  }
 }
-
-// console.log('jestConfig:', JSON.stringify(jestConfig, null, 2))
 
 module.exports = jestConfig

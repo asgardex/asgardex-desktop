@@ -1,11 +1,10 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { FeeOption } from '@xchainjs/xchain-client'
+import { FeeOption, Network } from '@xchainjs/xchain-client'
 import { FeesWithGasPricesAndLimits } from '@xchainjs/xchain-evm'
 import { Address, Asset, BaseAmount } from '@xchainjs/xchain-util'
 import { ethers } from 'ethers'
 import * as O from 'fp-ts/lib/Option'
 
-import { Network } from '../../../shared/api/types'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
 import { FeeLD, FeesLD, Memo } from '../chain/types'

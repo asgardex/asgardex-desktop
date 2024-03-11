@@ -1,11 +1,11 @@
-import { StoryFn, ComponentMeta } from '@storybook/react'
+import { StoryFn, Meta } from '@storybook/react'
 
 import { AssetBNB } from '../../../../../shared/utils/asset'
 import { AssetLabel as Component } from './AssetLabel'
 
 export const Default: StoryFn = () => <Component asset={AssetBNB} />
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/Assets/AssetLabel'
 }

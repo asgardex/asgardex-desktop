@@ -1,10 +1,7 @@
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryObj } from '@storybook/react'
 
 import { Button } from '../../uielements/button'
 import { SuccessView as Component, Props } from './SuccessView'
-
-const Template: StoryFn<Props> = (args) => <Component {...args} />
-export const Default = Template.bind({})
 
 const renderActionButton = () => (
   <Button onClick={() => console.log('action')} typevalue="outline">
@@ -12,7 +9,7 @@ const renderActionButton = () => (
   </Button>
 )
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/SuccessView',
   argTypes: {
@@ -27,6 +24,14 @@ const meta: ComponentMeta<typeof Component> = {
   args: {
     title: 'Data loaded successfully!',
     extra: null
+  }
+}
+
+// Define the default story using StoryObj
+export const Default: StoryObj<Props> = {
+  render: (args: Props) => <Component {...args} />,
+  args: {
+    title: 'Data loaded successfully!'
   }
 }
 

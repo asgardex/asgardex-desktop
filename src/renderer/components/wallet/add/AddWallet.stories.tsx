@@ -1,13 +1,19 @@
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryObj } from '@storybook/react'
 
 import { AddWallet as Component, Props } from './AddWallet'
 
-const Template: StoryFn<Props> = (args) => <Component {...args} />
-export const Default = Template.bind({})
+// Define the default story using StoryObj
+export const Default: StoryObj<Props> = {
+  render: (args: Props) => <Component {...args} />,
+  args: {
+    isLocked: false
+  }
+}
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Wallet/AddWallet',
+  // Directly specify default args for all stories in this file
   args: {
     isLocked: false
   }

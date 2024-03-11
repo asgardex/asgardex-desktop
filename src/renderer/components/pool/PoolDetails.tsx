@@ -1,12 +1,12 @@
 import React, { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { Network } from '@xchainjs/xchain-client'
 import { Asset } from '@xchainjs/xchain-util'
 import * as A from 'antd'
 import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/lib/function'
 
-import { Network } from '../../../shared/api/types'
 import { GetPoolsPeriodEnum, GetPoolsStatusEnum, PoolDetailRD, PoolStatsDetailRD } from '../../services/midgard/types'
 import { PoolHistoryActions } from '../../views/pool/PoolHistoryView.types'
 import { PoolCards } from './PoolCards'

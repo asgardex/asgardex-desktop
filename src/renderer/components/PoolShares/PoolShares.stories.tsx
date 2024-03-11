@@ -1,4 +1,5 @@
 import { Meta, StoryFn } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase, bn } from '@xchainjs/xchain-util'
 
 import { AssetBNB, AssetBTC } from '../../../shared/utils/asset'
@@ -41,7 +42,7 @@ const defaultProps: ComponentProps = {
   loading: false,
   priceAsset: AssetBNB,
   openShareInfo: () => console.log('go to stake info'),
-  network: 'testnet'
+  network: Network.Testnet
 }
 export const Default: StoryFn = () => <Component {...defaultProps} />
 

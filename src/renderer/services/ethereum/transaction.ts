@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { TxHash } from '@xchainjs/xchain-client'
+import { Network, TxHash } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { isApproved } from '@xchainjs/xchain-evm'
 import { baseAmount } from '@xchainjs/xchain-util'
@@ -18,7 +18,7 @@ import {
   IPCLedgerSendTxParams,
   ipcLedgerSendTxParamsIO
 } from '../../../shared/api/io'
-import { LedgerError, Network } from '../../../shared/api/types'
+import { LedgerError } from '../../../shared/api/types'
 import { DEPOSIT_EXPIRATION_OFFSET, ETHAddress } from '../../../shared/ethereum/const'
 import { ROUTER_ABI } from '../../../shared/evm/abi'
 import { getBlocktime } from '../../../shared/evm/provider'
@@ -265,7 +265,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
   const approveERC20Token$ = (params: ApproveParams): TxHashLD => {
     const { contractAddress, network, walletType } = params
     // check contract address before approving
-    if (network === 'mainnet' && !addressInERC20Whitelist(contractAddress))
+    if (network === Network.Mainnet && !addressInERC20Whitelist(contractAddress))
       return Rx.of(
         RD.failure({
           msg: `Contract address ${contractAddress} is black listed`,

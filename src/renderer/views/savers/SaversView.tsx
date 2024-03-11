@@ -3,6 +3,7 @@ import { Fragment, useCallback, useEffect, useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { Tab } from '@headlessui/react'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
+import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain-query'
 import { Address, Asset, assetToString, baseAmount, Chain, CryptoAmount } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
@@ -14,7 +15,6 @@ import { useIntl } from 'react-intl'
 import { useMatch, useNavigate, useParams } from 'react-router-dom'
 import * as RxOp from 'rxjs/operators'
 
-import { Network } from '../../../shared/api/types'
 import { isLedgerWallet, isWalletType } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { AddSavers } from '../../components/savers/AddSavers'
@@ -33,6 +33,7 @@ import { eqChain, eqNetwork, eqWalletType } from '../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { addressFromOptionalWalletAddress } from '../../helpers/walletHelper'
+import { useDex } from '../../hooks/useDex'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
@@ -83,6 +84,8 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   const navigate = useNavigate()
 
   const { network } = useNetwork()
+
+  const { dex } = useDex()
 
   const { thorchainQuery } = useThorchainQueryContext()
   const { isPrivate } = usePrivateData()
@@ -315,6 +318,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         hidePrivateData={isPrivate}
                         onChangeAsset={onChangeAssetHandler}
                         disableSaverAction={checkDisableSaverAction()}
+                        dex={dex}
                       />
                     )
                   case TabIndex.WITHDRAW:
@@ -347,6 +351,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         onChangeAsset={onChangeAssetHandler}
                         saverPosition={getSaverProvider$}
                         disableSaverAction={checkDisableSaverAction()}
+                        dex={dex}
                       />
                     )
                   default:
@@ -417,7 +422,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         </Tab.Panels>
                       </Tab.Group>
                     </div>
-                    <div className="min-h-auto mt-20px ml-0 flex w-full bg-bg0 dark:bg-bg0d xl:mt-0 xl:ml-20px xl:min-h-full xl:w-1/3">
+                    <div className="min-h-auto ml-0 mt-20px flex w-full bg-bg0 dark:bg-bg0d xl:ml-20px xl:mt-0 xl:min-h-full xl:w-1/3">
                       <SaversDetailsView asset={asset} address={address} poolDetails={poolDetails} />
                     </div>
                   </div>

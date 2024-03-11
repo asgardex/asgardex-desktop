@@ -16,7 +16,6 @@ import { FlatButton } from '../../components/uielements/button'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { eqAsset, eqString } from '../../helpers/fp/eq'
 import * as PoolHelpers from '../../helpers/poolHelper'
-import { useNetwork } from '../../hooks/useNetwork'
 import { usePricePool } from '../../hooks/usePricePool'
 import { PoolDetails } from '../../services/midgard/types'
 import { SaverProviderRD } from '../../services/thorchain/types'
@@ -37,8 +36,6 @@ export const SaversDetailsView: React.FC<Props> = (props): JSX.Element => {
   const { asset, address, poolDetails } = props
 
   const intl = useIntl()
-
-  const { network } = useNetwork()
 
   const pricePool = usePricePool()
   const { getSaverProvider$, reloadSaverProvider } = useThorchainContext()
@@ -84,8 +81,7 @@ export const SaversDetailsView: React.FC<Props> = (props): JSX.Element => {
           PoolHelpers.getPoolPriceValue({
             balance: { asset, amount: depositValue },
             poolDetails,
-            pricePool,
-            network
+            pricePool
           }),
           O.getOrElse(() => baseAmount(0, depositValue.decimal))
         )
@@ -94,8 +90,7 @@ export const SaversDetailsView: React.FC<Props> = (props): JSX.Element => {
           PoolHelpers.getPoolPriceValue({
             balance: { asset, amount: redeemValue },
             poolDetails,
-            pricePool,
-            network
+            pricePool
           }),
           O.getOrElse(() => baseAmount(0, depositValue.decimal))
         )

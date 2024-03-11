@@ -1,5 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 import * as O from 'fp-ts/Option'
 
 import { AssetETH } from '../../../shared/utils/asset'
@@ -9,7 +10,7 @@ import { PoolHistoryActions } from '../../views/pool/PoolHistoryView.types'
 import { PoolDetails as Component, Props } from './PoolDetails'
 import { getEmptyPoolDetail, getEmptyPoolStatsDetail } from './PoolDetails.helpers'
 
-const Template: StoryFn<Props> = (args) => <Component {...args} />
+const Template: StoryFn<Props> = (args: Props) => <Component {...args} />
 export const Default = Template.bind({})
 
 const historyActions: PoolHistoryActions = {
@@ -22,7 +23,7 @@ const historyActions: PoolHistoryActions = {
   prevHistoryPage: O.none
 }
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/PoolDetails',
   argTypes: {
@@ -31,7 +32,7 @@ const meta: ComponentMeta<typeof Component> = {
     unwatch: { action: 'unwatch' }
   },
   args: {
-    network: 'mainnet',
+    network: Network.Mainnet,
     historyActions,
     poolDetail: RD.success(getEmptyPoolDetail()),
     reloadPoolDetail: () => console.log('reloadPoolDetail'),

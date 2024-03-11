@@ -1,7 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Meta, Story } from '@storybook/react'
 import { BNBChain } from '@xchainjs/xchain-binance'
-import { Tx, TxType } from '@xchainjs/xchain-client'
+import { Network, Tx, TxType } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 
 import { AssetBNB } from '../../../../../shared/utils/asset'
@@ -28,7 +28,7 @@ export const Default: Story = () => (
     txsPageRD={txsRD}
     clickTxLinkHandler={(txHash: string) => console.log('txHash ', txHash)}
     changePaginationHandler={(page: number) => console.log('page:', page)}
-    network="testnet"
+    network={Network.Testnet}
     chain={BNBChain}
     reloadHandler={() => console.log('reload ')}
   />

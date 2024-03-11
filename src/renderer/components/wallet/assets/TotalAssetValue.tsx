@@ -59,7 +59,9 @@ export const TotalAssetValue: React.FC<Props> = (props): JSX.Element => {
   const chainErrors = useMemo(() => {
     // Map over the keys to create React elements for each error.
     const errorMessages = Object.keys(errorsByChain).map((chain) => (
-      <div key={chain}>{`${chain}: ${errorsByChain[chain].split('(')[0]}`}</div>
+      <div className="text-text2 hover:text-turquoise dark:text-text2d" key={chain}>{`${chain}: ${
+        errorsByChain[chain].split('(')[0]
+      }`}</div>
     ))
 
     return errorMessages // Return the array of React elements directly.

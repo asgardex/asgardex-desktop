@@ -1,9 +1,9 @@
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { KeystoreWalletsUI } from '../../../services/wallet/types'
 import { WalletSelector as Component, Props } from './WalletSelector'
 
-export const Default: StoryFn<Props> = (args) => <Component {...args} />
+export const Default: StoryFn<Props> = (args: Props) => <Component {...args} />
 
 const wallets: KeystoreWalletsUI = [
   { id: 0, name: 'wallet 0', selected: false },
@@ -12,11 +12,11 @@ const wallets: KeystoreWalletsUI = [
   { id: 3, name: 'wallet 3', selected: false }
 ]
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/WalletSelector',
   decorators: [
-    (Story) => (
+    (Story: React.FC) => (
       <div className="flex h-full w-full items-center justify-center">
         <Story />
       </div>

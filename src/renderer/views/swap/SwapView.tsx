@@ -2,10 +2,10 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
+import { Network } from '@xchainjs/xchain-client'
 import { MayaChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Address, Asset, assetToString, bn, Chain } from '@xchainjs/xchain-util'
-import { Spin } from 'antd'
+import { Address, Asset, assetToString, bn, Chain, baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
 import * as Eq from 'fp-ts/lib/Eq'
@@ -15,13 +15,13 @@ import { useIntl } from 'react-intl'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import * as RxOp from 'rxjs/operators'
 
-import { Network } from '../../../shared/api/types'
 import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
 import { isLedgerWallet, isWalletType } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ErrorView } from '../../components/shared/error/'
 import { Swap } from '../../components/swap'
 import { SLIP_TOLERANCE_KEY } from '../../components/swap/SelectableSlipTolerance'
+import { SwapAsset } from '../../components/swap/Swap.types'
 import * as Utils from '../../components/swap/Swap.utils'
 import { BackLinkButton } from '../../components/uielements/button'
 import { Button, RefreshButton } from '../../components/uielements/button'
@@ -169,15 +169,6 @@ const SuccessRouteView: React.FC<Props> = ({
     }
   }, [sourceAsset, setSelectedPoolAsset, setSelectedPoolAssetMaya, dex])
 
-  // reload inbound addresses at `onMount` to get always latest `pool address` + `feeRates`
-  useEffect(() => {
-    if (dex === 'THOR') {
-      reloadInboundAddresses()
-    } else {
-      reloadMayaInboundAddresses()
-    }
-  }, [dex, reloadInboundAddresses, reloadMayaInboundAddresses])
-
   const sourceAssetDecimal$: AssetWithDecimalLD = useMemo(
     () => assetWithDecimal$(sourceAsset),
     [assetWithDecimal$, sourceAsset]
@@ -252,13 +243,8 @@ const SuccessRouteView: React.FC<Props> = ({
   )
 
   const reloadBalances = useCallback(() => {
-    if (eqChain.equals(sourceChain, targetChain)) {
-      reloadBalancesByChain(sourceChain)()
-    } else {
-      reloadBalancesByChain(sourceChain)()
-      reloadBalancesByChain(targetChain)()
-    }
-  }, [sourceChain, targetChain, reloadBalancesByChain])
+    reloadBalancesByChain(sourceChain)()
+  }, [reloadBalancesByChain, sourceChain])
 
   const reloadSwapTxStatus = useCallback(() => {
     reloadTxStatus()
@@ -286,6 +272,17 @@ const SuccessRouteView: React.FC<Props> = ({
     reloadSelectedPoolDetail,
     reloadSelectedPoolDetailMaya
   ])
+
+  // reload inbound addresses at `onMount` to get always latest `pool address` + `feeRates`
+  useEffect(() => {
+    if (dex === 'THOR') {
+      reloadInboundAddresses()
+    } else {
+      reloadMayaInboundAddresses()
+    }
+    reloadBalances()
+    reloadHandler()
+  }, [dex, reloadBalances, reloadHandler, reloadInboundAddresses, reloadMayaInboundAddresses])
 
   const getStoredSlipTolerance = (): SlipTolerance =>
     FP.pipe(
@@ -402,11 +399,67 @@ const SuccessRouteView: React.FC<Props> = ({
           sequenceTRD(poolsStateRD, sourceAssetRD, targetAssetRD, pendingPoolsStateRD),
           RD.fold(
             () => <></>,
-            () => (
-              <div className="my-50px flex w-full max-w-[500px] flex-col justify-between">
-                <Spin />
-              </div>
-            ),
+            () => {
+              // Note: Ensure that `sourceAsset` and `targetAsset` are defined in your component's scope
+              const mockAssetSource: SwapAsset = {
+                asset: sourceAsset,
+                decimal: 18, // Assuming 18 as a placeholder, replace with actual decimal value
+                price: baseAmount(0).amount() // Using BigNumber constructor
+              }
+
+              const mockAssetTarget: SwapAsset = {
+                asset: targetAsset,
+                decimal: 18, // Assuming 18 as a placeholder, replace with actual decimal value
+                price: baseAmount(0).amount() // Using BigNumber constructor
+              }
+
+              return (
+                <Swap
+                  disableSwapAction={true}
+                  keystore={keystore}
+                  validatePassword$={validatePassword$}
+                  goToTransaction={openExplorerTxUrl}
+                  getExplorerTxUrl={getExplorerTxUrl}
+                  assets={{
+                    source: mockAssetSource,
+
+                    target: mockAssetTarget
+                  }}
+                  sourceKeystoreAddress={oSourceKeystoreAddress}
+                  sourceLedgerAddress={oSourceLedgerAddress}
+                  sourceWalletType={sourceWalletType}
+                  targetWalletType={oTargetWalletType}
+                  poolAddress={selectedPoolAddress}
+                  poolAssets={[]}
+                  poolsData={{}}
+                  pricePool={pricePool}
+                  poolDetails={[]}
+                  walletBalances={balancesState}
+                  reloadFees={reloadSwapFees}
+                  fees$={swapFees$}
+                  reloadApproveFee={reloadApproveFee}
+                  approveFee$={approveFee$}
+                  targetKeystoreAddress={oTargetKeystoreAddress}
+                  targetLedgerAddress={oTargetLedgerAddress}
+                  recipientAddress={oRecipient}
+                  swap$={swap$}
+                  reloadBalances={reloadBalances}
+                  onChangeAsset={onChangeAssetHandler}
+                  network={network}
+                  slipTolerance={slipTolerance}
+                  changeSlipTolerance={changeSlipTolerance}
+                  approveERC20Token$={approveERC20Token$}
+                  isApprovedERC20Token$={isApprovedERC20Token$}
+                  importWalletHandler={importWalletHandler}
+                  addressValidator={validateSwapAddress}
+                  hidePrivateData={isPrivate}
+                  thorchainQuery={thorchainQuery}
+                  mayachainQuery={mayachainQuery}
+                  reloadTxStatus={reloadSwapTxStatus}
+                  dex={dex}
+                />
+              )
+            },
             renderError,
             ([{ assetDetails, poolsData, poolDetails }, sourceAsset, targetAsset, pendingPools]) => {
               const combinedAssetDetails = [...assetDetails, ...pendingPools.assetDetails]

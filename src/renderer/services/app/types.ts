@@ -1,6 +1,7 @@
+import { Network } from '@xchainjs/xchain-client'
 import * as Rx from 'rxjs'
 
-import { Dex, Network } from '../../../shared/api/types'
+import { Dex } from '../../../shared/api/types'
 import { SlipTolerance } from '../../types/asgardex'
 
 export enum OnlineStatus {

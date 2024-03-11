@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { Network } from '@xchainjs/xchain-client'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { assetToString } from '@xchainjs/xchain-util'
 import { Grid } from 'antd'
@@ -13,7 +14,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { Network } from '../../../shared/api/types'
 import { ProtocolLimit, IncentivePendulum } from '../../components/pool'
 import { ManageButton } from '../../components/uielements/button'
 import { Table } from '../../components/uielements/table'
@@ -36,15 +36,15 @@ import { MayachainLastblockRD } from '../../services/mayachain/types'
 import { PendingPoolsState, DEFAULT_POOL_FILTERS } from '../../services/midgard/types'
 import { ThorchainLastblockRD } from '../../services/thorchain/types'
 import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
+import { filterTableData } from './Pools.utils'
 import {
   getBlocksLeftForPendingPoolAsString,
   getBlocksLeftForPendingPoolAsStringMaya,
   isEmptyPool
 } from './Pools.utils'
-import { filterTableData } from './Pools.utils'
 import * as Shared from './PoolsOverview.shared'
-import { TableAction, BlockLeftLabel } from './PoolsOverview.styles'
 import * as Styled from './PoolsOverview.styles'
+import { TableAction, BlockLeftLabel } from './PoolsOverview.styles'
 
 export const PendingPools: React.FC = (): JSX.Element => {
   const navigate = useNavigate()

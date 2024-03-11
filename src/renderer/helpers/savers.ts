@@ -1,3 +1,4 @@
+import { Network } from '@xchainjs/xchain-client'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { assetFromString, BaseAmount, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
@@ -6,7 +7,6 @@ import * as O from 'fp-ts/lib/Option'
 import * as Ord from 'fp-ts/lib/Ord'
 
 import { PoolsWatchList } from '../../shared/api/io'
-import { Network } from '../../shared/api/types'
 import type { PoolDetails } from '../services/midgard/types'
 import { toPoolData } from '../services/midgard/utils'
 import { PoolData } from '../views/pools/Pools.types'

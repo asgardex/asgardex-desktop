@@ -1,14 +1,15 @@
 import * as Client from '@xchainjs/xchain-client'
-
-import { Network } from '../api/types'
-
-export const toClientNetwork = (network: Network): Client.Network => {
+import { Network } from '@xchainjs/xchain-client'
+// tobefixed
+export const toClientNetwork = (network: string): Client.Network => {
   switch (network) {
-    case 'mainnet':
+    case Network.Mainnet:
       return Client.Network.Mainnet
-    case 'stagenet':
+    case Network.Stagenet:
       return Client.Network.Stagenet
-    case 'testnet':
+    case Network.Testnet:
       return Client.Network.Testnet
+    default:
+      return Client.Network.Mainnet
   }
 }

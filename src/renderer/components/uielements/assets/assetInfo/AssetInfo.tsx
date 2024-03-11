@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 
+import { Network } from '@xchainjs/xchain-client'
 import { Address } from '@xchainjs/xchain-util'
 import { Asset, formatAssetAmount, assetToString, AssetAmount } from '@xchainjs/xchain-util'
 import { Grid } from 'antd'
@@ -7,7 +8,6 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
-import { Network } from '../../../../../shared/api/types'
 import { isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { sequenceSOption, sequenceTOption } from '../../../../helpers/fpHelpers'

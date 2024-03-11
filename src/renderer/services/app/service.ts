@@ -1,9 +1,10 @@
 import * as Client from '@xchainjs/xchain-client'
+import { Network } from '@xchainjs/xchain-client'
 import * as Rx from 'rxjs'
 import { startWith, mapTo, distinctUntilChanged } from 'rxjs/operators'
 import * as RxOp from 'rxjs/operators'
 
-import { Dex, Network } from '../../../shared/api/types'
+import { Dex } from '../../../shared/api/types'
 import { toClientNetwork } from '../../../shared/utils/client'
 import { observableState } from '../../helpers/stateHelper'
 import { SlipTolerance } from '../../types/asgardex'

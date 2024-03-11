@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { FeeRate, TxHash, TxParams } from '@xchainjs/xchain-client'
+import { FeeRate, Network, TxHash, TxParams } from '@xchainjs/xchain-client'
 import { Keystore } from '@xchainjs/xchain-crypto'
 import { NodeUrl } from '@xchainjs/xchain-thorchain'
 import { Address, Chain } from '@xchainjs/xchain-util'
@@ -10,8 +10,6 @@ import { EvmHDMode } from '../evm/types'
 import { Locale } from '../i18n/types'
 import { HDMode, WalletAddress } from '../wallet/types'
 import { IPCLedgerAddressesIO, KeystoreWallets, PoolsStorageEncoded } from './io'
-
-export type Network = 'testnet' | 'stagenet' | 'mainnet'
 
 export type Dex = 'THOR' | 'MAYA'
 

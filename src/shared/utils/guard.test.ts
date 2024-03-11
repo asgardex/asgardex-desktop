@@ -1,4 +1,4 @@
-import { FeeOption } from '@xchainjs/xchain-client'
+import { FeeOption, Network } from '@xchainjs/xchain-client'
 import { baseAmount, bn } from '@xchainjs/xchain-util'
 
 import { AssetRuneNative } from './asset'
@@ -32,13 +32,13 @@ describe('shared/utils/guard', () => {
 
   describe('isNetwork', () => {
     it('true for "mainnet"', () => {
-      expect(isNetwork('mainnet')).toBeTruthy()
+      expect(isNetwork(Network.Mainnet)).toBeTruthy()
     })
     it('true for "stagenet"', () => {
-      expect(isNetwork('stagenet')).toBeTruthy()
+      expect(isNetwork(Network.Stagenet)).toBeTruthy()
     })
     it('true for testnet', () => {
-      expect(isNetwork('testnet')).toBeTruthy()
+      expect(isNetwork(Network.Testnet)).toBeTruthy()
     })
     it('false for invalid network ', () => {
       expect(isNetwork('network')).toBeFalsy()

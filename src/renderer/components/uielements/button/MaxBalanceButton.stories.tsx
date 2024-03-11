@@ -1,4 +1,4 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 import { Balance } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 
@@ -12,7 +12,7 @@ const bnbBalance: Balance = {
   amount: assetToBase(assetAmount(123))
 }
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/button/MaxBalanceButton',
   argTypes: {

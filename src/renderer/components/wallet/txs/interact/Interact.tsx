@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react'
 
+import { Network } from '@xchainjs/xchain-client'
 import { Chain } from '@xchainjs/xchain-util'
 import { useIntl } from 'react-intl'
 
-import { Network } from '../../../../../shared/api/types'
 import { isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { getChainAsset, isThorChain } from '../../../../helpers/chainHelper'

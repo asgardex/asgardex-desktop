@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react'
 
+import { Network } from '@xchainjs/xchain-client'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import { Asset } from '@xchainjs/xchain-util'
@@ -9,7 +10,6 @@ import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { Network } from '../../../../shared/api/types'
 import { chainToString } from '../../../../shared/utils/chain'
 import { WalletType } from '../../../../shared/wallet/types'
 import * as AssetHelper from '../../../helpers/assetHelper'
@@ -26,7 +26,7 @@ import { BorderButton, FlatButton, RefreshButton, TextButton } from '../../uiele
 import { TxsTable } from '../txs/table/TxsTable'
 import * as Styled from './AssetDetails.styles'
 
-type Props = {
+export type Props = {
   walletType: WalletType
   txsPageRD: TxsPageRD
   balances: O.Option<NonEmptyWalletBalances>
@@ -156,7 +156,7 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
       <Row>
         <Col span={24}>
           <TextButton
-            className="px-0 pt-40px pb-20px !font-mainSemiBold !text-18"
+            className="px-0 pb-20px pt-40px !font-mainSemiBold !text-18"
             size="large"
             color="neutral"
             onClick={openExplorerAddressUrl}>
@@ -170,7 +170,7 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
             as long as an external API can't provide it - currently `https://lcd-cosmoshub.keplr.app`
             See https://github.com/thorchain/asgardex-electron/pull/2405
            */}
-          {isCosmosChain(chain) || isThorChain(chain) || walletType === 'ledger' || asset.synth ? (
+          {isCosmosChain(chain) || asset.synth || isThorChain(chain) ? (
             <WarningView
               subTitle={intl.formatMessage({ id: 'wallet.txs.history.disabled' }, { chain: chainToString(chain) })}
               extra={

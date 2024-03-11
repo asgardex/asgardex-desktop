@@ -1,6 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { useCallback, useState } from '@storybook/addons'
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 import { NodeStatusEnum } from '@xchainjs/xchain-thornode'
 import { Address, baseAmount } from '@xchainjs/xchain-util'
 
@@ -29,7 +30,7 @@ export const Default: StoryFn = () => {
   return (
     <Component
       addressValidation={addressValidation}
-      network={'testnet'}
+      network={Network.Testnet}
       addNode={addNode}
       removeNode={removeNode}
       goToNode={(node) => console.log('go to ', node)}
@@ -39,7 +40,7 @@ export const Default: StoryFn = () => {
   )
 }
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Bonds/Bonds'
 }

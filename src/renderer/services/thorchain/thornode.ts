@@ -316,7 +316,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       liveData.map(
         A.map((provider): LiquidityProvider => {
           const oAsset = O.fromNullable(assetFromString(provider.asset))
-          const pendingRune = FP.pipe(
+          const pendingDexAsset = FP.pipe(
             /* 1e8 decimal by default at THORChain */
             baseAmount(bnOrZero(provider.pending_rune), THORCHAIN_DECIMAL),
             O.fromPredicate((v) => v.gt(ZERO_BASE_AMOUNT)),
@@ -336,9 +336,9 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
           )
 
           return {
-            runeAddress: O.fromNullable(provider.rune_address),
+            dexAssetAddress: O.fromNullable(provider.rune_address),
             assetAddress: O.fromNullable(provider.asset_address),
-            pendingRune,
+            pendingDexAsset,
             pendingAsset
           }
         })

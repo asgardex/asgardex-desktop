@@ -1,4 +1,4 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 
 import { TxType as MidgardTxType } from '../../../services/midgard/types'
 import { TxType } from './TxType'
@@ -47,7 +47,7 @@ const argTypes = {
   }
 }
 
-const meta: ComponentMeta<typeof Template> = {
+const meta: Meta<typeof Template> = {
   component: Template,
   title: 'Components/TxType',
   argTypes,

@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Story, Meta } from '@storybook/react'
-import { TxHash } from '@xchainjs/xchain-client'
+import { Network, TxHash } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase, baseAmount, Asset, assetToString } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -13,8 +13,8 @@ import { ZERO_BASE_AMOUNT } from '../../../const'
 import { BNB_DECIMAL } from '../../../helpers/assetHelper'
 import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
 import { mockWalletBalance } from '../../../helpers/test/testWalletHelper'
-import { INITIAL_SYM_DEPOSIT_STATE } from '../../../services/chain/const'
-import { SymDepositState } from '../../../services/chain/types'
+import { INITIAL_SAVER_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../../../services/chain/const'
+import { SaverDepositState, SymDepositState } from '../../../services/chain/types'
 import { WalletBalance } from '../../../services/wallet/types'
 import { SymDeposit, Props as SymDepositProps } from './SymDeposit'
 
@@ -111,7 +111,19 @@ const defaultProps: SymDepositProps = {
         })
       )
     ),
-  network: 'testnet',
+  // mock successfull result of sym. deposit$
+  asymDeposit$: (params) =>
+    Rx.of(params).pipe(
+      RxOp.tap((params) => console.log('deposit$ ', params)),
+      RxOp.switchMap((_) =>
+        Rx.of<SaverDepositState>({
+          ...INITIAL_SAVER_DEPOSIT_STATE,
+          step: 4,
+          deposit: RD.success(true)
+        })
+      )
+    ),
+  network: Network.Testnet,
   approveERC20Token$: () => Rx.of(RD.success('txHash')),
   isApprovedERC20Token$: () => Rx.of(RD.success(true)),
   protocolLimitReached: false,
@@ -124,7 +136,6 @@ const defaultProps: SymDepositProps = {
   symPendingAssets: RD.initial,
   hasAsymAssets: RD.initial,
   symAssetMismatch: RD.initial,
-  openRecoveryTool: () => console.log('openRecoveryTool'),
   openAsymDepositTool: () => console.log('openAsymDepositTool'),
   hidePrivateData: false,
   dex: 'THOR'

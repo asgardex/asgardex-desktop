@@ -1,11 +1,12 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { Network } from '@xchainjs/xchain-client'
 import { Configuration, MidgardApi } from '@xchainjs/xchain-mayamidgard'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { ApiUrls, Network } from '../../../shared/api/types'
+import { ApiUrls } from '../../../shared/api/types'
 import { DEFAULT_MIDGARD_MAYA_URLS } from '../../../shared/mayaMidgard/const'
 import { eqApiUrls } from '../../helpers/fp/eq'
 import { liveData } from '../../helpers/rx/liveData'

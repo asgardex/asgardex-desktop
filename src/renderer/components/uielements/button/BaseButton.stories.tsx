@@ -1,4 +1,4 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 
 import { BaseButton as Component, BaseButtonProps } from './BaseButton'
 
@@ -8,7 +8,7 @@ export const BaseButton = ({ size, loading, disabled, font, children }: BaseButt
   </Component>
 )
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/button/BaseButton',
   argTypes: {
@@ -39,9 +39,9 @@ const meta: ComponentMeta<typeof Component> = {
     uppercase: true
   },
   decorators: [
-    (S) => (
+    (Story: React.FC) => (
       <div className="flex justify-center bg-white p-50px">
-        <S />
+        <Story />
       </div>
     )
   ]

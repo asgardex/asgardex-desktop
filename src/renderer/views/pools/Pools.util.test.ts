@@ -1,4 +1,5 @@
 import { BNBChain } from '@xchainjs/xchain-binance'
+import { Network } from '@xchainjs/xchain-client'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { AssetAVAX } from '@xchainjs/xchain-thorchain-query'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
@@ -51,7 +52,7 @@ describe('views/pools/utils', () => {
         deepest: false,
         apy: 2,
         key: 'hi',
-        network: 'testnet',
+        network: Network.Testnet,
         watched: false
       }
 
@@ -59,7 +60,7 @@ describe('views/pools/utils', () => {
         poolDetail: lokPoolDetail,
         pricePoolData: pricePoolData,
         watchlist: [],
-        network: 'testnet'
+        network: Network.Testnet
       })
 
       expect(O.isSome(result)).toBeTruthy()

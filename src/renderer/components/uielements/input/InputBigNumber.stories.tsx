@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 import { bn } from '@xchainjs/xchain-util'
 import { Form, Row } from 'antd'
 import { Rule } from 'antd/lib/form'
@@ -10,7 +10,7 @@ import { Button } from '../button'
 import { InputBigNumber } from './InputBigNumber'
 import { InputBigNumber as Component } from './InputBigNumber'
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/InputBigNumber/Default',
   args: {
@@ -63,7 +63,7 @@ const FormValidation = () => {
   )
 }
 
-export const formValidation: ComponentMeta<typeof FormValidation> = {
+export const formValidation: Meta<typeof FormValidation> = {
   component: FormValidation,
   title: 'Components/InputBigNumber/FormValidation'
 }
@@ -85,7 +85,7 @@ const SetValue = () => {
   )
 }
 
-export const setValue: ComponentMeta<typeof SetValue> = {
+export const setValue: Meta<typeof SetValue> = {
   component: SetValue,
   title: 'Components/InputBigNumber/SetValue'
 }
@@ -102,7 +102,7 @@ const SetDecimal = ({ decimal }: { decimal: number }) => {
   )
 }
 
-export const setDecimal: ComponentMeta<typeof SetDecimal> = {
+export const setDecimal: Meta<typeof SetDecimal> = {
   component: SetDecimal,
   title: 'Components/InputBigNumber/SetDecimal',
   argTypes: {

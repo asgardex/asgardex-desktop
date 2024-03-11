@@ -3,10 +3,12 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as RxOp from 'rxjs/operators'
 
-import { AssetRuneNative } from '../../../../shared/utils/asset'
+import { Dex } from '../../../../shared/api/types'
+import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
 import { eqOAsset } from '../../../helpers/fp/eq'
 import { liveData } from '../../../helpers/rx/liveData'
 import { observableState } from '../../../helpers/stateHelper'
+import * as MAYA from '../../mayachain'
 import * as THOR from '../../thorchain'
 import { reloadInboundAddresses } from '../../thorchain'
 import { SaverDepositFeesHandler, SaverWithdrawFeesHandler, SymDepositFeesHandler } from '../types'
@@ -22,18 +24,18 @@ const {
 } = observableState<O.Option<Asset>>(O.none)
 
 // Triggers reloading of deposit fees
-const reloadSymDepositFees = (asset: Asset) => {
+const reloadSymDepositFees = (asset: Asset, dex: Dex) => {
   // (1) update reload state only, if prev. vs. current assets are different
   if (!eqOAsset.equals(O.some(asset), reloadSymDepositFeesState())) {
     _reloadSymDepositFees(O.some(asset))
   }
   // (2) Reload fees for RUNE
-  THOR.reloadFees()
+  dex === 'THOR' ? THOR.reloadFees() : MAYA.reloadFees()
   // (3) Reload fees for asset, which are provided via `inbound_addresses` endpoint
   reloadInboundAddresses()
 }
 
-const symDepositFees$: SymDepositFeesHandler = (initialAsset) => {
+const symDepositFees$: SymDepositFeesHandler = (initialAsset, dex) => {
   return FP.pipe(
     reloadSymDepositFees$,
     RxOp.debounceTime(300),
@@ -44,12 +46,11 @@ const symDepositFees$: SymDepositFeesHandler = (initialAsset) => {
         oAsset,
         O.getOrElse(() => initialAsset)
       )
-
       return FP.pipe(
         liveData.sequenceS({
-          runeInFee: poolInboundFee$(AssetRuneNative),
+          runeInFee: poolInboundFee$(dex === 'THOR' ? AssetRuneNative : AssetCacao),
           assetInFee: poolInboundFee$(asset),
-          runeOutFee: poolOutboundFee$(AssetRuneNative),
+          runeOutFee: poolOutboundFee$(dex === 'THOR' ? AssetRuneNative : AssetCacao),
           assetOutFee: poolOutboundFee$(asset)
         }),
         liveData.map(({ runeInFee, assetInFee, runeOutFee, assetOutFee }) => ({

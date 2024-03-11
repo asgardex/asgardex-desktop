@@ -1,11 +1,11 @@
-import { ComponentMeta, StoryFn } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { HeaderSettings as Component, Props } from './HeaderSettings'
 
-const Template: StoryFn<Props> = (args) => <Component {...args} />
+const Template: StoryFn<Props> = (args: Props) => <Component {...args} />
 export const Default = Template.bind({})
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/HeaderSettings',
   argTypes: { onPress: { action: 'onPress' } },

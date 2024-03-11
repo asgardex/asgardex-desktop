@@ -21,7 +21,7 @@ export const UnlockWalletSettings: React.FC<Props> = (props): JSX.Element => {
   const intl = useIntl()
 
   return (
-    <div className="mt-40px bg-bg0 py-10px px-40px dark:bg-bg0d">
+    <div className="mt-40px bg-bg0 px-40px py-10px dark:bg-bg0d">
       <Styled.Collapse
         expandIcon={({ isActive }) => <Styled.ExpandIcon rotate={isActive ? 90 : 0} />}
         activeKey={collapsed ? '0' : '1'}
@@ -33,8 +33,8 @@ export const UnlockWalletSettings: React.FC<Props> = (props): JSX.Element => {
           key={'1'}>
           <div
             className="
-          border-1 mt-10px
-          mb-20px
+          border-1 mb-20px
+          mt-10px
           flex min-h-[300px] items-center
           justify-center border-solid border-gray0 bg-bg1 dark:border-gray0d dark:bg-bg1d">
             <FlatButton className="my-30px min-w-[200px] px-30px" onClick={unlockHandler}>

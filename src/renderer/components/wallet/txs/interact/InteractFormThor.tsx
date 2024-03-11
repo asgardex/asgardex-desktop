@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
+import { Network } from '@xchainjs/xchain-client'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { QuoteThornameParams, ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
@@ -24,7 +25,6 @@ import * as O from 'fp-ts/lib/Option'
 import { debounce } from 'lodash'
 import { useIntl } from 'react-intl'
 
-import { Network } from '../../../../../shared/api/types'
 import { AssetAVAX, AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../shared/wallet/types'
@@ -51,7 +51,6 @@ import { UIFees, UIFeesRD } from '../../../uielements/fees'
 import { InfoIcon } from '../../../uielements/info'
 import { InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
-import { checkMemo } from '../TxForm.helpers'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
 import * as Styled from './Interact.styles'
@@ -151,8 +150,6 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   const [aliasChain, setAliasChain] = useState<string>('')
 
   const [currentMemo, setCurrentMemo] = useState('')
-  const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
-  const [affiliateTracking, setAffiliateTracking] = useState<string>('')
 
   const isFeeError = useMemo(
     () =>
@@ -168,28 +165,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   )
 
   const handleMemo = useCallback(() => {
-    let memoValue = form.getFieldValue('memo') as string
-
-    // Check if a swap memo is detected
-    if (checkMemo(memoValue)) {
-      const suffixPattern = /:dx:\d+$/ // Regex to match ':dx:' followed by any number
-
-      // Check if memo ends with the suffix pattern
-      if (!suffixPattern.test(memoValue)) {
-        // Remove any partial ':dx:' pattern before appending
-        memoValue = memoValue.replace(/:dx:\d*$/, '')
-
-        // Append ':dx:0'
-        memoValue += ':dx:1'
-      }
-
-      setSwapMemoDetected(true)
-      setAffiliateTracking(
-        memoValue.endsWith(':dx:10') ? `Swap memo detected` : `Swap memo detected 1bps affiliate fee applied`
-      )
-    } else {
-      setSwapMemoDetected(false)
-    }
+    const memoValue = form.getFieldValue('memo') as string
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
   }, [form])
@@ -241,8 +217,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     const maxAmountPrice = getPoolPriceValue({
       balance: { asset, amount: maxAmount },
       poolDetails,
-      pricePool,
-      network
+      pricePool
     })
 
     if ((maxAmount && interactType === 'bond') || interactType === 'custom') {
@@ -473,10 +448,10 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         walletIndex,
         hdMode,
         amount: amountToSend,
-        memo: getMemo()
+        memo: currentMemo
       })
     )
-  }, [subscribeInteractState, interact$, walletType, walletIndex, hdMode, amountToSend, getMemo])
+  }, [subscribeInteractState, interact$, walletType, walletIndex, hdMode, amountToSend, currentMemo])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
 
@@ -695,7 +670,6 @@ export const InteractFormThor: React.FC<Props> = (props) => {
               ]}>
               <Styled.Input disabled={isLoading} onChange={handleMemo} size="large" />
             </Form.Item>
-            {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
           </Styled.InputContainer>
         )}
 

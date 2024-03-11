@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from 'react'
 
+import { Network } from '@xchainjs/xchain-client'
 import { Address } from '@xchainjs/xchain-util'
 import { ColumnType } from 'antd/lib/table'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import { FormattedMessage, useIntl } from 'react-intl'
 
-import { Network } from '../../../../shared/api/types'
 import { NodeInfo, NodeInfos } from '../../../services/thorchain/types'
 import { ConfirmationModal } from '../../modal/confirmation'
 import { ExternalLinkIcon } from '../../uielements/common/Common.styles'

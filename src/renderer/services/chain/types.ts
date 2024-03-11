@@ -1,11 +1,11 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { FeeOption, Fees, Tx } from '@xchainjs/xchain-client'
+import { FeeOption, Fees, Network, Tx } from '@xchainjs/xchain-client'
 import { Address, Asset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 
-import { Dex, Network } from '../../../shared/api/types'
+import { Dex } from '../../../shared/api/types'
 import { WalletType, WalletAddress, HDMode } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
 import { AssetWithDecimal } from '../../types/asgardex'
@@ -80,8 +80,8 @@ export type SymDepositFeesParams = {
   readonly asset: Asset
 }
 
-export type SymDepositFeesHandler = (asset: Asset) => SymDepositFeesLD
-export type ReloadSymDepositFeesHandler = (asset: Asset) => void
+export type SymDepositFeesHandler = (asset: Asset, dex: Dex) => SymDepositFeesLD
+export type ReloadSymDepositFeesHandler = (asset: Asset, dex: Dex) => void
 
 export type SaverDepositParams = {
   readonly poolAddress: PoolAddress
@@ -92,6 +92,7 @@ export type SaverDepositParams = {
   readonly walletIndex: number
   readonly walletType: WalletType
   readonly hdMode: HDMode
+  readonly dex: Dex
 }
 
 export type SymDepositAmounts = { rune: BaseAmount; asset: BaseAmount }
@@ -266,8 +267,8 @@ export type SymWithdrawFees = {
 export type SymWithdrawFeesRD = RD.RemoteData<Error, SymWithdrawFees>
 export type SymWithdrawFeesLD = LiveData<Error, SymWithdrawFees>
 
-export type SymWithdrawFeesHandler = (asset: Asset) => SymWithdrawFeesLD
-export type ReloadWithdrawFeesHandler = (asset: Asset) => void
+export type SymWithdrawFeesHandler = (asset: Asset, dex: Dex) => SymWithdrawFeesLD
+export type ReloadWithdrawFeesHandler = (asset: Asset, dex: Dex) => void
 
 /**
  * Saver Withdraw Fees
@@ -304,6 +305,7 @@ export type SymWithdrawParams = {
   readonly walletIndex: number
   readonly hdMode: HDMode
   readonly dex: Dex
+  readonly dexAsset: Asset
 }
 
 export type SymWithdrawStateHandler = (p: SymWithdrawParams) => WithdrawState$
@@ -318,6 +320,7 @@ export type SaverWithdrawParams = {
   readonly walletIndex: number
   readonly sender: Address
   readonly hdMode: HDMode
+  readonly dex: Dex
 }
 
 export type SaverWithdrawStateHandler = (p: SaverWithdrawParams) => WithdrawState$

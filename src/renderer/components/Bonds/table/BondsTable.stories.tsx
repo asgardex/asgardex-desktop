@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react'
 
 import { Meta, Story } from '@storybook/react'
+import { Network } from '@xchainjs/xchain-client'
 import { NodeStatusEnum } from '@xchainjs/xchain-thornode'
 import { Address, baseAmount } from '@xchainjs/xchain-util'
 
@@ -35,7 +36,7 @@ export const Default: Story = () => {
 
   return (
     <BondsTable
-      network={'testnet'}
+      network={Network.Testnet}
       removeNode={removeNode}
       goToNode={(node) => console.log('go to ', node)}
       nodes={nodesList.map((address) => mockNodeInfo(address))}

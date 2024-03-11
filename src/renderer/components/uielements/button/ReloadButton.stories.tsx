@@ -1,4 +1,4 @@
-import { ComponentMeta } from '@storybook/react'
+import { Meta } from '@storybook/react'
 
 import baseMeta from './BaseButton.stories'
 import flatMeta from './FlatButton.stories'
@@ -6,7 +6,7 @@ import { ReloadButton as Component, Props } from './ReloadButton'
 
 export const ReloadButton = (props: Props) => <Component {...props} />
 
-const meta: ComponentMeta<typeof Component> = {
+const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/button/ReloadButton',
   argTypes: {
