@@ -1,3 +1,19 @@
+# 1.21.3 (2024-03-11)
+
+## Add
+
+- Please add ability to complete an LP add [#153](https://github.com/asgardex/asgardex-desktop/issues/153)
+- Add Pending Tx into history [#75](https://github.com/asgardex/asgardex-desktop/issues/75)
+- Fix ledger send and deposit functions [#72](https://github.com/asgardex/asgardex-desktop/issues/72)
+- Update: BTC ledger [#156](https://github.com/asgardex/asgardex-desktop/issues/156)
+- Swap errors from thornode not showing [#159](https://github.com/asgardex/asgardex-desktop/issues/159)
+- Add Expand and Collapse All - Wallets [#165](https://github.com/asgardex/asgardex-desktop/issues/165)
+  
+## Updates/Fixes
+
+- PR [Fixing RU and FR translations #163](https://github.com/asgardex/asgardex-desktop/pull/163) @TreefeedXavier
+- PR [Added ES (Espaniol) localization](https://github.com/asgardex/asgardex-desktop/pull/164) @TreefeedXavier
+
 # 1.21.2 (2024-02-13)
 
 ## Add
