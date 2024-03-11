@@ -7,7 +7,7 @@ const ledger: LedgerMessages = {
   'ledger.blindsign':
     '"smart contract data" or "blind signing" needs to be enabled for {chain} application on your Ledger device.',
   'ledger.needsconnected': 'Make sure your Ledger device is connected and {chain} application is up and running.',
-  'ledger.add.device': 'Add ledger',
+  'ledger.add.device': 'Add Ledger',
   'ledger.error.nodevice': 'No device connected',
   'ledger.error.inuse': 'Ledger is already in use for another app',
   'ledger.error.appnotopened': 'Ledger app is not opened',

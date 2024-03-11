@@ -7,7 +7,7 @@ const deposit: DepositMessages = {
   'deposit.interact.actions.bond': 'Caution',
   'deposit.interact.actions.unbond': 'Retrait',
   'deposit.interact.actions.leave': 'Quitter',
-  'deposit.interact.actions.buyThorname': 'Acheter Thorname',
+  'deposit.interact.actions.buyThorname': 'Acheter THORName',
   'deposit.interact.actions.checkThorname': 'Vérifier la disponibilité',
   'deposit.interact.actions.addBondProvider': 'Ajouter un fournisseur de caution',
   'deposit.share.title': 'Votre part dans la pool',
