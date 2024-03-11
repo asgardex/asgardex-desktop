@@ -3,6 +3,7 @@ import { createIntlCache } from 'react-intl'
 import { Locale } from '../../shared/i18n/types'
 import de from './de'
 import en from './en'
+import es from './es'
 import fr from './fr'
 import hi from './hi'
 import ru from './ru'
@@ -16,10 +17,12 @@ export const getMessagesByLocale = (l: Locale): Messages => {
       return en
     case Locale.FR:
       return fr
-    case Locale.RU:
-      return ru
     case Locale.HI:
       return hi
+    case Locale.RU:
+      return ru
+    case Locale.ES:
+      return es
     default:
       return en
   }
