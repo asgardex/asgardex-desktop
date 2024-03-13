@@ -13,7 +13,9 @@ import * as RxOp from 'rxjs/operators'
 import { PoolDetailsChart } from '../../components/uielements/chart'
 import { ChartDataType, ChartDetailsRD, ChartTimeFrame } from '../../components/uielements/chart/PoolDetailsChart.types'
 import { useMidgardContext } from '../../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { liveData } from '../../helpers/rx/liveData'
+import { useDex } from '../../hooks/useDex'
 import {
   GetLiquidityHistoryIntervalEnum,
   GetSwapHistoryIntervalEnum,
@@ -34,12 +36,35 @@ export type Props = {
 }
 
 export const PoolChartView: React.FC<Props> = ({ priceRatio }) => {
+  const { dex } = useDex()
   const {
     service: {
-      reloadChartDataUI$,
-      pools: { selectedPricePoolAsset$, getSelectedPoolSwapHistory$, getDepthHistory$, getPoolLiquidityHistory$ }
+      reloadChartDataUI$: reloadChartDataUIThor$,
+      pools: {
+        selectedPricePoolAsset$: selectedPricePoolAssetThor$,
+        getSelectedPoolSwapHistory$: getSelectedPoolSwapHistoryThor$,
+        getDepthHistory$: getDepthHistoryThor$,
+        getPoolLiquidityHistory$: getPoolLiquidityHistoryThor$
+      }
     }
   } = useMidgardContext()
+  const {
+    service: {
+      reloadChartDataUI$: reloadChartDataUIMaya$,
+      pools: {
+        selectedPricePoolAsset$: selectedPricePoolAssetMaya$,
+        getSelectedPoolSwapHistory$: getSelectedPoolSwapHistoryMaya$,
+        getDepthHistory$: getDepthHistoryMaya$,
+        getPoolLiquidityHistory$: getPoolLiquidityHistoryMaya$
+      }
+    }
+  } = useMidgardMayaContext()
+
+  const reloadChartDataUI$ = dex === 'THOR' ? reloadChartDataUIThor$ : reloadChartDataUIMaya$
+  const selectedPricePoolAsset$ = dex === 'THOR' ? selectedPricePoolAssetThor$ : selectedPricePoolAssetMaya$
+  const getSelectedPoolSwapHistory$ = dex === 'THOR' ? getSelectedPoolSwapHistoryThor$ : getSelectedPoolSwapHistoryMaya$
+  const getDepthHistory$ = dex === 'THOR' ? getDepthHistoryThor$ : getDepthHistoryMaya$
+  const getPoolLiquidityHistory$ = dex === 'THOR' ? getPoolLiquidityHistoryThor$ : getPoolLiquidityHistoryMaya$
 
   type DataRequestParams = { timeFrame: ChartTimeFrame; dataType: ChartDataType }
   const savedParams = useRef<DataRequestParams>({

@@ -25,7 +25,6 @@ import { useChainContext } from '../../contexts/ChainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
-import { isMayaChain, isThorChain } from '../../helpers/chainHelper'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
@@ -34,8 +33,8 @@ import { useDex } from '../../hooks/useDex'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePrivateData } from '../../hooks/usePrivateData'
-// import { WalletAddress$ } from '../../services/clients/types'
-import { PoolSharesRD } from '../../services/midgard/types'
+import { WalletAddress$ } from '../../services/clients/types'
+import { PoolShares } from '../../services/midgard/types'
 import { ledgerAddressToWalletAddress } from '../../services/wallet/util'
 import { BaseAmountRD } from '../../types'
 import * as H from './PoolShareView.helper'
@@ -88,9 +87,6 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   )
   const allPoolDetails$ = dex === 'THOR' ? allPoolDetailsThor$ : allPoolDetailsMaya$
   const poolsRD = useObservableState(dex === 'THOR' ? poolsState$ : mayaPoolsState$, RD.pending)
-
-  const allSharesByAddresses$ = dex === 'THOR' ? allSharesByAddressesThor$ : allSharesByAddressesMaya$
-
   const { addressByChain$ } = useChainContext()
 
   const { getLedgerAddress$ } = useWalletContext()
@@ -116,35 +112,46 @@ export const PoolShareView: React.FC = (): JSX.Element => {
 
     return () => subscription.unsubscribe() // Cleanup by unsubscribing when the component unmounts or dex changes
   }, [addressByChain$, dex])
-
-  const [allSharesRD, setAllSharesRD] = useState<PoolSharesRD>(RD.initial)
+  const INCLUDED_CHAINS = getChainsForDex(dex)
+  const [allSharesRD, setAllSharesRD] = useState<RD.RemoteData<Error, PoolShares>>(RD.initial)
 
   useEffect(() => {
-    const INCLUDED_CHAINS = getChainsForDex(dex) // React to `dex` changes
-
-    const addresses$ = FP.pipe(
+    const addresses$: WalletAddress$[] = FP.pipe(
       [...ENABLED_CHAINS],
-      A.filter(
-        (chain) => INCLUDED_CHAINS.includes(chain) && (dex === 'THOR' ? !isThorChain(chain) : !isMayaChain(chain))
-      ),
+      A.filter((chain) => INCLUDED_CHAINS.includes(chain)),
       A.map(addressByChain$)
     )
+    // ledger addresses
+    const ledgerAddresses$ = (): WalletAddress$[] =>
+      FP.pipe(
+        [...ENABLED_CHAINS],
+        A.filter((chain) => INCLUDED_CHAINS.includes(chain)),
+        A.map((chain) => getLedgerAddress$(chain)),
+        A.map(RxOp.map(FP.flow(O.map(ledgerAddressToWalletAddress))))
+      )
+    // Combine addresses and ledger addresses observables
+    const combinedAddresses$ = Rx.combineLatest([...addresses$, ...ledgerAddresses$()])
 
-    const ledgerAddresses$ = FP.pipe(
-      [...ENABLED_CHAINS],
-      A.filter((chain) => INCLUDED_CHAINS.includes(chain) && !isThorChain(chain)),
-      A.map((chain) => getLedgerAddress$(chain)),
-      A.map(RxOp.map(FP.flow(O.map(ledgerAddressToWalletAddress))))
+    // Create the final observable pipeline
+    const finalObservable$ = FP.pipe(
+      combinedAddresses$,
+      RxOp.switchMap(
+        FP.flow(
+          A.filterMap(FP.identity),
+          A.map(addressFromWalletAddress),
+          // Dynamically choose the right function based on `dex`
+          (addresses) => (dex === 'THOR' ? allSharesByAddressesThor$(addresses) : allSharesByAddressesMaya$(addresses))
+        )
+      ),
+      RxOp.startWith(RD.pending)
     )
 
-    const subscription = FP.pipe(
-      Rx.combineLatest([...addresses$, ...ledgerAddresses$]),
-      RxOp.switchMap(FP.flow(A.filterMap(FP.identity), A.map(addressFromWalletAddress), allSharesByAddresses$))
-    ).subscribe((result) => setAllSharesRD(result))
+    // Subscribe to the observable and update state
+    const subscription = finalObservable$.subscribe(setAllSharesRD)
 
-    // Cleanup observable subscription
+    // Cleanup on unmount or when deps change
     return () => subscription.unsubscribe()
-  }, [addressByChain$, allSharesByAddresses$, dex, getLedgerAddress$]) // `dex` is the dependency we're tracking for changes
+  }, [dex, allSharesByAddressesThor$, allSharesByAddressesMaya$, addressByChain$, INCLUDED_CHAINS, getLedgerAddress$]) // Include all dependencies that affect the observable pipeline
 
   const haltedChains$ = dex === 'THOR' ? haltedChainsThor$ : haltedMayaChains$
   const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
