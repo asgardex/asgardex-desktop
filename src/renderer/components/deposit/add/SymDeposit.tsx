@@ -1017,10 +1017,11 @@ export const SymDeposit: React.FC<Props> = (props) => {
         poolData,
         runeBalance: dexAssetBalance,
         assetBalance: { asset, amount: assetBalance },
-        fees: depositFees
+        fees: depositFees,
+        dex
       }),
 
-    [asset, assetBalance, depositFees, poolData, dexAssetBalance]
+    [poolData, dexAssetBalance, asset, assetBalance, depositFees, dex]
   )
 
   // Update `runeAmountToDeposit` if `maxRuneAmountToDeposit` has been updated

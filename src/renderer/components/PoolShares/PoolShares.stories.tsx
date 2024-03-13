@@ -42,7 +42,8 @@ const defaultProps: ComponentProps = {
   loading: false,
   priceAsset: AssetBNB,
   openShareInfo: () => console.log('go to stake info'),
-  network: Network.Testnet
+  network: Network.Testnet,
+  dex: 'THOR'
 }
 export const Default: StoryFn = () => <Component {...defaultProps} />
 

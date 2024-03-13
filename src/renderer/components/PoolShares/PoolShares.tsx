@@ -7,6 +7,7 @@ import { ColumnsType, ColumnType } from 'antd/lib/table'
 import * as FP from 'fp-ts/lib/function'
 import { useIntl } from 'react-intl'
 
+import { Dex } from '../../../shared/api/types'
 import { AssetRuneNative } from '../../../shared/utils/asset'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { MimirHalt } from '../../services/thorchain/types'
@@ -24,6 +25,7 @@ export type Props = {
   openShareInfo: FP.Lazy<void>
   haltedChains: Chain[]
   mimirHalt: MimirHalt
+  dex: Dex
 }
 
 export const PoolShares: React.FC<Props> = ({
@@ -33,7 +35,8 @@ export const PoolShares: React.FC<Props> = ({
   loading,
   network,
   haltedChains,
-  mimirHalt
+  mimirHalt,
+  dex
 }) => {
   const intl = useIntl()
 
@@ -169,19 +172,19 @@ export const PoolShares: React.FC<Props> = ({
     () => [iconColumn, valueColumn, manageColumn],
     [iconColumn, valueColumn, manageColumn]
   )
-
+  const website = dex === 'THOR' ? 'thoryeild.com' : 'Mayascan.com'
   const renderAnalyticsInfo = useMemo(() => {
     return network !== Network.Testnet ? (
       <>
         <Styled.InfoButton onClick={openShareInfo}>
           <Styled.TextLabel>{intl.formatMessage({ id: 'common.analytics' })}</Styled.TextLabel> <Styled.InfoArrow />
         </Styled.InfoButton>
-        <Styled.InfoDescription>thoryield.com</Styled.InfoDescription>
+        <Styled.InfoDescription>{website}</Styled.InfoDescription>
       </>
     ) : (
       <></>
     )
-  }, [openShareInfo, intl, network])
+  }, [network, openShareInfo, intl, website])
 
   return (
     <Styled.Container>

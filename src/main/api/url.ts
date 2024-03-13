@@ -42,6 +42,7 @@ const EXTERNALS_WHITELIST = [
   'bscscan.com',
   'track.ninerealms.com',
   'mayascan.org',
+  'www.mayascan.org',
   'explorer.mayachain.info',
   'insight.dash.org',
   'finder.kujira.network',

@@ -1,8 +1,9 @@
-import React, { useCallback, useMemo, useRef, useEffect } from 'react'
+import React, { useCallback, useMemo, useRef, useEffect, useState } from 'react'
 
 import { SyncOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Asset, Chain } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
@@ -33,7 +34,7 @@ import { useDex } from '../../hooks/useDex'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePrivateData } from '../../hooks/usePrivateData'
-import { WalletAddress$ } from '../../services/clients/types'
+// import { WalletAddress$ } from '../../services/clients/types'
 import { PoolSharesRD } from '../../services/midgard/types'
 import { ledgerAddressToWalletAddress } from '../../services/wallet/util'
 import { BaseAmountRD } from '../../types'
@@ -105,59 +106,54 @@ export const PoolShareView: React.FC = (): JSX.Element => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const [oRuneNativeAddress] = useObservableState<O.Option<Address>>(
-    () => FP.pipe(addressByChain$(THORChain), RxOp.map(addressFromOptionalWalletAddress)),
-    O.none
-  )
+  const [oDexNativeAddress, setODexNativeAddress] = useState<O.Option<Address>>(O.none)
 
-  const [allSharesRD] = useObservableState<PoolSharesRD, Network>(() => {
-    // for Thorchain need to exclude those chains that are not in the pools, tobefixed
-    const INCLUDED_CHAINS = getChainsForDex(dex) // simple exclude for bsc and avax. same as ETH
-    // keystore addresses
-    const addresses$: WalletAddress$[] = FP.pipe(
+  useEffect(() => {
+    const subscription = FP.pipe(
+      addressByChain$(dex === 'THOR' ? THORChain : MAYAChain),
+      RxOp.map(addressFromOptionalWalletAddress)
+    ).subscribe(setODexNativeAddress) // Set the state based on the observable's new value
+
+    return () => subscription.unsubscribe() // Cleanup by unsubscribing when the component unmounts or dex changes
+  }, [addressByChain$, dex])
+
+  const [allSharesRD, setAllSharesRD] = useState<PoolSharesRD>(RD.initial)
+
+  useEffect(() => {
+    const INCLUDED_CHAINS = getChainsForDex(dex) // React to `dex` changes
+
+    const addresses$ = FP.pipe(
       [...ENABLED_CHAINS],
-      A.filter((chain) =>
-        INCLUDED_CHAINS.includes(chain) && dex === 'THOR' ? !isThorChain(chain) : !isMayaChain(chain)
+      A.filter(
+        (chain) => INCLUDED_CHAINS.includes(chain) && (dex === 'THOR' ? !isThorChain(chain) : !isMayaChain(chain))
       ),
       A.map(addressByChain$)
     )
-    // ledger addresses
-    const ledgerAddresses$ = (): WalletAddress$[] =>
-      FP.pipe(
-        [...ENABLED_CHAINS],
-        A.filter((chain) => INCLUDED_CHAINS.includes(chain) && !isThorChain(chain)),
-        A.map((chain) => getLedgerAddress$(chain)),
-        A.map(RxOp.map(FP.flow(O.map(ledgerAddressToWalletAddress))))
-      )
 
-    return FP.pipe(
-      Rx.combineLatest([...addresses$, ...ledgerAddresses$()]),
-      RxOp.switchMap(
-        FP.flow(
-          /**
-           *
-           * At previous step we have Array<O.Option<Address>>.
-           * During the development not every chain address is O.some('stringAddress') but there
-           * might be O.none which so we can not use sequencing here as whole sequence might fail
-           * which is unacceptable. With filterMap(FP.identity) we filter up O.none values and
-           * unwrap values to the plain Array<Address> at a single place
-           */
-          A.filterMap(FP.identity),
-          // grab `address` from `WalletAddress`
-          A.map(addressFromWalletAddress),
-          /**
-           * We have to get a new stake-stream for every new asset
-           * @description /src/renderer/services/midgard/shares.ts
-           */ allSharesByAddresses$
-        )
-      )
+    const ledgerAddresses$ = FP.pipe(
+      [...ENABLED_CHAINS],
+      A.filter((chain) => INCLUDED_CHAINS.includes(chain) && !isThorChain(chain)),
+      A.map((chain) => getLedgerAddress$(chain)),
+      A.map(RxOp.map(FP.flow(O.map(ledgerAddressToWalletAddress))))
     )
-  }, RD.initial)
+
+    const subscription = FP.pipe(
+      Rx.combineLatest([...addresses$, ...ledgerAddresses$]),
+      RxOp.switchMap(FP.flow(A.filterMap(FP.identity), A.map(addressFromWalletAddress), allSharesByAddresses$))
+    ).subscribe((result) => setAllSharesRD(result))
+
+    // Cleanup observable subscription
+    return () => subscription.unsubscribe()
+  }, [addressByChain$, allSharesByAddresses$, dex, getLedgerAddress$]) // `dex` is the dependency we're tracking for changes
+
   const haltedChains$ = dex === 'THOR' ? haltedChainsThor$ : haltedMayaChains$
   const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
   const { mimirHalt } = useMimirHalt()
   const poolDetailsRD = useObservableState(allPoolDetails$, RD.pending)
-  const { poolData: pricePoolData } = useObservableState(selectedPricePool$, RUNE_PRICE_POOL)
+  const { poolData: pricePoolData } = useObservableState(
+    selectedPricePool$,
+    dex === 'THOR' ? RUNE_PRICE_POOL : MAYA_PRICE_POOL
+  )
   const oPriceAsset = useObservableState<O.Option<Asset>>(
     dex === 'THOR' ? selectedPricePoolAsset$ : selectedPricePoolMayaAsset$,
     O.none
@@ -172,11 +168,15 @@ export const PoolShareView: React.FC = (): JSX.Element => {
     const oMainnet = O.fromPredicate<Network>(() => network === Network.Mainnet)(network)
 
     return FP.pipe(
-      sequenceTOption(oRuneNativeAddress, oMainnet),
-      O.map(([thorAddress, _]) => `https://app.thoryield.com/accounts?thor=${thorAddress}`),
+      sequenceTOption(oDexNativeAddress, oMainnet),
+      O.map(([dexAddress, _]) =>
+        dex === 'THOR'
+          ? `https://app.thoryield.com/accounts?thor=${dexAddress}`
+          : `https://www.mayascan.org/address/${dexAddress}`
+      ),
       O.map(window.apiUrl.openExternal)
     )
-  }, [network, oRuneNativeAddress])
+  }, [dex, network, oDexNativeAddress])
 
   const renderPoolSharesTable = useCallback(
     (data: PoolShareTableRowData[], loading: boolean) => {
@@ -190,10 +190,11 @@ export const PoolShareView: React.FC = (): JSX.Element => {
           priceAsset={priceAsset}
           openShareInfo={openExternalShareInfo}
           network={network}
+          dex={dex}
         />
       )
     },
-    [haltedChains, mimirHalt, priceAsset, openExternalShareInfo, network]
+    [haltedChains, mimirHalt, priceAsset, openExternalShareInfo, network, dex]
   )
 
   const clickRefreshHandler = useCallback(() => {

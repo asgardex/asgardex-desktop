@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { Asset, baseAmount, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
@@ -6,6 +7,7 @@ import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
 import * as O from 'fp-ts/Option'
 
+import { Dex } from '../../../../shared/api/types'
 import { SUPPORTED_LEDGER_APPS, ZERO_BASE_AMOUNT } from '../../../const'
 import {
   convertBaseAmountDecimal,
@@ -63,18 +65,21 @@ export const maxRuneAmountToDeposit = ({
   poolData,
   runeBalance,
   assetBalance,
-  fees: { asset: assetFees, rune: runeFees }
+  fees: { asset: assetFees, rune: runeFees },
+  dex
 }: {
   poolData: PoolData
   runeBalance: BaseAmount
   assetBalance: AssetWithAmount
   fees: SymDepositFees
+  dex: Dex
 }): BaseAmount => {
   const { runeBalance: poolRuneBalance, assetBalance: poolAssetBalance } = poolData
   const maxRuneBalance = maxRuneBalanceToDeposit(runeBalance, runeFees.inFee)
   const maxAssetBalance = maxAssetBalanceToDeposit(assetBalance, assetFees.inFee)
   // asset balance needs to have `1e8` decimal to be in common with pool data (always `1e8`)
   const maxAssetBalance1e8 = to1e8BaseAmount(maxAssetBalance)
+  const decimal = dex === 'THOR' ? THORCHAIN_DECIMAL : CACAO_DECIMAL
   const maxRuneAmount = baseAmount(
     poolRuneBalance
       .amount()
@@ -82,7 +87,7 @@ export const maxRuneAmountToDeposit = ({
       .multipliedBy(maxAssetBalance1e8.amount())
       // don't accept decimal as values for `BaseAmount`
       .toFixed(0, BigNumber.ROUND_DOWN),
-    THORCHAIN_DECIMAL
+    decimal
   )
   return maxRuneAmount.gte(maxRuneBalance) ? maxRuneBalance : maxRuneAmount
 }
