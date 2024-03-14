@@ -91,6 +91,8 @@ const common: CommonMessages = {
   'common.min': 'Mín',
   'common.search': 'Buscar en',
   'common.searchAsset': 'Buscar Activo',
+  'common.searchExample':
+    'Ejemplo de búsqueda para cadena no sintética.ticker, es decir, btc.btc o para sintético btc/btc',
   'common.retry': 'Reintentar',
   'common.reload': 'Recarga',
   'common.action': 'Acción',

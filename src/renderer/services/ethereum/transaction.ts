@@ -224,6 +224,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     }
 
     const ipcParams: IPCLedgerApproveERC20TokenParams = {
+      chain: ETHChain,
       network,
       contractAddress,
       spenderAddress,
@@ -231,7 +232,6 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       evmHdMode: hdMode
     }
     const encoded = ipcLedgerApproveERC20TokenParamsIO.encode(ipcParams)
-
     return FP.pipe(
       Rx.from(window.apiHDWallet.approveLedgerERC20Token(encoded)),
       RxOp.switchMap(
@@ -241,7 +241,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
               Rx.of(
                 RD.failure({
                   errorId: ErrorId.APPROVE_LEDGER_TX,
-                  msg: `Approve Ledger ERC20 token failed. (${msg})`
+                  msg: `Approve Ledger ERC20 token failed: (${msg})`
                 })
               ),
             (txHash) => Rx.of(RD.success(txHash))
@@ -252,7 +252,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
         Rx.of(
           RD.failure({
             errorId: ErrorId.APPROVE_LEDGER_TX,
-            msg: `Approve Ledger ERC20 token failed. ${
+            msg: `Approve Ledger ERC20 token failed here. ${
               isError(error) ? error?.message ?? error.toString() : error.toString()
             }`
           })

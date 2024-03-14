@@ -6,7 +6,7 @@ import * as S from 'fp-ts/lib/string'
 
 import { isEnabledChain } from '../../../shared/utils/chain'
 import { WalletAddress } from '../../../shared/wallet/types'
-import { CURRENCY_WEIGHTS, CHAIN_WEIGHTS } from '../../const'
+import { CURRENCY_WEIGHTS, CHAIN_WEIGHTS_THOR } from '../../const'
 import { WalletBalance } from '../../services/wallet/types'
 import { PricePool } from '../../views/pools/Pools.types'
 import { eqBaseAmount, eqBigNumber, eqAsset, eqPricePool, eqChain } from './eq'
@@ -58,8 +58,8 @@ export const ordWalletAddressByChain: Ord.Ord<WalletAddress> = {
   // comparing chains by its weights
   compare: (x, y) =>
     ordNumber.compare(
-      isEnabledChain(x.chain) ? CHAIN_WEIGHTS[x.chain] : 0,
-      isEnabledChain(y.chain) ? CHAIN_WEIGHTS[y.chain] : 0
+      isEnabledChain(x.chain) ? CHAIN_WEIGHTS_THOR[x.chain] : 0,
+      isEnabledChain(y.chain) ? CHAIN_WEIGHTS_THOR[y.chain] : 0
     )
 }
 

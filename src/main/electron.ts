@@ -31,7 +31,7 @@ import {
   getAddresses as getLedgerAddresses,
   saveAddresses as saveLedgerAddresses
 } from './api/ledger'
-import { approveLedgerERC20Token } from './api/ledger/ethereum/approve'
+import { approveLedgerERC20Token } from './api/ledger/evm/approve'
 import { openExternal } from './api/url'
 import IPCMessages from './ipc/messages'
 import { setMenu } from './menu'

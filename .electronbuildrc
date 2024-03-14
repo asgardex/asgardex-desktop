@@ -37,11 +37,7 @@
         "target": "nsis",
         "arch": ["x64"]
       }
-    ],
-    "nsis": {
-     "oneClick": false,
-     "allowToChangeInstallationDirectory": true
-   }
+    ]
   },
   "linux": {
     "category": "Finance",

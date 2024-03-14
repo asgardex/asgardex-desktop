@@ -356,7 +356,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           ),
           // 'add' LP RUNE
           A.concatW<ActionButtonAction>(
-            isRuneNativeAsset(asset) && deepestPoolAsset !== null && dex !== 'MAYA'
+            (isRuneNativeAsset(asset) || isCacaoAsset(asset)) && deepestPoolAsset !== null
               ? [
                   {
                     label: intl.formatMessage({ id: 'common.add' }),
@@ -433,7 +433,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           ),
           // 'add' LP for assets of active pools only
           A.concatW<ActionButtonAction>(
-            hasActivePool && dex !== 'MAYA'
+            hasActivePool
               ? [
                   {
                     label: intl.formatMessage({ id: 'common.add' }),

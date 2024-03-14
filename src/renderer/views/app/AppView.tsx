@@ -128,10 +128,10 @@ export const AppView: React.FC = (): JSX.Element => {
               // by removing duplicates
               unionChains(inboundHaltedChains)
             )
-
+            const dexChain = dex === 'THOR' ? 'THORChain' : 'MAYAChain'
             msg =
               haltedChains.length === 1
-                ? `${msg} ${intl.formatMessage({ id: 'halt.chain' }, { chain: haltedChains[0] })}
+                ? `${msg} ${intl.formatMessage({ id: 'halt.chain' }, { chain: haltedChains[0], dex: dexChain })}
                 ${intl.formatMessage({ id: 'halt.chain.synth' }, { chain: haltedChains[0] })}`
                 : haltedChains.length > 1
                 ? `${msg} ${intl.formatMessage({ id: 'halt.chains' }, { chains: haltedChains.join(', ') })}`
@@ -161,7 +161,7 @@ export const AppView: React.FC = (): JSX.Element => {
         }),
         O.getOrElse(() => <></>)
       ),
-    [haltedChainsRD, intl, mimirHaltRD]
+    [dex, haltedChainsRD, intl, mimirHaltRD]
   )
 
   const renderMidgardError = useMemo(() => {

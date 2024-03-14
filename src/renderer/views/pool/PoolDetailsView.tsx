@@ -14,8 +14,10 @@ import { RefreshButton } from '../../components/uielements/button'
 import { DEFAULT_GET_POOLS_PERIOD, ONE_BN } from '../../const'
 import { useAppContext } from '../../contexts/AppContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { getAssetFromNullableString } from '../../helpers/assetHelper'
 import { eqAsset } from '../../helpers/fp/eq'
+import { useDex } from '../../hooks/useDex'
 import { useMidgardHistoryActions } from '../../hooks/useMidgardHistoryActions'
 import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
 import { PoolDetailRouteParams } from '../../routes/pools/detail'
@@ -50,68 +52,122 @@ const defaultDetailsProps: TargetPoolDetailProps = {
 
 export const PoolDetailsView: React.FC = () => {
   const { network$ } = useAppContext()
+
+  const { dex } = useDex()
   const {
     service: {
-      reloadChartDataUI,
+      reloadChartDataUI: reloadChartDataUIThor,
       pools: {
-        selectedPoolDetail$,
+        selectedPoolDetail$: selectedPoolDetailThor$,
         priceRatio$,
         selectedPricePoolAssetSymbol$,
         poolStatsDetail$,
         reloadPoolStatsDetail,
         reloadSelectedPoolDetail,
         poolsPeriod$,
-        setPoolsPeriod
+        setPoolsPeriod: setPoolsPeriodThor
       },
-      setSelectedPoolAsset
+      setSelectedPoolAsset: setSelectedPoolAssetThor
     }
   } = useMidgardContext()
+
+  const {
+    service: {
+      reloadChartDataUI: reloadChartDataUIMaya,
+      pools: {
+        selectedPoolDetail$: selectedPoolDetailMaya$,
+        priceRatio$: priceRatioMaya$,
+        selectedPricePoolAssetSymbol$: selectedPricePoolAssetSymbolMaya$,
+        poolStatsDetail$: poolStatsDetailMaya$,
+        reloadPoolStatsDetail: reloadPoolStatsDetailMaya,
+        reloadSelectedPoolDetail: reloadSelectedPoolDetailMaya,
+        poolsPeriod$: poolsPeriodMaya$,
+        setPoolsPeriod: setPoolsPeriodMaya
+      },
+      setSelectedPoolAsset: setSelectedPoolAssetMaya
+    }
+  } = useMidgardMayaContext()
 
   const network = useObservableState(network$, DEFAULT_NETWORK)
 
   const intl = useIntl()
 
+  const setPoolsPeriod = dex === 'THOR' ? setPoolsPeriodThor : setPoolsPeriodMaya
+
   const { asset } = useParams<PoolDetailRouteParams>()
 
   const { add: addToWatchList, remove: removeFromWatchList, list: watchedList } = usePoolWatchlist()
 
-  const poolsPeriod = useObservableState(poolsPeriod$, DEFAULT_GET_POOLS_PERIOD)
+  const poolsPeriod = useObservableState(dex === 'THOR' ? poolsPeriod$ : poolsPeriodMaya$, DEFAULT_GET_POOLS_PERIOD)
 
   const oRouteAsset = useMemo(() => getAssetFromNullableString(asset), [asset])
 
   // Set selected pool asset whenever an asset in route has been changed
   // Needed to get all data for this pool (pool details etc.)
   useEffect(() => {
-    setSelectedPoolAsset(oRouteAsset)
-    // Reset selectedPoolAsset on view's unmount to avoid effects with depending streams
-    return () => {
-      setSelectedPoolAsset(O.none)
+    if (dex === 'THOR') {
+      setSelectedPoolAssetThor(oRouteAsset)
+      // Reset selectedPoolAsset on view's unmount to avoid effects with depending streams
+      return () => {
+        setSelectedPoolAssetThor(O.none)
+      }
+    } else {
+      setSelectedPoolAssetMaya(oRouteAsset)
+      // Reset selectedPoolAsset on view's unmount to avoid effects with depending streams
+      return () => {
+        setSelectedPoolAssetMaya(O.none)
+      }
     }
-  }, [oRouteAsset, setSelectedPoolAsset])
+  }, [dex, oRouteAsset, setSelectedPoolAssetMaya, setSelectedPoolAssetThor])
 
-  const oPriceSymbol = useObservableState(selectedPricePoolAssetSymbol$, O.none)
+  const oPriceSymbol = useObservableState(
+    dex === 'THOR' ? selectedPricePoolAssetSymbol$ : selectedPricePoolAssetSymbolMaya$,
+    O.none
+  )
   const priceSymbol = FP.pipe(
     oPriceSymbol,
     O.getOrElse(() => '')
   )
 
-  const priceRatio = useObservableState(priceRatio$, ONE_BN)
+  const priceRatio = useObservableState(dex === 'THOR' ? priceRatio$ : priceRatioMaya$, ONE_BN)
 
   const historyActions = useMidgardHistoryActions()
 
   const { historyPage: historyPageRD, reloadHistory } = historyActions
 
-  const poolDetailRD: PoolDetailRD = useObservableState(selectedPoolDetail$, RD.initial)
+  const poolDetailRD: PoolDetailRD = useObservableState(
+    dex === 'THOR' ? selectedPoolDetailThor$ : selectedPoolDetailMaya$,
+    RD.initial
+  )
 
-  const poolStatsDetailRD: PoolStatsDetailRD = useObservableState(poolStatsDetail$, RD.initial)
+  const poolStatsDetailRD: PoolStatsDetailRD = useObservableState(
+    dex === 'THOR' ? poolStatsDetail$ : poolStatsDetailMaya$,
+    RD.initial
+  )
 
   const onRefreshData = useCallback(() => {
-    reloadSelectedPoolDetail()
-    reloadPoolStatsDetail()
     reloadHistory()
     // trigger reload of chart data, which will be handled in PoolChartView
-    reloadChartDataUI()
-  }, [reloadChartDataUI, reloadHistory, reloadPoolStatsDetail, reloadSelectedPoolDetail])
+
+    if (dex === 'THOR') {
+      reloadSelectedPoolDetail()
+      reloadPoolStatsDetail()
+      reloadChartDataUIThor()
+    } else {
+      reloadPoolStatsDetailMaya()
+      reloadSelectedPoolDetailMaya()
+      reloadChartDataUIMaya()
+    }
+  }, [
+    dex,
+    reloadChartDataUIMaya,
+    reloadChartDataUIThor,
+    reloadHistory,
+    reloadPoolStatsDetail,
+    reloadPoolStatsDetailMaya,
+    reloadSelectedPoolDetail,
+    reloadSelectedPoolDetailMaya
+  ])
 
   const refreshButtonDisabled = useMemo(() => {
     return FP.pipe(historyPageRD, RD.isPending) || FP.pipe(poolDetailRD, RD.isPending)

@@ -92,6 +92,7 @@ const common: CommonMessages = {
   'common.min': 'Мин.',
   'common.search': 'Поиск',
   'common.searchAsset': 'Поиск актива',
+  'common.searchExample': 'Пример поиска для не синтетической цепи.ticker, например, btc.btc или для синтетики btc/btc',
   'common.excludeSynth': 'Исключить синтезы',
   'common.retry': 'Повторить',
   'common.reload': 'Обновить',

@@ -1,10 +1,18 @@
 import React, { useMemo, useState } from 'react'
 
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
-import { BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
+import {
+  BaseAmount,
+  CryptoAmount,
+  assetAmount,
+  assetToBase,
+  baseToAsset,
+  formatAssetAmountCurrency
+} from '@xchainjs/xchain-util'
 // import { useIntl } from 'react-intl'
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 
+import { AssetUSDC } from '../../../const'
 import { hiddenString } from '../../../helpers/stringHelper'
 import { BaseButton } from '../../uielements/button'
 import { InfoIcon } from '../../uielements/info'
@@ -69,8 +77,16 @@ export const TotalAssetValue: React.FC<Props> = (props): JSX.Element => {
 
   const totalBalanceDisplay = useMemo(() => {
     const total = chartData.reduce((acc, { value }) => acc + value, 0)
-    const formattedTotal = hidePrivateData ? hiddenString : total.toFixed(2)
-    return <div className="text-[24px] text-text2 hover:text-turquoise dark:text-text2d">{`$ ${formattedTotal}`}</div>
+    const totalCyrpto = new CryptoAmount(assetToBase(assetAmount(total, 6)), AssetUSDC)
+    const formattedTotal = hidePrivateData
+      ? hiddenString
+      : formatAssetAmountCurrency({
+          asset: totalCyrpto.asset,
+          amount: totalCyrpto.assetAmount,
+          trimZeros: true,
+          decimal: 0
+        })
+    return <div className="text-[28px] text-text2 hover:text-turquoise dark:text-text2d">{`${formattedTotal}`}</div>
   }, [chartData, hidePrivateData])
   const filteredChartData = chartData.filter((entry) => entry.value !== 0.0)
 

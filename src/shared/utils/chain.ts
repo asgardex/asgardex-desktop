@@ -43,8 +43,8 @@ export type EnabledChain = typeof ENABLED_CHAINS[number]
 export const isEnabledChain = (u: string): u is EnabledChain => ENABLED_CHAINS.includes(u as EnabledChain)
 
 // Mapping of DEXs to their supported chains, Update this when new chains are added
-const DEX_CHAINS: { [key: string]: ReadonlyArray<Chain> } = {
-  MAYA: ['DASH', 'BTC', 'ETH', 'KUJI', 'THOR'],
+export const DEX_CHAINS: { [key: string]: ReadonlyArray<Chain> } = {
+  MAYA: ['DASH', 'BTC', 'ETH', 'KUJI', 'THOR', 'MAYA'],
   // For THOR, filter out chains that are maya specific
   THOR: ENABLED_CHAINS.filter((chain) => !['DASH', 'KUJI', 'MAYA'].includes(chain))
 }

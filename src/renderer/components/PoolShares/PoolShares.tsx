@@ -7,7 +7,8 @@ import { ColumnsType, ColumnType } from 'antd/lib/table'
 import * as FP from 'fp-ts/lib/function'
 import { useIntl } from 'react-intl'
 
-import { AssetRuneNative } from '../../../shared/utils/asset'
+import { Dex } from '../../../shared/api/types'
+import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { MimirHalt } from '../../services/thorchain/types'
 import { AssetLabel } from '../uielements/assets/assetLabel'
@@ -24,6 +25,7 @@ export type Props = {
   openShareInfo: FP.Lazy<void>
   haltedChains: Chain[]
   mimirHalt: MimirHalt
+  dex: Dex
 }
 
 export const PoolShares: React.FC<Props> = ({
@@ -33,7 +35,8 @@ export const PoolShares: React.FC<Props> = ({
   loading,
   network,
   haltedChains,
-  mimirHalt
+  mimirHalt,
+  dex
 }) => {
   const intl = useIntl()
 
@@ -48,7 +51,11 @@ export const PoolShares: React.FC<Props> = ({
 
         return (
           <Row justify="center" align="middle">
-            <Tooltip title={intl.formatMessage({ id: titleId }, { asset: asset.ticker, rune: AssetRuneNative.ticker })}>
+            <Tooltip
+              title={intl.formatMessage(
+                { id: titleId },
+                { asset: asset.ticker, rune: dex === 'THOR' ? AssetRuneNative.ticker : AssetCacao.ticker }
+              )}>
               {/* div needed for tooltip */}
               <div>
                 <Styled.AssetIcon asset={asset} size="normal" network={network} />
@@ -59,7 +66,7 @@ export const PoolShares: React.FC<Props> = ({
         )
       }
     }),
-    [intl, network]
+    [dex, intl, network]
   )
 
   const poolColumn: ColumnType<PoolShareTableRowData> = useMemo(
@@ -123,19 +130,19 @@ export const PoolShares: React.FC<Props> = ({
 
   const runeColumn: ColumnType<PoolShareTableRowData> = useMemo(
     () => ({
-      title: AssetRuneNative.symbol,
+      title: dex === 'THOR' ? AssetRuneNative.symbol : AssetCacao.symbol,
       align: 'right',
       render: ({ runeShare }: PoolShareTableRowData) => (
         <Label align="right">
           {formatAssetAmountCurrency({
             amount: baseToAsset(runeShare),
-            asset: AssetRuneNative,
+            asset: dex === 'THOR' ? AssetRuneNative : AssetCacao,
             decimal: 2
           })}
         </Label>
       )
     }),
-    []
+    [dex]
   )
 
   const manageColumn: ColumnType<PoolShareTableRowData> = useMemo(
@@ -151,13 +158,13 @@ export const PoolShares: React.FC<Props> = ({
             isTextView={isDesktopView}
             title={intl.formatMessage(
               { id: 'poolshares.single.notsupported' },
-              { asset: asset.ticker, rune: AssetRuneNative.ticker }
+              { asset: asset.ticker, rune: dex === 'THOR' ? AssetRuneNative.ticker : AssetCacao.ticker }
             )}
           />
         )
       }
     }),
-    [haltedChains, mimirHalt, isDesktopView, intl]
+    [haltedChains, mimirHalt, isDesktopView, intl, dex]
   )
 
   const desktopColumns: ColumnsType<PoolShareTableRowData> = useMemo(
@@ -169,19 +176,19 @@ export const PoolShares: React.FC<Props> = ({
     () => [iconColumn, valueColumn, manageColumn],
     [iconColumn, valueColumn, manageColumn]
   )
-
+  const website = dex === 'THOR' ? 'thoryeild.com' : 'Mayascan.com'
   const renderAnalyticsInfo = useMemo(() => {
     return network !== Network.Testnet ? (
       <>
         <Styled.InfoButton onClick={openShareInfo}>
           <Styled.TextLabel>{intl.formatMessage({ id: 'common.analytics' })}</Styled.TextLabel> <Styled.InfoArrow />
         </Styled.InfoButton>
-        <Styled.InfoDescription>thoryield.com</Styled.InfoDescription>
+        <Styled.InfoDescription>{website}</Styled.InfoDescription>
       </>
     ) : (
       <></>
     )
-  }, [openShareInfo, intl, network])
+  }, [network, openShareInfo, intl, website])
 
   return (
     <Styled.Container>

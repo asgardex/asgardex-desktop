@@ -141,3 +141,36 @@ export const filterEnabledChains = <T>(values: ChainValues<T>): T[] => {
 
   return result
 }
+
+export const getChain = (chain: string): Chain => {
+  switch (chain) {
+    case 'AVAX':
+      return AVAXChain
+    case 'BNB':
+      return BNBChain
+    case 'BTC':
+      return BTCChain
+    case 'ETH':
+      return ETHChain
+    case 'THOR':
+      return THORChain
+    case 'GAIA':
+      return GAIAChain
+    case 'BCH':
+      return BCHChain
+    case 'LTC':
+      return LTCChain
+    case 'DOGE':
+      return DOGEChain
+    case 'BSC':
+      return BSCChain
+    case 'MAYA':
+      return MAYAChain
+    case 'DASH':
+      return DASHChain
+    case 'KUJI':
+      return KUJIChain
+    default:
+      throw Error('Unknown chain')
+  }
+}

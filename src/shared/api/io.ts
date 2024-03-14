@@ -143,6 +143,7 @@ export const ipcLedgerDepositTxParamsIO = t.type({
 export type IPCLedgerDepositTxParams = t.TypeOf<typeof ipcLedgerDepositTxParamsIO>
 
 export const ipcLedgerApproveERC20TokenParamsIO = t.type({
+  chain: chainIO,
   network: networkIO,
   contractAddress: t.string,
   spenderAddress: t.string,

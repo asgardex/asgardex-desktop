@@ -44,10 +44,11 @@ describe('deposit/Deposit.helper', () => {
       inFee: baseAmount(200)
     }
   }
+  const dex = 'THOR'
 
   describe('maxRuneAmountToDeposit', () => {
     it('900', () => {
-      const result = maxRuneAmountToDeposit({ poolData, assetBalance, runeBalance, fees })
+      const result = maxRuneAmountToDeposit({ poolData, assetBalance, runeBalance, fees, dex })
       // R = 200000 (rune pool)
       // A = 100000 (asset pool)
       // r = 1000 (rune balance)
@@ -67,7 +68,7 @@ describe('deposit/Deposit.helper', () => {
     it('4900', () => {
       const runeBalance = baseAmount(5000)
       const assetBalance = { asset: AssetBNB, amount: baseAmount(10000) }
-      const result = maxRuneAmountToDeposit({ poolData, assetBalance, runeBalance, fees })
+      const result = maxRuneAmountToDeposit({ poolData, assetBalance, runeBalance, fees, dex })
       // R = 200000 (rune pool)
       // A = 100000 (asset pool)
       // r = 5000 (rune balance)

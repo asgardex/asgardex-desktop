@@ -225,6 +225,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     }
 
     const ipcParams: IPCLedgerApproveERC20TokenParams = {
+      chain: AVAXChain,
       network,
       contractAddress,
       spenderAddress,

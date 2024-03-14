@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { Chain } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -9,11 +10,14 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 import * as RxOp from 'rxjs/operators'
 
+import { Dex } from '../../../shared/api/types'
+import { isEnabledChain } from '../../../shared/utils/chain'
 import { RefreshButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
 import { AssetsTableCollapsable } from '../../components/wallet/assets/AssetsTableCollapsable'
 import type { AssetAction } from '../../components/wallet/assets/AssetsTableCollapsable'
 import { TotalAssetValue } from '../../components/wallet/assets/TotalAssetValue'
+import { CHAIN_WEIGHTS_THOR, CHAIN_WEIGHTS_MAYA } from '../../const'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
@@ -57,6 +61,18 @@ export const AssetsView: React.FC = (): JSX.Element => {
       ),
     []
   )
+  const getChainWeight = (chain: Chain, dex: Dex) => {
+    const weights = dex === 'THOR' ? CHAIN_WEIGHTS_THOR : CHAIN_WEIGHTS_MAYA
+
+    // If the chain is enabled, use its defined weight, otherwise sort it to the end
+    return isEnabledChain(chain) ? weights[chain] : Infinity
+  }
+
+  const sortedBalances = chainBalances.sort((a, b) => {
+    const weightA = getChainWeight(a.chain, dex) // selectedDex should be either 'MAYA' or 'THOR'
+    const weightB = getChainWeight(b.chain, dex)
+    return weightA - weightB
+  })
 
   const [{ loading: loadingBalances }] = useObservableState(
     () => balancesState$(DEFAULT_BALANCES_FILTER),
@@ -121,10 +137,10 @@ export const AssetsView: React.FC = (): JSX.Element => {
   const chains = useMemo(
     () =>
       FP.pipe(
-        chainBalances,
+        sortedBalances,
         A.map(({ chain }) => chain)
       ),
-    [chainBalances]
+    [sortedBalances]
   )
 
   const refreshHandler = useCallback(async () => {
@@ -156,7 +172,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
 
       <AssetsTableCollapsable
         disableRefresh={disableRefresh}
-        chainBalances={chainBalances}
+        chainBalances={sortedBalances}
         pricePool={selectedPricePool}
         mayaPricePool={selectedPricePoolMaya}
         poolDetails={poolDetails}
