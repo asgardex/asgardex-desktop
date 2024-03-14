@@ -12,6 +12,7 @@ import { Asset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
+import { isChainOfThor } from '../../../../shared/utils/chain'
 import { isCacaoAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { liveData } from '../../../helpers/rx/liveData'
 import * as BNB from '../../binance'
@@ -23,6 +24,7 @@ import * as DOGE from '../../doge'
 import * as KUJI from '../../kuji'
 import * as LTC from '../../litecoin'
 import * as MAYA from '../../mayachain'
+import { service as midgardMayaService } from '../../mayaMigard/service'
 import { service as midgardService } from '../../midgard/service'
 import * as THOR from '../../thorchain'
 import { FeesWithRatesLD } from '../../utxo/types'
@@ -31,6 +33,9 @@ import { PoolFeeLD } from '../types'
 const {
   pools: { outboundAssetFeeByChain$ }
 } = midgardService
+const {
+  pools: { outboundAssetFeeByChain$: outboundAssetFeeByChainMaya$ }
+} = midgardMayaService
 
 /**
  * Fees for pool outbound txs (swap/deposit/withdraw/earn)
@@ -49,7 +54,8 @@ export const poolOutboundFee$ = (asset: Asset): PoolFeeLD => {
     )
   } else {
     const { chain } = asset
-    return outboundAssetFeeByChain$(chain)
+    const outboundFee = isChainOfThor(chain) ? outboundAssetFeeByChain$(chain) : outboundAssetFeeByChainMaya$(chain)
+    return outboundFee
   }
 }
 /**
