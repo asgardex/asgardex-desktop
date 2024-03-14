@@ -3,6 +3,7 @@ import React, { useCallback, useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, BaseAmount, bn } from '@xchainjs/xchain-util'
@@ -122,7 +123,7 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
   )
 
   const { openExplorerTxUrl: openRuneExplorerTxUrl, getExplorerTxUrl: getRuneExplorerTxUrl } = useOpenExplorerTxUrl(
-    O.some(THORChain)
+    O.some(dex === 'THOR' ? THORChain : MAYAChain)
   )
 
   const { network$ } = useAppContext()
