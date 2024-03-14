@@ -460,6 +460,17 @@ export const AVAX_TOKEN_WHITELIST: {
   {
     asset: {
       chain: AVAXChain,
+      symbol: "USDT-0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7",
+      ticker: "USDT",
+      synth: true,
+    },
+    iconUrl: O.some(
+      "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: AVAXChain,
       symbol: "GMX-0x62edc0692BD897D2295872a9FFCac5425011c661",
       ticker: "GMX",
       synth: false,

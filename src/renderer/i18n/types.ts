@@ -90,6 +90,7 @@ export type CommonMessageKey =
   | 'common.min'
   | 'common.search'
   | 'common.searchAsset'
+  | 'common.searchExample'
   | 'common.excludeSynth'
   | 'common.retry'
   | 'common.reload'

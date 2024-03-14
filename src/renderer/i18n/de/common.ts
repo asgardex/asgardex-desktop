@@ -92,6 +92,7 @@ const common: CommonMessages = {
   'common.min': 'Min',
   'common.search': 'Suche',
   'common.searchAsset': 'Suche Asset',
+  'common.searchExample': 'Zoekvoorbeeld voor niet-synth chain.ticker, bijv. btc.btc of voor synth btc/btc',
   'common.excludeSynth': 'Synths uitsluiten',
   'common.retry': 'Wiederholen',
   'common.reload': 'Neuladen',

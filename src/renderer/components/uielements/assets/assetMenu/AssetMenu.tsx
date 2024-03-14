@@ -15,6 +15,7 @@ import { eqAsset } from '../../../../helpers/fp/eq'
 import { emptyString } from '../../../../helpers/stringHelper'
 import { FilterCheckbox } from '../../../wallet/assets/AssetsTableCollapsable.styles'
 import { BaseButton } from '../../button'
+import { Tooltip } from '../../common/Common.styles'
 import { InputSearch } from '../../input'
 import { Label } from '../../label'
 import { AssetData } from '../assetData'
@@ -116,7 +117,6 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
                       onClick={() => handleChangeAsset(assetInList)}
                       disabled={selected}>
                       <AssetData asset={assetInList} network={network} className="" />
-
                       {selected && <CheckIcon className="h-20px w-20px  text-turquoise" />}
                     </BaseButton>
                   )
@@ -228,15 +228,18 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
                 </h1>
               )}
               {chainFilter}
-              <InputSearch
-                ref={inputSearchRef}
-                className="my-10px"
-                size="normal"
-                onChange={searchHandler}
-                onCancel={clearSearchValue}
-                onEnter={onEnterHandler}
-                placeholder={intl.formatMessage({ id: 'common.searchAsset' })}
-              />
+              <Tooltip title={intl.formatMessage({ id: 'common.searchExample' })}>
+                <InputSearch
+                  ref={inputSearchRef}
+                  className="my-10px"
+                  size="normal"
+                  onChange={searchHandler}
+                  onCancel={clearSearchValue}
+                  onEnter={onEnterHandler}
+                  placeholder={intl.formatMessage({ id: 'common.searchAsset' })}
+                />
+              </Tooltip>
+
               <div className="flex items-center justify-start">
                 <Label className="mr-2 cursor-pointer text-sm font-medium text-text2 dark:text-text2d">
                   {intl.formatMessage({ id: 'common.excludeSynth' })}
