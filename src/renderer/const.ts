@@ -139,16 +139,16 @@ export const USD_PRICE_ASSETS: PricePoolAssets = [
 // The higher the value the higher the weight
 export const CHAIN_WEIGHTS: Record<EnabledChain, number> = {
   [THORChain]: 0,
-  [BTCChain]: 1,
-  [BCHChain]: 2,
-  [LTCChain]: 3,
-  [ETHChain]: 4,
-  [BNBChain]: 5,
-  [GAIAChain]: 6,
-  [AVAXChain]: 7,
-  [BSCChain]: 8,
-  [DOGEChain]: 9,
-  [MAYAChain]: 10,
+  [MAYAChain]: 1,
+  [BTCChain]: 2,
+  [ETHChain]: 3,
+  [BNBChain]: 4,
+  [AVAXChain]: 5,
+  [BSCChain]: 6,
+  [GAIAChain]: 7,
+  [DOGEChain]: 8,
+  [LTCChain]: 9,
+  [BCHChain]: 10,
   [DASHChain]: 11,
   [KUJIChain]: 12
 }

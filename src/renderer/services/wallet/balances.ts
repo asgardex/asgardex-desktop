@@ -836,19 +836,19 @@ export const createBalancesService = ({
   const chainBalances$: ChainBalances$ = FP.pipe(
     Rx.combineLatest(
       filterEnabledChains({
+        // for BTC we store `confirmed` or `all` (confirmed + unconfirmed) balances
         THOR: [thorChainBalance$, thorLedgerChainBalance$],
         MAYA: [mayaChainBalance$, mayaLedgerChainBalance$],
-        // for BTC we store `confirmed` or `all` (confirmed + unconfirmed) balances
         BTC: [btcChainBalance$, btcChainBalanceConfirmed$, btcLedgerChainBalance$, btcLedgerChainBalanceConfirmed$],
-        BCH: [bchChainBalance$, bchLedgerChainBalance$],
-        DASH: [dashBalance$, dashLedgerChainBalance$],
         ETH: [ethChainBalance$, ethLedgerChainBalance$],
+        BNB: [bnbChainBalance$, bnbLedgerChainBalance$],
         AVAX: [avaxChainBalance$, avaxLedgerChainBalance$],
         BSC: [bscChainBalance$, bscLedgerChainBalance$],
-        BNB: [bnbChainBalance$, bnbLedgerChainBalance$],
-        LTC: [ltcBalance$, ltcLedgerChainBalance$],
-        DOGE: [dogeChainBalance$, dogeLedgerChainBalance$],
         GAIA: [cosmosChainBalance$, cosmosLedgerChainBalance$],
+        DOGE: [dogeChainBalance$, dogeLedgerChainBalance$],
+        LTC: [ltcBalance$, ltcLedgerChainBalance$],
+        BCH: [bchChainBalance$, bchLedgerChainBalance$],
+        DASH: [dashBalance$, dashLedgerChainBalance$],
         KUJI: [kujiChainBalance$, kujiLedgerChainBalance$]
       })
     ),
