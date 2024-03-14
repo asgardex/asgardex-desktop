@@ -137,20 +137,39 @@ export const USD_PRICE_ASSETS: PricePoolAssets = [
 // Weight of chains
 // Needed for ordering chain related things (wallets, balances etc.)
 // The higher the value the higher the weight
-export const CHAIN_WEIGHTS: Record<EnabledChain, number> = {
+export const CHAIN_WEIGHTS_THOR: Record<EnabledChain, number> = {
   [THORChain]: 0,
-  [BTCChain]: 1,
-  [BCHChain]: 2,
-  [LTCChain]: 3,
-  [ETHChain]: 4,
-  [BNBChain]: 5,
-  [GAIAChain]: 6,
+  [MAYAChain]: 1,
+  [BTCChain]: 2,
+  [ETHChain]: 3,
+  [BSCChain]: 4,
+  [BCHChain]: 5,
+  [LTCChain]: 6,
   [AVAXChain]: 7,
-  [BSCChain]: 8,
-  [DOGEChain]: 9,
-  [MAYAChain]: 10,
-  [DASHChain]: 11,
-  [KUJIChain]: 12
+  [DOGEChain]: 8,
+  [GAIAChain]: 9,
+  [DASHChain]: 10,
+  [KUJIChain]: 11,
+  [BNBChain]: 12
+}
+
+// Weight of chains
+// Needed for ordering chain related things (wallets, balances etc.)
+// The higher the value the higher the weight
+export const CHAIN_WEIGHTS_MAYA: Record<EnabledChain, number> = {
+  [MAYAChain]: 0,
+  [THORChain]: 1,
+  [BTCChain]: 2,
+  [ETHChain]: 3,
+  [DASHChain]: 4,
+  [KUJIChain]: 5,
+  [BSCChain]: 6,
+  [BCHChain]: 7,
+  [LTCChain]: 8,
+  [AVAXChain]: 9,
+  [DOGEChain]: 10,
+  [GAIAChain]: 11,
+  [BNBChain]: 12
 }
 
 // Weight of currencies needed for pricing

@@ -1,13 +1,11 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { Network } from '@xchainjs/xchain-client'
 import { Address } from '@xchainjs/xchain-util'
 import { Asset } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
-import { useObservableState } from 'observable-hooks'
 
 import { Dex } from '../../shared/api/types'
 import { useMayachainContext } from '../contexts/MayachainContext'
@@ -39,9 +37,18 @@ export const useLiquidityProviders = ({
   const { getLiquidityProviders: getLiquidityProvidersThor } = useThorchainContext()
   const { getLiquidityProviders: getLiquidityProvidersMaya } = useMayachainContext()
 
-  const getLiquidityProviders = dex === 'THOR' ? getLiquidityProvidersThor : getLiquidityProvidersMaya
+  const [providers, setProviders] = useState<LiquidityProvidersRD>(RD.initial)
 
-  const [providers] = useObservableState<LiquidityProvidersRD, Network>(() => getLiquidityProviders(asset), RD.initial)
+  useEffect(() => {
+    // Determine the correct function based on the current value of `dex`
+    const getLiquidityProviders = dex === 'THOR' ? getLiquidityProvidersThor : getLiquidityProvidersMaya
+
+    // Create the observable and subscribe
+    const subscription = getLiquidityProviders(asset).subscribe(setProviders)
+
+    // Cleanup the subscription when the component unmounts or when `dex` or `asset` changes
+    return () => subscription.unsubscribe()
+  }, [dex, asset, getLiquidityProvidersThor, getLiquidityProvidersMaya])
 
   /**
    * Gets liquidity provider data by given RUNE + asset address
@@ -156,6 +163,7 @@ export const useLiquidityProviders = ({
       ),
     [assetAddress, providers, dexAssetAddress]
   )
+  console.log(symAssetMismatch)
 
   return {
     symPendingAssets,
