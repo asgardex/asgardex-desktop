@@ -163,7 +163,6 @@ export const useLiquidityProviders = ({
       ),
     [assetAddress, providers, dexAssetAddress]
   )
-  console.log(symAssetMismatch)
 
   return {
     symPendingAssets,
