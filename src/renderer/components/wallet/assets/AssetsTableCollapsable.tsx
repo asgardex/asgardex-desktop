@@ -373,24 +373,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
                 ]
               : []
           ),
-          A.concatW<ActionButtonAction>(
-            isCacaoAsset(asset) && deepestPoolAsset !== null && dex !== 'THOR'
-              ? [
-                  {
-                    label: intl.formatMessage({ id: 'common.add' }),
-                    callback: () => {
-                      navigate(
-                        poolsRoutes.deposit.path({
-                          asset: assetToString(deepestPoolAsset),
-                          assetWalletType: DEFAULT_WALLET_TYPE,
-                          runeWalletType: walletType
-                        })
-                      )
-                    }
-                  }
-                ]
-              : []
-          ),
           // 'swap' for synths assets of active pools only
           A.concatW<ActionButtonAction>(
             isSynthAsset(asset)
@@ -451,7 +433,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           ),
           // 'add' LP for assets of active pools only
           A.concatW<ActionButtonAction>(
-            hasActivePool && (dex === 'MAYA' || dex === 'THOR')
+            hasActivePool
               ? [
                   {
                     label: intl.formatMessage({ id: 'common.add' }),
