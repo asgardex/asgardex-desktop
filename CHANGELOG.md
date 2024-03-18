@@ -1,3 +1,15 @@
+# 1.21.4 (2024-03-15)
+
+## Add
+
+- Maya LP Support
+
+## Updates/Fixes
+
+- Re Order Wallet Assets [#170](https://github.com/asgardex/asgardex-desktop/issues/170)
+- Fix: Lpshares Tab [#167](https://github.com/asgardex/asgardex-desktop/issues/167)
+- Specify which Dex when there is a Chain Halt [#172](https://github.com/asgardex/asgardex-desktop/issues/172)
+
 # 1.21.3 (2024-03-11)
 
 ## Add
