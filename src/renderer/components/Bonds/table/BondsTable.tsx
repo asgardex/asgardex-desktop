@@ -223,7 +223,7 @@ export const BondsTable: React.FC<Props> = ({
                   title: intl.formatMessage({ id: 'common.action' }),
                   dataIndex: 'action',
                   key: 'action',
-                  render: (_, { address }) => {
+                  render: (address) => {
                     // Check if the current bond_providers address matches any wallet address
                     const isWalletAddress =
                       walletAddresses.THOR.some((walletInfo) => walletInfo.address === address) ||

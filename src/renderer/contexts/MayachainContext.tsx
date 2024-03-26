@@ -17,7 +17,7 @@ import {
   sendTx,
   resetTx,
   subscribeTx,
-  interact$,
+  interactMaya$,
   getNodeInfos$,
   reloadNodeInfos,
   explorerUrl$,
@@ -50,7 +50,7 @@ export type MayachainContextValue = {
   resetTx: typeof resetTx
   sendTx: typeof sendTx
   txRD$: typeof txRD$
-  interact$: typeof interact$
+  interactMaya$: typeof interactMaya$
   getNodeInfos$: typeof getNodeInfos$
   explorerUrl$: typeof explorerUrl$
   reloadNodeInfos: typeof reloadNodeInfos
@@ -85,7 +85,7 @@ const initialContext: MayachainContextValue = {
   txRD$,
   reloadFees,
   fees$,
-  interact$,
+  interactMaya$,
   getNodeInfos$,
   explorerUrl$,
   reloadNodeInfos,

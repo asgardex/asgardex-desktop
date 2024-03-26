@@ -448,10 +448,10 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         walletIndex,
         hdMode,
         amount: amountToSend,
-        memo: currentMemo
+        memo: getMemo()
       })
     )
-  }, [subscribeInteractState, interact$, walletType, walletIndex, hdMode, amountToSend, currentMemo])
+  }, [subscribeInteractState, interact$, walletType, walletIndex, hdMode, amountToSend, getMemo])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
 

@@ -73,7 +73,7 @@ type Props = {
   walletIndex: number
   hdMode: HDMode
   balance: WalletBalance
-  interact$: InteractStateHandler
+  interactMaya$: InteractStateHandler
   openExplorerTxUrl: OpenExplorerTxUrl
   getExplorerTxUrl: GetExplorerTxUrl
   fee: FeeRD
@@ -92,7 +92,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
     walletType,
     hdMode,
     walletIndex,
-    interact$,
+    interactMaya$,
     openExplorerTxUrl,
     getExplorerTxUrl,
     addressValidation,
@@ -436,7 +436,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
     setSendTxStartTime(Date.now())
 
     subscribeInteractState(
-      interact$({
+      interactMaya$({
         walletType,
         walletIndex,
         hdMode,
@@ -444,7 +444,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
         memo: getMemo()
       })
     )
-  }, [subscribeInteractState, interact$, walletType, walletIndex, hdMode, amountToSend, getMemo])
+  }, [subscribeInteractState, interactMaya$, walletType, walletIndex, hdMode, amountToSend, getMemo])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
 
