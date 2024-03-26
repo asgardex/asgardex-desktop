@@ -3,8 +3,8 @@
   "productName": "ASGARDEX",
   "copyright": "Copyright © 2023 ${author}",
   "artifactName": "${productName}-${version}-${os}.${ext}",
-  "afterSign": "./scripts/notarize.js",
   "files": ["resources/icon.png", "src/renderer/assets/svg/coin-*.svg"],
+  "afterSign": "scripts/notarize.js",
   "directories": {
     "buildResources": "resources",
     "output": "release"

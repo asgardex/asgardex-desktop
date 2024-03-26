@@ -46,7 +46,12 @@ import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
 import { Dex } from '../../../shared/api/types'
-import { ASGARDEX_ADDRESS, ASGARDEX_AFFILIATE_FEE, ASGARDEX_THORNAME } from '../../../shared/const'
+import {
+  ASGARDEX_ADDRESS,
+  ASGARDEX_AFFILIATE_FEE,
+  ASGARDEX_AFFILIATE_FEE_MIN,
+  ASGARDEX_THORNAME
+} from '../../../shared/const'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
@@ -708,7 +713,7 @@ export const Swap = ({
   //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
   const applyBps = useMemo(() => {
     let applyBps: number
-    const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(500)
+    const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
     applyBps = network === Network.Stagenet ? 0 : ASGARDEX_AFFILIATE_FEE
     applyBps = txFeeCovered ? ASGARDEX_AFFILIATE_FEE : 0
     return applyBps
@@ -1104,7 +1109,7 @@ export const Swap = ({
           const out1e8 = to1e8BaseAmount(outFee.baseAmount)
           const affiliate = to1e8BaseAmount(affiliateFee.baseAmount)
           const slipbps = isStreaming ? swapStreamingSlippage : swapSlippage
-          const slip = priceAmountToSwapMax1e8.baseAmount.times(slipbps / 100)
+          const slip = to1e8BaseAmount(priceAmountToSwapMax1e8.baseAmount.times(slipbps / 100))
           // adding slip costs to total fees
           return { asset: inFee.asset, amount: in1e8.plus(out1e8).plus(affiliate).plus(slip) }
         })
@@ -1116,7 +1121,7 @@ export const Swap = ({
       isStreaming,
       swapStreamingSlippage,
       swapSlippage,
-      priceAmountToSwapMax1e8.baseAmount
+      priceAmountToSwapMax1e8
     ]
   )
 
@@ -2745,10 +2750,12 @@ export const Swap = ({
 
                 {showDetails && (
                   <>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div>{intl.formatMessage({ id: 'common.approve' })}</div>
-                      <div>{priceApproveFeeLabel}</div>
-                    </div>
+                    {O.isSome(needApprovement) && (
+                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                        <div>{intl.formatMessage({ id: 'common.approve' })}</div>
+                        <div>{priceApproveFeeLabel}</div>s
+                      </div>
+                    )}
                     <div className="flex w-full justify-between pl-10px text-[12px]">
                       <div>{intl.formatMessage({ id: 'common.fee.inbound' })}</div>
                       <div>{priceSwapInFeeLabel}</div>

@@ -3,6 +3,7 @@ import { BondsMessages } from '../types'
 const bonds: BondsMessages = {
   'bonds.node': 'Узел',
   'bonds.bond': 'Вклад',
+  'bonds.bondProvider': 'Поставщик облигаций',
   'bonds.award': 'Награда',
   'bonds.status': 'Статус',
   'bonds.status.active': 'Активен',

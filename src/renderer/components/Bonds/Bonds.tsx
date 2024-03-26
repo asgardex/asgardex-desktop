@@ -10,6 +10,7 @@ import { useIntl } from 'react-intl'
 
 import { AddressValidation } from '../../services/clients'
 import { NodeInfos, NodeInfosRD } from '../../services/thorchain/types'
+import { WalletAddressInfo } from '../../views/wallet/BondsView'
 import { ErrorView } from '../shared/error'
 import { ReloadButton } from '../uielements/button'
 import * as Styled from './Bonds.styles'
@@ -19,21 +20,27 @@ type Props = {
   nodes: NodeInfosRD
   removeNode: (node: Address) => void
   goToNode: (node: Address) => void
+  goToAction: (action: String) => void
   network: Network
   addNode: (node: Address, network: Network) => void
-  addressValidation: AddressValidation
+  addressValidationThor: AddressValidation
+  addressValidationMaya: AddressValidation
   reloadNodeInfos: FP.Lazy<void>
   className?: string
+  walletAddresses: Record<'THOR' | 'MAYA', WalletAddressInfo[]>
 }
 
 export const Bonds: React.FC<Props> = ({
-  addressValidation,
+  addressValidationThor,
+  addressValidationMaya,
   nodes: nodesRD,
   removeNode,
   goToNode,
+  goToAction,
   network,
   addNode,
   reloadNodeInfos,
+  walletAddresses,
   className
 }) => {
   const intl = useIntl()
@@ -54,10 +61,11 @@ export const Bonds: React.FC<Props> = ({
       if (!value) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.empty' }))
       }
-
       const loweredCaseValue = value.toLowerCase()
-
-      if (!addressValidation(loweredCaseValue)) {
+      const validAddress = loweredCaseValue.startsWith('t')
+        ? addressValidationThor(loweredCaseValue)
+        : addressValidationMaya(loweredCaseValue)
+      if (!validAddress) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
 
@@ -65,7 +73,7 @@ export const Bonds: React.FC<Props> = ({
         return Promise.reject(intl.formatMessage({ id: 'bonds.validations.nodeAlreadyAdded' }))
       }
     },
-    [addressValidation, intl, nodes]
+    [addressValidationMaya, addressValidationThor, intl, nodes]
   )
 
   const onSubmit = useCallback(
@@ -83,11 +91,13 @@ export const Bonds: React.FC<Props> = ({
         nodes={nodes}
         removeNode={removeNode}
         goToNode={goToNode}
+        goToAction={goToAction}
         network={network}
+        walletAddresses={walletAddresses}
         loading={loading}
       />
     ),
-    [goToNode, network, removeNode]
+    [goToAction, goToNode, network, removeNode, walletAddresses]
   )
 
   const renderNodeInfos = useMemo(() => {

@@ -108,11 +108,22 @@ export type InteractState$ = Rx.Observable<InteractState>
 
 export type InteractStateHandler = (p: InteractParams) => InteractState$
 
+export type Providers = {
+  bondAddress: Address
+  bond: BaseAmount
+}
+
+export type BondProviders = {
+  nodeOperatorFee: BaseAmount
+  providers: Providers[]
+}
+
 export type NodeInfo = {
   address: Address
   bond: BaseAmount
   award: BaseAmount
   status: TN.NodeStatusEnum
+  bondProviders: BondProviders
 }
 
 export type NodeInfoLD = LiveData<Error, NodeInfo>

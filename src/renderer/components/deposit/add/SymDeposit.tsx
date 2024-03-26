@@ -236,6 +236,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
   const isAssetLedger = isLedgerWallet(assetWalletType)
 
   const [oFailedAssetAmount, setFailedAssetAmount] = useState<O.Option<AssetWithAmount1e8>>(O.none)
+  const [failedAssetWalletType, setFailedWalletType] = useState<string>()
 
   const { balances: oWalletBalances, loading: walletBalancesLoading } = walletBalances
 
@@ -894,6 +895,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
       FP.pipe(
         sequenceTOption(oDepositParams, oFailedAssetAmount),
         O.map(([params, { asset, amount1e8 }]) => {
+          setFailedWalletType(isRuneNativeAsset(asset) ? params.runeWalletType : params.assetWalletType)
           const result = {
             poolAddress: params.poolAddress,
             asset: asset,
@@ -1874,7 +1876,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
               : Helper.getAssetAmountToDeposit({ runeAmount: assetWB.amount1e8, poolData, assetDecimal })
 
             const assetAmount: AssetWithAmount1e8 = {
-              asset: !isAssetRuneNative(assetWB.asset) ? AssetRuneNative : assetWB.asset,
+              asset: isAssetRuneNative(assetWB.asset) ? asset : AssetRuneNative,
               amount1e8: amount
             }
             setFailedAssetAmount(O.some(assetAmount))
@@ -1884,7 +1886,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
         }
       )
     )
-  }, [assetDecimal, network, poolData, symPendingAssetsRD])
+  }, [asset, assetDecimal, network, poolData, symPendingAssetsRD])
 
   const prevHasAsymAssets = useRef<LiquidityProviderHasAsymAssets>({ dexAsset: false, asset: false })
 
@@ -2083,7 +2085,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     }
 
     const onSuccess = () => {
-      if (isAssetLedger || isRuneLedger) {
+      if (failedAssetWalletType === 'ledger') {
         setShowLedgerModal('recover')
       } else {
         setShowPasswordModal('recover')
@@ -2126,7 +2128,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
         title={intl.formatMessage({ id: 'common.completeLp' })}
       />
     )
-  }, [intl, isAssetLedger, isRuneLedger, network, oAsymDepositParams, showCompleteLpModal])
+  }, [failedAssetWalletType, intl, network, oAsymDepositParams, showCompleteLpModal])
   useEffect(() => {
     if (!eqOAsset.equals(prevAsset.current, O.some(asset))) {
       prevAsset.current = O.some(asset)

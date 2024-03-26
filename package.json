@@ -23,7 +23,7 @@
     "generate:erc20whitelist": "./node_modules/.bin/ts-node --project tsconfig.scripts.json ./scripts/generateERC20Whitelist.ts",
     "generate:avaxerc20whitelist": "./node_modules/.bin/ts-node --project tsconfig.scripts.json ./scripts/generateAVAXtokenlist.ts",
     "generate:bscerc20whitelist": "./node_modules/.bin/ts-node --project tsconfig.scripts.json ./scripts/generateBSCtokenlist.ts",
-    "storybook": "NODE_OPTIONS=\"--max-old-space-size=4096\" sb dev -p 9009 --no-manager-cache",
+    "storybook": "NODE_OPTIONS=\"--max-old-space-size=4096\" sb dev -p 9009",
     "build-storybook": "NODE_OPTIONS=\"--max-old-space-size=4096\" sb build",
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "prepare": "husky install"
@@ -159,7 +159,7 @@
     "wif": "^2.0.6"
   },
   "devDependencies": {
-    "@electron/notarize": "^2.1.0",
+    "@electron/notarize": "^2.3.0",
     "@storybook/addon-essentials": "7.6.17",
     "@storybook/addons": "7.6.17",
     "@storybook/builder-webpack5": "7.6.17",
