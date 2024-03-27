@@ -3058,11 +3058,13 @@ export const Swap = ({
                     <div>{intl.formatMessage({ id: 'swap.slip.title' })}</div>
                     <div>
                       {formatAssetAmountCurrency({
-                        amount: priceAmountToSwapMax1e8.assetAmount.times(swapSlippage / 100), // Find the value of swap slippage
+                        amount: priceAmountToSwapMax1e8.assetAmount.times(
+                          isStreaming ? swapStreamingSlippage / 100 : swapSlippage / 100
+                        ), // Find the value of swap slippage
                         asset: priceAmountToSwapMax1e8.asset,
                         decimal: isUSDAsset(priceAmountToSwapMax1e8.asset) ? 2 : 6,
                         trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)
-                      }) + ` (${swapSlippage.toFixed(2)}%)`}
+                      }) + ` (${isStreaming ? swapStreamingSlippage.toFixed(2) : swapSlippage.toFixed(2)}%)`}
                     </div>
                   </div>
                   <div className="flex w-full justify-between pl-10px text-[12px]">
