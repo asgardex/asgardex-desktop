@@ -10,6 +10,7 @@ import {
   Asset,
   assetAmount,
   assetToBase,
+  baseAmount,
   BaseAmount,
   baseToAsset,
   bn,
@@ -85,6 +86,8 @@ type Props = {
   thorchainQuery: ThorchainQuery
   network: Network
   poolDetails: PoolDetails
+  nodeAddress: string | null
+  bondAmount: string | null
 }
 export const InteractFormThor: React.FC<Props> = (props) => {
   const {
@@ -102,7 +105,9 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     reloadFeesHandler,
     validatePassword$,
     thorchainQuery,
-    network
+    network,
+    nodeAddress,
+    bondAmount
   } = props
   const intl = useIntl()
 
@@ -643,14 +648,16 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   }, [interactType, reset])
 
   const [showDetails, setShowDetails] = useState<boolean>(true)
-
+  const address = nodeAddress ? nodeAddress : ''
+  const amount = bn(0)
+  const bondBaseAmount = bondAmount ? baseAmount(Number(bondAmount), 8) : baseAmount(0)
   return (
     <Styled.Form
       form={form}
       onFinish={() => setShowConfirmationModal(true)}
       initialValues={{
-        thorAddress: '',
-        amount: bn(0),
+        thorAddress: address,
+        amount: amount,
         chain: THORChain,
         chainAddress: balance.walletAddress,
         expiry: 0
@@ -1056,6 +1063,25 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                 {intl.formatMessage({ id: 'common.memo' })}
                 <div className="truncate pl-10px font-main text-[12px]">{memoLabel}</div>
               </div>
+              {interactType === 'unbond' && (
+                <>
+                  <div className="ml-[-2px] flex w-full justify-between  pt-10px font-mainBold text-[14px]">
+                    {intl.formatMessage({ id: 'common.nodeAddress' })}
+                    <div className="truncate pl-10px font-main text-[12px]">{nodeAddress}</div>
+                  </div>
+                  <div className="ml-[-2px] flex w-full justify-between  pt-10px font-mainBold text-[14px]">
+                    {intl.formatMessage({ id: 'bonds.bond' })}
+                    <div className="truncate pl-10px font-main text-[12px]">
+                      {formatAssetAmountCurrency({
+                        asset: AssetRuneNative,
+                        amount: baseToAsset(bondBaseAmount),
+                        trimZeros: true,
+                        decimal: 0
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
             </>
           )}
         </div>
