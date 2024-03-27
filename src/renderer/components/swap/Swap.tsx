@@ -1449,7 +1449,7 @@ export const Swap = ({
   useEffect(() => {
     if (lockedWallet) {
       const fetchData = async () => {
-        const OneBitcoin = new CryptoAmount(assetToBase(assetAmount(1)), AssetBTC)
+        const OneBitcoin = new CryptoAmount(assetToBase(assetAmount(500)), AssetBTC)
         setLockedAssetAmount(await thorchainQuery.convert(OneBitcoin, sourceAsset))
       }
       fetchData()
