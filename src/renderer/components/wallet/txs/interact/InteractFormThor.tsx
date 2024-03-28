@@ -210,7 +210,9 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         O.fold(
           // Set maxAmount to zero if we dont know anything about fees
           () => ZERO_BASE_AMOUNT,
-          (fee) => balance.amount.minus(fee)
+          (fee) => {
+            return balance.amount.minus(fee)
+          }
         )
       ),
     [oFee, balance.amount]
@@ -743,7 +745,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                   />
                 </Styled.FormItem>
                 {/* max. amount button (BOND/CUSTOM only) */}
-                {(interactType === 'bond' || interactType === 'custom') && (
+                {(interactType === 'bond' || interactType === 'custom' || interactType === 'unbond') && (
                   <MaxBalanceButton
                     className="mb-10px"
                     color="neutral"

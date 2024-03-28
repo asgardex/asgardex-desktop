@@ -15,6 +15,7 @@ import { chainToString } from '../../../../shared/utils/chain'
 import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
 import * as AssetHelper from '../../../helpers/assetHelper'
+import { isBtcAsset } from '../../../helpers/assetHelper'
 import { isCosmosChain, isThorChain } from '../../../helpers/chainHelper'
 import * as poolsRoutes from '../../../routes/pools'
 import * as walletRoutes from '../../../routes/wallet'
@@ -71,7 +72,7 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
 
   const walletActionSwapClick = useCallback(() => {
     const path = poolsRoutes.swap.path({
-      source: assetToString(asset),
+      source: assetToString(isBtcAsset(asset) ? AssetRuneNative : AssetBTC),
       target: assetToString(AssetHelper.isRuneNativeAsset(AssetRuneNative) ? AssetBTC : AssetRuneNative),
       sourceWalletType: walletType,
       targetWalletType: DEFAULT_WALLET_TYPE
@@ -82,11 +83,11 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
   const walletActionManageClick = useCallback(() => {
     const path = poolsRoutes.deposit.path({
       asset: assetToString(asset),
-      assetWalletType: DEFAULT_WALLET_TYPE,
+      assetWalletType: walletType,
       runeWalletType: DEFAULT_WALLET_TYPE
     })
     navigate(path)
-  }, [asset, navigate])
+  }, [asset, navigate, walletType])
 
   const walletActionDepositClick = useCallback(() => {
     const path = walletRoutes.interact.path({
@@ -172,22 +173,23 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
               </Row>
             </Styled.ActionWrapper>
           </Styled.ActionCol>
-          {AssetHelper.isRuneNativeAsset(asset) && (
-            <Styled.ActionCol sm={{ span: actionColSpanMobile }} md={{ span: actionColSpanDesktop }}>
-              <Styled.ActionWrapper>
-                <Row justify="center">
-                  <BorderButton
-                    className="min-w-[200px]"
-                    size="large"
-                    color="primary"
-                    onClick={disableSend ? undefined : walletActionDepositClick}
-                    disabled={disableSend}>
-                    {intl.formatMessage({ id: 'wallet.action.deposit' })}
-                  </BorderButton>
-                </Row>
-              </Styled.ActionWrapper>
-            </Styled.ActionCol>
-          )}
+          {AssetHelper.isRuneNativeAsset(asset) ||
+            (AssetHelper.isCacaoAsset(asset) && (
+              <Styled.ActionCol sm={{ span: actionColSpanMobile }} md={{ span: actionColSpanDesktop }}>
+                <Styled.ActionWrapper>
+                  <Row justify="center">
+                    <BorderButton
+                      className="min-w-[200px]"
+                      size="large"
+                      color="primary"
+                      onClick={disableSend ? undefined : walletActionDepositClick}
+                      disabled={disableSend}>
+                      {intl.formatMessage({ id: 'wallet.action.deposit' })}
+                    </BorderButton>
+                  </Row>
+                </Styled.ActionWrapper>
+              </Styled.ActionCol>
+            ))}
         </Styled.ActionRow>
         <Styled.Divider />
       </Row>

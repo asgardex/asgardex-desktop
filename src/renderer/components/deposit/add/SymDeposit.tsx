@@ -899,7 +899,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
           const result = {
             poolAddress: params.poolAddress,
             asset: asset,
-            amount: amount1e8,
+            amount: convertBaseAmountDecimal(amount1e8, assetDecimal),
             memo: isRuneNativeAsset(asset) ? params.memos.rune : params.memos.asset,
             walletType: isRuneNativeAsset(asset) ? params.runeWalletType : params.assetWalletType,
             sender: isRuneNativeAsset(asset) ? params.runeSender : params.assetSender,
@@ -910,7 +910,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
           return result
         })
       ),
-    [oDepositParams, oFailedAssetAmount, dex]
+    [oDepositParams, oFailedAssetAmount, assetDecimal, dex]
   )
 
   const reloadFeesHandler = useCallback(() => {

@@ -2327,7 +2327,7 @@ export const Swap = ({
   const onSwitchAssets = useCallback(async () => {
     // delay to avoid render issues while switching
     await delay(100)
-
+    resetSwapState()
     const walletType = FP.pipe(
       oTargetWalletType,
       O.getOrElse<WalletType>(() => 'keystore')
@@ -2340,7 +2340,15 @@ export const Swap = ({
       targetWalletType: O.some(sourceWalletType),
       recipientAddress: oSourceWalletAddress
     })
-  }, [oSourceWalletAddress, oTargetWalletType, onChangeAsset, sourceAsset, sourceWalletType, targetAsset])
+  }, [
+    oSourceWalletAddress,
+    oTargetWalletType,
+    onChangeAsset,
+    resetSwapState,
+    sourceAsset,
+    sourceWalletType,
+    targetAsset
+  ])
 
   const disableSubmit: boolean = useMemo(
     () =>
