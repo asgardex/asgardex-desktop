@@ -109,7 +109,7 @@ export const InteractViewMAYA: React.FC = () => {
     )
   }, [oBalances, selectedAssetRD])
 
-  const { fees$, reloadFees, interact$ } = useMayachainContext()
+  const { fees$, reloadFees, interactMaya$ } = useMayachainContext()
 
   const [feeRD] = useObservableState<FeeRD>(
     () =>
@@ -176,7 +176,7 @@ export const InteractViewMAYA: React.FC = () => {
                       walletType={walletType}
                       hdMode={hdMode}
                       balance={walletBalance}
-                      interact$={interact$}
+                      interactMaya$={interactMaya$}
                       openExplorerTxUrl={openExplorerTxUrl}
                       getExplorerTxUrl={getExplorerTxUrl}
                       addressValidation={validateAddress}

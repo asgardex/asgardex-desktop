@@ -60,6 +60,20 @@ export const interact: Route<InteractParams> = {
   }
 }
 
+export type BondParams = {
+  interactType: string
+  nodeAddress: string
+  bondAmount: string
+}
+export const bondInteract: Route<BondParams> = {
+  template: `${assets.template}/interact/:interactType`,
+  path({ interactType, nodeAddress, bondAmount }) {
+    const basePath = `${assets.template}/interact/${interactType}`
+    const queryString = `?nodeAddress=${encodeURIComponent(nodeAddress)}&bondAmount=${encodeURIComponent(bondAmount)}`
+    return `${basePath}${queryString}`
+  }
+}
+
 export const bonds: Route<void> = {
   template: `${base.template}/bonds`,
   path() {

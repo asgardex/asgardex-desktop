@@ -1,10 +1,12 @@
-import { AssetBSC, BSCChain, BSC_GAS_ASSET_DECIMAL, LOWER_FEE_BOUND, UPPER_FEE_BOUND } from '@xchainjs/xchain-bsc'
+import { AssetBSC, BSCChain, BSC_GAS_ASSET_DECIMAL, UPPER_FEE_BOUND } from '@xchainjs/xchain-bsc'
 import { ExplorerProvider, FeeBounds, Network } from '@xchainjs/xchain-client'
 import { EVMClientParams } from '@xchainjs/xchain-evm'
 import { EtherscanProvider } from '@xchainjs/xchain-evm-providers'
 import { BigNumber, ethers } from 'ethers'
 
 import { envOrDefault } from '../utils/env'
+
+const LOWER_FEE_BOUND = 1_000_000_000
 
 export const FEE_BOUNDS: Record<Network, FeeBounds | undefined> = {
   /* for main|stagenet use default values defined in ETH.Client */

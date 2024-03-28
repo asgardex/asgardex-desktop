@@ -34,13 +34,19 @@ exports.default = async function notarizing(context) {
   const options = {
     appBundleId: 'org.thorchain.asgardex',
     appPath: `${appOutDir}/${appName}.app`,
-    appleId: SIGNING_APPLE_ID,
-    appleIdPassword: SIGNING_APP_PASSWORD,
-    teamId: SIGNING_TEAM_ID
+    appleId: process.env.SIGNING_APPLE_ID,
+    appleIdPassword: process.env.SIGNING_APP_PASSWORD,
+    teamId: process.env.SIGNING_TEAM_ID
   }
-  if (!isEmpty(SIGNING_TEAM_ID)) options.ascProvider = SIGNING_TEAM_ID
+
+  if (!isEmpty(SIGNING_TEAM_ID)) options.teamId = SIGNING_TEAM_ID
 
   console.log(`appPath`, options.appPath)
 
-  return notarize(options)
+  try {
+    await notarize(options)
+    console.log('Notarization successful')
+  } catch (error) {
+    console.error('Notarization failed:', error)
+  }
 }

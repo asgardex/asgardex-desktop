@@ -281,17 +281,45 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     liveData.map<Node[], NodeInfos>((nodes) =>
       FP.pipe(
         nodes,
-        A.map(({ total_bond, current_award, status, node_address }) => ({
+        A.map(({ total_bond, current_award, status, node_address, bond_providers }) => ({
+          address: node_address,
           bond: baseAmount(total_bond, THORCHAIN_DECIMAL),
           award: baseAmount(current_award, THORCHAIN_DECIMAL),
           status,
-          address: node_address
+          bondProviders: {
+            nodeOperatorFee: baseAmount(bond_providers.node_operator_fee, THORCHAIN_DECIMAL),
+            providers: Array.isArray(bond_providers.providers)
+              ? bond_providers.providers.map((provider) => ({
+                  bondAddress: provider.bond_address,
+                  bond: baseAmount(provider.bond, THORCHAIN_DECIMAL)
+                }))
+              : []
+          }
         }))
       )
     ),
     RxOp.startWith(RD.initial),
     RxOp.shareReplay(1)
   )
+
+  // const getBondProviderInfos$: NodeInfosLD = FP.pipe(
+  //   reloadNodeInfos$,
+  //   RxOp.debounceTime(300),
+  //   RxOp.switchMap(apiGetNodeInfos$),
+  //   liveData.map<Node[], NodeInfos>((nodes) =>
+  //     FP.pipe(
+  //       nodes,
+  //       A.map(({ total_bond, current_award, status, node_address }) => ({
+  //         bond: baseAmount(total_bond, THORCHAIN_DECIMAL),
+  //         award: baseAmount(current_award, THORCHAIN_DECIMAL),
+  //         status,
+  //         address: node_address
+  //       }))
+  //     )
+  //   ),
+  //   RxOp.startWith(RD.initial),
+  //   RxOp.shareReplay(1)
+  // )
 
   const apiGetLiquidityProviders$ = (asset: Asset): LiveData<Error, LiquidityProviderSummary[]> =>
     FP.pipe(

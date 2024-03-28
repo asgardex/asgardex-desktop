@@ -81,3 +81,10 @@ export const ConfirmationModalAddress = styled.span`
   font-weight: 'bold';
   font-family: 'MainFontBold';
 `
+
+export const WalletTypeLabel = styled(UILabel)`
+  color: inherit;
+  font-size: 16px;
+  font-family: 'MainFontRegular';
+  padding: 0;
+`

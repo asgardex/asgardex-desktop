@@ -2,19 +2,24 @@ import React from 'react'
 
 import { StopOutlined } from '@ant-design/icons'
 import { Network } from '@xchainjs/xchain-client'
+import { MayaChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { NodeStatusEnum } from '@xchainjs/xchain-thornode'
 import { Address, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { Col } from 'antd'
 import { useIntl } from 'react-intl'
 
-import { AssetRuneNative } from '../../../../shared/utils/asset'
-import { NodeInfo } from '../../../services/thorchain/types'
+import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
+import { NodeInfo, Providers } from '../../../services/thorchain/types'
 import * as Styled from './BondsTable.styles'
 
 export const NodeAddress: React.FC<{ address: Address; network: Network }> = ({ address, network }) => (
   <Col xs={18} lg={20} xl={24}>
-    <Styled.AddressEllipsis address={address} chain={THORChain} network={network} />
+    <Styled.AddressEllipsis
+      address={address}
+      chain={address.startsWith('thor') ? THORChain : MayaChain}
+      network={network}
+    />
   </Col>
 )
 
@@ -22,8 +27,21 @@ export const BondValue: React.FC<{ data: NodeInfo }> = ({ data }) => (
   <Col>
     <Styled.TextLabel align="right" nowrap>
       {formatAssetAmountCurrency({
-        asset: AssetRuneNative,
+        asset: data.address.startsWith('thor') ? AssetRuneNative : AssetCacao,
         amount: baseToAsset(data.bond),
+        trimZeros: true,
+        decimal: 0
+      })}
+    </Styled.TextLabel>
+  </Col>
+)
+
+export const BondProviderValue: React.FC<{ providers: Providers }> = ({ providers }) => (
+  <Col>
+    <Styled.TextLabel align="right" nowrap>
+      {formatAssetAmountCurrency({
+        asset: providers.bondAddress.startsWith('thor') ? AssetRuneNative : AssetCacao,
+        amount: baseToAsset(providers.bond),
         trimZeros: true,
         decimal: 0
       })}
@@ -35,7 +53,7 @@ export const AwardValue: React.FC<{ data: NodeInfo }> = ({ data }) => (
   <Col>
     <Styled.TextLabel align="right" nowrap>
       {formatAssetAmountCurrency({
-        asset: AssetRuneNative,
+        asset: data.address.startsWith('thor') ? AssetRuneNative : AssetCacao,
         amount: baseToAsset(data.award),
         trimZeros: true,
         decimal: 0

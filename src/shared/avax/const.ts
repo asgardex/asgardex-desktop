@@ -1,17 +1,12 @@
-import {
-  AVAXChain,
-  AVAX_DECIMAL,
-  AVAX_GAS_ASSET_DECIMAL,
-  AssetAVAX,
-  LOWER_FEE_BOUND,
-  UPPER_FEE_BOUND
-} from '@xchainjs/xchain-avax'
+import { AVAXChain, AVAX_DECIMAL, AVAX_GAS_ASSET_DECIMAL, AssetAVAX, UPPER_FEE_BOUND } from '@xchainjs/xchain-avax'
 import { ExplorerProvider, FeeBounds, Network } from '@xchainjs/xchain-client'
 import { EVMClientParams } from '@xchainjs/xchain-evm'
 import { EtherscanProvider, RoutescanProvider } from '@xchainjs/xchain-evm-providers'
 import { BigNumber, ethers } from 'ethers'
 
 import { envOrDefault } from '../utils/env'
+
+const LOWER_FEE_BOUND = 1_000_000_000
 
 export const FEE_BOUNDS: Record<Network, FeeBounds | undefined> = {
   /* for main|stagenet use default values defined in ETH.Client */

@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import { palette, size } from 'styled-theme'
 
 import { media } from '../../helpers/styleHelper'
+import { Label as UILabel } from '../uielements/label'
 
 export const Container = styled(Layout.Footer)`
   bottom: 0;
@@ -42,4 +43,16 @@ export const IconWrapper = styled.div`
 
 export const LinkWrapper = styled(Row)`
   margin: 20px 0;
+`
+
+export const Icon = styled.img`
+  border-radius: 50%;
+  width: 40px;
+  height: 30px;
+`
+export const TextLabel = styled(UILabel).attrs({ textTransform: 'uppercase' })`
+  color: inherit;
+  font-size: 14px;
+  font-family: 'MainFontRegular';
+  padding: 0;
 `

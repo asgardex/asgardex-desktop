@@ -7,7 +7,9 @@ import { useNavigate } from 'react-router-dom'
 import { ExternalUrl } from '../../../shared/const'
 import { ReactComponent as DiscordIcon } from '../../assets/svg/discord.svg'
 import { ReactComponent as ThorChainIcon } from '../../assets/svg/logo-thorchain.svg'
+import { useDex } from '../../hooks/useDex'
 import * as playgroundRoutes from '../../routes/playground'
+import { mayaIconT } from '../icons'
 import * as Styled from './Footer.styles'
 
 type IconProps = {
@@ -37,7 +39,7 @@ export const Footer: React.FC<Props> = (props): JSX.Element => {
 
   const navigate = useNavigate()
   const screens = Grid.useBreakpoint()
-
+  const { dex } = useDex()
   const gotoPlayground = useCallback(() => navigate(playgroundRoutes.base.path()), [navigate])
 
   const clickIconHandler = useCallback((url: string) => {
@@ -50,7 +52,18 @@ export const Footer: React.FC<Props> = (props): JSX.Element => {
         <Col span={24} md={12}>
           <Row justify={screens.md ? 'start' : 'center'}>
             <FooterIcon url={ExternalUrl.DOCS} onClick={clickIconHandler}>
-              <ThorChainIcon />
+              {dex === 'THOR' ? (
+                <ThorChainIcon />
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                  <div className="mr-2">
+                    <Styled.Icon src={mayaIconT} />
+                  </div>
+                  <div>
+                    <Styled.TextLabel>MAYACHAIN</Styled.TextLabel>
+                  </div>
+                </div>
+              )}
             </FooterIcon>
             {publicIP && <div className=" px-20px text-[14px] text-gray2 dark:text-gray2d">Public IP: {publicIP}</div>}
           </Row>
