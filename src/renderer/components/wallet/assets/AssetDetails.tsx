@@ -1,8 +1,9 @@
 import React, { useCallback, useState } from 'react'
 
+import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
-import { Address } from '@xchainjs/xchain-util'
+import { Address, assetToString } from '@xchainjs/xchain-util'
 import { Asset } from '@xchainjs/xchain-util'
 import { Row, Col } from 'antd'
 import * as FP from 'fp-ts/lib/function'
@@ -12,8 +13,10 @@ import { useNavigate } from 'react-router-dom'
 
 import { chainToString } from '../../../../shared/utils/chain'
 import { WalletType } from '../../../../shared/wallet/types'
+import { DEFAULT_WALLET_TYPE } from '../../../const'
 import * as AssetHelper from '../../../helpers/assetHelper'
 import { isCosmosChain, isThorChain } from '../../../helpers/chainHelper'
+import * as poolsRoutes from '../../../routes/pools'
 import * as walletRoutes from '../../../routes/wallet'
 import { OpenExplorerTxUrl, TxsPageRD } from '../../../services/clients'
 import { MAX_ITEMS_PER_PAGE } from '../../../services/const'
@@ -65,6 +68,25 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
   const walletActionSendClick = useCallback(() => {
     navigate(walletRoutes.send.path())
   }, [navigate])
+
+  const walletActionSwapClick = useCallback(() => {
+    const path = poolsRoutes.swap.path({
+      source: assetToString(asset),
+      target: assetToString(AssetHelper.isRuneNativeAsset(AssetRuneNative) ? AssetBTC : AssetRuneNative),
+      sourceWalletType: walletType,
+      targetWalletType: DEFAULT_WALLET_TYPE
+    })
+    navigate(path)
+  }, [asset, navigate, walletType])
+
+  const walletActionManageClick = useCallback(() => {
+    const path = poolsRoutes.deposit.path({
+      asset: assetToString(asset),
+      assetWalletType: DEFAULT_WALLET_TYPE,
+      runeWalletType: DEFAULT_WALLET_TYPE
+    })
+    navigate(path)
+  }, [asset, navigate])
 
   const walletActionDepositClick = useCallback(() => {
     const path = walletRoutes.interact.path({
@@ -122,14 +144,30 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
         <Styled.ActionRow>
           <Styled.ActionCol sm={{ span: actionColSpanMobile }} md={{ span: actionColSpanDesktop }}>
             <Styled.ActionWrapper>
-              <Row justify="center">
+              <Row justify="space-between">
                 <FlatButton
-                  className="min-w-[200px]"
+                  className="ml-2 min-w-[200px]"
                   size="large"
                   color="primary"
                   onClick={disableSend ? undefined : walletActionSendClick}
                   disabled={disableSend}>
                   {intl.formatMessage({ id: 'wallet.action.send' })}
+                </FlatButton>
+                <FlatButton
+                  className="min-w-[200px]"
+                  size="large"
+                  color="primary"
+                  onClick={disableSend ? undefined : walletActionSwapClick}
+                  disabled={disableSend}>
+                  {intl.formatMessage({ id: 'common.swap' })}
+                </FlatButton>
+                <FlatButton
+                  className="min-w-[200px]"
+                  size="large"
+                  color="primary"
+                  onClick={disableSend ? undefined : walletActionManageClick}
+                  disabled={disableSend}>
+                  {intl.formatMessage({ id: 'common.manage' })}
                 </FlatButton>
               </Row>
             </Styled.ActionWrapper>
