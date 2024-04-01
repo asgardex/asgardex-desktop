@@ -14,6 +14,7 @@ import { ZERO_ASSET_AMOUNT } from '../const'
 import { WalletBalances } from '../services/clients'
 import { NonEmptyWalletBalances, WalletBalance } from '../services/wallet/types'
 import {
+  isArbAsset,
   isAvaxAsset,
   isBnbAsset,
   isBscAsset,
@@ -138,7 +139,7 @@ export const getBnbAmountFromBalances = (balances: WalletBalances): O.Option<Ass
   getAssetAmountFromBalances(balances, isBnbAsset)
 
 export const getEVMAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
-  getAssetAmountFromBalances(balances, isEthAsset || isAvaxAsset || isBscAsset)
+  getAssetAmountFromBalances(balances, isEthAsset || isArbAsset|| isAvaxAsset || isBscAsset)
 
 export const getLtcAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
   getAssetAmountFromBalances(balances, isLtcAsset)
