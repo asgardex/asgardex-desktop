@@ -1,4 +1,5 @@
 import TransportNodeHidSingleton from '@ledgerhq/hw-transport-node-hid-singleton'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
@@ -19,6 +20,7 @@ import { IPCLedgerDepositTxParams, IPCLedgerSendTxParams } from '../../../shared
 import { LedgerError, LedgerErrorId } from '../../../shared/api/types'
 import { chainToString, isEnabledChain } from '../../../shared/utils/chain'
 import { isError, isEvmHDMode } from '../../../shared/utils/guard'
+import * as ARB from './arb/transaction'
 import * as AVAX from './avax/transaction'
 import * as BNB from './binance/transaction'
 import * as BTC from './bitcoin/transaction'
@@ -215,6 +217,36 @@ export const sendTx = async ({
             })
           }
           break
+        case ARBChain:
+          if (!asset) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(chain)}`
+            })
+          } else if (!feeOption) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Fee option needs to be set to send Ledger transaction on ${chainToString(chain)}`
+            })
+          } else if (!isEvmHDMode(hdMode)) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(chain)}`
+            })
+          } else {
+            res = await ARB.send({
+              asset,
+              transport,
+              network,
+              recipient,
+              amount,
+              memo,
+              walletIndex,
+              feeOption,
+              evmHDMode: hdMode
+            })
+          }
+          break
         case GAIAChain:
           if (!asset) {
             res = E.left({
@@ -334,6 +366,7 @@ export const deposit = async ({
         case GAIAChain:
         case AVAXChain:
         case BSCChain:
+        case ARBChain:
           res = notSupportedError
           break
       }
