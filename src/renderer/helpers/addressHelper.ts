@@ -1,3 +1,4 @@
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { getPrefix as getBinancePrefix } from '@xchainjs/xchain-binance'
 import { BNBChain } from '@xchainjs/xchain-binance'
@@ -52,6 +53,8 @@ export const getAddressPrefixLength = (chain: Chain, network: Network): number =
       return getCosmosPrefix().length
     case ETHChain:
       return getEvmPrefix().length
+     case ARBChain:
+      return getEvmPrefix().length
     case AVAXChain:
       return getEvmPrefix().length
     case BSCChain:
@@ -88,6 +91,14 @@ export const removeAddressPrefix = (address: Address): Address => {
  * ethers getAddress function recognize 0X address as invalid one
  */
 export const getEthChecksumAddress = (address: Address): O.Option<Address> =>
+  O.tryCatch(() => ethers.utils.getAddress(address.toLowerCase()))
+
+/**
+ * Helper to get Arb address as a checksum address
+ * toLowerCase() is needed to handle the ERC20 addresses start with 0X as well, not only 0x
+ * ethers getAddress function recognize 0X address as invalid one
+ */
+export const getArbChecksumAddress = (address: Address): O.Option<Address> =>
   O.tryCatch(() => ethers.utils.getAddress(address.toLowerCase()))
 
 /**
