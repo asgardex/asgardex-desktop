@@ -1,3 +1,4 @@
+import { ARBChain, AssetARB } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
@@ -148,9 +149,10 @@ export const CHAIN_WEIGHTS_THOR: Record<EnabledChain, number> = {
   [AVAXChain]: 7,
   [DOGEChain]: 8,
   [GAIAChain]: 9,
-  [DASHChain]: 10,
-  [KUJIChain]: 11,
-  [BNBChain]: 12
+  [ARBChain]: 10,
+  [DASHChain]: 11,
+  [KUJIChain]: 12,
+  [BNBChain]: 13
 }
 
 // Weight of chains
@@ -163,13 +165,14 @@ export const CHAIN_WEIGHTS_MAYA: Record<EnabledChain, number> = {
   [ETHChain]: 3,
   [DASHChain]: 4,
   [KUJIChain]: 5,
-  [BSCChain]: 6,
-  [BCHChain]: 7,
-  [LTCChain]: 8,
-  [AVAXChain]: 9,
-  [DOGEChain]: 10,
-  [GAIAChain]: 11,
-  [BNBChain]: 12
+  [ARBChain]: 6,
+  [BSCChain]: 7,
+  [BCHChain]: 8,
+  [LTCChain]: 9,
+  [AVAXChain]: 10,
+  [DOGEChain]: 11,
+  [GAIAChain]: 12,
+  [BNBChain]: 13
 }
 
 // Weight of currencies needed for pricing
