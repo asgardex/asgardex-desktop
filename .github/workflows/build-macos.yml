@@ -54,6 +54,7 @@ jobs:
           REACT_APP_BLOCKCYPHER_API_KEY: ${{ secrets.REACT_APP_BLOCKCYPHER_API_KEY }}
           REACT_APP_ETHERSCAN_API_KEY: ${{ secrets.REACT_APP_ETHERSCAN_API_KEY }}
           REACT_APP_BSCSCAN_API_KEY: ${{ secrets.REACT_APP_BSCSCAN_API_KEY }}
+          REACT_APP_ARBISCAN_API_KEY: ${{ secrets.REACT_APP_ARBISCAN_API_KEY }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
