@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -11,9 +12,11 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import {
+  getArbAssetAddress,
   getAvaxAssetAddress,
   getBscAssetAddress,
   getEthAssetAddress,
+  isArbAsset,
   isAvaxAsset,
   isBscAsset,
   isEthAsset,
@@ -226,6 +229,8 @@ export const saverWithdraw$ = ({
         switch (chain) {
           case ETHChain:
             return !isEthAsset(asset) ? getEthAssetAddress(asset) : O.none
+          case ARBChain:
+            return !isArbAsset(asset) ? getArbAssetAddress(asset) : O.none
           case AVAXChain:
             return !isAvaxAsset(asset) ? getAvaxAssetAddress(asset) : O.none
           case BSCChain:
