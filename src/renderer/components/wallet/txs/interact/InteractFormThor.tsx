@@ -758,11 +758,11 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                 )}
                 {nodeAddress && (
                   <div className="p-4">
-                    <div className="ml-[-2px] flex w-full justify-between font-mainBold text-[14px]">
+                    <div className="ml-[-2px] flex w-full justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
                       {intl.formatMessage({ id: 'common.nodeAddress' })}
                       <div className="truncate pl-10px font-main text-[12px]">{nodeAddress}</div>
                     </div>
-                    <div className="ml-[-2px] flex w-full justify-between  py-10px font-mainBold text-[14px]">
+                    <div className="ml-[-2px] flex w-full justify-between  py-10px font-mainBold text-[14px] text-gray2 dark:text-gray2d">
                       {intl.formatMessage({ id: 'bonds.bond' })}
                       <div className="truncate pl-10px font-main text-[12px]">
                         {formatAssetAmountCurrency({

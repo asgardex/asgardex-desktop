@@ -25,6 +25,11 @@ type Props = {
   className?: string
   walletAddresses: Record<'THOR' | 'MAYA', WalletAddressInfo[]>
 }
+interface CustomExpandIconProps {
+  expanded: boolean
+  onExpand: (record: string, event: React.MouseEvent<HTMLSpanElement, MouseEvent>) => void // Adjusted for <span>// Adjust YourRecordType accordingly
+  record: string
+}
 
 export const BondsTable: React.FC<Props> = ({
   nodes,
@@ -221,6 +226,10 @@ export const BondsTable: React.FC<Props> = ({
     }
   }, [nodeToRemove, removeNode])
 
+  const CustomExpandIcon: React.FC<CustomExpandIconProps> = ({ expanded, onExpand, record }) => (
+    <Styled.ExpandIcon onClick={(e) => onExpand(record, e)} rotate={expanded ? 90 : 0}></Styled.ExpandIcon>
+  )
+
   return (
     <>
       <Styled.Table
@@ -242,6 +251,7 @@ export const BondsTable: React.FC<Props> = ({
           ),
           rowExpandable: (record) => record.bondProviders.providers.length > 0,
           expandedRowKeys: expandedRowKeys,
+          expandIcon: ({ expanded, onExpand, record }) => CustomExpandIcon({ expanded, onExpand, record }),
           onExpand: (expanded, record) => {
             if (expanded) {
               setExpandedRowKeys((prevKeys) => [...prevKeys, record.address])
