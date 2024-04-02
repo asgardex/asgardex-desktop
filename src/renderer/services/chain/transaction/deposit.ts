@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { ARBChain } from '@xchainjs/xchain-avax'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { TxHash } from '@xchainjs/xchain-client'
@@ -13,6 +14,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
 import {
+  getArbAssetAddress,
   getAvaxAssetAddress,
   getBscAssetAddress,
   getEthAssetAddress,
@@ -125,6 +127,8 @@ export const saverDeposit$ = ({
         switch (chain) {
           case ETHChain:
             return !isEthAsset(asset) ? getEthAssetAddress(asset) : O.none
+          case ARBChain:
+            return !isArbAsset(asset) ? getArbAssetAddress(asset) : O.none
           case AVAXChain:
             return !isAvaxAsset(asset) ? getAvaxAssetAddress(asset) : O.none
           case BSCChain:
@@ -322,6 +326,8 @@ export const symDeposit$ = ({
               switch (chain) {
                 case ETHChain:
                   return !isEthAsset(asset) ? getEthAssetAddress(asset) : O.none
+                case ARBChain:
+                  return !isArbAsset(asset) ? getArbAssetAddress(asset) : O.none
                 case AVAXChain:
                   return !isAvaxAsset(asset) ? getAvaxAssetAddress(asset) : O.none
                 case BSCChain:
