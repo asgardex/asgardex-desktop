@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
@@ -28,6 +29,7 @@ import { sequenceTOptionFromArray } from '../../helpers/fpHelpers'
 import { liveData } from '../../helpers/rx/liveData'
 import { addressFromOptionalWalletAddress } from '../../helpers/walletHelper'
 import { Network$ } from '../app/types'
+import * as ARB from '../arb'
 import * as AVAX from '../avax'
 import * as BNB from '../binance'
 import * as BTC from '../bitcoin'
@@ -72,6 +74,7 @@ export const createBalancesService = ({
     DASH.reloadBalances()
     BCH.reloadBalances()
     ETH.reloadBalances()
+    ARB.reloadBalances()
     AVAX.reloadBalances()
     BSC.reloadBalances()
     THOR.reloadBalances()
@@ -97,6 +100,8 @@ export const createBalancesService = ({
         return BCH.reloadBalances
       case ETHChain:
         return ETH.reloadBalances
+      case ARBChain:
+        return ARB.reloadBalances
       case AVAXChain:
         return AVAX.reloadBalances
       case BSCChain:
@@ -178,6 +183,16 @@ export const createBalancesService = ({
             RxOp.switchMap((network) => ETH.balances$({ walletType, network, walletIndex, hdMode }))
           ),
           reloadBalances$: ETH.reloadBalances$
+        }
+       case ARBChain:
+        return {
+          reloadBalances: ARB.reloadBalances,
+          resetReloadBalances: ARB.resetReloadBalances,
+          balances$: FP.pipe(
+            network$,
+            RxOp.switchMap((network) => ARB.balances$({ walletType, network, walletIndex, hdMode }))
+          ),
+          reloadBalances$: ARB.reloadBalances$
         }
       case AVAXChain:
         return {
@@ -711,6 +726,28 @@ export const createBalancesService = ({
     }))
   )
 
+  const arbBalances$ = getChainBalance$({
+    chain: ARBChain,
+    walletType: 'keystore',
+    walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
+    hdMode: 'default',
+    walletBalanceType: 'all'
+  })
+
+  /**
+   * Transforms ARB data (address + `WalletBalance`) into `ChainBalance`
+   */
+  const arbChainBalance$: ChainBalance$ = Rx.combineLatest([ARB.addressUI$, arbBalances$]).pipe(
+    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
+      walletType: 'keystore',
+      chain: ARBChain,
+      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
+      balances,
+      balancesType: 'all'
+    }))
+  )
+  
   const avaxBalances$ = getChainBalance$({
     chain: AVAXChain,
     walletType: 'keystore',
@@ -732,7 +769,7 @@ export const createBalancesService = ({
       balancesType: 'all'
     }))
   )
-
+  
   const bscBalances$ = getChainBalance$({
     chain: BSCChain,
     walletType: 'keystore',
@@ -800,6 +837,19 @@ export const createBalancesService = ({
       })
     )
   )
+   /**
+   * ARB Ledger balances
+   */
+  const arbLedgerChainBalance$: ChainBalance$ = FP.pipe(
+    network$,
+    RxOp.switchMap((network) =>
+      ledgerChainBalance$({
+        chain: ARBChain,
+        walletBalanceType: 'all',
+        getBalanceByAddress$: ARB.getBalanceByAddress$(network)
+      })
+    )
+  )
   /**
    * AVAX Ledger balances
    */
@@ -843,6 +893,7 @@ export const createBalancesService = ({
         BCH: [bchChainBalance$, bchLedgerChainBalance$],
         DASH: [dashBalance$, dashLedgerChainBalance$],
         ETH: [ethChainBalance$, ethLedgerChainBalance$],
+        ARB: [arbChainBalance$, arbLedgerChainBalance$],
         AVAX: [avaxChainBalance$, avaxLedgerChainBalance$],
         BSC: [bscChainBalance$, bscLedgerChainBalance$],
         BNB: [bnbChainBalance$, bnbLedgerChainBalance$],
