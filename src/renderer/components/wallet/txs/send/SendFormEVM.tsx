@@ -192,8 +192,9 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       return O.some(balance.amount)
     }
     // or check list of other assets to get eth balance
-    return FP.pipe(balances, getEVMAmountFromBalances, O.map(assetToBase))
+    return FP.pipe(getEVMAmountFromBalances(balances, getChainAsset(asset.chain)), O.map(assetToBase))
   }, [asset, balance.amount, balances])
+
   const isFeeError = useMemo(() => {
     return FP.pipe(
       sequenceTOption(selectedFee, oAssetAmount),
@@ -213,7 +214,6 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       // no eth asset == zero amount
       O.getOrElse(() => ZERO_BASE_AMOUNT)
     )
-
     const msg = intl.formatMessage(
       { id: 'wallet.errors.fee.notCovered' },
       {

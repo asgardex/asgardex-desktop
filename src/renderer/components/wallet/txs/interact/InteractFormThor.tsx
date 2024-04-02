@@ -745,7 +745,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                   />
                 </Styled.FormItem>
                 {/* max. amount button (BOND/CUSTOM only) */}
-                {(interactType === 'bond' || interactType === 'custom' || interactType === 'unbond') && (
+                {(interactType === 'bond' || interactType === 'custom') && (
                   <MaxBalanceButton
                     className="mb-10px"
                     color="neutral"
@@ -756,12 +756,32 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                     onChange={() => getMemo()}
                   />
                 )}
+                {nodeAddress && (
+                  <div className="p-4">
+                    <div className="ml-[-2px] flex w-full justify-between font-mainBold text-[14px]">
+                      {intl.formatMessage({ id: 'common.nodeAddress' })}
+                      <div className="truncate pl-10px font-main text-[12px]">{nodeAddress}</div>
+                    </div>
+                    <div className="ml-[-2px] flex w-full justify-between  py-10px font-mainBold text-[14px]">
+                      {intl.formatMessage({ id: 'bonds.bond' })}
+                      <div className="truncate pl-10px font-main text-[12px]">
+                        {formatAssetAmountCurrency({
+                          asset: AssetRuneNative,
+                          amount: baseToAsset(bondBaseAmount),
+                          trimZeros: true,
+                          decimal: 0
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <Styled.Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} disabled={isLoading} />
                 {isFeeError && renderFeeError}
               </Styled.InputContainer>
             )}
           </>
         )}
+
         {hasProviderAddress && (
           <>
             {interactType === 'unbond' && (
@@ -1065,25 +1085,6 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                 {intl.formatMessage({ id: 'common.memo' })}
                 <div className="truncate pl-10px font-main text-[12px]">{memoLabel}</div>
               </div>
-              {interactType === 'unbond' && (
-                <>
-                  <div className="ml-[-2px] flex w-full justify-between  pt-10px font-mainBold text-[14px]">
-                    {intl.formatMessage({ id: 'common.nodeAddress' })}
-                    <div className="truncate pl-10px font-main text-[12px]">{nodeAddress}</div>
-                  </div>
-                  <div className="ml-[-2px] flex w-full justify-between  pt-10px font-mainBold text-[14px]">
-                    {intl.formatMessage({ id: 'bonds.bond' })}
-                    <div className="truncate pl-10px font-main text-[12px]">
-                      {formatAssetAmountCurrency({
-                        asset: AssetRuneNative,
-                        amount: baseToAsset(bondBaseAmount),
-                        trimZeros: true,
-                        decimal: 0
-                      })}
-                    </div>
-                  </div>
-                </>
-              )}
             </>
           )}
         </div>

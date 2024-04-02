@@ -15,6 +15,7 @@ import { useEvmContext } from '../../../contexts/EvmContext'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
+import { getChainAsset } from '../../../helpers/chainHelper'
 import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
@@ -72,7 +73,7 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
     // `reloadFees` will be called and with it, `feesRD` will be updated with fees
     () => {
       return fees$({
-        asset: asset.asset,
+        asset: getChainAsset(asset.asset.chain),
         amount: baseAmount(1),
         recipient: ETHAddress,
         from: asset.walletAddress

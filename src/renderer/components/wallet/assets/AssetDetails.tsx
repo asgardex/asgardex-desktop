@@ -2,8 +2,9 @@ import React, { useCallback, useState } from 'react'
 
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
+import { AssetCacao } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
-import { Address, assetToString } from '@xchainjs/xchain-util'
+import { Address, assetToString, Chain } from '@xchainjs/xchain-util'
 import { Asset } from '@xchainjs/xchain-util'
 import { Row, Col } from 'antd'
 import * as FP from 'fp-ts/lib/function'
@@ -11,11 +12,11 @@ import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { chainToString } from '../../../../shared/utils/chain'
+import { Dex } from '../../../../shared/api/types'
+import { chainToString, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
 import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
 import * as AssetHelper from '../../../helpers/assetHelper'
-import { isBtcAsset } from '../../../helpers/assetHelper'
 import { isCosmosChain, isThorChain } from '../../../helpers/chainHelper'
 import * as poolsRoutes from '../../../routes/pools'
 import * as walletRoutes from '../../../routes/wallet'
@@ -42,6 +43,9 @@ export type Props = {
   walletAddress: Address
   disableSend: boolean
   network: Network
+  dex: Dex
+  changeDex: (dex: Dex) => void
+  haltedChains: Chain[]
 }
 
 export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
@@ -56,38 +60,65 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
     openExplorerAddressUrl,
     walletAddress,
     disableSend,
-    network
+    network,
+    dex,
+    haltedChains,
+    changeDex
   } = props
 
   const [currentPage, setCurrentPage] = useState(1)
 
-  const { chain } = asset.synth ? AssetRuneNative : asset
+  const { chain } = asset.synth ? (dex === 'THOR' ? AssetRuneNative : AssetCacao) : asset
 
   const navigate = useNavigate()
   const intl = useIntl()
+
+  const isHaltedChain = haltedChains.includes(chain)
+  const disableSwap = isHaltedChain || AssetHelper.isMayaAsset(asset) || asset.synth
+  const disableAdd = isHaltedChain || asset.synth || AssetHelper.isMayaAsset(asset)
+
+  // If the chain is not halted, perform the action
 
   const walletActionSendClick = useCallback(() => {
     navigate(walletRoutes.send.path())
   }, [navigate])
 
   const walletActionSwapClick = useCallback(() => {
+    // Determine if the asset's chain is supported by the current DEX
+    const currentChainSupported = dex === 'MAYA' ? isChainOfMaya(chain) : isChainOfThor(chain)
+
+    // If the current DEX doesn't support the asset's chain, switch DEXes
+    if (!currentChainSupported) {
+      const newDex = dex === 'MAYA' ? 'THOR' : 'MAYA'
+      changeDex(newDex)
+    }
+
     const path = poolsRoutes.swap.path({
-      source: assetToString(isBtcAsset(asset) ? AssetRuneNative : AssetBTC),
-      target: assetToString(AssetHelper.isRuneNativeAsset(AssetRuneNative) ? AssetBTC : AssetRuneNative),
+      source: assetToString(asset),
+      target: assetToString(AssetHelper.isRuneNativeAsset(asset) ? AssetBTC : AssetRuneNative),
       sourceWalletType: walletType,
       targetWalletType: DEFAULT_WALLET_TYPE
     })
     navigate(path)
-  }, [asset, navigate, walletType])
+  }, [asset, chain, changeDex, dex, navigate, walletType])
 
   const walletActionManageClick = useCallback(() => {
+    // Determine if the asset's chain is supported by the current DEX
+    const currentChainSupported = dex === 'MAYA' ? isChainOfMaya(chain) : isChainOfThor(chain)
+
+    // If the current DEX doesn't support the asset's chain, switch DEXes
+    if (!currentChainSupported) {
+      const newDex = dex === 'MAYA' ? 'THOR' : 'MAYA'
+      changeDex(newDex)
+    }
+
     const path = poolsRoutes.deposit.path({
       asset: assetToString(asset),
       assetWalletType: walletType,
       runeWalletType: DEFAULT_WALLET_TYPE
     })
     navigate(path)
-  }, [asset, navigate, walletType])
+  }, [asset, chain, changeDex, dex, navigate, walletType])
 
   const walletActionDepositClick = useCallback(() => {
     const path = walletRoutes.interact.path({
@@ -112,9 +143,6 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
     },
     [loadTxsHandler]
   )
-
-  const actionColSpanDesktop = 12
-  const actionColSpanMobile = 24
 
   return (
     <>
@@ -143,11 +171,11 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
         <Styled.Divider />
 
         <Styled.ActionRow>
-          <Styled.ActionCol sm={{ span: actionColSpanMobile }} md={{ span: actionColSpanDesktop }}>
-            <Styled.ActionWrapper>
+          <Styled.ActionWrapper>
+            <Styled.ActionCol>
               <Row justify="space-between">
                 <FlatButton
-                  className="ml-2 min-w-[200px]"
+                  className="m-2 ml-2 min-w-[200px]"
                   size="large"
                   color="primary"
                   onClick={disableSend ? undefined : walletActionSendClick}
@@ -155,41 +183,45 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
                   {intl.formatMessage({ id: 'wallet.action.send' })}
                 </FlatButton>
                 <FlatButton
-                  className="min-w-[200px]"
+                  className="m-2 ml-2 min-w-[200px]"
                   size="large"
                   color="primary"
-                  onClick={disableSend ? undefined : walletActionSwapClick}
-                  disabled={disableSend}>
+                  onClick={disableSwap ? undefined : walletActionSwapClick}
+                  disabled={disableSwap}>
                   {intl.formatMessage({ id: 'common.swap' })}
                 </FlatButton>
                 <FlatButton
-                  className="min-w-[200px]"
+                  className="m-2 ml-2 min-w-[200px]"
                   size="large"
                   color="primary"
-                  onClick={disableSend ? undefined : walletActionManageClick}
-                  disabled={disableSend}>
+                  onClick={disableAdd ? undefined : walletActionManageClick}
+                  disabled={disableAdd}>
                   {intl.formatMessage({ id: 'common.manage' })}
                 </FlatButton>
+
+                {AssetHelper.isRuneNativeAsset(asset) && (
+                  <BorderButton
+                    className="m-2 ml-2 min-w-[200px]"
+                    size="large"
+                    color="primary"
+                    onClick={disableSend ? undefined : walletActionDepositClick}
+                    disabled={disableSend}>
+                    {intl.formatMessage({ id: 'wallet.action.deposit' })}
+                  </BorderButton>
+                )}
+                {AssetHelper.isCacaoAsset(asset) && (
+                  <BorderButton
+                    className="min-w-[200px]"
+                    size="large"
+                    color="primary"
+                    onClick={disableSend ? undefined : walletActionDepositClick}
+                    disabled={disableSend}>
+                    {intl.formatMessage({ id: 'wallet.action.deposit' })}
+                  </BorderButton>
+                )}
               </Row>
-            </Styled.ActionWrapper>
-          </Styled.ActionCol>
-          {AssetHelper.isRuneNativeAsset(asset) ||
-            (AssetHelper.isCacaoAsset(asset) && (
-              <Styled.ActionCol sm={{ span: actionColSpanMobile }} md={{ span: actionColSpanDesktop }}>
-                <Styled.ActionWrapper>
-                  <Row justify="center">
-                    <BorderButton
-                      className="min-w-[200px]"
-                      size="large"
-                      color="primary"
-                      onClick={disableSend ? undefined : walletActionDepositClick}
-                      disabled={disableSend}>
-                      {intl.formatMessage({ id: 'wallet.action.deposit' })}
-                    </BorderButton>
-                  </Row>
-                </Styled.ActionWrapper>
-              </Styled.ActionCol>
-            ))}
+            </Styled.ActionCol>
+          </Styled.ActionWrapper>
         </Styled.ActionRow>
         <Styled.Divider />
       </Row>
@@ -212,7 +244,10 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
            */}
           {isCosmosChain(chain) || asset.synth || isThorChain(chain) ? (
             <WarningView
-              subTitle={intl.formatMessage({ id: 'wallet.txs.history.disabled' }, { chain: chainToString(chain) })}
+              subTitle={intl.formatMessage(
+                { id: 'wallet.txs.history.disabled' },
+                { chain: `${chainToString(chain)} ${asset.synth ? 'synth' : ''}` }
+              )}
               extra={
                 <FlatButton size="normal" color="neutral" onClick={openExplorerAddressUrl}>
                   {intl.formatMessage({ id: 'wallet.txs.history' })}

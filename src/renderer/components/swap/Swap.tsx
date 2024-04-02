@@ -2327,7 +2327,9 @@ export const Swap = ({
   const onSwitchAssets = useCallback(async () => {
     // delay to avoid render issues while switching
     await delay(100)
-    resetSwapState()
+    setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
+    setQuote(O.none)
+    setQuoteMaya(O.none)
     const walletType = FP.pipe(
       oTargetWalletType,
       O.getOrElse<WalletType>(() => 'keystore')
@@ -2341,10 +2343,11 @@ export const Swap = ({
       recipientAddress: oSourceWalletAddress
     })
   }, [
+    initialAmountToSwapMax1e8,
     oSourceWalletAddress,
     oTargetWalletType,
     onChangeAsset,
-    resetSwapState,
+    setAmountToSwapMax1e8,
     sourceAsset,
     sourceWalletType,
     targetAsset
