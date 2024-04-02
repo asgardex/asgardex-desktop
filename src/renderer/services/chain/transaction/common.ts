@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
@@ -22,6 +23,7 @@ import * as Rx from 'rxjs'
 import { isEnabledChain } from '../../../../shared/utils/chain'
 import { DEFAULT_FEE_OPTION } from '../../../components/wallet/txs/send/Send.const'
 import { LiveData, liveData } from '../../../helpers/rx/liveData'
+import * as ARB from '../../arb'
 import * as AVAX from '../../avax'
 import * as BNB from '../../binance'
 import * as BTC from '../../bitcoin'
@@ -80,6 +82,9 @@ export const sendTx$ = ({
     case ETHChain:
       return ETH.sendTx({ walletType, asset, recipient, amount, memo, feeOption, walletIndex, hdMode })
 
+    case ARBChain:
+      return ARB.sendTx({ walletType, asset, recipient, amount, memo, feeOption, walletIndex, hdMode })
+      
     case AVAXChain:
       return AVAX.sendTx({ walletType, asset, recipient, amount, memo, feeOption, walletIndex, hdMode })
 
@@ -214,6 +219,18 @@ export const sendPoolTx$ = ({
         hdMode,
         feeOption
       })
+    case ARBChain:
+      return ARB.sendPoolTx$({
+        walletType,
+        router,
+        recipient,
+        asset,
+        amount,
+        memo,
+        walletIndex,
+        hdMode,
+        feeOption
+      })
     case AVAXChain:
       return AVAX.sendPoolTx$({
         walletType,
@@ -276,6 +293,8 @@ export const txStatusByChain$ = ({ txHash, chain }: { txHash: TxHash; chain: Cha
       return BTC.txStatus$(txHash, O.none)
     case ETHChain:
       return ETH.txStatus$(txHash, O.none)
+    case ARBChain:
+      return ARB.txStatus$(txHash, O.none)
     case AVAXChain:
       return AVAX.txStatus$(txHash, O.none)
     case BSCChain:
@@ -320,6 +339,8 @@ export const poolTxStatusByChain$ = ({
   switch (chain) {
     case ETHChain:
       return ETH.txStatus$(txHash, oAssetAddress)
+    case ARBChain:
+      return ARB.txStatus$(txHash, oAssetAddress)
     case AVAXChain:
       return AVAX.txStatus$(txHash, oAssetAddress)
     case BSCChain:
