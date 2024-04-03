@@ -1,7 +1,6 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-// import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { baseAmount } from '@xchainjs/xchain-util'
 import { Spin } from 'antd'
 import * as FP from 'fp-ts/lib/function'
@@ -13,13 +12,15 @@ import { SendFormEVM } from '../../../components/wallet/txs/send'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useEvmContext } from '../../../contexts/EvmContext'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
-import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
+import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
+import { useDex } from '../../../hooks/useDex'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { FeesRD, WalletBalances } from '../../../services/clients'
+import { PoolAddress } from '../../../services/midgard/types'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAsset, WalletBalance } from '../../../services/wallet/types'
 import * as Styled from '../Interact/InteractView.styles'
@@ -33,7 +34,7 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
   const { asset, emptyBalance } = props
 
   const { network } = useNetwork()
-
+  const { dex } = useDex()
   const {
     balancesState$,
     keystoreService: { validatePassword$ }
@@ -45,11 +46,34 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
   )
   const {
     service: {
-      pools: { poolsState$ }
+      pools: { selectedPoolAddress$, poolsState$ },
+      setSelectedPoolAsset
     }
   } = useMidgardContext()
-  const poolsRD = useObservableState(poolsState$, RD.pending)
-  const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
+  const {
+    service: {
+      pools: { selectedPoolAddress$: selectedPoolAddressMaya$, poolsState$: poolsStateMaya$ },
+      setSelectedPoolAsset: setSelectedPoolAssetMaya
+    }
+  } = useMidgardMayaContext()
+
+  useEffect(() => {
+    // Source asset is the asset of the pool we need to interact with
+    // Store it in global state, all depending streams will be updated then
+    dex === 'THOR' ? setSelectedPoolAsset(O.some(asset.asset)) : setSelectedPoolAssetMaya(O.some(asset.asset))
+    // Reset selectedPoolAsset on view's unmount to avoid effects with depending streams
+    return () => {
+      setSelectedPoolAsset(O.none)
+    }
+  }, [setSelectedPoolAsset, setSelectedPoolAssetMaya, dex, asset])
+
+  const poolsStateRD = useObservableState(dex === 'THOR' ? poolsState$ : poolsStateMaya$, RD.initial)
+  const poolDetails = RD.toNullable(poolsStateRD)?.poolDetails ?? []
+
+  const oPoolAddress: O.Option<PoolAddress> = useObservableState(
+    dex === 'THOR' ? selectedPoolAddress$ : selectedPoolAddressMaya$,
+    O.none
+  )
 
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(asset.asset.chain))
 
@@ -62,8 +86,7 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
     )
   }, [asset.asset, asset.walletAddress, oBalances])
 
-  const { thorchainQuery } = useThorchainQueryContext()
-  const { transfer$ } = useChainContext()
+  const { transfer$, saverDeposit$: deposit$ } = useChainContext()
 
   const { fees$, reloadFees } = useEvmContext(asset.asset.chain)
 
@@ -97,13 +120,15 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
               )}
               fees={feesRD}
               transfer$={transfer$}
+              deposit$={deposit$}
               openExplorerTxUrl={openExplorerTxUrl}
               getExplorerTxUrl={getExplorerTxUrl}
               reloadFeesHandler={reloadFees}
               validatePassword$={validatePassword$}
-              thorchainQuery={thorchainQuery}
               network={network}
               poolDetails={poolDetails}
+              oPoolAddress={O.none}
+              dex={dex}
             />
           </Styled.Container>
         </Spin>
@@ -119,13 +144,15 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
             )}
             fees={feesRD}
             transfer$={transfer$}
+            deposit$={deposit$}
             openExplorerTxUrl={openExplorerTxUrl}
             getExplorerTxUrl={getExplorerTxUrl}
             reloadFeesHandler={reloadFees}
             validatePassword$={validatePassword$}
-            thorchainQuery={thorchainQuery}
             network={network}
             poolDetails={poolDetails}
+            oPoolAddress={oPoolAddress}
+            dex={dex}
           />
         </Styled.Container>
       )
