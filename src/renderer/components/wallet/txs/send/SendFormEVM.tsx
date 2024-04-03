@@ -55,6 +55,7 @@ import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../
 import * as StyledR from '../../../shared/form/Radio.styles'
 import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
+import { SwitchButton } from '../../../uielements/button/SwitchButton'
 import { UIFeesRD } from '../../../uielements/fees'
 import { InputBigNumber } from '../../../uielements/input'
 import { ShowDetails } from '../../../uielements/showDetails'
@@ -507,11 +508,10 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       addressValidator(undefined, address)
         .then(() => {
           setSendAddress(O.some(address))
-          setPoolDeposit(address === InboundAddress)
         })
         .catch(() => setSendAddress(O.none))
     },
-    [addressValidator, InboundAddress]
+    [addressValidator]
   )
 
   const reloadFees = useCallback(() => {
@@ -854,13 +854,25 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
             <Form.Item name="fee">{renderFeeOptions}</Form.Item>
             {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
             <Styled.SettingsWrapper onClick={() => setShowMemo(!showMemo)}>
-              <Tooltip title={intl.formatMessage({ id: 'common.settings' })}>
+              <Tooltip title={intl.formatMessage({ id: 'deposit.advancedMode' })}>
                 <Cog8ToothIcon
-                  className={`ease h-[24px] w-[24px] text-text2 ${showMemo ? 'rotate-180' : ''} dark:text-text2d`}
+                  className={`ease h-[20px] w-[20px] text-text2 ${showMemo ? 'rotate-180' : ''} dark:text-text2d`}
                 />
               </Tooltip>
             </Styled.SettingsWrapper>
-            {showMemo && renderMemo}
+            {showMemo && (
+              <div>
+                <div className="flex w-full">
+                  <SwitchButton onChange={() => setPoolDeposit(!poolDeposit)}></SwitchButton>
+                  {poolDeposit ? (
+                    <div className="pl-4 text-text2 dark:text-text2d">{`Send pool transaction on ${dex}`}</div>
+                  ) : (
+                    <div className="pl-4 text-text2 dark:text-text2d">{`Transfer token ${asset.ticker}`}</div>
+                  )}
+                </div>
+                {renderMemo}
+              </div>
+            )}
           </Styled.SubForm>
           <FlatButton
             className="mt-40px min-w-[200px]"

@@ -146,8 +146,7 @@ export const SettingsWrapper = styled(`div`)`
   cursor: ${() => 'pointer'};
   justify-content: space-between;
   width: 100vw;
-  padding: 0 15px;
-  height: 60px;
+  height: 40px;
   align-items: center;
 
   ${media.lg`

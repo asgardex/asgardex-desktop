@@ -899,7 +899,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
           const result = {
             poolAddress: params.poolAddress,
             asset: asset,
-            amount: convertBaseAmountDecimal(amount1e8, assetDecimal),
+            amount: isRuneNativeAsset(asset) ? amount1e8 : convertBaseAmountDecimal(amount1e8, assetDecimal),
             memo: isRuneNativeAsset(asset) ? params.memos.rune : params.memos.asset,
             walletType: isRuneNativeAsset(asset) ? params.runeWalletType : params.assetWalletType,
             sender: isRuneNativeAsset(asset) ? params.runeSender : params.assetSender,
@@ -1587,6 +1587,16 @@ export const SymDeposit: React.FC<Props> = (props) => {
     // don't render TxModal in initial state
     if (RD.isInitial(depositRD)) return <></>
 
+    const source = FP.pipe(
+      oFailedAssetAmount,
+      O.fold(
+        // None case
+        () => ({ asset: dexAsset, amount: ZERO_BASE_AMOUNT }),
+        // Some case
+        (failedAssetAmount) => ({ asset: failedAssetAmount.asset, amount: failedAssetAmount.amount1e8 })
+      )
+    )
+
     // Get timer value
     const timerValue = FP.pipe(
       depositRD,
@@ -1634,8 +1644,11 @@ export const SymDeposit: React.FC<Props> = (props) => {
         extraResult={
           <ViewTxButton
             txHash={oTxHash}
-            onClick={getAssetExplorerTxUrl}
-            txUrl={FP.pipe(oTxHash, O.chain(getRuneExplorerTxUrl))}
+            onClick={isRuneNativeAsset(source.asset) ? openRuneExplorerTxUrl : openAssetExplorerTxUrl}
+            txUrl={FP.pipe(
+              oTxHash,
+              O.chain(isRuneNativeAsset(source.asset) ? getRuneExplorerTxUrl : getAssetExplorerTxUrl)
+            )}
             label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: asset.ticker })}
           />
         }
@@ -1644,14 +1657,18 @@ export const SymDeposit: React.FC<Props> = (props) => {
     )
   }, [
     asymDepositState,
+    oFailedAssetAmount,
     onCloseTxModal,
     onFinishTxModal,
     depositStartTime,
-    getAssetExplorerTxUrl,
+    openRuneExplorerTxUrl,
+    openAssetExplorerTxUrl,
     getRuneExplorerTxUrl,
+    getAssetExplorerTxUrl,
     intl,
     asset.ticker,
     txModalExtraContentAsym,
+    dexAsset,
     chain
   ])
 
