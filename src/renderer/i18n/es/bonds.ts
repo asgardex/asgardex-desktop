@@ -3,6 +3,7 @@ import { BondsMessages } from '../types'
 const bonds: BondsMessages = {
   'bonds.node': 'Nodo',
   'bonds.bond': 'Bono',
+  'bonds.currentBond': 'Bono Actual',
   'bonds.bondProvider': 'Proveedor de bonos',
   'bonds.award': 'Premio',
   'bonds.status': 'Estado',

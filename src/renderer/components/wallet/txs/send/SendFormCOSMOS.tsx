@@ -115,14 +115,14 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
       setSwapMemoDetected(true)
 
       // Set affiliate tracking message
-      setAffiliateTracking(`Swap memo detected 5bps affiliate fee applied`)
+      setAffiliateTracking(intl.formatMessage({ id: 'wallet.send.affiliateTracking' }))
     } else {
       setSwapMemoDetected(false)
     }
 
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
-  }, [form])
+  }, [form, intl])
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
 

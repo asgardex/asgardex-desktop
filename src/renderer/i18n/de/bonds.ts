@@ -4,6 +4,7 @@ const bonds: BondsMessages = {
   'bonds.node': 'Node',
   'bonds.bondProvider': 'Obligatieverstrekker',
   'bonds.bond': 'Anleihe',
+  'bonds.currentBond': 'Aktuelle Anleihe',
   'bonds.award': 'Prämie',
   'bonds.status': 'Status',
   'bonds.status.active': 'aktiv',

@@ -108,8 +108,8 @@ export function memoCorrection(memo: string): string {
     parts.push('')
   }
 
-  // Append 'dx:5'
-  parts.push('dx:5')
+  // Append 'dx:10'
+  parts.push('dx:10')
 
   // Reassemble the memoValue
   const memocorrected = parts.join(':')

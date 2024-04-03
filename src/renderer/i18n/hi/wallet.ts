@@ -70,6 +70,8 @@ const wallet: WalletMessages = {
   'wallet.send.success': 'लेन-देन सफल रहा।',
   'wallet.send.fastest': 'सबसे तेज़',
   'wallet.send.fast': 'तेज़',
+  'wallet.send.affiliateTracking': 'स्वैप मेमो का पता लगा, 10 बीपीएस एफिलिएट फी लागू',
+  'wallet.send.notAllowed': 'अनुमति नहीं है',
   'wallet.send.average': 'औसत',
   'wallet.send.max.doge':
     'अनुमानित शुल्कों के आधार पर गणना किया गया अधिकतम मूल्य, जो कभी-कभी DOGE के लिए गलत हो सकता है। "लेन-देन के लिए बैलेंस अपर्याप्त" त्रुटि संदेश के मामले में https://blockchair.com/dogecoin/transactions पर नवीनतम शुल्कों का औसत प्राप्त करें और लेन-देन भेजने से पहले इसे अपने बैलेंस से घटाने का प्रयास करें।',

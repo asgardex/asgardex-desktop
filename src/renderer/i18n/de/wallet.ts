@@ -72,6 +72,8 @@ const wallet: WalletMessages = {
   'wallet.send.success': 'Transaktion war erfolgreich.',
   'wallet.send.fastest': 'Am Schnellsten',
   'wallet.send.fast': 'Schnell',
+  'wallet.send.affiliateTracking': 'Swap-Memo erkannt, 10 Basispunkte Affiliate-Gebühr angewendet',
+  'wallet.send.notAllowed': 'Nicht erlaubt',
   'wallet.send.average': 'Mittel',
   'wallet.send.max.doge':
     'Der berechnete max. Wert basiert auf geschätzte Gebühren, welche bei DOGE von Zeit zur Zeit inkorrekt sein können. Im Falle eines "Balance Insufficient for transaction" Fehler, gehe zu https://blockchair.com/dogecoin/transactions , um einen Durchschnittswert der aktuellen Gebühren zu erhalten und versuche diese von Deiner Balance abzuziehen, bevor Du die Transaktion versendest.',

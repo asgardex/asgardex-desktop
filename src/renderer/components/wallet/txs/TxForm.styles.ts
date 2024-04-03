@@ -142,3 +142,16 @@ export const Input = styled(A.Input)`
   background: inherit !important;
   color: ${palette('text', 0)};
 `
+export const SettingsWrapper = styled(`div`)`
+  cursor: ${() => 'pointer'};
+  justify-content: space-between;
+  width: 100vw;
+  padding: 0 15px;
+  height: 60px;
+  align-items: center;
+
+  ${media.lg`
+    width: auto;
+    padding: 0 10px;
+  `}
+`

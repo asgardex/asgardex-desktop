@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { Cog8ToothIcon } from '@heroicons/react/20/solid'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { FeeOption, Fees, Network } from '@xchainjs/xchain-client'
 import { validateAddress } from '@xchainjs/xchain-evm'
@@ -19,6 +20,7 @@ import {
   CryptoAmount
 } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
+import Tooltip from 'antd/es/tooltip'
 import { RadioChangeEvent } from 'antd/lib/radio'
 import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/lib/function'
@@ -132,6 +134,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   const [routerAddress, setRouterAddress] = useState<string | undefined>(undefined)
 
   const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
+  const [notAllowed, setNotAllowed] = useState<boolean>(false)
 
   const [currentMemo, setCurrentMemo] = useState('')
   const [affiliateTracking, setAffiliateTracking] = useState<string>('')
@@ -139,20 +142,27 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   const handleMemo = useCallback(() => {
     let memoValue = form.getFieldValue('memo') as string
 
+    const isErc = isEthAsset(asset) || isAvaxAsset(asset) || isBscAsset(asset)
+
     // Check if a swap memo is detected
     if (checkMemo(memoValue)) {
       memoValue = memoCorrection(memoValue)
       setSwapMemoDetected(true)
 
       // Set affiliate tracking message
-      setAffiliateTracking(`Swap memo detected 5bps affiliate fee applied`)
+      setAffiliateTracking(
+        !isErc
+          ? intl.formatMessage({ id: 'wallet.send.affiliateTracking' })
+          : intl.formatMessage({ id: 'wallet.send.notAllowed' })
+      ) //Swap memo detected 10bps affiliate fee applied
+      setNotAllowed(isErc ? false : true) // don't allow erc to send memo
     } else {
       setSwapMemoDetected(false)
     }
 
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
-  }, [form])
+  }, [asset, form, intl])
 
   // useEffect to fetch data from query
   useEffect(() => {
@@ -487,20 +497,19 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
     return result
   }, [amountToSend, sendAddress, reloadFeesHandler, asset, currentMemo, walletAddress])
+  const [showMemo, setShowMemo] = useState(false)
 
   // only render memo field for chain asset.
   const renderMemo = useMemo(() => {
-    if (isEthAsset(asset) || isAvaxAsset(asset) || isBscAsset(asset)) {
-      return (
-        <>
-          <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
-          <Form.Item name="memo">
-            <Styled.Input size="large" disabled={isLoading} onBlur={reloadFees} onChange={handleMemo} />
-          </Form.Item>
-        </>
-      )
-    }
-  }, [asset, handleMemo, intl, isLoading, reloadFees])
+    return (
+      <>
+        <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
+        <Form.Item name="memo">
+          <Styled.Input size="large" disabled={isLoading} onBlur={reloadFees} onChange={handleMemo} />
+        </Form.Item>
+      </>
+    )
+  }, [handleMemo, intl, isLoading, reloadFees])
 
   // Send tx start time
   const [sendTxStartTime, setSendTxStartTime] = useState<number>(0)
@@ -745,14 +754,22 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
             <div className="w-full px-20px pb-10px">{renderSlider}</div>
             <Styled.Fees fees={uiFeesRD} reloadFees={reloadFees} disabled={isLoading} />
             {renderFeeError}
-            {renderMemo}
+
             {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
             <Form.Item name="fee">{renderFeeOptions}</Form.Item>
+            <Styled.SettingsWrapper onClick={() => setShowMemo(!showMemo)}>
+              <Tooltip title={intl.formatMessage({ id: 'common.settings' })}>
+                <Cog8ToothIcon
+                  className={`ease h-[24px] w-[24px] text-text2 ${showMemo ? 'rotate-180' : ''} dark:text-text2d`}
+                />
+              </Tooltip>
+            </Styled.SettingsWrapper>
+            {showMemo && renderMemo}
           </Styled.SubForm>
           <FlatButton
             className="mt-40px min-w-[200px]"
             loading={isLoading}
-            disabled={!feesAvailable || isLoading}
+            disabled={!feesAvailable || isLoading || notAllowed}
             type="submit"
             size="large">
             {intl.formatMessage({ id: 'wallet.action.send' })}

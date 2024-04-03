@@ -763,7 +763,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                       <div className="truncate pl-10px font-main text-[12px]">{nodeAddress}</div>
                     </div>
                     <div className="ml-[-2px] flex w-full justify-between  py-10px font-mainBold text-[14px] text-gray2 dark:text-gray2d">
-                      {intl.formatMessage({ id: 'bonds.bond' })}
+                      {intl.formatMessage({ id: 'bonds.currentBond' })}
                       <div className="truncate pl-10px font-main text-[12px]">
                         {formatAssetAmountCurrency({
                           asset: AssetRuneNative,
