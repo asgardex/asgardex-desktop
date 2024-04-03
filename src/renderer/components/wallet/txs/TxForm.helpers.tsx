@@ -6,6 +6,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { IntlShape } from 'react-intl'
 
+import { ASGARDEX_AFFILIATE_FEE, ASGARDEX_THORNAME } from '../../../../shared/const'
 import { WalletType } from '../../../../shared/wallet/types'
 import { emptyString } from '../../../helpers/stringHelper'
 import { getWalletByAddress } from '../../../helpers/walletHelper'
@@ -93,7 +94,7 @@ export function memoCorrection(memo: string): string {
   let parts = memo.split(':')
 
   // Remove any existing 'dx' parts and anything after it
-  const dxIndex = parts.findIndex((part) => part.startsWith('dx'))
+  const dxIndex = parts.findIndex((part) => part.startsWith(`${ASGARDEX_THORNAME}`))
   if (dxIndex !== -1) {
     parts = parts.slice(0, dxIndex)
   }
@@ -109,7 +110,7 @@ export function memoCorrection(memo: string): string {
   }
 
   // Append 'dx:10'
-  parts.push('dx:10')
+  parts.push(`${ASGARDEX_THORNAME}:${ASGARDEX_AFFILIATE_FEE}`)
 
   // Reassemble the memoValue
   const memocorrected = parts.join(':')

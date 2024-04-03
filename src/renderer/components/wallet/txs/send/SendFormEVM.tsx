@@ -284,7 +284,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       }
       if (InboundAddress === value) {
         const dexInbound = dex === 'THOR' ? 'Thorchain' : 'Mayachain'
-        const type = `${dexInbound} Inbound`
+        const type = `${dexInbound} ${asset.chain} Inbound`
         setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
       }
       const currentRouterAddress = FP.pipe(
@@ -293,11 +293,11 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       )
       if (currentRouterAddress === value) {
         const dexInbound = dex === 'THOR' ? 'Thorchain' : 'Mayachain'
-        const type = `${dexInbound} Inbound`
+        const type = `${dexInbound} ${asset.chain} Inbound`
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type }))
       }
     },
-    [InboundAddress, routerAddress, intl, dex]
+    [InboundAddress, routerAddress, intl, dex, asset.chain]
   )
 
   // max amount for eth
@@ -851,9 +851,8 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
             <div className="w-full px-20px pb-10px">{renderSlider}</div>
             <Styled.Fees fees={uiFeesRD} reloadFees={reloadFees} disabled={isLoading} />
             {renderFeeError}
-
-            {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
             <Form.Item name="fee">{renderFeeOptions}</Form.Item>
+            {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
             <Styled.SettingsWrapper onClick={() => setShowMemo(!showMemo)}>
               <Tooltip title={intl.formatMessage({ id: 'common.settings' })}>
                 <Cog8ToothIcon
