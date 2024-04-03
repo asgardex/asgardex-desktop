@@ -151,7 +151,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
       // Set affiliate tracking message
       setAffiliateTracking(
-        !isErc
+        isErc
           ? intl.formatMessage({ id: 'wallet.send.affiliateTracking' })
           : intl.formatMessage({ id: 'wallet.send.notAllowed' })
       ) //Swap memo detected 10bps affiliate fee applied
