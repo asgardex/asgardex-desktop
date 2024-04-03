@@ -73,6 +73,7 @@ const wallet: WalletMessages = {
   'wallet.send.affiliateTracking': 'Swap memo detected 10bps affiliate fee applied',
   'wallet.send.notAllowed': 'Not allowed',
   'wallet.send.average': 'Average',
+  'wallet.send.fundsLoss': 'Funds will be lossed sending to this addres',
   'wallet.send.max.doge':
     'Calculated max. value based on estimated fees, which might be incorrect for DOGE from time to time. In case of an "Balance Insufficient for transaction" error message check https://blockchair.com/dogecoin/transactions to get an average of latest fees and try to deduct it from your balance before sending a transaction.',
   'wallet.errors.balancesFailed': 'Loading balances failed. {errorMsg}',

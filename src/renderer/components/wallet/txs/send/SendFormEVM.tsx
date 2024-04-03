@@ -156,11 +156,10 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
   const [currentMemo, setCurrentMemo] = useState('')
   const [affiliateTracking, setAffiliateTracking] = useState<string>('')
+  const isChainAsset = isEthAsset(asset) || isAvaxAsset(asset) || isBscAsset(asset)
 
   const handleMemo = useCallback(() => {
     let memoValue = form.getFieldValue('memo') as string
-
-    const isChainAsset = isEthAsset(asset) || isAvaxAsset(asset) || isBscAsset(asset)
 
     // Check if a swap memo is detected
     if (checkMemo(memoValue)) {
@@ -181,7 +180,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
-  }, [asset, form, intl])
+  }, [form, intl, isChainAsset])
 
   // useEffect to fetch data from query
   useEffect(() => {
@@ -508,10 +507,11 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       addressValidator(undefined, address)
         .then(() => {
           setSendAddress(O.some(address))
+          setNotAllowed(address === InboundAddress && !isChainAsset) // remove for deposit
         })
         .catch(() => setSendAddress(O.none))
     },
-    [addressValidator]
+    [InboundAddress, addressValidator, isChainAsset]
   )
 
   const reloadFees = useCallback(() => {
@@ -863,14 +863,14 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
             {showMemo && (
               <div>
                 <div className="flex w-full">
-                  <SwitchButton onChange={() => setPoolDeposit(!poolDeposit)}></SwitchButton>
+                  <SwitchButton disabled={true} onChange={() => setPoolDeposit(!poolDeposit)}></SwitchButton>
                   {poolDeposit ? (
-                    <div className="pl-4 text-text2 dark:text-text2d">{`Send pool transaction on ${dex}`}</div>
+                    <div className="pl-4 text-text2 dark:text-text2d">{`Send pool transaction on ${dex}. Admin use only or risk losing your funds`}</div>
                   ) : (
                     <div className="pl-4 text-text2 dark:text-text2d">{`Transfer token ${asset.ticker}`}</div>
                   )}
                 </div>
-                {renderMemo}
+                {isChainAsset && renderMemo}
               </div>
             )}
           </Styled.SubForm>

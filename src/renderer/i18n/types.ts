@@ -282,6 +282,7 @@ type WalletMessageKey =
   | 'wallet.send.notAllowed'
   | 'wallet.send.average'
   | 'wallet.send.max.doge'
+  | 'wallet.send.fundsLoss'
   | 'wallet.password.confirmation.title'
   | 'wallet.password.confirmation.description'
   | 'wallet.password.confirmation.pending'

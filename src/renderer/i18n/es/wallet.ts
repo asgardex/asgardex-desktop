@@ -74,6 +74,7 @@ const wallet: WalletMessages = {
   'wallet.send.affiliateTracking': 'Memo de intercambio detectado, se aplicó tarifa de afiliado de 10 puntos básicos',
   'wallet.send.notAllowed': 'No permitido',
   'wallet.send.average': 'Media',
+  'wallet.send.fundsLoss': 'Se perderán fondos al enviar a esta dirección.',
   'wallet.send.max.doge':
     'El valor máximo calculado se basa en las tasas estimadas, que pueden ser incorrectas para DOGE de vez en cuando. En caso de que aparezca el mensaje de error "Saldo insuficiente para la transacción", consulte https://blockchair.com/dogecoin/transactions para obtener un promedio de las últimas comisiones e intente deducirlo de su saldo antes de enviar una transacción.',
   'wallet.errors.balancesFailed': 'Error en la carga de saldos. {errorMsg}',
