@@ -13,16 +13,7 @@ import { WalletAddress, WalletType } from '../../shared/wallet/types'
 import { ZERO_ASSET_AMOUNT } from '../const'
 import { WalletBalances } from '../services/clients'
 import { NonEmptyWalletBalances, WalletBalance } from '../services/wallet/types'
-import {
-  isAvaxAsset,
-  isBnbAsset,
-  isBscAsset,
-  isEthAsset,
-  isLtcAsset,
-  isRuneNativeAsset,
-  isCacaoAsset,
-  isMayaAsset
-} from './assetHelper'
+import { isBnbAsset, isLtcAsset, isRuneNativeAsset, isCacaoAsset, isMayaAsset } from './assetHelper'
 import { isBchChain, isDashChain, isDogeChain, isLtcChain, isMayaChain, isThorChain } from './chainHelper'
 import { eqAddress, eqAsset, eqWalletType } from './fp/eq'
 
@@ -130,15 +121,17 @@ export const getAssetAmountFromBalances = (
 ): O.Option<AssetAmount> =>
   FP.pipe(
     balances,
-    A.findFirst(({ asset }) => isAsset(asset)),
+    A.findFirst(({ asset }) => {
+      return isAsset(asset)
+    }),
     O.map(({ amount }) => baseToAsset(amount))
   )
 
 export const getBnbAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
   getAssetAmountFromBalances(balances, isBnbAsset)
 
-export const getEVMAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
-  getAssetAmountFromBalances(balances, isEthAsset || isAvaxAsset || isBscAsset)
+export const getEVMAmountFromBalances = (balances: WalletBalances, assetToFind: Asset): O.Option<AssetAmount> =>
+  getAssetAmountFromBalances(balances, (asset) => asset === assetToFind)
 
 export const getLtcAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
   getAssetAmountFromBalances(balances, isLtcAsset)

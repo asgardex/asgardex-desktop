@@ -17,6 +17,9 @@ export const ASGARDEX_ADDRESS = 'thor1rr6rahhd4sy76a7rdxkjaen2q4k4pw2g06w7qp'
 // Affilaite Fee in basis points
 export const ASGARDEX_AFFILIATE_FEE = 10
 
+// Affiliate Fee min apply value
+export const ASGARDEX_AFFILIATE_FEE_MIN = 1001
+
 // Header key for 9R endpoints
 export const NINE_REALMS_CLIENT_HEADER = 'x-client-id'
 

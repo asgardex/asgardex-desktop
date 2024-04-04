@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { Cog8ToothIcon } from '@heroicons/react/20/solid'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { FeeOption, Fees, Network } from '@xchainjs/xchain-client'
 import { validateAddress } from '@xchainjs/xchain-evm'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
-import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   bn,
   baseToAsset,
@@ -19,12 +19,14 @@ import {
   CryptoAmount
 } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
+import Tooltip from 'antd/es/tooltip'
 import { RadioChangeEvent } from 'antd/lib/radio'
 import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
+import { Dex } from '../../../../../shared/api/types'
 import { chainToString } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
@@ -37,16 +39,23 @@ import { loadingString } from '../../../../helpers/stringHelper'
 import { getEVMAmountFromBalances } from '../../../../helpers/walletHelper'
 import { usePricePool } from '../../../../hooks/usePricePool'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
-import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
-import { SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
+import { INITIAL_SAVER_DEPOSIT_STATE, INITIAL_SEND_STATE } from '../../../../services/chain/const'
+import {
+  SaverDepositState,
+  SaverDepositStateHandler,
+  SendTxState,
+  SendTxStateHandler
+} from '../../../../services/chain/types'
 import { FeesRD, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../../../services/clients'
 import { TxParams } from '../../../../services/evm/types'
+import { PoolAddress } from '../../../../services/midgard/types'
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
 import * as StyledR from '../../../shared/form/Radio.styles'
 import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
+import { SwitchButton } from '../../../uielements/button/SwitchButton'
 import { UIFeesRD } from '../../../uielements/fees'
 import { InputBigNumber } from '../../../uielements/input'
 import { ShowDetails } from '../../../uielements/showDetails'
@@ -70,14 +79,16 @@ export type Props = {
   balances: WalletBalances
   balance: WalletBalance
   transfer$: SendTxStateHandler
+  deposit$: SaverDepositStateHandler
   openExplorerTxUrl: OpenExplorerTxUrl
   getExplorerTxUrl: GetExplorerTxUrl
   fees: FeesRD
   reloadFeesHandler: (params: TxParams) => void
   validatePassword$: ValidatePasswordHandler
-  thorchainQuery: ThorchainQuery
   network: Network
   poolDetails: PoolDetails
+  oPoolAddress: O.Option<PoolAddress>
+  dex: Dex
 }
 
 export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
@@ -87,13 +98,15 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     balances,
     balance,
     transfer$,
+    deposit$,
     openExplorerTxUrl,
     getExplorerTxUrl,
     fees: feesRD,
     reloadFeesHandler,
     validatePassword$,
-    thorchainQuery,
-    network
+    network,
+    oPoolAddress,
+    dex
   } = props
 
   const intl = useIntl()
@@ -106,6 +119,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
   const [amountToSend, setAmountToSend] = useState<O.Option<BaseAmount>>(O.none)
   const [sendAddress, setSendAddress] = useState<O.Option<Address>>(O.none)
+  const [poolDeposit, setPoolDeposit] = useState<boolean>(false)
 
   const [warningMessage, setWarningMessage] = useState<string>('')
   const {
@@ -113,6 +127,12 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     reset: resetSendTxState,
     subscribe: subscribeSendTxState
   } = useSubscriptionState<SendTxState>(INITIAL_SEND_STATE)
+
+  const {
+    state: depositState,
+    reset: resetDepositState,
+    subscribe: subscribeDepositState
+  } = useSubscriptionState<SaverDepositState>(INITIAL_SAVER_DEPOSIT_STATE)
 
   const isLoading = useMemo(() => RD.isPending(sendTxState.status), [sendTxState.status])
 
@@ -129,12 +149,14 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   const feesAvailable = useMemo(() => O.isSome(oFees), [oFees])
 
   const [InboundAddress, setInboundAddress] = useState<string>('')
-  const [routerAddress, setRouterAddress] = useState<string | undefined>(undefined)
+  const [routerAddress, setRouterAddress] = useState<O.Option<string>>(O.none)
 
   const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
+  const [notAllowed, setNotAllowed] = useState<boolean>(false)
 
   const [currentMemo, setCurrentMemo] = useState('')
   const [affiliateTracking, setAffiliateTracking] = useState<string>('')
+  const isChainAsset = isEthAsset(asset) || isAvaxAsset(asset) || isBscAsset(asset)
 
   const handleMemo = useCallback(() => {
     let memoValue = form.getFieldValue('memo') as string
@@ -145,28 +167,38 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       setSwapMemoDetected(true)
 
       // Set affiliate tracking message
-      setAffiliateTracking(`Swap memo detected 5bps affiliate fee applied`)
+      setAffiliateTracking(
+        isChainAsset
+          ? intl.formatMessage({ id: 'wallet.send.affiliateTracking' })
+          : intl.formatMessage({ id: 'wallet.send.notAllowed' })
+      ) //Swap memo detected 10bps affiliate fee applied
+      setNotAllowed(!isChainAsset) // don't allow erc to send memo
     } else {
       setSwapMemoDetected(false)
+      setNotAllowed(false) // reset if not a swap memo
     }
 
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
-  }, [form])
+  }, [form, intl, isChainAsset])
 
   // useEffect to fetch data from query
   useEffect(() => {
-    const fetchData = async () => {
-      const inboundDetails = await thorchainQuery.thorchainCache.getInboundDetails()
-      setInboundAddress(inboundDetails[asset.chain].address)
-      setRouterAddress(inboundDetails[asset.chain].router)
-    }
+    FP.pipe(
+      oPoolAddress,
+      O.fold(
+        () => {
+          setInboundAddress('')
+          setRouterAddress(O.none)
+        },
+        (poolDetails) => {
+          setInboundAddress(poolDetails.address)
+          setRouterAddress(poolDetails.router)
+        }
+      )
+    )
+  }, [oPoolAddress, asset.chain])
 
-    fetchData()
-  }, [asset.chain, thorchainQuery])
-
-  // Store latest fees as `ref`
-  // needed to display previous fee while reloading
   useEffect(() => {
     FP.pipe(
       oFees,
@@ -192,8 +224,9 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       return O.some(balance.amount)
     }
     // or check list of other assets to get eth balance
-    return FP.pipe(balances, getEVMAmountFromBalances, O.map(assetToBase))
+    return FP.pipe(getEVMAmountFromBalances(balances, getChainAsset(asset.chain)), O.map(assetToBase))
   }, [asset, balance.amount, balances])
+
   const isFeeError = useMemo(() => {
     return FP.pipe(
       sequenceTOption(selectedFee, oAssetAmount),
@@ -213,7 +246,6 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       // no eth asset == zero amount
       O.getOrElse(() => ZERO_BASE_AMOUNT)
     )
-
     const msg = intl.formatMessage(
       { id: 'wallet.errors.fee.notCovered' },
       {
@@ -251,15 +283,21 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
       if (InboundAddress === value) {
-        const type = 'Inbound'
+        const dexInbound = dex === 'THOR' ? 'Thorchain' : 'Mayachain'
+        const type = `${dexInbound} ${asset.chain} Inbound`
         setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
       }
-      if (routerAddress === value) {
-        const type = 'Router'
-        return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
+      const currentRouterAddress = FP.pipe(
+        routerAddress,
+        O.getOrElse(() => '')
+      )
+      if (currentRouterAddress === value) {
+        const dexInbound = dex === 'THOR' ? 'Thorchain' : 'Mayachain'
+        const type = `${dexInbound} ${asset.chain} Inbound`
+        return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type }))
       }
     },
-    [InboundAddress, routerAddress, intl]
+    [InboundAddress, routerAddress, intl, dex, asset.chain]
   )
 
   // max amount for eth
@@ -469,10 +507,11 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       addressValidator(undefined, address)
         .then(() => {
           setSendAddress(O.some(address))
+          setNotAllowed(address === InboundAddress && !isChainAsset) // remove for deposit
         })
         .catch(() => setSendAddress(O.none))
     },
-    [setSendAddress, addressValidator]
+    [InboundAddress, addressValidator, isChainAsset]
   )
 
   const reloadFees = useCallback(() => {
@@ -487,20 +526,19 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
     return result
   }, [amountToSend, sendAddress, reloadFeesHandler, asset, currentMemo, walletAddress])
+  const [showMemo, setShowMemo] = useState(false)
 
   // only render memo field for chain asset.
   const renderMemo = useMemo(() => {
-    if (isEthAsset(asset) || isAvaxAsset(asset) || isBscAsset(asset)) {
-      return (
-        <>
-          <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
-          <Form.Item name="memo">
-            <Styled.Input size="large" disabled={isLoading} onBlur={reloadFees} onChange={handleMemo} />
-          </Form.Item>
-        </>
-      )
-    }
-  }, [asset, handleMemo, intl, isLoading, reloadFees])
+    return (
+      <>
+        <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
+        <Form.Item name="memo">
+          <Styled.Input size="large" disabled={isLoading} onBlur={reloadFees} onChange={handleMemo} />
+        </Form.Item>
+      </>
+    )
+  }, [handleMemo, intl, isLoading, reloadFees])
 
   // Send tx start time
   const [sendTxStartTime, setSendTxStartTime] = useState<number>(0)
@@ -510,7 +548,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   // State for visibility of Modal to confirm tx
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
 
-  const submitTx = useCallback(
+  const submitSendTx = useCallback(
     () =>
       FP.pipe(
         sequenceTOption(amountToSend, sendAddress),
@@ -546,11 +584,47 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       currentMemo
     ]
   )
+  const submitDepositTx = useCallback(
+    () =>
+      FP.pipe(
+        sequenceTOption(amountToSend, oPoolAddress),
+        O.map(([amount, poolAddress]) => {
+          setSendTxStartTime(Date.now())
+          subscribeDepositState(
+            deposit$({
+              walletType,
+              walletIndex,
+              hdMode,
+              sender: walletAddress,
+              poolAddress,
+              asset,
+              amount,
+              memo: currentMemo,
+              dex
+            })
+          )
+          return true
+        })
+      ),
+    [
+      amountToSend,
+      oPoolAddress,
+      subscribeDepositState,
+      deposit$,
+      walletType,
+      walletIndex,
+      hdMode,
+      walletAddress,
+      asset,
+      currentMemo,
+      dex
+    ]
+  )
 
   const renderConfirmationModal = useMemo(() => {
     const onSuccessHandler = () => {
       setShowConfirmationModal(false)
-      submitTx()
+      poolDeposit ? submitDepositTx() : submitSendTx()
     }
     const onCloseHandler = () => {
       setShowConfirmationModal(false)
@@ -600,38 +674,70 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       )
     }
     return null
-  }, [walletType, submitTx, validatePassword$, intl, asset, network, showConfirmationModal])
+  }, [
+    walletType,
+    poolDeposit,
+    submitDepositTx,
+    submitSendTx,
+    validatePassword$,
+    asset,
+    intl,
+    network,
+    showConfirmationModal
+  ])
 
   const renderTxModal = useMemo(
     () =>
-      FP.pipe(
-        amountToSend,
-        O.fold(
-          () => <></>,
-          (amount) =>
-            Shared.renderTxModal({
-              asset,
-              amountToSend: amount,
-              network,
-              sendTxState,
-              resetSendTxState,
-              sendTxStartTime,
-              openExplorerTxUrl,
-              getExplorerTxUrl,
-              intl
-            })
-        )
-      ),
+      poolDeposit
+        ? FP.pipe(
+            amountToSend,
+            O.fold(
+              () => <></>,
+              (amount) =>
+                Shared.renderDepositModal({
+                  asset,
+                  amountToSend: amount,
+                  network,
+                  depositState,
+                  resetDepositState,
+                  sendTxStartTime,
+                  openExplorerTxUrl,
+                  getExplorerTxUrl,
+                  intl
+                })
+            )
+          )
+        : FP.pipe(
+            amountToSend,
+            O.fold(
+              () => <></>,
+              (amount) =>
+                Shared.renderTxModal({
+                  asset,
+                  amountToSend: amount,
+                  network,
+                  sendTxState,
+                  resetSendTxState,
+                  sendTxStartTime,
+                  openExplorerTxUrl,
+                  getExplorerTxUrl,
+                  intl
+                })
+            )
+          ),
     [
-      asset,
+      poolDeposit,
       amountToSend,
+      asset,
       network,
-      sendTxState,
-      resetSendTxState,
+      depositState,
+      resetDepositState,
       sendTxStartTime,
       openExplorerTxUrl,
       getExplorerTxUrl,
-      intl
+      intl,
+      sendTxState,
+      resetSendTxState
     ]
   )
 
@@ -745,17 +851,38 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
             <div className="w-full px-20px pb-10px">{renderSlider}</div>
             <Styled.Fees fees={uiFeesRD} reloadFees={reloadFees} disabled={isLoading} />
             {renderFeeError}
-            {renderMemo}
-            {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
             <Form.Item name="fee">{renderFeeOptions}</Form.Item>
+            {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
+            <Styled.SettingsWrapper onClick={() => setShowMemo(!showMemo)}>
+              <Tooltip title={intl.formatMessage({ id: 'deposit.advancedMode' })}>
+                <Cog8ToothIcon
+                  className={`ease h-[20px] w-[20px] text-text2 ${showMemo ? 'rotate-180' : ''} dark:text-text2d`}
+                />
+              </Tooltip>
+            </Styled.SettingsWrapper>
+            {showMemo && (
+              <div>
+                <div className="flex w-full">
+                  <SwitchButton disabled={true} onChange={() => setPoolDeposit(!poolDeposit)}></SwitchButton>
+                  {poolDeposit ? (
+                    <div className="pl-4 text-text2 dark:text-text2d">{`Send pool transaction on ${dex}. Admin use only or risk losing your funds`}</div>
+                  ) : (
+                    <div className="pl-4 text-text2 dark:text-text2d">{`Transfer token ${asset.ticker}`}</div>
+                  )}
+                </div>
+                {isChainAsset && renderMemo}
+              </div>
+            )}
           </Styled.SubForm>
           <FlatButton
             className="mt-40px min-w-[200px]"
             loading={isLoading}
-            disabled={!feesAvailable || isLoading}
+            disabled={!feesAvailable || isLoading || notAllowed}
             type="submit"
             size="large">
-            {intl.formatMessage({ id: 'wallet.action.send' })}
+            {poolDeposit
+              ? intl.formatMessage({ id: 'wallet.action.deposit' })
+              : intl.formatMessage({ id: 'wallet.action.send' })}
           </FlatButton>
         </Styled.Form>
         <div className="w-full pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">

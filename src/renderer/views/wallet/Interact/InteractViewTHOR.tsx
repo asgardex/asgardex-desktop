@@ -5,7 +5,7 @@ import { Col, Row } from 'antd'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import * as RxOp from 'rxjs/operators'
 
 import { ErrorView } from '../../../components/shared/error'
@@ -33,11 +33,17 @@ import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../servic
 import { SelectedWalletAssetRD } from '../../../services/wallet/types'
 import * as Styled from './InteractView.styles'
 
+function useQuery() {
+  return new URLSearchParams(useLocation().search)
+}
+
 export const InteractViewTHOR: React.FC = () => {
-  const { interactType: routeInteractType } = useParams<walletRoutes.InteractParams>()
+  const { interactType: routeInteractType } = useParams<walletRoutes.BondParams>()
+
+  const nodeAddress = useQuery().get('nodeAddress')
+  const bondAmount = useQuery().get('bondAmount')
 
   const { selectedAsset$ } = useWalletContext()
-
   const [selectedAssetRD] = useObservableState<SelectedWalletAssetRD>(
     () =>
       FP.pipe(
@@ -148,7 +154,6 @@ export const InteractViewTHOR: React.FC = () => {
       ([interactType, { walletType, walletIndex, hdMode }]) => (
         <>
           <div className="relative mb-20px flex items-center justify-between">
-            {' '}
             <Row justify="space-between">
               <Col>
                 <BackLinkButton />
@@ -185,6 +190,8 @@ export const InteractViewTHOR: React.FC = () => {
                       thorchainQuery={thorchainQuery}
                       network={network}
                       poolDetails={poolDetails}
+                      nodeAddress={nodeAddress}
+                      bondAmount={bondAmount}
                     />
                   </Interact>
                 )

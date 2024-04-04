@@ -17,6 +17,7 @@ import xRuneIcon from '!file-loader!../../assets/svg/asset-xrune.svg'
 import cacaoIcon from '../../assets/png/asset-cacao.png'
 import dogeIcon from '../../assets/png/asset-doge.png'
 import kujiIcon from '../../assets/png/asset-kuji.png'
+import mayaIconT from '../../assets/png/asset-maya-T.png'
 import mayaIcon from '../../assets/png/asset-maya.png'
 import tgtIcon from '../../assets/png/asset-tgt.png'
 import usdpIcon from '../../assets/png/asset-usdp.png'
@@ -58,5 +59,6 @@ export {
   usdpIcon,
   dashIcon,
   kujiIcon,
-  uskIcon
+  uskIcon,
+  mayaIconT
 }

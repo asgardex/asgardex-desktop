@@ -46,7 +46,12 @@ import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
 import { Dex } from '../../../shared/api/types'
-import { ASGARDEX_ADDRESS, ASGARDEX_AFFILIATE_FEE, ASGARDEX_THORNAME } from '../../../shared/const'
+import {
+  ASGARDEX_ADDRESS,
+  ASGARDEX_AFFILIATE_FEE,
+  ASGARDEX_AFFILIATE_FEE_MIN,
+  ASGARDEX_THORNAME
+} from '../../../shared/const'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
@@ -708,7 +713,7 @@ export const Swap = ({
   //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
   const applyBps = useMemo(() => {
     let applyBps: number
-    const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(500)
+    const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
     applyBps = network === Network.Stagenet ? 0 : ASGARDEX_AFFILIATE_FEE
     applyBps = txFeeCovered ? ASGARDEX_AFFILIATE_FEE : 0
     return applyBps
@@ -1104,7 +1109,7 @@ export const Swap = ({
           const out1e8 = to1e8BaseAmount(outFee.baseAmount)
           const affiliate = to1e8BaseAmount(affiliateFee.baseAmount)
           const slipbps = isStreaming ? swapStreamingSlippage : swapSlippage
-          const slip = priceAmountToSwapMax1e8.baseAmount.times(slipbps / 100)
+          const slip = to1e8BaseAmount(priceAmountToSwapMax1e8.baseAmount.times(slipbps / 100))
           // adding slip costs to total fees
           return { asset: inFee.asset, amount: in1e8.plus(out1e8).plus(affiliate).plus(slip) }
         })
@@ -1116,7 +1121,7 @@ export const Swap = ({
       isStreaming,
       swapStreamingSlippage,
       swapSlippage,
-      priceAmountToSwapMax1e8.baseAmount
+      priceAmountToSwapMax1e8
     ]
   )
 
@@ -1444,7 +1449,7 @@ export const Swap = ({
   useEffect(() => {
     if (lockedWallet) {
       const fetchData = async () => {
-        const OneBitcoin = new CryptoAmount(assetToBase(assetAmount(1)), AssetBTC)
+        const OneBitcoin = new CryptoAmount(assetToBase(assetAmount(500)), AssetBTC)
         setLockedAssetAmount(await thorchainQuery.convert(OneBitcoin, sourceAsset))
       }
       fetchData()
@@ -2322,7 +2327,9 @@ export const Swap = ({
   const onSwitchAssets = useCallback(async () => {
     // delay to avoid render issues while switching
     await delay(100)
-
+    setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
+    setQuote(O.none)
+    setQuoteMaya(O.none)
     const walletType = FP.pipe(
       oTargetWalletType,
       O.getOrElse<WalletType>(() => 'keystore')
@@ -2335,7 +2342,16 @@ export const Swap = ({
       targetWalletType: O.some(sourceWalletType),
       recipientAddress: oSourceWalletAddress
     })
-  }, [oSourceWalletAddress, oTargetWalletType, onChangeAsset, sourceAsset, sourceWalletType, targetAsset])
+  }, [
+    initialAmountToSwapMax1e8,
+    oSourceWalletAddress,
+    oTargetWalletType,
+    onChangeAsset,
+    setAmountToSwapMax1e8,
+    sourceAsset,
+    sourceWalletType,
+    targetAsset
+  ])
 
   const disableSubmit: boolean = useMemo(
     () =>
@@ -2745,10 +2761,12 @@ export const Swap = ({
 
                 {showDetails && (
                   <>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div>{intl.formatMessage({ id: 'common.approve' })}</div>
-                      <div>{priceApproveFeeLabel}</div>
-                    </div>
+                    {O.isSome(needApprovement) && (
+                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                        <div>{intl.formatMessage({ id: 'common.approve' })}</div>
+                        <div>{priceApproveFeeLabel}</div>s
+                      </div>
+                    )}
                     <div className="flex w-full justify-between pl-10px text-[12px]">
                       <div>{intl.formatMessage({ id: 'common.fee.inbound' })}</div>
                       <div>{priceSwapInFeeLabel}</div>
@@ -3051,11 +3069,13 @@ export const Swap = ({
                     <div>{intl.formatMessage({ id: 'swap.slip.title' })}</div>
                     <div>
                       {formatAssetAmountCurrency({
-                        amount: priceAmountToSwapMax1e8.assetAmount.times(swapSlippage / 100), // Find the value of swap slippage
+                        amount: priceAmountToSwapMax1e8.assetAmount.times(
+                          isStreaming ? swapStreamingSlippage / 100 : swapSlippage / 100
+                        ), // Find the value of swap slippage
                         asset: priceAmountToSwapMax1e8.asset,
                         decimal: isUSDAsset(priceAmountToSwapMax1e8.asset) ? 2 : 6,
                         trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)
-                      }) + ` (${swapSlippage.toFixed(2)}%)`}
+                      }) + ` (${isStreaming ? swapStreamingSlippage.toFixed(2) : swapSlippage.toFixed(2)}%)`}
                     </div>
                   </div>
                   <div className="flex w-full justify-between pl-10px text-[12px]">

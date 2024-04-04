@@ -61,6 +61,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
       ),
     []
   )
+
   const getChainWeight = (chain: Chain, dex: Dex) => {
     const weights = dex === 'THOR' ? CHAIN_WEIGHTS_THOR : CHAIN_WEIGHTS_MAYA
 

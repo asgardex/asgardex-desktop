@@ -2,7 +2,9 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { XChainClient } from '@xchainjs/xchain-client'
+import { MayaChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { isSynthAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/lib/Option'
 import * as NEA from 'fp-ts/NonEmptyArray'
@@ -12,11 +14,14 @@ import * as RxOp from 'rxjs/operators'
 
 import { LoadingView } from '../../components/shared/loading'
 import { AssetDetails } from '../../components/wallet/assets'
+import { useMidgardContext } from '../../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { isRuneNativeAsset } from '../../helpers/assetHelper'
 import { isCosmosChain } from '../../helpers/chainHelper'
 import { eqOSelectedWalletAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
+import { useDex } from '../../hooks/useDex'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
@@ -26,10 +31,25 @@ import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/
 import { SelectedWalletAsset } from '../../services/wallet/types'
 
 export const AssetDetailsView: React.FC = (): JSX.Element => {
+  const { mimirHalt } = useMimirHalt()
   const {
-    mimirHalt: { haltTHORChain }
-  } = useMimirHalt()
+    service: {
+      pools: { haltedChains$: haltedChainsThor$ }
+    }
+  } = useMidgardContext()
 
+  const {
+    service: {
+      pools: { haltedChains$: haltedChainsMaya$ }
+    }
+  } = useMidgardMayaContext()
+  const { dex, changeDex } = useDex()
+
+  const haltedChains$ = dex === 'THOR' ? haltedChainsThor$ : haltedChainsMaya$
+  const haltedChainsRD = useObservableState(dex === 'THOR' ? haltedChains$ : haltedChainsMaya$, RD.initial)
+  const haltedChains = useMemo(() => {
+    return RD.isSuccess(haltedChainsRD) ? haltedChainsRD.value : []
+  }, [haltedChainsRD])
   const { getTxs$, balancesState$, loadTxs, reloadBalancesByChain, selectedAsset$, resetTxsPage } = useWalletContext()
 
   const oSelectedAsset = useObservableState(selectedAsset$, O.none)
@@ -48,7 +68,9 @@ export const AssetDetailsView: React.FC = (): JSX.Element => {
           O.fold(
             () => Rx.of(RD.pending),
             ({ walletIndex, walletAddress, asset }) =>
-              isCosmosChain(asset.chain) ? Rx.of(RD.initial) : getTxs$(O.some(walletAddress), walletIndex)
+              isCosmosChain(asset.chain) || isRuneNativeAsset(asset) || isSynthAsset(asset)
+                ? Rx.of(RD.initial)
+                : getTxs$(O.some(walletAddress), walletIndex)
           )
         )
       ),
@@ -120,7 +142,7 @@ export const AssetDetailsView: React.FC = (): JSX.Element => {
   const { openExplorerTxUrl } = useOpenExplorerTxUrl(
     FP.pipe(
       oSelectedAsset,
-      O.map(({ asset }) => (asset.synth ? THORChain : asset.chain))
+      O.map(({ asset }) => (asset.synth ? (dex === 'THOR' ? THORChain : MayaChain) : asset.chain))
     )
   )
 
@@ -139,8 +161,11 @@ export const AssetDetailsView: React.FC = (): JSX.Element => {
           openExplorerTxUrl={openExplorerTxUrl}
           openExplorerAddressUrl={openExplorerAddressUrlHandler}
           walletAddress={walletAddress}
-          disableSend={isRuneNativeAsset(asset) && haltTHORChain}
+          disableSend={isRuneNativeAsset(asset) && mimirHalt.haltTHORChain}
           network={network}
+          haltedChains={haltedChains}
+          dex={dex}
+          changeDex={changeDex}
         />
       )
     )
