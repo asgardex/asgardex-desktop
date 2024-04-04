@@ -55,8 +55,10 @@ jobs:
           REACT_APP_ETHERSCAN_API_KEY: ${{ secrets.REACT_APP_ETHERSCAN_API_KEY }}
           REACT_APP_BSCSCAN_API_KEY: ${{ secrets.REACT_APP_BSCSCAN_API_KEY }}
 
-      - name: List build output
-        run: ls -R ./release
+      - name: Staple Notarisation Ticket
+        if: success()
+        run: |
+          xcrun stapler staple ""./release/mac/ASGARDEX.app""
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
