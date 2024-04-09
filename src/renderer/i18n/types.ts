@@ -278,8 +278,11 @@ type WalletMessageKey =
   | 'wallet.send.success'
   | 'wallet.send.fastest'
   | 'wallet.send.fast'
+  | 'wallet.send.affiliateTracking'
+  | 'wallet.send.notAllowed'
   | 'wallet.send.average'
   | 'wallet.send.max.doge'
+  | 'wallet.send.fundsLoss'
   | 'wallet.password.confirmation.title'
   | 'wallet.password.confirmation.description'
   | 'wallet.password.confirmation.pending'
@@ -313,6 +316,7 @@ export type WalletMessages = { [key in WalletMessageKey]: string }
 type BondsMessageKey =
   | 'bonds.node'
   | 'bonds.bond'
+  | 'bonds.currentBond'
   | 'bonds.award'
   | 'bonds.status'
   | 'bonds.status.active'
@@ -323,6 +327,7 @@ type BondsMessageKey =
   | 'bonds.nodes.error'
   | 'bonds.node.enterMessage'
   | 'bonds.node.removeMessage'
+  | 'bonds.bondProvider'
   | 'bonds.validations.nodeAlreadyAdded'
 
 export type BondsMessages = { [key in BondsMessageKey]: string }

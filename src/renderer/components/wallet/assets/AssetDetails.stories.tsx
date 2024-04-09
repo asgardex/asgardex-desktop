@@ -7,6 +7,7 @@ import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import { AssetBNB, AssetRune67C } from '../../../../shared/utils/asset'
 import { ZERO_BASE_AMOUNT } from '../../../const'
 import { mockWalletBalance } from '../../../helpers/test/testWalletHelper'
+import { changeDex } from '../../../services/app/service'
 import { OpenExplorerTxUrl } from '../../../services/clients'
 import { WalletBalance, WalletBalances } from '../../../services/wallet/types'
 import { AssetDetails, Props as AssetDetailsProps } from './AssetDetails'
@@ -55,6 +56,9 @@ export const StoryBNB: StoryObj<AssetDetailsProps> = {
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}
+      dex={'THOR'}
+      haltedChains={[]}
+      changeDex={changeDex}
     />
   ),
   name: 'BNB'
@@ -70,6 +74,9 @@ export const StoryRuneTxSuccess: StoryObj<AssetDetailsProps> = {
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}
+      dex={'THOR'}
+      haltedChains={[]}
+      changeDex={changeDex}
     />
   ),
   name: 'RUNE - tx success'
@@ -86,6 +93,9 @@ export const StoryRuneNoSend: StoryObj<AssetDetailsProps> = {
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={true}
+      dex={'THOR'}
+      haltedChains={[]}
+      changeDex={changeDex}
     />
   ),
   name: 'RUNE - no send'
@@ -102,6 +112,9 @@ export const StoryRuneTxError: StoryObj<AssetDetailsProps> = {
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}
+      dex={'THOR'}
+      haltedChains={[]}
+      changeDex={changeDex}
     />
   ),
   name: 'RUNE - tx error'
@@ -118,6 +131,9 @@ export const StoryRuneNoBalances: StoryObj<AssetDetailsProps> = {
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}
+      dex={'THOR'}
+      haltedChains={[]}
+      changeDex={changeDex}
     />
   ),
   name: 'RUNE - disabled - no balance'
@@ -134,6 +150,9 @@ export const StoryRuneFeeNotCovered: StoryObj<AssetDetailsProps> = {
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}
+      dex={'THOR'}
+      haltedChains={[]}
+      changeDex={changeDex}
     />
   ),
   name: 'RUNE - fee not covered'

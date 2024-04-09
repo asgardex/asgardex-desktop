@@ -12,7 +12,11 @@ const mockNodeInfo = (address: Address) => ({
   bond: baseAmount(100000000 * 40000000),
   award: baseAmount(100000000 * 400000),
   status: NodeStatusEnum.Active,
-  address
+  address,
+  bondProviders: {
+    nodeOperatorFee: baseAmount(100000000 * 400000),
+    providers: []
+  }
 })
 const addressValidation: AddressValidation = (_) => true
 
@@ -27,15 +31,28 @@ export const Default: StoryFn = () => {
   )
   const addNode = useCallback((node: string) => setNodesList([...nodesList, node]), [nodesList, setNodesList])
 
+  const mockWalletAddresses = {
+    THOR: [
+      { address: 'thor1abcd1234', walletType: 'keystore' },
+      { address: 'thor1xyz7890', walletType: 'ledger' }
+    ],
+    MAYA: [
+      { address: 'maya1abcd1234', walletType: 'keystore' },
+      { address: 'maya1xyz7890', walletType: 'ledger' }
+    ]
+  }
   return (
     <Component
-      addressValidation={addressValidation}
+      addressValidationThor={addressValidation}
+      addressValidationMaya={addressValidation}
       network={Network.Testnet}
       addNode={addNode}
       removeNode={removeNode}
       goToNode={(node) => console.log('go to ', node)}
+      goToAction={(action) => console.log('go to ', action)}
       reloadNodeInfos={() => console.log('reloadNodeInfos')}
       nodes={RD.success(nodesList.map((address) => mockNodeInfo(address)))}
+      walletAddresses={mockWalletAddresses}
     />
   )
 }

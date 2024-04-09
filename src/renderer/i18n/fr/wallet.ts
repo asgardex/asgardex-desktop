@@ -72,7 +72,10 @@ const wallet: WalletMessages = {
   'wallet.send.error': 'Erreur de transaction.',
   'wallet.send.fastest': 'Très rapide',
   'wallet.send.fast': 'Rapide',
+  'wallet.send.affiliateTracking': `Mémo de swap détecté, frais d'affiliation de 10 points de base appliqués`,
+  'wallet.send.notAllowed': 'Non autorisé',
   'wallet.send.average': 'Normal',
+  'wallet.send.fundsLoss': 'Les fonds seront perdus en envoyant à cette adresse.',
   'wallet.send.max.doge':
     "Valeur calculée max. basée sur des frais estimés, qui peuvent être incorrects pour DOGE de temps à autre. En cas de message d'erreur 'Solde insuffisant pour la transaction', consultez https://blockchair.com/dogecoin/transactions pour obtenir une moyenne des derniers frais et essayez de la déduire de votre solde avant d'envoyer une transaction.",
   'wallet.errors.balancesFailed': 'Échec lors du chargement des soldes. {errorMsg}',

@@ -42,7 +42,7 @@ const { txs$, tx$, txStatus$, subscribeTx, resetTx, sendTx, txRD$, sendPoolTx$ }
   clientUrl$
 )
 const { reloadFees, fees$ } = createFeesService({ client$, chain: MAYAChain })
-const interact$ = createInteractService$(sendPoolTx$, txStatus$)
+const interactMaya$ = createInteractService$(sendPoolTx$, txStatus$)
 
 export {
   mayanodeUrl$,
@@ -74,7 +74,7 @@ export {
   sendTx,
   txRD$,
   sendPoolTx$,
-  interact$,
+  interactMaya$,
   getNodeInfos$,
   reloadNodeInfos,
   reloadMayachainConstants,

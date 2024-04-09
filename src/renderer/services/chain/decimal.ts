@@ -30,7 +30,7 @@ const getDecimal = (asset: Asset): Promise<number> => {
   if (isBscChain(chain)) {
     return Promise.resolve(BSC_GAS_ASSET_DECIMAL)
   }
-  // @St0rmzy find out why bsc.bnb on midgard -1 instead of being the correct decimals.
+
   if (isThorChain(chain)) {
     return Promise.resolve(THORCHAIN_DECIMAL)
   }

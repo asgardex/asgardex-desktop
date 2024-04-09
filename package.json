@@ -1,7 +1,7 @@
 {
   "name": "asgardex",
   "productName": "ASGARDEX",
-  "version": "1.21.4",
+  "version": "1.21.5",
   "description": "WALLET AND EXCHANGE CLIENT FOR THORCHAIN",
   "main": "index.js",
   "scripts": {
@@ -164,7 +164,7 @@
     "wif": "^2.0.6"
   },
   "devDependencies": {
-    "@electron/notarize": "^2.1.0",
+    "@electron/notarize": "^2.3.0",
     "@storybook/addon-essentials": "7.6.17",
     "@storybook/addons": "7.6.17",
     "@storybook/builder-webpack5": "7.6.17",

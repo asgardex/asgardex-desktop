@@ -1,4 +1,5 @@
 import * as AIcons from '@ant-design/icons/lib'
+import { CaretRightOutlined } from '@ant-design/icons/lib'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
@@ -80,4 +81,20 @@ export const ConfirmationModalAddress = styled.span`
   font-size: 16px;
   font-weight: 'bold';
   font-family: 'MainFontBold';
+`
+
+export const WalletTypeLabel = styled(UILabel)`
+  color: inherit;
+  font-size: 16px;
+  font-family: 'MainFontRegular';
+  padding: 0;
+`
+
+export const ExpandIcon = styled(CaretRightOutlined)`
+  margin-top: 0px;
+  svg {
+    width: 20px;
+    height: 20px;
+    color: ${palette('primary', 0)};
+  }
 `
