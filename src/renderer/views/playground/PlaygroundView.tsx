@@ -1,4 +1,35 @@
-import React, { useMemo, useCallback, useState } from 'react'
+/**
+
+ April 2024 - Removing Binance Beacon Chain - I don't believe this is needed anymore.
+
+*/
+
+import React from 'react'
+
+import { Button } from 'antd'
+
+export const PlaygroundView: React.FC = (): JSX.Element => {
+  return (
+    <>
+      <h1>Playground</h1>
+      <h1>i18n</h1>
+      <h2>Greetings from ASGARDEX</h2>
+      <h1>Pools</h1>
+      <h2>Raw data: {}</h2>
+      <div>No pools available.</div>
+      <h1>Ticker</h1>
+      <h2>Playground</h2>
+      <Button>Reload pools</Button>
+      <h1>Memo</h1>
+      <h2>Playground</h2>
+    </>
+  )
+}
+
+export default PlaygroundView
+
+/*
+ import React, { useMemo, useCallback, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { WS } from '@xchainjs/xchain-binance'
@@ -7,14 +38,13 @@ import { Button } from 'antd'
 import { useObservableState, useSubscription, useObservable } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
-import { useBinanceContext } from '../../contexts/BinanceContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { PoolsState } from '../../services/midgard/types'
 
 export const PlaygroundView: React.FC = (): JSX.Element => {
   const intl = useIntl()
 
-  const { subscribeTransfers, miniTickers$ } = useBinanceContext()
+  const { subscribeTransfers, miniTickers$ } = useBitcoinContext()
 
   const [memo, setMemo] = useState('')
 
@@ -84,3 +114,6 @@ export const PlaygroundView: React.FC = (): JSX.Element => {
     </>
   )
 }
+
+
+*/

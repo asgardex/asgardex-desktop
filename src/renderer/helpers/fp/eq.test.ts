@@ -9,7 +9,7 @@ import * as O from 'fp-ts/lib/Option'
 import { ApiUrls } from '../../../shared/api/types'
 import { BNB_ADDRESS_TESTNET, RUNE_ADDRESS_TESTNET } from '../../../shared/mock/address'
 import { ASSETS_TESTNET } from '../../../shared/mock/assets'
-import { AssetBNB, AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
+import { AssetBSC, AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
 import { WalletAddress } from '../../../shared/wallet/types'
 import { SymDepositAddresses } from '../../services/chain/types'
 import { PoolAddress, PoolShare } from '../../services/midgard/types'
@@ -82,7 +82,7 @@ describe('helpers/fp/eq', () => {
     })
     it('is not equal', () => {
       const a = AssetRuneNative
-      const b = AssetBNB
+      const b = AssetBSC
       expect(eqAsset.equals(a, b)).toBeFalsy()
     })
   })
@@ -94,11 +94,11 @@ describe('helpers/fp/eq', () => {
     })
     it('different some(asset) are not equal', () => {
       const a = O.some(AssetRuneNative)
-      const b = O.some(AssetBNB)
+      const b = O.some(AssetBSC)
       expect(eqOAsset.equals(a, b)).toBeFalsy()
     })
     it('none/some are not equal', () => {
-      const b = O.some(AssetBNB)
+      const b = O.some(AssetBSC)
       expect(eqOAsset.equals(O.none, b)).toBeFalsy()
     })
     it('none/none are equal', () => {
@@ -197,14 +197,14 @@ describe('helpers/fp/eq', () => {
     it('is equal', () => {
       const a: Balance = {
         amount: baseAmount('1'),
-        asset: AssetBNB
+        asset: AssetBSC
       }
       expect(eqBalance.equals(a, a)).toBeTruthy()
     })
     it('is not equal', () => {
       const a: Balance = {
         amount: baseAmount('1'),
-        asset: AssetBNB
+        asset: AssetBSC
       }
       // b = same as a, but another amount
       const b: Balance = {
@@ -225,14 +225,14 @@ describe('helpers/fp/eq', () => {
     it('is equal', () => {
       const a: AssetWithAmount = {
         amount: baseAmount('1'),
-        asset: AssetBNB
+        asset: AssetBSC
       }
       expect(eqAssetWithAmount.equals(a, a)).toBeTruthy()
     })
     it('is not equal', () => {
       const a: AssetWithAmount = {
         amount: baseAmount('1'),
-        asset: AssetBNB
+        asset: AssetBSC
       }
       // b = same as a, but another amount
       const b: AssetWithAmount = {
@@ -272,7 +272,7 @@ describe('helpers/fp/eq', () => {
     }
     const b: Balance = {
       ...a,
-      asset: AssetBNB
+      asset: AssetBSC
     }
     const c: Balance = {
       ...a,
@@ -296,7 +296,7 @@ describe('helpers/fp/eq', () => {
     }
     const b: AssetWithAmount = {
       ...a,
-      asset: AssetBNB
+      asset: AssetBSC
     }
     const c: AssetWithAmount = {
       ...a,
@@ -342,7 +342,7 @@ describe('helpers/fp/eq', () => {
       // c = same as a, but another asset
       const c: PoolShare = {
         ...a,
-        asset: AssetBNB
+        asset: AssetBSC
       }
       expect(eqPoolShare.equals(a, b)).toBeFalsy()
       expect(eqPoolShare.equals(a, c)).toBeFalsy()
@@ -361,7 +361,7 @@ describe('helpers/fp/eq', () => {
     const b: PoolShare = {
       type: 'sym',
       units: bn(1),
-      asset: AssetBNB,
+      asset: AssetBSC,
       assetAddress: O.some(BNB_ADDRESS_TESTNET),
       runeAddress: O.some(RUNE_ADDRESS_TESTNET),
       assetAddedAmount: baseAmount(0.5)
@@ -423,7 +423,7 @@ describe('helpers/fp/eq', () => {
       }
     }
     const c: PricePool = {
-      asset: AssetBNB,
+      asset: AssetBSC,
       poolData: {
         runeBalance: baseAmount(2),
         assetBalance: baseAmount(1)

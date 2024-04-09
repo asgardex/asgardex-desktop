@@ -7,10 +7,9 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { mockValidatePassword$ } from '../../../../shared/mock/wallet'
-import { AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../../../shared/utils/asset'
+import { AssetBSC, AssetBTC, AssetETH, AssetRuneNative } from '../../../../shared/utils/asset'
 import { WalletType } from '../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../const'
-import { BNB_DECIMAL } from '../../../helpers/assetHelper'
 import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
 import { mockWalletBalance } from '../../../helpers/test/testWalletHelper'
 import { INITIAL_SAVER_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../../../services/chain/const'
@@ -24,8 +23,8 @@ const balanceRune: WalletBalance = mockWalletBalance({
 
 const balanceBNB: WalletBalance = mockWalletBalance({
   amount: assetToBase(assetAmount(200)),
-  asset: AssetBNB,
-  walletAddress: 'bnb-address'
+  asset: AssetBSC,
+  walletAddress: 'bsc-address'
 })
 
 const balanceBTC: WalletBalance = mockWalletBalance({
@@ -42,9 +41,9 @@ const balanceTOMO: WalletBalance = mockWalletBalance({
 
 const defaultProps: SymDepositProps = {
   disableDepositAction: false,
-  availableAssets: [AssetRuneNative, AssetBNB, AssetBTC],
+  availableAssets: [AssetRuneNative, AssetBSC, AssetBTC],
   walletBalances: { balances: O.some([balanceRune, balanceBNB, balanceBTC, balanceTOMO]), loading: false },
-  asset: { asset: AssetBNB, decimal: BNB_DECIMAL },
+  asset: { asset: AssetBSC, decimal: 8 },
   poolDetails: [],
   pricePool: RUNE_PRICE_POOL,
   assetWalletType: 'keystore',
@@ -68,7 +67,7 @@ const defaultProps: SymDepositProps = {
           refundFee: assetToBase(assetAmount(0.6))
         },
         asset: {
-          asset: AssetBNB,
+          asset: AssetBSC,
           inFee: assetToBase(assetAmount(0.000075)),
           outFee: assetToBase(assetAmount(0.000225)),
           refundFee: assetToBase(assetAmount(0.000225))
@@ -128,7 +127,7 @@ const defaultProps: SymDepositProps = {
   isApprovedERC20Token$: () => Rx.of(RD.success(true)),
   protocolLimitReached: false,
   poolsData: {
-    [assetToString(AssetBNB)]: {
+    [assetToString(AssetBSC)]: {
       assetBalance: baseAmount(30),
       runeBalance: baseAmount(10)
     }
@@ -183,7 +182,7 @@ export const FeeError: Story = () => {
             refundFee: assetToBase(assetAmount(6))
           },
           asset: {
-            asset: AssetBNB,
+            asset: AssetBSC,
             inFee: assetToBase(assetAmount(1)),
             outFee: assetToBase(assetAmount(3)),
             refundFee: assetToBase(assetAmount(3))

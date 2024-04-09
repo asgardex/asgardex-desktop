@@ -7,7 +7,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
 import { ASSETS_TESTNET, ERC20_TESTNET } from '../../../shared/mock/assets'
-import { AssetBCH, AssetBNB, AssetBTC, AssetETH, AssetLTC, AssetRuneNative } from '../../../shared/utils/asset'
+import { AssetBCH, AssetBTC, AssetETH, AssetLTC, AssetRuneNative } from '../../../shared/utils/asset'
 import { AssetUSDTERC20Testnet } from '../../const'
 import { eqBaseAmount } from '../../helpers/fp/eq'
 import { GetPoolsStatusEnum } from '../../services/midgard/types'
@@ -89,16 +89,16 @@ describe('views/pools/utils', () => {
       }
     ]
     it('returns number of blocks left', () => {
-      const result = O.toNullable(getBlocksLeftForPendingPool(lastblock, AssetBNB, oNewPoolCycle))
+      const result = O.toNullable(getBlocksLeftForPendingPool(lastblock, AssetBTC, oNewPoolCycle))
       expect(result).toEqual(1001)
     })
     it('returns None if NewPoolCycle is not available', () => {
-      const result = getBlocksLeftForPendingPool(lastblock, AssetBNB, O.none)
+      const result = getBlocksLeftForPendingPool(lastblock, AssetBTC, O.none)
       expect(result).toBeNone()
     })
     it('returns NOne if lastblock (thorchain) is not available', () => {
       const lastblock2: LastblockItems = []
-      const result = getBlocksLeftForPendingPool(lastblock2, AssetBNB, oNewPoolCycle)
+      const result = getBlocksLeftForPendingPool(lastblock2, AssetBTC, oNewPoolCycle)
       expect(result).toBeNone()
     })
   })
@@ -112,16 +112,16 @@ describe('views/pools/utils', () => {
       }
     ]
     it('returns number of blocks left', () => {
-      const result = getBlocksLeftForPendingPoolAsString(lastblock, AssetBNB, oNewPoolCycle)
+      const result = getBlocksLeftForPendingPoolAsString(lastblock, AssetBTC, oNewPoolCycle)
       expect(result).toEqual('234')
     })
     it('returns empty string if NewPoolCycle is not available', () => {
-      const result = getBlocksLeftForPendingPoolAsString(lastblock, AssetBNB, O.none)
+      const result = getBlocksLeftForPendingPoolAsString(lastblock, AssetBTC, O.none)
       expect(result).toEqual('')
     })
     it('returns empty string if lastblock (thorchain) is not available', () => {
       const lastblock2: LastblockItems = []
-      const result = getBlocksLeftForPendingPoolAsString(lastblock2, AssetBNB, oNewPoolCycle)
+      const result = getBlocksLeftForPendingPoolAsString(lastblock2, AssetBTC, oNewPoolCycle)
       expect(result).toEqual('')
     })
   })
@@ -202,10 +202,6 @@ describe('views/pools/utils', () => {
     it('$100 for ERC20', () => {
       const result = minPoolTxAmountUSD(AssetUSDTERC20Testnet)
       expect(eqBaseAmount.equals(result, assetToBase(assetAmount(100, 8)))).toBeTruthy()
-    })
-    it('$10 for others (BNB)', () => {
-      const result = minPoolTxAmountUSD(AssetBNB)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(10, 8)))).toBeTruthy()
     })
     it('$10 for others (LTC)', () => {
       const result = minPoolTxAmountUSD(AssetLTC)

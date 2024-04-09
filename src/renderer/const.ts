@@ -1,5 +1,4 @@
 import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC, BSCChain } from '@xchainjs/xchain-bsc'
@@ -84,13 +83,6 @@ export const AssetUniH: Asset = {
 // All of following assets are needed for pricing USD
 //
 
-// BUSD testnet
-export const AssetBUSDBAF: Asset = { chain: BNBChain, symbol: 'BUSD-BAF', ticker: 'BUSD', synth: false }
-export const AssetBUSD74E: Asset = { chain: BNBChain, symbol: 'BUSD-74E', ticker: 'BUSD', synth: false }
-// BUSD mainnet
-export const AssetBUSDBD1: Asset = { chain: BNBChain, symbol: 'BUSD-BD1', ticker: 'BUSD', synth: false }
-// BNB.USDT
-export const AssetUSDTDC8: Asset = { chain: BNBChain, symbol: 'USDT-DC8', ticker: 'USDT', synth: false }
 // ETH.USDT mainnet
 export const AssetUSDTDAC: Asset = {
   chain: ETHChain,
@@ -121,17 +113,22 @@ export const AssetUSDCAVAX: Asset = {
   synth: false
 }
 
+// BSC.USDC mainnet
+export const AssetUSDCBSC: Asset = {
+  chain: BSCChain,
+  symbol: 'USDC-0X8AC76A51CC950D9822D68B83FE1AD97B32CD580D',
+  ticker: 'USDC',
+  synth: false
+}
+
 export const DEFAULT_PRICE_ASSETS: PricePoolAssets = [AssetRuneNative, AssetETH, AssetBTC, AssetCacao]
 
 export const USD_PRICE_ASSETS: PricePoolAssets = [
-  AssetBUSDBAF,
-  AssetBUSDBD1,
-  AssetBUSD74E,
-  AssetUSDTDC8,
   AssetUSDTDAC,
   AssetUSDT62E,
   AssetUSDTERC20Testnet,
-  AssetUSDC
+  AssetUSDC,
+  AssetUSDCBSC
 ]
 
 // Weight of chains
@@ -149,8 +146,7 @@ export const CHAIN_WEIGHTS_THOR: Record<EnabledChain, number> = {
   [DOGEChain]: 8,
   [GAIAChain]: 9,
   [DASHChain]: 10,
-  [KUJIChain]: 11,
-  [BNBChain]: 12
+  [KUJIChain]: 11
 }
 
 // Weight of chains
@@ -168,17 +164,12 @@ export const CHAIN_WEIGHTS_MAYA: Record<EnabledChain, number> = {
   [LTCChain]: 8,
   [AVAXChain]: 9,
   [DOGEChain]: 10,
-  [GAIAChain]: 11,
-  [BNBChain]: 12
+  [GAIAChain]: 11
 }
 
 // Weight of currencies needed for pricing
 // The higher the value the higher the weight
 export const CURRENCY_WEIGHTS: PricePoolCurrencyWeights = {
-  [assetToString(AssetBUSDBAF)]: 0,
-  [assetToString(AssetBUSDBD1)]: 1,
-  [assetToString(AssetBUSD74E)]: 2,
-  [assetToString(AssetUSDTDC8)]: 3,
   [assetToString(AssetUSDTDAC)]: 4,
   [assetToString(AssetUSDT62E)]: 5,
   [assetToString(AssetUSDTERC20Testnet)]: 6,
@@ -214,16 +205,7 @@ export const ASYM_DEPOSIT_TOOL_URL: Record<Network, string> = {
 }
 
 // @asgdx-team: Extend list whenever another ledger app will be supported
-export const SUPPORTED_LEDGER_APPS: Chain[] = [
-  THORChain,
-  BNBChain,
-  BTCChain,
-  LTCChain,
-  DOGEChain,
-  BCHChain,
-  ETHChain,
-  GAIAChain
-]
+export const SUPPORTED_LEDGER_APPS: Chain[] = [THORChain, BTCChain, LTCChain, DOGEChain, BCHChain, ETHChain, GAIAChain]
 
 export const DEFAULT_GET_POOLS_PERIOD = GetPoolsPeriodEnum._30d
 export const DEFAULT_GET_POOLS_PERIOD_MAYA = GetPoolsPeriodEnumMaya._30d

@@ -13,7 +13,6 @@ import * as O from 'fp-ts/lib/Option'
 import {
   iconUrlInERC20Whitelist,
   isBchAsset,
-  isBnbAsset,
   isBtcAsset,
   isDogeAsset,
   isEthAsset,
@@ -21,7 +20,6 @@ import {
   isRuneNativeAsset,
   isTgtERC20Asset,
   isAtomAsset,
-  isBnbAssetSynth,
   isBtcAssetSynth,
   isAvaxAsset,
   isBscAsset,
@@ -43,7 +41,7 @@ import {
   isUskSynthAsset,
   isDashSynthAsset
 } from '../../../../helpers/assetHelper'
-import { isAvaxChain, isBnbChain, isBscChain, isEthChain, isMayaChain } from '../../../../helpers/chainHelper'
+import { isAvaxChain, isBscChain, isEthChain, isMayaChain } from '../../../../helpers/chainHelper'
 import { getIntFromName, rainbowStop } from '../../../../helpers/colorHelpers'
 import { useRemoteImage } from '../../../../hooks/useRemoteImage'
 import {
@@ -123,12 +121,6 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     if (isDashAsset(asset) || isDashSynthAsset(asset)) {
       return dashIcon
     }
-    // BNB
-    if (isBnbAsset(asset) || isBnbAssetSynth(asset)) {
-      // Since BNB is blacklisted at TrustWallet's asset, we have to use "our" own BNB icon
-      // (see https://github.com/trustwallet/assets/blob/master/blockchains/binance/denylist.json
-      return bnbIcon
-    }
     // LTC
     if (isLtcAsset(asset) || isLtcSynthAsset(asset)) {
       return `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/litecoin/info/logo.png`
@@ -166,10 +158,6 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     }
 
     if (network !== Network.Testnet) {
-      if (isBnbChain(asset.chain)) {
-        return `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/binance/assets/${asset.symbol}/logo.png`
-      }
-
       // Since we've already checked ETH.ETH before,
       // we know any asset is ERC20 here - no need to run expensive `isEthTokenAsset`
       if (isEthChain(asset.chain)) {

@@ -1,17 +1,18 @@
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 
-import { AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../shared/utils/asset'
+import { AssetBTC, AssetETH, AssetRuneNative } from '../../shared/utils/asset'
 import {
   getChainAsset,
   isBchChain,
-  isBnbChain,
+  isBscChain,
   isBtcChain,
   isCosmosChain,
   isDogeChain,
@@ -22,9 +23,6 @@ import {
 
 describe('helpers/chainHelper', () => {
   describe('getChainAsset', () => {
-    it('returns asset for BNB chain', () => {
-      expect(getChainAsset(BNBChain)).toEqual(AssetBNB)
-    })
     it('returns asset for BTC chain', () => {
       expect(getChainAsset(BTCChain)).toEqual(AssetBTC)
     })
@@ -57,11 +55,11 @@ describe('helpers/chainHelper', () => {
       expect(isLtcChain(ETHChain)).toBeFalsy()
     })
 
-    it('BNBChain -> true', () => {
-      expect(isBnbChain(BNBChain)).toBeTruthy()
+    it('BSCChain -> true', () => {
+      expect(isBscChain(BSCChain)).toBeTruthy()
     })
-    it('BNBChain -> false', () => {
-      expect(isBnbChain(ETHChain)).toBeFalsy()
+    it('BSCChain -> false', () => {
+      expect(isBscChain(ETHChain)).toBeFalsy()
     })
 
     it('BCHChain -> true', () => {

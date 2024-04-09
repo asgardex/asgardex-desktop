@@ -4,7 +4,6 @@ import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
 
 import { useAvaxContext } from '../contexts/AvaxContext'
-import { useBinanceContext } from '../contexts/BinanceContext'
 import { useBitcoinCashContext } from '../contexts/BitcoinCashContext'
 import { useBitcoinContext } from '../contexts/BitcoinContext'
 import { useBscContext } from '../contexts/BscContext'
@@ -19,7 +18,6 @@ import { liveData } from '../helpers/rx/liveData'
 export type KeystoreClientStates = RD.RemoteData<Error, boolean>
 
 export const useKeystoreClientStates = (): { clientStates: KeystoreClientStates } => {
-  const { clientState$: bnbClientState$ } = useBinanceContext()
   const { clientState$: btcClientState$ } = useBitcoinContext()
   const { clientState$: bchClientState$ } = useBitcoinCashContext()
   const { clientState$: ltcClientState$ } = useLitecoinContext()
@@ -36,7 +34,6 @@ export const useKeystoreClientStates = (): { clientStates: KeystoreClientStates 
     () =>
       FP.pipe(
         liveData.sequenceS({
-          bnb: bnbClientState$,
           btc: btcClientState$,
           bch: bchClientState$,
           eth: ethClientState$,

@@ -1,5 +1,4 @@
 import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -20,7 +19,6 @@ import { Chain } from '@xchainjs/xchain-util'
  */
 export const ENABLED_CHAINS = [
   BCHChain,
-  BNBChain,
   BTCChain,
   GAIAChain,
   DOGEChain,
@@ -79,8 +77,6 @@ export const chainToString = (chain: Chain): string => {
   switch (chain) {
     case BCHChain:
       return 'Bitcoin Cash'
-    case BNBChain:
-      return 'BNB Beacon Chain'
     case BTCChain:
       return 'Bitcoin'
     case GAIAChain:

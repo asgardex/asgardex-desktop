@@ -1,6 +1,5 @@
 import TransportNodeHidSingleton from '@ledgerhq/hw-transport-node-hid-singleton'
 import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -20,7 +19,6 @@ import { LedgerError, LedgerErrorId } from '../../../shared/api/types'
 import { chainToString, isEnabledChain } from '../../../shared/utils/chain'
 import { isError, isEvmHDMode } from '../../../shared/utils/guard'
 import * as AVAX from './avax/transaction'
-import * as BNB from './binance/transaction'
 import * as BTC from './bitcoin/transaction'
 import * as BCH from './bitcoincash/transaction'
 import * as BSC from './bsc/transaction'
@@ -73,18 +71,6 @@ export const sendTx = async ({
               nodeUrl
             })
           }
-          break
-        case BNBChain:
-          res = await BNB.send({
-            transport,
-            network,
-            sender,
-            recipient,
-            amount,
-            asset,
-            memo,
-            walletIndex
-          })
           break
         case BTCChain:
           res = await BTC.send({
@@ -326,7 +312,6 @@ export const deposit = async ({
             })
           }
           break
-        case BNBChain:
         case BTCChain:
         case LTCChain:
         case BCHChain:

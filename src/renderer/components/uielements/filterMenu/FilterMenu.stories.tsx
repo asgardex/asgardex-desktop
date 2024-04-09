@@ -4,7 +4,7 @@ import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 
 import { ONE_RUNE_BASE_AMOUNT } from '../../../../shared/mock/amount'
 import { ASSETS_MAINNET } from '../../../../shared/mock/assets'
-import { AssetBNB, AssetRuneNative } from '../../../../shared/utils/asset'
+import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { AssetWithAmount } from '../../../types/asgardex'
 import { AssetData } from '../assets/assetData'
 import { FilterMenu as Component, Props as ComponentProps } from './FilterMenu'
@@ -23,8 +23,7 @@ const coinsProps: ComponentProps<AssetWithAmount> = {
   data: [
     { asset: AssetRuneNative, amount: ONE_RUNE_BASE_AMOUNT },
     { asset: ASSETS_MAINNET.FTM, amount: assetToBase(assetAmount(1, 8)) },
-    { asset: ASSETS_MAINNET.TOMO, amount: assetToBase(assetAmount(2, 8)) },
-    { asset: AssetBNB, amount: assetToBase(assetAmount(0.00387, 8)) }
+    { asset: ASSETS_MAINNET.TOMO, amount: assetToBase(assetAmount(2, 8)) }
   ] as AssetWithAmount[]
 }
 

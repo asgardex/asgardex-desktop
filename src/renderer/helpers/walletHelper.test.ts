@@ -12,16 +12,15 @@ import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import * as O from 'fp-ts/lib/Option'
 
 import { ASSETS_TESTNET } from '../../shared/mock/assets'
-import { AssetBNB, AssetLTC, AssetRuneNative } from '../../shared/utils/asset'
-import { AssetBUSD74E } from '../const'
+import { AssetBSC, AssetLTC, AssetRuneNative } from '../../shared/utils/asset'
+import { AssetUSDCBSC } from '../const'
 import { NonEmptyWalletBalances, WalletBalance, WalletBalances } from '../services/wallet/types'
-import { isRuneNativeAsset } from './assetHelper'
 import { eqWalletBalances } from './fp/eq'
 import { mockWalletBalance } from './test/testWalletHelper'
 import {
   filterWalletBalancesByAssets,
   getAssetAmountByAsset,
-  getBnbAmountFromBalances,
+  getEVMAmountFromBalances,
   getLtcAmountFromBalances,
   getWalletAddressFromNullableString,
   getWalletBalanceByAsset,
@@ -46,18 +45,18 @@ describe('walletHelper', () => {
   })
   const BNB_WB: WalletBalance = mockWalletBalance({
     amount: assetToBase(assetAmount(4)),
-    walletAddress: 'bnb-address',
-    asset: AssetBNB
+    walletAddress: 'bsc-address',
+    asset: AssetBSC
   })
   const BUSD_WB: WalletBalance = mockWalletBalance({
     amount: assetToBase(assetAmount(4.1)),
-    walletAddress: 'busd-address',
-    asset: AssetBUSD74E
+    walletAddress: 'busdc-address',
+    asset: AssetUSDCBSC
   })
   const BUSD_LEDGER_WB: WalletBalance = mockWalletBalance({
     amount: assetToBase(assetAmount(4.2)),
-    walletAddress: 'busd-ledger-address',
-    asset: AssetBUSD74E,
+    walletAddress: 'busdc-ledger-address',
+    asset: AssetUSDCBSC,
     walletType: 'ledger'
   })
   const LTC_WB = mockWalletBalance({
@@ -87,27 +86,27 @@ describe('walletHelper', () => {
   })
 
   describe('getWalletBalanceByAsset', () => {
-    it('returns amount of BNB', () => {
+    it('returns amount of BSC', () => {
       const balances: O.Option<NonEmptyWalletBalances> = NEA.fromArray([RUNE_WB, BOLT_WB, BNB_WB])
-      const result = O.toNullable(getWalletBalanceByAsset(balances, AssetBNB))
+      const result = O.toNullable(getWalletBalanceByAsset(balances, AssetBSC))
       expect(result?.asset.symbol).toEqual('BNB')
       expect(result?.amount.amount().toString()).toEqual('400000000')
     })
-    it('returns none if BNB is not available', () => {
+    it('returns none if BSC is not available', () => {
       const balances: O.Option<NonEmptyWalletBalances> = NEA.fromArray([RUNE_WB, BOLT_WB])
-      const result = getWalletBalanceByAsset(balances, AssetBNB)
+      const result = getWalletBalanceByAsset(balances, AssetBSC)
       expect(result).toBeNone()
     })
     it('returns none for empty lists of `AssetWB`', () => {
       const balances: O.Option<NonEmptyWalletBalances> = NEA.fromArray([])
-      const result = getWalletBalanceByAsset(balances, AssetBNB)
+      const result = getWalletBalanceByAsset(balances, AssetBSC)
       expect(result).toBeNone()
     })
   })
 
   describe('getBnbAmountFromBalances', () => {
-    it('returns amount of BNB', () => {
-      const result = getBnbAmountFromBalances([RUNE_WB, BOLT_WB, BNB_WB])
+    it('returns amount of BSC', () => {
+      const result = getEVMAmountFromBalances([RUNE_WB, BOLT_WB, BNB_WB], AssetBSC)
       expect(
         FP.pipe(
           result,
@@ -117,8 +116,8 @@ describe('walletHelper', () => {
         )
       ).toBeTruthy()
     })
-    it('returns none if no BNB is available', () => {
-      const result = getBnbAmountFromBalances([RUNE_WB, BOLT_WB])
+    it('returns none if no BSC is available', () => {
+      const result = getEVMAmountFromBalances([RUNE_WB, BOLT_WB, BNB_WB], AssetBSC)
       expect(result).toBeNone()
     })
   })
@@ -145,7 +144,7 @@ describe('walletHelper', () => {
     it('filters misc. assets', () => {
       const result = filterWalletBalancesByAssets(
         [RUNE_WB, RUNE_LEDGER_WB, BOLT_WB, BNB_WB, LTC_WB, BUSD_LEDGER_WB, BUSD_WB],
-        [AssetBNB, AssetLTC, AssetBUSD74E]
+        [AssetBSC, AssetLTC, AssetUSDCBSC]
       )
       expect(eqWalletBalances.equals(result, [BNB_WB, LTC_WB, BUSD_LEDGER_WB, BUSD_WB])).toBeTruthy()
     })
@@ -161,12 +160,6 @@ describe('walletHelper', () => {
   })
 
   describe('getWalletByAddress', () => {
-    it('returns address of RUNE wallet', () => {
-      const balances: WalletBalances = NEA.fromReadonlyNonEmptyArray([RUNE_WB, BOLT_WB, BNB_WB])
-      const result = O.toNullable(getWalletByAddress(balances, RUNE_WB.walletAddress))
-      expect(isRuneNativeAsset(result?.asset ?? AssetBNB /* BNB would fail */)).toBeTruthy()
-      expect(result?.walletAddress).toEqual(RUNE_WB.walletAddress)
-    })
     it('returns none if BNB wallet address is not available', () => {
       const balances: WalletBalances = NEA.fromReadonlyNonEmptyArray([BOLT_WB, BNB_WB])
       const result = getWalletByAddress(balances, RUNE_WB.walletAddress)
@@ -187,12 +180,12 @@ describe('walletHelper', () => {
     })
     it('BUSD -> true', () => {
       const balances: WalletBalances = NEA.fromReadonlyNonEmptyArray([RUNE_WB, BUSD_LEDGER_WB, BUSD_WB, BNB_WB])
-      const result = hasLedgerInBalancesByAsset(AssetBUSD74E, balances)
+      const result = hasLedgerInBalancesByAsset(AssetUSDCBSC, balances)
       expect(result).toBeTruthy()
     })
     it('BUSD -> false', () => {
       const balances: WalletBalances = NEA.fromReadonlyNonEmptyArray([RUNE_WB, BUSD_WB, BNB_WB])
-      const result = hasLedgerInBalancesByAsset(AssetBUSD74E, balances)
+      const result = hasLedgerInBalancesByAsset(AssetUSDCBSC, balances)
       expect(result).toBeFalsy()
     })
   })

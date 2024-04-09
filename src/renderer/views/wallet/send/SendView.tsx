@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react'
 
 import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -26,15 +25,7 @@ import { useWalletContext } from '../../../contexts/WalletContext'
 import { useDex } from '../../../hooks/useDex'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { SelectedWalletAsset } from '../../../services/wallet/types'
-import {
-  SendViewBNB,
-  SendViewEVM,
-  SendViewTHOR,
-  SendViewMAYA,
-  SendViewCOSMOS,
-  SendViewUTXO,
-  SendViewKUJI
-} from './index'
+import { SendViewEVM, SendViewTHOR, SendViewMAYA, SendViewCOSMOS, SendViewUTXO, SendViewKUJI } from './index'
 
 type Props = {}
 
@@ -72,8 +63,6 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
       }
 
       switch (chain) {
-        case BNBChain:
-          return <SendViewBNB asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
         case BCHChain:
         case BTCChain:
         case DOGEChain:

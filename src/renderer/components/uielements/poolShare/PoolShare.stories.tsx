@@ -3,8 +3,7 @@ import { bn, assetToBase, assetAmount } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 
 import { BNB_ADDRESS_TESTNET, RUNE_ADDRESS_TESTNET } from '../../../../shared/mock/address'
-import { AssetBNB, AssetRuneNative } from '../../../../shared/utils/asset'
-import { BNB_DECIMAL } from '../../../helpers/assetHelper'
+import { AssetBSC, AssetRuneNative } from '../../../../shared/utils/asset'
 import { PoolShare as Component, Props } from './PoolShare'
 
 const Template: StoryFn<Props> = (args) => <Component {...args} />
@@ -30,7 +29,7 @@ const meta: Meta<typeof Component> = {
     )
   ],
   args: {
-    asset: { asset: AssetBNB, decimal: BNB_DECIMAL },
+    asset: { asset: AssetBSC, decimal: 8 },
     assetPrice: assetToBase(assetAmount(120.1)),
     shares: { rune: assetToBase(assetAmount(1500)), asset: assetToBase(assetAmount(500)) },
     addresses: { rune: O.some(RUNE_ADDRESS_TESTNET), asset: O.some(BNB_ADDRESS_TESTNET) },

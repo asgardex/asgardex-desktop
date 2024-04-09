@@ -1,5 +1,4 @@
 import { AssetAVAX } from '@xchainjs/xchain-avax'
-import { AssetBNB } from '@xchainjs/xchain-binance'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { AssetBCH } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC } from '@xchainjs/xchain-bsc'
@@ -9,17 +8,10 @@ import { AssetETH } from '@xchainjs/xchain-ethereum'
 import { AssetKUJI } from '@xchainjs/xchain-kujira'
 import { AssetLTC } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, AssetMaya } from '@xchainjs/xchain-mayachain'
-import {
-  AssetRune67C,
-  AssetRuneB1A,
-  AssetRuneNative,
-  AssetRuneERC20,
-  AssetRuneERC20Testnet
-} from '@xchainjs/xchain-thorchain'
-import { assetFromStringEx } from '@xchainjs/xchain-util'
+import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
+import { Asset, assetFromStringEx } from '@xchainjs/xchain-util'
 
 const AssetSynthBtc = assetFromStringEx('BTC/BTC')
-const AssetSynthBnb = assetFromStringEx('BNB/BNB')
 const AssetSynthBusd = assetFromStringEx('BNB/BUSD-BD1')
 const AssetSynthEth = assetFromStringEx('ETH/ETH')
 const AssetSynthEthUsdc = assetFromStringEx('ETH/USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48')
@@ -41,7 +33,6 @@ export {
   AssetCacao,
   AssetMaya,
   AssetSynthBtc,
-  AssetSynthBnb,
   AssetSynthBusd,
   AssetSynthLTC,
   AssetSynthAVAX,
@@ -53,7 +44,6 @@ export {
   AssetSynthBCH,
   AssetSynthATOM,
   AssetSynthBSC,
-  AssetBNB,
   AssetBCH,
   AssetATOM,
   AssetLTC,
@@ -61,13 +51,17 @@ export {
   AssetBSC,
   AssetAVAX,
   AssetETH,
-  AssetRune67C,
-  AssetRuneB1A,
   AssetRuneNative,
-  AssetRuneERC20,
-  AssetRuneERC20Testnet,
   AssetSynthEthUsdt,
   AssetKUJI,
   AssetSynthUsk,
   AssetSynthDash
+}
+
+/** Moved from Binance Helpers
+ *
+ */
+export const isMiniToken = ({ symbol }: Pick<Asset, 'symbol'>): boolean => {
+  const [, two] = symbol.split('-')
+  return two?.length === 4 && two?.endsWith('M')
 }

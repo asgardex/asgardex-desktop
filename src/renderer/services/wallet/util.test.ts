@@ -1,8 +1,9 @@
+import { AssetBSC } from '@xchainjs/xchain-thorchain-query'
 import { baseAmount } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 
 import { ASSETS_TESTNET } from '../../../shared/mock/assets'
-import { AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../../shared/utils/asset'
+import { AssetBTC, AssetETH, AssetRuneNative } from '../../../shared/utils/asset'
 import { eqOWalletBalance, eqWalletBalances } from '../../helpers/fp/eq'
 import { WalletBalances } from '../clients'
 import { KeystoreState } from './types'
@@ -156,9 +157,9 @@ describe('services/wallet/util/', () => {
           hdMode: 'default'
         },
         {
-          asset: AssetBNB,
+          asset: AssetBSC,
           amount: baseAmount(2),
-          walletAddress: 'ADDRESS_BNB',
+          walletAddress: 'ADDRESS_BSC',
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -205,9 +206,9 @@ describe('services/wallet/util/', () => {
           hdMode: 'default'
         },
         {
-          asset: AssetBNB,
+          asset: AssetBSC,
           amount: baseAmount(2),
-          walletAddress: 'ADDRESS_BNB',
+          walletAddress: 'ADDRESS_BSC',
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -221,7 +222,7 @@ describe('services/wallet/util/', () => {
           hdMode: 'default'
         }
       ]
-      const balances = sortBalances(target, [AssetBTC.ticker, AssetETH.ticker, AssetRuneNative.ticker, AssetBNB.ticker])
+      const balances = sortBalances(target, [AssetBTC.ticker, AssetETH.ticker, AssetRuneNative.ticker, AssetBSC.ticker])
       expect(eqWalletBalances.equals(balances, [target[4], target[3], target[1], target[2], target[0]])).toBeTruthy()
     })
   })
@@ -254,9 +255,9 @@ describe('services/wallet/util/', () => {
           hdMode: 'default'
         },
         {
-          asset: AssetBNB,
+          asset: AssetBSC,
           amount: baseAmount(2),
-          walletAddress: 'ADDRESS_BNB',
+          walletAddress: 'ADDRESS_BSC',
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -271,12 +272,12 @@ describe('services/wallet/util/', () => {
         }
       ]
 
-      const balanceByAsset = getBalanceByAsset(AssetBNB)(walletBalances)
+      const balanceByAsset = getBalanceByAsset(AssetBSC)(walletBalances)
       expect(
         eqOWalletBalance.equals(
           balanceByAsset,
           O.some({
-            asset: AssetBNB,
+            asset: AssetBSC,
             amount: baseAmount(2),
             walletAddress: 'ADDRESS_BNB',
             walletIndex: 0,

@@ -4,9 +4,9 @@ import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/Option'
 
-import { AssetBNB, AssetBTC, AssetETH } from '../../../../shared/utils/asset'
-import { AssetBUSD74E, AssetUSDTERC20Testnet } from '../../../const'
-import { BNB_DECIMAL, THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
+import { AssetBTC, AssetETH } from '../../../../shared/utils/asset'
+import { AssetUSDTERC20Testnet } from '../../../const'
+import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { eqBaseAmount, eqODepositAssetFees, eqODepositFees } from '../../../helpers/fp/eq'
 import { DepositAssetFees, DepositFees, SymDepositFees, SymDepositFeesRD } from '../../../services/chain/types'
 import { PoolData } from '../../../views/pools/Pools.types'
@@ -31,8 +31,8 @@ describe('deposit/Deposit.helper', () => {
   }
   // user balances
   const runeBalance = baseAmount(1000)
-  const assetBalance = { asset: AssetBNB, amount: baseAmount(2000) }
-  const mockFees = getZeroSymDepositFees(AssetBNB)
+  const assetBalance = { asset: AssetBTC, amount: baseAmount(2000) }
+  const mockFees = getZeroSymDepositFees(AssetBTC)
   const fees: SymDepositFees = {
     ...mockFees,
     rune: {
@@ -67,7 +67,7 @@ describe('deposit/Deposit.helper', () => {
     })
     it('4900', () => {
       const runeBalance = baseAmount(5000)
-      const assetBalance = { asset: AssetBNB, amount: baseAmount(10000) }
+      const assetBalance = { asset: AssetBTC, amount: baseAmount(10000) }
       const result = maxRuneAmountToDeposit({ poolData, assetBalance, runeBalance, fees, dex })
       // R = 200000 (rune pool)
       // A = 100000 (asset pool)
@@ -108,7 +108,7 @@ describe('deposit/Deposit.helper', () => {
     })
     it('gas asset -> 9800', () => {
       const runeBalance = baseAmount(20000)
-      const assetBalance = { asset: AssetBNB, amount: baseAmount(10000) }
+      const assetBalance = { asset: AssetBTC, amount: baseAmount(10000) }
       const result = maxAssetAmountToDeposit({ poolData, assetBalance, runeBalance, fees })
       // R = 200000 (rune pool)
       // A = 100000 (asset pool)
@@ -125,26 +125,6 @@ describe('deposit/Deposit.helper', () => {
       // max > mab ? mab : max
       // 9900 > 9800 ? 9800 : 9900
       expect(eqBaseAmount.equals(result, baseAmount(9800))).toBeTruthy()
-    })
-    it('non gas asset -> 9950', () => {
-      const runeBalance = baseAmount(20000)
-      const assetBalance = { asset: AssetBUSD74E, amount: baseAmount(10000) }
-      const result = maxAssetAmountToDeposit({ poolData, assetBalance, runeBalance, fees })
-      // console.log('result', result.amount().toString())
-      // R = 200000 (rune pool)
-      // A = 100000 (asset pool)
-      // r = 20000 (rune balance)
-      // rf = 100 (rune fee)
-      // mrb = a - af (max rune balance = rune balance - rune fee)
-      // mrb = 20000 - 100 = 19900
-      // a = 10000 (asset balance)
-      // mab = a (non gas asset - no fee deduction)
-      // mab = 10000
-      // max = A / R * mrb
-      // max = 100000 / 200000 * 19900 = 9950
-      // max > mab ? mab : max
-      // 9950 > 10000 ? 10000 : 9950
-      expect(eqBaseAmount.equals(result, baseAmount(9950))).toBeTruthy()
     })
   })
 
@@ -182,7 +162,7 @@ describe('deposit/Deposit.helper', () => {
       inFee: baseAmount(20),
       outFee: baseAmount(21),
       refundFee: baseAmount(22),
-      asset: AssetBNB
+      asset: AssetBTC
     }
     const feesRD: SymDepositFeesRD = RD.success({
       rune: runeFee,
@@ -247,89 +227,23 @@ describe('deposit/Deposit.helper', () => {
       }
 
       // Prices
-      // All in BTC
-
+      // 1 ETH = 2000 USDT or 1 USDT = 0,0005 ETH
+      //
       // Formula (success):
-      // inboundFeeInBTC + outboundFeeInBTC
-      // 0.0001 + 0.0003 = 0.0004
+      // inboundFeeInUSDT + outboundFeeInUSDT
+      // 0.01 * 2000 + 0.03 * 2000 = 20 + 60 = 80
       //
       // Formula (failure):
-      // inboundFeeInBTC + refundFeeInBTC
-      // 0.0001 + 0.0003 = 0.0004
+      // inboundFeeInUSDT + refundFeeInUSDT
+      // 0.01 * 2000 + 0.03 * 2000 = 20 + 60 = 80
       //
       // Formula (minValue):
       // 1,5 * max(success, failure)
-      // 1,5 * max(0.0004, 0.0004) = 1,5 * 0.0004 = 0.0006
-      // AND as this is UTXO asset overestimate with 10k Satoshis => 0.0006 + 10k Satoshis = 0.0007
+      // 1,5 * max(80, 80) = 1,5 * 80 = 120
 
       const result = minAssetAmountToDepositMax1e8(params)
 
       expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.0007, BTC_DECIMAL)))).toBeTruthy()
-    })
-
-    it('deposit chain asset (BNB.BNB)', () => {
-      const params = {
-        fees: {
-          asset: AssetBNB,
-          inFee: assetToBase(assetAmount(0.0001, BNB_DECIMAL)),
-          outFee: assetToBase(assetAmount(0.0003, BNB_DECIMAL)),
-          refundFee: assetToBase(assetAmount(0.0003, BNB_DECIMAL))
-        },
-        asset: AssetBNB,
-        assetDecimal: BNB_DECIMAL,
-        poolsData
-      }
-
-      // Prices
-      // All in BNB
-
-      // Formula (success):
-      // inboundFeeInBNB + outboundFeeInBNB
-      // 0.0001 + 0.0003 = 0.0004
-      //
-      // Formula (failure):
-      // inboundFeeInBNB + refundFeeInBNB
-      // 0.0001 + 0.0003 = 0.0004
-      //
-      // Formula (minValue):
-      // 1,5 * max(success, failure)
-      // 1,5 * max(0.0004, 0.0004) = 1,5 * 0.0004 = 0.0006
-
-      const result = minAssetAmountToDepositMax1e8(params)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.0006, BNB_DECIMAL)))).toBeTruthy()
-    })
-
-    it('deposit non chain asset (BNB.USD)', () => {
-      const depositAssetDecimal = 8
-      const params = {
-        fees: {
-          asset: AssetBNB,
-          inFee: assetToBase(assetAmount(0.0001, BNB_DECIMAL)),
-          outFee: assetToBase(assetAmount(0.0003, BNB_DECIMAL)),
-          refundFee: assetToBase(assetAmount(0.0003, BNB_DECIMAL))
-        },
-        asset: AssetBUSD74E,
-        assetDecimal: depositAssetDecimal,
-        poolsData
-      }
-
-      // Prices
-      // 1 BNB = 600 BUSD or 1 BUSD = 0,001666667 BNB
-      //
-      // Formula (success):
-      // inboundFeeInBUSD + outboundFeeInBUSD
-      // 0.0001 * 600 + 0.0003 * 600 = 0.06 + 0,18 = 0.24
-      //
-      // Formula (failure):
-      // inboundFeeInBUSD + refundFeeInBUSD
-      // 0.0001 * 600 + 0.0003 * 600 = 0.06 + 0,18 = 0.24
-      //
-      // Formula (minValue):
-      // 1,5 * max(success, failure)
-      // 1,5 * max(0.24, 0.24) = 1,5 * 0.24 = 0.36
-
-      const result = minAssetAmountToDepositMax1e8(params)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.36, depositAssetDecimal)))).toBeTruthy()
     })
 
     it('deposit ERC20 token asset (ETH.USDT)', () => {

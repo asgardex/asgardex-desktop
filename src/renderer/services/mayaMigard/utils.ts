@@ -1,6 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -33,11 +32,10 @@ import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import * as O from 'fp-ts/lib/Option'
 import * as P from 'fp-ts/lib/Predicate'
 
-import { AssetBTC, AssetETH, AssetKUJI } from '../../../shared/utils/asset'
+import { AssetBTC, AssetETH, AssetKUJI, isMiniToken } from '../../../shared/utils/asset'
 import { isEnabledChain } from '../../../shared/utils/chain'
 import { optionFromNullableString } from '../../../shared/utils/fp'
 import { convertBaseAmountDecimal, isUSDAsset, CACAO_DECIMAL, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
-import { isMiniToken } from '../../helpers/binanceHelper'
 import { eqAsset, eqChain, eqOAddress } from '../../helpers/fp/eq'
 import { ordPricePool } from '../../helpers/fp/ord'
 import { getDeepestPool, MAYA_POOL_ADDRESS, MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
@@ -234,7 +232,6 @@ export const getOutboundAssetFeeByChain = (
 
       switch (chain) {
         case BCHChain:
-        case BNBChain:
         case GAIAChain:
         case DOGEChain:
         case BSCChain:

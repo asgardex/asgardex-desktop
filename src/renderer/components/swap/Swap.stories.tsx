@@ -11,7 +11,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { mockValidatePassword$ } from '../../../shared/mock/wallet'
-import { AssetBNB, AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
+import { AssetBSC, AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
 import { ONE_BN } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
@@ -27,7 +27,7 @@ const targetAsset: SwapAsset = { asset: AssetBTC, decimal: BTC_DECIMAL, price: b
 const defaultProps: SwapProps = {
   disableSwapAction: false,
   keystore: O.none,
-  poolAssets: [AssetBTC, AssetRuneNative],
+  poolAssets: [AssetBSC, AssetRuneNative],
   assets: { source: sourceAsset, target: targetAsset },
   poolAddress: O.some({
     chain: BNBChain,
@@ -52,7 +52,7 @@ const defaultProps: SwapProps = {
       )
     ),
   poolsData: {
-    [assetToString(AssetBNB)]: {
+    [assetToString(AssetBSC)]: {
       assetBalance: baseAmount(1),
       runeBalance: baseAmount(20)
     },

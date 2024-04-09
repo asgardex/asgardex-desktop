@@ -1,9 +1,9 @@
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
 
-import { AssetBNB, AssetETH } from '../../../../shared/utils/asset'
-import { AssetBUSD74E, AssetUSDTERC20Testnet, ZERO_BASE_AMOUNT } from '../../../const'
-import { BNB_DECIMAL, THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
+import { AssetBSC, AssetETH } from '../../../../shared/utils/asset'
+import { AssetUSDCBSC, AssetUSDTERC20Testnet, ZERO_BASE_AMOUNT } from '../../../const'
+import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { eqBaseAmount } from '../../../helpers/fp/eq'
 import {
   getWithdrawAmounts,
@@ -64,36 +64,14 @@ describe('stake/Withdraw.helper', () => {
       }
     }
 
-    it('witdhraw chain asset (BNB.BNB)', () => {
-      const params = {
-        fees: {
-          asset: AssetBNB,
-          amount: assetToBase(assetAmount(0.0003, BNB_DECIMAL))
-        },
-        asset: AssetBNB,
-        assetDecimal: BNB_DECIMAL,
-        poolsData
-      }
-
-      // Prices
-      // All in BNB
-      //
-      // Formula:
-      // 1,5 * feeInBNB
-      // 1,5 * 0.0003 = 0.00045
-
-      const result = minAssetAmountToWithdrawMax1e8(params)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.00045, BNB_DECIMAL)))).toBeTruthy()
-    })
-
     it('witdhraw non chain asset (BNB.USD)', () => {
       const withdrawAssetDecimal = 8
       const params = {
         fees: {
-          asset: AssetBNB,
-          amount: assetToBase(assetAmount(0.0003, BNB_DECIMAL))
+          asset: AssetBSC,
+          amount: assetToBase(assetAmount(0.0003))
         },
-        asset: AssetBUSD74E,
+        asset: AssetUSDCBSC,
         assetDecimal: withdrawAssetDecimal,
         poolsData
       }
