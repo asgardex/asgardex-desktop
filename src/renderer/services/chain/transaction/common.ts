@@ -84,7 +84,7 @@ export const sendTx$ = ({
 
     case ARBChain:
       return ARB.sendTx({ walletType, asset, recipient, amount, memo, feeOption, walletIndex, hdMode })
-      
+
     case AVAXChain:
       return AVAX.sendTx({ walletType, asset, recipient, amount, memo, feeOption, walletIndex, hdMode })
 

@@ -47,7 +47,7 @@ const EXTERNALS_WHITELIST = [
   'insight.dash.org',
   'finder.kujira.network',
   'midgard.ninerealms.com',
-  'asgardex.com'
+  'asgardex.com',
   'arbiscan.io'
 ]
 

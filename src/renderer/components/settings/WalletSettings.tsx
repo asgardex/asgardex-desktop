@@ -224,7 +224,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
         addLedgerAddress$({
           chain,
           walletIndex,
-          hdMode: isEthChain(chain) || isArbChain(chain) || isAvaxChain(chain) || isBscChain(chain) ? evmHDMode : 'default' // other Ledgers uses `default` path @St0mrzy note bsc & avax not ready yet for ledger
+          hdMode:
+            isEthChain(chain) || isArbChain(chain) || isAvaxChain(chain) || isBscChain(chain) ? evmHDMode : 'default' // other Ledgers uses `default` path @St0mrzy note bsc & avax not ready yet for ledger
         })
       )
     },

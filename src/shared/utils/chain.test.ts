@@ -25,6 +25,7 @@ describe('chain', () => {
     expect(isEnabledChain('GAIA')).toBeTruthy()
     expect(isEnabledChain('LTC')).toBeTruthy()
     expect(isEnabledChain('GAIA')).toBeTruthy()
+    expect(isEnabledChain('ARB')).toBeTruthy()
     expect(isEnabledChain('invalid')).toBeFalsy()
     expect(isEnabledChain('')).toBeFalsy()
   })
@@ -59,6 +60,9 @@ describe('chain', () => {
     })
     it('DOGE', () => {
       expect(chainToString(DOGEChain)).toEqual('Dogecoin')
+    })
+    it('ARB', () => {
+      expect(chainToString(ARBChain)).toEqual('Arbitrum')
     })
   })
 })

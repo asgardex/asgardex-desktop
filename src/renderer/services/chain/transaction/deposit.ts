@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ARBChain } from '@xchainjs/xchain-avax'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { TxHash } from '@xchainjs/xchain-client'
@@ -18,6 +18,7 @@ import {
   getAvaxAssetAddress,
   getBscAssetAddress,
   getEthAssetAddress,
+  isArbAsset,
   isAvaxAsset,
   isBscAsset,
   isEthAsset,

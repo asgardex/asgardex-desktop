@@ -97,6 +97,7 @@ export const getAddress = async ({
             res = await getBSCAddress({ transport, walletIndex, evmHdMode: hdMode })
           }
           break
+        }
         case ARBChain: {
           if (!isEvmHDMode(hdMode)) {
             res = E.left({
@@ -162,6 +163,7 @@ export const verifyLedgerAddress = async ({ chain, network, walletIndex, hdMode 
       if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for BSC to verify Ledger address`)
       result = await verifyBSCAddress({ transport, walletIndex, evmHdMode: hdMode })
       break
+    }
     case ARBChain: {
       if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for ARB to verify Ledger address`)
       result = await verifyARBAddress({ transport, walletIndex, evmHdMode: hdMode })

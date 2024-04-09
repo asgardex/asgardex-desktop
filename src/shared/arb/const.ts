@@ -40,7 +40,7 @@ const ethersJSProviders = {
 
 const ARB_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
   ARBITRUM_TESTNET_ETHERS_PROVIDER,
-  'https://api-sepolia.arbiscan.io/api',
+  'https://api-sepolia.arbiscan.io',
   envOrDefault(process.env.REACT_APP_ARBISCAN_API_KEY, ''),
   ARBChain,
   AssetARB,
@@ -48,7 +48,7 @@ const ARB_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
 )
 const ARB_ONLINE_PROVIDER_MAINNET = new EtherscanProvider(
   ARBITRUM_MAINNET_ETHERS_PROVIDER,
-  'https://api.arbiscan.io/api',
+  'https://api.arbiscan.io',
   envOrDefault(process.env.REACT_APP_ARBISCAN_API_KEY, ''),
   ARBChain,
   AssetARB,

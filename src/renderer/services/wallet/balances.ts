@@ -184,7 +184,7 @@ export const createBalancesService = ({
           ),
           reloadBalances$: ETH.reloadBalances$
         }
-       case ARBChain:
+      case ARBChain:
         return {
           reloadBalances: ARB.reloadBalances,
           resetReloadBalances: ARB.resetReloadBalances,
@@ -747,7 +747,7 @@ export const createBalancesService = ({
       balancesType: 'all'
     }))
   )
-  
+
   const avaxBalances$ = getChainBalance$({
     chain: AVAXChain,
     walletType: 'keystore',
@@ -769,7 +769,7 @@ export const createBalancesService = ({
       balancesType: 'all'
     }))
   )
-  
+
   const bscBalances$ = getChainBalance$({
     chain: BSCChain,
     walletType: 'keystore',
@@ -837,7 +837,7 @@ export const createBalancesService = ({
       })
     )
   )
-   /**
+  /**
    * ARB Ledger balances
    */
   const arbLedgerChainBalance$: ChainBalance$ = FP.pipe(

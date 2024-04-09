@@ -1,4 +1,4 @@
-import { ARBChain, AssetARB } from '@xchainjs/xchain-arbitrum'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
@@ -15,7 +15,7 @@ import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, bn, Asset, assetToString, baseAmount, Chain } from '@xchainjs/xchain-util'
 
-import { AssetBTC, AssetETH, AssetRuneNative } from '../shared/utils/asset'
+import { AssetARB, AssetBTC, AssetETH, AssetRuneNative } from '../shared/utils/asset'
 import { EnabledChain } from '../shared/utils/chain'
 import { WalletType } from '../shared/wallet/types'
 import { GetPoolsPeriodEnum as GetPoolsPeriodEnumMaya } from './services/mayaMigard/types'
@@ -69,6 +69,7 @@ export const AssetTGTERC20: Asset = {
 export const ETHAssetsTestnet = [AssetETH]
 export const AvaxAssetsTestnet = [AssetAVAX]
 export const BscAssetsTestnet = [AssetBSC]
+export const ArbAssetsTestnet = [AssetARB]
 
 // UNIH (exploit contract)
 // https://etherscan.io/address/0x4bf5dc91E2555449293D7824028Eb8Fe5879B689

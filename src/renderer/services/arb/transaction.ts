@@ -45,7 +45,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
 
   // Note: We don't use `client.deposit` to send "pool" txs to avoid repeating same requests we already do in ASGARDEX
   // That's why we call `deposit` directly here
-  const runSendPoolTx$ = (client: ArbxClient, { ...params }: SendPoolTxParams): TxHashLD => {
+  const runSendPoolTx$ = (client: ArbClient, { ...params }: SendPoolTxParams): TxHashLD => {
     // helper for failures
     const failure$ = (msg: string) =>
       Rx.of<RD.RemoteData<ApiError, never>>(

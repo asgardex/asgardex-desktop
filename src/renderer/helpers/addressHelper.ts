@@ -53,7 +53,7 @@ export const getAddressPrefixLength = (chain: Chain, network: Network): number =
       return getCosmosPrefix().length
     case ETHChain:
       return getEvmPrefix().length
-     case ARBChain:
+    case ARBChain:
       return getEvmPrefix().length
     case AVAXChain:
       return getEvmPrefix().length

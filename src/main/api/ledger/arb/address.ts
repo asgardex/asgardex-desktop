@@ -1,6 +1,6 @@
 import EthApp from '@ledgerhq/hw-app-eth'
 import type Transport from '@ledgerhq/hw-transport'
-import { ARBChain } from '@xchainjs/xchain-arb'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'

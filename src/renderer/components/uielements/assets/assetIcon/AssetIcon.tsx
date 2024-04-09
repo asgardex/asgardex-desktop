@@ -44,9 +44,17 @@ import {
   isKujiSynthAsset,
   isUskAsset,
   isUskSynthAsset,
-  isDashSynthAsset
+  isDashSynthAsset,
+  iconUrlInARBERC20Whitelist
 } from '../../../../helpers/assetHelper'
-import { isArbChain, isAvaxChain, isBnbChain, isBscChain, isEthChain, isMayaChain } from '../../../../helpers/chainHelper'
+import {
+  isArbChain,
+  isAvaxChain,
+  isBnbChain,
+  isBscChain,
+  isEthChain,
+  isMayaChain
+} from '../../../../helpers/chainHelper'
 import { getIntFromName, rainbowStop } from '../../../../helpers/colorHelpers'
 import { useRemoteImage } from '../../../../hooks/useRemoteImage'
 import {
@@ -192,11 +200,13 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
       // Since we've already checked ARB.ETH before,
       // we know any asset is ERC20 here - no need to run expensive `isArbTokenAsset`
       if (isArbChain(asset.chain)) {
-        return FP.pipe(
-          // Try to get url from ERC20Whitelist first
-          iconUrlInAVAXERC20Whitelist(asset),
-          O.getOrElse(() => '')
-        )
+        return asset.ticker === 'ARB'
+          ? arbIcon
+          : FP.pipe(
+              // Try to get url from ERC20Whitelist first
+              iconUrlInARBERC20Whitelist(asset),
+              O.getOrElse(() => '')
+            )
       }
       // Since we've already checked AVAX.AVAX before,
       // we know any asset is ERC20 here - no need to run expensive `isAvaxTokenAsset`

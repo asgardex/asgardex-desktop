@@ -8,12 +8,7 @@ import * as E from 'fp-ts/Either'
 
 import { isArbAsset } from '../../../../renderer/helpers/assetHelper'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
-import {
-  DEPOSIT_EXPIRATION_OFFSET,
-  ArbZeroAddress,
-  FEE_BOUNDS,
-  defaultArbParams
-} from '../../../../shared/arb/const'
+import { DEPOSIT_EXPIRATION_OFFSET, ArbZeroAddress, FEE_BOUNDS, defaultArbParams } from '../../../../shared/arb/const'
 import { ROUTER_ABI } from '../../../../shared/evm/abi'
 import { getDerivationPath } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'

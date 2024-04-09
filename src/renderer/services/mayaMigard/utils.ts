@@ -269,7 +269,7 @@ export const getOutboundAssetFeeByChain = (
             amount: baseAmount(value, KUJI_DECIMAL),
             asset: AssetKUJI
           })
-         case ARBChain: {
+        case ARBChain: {
           return O.some({
             // Convertion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ARB)
             amount: convertBaseAmountDecimal(baseAmount(value, CACAO_DECIMAL), ARB_GAS_ASSET_DECIMAL),

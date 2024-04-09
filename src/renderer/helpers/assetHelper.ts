@@ -63,7 +63,12 @@ import { AVAX_TOKEN_WHITELIST } from '../types/generated/thorchain/avaxerc20whit
 import { BSC_TOKEN_WHITELIST } from '../types/generated/thorchain/bscerc20whitelist'
 import { ERC20_WHITELIST } from '../types/generated/thorchain/erc20whitelist'
 import { PricePoolAsset } from '../views/pools/Pools.types'
-import { getArbChecksumAddress, getAvaxChecksumAddress, getBscChecksumAddress, getEthChecksumAddress } from './addressHelper'
+import {
+  getArbChecksumAddress,
+  getAvaxChecksumAddress,
+  getBscChecksumAddress,
+  getEthChecksumAddress
+} from './addressHelper'
 import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isEthChain, isLtcChain } from './chainHelper'
 import { eqAsset, eqString } from './fp/eq'
 import { sequenceTOption } from './fpHelpers'

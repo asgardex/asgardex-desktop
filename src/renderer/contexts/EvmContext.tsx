@@ -17,7 +17,7 @@ export const useEvmContext = (chain: Chain) => {
   switch (chain) {
     case ETHChain:
       return EthContext
-    case ARVChain:
+    case ARBChain:
       return ArbContext
     case AVAXChain:
       return AvaxContext

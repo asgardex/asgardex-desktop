@@ -18,7 +18,7 @@ import { writeFile, readFile } from '../src/main/utils/file'
 import { ERC20Whitelist, erc20WhitelistIO } from '../src/renderer/services/mayachain/types'
 
 const WHITELIST_URL =
-  'https://gitlab.com/mayachain/mayanode/-/raw/release-1.109.0/common/tokenlist/arbtokens/arb_mainnet_latest.json'
+  'https://gitlab.com/mayachain/mayanode/-/raw/stagenet/common/tokenlist/arbtokens/arb_mainnet_latest.json'
 
 const PATH = './src/renderer/types/generated/mayachain/arberc20whitelist.ts'
 

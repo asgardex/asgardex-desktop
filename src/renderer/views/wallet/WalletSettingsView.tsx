@@ -369,7 +369,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
       ledgerAddress: oEthLedgerWalletAddress,
       chain: ETHChain
     })
-     const arbWalletAccount$ = walletAccount$({
+    const arbWalletAccount$ = walletAccount$({
       addressUI$: arbAddressUI$,
       ledgerAddress: oArbLedgerWalletAddress,
       chain: ARBChain
