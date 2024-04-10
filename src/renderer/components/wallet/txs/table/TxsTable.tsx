@@ -250,17 +250,6 @@ export const TxsTable: React.FC<Props> = (props): JSX.Element => {
             const extra = (
               <ReloadButton size="normal" onClick={reloadHandler} label={intl.formatMessage({ id: 'common.retry' })} />
             )
-
-            // Binance returns 429 in case of API rate limits
-            if (e.statusCode === 429) {
-              return (
-                <ErrorView
-                  title={e.msg}
-                  subTitle={intl.formatMessage({ id: 'common.error.api.limit' })}
-                  extra={extra}
-                />
-              )
-            }
             return <ErrorView title={e.msg} extra={extra} />
           },
           (data: TxsPage): JSX.Element => {

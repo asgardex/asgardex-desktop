@@ -9,7 +9,7 @@ import { AssetKUJI } from '@xchainjs/xchain-kujira'
 import { AssetLTC } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, AssetMaya } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
-import { Asset, assetFromStringEx } from '@xchainjs/xchain-util'
+import { assetFromStringEx } from '@xchainjs/xchain-util'
 
 const AssetSynthBtc = assetFromStringEx('BTC/BTC')
 const AssetSynthBusd = assetFromStringEx('BNB/BUSD-BD1')
@@ -56,13 +56,4 @@ export {
   AssetKUJI,
   AssetSynthUsk,
   AssetSynthDash
-}
-
-/** Moved from Binance Helpers
- *  Checks to see if the second part od the symbol has a len of 4 and ends with M.
- * I suspect this is old school BNB specific stuff. Will leave for now as it is used in Midgard Service and by util.tests
- */
-export const isMiniToken = ({ symbol }: Pick<Asset, 'symbol'>): boolean => {
-  const [, two] = symbol.split('-')
-  return two?.length === 4 && two?.endsWith('M')
 }
