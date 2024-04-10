@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { AssetARB, ARB_GAS_ASSET_DECIMAL, ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
@@ -268,6 +269,13 @@ export const getOutboundAssetFeeByChain = (
             amount: baseAmount(value, KUJI_DECIMAL),
             asset: AssetKUJI
           })
+        case ARBChain: {
+          return O.some({
+            // Convertion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ARB)
+            amount: convertBaseAmountDecimal(baseAmount(value, CACAO_DECIMAL), ARB_GAS_ASSET_DECIMAL),
+            asset: AssetARB
+          })
+        }
         // 'MAYAChain can be ignored - fees for asset side only
         case MAYAChain:
           return O.none

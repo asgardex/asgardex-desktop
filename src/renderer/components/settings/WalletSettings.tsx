@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { SearchOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
@@ -36,7 +37,7 @@ import { RemoveWalletConfirmationModal } from '../../components/modal/confirmati
 import { AssetIcon } from '../../components/uielements/assets/assetIcon/AssetIcon'
 import { QRCodeModal } from '../../components/uielements/qrCodeModal/QRCodeModal'
 import { PhraseCopyModal } from '../../components/wallet/phrase/PhraseCopyModal'
-import { getChainAsset, isAvaxChain, isBscChain, isEthChain } from '../../helpers/chainHelper'
+import { getChainAsset, isArbChain, isAvaxChain, isBscChain, isEthChain } from '../../helpers/chainHelper'
 import { eqChain, eqString } from '../../helpers/fp/eq'
 import { emptyString } from '../../helpers/stringHelper'
 import { getWalletNamesFromKeystoreWallets, isEnabledLedger } from '../../helpers/walletHelper'
@@ -171,7 +172,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     [BSCChain]: 0,
     [MAYAChain]: 0,
     [DASHChain]: 0,
-    [KUJIChain]: 0
+    [KUJIChain]: 0,
+    [ARBChain]: 0
   })
 
   const {
@@ -222,7 +224,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
         addLedgerAddress$({
           chain,
           walletIndex,
-          hdMode: isEthChain(chain) || isAvaxChain(chain) || isBscChain(chain) ? evmHDMode : 'default' // other Ledgers uses `default` path @St0mrzy note bsc & avax not ready yet for ledger
+          hdMode:
+            isEthChain(chain) || isArbChain(chain) || isAvaxChain(chain) || isBscChain(chain) ? evmHDMode : 'default' // other Ledgers uses `default` path @St0mrzy note bsc & avax not ready yet for ledger
         })
       )
     },
@@ -301,6 +304,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
               </div>
 
               {isEthChain(chain) ||
+                isArbChain(chain) ||
                 isAvaxChain(chain) ||
                 (isBscChain(chain) && (
                   <StyledR.Radio.Group

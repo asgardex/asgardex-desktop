@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
@@ -28,6 +29,7 @@ import { DEFAULT_EVM_HD_MODE, EvmHDMode } from '../../../shared/evm/types'
 import { isEnabledChain } from '../../../shared/utils/chain'
 import { HDMode } from '../../../shared/wallet/types'
 import { WalletSettings } from '../../components/settings'
+import { useArbContext } from '../../contexts/ArbContext'
 import { useAvaxContext } from '../../contexts/AvaxContext'
 import { useBinanceContext } from '../../contexts/BinanceContext'
 import { useBitcoinCashContext } from '../../contexts/BitcoinCashContext'
@@ -53,6 +55,7 @@ import {
   isThorChain,
   isEthChain,
   isCosmosChain,
+  isArbChain,
   isAvaxChain,
   isBscChain,
   isMayaChain,
@@ -90,6 +93,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
   const { address$: thorAddressUI$ } = useThorchainContext()
   const { addressUI$: bnbAddressUI$ } = useBinanceContext()
   const { addressUI$: ethAddressUI$, ethHDMode$, updateEvmHDMode } = useEthereumContext()
+  const { addressUI$: arbAddressUI$ } = useArbContext()
   const { addressUI$: avaxAddressUI$ } = useAvaxContext()
   const { addressUI$: bscAddressUI$ } = useBscContext()
   const { addressUI$: btcAddressUI$ } = useBitcoinContext()
@@ -166,6 +170,12 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     removeAddress: removeLedgerEthAddress
   } = useLedger(ETHChain, keystoreId)
   const {
+    addAddress: addLedgerArbAddress,
+    verifyAddress: verifyLedgerArbAddress,
+    address: oArbLedgerWalletAddress,
+    removeAddress: removeLedgerArbAddress
+  } = useLedger(ARBChain, keystoreId)
+  const {
     addAddress: addLedgerAvaxAddress,
     verifyAddress: verifyLedgerAvaxAddress,
     address: oAvaxLedgerWalletAddress,
@@ -208,6 +218,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     if (isBchChain(chain)) return addLedgerBchAddress(walletIndex, hdMode)
     if (isDogeChain(chain)) return addLedgerDOGEAddress(walletIndex, hdMode)
     if (isEthChain(chain)) return addLedgerEthAddress(walletIndex, hdMode)
+    if (isArbChain(chain)) return addLedgerArbAddress(walletIndex, hdMode)
     if (isAvaxChain(chain)) return addLedgerAvaxAddress(walletIndex, hdMode)
     if (isBscChain(chain)) return addLedgerBscAddress(walletIndex, hdMode)
     if (isCosmosChain(chain)) return addLedgerCosmosAddress(walletIndex, hdMode)
@@ -239,6 +250,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     if (isBchChain(chain)) return verifyLedgerBchAddress(walletIndex, hdMode)
     if (isDogeChain(chain)) return verifyLedgerDOGEAddress(walletIndex, hdMode)
     if (isEthChain(chain)) return verifyLedgerEthAddress(walletIndex, hdMode)
+    if (isArbChain(chain)) return verifyLedgerArbAddress(walletIndex, hdMode)
     if (isAvaxChain(chain)) return verifyLedgerAvaxAddress(walletIndex, hdMode)
     if (isBscChain(chain)) return verifyLedgerBscAddress(walletIndex, hdMode)
     if (isCosmosChain(chain)) return verifyLedgerCosmosAddress(walletIndex, hdMode)
@@ -257,6 +269,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     if (isBchChain(chain)) return removeLedgerBchAddress()
     if (isDogeChain(chain)) return removeLedgerDOGEAddress()
     if (isEthChain(chain)) return removeLedgerEthAddress()
+    if (isArbChain(chain)) return removeLedgerArbAddress()
     if (isAvaxChain(chain)) return removeLedgerAvaxAddress()
     if (isBscChain(chain)) return removeLedgerBscAddress()
     if (isCosmosChain(chain)) return removeLedgerCosmosAddress()
@@ -271,6 +284,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
 
   const oBNBClient = useObservableState(clientByChain$(BNBChain), O.none)
   const oETHClient = useObservableState(clientByChain$(ETHChain), O.none)
+  const oARBClient = useObservableState(clientByChain$(ARBChain), O.none)
   const oAVAXClient = useObservableState(clientByChain$(AVAXChain), O.none)
   const oBSCClient = useObservableState(clientByChain$(BSCChain), O.none)
   const oBTCClient = useObservableState(clientByChain$(BTCChain), O.none)
@@ -305,6 +319,9 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
         break
       case ETHChain:
         FP.pipe(oETHClient, O.map(openExplorerAddressUrl))
+        break
+      case ARBChain:
+        FP.pipe(oARBClient, O.map(openExplorerAddressUrl))
         break
       case AVAXChain:
         FP.pipe(oAVAXClient, O.map(openExplorerAddressUrl))
@@ -351,6 +368,11 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
       addressUI$: ethAddressUI$,
       ledgerAddress: oEthLedgerWalletAddress,
       chain: ETHChain
+    })
+    const arbWalletAccount$ = walletAccount$({
+      addressUI$: arbAddressUI$,
+      ledgerAddress: oArbLedgerWalletAddress,
+      chain: ARBChain
     })
     const avaxWalletAccount$ = walletAccount$({
       addressUI$: avaxAddressUI$,
@@ -410,6 +432,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
           THOR: [thorWalletAccount$],
           BTC: [btcWalletAccount$],
           ETH: [ethWalletAccount$],
+          ARB: [arbWalletAccount$],
           AVAX: [avaxWalletAccount$],
           BSC: [bscWalletAccount$],
           BNB: [bnbWalletAccount$],
@@ -432,6 +455,8 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     oBtcLedgerWalletAddress,
     ethAddressUI$,
     oEthLedgerWalletAddress,
+    arbAddressUI$,
+    oArbLedgerWalletAddress,
     avaxAddressUI$,
     oAvaxLedgerWalletAddress,
     bscAddressUI$,

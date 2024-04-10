@@ -1,5 +1,6 @@
 import EthApp from '@ledgerhq/hw-app-eth'
 import TransportNodeHidSingleton from '@ledgerhq/hw-transport-node-hid-singleton'
+import * as ARB from '@xchainjs/xchain-arbitrum'
 import * as AVAX from '@xchainjs/xchain-avax'
 import * as BSC from '@xchainjs/xchain-bsc'
 import { FeeOption, TxHash } from '@xchainjs/xchain-client'
@@ -7,6 +8,7 @@ import * as ETH from '@xchainjs/xchain-ethereum'
 import { Client as XchainEvmClient } from '@xchainjs/xchain-evm'
 
 import { IPCLedgerApproveERC20TokenParams } from '../../../../shared/api/io'
+import { defaultArbParams } from '../../../../shared/arb/const'
 import { defaultAvaxParams } from '../../../../shared/avax/const'
 import { defaultBscParams } from '../../../../shared/bsc/const'
 import { FEE_BOUNDS, defaultEthParams } from '../../../../shared/ethereum/const'
@@ -33,6 +35,9 @@ export const approveLedgerERC20Token = async ({
         network: clientNetwork,
         feeBounds: FEE_BOUNDS[clientNetwork]
       })
+      break
+    case 'ARB':
+      client = new ARB.Client({ ...defaultArbParams, network: clientNetwork, feeBounds: FEE_BOUNDS[clientNetwork] })
       break
     case 'AVAX':
       client = new AVAX.Client({ ...defaultAvaxParams, network: clientNetwork, feeBounds: FEE_BOUNDS[clientNetwork] })

@@ -3,6 +3,7 @@
 // Workaround: Use `file-loader` explicit for imports
 // See https://github.com/facebook/create-react-app/issues/11770#issuecomment-1022024494
 /* eslint-disable import/no-webpack-loader-syntax */
+import arbIcon from '!file-loader!../../assets/svg/asset-arb.svg'
 import atomIcon from '!file-loader!../../assets/svg/asset-atom.svg'
 import avaxIcon from '!file-loader!../../assets/svg/asset-avax.svg'
 import bnbIcon from '!file-loader!../../assets/svg/asset-bnb.svg'
@@ -33,6 +34,7 @@ import { ReactComponent as UnlockIcon } from '../../assets/svg/icon-unlock-warni
 import { ReactComponent as LedgerIcon } from '../../assets/svg/ledger.svg'
 
 export {
+  arbIcon,
   atomIcon,
   bnbIcon,
   cacaoIcon,

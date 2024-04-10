@@ -226,6 +226,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     if (!hasImportedKeystore(keystore) || isLocked(keystore)) return O.some(false)
 
     // ERC20 token does need approval only
+    //tobeFixed
     switch (sourceChain) {
       case ETHChain:
         return isEthAsset(sourceAsset) ? O.some(false) : O.some(isEthTokenAsset(sourceAsset))
@@ -633,7 +634,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       oPoolAddress,
       O.chain(({ router }) => router)
     )
-
+    //tobeFixed
     const oTokenAddress: O.Option<string> = (() => {
       switch (sourceChain) {
         case ETHChain:

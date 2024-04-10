@@ -1,6 +1,7 @@
 import React, { useMemo, useCallback } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -23,6 +24,7 @@ import {
   isAtomAsset,
   isBnbAssetSynth,
   isBtcAssetSynth,
+  isArbAsset,
   isAvaxAsset,
   isBscAsset,
   iconUrlInAVAXERC20Whitelist,
@@ -31,6 +33,7 @@ import {
   isMayaAsset,
   isLtcSynthAsset,
   isEthSynthAsset,
+  isArbSynthAsset,
   isAvaxSynthAsset,
   isBscSynthAsset,
   isAtomSynthAsset,
@@ -41,12 +44,21 @@ import {
   isKujiSynthAsset,
   isUskAsset,
   isUskSynthAsset,
-  isDashSynthAsset
+  isDashSynthAsset,
+  iconUrlInARBERC20Whitelist
 } from '../../../../helpers/assetHelper'
-import { isAvaxChain, isBnbChain, isBscChain, isEthChain, isMayaChain } from '../../../../helpers/chainHelper'
+import {
+  isArbChain,
+  isAvaxChain,
+  isBnbChain,
+  isBscChain,
+  isEthChain,
+  isMayaChain
+} from '../../../../helpers/chainHelper'
 import { getIntFromName, rainbowStop } from '../../../../helpers/colorHelpers'
 import { useRemoteImage } from '../../../../hooks/useRemoteImage'
 import {
+  arbIcon,
   atomIcon,
   avaxIcon,
   bscIcon,
@@ -76,6 +88,8 @@ type Props = ComponentProps & React.HTMLAttributes<HTMLDivElement>
 
 const chainIconMap = (asset: Asset): string | null => {
   switch (asset.chain) {
+    case ARBChain:
+      return arbIcon
     case ETHChain:
       return ethIcon
     case AVAXChain:
@@ -103,11 +117,15 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     if (isEthSynthAsset(asset)) {
       return ethIcon
     }
+    // ARB
+    if (isArbAsset(asset) || isArbSynthAsset(asset)) {
+      return arbIcon
+    }
     // AVAX
     if (isAvaxAsset(asset) || isAvaxSynthAsset(asset)) {
       return avaxIcon
     }
-    // AVAX
+    // BSC
     if (isBscAsset(asset) || isBscSynthAsset(asset)) {
       return bscIcon
     }
@@ -178,6 +196,17 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
           iconUrlInERC20Whitelist(asset),
           O.getOrElse(() => '')
         )
+      }
+      // Since we've already checked ARB.ETH before,
+      // we know any asset is ERC20 here - no need to run expensive `isArbTokenAsset`
+      if (isArbChain(asset.chain)) {
+        return asset.ticker === 'ARB'
+          ? arbIcon
+          : FP.pipe(
+              // Try to get url from ERC20Whitelist first
+              iconUrlInARBERC20Whitelist(asset),
+              O.getOrElse(() => '')
+            )
       }
       // Since we've already checked AVAX.AVAX before,
       // we know any asset is ERC20 here - no need to run expensive `isAvaxTokenAsset`

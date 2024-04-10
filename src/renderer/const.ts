@@ -1,3 +1,4 @@
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
 import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
@@ -14,7 +15,7 @@ import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, bn, Asset, assetToString, baseAmount, Chain } from '@xchainjs/xchain-util'
 
-import { AssetBTC, AssetETH, AssetRuneNative } from '../shared/utils/asset'
+import { AssetARB, AssetBTC, AssetETH, AssetRuneNative } from '../shared/utils/asset'
 import { EnabledChain } from '../shared/utils/chain'
 import { WalletType } from '../shared/wallet/types'
 import { GetPoolsPeriodEnum as GetPoolsPeriodEnumMaya } from './services/mayaMigard/types'
@@ -68,6 +69,7 @@ export const AssetTGTERC20: Asset = {
 export const ETHAssetsTestnet = [AssetETH]
 export const AvaxAssetsTestnet = [AssetAVAX]
 export const BscAssetsTestnet = [AssetBSC]
+export const ArbAssetsTestnet = [AssetARB]
 
 // UNIH (exploit contract)
 // https://etherscan.io/address/0x4bf5dc91E2555449293D7824028Eb8Fe5879B689
@@ -148,9 +150,10 @@ export const CHAIN_WEIGHTS_THOR: Record<EnabledChain, number> = {
   [AVAXChain]: 7,
   [DOGEChain]: 8,
   [GAIAChain]: 9,
-  [DASHChain]: 10,
-  [KUJIChain]: 11,
-  [BNBChain]: 12
+  [ARBChain]: 10,
+  [DASHChain]: 11,
+  [KUJIChain]: 12,
+  [BNBChain]: 13
 }
 
 // Weight of chains
@@ -163,13 +166,14 @@ export const CHAIN_WEIGHTS_MAYA: Record<EnabledChain, number> = {
   [ETHChain]: 3,
   [DASHChain]: 4,
   [KUJIChain]: 5,
-  [BSCChain]: 6,
-  [BCHChain]: 7,
-  [LTCChain]: 8,
-  [AVAXChain]: 9,
-  [DOGEChain]: 10,
-  [GAIAChain]: 11,
-  [BNBChain]: 12
+  [ARBChain]: 6,
+  [BSCChain]: 7,
+  [BCHChain]: 8,
+  [LTCChain]: 9,
+  [AVAXChain]: 10,
+  [DOGEChain]: 11,
+  [GAIAChain]: 12,
+  [BNBChain]: 13
 }
 
 // Weight of currencies needed for pricing

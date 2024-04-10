@@ -23,7 +23,8 @@
     "generate:erc20whitelist": "./node_modules/.bin/ts-node --project tsconfig.scripts.json ./scripts/generateERC20Whitelist.ts",
     "generate:avaxerc20whitelist": "./node_modules/.bin/ts-node --project tsconfig.scripts.json ./scripts/generateAVAXtokenlist.ts",
     "generate:bscerc20whitelist": "./node_modules/.bin/ts-node --project tsconfig.scripts.json ./scripts/generateBSCtokenlist.ts",
-    "storybook": "NODE_OPTIONS=\"--max-old-space-size=4096\" sb dev -p 9009",
+    "generate:arberc20whitelist": "./node_modules/.bin/ts-node --project tsconfig.scripts.json ./scripts/generateARBtokenlist.ts",
+    "storybook": "NODE_OPTIONS=\"--max-old-space-size=4096\" sb dev -p 9009 --no-manager-cache",
     "build-storybook": "NODE_OPTIONS=\"--max-old-space-size=4096\" sb build",
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "prepare": "husky install"
@@ -61,7 +62,10 @@
     "cosmos",
     "bsc",
     "avax",
-    "mayachain"
+    "mayachain",
+    "dash",
+    "kujira",
+    "arb"
   ],
   "homepage": "https://thorchain.org",
   "dependencies": {
@@ -84,6 +88,7 @@
     "@psf/bitcoincashjs-lib": "^4.0.2",
     "@types/electron-devtools-installer": "^2.2.2",
     "@xchainjs/ledger-thorchain": "^0.2.0",
+    "@xchainjs/xchain-arbitrum": "0.1.6",
     "@xchainjs/xchain-avax": "0.4.5",
     "@xchainjs/xchain-binance": "^5.7.8",
     "@xchainjs/xchain-bitcoin": "^0.23.10",
