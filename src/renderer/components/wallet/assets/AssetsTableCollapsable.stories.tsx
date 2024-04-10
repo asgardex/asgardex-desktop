@@ -4,6 +4,7 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetToString, baseAmount } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
@@ -11,7 +12,7 @@ import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 
 import { getMockRDValueFactory, RDStatus } from '../../../../shared/mock/rdByStatus'
-import { AssetBTC, AssetETH, AssetLTC, AssetRuneNative } from '../../../../shared/utils/asset'
+import { AssetBTC, AssetETH, AssetLTC, AssetRuneNative, AssetMaya, AssetCacao } from '../../../../shared/utils/asset'
 import { EnabledChain, isEnabledChain } from '../../../../shared/utils/chain'
 import { WalletType } from '../../../../shared/wallet/types'
 import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
@@ -29,6 +30,33 @@ const assetHandler = ({ asset, walletType, walletAddress }: SelectedWalletAsset)
   console.log('assetHandler params ', assetToString(asset), walletType, walletAddress)
 const disableRefresh = false
 const balances: Partial<Record<EnabledChain, ChainBalances>> = {
+  [MAYAChain]: [
+    {
+      walletType: 'keystore',
+      walletAddress: O.some('bnb keystore'),
+
+      chain: MAYAChain,
+      balances: RD.success([
+        {
+          walletType: 'keystore',
+          amount: baseAmount('1000000'),
+          asset: AssetMaya,
+          walletAddress: 'Maya wallet address',
+          walletIndex: 0,
+          hdMode: 'default'
+        },
+        {
+          walletType: 'keystore',
+          amount: baseAmount('300000000'),
+          asset: AssetCacao,
+          walletAddress: 'Maya wallet address',
+          walletIndex: 0,
+          hdMode: 'default'
+        }
+      ]),
+      balancesType: 'all'
+    }
+  ],
   [BTCChain]: [
     {
       walletType: 'keystore',

@@ -27,7 +27,7 @@ const bscBalance: WalletBalance = mockWalletBalance({
   walletAddress: 'BSC address'
 })
 
-const runeBnbBalance: WalletBalance = mockWalletBalance({
+const runeBalance: WalletBalance = mockWalletBalance({
   asset: AssetRuneNative,
   amount: assetToBase(assetAmount(2.2)),
   walletAddress: 'thor.Rune address'
@@ -35,10 +35,10 @@ const runeBnbBalance: WalletBalance = mockWalletBalance({
 
 const runeNativeBalance: WalletBalance = mockWalletBalance()
 
-const runeBalanceEmpty: WalletBalance = { ...runeBnbBalance, amount: ZERO_BASE_AMOUNT }
+const runeBalanceEmpty: WalletBalance = { ...runeBalance, amount: ZERO_BASE_AMOUNT }
 const bscBalanceEmpty: WalletBalance = { ...bscBalance, amount: ZERO_BASE_AMOUNT }
 const getBalances = (balances: WalletBalances) => NEA.fromArray<WalletBalance>(balances)
-const balances = getBalances([bscBalance, runeBnbBalance, runeNativeBalance])
+const balances = getBalances([bscBalance, runeBalance, runeNativeBalance])
 const openExplorerTxUrl: OpenExplorerTxUrl = (txHash: TxHash) => {
   console.log(`Open explorer - tx hash ${txHash}`)
   return Promise.resolve(true)
@@ -145,7 +145,7 @@ export const StoryRuneFeeNotCovered: StoryObj<AssetDetailsProps> = {
       walletType="keystore"
       walletAddress="bnb-address"
       txsPageRD={RD.initial}
-      balances={getBalances([runeBnbBalance, bscBalanceEmpty])}
+      balances={getBalances([runeBalance, bscBalanceEmpty])}
       asset={AssetRuneNative}
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
