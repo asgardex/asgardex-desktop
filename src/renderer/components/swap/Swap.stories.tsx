@@ -1,7 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Meta, StoryFn } from '@storybook/react'
-import { BNBChain } from '@xchainjs/xchain-binance'
-import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
+import { BTCChain, BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { MayachainQuery } from '@xchainjs/xchain-mayachain-query'
 import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
@@ -11,7 +10,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { mockValidatePassword$ } from '../../../shared/mock/wallet'
-import { AssetBSC, AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
+import { AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
 import { ONE_BN } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
@@ -27,10 +26,10 @@ const targetAsset: SwapAsset = { asset: AssetBTC, decimal: BTC_DECIMAL, price: b
 const defaultProps: SwapProps = {
   disableSwapAction: false,
   keystore: O.none,
-  poolAssets: [AssetBSC, AssetRuneNative],
+  poolAssets: [AssetBTC, AssetRuneNative],
   assets: { source: sourceAsset, target: targetAsset },
   poolAddress: O.some({
-    chain: BNBChain,
+    chain: BTCChain,
     address: 'vault-address',
     router: O.some('router-address'),
     halted: false
@@ -52,7 +51,7 @@ const defaultProps: SwapProps = {
       )
     ),
   poolsData: {
-    [assetToString(AssetBSC)]: {
+    [assetToString(AssetBTC)]: {
       assetBalance: baseAmount(1),
       runeBalance: baseAmount(20)
     },

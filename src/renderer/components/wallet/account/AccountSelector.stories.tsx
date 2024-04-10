@@ -3,7 +3,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase, assetToString } from '@xchainjs/xchain-util'
 
 import { ASSETS_MAINNET } from '../../../../shared/mock/assets'
-import { AssetBSC, AssetSynthBSC } from '../../../../shared/utils/asset'
+import { AssetBSC } from '../../../../shared/utils/asset'
 import { mockWalletBalance } from '../../../helpers/test/testWalletHelper'
 import { WalletBalances } from '../../../services/clients'
 import { WalletBalance } from '../../../services/wallet/types'
@@ -13,7 +13,7 @@ const Template: StoryFn<Props> = (args: Props) => <Component {...args} />
 
 export const Default = Template.bind({})
 
-const few: WalletBalances = [AssetSynthBSC, ASSETS_MAINNET.TOMO].map<WalletBalance>((asset) => ({
+const few: WalletBalances = [AssetBSC, ASSETS_MAINNET.TOMO].map<WalletBalance>((asset) => ({
   walletType: 'keystore',
   asset,
   amount: assetToBase(assetAmount(1)),

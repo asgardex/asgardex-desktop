@@ -5,7 +5,7 @@ import { assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/Option'
 
 import { AssetBTC, AssetETH } from '../../../../shared/utils/asset'
-import { AssetUSDTERC20Testnet } from '../../../const'
+import { AssetUSDC, AssetUSDTBSC, AssetUSDTERC20Testnet } from '../../../const'
 import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { eqBaseAmount, eqODepositAssetFees, eqODepositFees } from '../../../helpers/fp/eq'
 import { DepositAssetFees, DepositFees, SymDepositFees, SymDepositFeesRD } from '../../../services/chain/types'
@@ -126,6 +126,26 @@ describe('deposit/Deposit.helper', () => {
       // 9900 > 9800 ? 9800 : 9900
       expect(eqBaseAmount.equals(result, baseAmount(9800))).toBeTruthy()
     })
+    it('non gas asset -> 9950', () => {
+      const runeBalance = baseAmount(20000)
+      const assetBalance = { asset: AssetUSDTBSC, amount: baseAmount(10000) }
+      const result = maxAssetAmountToDeposit({ poolData, assetBalance, runeBalance, fees })
+      // console.log('result', result.amount().toString())
+      // R = 200000 (rune pool)
+      // A = 100000 (asset pool)
+      // r = 20000 (rune balance)
+      // rf = 100 (rune fee)
+      // mrb = a - af (max rune balance = rune balance - rune fee)
+      // mrb = 20000 - 100 = 19900
+      // a = 10000 (asset balance)
+      // mab = a (non gas asset - no fee deduction)
+      // mab = 10000
+      // max = A / R * mrb
+      // max = 100000 / 200000 * 19900 = 9950
+      // max > mab ? mab : max
+      // 9950 > 10000 ? 10000 : 9950
+      expect(eqBaseAmount.equals(result, baseAmount(9950))).toBeTruthy()
+    })
   })
 
   describe('getRuneAmountToDeposit', () => {
@@ -244,6 +264,71 @@ describe('deposit/Deposit.helper', () => {
       const result = minAssetAmountToDepositMax1e8(params)
 
       expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.0007, BTC_DECIMAL)))).toBeTruthy()
+    })
+
+    it('deposit chain asset (BTC.BTC)', () => {
+      const params = {
+        fees: {
+          asset: AssetBTC,
+          inFee: assetToBase(assetAmount(0.0001, BTC_DECIMAL)),
+          outFee: assetToBase(assetAmount(0.0003, BTC_DECIMAL)),
+          refundFee: assetToBase(assetAmount(0.0003, BTC_DECIMAL))
+        },
+        asset: AssetBTC,
+        assetDecimal: BTC_DECIMAL,
+        poolsData
+      }
+
+      // Prices
+      // All in Bitcoin
+
+      // Formula (success):
+      // inboundFeeInBNB + outboundFeeInBNB
+      // 0.0001 + 0.0003 = 0.0004
+      //
+      // Formula (failure):
+      // inboundFeeInBNB + refundFeeInBNB
+      // 0.0001 + 0.0003 = 0.0004
+      //
+      // Formula (minValue):
+      // 1,5 * max(success, failure)
+      // 1,5 * max(0.0004, 0.0004) = 1,5 * 0.0004 = 0.0006
+
+      const result = minAssetAmountToDepositMax1e8(params)
+      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.0006, BTC_DECIMAL)))).toBeTruthy()
+    })
+
+    it('deposit non chain asset (ETH.USDT)', () => {
+      const depositAssetDecimal = 8
+      const params = {
+        fees: {
+          asset: AssetETH,
+          inFee: assetToBase(assetAmount(0.0001, ETH_GAS_ASSET_DECIMAL)),
+          outFee: assetToBase(assetAmount(0.0003, ETH_GAS_ASSET_DECIMAL)),
+          refundFee: assetToBase(assetAmount(0.0003, ETH_GAS_ASSET_DECIMAL))
+        },
+        asset: AssetUSDC,
+        assetDecimal: depositAssetDecimal,
+        poolsData
+      }
+
+      // Prices
+      // 1 BNB = 600 BUSD or 1 BUSD = 0,001666667 BNB
+      //
+      // Formula (success):
+      // inboundFeeInBUSD + outboundFeeInBUSD
+      // 0.0001 * 600 + 0.0003 * 600 = 0.06 + 0,18 = 0.24
+      //
+      // Formula (failure):
+      // inboundFeeInBUSD + refundFeeInBUSD
+      // 0.0001 * 600 + 0.0003 * 600 = 0.06 + 0,18 = 0.24
+      //
+      // Formula (minValue):
+      // 1,5 * max(success, failure)
+      // 1,5 * max(0.24, 0.24) = 1,5 * 0.24 = 0.36
+
+      const result = minAssetAmountToDepositMax1e8(params)
+      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.36, depositAssetDecimal)))).toBeTruthy()
     })
 
     it('deposit ERC20 token asset (ETH.USDT)', () => {

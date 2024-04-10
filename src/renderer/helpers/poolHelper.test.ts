@@ -7,7 +7,6 @@ import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
-import { AssetBSC } from '@xchainjs/xchain-thorchain-query'
 import { assetAmount, assetToBase, assetToString, baseAmount } from '@xchainjs/xchain-util'
 import { Chain } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
@@ -15,7 +14,8 @@ import * as O from 'fp-ts/lib/Option'
 
 import { PoolsWatchList } from '../../shared/api/io'
 import { ASSETS_TESTNET } from '../../shared/mock/assets'
-import { AssetRuneNative } from '../../shared/utils/asset'
+import { AssetRuneNative, AssetBSC } from '../../shared/utils/asset'
+import { AssetUSDTBSC } from '../const'
 import { GetPoolsStatusEnum, PoolDetails } from '../services/midgard/types'
 import { toPoolData } from '../services/midgard/utils'
 import { DEFAULT_MIMIR_HALT } from '../services/thorchain/const'
@@ -139,7 +139,7 @@ describe('helpers/poolHelper/', () => {
     ]
 
     const usdPricePool: PricePool = {
-      asset: AssetBSC,
+      asset: AssetUSDTBSC,
       poolData: {
         assetBalance: assetToBase(assetAmount(110000)),
         runeBalance: assetToBase(assetAmount(100000))
@@ -358,6 +358,7 @@ describe('helpers/poolHelper/', () => {
           haltBTCTrading: true,
           haltETHTrading: true,
           haltBCHTrading: true,
+          haltBSCTrading: true,
           haltGAIATrading: true
         }
       })

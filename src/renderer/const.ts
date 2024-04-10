@@ -105,11 +105,27 @@ export const AssetUSDC: Asset = {
   synth: false
 }
 
-// AVAX.USDC mainnet
+// AVAX.USDT mainnet
 export const AssetUSDCAVAX: Asset = {
+  chain: AVAXChain,
+  symbol: 'USDC-0X9702230A8EA53601F5CD2DC00FDBC13D4DF4A8C7',
+  ticker: 'USDT',
+  synth: false
+}
+
+// AVAX.USDC mainnet
+export const AssetUSDTAVAX: Asset = {
   chain: AVAXChain,
   symbol: 'USDC-0XB97EF9EF8734C71904D8002F8B6BC66DD9C48A6E',
   ticker: 'USDC',
+  synth: false
+}
+
+// BSC.USDT mainnet
+export const AssetUSDTBSC: Asset = {
+  chain: BSCChain,
+  symbol: 'USDC-0X55D398326F99059FF775485246999027B3197955',
+  ticker: 'USDT',
   synth: false
 }
 
@@ -122,14 +138,6 @@ export const AssetUSDCBSC: Asset = {
 }
 
 export const DEFAULT_PRICE_ASSETS: PricePoolAssets = [AssetRuneNative, AssetETH, AssetBTC, AssetCacao]
-
-export const USD_PRICE_ASSETS: PricePoolAssets = [
-  AssetUSDTDAC,
-  AssetUSDT62E,
-  AssetUSDTERC20Testnet,
-  AssetUSDC,
-  AssetUSDCBSC
-]
 
 // Weight of chains
 // Needed for ordering chain related things (wallets, balances etc.)
@@ -166,14 +174,28 @@ export const CHAIN_WEIGHTS_MAYA: Record<EnabledChain, number> = {
   [DOGEChain]: 10,
   [GAIAChain]: 11
 }
+// All Mainnet Pools except AssetUSDT62E
+export const USD_PRICE_ASSETS: PricePoolAssets = [
+  AssetUSDTDAC, // ETH.DAI
+  AssetUSDT62E, // ETH.USDT (Testnet)
+  AssetUSDTERC20, // ETH.USDT
+  AssetUSDTAVAX, // ETH.USDT
+  AssetUSDC, // ETH.USDC
+  AssetUSDCAVAX, // AVAX.USDC
+  AssetUSDTBSC, // BSC.USDT
+  AssetUSDCBSC // BSC.USDC
+]
 
 // Weight of currencies needed for pricing
 // The higher the value the higher the weight
 export const CURRENCY_WEIGHTS: PricePoolCurrencyWeights = {
-  [assetToString(AssetUSDTDAC)]: 4,
-  [assetToString(AssetUSDT62E)]: 5,
-  [assetToString(AssetUSDTERC20Testnet)]: 6,
-  [assetToString(AssetUSDC)]: 7,
+  [assetToString(AssetUSDC)]: 0,
+  [assetToString(AssetUSDTERC20)]: 2,
+  [assetToString(AssetUSDTDAC)]: 3,
+  [assetToString(AssetUSDTAVAX)]: 4,
+  [assetToString(AssetUSDTAVAX)]: 5,
+  [assetToString(AssetUSDTBSC)]: 6,
+  [assetToString(AssetUSDCBSC)]: 7,
   [assetToString(AssetETH)]: 8,
   [assetToString(AssetBTC)]: 9,
   [assetToString(AssetRuneNative)]: 10

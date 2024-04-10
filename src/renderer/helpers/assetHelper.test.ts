@@ -1,4 +1,4 @@
-import { BNBChain } from '@xchainjs/xchain-binance'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { assetAmount, baseAmount } from '@xchainjs/xchain-util'
@@ -42,9 +42,10 @@ import {
   iconUrlInERC20Whitelist,
   isRuneAsset,
   getAssetFromNullableString,
-  assetInList
+  assetInList,
+  isBscAsset
 } from './assetHelper'
-import { eqAsset, eqAssetAmount, eqBaseAmount } from './fp/eq'
+import { eqAsset, eqAssetAmount, eqBaseAmount, eqOAsset } from './fp/eq'
 
 describe('helpers/assetHelper', () => {
   describe('isRuneNativeAsset', () => {
@@ -65,6 +66,12 @@ describe('helpers/assetHelper', () => {
     it('AssetBTC', () => {
       expect(isRuneAsset(AssetBTC)).toBeFalsy()
       expect(isRuneAsset(AssetBTC)).toBeFalsy()
+    })
+  })
+
+  describe('isBscbAsset', () => {
+    it('checks Bsc asset', () => {
+      expect(isBscAsset(AssetBSC)).toBeTruthy()
     })
   })
 
@@ -107,6 +114,7 @@ describe('helpers/assetHelper', () => {
     it('is true for ETH.USDT ', () => {
       expect(isEthTokenAsset(ERC20_TESTNET.USDT)).toBeTruthy()
     })
+    // ERC20_TESTNET.RUNE Removed as it does not exist.
   })
 
   describe('getEthAssetAddress', () => {
@@ -211,15 +219,15 @@ describe('helpers/assetHelper', () => {
   })
 
   describe('isPricePoolAsset', () => {
-    it('returns true for BUSDB', () => {
+    it('returns true for USDC', () => {
       expect(isPricePoolAsset(AssetUSDCAVAX)).toBeTruthy()
       expect(isPricePoolAsset(AssetUSDCBSC)).toBeTruthy()
     })
-    it('returns false for BNB', () => {
-      expect(isPricePoolAsset(AssetBTC)).toBeFalsy()
+    it('returns false for BTC', () => {
+      expect(isPricePoolAsset(AssetBSC)).toBeFalsy()
     })
     it('returns false for deprecated asset ', () => {
-      expect(isPricePoolAsset({ chain: BNBChain, symbol: 'RUNE-1AF', ticker: 'RUNE', synth: false })).toBeFalsy()
+      expect(isPricePoolAsset({ chain: BSCChain, symbol: 'RUNE-1AF', ticker: 'RUNE', synth: false })).toBeFalsy()
     })
   })
 
@@ -229,6 +237,12 @@ describe('helpers/assetHelper', () => {
     })
     it('ATOM', () => {
       expect(isChainAsset(AssetATOM)).toBeTruthy()
+    })
+    it('BSC', () => {
+      expect(isChainAsset(AssetBSC)).toBeTruthy()
+    })
+    it('BSC.USDC', () => {
+      expect(isChainAsset(AssetUSDCBSC)).toBeFalsy()
     })
   })
 
@@ -342,6 +356,14 @@ describe('helpers/assetHelper', () => {
   })
 
   describe('getAssetFromNullableString', () => {
+    it('BSC.BSC (uppercase)', () => {
+      const result = getAssetFromNullableString('BSC.BNB')
+      expect(eqOAsset.equals(result, O.some(AssetBSC))).toBeTruthy()
+    })
+    it('bnb.bnb (lowercase)', () => {
+      const result = getAssetFromNullableString('bsc.bnb')
+      expect(eqOAsset.equals(result, O.some(AssetBSC))).toBeTruthy()
+    })
     it('invalid', () => {
       const result = getAssetFromNullableString('invalid')
       expect(result).toBeNone()

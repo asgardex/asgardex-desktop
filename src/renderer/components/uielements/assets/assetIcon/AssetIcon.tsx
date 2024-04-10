@@ -2,7 +2,6 @@ import React, { useMemo, useCallback } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -48,7 +47,6 @@ import {
   atomIcon,
   avaxIcon,
   bscIcon,
-  bnbIcon,
   mayaIcon,
   btcIcon,
   dogeIcon,
@@ -80,8 +78,6 @@ const chainIconMap = (asset: Asset): string | null => {
       return avaxIcon
     case BSCChain:
       return bscIcon
-    case BNBChain:
-      return bnbIcon
     default:
       return null // return null if no chain matches
   }

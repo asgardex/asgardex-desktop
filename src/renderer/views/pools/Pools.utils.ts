@@ -18,7 +18,7 @@ import * as O from 'fp-ts/lib/Option'
 
 import { PoolsWatchList } from '../../../shared/api/io'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
-import { isBtcAsset, isChainAsset, isEthAsset, isUSDAsset, isEthTokenAsset } from '../../helpers/assetHelper'
+import { isChainAsset, isUSDAsset } from '../../helpers/assetHelper'
 import { isAvaxChain, isEthChain } from '../../helpers/chainHelper'
 import { eqString, eqAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
@@ -299,6 +299,7 @@ export const filterTableData =
  * TODO (@asgdx-team) Remove min. amount if xchain-* gets fee rates from THORChain
  * @see: https://github.com/xchainjs/xchainjs-lib/issues/299
  */
+/** Not uses except for in the pools test, removing. xchainjs gets the mins or returned from the quote endpoint
 export const minPoolTxAmountUSD = (asset: Asset): BaseAmount => {
   // BUSD has 8 decimal
   const value = (v: number) => assetToBase(assetAmount(v, 8))
@@ -311,6 +312,6 @@ export const minPoolTxAmountUSD = (asset: Asset): BaseAmount => {
   // anything else $10
   else return value(10)
 }
-
+*/
 export const isEmptyPool = ({ assetDepth, runeDepth }: Pick<PoolDetail, 'assetDepth' | 'runeDepth'>): boolean =>
   bnOrZero(assetDepth).isZero() || bnOrZero(runeDepth).isZero()

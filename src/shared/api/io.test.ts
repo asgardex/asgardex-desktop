@@ -1,13 +1,16 @@
 import { fail } from 'assert'
 
-import { Network } from '@xchainjs/xchain-client'
+import { BTCChain } from '@xchainjs/xchain-bitcoin'
+import { FeeOption, Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { baseAmount } from '@xchainjs/xchain-util'
 import * as E from 'fp-ts/lib/Either'
 import * as FP from 'fp-ts/lib/function'
 
+import { ZERO_BASE_AMOUNT } from '../../renderer/const'
 import { eqBaseAmount } from '../../renderer/helpers/fp/eq'
 import { MOCK_KEYSTORE } from '../mock/wallet'
+import { AssetBTC, AssetRuneNative } from '../utils/asset'
 import { mapIOErrors } from '../utils/fp'
 import {
   BaseAmountEncoded,
@@ -15,9 +18,11 @@ import {
   IPCLedgerAddressesIO,
   ipcKeystoreWalletIO,
   ipcLedgerAddressesIO,
+  ipcLedgerSendTxParamsIO,
   isBaseAmountEncoded,
   keystoreIO,
-  KeystoreWallet
+  KeystoreWallet,
+  poolsWatchListsIO
 } from './io'
 
 describe('shared/io', () => {
@@ -80,6 +85,159 @@ describe('shared/io', () => {
     })
   })
 
+  describe('ipcLedgerSendTxParams', () => {
+    it('encode IPCLedgerSendTxParams', () => {
+      const encoded = ipcLedgerSendTxParamsIO.encode({
+        chain: BTCChain,
+        network: Network.Mainnet,
+        asset: AssetBTC,
+        feeAsset: AssetBTC,
+        amount: baseAmount(10),
+        sender: 'address-abc',
+        recipient: 'address-abc',
+        memo: 'memo-abc',
+        walletIndex: 0,
+        feeRate: 1,
+        feeOption: FeeOption.Fast,
+        feeAmount: baseAmount(1, 6),
+        nodeUrl: 'node-url',
+        hdMode: 'default'
+      })
+      expect(encoded).toEqual({
+        chain: 'BTC',
+        network: Network.Mainnet,
+        asset: 'BTC.BTC',
+        feeAsset: 'BTC.BTC',
+        amount: { amount: '10', decimal: 8 },
+        sender: 'address-abc',
+        recipient: 'address-abc',
+        memo: 'memo-abc',
+        walletIndex: 0,
+        feeRate: 1,
+        feeOption: 'fast',
+        feeAmount: { amount: '1', decimal: 6 },
+        nodeUrl: 'node-url',
+        hdMode: 'default'
+      })
+    })
+
+    it('encode IPCLedgerSendTxParams - undefined fee option / fee amount / nodeUrl', () => {
+      const encoded = ipcLedgerSendTxParamsIO.encode({
+        chain: BTCChain,
+        network: Network.Mainnet,
+        asset: AssetBTC,
+        feeAsset: AssetBTC,
+        amount: baseAmount(10),
+        sender: 'address-abc',
+        recipient: 'address-abc',
+        memo: 'memo-abc',
+        walletIndex: 0,
+        feeRate: 1,
+        feeOption: undefined,
+        feeAmount: undefined,
+        nodeUrl: undefined,
+        hdMode: 'default'
+      })
+
+      expect(encoded).toEqual({
+        chain: 'BTC',
+        network: Network.Mainnet,
+        asset: 'BTC.BTC',
+        feeAsset: 'BTC.BTC',
+        amount: { amount: '10', decimal: 8 },
+        sender: 'address-abc',
+        recipient: 'address-abc',
+        memo: 'memo-abc',
+        walletIndex: 0,
+        feeRate: 1,
+        feeOption: undefined,
+        feeAmount: undefined,
+        nodeUrl: undefined,
+        hdMode: 'default'
+      })
+    })
+
+    it('decode IPCLedgerSendTxParams', () => {
+      const encoded = {
+        chain: 'BTC',
+        network: Network.Mainnet,
+        asset: 'BTC.BTC',
+        amount: { amount: '10', decimal: 8 },
+        sender: 'address-abc',
+        recipient: 'address-abc',
+        memo: 'memo-abc',
+        walletIndex: 0,
+        feeRate: 1,
+        feeAmount: { amount: '1', decimal: 6 },
+        hdMode: 'default'
+      }
+      const decoded = ipcLedgerSendTxParamsIO.decode(encoded)
+      expect(E.isRight(decoded)).toBeTruthy()
+
+      FP.pipe(
+        decoded,
+        E.fold(
+          (errors) => {
+            fail(mapIOErrors(errors))
+          },
+          (r) => {
+            expect(r.chain).toEqual(BTCChain)
+            expect(r.network).toEqual(Network.Mainnet)
+            expect(r.asset).toEqual(AssetBTC)
+            expect(eqBaseAmount.equals(r.amount, baseAmount(10, 8))).toBeTruthy()
+            expect(r.memo).toEqual('memo-abc')
+            expect(r.feeRate).toEqual(1)
+            expect(eqBaseAmount.equals(r?.feeAmount ?? ZERO_BASE_AMOUNT, baseAmount(1, 6))).toBeTruthy()
+          }
+        )
+      )
+    })
+    it('decode IPCLedgerSendTxParams - feeAmount undefined', () => {
+      const encoded = {
+        chain: 'BTC',
+        network: Network.Mainnet,
+        asset: 'BTC.BTC',
+        amount: { amount: '10', decimal: 8 },
+        sender: 'address-abc',
+        recipient: 'address-abc',
+        memo: 'memo-abc',
+        walletIndex: 0,
+        feeRate: 1,
+        feeAmount: undefined,
+        hdMode: 'default'
+      }
+      const decoded = ipcLedgerSendTxParamsIO.decode(encoded)
+      expect(E.isRight(decoded)).toBeTruthy()
+
+      FP.pipe(
+        decoded,
+        E.fold(
+          (errors) => {
+            fail(mapIOErrors(errors))
+          },
+          (r) => {
+            expect(r?.feeAmount).toBeUndefined()
+          }
+        )
+      )
+    })
+  })
+
+  describe('poolWatchListsIO', () => {
+    it('encode', () => {
+      const encoded = poolsWatchListsIO.encode({
+        testnet: [AssetBTC],
+        stagenet: [],
+        mainnet: [AssetRuneNative]
+      })
+
+      expect(encoded).toEqual({
+        testnet: ['BTC.BTC'],
+        mainnet: ['THOR.RUNE'],
+        stagenet: []
+      })
+    })
+  })
   describe('keystoreIO', () => {
     it('decoded', () => {
       const data = JSON.parse(JSON.stringify(MOCK_KEYSTORE))

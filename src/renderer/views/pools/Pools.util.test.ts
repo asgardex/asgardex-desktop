@@ -1,4 +1,5 @@
-import { BNBChain } from '@xchainjs/xchain-binance'
+import { BTCChain } from '@xchainjs/xchain-bitcoin'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { AssetAVAX } from '@xchainjs/xchain-thorchain-query'
@@ -7,9 +8,8 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
 import { ASSETS_TESTNET, ERC20_TESTNET } from '../../../shared/mock/assets'
-import { AssetBCH, AssetBTC, AssetETH, AssetLTC, AssetRuneNative } from '../../../shared/utils/asset'
-import { AssetUSDTERC20Testnet } from '../../const'
-import { eqBaseAmount } from '../../helpers/fp/eq'
+import { AssetBCH, AssetBTC, AssetETH, AssetLTC } from '../../../shared/utils/asset'
+import { AssetUSDC, AssetUSDT62E, AssetUSDTDAC } from '../../const'
 import { GetPoolsStatusEnum } from '../../services/midgard/types'
 import { LastblockItems } from '../../services/thorchain/types'
 import { PoolData, PoolTableRowData } from './Pools.types'
@@ -18,7 +18,6 @@ import {
   getBlocksLeftForPendingPool,
   getBlocksLeftForPendingPoolAsString,
   filterTableData,
-  minPoolTxAmountUSD,
   stringToGetPoolsStatus,
   isEmptyPool,
   FilterTableData
@@ -27,7 +26,7 @@ import {
 describe('views/pools/utils', () => {
   describe('getPoolTableRowData', () => {
     const lokPoolDetail = {
-      asset: 'BNB.FTM-585',
+      asset: 'BSC.FTM-585',
       assetDepth: '11000000000',
       runeDepth: '10000000000',
       volume24h: '10000000000',
@@ -85,7 +84,7 @@ describe('views/pools/utils', () => {
     const lastblock = [
       {
         thorchain: 2000,
-        chain: BNBChain
+        chain: BTCChain
       }
     ]
     it('returns number of blocks left', () => {
@@ -108,7 +107,7 @@ describe('views/pools/utils', () => {
     const lastblock = [
       {
         thorchain: 1000,
-        chain: BNBChain
+        chain: BTCChain
       }
     ]
     it('returns number of blocks left', () => {
@@ -141,22 +140,27 @@ describe('views/pools/utils', () => {
         asset: AssetBCH
       },
       {
-        asset: ASSETS_TESTNET.BUSD
+        asset: AssetUSDTDAC // ETH.USDT mainnet
       },
       {
-        asset: ERC20_TESTNET.USDT
+        asset: AssetUSDT62E // ETH.USDT testnet
       },
       {
-        asset: ERC20_TESTNET.RUNE
+        asset: AssetUSDC // ETH.USDC mainnet
       },
       {
-        asset: ERC20_TESTNET.USDT
+        asset: ERC20_TESTNET.USDT // Same as AssetUSDT62E
       },
       {
         asset: AssetETH
       },
       {
-        asset: { chain: BNBChain, symbol: 'BNB.ETH-1C9', ticker: 'ETH', synth: false }
+        asset: {
+          chain: BSCChain,
+          symbol: 'BSC.USDT-0X55D398326F99059FF775485246999027B319795',
+          ticker: 'USDT',
+          synth: false
+        }
       }
     ] as PoolTableRowData[]
 
@@ -182,14 +186,29 @@ describe('views/pools/utils', () => {
 
     it('erc20', () => {
       const result = filterTableData(O.some('__erc20__'))(tableData)
-      expect(result).toEqual([tableData[5], tableData[6], tableData[7]])
+      expect(result).toEqual([tableData[4], tableData[5], tableData[6], tableData[7]])
     })
 
     it('usd', () => {
-      expect(filterTableData(O.some('__usd__'))(tableData)).toEqual([tableData[4], tableData[5], tableData[7]])
+      expect(filterTableData(O.some('__usd__'))(tableData)).toEqual([
+        tableData[4],
+        tableData[5],
+        tableData[6],
+        tableData[7],
+        tableData[9]
+      ])
     })
   })
-
+  // Removing minPoolTxAmount tests as https://github.com/xchainjs/xchainjs-lib/issues/299 was implemented.
+  // From pool.utils
+  /**
+   * Helper to get min. amount for pool txs
+   * We use these currently to make sure all fees are covered
+   *
+   * TODO (@asgdx-team) Remove min. amount if xchain-* gets fee rates from THORChain
+   * @see: https://github.com/xchainjs/xchainjs-lib/issues/299
+   */
+  /**
   describe('minPoolTxAmount', () => {
     it('$200 for BTC', () => {
       const result = minPoolTxAmountUSD(AssetBTC)
@@ -202,6 +221,10 @@ describe('views/pools/utils', () => {
     it('$100 for ERC20', () => {
       const result = minPoolTxAmountUSD(AssetUSDTERC20Testnet)
       expect(eqBaseAmount.equals(result, assetToBase(assetAmount(100, 8)))).toBeTruthy()
+    })
+    it('$10 for others (BSC)', () => {
+      const result = minPoolTxAmountUSD(AssetBSC)
+      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(10, BSC_GAS_ASSET_DECIMAL)))).toBeTruthy()
     })
     it('$10 for others (LTC)', () => {
       const result = minPoolTxAmountUSD(AssetLTC)
@@ -216,7 +239,7 @@ describe('views/pools/utils', () => {
       expect(eqBaseAmount.equals(result, assetToBase(assetAmount(10, 8)))).toBeTruthy()
     })
   })
-
+ */
   describe('stringToGetPoolsStatus', () => {
     it('suspended', () => {
       const status = 'suspended'

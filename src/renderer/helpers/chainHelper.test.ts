@@ -1,4 +1,3 @@
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -73,7 +72,7 @@ describe('helpers/chainHelper', () => {
       expect(isEthChain(ETHChain)).toBeTruthy()
     })
     it('ETHChain -> false', () => {
-      expect(isEthChain(BNBChain)).toBeFalsy()
+      expect(isEthChain(BTCChain)).toBeFalsy()
     })
 
     it('DOGEChain -> true', () => {

@@ -279,7 +279,7 @@ describe('services/wallet/util/', () => {
           O.some({
             asset: AssetBSC,
             amount: baseAmount(2),
-            walletAddress: 'ADDRESS_BNB',
+            walletAddress: 'ADDRESS_BSC',
             walletIndex: 0,
             walletType: 'keystore',
             hdMode: 'default'

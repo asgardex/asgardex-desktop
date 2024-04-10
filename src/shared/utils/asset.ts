@@ -59,7 +59,8 @@ export {
 }
 
 /** Moved from Binance Helpers
- *
+ *  Checks to see if the second part od the symbol has a len of 4 and ends with M.
+ * I suspect this is old school BNB specific stuff. Will leave for now as it is used in Midgard Service and by util.tests
  */
 export const isMiniToken = ({ symbol }: Pick<Asset, 'symbol'>): boolean => {
   const [, two] = symbol.split('-')

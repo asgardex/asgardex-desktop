@@ -8,7 +8,6 @@ import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
 
 import { useChainContext } from '../contexts/ChainContext'
-import { isBnbClient } from '../helpers/clientHelper'
 import { eqChain } from '../helpers/fp/eq'
 import { AddressValidation, AddressValidationAsync } from '../services/clients'
 
@@ -45,7 +44,8 @@ export const useValidateAddress = (
       FP.pipe(
         oClient,
         O.map(async (client) => {
-          const valid = client.validateAddress(address)
+          return client.validateAddress(address)
+          /**  Remove BNB Specific checks
           if (valid && isBnbClient(client)) {
             try {
               // check BNB account and block if flag !== 0
@@ -62,7 +62,7 @@ export const useValidateAddress = (
               return true
             }
           }
-          return valid
+          */
         }),
         // In case client is not available (it should never happen), skip validation by returning always `true`
         O.getOrElse<Promise<boolean>>(() => Promise.resolve(true))

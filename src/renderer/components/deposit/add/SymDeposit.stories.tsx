@@ -1,5 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Story, Meta } from '@storybook/react'
+import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase, baseAmount, Asset, assetToString } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
@@ -43,7 +44,7 @@ const defaultProps: SymDepositProps = {
   disableDepositAction: false,
   availableAssets: [AssetRuneNative, AssetBSC, AssetBTC],
   walletBalances: { balances: O.some([balanceRune, balanceBNB, balanceBTC, balanceTOMO]), loading: false },
-  asset: { asset: AssetBSC, decimal: 8 },
+  asset: { asset: AssetBSC, decimal: BSC_GAS_ASSET_DECIMAL },
   poolDetails: [],
   pricePool: RUNE_PRICE_POOL,
   assetWalletType: 'keystore',

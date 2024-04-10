@@ -9059,18 +9059,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-binance@npm:^5.7.8":
-  version: 5.7.8
-  resolution: "@xchainjs/xchain-binance@npm:5.7.8"
-  peerDependencies:
-    "@binance-chain/javascript-sdk": ^4.2.0
-    "@xchainjs/xchain-client": ^0.16.0
-    "@xchainjs/xchain-crypto": ^0.3.0
-    "@xchainjs/xchain-util": ^0.13.1
-  checksum: ca17a03d564339a3a759cecda5878ee1d80566016003acb95f0343095496f67fa698d2ae4cc2d556188d7f417dca50ab1042b167f6a18d4fed365712b6678d05
-  languageName: node
-  linkType: hard
-
 "@xchainjs/xchain-bitcoin@npm:^0.23.10":
   version: 0.23.10
   resolution: "@xchainjs/xchain-bitcoin@npm:0.23.10"
@@ -10226,7 +10214,6 @@ __metadata:
     "@types/styled-components": ^5.1.25
     "@xchainjs/ledger-thorchain": ^0.2.0
     "@xchainjs/xchain-avax": 0.4.5
-    "@xchainjs/xchain-binance": ^5.7.8
     "@xchainjs/xchain-bitcoin": ^0.23.10
     "@xchainjs/xchain-bitcoincash": ^0.17.8
     "@xchainjs/xchain-bsc": 0.4.4

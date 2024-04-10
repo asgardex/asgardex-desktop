@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Meta, Story } from '@storybook/react'
-import { BNBChain } from '@xchainjs/xchain-binance'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network, Tx, TxType } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 
@@ -24,12 +24,12 @@ const txsRD = RD.success({
 
 export const Default: Story = () => (
   <TxsTable
-    walletAddress="bnb-address"
+    walletAddress="bsc-address"
     txsPageRD={txsRD}
     clickTxLinkHandler={(txHash: string) => console.log('txHash ', txHash)}
     changePaginationHandler={(page: number) => console.log('page:', page)}
     network={Network.Testnet}
-    chain={BNBChain}
+    chain={BSCChain}
     reloadHandler={() => console.log('reload ')}
   />
 )

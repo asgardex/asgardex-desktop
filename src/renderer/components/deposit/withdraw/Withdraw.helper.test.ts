@@ -46,15 +46,15 @@ describe('stake/Withdraw.helper', () => {
 
   describe('minAssetAmountToWithdrawMax1e8', () => {
     const poolsData = {
-      'BNB.BUSD-74E': {
-        assetBalance: assetToBase(assetAmount(20)), // 1 BUSD = 0.05 RUNE
-        runeBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 BUSD
+      'BSC.USDC': {
+        assetBalance: assetToBase(assetAmount(20)), // 1 BSDC = 0.05 RUNE
+        runeBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDC
       },
       'ETH.USDT-0xa3910454bf2cb59b8b3a401589a3bacc5ca42306': {
         assetBalance: assetToBase(assetAmount(20)), // 1 USDT = 0.05 RUNE
         runeBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDT
       },
-      'BNB.BNB': {
+      'BSC.BNB': {
         assetBalance: assetToBase(assetAmount(1)), // 1 BNB = 30 RUNE (600 USD)
         runeBalance: assetToBase(assetAmount(30)) // 1 RUNE = 0.03 BNB
       },
@@ -64,11 +64,47 @@ describe('stake/Withdraw.helper', () => {
       }
     }
 
-    it('witdhraw non chain asset (BNB.USD)', () => {
-      const withdrawAssetDecimal = 8
+    it('witdhraw chain asset (BSC.BNB)', () => {
+      const withdrawAssetDecimal = 7
       const params = {
         fees: {
           asset: AssetBSC,
+          amount: assetToBase(assetAmount(0.0003))
+        },
+        asset: AssetBSC,
+        assetDecimal: withdrawAssetDecimal,
+        poolsData
+      }
+      // Prices
+      // All in BNB
+      //
+      // Formula:
+      // 1,5 * feeInBNB
+      // 1,5 * 0.0003 = 0.00045
+
+      const result = minAssetAmountToWithdrawMax1e8(params)
+
+      const bnb_bnb_amount = assetToBase(assetAmount(0.0003, 8))
+      const bsc_bnb_amount = assetToBase(assetAmount(0.0003, 8))
+
+      console.log(` Setting 0.0003 BNB.BNB ${bnb_bnb_amount.amount()}`)
+      console.log(` Setting 0.0003 BSC.BNB ${bsc_bnb_amount.amount()}`)
+
+      console.log(
+        `witdhraw chain asset (BSC.BNB) withdrawn amount is: ${assetToBase(assetAmount(0.0003))
+          .amount()
+          .toFixed(8, 1)} Result: ${result.amount().toFixed(8)}, expected is 0.00045`
+      )
+
+      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.00045, withdrawAssetDecimal)))).toBeTruthy()
+      // Failing  Result: 45000.00000000, expected is 0.00045
+    })
+
+    it('witdhraw non chain asset (BNB.USDC)', () => {
+      const withdrawAssetDecimal = 7
+      const params = {
+        fees: {
+          asset: AssetUSDCBSC,
           amount: assetToBase(assetAmount(0.0003))
         },
         asset: AssetUSDCBSC,
@@ -84,7 +120,9 @@ describe('stake/Withdraw.helper', () => {
       // 1,5 * 0.0003 * 600 = 0.27
 
       const result = minAssetAmountToWithdrawMax1e8(params)
+      console.log(`witdhraw chain asset (BSC.USDC) result : ${result.amount().toFixed(8, 1)}, expected is 0.27`)
       expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.27, withdrawAssetDecimal)))).toBeTruthy()
+      // Failing Result 45000.00000000, expected is 0.27
     })
 
     it('withdraw ERC20 token asset (ETH.USDT)', () => {

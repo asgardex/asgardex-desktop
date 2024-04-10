@@ -1,16 +1,17 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Story, Meta } from '@storybook/react'
-import { AssetBTC, BTCChain } from '@xchainjs/xchain-bitcoin'
+import { BTCChain } from '@xchainjs/xchain-bitcoin'
+import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { Asset, assetAmount, assetToBase, assetToString, baseAmount, bn } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { BTC_ADDRESS_MAINNET } from '../../../../shared/mock/address'
+import { BSC_ADDRESS_MAINNET } from '../../../../shared/mock/address'
 import { mockValidatePassword$ } from '../../../../shared/mock/wallet'
-import { AssetRuneNative } from '../../../../shared/utils/asset'
-import { BTC_DECIMAL, THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
+import { AssetRuneNative, AssetBSC } from '../../../../shared/utils/asset'
+import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { mockWalletAddress } from '../../../helpers/test/testWalletHelper'
 import { INITIAL_WITHDRAW_STATE } from '../../../services/chain/const'
 import { WithdrawState$ } from '../../../services/chain/types'
@@ -20,15 +21,18 @@ import { Withdraw, Props as WitdrawProps } from './Withdraw'
 const defaultProps: WitdrawProps = {
   haltedChains: [],
   mimirHalt: DEFAULT_MIMIR_HALT,
-  asset: { asset: AssetBTC, decimal: BTC_DECIMAL },
-  assetWalletAddress: mockWalletAddress({ address: BTC_ADDRESS_MAINNET, chain: BTCChain }),
+  asset: { asset: AssetBSC, decimal: BSC_GAS_ASSET_DECIMAL },
+  assetWalletAddress: mockWalletAddress({ address: BSC_ADDRESS_MAINNET, chain: BTCChain }),
   runeWalletAddress: mockWalletAddress(),
   runePrice: bn(1),
   assetPrice: bn(60.972),
   runeBalance: O.some(assetToBase(assetAmount(100))),
   selectedPriceAsset: AssetRuneNative,
   reloadFees: () => console.log('reload fees'),
-  shares: { rune: assetToBase(assetAmount(10, THORCHAIN_DECIMAL)), asset: assetToBase(assetAmount(30, BTC_DECIMAL)) },
+  shares: {
+    rune: assetToBase(assetAmount(10, THORCHAIN_DECIMAL)),
+    asset: assetToBase(assetAmount(30, BSC_GAS_ASSET_DECIMAL))
+  },
   disabled: false,
   openRuneExplorerTxUrl: (txHash: TxHash) => {
     console.log(`Open RUNE explorer - tx hash ${txHash}`)
@@ -61,14 +65,14 @@ const defaultProps: WitdrawProps = {
           outFee: assetToBase(assetAmount(0.7))
         },
         asset: {
-          asset: AssetBTC,
+          asset: AssetBSC,
           amount: assetToBase(assetAmount(0.5))
         }
       })
     ),
   network: Network.Testnet,
   poolsData: {
-    [assetToString(AssetBTC)]: {
+    [assetToString(AssetBSC)]: {
       assetBalance: baseAmount(1),
       runeBalance: baseAmount(20)
     }

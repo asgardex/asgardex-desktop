@@ -1,7 +1,7 @@
 import { Meta, StoryFn } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 
-import { BTC_ADDRESS_MAINNET, RUNE_ADDRESS_TESTNET } from '../../../../shared/mock/address'
+import { BSC_ADDRESS_MAINNET, RUNE_ADDRESS_TESTNET } from '../../../../shared/mock/address'
 import { AssetBTC, AssetRuneNative } from '../../../../shared/utils/asset'
 import * as AT from '../../../storybook/argTypes'
 import { AssetWithAddress } from '../../../types/asgardex'
@@ -11,7 +11,7 @@ const Template: StoryFn<Props> = (args: Props) => <Component {...args} />
 
 export const Default = Template.bind({})
 
-const btc: AssetWithAddress = { asset: AssetBTC, address: BTC_ADDRESS_MAINNET }
+const btc: AssetWithAddress = { asset: AssetBTC, address: BSC_ADDRESS_MAINNET }
 const rune: AssetWithAddress = { asset: AssetRuneNative, address: RUNE_ADDRESS_TESTNET }
 
 const meta: Meta<typeof Component> = {

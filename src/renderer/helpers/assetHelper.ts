@@ -2,6 +2,8 @@ import { Network } from '@xchainjs/xchain-client'
 import { AssetDASH } from '@xchainjs/xchain-dash'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
 import { AssetUSK } from '@xchainjs/xchain-kujira'
+import { CACAO_DECIMAL as MAYA_PACKAGE_CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
+import { RUNE_DECIMAL } from '@xchainjs/xchain-thorchain'
 import {
   Address,
   Asset,
@@ -70,17 +72,9 @@ import { sequenceTOption } from './fpHelpers'
  * (eg. `asgardex-binance|bitcoin|ethereum` and others)
  *
  * */
-export const THORCHAIN_DECIMAL = 8
+export const THORCHAIN_DECIMAL = RUNE_DECIMAL
 
-export const CACAO_DECIMAL = 10
-
-/**
- * Number of decimals for Binance chain assets
- * Example:
- * 1 RUNE == 100,000,000 ð (tor)
- * 0.00000001 RUNE == 1 ð (tor)
- * */
-export const BTC_DECIMAL = 8
+export const CACAO_DECIMAL = MAYA_PACKAGE_CACAO_DECIMAL
 
 export const isAssetInMayachainPools = (asset: Asset): boolean =>
   eqAsset.equals(asset, AssetCacao || AssetDASH || AssetKUJI)

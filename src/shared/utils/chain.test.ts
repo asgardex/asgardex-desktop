@@ -1,5 +1,4 @@
 import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -7,13 +6,13 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { MayaChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 
 import { chainToString, isEnabledChain } from './chain'
 
 describe('chain', () => {
   it('isEnabledChain', () => {
-    expect(isEnabledChain('BNB')).toBeTruthy()
     expect(isEnabledChain('BTC')).toBeTruthy()
     expect(isEnabledChain('BCH')).toBeTruthy()
     expect(isEnabledChain('ETH')).toBeTruthy()
@@ -46,9 +45,6 @@ describe('chain', () => {
     it('BSC', () => {
       expect(chainToString(BSCChain)).toEqual('BNB Chain (BSC)')
     })
-    it('BNB', () => {
-      expect(chainToString(BNBChain)).toEqual('BNB Beacon Chain')
-    })
     it('GAIA', () => {
       expect(chainToString(GAIAChain)).toEqual('Cosmos')
     })
@@ -57,6 +53,9 @@ describe('chain', () => {
     })
     it('DOGE', () => {
       expect(chainToString(DOGEChain)).toEqual('Dogecoin')
+    })
+    it('MAYA', () => {
+      expect(chainToString(MayaChain)).toEqual('MAYAChain')
     })
   })
 })
