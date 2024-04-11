@@ -1,3 +1,4 @@
+import { ARBChain, AssetARB } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
 import { AssetBTC, BTCChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDBTC } from '@xchainjs/xchain-bitcoin'
 import { AssetBCH, BCHChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDBCH } from '@xchainjs/xchain-bitcoincash'
@@ -43,6 +44,8 @@ export const getChainAsset = (chain: Chain): Asset => {
       return AssetDASH
     case KUJIChain:
       return AssetKUJI
+    case ARBChain:
+      return AssetARB
   }
 }
 // TODO (@veado) Return Maybe<Asset> instead of throwing an error
@@ -92,6 +95,11 @@ export const isDashChain = (chain: Chain): boolean => eqChain.equals(chain.toUpp
 export const isEthChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), ETHChain)
 
 /**
+ * Check whether chain is ARB chain
+ */
+export const isArbChain = (chain: Chain): boolean => eqChain.equals(chain, ARBChain)
+
+/**
  * Check whether chain is AVAX chain
  */
 export const isAvaxChain = (chain: Chain): boolean => eqChain.equals(chain, AVAXChain)
@@ -136,6 +144,8 @@ export const filterEnabledChains = <T>(values: ChainValues<T>): T[] => {
 
 export const getChain = (chain: string): Chain => {
   switch (chain) {
+    case 'ARB':
+      return ARBChain
     case 'AVAX':
       return AVAXChain
     case 'BTC':

@@ -1,3 +1,4 @@
+import { ARBChain, ARB_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AVAX_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-avax'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
@@ -47,6 +48,9 @@ export const smallestAmountToSent = (chain: Chain, _network: Network): BaseAmoun
     case ETHChain:
       // zero for ETH
       return baseAmount(0, ETH_GAS_ASSET_DECIMAL)
+    case ARBChain:
+      // zero for Arb
+      return baseAmount(0, ARB_GAS_ASSET_DECIMAL)
     case AVAXChain:
       // zero for Avax
       return baseAmount(0, AVAX_GAS_ASSET_DECIMAL)

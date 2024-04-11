@@ -1,3 +1,4 @@
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -25,6 +26,7 @@ export const ENABLED_CHAINS = [
   ETHChain,
   LTCChain,
   THORChain,
+  ARBChain,
   AVAXChain,
   BSCChain,
   MAYAChain,
@@ -42,9 +44,9 @@ export const isEnabledChain = (u: string): u is EnabledChain => ENABLED_CHAINS.i
 
 // Mapping of DEXs to their supported chains, Update this when new chains are added
 export const DEX_CHAINS: { [key: string]: ReadonlyArray<Chain> } = {
-  MAYA: ['DASH', 'BTC', 'ETH', 'KUJI', 'THOR', 'MAYA'],
+  MAYA: ['DASH', 'BTC', 'ETH', 'KUJI', 'THOR', 'MAYA', 'ARB'],
   // For THOR, filter out chains that are maya specific
-  THOR: ENABLED_CHAINS.filter((chain) => !['DASH', 'KUJI', 'MAYA'].includes(chain))
+  THOR: ENABLED_CHAINS.filter((chain) => !['DASH', 'KUJI', 'MAYA', 'ARB'].includes(chain))
 }
 
 // Function to retrieve chains for a specific DEX
@@ -89,6 +91,8 @@ export const chainToString = (chain: Chain): string => {
       return 'Litecoin'
     case THORChain:
       return 'THORChain'
+    case ARBChain:
+      return 'Arbitrum'
     case AVAXChain:
       return 'Avax'
     case BSCChain:
@@ -154,5 +158,9 @@ export const DefaultChainAttributes: Record<Chain, ChainAttributes> = {
   KUJI: {
     blockReward: 0,
     avgBlockTimeInSecs: 4
+  },
+  ARB: {
+    blockReward: 0,
+    avgBlockTimeInSecs: 3
   }
 }

@@ -450,6 +450,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     if (!hasImportedKeystore(keystore) || isLocked(keystore)) return O.some(false)
 
     // ERC20 token does need approval only
+    //tobeFixed
     switch (sourceChain) {
       case ETHChain:
         return isEthAsset(asset.asset) ? O.some(false) : O.some(isEthTokenAsset(asset.asset))

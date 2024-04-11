@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -18,6 +19,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { isEnabledChain } from '../../../shared/utils/chain'
 import { observableState } from '../../helpers/stateHelper'
+import * as ARB from '../arb'
 import * as AVAX from '../avax'
 import * as BTC from '../bitcoin'
 import * as BCH from '../bitcoincash'
@@ -77,6 +79,8 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
                 return DASH.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
               case ETHChain:
                 return ETH.txs$({ asset: O.some(asset), limit, offset, walletAddress, walletIndex })
+              case ARBChain:
+                return ARB.txs$({ asset: O.some(asset), limit, offset, walletAddress, walletIndex })
               case AVAXChain:
                 return AVAX.txs$({ asset: O.some(asset), limit, offset, walletAddress, walletIndex })
               case BSCChain:

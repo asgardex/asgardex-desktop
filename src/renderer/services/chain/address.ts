@@ -1,3 +1,4 @@
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -15,6 +16,7 @@ import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 
 import { isEnabledChain } from '../../../shared/utils/chain'
+import * as ARB from '../arb'
 import * as AVAX from '../avax'
 import * as BTC from '../bitcoin'
 import * as BCH from '../bitcoincash'
@@ -43,6 +45,8 @@ const addressByChain$ = (chain: Chain): WalletAddress$ => {
       return DASH.address$
     case ETHChain:
       return ETH.address$
+    case ARBChain:
+      return ARB.address$
     case AVAXChain:
       return AVAX.address$
     case BSCChain:

@@ -1,4 +1,5 @@
 import TransportNodeHidSingleton from '@ledgerhq/hw-transport-node-hid-singleton'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -17,6 +18,7 @@ import { IPCLedgerAdddressParams, LedgerError, LedgerErrorId } from '../../../sh
 import { isEnabledChain } from '../../../shared/utils/chain'
 import { isError, isEvmHDMode } from '../../../shared/utils/guard'
 import { WalletAddress } from '../../../shared/wallet/types'
+import { getAddress as getARBAddress, verifyAddress as verifyARBAddress } from './arb/address'
 import { getAddress as getAVAXAddress, verifyAddress as verifyAVAXAddress } from './avax/address'
 import { getAddress as getBTCAddress, verifyAddress as verifyBTCAddress } from './bitcoin/address'
 import { getAddress as getBCHAddress, verifyAddress as verifyBCHAddress } from './bitcoincash/address'
@@ -91,6 +93,17 @@ export const getAddress = async ({
           }
           break
         }
+        case ARBChain: {
+          if (!isEvmHDMode(hdMode)) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_ETH_DERIVATION_MODE,
+              msg: `Invalid 'ArbHDMode' - needed for ARB to get Ledger address`
+            })
+          } else {
+            res = await getARBAddress({ transport, walletIndex, evmHdMode: hdMode })
+          }
+          break
+        }
         case GAIAChain:
           res = await getCOSMOSAddress(transport, walletIndex)
           break
@@ -141,6 +154,11 @@ export const verifyLedgerAddress = async ({ chain, network, walletIndex, hdMode 
     case BSCChain: {
       if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for BSC to verify Ledger address`)
       result = await verifyBSCAddress({ transport, walletIndex, evmHdMode: hdMode })
+      break
+    }
+    case ARBChain: {
+      if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for ARB to verify Ledger address`)
+      result = await verifyARBAddress({ transport, walletIndex, evmHdMode: hdMode })
       break
     }
     case GAIAChain:

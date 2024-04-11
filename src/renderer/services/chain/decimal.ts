@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { ARB_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-arbitrum'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { DASH_DECIMAL } from '@xchainjs/xchain-dash'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
@@ -10,7 +11,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { isEnabledChain } from '../../../shared/utils/chain'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
-import { isBscChain, isDashChain, isKujiChain, isMayaChain, isThorChain } from '../../helpers/chainHelper'
+import { isArbChain, isBscChain, isDashChain, isKujiChain, isMayaChain, isThorChain } from '../../helpers/chainHelper'
 import { KUJI_DECIMAL } from '../kuji/const'
 import { AssetWithDecimalLD } from './types'
 
@@ -20,6 +21,10 @@ const getDecimal = (asset: Asset): Promise<number> => {
 
   if (!isEnabledChain(chain)) {
     return Promise.reject(new Error(`${chain} is not supported for 'getDecimal'`))
+  }
+
+  if (isArbChain(chain)) {
+    return Promise.resolve(ARB_GAS_ASSET_DECIMAL)
   }
   // @St0rmzy find out why bsc.bnb on midgard -1 instead of being the correct decimals.
   if (isBscChain(chain)) {

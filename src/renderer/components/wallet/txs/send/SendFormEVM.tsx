@@ -31,7 +31,7 @@ import { chainToString } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../../const'
-import { isAvaxAsset, isBscAsset, isEthAsset, isUSDAsset } from '../../../../helpers/assetHelper'
+import { isArbAsset, isAvaxAsset, isBscAsset, isEthAsset, isUSDAsset } from '../../../../helpers/assetHelper'
 import { getChainAsset } from '../../../../helpers/chainHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import { getPoolPriceValue } from '../../../../helpers/poolHelper'
@@ -220,7 +220,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
   const oAssetAmount: O.Option<BaseAmount> = useMemo(() => {
     // return balance of current asset
-    if (isEthAsset(asset) || isAvaxAsset(asset) || isBscAsset(asset)) {
+    if (isEthAsset(asset) || isArbAsset(asset) || isAvaxAsset(asset) || isBscAsset(asset)) {
       return O.some(balance.amount)
     }
     // or check list of other assets to get eth balance
@@ -649,7 +649,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
       // extended description for ERC20 tokens only
       const description1 =
-        !isEthAsset(asset) || !isAvaxAsset(asset) || !isBscAsset(asset)
+        !isEthAsset(asset) || !isArbAsset(asset) || !isAvaxAsset(asset) || !isBscAsset(asset)
           ? `${txtNeedsConnected} ${intl.formatMessage(
               {
                 id: 'ledger.blindsign'
