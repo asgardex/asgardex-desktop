@@ -67,7 +67,6 @@
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
     "@asgardex/asgardex-theme": "^0.1.2",
-    "@binance-chain/javascript-sdk": "^4.2.2",
     "@cosmjs/stargate": "^0.28.10",
     "@cosmos-client/core": "0.46.1",
     "@craco/craco": "^7.0.0",
