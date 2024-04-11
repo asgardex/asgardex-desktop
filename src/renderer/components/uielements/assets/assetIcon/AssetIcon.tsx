@@ -45,7 +45,8 @@ import {
   isUskAsset,
   isUskSynthAsset,
   isDashSynthAsset,
-  iconUrlInARBERC20Whitelist
+  iconUrlInARBERC20Whitelist,
+  isAethAsset
 } from '../../../../helpers/assetHelper'
 import {
   isArbChain,
@@ -118,7 +119,7 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
       return ethIcon
     }
     // ARB
-    if (isArbAsset(asset) || isArbSynthAsset(asset)) {
+    if (isArbAsset(asset) || isArbSynthAsset(asset) || isAethAsset(asset)) {
       return arbIcon
     }
     // AVAX
@@ -200,13 +201,11 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
       // Since we've already checked ARB.ETH before,
       // we know any asset is ERC20 here - no need to run expensive `isArbTokenAsset`
       if (isArbChain(asset.chain)) {
-        return asset.ticker === 'ARB'
-          ? arbIcon
-          : FP.pipe(
-              // Try to get url from ERC20Whitelist first
-              iconUrlInARBERC20Whitelist(asset),
-              O.getOrElse(() => '')
-            )
+        return FP.pipe(
+          // Try to get url from ERC20Whitelist first
+          iconUrlInARBERC20Whitelist(asset),
+          O.getOrElse(() => '')
+        )
       }
       // Since we've already checked AVAX.AVAX before,
       // we know any asset is ERC20 here - no need to run expensive `isAvaxTokenAsset`

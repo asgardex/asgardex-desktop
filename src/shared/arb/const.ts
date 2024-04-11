@@ -9,6 +9,7 @@ import {
 import { ExplorerProvider, FeeBounds, Network } from '@xchainjs/xchain-client'
 import { EVMClientParams } from '@xchainjs/xchain-evm'
 import { EtherscanProvider, RoutescanProvider } from '@xchainjs/xchain-evm-providers'
+import { Asset } from '@xchainjs/xchain-util'
 import { BigNumber, ethers } from 'ethers'
 
 import { envOrDefault } from '../utils/env'
@@ -25,6 +26,9 @@ export const FEE_BOUNDS: Record<Network, FeeBounds | undefined> = {
 export const DEPOSIT_EXPIRATION_OFFSET = 15 * 60 // 15min in seconds
 
 export const ArbZeroAddress = '0x0000000000000000000000000000000000000000'
+
+// ARB ETH
+export const AssetAETH: Asset = { chain: ARBChain, symbol: 'ETH', ticker: 'ETH', synth: false }
 
 // =====Ethers providers=====
 const ARBITRUM_MAINNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider('https://rpc.ankr.com/arbitrum')

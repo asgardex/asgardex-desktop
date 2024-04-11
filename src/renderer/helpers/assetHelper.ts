@@ -19,7 +19,7 @@ import * as O from 'fp-ts/lib/Option'
 import * as P from 'fp-ts/lib/Predicate'
 import * as S from 'fp-ts/lib/string'
 
-import { ArbZeroAddress } from '../../shared/arb/const'
+import { ArbZeroAddress, AssetAETH } from '../../shared/arb/const'
 import { AvaxZeroAddress } from '../../shared/avax/const'
 import { BscZeroAddress } from '../../shared/bsc/const'
 import { ETHAddress } from '../../shared/ethereum/const'
@@ -176,6 +176,11 @@ export const isEthAsset = (asset: Asset): boolean => eqAsset.equals(asset, Asset
  * Checks whether an asset is an ARB asset
  */
 export const isArbAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetARB)
+
+/**
+ * Checks whether an asset is an ARB ETH asset
+ */
+export const isAethAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetAETH)
 /**
  * Checks whether an asset is an ARB synth asset
  */
