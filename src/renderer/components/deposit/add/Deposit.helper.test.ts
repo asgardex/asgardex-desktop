@@ -1,10 +1,11 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
+import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/Option'
 
-import { AssetBTC, AssetETH } from '../../../../shared/utils/asset'
+import { AssetBTC, AssetETH, AssetBSC } from '../../../../shared/utils/asset'
 import { AssetUSDC, AssetUSDTBSC, AssetUSDTERC20Testnet } from '../../../const'
 import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { eqBaseAmount, eqODepositAssetFees, eqODepositFees } from '../../../helpers/fp/eq'
@@ -215,7 +216,7 @@ describe('deposit/Deposit.helper', () => {
 
   describe('minAssetAmountToDepositMax1e8', () => {
     const poolsData = {
-      'BNB.BUSD-74E': {
+      'BNB.USDT': {
         assetBalance: assetToBase(assetAmount(20)), // 1 BUSD = 0.05 RUNE
         runeBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 BUSD
       },
@@ -223,7 +224,7 @@ describe('deposit/Deposit.helper', () => {
         assetBalance: assetToBase(assetAmount(20)), // 1 USDT = 0.05 RUNE
         runeBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDT
       },
-      'BNB.BNB': {
+      'BSC.BNB': {
         assetBalance: assetToBase(assetAmount(1)), // 1 BNB = 30 RUNE (600 USD)
         runeBalance: assetToBase(assetAmount(30)) // 1 RUNE = 0.03 BNB
       },
@@ -247,40 +248,42 @@ describe('deposit/Deposit.helper', () => {
       }
 
       // Prices
-      // 1 ETH = 2000 USDT or 1 USDT = 0,0005 ETH
-      //
+      // All in BTC
+
       // Formula (success):
-      // inboundFeeInUSDT + outboundFeeInUSDT
-      // 0.01 * 2000 + 0.03 * 2000 = 20 + 60 = 80
+      // inboundFeeInBTC + outboundFeeInBTC
+      // 0.0001 + 0.0003 = 0.0004
       //
       // Formula (failure):
-      // inboundFeeInUSDT + refundFeeInUSDT
-      // 0.01 * 2000 + 0.03 * 2000 = 20 + 60 = 80
+      // inboundFeeInBTC + refundFeeInBTC
+      // 0.0001 + 0.0003 = 0.0004
       //
       // Formula (minValue):
       // 1,5 * max(success, failure)
-      // 1,5 * max(80, 80) = 1,5 * 80 = 120
+      // 1,5 * max(0.0004, 0.0004) = 1,5 * 0.0004 = 0.0006
+      // AND as this is UTXO asset overestimate with 10k Satoshis => 0.0006 + 10k Satoshis = 0.0007
 
       const result = minAssetAmountToDepositMax1e8(params)
 
       expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.0007, BTC_DECIMAL)))).toBeTruthy()
     })
 
-    it('deposit chain asset (BTC.BTC)', () => {
+    it('deposit chain asset (BSC.BNB)', () => {
+      const depositAssetDecimal = 8
       const params = {
         fees: {
-          asset: AssetBTC,
-          inFee: assetToBase(assetAmount(0.0001, BTC_DECIMAL)),
-          outFee: assetToBase(assetAmount(0.0003, BTC_DECIMAL)),
-          refundFee: assetToBase(assetAmount(0.0003, BTC_DECIMAL))
+          asset: AssetBSC,
+          inFee: assetToBase(assetAmount(0.0001, 8)),
+          outFee: assetToBase(assetAmount(0.0003, depositAssetDecimal)),
+          refundFee: assetToBase(assetAmount(0.0003, depositAssetDecimal))
         },
-        asset: AssetBTC,
-        assetDecimal: BTC_DECIMAL,
+        asset: AssetBSC,
+        assetDecimal: depositAssetDecimal,
         poolsData
       }
 
       // Prices
-      // All in Bitcoin
+      // All in BNB
 
       // Formula (success):
       // inboundFeeInBNB + outboundFeeInBNB
@@ -295,7 +298,7 @@ describe('deposit/Deposit.helper', () => {
       // 1,5 * max(0.0004, 0.0004) = 1,5 * 0.0004 = 0.0006
 
       const result = minAssetAmountToDepositMax1e8(params)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.0006, BTC_DECIMAL)))).toBeTruthy()
+      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.0006, depositAssetDecimal)))).toBeTruthy()
     })
 
     it('deposit non chain asset (ETH.USDT)', () => {

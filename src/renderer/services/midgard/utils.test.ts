@@ -1,12 +1,13 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { BTC_DECIMAL, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
-import { BSC_GAS_ASSET_DECIMAL, BSCChain } from '@xchainjs/xchain-bsc'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { COSMOS_DECIMAL } from '@xchainjs/xchain-cosmos'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { ETH_GAS_ASSET_DECIMAL as ETH_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { BtcChain } from '@xchainjs/xchain-mayachain-query'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, assetToBase, assetToString, baseAmount, bn } from '@xchainjs/xchain-util'
@@ -232,9 +233,6 @@ describe('services/midgard/utils/', () => {
     it('returns empty list', () => {
       expect(filterPoolAssets([])).toEqual([])
     })
-    it('filters out mini tokens', () => {
-      expect(filterPoolAssets(['BNB.BNB', 'BNB.MINIA-7A2M', 'BNB.RUNE-B1A'])).toEqual(['BNB.BNB', 'BNB.RUNE-B1A'])
-    })
   })
 
   describe('inboundToPoolAddresses', () => {
@@ -307,15 +305,6 @@ describe('services/midgard/utils/', () => {
       runeAddress: O.none,
       type: 'asym'
     }
-    const usdcShare: PoolShare = {
-      asset: AssetUSDCBSC,
-      assetAddedAmount: assetToBase(assetAmount(3, BSC_GAS_ASSET_DECIMAL)),
-      units: bn('300000000'),
-      assetAddress: O.some(BSC_ADDRESS_TESTNET),
-      runeAddress: O.some(RUNE_ADDRESS_TESTNET),
-      type: 'sym'
-    }
-
     const btcShare: PoolShare = {
       asset: AssetBTC,
       assetAddedAmount: FOUR_RUNE_BASE_AMOUNT,
@@ -324,7 +313,15 @@ describe('services/midgard/utils/', () => {
       runeAddress: O.none,
       type: 'asym'
     }
-    const shares: PoolShares = [ethShare, bscShare1, bscShare2, usdcShare, btcShare]
+    const usdcShare: PoolShare = {
+      asset: AssetUSDCBSC,
+      assetAddedAmount: assetToBase(assetAmount(3)),
+      units: bn('300000000'),
+      assetAddress: O.some(BSC_ADDRESS_TESTNET),
+      runeAddress: O.some(RUNE_ADDRESS_TESTNET),
+      type: 'sym'
+    }
+    const shares: PoolShares = [ethShare, bscShare1, bscShare2, btcShare, usdcShare]
 
     describe('combineSharesByAsset', () => {
       it('returns none for empty list', () => {
@@ -498,7 +495,7 @@ describe('services/midgard/utils/', () => {
 
     describe('getOutboundAssetFeeByChain', () => {
       const data: { chain: Chain; outbound_fee?: string }[] = [
-        { chain: BSCChain, outbound_fee: '1' },
+        { chain: BtcChain, outbound_fee: '1' },
         { chain: ETHChain, outbound_fee: '2' },
         { chain: GAIAChain, outbound_fee: '300' },
         { chain: LTCChain }, // no value

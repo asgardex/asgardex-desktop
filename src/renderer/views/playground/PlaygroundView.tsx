@@ -8,47 +8,22 @@ import { useIntl } from 'react-intl'
 
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
+import { useDex } from '../../hooks/useDex'
 import { PoolsState } from '../../services/midgard/types'
 
 export const PlaygroundView: React.FC = (): JSX.Element => {
   const intl = useIntl()
+  const { dex } = useDex()
 
   const { service: midgardService } = useMidgardContext()
   const { service: midgardMayaService } = useMidgardMayaContext()
 
-  const tc_poolState = useObservableState(midgardService.pools.poolsState$, RD.initial)
-  const maya_poolState = useObservableState(midgardMayaService.pools.poolsState$, RD.initial)
-
-  const renderTCPools = useMemo(
-    () =>
-      RD.fold(
-        // initial state
-        () => <div />,
-        // loading state
-        () => <h3>Loading...</h3>,
-        // error state
-        (error: Error) => <h3>`Loading of pool data failed ${error?.message ?? ''}`</h3>,
-        // success state
-        (s: PoolsState): JSX.Element => {
-          const hasPools = s.poolAssets.length > 0
-          return (
-            <>
-              {!hasPools && <h3>No pools available.</h3>}
-              {hasPools && (
-                <ul>
-                  {s.poolAssets.map((pool: Asset, index: number) => (
-                    <li key={index}>{assetToString(pool)}</li>
-                  ))}
-                </ul>
-              )}
-            </>
-          )
-        }
-      )(tc_poolState),
-    [tc_poolState]
+  const poolState = useObservableState(
+    dex === 'THOR' ? midgardService.pools.poolsState$ : midgardMayaService.pools.poolsState$,
+    RD.initial
   )
 
-  const renderMayaPools = useMemo(
+  const renderPools = useMemo(
     () =>
       RD.fold(
         // initial state
@@ -73,8 +48,8 @@ export const PlaygroundView: React.FC = (): JSX.Element => {
             </>
           )
         }
-      )(maya_poolState),
-    [maya_poolState]
+      )(poolState),
+    [poolState]
   )
 
   return (
@@ -83,9 +58,8 @@ export const PlaygroundView: React.FC = (): JSX.Element => {
       <h1>i18n</h1>
       <h2>{intl.formatMessage({ id: 'common.greeting' }, { name: 'ASGARDEX' })}</h2>
       <h1>Pools</h1>
-      <h2>Raw data: {JSON.stringify(tc_poolState)}</h2>
-      {renderTCPools}
-      {renderMayaPools}
+      <h2>Raw data: {JSON.stringify(poolState)}</h2>
+      {renderPools}
       <Button
         onClick={() => {
           midgardService.pools.reloadPools()

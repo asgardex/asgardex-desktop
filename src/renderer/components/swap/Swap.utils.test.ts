@@ -85,7 +85,7 @@ describe('components/swap/utils', () => {
         assetBalance: assetToBase(assetAmount(20)), // 1 USDT = 0.05 RUNE
         runeBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDT
       },
-      'BNB.BNB': {
+      'BSC.BNB': {
         assetBalance: assetToBase(assetAmount(1)), // 1 BNB = 30 RUNE (600 USD)
         runeBalance: assetToBase(assetAmount(30)) // 1 RUNE = 0.03 BNB
       },
@@ -99,8 +99,8 @@ describe('components/swap/utils', () => {
       }
     }
 
-    it('non chain asset -> chain asset (same chain): BNB.USD -> BNB.BNB)', () => {
-      const inAssetDecimal = 6
+    it('non chain asset -> chain asset (same chain): BNB.USDT -> BSC.BNB)', () => {
+      const inAssetDecimal = 18 // as per midgard pool data.
       const params = {
         swapFees: {
           inFee: {
@@ -142,7 +142,7 @@ describe('components/swap/utils', () => {
 
       const result = minAmountToSwapMax1e8(params)
       console.log(
-        `non chain asset -> chain asset (same chain): BNB.USD -> BNB.BNB) : ${result
+        `non chain asset -> chain asset (same chain): BNB.USD -> BNB.BNB) Result: ${result
           .amount()
           .toFixed(8, 2)}, expected is 0.36`
       )
@@ -185,7 +185,7 @@ describe('components/swap/utils', () => {
 
       const result = minAmountToSwapMax1e8(params)
       console.log(
-        `chain asset -> non chain asset (same chain): BSC.BNB -> BSC.USDT': ${result
+        `chain asset -> non chain asset (same chain): BSC.BNB -> BSC.USDT' Result: ${result
           .amount()
           .toFixed(8, 2)}, expected is 0.0006`
       )
