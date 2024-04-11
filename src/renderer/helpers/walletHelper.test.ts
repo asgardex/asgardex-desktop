@@ -186,12 +186,12 @@ describe('walletHelper', () => {
       const result = hasLedgerInBalancesByAsset(AssetRuneNative, balances)
       expect(result).toBeFalsy()
     })
-    it('BUSD -> true', () => {
+    it('USDC -> true', () => {
       const balances: WalletBalances = NEA.fromReadonlyNonEmptyArray([RUNE_WB, USDC_LEDGER_WB, USDC_WB, BSC_WB])
       const result = hasLedgerInBalancesByAsset(AssetUSDCBSC, balances)
       expect(result).toBeTruthy()
     })
-    it('BUSD -> false', () => {
+    it('USDC -> false', () => {
       const balances: WalletBalances = NEA.fromReadonlyNonEmptyArray([RUNE_WB, USDC_WB, BSC_WB])
       const result = hasLedgerInBalancesByAsset(AssetUSDCBSC, balances)
       expect(result).toBeFalsy()

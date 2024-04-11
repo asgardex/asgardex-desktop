@@ -215,9 +215,9 @@ describe('deposit/Deposit.helper', () => {
 
   describe('minAssetAmountToDepositMax1e8', () => {
     const poolsData = {
-      'BNB.USDT': {
-        assetBalance: assetToBase(assetAmount(20)), // 1 BUSD = 0.05 RUNE
-        runeBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 BUSD
+      'BSC.USDT': {
+        assetBalance: assetToBase(assetAmount(20)), // 1 USDT = 0.05 RUNE
+        runeBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDT
       },
       'ETH.USDT-0xa3910454bf2cb59b8b3a401589a3bacc5ca42306': {
         assetBalance: assetToBase(assetAmount(20)), // 1 USDT = 0.05 RUNE

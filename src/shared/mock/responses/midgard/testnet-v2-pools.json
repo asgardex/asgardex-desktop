@@ -56,20 +56,6 @@
     "volume24h": "0"
   },
   {
-    "asset": "BNB.BUSD-74E",
-    "assetDepth": "68433031907057",
-    "assetPrice": "0.1724891266319408",
-    "assetPriceUSD": "1",
-    "liquidityUnits": "6684225511507",
-    "poolAPY": "0",
-    "runeDepth": "11803953906424",
-    "status": "available",
-    "synthSupply": "11425908341169",
-    "synthUnits": "608842899932",
-    "units": "7293068411439",
-    "volume24h": "0"
-  },
-  {
     "asset": "BTC.BTC",
     "assetDepth": "239092361",
     "assetPrice": "229552.806753345",

@@ -13,7 +13,6 @@ import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { assetFromStringEx } from '@xchainjs/xchain-util'
 
 const AssetSynthBtc = assetFromStringEx('BTC/BTC')
-const AssetSynthBusd = assetFromStringEx('BNB/BUSD-BD1')
 const AssetSynthEth = assetFromStringEx('ETH/ETH')
 const AssetSynthEthUsdc = assetFromStringEx('ETH/USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48')
 const AssetSynthEthUsdt = assetFromStringEx('ETH/USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7')
@@ -35,7 +34,6 @@ export {
   AssetCacao,
   AssetMaya,
   AssetSynthBtc,
-  AssetSynthBusd,
   AssetSynthLTC,
   AssetSynthARB,
   AssetSynthAVAX,

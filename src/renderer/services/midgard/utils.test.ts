@@ -126,17 +126,17 @@ describe('services/midgard/utils/', () => {
       expect(pool.asset).toEqual(AssetETH)
     })
 
-    it('selects BUSDBAF pool if ETH pool is not available', () => {
+    it('selects USDC pool if ETH pool is not available', () => {
       const pool = pricePoolSelector([rune, BSCUSDC, btc], O.some(AssetETH))
       expect(pool.asset).toEqual(AssetUSDCBSC)
     })
 
-    it('selects BUSDBAF by default if no selection has been done', () => {
+    it('selects USDC by default if no selection has been done', () => {
       const pool = pricePoolSelector([rune, eth, BSCUSDC, btc], O.none)
       expect(pool.asset).toEqual(AssetUSDCBSC)
     })
 
-    it('selects RUNE if ETH + BUSDBAF pools are not available', () => {
+    it('selects RUNE if ETH + USDC pools are not available', () => {
       const pool = pricePoolSelector([rune, btc], O.some(AssetETH))
       expect(pool.asset).toEqual(AssetRuneNative)
     })
@@ -163,18 +163,18 @@ describe('services/midgard/utils/', () => {
       expect(pool.asset).toEqual(AssetETH)
     })
 
-    it('selects BUSDBAF pool if ETH pool is not available', () => {
+    it('selects USDC pool if ETH pool is not available', () => {
       const poolsRD = mockPoolsStateSuccess([rune, BSCUSDC, btc])
       const pool = pricePoolSelectorFromRD(poolsRD, O.some(AssetETH))
       expect(pool.asset).toEqual(AssetUSDCBSC)
     })
 
-    it('selects BUSDBAF by default if no selection has been done', () => {
+    it('selects USDC by default if no selection has been done', () => {
       const poolsRD = mockPoolsStateSuccess([rune, eth, BSCUSDC, btc])
       const pool = pricePoolSelectorFromRD(poolsRD, O.none)
       expect(pool.asset).toEqual(AssetUSDCBSC)
     })
-    it('selects RUNE if ETH + BUSDBAF pools are not available', () => {
+    it('selects RUNE if ETH + USDC pools are not available', () => {
       const poolsRD = mockPoolsStateSuccess([rune, btc])
       const pool = pricePoolSelectorFromRD(poolsRD, O.some(AssetETH))
       expect(eqAsset.equals(pool.asset, AssetRuneNative)).toBeTruthy()

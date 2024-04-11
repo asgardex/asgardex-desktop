@@ -77,7 +77,7 @@ describe('components/swap/utils', () => {
 
   describe('minAmountToSwapMax1e8', () => {
     const poolsData: PoolsDataMap = {
-      'BNB.BUSD-74E': {
+      'BNB.USDT': {
         assetBalance: assetToBase(assetAmount(20)), // 1 BUSD = 0.05 RUNE
         runeBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 BUSD
       },

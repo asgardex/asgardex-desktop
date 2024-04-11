@@ -26,7 +26,7 @@ const meta: Meta<typeof Component> = {
       mapping: {
         RUNE: AssetRuneNative,
         BTC: AssetBTC,
-        BNB: AssetBSC,
+        BSC: AssetBSC,
         BCH: AssetBCH,
         ETH: AssetETH
       }

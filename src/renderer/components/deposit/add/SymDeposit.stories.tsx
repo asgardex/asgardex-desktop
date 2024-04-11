@@ -22,7 +22,7 @@ const balanceRune: WalletBalance = mockWalletBalance({
   amount: assetToBase(assetAmount(100))
 })
 
-const balanceBNB: WalletBalance = mockWalletBalance({
+const balanceBSC: WalletBalance = mockWalletBalance({
   amount: assetToBase(assetAmount(200)),
   asset: AssetBSC,
   walletAddress: 'bsc-address'
@@ -43,7 +43,7 @@ const balanceTOMO: WalletBalance = mockWalletBalance({
 const defaultProps: SymDepositProps = {
   disableDepositAction: false,
   availableAssets: [AssetRuneNative, AssetBSC, AssetBTC],
-  walletBalances: { balances: O.some([balanceRune, balanceBNB, balanceBTC, balanceTOMO]), loading: false },
+  walletBalances: { balances: O.some([balanceRune, balanceBSC, balanceBTC, balanceTOMO]), loading: false },
   asset: { asset: AssetBSC, decimal: BSC_GAS_ASSET_DECIMAL },
   poolDetails: [],
   pricePool: RUNE_PRICE_POOL,
@@ -151,7 +151,7 @@ export const BalanceError: Story = () => {
     walletBalances: {
       balances: O.some([
         { ...balanceRune, balance: ZERO_BASE_AMOUNT },
-        { ...balanceBNB, balance: ZERO_BASE_AMOUNT },
+        { ...balanceBSC, balance: ZERO_BASE_AMOUNT },
         balanceBTC,
         balanceTOMO
       ]),
@@ -193,7 +193,7 @@ export const FeeError: Story = () => {
     walletBalances: {
       balances: O.some([
         { ...balanceRune, balance: assetToBase(assetAmount(0.6)) },
-        { ...balanceBNB, balance: assetToBase(assetAmount(0.5)) },
+        { ...balanceBSC, balance: assetToBase(assetAmount(0.5)) },
         balanceBTC,
         balanceTOMO
       ]),

@@ -6,7 +6,6 @@
 import arbIcon from '!file-loader!../../assets/svg/asset-arb.svg'
 import atomIcon from '!file-loader!../../assets/svg/asset-atom.svg'
 import avaxIcon from '!file-loader!../../assets/svg/asset-avax.svg'
-import bnbIcon from '!file-loader!../../assets/svg/asset-bnb.svg'
 import bscIcon from '!file-loader!../../assets/svg/asset-bsc.svg'
 import btcIcon from '!file-loader!../../assets/svg/asset-btc.svg'
 import dashIcon from '!file-loader!../../assets/svg/asset-dash.svg'
@@ -36,7 +35,6 @@ import { ReactComponent as LedgerIcon } from '../../assets/svg/ledger.svg'
 export {
   arbIcon,
   atomIcon,
-  bnbIcon,
   cacaoIcon,
   avaxIcon,
   bscIcon,

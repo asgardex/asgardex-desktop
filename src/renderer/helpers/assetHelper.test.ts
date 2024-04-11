@@ -247,7 +247,7 @@ describe('helpers/assetHelper', () => {
   })
 
   describe('isUSDAsset', () => {
-    it('BUSD -> true', () => {
+    it('USDC (BSC) -> true', () => {
       expect(isUSDAsset(AssetUSDCBSC)).toBeTruthy()
     })
     it('USDT (ERC20) -> true', () => {

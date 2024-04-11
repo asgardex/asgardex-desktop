@@ -7,7 +7,7 @@ import * as AT from '../../../storybook/argTypes'
 import { AssetWithAmount1e8, AssetsWithAmount1e8 } from '../../../types/asgardex'
 import { PendingAssetsWarning as Component } from './PendingAssetsWarning'
 
-const bnbAsset: AssetWithAmount1e8 = {
+const bscAsset: AssetWithAmount1e8 = {
   amount1e8: assetToBase(assetAmount(1)),
   asset: AssetBSC
 }
@@ -17,7 +17,7 @@ const btcAsset: AssetWithAmount1e8 = {
   amount1e8: assetToBase(assetAmount(2))
 }
 
-const assets: AssetsWithAmount1e8 = [bnbAsset, btcAsset]
+const assets: AssetsWithAmount1e8 = [bscAsset, btcAsset]
 
 type Args = {
   network: Network
