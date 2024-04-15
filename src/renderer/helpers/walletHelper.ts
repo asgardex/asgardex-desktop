@@ -15,7 +15,7 @@ import { WalletBalances } from '../services/clients'
 import { NonEmptyWalletBalances, WalletBalance } from '../services/wallet/types'
 import { isBnbAsset, isLtcAsset, isRuneNativeAsset, isCacaoAsset, isMayaAsset } from './assetHelper'
 import { isBchChain, isDashChain, isDogeChain, isLtcChain, isMayaChain, isThorChain } from './chainHelper'
-import { eqAddress, eqAsset, eqWalletType } from './fp/eq'
+import { eqAddress, eqAsset, eqChain, eqWalletType } from './fp/eq'
 
 /**
  * Tries to find an `AssetAmount` of an `Asset`
@@ -88,7 +88,9 @@ export const getWalletBalanceByAddressAndAsset = ({
     balances,
     A.findFirst(
       ({ walletAddress: addressInList, asset: assetInList }) =>
-        eqAddress.equals(addressInList, address) && eqAddress.equals(assetInList.symbol, asset.symbol)
+        eqAddress.equals(addressInList, address) &&
+        eqAddress.equals(assetInList.symbol, asset.symbol) &&
+        eqChain.equals(assetInList.chain, asset.chain)
     )
   )
 

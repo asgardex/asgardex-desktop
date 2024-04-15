@@ -1,8 +1,8 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Meta } from '@storybook/react'
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
+import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -12,7 +12,7 @@ import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 
 import { getMockRDValueFactory, RDStatus } from '../../../../shared/mock/rdByStatus'
-import { AssetBNB, AssetBTC, AssetETH, AssetLTC, AssetRune67C, AssetRuneNative } from '../../../../shared/utils/asset'
+import { AssetDOGE, AssetBTC, AssetETH, AssetLTC, AssetRuneNative } from '../../../../shared/utils/asset'
 import { EnabledChain, isEnabledChain } from '../../../../shared/utils/chain'
 import { WalletType } from '../../../../shared/wallet/types'
 import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
@@ -30,26 +30,26 @@ const assetHandler = ({ asset, walletType, walletAddress }: SelectedWalletAsset)
   console.log('assetHandler params ', assetToString(asset), walletType, walletAddress)
 const disableRefresh = false
 const balances: Partial<Record<EnabledChain, ChainBalances>> = {
-  [BNBChain]: [
+  [DOGEChain]: [
     {
       walletType: 'keystore',
-      walletAddress: O.some('bnb keystore'),
+      walletAddress: O.some('doge keystore'),
 
-      chain: BNBChain,
+      chain: DOGEChain,
       balances: RD.success([
         {
           walletType: 'keystore',
           amount: baseAmount('1000000'),
-          asset: AssetBNB,
-          walletAddress: 'BNB wallet address',
+          asset: AssetDOGE,
+          walletAddress: 'DOGE wallet address',
           walletIndex: 0,
           hdMode: 'default'
         },
         {
           walletType: 'keystore',
           amount: baseAmount('300000000'),
-          asset: AssetRune67C,
-          walletAddress: 'BNB wallet address',
+          asset: AssetRuneNative,
+          walletAddress: 'DOGE wallet address',
           walletIndex: 0,
           hdMode: 'default'
         }
@@ -67,7 +67,7 @@ const balances: Partial<Record<EnabledChain, ChainBalances>> = {
           walletType: 'keystore',
           amount: baseAmount('1000000'),
           asset: AssetBTC,
-          walletAddress: 'BNB wallet address',
+          walletAddress: 'DOGE wallet address',
           walletIndex: 0,
           hdMode: 'default'
         }
@@ -103,7 +103,7 @@ const balances: Partial<Record<EnabledChain, ChainBalances>> = {
           walletType: 'keystore',
           amount: baseAmount('1000000'),
           asset: AssetRuneNative,
-          walletAddress: 'BNB wallet address',
+          walletAddress: 'DOGE wallet address',
           walletIndex: 0,
           hdMode: 'default'
         }

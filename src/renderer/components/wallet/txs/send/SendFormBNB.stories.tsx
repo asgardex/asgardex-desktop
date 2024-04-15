@@ -1,5 +1,6 @@
 import { Meta } from '@storybook/react'
 import { Network, TxHash } from '@xchainjs/xchain-client'
+import { AssetRuneNative } from '@xchainjs/xchain-thorchain-query'
 import { assetAmount, assetToBase, BaseAmount, baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -7,7 +8,7 @@ import * as Rx from 'rxjs'
 
 import { getMockRDValueFactory, RDStatus } from '../../../../../shared/mock/rdByStatus'
 import { mockValidatePassword$ } from '../../../../../shared/mock/wallet'
-import { AssetBNB, AssetRune67C } from '../../../../../shared/utils/asset'
+import { AssetDOGE } from '../../../../../shared/utils/asset'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { useThorchainQueryContext } from '../../../../contexts/ThorchainQueryContext'
 import { mockWalletBalance } from '../../../../helpers/test/testWalletHelper'
@@ -47,24 +48,24 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
     )
   )
 
-  const bnbBalance: WalletBalance = mockWalletBalance({
-    asset: AssetBNB,
+  const dogeBalance: WalletBalance = mockWalletBalance({
+    asset: AssetDOGE,
     amount: assetToBase(assetAmount(balance)),
-    walletAddress: 'AssetBNB wallet address'
+    walletAddress: 'AssetDOGE wallet address'
   })
 
   const runeBalance: WalletBalance = mockWalletBalance({
-    asset: AssetRune67C,
+    asset: AssetRuneNative,
     amount: assetToBase(assetAmount(234)),
-    walletAddress: 'AssetRune67C wallet address'
+    walletAddress: 'AssetRuneNative wallet address'
   })
   const { thorchainQuery } = useThorchainQueryContext()
   return (
     <Component
-      asset={{ asset: AssetBNB, walletAddress: 'bnb-address', walletType, walletIndex: 0, hdMode: 'default' }}
+      asset={{ asset: AssetDOGE, walletAddress: 'bnb-address', walletType, walletIndex: 0, hdMode: 'default' }}
       transfer$={transfer$}
-      balances={[bnbBalance, runeBalance]}
-      balance={bnbBalance}
+      balances={[dogeBalance, runeBalance]}
+      balance={dogeBalance}
       addressValidation={(_: string) => validAddress}
       fee={feeRD}
       reloadFeesHandler={() => console.log('reload fees')}

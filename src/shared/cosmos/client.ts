@@ -6,7 +6,7 @@ import { envOrDefault } from '../utils/env'
 // expose env (needed to access ENVs by `envOrDefault`) in `main` thread)
 require('dotenv').config()
 
-const MAINNET_LCD = envOrDefault(process.env.REACT_APP_COSMOS_MAINNET_LCD, 'https://lcd-cosmoshub.keplr.app')
+const MAINNET_LCD = envOrDefault(process.env.REACT_APP_COSMOS_MAINNET_LCD, 'https://rpc.cosmos.directory/cosmoshub')
 
 export const getClientUrls = (): ClientUrls => ({
   [Network.Stagenet]: MAINNET_LCD,

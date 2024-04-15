@@ -19,12 +19,11 @@ import * as O from 'fp-ts/lib/Option'
 import * as P from 'fp-ts/lib/Predicate'
 import * as S from 'fp-ts/lib/string'
 
-import { ArbZeroAddress, AssetAETH } from '../../shared/arb/const'
+import { ArbZeroAddress, AssetAETH, AssetARB } from '../../shared/arb/const'
 import { AvaxZeroAddress } from '../../shared/avax/const'
 import { BscZeroAddress } from '../../shared/bsc/const'
 import { ETHAddress } from '../../shared/ethereum/const'
 import {
-  AssetARB,
   AssetATOM,
   AssetBCH,
   AssetBNB,
@@ -375,7 +374,10 @@ export const validAssetForETH = (asset: Asset /* ETH or ERC20 asset */, network:
  * (3) ERC20 asset needs to be listed in `ARBERC20Whitelist`
  */
 export const validAssetForARB = (asset: Asset /* ETH or ERC20 asset */, network: Network): boolean =>
-  network !== Network.Mainnet /* (1) */ || isArbAsset(asset) /* (2) */ || assetInARBERC20Whitelist(asset)
+  network !== Network.Mainnet /* (1) */ ||
+  isArbAsset(asset) ||
+  isAethAsset(asset) /* (2) */ ||
+  assetInARBERC20Whitelist(asset)
 
 /**
  * Checks whether AVAX/ERC20 asset is whitelisted or not
@@ -506,7 +508,7 @@ export const getEthAssetAddress = (asset: Asset): O.Option<Address> =>
  * Get address (as check sum address) from an Arb or Arb token asset
  */
 export const getArbAssetAddress = (asset: Asset): O.Option<Address> =>
-  isArbAsset(asset) ? O.some(ArbZeroAddress) : getArbTokenAddress(asset)
+  isAethAsset(asset) ? O.some(ArbZeroAddress) : getArbTokenAddress(asset)
 
 /**
  * Get address (as check sum address) from an Avax or Avax token asset

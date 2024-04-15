@@ -110,8 +110,8 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     if (isBtcAsset(asset) || isBtcAssetSynth(asset)) {
       return btcIcon
     }
-    // ETH
-    if (isEthAsset(asset)) {
+    // ETH || AETH
+    if (isEthAsset(asset) || isAethAsset(asset)) {
       return ethIcon
     }
     // ETH synth
@@ -119,7 +119,7 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
       return ethIcon
     }
     // ARB
-    if (isArbAsset(asset) || isArbSynthAsset(asset) || isAethAsset(asset)) {
+    if (isArbAsset(asset) || isArbSynthAsset(asset)) {
       return arbIcon
     }
     // AVAX
@@ -242,11 +242,12 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
   const renderIcon = useCallback(
     (src: string) => {
       const overlayIconSrc = chainIconMap(asset)
-
       return (
         <Styled.IconWrapper size={size} isSynth={isSynth} className={className}>
           <Styled.Icon src={src} isSynth={isSynth} size={size} />
-          {overlayIconSrc && asset.chain !== asset.symbol && <Styled.OverlayIcon src={overlayIconSrc} size={size} />}
+          {overlayIconSrc && !asset.symbol.includes(asset.chain) && (
+            <Styled.OverlayIcon src={overlayIconSrc} size={size} />
+          )}
         </Styled.IconWrapper>
       )
     },
