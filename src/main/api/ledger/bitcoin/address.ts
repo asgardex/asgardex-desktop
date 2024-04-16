@@ -32,7 +32,7 @@ export const getAddress = async (
 ): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
     const clientLedger = new ClientLedger({ transport, ...btcInitParams, network: network })
-    const address = await clientLedger.getAddressAsync()
+    const address = await clientLedger.getAddressAsync(walletIndex)
     return E.right({ address: address, chain: BTCChain, type: 'ledger', walletIndex, hdMode: 'default' })
   } catch (error) {
     return E.left({

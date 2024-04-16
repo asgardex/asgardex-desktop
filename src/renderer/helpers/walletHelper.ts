@@ -204,7 +204,7 @@ export const isEnabledLedger = (chain: Chain, network: Network) => {
   if (isDogeChain(chain) && network === Network.Testnet) return false
   // Disable for these chains
   if (isMayaChain(chain)) return false
-  if (isDashChain(chain)) return false
+  if (isDashChain(chain) && network === Network.Testnet) return false
   return true
 }
 

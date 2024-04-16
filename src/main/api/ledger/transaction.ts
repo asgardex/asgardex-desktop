@@ -27,6 +27,7 @@ import * as BTC from './bitcoin/transaction'
 import * as BCH from './bitcoincash/transaction'
 import * as BSC from './bsc/transaction'
 import * as COSMOS from './cosmos/transaction'
+import * as DASH from './dash/transaction'
 import * as DOGE from './doge/transaction'
 import * as ETH from './ethereum/transaction'
 import * as LTC from './litecoin/transaction'
@@ -50,7 +51,7 @@ export const sendTx = async ({
   try {
     const transport = await TransportNodeHidSingleton.create()
     let res: E.Either<LedgerError, string>
-    if (!isEnabledChain(chain) || chain === MAYAChain || chain === DASHChain || chain === KUJIChain) {
+    if (!isEnabledChain(chain) || chain === MAYAChain || chain === KUJIChain) {
       res = E.left({
         errorId: LedgerErrorId.NOT_IMPLEMENTED,
         msg: `${chain} is not supported for 'sendTx'`
@@ -117,6 +118,18 @@ export const sendTx = async ({
           break
         case DOGEChain:
           res = await DOGE.send({
+            transport,
+            network,
+            sender,
+            recipient,
+            amount,
+            feeRate,
+            memo,
+            walletIndex
+          })
+          break
+        case DASHChain:
+          res = await DASH.send({
             transport,
             network,
             sender,
@@ -303,7 +316,7 @@ export const deposit = async ({
       errorId: LedgerErrorId.NOT_IMPLEMENTED,
       msg: `${chain} is not supported for 'deposit'`
     })
-    if (!isEnabledChain(chain) || chain === MAYAChain || chain === DASHChain || chain === KUJIChain) {
+    if (!isEnabledChain(chain) || chain === MAYAChain || chain === KUJIChain) {
       res = notSupportedError
     } else {
       switch (chain) {
@@ -363,6 +376,7 @@ export const deposit = async ({
         case LTCChain:
         case BCHChain:
         case DOGEChain:
+        case DASHChain:
         case GAIAChain:
         case AVAXChain:
         case BSCChain:

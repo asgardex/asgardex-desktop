@@ -26,6 +26,7 @@ import { getAddress as getBTCAddress, verifyAddress as verifyBTCAddress } from '
 import { getAddress as getBCHAddress, verifyAddress as verifyBCHAddress } from './bitcoincash/address'
 import { getAddress as getBSCAddress, verifyAddress as verifyBSCAddress } from './bsc/address'
 import { getAddress as getCOSMOSAddress, verifyAddress as verifyCOSMOSAddress } from './cosmos/address'
+import { getAddress as getDASHAddress, verifyAddress as verifyDASHAddress } from './dash/address'
 import { getAddress as getDOGEAddress, verifyAddress as verifyDOGEAddress } from './doge/address'
 import { getAddress as getETHAddress, verifyAddress as verifyETHAddress } from './ethereum/address'
 import { getAddress as getLTCAddress, verifyAddress as verifyLTCAddress } from './litecoin/address'
@@ -40,7 +41,7 @@ export const getAddress = async ({
   try {
     let res: E.Either<LedgerError, WalletAddress>
     const transport = await TransportNodeHidSingleton.create()
-    if (!isEnabledChain(chain) || chain === MAYAChain || chain === DASHChain || chain === KUJIChain) {
+    if (!isEnabledChain(chain) || chain === MAYAChain || chain === KUJIChain) {
       res = E.left({
         errorId: LedgerErrorId.NOT_IMPLEMENTED,
         msg: `${chain} is not supported for 'getAddress'`
@@ -64,6 +65,9 @@ export const getAddress = async ({
           break
         case DOGEChain:
           res = await getDOGEAddress(transport, network, walletIndex)
+          break
+        case DASHChain:
+          res = await getDASHAddress(transport, network, walletIndex)
           break
         case ETHChain: {
           if (!isEvmHDMode(hdMode)) {
@@ -148,6 +152,9 @@ export const verifyLedgerAddress = async ({ chain, network, walletIndex, hdMode 
       break
     case DOGEChain:
       result = await verifyDOGEAddress({ transport, network, walletIndex })
+      break
+    case DASHChain:
+      result = await verifyDASHAddress({ transport, network, walletIndex })
       break
     case ETHChain: {
       if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EthHDMode' - needed for ETH to verify Ledger address`)
