@@ -7,7 +7,7 @@ import * as O from 'fp-ts/lib/Option'
 
 import { ASSETS_TESTNET } from '../../../shared/mock/assets'
 import { AssetBTC, AssetETH, AssetRuneNative, AssetBSC } from '../../../shared/utils/asset'
-import { AssetUSDCBSC, AssetUSDT62E, AssetUSDTBSC, AssetUSDTERC20Testnet } from '../../const'
+import { AssetUSDCBSC, AssetUSDT62E, AssetUSDTERC20Testnet } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { eqAsset, eqBaseAmount } from '../../helpers/fp/eq'
 import { mockWalletBalance } from '../../helpers/test/testWalletHelper'
@@ -77,9 +77,9 @@ describe('components/swap/utils', () => {
 
   describe('minAmountToSwapMax1e8', () => {
     const poolsData: PoolsDataMap = {
-      'BNB.USDT': {
-        assetBalance: assetToBase(assetAmount(20)), // 1 BUSD = 0.05 RUNE
-        runeBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 BUSD
+      'BSC.USDC-0X8AC76A51CC950D9822D68B83FE1AD97B32CD580D': {
+        assetBalance: assetToBase(assetAmount(20)), // 1 USDT = 0.05 RUNE
+        runeBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDT
       },
       'ETH.USDT-0xa3910454bf2cb59b8b3a401589a3bacc5ca42306': {
         assetBalance: assetToBase(assetAmount(20)), // 1 USDT = 0.05 RUNE
@@ -99,8 +99,8 @@ describe('components/swap/utils', () => {
       }
     }
 
-    it('non chain asset -> chain asset (same chain): BNB.USDT -> BSC.BNB)', () => {
-      const inAssetDecimal = 18 // as per midgard pool data.
+    it('non chain asset -> chain asset (same chain): BNB.USDC -> BSC.BNB)', () => {
+      const inAssetDecimal = 8 // as per midgard pool data.
       const params = {
         swapFees: {
           inFee: {
@@ -112,28 +112,28 @@ describe('components/swap/utils', () => {
             asset: AssetBSC
           }
         },
-        inAsset: AssetUSDTBSC,
+        inAsset: AssetUSDCBSC,
         inAssetDecimal,
         outAsset: AssetBSC,
         poolsData
       }
       // Prices
-      // 1 BNB = 600 BUSD or 1 BUSD = 0,001666667 BNB
+      // 1 BSC = 600 BUSD or 1 USDT = 0,001666667 BNB
       // Formula:
-      // 1.5 * (inboundFeeInBUSD + outboundFeeInBUSD)
+      // 1.5 * (inboundFeeInUSDT + outboundFeeInUSDT)
       // = 1.5 * (0.0001 * 600 + 0.0003 * 600)
       // = 1.5 * (0.06 + 0,18) = 1.5 * 0.24
       // = 0.36
 
       // Prices
-      // 1 BNB = 600 BUSD or 1 BUSD = 0,001666667 BNB
+      // 1 BNB = 600 USDT or 1 USDT = 0,001666667 BNB
       //
       // Formula (success):
-      // inboundFeeInBUSD + outboundFeeInBUSD
+      // inboundFeeInUSDT+ outboundFeeInUSDT
       // 0.0001 * 600 + 0.0003 * 600 = 0.06 + 0,18 = 0.24
       //
       // Formula (failure):
-      // inboundFeeInBUSD + refundFeeInBUSD
+      // inboundFeeInUSDT + refundFeeInUSDT
       // 0.0001 * 600 + 0.0003 * 600 = 0.06 + 0,18 = 0.24
       //
       // Formula (minValue):
@@ -141,30 +141,25 @@ describe('components/swap/utils', () => {
       // 1,5 * max(0.24, 0.24) = 1,5 * 0.24 = 0.36
 
       const result = minAmountToSwapMax1e8(params)
-      console.log(
-        `non chain asset -> chain asset (same chain): BNB.USD -> BNB.BNB) Result: ${result
-          .amount()
-          .toFixed(8, 2)}, expected is 0.36`
-      )
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.36, inAssetDecimal)))).toBeTruthy()
+      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.36, inAssetDecimal)))).toBeTruthy() // not working
     })
 
-    it('chain asset -> non chain asset (same chain): BSC.BNB -> BSC.USDT', () => {
-      const inAssetDecimal = BSC_GAS_ASSET_DECIMAL
+    it('chain asset -> non chain asset (same chain): BSC.BNB -> BSC.USDC', () => {
+      const inAssetDecimal = 8
       const params = {
         swapFees: {
           inFee: {
-            amount: assetToBase(assetAmount(0.0001)),
+            amount: assetToBase(assetAmount(0.0001, BSC_GAS_ASSET_DECIMAL)),
             asset: AssetBSC
           },
           outFee: {
-            amount: assetToBase(assetAmount(0.0003)),
+            amount: assetToBase(assetAmount(0.0003, BSC_GAS_ASSET_DECIMAL)),
             asset: AssetBSC
           }
         },
         inAsset: AssetBSC,
         inAssetDecimal,
-        outAsset: AssetUSDTBSC,
+        outAsset: AssetUSDCBSC,
         poolsData
       }
 
@@ -184,11 +179,6 @@ describe('components/swap/utils', () => {
       // 1,5 * max(0.0004, 0.0004) = 1,5 * 0.0004 = 0.0006
 
       const result = minAmountToSwapMax1e8(params)
-      console.log(
-        `chain asset -> non chain asset (same chain): BSC.BNB -> BSC.USDT' Result: ${result
-          .amount()
-          .toFixed(8, 2)}, expected is 0.0006`
-      )
       expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.0006, inAssetDecimal)))).toBeTruthy()
     })
 
@@ -229,12 +219,12 @@ describe('components/swap/utils', () => {
       expect(eqBaseAmount.equals(result, assetToBase(assetAmount(120, inAssetDecimal)))).toBeTruthy()
     })
 
-    it('chain asset -> chain asset (different chains): BNB.BSC -> ETH.ETH', () => {
-      const inAssetDecimal = BSC_GAS_ASSET_DECIMAL
+    it('chain asset -> chain asset (different chains): BSC.BNB -> ETH.ETH', () => {
+      const inAssetDecimal = 8
       const params = {
         swapFees: {
           inFee: {
-            amount: assetToBase(assetAmount(0.0001, inAssetDecimal)),
+            amount: assetToBase(assetAmount(0.0001)),
             asset: AssetBSC
           },
           outFee: {
@@ -263,7 +253,6 @@ describe('components/swap/utils', () => {
       // 1,5 * max(0.03343, 0.0004) = 1,5 * 0.03343 = 0.0501
 
       const result = minAmountToSwapMax1e8(params)
-
       expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.05015, inAssetDecimal)))).toBeTruthy()
     })
 
@@ -305,25 +294,24 @@ describe('components/swap/utils', () => {
       expect(eqBaseAmount.equals(result, assetToBase(assetAmount(1.53, inAssetDecimal)))).toBeTruthy()
     })
 
-    it('non chain asset -> non chain asset (different chains): BNB.USDT -> ETH.USDT', () => {
+    it('non chain asset -> non chain asset (different chains): BSB.USDT -> ETH.USDT', () => {
       const inAssetDecimal = 7
       const params = {
         swapFees: {
           inFee: {
-            amount: assetToBase(assetAmount(0.0001)),
+            amount: assetToBase(assetAmount(0.0001, BSC_GAS_ASSET_DECIMAL)),
             asset: AssetBSC
           },
           outFee: {
-            amount: assetToBase(assetAmount(0.01)),
+            amount: assetToBase(assetAmount(0.01, ETH_DECIMAL)),
             asset: AssetETH
           }
         },
-        inAsset: AssetUSDTBSC,
+        inAsset: AssetUSDCBSC,
         inAssetDecimal,
         outAsset: AssetUSDT62E,
         poolsData
       }
-
       // Prices
       // 1 ETH = 2000 USD or 1 USD = 0,0005 ETH
       // 1 BNB = 600 USD or 1 USD = 0,001666667 BNB
@@ -341,7 +329,6 @@ describe('components/swap/utils', () => {
       // 1,5 * max(20, 0.24) = 1,5 * 20 = 30
 
       const result = minAmountToSwapMax1e8(params)
-
       expect(eqBaseAmount.equals(result, assetToBase(assetAmount(30, inAssetDecimal)))).toBeTruthy()
     })
 

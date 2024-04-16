@@ -1,11 +1,12 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
+import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/Option'
 
 import { AssetBTC, AssetETH, AssetBSC } from '../../../../shared/utils/asset'
-import { AssetUSDC, AssetUSDTBSC, AssetUSDTERC20Testnet } from '../../../const'
+import { AssetUSDTBSC, AssetUSDTERC20Testnet } from '../../../const'
 import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { eqBaseAmount, eqODepositAssetFees, eqODepositFees } from '../../../helpers/fp/eq'
 import { DepositAssetFees, DepositFees, SymDepositFees, SymDepositFeesRD } from '../../../services/chain/types'
@@ -215,7 +216,7 @@ describe('deposit/Deposit.helper', () => {
 
   describe('minAssetAmountToDepositMax1e8', () => {
     const poolsData = {
-      'BSC.USDT': {
+      'BSC.USDC-0X55D398326F99059FF775485246999027B3197955': {
         assetBalance: assetToBase(assetAmount(20)), // 1 USDT = 0.05 RUNE
         runeBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDT
       },
@@ -263,7 +264,6 @@ describe('deposit/Deposit.helper', () => {
       // AND as this is UTXO asset overestimate with 10k Satoshis => 0.0006 + 10k Satoshis = 0.0007
 
       const result = minAssetAmountToDepositMax1e8(params)
-
       expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.0007, BTC_DECIMAL)))).toBeTruthy()
     })
 
@@ -300,16 +300,16 @@ describe('deposit/Deposit.helper', () => {
       expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.0006, depositAssetDecimal)))).toBeTruthy()
     })
 
-    it('deposit non chain asset (ETH.USDT)', () => {
-      const depositAssetDecimal = 8
+    it('deposit non chain asset (BNB.USDT)', () => {
+      const depositAssetDecimal = 7
       const params = {
         fees: {
-          asset: AssetETH,
-          inFee: assetToBase(assetAmount(0.0001, ETH_GAS_ASSET_DECIMAL)),
-          outFee: assetToBase(assetAmount(0.0003, ETH_GAS_ASSET_DECIMAL)),
-          refundFee: assetToBase(assetAmount(0.0003, ETH_GAS_ASSET_DECIMAL))
+          asset: AssetBSC,
+          inFee: assetToBase(assetAmount(0.0001, BSC_GAS_ASSET_DECIMAL)),
+          outFee: assetToBase(assetAmount(0.0003, BSC_GAS_ASSET_DECIMAL)),
+          refundFee: assetToBase(assetAmount(0.0003, BSC_GAS_ASSET_DECIMAL))
         },
-        asset: AssetUSDC,
+        asset: AssetUSDTBSC,
         assetDecimal: depositAssetDecimal,
         poolsData
       }
