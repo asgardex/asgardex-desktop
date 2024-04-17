@@ -8,6 +8,7 @@ import {
   MagnifyingGlassMinusIcon,
   MagnifyingGlassPlusIcon
 } from '@heroicons/react/24/outline'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -73,7 +74,8 @@ import {
   getBscTokenAddress,
   isAvaxAsset,
   isBscAsset,
-  max1e10BaseAmount
+  max1e10BaseAmount,
+  getArbTokenAddress
 } from '../../helpers/assetHelper'
 import {
   getChainAsset,
@@ -1238,8 +1240,6 @@ export const Swap = ({
   }, [rateDirection, sourceAsset, sourceAssetPrice, targetAsset, targetAssetPrice])
 
   const needApprovement: O.Option<boolean> = useMemo(() => {
-    // not needed for users with locked or not imported wallets
-    if (!hasImportedKeystore(keystore) || isLocked(keystore)) return O.some(false)
     // ERC20 token does need approval only
     switch (sourceChain) {
       case ETHChain:
@@ -1251,7 +1251,7 @@ export const Swap = ({
       default:
         return O.none
     }
-  }, [keystore, sourceAsset, sourceChain])
+  }, [sourceAsset, sourceChain])
 
   const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
     const oRouterAddress: O.Option<Address> = FP.pipe(
@@ -1267,6 +1267,8 @@ export const Swap = ({
           return getAvaxTokenAddress(sourceAsset)
         case BSCChain:
           return getBscTokenAddress(sourceAsset)
+        case ARBChain:
+          return getArbTokenAddress(sourceAsset)
         default:
           return O.none
       }
@@ -2764,7 +2766,7 @@ export const Swap = ({
                     {O.isSome(needApprovement) && (
                       <div className="flex w-full justify-between pl-10px text-[12px]">
                         <div>{intl.formatMessage({ id: 'common.approve' })}</div>
-                        <div>{priceApproveFeeLabel}</div>s
+                        <div>{priceApproveFeeLabel}</div>
                       </div>
                     )}
                     <div className="flex w-full justify-between pl-10px text-[12px]">

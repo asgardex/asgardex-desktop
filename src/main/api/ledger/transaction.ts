@@ -371,6 +371,88 @@ export const deposit = async ({
             })
           }
           break
+        case AVAXChain:
+          if (!router) {
+            return E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Router address needs to be defined to send Ledger transaction  on ${chainToString(chain)}`
+            })
+          } else if (!asset) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(chain)}`
+            })
+          } else if (!recipient) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Recipient needs to be defined to send Ledger transaction on ${chainToString(chain)}`
+            })
+          } else if (!feeOption) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Fee option needs to be defined to send Ledger transaction on ${chainToString(chain)}`
+            })
+          } else if (!isEvmHDMode(hdMode)) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Invalid EthHDMode set - needed to send Ledger transaction on ${chainToString(chain)}`
+            })
+          } else {
+            res = await AVAX.deposit({
+              asset,
+              router,
+              transport,
+              network,
+              amount,
+              memo,
+              walletIndex,
+              recipient,
+              feeOption,
+              evmHDMode: hdMode
+            })
+          }
+          break
+        case BSCChain:
+          if (!router) {
+            return E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Router address needs to be defined to send Ledger transaction  on ${chainToString(chain)}`
+            })
+          } else if (!asset) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(chain)}`
+            })
+          } else if (!recipient) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Recipient needs to be defined to send Ledger transaction on ${chainToString(chain)}`
+            })
+          } else if (!feeOption) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Fee option needs to be defined to send Ledger transaction on ${chainToString(chain)}`
+            })
+          } else if (!isEvmHDMode(hdMode)) {
+            res = E.left({
+              errorId: LedgerErrorId.INVALID_DATA,
+              msg: `Invalid EthHDMode set - needed to send Ledger transaction on ${chainToString(chain)}`
+            })
+          } else {
+            res = await BSC.deposit({
+              asset,
+              router,
+              transport,
+              network,
+              amount,
+              memo,
+              walletIndex,
+              recipient,
+              feeOption,
+              evmHDMode: hdMode
+            })
+          }
+          break
         case BNBChain:
         case BTCChain:
         case LTCChain:
@@ -378,8 +460,6 @@ export const deposit = async ({
         case DOGEChain:
         case DASHChain:
         case GAIAChain:
-        case AVAXChain:
-        case BSCChain:
         case ARBChain:
           res = notSupportedError
           break

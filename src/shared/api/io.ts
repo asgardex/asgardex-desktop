@@ -148,7 +148,7 @@ export const ipcLedgerApproveERC20TokenParamsIO = t.type({
   contractAddress: t.string,
   spenderAddress: t.string,
   walletIndex: t.number,
-  evmHdMode: evmHDModeIO
+  hdMode: evmHDModeIO
 })
 
 export type IPCLedgerApproveERC20TokenParams = t.TypeOf<typeof ipcLedgerApproveERC20TokenParamsIO>

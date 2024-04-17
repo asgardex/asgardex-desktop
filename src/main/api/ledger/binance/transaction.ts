@@ -7,7 +7,6 @@ import * as E from 'fp-ts/lib/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { AssetBNB } from '../../../../shared/utils/asset'
-import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
 
 /**
@@ -33,12 +32,11 @@ export const send = async ({
   walletIndex: number
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const clientNetwork = toClientNetwork(network)
-    const prefix = getPrefix(clientNetwork)
+    const prefix = getPrefix(network)
     const derivePath = getDerivePath(walletIndex)
 
     const app = new LedgerApp(transport)
-    const client = new Client({ network: clientNetwork })
+    const client = new Client({ network: network })
 
     await app.showAddress(prefix, derivePath)
     const bncClient = client.getBncClient()

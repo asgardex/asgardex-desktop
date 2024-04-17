@@ -5068,6 +5068,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/cryptoassets@npm:^12.0.0":
+  version: 12.0.0
+  resolution: "@ledgerhq/cryptoassets@npm:12.0.0"
+  dependencies:
+    axios: ^1.6.0
+    bs58check: ^2.1.2
+    invariant: 2
+  checksum: f66e05e611577ba2bad4e0bd3c1252d0e4abbfd5f3425b8142228c8f300d17115ee9eeee004e21c525ebcc204497a806ba575cd315e7d9775b5f8630406b0eb7
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/devices@npm:^5.51.1":
   version: 5.51.1
   resolution: "@ledgerhq/devices@npm:5.51.1"
@@ -5092,6 +5103,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/devices@npm:^8.2.2":
+  version: 8.2.2
+  resolution: "@ledgerhq/devices@npm:8.2.2"
+  dependencies:
+    "@ledgerhq/errors": ^6.16.3
+    "@ledgerhq/logs": ^6.12.0
+    rxjs: ^7.8.1
+    semver: ^7.3.5
+  checksum: e3d3038e853a98d957c1c3aeb067c62ebe8d618cd5bf7f5bb78e72e8c68e187c9116efe40dfe6523f654188fb9ad40042a1eb3391a15ec25c26078e4fee45d3e
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/domain-service@npm:^1.1.16":
   version: 1.1.16
   resolution: "@ledgerhq/domain-service@npm:1.1.16"
@@ -5104,6 +5127,21 @@ __metadata:
     react: ^18.2.0
     react-dom: ^18.2.0
   checksum: b6b121114bdc3537b0a253c0069a9226c4df86e0bf1c9cc42239b2f6e3e6dd39aa009f63862bf88cb12f7d6ca8511210e6c0cb921007d57143958ac7e07f5308
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/domain-service@npm:^1.1.19":
+  version: 1.1.19
+  resolution: "@ledgerhq/domain-service@npm:1.1.19"
+  dependencies:
+    "@ledgerhq/errors": ^6.16.3
+    "@ledgerhq/logs": ^6.12.0
+    "@ledgerhq/types-live": ^6.45.0
+    axios: ^1.3.4
+    eip55: ^2.1.1
+    react: ^18.2.0
+    react-dom: ^18.2.0
+  checksum: be0fa5d360a36ce2e794bc86360744549e03ebc982ea1b39e446e47746b05ed908212aa64c6f2ebf3c5703a5349f1ce34ba12e71a3bfef9ea15c52d88ed68f71
   languageName: node
   linkType: hard
 
@@ -5121,6 +5159,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/errors@npm:^6.16.3":
+  version: 6.16.3
+  resolution: "@ledgerhq/errors@npm:6.16.3"
+  checksum: 430a4f34cf0aec9c9713b3784a9e76bc0cbf87c179dad8251b841d6c72c595be3c5df15668d249e8ea958577317ae909a9dbe5093a2632a3fc071edba957549d
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/evm-tools@npm:^1.0.12":
   version: 1.0.12
   resolution: "@ledgerhq/evm-tools@npm:1.0.12"
@@ -5131,6 +5176,19 @@ __metadata:
     crypto-js: 4.2.0
     ethers: 5.7.2
   checksum: 7259fe02379dd7648c39ee185cbdbbf31f08cdc0fd4d5b44990ae4b72e0a22032a2c2fbfcf4bc27b81ce478df174553289add3e5123ae192b247d9ad5e248d87
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/evm-tools@npm:^1.0.17":
+  version: 1.0.17
+  resolution: "@ledgerhq/evm-tools@npm:1.0.17"
+  dependencies:
+    "@ledgerhq/cryptoassets": ^12.0.0
+    "@ledgerhq/live-env": ^2.0.0
+    axios: ^1.6.5
+    crypto-js: 4.2.0
+    ethers: 5.7.2
+  checksum: e8b9c67f01fbaeb7ce4586196a390ceeb8f90995471a0313456ba550dccf583ba47b914af8a15ebae939dfaae5d61508b85720a1788d9f27d0996c48232eab9a
   languageName: node
   linkType: hard
 
@@ -5165,6 +5223,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/hw-app-eth@npm:6.35.7":
+  version: 6.35.7
+  resolution: "@ledgerhq/hw-app-eth@npm:6.35.7"
+  dependencies:
+    "@ethersproject/abi": ^5.5.0
+    "@ethersproject/rlp": ^5.5.0
+    "@ledgerhq/cryptoassets": ^12.0.0
+    "@ledgerhq/domain-service": ^1.1.19
+    "@ledgerhq/errors": ^6.16.3
+    "@ledgerhq/evm-tools": ^1.0.17
+    "@ledgerhq/hw-transport": ^6.30.5
+    "@ledgerhq/hw-transport-mocker": ^6.28.5
+    "@ledgerhq/logs": ^6.12.0
+    "@ledgerhq/types-live": ^6.45.0
+    axios: ^1.3.4
+    bignumber.js: ^9.1.2
+  checksum: a3e3bc56f48d27ab09ae7ec1a4679a32da06263d64b14be128eae1885cd6658a244dd62b2eaca6ab6dff9cda14d75f5ffcb2f9bf25a053caefc9eca026c84c1f
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/hw-app-eth@npm:^6.35.1 ":
   version: 6.35.1
   resolution: "@ledgerhq/hw-app-eth@npm:6.35.1"
@@ -5193,6 +5271,17 @@ __metadata:
     "@ledgerhq/logs": ^6.12.0
     rxjs: ^7.8.1
   checksum: b67ff5abd0ab84d1b8fdb96f4e0825ce0c46b9c009c388208096e776c5b1f7a83e6287492c2b131d7e61dd82527b366ff98ce19b9538976941e6f9ae71ff38bf
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/hw-transport-mocker@npm:^6.28.5":
+  version: 6.28.5
+  resolution: "@ledgerhq/hw-transport-mocker@npm:6.28.5"
+  dependencies:
+    "@ledgerhq/hw-transport": ^6.30.5
+    "@ledgerhq/logs": ^6.12.0
+    rxjs: ^7.8.1
+  checksum: f5fff2856797df9ac0e46ffdc0c04e099f3d1d37e1119cbce2558c63d3c10df6c3f050ef0542c893ba899a9aeb925569c46ec8289aed58df5ea63cbd9ba317e8
   languageName: node
   linkType: hard
 
@@ -5341,6 +5430,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/hw-transport@npm:^6.30.5":
+  version: 6.30.5
+  resolution: "@ledgerhq/hw-transport@npm:6.30.5"
+  dependencies:
+    "@ledgerhq/devices": ^8.2.2
+    "@ledgerhq/errors": ^6.16.3
+    "@ledgerhq/logs": ^6.12.0
+    events: ^3.3.0
+  checksum: 81b6deec97baeb2ffe8d318861f06737cf1ff9cbbad2674671cef850d3190390ce2cbacd723fcc9c680b7c2a081cb97be7302e13d652509a813612c40b4c710e
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/live-env@npm:^0.8.0":
   version: 0.8.0
   resolution: "@ledgerhq/live-env@npm:0.8.0"
@@ -5348,6 +5449,16 @@ __metadata:
     rxjs: ^7.8.1
     utility-types: ^3.10.0
   checksum: 74fb04fedddf255407ca56b8634ada59151e5c4cca5b383d8d9d7eeac47c69ad65a27c043faecbbc0255c15ae1a484a7d2a96e8952a183c3099c40779266d434
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/live-env@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@ledgerhq/live-env@npm:2.0.0"
+  dependencies:
+    rxjs: ^7.8.1
+    utility-types: ^3.10.0
+  checksum: bf7e54447bca9007dea5e14ff741ffd7514b36cfa94e2951f11a6be868ba12f9e99343b91e14b5114eade1e8fd3e92f48b5e3f28f555ea681b652ec6411e03c3
   languageName: node
   linkType: hard
 
@@ -5396,6 +5507,16 @@ __metadata:
     bignumber.js: ^9.1.2
     rxjs: ^7.8.1
   checksum: 0f3f6e624f909ca659c3ebf2e23b5292a7cfc26fef961a3c0ef54297a54b24314bfcb87705aa7239bdc66b5a1ae53384ea5bc9cf849a8c412557d4c146f19e6c
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/types-live@npm:^6.45.0":
+  version: 6.45.0
+  resolution: "@ledgerhq/types-live@npm:6.45.0"
+  dependencies:
+    bignumber.js: ^9.1.2
+    rxjs: ^7.8.1
+  checksum: 218a30200a9f19348266e6ab8c77990c73024665df6e1d6acc3d4ee6619908b9eb5f730dabfab8108cc90fcff6339ec9b9a7e5c1bcb52b0139954fd8652a5549
   languageName: node
   linkType: hard
 
@@ -9071,18 +9192,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-avax@npm:0.4.6":
+"@xchainjs/xchain-avax@file:/Users/dev/Documents/xchainjs-lib/packages/xchain-avax::locator=asgardex%40workspace%3A.":
   version: 0.4.6
-  resolution: "@xchainjs/xchain-avax@npm:0.4.6"
+  resolution: "@xchainjs/xchain-avax@file:/Users/dev/Documents/xchainjs-lib/packages/xchain-avax#/Users/dev/Documents/xchainjs-lib/packages/xchain-avax::hash=f382c9&locator=asgardex%40workspace%3A."
+  dependencies:
+    "@xchainjs/xchain-evm": "*"
   peerDependencies:
     "@xchainjs/xchain-client": ^0.16.2
     "@xchainjs/xchain-crypto": ^0.3.1
-    "@xchainjs/xchain-evm": ^0.4.5
     "@xchainjs/xchain-evm-providers": ^0.1.7
     "@xchainjs/xchain-util": ^0.13.3
     axios: ^1.3.6
     ethers: ^5.7.2
-  checksum: ee98c050199b1606eaffc4e7cfd229f388601270cf6a18fd8b1c6bb7021eddf2baf87a72e69e7a987c1f284ffc1c3c88ba0db7eb5ed6e175dca704bf855cab45
+  checksum: f1e920820e6d704f05c8d101e8ccd7755a00046e15fde1172d0af48a2d879af7e45f6e5e26c4a6c8d54e5430dc9b10620c59abc0c07f7a210b868a7d178657ee
   languageName: node
   linkType: hard
 
@@ -9271,18 +9393,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-ethereum@npm:^0.31.6":
+"@xchainjs/xchain-ethereum@file:/Users/dev/Documents/xchainjs-lib/packages/xchain-ethereum::locator=asgardex%40workspace%3A.":
   version: 0.31.6
-  resolution: "@xchainjs/xchain-ethereum@npm:0.31.6"
+  resolution: "@xchainjs/xchain-ethereum@file:/Users/dev/Documents/xchainjs-lib/packages/xchain-ethereum#/Users/dev/Documents/xchainjs-lib/packages/xchain-ethereum::hash=8fab1a&locator=asgardex%40workspace%3A."
+  dependencies:
+    "@xchainjs/xchain-evm": "*"
   peerDependencies:
     "@xchainjs/xchain-client": ^0.16.2
     "@xchainjs/xchain-crypto": ^0.3.1
-    "@xchainjs/xchain-evm": ^0.4.5
     "@xchainjs/xchain-evm-providers": ^0.1.7
     "@xchainjs/xchain-util": ^0.13.3
     axios: ^1.3.6
     ethers: ^5.7.2
-  checksum: df9d0bc0fd128d3dc965030075a6c827183591fc540e73186145bd2e8323e512bca2c43aaa29561f6a6d83416d7f9981291018dced0f57f9a2107cbe7d284c03
+  checksum: 58282586a5883d989b6c911e97f18de56cad04e15e4a0c3f8854aa54b9e4b0088fd7fe0f59a6984f0558c93ce4386ddbc2fa509d56417a1153804c68c1c65e6d
   languageName: node
   linkType: hard
 
@@ -9300,7 +9423,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-evm@npm:^0.4.5":
+"@xchainjs/xchain-evm@file:/Users/dev/Documents/xchainjs-lib/packages/xchain-evm::locator=asgardex%40workspace%3A.":
+  version: 0.4.5
+  resolution: "@xchainjs/xchain-evm@file:/Users/dev/Documents/xchainjs-lib/packages/xchain-evm#/Users/dev/Documents/xchainjs-lib/packages/xchain-evm::hash=6c82a6&locator=asgardex%40workspace%3A."
+  dependencies:
+    "@ledgerhq/hw-app-eth": 6.35.7
+  peerDependencies:
+    "@xchainjs/xchain-client": ^0.16.2
+    "@xchainjs/xchain-crypto": ^0.3.1
+    "@xchainjs/xchain-util": ^0.13.3
+    axios: ^1.3.6
+    ethers: ^5.7.2
+  checksum: b48349f1482e6a43a12376331157651db254332632a112bda1ed917e6edf228c71566d860baf3db34132617da8c44e0dd2b94881d2bcd659871c698bb9970e86
+  languageName: node
+  linkType: hard
+
+"@xchainjs/xchain-evm@npm:*":
   version: 0.4.5
   resolution: "@xchainjs/xchain-evm@npm:0.4.5"
   peerDependencies:
@@ -10262,7 +10400,7 @@ __metadata:
     "@types/styled-components": ^5.1.25
     "@xchainjs/ledger-thorchain": ^0.2.0
     "@xchainjs/xchain-arbitrum": 0.1.6
-    "@xchainjs/xchain-avax": 0.4.6
+    "@xchainjs/xchain-avax": /Users/dev/Documents/xchainjs-lib/packages/xchain-avax
     "@xchainjs/xchain-binance": ^5.7.8
     "@xchainjs/xchain-bitcoin": ^0.23.13
     "@xchainjs/xchain-bitcoincash": ^0.17.11
@@ -10273,8 +10411,8 @@ __metadata:
     "@xchainjs/xchain-crypto": ^0.3.0
     "@xchainjs/xchain-dash": 0.3.0
     "@xchainjs/xchain-doge": ^0.7.13
-    "@xchainjs/xchain-ethereum": ^0.31.6
-    "@xchainjs/xchain-evm": ^0.4.5
+    "@xchainjs/xchain-ethereum": /Users/dev/Documents/xchainjs-lib/packages/xchain-ethereum
+    "@xchainjs/xchain-evm": /Users/dev/Documents/xchainjs-lib/packages/xchain-evm
     "@xchainjs/xchain-evm-providers": ^0.1.7
     "@xchainjs/xchain-kujira": 0.1.12
     "@xchainjs/xchain-litecoin": ^0.14.0
@@ -10299,7 +10437,7 @@ __metadata:
     axios-retry: ^3.2.5
     bchaddrjs: ^0.5.2
     bech32-buffer: ^0.2.0
-    bignumber.js: ^9.0.2
+    bignumber.js: ^9.0.0
     bitcoinjs-lib: ^5.2.0
     browserify-fs: ^1.0.0
     buffer: ^6.0.3
@@ -10649,6 +10787,17 @@ __metadata:
     form-data: ^4.0.0
     proxy-from-env: ^1.1.0
   checksum: 87d4d429927d09942771f3b3a6c13580c183e31d7be0ee12f09be6d5655304996bb033d85e54be81606f4e89684df43be7bf52d14becb73a12727bf33298a082
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.6.5":
+  version: 1.6.8
+  resolution: "axios@npm:1.6.8"
+  dependencies:
+    follow-redirects: ^1.15.6
+    form-data: ^4.0.0
+    proxy-from-env: ^1.1.0
+  checksum: bf007fa4b207d102459300698620b3b0873503c6d47bf5a8f6e43c0c64c90035a4f698b55027ca1958f61ab43723df2781c38a99711848d232cad7accbcdfcdd
   languageName: node
   linkType: hard
 
@@ -11090,14 +11239,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bignumber.js@npm:^9.0.2":
-  version: 9.1.0
-  resolution: "bignumber.js@npm:9.1.0"
-  checksum: 52ec2bb5a3874d7dc1a1018f28f8f7aff4683515ffd09d6c2d93191343c76567ae0ee32cc45149d53afb2b904bc62ed471a307b35764beea7e9db78e56bef6c6
-  languageName: node
-  linkType: hard
-
-"bignumber.js@npm:^9.1.2":
+"bignumber.js@npm:^9.0.0, bignumber.js@npm:^9.1.2":
   version: 9.1.2
   resolution: "bignumber.js@npm:9.1.2"
   checksum: 582c03af77ec9cb0ebd682a373ee6c66475db94a4325f92299621d544aa4bd45cb45fd60001610e94aef8ae98a0905fa538241d9638d4422d57abbeeac6fadaf
@@ -15750,6 +15892,16 @@ __metadata:
     debug:
       optional: true
   checksum: 5ca49b5ce6f44338cbfc3546823357e7a70813cecc9b7b768158a1d32c1e62e7407c944402a918ea8c38ae2e78266312d617dc68783fac502cbb55e1047b34ec
+  languageName: node
+  linkType: hard
+
+"follow-redirects@npm:^1.15.6":
+  version: 1.15.6
+  resolution: "follow-redirects@npm:1.15.6"
+  peerDependenciesMeta:
+    debug:
+      optional: true
+  checksum: a62c378dfc8c00f60b9c80cab158ba54e99ba0239a5dd7c81245e5a5b39d10f0c35e249c3379eae719ff0285fff88c365dd446fab19dee771f1d76252df1bbf5
   languageName: node
   linkType: hard
 

@@ -186,14 +186,13 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     return FP.pipe(
       Rx.from(
         client.approve({
-          signer,
           contractAddress,
           spenderAddress,
-          feeOption: ChainTxFeeOption.APPROVE
+          feeOption: ChainTxFeeOption.APPROVE,
+          walletIndex
         })
       ),
-      RxOp.switchMap((txResult) => Rx.from(txResult.wait(1))),
-      RxOp.map(({ transactionHash }) => transactionHash),
+      RxOp.switchMap((txResult) => Rx.from(txResult)),
       RxOp.map(RD.success),
       RxOp.catchError(
         (error): TxHashLD =>
@@ -230,7 +229,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       contractAddress,
       spenderAddress,
       walletIndex,
-      evmHdMode: hdMode
+      hdMode
     }
     const encoded = ipcLedgerApproveERC20TokenParamsIO.encode(ipcParams)
 

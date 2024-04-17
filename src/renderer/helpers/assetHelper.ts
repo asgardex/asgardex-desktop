@@ -472,7 +472,7 @@ export const getEthTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
 )
 
 /**
- * Get ethereum token address (as check sum address) from a given asset
+ * Get arb token address (as check sum address) from a given asset
  */
 export const getArbTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
   getTokenAddress,
@@ -481,7 +481,7 @@ export const getArbTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
 )
 
 /**
- * Get ethereum token address (as check sum address) from a given asset
+ * Get avax token address (as check sum address) from a given asset
  */
 export const getAvaxTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
   getTokenAddress,
@@ -490,7 +490,7 @@ export const getAvaxTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
 )
 
 /**
- * Get ethereum token address (as check sum address) from a given asset
+ * Get Bsc token address (as check sum address) from a given asset
  */
 export const getBscTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
   getTokenAddress,
