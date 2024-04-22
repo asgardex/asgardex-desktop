@@ -50,7 +50,7 @@ import { InputBigNumber } from '../../../uielements/input'
 import { ShowDetails } from '../../../uielements/showDetails'
 import { Slider } from '../../../uielements/slider'
 import { AccountSelector } from '../../account'
-import { checkMemo, matchedWalletType, memoCorrection, renderedWalletType } from '../TxForm.helpers'
+import { checkMemo, matchedWalletType, renderedWalletType } from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
 import { validateTxAmountInput } from '../TxForm.util'
 import { DEFAULT_FEE_OPTION } from './Send.const'
@@ -139,12 +139,10 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
   const [form] = Form.useForm<FormValues>()
 
   const handleMemo = useCallback(() => {
-    let memoValue = form.getFieldValue('memo') as string
+    const memoValue = form.getFieldValue('memo') as string
 
     if (checkMemo(memoValue)) {
-      memoValue = memoCorrection(memoValue)
       setSwapMemoDetected(true)
-
       // Set affiliate tracking message
       setAffiliateTracking(intl.formatMessage({ id: 'wallet.send.affiliateTracking' }))
     } else {
@@ -666,7 +664,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
             {renderFeeError}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
             <Form.Item name="memo">
-              <Styled.Input size="large" disabled={isLoading} onChange={handleMemo} />
+              <Styled.Input size="large" disabled={isLoading} onBlur={handleMemo} />
             </Form.Item>
             {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
             <Form.Item name="feeRate">{renderFeeOptions}</Form.Item>

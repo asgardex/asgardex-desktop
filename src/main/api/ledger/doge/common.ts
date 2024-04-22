@@ -1,5 +1,13 @@
 import { Network } from '@xchainjs/xchain-client'
+import { AssetDOGE, DOGEChain, defaultDogeParams } from '@xchainjs/xchain-doge'
+import {
+  BitgoProvider,
+  BlockcypherNetwork,
+  BlockcypherProvider,
+  UtxoOnlineDataProviders
+} from '@xchainjs/xchain-utxo-providers'
 
+import { blockcypherApiKey, blockcypherUrl } from '../../../../shared/api/blockcypher'
 import { LedgerErrorId } from '../../../../shared/api/types'
 
 // TODO(@veado) Extend`xchain-doge` to get derivation path from it
@@ -20,4 +28,44 @@ export const fromLedgerErrorType = (error: number): LedgerErrorId => {
     default:
       return LedgerErrorId.UNKNOWN
   }
+}
+
+const testnetBlockcypherProvider = new BlockcypherProvider(
+  blockcypherUrl,
+  DOGEChain,
+  AssetDOGE,
+  8,
+  BlockcypherNetwork.DOGE,
+  blockcypherApiKey || ''
+)
+const mainnetBlockcypherProvider = new BlockcypherProvider(
+  blockcypherUrl,
+  DOGEChain,
+  AssetDOGE,
+  8,
+  BlockcypherNetwork.DOGE,
+  blockcypherApiKey || ''
+)
+const BlockcypherDataProviders: UtxoOnlineDataProviders = {
+  [Network.Testnet]: testnetBlockcypherProvider,
+  [Network.Stagenet]: mainnetBlockcypherProvider,
+  [Network.Mainnet]: mainnetBlockcypherProvider
+}
+//======================
+// Bitgo
+//======================
+const mainnetBitgoProvider = new BitgoProvider({
+  baseUrl: 'https://app.bitgo.com',
+  chain: DOGEChain
+})
+
+const BitgoProviders: UtxoOnlineDataProviders = {
+  [Network.Testnet]: undefined,
+  [Network.Stagenet]: mainnetBitgoProvider,
+  [Network.Mainnet]: mainnetBitgoProvider
+}
+export const dogeInitParams = {
+  ...defaultDogeParams,
+  network: Network,
+  dataProviders: [BlockcypherDataProviders, BitgoProviders]
 }

@@ -155,6 +155,7 @@ export const eqOPoolAddresses = O.getEq(eqPoolAddresses)
 
 export const eqSwapFeesParams = Eq.struct<SwapFeesParams>({
   inAsset: eqAsset,
+  memo: eqString,
   outAsset: eqAsset
 })
 

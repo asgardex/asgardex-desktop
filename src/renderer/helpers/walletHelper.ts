@@ -202,6 +202,8 @@ export const isEnabledLedger = (chain: Chain, network: Network) => {
   if (isBchChain(chain) && network === Network.Testnet) return false
   // No DOGE support on `testnet`
   if (isDogeChain(chain) && network === Network.Testnet) return false
+  // No DASH support on `testnet`
+  if (isDashChain(chain) && network === Network.Testnet) return false
   // Disable for these chains
   if (isMayaChain(chain)) return false
   if (isDashChain(chain) && network === Network.Testnet) return false

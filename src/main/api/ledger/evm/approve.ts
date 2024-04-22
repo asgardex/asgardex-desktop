@@ -18,7 +18,6 @@ export const approveLedgerERC20Token = async ({
   let clientParams
 
   const transport = await TransportNodeHidSingleton.create()
-  console.log(chain)
   switch (chain) {
     case 'ETH':
       clientParams = {
@@ -59,8 +58,6 @@ export const approveLedgerERC20Token = async ({
     feeOption: FeeOption.Fast,
     walletIndex
   })
-  // wait for the tx to be mined
-  const _ = await client.getTransactionData(transactionHash)
 
   await transport.close()
 

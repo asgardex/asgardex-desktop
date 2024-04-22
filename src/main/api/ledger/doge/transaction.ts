@@ -1,11 +1,12 @@
 import Transport from '@ledgerhq/hw-transport'
 import { FeeRate, Network, TxHash } from '@xchainjs/xchain-client'
-import { AssetDOGE, ClientLedger, defaultDogeParams } from '@xchainjs/xchain-doge'
+import { AssetDOGE, ClientLedger } from '@xchainjs/xchain-doge'
 import { Address, BaseAmount } from '@xchainjs/xchain-util'
 import * as E from 'fp-ts/lib/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
+import { dogeInitParams } from './common'
 
 /**
  * Sends DOGE tx using Ledger
@@ -37,7 +38,8 @@ export const send = async ({
   }
 
   try {
-    const dogeClient = new ClientLedger({ transport, ...defaultDogeParams, network: network })
+    const dogeClient = new ClientLedger({ transport, ...dogeInitParams, network: network })
+    console.log(recipient, amount, memo, feeRate)
     const txHash = await dogeClient.transfer({ walletIndex, asset: AssetDOGE, recipient, amount, memo, feeRate })
 
     if (!txHash) {

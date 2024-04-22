@@ -75,15 +75,14 @@ export const send = async ({
   }
 
   try {
-    // console.log(amount.amount().toNumber())
-    // console.log(recipient)
     const dashClient = new ClientLedger({
       transport,
       ...defaultDashParams,
       dataProviders: [BlockcypherDataProviders, BitgoProviders],
       network: network
     })
-    const txHash = await dashClient.transfer({ amount, recipient, walletIndex, asset: AssetDASH, memo, feeRate })
+
+    const txHash = await dashClient.transfer({ asset: AssetDASH, recipient, amount, memo, walletIndex, feeRate })
 
     if (!txHash) {
       return E.left({

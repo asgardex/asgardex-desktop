@@ -56,12 +56,12 @@ const swapFees$: SwapFeesHandler = (initialParams) => {
     RxOp.switchMap((oReloadParams) => {
       // Since `oReloadParams` is `none` by default,
       // `initialParams` will be used as first value
-      const { inAsset, outAsset } = FP.pipe(
+      const { inAsset, memo, outAsset } = FP.pipe(
         oReloadParams,
         O.getOrElse(() => initialParams)
       )
       return liveData.sequenceS({
-        inFee: poolInboundFee$(inAsset),
+        inFee: poolInboundFee$(inAsset, memo),
         outFee: poolOutboundFee$(outAsset)
       })
     })

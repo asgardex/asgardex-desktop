@@ -75,7 +75,9 @@ import {
   isAvaxAsset,
   isBscAsset,
   max1e10BaseAmount,
-  getArbTokenAddress
+  getArbTokenAddress,
+  isArbAsset,
+  isArbTokenAsset
 } from '../../helpers/assetHelper'
 import {
   getChainAsset,
@@ -90,6 +92,7 @@ import {
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqOApproveParams, eqAddress } from '../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
+import { getSwapMemo, shortenMemo } from '../../helpers/memoHelper'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../helpers/poolHelperMaya'
 import { liveData, LiveData } from '../../helpers/rx/liveData'
@@ -481,11 +484,29 @@ export const Swap = ({
   }, [inboundDetails, sourceAsset, targetAsset])
 
   const prevChainFees = useRef<O.Option<SwapFees>>(O.none)
+  const swapMemo = useMemo(() => {
+    return O.fold(
+      () => '',
+      (recipientAddress: string) => {
+        const toleranceBps = undefined
+        return getSwapMemo({
+          targetAsset,
+          targetAddress: recipientAddress,
+          toleranceBps,
+          streamingInterval,
+          streamingQuantity,
+          affiliateName: ASGARDEX_THORNAME,
+          affiliateBps: ASGARDEX_AFFILIATE_FEE
+        })
+      }
+    )(oRecipientAddress)
+  }, [oRecipientAddress, targetAsset, streamingInterval, streamingQuantity])
 
   const [swapFeesRD] = useObservableState<SwapFeesRD>(() => {
     return FP.pipe(
       fees$({
         inAsset: sourceAsset,
+        memo: swapMemo,
         outAsset: targetAsset
       }),
       liveData.map((chainFees) => {
@@ -1054,6 +1075,18 @@ export const Swap = ({
       ),
     [oQuote]
   )
+  // Memo
+  // const quoteMemo: string = useMemo(
+  //   () =>
+  //     FP.pipe(
+  //       sequenceTOption(oQuote),
+  //       O.fold(
+  //         () => '',
+  //         ([txDetails]) => txDetails.memo
+  //       )
+  //     ),
+  //   [oQuote]
+  // )
 
   /**
    * Price of swap result in max 1e8 // boolean to convert between streaming and regular swaps
@@ -1170,7 +1203,7 @@ export const Swap = ({
             poolAddress,
             asset: sourceAsset,
             amount: convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal),
-            memo: txDetails.memo, // The memo will be different based on the selected quote
+            memo: shortenMemo(txDetails.memo), // short asset
             walletType,
             sender: walletAddress,
             walletIndex,
@@ -1248,6 +1281,8 @@ export const Swap = ({
         return isAvaxAsset(sourceAsset) ? O.some(false) : O.some(isAvaxTokenAsset(sourceAsset))
       case BSCChain:
         return isBscAsset(sourceAsset) ? O.some(false) : O.some(isBscTokenAsset(sourceAsset))
+      case ARBChain:
+        return isArbAsset(sourceAsset) ? O.some(false) : O.some(isArbTokenAsset(sourceAsset))
       default:
         return O.none
     }
@@ -1258,7 +1293,6 @@ export const Swap = ({
       oPoolAddress,
       O.chain(({ router }) => router)
     )
-    //tobeFixed
     const oTokenAddress: O.Option<string> = (() => {
       switch (sourceChain) {
         case ETHChain:
@@ -1297,9 +1331,10 @@ export const Swap = ({
   const reloadFeesHandler = useCallback(() => {
     reloadFees({
       inAsset: sourceAsset,
+      memo: swapMemo,
       outAsset: targetAsset
     })
-  }, [reloadFees, sourceAsset, targetAsset])
+  }, [reloadFees, sourceAsset, swapMemo, targetAsset])
 
   const prevApproveFee = useRef<O.Option<BaseAmount>>(O.none)
 
@@ -1361,13 +1396,14 @@ export const Swap = ({
       O.filter((params) => !eqOApproveParams.equals(O.some(params), prevApproveParams.current)),
       // update ref
       O.map((params) => {
-        prevApproveParams.current = O.some(params)
-        return params
-      }),
-      // Trigger update for `approveFeesRD` + `checkApprove`
-      O.map((params) => {
-        approveFeeParamsUpdated(params)
-        checkApprovedStatus(params)
+        prevApproveParams.current = O.some(params) // Update reference to current params
+
+        // Using setTimeout to delay the execution of subsequent actions
+        setTimeout(() => {
+          approveFeeParamsUpdated(params)
+          checkApprovedStatus(params)
+        }, 100) // Delay of 100 milliseconds
+
         return true
       })
     )
