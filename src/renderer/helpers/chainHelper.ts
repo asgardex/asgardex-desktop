@@ -1,4 +1,4 @@
-import { ARBChain } from '@xchainjs/xchain-arbitrum'
+import { ARBChain, AssetAETH } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
 import { AssetBNB, BNBChain } from '@xchainjs/xchain-binance'
 import { AssetBTC, BTCChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDBTC } from '@xchainjs/xchain-bitcoin'
@@ -14,7 +14,6 @@ import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Chain } from '@xchainjs/xchain-util'
 
-import { AssetAETH } from '../../shared/arb/const'
 import { isEnabledChain } from '../../shared/utils/chain'
 import { eqChain } from './fp/eq'
 

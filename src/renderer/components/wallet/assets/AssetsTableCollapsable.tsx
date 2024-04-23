@@ -31,7 +31,16 @@ import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString, isChainOfMaya } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
-import { isCacaoAsset, isMayaAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
+import {
+  isAethAsset,
+  isArbAsset,
+  isCacaoAsset,
+  isDashAsset,
+  isKujiAsset,
+  isMayaAsset,
+  isRuneNativeAsset,
+  isUSDAsset
+} from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../helpers/poolHelperMaya'
@@ -212,7 +221,13 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
         if (isUSDAsset(asset)) {
           price = balance.toString()
-        } else if (isChainOfMaya(asset.chain)) {
+        } else if (
+          isMayaAsset(asset) ||
+          isDashAsset(asset) ||
+          isKujiAsset(asset) ||
+          isAethAsset(asset) ||
+          isArbAsset(asset)
+        ) {
           // First try to get the price from poolDetails
           const priceOptionFromPoolDetails = getPoolPriceValueM({
             balance: { asset, amount },

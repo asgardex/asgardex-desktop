@@ -1,3 +1,4 @@
+import { AssetAETH, AssetARB } from '@xchainjs/xchain-arbitrum'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetDASH } from '@xchainjs/xchain-dash'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
@@ -19,7 +20,7 @@ import * as O from 'fp-ts/lib/Option'
 import * as P from 'fp-ts/lib/Predicate'
 import * as S from 'fp-ts/lib/string'
 
-import { ArbZeroAddress, AssetAETH, AssetARB } from '../../shared/arb/const'
+import { ArbZeroAddress } from '../../shared/arb/const'
 import { AvaxZeroAddress } from '../../shared/avax/const'
 import { BscZeroAddress } from '../../shared/bsc/const'
 import { ETHAddress } from '../../shared/ethereum/const'

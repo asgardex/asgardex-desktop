@@ -2,13 +2,13 @@ import {
   ARBChain,
   ARB_DECIMAL,
   ARB_GAS_ASSET_DECIMAL,
+  AssetAETH,
   LOWER_FEE_BOUND,
   UPPER_FEE_BOUND
 } from '@xchainjs/xchain-arbitrum'
 import { ExplorerProvider, FeeBounds, Network } from '@xchainjs/xchain-client'
 import { EVMClientParams } from '@xchainjs/xchain-evm'
 import { EtherscanProvider, RoutescanProvider } from '@xchainjs/xchain-evm-providers'
-import { Asset } from '@xchainjs/xchain-util'
 import { BigNumber, ethers } from 'ethers'
 
 import { envOrDefault } from '../utils/env'
@@ -26,15 +26,15 @@ export const DEPOSIT_EXPIRATION_OFFSET = 15 * 60 // 15min in seconds
 
 export const ArbZeroAddress = '0x0000000000000000000000000000000000000000'
 
-// AETH
-export const AssetAETH: Asset = { chain: ARBChain, symbol: 'ETH', ticker: 'ETH', synth: false }
-// ARB
-export const AssetARB: Asset = {
-  chain: ARBChain,
-  symbol: 'ARB-0x912ce59144191c1204e64559fe8253a0e49e6548',
-  ticker: 'ARB',
-  synth: false
-}
+// // AETH
+// export const AssetAETH: Asset = { chain: ARBChain, symbol: 'ETH', ticker: 'ETH', synth: false }
+// // ARB
+// export const AssetARB: Asset = {
+//   chain: ARBChain,
+//   symbol: 'ARB-0x912ce59144191c1204e64559fe8253a0e49e6548',
+//   ticker: 'ARB',
+//   synth: false
+// }
 
 // =====Ethers providers=====
 const ARBITRUM_MAINNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider('https://rpc.ankr.com/arbitrum')

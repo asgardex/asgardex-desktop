@@ -1,3 +1,4 @@
+import { AssetARB } from '@xchainjs/xchain-arbitrum'
 import { AssetAVAX } from '@xchainjs/xchain-avax'
 import { AssetBNB } from '@xchainjs/xchain-binance'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
@@ -11,8 +12,6 @@ import { AssetLTC } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, AssetMaya } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { assetFromStringEx } from '@xchainjs/xchain-util'
-
-import { AssetARB } from '../arb/const'
 
 const AssetSynthBtc = assetFromStringEx('BTC/BTC')
 const AssetSynthBnb = assetFromStringEx('BNB/BNB')
