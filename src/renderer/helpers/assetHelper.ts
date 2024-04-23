@@ -390,10 +390,10 @@ export const validAssetForAVAX = (asset: Asset /* AVAX or ERC20 asset */, networ
   network !== Network.Mainnet /* (1) */ || isAvaxAsset(asset) /* (2) */ || assetInAVAXERC20Whitelist(asset)
 
 /**
- * Checks whether ETH/ERC20 asset is whitelisted or not
+ * Checks whether BSC/ERC20 asset is whitelisted or not
  * based on following rules:
  * (1) Check on `mainnet` only
- * (2) Always accept ETH
+ * (2) Always accept BSC
  * (3) ERC20 asset needs to be listed in `ERC20Whitelist`
  */
 export const validAssetForBSC = (asset: Asset /* BSC or ERC20 asset */, network: Network): boolean =>

@@ -13,6 +13,7 @@ import * as E from 'fp-ts/lib/Either'
 import { blockcypherApiKey } from '../../../../shared/api/blockcypher'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
+import { removeAffiliate } from '../doge/common'
 
 //======================
 // Bitgo
@@ -81,8 +82,15 @@ export const send = async ({
       dataProviders: [BlockcypherDataProviders, BitgoProviders],
       network: network
     })
-
-    const txHash = await dashClient.transfer({ asset: AssetDASH, recipient, amount, memo, walletIndex, feeRate })
+    const newMemo = memo !== undefined ? removeAffiliate(memo) : memo // removes affilaite to shorten memo.
+    const txHash = await dashClient.transfer({
+      asset: AssetDASH,
+      recipient,
+      amount,
+      memo: newMemo,
+      walletIndex,
+      feeRate
+    })
 
     if (!txHash) {
       return E.left({

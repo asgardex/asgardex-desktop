@@ -99,7 +99,7 @@
     "@xchainjs/xchain-cosmos-sdk": "0.2.1",
     "@xchainjs/xchain-crypto": "^0.3.0",
     "@xchainjs/xchain-dash": "0.3.0",
-    "@xchainjs/xchain-doge": "^0.7.13",
+    "@xchainjs/xchain-doge": "0.7.13",
     "@xchainjs/xchain-ethereum": "0.32.0",
     "@xchainjs/xchain-evm": "0.5.0",
     "@xchainjs/xchain-evm-providers": "^0.1.8",

@@ -50,7 +50,7 @@ import { InputBigNumber } from '../../../uielements/input'
 import { ShowDetails } from '../../../uielements/showDetails'
 import { Slider } from '../../../uielements/slider'
 import { AccountSelector } from '../../account'
-import { checkMemo, matchedWalletType, renderedWalletType } from '../TxForm.helpers'
+import { checkMemo, matchedWalletType, memoCorrection, renderedWalletType } from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
 import { validateTxAmountInput } from '../TxForm.util'
 import { DEFAULT_FEE_OPTION } from './Send.const'
@@ -139,9 +139,10 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
   const [form] = Form.useForm<FormValues>()
 
   const handleMemo = useCallback(() => {
-    const memoValue = form.getFieldValue('memo') as string
+    let memoValue = form.getFieldValue('memo') as string
 
     if (checkMemo(memoValue)) {
+      memoValue = memoCorrection(memoValue)
       setSwapMemoDetected(true)
       // Set affiliate tracking message
       setAffiliateTracking(intl.formatMessage({ id: 'wallet.send.affiliateTracking' }))
@@ -303,6 +304,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
       }
       if (InboundAddress === value) {
         const type = 'Inbound'
+        // setRemoveMemoField(true)
         setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
       }
     },

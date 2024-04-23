@@ -163,6 +163,10 @@ export const UnlockForm: React.FC<Props> = (props): JSX.Element => {
     navigate(walletRoutes.create.phrase.path())
   }, [navigate])
 
+  const importWalletHandler = useCallback(() => {
+    navigate(walletRoutes.imports.base.path())
+  }, [navigate])
+
   const renderChangeWalletError = useMemo(
     () =>
       FP.pipe(
@@ -226,12 +230,20 @@ export const UnlockForm: React.FC<Props> = (props): JSX.Element => {
               />
               <div className="flex flex-wrap justify-between gap-4 p-20">
                 <BorderButton
-                  className="mr-20px w-full min-w-[200px] sm:mb-0 sm:w-auto sm:max-w-[200px]"
+                  className="mr-20px w-full min-w-[100px] sm:mb-0 sm:w-auto sm:max-w-[200px]"
                   size="normal"
                   color="primary"
                   onClick={createWalletHandler}
                   disabled={unlocking}>
                   {intl.formatMessage({ id: 'wallet.action.create' })}
+                </BorderButton>
+                <BorderButton
+                  className="mr-20px w-full min-w-[100px] sm:mb-0 sm:w-auto sm:max-w-[200px]"
+                  size="normal"
+                  color="primary"
+                  onClick={importWalletHandler}
+                  disabled={unlocking}>
+                  {intl.formatMessage({ id: 'wallet.action.import' })}
                 </BorderButton>
                 <FlatButton
                   type="submit"
@@ -243,7 +255,7 @@ export const UnlockForm: React.FC<Props> = (props): JSX.Element => {
                   {intl.formatMessage({ id: 'wallet.action.unlock' })}
                 </FlatButton>
                 <BorderButton
-                  className="w-full min-w-[200px] sm:mb-0 sm:w-auto sm:max-w-[200px]"
+                  className="w-full min-w-[100px] sm:mb-0 sm:w-auto sm:max-w-[200px]"
                   size="normal"
                   color="error"
                   onClick={showRemoveConfirm}

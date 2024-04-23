@@ -134,7 +134,6 @@ const assetCodes: AssetCodes = {
   'THOR.RUNE': 'r',
   'BTC.BTC': 'b',
   'ETH.ETH': 'e',
-  'BNB.BNB': 'n',
   'GAIA.ATOM': 'g',
   'DOGE.DOGE': 'd',
   'LTC.LTC': 'l',

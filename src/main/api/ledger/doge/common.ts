@@ -69,3 +69,19 @@ export const dogeInitParams = {
   network: Network,
   dataProviders: [BlockcypherDataProviders, BitgoProviders]
 }
+
+/**
+ *  Temp function to shorten memo currently doge doesn't like anything over 55 bytes..
+ * @param input - memo
+ * @returns - memo without the affiliate
+ */
+export const removeAffiliate = (input: string): string => {
+  const affiliate = ':dx:0'
+  // Check if the string ends with the specified affiliate
+  if (input.endsWith(affiliate)) {
+    // Remove the affiliate from the end of the string
+    return input.slice(0, input.length - affiliate.length)
+  }
+  // Return the original string if it does not end with the affiliate
+  return input
+}
