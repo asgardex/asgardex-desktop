@@ -1,3 +1,18 @@
+# 1.21.6 (2024-04-24)
+
+# Add
+
+- Add Arbitrum [#189](https://github.com/asgardex/asgardex-desktop/issues/189)
+- Add Import option [#193 #190](https://github.com/asgardex/asgardex-desktop/issues/193)
+- Add Ledger functions for Dash [#207](https://github.com/asgardex/asgardex-desktop/issues/207)
+- Add EVM ledger clients [#206](https://github.com/asgardex/asgardex-desktop/issues/206)
+
+## Updates/Fixes
+
+- Clear source input amount when changing asset [#187](https://github.com/asgardex/asgardex-desktop/issues/187)
+- Fixed ERC Approval for Ledger [#166](https://github.com/asgardex/asgardex-desktop/issues/166)
+- Update UXTO fee collection for swaps [#202](https://github.com/asgardex/asgardex-desktop/issues/205)
+
 # 1.21.5 (2024-03-28)
 
 ## Add
@@ -34,7 +49,7 @@
 - Update: BTC ledger [#156](https://github.com/asgardex/asgardex-desktop/issues/156)
 - Swap errors from thornode not showing [#159](https://github.com/asgardex/asgardex-desktop/issues/159)
 - Add Expand and Collapse All - Wallets [#165](https://github.com/asgardex/asgardex-desktop/issues/165)
-  
+
 ## Updates/Fixes
 
 - PR [Fixing RU and FR translations #163](https://github.com/asgardex/asgardex-desktop/pull/163) @TreefeedXavier
@@ -60,7 +75,7 @@
 
 ## Add
 
-- Maya Dex Integration  [#136](https://github.com/asgardex/asgardex-desktop/issues/136)
+- Maya Dex Integration [#136](https://github.com/asgardex/asgardex-desktop/issues/136)
 - Add Dash Wallet Funcitons only [#127](https://github.com/asgardex/asgardex-desktop/issues/127)
 
 ## Updates/Fixes
