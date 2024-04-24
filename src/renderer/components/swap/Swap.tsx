@@ -2091,7 +2091,7 @@ export const Swap = ({
     const error = quoteErrors[0].split(':')
     const assetPart = error[2].split('(')[1]?.split(')')[0]
     if (!lockedWallet && assetPart === `${targetAsset.chain}.${targetAsset.symbol}`) {
-      return <ErrorLabel>{intl.formatMessage({ id: 'swap.errors.pool.notAvailable' }, { pool: error[2] })}</ErrorLabel>
+      return <ErrorLabel>{intl.formatMessage({ id: 'swap.errors.pool.notAvailable' }, { pool: assetPart })}</ErrorLabel>
     }
 
     // Extract numerical value from error string

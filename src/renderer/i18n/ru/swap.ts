@@ -28,7 +28,7 @@ const swap: SwapMessages = {
   'swap.note.nowallet': 'Для обмена создайте или импортируйте кошелек',
   'swap.errors.asset.missingSourceAsset': 'Исходный актив не поддерживается',
   'swap.errors.asset.missingTargetAsset': 'Целевой актив не поддерживается',
-  'swap.errors.pool.notAvailable': 'Пул недоступен',
+  'swap.errors.pool.notAvailable': 'Пул недоступен {pool}',
   'swap.min.amount.info':
     'Минимальное значение для обмена, чтобы покрыть все комиссии за входящие и исходящие транзакции.',
   'swap.min.result.info':
