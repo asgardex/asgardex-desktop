@@ -1088,6 +1088,27 @@ export const Swap = ({
   //   [oQuote]
   // )
 
+  // Quote Errors
+  const quoteErrors: string[] = useMemo(
+    () =>
+      dex === 'THOR'
+        ? FP.pipe(
+            sequenceTOption(oQuote),
+            O.fold(
+              () => [],
+              ([txDetails]) => txDetails.txEstimate.errors
+            )
+          )
+        : FP.pipe(
+            sequenceTOption(oQuoteMaya),
+            O.fold(
+              () => [],
+              ([txDetails]) => txDetails.errors
+            )
+          ),
+    [dex, oQuote, oQuoteMaya]
+  )
+
   /**
    * Price of swap result in max 1e8 // boolean to convert between streaming and regular swaps
    */
@@ -2063,21 +2084,13 @@ export const Swap = ({
   }, [isZeroAmountToSwap, minAmountError, swapFees, sourceChainAssetAmount])
 
   const quoteError: JSX.Element = useMemo(() => {
-    if (
-      !O.isSome(oQuote) ||
-      !oQuote.value.txEstimate ||
-      !oQuote.value.txEstimate.errors ||
-      oQuote.value.txEstimate.errors.length === 0
-    ) {
-      return <></>
-    }
-    if (!O.isSome(oQuoteMaya) || !oQuoteMaya.value.errors || oQuoteMaya.value.errors.length === 0) {
+    if (quoteErrors.length === 0) {
       return <></>
     }
 
-    const error = dex === 'THOR' ? oQuote.value.txEstimate.errors[0].split(':') : oQuoteMaya.value.errors[0].split(':')
-
-    if (!isLocked && error[2].includes('pool') && error[2].includes('not available')) {
+    const error = quoteErrors[0].split(':')
+    const assetPart = error[2].split('(')[1]?.split(')')[0]
+    if (!lockedWallet && assetPart === `${targetAsset.chain}.${targetAsset.symbol}`) {
       return <ErrorLabel>{intl.formatMessage({ id: 'swap.errors.pool.notAvailable' }, { pool: error[2] })}</ErrorLabel>
     }
 
@@ -2100,7 +2113,7 @@ export const Swap = ({
           : intl.formatMessage({ id: 'swap.errors.amount.thornodeQuoteError' }, { error: error[1] })}
       </ErrorLabel>
     )
-  }, [oQuote, oQuoteMaya, dex, sourceAssetDecimal, sourceAsset, intl])
+  }, [quoteErrors, lockedWallet, targetAsset.chain, targetAsset.symbol, sourceAssetDecimal, sourceAsset, intl])
 
   const sourceChainFeeErrorLabel: JSX.Element = useMemo(() => {
     if (!sourceChainFeeError) {
