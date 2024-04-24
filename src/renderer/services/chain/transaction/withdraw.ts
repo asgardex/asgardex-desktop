@@ -16,7 +16,7 @@ import {
   getAvaxAssetAddress,
   getBscAssetAddress,
   getEthAssetAddress,
-  isArbAsset,
+  isAethAsset,
   isAvaxAsset,
   isBscAsset,
   isEthAsset,
@@ -230,7 +230,7 @@ export const saverWithdraw$ = ({
           case ETHChain:
             return !isEthAsset(asset) ? getEthAssetAddress(asset) : O.none
           case ARBChain:
-            return !isArbAsset(asset) ? getArbAssetAddress(asset) : O.none
+            return !isAethAsset(asset) ? getArbAssetAddress(asset) : O.none
           case AVAXChain:
             return !isAvaxAsset(asset) ? getAvaxAssetAddress(asset) : O.none
           case BSCChain:

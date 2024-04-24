@@ -1,4 +1,4 @@
-import { Asset, BaseAmount } from '@xchainjs/xchain-util'
+import { Address, Asset, BaseAmount } from '@xchainjs/xchain-util'
 
 const DELIMITER = ':'
 
@@ -71,6 +71,34 @@ export const getWithdrawMemo = ({
 }
 
 /**
+ * Get swap memo used for calculating fees
+ * @param param0
+ * @returns
+ */
+export const getSwapMemo = ({
+  targetAsset,
+  targetAddress,
+  toleranceBps,
+  streamingInterval,
+  streamingQuantity,
+  affiliateName,
+  affiliateBps
+}: {
+  targetAsset: Asset
+  targetAddress: Address
+  toleranceBps: number | undefined
+  streamingInterval: number
+  streamingQuantity: number
+  affiliateName: string
+  affiliateBps: number
+}) => {
+  const target = assetToMemoString(targetAsset)
+  const streaming = `0/${streamingInterval}/${streamingQuantity}`
+  const memo = '='
+  return mkMemo([memo, target, targetAddress, toleranceBps, streaming, affiliateName, affiliateBps])
+}
+
+/**
  * Memo to leave
  *
  * @param thorAddress THOR address to leave from
@@ -97,3 +125,33 @@ export const getDepositMemo = ({
   address?: string
   short?: boolean
 }) => mkMemo([`${short ? '+' : 'ADD'}`, assetToMemoString(asset), address || null])
+
+export type AssetCodes = {
+  [key: string]: string
+}
+
+const assetCodes: AssetCodes = {
+  'THOR.RUNE': 'r',
+  'BTC.BTC': 'b',
+  'ETH.ETH': 'e',
+  'GAIA.ATOM': 'g',
+  'DOGE.DOGE': 'd',
+  'LTC.LTC': 'l',
+  'BCH.BCH': 'c',
+  'AVAX.AVAX': 'a',
+  'BSC.BNB': 's'
+}
+
+export const shortenMemo = (input: string): string => {
+  // Extract the asset identifier from the input string
+  const assetPattern = /:([^:]+):/
+  const match = assetPattern.exec(input)
+
+  if (match && match[1] && assetCodes[match[1]]) {
+    // Replace the full asset name with its corresponding short code
+    return input.replace(match[1], assetCodes[match[1]])
+  }
+
+  // Return the input as is if no matching asset code is found
+  return input
+}

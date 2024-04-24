@@ -1,9 +1,11 @@
 import EthApp from '@ledgerhq/hw-app-eth'
 import type Transport from '@ledgerhq/hw-transport'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
+import { ClientLedger } from '@xchainjs/xchain-evm'
 import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
+import { defaultArbParams } from '../../../../shared/arb/const'
 import { getDerivationPath } from '../../../../shared/evm/ledger'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
@@ -19,9 +21,8 @@ export const getAddress = async ({
   evmHdMode: EvmHDMode
 }): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
-    const app = new EthApp(transport)
-    const path = getDerivationPath(walletIndex, evmHdMode)
-    const { address } = await app.getAddress(path)
+    const clientLedger = new ClientLedger({ transport, ...defaultArbParams })
+    const address = await clientLedger.getAddressAsync(walletIndex)
 
     if (address) {
       return E.right({ address, chain: ARBChain, type: 'ledger', walletIndex, hdMode: evmHdMode })

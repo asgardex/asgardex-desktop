@@ -1,4 +1,3 @@
-import EthApp from '@ledgerhq/hw-app-eth'
 import type Transport from '@ledgerhq/hw-transport'
 import { FeeOption, Network, Protocol, TxHash } from '@xchainjs/xchain-client'
 import * as ETH from '@xchainjs/xchain-evm'
@@ -8,14 +7,13 @@ import * as E from 'fp-ts/Either'
 
 import { isEthAsset } from '../../../../renderer/helpers/assetHelper'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
-import { DEPOSIT_EXPIRATION_OFFSET, ETHAddress, FEE_BOUNDS, defaultEthParams } from '../../../../shared/ethereum/const'
+import { DEPOSIT_EXPIRATION_OFFSET, ETHAddress, defaultEthParams } from '../../../../shared/ethereum/const'
 import { ROUTER_ABI } from '../../../../shared/evm/abi'
 import { getDerivationPath } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
-import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
-import { LedgerSigner } from './LedgerSigner'
+import { LedgerSigner } from '../evm/LedgerSigner'
 /**
  * Sends ETH tx using Ledger
  */
@@ -27,8 +25,7 @@ export const send = async ({
   memo,
   recipient,
   feeOption,
-  walletIndex,
-  evmHDMode
+  walletIndex
 }: {
   asset: Asset
   transport: Transport
@@ -41,23 +38,8 @@ export const send = async ({
   evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const clientNetwork = toClientNetwork(network)
-
-    const client = new ETH.Client({ ...defaultEthParams, network: clientNetwork, feeBounds: FEE_BOUNDS[clientNetwork] })
-
-    const app = new EthApp(transport)
-    const path = getDerivationPath(walletIndex, evmHDMode)
-    const provider = client.getProvider()
-    const signer = new LedgerSigner({ provider, path, app })
-
-    const txHash = await client.transfer({
-      signer,
-      asset,
-      memo,
-      amount,
-      recipient,
-      feeOption
-    })
+    const ledgerClient = new ETH.ClientLedger({ transport, ...defaultEthParams, network: network })
+    const txHash = await ledgerClient.transfer({ walletIndex, asset, recipient, amount, memo, feeOption })
 
     if (!txHash) {
       return E.left({
@@ -113,29 +95,27 @@ export const deposit = async ({
 
     const isETHAddress = address === ETHAddress
 
-    const clientNetwork = toClientNetwork(network)
+    const ledgerClient = new ETH.ClientLedger({ transport, ...defaultEthParams, network: network })
 
-    const client = new ETH.Client({ ...defaultEthParams, network: clientNetwork, feeBounds: FEE_BOUNDS[clientNetwork] })
-
-    const app = new EthApp(transport)
-    const path = getDerivationPath(walletIndex, evmHDMode)
-    const provider = client.getProvider()
-    const signer = new LedgerSigner({ provider, path, app })
-
-    const gasPrices = await client.estimateGasPrices(Protocol.THORCHAIN) // fetch gas prices from thorchain
+    const provider = ledgerClient.getProvider()
+    const gasPrices = await ledgerClient.estimateGasPrices(Protocol.THORCHAIN) // fetch gas prices from thorchain
     const gasPrice = gasPrices[feeOption].amount().toFixed(0) // no round down needed
     const blockTime = await getBlocktime(provider)
     const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
 
+    const app = await ledgerClient.getApp()
+    const path = getDerivationPath(walletIndex, evmHDMode)
+    const signer = new LedgerSigner({ provider, path, app })
     // Note: `client.call` handling very - similar to `runSendPoolTx$` in `src/renderer/services/ethereum/transaction.ts`
     // Call deposit function of Router contract
     // Note2: Amounts need to use `toFixed` to convert `BaseAmount` to `Bignumber`
     // since `value` and `gasPrice` type is `Bignumber`
-    const { hash } = await client.call<{ hash: TxHash }>({
+    const { hash } = await ledgerClient.call<{ hash: TxHash }>({
       signer,
       contractAddress: router,
       abi: ROUTER_ABI,
       funcName: 'depositWithExpiry',
+      walletIndex: walletIndex,
       funcParams: [
         recipient,
         address,

@@ -83,39 +83,8 @@ export const createInteractService$ =
       })
     )
 
-    // We do need to fake progress in last step
-    // Note: `requests$` has to be added to subscribe it once (it won't do anything otherwise)
-    return Rx.combineLatest([getState$, requests$]).pipe(
-      RxOp.switchMap(([state]) =>
-        FP.pipe(
-          state.txRD,
-          RD.fold(
-            // ignore initial state + return same state (no changes)
-            () => Rx.of(state),
-            // For `pending` we fake progress state in last third
-            (oProgress) =>
-              FP.pipe(
-                // Just a timer used to update loaded state (in pending state only)
-                Rx.interval(1500),
-                RxOp.map(() =>
-                  FP.pipe(
-                    oProgress,
-                    O.map(({ loaded }): InteractState => {
-                      // From 66 to 97 we count progress with small steps, but stop it at 98
-                      const updatedLoaded = loaded >= 66 && loaded <= 97 ? ++loaded : loaded
-                      return { ...state, txRD: RD.progress({ loaded: updatedLoaded, total }) }
-                    }),
-                    O.getOrElse(() => state)
-                  )
-                )
-              ),
-            // ignore `failure` state + return same state (no changes)
-            () => Rx.of(state),
-            // ignore `success` state + return same state (no changes)
-            () => Rx.of(state)
-          )
-        )
-      ),
-      RxOp.startWith({ ...getState() })
+    return FP.pipe(
+      Rx.combineLatest([getState$, requests$]),
+      RxOp.switchMap(() => Rx.of(getState()))
     )
   }

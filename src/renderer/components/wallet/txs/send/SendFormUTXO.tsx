@@ -144,7 +144,6 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     if (checkMemo(memoValue)) {
       memoValue = memoCorrection(memoValue)
       setSwapMemoDetected(true)
-
       // Set affiliate tracking message
       setAffiliateTracking(intl.formatMessage({ id: 'wallet.send.affiliateTracking' }))
     } else {
@@ -305,6 +304,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
       }
       if (InboundAddress === value) {
         const type = 'Inbound'
+        // setRemoveMemoField(true)
         setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
       }
     },
@@ -666,7 +666,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
             {renderFeeError}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
             <Form.Item name="memo">
-              <Styled.Input size="large" disabled={isLoading} onChange={handleMemo} />
+              <Styled.Input size="large" disabled={isLoading} onBlur={handleMemo} />
             </Form.Item>
             {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
             <Form.Item name="feeRate">{renderFeeOptions}</Form.Item>

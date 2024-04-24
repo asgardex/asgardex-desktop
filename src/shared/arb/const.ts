@@ -2,7 +2,7 @@ import {
   ARBChain,
   ARB_DECIMAL,
   ARB_GAS_ASSET_DECIMAL,
-  AssetARB,
+  AssetAETH,
   LOWER_FEE_BOUND,
   UPPER_FEE_BOUND
 } from '@xchainjs/xchain-arbitrum'
@@ -43,7 +43,7 @@ const ARB_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
   'https://api-sepolia.arbiscan.io',
   envOrDefault(process.env.REACT_APP_ARBISCAN_API_KEY, ''),
   ARBChain,
-  AssetARB,
+  AssetAETH,
   ARB_DECIMAL
 )
 const ARB_ONLINE_PROVIDER_MAINNET = new EtherscanProvider(
@@ -51,7 +51,7 @@ const ARB_ONLINE_PROVIDER_MAINNET = new EtherscanProvider(
   'https://api.arbiscan.io',
   envOrDefault(process.env.REACT_APP_ARBISCAN_API_KEY, ''),
   ARBChain,
-  AssetARB,
+  AssetAETH,
   ARB_DECIMAL
 )
 const arbProviders = {
@@ -63,7 +63,7 @@ const ROUTESCAN_PROVIDER_MAINNET = new RoutescanProvider(
   ARBITRUM_MAINNET_ETHERS_PROVIDER,
   'https://api.routescan.io',
   43114,
-  AssetARB,
+  AssetAETH,
   ARB_DECIMAL
 )
 
@@ -71,7 +71,7 @@ const ROUTESCAN_PROVIDER_TESTNET = new RoutescanProvider(
   ARBITRUM_TESTNET_ETHERS_PROVIDER,
   'https://api.routescan.io',
   42161,
-  AssetARB,
+  AssetAETH,
   ARB_DECIMAL,
   true
 )
@@ -129,7 +129,7 @@ const defaults = {
 }
 export const defaultArbParams: EVMClientParams = {
   chain: ARBChain,
-  gasAsset: AssetARB,
+  gasAsset: AssetAETH,
   gasAssetDecimals: ARB_GAS_ASSET_DECIMAL,
   defaults,
   providers: ethersJSProviders,

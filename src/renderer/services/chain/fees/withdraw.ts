@@ -67,10 +67,10 @@ const symWithdrawFee$: SymWithdrawFeesHandler = (initialAsset, dex) =>
         oAsset,
         O.getOrElse(() => initialAsset)
       )
-
+      //tobefixed
       return FP.pipe(
         liveData.sequenceS({
-          runeInFee: poolInboundFee$(dex === 'THOR' ? AssetRuneNative : AssetCacao),
+          runeInFee: poolInboundFee$(dex === 'THOR' ? AssetRuneNative : AssetCacao, ''),
           runeOutFee: poolOutboundFee$(dex === 'THOR' ? AssetRuneNative : AssetCacao),
           assetOutFee: poolOutboundFee$(asset)
         }),

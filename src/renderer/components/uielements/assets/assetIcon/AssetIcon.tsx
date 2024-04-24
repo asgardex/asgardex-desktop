@@ -45,7 +45,8 @@ import {
   isUskAsset,
   isUskSynthAsset,
   isDashSynthAsset,
-  iconUrlInARBERC20Whitelist
+  iconUrlInARBERC20Whitelist,
+  isAethAsset
 } from '../../../../helpers/assetHelper'
 import {
   isArbChain,
@@ -109,8 +110,8 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     if (isBtcAsset(asset) || isBtcAssetSynth(asset)) {
       return btcIcon
     }
-    // ETH
-    if (isEthAsset(asset)) {
+    // ETH || AETH
+    if (isEthAsset(asset) || isAethAsset(asset)) {
       return ethIcon
     }
     // ETH synth
@@ -200,13 +201,11 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
       // Since we've already checked ARB.ETH before,
       // we know any asset is ERC20 here - no need to run expensive `isArbTokenAsset`
       if (isArbChain(asset.chain)) {
-        return asset.ticker === 'ARB'
-          ? arbIcon
-          : FP.pipe(
-              // Try to get url from ERC20Whitelist first
-              iconUrlInARBERC20Whitelist(asset),
-              O.getOrElse(() => '')
-            )
+        return FP.pipe(
+          // Try to get url from ERC20Whitelist first
+          iconUrlInARBERC20Whitelist(asset),
+          O.getOrElse(() => '')
+        )
       }
       // Since we've already checked AVAX.AVAX before,
       // we know any asset is ERC20 here - no need to run expensive `isAvaxTokenAsset`
@@ -243,11 +242,12 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
   const renderIcon = useCallback(
     (src: string) => {
       const overlayIconSrc = chainIconMap(asset)
-
       return (
         <Styled.IconWrapper size={size} isSynth={isSynth} className={className}>
           <Styled.Icon src={src} isSynth={isSynth} size={size} />
-          {overlayIconSrc && asset.chain !== asset.symbol && <Styled.OverlayIcon src={overlayIconSrc} size={size} />}
+          {overlayIconSrc && !asset.symbol.includes(asset.chain) && (
+            <Styled.OverlayIcon src={overlayIconSrc} size={size} />
+          )}
         </Styled.IconWrapper>
       )
     },

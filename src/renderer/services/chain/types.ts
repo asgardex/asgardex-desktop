@@ -203,6 +203,7 @@ export type SwapFeesLD = LiveData<Error, SwapFees>
 
 export type SwapFeesParams = {
   readonly inAsset: Asset
+  readonly memo: string
   readonly outAsset: Asset
 }
 

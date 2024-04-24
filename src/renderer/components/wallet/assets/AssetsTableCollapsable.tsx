@@ -32,6 +32,8 @@ import { chainToString, isChainOfMaya } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
 import {
+  isAethAsset,
+  isArbAsset,
   isCacaoAsset,
   isDashAsset,
   isKujiAsset,
@@ -219,13 +221,20 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
         if (isUSDAsset(asset)) {
           price = balance.toString()
-        } else if (isCacaoAsset(asset) || isDashAsset(asset) || isKujiAsset(asset)) {
+        } else if (
+          isCacaoAsset(asset) ||
+          isDashAsset(asset) ||
+          isKujiAsset(asset) ||
+          isAethAsset(asset) ||
+          isArbAsset(asset)
+        ) {
           // First try to get the price from poolDetails
           const priceOptionFromPoolDetails = getPoolPriceValueM({
             balance: { asset, amount },
             poolDetails: poolDetailsMaya,
             pricePool: mayaPricePool
           })
+
           if (O.isSome(priceOptionFromPoolDetails)) {
             price = formatAssetAmountCurrency({
               amount: baseToAsset(priceOptionFromPoolDetails.value),

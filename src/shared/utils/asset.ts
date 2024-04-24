@@ -10,13 +10,7 @@ import { AssetETH } from '@xchainjs/xchain-ethereum'
 import { AssetKUJI } from '@xchainjs/xchain-kujira'
 import { AssetLTC } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, AssetMaya } from '@xchainjs/xchain-mayachain'
-import {
-  AssetRune67C,
-  AssetRuneB1A,
-  AssetRuneNative,
-  AssetRuneERC20,
-  AssetRuneERC20Testnet
-} from '@xchainjs/xchain-thorchain'
+import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { assetFromStringEx } from '@xchainjs/xchain-util'
 
 const AssetSynthBtc = assetFromStringEx('BTC/BTC')
@@ -65,11 +59,7 @@ export {
   AssetARB,
   AssetAVAX,
   AssetETH,
-  AssetRune67C,
-  AssetRuneB1A,
   AssetRuneNative,
-  AssetRuneERC20,
-  AssetRuneERC20Testnet,
   AssetSynthEthUsdt,
   AssetKUJI,
   AssetSynthUsk,

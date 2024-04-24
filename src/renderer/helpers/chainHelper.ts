@@ -1,4 +1,4 @@
-import { ARBChain, AssetARB } from '@xchainjs/xchain-arbitrum'
+import { ARBChain, AssetAETH } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
 import { AssetBNB, BNBChain } from '@xchainjs/xchain-binance'
 import { AssetBTC, BTCChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDBTC } from '@xchainjs/xchain-bitcoin'
@@ -48,7 +48,7 @@ export const getChainAsset = (chain: Chain): Asset => {
     case KUJIChain:
       return AssetKUJI
     case ARBChain:
-      return AssetARB
+      return AssetAETH
   }
 }
 // TODO (@veado) Return Maybe<Asset> instead of throwing an error

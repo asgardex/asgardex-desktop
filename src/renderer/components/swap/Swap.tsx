@@ -8,6 +8,7 @@ import {
   MagnifyingGlassMinusIcon,
   MagnifyingGlassPlusIcon
 } from '@heroicons/react/24/outline'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -73,7 +74,10 @@ import {
   getBscTokenAddress,
   isAvaxAsset,
   isBscAsset,
-  max1e10BaseAmount
+  max1e10BaseAmount,
+  getArbTokenAddress,
+  isArbAsset,
+  isArbTokenAsset
 } from '../../helpers/assetHelper'
 import {
   getChainAsset,
@@ -88,6 +92,7 @@ import {
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqOApproveParams, eqAddress } from '../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
+import { getSwapMemo, shortenMemo } from '../../helpers/memoHelper'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../helpers/poolHelperMaya'
 import { liveData, LiveData } from '../../helpers/rx/liveData'
@@ -267,6 +272,7 @@ export const Swap = ({
   const lockedWallet: boolean = useMemo(() => isLocked(keystore) || !hasImportedKeystore(keystore), [keystore])
 
   const useSourceAssetLedger = isLedgerWallet(initialSourceWalletType)
+  const prevChainFees = useRef<O.Option<SwapFees>>(O.none)
 
   const oSourceWalletAddress = useSourceAssetLedger ? oSourceLedgerAddress : oInitialSourceKeystoreAddress
 
@@ -427,6 +433,10 @@ export const Swap = ({
     _setAmountToSwapMax1e8 /* private - never set it directly, use setAmountToSwapMax1e8() instead */
   ] = useState(initialAmountToSwapMax1e8)
 
+  const [lockedAssetAmount, setLockedAssetAmount] = useState<CryptoAmount>(
+    new CryptoAmount(baseAmount(0, sourceAssetDecimal), sourceAsset)
+  )
+
   const priceAmountToSwapMax1e8: CryptoAmount = useMemo(() => {
     const result =
       dex === 'THOR'
@@ -477,13 +487,30 @@ export const Swap = ({
       return getZeroSwapFees({ inAsset: sourceAsset, outAsset: targetAsset })
     }
   }, [inboundDetails, sourceAsset, targetAsset])
-
-  const prevChainFees = useRef<O.Option<SwapFees>>(O.none)
+  // PlaceHolder memo just to calc fees better
+  const swapMemo = useMemo(() => {
+    return O.fold(
+      () => '',
+      (recipientAddress: string) => {
+        const toleranceBps = undefined
+        return getSwapMemo({
+          targetAsset,
+          targetAddress: recipientAddress,
+          toleranceBps,
+          streamingInterval,
+          streamingQuantity,
+          affiliateName: ASGARDEX_THORNAME,
+          affiliateBps: ASGARDEX_AFFILIATE_FEE
+        })
+      }
+    )(oRecipientAddress)
+  }, [oRecipientAddress, targetAsset, streamingInterval, streamingQuantity])
 
   const [swapFeesRD] = useObservableState<SwapFeesRD>(() => {
     return FP.pipe(
       fees$({
         inAsset: sourceAsset,
+        memo: swapMemo,
         outAsset: targetAsset
       }),
       liveData.map((chainFees) => {
@@ -503,6 +530,42 @@ export const Swap = ({
       ),
     [swapFeesRD, zeroSwapFees]
   )
+
+  // Max amount to swap == users balances of source asset
+  // Decimal always <= 1e8 based
+  const maxAmountToSwapMax1e8: BaseAmount = useMemo(() => {
+    if (lockedWallet) {
+      return lockedAssetAmount.baseAmount
+    }
+
+    return Utils.maxAmountToSwapMax1e8({
+      asset: sourceAsset,
+      balanceAmountMax1e8: sourceAssetAmountMax1e8,
+      feeAmount: swapFees.inFee.amount
+    })
+  }, [lockedAssetAmount.baseAmount, lockedWallet, sourceAsset, sourceAssetAmountMax1e8, swapFees.inFee.amount])
+
+  const setAmountToSwapMax1e8 = useCallback(
+    (amountToSwap: BaseAmount) => {
+      const newAmount = baseAmount(amountToSwap.amount(), sourceAssetAmountMax1e8.decimal)
+
+      // dirty check - do nothing if prev. and next amounts are equal
+      if (eqBaseAmount.equals(newAmount, amountToSwapMax1e8)) return {}
+
+      const newAmountToSwap = newAmount.gt(maxAmountToSwapMax1e8) ? maxAmountToSwapMax1e8 : newAmount
+      /**
+       * New object instance of `amountToSwap` is needed to make
+       * AssetInput component react to the new value.
+       * In case maxAmount has the same pointer
+       * AssetInput will not be updated as a React-component
+       * but native input element will change its
+       * inner value and user will see inappropriate value
+       */
+      _setAmountToSwapMax1e8({ ...newAmountToSwap })
+    },
+    [amountToSwapMax1e8, maxAmountToSwapMax1e8, sourceAssetAmountMax1e8]
+  )
+
   // Price of swap IN fee
   const oPriceSwapInFee: O.Option<CryptoAmount> = useMemo(() => {
     const assetAmount = new CryptoAmount(swapFees.inFee.amount, swapFees.inFee.asset)
@@ -1052,6 +1115,39 @@ export const Swap = ({
       ),
     [oQuote]
   )
+  // Memo
+  // const quoteMemo: string = useMemo(
+  //   () =>
+  //     FP.pipe(
+  //       sequenceTOption(oQuote),
+  //       O.fold(
+  //         () => '',
+  //         ([txDetails]) => txDetails.memo
+  //       )
+  //     ),
+  //   [oQuote]
+  // )
+
+  // Quote Errors
+  const quoteErrors: string[] = useMemo(
+    () =>
+      dex === 'THOR'
+        ? FP.pipe(
+            sequenceTOption(oQuote),
+            O.fold(
+              () => [],
+              ([txDetails]) => txDetails.txEstimate.errors
+            )
+          )
+        : FP.pipe(
+            sequenceTOption(oQuoteMaya),
+            O.fold(
+              () => [],
+              ([txDetails]) => txDetails.errors
+            )
+          ),
+    [dex, oQuote, oQuoteMaya]
+  )
 
   /**
    * Price of swap result in max 1e8 // boolean to convert between streaming and regular swaps
@@ -1168,7 +1264,7 @@ export const Swap = ({
             poolAddress,
             asset: sourceAsset,
             amount: convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal),
-            memo: txDetails.memo, // The memo will be different based on the selected quote
+            memo: shortenMemo(txDetails.memo), // short asset
             walletType,
             sender: walletAddress,
             walletIndex,
@@ -1238,8 +1334,6 @@ export const Swap = ({
   }, [rateDirection, sourceAsset, sourceAssetPrice, targetAsset, targetAssetPrice])
 
   const needApprovement: O.Option<boolean> = useMemo(() => {
-    // not needed for users with locked or not imported wallets
-    if (!hasImportedKeystore(keystore) || isLocked(keystore)) return O.some(false)
     // ERC20 token does need approval only
     switch (sourceChain) {
       case ETHChain:
@@ -1248,17 +1342,18 @@ export const Swap = ({
         return isAvaxAsset(sourceAsset) ? O.some(false) : O.some(isAvaxTokenAsset(sourceAsset))
       case BSCChain:
         return isBscAsset(sourceAsset) ? O.some(false) : O.some(isBscTokenAsset(sourceAsset))
+      case ARBChain:
+        return isArbAsset(sourceAsset) ? O.some(false) : O.some(isArbTokenAsset(sourceAsset))
       default:
         return O.none
     }
-  }, [keystore, sourceAsset, sourceChain])
+  }, [sourceAsset, sourceChain])
 
   const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
     const oRouterAddress: O.Option<Address> = FP.pipe(
       oPoolAddress,
       O.chain(({ router }) => router)
     )
-    //tobeFixed
     const oTokenAddress: O.Option<string> = (() => {
       switch (sourceChain) {
         case ETHChain:
@@ -1267,6 +1362,8 @@ export const Swap = ({
           return getAvaxTokenAddress(sourceAsset)
         case BSCChain:
           return getBscTokenAddress(sourceAsset)
+        case ARBChain:
+          return getArbTokenAddress(sourceAsset)
         default:
           return O.none
       }
@@ -1295,9 +1392,10 @@ export const Swap = ({
   const reloadFeesHandler = useCallback(() => {
     reloadFees({
       inAsset: sourceAsset,
+      memo: swapMemo,
       outAsset: targetAsset
     })
-  }, [reloadFees, sourceAsset, targetAsset])
+  }, [reloadFees, sourceAsset, swapMemo, targetAsset])
 
   const prevApproveFee = useRef<O.Option<BaseAmount>>(O.none)
 
@@ -1359,13 +1457,14 @@ export const Swap = ({
       O.filter((params) => !eqOApproveParams.equals(O.some(params), prevApproveParams.current)),
       // update ref
       O.map((params) => {
-        prevApproveParams.current = O.some(params)
-        return params
-      }),
-      // Trigger update for `approveFeesRD` + `checkApprove`
-      O.map((params) => {
-        approveFeeParamsUpdated(params)
-        checkApprovedStatus(params)
+        prevApproveParams.current = O.some(params) // Update reference to current params
+
+        // Using setTimeout to delay the execution of subsequent actions
+        setTimeout(() => {
+          approveFeeParamsUpdated(params)
+          checkApprovedStatus(params)
+        }, 100) // Delay of 100 milliseconds
+
         return true
       })
     )
@@ -1382,7 +1481,9 @@ export const Swap = ({
     async (asset: Asset) => {
       // delay to avoid render issues while switching
       await delay(100)
-
+      setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
+      setQuote(O.none)
+      setQuoteMaya(O.none)
       onChangeAsset({
         source: asset,
         // back to default 'keystore' type
@@ -1392,7 +1493,7 @@ export const Swap = ({
         recipientAddress: oRecipientAddress
       })
     },
-    [oRecipientAddress, oTargetWalletType, onChangeAsset, targetAsset]
+    [initialAmountToSwapMax1e8, oRecipientAddress, oTargetWalletType, onChangeAsset, setAmountToSwapMax1e8, targetAsset]
   )
 
   const setTargetAsset = useCallback(
@@ -1442,10 +1543,6 @@ export const Swap = ({
     [intl, minAmountError, sourceAsset, reccommendedAmountIn]
   )
 
-  const [lockedAssetAmount, setLockedAssetAmount] = useState<CryptoAmount>(
-    new CryptoAmount(baseAmount(0, sourceAssetDecimal), sourceAsset)
-  )
-
   useEffect(() => {
     if (lockedWallet) {
       const fetchData = async () => {
@@ -1455,40 +1552,6 @@ export const Swap = ({
       fetchData()
     }
   }, [lockedWallet, sourceAsset, thorchainQuery])
-
-  // Max amount to swap == users balances of source asset
-  // Decimal always <= 1e8 based
-  const maxAmountToSwapMax1e8: BaseAmount = useMemo(() => {
-    if (lockedWallet) {
-      return lockedAssetAmount.baseAmount
-    }
-
-    return Utils.maxAmountToSwapMax1e8({
-      asset: sourceAsset,
-      balanceAmountMax1e8: sourceAssetAmountMax1e8,
-      feeAmount: swapFees.inFee.amount
-    })
-  }, [lockedAssetAmount.baseAmount, lockedWallet, sourceAsset, sourceAssetAmountMax1e8, swapFees.inFee.amount])
-  const setAmountToSwapMax1e8 = useCallback(
-    (amountToSwap: BaseAmount) => {
-      const newAmount = baseAmount(amountToSwap.amount(), sourceAssetAmountMax1e8.decimal)
-
-      // dirty check - do nothing if prev. and next amounts are equal
-      if (eqBaseAmount.equals(newAmount, amountToSwapMax1e8)) return {}
-
-      const newAmountToSwap = newAmount.gt(maxAmountToSwapMax1e8) ? maxAmountToSwapMax1e8 : newAmount
-      /**
-       * New object instance of `amountToSwap` is needed to make
-       * AssetInput component react to the new value.
-       * In case maxAmount has the same pointer
-       * AssetInput will not be updated as a React-component
-       * but native input element will change its
-       * inner value and user will see inappropriate value
-       */
-      _setAmountToSwapMax1e8({ ...newAmountToSwap })
-    },
-    [amountToSwapMax1e8, maxAmountToSwapMax1e8, sourceAssetAmountMax1e8]
-  )
 
   const priceAmountMax1e8: CryptoAmount = useMemo(() => {
     const result =
@@ -1843,6 +1906,7 @@ export const Swap = ({
     setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
     setQuoteExpired(true)
     setQuote(O.none)
+    setQuoteMaya(O.none)
   }, [resetSwapState, reloadBalances, setAmountToSwapMax1e8, initialAmountToSwapMax1e8])
 
   const renderTxModal = useMemo(() => {
@@ -2025,22 +2089,14 @@ export const Swap = ({
   }, [isZeroAmountToSwap, minAmountError, swapFees, sourceChainAssetAmount])
 
   const quoteError: JSX.Element = useMemo(() => {
-    if (
-      !O.isSome(oQuote) ||
-      !oQuote.value.txEstimate ||
-      !oQuote.value.txEstimate.errors ||
-      oQuote.value.txEstimate.errors.length === 0
-    ) {
-      return <></>
-    }
-    if (!O.isSome(oQuoteMaya) || !oQuoteMaya.value.errors || oQuoteMaya.value.errors.length === 0) {
+    if (quoteErrors.length === 0) {
       return <></>
     }
 
-    const error = dex === 'THOR' ? oQuote.value.txEstimate.errors[0].split(':') : oQuoteMaya.value.errors[0].split(':')
-
-    if (!isLocked && error[2].includes('pool') && error[2].includes('not available')) {
-      return <ErrorLabel>{intl.formatMessage({ id: 'swap.errors.pool.notAvailable' }, { pool: error[2] })}</ErrorLabel>
+    const error = quoteErrors[0].split(':')
+    const assetPart = error[2].split('(')[1]?.split(')')[0]
+    if (!lockedWallet && assetPart === `${targetAsset.chain}.${targetAsset.symbol}`) {
+      return <ErrorLabel>{intl.formatMessage({ id: 'swap.errors.pool.notAvailable' }, { pool: assetPart })}</ErrorLabel>
     }
 
     // Extract numerical value from error string
@@ -2062,7 +2118,7 @@ export const Swap = ({
           : intl.formatMessage({ id: 'swap.errors.amount.thornodeQuoteError' }, { error: error[1] })}
       </ErrorLabel>
     )
-  }, [oQuote, oQuoteMaya, dex, sourceAssetDecimal, sourceAsset, intl])
+  }, [quoteErrors, lockedWallet, targetAsset.chain, targetAsset.symbol, sourceAssetDecimal, sourceAsset, intl])
 
   const sourceChainFeeErrorLabel: JSX.Element = useMemo(() => {
     if (!sourceChainFeeError) {
@@ -2764,7 +2820,7 @@ export const Swap = ({
                     {O.isSome(needApprovement) && (
                       <div className="flex w-full justify-between pl-10px text-[12px]">
                         <div>{intl.formatMessage({ id: 'common.approve' })}</div>
-                        <div>{priceApproveFeeLabel}</div>s
+                        <div>{priceApproveFeeLabel}</div>
                       </div>
                     )}
                     <div className="flex w-full justify-between pl-10px text-[12px]">

@@ -5,7 +5,6 @@ import { getPrefix, THORChain } from '@xchainjs/xchain-thorchain'
 import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
-import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
 import { VerifyAddressHandler } from '../types'
@@ -18,8 +17,7 @@ export const getAddress = async (
 ): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
     const app = new THORChainApp(transport)
-    const clientNetwork = toClientNetwork(network)
-    const prefix = getPrefix(clientNetwork)
+    const prefix = getPrefix(network)
     const path = getDerivationPath(walletIndex)
     const { bech32Address, returnCode } = await app.getAddressAndPubKey(path, prefix)
     if (!bech32Address || returnCode !== LedgerErrorType.NoErrors) {
@@ -39,8 +37,7 @@ export const getAddress = async (
 
 export const verifyAddress: VerifyAddressHandler = async ({ transport, network, walletIndex }) => {
   const app = new THORChainApp(transport)
-  const clientNetwork = toClientNetwork(network)
-  const prefix = getPrefix(clientNetwork)
+  const prefix = getPrefix(network)
   const path = getDerivationPath(walletIndex)
   const _ = await app.showAddressAndPubKey(path, prefix)
   return true

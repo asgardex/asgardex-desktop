@@ -1,10 +1,11 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Meta, StoryObj } from '@storybook/react'
 import { Network, TxHash } from '@xchainjs/xchain-client'
+import { AssetRuneNative } from '@xchainjs/xchain-thorchain-query'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
 
-import { AssetBNB, AssetRune67C } from '../../../../shared/utils/asset'
+import { AssetDOGE } from '../../../../shared/utils/asset'
 import { ZERO_BASE_AMOUNT } from '../../../const'
 import { mockWalletBalance } from '../../../helpers/test/testWalletHelper'
 import { changeDex } from '../../../services/app/service'
@@ -22,23 +23,23 @@ export default meta
 // Define other stories following the same pattern
 
 const bnbBalance: WalletBalance = mockWalletBalance({
-  asset: AssetBNB,
+  asset: AssetDOGE,
   amount: assetToBase(assetAmount(1.1)),
   walletAddress: 'BNB address'
 })
 
-const runeBnbBalance: WalletBalance = mockWalletBalance({
-  asset: AssetRune67C,
+const runeBalance: WalletBalance = mockWalletBalance({
+  asset: AssetRuneNative,
   amount: assetToBase(assetAmount(2.2)),
   walletAddress: 'BNB.Rune address'
 })
 
 const runeNativeBalance: WalletBalance = mockWalletBalance()
 
-const runeBalanceEmpty: WalletBalance = { ...runeBnbBalance, amount: ZERO_BASE_AMOUNT }
+const runeBalanceEmpty: WalletBalance = { ...runeBalance, amount: ZERO_BASE_AMOUNT }
 const bnbBalanceEmpty: WalletBalance = { ...bnbBalance, amount: ZERO_BASE_AMOUNT }
 const getBalances = (balances: WalletBalances) => NEA.fromArray<WalletBalance>(balances)
-const balances = getBalances([bnbBalance, runeBnbBalance, runeNativeBalance])
+const balances = getBalances([bnbBalance, runeBalance, runeNativeBalance])
 const openExplorerTxUrl: OpenExplorerTxUrl = (txHash: TxHash) => {
   console.log(`Open explorer - tx hash ${txHash}`)
   return Promise.resolve(true)
@@ -52,7 +53,7 @@ export const StoryBNB: StoryObj<AssetDetailsProps> = {
       walletAddress="bnb-address"
       txsPageRD={RD.initial}
       balances={balances}
-      asset={AssetBNB}
+      asset={AssetDOGE}
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}
@@ -70,7 +71,7 @@ export const StoryRuneTxSuccess: StoryObj<AssetDetailsProps> = {
       walletAddress="thor-address"
       txsPageRD={RD.initial}
       balances={balances}
-      asset={AssetRune67C}
+      asset={AssetRuneNative}
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}
@@ -89,7 +90,7 @@ export const StoryRuneNoSend: StoryObj<AssetDetailsProps> = {
       walletAddress="thor-address"
       txsPageRD={RD.initial}
       balances={balances}
-      asset={AssetRune67C}
+      asset={AssetRuneNative}
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={true}
@@ -108,7 +109,7 @@ export const StoryRuneTxError: StoryObj<AssetDetailsProps> = {
       walletAddress="bnb-address"
       txsPageRD={RD.initial}
       balances={balances}
-      asset={AssetRune67C}
+      asset={AssetRuneNative}
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}
@@ -127,7 +128,7 @@ export const StoryRuneNoBalances: StoryObj<AssetDetailsProps> = {
       walletAddress="bnb-address"
       txsPageRD={RD.initial}
       balances={getBalances([runeBalanceEmpty, bnbBalance])}
-      asset={AssetRune67C}
+      asset={AssetRuneNative}
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}
@@ -145,8 +146,8 @@ export const StoryRuneFeeNotCovered: StoryObj<AssetDetailsProps> = {
       walletType="keystore"
       walletAddress="bnb-address"
       txsPageRD={RD.initial}
-      balances={getBalances([runeBnbBalance, bnbBalanceEmpty])}
-      asset={AssetRune67C}
+      balances={getBalances([runeBalance, bnbBalanceEmpty])}
+      asset={AssetRuneNative}
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}

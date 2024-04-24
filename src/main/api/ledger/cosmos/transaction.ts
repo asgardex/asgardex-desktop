@@ -21,7 +21,6 @@ import sortKeys from 'sort-keys'
 import { getChainId } from '../../../../shared/api/cosmos'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { getClientUrls, INITIAL_CHAIN_IDS } from '../../../../shared/cosmos/client'
-import { toClientNetwork } from '../../../../shared/utils/client'
 import { isError } from '../../../../shared/utils/guard'
 import { getDerivationPath } from './common'
 
@@ -68,8 +67,6 @@ export const send = async ({
   walletIndex: number
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const clientNetwork = toClientNetwork(network)
-
     const denom = getDenom(asset)
 
     if (!denom)
@@ -80,7 +77,7 @@ export const send = async ({
     const fee = protoFee({ denom, amount: feeAmount, gasLimit })
 
     const clientUrls = getClientUrls()
-    const eChainId = await getChainId(clientUrls[clientNetwork])()
+    const eChainId = await getChainId(clientUrls[network])()
     const chainId = E.getOrElse(() => '')(eChainId)
 
     if (!chainId) {
@@ -94,7 +91,7 @@ export const send = async ({
     const senderAcc = cosmosclient.AccAddress.fromString(sender)
 
     const client = new Client({
-      network: clientNetwork,
+      network,
       clientUrls,
       chainIds: { ...INITIAL_CHAIN_IDS, [network]: chainId }
     })

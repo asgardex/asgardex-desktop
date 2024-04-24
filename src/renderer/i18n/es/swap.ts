@@ -29,7 +29,7 @@ const swap: SwapMessages = {
   'swap.note.nowallet': 'Crear o importar un monedero para intercambiar',
   'swap.errors.asset.missingSourceAsset': 'Falta el activo de origen',
   'swap.errors.asset.missingTargetAsset': 'Falta el activo de destino',
-  'swap.errors.pool.notAvailable': 'La fondo no está disponible',
+  'swap.errors.pool.notAvailable': 'La fondo no está disponible {pool}',
   'swap.min.amount.info':
     'Valor mínimo a intercambiar para cubrir todas las comisiones de las transacciones entrantes y salientes.',
   'swap.min.result.info':

@@ -1,5 +1,13 @@
 import { Network } from '@xchainjs/xchain-client'
+import { AssetDOGE, DOGEChain, defaultDogeParams } from '@xchainjs/xchain-doge'
+import {
+  BitgoProvider,
+  BlockcypherNetwork,
+  BlockcypherProvider,
+  UtxoOnlineDataProviders
+} from '@xchainjs/xchain-utxo-providers'
 
+import { blockcypherApiKey, blockcypherUrl } from '../../../../shared/api/blockcypher'
 import { LedgerErrorId } from '../../../../shared/api/types'
 
 // TODO(@veado) Extend`xchain-doge` to get derivation path from it
@@ -20,4 +28,60 @@ export const fromLedgerErrorType = (error: number): LedgerErrorId => {
     default:
       return LedgerErrorId.UNKNOWN
   }
+}
+
+const testnetBlockcypherProvider = new BlockcypherProvider(
+  blockcypherUrl,
+  DOGEChain,
+  AssetDOGE,
+  8,
+  BlockcypherNetwork.DOGE,
+  blockcypherApiKey || ''
+)
+const mainnetBlockcypherProvider = new BlockcypherProvider(
+  blockcypherUrl,
+  DOGEChain,
+  AssetDOGE,
+  8,
+  BlockcypherNetwork.DOGE,
+  blockcypherApiKey || ''
+)
+const BlockcypherDataProviders: UtxoOnlineDataProviders = {
+  [Network.Testnet]: testnetBlockcypherProvider,
+  [Network.Stagenet]: mainnetBlockcypherProvider,
+  [Network.Mainnet]: mainnetBlockcypherProvider
+}
+//======================
+// Bitgo
+//======================
+const mainnetBitgoProvider = new BitgoProvider({
+  baseUrl: 'https://app.bitgo.com',
+  chain: DOGEChain
+})
+
+const BitgoProviders: UtxoOnlineDataProviders = {
+  [Network.Testnet]: undefined,
+  [Network.Stagenet]: mainnetBitgoProvider,
+  [Network.Mainnet]: mainnetBitgoProvider
+}
+export const dogeInitParams = {
+  ...defaultDogeParams,
+  network: Network,
+  dataProviders: [BlockcypherDataProviders, BitgoProviders]
+}
+
+/**
+ *  Temp function to shorten memo currently doge doesn't like anything over 55 bytes..
+ * @param input - memo
+ * @returns - memo without the affiliate
+ */
+export const removeAffiliate = (input: string): string => {
+  const affiliate = ':dx:0'
+  // Check if the string ends with the specified affiliate
+  if (input.endsWith(affiliate)) {
+    // Remove the affiliate from the end of the string
+    return input.slice(0, input.length - affiliate.length)
+  }
+  // Return the original string if it does not end with the affiliate
+  return input
 }

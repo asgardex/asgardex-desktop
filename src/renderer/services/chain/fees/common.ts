@@ -61,7 +61,7 @@ export const poolOutboundFee$ = (asset: Asset): PoolFeeLD => {
 /**
  * Fees for pool inbound txs (swap/deposit/withdraw/earn)
  */
-export const poolInboundFee$ = (asset: Asset): PoolFeeLD => {
+export const poolInboundFee$ = (asset: Asset, memo: string): PoolFeeLD => {
   switch (asset.chain) {
     case BNBChain:
       return FP.pipe(
@@ -70,13 +70,13 @@ export const poolInboundFee$ = (asset: Asset): PoolFeeLD => {
       )
     case DOGEChain:
       return FP.pipe(
-        DOGE.fees$(),
-        liveData.map((fees) => ({ asset, amount: fees.fast }))
+        DOGE.feesWithRates$(memo),
+        liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
       )
     case LTCChain:
       return FP.pipe(
-        LTC.fees$(),
-        liveData.map((fees) => ({ asset, amount: fees.fast }))
+        LTC.feesWithRates$(memo),
+        liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
       )
     case GAIAChain:
       return FP.pipe(
@@ -85,13 +85,13 @@ export const poolInboundFee$ = (asset: Asset): PoolFeeLD => {
       )
     case BTCChain:
       return FP.pipe(
-        BTC.fees$(),
-        liveData.map((fees) => ({ asset, amount: fees.fast }))
+        BTC.feesWithRates$(memo),
+        liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
       )
     case BCHChain:
       return FP.pipe(
-        BCH.fees$(),
-        liveData.map((fees) => ({ asset, amount: fees.fast }))
+        BCH.feesWithRates$(memo),
+        liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
       )
     case THORChain:
       return FP.pipe(
@@ -110,8 +110,8 @@ export const poolInboundFee$ = (asset: Asset): PoolFeeLD => {
       )
     case DASHChain:
       return FP.pipe(
-        DASH.fees$(),
-        liveData.map((fees) => ({ asset, amount: fees.fast }))
+        DASH.feesWithRates$(memo),
+        liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
       )
     default:
       return FP.pipe(

@@ -31,7 +31,7 @@ const clientState$: ClientState$ = FP.pipe(
           getPhrase(keystore),
           O.map<string, ClientState>((phrase) => {
             try {
-              const client = new ETH.Client({
+              const client = new ETH.ClientKeystore({
                 ...defaultEthParams,
                 network: network,
                 phrase: phrase,
@@ -67,38 +67,5 @@ const addressUI$: WalletAddress$ = C.addressUI$(client$, ETHChain)
  * Explorer url depending on selected network
  */
 const explorerUrl$: ExplorerUrl$ = C.explorerUrl$(client$)
-
-// /**
-//  * Map to store decimal in memory
-//  *
-//  * to avoid unessary request for same data
-//  * */
-// // const decimalMap: Map<string, number> = new Map()
-// // /**
-//  * Helper to get decimals for ERC20
-//  */
-// const getERC20Decimal = async (asset: Asset, network: Network): Promise<number> => {
-//   const assetString = assetToString(asset)
-//   return FP.pipe(
-//     decimalMap.get(assetString),
-//     O.fromNullable,
-//     O.fold(
-//       async () => {
-//         // https://docs.ethers.io/v5/api/providers/api-providers/#EtherscanProvider
-//         const ethNetwork = network === 'testnet' ? 'ropsten' : 'homestead'
-//         const provider = new EtherscanProvider(ethNetwork, getEtherscanApiKey())
-//         try {
-//           const decimal = await ETH.(asset, provider)
-//           // store result in memory
-//           decimalMap.set(assetString, decimal)
-//           return Promise.resolve(decimal)
-//         } catch (e) {
-//           return Promise.reject(e)
-//         }
-//       },
-//       async (decimal) => Promise.resolve(decimal)
-//     )
-//   )
-// }
 
 export { client$, clientState$, address$, addressUI$, explorerUrl$ }
