@@ -1482,6 +1482,8 @@ export const Swap = ({
       // delay to avoid render issues while switching
       await delay(100)
       setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
+      setQuote(O.none)
+      setQuoteMaya(O.none)
       onChangeAsset({
         source: asset,
         // back to default 'keystore' type
@@ -1904,6 +1906,7 @@ export const Swap = ({
     setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
     setQuoteExpired(true)
     setQuote(O.none)
+    setQuoteMaya(O.none)
   }, [resetSwapState, reloadBalances, setAmountToSwapMax1e8, initialAmountToSwapMax1e8])
 
   const renderTxModal = useMemo(() => {
