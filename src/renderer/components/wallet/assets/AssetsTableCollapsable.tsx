@@ -222,7 +222,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         if (isUSDAsset(asset)) {
           price = balance.toString()
         } else if (
-          isMayaAsset(asset) ||
+          isCacaoAsset(asset) ||
           isDashAsset(asset) ||
           isKujiAsset(asset) ||
           isAethAsset(asset) ||
