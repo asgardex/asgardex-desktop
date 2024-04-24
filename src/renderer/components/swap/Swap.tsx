@@ -272,6 +272,7 @@ export const Swap = ({
   const lockedWallet: boolean = useMemo(() => isLocked(keystore) || !hasImportedKeystore(keystore), [keystore])
 
   const useSourceAssetLedger = isLedgerWallet(initialSourceWalletType)
+  const prevChainFees = useRef<O.Option<SwapFees>>(O.none)
 
   const oSourceWalletAddress = useSourceAssetLedger ? oSourceLedgerAddress : oInitialSourceKeystoreAddress
 
@@ -432,6 +433,10 @@ export const Swap = ({
     _setAmountToSwapMax1e8 /* private - never set it directly, use setAmountToSwapMax1e8() instead */
   ] = useState(initialAmountToSwapMax1e8)
 
+  const [lockedAssetAmount, setLockedAssetAmount] = useState<CryptoAmount>(
+    new CryptoAmount(baseAmount(0, sourceAssetDecimal), sourceAsset)
+  )
+
   const priceAmountToSwapMax1e8: CryptoAmount = useMemo(() => {
     const result =
       dex === 'THOR'
@@ -482,8 +487,7 @@ export const Swap = ({
       return getZeroSwapFees({ inAsset: sourceAsset, outAsset: targetAsset })
     }
   }, [inboundDetails, sourceAsset, targetAsset])
-
-  const prevChainFees = useRef<O.Option<SwapFees>>(O.none)
+  // PlaceHolder memo just to calc fees better
   const swapMemo = useMemo(() => {
     return O.fold(
       () => '',
@@ -526,6 +530,42 @@ export const Swap = ({
       ),
     [swapFeesRD, zeroSwapFees]
   )
+
+  // Max amount to swap == users balances of source asset
+  // Decimal always <= 1e8 based
+  const maxAmountToSwapMax1e8: BaseAmount = useMemo(() => {
+    if (lockedWallet) {
+      return lockedAssetAmount.baseAmount
+    }
+
+    return Utils.maxAmountToSwapMax1e8({
+      asset: sourceAsset,
+      balanceAmountMax1e8: sourceAssetAmountMax1e8,
+      feeAmount: swapFees.inFee.amount
+    })
+  }, [lockedAssetAmount.baseAmount, lockedWallet, sourceAsset, sourceAssetAmountMax1e8, swapFees.inFee.amount])
+
+  const setAmountToSwapMax1e8 = useCallback(
+    (amountToSwap: BaseAmount) => {
+      const newAmount = baseAmount(amountToSwap.amount(), sourceAssetAmountMax1e8.decimal)
+
+      // dirty check - do nothing if prev. and next amounts are equal
+      if (eqBaseAmount.equals(newAmount, amountToSwapMax1e8)) return {}
+
+      const newAmountToSwap = newAmount.gt(maxAmountToSwapMax1e8) ? maxAmountToSwapMax1e8 : newAmount
+      /**
+       * New object instance of `amountToSwap` is needed to make
+       * AssetInput component react to the new value.
+       * In case maxAmount has the same pointer
+       * AssetInput will not be updated as a React-component
+       * but native input element will change its
+       * inner value and user will see inappropriate value
+       */
+      _setAmountToSwapMax1e8({ ...newAmountToSwap })
+    },
+    [amountToSwapMax1e8, maxAmountToSwapMax1e8, sourceAssetAmountMax1e8]
+  )
+
   // Price of swap IN fee
   const oPriceSwapInFee: O.Option<CryptoAmount> = useMemo(() => {
     const assetAmount = new CryptoAmount(swapFees.inFee.amount, swapFees.inFee.asset)
@@ -1441,7 +1481,7 @@ export const Swap = ({
     async (asset: Asset) => {
       // delay to avoid render issues while switching
       await delay(100)
-
+      setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
       onChangeAsset({
         source: asset,
         // back to default 'keystore' type
@@ -1451,7 +1491,7 @@ export const Swap = ({
         recipientAddress: oRecipientAddress
       })
     },
-    [oRecipientAddress, oTargetWalletType, onChangeAsset, targetAsset]
+    [initialAmountToSwapMax1e8, oRecipientAddress, oTargetWalletType, onChangeAsset, setAmountToSwapMax1e8, targetAsset]
   )
 
   const setTargetAsset = useCallback(
@@ -1501,10 +1541,6 @@ export const Swap = ({
     [intl, minAmountError, sourceAsset, reccommendedAmountIn]
   )
 
-  const [lockedAssetAmount, setLockedAssetAmount] = useState<CryptoAmount>(
-    new CryptoAmount(baseAmount(0, sourceAssetDecimal), sourceAsset)
-  )
-
   useEffect(() => {
     if (lockedWallet) {
       const fetchData = async () => {
@@ -1514,40 +1550,6 @@ export const Swap = ({
       fetchData()
     }
   }, [lockedWallet, sourceAsset, thorchainQuery])
-
-  // Max amount to swap == users balances of source asset
-  // Decimal always <= 1e8 based
-  const maxAmountToSwapMax1e8: BaseAmount = useMemo(() => {
-    if (lockedWallet) {
-      return lockedAssetAmount.baseAmount
-    }
-
-    return Utils.maxAmountToSwapMax1e8({
-      asset: sourceAsset,
-      balanceAmountMax1e8: sourceAssetAmountMax1e8,
-      feeAmount: swapFees.inFee.amount
-    })
-  }, [lockedAssetAmount.baseAmount, lockedWallet, sourceAsset, sourceAssetAmountMax1e8, swapFees.inFee.amount])
-  const setAmountToSwapMax1e8 = useCallback(
-    (amountToSwap: BaseAmount) => {
-      const newAmount = baseAmount(amountToSwap.amount(), sourceAssetAmountMax1e8.decimal)
-
-      // dirty check - do nothing if prev. and next amounts are equal
-      if (eqBaseAmount.equals(newAmount, amountToSwapMax1e8)) return {}
-
-      const newAmountToSwap = newAmount.gt(maxAmountToSwapMax1e8) ? maxAmountToSwapMax1e8 : newAmount
-      /**
-       * New object instance of `amountToSwap` is needed to make
-       * AssetInput component react to the new value.
-       * In case maxAmount has the same pointer
-       * AssetInput will not be updated as a React-component
-       * but native input element will change its
-       * inner value and user will see inappropriate value
-       */
-      _setAmountToSwapMax1e8({ ...newAmountToSwap })
-    },
-    [amountToSwapMax1e8, maxAmountToSwapMax1e8, sourceAssetAmountMax1e8]
-  )
 
   const priceAmountMax1e8: CryptoAmount = useMemo(() => {
     const result =
