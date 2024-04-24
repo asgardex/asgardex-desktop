@@ -12,6 +12,9 @@
 - Clear source input amount when changing asset [#187](https://github.com/asgardex/asgardex-desktop/issues/187)
 - Fixed ERC Approval for Ledger [#166](https://github.com/asgardex/asgardex-desktop/issues/166)
 - Update UXTO fee collection for swaps [#202](https://github.com/asgardex/asgardex-desktop/issues/205)
+- Swap: Clear source input amount when changing source asset [#187](https://github.com/asgardex/asgardex-desktop/issues/187)
+- Ability to add new (existing) Keystore wallet [#190](https://github.com/asgardex/asgardex-desktop/issues/190)
+- FIX: FeeswithRates [#205](https://github.com/asgardex/asgardex-desktop/issues/205)
 
 # 1.21.5 (2024-03-28)
 
