@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon } from '@heroicons/react/20/solid'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
@@ -40,6 +41,8 @@ import {
   getAvaxTokenAddress,
   getBscTokenAddress,
   getEthTokenAddress,
+  isArbAsset,
+  isArbTokenAsset,
   isAvaxAsset,
   isAvaxTokenAsset,
   isBscAsset,
@@ -446,6 +449,8 @@ export const SymDeposit: React.FC<Props> = (props) => {
         return isAvaxAsset(asset) ? O.some(false) : O.some(isAvaxTokenAsset(asset))
       case BSCChain:
         return isBscAsset(asset) ? O.some(false) : O.some(isBscTokenAsset(asset))
+      case ARBChain:
+        return isArbAsset(asset) ? O.some(false) : O.some(isArbTokenAsset(asset))
       default:
         return O.none
     }
