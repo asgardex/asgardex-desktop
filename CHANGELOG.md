@@ -1,3 +1,11 @@
+# 1.21.7 (2024-tba)
+
+# Add
+
+## Updates/Fixes
+
+- Fix Arb Approval [#210](https://github.com/asgardex/asgardex-desktop/pull/210)
+
 # 1.21.6 (2024-04-24)
 
 # Add

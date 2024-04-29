@@ -68,7 +68,7 @@ describe('helpers/fp/ord', () => {
 
   describe('ordPricePool', () => {
     const poolData: PoolData = {
-      runeBalance: ZERO_BASE_AMOUNT,
+      dexBalance: ZERO_BASE_AMOUNT,
       assetBalance: ZERO_BASE_AMOUNT
     }
     const rune: PricePool = {

@@ -198,7 +198,7 @@ export const toPoolBalance = (baseAmountString: string): BaseAmount => baseAmoun
  */
 export const toPoolData = ({ assetDepth, runeDepth }: Pick<PoolDetail, 'assetDepth' | 'runeDepth'>): PoolData => ({
   assetBalance: toPoolBalance(assetDepth),
-  runeBalance: toPoolBalance(runeDepth)
+  dexBalance: toPoolBalance(runeDepth)
 })
 
 /**

@@ -54,11 +54,11 @@ const defaultProps: SwapProps = {
   poolsData: {
     [assetToString(AssetBNB)]: {
       assetBalance: baseAmount(1),
-      runeBalance: baseAmount(20)
+      dexBalance: baseAmount(20)
     },
     [assetToString(AssetBTC)]: {
       assetBalance: baseAmount(1),
-      runeBalance: baseAmount(3000)
+      dexBalance: baseAmount(3000)
     }
   },
   walletBalances: {

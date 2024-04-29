@@ -50,8 +50,8 @@ export const maxAssetBalanceToDeposit = (assetBalance: AssetWithAmount, inFee: B
   return value.gt(zero) ? value : zero
 }
 
-export const maxRuneBalanceToDeposit = (runeBalance: BaseAmount, inFee: BaseAmount): BaseAmount => {
-  const value = runeBalance.minus(inFee)
+export const maxRuneBalanceToDeposit = (dexBalance: BaseAmount, inFee: BaseAmount): BaseAmount => {
+  const value = dexBalance.minus(inFee)
   return value.gt(ZERO_BASE_AMOUNT) ? value : ZERO_BASE_AMOUNT
 }
 
@@ -63,19 +63,19 @@ export const maxRuneBalanceToDeposit = (runeBalance: BaseAmount, inFee: BaseAmou
  */
 export const maxRuneAmountToDeposit = ({
   poolData,
-  runeBalance,
+  dexBalance,
   assetBalance,
   fees: { asset: assetFees, rune: runeFees },
   dex
 }: {
   poolData: PoolData
-  runeBalance: BaseAmount
+  dexBalance: BaseAmount
   assetBalance: AssetWithAmount
   fees: SymDepositFees
   dex: Dex
 }): BaseAmount => {
-  const { runeBalance: poolRuneBalance, assetBalance: poolAssetBalance } = poolData
-  const maxRuneBalance = maxRuneBalanceToDeposit(runeBalance, runeFees.inFee)
+  const { dexBalance: poolRuneBalance, assetBalance: poolAssetBalance } = poolData
+  const maxRuneBalance = maxRuneBalanceToDeposit(dexBalance, runeFees.inFee)
   const maxAssetBalance = maxAssetBalanceToDeposit(assetBalance, assetFees.inFee)
   // asset balance needs to have `1e8` decimal to be in common with pool data (always `1e8`)
   const maxAssetBalance1e8 = to1e8BaseAmount(maxAssetBalance)
@@ -100,18 +100,18 @@ export const maxRuneAmountToDeposit = ({
  */
 export const maxAssetAmountToDeposit = ({
   poolData,
-  runeBalance,
+  dexBalance,
   assetBalance,
   fees: { asset: assetFees, rune: runeFees }
 }: {
   poolData: PoolData
-  runeBalance: BaseAmount
+  dexBalance: BaseAmount
   assetBalance: AssetWithAmount
   fees: SymDepositFees
 }): BaseAmount => {
-  const { runeBalance: poolRuneBalance, assetBalance: poolAssetBalance } = poolData
+  const { dexBalance: poolRuneBalance, assetBalance: poolAssetBalance } = poolData
 
-  const maxRuneBalance = maxRuneBalanceToDeposit(runeBalance, runeFees.inFee)
+  const maxRuneBalance = maxRuneBalanceToDeposit(dexBalance, runeFees.inFee)
   const maxAssetBalance = maxAssetBalanceToDeposit(assetBalance, assetFees.inFee)
 
   // All amounts of pool data are always 1e8 decimal based
@@ -133,7 +133,7 @@ export const maxAssetAmountToDeposit = ({
 
 export const getRuneAmountToDeposit = (
   assetAmount: BaseAmount,
-  { runeBalance: poolRuneBalance, assetBalance: poolAssetBalance }: PoolData
+  { dexBalance: poolRuneBalance, assetBalance: poolAssetBalance }: PoolData
 ): BaseAmount => {
   // convert `assetAmount` to `1e8` to be similar with decimal of `PoolData`, which are always 1e8 decimal based
   const assetAmount1e8 = to1e8BaseAmount(assetAmount)
@@ -159,7 +159,7 @@ export const getAssetAmountToDeposit = ({
   poolData: PoolData
   assetDecimal: number
 }): BaseAmount => {
-  const { runeBalance: poolRuneBalance, assetBalance: poolAssetBalance } = poolData
+  const { dexBalance: poolRuneBalance, assetBalance: poolAssetBalance } = poolData
   const assetAmountToDeposit1e8 =
     // formula: runeAmount * poolRuneBalance / poolAssetBalance
     // Note: pool data are always 1e8 based,

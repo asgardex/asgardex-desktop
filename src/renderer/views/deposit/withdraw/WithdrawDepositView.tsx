@@ -3,7 +3,7 @@ import React, { useCallback, useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, BaseAmount, bn } from '@xchainjs/xchain-util'
@@ -41,7 +41,7 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
     haltedChains,
     mimirHalt,
     assetWalletAddress,
-    runeWalletAddress
+    dexWalletAddress
   } = props
   const { decimal: assetDecimal } = assetWD
   const {
@@ -66,7 +66,7 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
   const selectedPricePoolAsset$ = dex === 'THOR' ? selectedPricePoolAssetThor$ : selectedPricePoolAssetMaya$
   const { symWithdrawFee$, reloadWithdrawFees, symWithdraw$ } = useChainContext()
   const poolsState$ = dex === 'THOR' ? poolsStateThor$ : poolsStateMaya$
-  const runePrice = useObservableState(dex === 'THOR' ? priceRatio$ : priceRatioMaya$, bn(1))
+  const dexPrice = useObservableState(dex === 'THOR' ? priceRatio$ : priceRatioMaya$, bn(1))
 
   const [selectedPriceAssetRD]: [RD.RemoteData<Error, Asset>, unknown] = useObservableState(
     () =>
@@ -91,7 +91,7 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
   const assetPriceRD: RD.RemoteData<Error, BigNumber> = FP.pipe(
     poolDetailRD,
     // convert from RUNE price to selected pool asset price
-    RD.map(getAssetPoolPrice(runePrice))
+    RD.map(getAssetPoolPrice(dexPrice))
   )
 
   const {
@@ -112,14 +112,14 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
     O.none
   )
 
-  const runeBalance: O.Option<BaseAmount> = useMemo(
+  const dexBalance: O.Option<BaseAmount> = useMemo(
     () =>
       FP.pipe(
         balances,
-        O.chain(getBalanceByAsset(AssetRuneNative)),
+        O.chain(getBalanceByAsset(dex === 'THOR' ? AssetRuneNative : AssetCacao)),
         O.map(({ amount }) => amount)
       ),
-    [balances]
+    [balances, dex]
   )
 
   const { openExplorerTxUrl: openRuneExplorerTxUrl, getExplorerTxUrl: getRuneExplorerTxUrl } = useOpenExplorerTxUrl(
@@ -146,9 +146,9 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
         fees$={symWithdrawFee$}
         assetPrice={ZERO_BN}
         assetWalletAddress={assetWalletAddress}
-        runePrice={runePrice}
-        runeWalletAddress={runeWalletAddress}
-        runeBalance={runeBalance}
+        dexPrice={dexPrice}
+        dexWalletAddress={dexWalletAddress}
+        dexBalance={dexBalance}
         selectedPriceAsset={AssetRuneNative}
         shares={{ rune: ZERO_BASE_AMOUNT, asset: ZERO_BASE_AMOUNT }}
         asset={assetWD}
@@ -169,9 +169,9 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
       mimirHalt,
       symWithdrawFee$,
       assetWalletAddress,
-      runePrice,
-      runeWalletAddress,
-      runeBalance,
+      dexPrice,
+      dexWalletAddress,
+      dexBalance,
       assetWD,
       reloadWithdrawFees,
       validatePassword$,
@@ -203,9 +203,9 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
         mimirHalt={mimirHalt}
         assetPrice={assetPrice}
         assetWalletAddress={assetWalletAddress}
-        runePrice={runePrice}
-        runeWalletAddress={runeWalletAddress}
-        runeBalance={runeBalance}
+        dexPrice={dexPrice}
+        dexWalletAddress={dexWalletAddress}
+        dexBalance={dexBalance}
         selectedPriceAsset={selectedPriceAsset}
         shares={{
           rune: ShareHelpers.getRuneShare(liquidityUnits, poolDetail, dex),
@@ -228,9 +228,9 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
       haltedChains,
       mimirHalt,
       assetWalletAddress,
-      runePrice,
-      runeWalletAddress,
-      runeBalance,
+      dexPrice,
+      dexWalletAddress,
+      dexBalance,
       assetDecimal,
       assetWD,
       symWithdrawFee$,

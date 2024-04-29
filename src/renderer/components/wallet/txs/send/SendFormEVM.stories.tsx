@@ -72,7 +72,7 @@ export const Default: StoryObj<StoryArgs> = {
       amount: assetToBase(assetAmount(balance.amount.amount().toNumber(), ETH_DECIMAL)),
       walletAddress: 'ETH wallet address'
     })
-    const runeBalance: WalletBalance = mockWalletBalance({
+    const dexBalance: WalletBalance = mockWalletBalance({
       amount: assetToBase(assetAmount(2, THORCHAIN_DECIMAL))
     })
 
@@ -81,7 +81,7 @@ export const Default: StoryObj<StoryArgs> = {
         {...args}
         asset={{ asset: AssetETH, walletAddress: 'eth-address', walletType, walletIndex: 0, hdMode: 'default' }}
         transfer$={transfer$}
-        balances={[ethBalance, runeBalance]}
+        balances={[ethBalance, dexBalance]}
         balance={ethBalance}
         fees={feesRD}
         reloadFeesHandler={() => console.log('Reload fees handler invoked')}
