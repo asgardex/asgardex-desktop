@@ -3,15 +3,7 @@ import cosmosclient from '@cosmos-client/core'
 import CosmosApp from '@ledgerhq/hw-app-cosmos'
 import type Transport from '@ledgerhq/hw-transport'
 import { Network, TxHash } from '@xchainjs/xchain-client'
-import {
-  Client,
-  DEFAULT_GAS_LIMIT,
-  getDenom,
-  protoFee,
-  protoAuthInfo,
-  protoMsgSend,
-  protoTxBody
-} from '@xchainjs/xchain-cosmos'
+import { Client, DEFAULT_GAS_LIMIT, getDefaultClientUrls, getDenom } from '@xchainjs/xchain-cosmos'
 import { Address, Asset, assetToString, BaseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
@@ -20,7 +12,6 @@ import sortKeys from 'sort-keys'
 
 import { getChainId } from '../../../../shared/api/cosmos'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
-import { getClientUrls, INITIAL_CHAIN_IDS } from '../../../../shared/cosmos/client'
 import { isError } from '../../../../shared/utils/guard'
 import { getDerivationPath } from './common'
 
@@ -76,7 +67,7 @@ export const send = async ({
 
     const fee = protoFee({ denom, amount: feeAmount, gasLimit })
 
-    const clientUrls = getClientUrls()
+    const clientUrls = getDefaultClientUrls()
     const eChainId = await getChainId(clientUrls[network])()
     const chainId = E.getOrElse(() => '')(eChainId)
 
@@ -92,8 +83,7 @@ export const send = async ({
 
     const client = new Client({
       network,
-      clientUrls,
-      chainIds: { ...INITIAL_CHAIN_IDS, [network]: chainId }
+      clientUrls
     })
 
     const sdk = client.getSDKClient()
