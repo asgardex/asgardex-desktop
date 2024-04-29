@@ -32,7 +32,7 @@ const ordByDepth = Ord.Contravariant.contramap(ordBaseAmount, ({ depthPrice }: P
  * Note: We don't have a "RUNE" pool in THORChain,
  * but do need such thing for pricing
  */
-export const RUNE_POOL_DATA: PoolData = { assetBalance: ONE_RUNE_BASE_AMOUNT, runeBalance: ONE_RUNE_BASE_AMOUNT }
+export const RUNE_POOL_DATA: PoolData = { assetBalance: ONE_RUNE_BASE_AMOUNT, dexBalance: ONE_RUNE_BASE_AMOUNT }
 
 /**
  * RUNE based `PricePool`

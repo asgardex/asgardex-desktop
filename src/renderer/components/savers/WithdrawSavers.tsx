@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
@@ -42,6 +43,8 @@ import {
   getAvaxTokenAddress,
   getBscTokenAddress,
   getEthTokenAddress,
+  isAethAsset,
+  isArbTokenAsset,
   isAvaxAsset,
   isAvaxTokenAsset,
   isBscAsset,
@@ -52,6 +55,7 @@ import {
   max1e8BaseAmount
 } from '../../helpers/assetHelper'
 import { getChainAsset, isAvaxChain, isBscChain, isEthChain } from '../../helpers/chainHelper'
+import { isEvmChain, isEvmToken } from '../../helpers/evmHelper'
 import { eqBaseAmount, eqOApproveParams, eqOAsset } from '../../helpers/fp/eq'
 import { sequenceTOption, sequenceTOptionFromArray } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
@@ -234,6 +238,8 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
         return isAvaxAsset(sourceAsset) ? O.some(false) : O.some(isAvaxTokenAsset(sourceAsset))
       case BSCChain:
         return isBscAsset(sourceAsset) ? O.some(false) : O.some(isBscTokenAsset(sourceAsset))
+      case ARBChain:
+        return isAethAsset(sourceAsset) ? O.some(false) : O.some(isArbTokenAsset(sourceAsset))
       default:
         return O.none
     }
@@ -1105,7 +1111,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
 
     const description1 =
       // extra info for ERC20 assets only
-      isEthChain(sourceChain) && !isEthAsset(sourceAsset)
+      isEvmChain(sourceChain) && isEvmToken(sourceAsset)
         ? `${txtNeedsConnected} ${intl.formatMessage(
             {
               id: 'ledger.blindsign'

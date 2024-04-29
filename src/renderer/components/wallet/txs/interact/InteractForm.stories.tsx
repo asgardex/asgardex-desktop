@@ -64,7 +64,7 @@ const Template = ({ interactType, txRDStatus, feeRDStatus, balance, validAddress
     )
   )
 
-  const runeBalance: WalletBalance = mockWalletBalance({
+  const dexBalance: WalletBalance = mockWalletBalance({
     amount: assetToBase(assetAmount(balance))
   })
 
@@ -75,7 +75,7 @@ const Template = ({ interactType, txRDStatus, feeRDStatus, balance, validAddress
       walletIndex={0}
       hdMode="default"
       interact$={interact$}
-      balance={runeBalance}
+      balance={dexBalance}
       addressValidation={(_: string) => validAddress}
       fee={feeRD}
       reloadFeesHandler={() => console.log('reload fees')}

@@ -62,12 +62,12 @@ export type Props = {
   asset: AssetWithDecimal
   assetWalletAddress: WalletAddress
   /** Rune price (base amount) */
-  runePrice: BigNumber
+  dexPrice: BigNumber
   /** Asset price (base amount) */
   assetPrice: BigNumber
   /** Wallet balance of Rune */
-  runeBalance: O.Option<BaseAmount>
-  runeWalletAddress: WalletAddress
+  dexBalance: O.Option<BaseAmount>
+  dexWalletAddress: WalletAddress
   /** Selected price asset */
   selectedPriceAsset: Asset
   /** Callback to reload fees */
@@ -101,10 +101,10 @@ export type Props = {
 export const Withdraw: React.FC<Props> = ({
   asset: assetWD,
   assetWalletAddress,
-  runePrice,
-  runeWalletAddress,
+  dexPrice,
+  dexWalletAddress,
   assetPrice,
-  runeBalance: oRuneBalance,
+  dexBalance: oDexBalance,
   selectedPriceAsset,
   shares: { rune: runeShare, asset: assetShare },
   disabled,
@@ -134,7 +134,7 @@ export const Withdraw: React.FC<Props> = ({
     address: runeAddress,
     walletIndex: runeWalletIndex,
     hdMode: runeHDMode
-  } = runeWalletAddress
+  } = dexWalletAddress
   const { type: assetWalletType, address: assetAddress } = assetWalletAddress
 
   // Disable withdraw in case all or pool actions are disabled
@@ -213,19 +213,19 @@ export const Withdraw: React.FC<Props> = ({
     if (zeroWithdrawPercent) return false
 
     return FP.pipe(
-      oRuneBalance,
+      oDexBalance,
       O.fold(
         () => true,
         (balance) => FP.pipe(withdrawFees.rune, Helper.sumWithdrawFees, balance.lt)
       )
     )
-  }, [oRuneBalance, withdrawFees.rune, zeroWithdrawPercent])
+  }, [oDexBalance, withdrawFees.rune, zeroWithdrawPercent])
 
   const renderInboundChainFeeError = useMemo(() => {
     if (!isInboundChainFeeError) return <></>
 
-    const runeBalance = FP.pipe(
-      oRuneBalance,
+    const dexBalance = FP.pipe(
+      oDexBalance,
       O.getOrElse(() => ZERO_BASE_AMOUNT)
     )
 
@@ -238,14 +238,14 @@ export const Withdraw: React.FC<Props> = ({
           trimZeros: true
         }),
         balance: formatAssetAmountCurrency({
-          amount: baseToAsset(runeBalance),
+          amount: baseToAsset(dexBalance),
           asset: dexAsset,
           trimZeros: true
         })
       }
     )
     return <Styled.FeeErrorLabel key="fee-error">{msg}</Styled.FeeErrorLabel>
-  }, [isInboundChainFeeError, oRuneBalance, intl, withdrawFees.rune, dexAsset])
+  }, [isInboundChainFeeError, oDexBalance, intl, withdrawFees.rune, dexAsset])
 
   const minRuneAmountToWithdraw = useMemo(() => Helper.minRuneAmountToWithdraw(withdrawFees.rune), [withdrawFees.rune])
 
@@ -548,7 +548,7 @@ export const Withdraw: React.FC<Props> = ({
             <Styled.OutputUSDLabel>
               {formatAssetAmountCurrency({
                 amount: getTwoSigfigAssetAmount(
-                  baseToAsset(baseAmount(runeAmountToWithdraw.amount().times(runePrice), dexAssetDecimal))
+                  baseToAsset(baseAmount(runeAmountToWithdraw.amount().times(dexPrice), dexAssetDecimal))
                 ),
                 asset: selectedPriceAsset,
                 trimZeros: true

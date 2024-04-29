@@ -45,7 +45,7 @@ export const stringToGetPoolsStatus = (status: string): GetPoolsStatusEnum => {
 export const getValueOfAssetInRune = (inputAsset: BaseAmount, pool: PoolData): BaseAmount => {
   // formula: ((a * R) / A) => R per A (Runeper$)
   const t = inputAsset.amount()
-  const R = pool.runeBalance.amount()
+  const R = pool.dexBalance.amount()
   const A = pool.assetBalance.amount()
   const result = t.times(R).div(A)
   return baseAmount(result)
@@ -54,7 +54,7 @@ export const getValueOfAssetInRune = (inputAsset: BaseAmount, pool: PoolData): B
 export const getValueOfRuneInAsset = (inputRune: BaseAmount, pool: PoolData): BaseAmount => {
   // formula: ((r * A) / R) => A per R ($perRune)
   const r = inputRune.amount()
-  const R = pool.runeBalance.amount()
+  const R = pool.dexBalance.amount()
   const A = pool.assetBalance.amount()
   const result = r.times(A).div(R)
   return baseAmount(result)

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
@@ -43,6 +44,8 @@ import {
   getAvaxTokenAddress,
   getBscTokenAddress,
   getEthTokenAddress,
+  isAethAsset,
+  isArbTokenAsset,
   isAvaxAsset,
   isAvaxTokenAsset,
   isBscAsset,
@@ -53,6 +56,7 @@ import {
   max1e8BaseAmount
 } from '../../helpers/assetHelper'
 import { getChainAsset, isAvaxChain, isBscChain, isEthChain } from '../../helpers/chainHelper'
+import { isEvmChain, isEvmToken } from '../../helpers/evmHelper'
 import { eqBaseAmount, eqOApproveParams, eqOAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
@@ -458,10 +462,12 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
         return isAvaxAsset(asset.asset) ? O.some(false) : O.some(isAvaxTokenAsset(asset.asset))
       case BSCChain:
         return isBscAsset(asset.asset) ? O.some(false) : O.some(isBscTokenAsset(asset.asset))
+      case ARBChain:
+        return isAethAsset(asset.asset) ? O.some(false) : O.some(isArbTokenAsset(asset.asset))
       default:
         return O.none
     }
-  }, [keystore, asset.asset, sourceChain])
+  }, [keystore, sourceChain, asset])
 
   const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
     const oRouterAddress: O.Option<Address> = FP.pipe(
@@ -1137,7 +1143,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
 
     const description1 =
       // extra info for ERC20 assets only
-      isEthChain(sourceChain) && !isEthAsset(asset.asset)
+      isEvmChain(asset.asset.chain) && isEvmToken(asset.asset)
         ? `${txtNeedsConnected} ${intl.formatMessage(
             {
               id: 'ledger.blindsign'

@@ -9,7 +9,7 @@ export type Props = {
   asset: AssetWithDecimal
   poolShare: PoolShareRD
   poolDetail: PoolDetailRD
-  runeWalletAddress: WalletAddress
+  dexWalletAddress: WalletAddress
   assetWalletAddress: WalletAddress
   haltedChains: Chain[]
   mimirHalt: MimirHalt

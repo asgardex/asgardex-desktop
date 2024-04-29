@@ -41,7 +41,7 @@ import {
   getAvaxTokenAddress,
   getBscTokenAddress,
   getEthTokenAddress,
-  isArbAsset,
+  isAethAsset,
   isArbTokenAsset,
   isAvaxAsset,
   isAvaxTokenAsset,
@@ -58,6 +58,7 @@ import {
   to1e8BaseAmount
 } from '../../../helpers/assetHelper'
 import { getChainAsset, isAvaxChain, isBscChain, isEthChain } from '../../../helpers/chainHelper'
+import { isEvmChain, isEvmToken } from '../../../helpers/evmHelper'
 import { unionAssets } from '../../../helpers/fp/array'
 import { eqBaseAmount, eqOAsset, eqOApproveParams, eqAsset } from '../../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../../helpers/fpHelpers'
@@ -450,7 +451,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
       case BSCChain:
         return isBscAsset(asset) ? O.some(false) : O.some(isBscTokenAsset(asset))
       case ARBChain:
-        return isArbAsset(asset) ? O.some(false) : O.some(isArbTokenAsset(asset))
+        return isAethAsset(asset) ? O.some(false) : O.some(isArbTokenAsset(asset))
       default:
         return O.none
     }
@@ -1023,7 +1024,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     (): BaseAmount =>
       Helper.maxRuneAmountToDeposit({
         poolData,
-        runeBalance: dexAssetBalance,
+        dexBalance: dexAssetBalance,
         assetBalance: { asset, amount: assetBalance },
         fees: depositFees,
         dex
@@ -1046,7 +1047,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
   const maxAssetAmountToDepositMax1e8 = useMemo((): BaseAmount => {
     const maxAmount = Helper.maxAssetAmountToDeposit({
       poolData,
-      runeBalance: dexAssetBalance,
+      dexBalance: dexAssetBalance,
       assetBalance: { asset, amount: assetBalance },
       fees: depositFees
     })
@@ -2052,7 +2053,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
     const description1 =
       // extra info for ERC20 assets only
-      isEthChain(chain) && !isEthAsset(asset)
+      isEvmChain(chain) && isEvmToken(asset)
         ? `${txtNeedsConnected} ${intl.formatMessage(
             {
               id: 'ledger.blindsign'
