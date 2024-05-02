@@ -4,7 +4,6 @@ import { AssetDASH } from '@xchainjs/xchain-dash'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
 import { AssetUSK } from '@xchainjs/xchain-kujira'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
-import { RUNE_DECIMAL } from '@xchainjs/xchain-thorchain'
 import {
   Address,
   Asset,
@@ -81,7 +80,7 @@ import { sequenceTOption } from './fpHelpers'
  * (eg. `asgardex-binance|bitcoin|ethereum` and others)
  *
  * */
-export const THORCHAIN_DECIMAL = RUNE_DECIMAL
+export const THORCHAIN_DECIMAL = 8
 
 export const isAssetInMayachainPools = (asset: Asset): boolean =>
   eqAsset.equals(asset, AssetCacao || AssetDASH || AssetKUJI)
