@@ -7,7 +7,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { getChainId } from '../../../shared/api/cosmos'
-import { getClientUrls, INITIAL_CHAIN_IDS } from '../../../shared/cosmos/client'
+import { getClientUrls } from '../../../shared/cosmos/client'
 import { isError } from '../../../shared/utils/guard'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
@@ -38,7 +38,7 @@ const clientState$: ClientState$ = FP.pipe(
             E.fold(
               (error) =>
                 Rx.of(RD.failure(Error(`Failed to get Cosmos' chain id (${error?.message ?? error.toString()})`))),
-              (chainId) =>
+              () =>
                 Rx.of(
                   FP.pipe(
                     getPhrase(keystore),
@@ -47,9 +47,7 @@ const clientState$: ClientState$ = FP.pipe(
                         const client = new Client({
                           network,
                           phrase,
-                          clientUrls: getClientUrls(),
-                          // clientUrls: { ...getClientUrls(), [network]: rpcURL },
-                          chainIds: { ...INITIAL_CHAIN_IDS, [network]: chainId }
+                          clientUrls: getClientUrls()
                         })
                         return RD.success(client)
                       } catch (error) {
