@@ -1,6 +1,5 @@
 import { AssetARB } from '@xchainjs/xchain-arbitrum'
 import { AssetAVAX } from '@xchainjs/xchain-avax'
-import { AssetBNB } from '@xchainjs/xchain-binance'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { AssetBCH } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC } from '@xchainjs/xchain-bsc'
@@ -14,8 +13,6 @@ import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { assetFromStringEx } from '@xchainjs/xchain-util'
 
 const AssetSynthBtc = assetFromStringEx('BTC/BTC')
-const AssetSynthBnb = assetFromStringEx('BNB/BNB')
-const AssetSynthBusd = assetFromStringEx('BNB/BUSD-BD1')
 const AssetSynthEth = assetFromStringEx('ETH/ETH')
 const AssetSynthEthUsdc = assetFromStringEx('ETH/USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48')
 const AssetSynthEthUsdt = assetFromStringEx('ETH/USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7')
@@ -37,8 +34,6 @@ export {
   AssetCacao,
   AssetMaya,
   AssetSynthBtc,
-  AssetSynthBnb,
-  AssetSynthBusd,
   AssetSynthLTC,
   AssetSynthARB,
   AssetSynthAVAX,
@@ -50,7 +45,6 @@ export {
   AssetSynthBCH,
   AssetSynthATOM,
   AssetSynthBSC,
-  AssetBNB,
   AssetBCH,
   AssetATOM,
   AssetLTC,

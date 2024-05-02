@@ -1,15 +1,15 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Meta, Story } from '@storybook/react'
-import { BNBChain } from '@xchainjs/xchain-binance'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network, Tx, TxType } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 
-import { AssetBNB } from '../../../../../shared/utils/asset'
+import { AssetBSC } from '../../../../../shared/utils/asset'
 import { TxsTable } from './TxsTable'
 
 const tx: Tx = {
-  asset: AssetBNB,
-  from: [{ from: 'tbnb138u9djee6fwphhd2a3628q2h0j5w97yx48zqex', amount: assetToBase(assetAmount('200', 8)) }],
+  asset: AssetBSC,
+  from: [{ from: '0x138u9djee6fwphhd2a3628q2h0j5w97yx48zqex', amount: assetToBase(assetAmount('200', 8)) }],
   // always a single amount to a single address only
   to: [{ to: 'tbnb1ed04qgw3s69z90jskr3shpyn9mr0e59qdtsxqa', amount: assetToBase(assetAmount('200', 8)) }],
   date: new Date('2020-07-03T11:58:01.553Z'),
@@ -24,12 +24,12 @@ const txsRD = RD.success({
 
 export const Default: Story = () => (
   <TxsTable
-    walletAddress="bnb-address"
+    walletAddress="bsc-address"
     txsPageRD={txsRD}
     clickTxLinkHandler={(txHash: string) => console.log('txHash ', txHash)}
     changePaginationHandler={(page: number) => console.log('page:', page)}
     network={Network.Testnet}
-    chain={BNBChain}
+    chain={BSCChain}
     reloadHandler={() => console.log('reload ')}
   />
 )

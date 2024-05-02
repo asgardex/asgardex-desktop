@@ -18,7 +18,7 @@ import * as O from 'fp-ts/lib/Option'
 
 import { PoolsWatchList } from '../../../shared/api/io'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
-import { isBtcAsset, isChainAsset, isEthAsset, isUSDAsset, isEthTokenAsset } from '../../helpers/assetHelper'
+import { isChainAsset, isUSDAsset } from '../../helpers/assetHelper'
 import { isAvaxChain, isEthChain } from '../../helpers/chainHelper'
 import { eqString, eqAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
@@ -291,26 +291,6 @@ export const filterTableData =
       O.getOrElse(() => tableData)
     )
   }
-
-/**
- * Helper to get min. amount for pool txs
- * We use these currently to make sure all fees are covered
- *
- * TODO (@asgdx-team) Remove min. amount if xchain-* gets fee rates from THORChain
- * @see: https://github.com/xchainjs/xchainjs-lib/issues/299
- */
-export const minPoolTxAmountUSD = (asset: Asset): BaseAmount => {
-  // BUSD has 8 decimal
-  const value = (v: number) => assetToBase(assetAmount(v, 8))
-  // BTC $200
-  if (isBtcAsset(asset)) return value(200)
-  // ETH $50
-  else if (isEthAsset(asset)) return value(50)
-  // ERC20 $100
-  else if (isEthTokenAsset(asset)) return value(100)
-  // anything else $10
-  else return value(10)
-}
 
 export const isEmptyPool = ({ assetDepth, runeDepth }: Pick<PoolDetail, 'assetDepth' | 'runeDepth'>): boolean =>
   bnOrZero(assetDepth).isZero() || bnOrZero(runeDepth).isZero()

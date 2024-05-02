@@ -1,7 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -25,7 +24,6 @@ import { DEFAULT_FEE_OPTION } from '../../../components/wallet/txs/send/Send.con
 import { LiveData, liveData } from '../../../helpers/rx/liveData'
 import * as ARB from '../../arb'
 import * as AVAX from '../../avax'
-import * as BNB from '../../binance'
 import * as BTC from '../../bitcoin'
 import * as BCH from '../../bitcoincash'
 import * as BSC from '../../bsc'
@@ -64,9 +62,6 @@ export const sendTx$ = ({
   if (!isEnabledChain(chain)) return txFailure$(`${chain} is not supported for 'sendTx$'`)
 
   switch (chain) {
-    case BNBChain:
-      return BNB.sendTx({ walletType, sender, recipient, amount, asset, memo, walletIndex, hdMode })
-
     case BTCChain:
       return FP.pipe(
         BTC.feesWithRates$(memo),
@@ -264,7 +259,6 @@ export const sendPoolTx$ = ({
     case MAYAChain:
       return MAYA.sendPoolTx$({ walletType, amount, asset, memo, walletIndex, hdMode })
 
-    case BNBChain:
     case BTCChain:
     case BCHChain:
     case DOGEChain:
@@ -287,8 +281,6 @@ export const txStatusByChain$ = ({ txHash, chain }: { txHash: TxHash; chain: Cha
   }
 
   switch (chain) {
-    case BNBChain:
-      return BNB.txStatus$(txHash, O.none)
     case BTCChain:
       return BTC.txStatus$(txHash, O.none)
     case ETHChain:
@@ -345,7 +337,6 @@ export const poolTxStatusByChain$ = ({
       return AVAX.txStatus$(txHash, oAssetAddress)
     case BSCChain:
       return BSC.txStatus$(txHash, oAssetAddress)
-    case BNBChain:
     case BTCChain:
     case THORChain:
     case MAYAChain:

@@ -2,7 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Meta, StoryFn } from '@storybook/react'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 
-import { AssetBUSDBD1 } from '../../../const'
+import { AssetUSDCBSC } from '../../../const'
 import { HeaderStats as Component, Props } from './HeaderStats'
 
 const Template: StoryFn<Props> = (args) => <Component {...args} />
@@ -17,11 +17,11 @@ const meta: Meta = {
   },
   args: {
     runePrice: RD.success({
-      asset: AssetBUSDBD1,
+      asset: AssetUSDCBSC,
       amount: assetToBase(assetAmount('14.08'))
     }),
     volume24Price: RD.success({
-      asset: AssetBUSDBD1,
+      asset: AssetUSDCBSC,
       amount: assetToBase(assetAmount('24000000'))
     })
   },

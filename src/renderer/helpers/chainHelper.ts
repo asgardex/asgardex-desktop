@@ -1,6 +1,5 @@
 import { ARBChain, AssetAETH } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
-import { AssetBNB, BNBChain } from '@xchainjs/xchain-binance'
 import { AssetBTC, BTCChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDBTC } from '@xchainjs/xchain-bitcoin'
 import { AssetBCH, BCHChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDBCH } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC, BSCChain } from '@xchainjs/xchain-bsc'
@@ -21,8 +20,6 @@ import { eqChain } from './fp/eq'
 export const getChainAsset = (chain: Chain): Asset => {
   if (!isEnabledChain(chain)) throw Error(`${chain} is not supported for 'getChainAsset'`)
   switch (chain) {
-    case BNBChain:
-      return AssetBNB
     case BTCChain:
       return AssetBTC
     case ETHChain:
@@ -93,11 +90,6 @@ export const isMayaChain = (chain: Chain): boolean => eqChain.equals(chain, MAYA
 export const isDashChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), DASHChain)
 
 /**
- * Check whether chain is BNB chain
- */
-export const isBnbChain = (chain: Chain): boolean => eqChain.equals(chain, BNBChain)
-
-/**
  * Check whether chain is ETH chain
  */
 export const isEthChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), ETHChain)
@@ -156,8 +148,6 @@ export const getChain = (chain: string): Chain => {
       return ARBChain
     case 'AVAX':
       return AVAXChain
-    case 'BNB':
-      return BNBChain
     case 'BTC':
       return BTCChain
     case 'ETH':

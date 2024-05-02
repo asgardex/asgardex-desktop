@@ -3,13 +3,13 @@ import { Network } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 
-import { AssetBNB, AssetRuneNative } from '../../../../../shared/utils/asset'
+import { AssetBSC, AssetRuneNative } from '../../../../../shared/utils/asset'
 import { DepositAssets, Props as DepositAssetsProps } from './DepositAssets'
 
 const defaultProps: DepositAssetsProps = {
   stepDescription: 'step 1',
   source: O.some({ asset: AssetRuneNative, amount: assetToBase(assetAmount(30)) }),
-  target: { asset: AssetBNB, amount: assetToBase(assetAmount(1)) },
+  target: { asset: AssetBSC, amount: assetToBase(assetAmount(1)) },
   network: Network.Testnet
 }
 

@@ -24,7 +24,7 @@
     "generate:avaxerc20whitelist": "./node_modules/.bin/ts-node --project tsconfig.scripts.json ./scripts/generateAVAXtokenlist.ts",
     "generate:bscerc20whitelist": "./node_modules/.bin/ts-node --project tsconfig.scripts.json ./scripts/generateBSCtokenlist.ts",
     "generate:arberc20whitelist": "./node_modules/.bin/ts-node --project tsconfig.scripts.json ./scripts/generateARBtokenlist.ts",
-    "storybook": "NODE_OPTIONS=\"--max-old-space-size=4096\" sb dev -p 9009 --no-manager-cache",
+    "storybook": "NODE_OPTIONS=\"--max-old-space-size=4096\" sb dev -p 9009 ",
     "build-storybook": "NODE_OPTIONS=\"--max-old-space-size=4096\" sb build",
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "prepare": "husky install"
@@ -71,7 +71,6 @@
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
     "@asgardex/asgardex-theme": "^0.1.2",
-    "@binance-chain/javascript-sdk": "^4.2.2",
     "@cosmjs/stargate": "^0.28.10",
     "@cosmos-client/core": "0.46.1",
     "@craco/craco": "^7.0.0",

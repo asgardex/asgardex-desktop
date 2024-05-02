@@ -38,7 +38,7 @@ const meta: Meta<typeof Template> = {
       name: 'Chain',
       control: {
         type: 'select',
-        options: ['BNB', 'BCH', 'BTC', 'ETH']
+        options: ['DOGE', 'BCH', 'BTC', 'ETH']
       },
       defaultValue: 'BCH'
     }

@@ -1,9 +1,10 @@
+import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
 
-import { AssetBNB, AssetETH } from '../../../../shared/utils/asset'
-import { AssetBUSD74E, AssetUSDTERC20Testnet, ZERO_BASE_AMOUNT } from '../../../const'
-import { BNB_DECIMAL, THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
+import { AssetBSC, AssetETH } from '../../../../shared/utils/asset'
+import { AssetUSDCBSC, AssetUSDTERC20Testnet, ZERO_BASE_AMOUNT } from '../../../const'
+import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { eqBaseAmount } from '../../../helpers/fp/eq'
 import {
   getWithdrawAmounts,
@@ -46,17 +47,17 @@ describe('stake/Withdraw.helper', () => {
 
   describe('minAssetAmountToWithdrawMax1e8', () => {
     const poolsData = {
-      'BNB.BUSD-74E': {
-        assetBalance: assetToBase(assetAmount(20)), // 1 BUSD = 0.05 RUNE
-        dexBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 BUSD
+      'BSC.USDC-0X8AC76A51CC950D9822D68B83FE1AD97B32CD580D': {
+        assetBalance: assetToBase(assetAmount(20)), // 1 BSDC = 0.05 RUNE
+        dexBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDC
       },
       'ETH.USDT-0xa3910454bf2cb59b8b3a401589a3bacc5ca42306': {
         assetBalance: assetToBase(assetAmount(20)), // 1 USDT = 0.05 RUNE
         dexBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDT
       },
-      'BNB.BNB': {
-        assetBalance: assetToBase(assetAmount(1)), // 1 BNB = 30 RUNE (600 USD)
-        dexBalance: assetToBase(assetAmount(30)) // 1 RUNE = 0.03 BNB
+      'BSC.BNB': {
+        assetBalance: assetToBase(assetAmount(1)), // 1 BSC.BNB = 30 RUNE (600 USD)
+        dexBalance: assetToBase(assetAmount(30)) // 1 RUNE = 0.03 BSC.BNB
       },
       'ETH.ETH': {
         assetBalance: assetToBase(assetAmount(1)), // 1 ETH = 100 RUNE (2000 USD)
@@ -64,42 +65,42 @@ describe('stake/Withdraw.helper', () => {
       }
     }
 
-    it('witdhraw chain asset (BNB.BNB)', () => {
-      const params = {
-        fees: {
-          asset: AssetBNB,
-          amount: assetToBase(assetAmount(0.0003, BNB_DECIMAL))
-        },
-        asset: AssetBNB,
-        assetDecimal: BNB_DECIMAL,
-        poolsData
-      }
-
-      // Prices
-      // All in BNB
-      //
-      // Formula:
-      // 1,5 * feeInBNB
-      // 1,5 * 0.0003 = 0.00045
-
-      const result = minAssetAmountToWithdrawMax1e8(params)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.00045, BNB_DECIMAL)))).toBeTruthy()
-    })
-
-    it('witdhraw non chain asset (BNB.USD)', () => {
+    it('withdraw chain asset (BSC.BNB)', () => {
       const withdrawAssetDecimal = 8
       const params = {
         fees: {
-          asset: AssetBNB,
-          amount: assetToBase(assetAmount(0.0003, BNB_DECIMAL))
+          asset: AssetBSC,
+          amount: assetToBase(assetAmount(0.0003, BSC_GAS_ASSET_DECIMAL))
         },
-        asset: AssetBUSD74E,
+        asset: AssetBSC,
+        assetDecimal: withdrawAssetDecimal,
+        poolsData
+      }
+      // Prices
+      // All in BSC.BNB
+      //
+      // Formula:
+      // 1,5 * feeIn BSC.BNB
+      // 1,5 * 0.0003 = 0.00045
+
+      const result = minAssetAmountToWithdrawMax1e8(params)
+      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.00045, withdrawAssetDecimal)))).toBeTruthy()
+    })
+
+    it('witdhraw non chain asset (BSC.USDC)', () => {
+      const withdrawAssetDecimal = 8
+      const params = {
+        fees: {
+          asset: AssetBSC,
+          amount: assetToBase(assetAmount(0.0003, BSC_GAS_ASSET_DECIMAL))
+        },
+        asset: AssetUSDCBSC,
         assetDecimal: withdrawAssetDecimal,
         poolsData
       }
 
       // Prices
-      // 1 BNB = 600 BUSD or 1 BUSD = 0,001666667 BNB
+      // 1 BSC.BNB = 600 BUSD or 1 BUSD = 0,001666667 BSC.BNB
       //
       // Formula:
       // 1,5 * feeInBUSD

@@ -4,23 +4,14 @@ import { Meta } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { Asset } from '@xchainjs/xchain-util'
 
-import {
-  AssetBCH,
-  AssetBNB,
-  AssetBTC,
-  AssetDOGE,
-  AssetETH,
-  AssetLTC,
-  AssetRuneNative
-} from '../../../../../shared/utils/asset'
-import { AssetBUSDBD1 } from '../../../../const'
+import { AssetBCH, AssetBTC, AssetDOGE, AssetETH, AssetLTC, AssetRuneNative } from '../../../../../shared/utils/asset'
 import * as AT from '../../../../storybook/argTypes'
 import { AssetMenu as Component, Props } from './AssetMenu'
 
-const assets = [AssetBTC, AssetBNB, AssetRuneNative, AssetETH, AssetLTC, AssetBCH, AssetDOGE, AssetBUSDBD1]
+const assets = [AssetBTC, AssetRuneNative, AssetETH, AssetLTC, AssetBCH, AssetDOGE]
 
 const Template = ({ network, onSelect, open, onClose, headline }: Props) => {
-  const [asset, setAsset] = useState<Asset>(AssetBNB)
+  const [asset, setAsset] = useState<Asset>(AssetBTC)
   const [openMenu, setOpenMenu] = useState(open)
   return (
     <Component

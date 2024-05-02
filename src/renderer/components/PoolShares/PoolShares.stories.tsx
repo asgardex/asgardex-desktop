@@ -2,7 +2,7 @@ import { Meta, StoryFn } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase, bn } from '@xchainjs/xchain-util'
 
-import { AssetBNB, AssetBTC } from '../../../shared/utils/asset'
+import { AssetBSC, AssetBTC } from '../../../shared/utils/asset'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { DEFAULT_MIMIR_HALT } from '../../services/thorchain/const'
 import { PoolShares as Component, Props as ComponentProps } from './PoolShares'
@@ -12,7 +12,7 @@ const defaultProps: ComponentProps = {
   mimirHalt: DEFAULT_MIMIR_HALT,
   data: [
     {
-      asset: AssetBNB,
+      asset: AssetBSC,
       sharePercent: bn(10),
       runeShare: assetToBase(assetAmount(10)),
       assetShare: assetToBase(assetAmount(20)),
@@ -40,7 +40,7 @@ const defaultProps: ComponentProps = {
     }
   ],
   loading: false,
-  priceAsset: AssetBNB,
+  priceAsset: AssetBSC,
   openShareInfo: () => console.log('go to stake info'),
   network: Network.Testnet,
   dex: 'THOR'

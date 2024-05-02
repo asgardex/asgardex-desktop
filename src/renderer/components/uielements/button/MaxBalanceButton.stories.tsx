@@ -2,13 +2,13 @@ import { Meta } from '@storybook/react'
 import { Balance } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 
-import { AssetBNB, AssetRuneNative } from '../../../../shared/utils/asset'
+import { AssetDOGE, AssetRuneNative } from '../../../../shared/utils/asset'
 import { MaxBalanceButton as Component, ComponentProps } from './MaxBalanceButton'
 
 export const MaxBalanceButton = (props: ComponentProps) => <Component {...props} />
 
-const bnbBalance: Balance = {
-  asset: AssetBNB,
+const dogeBalance: Balance = {
+  asset: AssetDOGE,
   amount: assetToBase(assetAmount(123))
 }
 
@@ -17,9 +17,9 @@ const meta: Meta<typeof Component> = {
   title: 'Components/button/MaxBalanceButton',
   argTypes: {
     balance: {
-      options: ['BNB', 'RUNE'],
+      options: ['DOGE', 'RUNE'],
       mappings: {
-        BNB: bnbBalance,
+        DOGE: dogeBalance,
         RUNE: {
           asset: AssetRuneNative,
           amount: assetToBase(assetAmount(345))
@@ -30,7 +30,7 @@ const meta: Meta<typeof Component> = {
   },
   args: {
     maxInfoText: 'info text',
-    balance: bnbBalance,
+    balance: dogeBalance,
     hidePrivateData: false
   },
   decorators: [

@@ -47,7 +47,7 @@ const defaultProps: DepositProps = {
   SymDepositContent: SymDeposit,
   WidthdrawContent: Withdraw,
   keystoreState: O.some(O.some({ phrase: 'phrase' })),
-  runeWalletAddress: mockWalletAddress(),
+  dexWalletAddress: mockWalletAddress(),
   assetWalletAddress: mockWalletAddress({ address: BNB_ADDRESS_TESTNET, chain: BNBChain })
 }
 

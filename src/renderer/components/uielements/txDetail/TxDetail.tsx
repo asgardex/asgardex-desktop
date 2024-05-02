@@ -1,13 +1,14 @@
 import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { baseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as NEA from 'fp-ts/NonEmptyArray'
 import * as O from 'fp-ts/Option'
 
-import { CACAO_DECIMAL, isCacaoAsset } from '../../../helpers/assetHelper'
+import { isCacaoAsset } from '../../../helpers/assetHelper'
 import { Fees } from '../fees'
 import * as Styled from './TxDetail.styles'
 import { ActionProps } from './types'

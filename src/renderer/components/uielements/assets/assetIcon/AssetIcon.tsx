@@ -3,7 +3,6 @@ import React, { useMemo, useCallback } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -14,7 +13,6 @@ import * as O from 'fp-ts/lib/Option'
 import {
   iconUrlInERC20Whitelist,
   isBchAsset,
-  isBnbAsset,
   isBtcAsset,
   isDogeAsset,
   isEthAsset,
@@ -22,7 +20,6 @@ import {
   isRuneNativeAsset,
   isTgtERC20Asset,
   isAtomAsset,
-  isBnbAssetSynth,
   isBtcAssetSynth,
   isArbAsset,
   isAvaxAsset,
@@ -48,14 +45,7 @@ import {
   iconUrlInARBERC20Whitelist,
   isAethAsset
 } from '../../../../helpers/assetHelper'
-import {
-  isArbChain,
-  isAvaxChain,
-  isBnbChain,
-  isBscChain,
-  isEthChain,
-  isMayaChain
-} from '../../../../helpers/chainHelper'
+import { isArbChain, isAvaxChain, isBscChain, isEthChain, isMayaChain } from '../../../../helpers/chainHelper'
 import { getIntFromName, rainbowStop } from '../../../../helpers/colorHelpers'
 import { useRemoteImage } from '../../../../hooks/useRemoteImage'
 import {
@@ -63,7 +53,6 @@ import {
   atomIcon,
   avaxIcon,
   bscIcon,
-  bnbIcon,
   mayaIcon,
   btcIcon,
   dogeIcon,
@@ -97,8 +86,6 @@ const chainIconMap = (asset: Asset): string | null => {
       return avaxIcon
     case BSCChain:
       return bscIcon
-    case BNBChain:
-      return bnbIcon
     default:
       return null // return null if no chain matches
   }
@@ -142,12 +129,6 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     if (isDashAsset(asset) || isDashSynthAsset(asset)) {
       return dashIcon
     }
-    // BNB
-    if (isBnbAsset(asset) || isBnbAssetSynth(asset)) {
-      // Since BNB is blacklisted at TrustWallet's asset, we have to use "our" own BNB icon
-      // (see https://github.com/trustwallet/assets/blob/master/blockchains/binance/denylist.json
-      return bnbIcon
-    }
     // LTC
     if (isLtcAsset(asset) || isLtcSynthAsset(asset)) {
       return `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/litecoin/info/logo.png`
@@ -185,10 +166,6 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     }
 
     if (network !== Network.Testnet) {
-      if (isBnbChain(asset.chain)) {
-        return `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/binance/assets/${asset.symbol}/logo.png`
-      }
-
       // Since we've already checked ETH.ETH before,
       // we know any asset is ERC20 here - no need to run expensive `isEthTokenAsset`
       if (isEthChain(asset.chain)) {

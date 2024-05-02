@@ -2,7 +2,7 @@ import { Meta, StoryFn } from '@storybook/react'
 import * as O from 'fp-ts/lib/Option'
 
 import { AssetBTC, AssetETH, AssetRuneNative } from '../../../../shared/utils/asset'
-import { AssetBUSDBAF } from '../../../const'
+import { AssetUSDC } from '../../../const'
 import { HeaderPriceSelector as Component, Props } from './HeaderPriceSelector'
 
 const Template: StoryFn<Props> = (args: Props) => <Component {...args} />
@@ -15,18 +15,18 @@ const meta: Meta<typeof Component> = {
   argTypes: {
     changeHandler: { action: 'changeHandler' },
     selectedAsset: {
-      options: ['RUNE', 'BTC', 'ETH', 'BUSD'],
+      options: ['RUNE', 'BTC', 'ETH', 'USD'],
       mapping: {
         RUNE: O.some(AssetRuneNative),
         BTC: O.some(AssetBTC),
         ETH: O.some(AssetETH),
-        BUSD: O.some(AssetBUSDBAF)
+        USD: O.some(AssetUSDC)
       }
     }
   },
   args: {
-    assets: [AssetRuneNative, AssetBTC, AssetETH, AssetBUSDBAF],
-    selectedAsset: O.some(AssetBUSDBAF),
+    assets: [AssetRuneNative, AssetBTC, AssetETH, AssetUSDC],
+    selectedAsset: O.some(AssetUSDC),
     isDesktopView: false,
     disabled: false
   }

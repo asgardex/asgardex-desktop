@@ -6,18 +6,17 @@ import { Asset } from '@xchainjs/xchain-util'
 
 import {
   AssetBCH,
-  AssetBNB,
+  AssetBSC,
   AssetBTC,
   AssetDOGE,
   AssetETH,
   AssetLTC,
   AssetRuneNative
 } from '../../../../../shared/utils/asset'
-import { AssetBUSDBD1 } from '../../../../const'
 import * as AT from '../../../../storybook/argTypes'
 import { AssetSelect as Component } from './AssetSelect'
 
-const assets = [AssetBTC, AssetBNB, AssetRuneNative, AssetETH, AssetLTC, AssetBCH, AssetDOGE, AssetBUSDBD1]
+const assets = [AssetBTC, AssetBSC, AssetRuneNative, AssetETH, AssetLTC, AssetBCH, AssetDOGE]
 
 type Args = {
   network: Network
@@ -26,7 +25,7 @@ type Args = {
 }
 
 const Template = ({ network, onSelect, dialogHeadline }: Args) => {
-  const [asset, setAsset] = useState<Asset>(AssetBNB)
+  const [asset, setAsset] = useState<Asset>(AssetBSC)
   return (
     <Component
       asset={asset}

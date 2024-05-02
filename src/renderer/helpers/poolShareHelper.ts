@@ -1,10 +1,11 @@
+import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { baseAmount, BaseAmount, bn, bnOrZero } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 
 import { Dex } from '../../shared/api/types'
 import { ZERO_BN } from '../const'
-import { CACAO_DECIMAL, convertBaseAmountDecimal, THORCHAIN_DECIMAL } from './assetHelper'
+import { convertBaseAmountDecimal, THORCHAIN_DECIMAL } from './assetHelper'
 
 /**
  * RUNE share of a pool in `BaseAmount`

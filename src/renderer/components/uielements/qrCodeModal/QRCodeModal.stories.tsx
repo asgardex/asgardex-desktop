@@ -1,8 +1,8 @@
 import { Meta, StoryObj } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 
-import { BNB_ADDRESS_MAINNET, BNB_ADDRESS_TESTNET } from '../../../../shared/mock/address'
-import { AssetBNB } from '../../../../shared/utils/asset'
+import { BSC_ADDRESS_MAINNET, BSC_ADDRESS_TESTNET } from '../../../../shared/mock/address'
+import { AssetRuneNative } from '../../../../shared/utils/asset'
 import * as AT from '../../../storybook/argTypes'
 import { QRCodeModal as Component, Props } from './QRCodeModal'
 
@@ -29,8 +29,8 @@ export default meta
 export const Default: StoryObj<Props> = {
   render: (storyArgs: Props) => (
     <Component
-      asset={AssetBNB}
-      address={storyArgs.network === Network.Testnet ? BNB_ADDRESS_TESTNET : BNB_ADDRESS_MAINNET}
+      asset={AssetRuneNative}
+      address={storyArgs.network === Network.Testnet ? BSC_ADDRESS_TESTNET : BSC_ADDRESS_MAINNET}
       network={storyArgs.network}
       visible={storyArgs.visible}
       onCancel={storyArgs.onCancel}

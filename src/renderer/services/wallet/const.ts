@@ -1,6 +1,5 @@
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -31,7 +30,6 @@ export const INITIAL_BALANCES_STATE: BalancesState = {
 }
 
 export const DEFAULT_BALANCES_FILTER: BalancesStateFilter = {
-  [BNBChain]: 'all',
   [BCHChain]: 'all',
   [DASHChain]: 'all',
   [BTCChain]: 'all',

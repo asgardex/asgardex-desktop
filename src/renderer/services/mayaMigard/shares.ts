@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { DefaultApi, MemberPool } from '@xchainjs/xchain-mayamidgard'
 import { Address, Asset, assetFromString, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
@@ -8,7 +9,6 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { optionFromNullableString } from '../../../shared/utils/fp'
-import { CACAO_DECIMAL } from '../../helpers/assetHelper'
 import { liveData } from '../../helpers/rx/liveData'
 import { triggerStream, observableState } from '../../helpers/stateHelper'
 import { MidgardUrlLD, PoolShare, PoolShareLD, PoolSharesLD } from './types'

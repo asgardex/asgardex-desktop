@@ -50,7 +50,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
     poolDetail: poolDetailRD,
     mimirHalt,
     haltedChains,
-    runeWalletAddress,
+    dexWalletAddress,
     assetWalletAddress
   } = props
   const { asset } = assetWD
@@ -206,7 +206,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
 
   const { symPendingAssets, hasAsymAssets, symAssetMismatch } = useLiquidityProviders({
     asset,
-    dexAssetAddress: runeWalletAddress.address,
+    dexAssetAddress: dexWalletAddress.address,
     assetAddress: assetWalletAddress.address,
     dex
   })
@@ -257,7 +257,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
           symAssetMismatch={RD.initial}
           openAsymDepositTool={openAsymDepositTool}
           assetWalletType={assetWalletAddress.type}
-          runeWalletType={runeWalletAddress.type}
+          runeWalletType={dexWalletAddress.type}
           hidePrivateData={isPrivate}
           dex={dex}
         />
@@ -289,7 +289,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
       protocolLimitReached,
       openAsymDepositTool,
       assetWalletAddress.type,
-      runeWalletAddress.type,
+      dexWalletAddress.type,
       isPrivate
     ]
   )
@@ -345,7 +345,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
               symAssetMismatch={symAssetMismatch}
               openAsymDepositTool={openAsymDepositTool}
               assetWalletType={assetWalletAddress.type}
-              runeWalletType={runeWalletAddress.type}
+              runeWalletType={dexWalletAddress.type}
               hidePrivateData={isPrivate}
               dex={dex}
             />
