@@ -5,6 +5,7 @@
 ## Updates/Fixes
 
 - Fix Arb Approval [#210](https://github.com/asgardex/asgardex-desktop/pull/210)
+- Remove BNB Bep2Chain & Client [#199](https://github.com/asgardex/asgardex-desktop/pull/200)
 
 # 1.21.6 (2024-04-24)
 
