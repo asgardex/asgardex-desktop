@@ -45,24 +45,6 @@ export const useValidateAddress = (
         oClient,
         O.map(async (client) => {
           return client.validateAddress(address)
-          /**  Remove BNB Specific checks
-          if (valid && isBnbClient(client)) {
-            try {
-              // check BNB account and block if flag !== 0
-              // See https://github.com/thorchain/asgardex-electron/issues/1611
-              // and https://docs.binance.org/changelog.html#apiv1accountaddress
-              const { flags } = await client.getAccount(address)
-              return flags === 0
-            } catch (e) {
-              // Previous call to `client.getAccount` might fail in following scenarios
-              // - An account has empty balances (Binance API will return "account not found" )
-              // - `public_key` of `Account` might not be available for any reason and `getAccount` will throw an error
-              // However, we can't get `flags` in this case, but we can still say it's a valid address
-              // because of `validateAddress` check before
-              return true
-            }
-          }
-          */
         }),
         // In case client is not available (it should never happen), skip validation by returning always `true`
         O.getOrElse<Promise<boolean>>(() => Promise.resolve(true))

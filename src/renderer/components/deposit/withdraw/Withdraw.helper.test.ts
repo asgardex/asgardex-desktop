@@ -49,15 +49,15 @@ describe('stake/Withdraw.helper', () => {
     const poolsData = {
       'BSC.USDC-0X8AC76A51CC950D9822D68B83FE1AD97B32CD580D': {
         assetBalance: assetToBase(assetAmount(20)), // 1 BSDC = 0.05 RUNE
-        runeBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDC
+        dexBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDC
       },
       'ETH.USDT-0xa3910454bf2cb59b8b3a401589a3bacc5ca42306': {
         assetBalance: assetToBase(assetAmount(20)), // 1 USDT = 0.05 RUNE
         dexBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDT
       },
       'BSC.BNB': {
-        assetBalance: assetToBase(assetAmount(1)), // 1 BNB = 30 RUNE (600 USD)
-        dexBalance: assetToBase(assetAmount(30)) // 1 RUNE = 0.03 BNB
+        assetBalance: assetToBase(assetAmount(1)), // 1 BSC.BNB = 30 RUNE (600 USD)
+        dexBalance: assetToBase(assetAmount(30)) // 1 RUNE = 0.03 BSC.BNB
       },
       'ETH.ETH': {
         assetBalance: assetToBase(assetAmount(1)), // 1 ETH = 100 RUNE (2000 USD)
@@ -65,7 +65,7 @@ describe('stake/Withdraw.helper', () => {
       }
     }
 
-    it('witdhraw chain asset (BSC.BNB)', () => {
+    it('withdraw chain asset (BSC.BNB)', () => {
       const withdrawAssetDecimal = 8
       const params = {
         fees: {
@@ -77,10 +77,10 @@ describe('stake/Withdraw.helper', () => {
         poolsData
       }
       // Prices
-      // All in BNB
+      // All in BSC.BNB
       //
       // Formula:
-      // 1,5 * feeInBNB
+      // 1,5 * feeIn BSC.BNB
       // 1,5 * 0.0003 = 0.00045
 
       const result = minAssetAmountToWithdrawMax1e8(params)
@@ -100,7 +100,7 @@ describe('stake/Withdraw.helper', () => {
       }
 
       // Prices
-      // 1 BNB = 600 BUSD or 1 BUSD = 0,001666667 BNB
+      // 1 BSC.BNB = 600 BUSD or 1 BUSD = 0,001666667 BSC.BNB
       //
       // Formula:
       // 1,5 * feeInBUSD

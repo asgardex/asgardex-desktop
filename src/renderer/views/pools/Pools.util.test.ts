@@ -7,7 +7,7 @@ import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
-import { ASSETS_TESTNET, ERC20_TESTNET } from '../../../shared/mock/assets'
+import { ASSETS_MAINNET, ERC20_TESTNET } from '../../../shared/mock/assets'
 import { AssetBCH, AssetBTC, AssetETH, AssetLTC } from '../../../shared/utils/asset'
 import { AssetUSDC, AssetUSDT62E, AssetUSDTDAC } from '../../const'
 import { GetPoolsStatusEnum } from '../../services/midgard/types'
@@ -26,7 +26,7 @@ import {
 describe('views/pools/utils', () => {
   describe('getPoolTableRowData', () => {
     const lokPoolDetail = {
-      asset: 'BSC.FTM-585',
+      asset: 'DOGE.DOGE',
       assetDepth: '11000000000',
       runeDepth: '10000000000',
       volume24h: '10000000000',
@@ -39,9 +39,9 @@ describe('views/pools/utils', () => {
       assetBalance: assetToBase(assetAmount(100))
     }
 
-    it('transforms data for a FTM pool', () => {
+    it('transforms data for a DOGE pool', () => {
       const expected: PoolTableRowData = {
-        asset: ASSETS_TESTNET.FTM,
+        asset: ASSETS_MAINNET.DOGE,
         poolPrice: assetToBase(assetAmount(2)),
         depthAmount: assetToBase(assetAmount(220)),
         depthPrice: assetToBase(assetAmount(2000)),

@@ -13,7 +13,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
 import { PoolsWatchList } from '../../shared/api/io'
-import { ASSETS_TESTNET } from '../../shared/mock/assets'
+import { ASSETS_MAINNET } from '../../shared/mock/assets'
 import { AssetRuneNative, AssetBSC } from '../../shared/utils/asset'
 import { AssetUSDTBSC } from '../const'
 import { GetPoolsStatusEnum, PoolDetails } from '../services/midgard/types'
@@ -74,12 +74,12 @@ describe('helpers/poolHelper/', () => {
 
   describe('getPoolTableRowsData', () => {
     const poolDetails: PoolDetails = [
-      { ...mockPoolDetail, asset: assetToString(ASSETS_TESTNET.TOMO), status: GetPoolsStatusEnum.Available },
-      { ...mockPoolDetail, asset: assetToString(ASSETS_TESTNET.FTM), status: GetPoolsStatusEnum.Available }
+      { ...mockPoolDetail, asset: assetToString(ASSETS_MAINNET.ETH), status: GetPoolsStatusEnum.Available },
+      { ...mockPoolDetail, asset: assetToString(ASSETS_MAINNET.BTC), status: GetPoolsStatusEnum.Available }
     ]
     const pendingPoolDetails: PoolDetails = [
-      { ...mockPoolDetail, asset: assetToString(ASSETS_TESTNET.BOLT), status: GetPoolsStatusEnum.Staged },
-      { ...mockPoolDetail, asset: assetToString(ASSETS_TESTNET.FTM), status: GetPoolsStatusEnum.Staged }
+      { ...mockPoolDetail, asset: assetToString(ASSETS_MAINNET.DOGE), status: GetPoolsStatusEnum.Staged },
+      { ...mockPoolDetail, asset: assetToString(ASSETS_MAINNET.BTC), status: GetPoolsStatusEnum.Staged }
     ]
 
     const pricePoolData: PoolData = {
@@ -96,8 +96,8 @@ describe('helpers/poolHelper/', () => {
       })
       expect(result.length).toEqual(2)
       // Note: `getPoolTableRowsData` reverses the order of given `poolDetails`
-      expect(result[0].asset).toEqual(ASSETS_TESTNET.FTM)
-      expect(result[1].asset).toEqual(ASSETS_TESTNET.BOLT)
+      expect(result[0].asset).toEqual(ASSETS_MAINNET.BTC)
+      expect(result[1].asset).toEqual(ASSETS_MAINNET.DOGE)
     })
 
     it('returns data for available pools', () => {
@@ -109,8 +109,8 @@ describe('helpers/poolHelper/', () => {
       })
       expect(result.length).toEqual(2)
       // Note: `getPoolTableRowsData` reverses the order of given `poolDetails`
-      expect(result[0].asset).toEqual(ASSETS_TESTNET.FTM)
-      expect(result[1].asset).toEqual(ASSETS_TESTNET.TOMO)
+      expect(result[0].asset).toEqual(ASSETS_MAINNET.BTC)
+      expect(result[1].asset).toEqual(ASSETS_MAINNET.ETH)
     })
   })
 

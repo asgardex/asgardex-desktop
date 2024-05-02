@@ -41,7 +41,7 @@ Symbols:
 
 ### THORChain Exchange
 
-|                | RUNE               | BNB / BEP2         | BTC                | BCH                | DOGE               | ETH / ERC20        | LTC                | COSMOS             | BSC                | AVAX               |
+|                | RUNE               | BSC /BRC20       | BTC                | BCH                | DOGE               | ETH / ERC20        | LTC                | COSMOS             | BSC                | AVAX               |
 | -------------- | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
 | Pools overview | -                  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Pool detail    | -                  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |

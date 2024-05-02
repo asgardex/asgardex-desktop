@@ -360,7 +360,7 @@ describe('helpers/assetHelper', () => {
       const result = getAssetFromNullableString('BSC.BNB')
       expect(eqOAsset.equals(result, O.some(AssetBSC))).toBeTruthy()
     })
-    it('bnb.bnb (lowercase)', () => {
+    it('bsc.bnb (lowercase)', () => {
       const result = getAssetFromNullableString('bsc.bnb')
       expect(eqOAsset.equals(result, O.some(AssetBSC))).toBeTruthy()
     })
@@ -368,8 +368,8 @@ describe('helpers/assetHelper', () => {
       const result = getAssetFromNullableString('invalid')
       expect(result).toBeNone()
     })
-    it('BNB (no ticker)', () => {
-      const result = getAssetFromNullableString('BNB')
+    it('BSC (no ticker)', () => {
+      const result = getAssetFromNullableString('BSC')
       expect(result).toBeNone()
     })
     it('undefined', () => {

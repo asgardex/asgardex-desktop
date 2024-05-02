@@ -22,8 +22,8 @@ const coinsProps: ComponentProps<AssetWithAmount> = {
   asset: 'TOMOB-1E1',
   data: [
     { asset: AssetRuneNative, amount: ONE_RUNE_BASE_AMOUNT },
-    { asset: ASSETS_MAINNET.FTM, amount: assetToBase(assetAmount(1, 8)) },
-    { asset: ASSETS_MAINNET.TOMO, amount: assetToBase(assetAmount(2, 8)) }
+    { asset: ASSETS_MAINNET.ETH, amount: assetToBase(assetAmount(1, 8)) },
+    { asset: ASSETS_MAINNET.BTC, amount: assetToBase(assetAmount(2, 8)) }
   ] as AssetWithAmount[]
 }
 

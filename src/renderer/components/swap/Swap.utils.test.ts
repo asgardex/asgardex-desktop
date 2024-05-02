@@ -5,7 +5,7 @@ import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, assetToBase, baseAmount, bn } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 
-import { ASSETS_TESTNET } from '../../../shared/mock/assets'
+import { ASSETS_MAINNET } from '../../../shared/mock/assets'
 import { AssetBTC, AssetETH, AssetRuneNative, AssetBSC } from '../../../shared/utils/asset'
 import { AssetUSDCBSC, AssetUSDT62E, AssetUSDTERC20Testnet } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
@@ -26,15 +26,15 @@ import {
 describe('components/swap/utils', () => {
   describe('isRuneSwap', () => {
     it('should return none if no RUNE asset', () => {
-      expect(isRuneSwap(ASSETS_TESTNET.BOLT, AssetBSC)).toBeNone()
+      expect(isRuneSwap(ASSETS_MAINNET.DOGE, AssetBSC)).toBeNone()
     })
 
     it('should return some(true) if target asset is RUNE', () => {
-      expect(isRuneSwap(ASSETS_TESTNET.BOLT, AssetRuneNative)).toEqual(O.some(true))
+      expect(isRuneSwap(ASSETS_MAINNET.BTC, AssetRuneNative)).toEqual(O.some(true))
     })
 
     it('should return some(false) if source asset is RUNE', () => {
-      expect(isRuneSwap(AssetRuneNative, ASSETS_TESTNET.BOLT)).toEqual(O.some(false))
+      expect(isRuneSwap(AssetRuneNative, ASSETS_MAINNET.ETH)).toEqual(O.some(false))
     })
   })
 
@@ -49,7 +49,7 @@ describe('components/swap/utils', () => {
             { asset: AssetRuneNative, assetPrice: bn(0) },
             { asset: AssetBSC, assetPrice: bn(1) }
           ],
-          ASSETS_TESTNET.FTM
+          ASSETS_MAINNET.USDT
         )
       ).toEqual(O.some({ asset: AssetRuneNative, assetPrice: bn(0) }))
     })
@@ -118,7 +118,7 @@ describe('components/swap/utils', () => {
         poolsData
       }
       // Prices
-      // 1 BSC = 600 BUSD or 1 USDT = 0,001666667 BNB
+      // 1 BSC.BNB = 600 BUSD or 1 USDT = 0,001666667 BSC.BNB
       // Formula:
       // 1.5 * (inboundFeeInUSDT + outboundFeeInUSDT)
       // = 1.5 * (0.0001 * 600 + 0.0003 * 600)
@@ -126,7 +126,7 @@ describe('components/swap/utils', () => {
       // = 0.36
 
       // Prices
-      // 1 BNB = 600 USDT or 1 USDT = 0,001666667 BNB
+      // 1 BSC.BNB = 600 USDT or 1 USDT = 0,001666667 BSC.BNB
       //
       // Formula (success):
       // inboundFeeInUSDT+ outboundFeeInUSDT
@@ -464,7 +464,7 @@ describe('components/swap/utils', () => {
         walletBalances: [dexBalance, runeBalanceLedger, bnbBalance]
       })
       expect(result.length).toEqual(1)
-      // Keystore BNB.BNB
+      // Keystore BSC.BNB
       expect(result[0].walletType).toEqual('keystore')
       expect(eqAsset.equals(result[0].asset, AssetBSC)).toBeTruthy()
     })

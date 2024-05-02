@@ -526,7 +526,7 @@ export const isBscTokenAsset: (asset: Asset) => boolean = FP.flow(getBscTokenAdd
 
 // Type guard for `PricePoolAsset`
 export const isPricePoolAsset = (asset: Asset): asset is PricePoolAsset =>
-  // all of PoolAsset except BNB -> see `PricePoolAsset`
+  // all of PoolAsset except BSC.BNB -> see `PricePoolAsset`
   [...DEFAULT_PRICE_ASSETS, ...USD_PRICE_ASSETS].includes(asset)
 
 // How should this work for synths

@@ -61,7 +61,7 @@ export const StoryBSC: StoryObj<AssetDetailsProps> = {
       changeDex={changeDex}
     />
   ),
-  name: 'BNB'
+  name: 'BSC'
 }
 export const StoryRuneTxSuccess: StoryObj<AssetDetailsProps> = {
   render: () => (
@@ -70,7 +70,6 @@ export const StoryRuneTxSuccess: StoryObj<AssetDetailsProps> = {
       walletAddress="thor-address"
       txsPageRD={RD.initial}
       balances={balances}
-      asset={AssetRuneNative}
       asset={AssetRuneNative}
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
@@ -91,7 +90,6 @@ export const StoryRuneNoSend: StoryObj<AssetDetailsProps> = {
       txsPageRD={RD.initial}
       balances={balances}
       asset={AssetRuneNative}
-      asset={AssetRuneNative}
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={true}
@@ -110,7 +108,6 @@ export const StoryRuneTxError: StoryObj<AssetDetailsProps> = {
       walletAddress="thor-address"
       txsPageRD={RD.initial}
       balances={balances}
-      asset={AssetRuneNative}
       asset={AssetRuneNative}
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}

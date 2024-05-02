@@ -9,7 +9,7 @@ import * as O from 'fp-ts/lib/Option'
 
 import { ApiUrls } from '../../../shared/api/types'
 import { BSC_ADDRESS_TESTNET, RUNE_ADDRESS_TESTNET } from '../../../shared/mock/address'
-import { ASSETS_TESTNET } from '../../../shared/mock/assets'
+import { ASSETS_MAINNET } from '../../../shared/mock/assets'
 import { AssetBSC, AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
 import { WalletAddress } from '../../../shared/wallet/types'
 import { SymDepositAddresses } from '../../services/chain/types'
@@ -277,7 +277,7 @@ describe('helpers/fp/eq', () => {
     }
     const c: Balance = {
       ...a,
-      asset: ASSETS_TESTNET.BOLT
+      asset: ASSETS_MAINNET.DOGE
     }
     it('is equal', () => {
       expect(eqBalances.equals([a, b], [a, b])).toBeTruthy()
@@ -301,7 +301,7 @@ describe('helpers/fp/eq', () => {
     }
     const c: AssetWithAmount = {
       ...a,
-      asset: ASSETS_TESTNET.BOLT
+      asset: ASSETS_MAINNET.DOGE
     }
     it('is equal', () => {
       expect(eqAssetsWithAmount.equals([a, b], [a, b])).toBeTruthy()

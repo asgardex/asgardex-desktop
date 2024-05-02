@@ -135,10 +135,6 @@ export const DefaultChainAttributes: Record<Chain, ChainAttributes> = {
     blockReward: 0,
     avgBlockTimeInSecs: 6
   },
-  BNB: {
-    blockReward: 0,
-    avgBlockTimeInSecs: 6
-  },
   THOR: {
     blockReward: 0,
     avgBlockTimeInSecs: 6
