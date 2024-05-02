@@ -1,4 +1,4 @@
-import { BNBChain } from '@xchainjs/xchain-binance'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { assetAmount, baseAmount } from '@xchainjs/xchain-util'
@@ -7,12 +7,12 @@ import * as O from 'fp-ts/lib/Option'
 
 import { ETHAddress } from '../../shared/ethereum/const'
 import { ERC20_TESTNET } from '../../shared/mock/assets'
-import { AssetATOM, AssetBCH, AssetBNB, AssetBTC, AssetETH, AssetLTC, AssetRuneNative } from '../../shared/utils/asset'
+import { AssetATOM, AssetBCH, AssetBSC, AssetBTC, AssetETH, AssetLTC, AssetRuneNative } from '../../shared/utils/asset'
 import {
-  AssetBUSDBAF,
-  AssetBUSDBD1,
   AssetUniH,
   AssetUniHAddress,
+  AssetUSDCAVAX,
+  AssetUSDCBSC,
   AssetUSDTERC20,
   AssetUSDTERC20Testnet,
   AssetXRune,
@@ -21,7 +21,6 @@ import {
 } from '../const'
 import {
   isBchAsset,
-  isBnbAsset,
   isBtcAsset,
   isChainAsset,
   isEthTokenAsset,
@@ -43,7 +42,8 @@ import {
   iconUrlInERC20Whitelist,
   isRuneAsset,
   getAssetFromNullableString,
-  assetInList
+  assetInList,
+  isBscAsset
 } from './assetHelper'
 import { eqAsset, eqAssetAmount, eqBaseAmount, eqOAsset } from './fp/eq'
 
@@ -54,7 +54,7 @@ describe('helpers/assetHelper', () => {
     })
 
     it('returns false for any other asset than RUNE', () => {
-      expect(isRuneNativeAsset(AssetBNB)).toBeFalsy()
+      expect(isRuneNativeAsset(AssetBTC)).toBeFalsy()
     })
   })
 
@@ -69,9 +69,9 @@ describe('helpers/assetHelper', () => {
     })
   })
 
-  describe('isBnbAsset', () => {
-    it('checks BNB asset', () => {
-      expect(isBnbAsset(AssetBNB)).toBeTruthy()
+  describe('isBscbAsset', () => {
+    it('checks Bsc asset', () => {
+      expect(isBscAsset(AssetBSC)).toBeTruthy()
     })
   })
 
@@ -81,7 +81,7 @@ describe('helpers/assetHelper', () => {
     })
 
     it('returns false for any other asset than LTC', () => {
-      expect(isLtcAsset(AssetBNB)).toBeFalsy()
+      expect(isLtcAsset(AssetBTC)).toBeFalsy()
     })
   })
 
@@ -91,7 +91,7 @@ describe('helpers/assetHelper', () => {
     })
 
     it('returns false for any other asset than BCH', () => {
-      expect(isBchAsset(AssetBNB)).toBeFalsy()
+      expect(isBchAsset(AssetBTC)).toBeFalsy()
     })
   })
 
@@ -114,9 +114,7 @@ describe('helpers/assetHelper', () => {
     it('is true for ETH.USDT ', () => {
       expect(isEthTokenAsset(ERC20_TESTNET.USDT)).toBeTruthy()
     })
-    it('is false for ETH.RUNE', () => {
-      expect(isEthTokenAsset(ERC20_TESTNET.RUNE)).toBeTruthy()
-    })
+    // ERC20_TESTNET.RUNE Removed as it does not exist.
   })
 
   describe('getEthAssetAddress', () => {
@@ -207,10 +205,10 @@ describe('helpers/assetHelper', () => {
   })
 
   describe('assetInList', () => {
-    const list = [AssetBNB, AssetBTC, AssetRuneNative]
+    const list = [AssetBSC, AssetBTC, AssetRuneNative]
 
-    it('AssetBNB', () => {
-      expect(FP.pipe(list, assetInList(AssetBNB))).toBeTruthy()
+    it('AssetBSC', () => {
+      expect(FP.pipe(list, assetInList(AssetBSC))).toBeTruthy()
     })
     it('AssetBTC', () => {
       expect(FP.pipe(list, assetInList(AssetBTC))).toBeTruthy()
@@ -221,36 +219,36 @@ describe('helpers/assetHelper', () => {
   })
 
   describe('isPricePoolAsset', () => {
-    it('returns true for BUSDB', () => {
-      expect(isPricePoolAsset(AssetBUSDBAF)).toBeTruthy()
-      expect(isPricePoolAsset(AssetBUSDBD1)).toBeTruthy()
+    it('returns true for USDC', () => {
+      expect(isPricePoolAsset(AssetUSDCAVAX)).toBeTruthy()
+      expect(isPricePoolAsset(AssetUSDCBSC)).toBeTruthy()
     })
-    it('returns false for BNB', () => {
-      expect(isPricePoolAsset(AssetBNB)).toBeFalsy()
+    it('returns false for BTC', () => {
+      expect(isPricePoolAsset(AssetBSC)).toBeFalsy()
     })
     it('returns false for deprecated asset ', () => {
-      expect(isPricePoolAsset({ chain: BNBChain, symbol: 'RUNE-1AF', ticker: 'RUNE', synth: false })).toBeFalsy()
+      expect(isPricePoolAsset({ chain: BSCChain, symbol: 'RUNE-1AF', ticker: 'RUNE', synth: false })).toBeFalsy()
     })
   })
 
   describe('isChainAsset', () => {
-    it('BNB', () => {
-      expect(isChainAsset(AssetBNB)).toBeTruthy()
-    })
-    it('BUSDB', () => {
-      expect(isChainAsset(AssetBUSDBAF)).toBeFalsy()
-    })
     it('RUNE Native ', () => {
       expect(isChainAsset(AssetRuneNative)).toBeTruthy()
     })
     it('ATOM', () => {
       expect(isChainAsset(AssetATOM)).toBeTruthy()
     })
+    it('BSC', () => {
+      expect(isChainAsset(AssetBSC)).toBeTruthy()
+    })
+    it('BSC.USDC', () => {
+      expect(isChainAsset(AssetUSDCBSC)).toBeFalsy()
+    })
   })
 
   describe('isUSDAsset', () => {
-    it('BUSD -> true', () => {
-      expect(isUSDAsset(AssetBUSDBAF)).toBeTruthy()
+    it('USDC (BSC) -> true', () => {
+      expect(isUSDAsset(AssetUSDCBSC)).toBeTruthy()
     })
     it('USDT (ERC20) -> true', () => {
       expect(isUSDAsset(AssetUSDTERC20Testnet)).toBeTruthy()
@@ -358,20 +356,20 @@ describe('helpers/assetHelper', () => {
   })
 
   describe('getAssetFromNullableString', () => {
-    it('BNB.BNB (uppercase)', () => {
-      const result = getAssetFromNullableString('BNB.BNB')
-      expect(eqOAsset.equals(result, O.some(AssetBNB))).toBeTruthy()
+    it('BSC.BSC (uppercase)', () => {
+      const result = getAssetFromNullableString('BSC.BNB')
+      expect(eqOAsset.equals(result, O.some(AssetBSC))).toBeTruthy()
     })
-    it('bnb.bnb (lowercase)', () => {
-      const result = getAssetFromNullableString('bnb.bnb')
-      expect(eqOAsset.equals(result, O.some(AssetBNB))).toBeTruthy()
+    it('bsc.bnb (lowercase)', () => {
+      const result = getAssetFromNullableString('bsc.bnb')
+      expect(eqOAsset.equals(result, O.some(AssetBSC))).toBeTruthy()
     })
     it('invalid', () => {
       const result = getAssetFromNullableString('invalid')
       expect(result).toBeNone()
     })
-    it('BNB (no ticker)', () => {
-      const result = getAssetFromNullableString('BNB')
+    it('BSC (no ticker)', () => {
+      const result = getAssetFromNullableString('BSC')
       expect(result).toBeNone()
     })
     it('undefined', () => {

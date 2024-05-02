@@ -1,4 +1,5 @@
-import { BNBChain } from '@xchainjs/xchain-binance'
+import { BTCChain } from '@xchainjs/xchain-bitcoin'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { AssetAVAX } from '@xchainjs/xchain-thorchain-query'
@@ -6,10 +7,9 @@ import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
-import { ASSETS_TESTNET, ERC20_TESTNET } from '../../../shared/mock/assets'
-import { AssetBCH, AssetBNB, AssetBTC, AssetETH, AssetLTC, AssetRuneNative } from '../../../shared/utils/asset'
-import { AssetUSDTERC20Testnet } from '../../const'
-import { eqBaseAmount } from '../../helpers/fp/eq'
+import { ASSETS_MAINNET, ERC20_TESTNET } from '../../../shared/mock/assets'
+import { AssetBCH, AssetBTC, AssetETH, AssetLTC } from '../../../shared/utils/asset'
+import { AssetUSDC, AssetUSDT62E, AssetUSDTDAC } from '../../const'
 import { GetPoolsStatusEnum } from '../../services/midgard/types'
 import { LastblockItems } from '../../services/thorchain/types'
 import { PoolData, PoolTableRowData } from './Pools.types'
@@ -18,7 +18,6 @@ import {
   getBlocksLeftForPendingPool,
   getBlocksLeftForPendingPoolAsString,
   filterTableData,
-  minPoolTxAmountUSD,
   stringToGetPoolsStatus,
   isEmptyPool,
   FilterTableData
@@ -27,7 +26,7 @@ import {
 describe('views/pools/utils', () => {
   describe('getPoolTableRowData', () => {
     const lokPoolDetail = {
-      asset: 'BNB.FTM-585',
+      asset: 'DOGE.DOGE',
       assetDepth: '11000000000',
       runeDepth: '10000000000',
       volume24h: '10000000000',
@@ -40,9 +39,9 @@ describe('views/pools/utils', () => {
       assetBalance: assetToBase(assetAmount(100))
     }
 
-    it('transforms data for a FTM pool', () => {
+    it('transforms data for a DOGE pool', () => {
       const expected: PoolTableRowData = {
-        asset: ASSETS_TESTNET.FTM,
+        asset: ASSETS_MAINNET.DOGE,
         poolPrice: assetToBase(assetAmount(2)),
         depthAmount: assetToBase(assetAmount(220)),
         depthPrice: assetToBase(assetAmount(2000)),
@@ -85,20 +84,20 @@ describe('views/pools/utils', () => {
     const lastblock = [
       {
         thorchain: 2000,
-        chain: BNBChain
+        chain: BTCChain
       }
     ]
     it('returns number of blocks left', () => {
-      const result = O.toNullable(getBlocksLeftForPendingPool(lastblock, AssetBNB, oNewPoolCycle))
+      const result = O.toNullable(getBlocksLeftForPendingPool(lastblock, AssetBTC, oNewPoolCycle))
       expect(result).toEqual(1001)
     })
     it('returns None if NewPoolCycle is not available', () => {
-      const result = getBlocksLeftForPendingPool(lastblock, AssetBNB, O.none)
+      const result = getBlocksLeftForPendingPool(lastblock, AssetBTC, O.none)
       expect(result).toBeNone()
     })
     it('returns NOne if lastblock (thorchain) is not available', () => {
       const lastblock2: LastblockItems = []
-      const result = getBlocksLeftForPendingPool(lastblock2, AssetBNB, oNewPoolCycle)
+      const result = getBlocksLeftForPendingPool(lastblock2, AssetBTC, oNewPoolCycle)
       expect(result).toBeNone()
     })
   })
@@ -108,20 +107,20 @@ describe('views/pools/utils', () => {
     const lastblock = [
       {
         thorchain: 1000,
-        chain: BNBChain
+        chain: BTCChain
       }
     ]
     it('returns number of blocks left', () => {
-      const result = getBlocksLeftForPendingPoolAsString(lastblock, AssetBNB, oNewPoolCycle)
+      const result = getBlocksLeftForPendingPoolAsString(lastblock, AssetBTC, oNewPoolCycle)
       expect(result).toEqual('234')
     })
     it('returns empty string if NewPoolCycle is not available', () => {
-      const result = getBlocksLeftForPendingPoolAsString(lastblock, AssetBNB, O.none)
+      const result = getBlocksLeftForPendingPoolAsString(lastblock, AssetBTC, O.none)
       expect(result).toEqual('')
     })
     it('returns empty string if lastblock (thorchain) is not available', () => {
       const lastblock2: LastblockItems = []
-      const result = getBlocksLeftForPendingPoolAsString(lastblock2, AssetBNB, oNewPoolCycle)
+      const result = getBlocksLeftForPendingPoolAsString(lastblock2, AssetBTC, oNewPoolCycle)
       expect(result).toEqual('')
     })
   })
@@ -141,22 +140,27 @@ describe('views/pools/utils', () => {
         asset: AssetBCH
       },
       {
-        asset: ASSETS_TESTNET.BUSD
+        asset: AssetUSDTDAC // ETH.USDT mainnet
       },
       {
-        asset: ERC20_TESTNET.USDT
+        asset: AssetUSDT62E // ETH.USDT testnet
       },
       {
-        asset: ERC20_TESTNET.RUNE
+        asset: AssetUSDC // ETH.USDC mainnet
       },
       {
-        asset: ERC20_TESTNET.USDT
+        asset: ERC20_TESTNET.USDT // Same as AssetUSDT62E
       },
       {
         asset: AssetETH
       },
       {
-        asset: { chain: BNBChain, symbol: 'BNB.ETH-1C9', ticker: 'ETH', synth: false }
+        asset: {
+          chain: BSCChain,
+          symbol: 'BSC.USDT-0X55D398326F99059FF775485246999027B319795',
+          ticker: 'USDT',
+          synth: false
+        }
       }
     ] as PoolTableRowData[]
 
@@ -182,42 +186,17 @@ describe('views/pools/utils', () => {
 
     it('erc20', () => {
       const result = filterTableData(O.some('__erc20__'))(tableData)
-      expect(result).toEqual([tableData[5], tableData[6], tableData[7]])
+      expect(result).toEqual([tableData[4], tableData[5], tableData[6], tableData[7]])
     })
 
     it('usd', () => {
-      expect(filterTableData(O.some('__usd__'))(tableData)).toEqual([tableData[4], tableData[5], tableData[7]])
-    })
-  })
-
-  describe('minPoolTxAmount', () => {
-    it('$200 for BTC', () => {
-      const result = minPoolTxAmountUSD(AssetBTC)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(200, 8)))).toBeTruthy()
-    })
-    it('$50 for ETH', () => {
-      const result = minPoolTxAmountUSD(AssetETH)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(50, 8)))).toBeTruthy()
-    })
-    it('$100 for ERC20', () => {
-      const result = minPoolTxAmountUSD(AssetUSDTERC20Testnet)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(100, 8)))).toBeTruthy()
-    })
-    it('$10 for others (BNB)', () => {
-      const result = minPoolTxAmountUSD(AssetBNB)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(10, 8)))).toBeTruthy()
-    })
-    it('$10 for others (LTC)', () => {
-      const result = minPoolTxAmountUSD(AssetLTC)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(10, 8)))).toBeTruthy()
-    })
-    it('$10 for others (BCH)', () => {
-      const result = minPoolTxAmountUSD(AssetBCH)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(10, 8)))).toBeTruthy()
-    })
-    it('$10 for others (RUNE)', () => {
-      const result = minPoolTxAmountUSD(AssetRuneNative)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(10, 8)))).toBeTruthy()
+      expect(filterTableData(O.some('__usd__'))(tableData)).toEqual([
+        tableData[4],
+        tableData[5],
+        tableData[6],
+        tableData[7],
+        tableData[9]
+      ])
     })
   })
 

@@ -1,11 +1,10 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Meta, StoryObj } from '@storybook/react'
 import { Network, TxHash } from '@xchainjs/xchain-client'
-import { AssetRuneNative } from '@xchainjs/xchain-thorchain-query'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
 
-import { AssetDOGE } from '../../../../shared/utils/asset'
+import { AssetBSC, AssetRuneNative } from '../../../../shared/utils/asset'
 import { ZERO_BASE_AMOUNT } from '../../../const'
 import { mockWalletBalance } from '../../../helpers/test/testWalletHelper'
 import { changeDex } from '../../../services/app/service'
@@ -22,38 +21,38 @@ export default meta
 
 // Define other stories following the same pattern
 
-const bnbBalance: WalletBalance = mockWalletBalance({
-  asset: AssetDOGE,
+const bscBalance: WalletBalance = mockWalletBalance({
+  asset: AssetBSC,
   amount: assetToBase(assetAmount(1.1)),
-  walletAddress: 'BNB address'
+  walletAddress: 'BSC address'
 })
 
-const dexBalance: WalletBalance = mockWalletBalance({
+const runeBalance: WalletBalance = mockWalletBalance({
   asset: AssetRuneNative,
   amount: assetToBase(assetAmount(2.2)),
-  walletAddress: 'BNB.Rune address'
+  walletAddress: 'thor.Rune address'
 })
 
 const runeNativeBalance: WalletBalance = mockWalletBalance()
 
-const runeBalanceEmpty: WalletBalance = { ...dexBalance, amount: ZERO_BASE_AMOUNT }
-const bnbBalanceEmpty: WalletBalance = { ...bnbBalance, amount: ZERO_BASE_AMOUNT }
+const runeBalanceEmpty: WalletBalance = { ...runeBalance, amount: ZERO_BASE_AMOUNT }
+const bscBalanceEmpty: WalletBalance = { ...bscBalance, amount: ZERO_BASE_AMOUNT }
 const getBalances = (balances: WalletBalances) => NEA.fromArray<WalletBalance>(balances)
-const balances = getBalances([bnbBalance, dexBalance, runeNativeBalance])
+const balances = getBalances([bscBalance, runeBalance, runeNativeBalance])
 const openExplorerTxUrl: OpenExplorerTxUrl = (txHash: TxHash) => {
   console.log(`Open explorer - tx hash ${txHash}`)
   return Promise.resolve(true)
 }
 
 // Example conversion for the StoryBNB story
-export const StoryBNB: StoryObj<AssetDetailsProps> = {
+export const StoryBSC: StoryObj<AssetDetailsProps> = {
   render: () => (
     <AssetDetails
       walletType="keystore"
       walletAddress="bnb-address"
       txsPageRD={RD.initial}
       balances={balances}
-      asset={AssetDOGE}
+      asset={AssetBSC}
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}
@@ -62,7 +61,7 @@ export const StoryBNB: StoryObj<AssetDetailsProps> = {
       changeDex={changeDex}
     />
   ),
-  name: 'BNB'
+  name: 'BSC'
 }
 export const StoryRuneTxSuccess: StoryObj<AssetDetailsProps> = {
   render: () => (
@@ -106,7 +105,7 @@ export const StoryRuneTxError: StoryObj<AssetDetailsProps> = {
   render: () => (
     <AssetDetails
       walletType="keystore"
-      walletAddress="bnb-address"
+      walletAddress="thor-address"
       txsPageRD={RD.initial}
       balances={balances}
       asset={AssetRuneNative}
@@ -125,9 +124,9 @@ export const StoryRuneNoBalances: StoryObj<AssetDetailsProps> = {
   render: () => (
     <AssetDetails
       walletType="keystore"
-      walletAddress="bnb-address"
+      walletAddress="thor-address"
       txsPageRD={RD.initial}
-      balances={getBalances([runeBalanceEmpty, bnbBalance])}
+      balances={getBalances([runeBalanceEmpty, bscBalance])}
       asset={AssetRuneNative}
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
@@ -146,7 +145,7 @@ export const StoryRuneFeeNotCovered: StoryObj<AssetDetailsProps> = {
       walletType="keystore"
       walletAddress="bnb-address"
       txsPageRD={RD.initial}
-      balances={getBalances([dexBalance, bnbBalanceEmpty])}
+      balances={getBalances([runeBalance, bscBalanceEmpty])}
       asset={AssetRuneNative}
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}

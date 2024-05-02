@@ -2,7 +2,7 @@ import { Meta } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 
-import { AssetBNB, AssetRuneNative } from '../../../../../shared/utils/asset'
+import { AssetBSC, AssetRuneNative } from '../../../../../shared/utils/asset'
 import { WalletType } from '../../../../../shared/wallet/types'
 import * as AT from '../../../../storybook/argTypes'
 import { AssetData } from './AssetData'
@@ -23,7 +23,7 @@ const Template = ({ network, size, noTicker, noPrice, walletType }: Args) => {
 
   return (
     <AssetData
-      asset={AssetBNB}
+      asset={AssetBSC}
       noTicker={noTicker}
       amount={amount}
       price={price}

@@ -3,6 +3,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { AssetDASH } from '@xchainjs/xchain-dash'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
 import { AssetUSK } from '@xchainjs/xchain-kujira'
+import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import {
   Address,
   Asset,
@@ -27,7 +28,6 @@ import { ETHAddress } from '../../shared/ethereum/const'
 import {
   AssetATOM,
   AssetBCH,
-  AssetBNB,
   AssetBTC,
   AssetDOGE,
   AssetETH,
@@ -35,9 +35,7 @@ import {
   AssetBSC,
   AssetLTC,
   AssetRuneNative,
-  AssetSynthBnb,
   AssetSynthBtc,
-  AssetSynthBusd,
   AssetSynthEth,
   AssetCacao,
   AssetMaya,
@@ -84,16 +82,6 @@ import { sequenceTOption } from './fpHelpers'
  * */
 export const THORCHAIN_DECIMAL = 8
 
-export const CACAO_DECIMAL = 10
-
-/**
- * Number of decimals for Binance chain assets
- * Example:
- * 1 RUNE == 100,000,000 ð (tor)
- * 0.00000001 RUNE == 1 ð (tor)
- * */
-export const BNB_DECIMAL = 8
-
 export const isAssetInMayachainPools = (asset: Asset): boolean =>
   eqAsset.equals(asset, AssetCacao || AssetDASH || AssetKUJI)
 
@@ -138,11 +126,6 @@ export const isDashSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset,
 export const isBchSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthBCH)
 
 /**
- * Checks whether an asset is a BNB asset
- */
-export const isBnbAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetBNB)
-
-/**
  * Checks whether an asset is a Cacao asset
  */
 export const isCacaoAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetCacao)
@@ -151,11 +134,6 @@ export const isCacaoAsset = (asset: Asset): boolean => eqAsset.equals(asset, Ass
  * Checks whether an asset is a Maya asset
  */
 export const isMayaAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetMaya)
-
-/**
- * Checks whether an asset is a BNB synthetic asset
- */
-export const isBnbAssetSynth = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthBnb || AssetSynthBusd)
 
 /**
  * Checks whether an asset is a BTC asset
@@ -545,7 +523,7 @@ export const isBscTokenAsset: (asset: Asset) => boolean = FP.flow(getBscTokenAdd
 
 // Type guard for `PricePoolAsset`
 export const isPricePoolAsset = (asset: Asset): asset is PricePoolAsset =>
-  // all of PoolAsset except BNB -> see `PricePoolAsset`
+  // all of PoolAsset except BSC.BNB -> see `PricePoolAsset`
   [...DEFAULT_PRICE_ASSETS, ...USD_PRICE_ASSETS].includes(asset)
 
 // How should this work for synths

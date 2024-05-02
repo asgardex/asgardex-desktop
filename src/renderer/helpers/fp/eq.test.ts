@@ -1,5 +1,6 @@
-import { BNBChain } from '@xchainjs/xchain-binance'
+import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Balance, Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, baseAmount, bn } from '@xchainjs/xchain-util'
@@ -7,9 +8,9 @@ import { Chain } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 
 import { ApiUrls } from '../../../shared/api/types'
-import { BNB_ADDRESS_TESTNET, RUNE_ADDRESS_TESTNET } from '../../../shared/mock/address'
-import { ASSETS_TESTNET } from '../../../shared/mock/assets'
-import { AssetBNB, AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
+import { BSC_ADDRESS_TESTNET, RUNE_ADDRESS_TESTNET } from '../../../shared/mock/address'
+import { ASSETS_MAINNET } from '../../../shared/mock/assets'
+import { AssetBSC, AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
 import { WalletAddress } from '../../../shared/wallet/types'
 import { SymDepositAddresses } from '../../services/chain/types'
 import { PoolAddress, PoolShare } from '../../services/midgard/types'
@@ -82,7 +83,7 @@ describe('helpers/fp/eq', () => {
     })
     it('is not equal', () => {
       const a = AssetRuneNative
-      const b = AssetBNB
+      const b = AssetBSC
       expect(eqAsset.equals(a, b)).toBeFalsy()
     })
   })
@@ -94,11 +95,11 @@ describe('helpers/fp/eq', () => {
     })
     it('different some(asset) are not equal', () => {
       const a = O.some(AssetRuneNative)
-      const b = O.some(AssetBNB)
+      const b = O.some(AssetBSC)
       expect(eqOAsset.equals(a, b)).toBeFalsy()
     })
     it('none/some are not equal', () => {
-      const b = O.some(AssetBNB)
+      const b = O.some(AssetBSC)
       expect(eqOAsset.equals(O.none, b)).toBeFalsy()
     })
     it('none/none are equal', () => {
@@ -111,7 +112,7 @@ describe('helpers/fp/eq', () => {
       expect(eqChain.equals(THORChain, THORChain)).toBeTruthy()
     })
     it('is not equal', () => {
-      expect(eqChain.equals(THORChain, BNBChain)).toBeFalsy()
+      expect(eqChain.equals(THORChain, BTCChain)).toBeFalsy()
     })
   })
 
@@ -122,11 +123,11 @@ describe('helpers/fp/eq', () => {
     })
     it('different some(chain) are not equal', () => {
       const a: O.Option<Chain> = O.some(THORChain)
-      const b: O.Option<Chain> = O.some(BNBChain)
+      const b: O.Option<Chain> = O.some(BTCChain)
       expect(eqOChain.equals(a, b)).toBeFalsy()
     })
     it('none/some are not equal', () => {
-      const b: O.Option<Chain> = O.some(BNBChain)
+      const b: O.Option<Chain> = O.some(BTCChain)
       expect(eqOChain.equals(O.none, b)).toBeFalsy()
     })
     it('none/none are equal', () => {
@@ -197,14 +198,14 @@ describe('helpers/fp/eq', () => {
     it('is equal', () => {
       const a: Balance = {
         amount: baseAmount('1'),
-        asset: AssetBNB
+        asset: AssetBSC
       }
       expect(eqBalance.equals(a, a)).toBeTruthy()
     })
     it('is not equal', () => {
       const a: Balance = {
         amount: baseAmount('1'),
-        asset: AssetBNB
+        asset: AssetBSC
       }
       // b = same as a, but another amount
       const b: Balance = {
@@ -225,14 +226,14 @@ describe('helpers/fp/eq', () => {
     it('is equal', () => {
       const a: AssetWithAmount = {
         amount: baseAmount('1'),
-        asset: AssetBNB
+        asset: AssetBSC
       }
       expect(eqAssetWithAmount.equals(a, a)).toBeTruthy()
     })
     it('is not equal', () => {
       const a: AssetWithAmount = {
         amount: baseAmount('1'),
-        asset: AssetBNB
+        asset: AssetBSC
       }
       // b = same as a, but another amount
       const b: AssetWithAmount = {
@@ -272,11 +273,11 @@ describe('helpers/fp/eq', () => {
     }
     const b: Balance = {
       ...a,
-      asset: AssetBNB
+      asset: AssetBSC
     }
     const c: Balance = {
       ...a,
-      asset: ASSETS_TESTNET.BOLT
+      asset: ASSETS_MAINNET.DOGE
     }
     it('is equal', () => {
       expect(eqBalances.equals([a, b], [a, b])).toBeTruthy()
@@ -296,11 +297,11 @@ describe('helpers/fp/eq', () => {
     }
     const b: AssetWithAmount = {
       ...a,
-      asset: AssetBNB
+      asset: AssetBSC
     }
     const c: AssetWithAmount = {
       ...a,
-      asset: ASSETS_TESTNET.BOLT
+      asset: ASSETS_MAINNET.DOGE
     }
     it('is equal', () => {
       expect(eqAssetsWithAmount.equals([a, b], [a, b])).toBeTruthy()
@@ -342,7 +343,7 @@ describe('helpers/fp/eq', () => {
       // c = same as a, but another asset
       const c: PoolShare = {
         ...a,
-        asset: AssetBNB
+        asset: AssetBSC
       }
       expect(eqPoolShare.equals(a, b)).toBeFalsy()
       expect(eqPoolShare.equals(a, c)).toBeFalsy()
@@ -361,8 +362,8 @@ describe('helpers/fp/eq', () => {
     const b: PoolShare = {
       type: 'sym',
       units: bn(1),
-      asset: AssetBNB,
-      assetAddress: O.some(BNB_ADDRESS_TESTNET),
+      asset: AssetBSC,
+      assetAddress: O.some(BSC_ADDRESS_TESTNET),
       runeAddress: O.some(RUNE_ADDRESS_TESTNET),
       assetAddedAmount: baseAmount(0.5)
     }
@@ -392,7 +393,7 @@ describe('helpers/fp/eq', () => {
       halted: false
     }
     const b: PoolAddress = {
-      chain: BNBChain,
+      chain: BSCChain,
       address: 'addressB',
       router: O.some('routerB'),
       halted: false
@@ -423,7 +424,7 @@ describe('helpers/fp/eq', () => {
       }
     }
     const c: PricePool = {
-      asset: AssetBNB,
+      asset: AssetBSC,
       poolData: {
         dexBalance: baseAmount(2),
         assetBalance: baseAmount(1)
@@ -459,7 +460,7 @@ describe('helpers/fp/eq', () => {
     it('is not equal', () => {
       expect(eqWalletAddress.equals(a, { ...a, address: 'another' })).toBeFalsy()
       expect(eqWalletAddress.equals(a, { ...a, type: 'ledger' })).toBeFalsy()
-      expect(eqWalletAddress.equals(a, { ...a, chain: BNBChain })).toBeFalsy()
+      expect(eqWalletAddress.equals(a, { ...a, chain: BSCChain })).toBeFalsy()
       expect(eqWalletAddress.equals(a, { ...a, walletIndex: 1 })).toBeFalsy()
     })
   })
@@ -487,7 +488,7 @@ describe('helpers/fp/eq', () => {
     it('is not equal', () => {
       expect(eqOWalletAddress.equals(O.some(a), O.some({ ...a, address: 'another' }))).toBeFalsy()
       expect(eqOWalletAddress.equals(O.some(a), O.some({ ...a, type: 'ledger' }))).toBeFalsy()
-      expect(eqOWalletAddress.equals(O.some(a), O.some({ ...a, chain: BNBChain }))).toBeFalsy()
+      expect(eqOWalletAddress.equals(O.some(a), O.some({ ...a, chain: BSCChain }))).toBeFalsy()
       expect(eqOWalletAddress.equals(O.some(a), O.some({ ...a, walletIndex: 1 }))).toBeFalsy()
     })
   })
@@ -495,7 +496,7 @@ describe('helpers/fp/eq', () => {
   describe('eqSymDepositAddresses', () => {
     const rune: WalletAddress = mockWalletAddress()
     const oRune: O.Option<WalletAddress> = O.some(rune)
-    const asset: WalletAddress = mockWalletAddress({ chain: BNBChain })
+    const asset: WalletAddress = mockWalletAddress({ chain: BSCChain })
     const oAsset: O.Option<WalletAddress> = O.some(asset)
     const addresses: SymDepositAddresses = { rune: oRune, asset: oAsset }
 
@@ -511,7 +512,7 @@ describe('helpers/fp/eq', () => {
         eqSymDepositAddresses.equals(addresses, { asset: oAsset, rune: O.some({ ...rune, type: 'ledger' }) })
       ).toBeFalsy()
       expect(
-        eqSymDepositAddresses.equals(addresses, { asset: oAsset, rune: O.some({ ...rune, chain: BNBChain }) })
+        eqSymDepositAddresses.equals(addresses, { asset: oAsset, rune: O.some({ ...rune, chain: BSCChain }) })
       ).toBeFalsy()
       expect(
         eqSymDepositAddresses.equals(addresses, { asset: oAsset, rune: O.some({ ...rune, walletIndex: 1 }) })

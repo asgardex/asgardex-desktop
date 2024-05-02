@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { Keystore } from '@xchainjs/xchain-crypto'
@@ -28,13 +27,6 @@ export const mockValidatePassword$ = (password: string) =>
 export const MOCK_PHRASE = 'rural bright ball negative already grass good grant nation screen model pizza'
 
 export const MOCK_WALLET_ADDRESSES: WalletAddresses = [
-  {
-    address: 'tbnb1ed04qgw3s69z90jskr3shpyn9mr0e59qdtsxqa',
-    type: 'ledger',
-    chain: BNBChain,
-    walletIndex: 0,
-    hdMode: 'default'
-  },
   {
     address: 'tthor13gym97tmw3axj3hpewdggy2cr288d3qffr8skg',
     type: 'ledger',

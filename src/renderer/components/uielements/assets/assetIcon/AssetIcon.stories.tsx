@@ -1,7 +1,7 @@
 import { Meta, StoryFn } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 
-import { AssetBCH, AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../../../../shared/utils/asset'
+import { AssetBCH, AssetBSC, AssetBTC, AssetETH, AssetRuneNative } from '../../../../../shared/utils/asset'
 import * as AT from '../../../../storybook/argTypes'
 import { AssetIcon as Component, ComponentProps } from './AssetIcon'
 
@@ -22,11 +22,11 @@ const meta: Meta<typeof Component> = {
     },
     asset: {
       name: 'asset',
-      options: ['RUNE', 'BTC', 'BNB', 'ETH', 'BCH'],
+      options: ['RUNE', 'BTC', 'BSC', 'ETH', 'BCH'],
       mapping: {
         RUNE: AssetRuneNative,
         BTC: AssetBTC,
-        BNB: AssetBNB,
+        BSC: AssetBSC,
         BCH: AssetBCH,
         ETH: AssetETH
       }

@@ -42,7 +42,7 @@ const meta: Meta<typeof Template> = {
       name: 'Assets',
       control: {
         type: 'select',
-        options: ['BNB.BNB', 'BNB.BNB|BTC.BTC', 'ETH.ETH']
+        options: ['BSC.BNB', 'BSC.BNB|BTC.BTC', 'ETH.ETH']
       }
     },
     onClickOpenAsymTool: {
@@ -52,7 +52,7 @@ const meta: Meta<typeof Template> = {
   args: {
     network: Network.Mainnet,
     loading: false,
-    assets: 'BNB.BNB'
+    assets: 'BSC.BNB'
   }
 }
 

@@ -1,4 +1,3 @@
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
@@ -15,7 +14,6 @@ import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { isChainOfThor } from '../../../../shared/utils/chain'
 import { isCacaoAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { liveData } from '../../../helpers/rx/liveData'
-import * as BNB from '../../binance'
 import * as BTC from '../../bitcoin'
 import * as BCH from '../../bitcoincash'
 import * as COSMOS from '../../cosmos'
@@ -63,11 +61,6 @@ export const poolOutboundFee$ = (asset: Asset): PoolFeeLD => {
  */
 export const poolInboundFee$ = (asset: Asset, memo: string): PoolFeeLD => {
   switch (asset.chain) {
-    case BNBChain:
-      return FP.pipe(
-        BNB.fees$(),
-        liveData.map((fees) => ({ asset, amount: fees.fast }))
-      )
     case DOGEChain:
       return FP.pipe(
         DOGE.feesWithRates$(memo),

@@ -1,6 +1,6 @@
 import { fail } from 'assert'
 
-import { BNBChain } from '@xchainjs/xchain-binance'
+import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { FeeOption, Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { baseAmount } from '@xchainjs/xchain-util'
@@ -10,7 +10,7 @@ import * as FP from 'fp-ts/lib/function'
 import { ZERO_BASE_AMOUNT } from '../../renderer/const'
 import { eqBaseAmount } from '../../renderer/helpers/fp/eq'
 import { MOCK_KEYSTORE } from '../mock/wallet'
-import { AssetBNB, AssetRuneNative } from '../utils/asset'
+import { AssetBTC, AssetRuneNative } from '../utils/asset'
 import { mapIOErrors } from '../utils/fp'
 import {
   BaseAmountEncoded,
@@ -84,13 +84,14 @@ describe('shared/io', () => {
       )
     })
   })
+
   describe('ipcLedgerSendTxParams', () => {
     it('encode IPCLedgerSendTxParams', () => {
       const encoded = ipcLedgerSendTxParamsIO.encode({
-        chain: BNBChain,
+        chain: BTCChain,
         network: Network.Mainnet,
-        asset: AssetBNB,
-        feeAsset: AssetBNB,
+        asset: AssetBTC,
+        feeAsset: AssetBTC,
         amount: baseAmount(10),
         sender: 'address-abc',
         recipient: 'address-abc',
@@ -103,10 +104,10 @@ describe('shared/io', () => {
         hdMode: 'default'
       })
       expect(encoded).toEqual({
-        chain: 'BNB',
+        chain: 'BTC',
         network: Network.Mainnet,
-        asset: 'BNB.BNB',
-        feeAsset: 'BNB.BNB',
+        asset: 'BTC.BTC',
+        feeAsset: 'BTC.BTC',
         amount: { amount: '10', decimal: 8 },
         sender: 'address-abc',
         recipient: 'address-abc',
@@ -122,10 +123,10 @@ describe('shared/io', () => {
 
     it('encode IPCLedgerSendTxParams - undefined fee option / fee amount / nodeUrl', () => {
       const encoded = ipcLedgerSendTxParamsIO.encode({
-        chain: BNBChain,
+        chain: BTCChain,
         network: Network.Mainnet,
-        asset: AssetBNB,
-        feeAsset: AssetBNB,
+        asset: AssetBTC,
+        feeAsset: AssetBTC,
         amount: baseAmount(10),
         sender: 'address-abc',
         recipient: 'address-abc',
@@ -139,10 +140,10 @@ describe('shared/io', () => {
       })
 
       expect(encoded).toEqual({
-        chain: 'BNB',
+        chain: 'BTC',
         network: Network.Mainnet,
-        asset: 'BNB.BNB',
-        feeAsset: 'BNB.BNB',
+        asset: 'BTC.BTC',
+        feeAsset: 'BTC.BTC',
         amount: { amount: '10', decimal: 8 },
         sender: 'address-abc',
         recipient: 'address-abc',
@@ -158,9 +159,9 @@ describe('shared/io', () => {
 
     it('decode IPCLedgerSendTxParams', () => {
       const encoded = {
-        chain: 'BNB',
+        chain: 'BTC',
         network: Network.Mainnet,
-        asset: 'BNB.BNB',
+        asset: 'BTC.BTC',
         amount: { amount: '10', decimal: 8 },
         sender: 'address-abc',
         recipient: 'address-abc',
@@ -180,9 +181,9 @@ describe('shared/io', () => {
             fail(mapIOErrors(errors))
           },
           (r) => {
-            expect(r.chain).toEqual(BNBChain)
+            expect(r.chain).toEqual(BTCChain)
             expect(r.network).toEqual(Network.Mainnet)
-            expect(r.asset).toEqual(AssetBNB)
+            expect(r.asset).toEqual(AssetBTC)
             expect(eqBaseAmount.equals(r.amount, baseAmount(10, 8))).toBeTruthy()
             expect(r.memo).toEqual('memo-abc')
             expect(r.feeRate).toEqual(1)
@@ -193,9 +194,9 @@ describe('shared/io', () => {
     })
     it('decode IPCLedgerSendTxParams - feeAmount undefined', () => {
       const encoded = {
-        chain: 'BNB',
+        chain: 'BTC',
         network: Network.Mainnet,
-        asset: 'BNB.BNB',
+        asset: 'BTC.BTC',
         amount: { amount: '10', decimal: 8 },
         sender: 'address-abc',
         recipient: 'address-abc',
@@ -225,19 +226,18 @@ describe('shared/io', () => {
   describe('poolWatchListsIO', () => {
     it('encode', () => {
       const encoded = poolsWatchListsIO.encode({
-        testnet: [AssetBNB],
+        testnet: [AssetBTC],
         stagenet: [],
         mainnet: [AssetRuneNative]
       })
 
       expect(encoded).toEqual({
-        testnet: ['BNB.BNB'],
+        testnet: ['BTC.BTC'],
         mainnet: ['THOR.RUNE'],
         stagenet: []
       })
     })
   })
-
   describe('keystoreIO', () => {
     it('decoded', () => {
       const data = JSON.parse(JSON.stringify(MOCK_KEYSTORE))
@@ -318,14 +318,6 @@ describe('ipcKeystorLedgerAddressesIO', () => {
       address: 'eth-address',
       walletIndex: 1,
       hdMode: 'metamask'
-    },
-    {
-      keystoreId: 1,
-      chain: BNBChain,
-      network: Network.Stagenet,
-      address: 'nbn-address',
-      walletIndex: 2,
-      hdMode: 'default'
     }
   ]
 

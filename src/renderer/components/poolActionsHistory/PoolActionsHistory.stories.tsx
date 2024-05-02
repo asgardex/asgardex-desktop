@@ -7,7 +7,7 @@ import * as O from 'fp-ts/lib/Option'
 
 import { getMockRDValueFactory, RDStatus, rdStatusOptions } from '../../../shared/mock/rdByStatus'
 import { MOCK_WALLET_ADDRESSES } from '../../../shared/mock/wallet'
-import { AssetBNB, AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
+import { AssetLTC, AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
 import { WalletAddress } from '../../../shared/wallet/types'
 import { Actions } from '../../services/midgard/types'
 import { ErrorId } from '../../services/wallet/types'
@@ -26,7 +26,7 @@ const actions: Actions = [
         address: 'string',
         values: [
           { asset: AssetRuneNative, amount: assetToBase(assetAmount(1155.241231)) },
-          { asset: AssetBNB, amount: assetToBase(assetAmount(15522.2312)) }
+          { asset: AssetBTC, amount: assetToBase(assetAmount(15522.2312)) }
         ],
         memo: 'string',
         /**
@@ -40,7 +40,7 @@ const actions: Actions = [
         address: 'string',
         values: [
           { asset: AssetBTC, amount: assetToBase(assetAmount(101.2412)) },
-          { asset: AssetBNB, amount: assetToBase(assetAmount(120.232)) }
+          { asset: AssetLTC, amount: assetToBase(assetAmount(120.232)) }
         ],
         memo: 'string',
         /**
@@ -72,7 +72,7 @@ const actions: Actions = [
     out: [
       {
         address: 'string',
-        values: [{ asset: AssetBNB, amount: assetToBase(assetAmount(12.23)) }],
+        values: [{ asset: AssetBTC, amount: assetToBase(assetAmount(12.23)) }],
         memo: 'string',
         /**
          * Transaction id hash. Some transactions (such as outbound transactions made in the native asset) may have a zero value.
@@ -112,7 +112,7 @@ const actions: Actions = [
         address: 'string',
         values: [
           { asset: AssetRuneNative, amount: assetToBase(assetAmount(12.3)) },
-          { asset: AssetBNB, amount: assetToBase(assetAmount(2.34)) }
+          { asset: AssetBTC, amount: assetToBase(assetAmount(2.34)) }
         ],
         memo: 'string',
         /**

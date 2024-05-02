@@ -1,11 +1,11 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { BaseAmount, baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
 
 import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
-import { CACAO_DECIMAL } from '../helpers/assetHelper'
 import { liveData } from '../helpers/rx/liveData'
 
 export type Color = 'green' | 'yellow' | 'red' | 'grey'

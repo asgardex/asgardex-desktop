@@ -1,6 +1,6 @@
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
@@ -42,16 +42,6 @@ describe('helpers/addressHelper', () => {
     it('bitcoin cash mainnet', () => {
       const result = truncateAddress('13kwsEHsKn82UobM9WaTRbU2vCW5qXkY97', BCHChain, Network.Testnet)
       expect(result).toEqual('13kwsE...Y97')
-    })
-
-    it('binance testnet', () => {
-      const result = truncateAddress('tbnb1ed04qgw3s69z90jskr3shpyn9mr0e59qdtsxqa', BNBChain, Network.Testnet)
-      expect(result).toEqual('tbnb1ed...xqa')
-    })
-
-    it('binance mainnet', () => {
-      const result = truncateAddress('bnb1ed04qgw3s69z90jskr3shpyn9mr0e59qdtsxqa', BNBChain, Network.Testnet)
-      expect(result).toEqual('bnb1ed0...xqa')
     })
 
     it('litecoin testnet', () => {
@@ -106,16 +96,6 @@ describe('helpers/addressHelper', () => {
       expect(result).toEqual('qr20g55jd7x3dalp4qxjfgfvda0nwr8cfccrgxd0dw')
     })
 
-    it('binance testnet', () => {
-      const result = removeAddressPrefix('tbnb1ed04qgw3s69z90jskr3shpyn9mr0e59qdtsxqa')
-      expect(result).toEqual('tbnb1ed04qgw3s69z90jskr3shpyn9mr0e59qdtsxqa')
-    })
-
-    it('binance mainnet', () => {
-      const result = removeAddressPrefix('bnb1ed04qgw3s69z90jskr3shpyn9mr0e59qdtsxqa')
-      expect(result).toEqual('bnb1ed04qgw3s69z90jskr3shpyn9mr0e59qdtsxqa')
-    })
-
     it('litecoin testnet', () => {
       const result = removeAddressPrefix('tltc1qtephp596jhpwrawlp67junuk347zl2cwpucctk')
       expect(result).toEqual('tltc1qtephp596jhpwrawlp67junuk347zl2cwpucctk')
@@ -158,11 +138,11 @@ describe('helpers/addressHelper', () => {
   describe('hasLedgerAddress', () => {
     const addresses: LedgerAddresses = [
       {
-        address: 'bnb-address',
+        address: 'bsc-address',
         type: 'ledger',
         keystoreId: 1,
         network: Network.Mainnet,
-        chain: BNBChain,
+        chain: BSCChain,
         walletIndex: 1,
         hdMode: 'default'
       },
@@ -176,11 +156,11 @@ describe('helpers/addressHelper', () => {
         hdMode: 'default'
       }
     ]
-    it('has ledger BNB', () => {
-      expect(hasLedgerAddress(addresses, BNBChain)).toBeTruthy()
+    it('has ledger BSC', () => {
+      expect(hasLedgerAddress(addresses, BSCChain)).toBeTruthy()
     })
     it('has ledger ETH', () => {
-      expect(hasLedgerAddress(addresses, BNBChain)).toBeTruthy()
+      expect(hasLedgerAddress(addresses, ETHChain)).toBeTruthy()
     })
     it('has NOT ledger BTC', () => {
       expect(hasLedgerAddress(addresses, BTCChain)).toBeFalsy()
