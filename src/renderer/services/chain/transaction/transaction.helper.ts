@@ -16,14 +16,13 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTC_DECIMAL } from '@xchainjs/xchain-litecoin'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RUNE_DECIMAL as THOR_DECIMAL } from '@xchainjs/xchain-thorchain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { BaseAmount, baseAmount } from '@xchainjs/xchain-util'
 import { Chain } from '@xchainjs/xchain-util'
 
 import { isEnabledChain } from '../../../../shared/utils/chain'
-import { CACAO_DECIMAL } from '../../../helpers/assetHelper'
 import { KUJI_DECIMAL } from '../../kuji/const'
 
 /**

@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
+import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Asset,
@@ -23,12 +24,7 @@ import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
 import { isLedgerWallet } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../const'
-import {
-  CACAO_DECIMAL,
-  getTwoSigfigAssetAmount,
-  THORCHAIN_DECIMAL,
-  to1e8BaseAmount
-} from '../../../helpers/assetHelper'
+import { getTwoSigfigAssetAmount, THORCHAIN_DECIMAL, to1e8BaseAmount } from '../../../helpers/assetHelper'
 import { eqAsset } from '../../../helpers/fp/eq'
 import { getWithdrawMemo } from '../../../helpers/memoHelper'
 import * as PoolHelpers from '../../../helpers/poolHelper'

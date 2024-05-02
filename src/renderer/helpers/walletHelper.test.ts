@@ -15,6 +15,7 @@ import { ASSETS_MAINNET } from '../../shared/mock/assets'
 import { AssetBSC, AssetLTC, AssetRuneNative } from '../../shared/utils/asset'
 import { AssetUSDCBSC } from '../const'
 import { NonEmptyWalletBalances, WalletBalance, WalletBalances } from '../services/wallet/types'
+import { isRuneNativeAsset } from './assetHelper'
 import { eqWalletBalances } from './fp/eq'
 import { mockWalletBalance } from './test/testWalletHelper'
 import {
@@ -165,6 +166,12 @@ describe('walletHelper', () => {
   })
 
   describe('getWalletByAddress', () => {
+    it('returns address of RUNE wallet', () => {
+      const balances: WalletBalances = NEA.fromReadonlyNonEmptyArray([RUNE_WB, DOGE_WB, BSC_WB])
+      const result = O.toNullable(getWalletByAddress(balances, RUNE_WB.walletAddress))
+      expect(isRuneNativeAsset(result?.asset ?? AssetBSC /* BSC.BNB would fail */)).toBeTruthy()
+      expect(result?.walletAddress).toEqual(RUNE_WB.walletAddress)
+    })
     it('returns none if BSC.BNB wallet address is not available', () => {
       const balances: WalletBalances = NEA.fromReadonlyNonEmptyArray([DOGE_WB, BSC_WB])
       const result = getWalletByAddress(balances, RUNE_WB.walletAddress)

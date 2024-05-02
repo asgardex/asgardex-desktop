@@ -199,47 +199,7 @@ describe('views/pools/utils', () => {
       ])
     })
   })
-  // Removing minPoolTxAmount tests as https://github.com/xchainjs/xchainjs-lib/issues/299 was implemented.
-  // From pool.utils
-  /**
-   * Helper to get min. amount for pool txs
-   * We use these currently to make sure all fees are covered
-   *
-   * TODO (@asgdx-team) Remove min. amount if xchain-* gets fee rates from THORChain
-   * @see: https://github.com/xchainjs/xchainjs-lib/issues/299
-   */
-  /**
-  describe('minPoolTxAmount', () => {
-    it('$200 for BTC', () => {
-      const result = minPoolTxAmountUSD(AssetBTC)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(200, 8)))).toBeTruthy()
-    })
-    it('$50 for ETH', () => {
-      const result = minPoolTxAmountUSD(AssetETH)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(50, 8)))).toBeTruthy()
-    })
-    it('$100 for ERC20', () => {
-      const result = minPoolTxAmountUSD(AssetUSDTERC20Testnet)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(100, 8)))).toBeTruthy()
-    })
-    it('$10 for others (BSC)', () => {
-      const result = minPoolTxAmountUSD(AssetBSC)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(10, BSC_GAS_ASSET_DECIMAL)))).toBeTruthy()
-    })
-    it('$10 for others (LTC)', () => {
-      const result = minPoolTxAmountUSD(AssetLTC)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(10, 8)))).toBeTruthy()
-    })
-    it('$10 for others (BCH)', () => {
-      const result = minPoolTxAmountUSD(AssetBCH)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(10, 8)))).toBeTruthy()
-    })
-    it('$10 for others (RUNE)', () => {
-      const result = minPoolTxAmountUSD(AssetRuneNative)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(10, 8)))).toBeTruthy()
-    })
-  })
- */
+
   describe('stringToGetPoolsStatus', () => {
     it('suspended', () => {
       const status = 'suspended'

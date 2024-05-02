@@ -5,7 +5,7 @@ import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/re
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { QuoteThornameParams, ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
+import { AssetDOGE, QuoteThornameParams, ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
 import {
   Asset,
   assetAmount,
@@ -911,6 +911,9 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                       </StyledR.Radio>
                       <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetETH.chain}>
                         ETH
+                      </StyledR.Radio>
+                      <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetDOGE}>
+                        DOGE
                       </StyledR.Radio>
                     </StyledR.Radio.Group>
                   </Styled.FormItem>
