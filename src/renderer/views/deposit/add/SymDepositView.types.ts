@@ -10,6 +10,6 @@ export type Props = {
   poolDetail: PoolDetailRD
   haltedChains: Chain[]
   mimirHalt: MimirHalt
-  runeWalletAddress: WalletAddress
+  dexWalletAddress: WalletAddress
   assetWalletAddress: WalletAddress
 }

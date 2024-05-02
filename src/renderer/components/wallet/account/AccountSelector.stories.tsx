@@ -13,7 +13,7 @@ const Template: StoryFn<Props> = (args: Props) => <Component {...args} />
 
 export const Default = Template.bind({})
 
-const few: WalletBalances = [AssetBSC, ASSETS_MAINNET.TOMO].map<WalletBalance>((asset) => ({
+const few: WalletBalances = [AssetBSC, ASSETS_MAINNET.BTC].map<WalletBalance>((asset) => ({
   walletType: 'keystore',
   asset,
   amount: assetToBase(assetAmount(1)),

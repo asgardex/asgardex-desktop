@@ -24,7 +24,7 @@
     "generate:avaxerc20whitelist": "./node_modules/.bin/ts-node --project tsconfig.scripts.json ./scripts/generateAVAXtokenlist.ts",
     "generate:bscerc20whitelist": "./node_modules/.bin/ts-node --project tsconfig.scripts.json ./scripts/generateBSCtokenlist.ts",
     "generate:arberc20whitelist": "./node_modules/.bin/ts-node --project tsconfig.scripts.json ./scripts/generateARBtokenlist.ts",
-    "storybook": "NODE_OPTIONS=\"--max-old-space-size=4096\" sb dev -p 9009 --no-manager-cache",
+    "storybook": "NODE_OPTIONS=\"--max-old-space-size=4096\" sb dev -p 9009 ",
     "build-storybook": "NODE_OPTIONS=\"--max-old-space-size=4096\" sb build",
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "prepare": "husky install"
