@@ -26,11 +26,11 @@ import {
 describe('deposit/Deposit.helper', () => {
   // pool balances
   const poolData: PoolData = {
-    runeBalance: baseAmount(200000), //  1 RUNE == 0.5 ASSET
+    dexBalance: baseAmount(200000), //  1 RUNE == 0.5 ASSET
     assetBalance: baseAmount(100000) //  1 ASSET == 2 RUNE
   }
   // user balances
-  const runeBalance = baseAmount(1000)
+  const dexBalance = baseAmount(1000)
   const assetBalance = { asset: AssetBNB, amount: baseAmount(2000) }
   const mockFees = getZeroSymDepositFees(AssetBNB)
   const fees: SymDepositFees = {
@@ -48,7 +48,7 @@ describe('deposit/Deposit.helper', () => {
 
   describe('maxRuneAmountToDeposit', () => {
     it('900', () => {
-      const result = maxRuneAmountToDeposit({ poolData, assetBalance, runeBalance, fees, dex })
+      const result = maxRuneAmountToDeposit({ poolData, assetBalance, dexBalance, fees, dex })
       // R = 200000 (rune pool)
       // A = 100000 (asset pool)
       // r = 1000 (rune balance)
@@ -66,9 +66,9 @@ describe('deposit/Deposit.helper', () => {
       expect(eqBaseAmount.equals(result, baseAmount(900))).toBeTruthy()
     })
     it('4900', () => {
-      const runeBalance = baseAmount(5000)
+      const dexBalance = baseAmount(5000)
       const assetBalance = { asset: AssetBNB, amount: baseAmount(10000) }
-      const result = maxRuneAmountToDeposit({ poolData, assetBalance, runeBalance, fees, dex })
+      const result = maxRuneAmountToDeposit({ poolData, assetBalance, dexBalance, fees, dex })
       // R = 200000 (rune pool)
       // A = 100000 (asset pool)
       // r = 5000 (rune balance)
@@ -89,7 +89,7 @@ describe('deposit/Deposit.helper', () => {
 
   describe('maxAssetAmountToDeposit', () => {
     it('gas asset -> 450', () => {
-      const result = maxAssetAmountToDeposit({ poolData, assetBalance, runeBalance, fees })
+      const result = maxAssetAmountToDeposit({ poolData, assetBalance, dexBalance, fees })
       // R = 200000 (rune pool)
       // A = 100000 (asset pool)
       // r = 1000 (rune balance)
@@ -107,9 +107,9 @@ describe('deposit/Deposit.helper', () => {
       expect(eqBaseAmount.equals(result, baseAmount(450))).toBeTruthy()
     })
     it('gas asset -> 9800', () => {
-      const runeBalance = baseAmount(20000)
+      const dexBalance = baseAmount(20000)
       const assetBalance = { asset: AssetBNB, amount: baseAmount(10000) }
-      const result = maxAssetAmountToDeposit({ poolData, assetBalance, runeBalance, fees })
+      const result = maxAssetAmountToDeposit({ poolData, assetBalance, dexBalance, fees })
       // R = 200000 (rune pool)
       // A = 100000 (asset pool)
       // r = 20000 (rune balance)
@@ -127,9 +127,9 @@ describe('deposit/Deposit.helper', () => {
       expect(eqBaseAmount.equals(result, baseAmount(9800))).toBeTruthy()
     })
     it('non gas asset -> 9950', () => {
-      const runeBalance = baseAmount(20000)
+      const dexBalance = baseAmount(20000)
       const assetBalance = { asset: AssetBUSD74E, amount: baseAmount(10000) }
-      const result = maxAssetAmountToDeposit({ poolData, assetBalance, runeBalance, fees })
+      const result = maxAssetAmountToDeposit({ poolData, assetBalance, dexBalance, fees })
       // console.log('result', result.amount().toString())
       // R = 200000 (rune pool)
       // A = 100000 (asset pool)
@@ -217,19 +217,19 @@ describe('deposit/Deposit.helper', () => {
     const poolsData = {
       'BNB.BUSD-74E': {
         assetBalance: assetToBase(assetAmount(20)), // 1 BUSD = 0.05 RUNE
-        runeBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 BUSD
+        dexBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 BUSD
       },
       'ETH.USDT-0xa3910454bf2cb59b8b3a401589a3bacc5ca42306': {
         assetBalance: assetToBase(assetAmount(20)), // 1 USDT = 0.05 RUNE
-        runeBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDT
+        dexBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDT
       },
       'BNB.BNB': {
         assetBalance: assetToBase(assetAmount(1)), // 1 BNB = 30 RUNE (600 USD)
-        runeBalance: assetToBase(assetAmount(30)) // 1 RUNE = 0.03 BNB
+        dexBalance: assetToBase(assetAmount(30)) // 1 RUNE = 0.03 BNB
       },
       'ETH.ETH': {
         assetBalance: assetToBase(assetAmount(1)), // 1 ETH = 100 RUNE (2000 USD)
-        runeBalance: assetToBase(assetAmount(100)) // 1 RUNE = 0.01 ETH
+        dexBalance: assetToBase(assetAmount(100)) // 1 RUNE = 0.01 ETH
       }
     }
 

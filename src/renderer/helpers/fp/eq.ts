@@ -197,7 +197,7 @@ export const eqHaltedChain = Eq.struct({
 
 export const eqPoolData = Eq.struct<PoolData>({
   assetBalance: eqBaseAmount,
-  runeBalance: eqBaseAmount
+  dexBalance: eqBaseAmount
 })
 
 export const eqPricePool = Eq.struct<PricePool>({

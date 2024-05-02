@@ -54,7 +54,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
     walletAddress: 'AssetDOGE wallet address'
   })
 
-  const runeBalance: WalletBalance = mockWalletBalance({
+  const dexBalance: WalletBalance = mockWalletBalance({
     asset: AssetRuneNative,
     amount: assetToBase(assetAmount(234)),
     walletAddress: 'AssetRuneNative wallet address'
@@ -64,7 +64,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
     <Component
       asset={{ asset: AssetDOGE, walletAddress: 'bnb-address', walletType, walletIndex: 0, hdMode: 'default' }}
       transfer$={transfer$}
-      balances={[dogeBalance, runeBalance]}
+      balances={[dogeBalance, dexBalance]}
       balance={dogeBalance}
       addressValidation={(_: string) => validAddress}
       fee={feeRD}

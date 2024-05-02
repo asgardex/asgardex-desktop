@@ -127,7 +127,7 @@ export const Deposit: React.FC<Props> = (props) => {
           <WidthdrawContent
             poolDetail={poolDetailRD}
             asset={assetWD}
-            runeWalletAddress={dexWalletAddress}
+            dexWalletAddress={dexWalletAddress}
             assetWalletAddress={assetWalletAddress}
             poolShare={symPoolShare}
             haltedChains={haltedChains}

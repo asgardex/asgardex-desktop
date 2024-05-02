@@ -76,8 +76,8 @@ import {
   isBscAsset,
   max1e10BaseAmount,
   getArbTokenAddress,
-  isArbAsset,
-  isArbTokenAsset
+  isArbTokenAsset,
+  isAethAsset
 } from '../../helpers/assetHelper'
 import {
   getChainAsset,
@@ -89,6 +89,7 @@ import {
   isEthChain,
   isLtcChain
 } from '../../helpers/chainHelper'
+import { isEvmChain, isEvmToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqOApproveParams, eqAddress } from '../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
@@ -1343,7 +1344,7 @@ export const Swap = ({
       case BSCChain:
         return isBscAsset(sourceAsset) ? O.some(false) : O.some(isBscTokenAsset(sourceAsset))
       case ARBChain:
-        return isArbAsset(sourceAsset) ? O.some(false) : O.some(isArbTokenAsset(sourceAsset))
+        return isAethAsset(sourceAsset) ? O.some(false) : O.some(isArbTokenAsset(sourceAsset))
       default:
         return O.none
     }
@@ -2035,7 +2036,7 @@ export const Swap = ({
 
     const description1 =
       // extra info for ERC20 assets only
-      isEthChain(sourceChain) && !isEthAsset(sourceAsset)
+      isEvmChain(sourceAsset.chain) && isEvmToken(sourceAsset)
         ? `${txtNeedsConnected} ${intl.formatMessage(
             {
               id: 'ledger.blindsign'

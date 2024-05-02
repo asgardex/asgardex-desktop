@@ -33,7 +33,6 @@ import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
 import {
   isAethAsset,
-  isArbAsset,
   isCacaoAsset,
   isDashAsset,
   isKujiAsset,
@@ -41,7 +40,7 @@ import {
   isRuneNativeAsset,
   isUSDAsset
 } from '../../../helpers/assetHelper'
-import { getChainAsset } from '../../../helpers/chainHelper'
+import { getChainAsset, isArbChain } from '../../../helpers/chainHelper'
 import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../helpers/poolHelperMaya'
 import { hiddenString, noDataString } from '../../../helpers/stringHelper'
@@ -226,7 +225,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           isDashAsset(asset) ||
           isKujiAsset(asset) ||
           isAethAsset(asset) ||
-          isArbAsset(asset)
+          isArbChain(asset.chain)
         ) {
           // First try to get the price from poolDetails
           const priceOptionFromPoolDetails = getPoolPriceValueM({

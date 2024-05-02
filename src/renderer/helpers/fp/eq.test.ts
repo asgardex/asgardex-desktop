@@ -411,21 +411,21 @@ describe('helpers/fp/eq', () => {
     const a: PricePool = {
       asset: AssetRuneNative,
       poolData: {
-        runeBalance: baseAmount(1),
+        dexBalance: baseAmount(1),
         assetBalance: baseAmount(1)
       }
     }
     const b: PricePool = {
       asset: AssetRuneNative,
       poolData: {
-        runeBalance: baseAmount(2),
+        dexBalance: baseAmount(2),
         assetBalance: baseAmount(1)
       }
     }
     const c: PricePool = {
       asset: AssetBNB,
       poolData: {
-        runeBalance: baseAmount(2),
+        dexBalance: baseAmount(2),
         assetBalance: baseAmount(1)
       }
     }

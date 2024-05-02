@@ -36,7 +36,7 @@ describe('views/pools/utils', () => {
     } as PoolDetail
 
     const pricePoolData: PoolData = {
-      runeBalance: assetToBase(assetAmount(10)),
+      dexBalance: assetToBase(assetAmount(10)),
       assetBalance: assetToBase(assetAmount(100))
     }
 

@@ -31,7 +31,7 @@ const ordByDepth = Ord.Contravariant.contramap(ordBaseAmount, ({ depthPrice }: P
  * Note: We don't have a "MAYA" pool in THORChain,
  * but do need such thing for pricing
  */
-export const MAYA_POOL_DATA: PoolData = { assetBalance: ONE_MAYA_BASE_AMOUNT, runeBalance: ONE_MAYA_BASE_AMOUNT }
+export const MAYA_POOL_DATA: PoolData = { assetBalance: ONE_MAYA_BASE_AMOUNT, dexBalance: ONE_MAYA_BASE_AMOUNT }
 
 /**
  * MAYA based `PricePool`
