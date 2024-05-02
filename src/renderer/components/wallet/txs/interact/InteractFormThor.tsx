@@ -516,8 +516,20 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     // don't render TxModal in initial state
     if (RD.isInitial(txRD)) return <></>
 
+    // Get timer value
+    const timerValue = FP.pipe(
+      txRD,
+      RD.fold(
+        () => 0,
+        FP.flow(
+          O.map(({ loaded }) => loaded),
+          O.getOrElse(() => 0)
+        ),
+        () => 0,
+        () => 100
+      )
+    )
     const oTxHash = RD.toOption(txRD)
-
     const txRDasBoolean = FP.pipe(
       txRD,
       RD.map((txHash) => !!txHash)
@@ -535,20 +547,10 @@ export const InteractFormThor: React.FC<Props> = (props) => {
             txHash={oTxHash}
             onClick={openExplorerTxUrl}
             txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
+            network={network}
           />
         }
-        timerValue={FP.pipe(
-          txRD,
-          RD.fold(
-            () => 0,
-            FP.flow(
-              O.map(({ loaded }) => loaded),
-              O.getOrElse(() => 0)
-            ),
-            () => 0,
-            () => 100
-          )
-        )}
+        timerValue={timerValue}
         extra={
           <SendAsset
             asset={{ asset, amount: amountToSend }}

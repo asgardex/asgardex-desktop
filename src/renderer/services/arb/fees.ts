@@ -10,7 +10,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { ArbZeroAddress } from '../../../shared/arb/const'
-import { isArbAsset } from '../../helpers/assetHelper'
+import { isAethAsset } from '../../helpers/assetHelper'
 import { observableState } from '../../helpers/stateHelper'
 import { FeeLD } from '../chain/types'
 import * as C from '../clients'
@@ -107,7 +107,7 @@ export const createFeesService = (client$: Client$): FeesService => {
           O.fold(
             () => Rx.of(RD.initial),
             (client) => {
-              const gasLimit = isArbAsset(asset) ? ETH_OUT_TX_GAS_LIMIT : ERC20_OUT_TX_GAS_LIMIT
+              const gasLimit = isAethAsset(asset) ? ETH_OUT_TX_GAS_LIMIT : ERC20_OUT_TX_GAS_LIMIT
               return Rx.from(client.estimateGasPrices()).pipe(
                 RxOp.map<GasPrices, Fees>((gasPrices) => ({
                   type: FeeType.PerByte,

@@ -23,7 +23,7 @@ const swap: SwapMessages = {
   'swap.errors.amount.outputShouldCoverChainFee':
     'प्राप्त राशि द्वारा कवर किया जाने वाला आउटबाउंडिंग शुल्क {fee} (वर्तमान में {amount})।',
   'swap.errors.amount.thornodeQuoteError': '{error} : स्लिप या इनपुट राशि समायोजित करें',
-  'swap.errors.pool.notAvailable': 'पूल उपलब्ध नहीं है',
+  'swap.errors.pool.notAvailable': 'पूल उपलब्ध नहीं है {pool}',
   'swap.note.lockedWallet': 'स्वैप करने के लिए आपको अपने वॉलेट को अनलॉक करने की आवश्यकता है',
   'swap.note.nowallet': 'स्वैप करने के लिए वॉलेट बनाएं या आयात करें',
   'swap.errors.asset.missingSourceAsset': 'स्रोत संपत्ति गायब है',

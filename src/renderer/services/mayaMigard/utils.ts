@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { AssetARB, ARB_GAS_ASSET_DECIMAL, ARBChain } from '@xchainjs/xchain-arbitrum'
+import { ARB_GAS_ASSET_DECIMAL, ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
@@ -33,7 +33,7 @@ import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import * as O from 'fp-ts/lib/Option'
 import * as P from 'fp-ts/lib/Predicate'
 
-import { AssetBTC, AssetETH, AssetKUJI } from '../../../shared/utils/asset'
+import { AssetARB, AssetBTC, AssetETH, AssetKUJI } from '../../../shared/utils/asset'
 import { isEnabledChain } from '../../../shared/utils/chain'
 import { optionFromNullableString } from '../../../shared/utils/fp'
 import { convertBaseAmountDecimal, isUSDAsset, CACAO_DECIMAL, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
@@ -165,7 +165,7 @@ export const getPoolDetail = (details: PoolDetails, asset: Asset): O.Option<Pool
         O.map(
           (detailAsset) =>
             detailAsset.chain === asset.chain &&
-            detailAsset.symbol === asset.symbol &&
+            detailAsset.symbol.toUpperCase() === asset.symbol.toUpperCase() &&
             detailAsset.ticker === asset.ticker
         ),
         O.getOrElse(() => false)
@@ -193,7 +193,7 @@ export const toPoolBalance = (baseAmountString: string): BaseAmount => baseAmoun
  */
 export const toPoolData = ({ assetDepth, runeDepth }: Pick<PoolDetail, 'assetDepth' | 'runeDepth'>): PoolData => ({
   assetBalance: toPoolBalance(assetDepth),
-  runeBalance: toPoolBalance(runeDepth)
+  dexBalance: toPoolBalance(runeDepth)
 })
 
 /**

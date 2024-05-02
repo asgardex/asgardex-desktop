@@ -1,3 +1,4 @@
+import { AssetAETH, AssetARB } from '@xchainjs/xchain-arbitrum'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetDASH } from '@xchainjs/xchain-dash'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
@@ -26,7 +27,6 @@ import { AvaxZeroAddress } from '../../shared/avax/const'
 import { BscZeroAddress } from '../../shared/bsc/const'
 import { ETHAddress } from '../../shared/ethereum/const'
 import {
-  AssetARB,
   AssetATOM,
   AssetBCH,
   AssetBTC,
@@ -157,6 +157,11 @@ export const isEthAsset = (asset: Asset): boolean => eqAsset.equals(asset, Asset
  * Checks whether an asset is an ARB asset
  */
 export const isArbAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetARB)
+
+/**
+ * Checks whether an asset is an ARB ETH asset
+ */
+export const isAethAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetAETH)
 /**
  * Checks whether an asset is an ARB synth asset
  */
@@ -351,7 +356,10 @@ export const validAssetForETH = (asset: Asset /* ETH or ERC20 asset */, network:
  * (3) ERC20 asset needs to be listed in `ARBERC20Whitelist`
  */
 export const validAssetForARB = (asset: Asset /* ETH or ERC20 asset */, network: Network): boolean =>
-  network !== Network.Mainnet /* (1) */ || isArbAsset(asset) /* (2) */ || assetInARBERC20Whitelist(asset)
+  network !== Network.Mainnet /* (1) */ ||
+  isArbAsset(asset) ||
+  isAethAsset(asset) /* (2) */ ||
+  assetInARBERC20Whitelist(asset)
 
 /**
  * Checks whether AVAX/ERC20 asset is whitelisted or not
@@ -364,10 +372,10 @@ export const validAssetForAVAX = (asset: Asset /* AVAX or ERC20 asset */, networ
   network !== Network.Mainnet /* (1) */ || isAvaxAsset(asset) /* (2) */ || assetInAVAXERC20Whitelist(asset)
 
 /**
- * Checks whether ETH/ERC20 asset is whitelisted or not
+ * Checks whether BSC/ERC20 asset is whitelisted or not
  * based on following rules:
  * (1) Check on `mainnet` only
- * (2) Always accept ETH
+ * (2) Always accept BSC
  * (3) ERC20 asset needs to be listed in `ERC20Whitelist`
  */
 export const validAssetForBSC = (asset: Asset /* BSC or ERC20 asset */, network: Network): boolean =>
@@ -446,7 +454,7 @@ export const getEthTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
 )
 
 /**
- * Get ethereum token address (as check sum address) from a given asset
+ * Get arb token address (as check sum address) from a given asset
  */
 export const getArbTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
   getTokenAddress,
@@ -455,7 +463,7 @@ export const getArbTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
 )
 
 /**
- * Get ethereum token address (as check sum address) from a given asset
+ * Get avax token address (as check sum address) from a given asset
  */
 export const getAvaxTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
   getTokenAddress,
@@ -464,7 +472,7 @@ export const getAvaxTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
 )
 
 /**
- * Get ethereum token address (as check sum address) from a given asset
+ * Get Bsc token address (as check sum address) from a given asset
  */
 export const getBscTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
   getTokenAddress,
@@ -482,7 +490,7 @@ export const getEthAssetAddress = (asset: Asset): O.Option<Address> =>
  * Get address (as check sum address) from an Arb or Arb token asset
  */
 export const getArbAssetAddress = (asset: Asset): O.Option<Address> =>
-  isArbAsset(asset) ? O.some(ArbZeroAddress) : getArbTokenAddress(asset)
+  isAethAsset(asset) ? O.some(ArbZeroAddress) : getArbTokenAddress(asset)
 
 /**
  * Get address (as check sum address) from an Avax or Avax token asset

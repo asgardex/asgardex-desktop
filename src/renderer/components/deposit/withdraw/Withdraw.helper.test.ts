@@ -53,15 +53,15 @@ describe('stake/Withdraw.helper', () => {
       },
       'ETH.USDT-0xa3910454bf2cb59b8b3a401589a3bacc5ca42306': {
         assetBalance: assetToBase(assetAmount(20)), // 1 USDT = 0.05 RUNE
-        runeBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDT
+        dexBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDT
       },
       'BSC.BNB': {
         assetBalance: assetToBase(assetAmount(1)), // 1 BNB = 30 RUNE (600 USD)
-        runeBalance: assetToBase(assetAmount(30)) // 1 RUNE = 0.03 BNB
+        dexBalance: assetToBase(assetAmount(30)) // 1 RUNE = 0.03 BNB
       },
       'ETH.ETH': {
         assetBalance: assetToBase(assetAmount(1)), // 1 ETH = 100 RUNE (2000 USD)
-        runeBalance: assetToBase(assetAmount(100)) // 1 RUNE = 0.01 ETH
+        dexBalance: assetToBase(assetAmount(100)) // 1 RUNE = 0.01 ETH
       }
     }
 

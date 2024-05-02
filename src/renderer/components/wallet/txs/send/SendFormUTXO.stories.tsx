@@ -49,7 +49,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
     walletAddress: 'btc wallet address'
   })
 
-  const runeBalance: WalletBalance = mockWalletBalance({
+  const dexBalance: WalletBalance = mockWalletBalance({
     amount: assetToBase(assetAmount(2, THORCHAIN_DECIMAL))
   })
 
@@ -80,7 +80,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
     <Component
       asset={{ asset: AssetBTC, walletAddress: 'btc-address', walletType, walletIndex: 0, hdMode: 'default' }}
       transfer$={transfer$}
-      balances={[btcBalance, runeBalance]}
+      balances={[btcBalance, dexBalance]}
       balance={btcBalance}
       addressValidation={(_: Address) => validAddress}
       feesWithRates={feesWithRates}

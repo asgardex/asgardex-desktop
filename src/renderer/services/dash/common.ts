@@ -21,6 +21,7 @@ import * as Rx from 'rxjs'
 import { Observable } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { blockcypherApiKey } from '../../../shared/api/blockcypher'
 import { isError } from '../../../shared/utils/guard'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
@@ -50,7 +51,8 @@ const mainnetBlockcypherProvider = new BlockcypherProvider(
   DASHChain,
   AssetDASH,
   DASH_DECIMAL,
-  BlockcypherNetwork.DASH
+  BlockcypherNetwork.DASH,
+  blockcypherApiKey || ''
 )
 export const BlockcypherDataProviders: UtxoOnlineDataProviders = {
   [Network.Testnet]: undefined,

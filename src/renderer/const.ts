@@ -1,4 +1,4 @@
-import { ARBChain } from '@xchainjs/xchain-arbitrum'
+import { ARBChain, AssetARB } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -14,7 +14,7 @@ import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, bn, Asset, assetToString, baseAmount, Chain } from '@xchainjs/xchain-util'
 
-import { AssetARB, AssetBTC, AssetETH, AssetRuneNative } from '../shared/utils/asset'
+import { AssetBTC, AssetETH, AssetRuneNative } from '../shared/utils/asset'
 import { EnabledChain } from '../shared/utils/chain'
 import { WalletType } from '../shared/wallet/types'
 import { GetPoolsPeriodEnum as GetPoolsPeriodEnumMaya } from './services/mayaMigard/types'
@@ -217,7 +217,7 @@ export const ZERO_ASSET_AMOUNT = assetAmount(ZERO_BN)
 
 export const ZERO_BASE_AMOUNT = baseAmount(ZERO_BN)
 
-export const ZERO_POOL_DATA: PoolData = { runeBalance: ZERO_BASE_AMOUNT, assetBalance: ZERO_BASE_AMOUNT }
+export const ZERO_POOL_DATA: PoolData = { dexBalance: ZERO_BASE_AMOUNT, assetBalance: ZERO_BASE_AMOUNT }
 
 export const RECOVERY_TOOL_URL: Record<Network, string> = {
   testnet: 'https://testnet.thorswap.finance/pending',

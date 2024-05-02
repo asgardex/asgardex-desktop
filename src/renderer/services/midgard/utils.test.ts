@@ -64,22 +64,22 @@ describe('services/midgard/utils/', () => {
       // RUNE pool
       const pool0 = result[0]
       expect(pool0.asset).toEqual(AssetRuneNative)
-      expect(pool0.poolData.runeBalance.amount().toNumber()).toEqual(ONE_RUNE_BASE_AMOUNT.amount().toNumber())
+      expect(pool0.poolData.dexBalance.amount().toNumber()).toEqual(ONE_RUNE_BASE_AMOUNT.amount().toNumber())
       expect(pool0.poolData.assetBalance.amount().toNumber()).toEqual(ONE_RUNE_BASE_AMOUNT.amount().toNumber())
       // BTC pool
       const btcPool = result[1]
       expect(btcPool.asset).toEqual(AssetBTC)
-      expect(btcPool.poolData.runeBalance.amount().toNumber()).toEqual(44)
+      expect(btcPool.poolData.dexBalance.amount().toNumber()).toEqual(44)
       expect(btcPool.poolData.assetBalance.amount().toNumber()).toEqual(4)
       // // ETH pool
       const ethPool = result[2]
       expect(ethPool.asset).toEqual(AssetETH)
-      expect(ethPool.poolData.runeBalance.amount().toNumber()).toEqual(22)
+      expect(ethPool.poolData.dexBalance.amount().toNumber()).toEqual(22)
       expect(ethPool.poolData.assetBalance.amount().toNumber()).toEqual(2)
       // // AssetUSDCBSC pool
       const usdc_bscPool = result[3]
       expect(usdc_bscPool.asset).toEqual(AssetUSDCBSC)
-      expect(usdc_bscPool.poolData.runeBalance.amount().toNumber()).toEqual(33)
+      expect(usdc_bscPool.poolData.dexBalance.amount().toNumber()).toEqual(33)
       expect(usdc_bscPool.poolData.assetBalance.amount().toNumber()).toEqual(3)
     })
 

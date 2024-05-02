@@ -33,7 +33,7 @@ const balances: Partial<Record<EnabledChain, ChainBalances>> = {
   [MAYAChain]: [
     {
       walletType: 'keystore',
-      walletAddress: O.some('bnb keystore'),
+      walletAddress: O.some('doge keystore'),
 
       chain: MAYAChain,
       balances: RD.success([
@@ -67,7 +67,7 @@ const balances: Partial<Record<EnabledChain, ChainBalances>> = {
           walletType: 'keystore',
           amount: baseAmount('1000000'),
           asset: AssetBTC,
-          walletAddress: 'BNB wallet address',
+          walletAddress: 'DOGE wallet address',
           walletIndex: 0,
           hdMode: 'default'
         }
@@ -103,7 +103,7 @@ const balances: Partial<Record<EnabledChain, ChainBalances>> = {
           walletType: 'keystore',
           amount: baseAmount('1000000'),
           asset: AssetRuneNative,
-          walletAddress: 'BNB wallet address',
+          walletAddress: 'DOGE wallet address',
           walletIndex: 0,
           hdMode: 'default'
         }

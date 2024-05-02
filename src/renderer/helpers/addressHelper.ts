@@ -28,7 +28,6 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
 import { isEnabledChain } from '../../shared/utils/chain'
-import { toClientNetwork } from '../../shared/utils/client'
 import { LedgerAddresses } from '../services/wallet/types'
 import { eqChain } from './fp/eq'
 
@@ -39,12 +38,11 @@ export const truncateAddress = (addr: Address, chain: Chain, network: Network): 
 }
 
 export const getAddressPrefixLength = (chain: Chain, network: Network): number => {
-  const clientNetwork = toClientNetwork(network)
   if (!isEnabledChain(chain)) throw Error(`${chain} is not supported for 'getAddressPrefixLength'`)
 
   switch (chain) {
     case BTCChain:
-      return getBitcoinPrefix(clientNetwork).length
+      return getBitcoinPrefix(network).length
     case GAIAChain:
       return getCosmosPrefix().length
     case ETHChain:
@@ -56,15 +54,15 @@ export const getAddressPrefixLength = (chain: Chain, network: Network): number =
     case BSCChain:
       return getEvmPrefix().length
     case DOGEChain:
-      return getDogePrefix(clientNetwork).length
+      return getDogePrefix(network).length
     case THORChain:
-      return getThorchainPrefix(clientNetwork).length
+      return getThorchainPrefix(network).length
     case MAYAChain:
-      return getMayachainPrefix(clientNetwork).length
+      return getMayachainPrefix(network).length
     case LTCChain:
-      return getLitecoinPrefix(clientNetwork).length
+      return getLitecoinPrefix(network).length
     case DASHChain:
-      return getDashPrefix(clientNetwork).length
+      return getDashPrefix(network).length
     case BCHChain:
       return getBCHPrefix().length
     case KUJIChain:

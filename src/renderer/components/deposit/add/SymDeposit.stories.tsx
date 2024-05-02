@@ -79,7 +79,7 @@ const defaultProps: SymDepositProps = {
   approveFee$: () => Rx.of(RD.success(baseAmount(10000000))),
   poolData: {
     assetBalance: baseAmount('1000'),
-    runeBalance: baseAmount('2000')
+    dexBalance: baseAmount('2000')
   },
   poolAddress: O.none,
   reloadBalances: () => console.log('reloadBalances'),
@@ -130,7 +130,7 @@ const defaultProps: SymDepositProps = {
   poolsData: {
     [assetToString(AssetBSC)]: {
       assetBalance: baseAmount(30),
-      runeBalance: baseAmount(10)
+      dexBalance: baseAmount(10)
     }
   },
   symPendingAssets: RD.initial,

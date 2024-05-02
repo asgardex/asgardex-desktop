@@ -1,70 +1,63 @@
-import EthApp from '@ledgerhq/hw-app-eth'
 import TransportNodeHidSingleton from '@ledgerhq/hw-transport-node-hid-singleton'
-import * as ARB from '@xchainjs/xchain-arbitrum'
-import * as AVAX from '@xchainjs/xchain-avax'
-import * as BSC from '@xchainjs/xchain-bsc'
 import { FeeOption, TxHash } from '@xchainjs/xchain-client'
-import * as ETH from '@xchainjs/xchain-ethereum'
-import { Client as XchainEvmClient } from '@xchainjs/xchain-evm'
+import { ClientLedger } from '@xchainjs/xchain-evm'
 
 import { IPCLedgerApproveERC20TokenParams } from '../../../../shared/api/io'
 import { defaultArbParams } from '../../../../shared/arb/const'
 import { defaultAvaxParams } from '../../../../shared/avax/const'
 import { defaultBscParams } from '../../../../shared/bsc/const'
-import { FEE_BOUNDS, defaultEthParams } from '../../../../shared/ethereum/const'
-import { getDerivationPath } from '../../../../shared/evm/ledger'
-import { toClientNetwork } from '../../../../shared/utils/client'
-import { LedgerSigner } from '../ethereum/LedgerSigner'
+import { defaultEthParams } from '../../../../shared/ethereum/const'
 
 export const approveLedgerERC20Token = async ({
   chain,
   network,
   contractAddress,
   spenderAddress,
-  walletIndex,
-  evmHdMode
+  walletIndex
 }: IPCLedgerApproveERC20TokenParams): Promise<TxHash> => {
-  const clientNetwork = toClientNetwork(network)
-  const path = getDerivationPath(walletIndex, evmHdMode)
-  let client: XchainEvmClient
-
-  switch (chain) {
-    case 'ETH':
-      client = new ETH.Client({
-        ...defaultEthParams,
-        network: clientNetwork,
-        feeBounds: FEE_BOUNDS[clientNetwork]
-      })
-      break
-    case 'ARB':
-      client = new ARB.Client({ ...defaultArbParams, network: clientNetwork, feeBounds: FEE_BOUNDS[clientNetwork] })
-      break
-    case 'AVAX':
-      client = new AVAX.Client({ ...defaultAvaxParams, network: clientNetwork, feeBounds: FEE_BOUNDS[clientNetwork] })
-      break
-    case 'BSC':
-      client = new BSC.Client({ ...defaultBscParams, network: clientNetwork, feeBounds: FEE_BOUNDS[clientNetwork] })
-      break
-    default:
-      client = new ETH.Client({ ...defaultEthParams, network: clientNetwork, feeBounds: FEE_BOUNDS[clientNetwork] })
-      break
-  }
+  let clientParams
 
   const transport = await TransportNodeHidSingleton.create()
-  const app = new EthApp(transport)
+  switch (chain) {
+    case 'ETH':
+      clientParams = {
+        transport,
+        ...defaultEthParams,
+        network: network
+      }
+      break
+    case 'ARB':
+      clientParams = {
+        transport,
+        ...defaultArbParams,
+        network: network
+      }
+      break
+    case 'AVAX':
+      clientParams = {
+        transport,
+        ...defaultAvaxParams,
+        network: network
+      }
+      break
+    case 'BSC':
+      clientParams = {
+        transport,
+        ...defaultBscParams,
+        network: network
+      }
+      break
+    default:
+      throw new Error(`Unsupported chain: ${chain}`)
+  }
 
-  const provider = client.getProvider()
-  const signer = new LedgerSigner({ provider, path, app })
-
-  const { wait } = await client.approve({
-    signer,
+  const client = new ClientLedger(clientParams)
+  const transactionHash = await client.approve({
     contractAddress,
     spenderAddress,
-    feeOption: FeeOption.Fast // ChainTxFeeOption.APPROVE
+    feeOption: FeeOption.Fast,
+    walletIndex
   })
-
-  // wait until the transaction has been mined
-  const { transactionHash } = await wait(1)
 
   await transport.close()
 

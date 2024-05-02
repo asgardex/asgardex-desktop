@@ -26,7 +26,7 @@ const defaultProps: WitdrawProps = {
   runeWalletAddress: mockWalletAddress(),
   runePrice: bn(1),
   assetPrice: bn(60.972),
-  runeBalance: O.some(assetToBase(assetAmount(100))),
+  dexBalance: O.some(assetToBase(assetAmount(100))),
   selectedPriceAsset: AssetRuneNative,
   reloadFees: () => console.log('reload fees'),
   shares: {
@@ -74,7 +74,7 @@ const defaultProps: WitdrawProps = {
   poolsData: {
     [assetToString(AssetBSC)]: {
       assetBalance: baseAmount(1),
-      runeBalance: baseAmount(20)
+      dexBalance: baseAmount(20)
     }
   },
   dex: 'THOR'
@@ -86,7 +86,7 @@ Default.storyName = 'default'
 export const FeesNotCovered: Story = () => {
   const props: WitdrawProps = {
     ...defaultProps,
-    runeBalance: O.some(assetToBase(assetAmount(0.5)))
+    dexBalance: O.some(assetToBase(assetAmount(0.5)))
   }
   return <Withdraw {...props} />
 }

@@ -155,6 +155,7 @@ export const eqOPoolAddresses = O.getEq(eqPoolAddresses)
 
 export const eqSwapFeesParams = Eq.struct<SwapFeesParams>({
   inAsset: eqAsset,
+  memo: eqString,
   outAsset: eqAsset
 })
 
@@ -196,7 +197,7 @@ export const eqHaltedChain = Eq.struct({
 
 export const eqPoolData = Eq.struct<PoolData>({
   assetBalance: eqBaseAmount,
-  runeBalance: eqBaseAmount
+  dexBalance: eqBaseAmount
 })
 
 export const eqPricePool = Eq.struct<PricePool>({

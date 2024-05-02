@@ -12,7 +12,7 @@ export type PricePoolCurrencyWeights = Record<string, number>
 
 export type PoolData = {
   assetBalance: BaseAmount
-  runeBalance: BaseAmount
+  dexBalance: BaseAmount
 }
 // TODO (@asgdx-team) Move all PricePool* types into `src/renderer/services/midgard/types.ts`
 export type PricePool = {

@@ -31,8 +31,9 @@ import { chainToString } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../../const'
-import { isArbAsset, isAvaxAsset, isBscAsset, isEthAsset, isUSDAsset } from '../../../../helpers/assetHelper'
+import { isAethAsset, isAvaxAsset, isBscAsset, isEthAsset, isUSDAsset } from '../../../../helpers/assetHelper'
 import { getChainAsset } from '../../../../helpers/chainHelper'
+import { isEvmChain, isEvmToken } from '../../../../helpers/evmHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { loadingString } from '../../../../helpers/stringHelper'
@@ -113,6 +114,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
   const { asset } = balance
   const sourceChainAsset = getChainAsset(asset.chain)
+
   const pricePool = usePricePool()
 
   const [selectedFeeOption, setSelectedFeeOption] = useState<FeeOption>(DEFAULT_FEE_OPTION)
@@ -156,7 +158,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
   const [currentMemo, setCurrentMemo] = useState('')
   const [affiliateTracking, setAffiliateTracking] = useState<string>('')
-  const isChainAsset = isEthAsset(asset) || isAvaxAsset(asset) || isBscAsset(asset)
+  const isChainAsset = isEthAsset(asset) || isAvaxAsset(asset) || isBscAsset(asset) || isAethAsset(asset)
 
   const handleMemo = useCallback(() => {
     let memoValue = form.getFieldValue('memo') as string
@@ -220,12 +222,12 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
   const oAssetAmount: O.Option<BaseAmount> = useMemo(() => {
     // return balance of current asset
-    if (isEthAsset(asset) || isArbAsset(asset) || isAvaxAsset(asset) || isBscAsset(asset)) {
+    if (isChainAsset) {
       return O.some(balance.amount)
     }
     // or check list of other assets to get eth balance
     return FP.pipe(getEVMAmountFromBalances(balances, getChainAsset(asset.chain)), O.map(assetToBase))
-  }, [asset, balance.amount, balances])
+  }, [asset.chain, balance.amount, balances, isChainAsset])
 
   const isFeeError = useMemo(() => {
     return FP.pipe(
@@ -313,8 +315,8 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         }
       )
     )
-    return isEthAsset(asset) ? baseAmount(maxEthAmount, balance.amount.decimal) : balance.amount
-  }, [selectedFee, oAssetAmount, asset, balance.amount])
+    return isChainAsset ? baseAmount(maxEthAmount, balance.amount.decimal) : balance.amount
+  }, [selectedFee, oAssetAmount, isChainAsset, balance.amount])
 
   // store maxAmountValue
   const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
@@ -449,13 +451,13 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       const errors = {
         msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
         msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterThan' }, { amount: '0' }),
-        msg3: isEthAsset(asset)
+        msg3: isChainAsset
           ? intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalanceAndFee' })
           : intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalance' })
       }
       return validateTxAmountInput({ input: value, maxAmount: baseToAsset(maxAmount), errors })
     },
-    [asset, intl, maxAmount]
+    [intl, isChainAsset, maxAmount]
   )
 
   const renderSlider = useMemo(() => {
@@ -649,7 +651,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
       // extended description for ERC20 tokens only
       const description1 =
-        !isEthAsset(asset) || !isArbAsset(asset) || !isAvaxAsset(asset) || !isBscAsset(asset)
+        isEvmChain(asset.chain) && isEvmToken(asset)
           ? `${txtNeedsConnected} ${intl.formatMessage(
               {
                 id: 'ledger.blindsign'

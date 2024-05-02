@@ -83,7 +83,7 @@ describe('helpers/poolHelper/', () => {
     ]
 
     const pricePoolData: PoolData = {
-      runeBalance: assetToBase(assetAmount(110)),
+      dexBalance: assetToBase(assetAmount(110)),
       assetBalance: assetToBase(assetAmount(100))
     }
 
@@ -124,7 +124,7 @@ describe('helpers/poolHelper/', () => {
     it('transforms `PoolData', () => {
       const result = toPoolData(poolDetail)
       expect(result.assetBalance.amount().toNumber()).toEqual(11000000000)
-      expect(result.runeBalance.amount().toNumber()).toEqual(10000000000)
+      expect(result.dexBalance.amount().toNumber()).toEqual(10000000000)
     })
   })
 
@@ -142,7 +142,7 @@ describe('helpers/poolHelper/', () => {
       asset: AssetUSDTBSC,
       poolData: {
         assetBalance: assetToBase(assetAmount(110000)),
-        runeBalance: assetToBase(assetAmount(100000))
+        dexBalance: assetToBase(assetAmount(100000))
       }
     }
 

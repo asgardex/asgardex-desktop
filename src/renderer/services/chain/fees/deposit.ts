@@ -48,8 +48,8 @@ const symDepositFees$: SymDepositFeesHandler = (initialAsset, dex) => {
       )
       return FP.pipe(
         liveData.sequenceS({
-          runeInFee: poolInboundFee$(dex === 'THOR' ? AssetRuneNative : AssetCacao),
-          assetInFee: poolInboundFee$(asset),
+          runeInFee: poolInboundFee$(dex === 'THOR' ? AssetRuneNative : AssetCacao, ''),
+          assetInFee: poolInboundFee$(asset, ''),
           runeOutFee: poolOutboundFee$(dex === 'THOR' ? AssetRuneNative : AssetCacao),
           assetOutFee: poolOutboundFee$(asset)
         }),
@@ -97,7 +97,7 @@ const saverDepositFee$: SaverDepositFeesHandler = (initialAsset) => {
 
       return FP.pipe(
         liveData.sequenceS({
-          assetInFee: poolInboundFee$(asset),
+          assetInFee: poolInboundFee$(asset, ''),
           assetOutFee: poolOutboundFee$(asset)
         }),
         liveData.map(({ assetInFee, assetOutFee }) => ({
@@ -144,7 +144,7 @@ const saverWithdrawFee$: SaverWithdrawFeesHandler = (initialAsset) => {
 
       return FP.pipe(
         liveData.sequenceS({
-          assetInFee: poolInboundFee$(asset),
+          assetInFee: poolInboundFee$(asset, ''),
           assetOutFee: poolOutboundFee$(asset)
         }),
         liveData.map(({ assetInFee, assetOutFee }) => ({

@@ -163,6 +163,10 @@ export const UnlockForm: React.FC<Props> = (props): JSX.Element => {
     navigate(walletRoutes.create.phrase.path())
   }, [navigate])
 
+  const importWalletHandler = useCallback(() => {
+    navigate(walletRoutes.imports.base.path())
+  }, [navigate])
+
   const renderChangeWalletError = useMemo(
     () =>
       FP.pipe(
@@ -224,15 +228,7 @@ export const UnlockForm: React.FC<Props> = (props): JSX.Element => {
                 disabled={RD.isPending(changeWalletState)}
                 className="min-w-[200px]"
               />
-              <div className="flex flex-wrap justify-between gap-4 p-20">
-                <BorderButton
-                  className="mr-20px w-full min-w-[200px] sm:mb-0 sm:w-auto sm:max-w-[200px]"
-                  size="normal"
-                  color="primary"
-                  onClick={createWalletHandler}
-                  disabled={unlocking}>
-                  {intl.formatMessage({ id: 'wallet.action.create' })}
-                </BorderButton>
+              <div className="flex flex-col justify-between gap-4 p-20">
                 <FlatButton
                   type="submit"
                   className="mr-20px w-full min-w-[200px] sm:mb-0 sm:w-auto sm:max-w-[200px]"
@@ -242,6 +238,22 @@ export const UnlockForm: React.FC<Props> = (props): JSX.Element => {
                   loading={unlocking}>
                   {intl.formatMessage({ id: 'wallet.action.unlock' })}
                 </FlatButton>
+                <BorderButton
+                  className="mr-20px w-full min-w-[200px] sm:mb-0 sm:w-auto sm:max-w-[200px]"
+                  size="normal"
+                  color="primary"
+                  onClick={createWalletHandler}
+                  disabled={unlocking}>
+                  {intl.formatMessage({ id: 'wallet.action.create' })}
+                </BorderButton>
+                <BorderButton
+                  className="mr-20px w-full min-w-[200px] sm:mb-0 sm:w-auto sm:max-w-[200px]"
+                  size="normal"
+                  color="primary"
+                  onClick={importWalletHandler}
+                  disabled={unlocking}>
+                  {intl.formatMessage({ id: 'wallet.action.import' })}
+                </BorderButton>
                 <BorderButton
                   className="w-full min-w-[200px] sm:mb-0 sm:w-auto sm:max-w-[200px]"
                   size="normal"
