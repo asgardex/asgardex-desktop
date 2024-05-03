@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { AssetCacao } from '@xchainjs/xchain-mayachain'
+import { AssetCacao, CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import {
   Configuration,
   MimirApi,
@@ -25,7 +25,6 @@ import * as RxOp from 'rxjs/operators'
 
 import { isEnabledChain } from '../../../shared/utils/chain'
 import { ZERO_BASE_AMOUNT } from '../../const'
-import { CACAO_DECIMAL } from '../../helpers/assetHelper'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { LiveData, liveData } from '../../helpers/rx/liveData'
 import { triggerStream } from '../../helpers/stateHelper'

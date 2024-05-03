@@ -1,43 +1,27 @@
-import React, { useMemo, useCallback, useState } from 'react'
+import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { WS } from '@xchainjs/xchain-binance'
 import { Asset, assetToString } from '@xchainjs/xchain-util'
 import { Button } from 'antd'
-import { useObservableState, useSubscription, useObservable } from 'observable-hooks'
+import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
-import { useBinanceContext } from '../../contexts/BinanceContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
+import { useDex } from '../../hooks/useDex'
 import { PoolsState } from '../../services/midgard/types'
 
 export const PlaygroundView: React.FC = (): JSX.Element => {
   const intl = useIntl()
-
-  const { subscribeTransfers, miniTickers$ } = useBinanceContext()
-
-  const [memo, setMemo] = useState('')
-
-  const tickers = useObservableState(miniTickers$, [])
-
-  // For debugging only - address will be provided by wallet
-  const address = 'tbnb13egw96d95lldrhwu56dttrpn2fth6cs0axzaad'
-
-  // 1. Create observable for incoming transfer messages of given address
-  const transfers$ = useObservable<WS.Transfer>(() => subscribeTransfers(address))
-
-  // 2. Define callback for handling incoming transfer messages
-  const transferHandler = useCallback((transfer: WS.Transfer) => {
-    // Do anything with transfer data
-    // we just store memo here - just to demonstrate
-    setMemo(transfer.M)
-  }, [])
-
-  // 3. Subscribe to incoming transfer events
-  useSubscription(transfers$, transferHandler)
+  const { dex } = useDex()
 
   const { service: midgardService } = useMidgardContext()
-  const poolState = useObservableState(midgardService.pools.poolsState$, RD.initial)
+  const { service: midgardMayaService } = useMidgardMayaContext()
+
+  const poolState = useObservableState(
+    dex === 'THOR' ? midgardService.pools.poolsState$ : midgardMayaService.pools.poolsState$,
+    RD.initial
+  )
 
   const renderPools = useMemo(
     () =>
@@ -76,11 +60,13 @@ export const PlaygroundView: React.FC = (): JSX.Element => {
       <h1>Pools</h1>
       <h2>Raw data: {JSON.stringify(poolState)}</h2>
       {renderPools}
-      <h1>Ticker</h1>
-      <h2>{tickers[0]?.s}</h2>
-      <Button onClick={() => midgardService.pools.reloadPools()}>Reload pools</Button>
-      <h1>Memo</h1>
-      <h2>{memo}</h2>
+      <Button
+        onClick={() => {
+          midgardService.pools.reloadPools()
+          midgardMayaService.pools.reloadPools()
+        }}>
+        Reload pools
+      </Button>
     </>
   )
 }

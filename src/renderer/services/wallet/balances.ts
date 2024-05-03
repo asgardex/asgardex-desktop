@@ -1,7 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -31,7 +30,6 @@ import { addressFromOptionalWalletAddress } from '../../helpers/walletHelper'
 import { Network$ } from '../app/types'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'
-import * as BNB from '../binance'
 import * as BTC from '../bitcoin'
 import * as BCH from '../bitcoincash'
 import * as BSC from '../bsc'
@@ -69,7 +67,6 @@ export const createBalancesService = ({
 }): BalancesService => {
   // reload all balances
   const reloadBalances: FP.Lazy<void> = () => {
-    BNB.reloadBalances()
     BTC.reloadBalances()
     DASH.reloadBalances()
     BCH.reloadBalances()
@@ -90,8 +87,6 @@ export const createBalancesService = ({
     if (!isEnabledChain(chain)) return FP.constVoid
 
     switch (chain) {
-      case BNBChain:
-        return BNB.reloadBalances
       case BTCChain:
         return BTC.reloadBalances
       case DASHChain:
@@ -143,16 +138,6 @@ export const createBalancesService = ({
       }
     }
     switch (chain) {
-      case BNBChain:
-        return {
-          reloadBalances: BNB.reloadBalances,
-          resetReloadBalances: BNB.resetReloadBalances,
-          balances$: FP.pipe(
-            network$,
-            RxOp.switchMap((network) => BNB.balances$(walletType, network, walletIndex, hdMode))
-          ),
-          reloadBalances$: BNB.reloadBalances$
-        }
       case BTCChain:
         return {
           reloadBalances: BTC.reloadBalances,
@@ -549,39 +534,6 @@ export const createBalancesService = ({
   })
 
   /**
-   * BNB Ledger balances
-   */
-  const bnbLedgerChainBalance$: ChainBalance$ = ledgerChainBalance$({
-    chain: BNBChain,
-    walletBalanceType: 'all',
-    getBalanceByAddress$: BNB.getBalanceByAddress$
-  })
-
-  /**
-   * Transforms BNB balances into `ChainBalances`
-   */
-  const bnbChainBalance$: ChainBalance$ = Rx.combineLatest([
-    BNB.addressUI$,
-    getChainBalance$({
-      chain: BNBChain,
-      walletType: 'keystore',
-      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
-      hdMode: 'default',
-      walletBalanceType: 'all'
-    })
-  ]).pipe(
-    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: 'keystore',
-      chain: BNBChain,
-      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
-      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
-      hdMode: 'default',
-      balances,
-      balancesType: 'all'
-    }))
-  )
-
-  /**
    * BTC Ledger balances
    */
   const btcLedgerChainBalance$: ChainBalance$ = ledgerChainBalance$({
@@ -896,7 +848,6 @@ export const createBalancesService = ({
         ARB: [arbChainBalance$, arbLedgerChainBalance$],
         AVAX: [avaxChainBalance$, avaxLedgerChainBalance$],
         BSC: [bscChainBalance$, bscLedgerChainBalance$],
-        BNB: [bnbChainBalance$, bnbLedgerChainBalance$],
         LTC: [ltcBalance$, ltcLedgerChainBalance$],
         DOGE: [dogeChainBalance$, dogeLedgerChainBalance$],
         GAIA: [cosmosChainBalance$, cosmosLedgerChainBalance$],

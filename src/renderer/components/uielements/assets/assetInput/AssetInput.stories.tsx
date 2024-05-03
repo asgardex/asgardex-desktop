@@ -1,14 +1,14 @@
 import { Meta, StoryFn } from '@storybook/react'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 
-import { AssetBNB } from '../../../../../shared/utils/asset'
-import { AssetBUSD74E } from '../../../../const'
+import { AssetBSC } from '../../../../../shared/utils/asset'
+import { AssetUSDCBSC } from '../../../../const'
 import { AssetInput as Component, Props } from './AssetInput'
 
 export const Default: StoryFn<Props> = (args) => <Component {...args} />
 
-const amount = { amount: assetToBase(assetAmount(1.23, 8)), asset: AssetBNB }
-const priceAmount = { amount: assetToBase(assetAmount(345, 8)), asset: AssetBUSD74E }
+const amount = { amount: assetToBase(assetAmount(1.23, 8)), asset: AssetBSC }
+const priceAmount = { amount: assetToBase(assetAmount(345, 8)), asset: AssetUSDCBSC }
 
 const meta: Meta = {
   component: Component,

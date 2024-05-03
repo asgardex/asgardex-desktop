@@ -1,5 +1,6 @@
 import React, { RefObject, useCallback, useMemo, useRef } from 'react'
 
+import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { Address } from '@xchainjs/xchain-util'
 import {
   formatBN,
@@ -18,7 +19,7 @@ import { useIntl } from 'react-intl'
 
 import { Dex } from '../../../../shared/api/types'
 import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
-import { CACAO_DECIMAL, THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
+import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { AssetWithDecimal } from '../../../types/asgardex'
 import { TooltipAddress } from '../common/Common.styles'
 import * as Styled from './PoolShare.styles'

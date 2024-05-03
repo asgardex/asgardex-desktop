@@ -1,7 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AssetAVAX, AVAX_GAS_ASSET_DECIMAL, AVAXChain } from '@xchainjs/xchain-avax'
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
@@ -38,11 +37,10 @@ import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import * as O from 'fp-ts/lib/Option'
 import * as P from 'fp-ts/lib/Predicate'
 
-import { AssetATOM, AssetBCH, AssetBNB, AssetBTC, AssetDOGE, AssetETH, AssetLTC } from '../../../shared/utils/asset'
+import { AssetATOM, AssetBCH, AssetBTC, AssetDOGE, AssetETH, AssetLTC } from '../../../shared/utils/asset'
 import { isEnabledChain } from '../../../shared/utils/chain'
 import { optionFromNullableString } from '../../../shared/utils/fp'
-import { BNB_DECIMAL, convertBaseAmountDecimal, isUSDAsset, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
-import { isMiniToken } from '../../helpers/binanceHelper'
+import { convertBaseAmountDecimal, isUSDAsset, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { eqAsset, eqChain, eqOAddress } from '../../helpers/fp/eq'
 import { ordPricePool } from '../../helpers/fp/ord'
 import { getDeepestPool, RUNE_POOL_ADDRESS, RUNE_PRICE_POOL } from '../../helpers/poolHelper'
@@ -205,7 +203,7 @@ export const toPoolData = ({ assetDepth, runeDepth }: Pick<PoolDetail, 'assetDep
  * Filter out mini tokens from pool assets
  */
 export const filterPoolAssets = (poolAssets: string[]) => {
-  return poolAssets.filter((poolAsset) => !isMiniToken(assetFromString(poolAsset) || { symbol: '' }))
+  return poolAssets.filter((poolAsset) => assetFromString(poolAsset) || { symbol: '' })
 }
 
 export const getPoolAddressesByChain = (addresses: PoolAddresses, chain: Chain): O.Option<PoolAddress> =>
@@ -238,11 +236,6 @@ export const getOutboundAssetFeeByChain = (
       if (!isEnabledChain(chain)) return O.none
 
       switch (chain) {
-        case BNBChain:
-          return O.some({
-            amount: baseAmount(value, BNB_DECIMAL),
-            asset: AssetBNB
-          })
         case BTCChain:
           return O.some({
             amount: baseAmount(value, BTC_DECIMAL),

@@ -1,10 +1,11 @@
+import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { Asset, BaseAmount, baseAmount, bn } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
 import { Dex } from '../../../../shared/api/types'
 import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../const'
-import { CACAO_DECIMAL, isChainAsset, max1e8BaseAmount, THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
+import { isChainAsset, max1e8BaseAmount, THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { priceFeeAmountForAsset } from '../../../services/chain/fees/utils'
 import { WithdrawFees } from '../../../services/chain/types'
 import { PoolsDataMap } from '../../../services/midgard/types'

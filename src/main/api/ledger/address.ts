@@ -1,7 +1,6 @@
 import TransportNodeHidSingleton from '@ledgerhq/hw-transport-node-hid-singleton'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -21,7 +20,6 @@ import { isError, isEvmHDMode } from '../../../shared/utils/guard'
 import { WalletAddress } from '../../../shared/wallet/types'
 import { getAddress as getARBAddress, verifyAddress as verifyARBAddress } from './arb/address'
 import { getAddress as getAVAXAddress, verifyAddress as verifyAVAXAddress } from './avax/address'
-import { getAddress as getBNBAddress, verifyAddress as verifyBNBAddress } from './binance/address'
 import { getAddress as getBTCAddress, verifyAddress as verifyBTCAddress } from './bitcoin/address'
 import { getAddress as getBCHAddress, verifyAddress as verifyBCHAddress } from './bitcoincash/address'
 import { getAddress as getBSCAddress, verifyAddress as verifyBSCAddress } from './bsc/address'
@@ -50,9 +48,6 @@ export const getAddress = async ({
       switch (chain) {
         case THORChain:
           res = await getTHORAddress(transport, network, walletIndex)
-          break
-        case BNBChain:
-          res = await getBNBAddress(transport, network, walletIndex)
           break
         case BTCChain:
           res = await getBTCAddress(transport, network, walletIndex)
@@ -137,9 +132,6 @@ export const verifyLedgerAddress = async ({ chain, network, walletIndex, hdMode 
   switch (chain) {
     case THORChain:
       result = await verifyTHORAddress({ transport, network, walletIndex })
-      break
-    case BNBChain:
-      result = await verifyBNBAddress({ transport, network, walletIndex })
       break
     case BTCChain:
       result = await verifyBTCAddress({ transport, network, walletIndex })

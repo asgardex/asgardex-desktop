@@ -1,13 +1,14 @@
 import { BTCChain, BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
+import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { ETH_GAS_ASSET_DECIMAL as ETH_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, assetToBase, baseAmount, bn } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 
-import { ASSETS_TESTNET } from '../../../shared/mock/assets'
-import { AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../../shared/utils/asset'
-import { AssetBUSD74E, AssetBUSDBAF, AssetUSDTERC20Testnet } from '../../const'
-import { BNB_DECIMAL, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
+import { ASSETS_MAINNET } from '../../../shared/mock/assets'
+import { AssetBTC, AssetETH, AssetRuneNative, AssetBSC } from '../../../shared/utils/asset'
+import { AssetUSDCBSC, AssetUSDT62E, AssetUSDTERC20Testnet } from '../../const'
+import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { eqAsset, eqBaseAmount } from '../../helpers/fp/eq'
 import { mockWalletBalance } from '../../helpers/test/testWalletHelper'
 import { PoolsDataMap } from '../../services/midgard/types'
@@ -25,30 +26,30 @@ import {
 describe('components/swap/utils', () => {
   describe('isRuneSwap', () => {
     it('should return none if no RUNE asset', () => {
-      expect(isRuneSwap(ASSETS_TESTNET.BOLT, AssetBNB)).toBeNone()
+      expect(isRuneSwap(ASSETS_MAINNET.DOGE, AssetBSC)).toBeNone()
     })
 
     it('should return some(true) if target asset is RUNE', () => {
-      expect(isRuneSwap(ASSETS_TESTNET.BOLT, AssetRuneNative)).toEqual(O.some(true))
+      expect(isRuneSwap(ASSETS_MAINNET.BTC, AssetRuneNative)).toEqual(O.some(true))
     })
 
     it('should return some(false) if source asset is RUNE', () => {
-      expect(isRuneSwap(AssetRuneNative, ASSETS_TESTNET.BOLT)).toEqual(O.some(false))
+      expect(isRuneSwap(AssetRuneNative, ASSETS_MAINNET.ETH)).toEqual(O.some(false))
     })
   })
 
   describe('pickPoolAsset', () => {
     it('should be none', () => {
-      expect(pickPoolAsset([], AssetBNB)).toBeNone()
+      expect(pickPoolAsset([], AssetBSC)).toBeNone()
     })
     it('should return first element if nothing found', () => {
       expect(
         pickPoolAsset(
           [
             { asset: AssetRuneNative, assetPrice: bn(0) },
-            { asset: AssetBNB, assetPrice: bn(1) }
+            { asset: AssetBSC, assetPrice: bn(1) }
           ],
-          ASSETS_TESTNET.FTM
+          ASSETS_MAINNET.USDT
         )
       ).toEqual(O.some({ asset: AssetRuneNative, assetPrice: bn(0) }))
     })
@@ -58,7 +59,7 @@ describe('components/swap/utils', () => {
         pickPoolAsset(
           [
             { asset: AssetRuneNative, assetPrice: bn(0) },
-            { asset: AssetBNB, assetPrice: bn(1) },
+            { asset: AssetBSC, assetPrice: bn(1) },
             { asset: AssetETH, assetPrice: bn(2) }
           ],
           AssetETH
@@ -76,15 +77,15 @@ describe('components/swap/utils', () => {
 
   describe('minAmountToSwapMax1e8', () => {
     const poolsData: PoolsDataMap = {
-      'BNB.BUSD-74E': {
-        assetBalance: assetToBase(assetAmount(20)), // 1 BUSD = 0.05 RUNE
-        dexBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 BUSD
+      'BSC.USDC-0X8AC76A51CC950D9822D68B83FE1AD97B32CD580D': {
+        assetBalance: assetToBase(assetAmount(20)), // 1 USDT = 0.05 RUNE
+        dexBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDT
       },
       'ETH.USDT-0xa3910454bf2cb59b8b3a401589a3bacc5ca42306': {
         assetBalance: assetToBase(assetAmount(20)), // 1 USDT = 0.05 RUNE
         dexBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDT
       },
-      'BNB.BNB': {
+      'BSC.BNB': {
         assetBalance: assetToBase(assetAmount(1)), // 1 BNB = 30 RUNE (600 USD)
         dexBalance: assetToBase(assetAmount(30)) // 1 RUNE = 0.03 BNB
       },
@@ -98,41 +99,41 @@ describe('components/swap/utils', () => {
       }
     }
 
-    it('non chain asset -> chain asset (same chain): BNB.USD -> BNB.BNB)', () => {
-      const inAssetDecimal = 6
+    it('non chain asset -> chain asset (same chain): BNB.USDC -> BSC.BNB)', () => {
+      const inAssetDecimal = 8 // as per midgard pool data.
       const params = {
         swapFees: {
           inFee: {
-            amount: assetToBase(assetAmount(0.0001, BNB_DECIMAL)),
-            asset: AssetBNB
+            amount: assetToBase(assetAmount(0.0001, BSC_GAS_ASSET_DECIMAL)),
+            asset: AssetBSC
           },
           outFee: {
-            amount: assetToBase(assetAmount(0.0003, BNB_DECIMAL)),
-            asset: AssetBNB
+            amount: assetToBase(assetAmount(0.0003, BSC_GAS_ASSET_DECIMAL)),
+            asset: AssetBSC
           }
         },
-        inAsset: AssetBUSD74E,
+        inAsset: AssetUSDCBSC,
         inAssetDecimal,
-        outAsset: AssetBNB,
+        outAsset: AssetBSC,
         poolsData
       }
       // Prices
-      // 1 BNB = 600 BUSD or 1 BUSD = 0,001666667 BNB
+      // 1 BSC.BNB = 600 BUSD or 1 USDT = 0,001666667 BSC.BNB
       // Formula:
-      // 1.5 * (inboundFeeInBUSD + outboundFeeInBUSD)
+      // 1.5 * (inboundFeeInUSDT + outboundFeeInUSDT)
       // = 1.5 * (0.0001 * 600 + 0.0003 * 600)
       // = 1.5 * (0.06 + 0,18) = 1.5 * 0.24
       // = 0.36
 
       // Prices
-      // 1 BNB = 600 BUSD or 1 BUSD = 0,001666667 BNB
+      // 1 BSC.BNB = 600 USDT or 1 USDT = 0,001666667 BSC.BNB
       //
       // Formula (success):
-      // inboundFeeInBUSD + outboundFeeInBUSD
+      // inboundFeeInUSDT+ outboundFeeInUSDT
       // 0.0001 * 600 + 0.0003 * 600 = 0.06 + 0,18 = 0.24
       //
       // Formula (failure):
-      // inboundFeeInBUSD + refundFeeInBUSD
+      // inboundFeeInUSDT + refundFeeInUSDT
       // 0.0001 * 600 + 0.0003 * 600 = 0.06 + 0,18 = 0.24
       //
       // Formula (minValue):
@@ -140,25 +141,25 @@ describe('components/swap/utils', () => {
       // 1,5 * max(0.24, 0.24) = 1,5 * 0.24 = 0.36
 
       const result = minAmountToSwapMax1e8(params)
-      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.36, inAssetDecimal)))).toBeTruthy()
+      expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.36, inAssetDecimal)))).toBeTruthy() // not working
     })
 
-    it('chain asset -> non chain asset (same chain): BNB.BNB -> BNB.USD', () => {
-      const inAssetDecimal = BNB_DECIMAL
+    it('chain asset -> non chain asset (same chain): BSC.BNB -> BSC.USDC', () => {
+      const inAssetDecimal = 8
       const params = {
         swapFees: {
           inFee: {
-            amount: assetToBase(assetAmount(0.0001)),
-            asset: AssetBNB
+            amount: assetToBase(assetAmount(0.0001, BSC_GAS_ASSET_DECIMAL)),
+            asset: AssetBSC
           },
           outFee: {
-            amount: assetToBase(assetAmount(0.0003)),
-            asset: AssetBNB
+            amount: assetToBase(assetAmount(0.0003, BSC_GAS_ASSET_DECIMAL)),
+            asset: AssetBSC
           }
         },
-        inAsset: AssetBNB,
+        inAsset: AssetBSC,
         inAssetDecimal,
-        outAsset: AssetBUSD74E,
+        outAsset: AssetUSDCBSC,
         poolsData
       }
 
@@ -218,20 +219,20 @@ describe('components/swap/utils', () => {
       expect(eqBaseAmount.equals(result, assetToBase(assetAmount(120, inAssetDecimal)))).toBeTruthy()
     })
 
-    it('chain asset -> chain asset (different chains): BNB.BNB -> ETH.ETH', () => {
-      const inAssetDecimal = BNB_DECIMAL
+    it('chain asset -> chain asset (different chains): BSC.BNB -> ETH.ETH', () => {
+      const inAssetDecimal = 8
       const params = {
         swapFees: {
           inFee: {
             amount: assetToBase(assetAmount(0.0001)),
-            asset: AssetBNB
+            asset: AssetBSC
           },
           outFee: {
             amount: assetToBase(assetAmount(0.01, ETH_DECIMAL)),
             asset: AssetETH
           }
         },
-        inAsset: AssetBNB,
+        inAsset: AssetBSC,
         inAssetDecimal,
         outAsset: AssetETH,
         poolsData
@@ -293,25 +294,24 @@ describe('components/swap/utils', () => {
       expect(eqBaseAmount.equals(result, assetToBase(assetAmount(1.53, inAssetDecimal)))).toBeTruthy()
     })
 
-    it('non chain asset -> non chain asset (different chains): BNB.BUSD -> ETH.USDT', () => {
+    it('non chain asset -> non chain asset (different chains): BSB.USDT -> ETH.USDT', () => {
       const inAssetDecimal = 7
       const params = {
         swapFees: {
           inFee: {
-            amount: assetToBase(assetAmount(0.0001)),
-            asset: AssetBNB
+            amount: assetToBase(assetAmount(0.0001, BSC_GAS_ASSET_DECIMAL)),
+            asset: AssetBSC
           },
           outFee: {
-            amount: assetToBase(assetAmount(0.01)),
+            amount: assetToBase(assetAmount(0.01, ETH_DECIMAL)),
             asset: AssetETH
           }
         },
-        inAsset: AssetBUSD74E,
+        inAsset: AssetUSDCBSC,
         inAssetDecimal,
-        outAsset: AssetUSDTERC20Testnet,
+        outAsset: AssetUSDT62E,
         poolsData
       }
-
       // Prices
       // 1 ETH = 2000 USD or 1 USD = 0,0005 ETH
       // 1 BNB = 600 USD or 1 USD = 0,001666667 BNB
@@ -375,7 +375,7 @@ describe('components/swap/utils', () => {
     it('balance to swap - with estimated fees', () => {
       const params = {
         balanceAmountMax1e8: baseAmount(1000),
-        asset: AssetBNB,
+        asset: AssetBSC,
         feeAmount: baseAmount(100)
       }
       const result = maxAmountToSwapMax1e8(params)
@@ -405,7 +405,7 @@ describe('components/swap/utils', () => {
     it('no chain asset - no change', () => {
       const params = {
         balanceAmountMax1e8: baseAmount(100),
-        asset: AssetBUSDBAF,
+        asset: AssetUSDCBSC,
         feeAmount: baseAmount(50, 8)
       }
       const result = maxAmountToSwapMax1e8(params)
@@ -415,7 +415,7 @@ describe('components/swap/utils', () => {
 
   describe('assetsInWallet', () => {
     const a = mockWalletBalance()
-    const b = mockWalletBalance({ asset: AssetBNB })
+    const b = mockWalletBalance({ asset: AssetBSC })
     const c = mockWalletBalance({ asset: AssetBTC })
 
     it('empty list of assets for empty balances', () => {
@@ -428,7 +428,7 @@ describe('components/swap/utils', () => {
 
       expect(assets.length).toEqual(3)
       expect(eqAsset.equals(assets[0], AssetRuneNative)).toBeTruthy()
-      expect(eqAsset.equals(assets[1], AssetBNB)).toBeTruthy()
+      expect(eqAsset.equals(assets[1], AssetBSC)).toBeTruthy()
       expect(eqAsset.equals(assets[2], AssetBTC)).toBeTruthy()
     })
   })
@@ -441,12 +441,12 @@ describe('components/swap/utils', () => {
     })
     const bnbBalance = mockWalletBalance({
       ...dexBalance,
-      asset: AssetBNB
+      asset: AssetBSC
     })
 
     it('RUNE ledger + Keystore ', () => {
       const result = balancesToSwapFrom({
-        assetsToSwap: O.some({ source: AssetBNB, target: AssetRuneNative }),
+        assetsToSwap: O.some({ source: AssetBSC, target: AssetRuneNative }),
         walletBalances: [dexBalance, runeBalanceLedger, bnbBalance]
       })
       expect(result.length).toEqual(2)
@@ -460,13 +460,13 @@ describe('components/swap/utils', () => {
 
     it('RUNE ledger + Keystore ', () => {
       const result = balancesToSwapFrom({
-        assetsToSwap: O.some({ source: AssetRuneNative, target: AssetBNB }),
+        assetsToSwap: O.some({ source: AssetRuneNative, target: AssetBSC }),
         walletBalances: [dexBalance, runeBalanceLedger, bnbBalance]
       })
       expect(result.length).toEqual(1)
-      // Keystore BNB.BNB
+      // Keystore BSC.BNB
       expect(result[0].walletType).toEqual('keystore')
-      expect(eqAsset.equals(result[0].asset, AssetBNB)).toBeTruthy()
+      expect(eqAsset.equals(result[0].asset, AssetBSC)).toBeTruthy()
     })
   })
 
@@ -478,7 +478,7 @@ describe('components/swap/utils', () => {
     })
     const bnbBalance = mockWalletBalance({
       ...dexBalance,
-      asset: AssetBNB
+      asset: AssetBSC
     })
 
     const balances = [dexBalance, runeBalanceLedger, bnbBalance]

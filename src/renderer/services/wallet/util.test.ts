@@ -1,8 +1,9 @@
+import { AssetBSC, AssetDOGE } from '@xchainjs/xchain-thorchain-query'
 import { baseAmount } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 
-import { ASSETS_TESTNET } from '../../../shared/mock/assets'
-import { AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../../shared/utils/asset'
+import { ASSETS_MAINNET } from '../../../shared/mock/assets'
+import { AssetBTC, AssetETH, AssetRuneNative } from '../../../shared/utils/asset'
 import { eqOWalletBalance, eqWalletBalances } from '../../helpers/fp/eq'
 import { WalletBalances } from '../clients'
 import { KeystoreState } from './types'
@@ -132,33 +133,33 @@ describe('services/wallet/util/', () => {
     it('should filter nullable balances', () => {
       const target: WalletBalances = [
         {
-          asset: ASSETS_TESTNET.TOMO,
+          asset: ASSETS_MAINNET.ETH,
           amount: baseAmount(0),
-          walletAddress: 'ADDRESS_TOMO',
+          walletAddress: 'ADDRESS_ETH',
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
         },
         {
-          asset: ASSETS_TESTNET.BOLT,
+          asset: ASSETS_MAINNET.DOGE,
           amount: baseAmount(1),
-          walletAddress: 'ADDRESS_BOLT',
+          walletAddress: 'ADDRESS_DOGE',
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
         },
         {
-          asset: ASSETS_TESTNET.FTM,
+          asset: ASSETS_MAINNET.BTC,
           amount: baseAmount(0),
-          walletAddress: 'ADDRESS_FTM',
+          walletAddress: 'ADDRESS_BTC',
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
         },
         {
-          asset: AssetBNB,
+          asset: AssetBSC,
           amount: baseAmount(2),
-          walletAddress: 'ADDRESS_BNB',
+          walletAddress: 'ADDRESS_BSC',
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -181,33 +182,33 @@ describe('services/wallet/util/', () => {
     it('sorts balances based on orders', () => {
       const target: WalletBalances = [
         {
-          asset: ASSETS_TESTNET.TOMO,
+          asset: ASSETS_MAINNET.ETH,
           amount: baseAmount(0),
-          walletAddress: 'ADDRESS_TOMO',
+          walletAddress: 'ADDRESS_ETH',
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
         },
         {
-          asset: ASSETS_TESTNET.BOLT,
+          asset: ASSETS_MAINNET.DOGE,
           amount: baseAmount(1),
-          walletAddress: 'ADDRESS_BOLT',
+          walletAddress: 'ADDRESS_DOGE',
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
         },
         {
-          asset: ASSETS_TESTNET.FTM,
+          asset: ASSETS_MAINNET.BTC,
           amount: baseAmount(0),
-          walletAddress: 'ADDRESS_FTM',
+          walletAddress: 'ADDRESS_BTC',
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
         },
         {
-          asset: AssetBNB,
+          asset: AssetBSC,
           amount: baseAmount(2),
-          walletAddress: 'ADDRESS_BNB',
+          walletAddress: 'ADDRESS_BSC',
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -221,8 +222,14 @@ describe('services/wallet/util/', () => {
           hdMode: 'default'
         }
       ]
-      const balances = sortBalances(target, [AssetBTC.ticker, AssetETH.ticker, AssetRuneNative.ticker, AssetBNB.ticker])
-      expect(eqWalletBalances.equals(balances, [target[4], target[3], target[1], target[2], target[0]])).toBeTruthy()
+      const balances = sortBalances(target, [
+        AssetBTC.ticker,
+        AssetETH.ticker,
+        AssetDOGE.ticker,
+        AssetRuneNative.ticker,
+        AssetBSC.ticker
+      ])
+      expect(eqWalletBalances.equals(balances, [target[2], target[0], target[1], target[4], target[3]])).toBeTruthy()
     })
   })
 
@@ -230,33 +237,33 @@ describe('services/wallet/util/', () => {
     it('get balance by asset', () => {
       const walletBalances: WalletBalances = [
         {
-          asset: ASSETS_TESTNET.TOMO,
+          asset: ASSETS_MAINNET.ETH,
           amount: baseAmount(0),
-          walletAddress: 'ADDRESS_TOMO',
+          walletAddress: 'ADDRESS_ETH',
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
         },
         {
-          asset: ASSETS_TESTNET.BOLT,
+          asset: ASSETS_MAINNET.DOGE,
           amount: baseAmount(1),
-          walletAddress: 'ADDRESS_BOLT',
+          walletAddress: 'ADDRESS_DOGE',
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
         },
         {
-          asset: ASSETS_TESTNET.FTM,
+          asset: ASSETS_MAINNET.BTC,
           amount: baseAmount(0),
-          walletAddress: 'ADDRESS_FTM',
+          walletAddress: 'ADDRESS_BTC',
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
         },
         {
-          asset: AssetBNB,
+          asset: AssetBSC,
           amount: baseAmount(2),
-          walletAddress: 'ADDRESS_BNB',
+          walletAddress: 'ADDRESS_BSC',
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -271,14 +278,14 @@ describe('services/wallet/util/', () => {
         }
       ]
 
-      const balanceByAsset = getBalanceByAsset(AssetBNB)(walletBalances)
+      const balanceByAsset = getBalanceByAsset(AssetBSC)(walletBalances)
       expect(
         eqOWalletBalance.equals(
           balanceByAsset,
           O.some({
-            asset: AssetBNB,
+            asset: AssetBSC,
             amount: baseAmount(2),
-            walletAddress: 'ADDRESS_BNB',
+            walletAddress: 'ADDRESS_BSC',
             walletIndex: 0,
             walletType: 'keystore',
             hdMode: 'default'

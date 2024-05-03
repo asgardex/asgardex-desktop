@@ -1,8 +1,8 @@
 import { Meta } from '@storybook/react'
-import { BNBChain } from '@xchainjs/xchain-binance'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 
-import { BNB_ADDRESS_MAINNET, BNB_ADDRESS_TESTNET } from '../../../../shared/mock/address'
+import { BSC_ADDRESS_MAINNET, BSC_ADDRESS_TESTNET } from '../../../../shared/mock/address'
 import * as AT from '../../../storybook/argTypes'
 import { AddressEllipsis as Component } from './index'
 
@@ -14,7 +14,7 @@ type Args = {
 
 const Template = ({ address, network, width }: Args) => (
   <div style={{ width: width || 400 }}>
-    <Component address={address} chain={BNBChain} network={network} />
+    <Component address={address} chain={BSCChain} network={network} />
   </div>
 )
 export const Default = Template.bind({})
@@ -27,12 +27,12 @@ const meta: Meta<typeof Template> = {
     address: {
       options: [Network.Testnet, Network.Mainnet],
       mapping: {
-        testnet: BNB_ADDRESS_TESTNET,
-        mainnet: BNB_ADDRESS_MAINNET
+        testnet: BSC_ADDRESS_TESTNET,
+        mainnet: BSC_ADDRESS_MAINNET
       }
     }
   },
-  args: { network: Network.Mainnet, address: BNB_ADDRESS_MAINNET }
+  args: { network: Network.Mainnet, address: BSC_ADDRESS_MAINNET }
 }
 
 export default meta

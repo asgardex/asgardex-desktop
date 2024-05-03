@@ -5,7 +5,7 @@ import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 
-import { AssetBCH, AssetBNB, AssetBTC, AssetRuneNative } from '../../../../shared/utils/asset'
+import { AssetBCH, AssetBTC, AssetRuneNative } from '../../../../shared/utils/asset'
 import { TxDetail } from './TxDetail'
 
 const getValues = (firstAsset: string, secondAsset: string, firstValue: number, secondValue: number) => {
@@ -63,7 +63,7 @@ const Template = ({
   )
 }
 
-const stringAssetsOrNone = [AssetRuneNative, AssetBNB, AssetBCH, AssetBTC].map(assetToString)
+const stringAssetsOrNone = [AssetRuneNative, AssetBCH, AssetBTC].map(assetToString)
 stringAssetsOrNone.unshift('none')
 
 const numberControlConfig = { type: 'number', min: 0, step: 0.0001 }

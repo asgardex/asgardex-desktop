@@ -1,6 +1,5 @@
 import { ARBChain, ARB_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AVAX_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-avax'
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
@@ -17,14 +16,13 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTC_DECIMAL } from '@xchainjs/xchain-litecoin'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RUNE_DECIMAL as THOR_DECIMAL } from '@xchainjs/xchain-thorchain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { BaseAmount, baseAmount } from '@xchainjs/xchain-util'
 import { Chain } from '@xchainjs/xchain-util'
 
 import { isEnabledChain } from '../../../../shared/utils/chain'
-import { BNB_DECIMAL, CACAO_DECIMAL } from '../../../helpers/assetHelper'
 import { KUJI_DECIMAL } from '../../kuji/const'
 
 /**
@@ -34,8 +32,6 @@ export const smallestAmountToSent = (chain: Chain, _network: Network): BaseAmoun
   if (!isEnabledChain(chain)) throw Error(`${chain} is not supported for 'smallestAmountToSent$'`)
 
   switch (chain) {
-    case BNBChain:
-      return baseAmount(1, BNB_DECIMAL)
     case BTCChain:
       // 1000 satoshi
       return baseAmount(1000, BTC_DECIMAL)

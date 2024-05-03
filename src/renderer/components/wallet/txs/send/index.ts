@@ -1,4 +1,3 @@
-export { SendFormBNB } from './SendFormBNB'
 export { SendFormEVM } from './SendFormEVM'
 export { SendFormTHOR } from './SendFormTHOR'
 export { SendFormCOSMOS } from './SendFormCOSMOS'

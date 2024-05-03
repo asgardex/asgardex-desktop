@@ -1,6 +1,5 @@
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -19,7 +18,6 @@ import * as Rx from 'rxjs'
 import { isEnabledChain } from '../../../shared/utils/chain'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'
-import * as BNB from '../binance'
 import * as BTC from '../bitcoin'
 import * as BCH from '../bitcoincash'
 import * as BSC from '../bsc'
@@ -41,8 +39,6 @@ const addressByChain$ = (chain: Chain): WalletAddress$ => {
   if (!isEnabledChain(chain)) return Rx.of(O.none)
 
   switch (chain) {
-    case BNBChain:
-      return BNB.address$
     case BTCChain:
       return BTC.address$
     case DASHChain:

@@ -4,7 +4,6 @@ import { SearchOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -160,7 +159,6 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
   }, [showQRModal, network, closeQrModal])
 
   const [walletIndexMap, setWalletIndexMap] = useState<Record<EnabledChain, number>>({
-    [BNBChain]: 0,
     [BTCChain]: 0,
     [BCHChain]: 0,
     [LTCChain]: 0,

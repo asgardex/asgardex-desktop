@@ -2,13 +2,13 @@ import { Meta, StoryFn } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 
-import { AssetBNB, AssetRuneNative } from '../../../../../shared/utils/asset'
+import { AssetBTC, AssetRuneNative } from '../../../../../shared/utils/asset'
 import { SwapAssets, Props } from './SwapAssets'
 
 const defaultProps: Props = {
   stepDescription: 'step 1',
   source: { asset: AssetRuneNative, amount: assetToBase(assetAmount(30)) },
-  target: { asset: AssetBNB, amount: assetToBase(assetAmount(1)) },
+  target: { asset: AssetBTC, amount: assetToBase(assetAmount(1)) },
   network: Network.Testnet
 }
 export const Default: StoryFn = () => <SwapAssets {...defaultProps} />

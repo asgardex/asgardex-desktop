@@ -1,5 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Story, Meta } from '@storybook/react'
+import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase, baseAmount, Asset, assetToString } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
@@ -7,10 +8,9 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { mockValidatePassword$ } from '../../../../shared/mock/wallet'
-import { AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../../../shared/utils/asset'
+import { AssetBSC, AssetBTC, AssetETH, AssetRuneNative } from '../../../../shared/utils/asset'
 import { WalletType } from '../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../const'
-import { BNB_DECIMAL } from '../../../helpers/assetHelper'
 import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
 import { mockWalletBalance } from '../../../helpers/test/testWalletHelper'
 import { INITIAL_SAVER_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../../../services/chain/const'
@@ -22,10 +22,10 @@ const balanceRune: WalletBalance = mockWalletBalance({
   amount: assetToBase(assetAmount(100))
 })
 
-const balanceBNB: WalletBalance = mockWalletBalance({
+const balanceBSC: WalletBalance = mockWalletBalance({
   amount: assetToBase(assetAmount(200)),
-  asset: AssetBNB,
-  walletAddress: 'bnb-address'
+  asset: AssetBSC,
+  walletAddress: 'bsc-address'
 })
 
 const balanceBTC: WalletBalance = mockWalletBalance({
@@ -42,9 +42,9 @@ const balanceTOMO: WalletBalance = mockWalletBalance({
 
 const defaultProps: SymDepositProps = {
   disableDepositAction: false,
-  availableAssets: [AssetRuneNative, AssetBNB, AssetBTC],
-  walletBalances: { balances: O.some([balanceRune, balanceBNB, balanceBTC, balanceTOMO]), loading: false },
-  asset: { asset: AssetBNB, decimal: BNB_DECIMAL },
+  availableAssets: [AssetRuneNative, AssetBSC, AssetBTC],
+  walletBalances: { balances: O.some([balanceRune, balanceBSC, balanceBTC, balanceTOMO]), loading: false },
+  asset: { asset: AssetBSC, decimal: BSC_GAS_ASSET_DECIMAL },
   poolDetails: [],
   pricePool: RUNE_PRICE_POOL,
   assetWalletType: 'keystore',
@@ -68,7 +68,7 @@ const defaultProps: SymDepositProps = {
           refundFee: assetToBase(assetAmount(0.6))
         },
         asset: {
-          asset: AssetBNB,
+          asset: AssetBSC,
           inFee: assetToBase(assetAmount(0.000075)),
           outFee: assetToBase(assetAmount(0.000225)),
           refundFee: assetToBase(assetAmount(0.000225))
@@ -128,7 +128,7 @@ const defaultProps: SymDepositProps = {
   isApprovedERC20Token$: () => Rx.of(RD.success(true)),
   protocolLimitReached: false,
   poolsData: {
-    [assetToString(AssetBNB)]: {
+    [assetToString(AssetBSC)]: {
       assetBalance: baseAmount(30),
       dexBalance: baseAmount(10)
     }
@@ -151,7 +151,7 @@ export const BalanceError: Story = () => {
     walletBalances: {
       balances: O.some([
         { ...balanceRune, balance: ZERO_BASE_AMOUNT },
-        { ...balanceBNB, balance: ZERO_BASE_AMOUNT },
+        { ...balanceBSC, balance: ZERO_BASE_AMOUNT },
         balanceBTC,
         balanceTOMO
       ]),
@@ -183,7 +183,7 @@ export const FeeError: Story = () => {
             refundFee: assetToBase(assetAmount(6))
           },
           asset: {
-            asset: AssetBNB,
+            asset: AssetBSC,
             inFee: assetToBase(assetAmount(1)),
             outFee: assetToBase(assetAmount(3)),
             refundFee: assetToBase(assetAmount(3))
@@ -193,7 +193,7 @@ export const FeeError: Story = () => {
     walletBalances: {
       balances: O.some([
         { ...balanceRune, balance: assetToBase(assetAmount(0.6)) },
-        { ...balanceBNB, balance: assetToBase(assetAmount(0.5)) },
+        { ...balanceBSC, balance: assetToBase(assetAmount(0.5)) },
         balanceBTC,
         balanceTOMO
       ]),

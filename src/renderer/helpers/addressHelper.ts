@@ -1,7 +1,5 @@
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
-import { getPrefix as getBinancePrefix } from '@xchainjs/xchain-binance'
-import { BNBChain } from '@xchainjs/xchain-binance'
 import { getPrefix as getBitcoinPrefix } from '@xchainjs/xchain-bitcoin'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { getPrefix as getBCHPrefix } from '@xchainjs/xchain-bitcoincash'
@@ -43,8 +41,6 @@ export const getAddressPrefixLength = (chain: Chain, network: Network): number =
   if (!isEnabledChain(chain)) throw Error(`${chain} is not supported for 'getAddressPrefixLength'`)
 
   switch (chain) {
-    case BNBChain:
-      return getBinancePrefix(network).length
     case BTCChain:
       return getBitcoinPrefix(network).length
     case GAIAChain:

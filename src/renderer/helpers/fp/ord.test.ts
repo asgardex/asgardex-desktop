@@ -1,7 +1,7 @@
 import { bn, baseAmount } from '@xchainjs/xchain-util'
 
-import { ASSETS_TESTNET } from '../../../shared/mock/assets'
-import { AssetBNB, AssetBTC, AssetETH, AssetRuneNative } from '../../../shared/utils/asset'
+import { ASSETS_MAINNET } from '../../../shared/mock/assets'
+import { AssetBTC, AssetBSC, AssetETH, AssetRuneNative } from '../../../shared/utils/asset'
 import { AssetUSDC, ZERO_BASE_AMOUNT } from '../../const'
 import { WalletBalance } from '../../services/wallet/types'
 import { PoolData, PricePool } from '../../views/pools/Pools.types'
@@ -49,11 +49,11 @@ describe('helpers/fp/ord', () => {
     }
     const b: WalletBalance = {
       ...a,
-      asset: AssetBNB
+      asset: AssetBSC
     }
     const c: WalletBalance = {
       ...a,
-      asset: ASSETS_TESTNET.BOLT
+      asset: ASSETS_MAINNET.BTC
     }
     it('is less', () => {
       expect(ordWalletBalanceByAsset.compare(a, b)).toEqual(1)

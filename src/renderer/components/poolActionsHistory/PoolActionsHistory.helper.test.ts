@@ -1,7 +1,7 @@
 import { baseAmount } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/Option'
 
-import { AssetBNB, AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
+import { AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
 import { eqAssetsWithAmount } from '../../helpers/fp/eq'
 import { Action, Tx } from '../../services/midgard/types'
 import { getTxId, getValues, getRowKey, historyFilterToViewblockFilter } from './PoolActionsHistory.helper'
@@ -117,14 +117,14 @@ describe('PoolActionsHistory.helper', () => {
             { asset: AssetBTC, amount: baseAmount(30) }
           ]
         },
-        { ...defaultTx, values: [{ asset: AssetBNB, amount: baseAmount(100) }] }
+        { ...defaultTx, values: [{ asset: AssetBTC, amount: baseAmount(100) }] }
       ])
       expect(
         eqAssetsWithAmount.equals(res, [
           { asset: AssetRuneNative, amount: baseAmount(1) },
           { asset: AssetBTC, amount: baseAmount(20) },
           { asset: AssetBTC, amount: baseAmount(30) },
-          { asset: AssetBNB, amount: baseAmount(100) }
+          { asset: AssetBTC, amount: baseAmount(100) }
         ])
       ).toBeTruthy()
     })
