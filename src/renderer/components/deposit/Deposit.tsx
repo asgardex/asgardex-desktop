@@ -9,6 +9,7 @@ import { useIntl } from 'react-intl'
 
 import { WalletAddress } from '../../../shared/wallet/types'
 import { eqAddress, eqOAddress } from '../../helpers/fp/eq'
+import { PoolDetailRD as PoolDetailMayaRD, PoolShareRD as PoolShareMayaRD } from '../../services/mayaMigard/types'
 import { PoolDetailRD, PoolShareRD, PoolSharesRD } from '../../services/midgard/types'
 import { getSharesByAssetAndType } from '../../services/midgard/utils'
 import { MimirHalt } from '../../services/thorchain/types'
@@ -34,12 +35,12 @@ export type Props = {
   mimirHalt: MimirHalt
   asset: AssetWithDecimal
   shares: PoolSharesRD
-  poolDetail: PoolDetailRD
+  poolDetail: PoolDetailRD | PoolDetailMayaRD
   ShareContent: React.ComponentType<{
     asset: AssetWithDecimal
-    poolShare: PoolShareRD
+    poolShare: PoolShareRD | PoolShareMayaRD
     smallWidth?: boolean
-    poolDetail: PoolDetailRD
+    poolDetail: PoolDetailRD | PoolDetailMayaRD
   }>
   SymDepositContent: React.ComponentType<SymDepositContentProps>
   WidthdrawContent: React.ComponentType<WidthdrawContentProps>

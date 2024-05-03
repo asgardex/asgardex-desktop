@@ -95,6 +95,7 @@ import { eqAsset, eqBaseAmount, eqOAsset, eqOApproveParams, eqAddress } from '..
 import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
 import { getSwapMemo, shortenMemo } from '../../helpers/memoHelper'
 import * as PoolHelpers from '../../helpers/poolHelper'
+import { isPoolDetails } from '../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../helpers/poolHelperMaya'
 import { liveData, LiveData } from '../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../helpers/stringHelper'
@@ -187,7 +188,7 @@ export type SwapProps = {
   reloadTxStatus: FP.Lazy<void>
   poolsData: PoolsDataMap
   pricePool: PricePool
-  poolDetails: PoolDetailsMaya | PoolDetails
+  poolDetails: PoolDetails | PoolDetailsMaya
   walletBalances: Pick<BalancesState, 'balances' | 'loading'>
   goToTransaction: OpenExplorerTxUrl
   getExplorerTxUrl: GetExplorerTxUrl
@@ -442,11 +443,13 @@ export const Swap = ({
     const result =
       dex === 'THOR'
         ? FP.pipe(
-            PoolHelpers.getPoolPriceValue({
-              balance: { asset: sourceAsset, amount: amountToSwapMax1e8 },
-              poolDetails,
-              pricePool
-            }),
+            isPoolDetails(poolDetails)
+              ? PoolHelpers.getPoolPriceValue({
+                  balance: { asset: sourceAsset, amount: amountToSwapMax1e8 },
+                  poolDetails,
+                  pricePool
+                })
+              : O.none,
             O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal))
           )
         : FP.pipe(
@@ -572,11 +575,13 @@ export const Swap = ({
     const assetAmount = new CryptoAmount(swapFees.inFee.amount, swapFees.inFee.asset)
     return dex === 'THOR'
       ? FP.pipe(
-          PoolHelpers.getPoolPriceValue({
-            balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
-            poolDetails,
-            pricePool
-          }),
+          isPoolDetails(poolDetails)
+            ? PoolHelpers.getPoolPriceValue({
+                balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
+                poolDetails,
+                pricePool
+              })
+            : O.none,
           O.map((amount) => {
             return new CryptoAmount(amount, pricePool.asset)
           })
@@ -661,11 +666,13 @@ export const Swap = ({
   useEffect(() => {
     const swapOutFeePrice =
       dex === 'THOR'
-        ? PoolHelpers.getPoolPriceValue({
-            balance: { asset: oSwapOutFee.asset, amount: oSwapOutFee.baseAmount },
-            poolDetails,
-            pricePool
-          })
+        ? isPoolDetails(poolDetails)
+          ? PoolHelpers.getPoolPriceValue({
+              balance: { asset: oSwapOutFee.asset, amount: oSwapOutFee.baseAmount },
+              poolDetails,
+              pricePool
+            })
+          : O.none
         : getPoolPriceValueM({
             balance: { asset: oSwapOutFee.asset, amount: oSwapOutFee.baseAmount },
             poolDetails,
@@ -758,11 +765,13 @@ export const Swap = ({
   useEffect(() => {
     const affiliatePriceValue =
       dex === 'THOR'
-        ? PoolHelpers.getPoolPriceValue({
-            balance: { asset: affiliateFee.asset, amount: affiliateFee.baseAmount },
-            poolDetails,
-            pricePool
-          })
+        ? isPoolDetails(poolDetails)
+          ? PoolHelpers.getPoolPriceValue({
+              balance: { asset: affiliateFee.asset, amount: affiliateFee.baseAmount },
+              poolDetails,
+              pricePool
+            })
+          : O.none
         : getPoolPriceValueM({
             balance: { asset: affiliateFee.asset, amount: affiliateFee.baseAmount },
             poolDetails,
@@ -1156,14 +1165,16 @@ export const Swap = ({
   const priceSwapResultAmountMax1e8: AssetWithAmount = useMemo(() => {
     return dex === 'THOR'
       ? FP.pipe(
-          PoolHelpers.getPoolPriceValue({
-            balance: {
-              asset: swapResultAmountMax.asset,
-              amount: isStreaming ? swapStreamingNetOutput.baseAmount : swapResultAmountMax.baseAmount
-            },
-            poolDetails,
-            pricePool
-          }),
+          isPoolDetails(poolDetails)
+            ? PoolHelpers.getPoolPriceValue({
+                balance: {
+                  asset: swapResultAmountMax.asset,
+                  amount: isStreaming ? swapStreamingNetOutput.baseAmount : swapResultAmountMax.baseAmount
+                },
+                poolDetails,
+                pricePool
+              })
+            : O.none,
           O.getOrElse(() => baseAmount(0, THORCHAIN_DECIMAL)), // default decimal
           (amount) => ({ asset: pricePool.asset, amount })
         )
@@ -1558,11 +1569,13 @@ export const Swap = ({
     const result =
       dex === 'THOR'
         ? FP.pipe(
-            PoolHelpers.getPoolPriceValue({
-              balance: { asset: sourceAsset, amount: maxAmountToSwapMax1e8 },
-              poolDetails,
-              pricePool
-            }),
+            isPoolDetails(poolDetails)
+              ? PoolHelpers.getPoolPriceValue({
+                  balance: { asset: sourceAsset, amount: maxAmountToSwapMax1e8 },
+                  poolDetails,
+                  pricePool
+                })
+              : O.none,
             O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal)),
             (amount) => ({ asset: pricePool.asset, amount })
           )
@@ -2302,11 +2315,13 @@ export const Swap = ({
 
     return dex === 'THOR'
       ? FP.pipe(
-          PoolHelpers.getPoolPriceValue({
-            balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
-            poolDetails,
-            pricePool
-          }),
+          isPoolDetails(poolDetails)
+            ? PoolHelpers.getPoolPriceValue({
+                balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
+                poolDetails,
+                pricePool
+              })
+            : O.none,
           O.fold(
             () => new CryptoAmount(baseAmount(0), pricePool.asset), // Default value if None
             (amount) => new CryptoAmount(amount, pricePool.asset) // Value if Some

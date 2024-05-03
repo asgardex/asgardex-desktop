@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
+import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { assetToString } from '@xchainjs/xchain-util'
 import { Grid } from 'antd'
@@ -22,7 +23,8 @@ import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
-import { getPoolTableRowsData, RUNE_PRICE_POOL } from '../../helpers/poolHelper'
+import { getPoolTableRowsData, isPoolDetails, RUNE_PRICE_POOL } from '../../helpers/poolHelper'
+import { getPoolTableRowsData as getPoolTableRowsDataMaya } from '../../helpers/poolHelperMaya'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { useDex } from '../../hooks/useDex'
 import { useIncentivePendulum } from '../../hooks/useIncentivePendulum'
@@ -33,6 +35,7 @@ import { useProtocolLimit } from '../../hooks/useProtocolLimit'
 import * as poolsRoutes from '../../routes/pools'
 import { DEFAULT_NETWORK } from '../../services/const'
 import { MayachainLastblockRD } from '../../services/mayachain/types'
+import { PendingPoolsState as PendingPoolsStateMaya } from '../../services/mayaMigard/types'
 import { PendingPoolsState, DEFAULT_POOL_FILTERS } from '../../services/midgard/types'
 import { ThorchainLastblockRD } from '../../services/thorchain/types'
 import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
@@ -236,17 +239,30 @@ export const PendingPools: React.FC = (): JSX.Element => {
         // render error state
         Shared.renderTableError(intl.formatMessage({ id: 'common.refresh' }), refreshHandler),
         // success state
-        ({ poolDetails }: PendingPoolsState): JSX.Element => {
-          // filter out empty pools
-          const poolDetailsFiltered = A.filter<PoolDetail>(P.not(isEmptyPool))(poolDetails)
-          const poolViewData = getPoolTableRowsData({
-            poolDetails: poolDetailsFiltered,
-            pricePoolData: selectedPricePool.poolData,
-            watchlist: poolWatchList,
-            network
-          })
-          previousPools.current = O.some(poolViewData)
-          return renderPoolsTable(poolViewData)
+        ({ poolDetails }: PendingPoolsState | PendingPoolsStateMaya): JSX.Element => {
+          if (isPoolDetails(poolDetails)) {
+            // filter out empty pools
+            const poolDetailsFiltered = A.filter<PoolDetail>(P.not(isEmptyPool))(poolDetails)
+            const poolViewData = getPoolTableRowsData({
+              poolDetails: poolDetailsFiltered,
+              pricePoolData: selectedPricePool.poolData,
+              watchlist: poolWatchList,
+              network
+            })
+            previousPools.current = O.some(poolViewData)
+            return renderPoolsTable(poolViewData)
+          } else {
+            // filter out empty pools
+            const poolDetailsFiltered = A.filter<PoolDetailMaya>(P.not(isEmptyPool))(poolDetails)
+            const poolViewData = getPoolTableRowsDataMaya({
+              poolDetails: poolDetailsFiltered,
+              pricePoolData: selectedPricePool.poolData,
+              watchlist: poolWatchList,
+              network
+            })
+            previousPools.current = O.some(poolViewData)
+            return renderPoolsTable(poolViewData)
+          }
         }
       )(poolsRD)}
     </>

@@ -163,6 +163,9 @@
     "wif": "^2.0.6"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.24.5",
+    "@babel/preset-react": "^7.24.1",
+    "@babel/preset-typescript": "^7.24.1",
     "@electron/notarize": "^2.3.0",
     "@storybook/addon-essentials": "7.6.17",
     "@storybook/addons": "7.6.17",
@@ -179,7 +182,7 @@
     "@types/fs-extra": "^9.0.13",
     "@types/jest": "^29.5.12",
     "@types/lodash.shuffle": "^4.2.7",
-    "@types/node": "^20.12.8",
+    "@types/node": "^16.11.7",
     "@types/qrcode": "^1.4.2",
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
@@ -189,6 +192,7 @@
     "ansis": "^1.5.5",
     "assert": "^2.0.0",
     "autoprefixer": "^10.4.8",
+    "babel-jest": "^29.7.0",
     "browserify-fs": "^1.0.0",
     "buffer": "^6.0.3",
     "concurrently": "^7.2.1",
@@ -227,7 +231,9 @@
     "webpack-node-externals": "^3.0.0"
   },
   "resolutions": {
-    "@svgr/webpack": "^6.2.1"
+    "@svgr/webpack": "^6.2.1",
+    "@ledgerhq/hw-transport": "6.30.6",
+    "bignumber.js": "^9.0.0"
   },
   "packageManager": "yarn@3.2.3"
 }

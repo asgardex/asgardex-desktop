@@ -11,6 +11,7 @@ import * as Ord from 'fp-ts/lib/Ord'
 import { PoolsWatchList } from '../../shared/api/io'
 import { ONE_RUNE_BASE_AMOUNT } from '../../shared/mock/amount'
 import { AssetRuneNative } from '../../shared/utils/asset'
+import { PoolDetails as PoolDetailsMaya } from '../services/mayaMigard/types'
 import { PoolAddress, PoolDetails } from '../services/midgard/types'
 import { getPoolDetail, toPoolData } from '../services/midgard/utils'
 import { MimirHalt } from '../services/thorchain/types'
@@ -256,4 +257,13 @@ export const disablePoolActions = ({
 
   // Check `chain` is included in `haltedChains` (provided by `inbound_addresses` endpoint)
   return FP.pipe(haltedChains, isChainElem(chain))
+}
+
+/**
+ *
+ * @param poolDetails - type check
+ * @returns - correct type
+ */
+export const isPoolDetails = (poolDetails: PoolDetails | PoolDetailsMaya): poolDetails is PoolDetails => {
+  return (poolDetails as PoolDetails) !== undefined
 }

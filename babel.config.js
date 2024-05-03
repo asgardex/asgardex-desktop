@@ -1,11 +1,13 @@
 // babel.config.js
 module.exports = {
   presets: [
-    ['@babel/preset-env', { targets: { node: 'current' } }], // Target modern Node.js
-    '@babel/preset-react', // For JSX
-    '@babel/preset-typescript' // For TypeScript
+    ["@babel/preset-env", {
+      targets: {
+        node: "current"
+      }
+    }],
+    "@babel/preset-react",
+    "@babel/preset-typescript"
   ],
-  plugins: [
-    // Add any Babel plugins necessary for additional JavaScript features
-  ]
-}
+  ignore: [/node_modules\/(?!@xchainjs|xchain-client|axios)/]
+};

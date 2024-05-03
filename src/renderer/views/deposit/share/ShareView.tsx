@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { Asset, BaseAmount } from '@xchainjs/xchain-util'
 import { Spin } from 'antd'
@@ -19,6 +20,11 @@ import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
 import * as ShareHelpers from '../../../helpers/poolShareHelper'
 import { useDex } from '../../../hooks/useDex'
+import {
+  PoolDetailRD as PoolDetailMayaRD,
+  PoolShareRD as PoolShareMayaRD,
+  PoolShare as PoolShareMaya
+} from '../../../services/mayaMigard/types'
 import { PoolDetailRD, PoolShareRD, PoolShare } from '../../../services/midgard/types'
 import { toPoolData } from '../../../services/midgard/utils'
 import { AssetWithDecimal } from '../../../types/asgardex'
@@ -26,8 +32,8 @@ import { getValueOfAsset1InAsset2, getValueOfRuneInAsset } from '../../pools/Poo
 
 type Props = {
   asset: AssetWithDecimal
-  poolShare: PoolShareRD
-  poolDetail: PoolDetailRD
+  poolShare: PoolShareRD | PoolShareMayaRD
+  poolDetail: PoolDetailRD | PoolDetailMayaRD
   smallWidth?: boolean
 }
 
@@ -61,7 +67,7 @@ export const ShareView: React.FC<Props> = ({
   )
 
   const renderPoolShareReady = useCallback(
-    ({ units, runeAddress, assetAddress }: PoolShare, poolDetail: PoolDetail) => {
+    ({ units, runeAddress, assetAddress }: PoolShare | PoolShareMaya, poolDetail: PoolDetail | PoolDetailMaya) => {
       const runeShare: BaseAmount = ShareHelpers.getRuneShare(units, poolDetail, dex)
       const assetShare: BaseAmount = ShareHelpers.getAssetShare({
         liquidityUnits: units,

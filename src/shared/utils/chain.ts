@@ -34,7 +34,7 @@ export const ENABLED_CHAINS = [
   KUJIChain
 ] as const
 
-export type EnabledChain = typeof ENABLED_CHAINS[number]
+export type EnabledChain = (typeof ENABLED_CHAINS)[number]
 
 /**
  * Type guard
