@@ -211,7 +211,7 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
                 )}
                 {AssetHelper.isCacaoAsset(asset) && (
                   <BorderButton
-                    className="min-w-[200px]"
+                    className="m-2 ml-2 min-w-[200px]"
                     size="large"
                     color="primary"
                     onClick={disableSend ? undefined : walletActionDepositClick}
