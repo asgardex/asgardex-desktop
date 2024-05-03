@@ -11,7 +11,7 @@ export const Result = styled(A.Result)`
   align-items: center;
   padding: 150px 20px;
   ${media.lg`
-    padding: 50px 10px;
+    padding: 8px 5px;
   `}
   background-color: ${palette('background', 1)};
 
@@ -27,8 +27,8 @@ export const Result = styled(A.Result)`
 `
 export const IconWrapper = styled.div`
   display: inline-block;
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   background: ${palette('background', 2)};
 `
