@@ -9,5 +9,5 @@ module.exports = {
     "@babel/preset-react",
     "@babel/preset-typescript"
   ],
-  ignore: [/node_modules\/(?!@xchainjs|xchain-client|axios)/]
+  plugins: ["@babel/plugin-transform-runtime"],
 };
