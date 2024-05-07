@@ -227,7 +227,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           isAethAsset(asset) ||
           isArbChain(asset.chain)
         ) {
-          // First try to get the price from poolDetails
+          // First try to get the price of those assets from MayaChain poolDetails
           const priceOptionFromPoolDetails = getPoolPriceValueM({
             balance: { asset, amount },
             poolDetails: poolDetailsMaya,
@@ -242,7 +242,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
             })
           }
         } else {
-          // First try to get the price from poolDetails
+          // Then get the price for the remaining assets from THorchain Pool Details
           const priceOptionFromPoolDetails = getPoolPriceValue({
             balance: { asset, amount },
             poolDetails,

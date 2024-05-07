@@ -6832,4 +6832,15 @@ export const ARB_TOKEN_WHITELIST: {
       "https://img.inleo.io/DQmZhBmRaQx5tozZLZai579SjktJDigtmoXNP73jHmh6nWK/leoLogo.png"
     ),
   },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: "LEO-0x93864d81175095DD93360FFA2A529b8642F76A6E",
+      ticker: "LEO",
+      synth: true,
+    },
+    iconUrl: O.some(
+      "https://img.inleo.io/DQmZhBmRaQx5tozZLZai579SjktJDigtmoXNP73jHmh6nWK/leoLogo.png"
+    ),
+  },
 ];
