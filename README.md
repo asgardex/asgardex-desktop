@@ -5,13 +5,18 @@
   <img src="internals/img/asgardex-splash.png" width="100%" />
 </div>
 
-[![Version](https://img.shields.io/github/package-json/v/asgardex/asgardex-desktopcolor=xyz&filename=package.json&style=flat-square)](https://github.com/asgardex/asgardex-desktop/releases)
+[![Version](https://img.shields.io/github/package-json/v/asgardex/asgardex-desktop?color=xyz&filename=package.json&style=flat-square
+)](https://github.com/asgardex/asgardex-desktop/releases)
 ![Test](https://github.com/asgardex/asgardex-desktop/workflows/Test/badge.svg)
 ![Electron build](https://github.com/asgardex/asgardex-desktop/workflows/Electron%20build/badge.svg)
 
 [![Discord](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/hkeJxHS7d7)
 [![Follow on Twitter](https://img.shields.io/twitter/follow/asgardex?style=social)](https://twitter.com/asgardex)
 [![Check our Website](https://img.shields.io/badge/Visit-Our%20Website-blue)](https://asgardex.com)
+
+## Website
+This is the developer source repository, general information and download page can be found at
+[Asgardex](https://asgardex.com)
 
 
 ## Feature list
@@ -41,7 +46,7 @@ Symbols:
 
 ### THORChain Exchange
 
-|                | RUNE               | BSC /BRC20         | BTC                | BCH                | DOGE               | ETH / ERC20        | LTC                | COSMOS             | AVAX               | 
+|                | RUNE               | BSC /BEP20         | BTC                | BCH                | DOGE               | ETH / ERC20        | LTC                | COSMOS             | AVAX               | 
 | -------------- | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | 
 | Pools overview | -                  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
 | Pool detail    | -                  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
