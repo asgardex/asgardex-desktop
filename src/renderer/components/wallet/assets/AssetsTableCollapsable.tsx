@@ -63,6 +63,7 @@ import { walletTypeToI18n } from '../../../services/wallet/util'
 import { PricePool } from '../../../views/pools/Pools.types'
 import { ErrorView } from '../../shared/error/'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
+import { FlatButton } from '../../uielements/button'
 import { Action as ActionButtonAction, ActionButton } from '../../uielements/button/ActionButton'
 import { ReloadButton } from '../../uielements/button/ReloadButton'
 import { QRCodeModal } from '../../uielements/qrCodeModal/QRCodeModal'
@@ -362,7 +363,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
                 ]
               : []
           ),
-          // 'add' LP RUNE
+          // 'add' LP RUNE || Cacao
           A.concatW<ActionButtonAction>(
             (isRuneNativeAsset(asset) || isCacaoAsset(asset)) && deepestPoolAsset !== null
               ? [
@@ -463,12 +464,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
               label: intl.formatMessage({ id: 'wallet.action.send' }),
               callback: () => {
                 assetHandler(walletAsset, 'send')
-              }
-            },
-            {
-              label: intl.formatMessage({ id: 'wallet.action.receive' }),
-              callback: () => {
-                setShowQRModal(O.some({ asset: getChainAsset(chain), address: walletAddress }))
               }
             }
           ]),
@@ -670,11 +665,17 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
             </Styled.HeaderAddress>
           </Col>
           <Col xs={10} md={6} lg={10}>
-            <div className="row flex">
+            <div className="row flex ">
               <Styled.HeaderLabel color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>
                 {`${assetsTxt}`}
               </Styled.HeaderLabel>
-              <ReloadButton size="small" onClick={() => handleRefreshClick(chain)}></ReloadButton>
+              <ReloadButton className="mr-8px" size="small" onClick={() => handleRefreshClick(chain)}></ReloadButton>
+              <FlatButton
+                className="ml-8px"
+                size="small"
+                onClick={() => setShowQRModal(O.some({ asset: getChainAsset(chain), address: walletAddress }))}>
+                <span className="hidden sm:inline-block">{intl.formatMessage({ id: 'wallet.action.receive' })}</span>
+              </FlatButton>
             </div>
           </Col>
         </Styled.HeaderRow>
