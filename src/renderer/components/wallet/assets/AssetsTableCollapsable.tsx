@@ -640,38 +640,41 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
       )
 
       const header = (
-        <Styled.HeaderRow>
-          <Col xs={14} md={6} lg={4}>
+        <Styled.HeaderRow className="flex w-full justify-between">
+          <Col>
             <Styled.HeaderChainContainer>
               <Styled.HeaderLabel>{chainToString(chain)}</Styled.HeaderLabel>
-              {
-                // show tag for NON keystore wallets only (e.g. Ledger)
-                !isKeystoreWallet(walletType) && (
-                  <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
-                )
-              }
+              {!isKeystoreWallet(walletType) && (
+                <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
+              )}
             </Styled.HeaderChainContainer>
           </Col>
-          <Col xs={0} md={12} lg={10}>
-            <Styled.HeaderAddress>
-              {hidePrivateData ? hiddenString : walletAddress}
-              <Styled.CopyLabelContainer
-                onClick={(event) => {
-                  event.preventDefault()
-                  event.stopPropagation()
-                }}>
-                <Styled.CopyLabel copyable={{ text: walletAddress }} />
-              </Styled.CopyLabelContainer>
-            </Styled.HeaderAddress>
+          <Col>
+            <div className="flex">
+              <Styled.HeaderAddress>
+                {hidePrivateData ? hiddenString : walletAddress}
+                <Styled.CopyLabelContainer
+                  onClick={(event) => {
+                    event.preventDefault()
+                    event.stopPropagation()
+                  }}>
+                  <Styled.CopyLabel copyable={{ text: walletAddress }} />
+                </Styled.CopyLabelContainer>
+              </Styled.HeaderAddress>
+            </div>
           </Col>
-          <Col xs={10} md={6} lg={10}>
-            <div className="row flex ">
+          <Col>
+            <div className="flex ">
               <Styled.HeaderLabel color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>
                 {`${assetsTxt}`}
               </Styled.HeaderLabel>
-              <ReloadButton className="mr-8px" size="small" onClick={() => handleRefreshClick(chain)}></ReloadButton>
+            </div>
+          </Col>
+          <Col>
+            <div className="flex pr-4 ">
+              <ReloadButton className="pr-2" size="small" onClick={() => handleRefreshClick(chain)} />
               <FlatButton
-                className="ml-8px"
+                className="pl-2 ml-2"
                 size="small"
                 onClick={() => setShowQRModal(O.some({ asset: getChainAsset(chain), address: walletAddress }))}>
                 <span className="hidden sm:inline-block">{intl.formatMessage({ id: 'wallet.action.receive' })}</span>
@@ -680,6 +683,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           </Col>
         </Styled.HeaderRow>
       )
+
       return (
         <Panel header={header} key={key}>
           {renderBalances({
