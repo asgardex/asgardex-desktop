@@ -89,7 +89,6 @@
     "@xchainjs/ledger-thorchain": "0.2.0",
     "@xchainjs/xchain-arbitrum": "0.1.7",
     "@xchainjs/xchain-avax": "0.5.0",
-    "@xchainjs/xchain-binance": "5.7.13",
     "@xchainjs/xchain-bitcoin": "0.23.15",
     "@xchainjs/xchain-bitcoincash": "0.17.13",
     "@xchainjs/xchain-bsc": "0.5.0",

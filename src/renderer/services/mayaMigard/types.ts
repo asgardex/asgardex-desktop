@@ -420,7 +420,7 @@ export type ActionsPageRD = RD.RemoteData<ApiError, ActionsPage>
 export type ActionsPageLD = LiveData<ApiError, ActionsPage>
 
 const staticPoolFilters = ['__base__', '__usd__', '__erc20__', '__synth__', '__watched__'] as const
-export type StaticPoolFilter = (typeof staticPoolFilters)[number]
+export type StaticPoolFilter = typeof staticPoolFilters[number]
 
 /**
  * Type guard for `StaticPoolFilters`
