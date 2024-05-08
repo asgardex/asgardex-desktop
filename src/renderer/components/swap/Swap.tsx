@@ -2716,7 +2716,7 @@ export const Swap = ({
             O.map((address) => (
               <div className="mt-20px flex flex-col  px-10px" key="edit-address">
                 <div className="flex items-center">
-                  <h3 className="font-[12px] !mb-0 mr-10px w-auto p-0 font-main uppercase text-text2 dark:text-text2d">
+                  <h3 className="!mb-0 mr-10px w-auto p-0 font-main font-[12px] uppercase text-text2 dark:text-text2d">
                     {intl.formatMessage({ id: 'common.recipient' })}
                   </h3>
                   <WalletTypeLabel key="target-w-type">{getWalletTypeLabel(oTargetWalletType, intl)}</WalletTypeLabel>

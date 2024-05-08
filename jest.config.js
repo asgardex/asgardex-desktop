@@ -11,17 +11,12 @@ jestConfig = {
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest'
   },
-  globals: { ...jestConfig.globals, },
+  globals: { ...jestConfig.globals },
   extensionsToTreatAsEsm: ['.ts'],
-  transformIgnorePatterns: ["node_modules/(?!(axios)/)"],
+  transformIgnorePatterns: ['node_modules/(?!(axios)/)'],
   moduleNameMapper: {
     '\\.(css|less)$': '<rootDir>/__mocks__/styleMock.js'
-  },
-  watchPlugins: [
-    'jest-watch-typeahead/filename',
-    'jest-watch-typeahead/testname'
-  ],
-  testEnvironment: 'jsdom'
+  }
 }
 
 module.exports = jestConfig

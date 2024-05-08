@@ -69,7 +69,7 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
     {
       title: intl.formatMessage({ id: 'common.managePosition' }),
       key: 'manage',
-      render: (record: (typeof dataSource)[0]) => {
+      render: (record: typeof dataSource[0]) => {
         const assetDetail = assetDetails.find(
           (detail) =>
             detail.asset.chain === record.key.split('.')[0] && detail.asset.symbol === record.key.split('.')[1]
