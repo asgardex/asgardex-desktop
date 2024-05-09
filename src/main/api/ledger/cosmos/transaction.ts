@@ -12,7 +12,6 @@ import { isError } from '../../../../shared/utils/guard'
  */
 export const send = async ({
   transport,
-  network,
   amount,
   asset,
   memo,
@@ -34,7 +33,7 @@ export const send = async ({
     if (!denom)
       throw Error(`Invalid asset ${assetToString(asset)} - Only ATOM asset is currently supported to transfer`)
 
-    const clientLedger = new ClientLedger({ transport, ...defaultClientConfig, network: network })
+    const clientLedger = new ClientLedger({ transport, ...defaultClientConfig })
     const txHash = await clientLedger.transfer({ walletIndex, asset: AssetATOM, recipient, amount, memo })
     if (txHash) {
       return E.left({

@@ -1,6 +1,5 @@
 import { Client } from '@xchainjs/xchain-cosmos'
-import { Address } from '@xchainjs/xchain-util'
-import { Asset, BaseAmount } from '@xchainjs/xchain-util'
+import { Address, Asset, BaseAmount } from '@xchainjs/xchain-util'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import * as C from '../clients'

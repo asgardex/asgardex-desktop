@@ -1,13 +1,10 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Client, GAIAChain } from '@xchainjs/xchain-cosmos'
-import * as E from 'fp-ts/lib/Either'
+import { Client, defaultClientConfig, GAIAChain } from '@xchainjs/xchain-cosmos'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { getChainId } from '../../../shared/api/cosmos'
-import { getClientUrls } from '../../../shared/cosmos/client'
 import { isError } from '../../../shared/utils/guard'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
@@ -23,46 +20,31 @@ import type { Client$, ClientState, ClientState$ } from './types'
  * A `CosmosClient` will never be created as long as no phrase is available
  */
 
-// const rpcURL = 'https://api.cosmos.network'
 const clientState$: ClientState$ = FP.pipe(
-  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$, Rx.of(getClientUrls())]),
+  Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$]),
   RxOp.switchMap(
-    ([keystore, network, clientUrls]): ClientState$ =>
-      FP.pipe(
-        // request chain id whenever network or keystore have been changed
-        Rx.from(getChainId(clientUrls[network])()),
-        // Rx.from(getChainId(rpcURL)()),
-        RxOp.switchMap((eChainId) =>
-          FP.pipe(
-            eChainId,
-            E.fold(
-              (error) =>
-                Rx.of(RD.failure(Error(`Failed to get Cosmos' chain id (${error?.message ?? error.toString()})`))),
-              () =>
-                Rx.of(
-                  FP.pipe(
-                    getPhrase(keystore),
-                    O.map<string, ClientState>((phrase) => {
-                      try {
-                        const client = new Client({
-                          network,
-                          phrase,
-                          clientUrls: getClientUrls()
-                        })
-                        return RD.success(client)
-                      } catch (error) {
-                        return RD.failure<Error>(isError(error) ? error : new Error('Failed to create Cosmos client'))
-                      }
-                    }),
-                    // Set back to `initial` if no phrase is available (locked wallet)
-                    O.getOrElse<ClientState>(() => RD.initial)
-                  )
-                )
-            )
-          )
-        ),
-        RxOp.startWith(RD.pending)
-      )
+    ([keystore, network]): ClientState$ =>
+      Rx.of(
+        FP.pipe(
+          getPhrase(keystore),
+          O.map<string, ClientState>((phrase) => {
+            try {
+              const cosmosInitParams = {
+                ...defaultClientConfig,
+                network: network,
+                phrase: phrase
+              }
+              const client = new Client(cosmosInitParams)
+              return RD.success(client)
+            } catch (error) {
+              console.error('Failed to create Cosmos client', error)
+              return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
+            }
+          }),
+          // Set back to `initial` if no phrase is available (locked wallet)
+          O.getOrElse<ClientState>(() => RD.initial)
+        )
+      ).pipe(RxOp.startWith(RD.pending))
   ),
   RxOp.startWith(RD.initial),
   RxOp.shareReplay(1)
