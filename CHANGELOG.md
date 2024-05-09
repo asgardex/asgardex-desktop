@@ -6,7 +6,10 @@
 
 - Fix Arb Approval [#210](https://github.com/asgardex/asgardex-desktop/pull/210)
 - Remove BNB Bep2Chain & Client [#199](https://github.com/asgardex/asgardex-desktop/pull/200)
-- Action button removed. [#194] (https://github.com/asgardex/asgardex-desktop/pull/223)
+- Fix Quote swap White page error [#216](https://github.com/asgardex/asgardex-desktop/pull/216)
+- Fix Master ReadMe [#214] (https://github.com/asgardex/asgardex-desktop/pull/222)
+- Update AVAX BSC whitelists [#220] (https://github.com/asgardex/asgardex-desktop/pull/220)
+- Fix Maya Asset pricing [#220] (https://github.com/asgardex/asgardex-desktop/pull/220)
 
 # 1.21.6 (2024-04-24)
 

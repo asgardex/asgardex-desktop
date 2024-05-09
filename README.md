@@ -5,23 +5,32 @@
   <img src="internals/img/asgardex-splash.png" width="100%" />
 </div>
 
-[![Version](https://img.shields.io/github/package-json/v/asgardex/asgardex-desktopcolor=xyz&filename=package.json&style=flat-square)](https://github.com/asgardex/asgardex-desktop/releases)
+[![Version](https://img.shields.io/github/package-json/v/asgardex/asgardex-desktop?color=xyz&filename=package.json&style=flat-square)](https://github.com/asgardex/asgardex-desktop/releases)
+
 ![Test](https://github.com/asgardex/asgardex-desktop/workflows/Test/badge.svg)
-![Electron build](https://github.com/asgardex/asgardex-desktop/workflows/Electron%20build/badge.svg)
+
+![Electron build Windows](https://github.com/asgardex/asgardex-desktop/workflows/Electron%20build%20-%20Windows/badge.svg)
+
+![Electron build Linux](https://github.com/asgardex/asgardex-desktop/workflows/Electron%20build%20-%20Linux/badge.svg)
+
+![Electron build Mac](https://github.com/asgardex/asgardex-desktop/workflows/Electron%20build%20-%20macOS/badge.svg)
 
 [![Discord](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/hkeJxHS7d7)
 [![Follow on Twitter](https://img.shields.io/twitter/follow/asgardex?style=social)](https://twitter.com/asgardex)
 [![Check our Website](https://img.shields.io/badge/Visit-Our%20Website-blue)](https://asgardex.com)
 
+## Website
+This is the developer source repository, general information, and download page can be found at [Asgardex](https://asgardex.com)
 
 ## Feature list
 
-Symbols:
+### Symbols
+
 :heavy_check_mark: implemented
 :white_check_mark: planned
 `-` not needed
 
-### Wallet
+#### Wallet
 
 |                | RUNE               | BTC                | BCH                | DOGE               | ETH / ERC20        | LTC                | COSMOS             | BSC                | AVAX               | MAYA               | DASH               | KUJI               |
 | -------------- | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
@@ -34,14 +43,13 @@ Symbols:
 | History        | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Synths         | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | -                  | -                  | -                  |
 
-
-(\*) Ledger `RUNE` is not supported at `stagenet`. Ledger `LTC`/`BCH`/`DOGE` are not supported at `testnet`. `Maya`is not supported on Ledger.
+(\*) Ledger `RUNE` is not supported at `stagenet`. Ledger `LTC`/`BCH`/`DOGE` are not supported at `testnet`. `Maya` is not supported on Ledger.
 
 (\*\*) With or without memo
 
-### THORChain Exchange
+#### THORChain Exchange
 
-|                | RUNE               | BSC /BRC20         | BTC                | BCH                | DOGE               | ETH / ERC20        | LTC                | COSMOS             | AVAX               | 
+|                | RUNE               | BSC /BEP20         | BTC                | BCH                | DOGE               | ETH / ERC20        | LTC                | COSMOS             | AVAX               | 
 | -------------- | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | 
 | Pools overview | -                  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
 | Pool detail    | -                  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
@@ -55,7 +63,7 @@ Symbols:
 
 (\*) Symmetrical deposit/withdraw only
 
-### MAYA Exchange
+#### MAYA Exchange
 
 |                | MAYA               | RUNE               | BTC                | ETH / ERC20        | KUJI               |  DASH              | ARB
 | -------------- | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
@@ -70,13 +78,13 @@ Symbols:
 
 (\*) Symmetrical deposit/withdraw only
 
-### THORNode
+#### THORNode
 
 | Overview           | Status             | BOND               | UNBOND             | LEAVE              | THORName           |
 | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
 | :heavy_check_mark: | :white_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 
-### MAYANode
+#### MAYANode
 
 | Overview           | Status             | BOND               | UNBOND             | LEAVE              | MAYAName           |
 | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
@@ -94,7 +102,7 @@ Symbols:
 - Security first
 - 10 bps affiliate fees on swaps - free Under $1000 
 
-## ASGARDEX uses following libraries, frameworks and more:
+## ASGARDEX utilizes the following libraries, frameworks, and more:
 
 _(in alphabetical order)_
 
@@ -114,9 +122,9 @@ _(in alphabetical order)_
 - [xchainjs-lib](https://github.com/xchainjs/xchainjs-lib/)
 - and others ...
 
-## Install
+## Installation
 
-It's recommended to use a Node version as same as Electron is running with (currently: [`Electron v26.0.x` / Node `18.16.1`](https://github.com/electron/releases#releases)). It's recommened to install [nvm](https://github.com/nvm-sh/nvm) to run as same Node version locally as used for building ASGARDEX on CI.
+It's recommended to use a Node version as same as Electron is running with (currently: [`Electron v26.0.x` / Node `18.16.1`](https://github.com/electron/releases#releases)). It's recommended to install [nvm](https://github.com/nvm-sh/nvm) to run as the same Node version locally as used for building ASGARDEX on CI.
 
 ```bash
 git clone https://github.com/asgardex/asgardex-desktop.git asgardex
@@ -169,32 +177,16 @@ In case Node might run into memory issues locally set `--max-old-space-size` as 
 export NODE_OPTIONS="--max-old-space-size=4096"
 ```
 
-### Generate types and endpoints for Midgard
-
-Whenever Midgard has been updated with a new release, run following script to auto-generate types and endpoints
-
-```bash
-generate:types:midgard
-```
-
-Generated files are based on Midgard's [swagger.json](https://midgard.thorchain.info/v2/swagger.json).
-
-### Generate types and endpoints for THORNode
-
-Whenever THORNode has been updated with a new release, run following script to auto-generate types and endpoints
-
-```bash
-generate:types:thornode
-```
-
-Generated files are based on `https://gitlab.com/thorchain/thornode/-/raw/release-{version}/openapi/openapi.yaml` (replace `{version}` with latest version (e.g. `0.19.5`)).
-
-### Generate ERC20 asset white list
+### Generate ERC20/BEP20 & Avax & ARB asset white list
 
 Whenever [THORChain ERC20 asset whitelist](https://gitlab.com/thorchain/thornode/-/blob/develop/bifrost/pkg/chainclients/ethereum/token_list.json) has been updated (usually with a [new release of THORNode](https://gitlab.com/thorchain/thornode/-/tags)), run following script to auto-generate this list for ASGARDEX
+For synths to have an icon the asset in the whitelist needs to be duplicated and the synth boolean flipped `true`
 
 ```bash
 yarn generate:erc20whitelist
+yarn generate:avaxerc20whitelist
+yarn generate:bscerc20whitelist
+yarn generate:arberc20whitelist
 ```
 
 ### How to auto-unlock a locked wallet while hot-reloading the app (for development only, disabled in production build)

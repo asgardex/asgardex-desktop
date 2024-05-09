@@ -3654,4 +3654,455 @@ export const BSC_TOKEN_WHITELIST: {
       "https://tokens.pancakeswap.finance/images/0x1D229B958D5DDFca92146585a8711aECbE56F095.png"
     ),
   },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "ALIX-0xaF6Bd11A6F8f9c44b9D18f5FA116E403db599f8E",
+      ticker: "ALIX",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xaF6Bd11A6F8f9c44b9D18f5FA116E403db599f8E/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "ALU-0x8263CD1601FE73C066bf49cc09841f35348e3be0",
+      ticker: "ALU",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0x8263CD1601FE73C066bf49cc09841f35348e3be0/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "BABYDOGE-0xc748673057861a797275CD8A068AbB95A902e8de",
+      ticker: "BABYDOGE",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xc748673057861a797275CD8A068AbB95A902e8de/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "BEAR-0xc3EAE9b061Aa0e1B9BD3436080Dc57D2d63FEdc1",
+      ticker: "BEAR",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xc3EAE9b061Aa0e1B9BD3436080Dc57D2d63FEdc1/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "BIN-0xe56842Ed550Ff2794F010738554db45E60730371",
+      ticker: "BIN",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xe56842Ed550Ff2794F010738554db45E60730371/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "BNX-0x8C851d1a123Ff703BD1f9dabe631b69902Df5f97",
+      ticker: "BNX",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0x8C851d1a123Ff703BD1f9dabe631b69902Df5f97/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "CP-0x82C19905B036bf4E329740989DCF6aE441AE26c1",
+      ticker: "CP",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0x82C19905B036bf4E329740989DCF6aE441AE26c1/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "DERC-0x373E768f79c820aA441540d254dCA6d045c6d25b",
+      ticker: "DERC",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0x373E768f79c820aA441540d254dCA6d045c6d25b/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "DPET-0xfb62AE373acA027177D1c18Ee0862817f9080d08",
+      ticker: "DPET",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xfb62AE373acA027177D1c18Ee0862817f9080d08/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "DRACE-0xA6c897CaaCA3Db7fD6e2D2cE1a00744f40aB87Bb",
+      ticker: "DRACE",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xA6c897CaaCA3Db7fD6e2D2cE1a00744f40aB87Bb/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "DRS-0xc8E8ecB2A5B5d1eCFf007BF74d15A86434aA0c5C",
+      ticker: "DRS",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xc8E8ecB2A5B5d1eCFf007BF74d15A86434aA0c5C/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "ECC-0x8D047F4F57A190C96c8b9704B39A1379E999D82B",
+      ticker: "ECC",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0x8D047F4F57A190C96c8b9704B39A1379E999D82B/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "FARA-0xF4Ed363144981D3A65f42e7D0DC54FF9EEf559A1",
+      ticker: "FARA",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xF4Ed363144981D3A65f42e7D0DC54FF9EEf559A1/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "FLOKI-0x2B3F34e9D4b127797CE6244Ea341a83733ddd6E4",
+      ticker: "FLOKI",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0x2B3F34e9D4b127797CE6244Ea341a83733ddd6E4/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "GOLD-0xb3a6381070B1a15169DEA646166EC0699fDAeA79",
+      ticker: "GOLD",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xb3a6381070B1a15169DEA646166EC0699fDAeA79/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "HONEY-0xFa363022816aBf82f18a9C2809dCd2BB393F6AC5",
+      ticker: "HONEY",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xFa363022816aBf82f18a9C2809dCd2BB393F6AC5/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "HUNNY-0x565b72163f17849832A692A3c5928cc502f46D69",
+      ticker: "HUNNY",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0x565b72163f17849832A692A3c5928cc502f46D69/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "KABY-0x02A40C048eE2607B5f5606e445CFc3633Fb20b58",
+      ticker: "KABY",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0x02A40C048eE2607B5f5606e445CFc3633Fb20b58/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "KMON-0xc732B6586A93b6B7CF5FeD3470808Bc74998224D",
+      ticker: "KMON",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xc732B6586A93b6B7CF5FeD3470808Bc74998224D/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "MINIFOOTBALL-0xD024Ac1195762F6F13f8CfDF3cdd2c97b33B248b",
+      ticker: "MINIFOOTBALL",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xD024Ac1195762F6F13f8CfDF3cdd2c97b33B248b/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "MIST-0x68E374F856bF25468D365E539b700b648Bf94B67",
+      ticker: "MIST",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0x68E374F856bF25468D365E539b700b648Bf94B67/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "MND-0x4c97c901B5147F8C1C7Ce3c5cF3eB83B44F244fE",
+      ticker: "MND",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0x4c97c901B5147F8C1C7Ce3c5cF3eB83B44F244fE/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "NAFT-0xD7730681B1DC8f6F969166B29D8A5EA8568616a3",
+      ticker: "NAFT",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xD7730681B1DC8f6F969166B29D8A5EA8568616a3/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "NBL-0xA67a13c9283Da5AABB199Da54a9Cb4cD8B9b16bA",
+      ticker: "NBL",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xA67a13c9283Da5AABB199Da54a9Cb4cD8B9b16bA/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "NFTB-0xde3dbBE30cfa9F437b293294d1fD64B26045C71A",
+      ticker: "NFTB",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xde3dbBE30cfa9F437b293294d1fD64B26045C71A/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "PAID-0xAD86d0E9764ba90DDD68747D64BFfBd79879a238",
+      ticker: "PAID",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xAD86d0E9764ba90DDD68747D64BFfBd79879a238/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "PETG-0x09607078980CbB0665ABa9c6D1B84b8eAD246aA0",
+      ticker: "PETG",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0x09607078980CbB0665ABa9c6D1B84b8eAD246aA0/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "PINK-0x9133049Fb1FdDC110c92BF5b7Df635abB70C89DC",
+      ticker: "PINK",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0x9133049Fb1FdDC110c92BF5b7Df635abB70C89DC/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "POCO-0x394bBA8F309f3462b31238B3fd04b83F71A98848",
+      ticker: "POCO",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0x394bBA8F309f3462b31238B3fd04b83F71A98848/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "PVU-0x31471E0791fCdbE82fbF4C44943255e923F1b794",
+      ticker: "PVU",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0x31471E0791fCdbE82fbF4C44943255e923F1b794/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "PWT-0xf3eDD4f14a018df4b6f02Bf1b2cF17A8120519A2",
+      ticker: "PWT",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xf3eDD4f14a018df4b6f02Bf1b2cF17A8120519A2/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "SHI-0x7269d98Af4aA705e0B1A5D8512FadB4d45817d5a",
+      ticker: "SHI",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0x7269d98Af4aA705e0B1A5D8512FadB4d45817d5a/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "SMON-0xAB15B79880f11cFfb58dB25eC2bc39d28c4d80d2",
+      ticker: "SMON",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xAB15B79880f11cFfb58dB25eC2bc39d28c4d80d2/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "TRONPAD-0x1Bf7AedeC439D6BFE38f8f9b20CF3dc99e3571C4",
+      ticker: "TRONPAD",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0x1Bf7AedeC439D6BFE38f8f9b20CF3dc99e3571C4/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "TSC-0xA2a26349448ddAfAe34949a6Cc2cEcF78c0497aC",
+      ticker: "TSC",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xA2a26349448ddAfAe34949a6Cc2cEcF78c0497aC/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "UNCL-0x0E8D5504bF54D9E44260f8d153EcD5412130CaBb",
+      ticker: "UNCL",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0x0E8D5504bF54D9E44260f8d153EcD5412130CaBb/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "UNCX-0x09a6c44c3947B69E2B45F4D51b67E6a39ACfB506",
+      ticker: "UNCX",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0x09a6c44c3947B69E2B45F4D51b67E6a39ACfB506/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "WANA-0x339C72829AB7DD45C3C52f965E7ABe358dd8761E",
+      ticker: "WANA",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0x339C72829AB7DD45C3C52f965E7ABe358dd8761E/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "WEYU-0xFAfD4CB703B25CB22f43D017e7e0d75FEBc26743",
+      ticker: "WEYU",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xFAfD4CB703B25CB22f43D017e7e0d75FEBc26743/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "YAY-0x524dF384BFFB18C0C8f3f43d012011F8F9795579",
+      ticker: "YAY",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0x524dF384BFFB18C0C8f3f43d012011F8F9795579/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "ZIN-0xFbe0b4aE6E5a200c36A341299604D5f71A5F0a48",
+      ticker: "ZIN",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/0xFbe0b4aE6E5a200c36A341299604D5f71A5F0a48/logo.png"
+    ),
+  },
 ];
