@@ -68,9 +68,9 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
             const { chain } = asset
             if (!isEnabledChain(chain))
               return Rx.of(RD.failure<ApiError>({ errorId: ErrorId.GET_ASSET_TXS, msg: `Unsupported chain ${chain}` }))
-            // If the asset is synthetic, use the THOR client
+            // If the asset is synthetic, use the THOR client tobefixed
             if (asset && asset.synth) {
-              return THOR.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
+              return THOR.txs$({ asset: O.none, walletAddress, walletIndex })
             }
             switch (chain) {
               case BTCChain:
@@ -86,9 +86,9 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
               case BSCChain:
                 return BSC.txs$({ asset: O.some(asset), limit, offset, walletAddress, walletIndex })
               case THORChain:
-                return THOR.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
+                return THOR.txs$({ asset: O.none, walletAddress, walletIndex })
               case MAYAChain:
-                return MAYA.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
+                return MAYA.txs$({ asset: O.none, walletAddress, walletIndex })
               case LTCChain:
                 return LTC.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
               case BCHChain:
@@ -96,9 +96,9 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
               case DOGEChain:
                 return DOGE.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
               case KUJIChain:
-                return KUJI.txs$({ asset: O.some(asset), limit, offset, walletAddress, walletIndex })
+                return KUJI.txs$({ asset: O.none, walletAddress, walletIndex })
               case GAIAChain:
-                return COSMOS.txs$({ asset: O.some(asset), limit, offset, walletAddress, walletIndex })
+                return COSMOS.txs$({ asset: O.none, walletAddress, walletIndex })
             }
           }
         )

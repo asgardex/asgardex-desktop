@@ -22,7 +22,7 @@ export const ActionButton: React.FC<Props> = (props): JSX.Element => {
   const { size, actions, isTextView = true, className = '', btnClassName = '' } = props
 
   return (
-    <div className={`flex w-full justify-end space-x-2 ${className}`}>
+    <div className={`flex w-full justify-start space-x-2 ${className}`}>
       {FP.pipe(
         actions,
         A.mapWithIndex((index, { label, callback, disabled = false }) => (

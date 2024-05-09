@@ -131,7 +131,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
                 }
               },
               {
-                label: intl.formatMessage({ id: 'common.manage' }),
+                label: intl.formatMessage({ id: 'common.add' }),
                 callback: () => {
                   navigate(
                     poolsRoutes.deposit.path({
@@ -164,7 +164,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
                 }
               },
               {
-                label: intl.formatMessage({ id: 'common.manage' }),
+                label: intl.formatMessage({ id: 'common.add' }),
                 callback: () => {
                   navigate(
                     poolsRoutes.deposit.path({
@@ -185,7 +185,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
 
       return (
         <Styled.TableAction>
-          <ActionButton btnClassName="min-w-[120px]" size="normal" actions={actions} />
+          <ActionButton size="normal" actions={actions} />
         </Styled.TableAction>
       )
     },
