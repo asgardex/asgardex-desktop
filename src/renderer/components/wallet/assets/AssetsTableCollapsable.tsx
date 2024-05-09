@@ -626,8 +626,8 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
       )
 
       const header = (
-        <Styled.HeaderRow className="flex w-full justify-between">
-          <Col>
+        <Styled.HeaderRow className="flex w-full justify-between space-x-4">
+          <Col flex="0 0 10rem" span={4}>
             <Styled.HeaderChainContainer>
               <Styled.HeaderLabel>{chainToString(chain)}</Styled.HeaderLabel>
               {!isKeystoreWallet(walletType) && (
@@ -635,29 +635,25 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
               )}
             </Styled.HeaderChainContainer>
           </Col>
-          <Col>
-            <div className="flex">
-              <Styled.HeaderAddress>
-                {hidePrivateData ? hiddenString : walletAddress}
-                <Styled.CopyLabelContainer
-                  onClick={(event) => {
-                    event.preventDefault()
-                    event.stopPropagation()
-                  }}>
-                  <Styled.CopyLabel copyable={{ text: walletAddress }} />
-                </Styled.CopyLabelContainer>
-              </Styled.HeaderAddress>
-            </div>
+          <Col flex={1} span={9}>
+            <Styled.HeaderAddress>
+              {hidePrivateData ? hiddenString : walletAddress}
+              <Styled.CopyLabelContainer
+                onClick={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                }}>
+                <Styled.CopyLabel copyable={{ text: walletAddress }} />
+              </Styled.CopyLabelContainer>
+            </Styled.HeaderAddress>
           </Col>
-          <Col>
-            <div className="flex ">
-              <Styled.HeaderLabel color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>
-                {`${assetsTxt}`}
-              </Styled.HeaderLabel>
-            </div>
+          <Col flex="0 1 auto" span={3} style={{ textAlign: 'right' }}>
+            <Styled.HeaderLabel color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>
+              {`${assetsTxt}`}
+            </Styled.HeaderLabel>
           </Col>
-          <Col>
-            <div className="flex pr-4 ">
+          <Col flex="0 0 12rem" span={1}>
+            <div className="flex justify-end space-x-2 pr-4">
               <ReloadButton
                 className="pr-2"
                 size="small"
