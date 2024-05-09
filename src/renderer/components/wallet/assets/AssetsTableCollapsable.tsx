@@ -63,6 +63,7 @@ import { walletTypeToI18n } from '../../../services/wallet/util'
 import { PricePool } from '../../../views/pools/Pools.types'
 import { ErrorView } from '../../shared/error/'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
+import { FlatButton } from '../../uielements/button'
 import { Action as ActionButtonAction, ActionButton } from '../../uielements/button/ActionButton'
 import { ReloadButton } from '../../uielements/button/ReloadButton'
 import { QRCodeModal } from '../../uielements/qrCodeModal/QRCodeModal'
@@ -362,7 +363,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
                 ]
               : []
           ),
-          // 'add' LP RUNE
+          // 'add' LP RUNE || Cacao
           A.concatW<ActionButtonAction>(
             (isRuneNativeAsset(asset) || isCacaoAsset(asset)) && deepestPoolAsset !== null
               ? [
@@ -464,12 +465,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
               callback: () => {
                 assetHandler(walletAsset, 'send')
               }
-            },
-            {
-              label: intl.formatMessage({ id: 'wallet.action.receive' }),
-              callback: () => {
-                setShowQRModal(O.some({ asset: getChainAsset(chain), address: walletAddress }))
-              }
             }
           ]),
           // 'deposit'  for RuneNativeAsset only
@@ -484,20 +479,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
                   }
                 ]
               : []
-          ),
-          // Reload Balance
-          A.concatW<ActionButtonAction>(
-            !disableRefresh
-              ? [
-                  {
-                    label: intl.formatMessage({ id: 'common.refresh' }),
-                    callback: () => {
-                      const lazyReload = reloadBalancesByChain(chain)
-                      lazyReload() // Invoke the lazy function
-                    }
-                  }
-                ]
-              : []
           )
         )
       }
@@ -508,7 +489,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         </div>
       )
     },
-    [dex, poolsData, poolsDataMaya, poolDetails, intl, disableRefresh, navigate, assetHandler]
+    [dex, poolsData, poolsDataMaya, poolDetails, intl, navigate, assetHandler]
   )
 
   const actionColumn: ColumnType<WalletBalance> = useMemo(
@@ -645,40 +626,63 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
       )
 
       const header = (
-        <Styled.HeaderRow>
-          <Col xs={14} md={6} lg={4}>
+        <Styled.HeaderRow className="flex w-full justify-between">
+          <Col>
             <Styled.HeaderChainContainer>
               <Styled.HeaderLabel>{chainToString(chain)}</Styled.HeaderLabel>
-              {
-                // show tag for NON keystore wallets only (e.g. Ledger)
-                !isKeystoreWallet(walletType) && (
-                  <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
-                )
-              }
+              {!isKeystoreWallet(walletType) && (
+                <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
+              )}
             </Styled.HeaderChainContainer>
           </Col>
-          <Col xs={0} md={12} lg={10}>
-            <Styled.HeaderAddress>
-              {hidePrivateData ? hiddenString : walletAddress}
-              <Styled.CopyLabelContainer
-                onClick={(event) => {
-                  event.preventDefault()
-                  event.stopPropagation()
-                }}>
-                <Styled.CopyLabel copyable={{ text: walletAddress }} />
-              </Styled.CopyLabelContainer>
-            </Styled.HeaderAddress>
+          <Col>
+            <div className="flex">
+              <Styled.HeaderAddress>
+                {hidePrivateData ? hiddenString : walletAddress}
+                <Styled.CopyLabelContainer
+                  onClick={(event) => {
+                    event.preventDefault()
+                    event.stopPropagation()
+                  }}>
+                  <Styled.CopyLabel copyable={{ text: walletAddress }} />
+                </Styled.CopyLabelContainer>
+              </Styled.HeaderAddress>
+            </div>
           </Col>
-          <Col xs={10} md={6} lg={10}>
-            <div className="row flex">
+          <Col>
+            <div className="flex ">
               <Styled.HeaderLabel color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>
                 {`${assetsTxt}`}
               </Styled.HeaderLabel>
-              <ReloadButton size="small" onClick={() => handleRefreshClick(chain)}></ReloadButton>
+            </div>
+          </Col>
+          <Col>
+            <div className="flex pr-4 ">
+              <ReloadButton
+                className="pr-2"
+                size="small"
+                color="neutral"
+                disabled={disableRefresh}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  handleRefreshClick(chain)
+                }}
+              />
+              <FlatButton
+                className="ml-2 pl-2"
+                size="small"
+                color="neutral"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  setShowQRModal(O.some({ asset: getChainAsset(chain), address: walletAddress }))
+                }}>
+                <span className="hidden sm:inline-block">{intl.formatMessage({ id: 'wallet.action.receive' })}</span>
+              </FlatButton>
             </div>
           </Col>
         </Styled.HeaderRow>
       )
+
       return (
         <Panel header={header} key={key}>
           {renderBalances({
@@ -689,7 +693,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         </Panel>
       )
     },
-    [hidePrivateData, intl, renderBalances]
+    [disableRefresh, hidePrivateData, intl, renderBalances]
   )
 
   // open all panels by default
