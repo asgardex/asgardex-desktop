@@ -674,7 +674,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
             <div className="flex pr-4 ">
               <ReloadButton className="pr-2" size="small" onClick={() => handleRefreshClick(chain)} />
               <FlatButton
-                className="pl-2 ml-2"
+                className="ml-2 pl-2"
                 size="small"
                 onClick={() => setShowQRModal(O.some({ asset: getChainAsset(chain), address: walletAddress }))}>
                 <span className="hidden sm:inline-block">{intl.formatMessage({ id: 'wallet.action.receive' })}</span>
