@@ -479,20 +479,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
                   }
                 ]
               : []
-          ),
-          // Reload Balance
-          A.concatW<ActionButtonAction>(
-            !disableRefresh
-              ? [
-                  {
-                    label: intl.formatMessage({ id: 'common.refresh' }),
-                    callback: () => {
-                      const lazyReload = reloadBalancesByChain(chain)
-                      lazyReload() // Invoke the lazy function
-                    }
-                  }
-                ]
-              : []
           )
         )
       }
@@ -503,7 +489,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         </div>
       )
     },
-    [dex, poolsData, poolsDataMaya, poolDetails, intl, disableRefresh, navigate, assetHandler]
+    [dex, poolsData, poolsDataMaya, poolDetails, intl, navigate, assetHandler]
   )
 
   const actionColumn: ColumnType<WalletBalance> = useMemo(
@@ -672,11 +658,24 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           </Col>
           <Col>
             <div className="flex pr-4 ">
-              <ReloadButton className="pr-2" size="small" onClick={() => handleRefreshClick(chain)} />
+              <ReloadButton
+                className="pr-2"
+                size="small"
+                color="neutral"
+                disabled={disableRefresh}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  handleRefreshClick(chain)
+                }}
+              />
               <FlatButton
                 className="ml-2 pl-2"
                 size="small"
-                onClick={() => setShowQRModal(O.some({ asset: getChainAsset(chain), address: walletAddress }))}>
+                color="neutral"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  setShowQRModal(O.some({ asset: getChainAsset(chain), address: walletAddress }))
+                }}>
                 <span className="hidden sm:inline-block">{intl.formatMessage({ id: 'wallet.action.receive' })}</span>
               </FlatButton>
             </div>
@@ -694,7 +693,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         </Panel>
       )
     },
-    [hidePrivateData, intl, renderBalances]
+    [disableRefresh, hidePrivateData, intl, renderBalances]
   )
 
   // open all panels by default
