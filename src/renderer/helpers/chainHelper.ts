@@ -97,7 +97,7 @@ export const isEthChain = (chain: Chain): boolean => eqChain.equals(chain.toUppe
 /**
  * Check whether chain is ARB chain
  */
-export const isArbChain = (chain: Chain): boolean => eqChain.equals(chain, ARBChain)
+export const isArbChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), ARBChain)
 
 /**
  * Check whether chain is AVAX chain

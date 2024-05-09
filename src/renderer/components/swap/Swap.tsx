@@ -2107,6 +2107,10 @@ export const Swap = ({
       return <></>
     }
 
+    if (lockedWallet) {
+      return <></>
+    }
+
     const error = quoteErrors[0].split(':')
     const assetPart = error[2].split('(')[1]?.split(')')[0]
     if (!lockedWallet && assetPart === `${targetAsset.chain}.${targetAsset.symbol}`) {

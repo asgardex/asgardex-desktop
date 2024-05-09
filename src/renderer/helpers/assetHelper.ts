@@ -253,7 +253,9 @@ export const assetInList =
   (list: Asset[]): boolean =>
     FP.pipe(
       list,
-      A.findFirst((assetInList) => eqAsset.equals(assetInList, asset)),
+      A.findFirst((assetInList) => {
+        return eqAsset.equals(assetInList, asset)
+      }),
       O.isSome
     )
 
@@ -374,9 +376,11 @@ export const validAssetForAVAX = (asset: Asset /* AVAX or ERC20 asset */, networ
  * (1) Check on `mainnet` only
  * (2) Always accept BSC
  * (3) ERC20 asset needs to be listed in `ERC20Whitelist`
+ * BSC-USD is corrupted. Temporary fix until xchainjs fixes the issue
  */
-export const validAssetForBSC = (asset: Asset /* BSC or ERC20 asset */, network: Network): boolean =>
-  network !== Network.Mainnet /* (1) */ || isBscAsset(asset) /* (2) */ || assetInBSCERC20Whitelist(asset)
+export const validAssetForBSC = (asset: Asset /* BSC or ERC20 asset */, network: Network): boolean => {
+  return network !== Network.Mainnet || isBscAsset(asset) || assetInBSCERC20Whitelist(asset) // Check additional conditions
+}
 
 /**
  * Checks whether an ERC20 address is black listed or not

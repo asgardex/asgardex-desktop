@@ -18,7 +18,7 @@ import { writeFile, readFile } from '../src/main/utils/file'
 import { ERC20Whitelist, erc20WhitelistIO } from '../src/renderer/services/thorchain/types'
 
 const WHITELIST_URL =
-  'https://gitlab.com/thorchain/thornode/-/raw/release-1.97.2/common/tokenlist/avaxtokens/avax_mainnet_V95.json'
+  'https://gitlab.com/thorchain/thornode/-/raw/develop/common/tokenlist/avaxtokens/avax_mainnet_V127.json'
 
 const PATH = './src/renderer/types/generated/thorchain/avaxerc20whitelist.ts'
 

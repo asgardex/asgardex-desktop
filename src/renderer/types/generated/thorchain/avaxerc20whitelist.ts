@@ -16,6 +16,34 @@ export const AVAX_TOKEN_WHITELIST: {
   {
     asset: {
       chain: AVAXChain,
+      symbol: "COQ-0x420FcA0121DC28039145009570975747295f2329",
+      ticker: "COQ",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0x420FcA0121DC28039145009570975747295f2329/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: AVAXChain,
+      symbol: "BUSD-0x9C9e5fD8bbc25984B178FdCE6117Defa39d2db39",
+      ticker: "BUSD",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0x9C9e5fD8bbc25984B178FdCE6117Defa39d2db39/logo.png"
+    ),
+  },
+  {
+    asset: { chain: AVAXChain, symbol: "BUSD", ticker: "BUSD", synth: false },
+    iconUrl: O.some(
+      "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0x9C9e5fD8bbc25984B178FdCE6117Defa39d2db39/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: AVAXChain,
       symbol: "JOE-0xce347E069B68C53A9ED5e7DA5952529cAF8ACCd4",
       ticker: "JOE",
       synth: false,
@@ -879,6 +907,39 @@ export const AVAX_TOKEN_WHITELIST: {
     asset: { chain: AVAXChain, symbol: "BTC", ticker: "BTC", synth: false },
     iconUrl: O.some(
       "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0x152b9d0FdC40C096757F570A51E494bd4b943E50/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: AVAXChain,
+      symbol: "SOL-0xFE6B19286885a4F7F55AdAD09C3Cd1f906D2478F",
+      ticker: "SOL",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0xFE6B19286885a4F7F55AdAD09C3Cd1f906D2478F/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: AVAXChain,
+      symbol: "SOL-0xFE6B19286885a4F7F55AdAD09C3Cd1f906D2478F",
+      ticker: "SOL",
+      synth: true,
+    },
+    iconUrl: O.some(
+      "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0xFE6B19286885a4F7F55AdAD09C3Cd1f906D2478F/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: AVAXChain,
+      symbol: "ALOT-0x093783055f9047c2bff99c4e414501f8a147bc69",
+      ticker: "ALOT",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0x093783055f9047c2bff99c4e414501f8a147bc69/logo.png"
     ),
   },
 ];
