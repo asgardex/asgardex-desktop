@@ -40,6 +40,7 @@ import { getPoolPriceValue as getPoolPriceValueM } from '../../../../helpers/poo
 import { loadingString } from '../../../../helpers/stringHelper'
 import { getEVMAmountFromBalances } from '../../../../helpers/walletHelper'
 import { usePricePool } from '../../../../hooks/usePricePool'
+import { usePricePoolMaya } from '../../../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SAVER_DEPOSIT_STATE, INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import {
@@ -118,6 +119,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   const sourceChainAsset = getChainAsset(asset.chain)
 
   const pricePool = usePricePool()
+  const pricePoolMaya = usePricePoolMaya()
 
   const [selectedFeeOption, setSelectedFeeOption] = useState<FeeOption>(DEFAULT_FEE_OPTION)
 
@@ -330,39 +332,43 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   // useEffect to fetch data from query
   useEffect(() => {
     const amountValue = O.getOrElse(() => ZERO_BASE_AMOUNT)(amountToSend)
-    const maxAmountPrice = isPoolDetails(poolDetails)
-      ? getPoolPriceValue({
-          balance: { asset, amount: maxAmount },
-          poolDetails,
-          pricePool
-        })
-      : getPoolPriceValueM({
-          balance: { asset, amount: maxAmount },
-          poolDetails,
-          pricePool
-        })
-    const amountPrice = isPoolDetails(poolDetails)
-      ? getPoolPriceValue({
-          balance: { asset, amount: amountValue },
-          poolDetails,
-          pricePool
-        })
-      : getPoolPriceValueM({
-          balance: { asset, amount: amountValue },
-          poolDetails,
-          pricePool
-        })
-    const assetFeePrice = isPoolDetails(poolDetails)
-      ? getPoolPriceValue({
-          balance: { asset: sourceChainAsset, amount: assetFee.baseAmount },
-          poolDetails,
-          pricePool
-        })
-      : getPoolPriceValueM({
-          balance: { asset: sourceChainAsset, amount: assetFee.baseAmount },
-          poolDetails,
-          pricePool
-        })
+
+    const maxAmountPrice =
+      isPoolDetails(poolDetails) && dex === 'THOR'
+        ? getPoolPriceValue({
+            balance: { asset, amount: maxAmount },
+            poolDetails,
+            pricePool
+          })
+        : getPoolPriceValueM({
+            balance: { asset, amount: maxAmount },
+            poolDetails,
+            pricePool: pricePoolMaya
+          })
+    const amountPrice =
+      isPoolDetails(poolDetails) && dex === 'THOR'
+        ? getPoolPriceValue({
+            balance: { asset, amount: amountValue },
+            poolDetails,
+            pricePool
+          })
+        : getPoolPriceValueM({
+            balance: { asset, amount: amountValue },
+            poolDetails,
+            pricePool: pricePoolMaya
+          })
+    const assetFeePrice =
+      isPoolDetails(poolDetails) && dex === 'THOR'
+        ? getPoolPriceValue({
+            balance: { asset: sourceChainAsset, amount: assetFee.baseAmount },
+            poolDetails,
+            pricePool
+          })
+        : getPoolPriceValueM({
+            balance: { asset: sourceChainAsset, amount: assetFee.baseAmount },
+            poolDetails,
+            pricePool: pricePoolMaya
+          })
     if (O.isSome(assetFeePrice)) {
       const maxCryptoAmount = new CryptoAmount(assetFeePrice.value, pricePool.asset)
       setFeePriceValue(maxCryptoAmount)
@@ -375,7 +381,19 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
       setMaxAmountPriceValue(maxCryptoAmount)
     }
-  }, [asset, maxAmount, assetFee, amountToSend, pricePool.asset, pricePool, network, poolDetails, sourceChainAsset])
+  }, [
+    asset,
+    maxAmount,
+    assetFee,
+    amountToSend,
+    pricePool.asset,
+    pricePool,
+    network,
+    poolDetails,
+    sourceChainAsset,
+    dex,
+    pricePoolMaya
+  ])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {
