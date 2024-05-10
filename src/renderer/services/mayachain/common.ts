@@ -15,7 +15,7 @@ import * as C from '../clients'
 import { getStorageState, getStorageState$, modifyStorage } from '../storage/common'
 import { keystoreService } from '../wallet/keystore'
 import { getPhrase } from '../wallet/util'
-import { INITIAL_CHAIN_IDS, DEFAULT_CLIENT_URL } from './const'
+import { DEFAULT_CLIENT_URL } from './const'
 import { Client$, ClientState, ClientState$, ClientUrl$ } from './types'
 
 // `TriggerStream` to reload ClientUrl
@@ -82,17 +82,15 @@ const clientState$: ClientState$ = FP.pipe(
       FP.pipe(
         // request chain id from node whenever network or keystore state have been changed
         Rx.from(getChainId(clientUrl[network].node)),
-        RxOp.switchMap((chainId) =>
+        RxOp.switchMap(() =>
           Rx.of(
             FP.pipe(
               getPhrase(keystore),
               O.map<string, ClientState>((phrase) => {
                 try {
                   const client = new Client({
-                    clientUrl,
                     network,
-                    phrase,
-                    chainIds: { ...INITIAL_CHAIN_IDS, [network]: chainId }
+                    phrase
                   })
                   return RD.success(client)
                 } catch (error) {
@@ -103,29 +101,7 @@ const clientState$: ClientState$ = FP.pipe(
               O.getOrElse<ClientState>(() => RD.initial)
             )
           )
-        ),
-        RxOp.catchError(() =>
-          Rx.of(
-            FP.pipe(
-              getPhrase(keystore),
-              O.map<string, ClientState>((phrase) => {
-                try {
-                  const client = new Client({
-                    clientUrl,
-                    network,
-                    phrase,
-                    chainIds: { ...INITIAL_CHAIN_IDS, [network]: INITIAL_CHAIN_IDS }
-                  })
-                  return RD.success(client)
-                } catch (error) {
-                  return RD.failure<Error>(isError(error) ? error : new Error('Failed to create MAYA client'))
-                }
-              }),
-              O.getOrElse<ClientState>(() => RD.initial)
-            )
-          )
-        ),
-        RxOp.startWith(RD.pending)
+        )
       )
   ),
   RxOp.startWith(RD.initial),

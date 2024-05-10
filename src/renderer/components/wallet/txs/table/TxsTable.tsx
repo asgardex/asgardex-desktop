@@ -211,6 +211,22 @@ export const TxsTable: React.FC<Props> = (props): JSX.Element => {
     [typeColumn, amountColumn, dateColumn, linkColumn]
   )
 
+  const removeDuplicateTxs = (txsPage: TxsPage): TxsPage => {
+    const seen = new Map<string, boolean>()
+    const filteredTxs = txsPage.txs.filter((tx) => {
+      if (!seen.has(tx.hash)) {
+        seen.set(tx.hash, true)
+        return true
+      }
+      return false
+    })
+    return {
+      ...txsPage,
+      txs: filteredTxs,
+      total: filteredTxs.length // Update the total count if necessary
+    }
+  }
+
   const renderTable = useCallback(
     ({ total, txs }: TxsPage, loading = false) => {
       const columns = isDesktopView ? desktopColumns : mobileColumns
@@ -254,7 +270,8 @@ export const TxsTable: React.FC<Props> = (props): JSX.Element => {
           },
           (data: TxsPage): JSX.Element => {
             previousTxs.current = O.some(data)
-            return renderTable(data)
+            const uniqueData = removeDuplicateTxs(data)
+            return renderTable(uniqueData)
           }
         )(txsPageRD)}
       </>

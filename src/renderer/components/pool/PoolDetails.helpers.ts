@@ -49,11 +49,6 @@ export const getMembers = (data: Pick<PoolStatsDetail, 'uniqueMemberCount'>): Bi
 export const getFees = (data: Pick<PoolStatsDetail, 'totalFees'>, priceRatio: BigNumber = bn(1)): AssetAmount =>
   baseToAsset(baseAmount(bnOrZero(data.totalFees).multipliedBy(priceRatio)))
 
-export const getILPPaid = (
-  { impermanentLossProtectionPaid }: Pick<PoolStatsDetail, 'impermanentLossProtectionPaid'>,
-  priceRatio: BigNumber = bn(1)
-): AssetAmount => baseToAsset(baseAmount(bnOrZero(impermanentLossProtectionPaid).multipliedBy(priceRatio)))
-
 export const getEmptyPoolDetail = (): PoolDetail => ({
   asset: 'asset',
   assetDepth: '0',
@@ -73,7 +68,10 @@ export const getEmptyPoolDetail = (): PoolDetail => ({
   saversUnits: '0',
   saversAPR: '0',
   totalCollateral: '0',
-  totalDebtTor: '0'
+  totalDebtTor: '0',
+  earnings: '0',
+  earningsAnnualAsPercentOfDepth: '0',
+  lpLuvi: '0'
 })
 
 export const getEmptyPoolStatsDetail = (): PoolStatsDetail => ({
@@ -107,9 +105,11 @@ export const getEmptyPoolStatsDetail = (): PoolStatsDetail => ({
   withdrawCount: '0',
   withdrawRuneVolume: '0',
   withdrawVolume: '0',
-  impermanentLossProtectionPaid: '0',
   liquidityUnits: '0',
   synthUnits: '0',
   synthSupply: '0',
-  annualPercentageRate: '0'
+  annualPercentageRate: '0',
+  earnings: '0',
+  earningsAnnualAsPercentOfDepth: '0',
+  saversAPR: '0'
 })

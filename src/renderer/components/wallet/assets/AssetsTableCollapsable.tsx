@@ -2,8 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetCacao } from '@xchainjs/xchain-mayachain'
 import { assetUSDC } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
@@ -296,8 +295,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
   )
 
   const renderActionColumn = useCallback(
-    ({ asset, amount, walletAddress, walletIndex, walletType, hdMode }: WalletBalance) => {
-      const chain = asset.synth ? (dex === 'THOR' ? THORChain : MAYAChain) : asset.chain
+    ({ asset, walletAddress, walletIndex, walletType, hdMode }: WalletBalance) => {
       const walletAsset: SelectedWalletAsset = { asset, walletAddress, walletIndex, walletType, hdMode }
       const normalizedAssetString = assetToString(asset).toUpperCase()
       const hasActivePool: boolean = FP.pipe(
@@ -310,22 +308,20 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         O.chain(({ asset }) => O.fromNullable(assetFromString(asset))),
         O.toNullable
       )
-      const isZeroBalance = amount.amount().isZero()
+
       let actions: ActionButtonAction[] = []
 
-      if (isZeroBalance) {
-        actions = [
+      actions = FP.pipe(
+        [
           {
-            label: intl.formatMessage({ id: 'common.refresh' }),
+            label: intl.formatMessage({ id: 'wallet.action.send' }),
             callback: () => {
-              const lazyReload = reloadBalancesByChain(chain)
-              lazyReload() // Invoke the lazy function
+              assetHandler(walletAsset, 'send')
             }
           }
-        ]
-      } else {
-        actions = FP.pipe(
-          // 'swap' for RUNE
+        ],
+        // 'swap' for RUNE
+        A.concatW<ActionButtonAction>(
           isRuneNativeAsset(asset) && deepestPoolAsset !== null && dex !== 'MAYA'
             ? [
                 {
@@ -342,146 +338,159 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
                   }
                 }
               ]
-            : [],
-          // 'swap' for cacao
-          A.concatW<ActionButtonAction>(
-            isCacaoAsset(asset) && deepestPoolAsset !== null && dex !== 'THOR'
-              ? [
-                  {
-                    label: intl.formatMessage({ id: 'common.swap' }),
-                    callback: () => {
-                      navigate(
-                        poolsRoutes.swap.path({
-                          source: assetToString(asset),
-                          target: assetToString(deepestPoolAsset),
-                          sourceWalletType: walletType,
-                          targetWalletType: DEFAULT_WALLET_TYPE
-                        })
-                      )
-                    }
+            : []
+        ),
+        // 'swap' for cacao
+        A.concatW<ActionButtonAction>(
+          isCacaoAsset(asset) && deepestPoolAsset !== null && dex !== 'THOR'
+            ? [
+                {
+                  label: intl.formatMessage({ id: 'common.swap' }),
+                  callback: () => {
+                    navigate(
+                      poolsRoutes.swap.path({
+                        source: assetToString(asset),
+                        target: assetToString(deepestPoolAsset),
+                        sourceWalletType: walletType,
+                        targetWalletType: DEFAULT_WALLET_TYPE
+                      })
+                    )
                   }
-                ]
-              : []
-          ),
-          // 'add' LP RUNE || Cacao
-          A.concatW<ActionButtonAction>(
-            (isRuneNativeAsset(asset) || isCacaoAsset(asset)) && deepestPoolAsset !== null
-              ? [
-                  {
-                    label: intl.formatMessage({ id: 'common.add' }),
-                    callback: () => {
-                      navigate(
-                        poolsRoutes.deposit.path({
-                          asset: assetToString(deepestPoolAsset),
-                          assetWalletType: DEFAULT_WALLET_TYPE,
-                          runeWalletType: walletType
-                        })
-                      )
-                    }
+                }
+              ]
+            : []
+        ),
+
+        // 'swap' for synths assets of active pools only
+        A.concatW<ActionButtonAction>(
+          isSynthAsset(asset)
+            ? [
+                {
+                  label: intl.formatMessage({ id: 'common.swap' }),
+                  callback: () => {
+                    navigate(
+                      poolsRoutes.swap.path({
+                        source: `${asset.chain}/${asset.symbol}`,
+                        target: assetToString(dex === 'THOR' ? AssetRuneNative : AssetCacao),
+                        sourceWalletType: walletType,
+                        targetWalletType: DEFAULT_WALLET_TYPE
+                      })
+                    )
                   }
-                ]
-              : []
-          ),
-          // 'swap' for synths assets of active pools only
-          A.concatW<ActionButtonAction>(
-            isSynthAsset(asset)
-              ? [
-                  {
-                    label: intl.formatMessage({ id: 'common.swap' }),
-                    callback: () => {
-                      navigate(
-                        poolsRoutes.swap.path({
-                          source: `${asset.chain}/${asset.symbol}`,
-                          target: assetToString(dex === 'THOR' ? AssetRuneNative : AssetCacao),
-                          sourceWalletType: walletType,
-                          targetWalletType: DEFAULT_WALLET_TYPE
-                        })
-                      )
-                    }
+                }
+              ]
+            : []
+        ),
+        // 'swap' for assets of active pools only
+        A.concatW<ActionButtonAction>(
+          hasActivePool
+            ? [
+                {
+                  label: intl.formatMessage({ id: 'common.swap' }),
+                  callback: () => {
+                    navigate(
+                      poolsRoutes.swap.path({
+                        source: assetToString(asset),
+                        target: assetToString(isRuneNativeAsset(asset) ? AssetCacao : AssetRuneNative),
+                        sourceWalletType: walletType,
+                        targetWalletType: DEFAULT_WALLET_TYPE
+                      })
+                    )
                   }
-                ]
-              : []
-          ),
-          // 'swap' for assets of active pools only
-          A.concatW<ActionButtonAction>(
-            hasActivePool
-              ? [
-                  {
-                    label: intl.formatMessage({ id: 'common.swap' }),
-                    callback: () => {
-                      navigate(
-                        poolsRoutes.swap.path({
-                          source: assetToString(asset),
-                          target: assetToString(isRuneNativeAsset(asset) ? AssetCacao : AssetRuneNative),
-                          sourceWalletType: walletType,
-                          targetWalletType: DEFAULT_WALLET_TYPE
-                        })
-                      )
-                    }
+                }
+              ]
+            : []
+        ),
+        // 'Earn' for assets of active pools only
+        A.concatW<ActionButtonAction>(
+          hasActivePool && dex !== 'MAYA'
+            ? [
+                {
+                  label: intl.formatMessage({ id: 'common.earn' }),
+                  callback: () => {
+                    navigate(
+                      poolsRoutes.earn.path({
+                        asset: assetToString(asset),
+                        walletType: walletType
+                      })
+                    )
                   }
-                ]
-              : []
-          ),
-          // 'Earn' for assets of active pools only
-          A.concatW<ActionButtonAction>(
-            hasActivePool && dex !== 'MAYA'
-              ? [
-                  {
-                    label: intl.formatMessage({ id: 'common.earn' }),
-                    callback: () => {
-                      navigate(
-                        poolsRoutes.earn.path({
-                          asset: assetToString(asset),
-                          walletType: walletType
-                        })
-                      )
-                    }
+                }
+              ]
+            : []
+        ),
+        // 'add' LP RUNE
+        A.concatW<ActionButtonAction>(
+          dex === 'THOR' && isRuneNativeAsset(asset) && deepestPoolAsset !== null
+            ? [
+                {
+                  label: intl.formatMessage({ id: 'common.add' }),
+                  callback: () => {
+                    navigate(
+                      poolsRoutes.deposit.path({
+                        asset: assetToString(deepestPoolAsset),
+                        assetWalletType: DEFAULT_WALLET_TYPE,
+                        runeWalletType: walletType
+                      })
+                    )
                   }
-                ]
-              : []
-          ),
-          // 'add' LP for assets of active pools only
-          A.concatW<ActionButtonAction>(
-            hasActivePool
-              ? [
-                  {
-                    label: intl.formatMessage({ id: 'common.add' }),
-                    callback: () => {
-                      navigate(
-                        poolsRoutes.deposit.path({
-                          asset: assetToString(asset),
-                          assetWalletType: walletType,
-                          runeWalletType: DEFAULT_WALLET_TYPE
-                        })
-                      )
-                    }
+                }
+              ]
+            : []
+        ),
+        // 'add' LP CACAO
+        A.concatW<ActionButtonAction>(
+          dex === 'MAYA' && isCacaoAsset(asset) && deepestPoolAsset !== null
+            ? [
+                {
+                  label: intl.formatMessage({ id: 'common.add' }),
+                  callback: () => {
+                    navigate(
+                      poolsRoutes.deposit.path({
+                        asset: assetToString(deepestPoolAsset),
+                        assetWalletType: DEFAULT_WALLET_TYPE,
+                        runeWalletType: walletType
+                      })
+                    )
                   }
-                ]
-              : []
-          ),
-          A.concat([
-            {
-              label: intl.formatMessage({ id: 'wallet.action.send' }),
-              callback: () => {
-                assetHandler(walletAsset, 'send')
-              }
-            }
-          ]),
-          // 'deposit'  for RuneNativeAsset only
-          A.concatW<ActionButtonAction>(
-            isRuneNativeAsset(asset) || isCacaoAsset(asset)
-              ? [
-                  {
-                    label: intl.formatMessage({ id: 'wallet.action.deposit' }),
-                    callback: () => {
-                      assetHandler(walletAsset, 'deposit')
-                    }
+                }
+              ]
+            : []
+        ),
+        // 'add' LP for assets of active pools only
+        A.concatW<ActionButtonAction>(
+          hasActivePool
+            ? [
+                {
+                  label: intl.formatMessage({ id: 'common.add' }),
+                  callback: () => {
+                    navigate(
+                      poolsRoutes.deposit.path({
+                        asset: assetToString(asset),
+                        assetWalletType: walletType,
+                        runeWalletType: DEFAULT_WALLET_TYPE
+                      })
+                    )
                   }
-                ]
-              : []
-          )
+                }
+              ]
+            : []
+        ),
+
+        // 'deposit'  for dex chain only
+        A.concatW<ActionButtonAction>(
+          isRuneNativeAsset(asset) || isCacaoAsset(asset)
+            ? [
+                {
+                  label: intl.formatMessage({ id: 'wallet.action.deposit' }),
+                  callback: () => {
+                    assetHandler(walletAsset, 'deposit')
+                  }
+                }
+              ]
+            : []
         )
-      }
+      )
 
       return (
         <div className="flex justify-center">
@@ -626,8 +635,8 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
       )
 
       const header = (
-        <Styled.HeaderRow className="flex w-full justify-between">
-          <Col>
+        <Styled.HeaderRow className="flex w-full justify-between space-x-4">
+          <Col flex="0 0 10rem" span={4}>
             <Styled.HeaderChainContainer>
               <Styled.HeaderLabel>{chainToString(chain)}</Styled.HeaderLabel>
               {!isKeystoreWallet(walletType) && (
@@ -635,29 +644,25 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
               )}
             </Styled.HeaderChainContainer>
           </Col>
-          <Col>
-            <div className="flex">
-              <Styled.HeaderAddress>
-                {hidePrivateData ? hiddenString : walletAddress}
-                <Styled.CopyLabelContainer
-                  onClick={(event) => {
-                    event.preventDefault()
-                    event.stopPropagation()
-                  }}>
-                  <Styled.CopyLabel copyable={{ text: walletAddress }} />
-                </Styled.CopyLabelContainer>
-              </Styled.HeaderAddress>
-            </div>
+          <Col flex={1} span={9}>
+            <Styled.HeaderAddress>
+              {hidePrivateData ? hiddenString : walletAddress}
+              <Styled.CopyLabelContainer
+                onClick={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                }}>
+                <Styled.CopyLabel copyable={{ text: walletAddress }} />
+              </Styled.CopyLabelContainer>
+            </Styled.HeaderAddress>
           </Col>
-          <Col>
-            <div className="flex ">
-              <Styled.HeaderLabel color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>
-                {`${assetsTxt}`}
-              </Styled.HeaderLabel>
-            </div>
+          <Col flex="0 1 auto" span={3} style={{ textAlign: 'right' }}>
+            <Styled.HeaderLabel color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>
+              {`${assetsTxt}`}
+            </Styled.HeaderLabel>
           </Col>
-          <Col>
-            <div className="flex pr-4 ">
+          <Col flex="0 0 12rem" span={1}>
+            <div className="flex justify-end space-x-2 pr-4">
               <ReloadButton
                 className="pr-2"
                 size="small"

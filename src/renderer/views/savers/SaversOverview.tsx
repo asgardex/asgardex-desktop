@@ -37,6 +37,7 @@ import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
 import { useSynthConstants } from '../../hooks/useSynthConstants'
 import * as poolsRoutes from '../../routes/pools'
 import * as saversRoutes from '../../routes/pools/savers'
+import { PoolsState as PoolStateMaya, PoolDetails as PoolDetailsMaya } from '../../services/mayaMigard/types'
 import { GetPoolsPeriodEnum, PoolDetails, PoolsState } from '../../services/midgard/types'
 import type { MimirHalt } from '../../services/thorchain/types'
 import * as Shared from '../pools/PoolsOverview.shared'
@@ -300,9 +301,9 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
           Shared.renderTableError(intl.formatMessage({ id: 'common.refresh' }), refreshHandler),
           // success state
           ([pools, maxSynthPerPoolDepth]): JSX.Element => {
-            const { poolDetails }: PoolsState = pools
+            const { poolDetails }: PoolsState | PoolStateMaya = pools
             // filter chain assets
-            const poolDetailsFiltered: PoolDetails = FP.pipe(
+            const poolDetailsFiltered: PoolDetails | PoolDetailsMaya = FP.pipe(
               poolDetails,
               A.filter(({ saversDepth }) => Number(saversDepth) > 0)
             )

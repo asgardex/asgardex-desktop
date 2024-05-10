@@ -1,22 +1,20 @@
-import CosmosApp from '@ledgerhq/hw-app-cosmos'
 import type Transport from '@ledgerhq/hw-transport'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
+import { Network } from '@xchainjs/xchain-client'
+import { ClientLedger, GAIAChain, defaultClientConfig } from '@xchainjs/xchain-cosmos'
 import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
-import { getDerivationPath } from './common'
 
 export const getAddress = async (
   transport: Transport,
-  walletIndex: number
+  walletIndex: number,
+  network: Network
 ): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
-    const app = new CosmosApp(transport)
-    const path = getDerivationPath(walletIndex)
-
-    const { address } = await app.getAddress(path, 'cosmos')
+    const clientLedger = new ClientLedger({ transport, ...defaultClientConfig, network: network })
+    const address = await clientLedger.getAddressAsync(walletIndex)
 
     if (!address) {
       return E.left({
@@ -33,10 +31,8 @@ export const getAddress = async (
   }
 }
 
-export const verifyAddress = async (transport: Transport, walletIndex: number) => {
-  const app = new CosmosApp(transport)
-  const path = getDerivationPath(walletIndex)
-
-  const _ = await app.getAddress(path, 'cosmos', true)
+export const verifyAddress = async (transport: Transport, walletIndex: number, network: Network) => {
+  const clientLedger = new ClientLedger({ transport, ...defaultClientConfig, network: network })
+  const _ = await clientLedger.getAddressAsync(walletIndex, true)
   return true
 }

@@ -27,8 +27,8 @@ export type FeesRD = RD.RemoteData<Error, Fees>
 export type FeesLD = LiveData<Error, Fees>
 
 export type LoadTxsParams = {
-  limit: number
-  offset: number
+  limit?: number
+  offset?: number
 }
 
 export type TxsParams = { asset: O.Option<Asset>; walletAddress: O.Option<string>; walletIndex: number } & LoadTxsParams

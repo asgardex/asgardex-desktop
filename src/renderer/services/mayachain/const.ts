@@ -1,9 +1,9 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { ChainIds, ClientUrl } from '@xchainjs/xchain-mayachain'
 
 import { DEFAULT_MAYANODE_API_URLS, DEFAULT_MAYANODE_RPC_URLS } from '../../../shared/mayachain/const'
 import { ENABLED_CHAINS } from '../../../shared/utils/chain'
+import { ClientUrl } from '../thorchain/types'
 import { InteractState, MimirHalt } from './types'
 
 export const INITIAL_INTERACT_STATE: InteractState = {
@@ -29,13 +29,6 @@ export const createDefaultMimirHalt = (): MimirHalt => {
 }
 
 export const DEFAULT_MIMIR_HALT = createDefaultMimirHalt()
-
-// 'unknown' by default - needed to be requested from MAYANode before initializing a `xchain-mayachain` client
-export const INITIAL_CHAIN_IDS: ChainIds = {
-  [Network.Mainnet]: 'mayachain-mainnet-v1',
-  [Network.Stagenet]: 'mayachain-stagenet-v1',
-  [Network.Testnet]: 'unkown-testnet-chain-id'
-}
 
 export const DEFAULT_CLIENT_URL: ClientUrl = {
   [Network.Testnet]: {

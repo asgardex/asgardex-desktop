@@ -4,7 +4,6 @@ import * as RD from '@devexperts/remote-data-ts'
 import { XChainClient } from '@xchainjs/xchain-client'
 import { MayaChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { isSynthAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/lib/Option'
 import * as NEA from 'fp-ts/NonEmptyArray'
@@ -18,7 +17,6 @@ import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { isRuneNativeAsset } from '../../helpers/assetHelper'
-import { isCosmosChain } from '../../helpers/chainHelper'
 import { eqOSelectedWalletAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { useDex } from '../../hooks/useDex'
@@ -59,18 +57,10 @@ export const AssetDetailsView: React.FC = (): JSX.Element => {
       FP.pipe(
         selectedAssetUpdated$,
         RxOp.distinctUntilChanged(eqOSelectedWalletAsset.equals),
-        /*
-          Disable txs history for Cosmos temporarily
-          as long as an external API can't provide it - currently `https://lcd-cosmoshub.keplr.app`
-          See https://github.com/thorchain/asgardex-electron/pull/2405
-        */
         RxOp.switchMap(
           O.fold(
             () => Rx.of(RD.pending),
-            ({ walletIndex, walletAddress, asset }) =>
-              isCosmosChain(asset.chain) || isRuneNativeAsset(asset) || isSynthAsset(asset)
-                ? Rx.of(RD.initial)
-                : getTxs$(O.some(walletAddress), walletIndex)
+            ({ walletIndex, walletAddress }) => getTxs$(O.some(walletAddress), walletIndex)
           )
         )
       ),

@@ -49,7 +49,10 @@ describe('helpers/poolHelper/', () => {
     saversUnits: '0',
     saversAPR: '0',
     totalCollateral: '0',
-    totalDebtTor: '0'
+    totalDebtTor: '0',
+    earnings: '0',
+    earningsAnnualAsPercentOfDepth: '0',
+    lpLuvi: '0'
   }
   const pool1: PoolDetail = { ...mockPoolDetail, status: GetPoolsStatusEnum.Staged, runeDepth: '1000' }
   const pool2: PoolDetail = { ...mockPoolDetail, status: GetPoolsStatusEnum.Available, runeDepth: '2000' }

@@ -11,8 +11,7 @@ import {
   getTotalTx,
   getMembers,
   getFees,
-  getVolumeTotal,
-  getILPPaid
+  getVolumeTotal
 } from './PoolDetails.helpers'
 
 describe('PoolDetails.helpers', () => {
@@ -259,26 +258,6 @@ describe('PoolDetails.helpers', () => {
           getFees({ totalFees: assetToBase(assetAmount(100)).amount().toString() }, bn(2.5)),
           assetAmount(250)
         )
-      ).toBeTruthy()
-    })
-  })
-
-  describe('ilpPaid', () => {
-    it('returns zero for incorrect data', () => {
-      expect(eqAssetAmount.equals(getILPPaid({ impermanentLossProtectionPaid: '' }), ZERO_ASSET_AMOUNT)).toBeTruthy()
-      expect(
-        eqAssetAmount.equals(getILPPaid({ impermanentLossProtectionPaid: 'asdasd' }), ZERO_ASSET_AMOUNT)
-      ).toBeTruthy()
-    })
-    it('returns result using default price ratio', () => {
-      expect(
-        eqAssetAmount.equals(getILPPaid({ impermanentLossProtectionPaid: '100000000' }), assetAmount(1))
-      ).toBeTruthy()
-    })
-
-    it('should get earnings correctly for provided price ratio', () => {
-      expect(
-        eqAssetAmount.equals(getILPPaid({ impermanentLossProtectionPaid: '100000000' }, bn(2)), assetAmount(2))
       ).toBeTruthy()
     })
   })

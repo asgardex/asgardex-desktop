@@ -292,5 +292,8 @@ export const filterTableData =
     )
   }
 
-export const isEmptyPool = ({ assetDepth, runeDepth }: Pick<PoolDetail, 'assetDepth' | 'runeDepth'>): boolean =>
+export const isEmptyPool = ({
+  assetDepth,
+  runeDepth
+}: Pick<PoolDetail | PoolDetailMaya, 'assetDepth' | 'runeDepth'>): boolean =>
   bnOrZero(assetDepth).isZero() || bnOrZero(runeDepth).isZero()

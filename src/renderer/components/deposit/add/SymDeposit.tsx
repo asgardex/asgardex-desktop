@@ -353,31 +353,37 @@ export const SymDeposit: React.FC<Props> = (props) => {
     () => baseAmount(0, assetBalanceMax1e8.decimal),
     [assetBalanceMax1e8.decimal]
   )
+  const isPoolDetails = (poolDetails: PoolDetails | PoolDetailsMaya): poolDetails is PoolDetails => {
+    return (poolDetails as PoolDetails) !== undefined
+  }
 
   const priceRuneAmountToDepositMax1e8: AssetWithAmount = useMemo(() => {
     const result =
       dex === 'THOR'
         ? FP.pipe(
-            PoolHelpers.getPoolPriceValue({
-              balance: { asset: AssetRuneNative, amount: runeAmountToDeposit },
-              poolDetails,
-              pricePool
-            }),
+            isPoolDetails(poolDetails)
+              ? PoolHelpers.getPoolPriceValue({
+                  balance: { asset: AssetRuneNative, amount: runeAmountToDeposit },
+                  poolDetails,
+                  pricePool
+                })
+              : O.none,
             O.getOrElse(() => ZERO_BASE_AMOUNT),
             (amount) => ({ asset: pricePool.asset, amount })
           )
         : FP.pipe(
-            getPoolPriceValueM({
-              balance: { asset: AssetCacao, amount: runeAmountToDeposit },
-              poolDetails,
-              pricePool
-            }),
+            !isPoolDetails(poolDetails)
+              ? getPoolPriceValueM({
+                  balance: { asset: AssetCacao, amount: runeAmountToDeposit },
+                  poolDetails,
+                  pricePool
+                })
+              : O.none,
             O.getOrElse(() => ZERO_BASE_AMOUNT),
             (amount) => ({ asset: pricePool.asset, amount })
           )
     return result
   }, [dex, poolDetails, pricePool, runeAmountToDeposit])
-
   const [
     /* max. 1e8 decimal */
     assetAmountToDepositMax1e8,
@@ -580,11 +586,13 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
     return dex === 'THOR'
       ? FP.pipe(
-          PoolHelpers.getPoolPriceValue({
-            balance: { asset: AssetRuneNative, amount },
-            poolDetails,
-            pricePool
-          }),
+          isPoolDetails(poolDetails)
+            ? PoolHelpers.getPoolPriceValue({
+                balance: { asset: AssetRuneNative, amount },
+                poolDetails,
+                pricePool
+              })
+            : O.none,
           O.map((amount) => ({ amount, asset: pricePool.asset }))
         )
       : FP.pipe(
@@ -641,11 +649,13 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
     return dex === 'THOR'
       ? FP.pipe(
-          PoolHelpers.getPoolPriceValue({
-            balance: { asset: AssetRuneNative, amount },
-            poolDetails,
-            pricePool
-          }),
+          isPoolDetails(poolDetails)
+            ? PoolHelpers.getPoolPriceValue({
+                balance: { asset: AssetRuneNative, amount },
+                poolDetails,
+                pricePool
+              })
+            : O.none,
           O.map((amount) => ({ asset: pricePool.asset, amount }))
         )
       : FP.pipe(
@@ -703,11 +713,13 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
     return dex === 'THOR'
       ? FP.pipe(
-          PoolHelpers.getPoolPriceValue({
-            balance: { asset, amount },
-            poolDetails,
-            pricePool
-          }),
+          isPoolDetails(poolDetails)
+            ? PoolHelpers.getPoolPriceValue({
+                balance: { asset, amount },
+                poolDetails,
+                pricePool
+              })
+            : O.none,
           O.map((amount) => ({ amount, asset: pricePool.asset }))
         )
       : FP.pipe(
@@ -765,11 +777,13 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
     return dex === 'THOR'
       ? FP.pipe(
-          PoolHelpers.getPoolPriceValue({
-            balance: { asset, amount },
-            poolDetails,
-            pricePool
-          }),
+          isPoolDetails(poolDetails)
+            ? PoolHelpers.getPoolPriceValue({
+                balance: { asset, amount },
+                poolDetails,
+                pricePool
+              })
+            : O.none,
           O.map((amount) => ({ asset: pricePool.asset, amount }))
         )
       : FP.pipe(
@@ -1058,11 +1072,13 @@ export const SymDeposit: React.FC<Props> = (props) => {
     const result =
       dex === 'THOR'
         ? FP.pipe(
-            PoolHelpers.getPoolPriceValue({
-              balance: { asset: asset, amount: maxAssetAmountToDepositMax1e8 },
-              poolDetails,
-              pricePool
-            }),
+            isPoolDetails(poolDetails)
+              ? PoolHelpers.getPoolPriceValue({
+                  balance: { asset: asset, amount: maxAssetAmountToDepositMax1e8 },
+                  poolDetails,
+                  pricePool
+                })
+              : O.none,
             O.getOrElse(() => baseAmount(0, maxAssetAmountToDepositMax1e8.decimal)),
             (amount) => ({ asset: pricePool.asset, amount })
           )
@@ -1082,11 +1098,13 @@ export const SymDeposit: React.FC<Props> = (props) => {
     const result =
       dex === 'THOR'
         ? FP.pipe(
-            PoolHelpers.getPoolPriceValue({
-              balance: { asset: AssetRuneNative, amount: maxRuneAmountToDeposit },
-              poolDetails,
-              pricePool
-            }),
+            isPoolDetails(poolDetails)
+              ? PoolHelpers.getPoolPriceValue({
+                  balance: { asset: AssetRuneNative, amount: maxRuneAmountToDeposit },
+                  poolDetails,
+                  pricePool
+                })
+              : O.none,
             O.getOrElse(() => baseAmount(0, maxRuneAmountToDeposit.decimal)),
             (amount) => ({ asset: pricePool.asset, amount })
           )
@@ -1129,16 +1147,18 @@ export const SymDeposit: React.FC<Props> = (props) => {
     const result =
       dex === 'THOR'
         ? FP.pipe(
-            PoolHelpers.getPoolPriceValue({
-              balance: { asset, amount: assetAmountToDepositMax1e8 },
-              poolDetails,
-              pricePool
-            }),
+            isPoolDetails(poolDetails)
+              ? PoolHelpers.getPoolPriceValue({
+                  balance: { asset, amount: assetAmountToDepositMax1e8 },
+                  poolDetails,
+                  pricePool
+                })
+              : O.none,
             O.getOrElse(() => baseAmount(0, assetAmountToDepositMax1e8.decimal)),
             (amount) => ({ asset: pricePool.asset, amount })
           )
         : FP.pipe(
-            PoolHelpers.getPoolPriceValue({
+            getPoolPriceValueM({
               balance: { asset, amount: assetAmountToDepositMax1e8 },
               poolDetails,
               pricePool
