@@ -10,7 +10,6 @@ import {
 } from '@heroicons/react/24/outline'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
-import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -1563,9 +1562,9 @@ export const Swap = ({
       const poolDetailBTC =
         dex === 'THOR'
           ? isPoolDetails(poolDetails)
-            ? getPoolDetail(poolDetails, AssetBTC)
+            ? getPoolDetail(poolDetails, sourceAsset)
             : O.none
-          : getPoolDetailMaya(poolDetails, AssetBTC)
+          : getPoolDetailMaya(poolDetails, sourceAsset)
       const poolDetailSource =
         dex === 'THOR'
           ? isPoolDetails(poolDetails)
