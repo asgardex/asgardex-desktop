@@ -2,7 +2,6 @@ import cosmosclient from '@cosmos-client/core'
 import type Transport from '@ledgerhq/hw-transport'
 import THORChainApp, { extractSignatureFromTLV, LedgerErrorType } from '@xchainjs/ledger-thorchain'
 import { Network, TxHash } from '@xchainjs/xchain-client'
-import { CosmosSDKClient } from '@xchainjs/xchain-cosmos'
 import { AssetRuneNative, DEFAULT_GAS_LIMIT_VALUE, getChainId, getDenom, getPrefix } from '@xchainjs/xchain-thorchain'
 import { Address, Asset, assetToString, BaseAmount, delay } from '@xchainjs/xchain-util'
 import { AccAddress, PubKeySecp256k1, Msg, CosmosSDK } from 'cosmos-client'
@@ -56,8 +55,6 @@ export const send = async ({
 
     const chainId = await getChainId(nodeUrl)
 
-    const cosmos = new CosmosSDKClient({ server: nodeUrl, chainId, prefix })
-
     const accAddress = cosmosclient.AccAddress.fromString(bech32Address)
 
     const denom = getDenom(asset)
@@ -65,7 +62,7 @@ export const send = async ({
     Legacy.registerCodecs(prefix)
     // get account number + sequence from signer account // fetches using cosmosClient for headers to be added
     const account = await cosmosclient.rest.auth
-      .account(cosmos.sdk, accAddress)
+      .account(new cosmosclient.CosmosSDK(nodeUrl, chainId), accAddress)
       .then((res) =>
         cosmosclient.codec.protoJSONToInstance(cosmosclient.codec.castProtoJSONOfProtoAny(res.data.account))
       )

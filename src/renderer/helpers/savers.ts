@@ -1,4 +1,5 @@
 import { Network } from '@xchainjs/xchain-client'
+import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { assetFromString, BaseAmount, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
@@ -7,6 +8,7 @@ import * as O from 'fp-ts/lib/Option'
 import * as Ord from 'fp-ts/lib/Ord'
 
 import { PoolsWatchList } from '../../shared/api/io'
+import type { PoolDetails as PoolDetailsMaya } from '../services/mayaMigard/types'
 import type { PoolDetails } from '../services/midgard/types'
 import { toPoolData } from '../services/midgard/utils'
 import { PoolData } from '../views/pools/Pools.types'
@@ -15,7 +17,8 @@ import type { SaversTableRowData, SaversTableRowsData } from '../views/savers/Sa
 import { eqAsset, eqString } from './fp/eq'
 import { ordBaseAmount } from './fp/ord'
 import { sequenceTOption, sequenceTOptionFromArray } from './fpHelpers'
-import { getDeepestPoolSymbol } from './poolHelper'
+import { getDeepestPoolSymbol, isPoolDetails } from './poolHelper'
+import { getDeepestPoolSymbol as getDeepestPoolSymbolMaya } from './poolHelperMaya'
 
 /**
  * Order savers by depth price
@@ -32,7 +35,7 @@ export const getSaversTableRowData = ({
   maxSynthPerPoolDepth,
   network
 }: {
-  poolDetail: PoolDetail
+  poolDetail: PoolDetail | PoolDetailMaya
   pricePoolData: PoolData
   watchlist: PoolsWatchList
   maxSynthPerPoolDepth: number
@@ -81,19 +84,21 @@ export const getSaversTableRowsData = ({
   maxSynthPerPoolDepth,
   network
 }: {
-  poolDetails: PoolDetails
+  poolDetails: PoolDetails | PoolDetailsMaya
   pricePoolData: PoolData
   watchlist: PoolsWatchList
   maxSynthPerPoolDepth: number
   network: Network
 }): SaversTableRowsData => {
   // get symbol of deepest pool
-  const oDeepestPoolSymbol: O.Option<string> = getDeepestPoolSymbol(poolDetails)
+  const oDeepestPoolSymbol: O.Option<string> = isPoolDetails(poolDetails)
+    ? getDeepestPoolSymbol(poolDetails)
+    : getDeepestPoolSymbolMaya(poolDetails)
 
   // Transform `PoolDetails` -> SaversTableRowData
   return FP.pipe(
     poolDetails,
-    A.mapWithIndex<PoolDetail, O.Option<SaversTableRowData>>((index, poolDetail) => {
+    A.mapWithIndex<PoolDetail | PoolDetailMaya, O.Option<SaversTableRowData>>((index, poolDetail) => {
       // get symbol of PoolDetail
       const oPoolDetailSymbol: O.Option<string> = FP.pipe(
         O.fromNullable(assetFromString(poolDetail.asset ?? '')),

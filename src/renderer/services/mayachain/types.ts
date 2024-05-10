@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Client, ClientUrl, DepositParam, NodeUrl } from '@xchainjs/xchain-mayachain'
+import { Client, DepositParam } from '@xchainjs/xchain-mayachain'
 import type * as TN from '@xchainjs/xchain-mayanode'
 import { Address, Asset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -8,11 +8,13 @@ import * as t from 'io-ts'
 import { IntlShape } from 'react-intl'
 import * as Rx from 'rxjs'
 
+import { NodeUrl } from '../../../shared/api/types'
 import { EnabledChain } from '../../../shared/utils/chain'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
 import { AssetsWithAmount1e8, AssetWithAmount1e8 } from '../../types/asgardex'
 import * as C from '../clients'
+import { ClientUrl } from '../thorchain/types'
 import { TxHashLD, TxHashRD } from '../wallet/types'
 
 /**

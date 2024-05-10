@@ -32,6 +32,7 @@ import { useSymDepositAddresses } from '../../hooks/useSymDepositAddresses'
 import { useSymDepositAddressesMaya } from '../../hooks/useSymDepositAddressesMaya'
 import { DepositRouteParams } from '../../routes/pools/deposit'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
+import { PoolDetailRD as PoolDetailMayaRD } from '../../services/mayaMigard/types'
 import { PoolDetailRD, PoolSharesLD, PoolSharesRD } from '../../services/midgard/types'
 import { SymDepositView } from './add/SymDepositView'
 import { ShareView } from './share/ShareView'
@@ -81,7 +82,7 @@ export const DepositView: React.FC<Props> = () => {
   } = useMidgardMayaContext()
 
   const selectedPoolAsset$ = dex === 'THOR' ? selectedPoolAssetThor$ : selectedPoolAssetMaya$
-  const selectedPoolDetail$ = dex === 'THOR' ? selectedPoolDetailThor$ : selectedPoolDetailMaya$
+
   const haltedChains$ = dex === 'THOR' ? haltedChainsThor$ : haltedChainsMaya$
   const shares$ = dex === 'THOR' ? sharesThor$ : sharesMaya$
 
@@ -231,8 +232,9 @@ export const DepositView: React.FC<Props> = () => {
   // before a check of `keystoreState` can be done
   const keystoreState = useObservableState(keystoreService.keystoreState$, undefined)
 
-  const poolDetailRD = useObservableState<PoolDetailRD>(selectedPoolDetail$, RD.initial)
-
+  const poolDetailThorRD: PoolDetailRD = useObservableState(selectedPoolDetailThor$, RD.initial)
+  const poolDetailMayaRD: PoolDetailMayaRD = useObservableState(selectedPoolDetailMaya$, RD.initial)
+  const poolDetailRD = dex === 'THOR' ? poolDetailThorRD : poolDetailMayaRD
   const renderTopContent = useMemo(
     () => (
       <div className="relative mb-20px flex items-center justify-between">

@@ -10,7 +10,7 @@ jestConfig = {
   ...jestConfig,
   globals: { ...jestConfig.globals, crypto: require('crypto') },
   extensionsToTreatAsEsm: ['.ts'],
-  transformIgnorePatterns: ['node_modules/(?!axios)'],
+  transformIgnorePatterns: ['node_modules/(?!axios/)'],
   moduleNameMapper: {
     '\\.(css|less)$': '<rootDir>/__mocks__/styleMock.js'
   }

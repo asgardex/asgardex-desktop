@@ -20,11 +20,11 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
   const common = C.createTransactionService(client$)
 
   const sendKeystoreTx = (params: SendTxParams): TxHashLD => {
-    const { asset, recipient, amount, feeAmount, memo, walletIndex } = params
+    const { asset, recipient, amount, memo, walletIndex } = params
     return FP.pipe(
       client$,
       RxOp.switchMap(FP.flow(O.fold<Client, Rx.Observable<Client>>(() => Rx.EMPTY, Rx.of))),
-      RxOp.switchMap((client) => Rx.from(client.transfer({ walletIndex, asset, amount, recipient, memo, feeAmount }))),
+      RxOp.switchMap((client) => Rx.from(client.transfer({ walletIndex, asset, amount, recipient, memo }))),
       RxOp.map(RD.success),
       RxOp.catchError(
         (e): TxHashLD =>

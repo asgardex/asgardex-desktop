@@ -25,7 +25,7 @@ const common = (_ /* env */, argv) => ({
     __dirname: false,
     __filename: false
   },
-  // Add `node-hid` to externals dure build issues - see https://github.com/thorchain/asgardex-electron/pull/881
+  // Add `node-hid` to externals build issues
   // https://webpack.js.org/configuration/externals/#root
   // Note: ^ Disabled temporary due sign issues on macOS
   externals: {

@@ -9,6 +9,7 @@ import { useIntl } from 'react-intl'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useDex } from '../../hooks/useDex'
+import { PoolsState as PoolStateMaya } from '../../services/mayaMigard/types'
 import { PoolsState } from '../../services/midgard/types'
 
 export const PlaygroundView: React.FC = (): JSX.Element => {
@@ -33,7 +34,7 @@ export const PlaygroundView: React.FC = (): JSX.Element => {
         // error state
         (error: Error) => <h3>`Loading of pool data failed ${error?.message ?? ''}`</h3>,
         // success state
-        (s: PoolsState): JSX.Element => {
+        (s: PoolsState | PoolStateMaya): JSX.Element => {
           const hasPools = s.poolAssets.length > 0
           return (
             <>

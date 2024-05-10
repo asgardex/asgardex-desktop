@@ -36,6 +36,7 @@ import { getChainAsset } from '../../../../helpers/chainHelper'
 import { isEvmChain, isEvmToken } from '../../../../helpers/evmHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import { getPoolPriceValue } from '../../../../helpers/poolHelper'
+import { getPoolPriceValue as getPoolPriceValueM } from '../../../../helpers/poolHelperMaya'
 import { loadingString } from '../../../../helpers/stringHelper'
 import { getEVMAmountFromBalances } from '../../../../helpers/walletHelper'
 import { usePricePool } from '../../../../hooks/usePricePool'
@@ -49,6 +50,7 @@ import {
 } from '../../../../services/chain/types'
 import { FeesRD, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../../../services/clients'
 import { TxParams } from '../../../../services/evm/types'
+import { PoolDetails as PoolDetailsMaya } from '../../../../services/mayaMigard/types'
 import { PoolAddress } from '../../../../services/midgard/types'
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
@@ -87,7 +89,7 @@ export type Props = {
   reloadFeesHandler: (params: TxParams) => void
   validatePassword$: ValidatePasswordHandler
   network: Network
-  poolDetails: PoolDetails
+  poolDetails: PoolDetails | PoolDetailsMaya
   oPoolAddress: O.Option<PoolAddress>
   dex: Dex
 }
@@ -321,24 +323,46 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   // store maxAmountValue
   const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
+  const isPoolDetails = (poolDetails: PoolDetails | PoolDetailsMaya): poolDetails is PoolDetails => {
+    return (poolDetails as PoolDetails) !== undefined
+  }
+
   // useEffect to fetch data from query
   useEffect(() => {
     const amountValue = O.getOrElse(() => ZERO_BASE_AMOUNT)(amountToSend)
-    const maxAmountPrice = getPoolPriceValue({
-      balance: { asset, amount: maxAmount },
-      poolDetails,
-      pricePool
-    })
-    const amountPrice = getPoolPriceValue({
-      balance: { asset, amount: amountValue },
-      poolDetails,
-      pricePool
-    })
-    const assetFeePrice = getPoolPriceValue({
-      balance: { asset: sourceChainAsset, amount: assetFee.baseAmount },
-      poolDetails,
-      pricePool
-    })
+    const maxAmountPrice = isPoolDetails(poolDetails)
+      ? getPoolPriceValue({
+          balance: { asset, amount: maxAmount },
+          poolDetails,
+          pricePool
+        })
+      : getPoolPriceValueM({
+          balance: { asset, amount: maxAmount },
+          poolDetails,
+          pricePool
+        })
+    const amountPrice = isPoolDetails(poolDetails)
+      ? getPoolPriceValue({
+          balance: { asset, amount: amountValue },
+          poolDetails,
+          pricePool
+        })
+      : getPoolPriceValueM({
+          balance: { asset, amount: amountValue },
+          poolDetails,
+          pricePool
+        })
+    const assetFeePrice = isPoolDetails(poolDetails)
+      ? getPoolPriceValue({
+          balance: { asset: sourceChainAsset, amount: assetFee.baseAmount },
+          poolDetails,
+          pricePool
+        })
+      : getPoolPriceValueM({
+          balance: { asset: sourceChainAsset, amount: assetFee.baseAmount },
+          poolDetails,
+          pricePool
+        })
     if (O.isSome(assetFeePrice)) {
       const maxCryptoAmount = new CryptoAmount(assetFeePrice.value, pricePool.asset)
       setFeePriceValue(maxCryptoAmount)

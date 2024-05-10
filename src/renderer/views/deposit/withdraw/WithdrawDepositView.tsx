@@ -4,6 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, BaseAmount, bn } from '@xchainjs/xchain-util'
@@ -194,7 +195,7 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
     }: {
       assetPrice: BigNumber
       poolShare: PoolShare
-      poolDetail: PoolDetail
+      poolDetail: PoolDetail | PoolDetailMaya
       selectedPriceAsset: Asset
       poolsData: PoolsDataMap
     }) => (
