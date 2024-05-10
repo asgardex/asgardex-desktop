@@ -9,7 +9,7 @@ import * as O from 'fp-ts/lib/Option'
 import * as Ord from 'fp-ts/lib/Ord'
 
 import { PoolsWatchList } from '../../shared/api/io'
-import { ONE_MAYA_BASE_AMOUNT } from '../../shared/mock/amount'
+import { ONE_CACAO_BASE_AMOUNT } from '../../shared/mock/amount'
 import { PoolAddress, PoolDetails } from '../services/mayaMigard/types'
 import { getPoolDetail, toPoolData } from '../services/mayaMigard/utils'
 import { MimirHalt } from '../services/thorchain/types'
@@ -31,7 +31,7 @@ const ordByDepth = Ord.Contravariant.contramap(ordBaseAmount, ({ depthPrice }: P
  * Note: We don't have a "MAYA" pool in THORChain,
  * but do need such thing for pricing
  */
-export const MAYA_POOL_DATA: PoolData = { assetBalance: ONE_MAYA_BASE_AMOUNT, dexBalance: ONE_MAYA_BASE_AMOUNT }
+export const MAYA_POOL_DATA: PoolData = { assetBalance: ONE_CACAO_BASE_AMOUNT, dexBalance: ONE_CACAO_BASE_AMOUNT }
 
 /**
  * MAYA based `PricePool`
