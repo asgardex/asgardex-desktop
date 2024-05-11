@@ -10,17 +10,16 @@ import { useObservableState } from 'observable-hooks'
 import { SendFormKUJI } from '../../../components/wallet/txs/send/'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useKujiContext } from '../../../contexts/KujiContext'
-import { useMayachainQueryContext } from '../../../contexts/MayachainQueryContext'
-import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
-import { MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
 import { liveData } from '../../../helpers/rx/liveData'
 import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
+import { usePricePoolMaya } from '../../../hooks/usePricePoolMaya'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import { FeeRD } from '../../../services/chain/types'
 import { WalletBalances } from '../../../services/clients'
+import { PoolAddress, PoolDetails as PoolDetailsMaya } from '../../../services/mayaMigard/types'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAsset, WalletBalance } from '../../../services/wallet/types'
 import * as Styled from '../Interact/InteractView.styles'
@@ -28,10 +27,12 @@ import * as Styled from '../Interact/InteractView.styles'
 type Props = {
   asset: SelectedWalletAsset
   emptyBalance: WalletBalance
+  poolDetails: PoolDetailsMaya
+  oPoolAddress: O.Option<PoolAddress>
 }
 
 export const SendViewKUJI: React.FC<Props> = (props): JSX.Element => {
-  const { asset, emptyBalance } = props
+  const { asset, emptyBalance, poolDetails, oPoolAddress } = props
 
   const { network } = useNetwork()
   const {
@@ -44,17 +45,7 @@ export const SendViewKUJI: React.FC<Props> = (props): JSX.Element => {
     INITIAL_BALANCES_STATE
   )
 
-  const {
-    service: {
-      pools: { poolsState$, selectedPricePool$ }
-    }
-  } = useMidgardMayaContext()
-
-  const pricePool = useObservableState(selectedPricePool$, MAYA_PRICE_POOL)
-
-  const poolsRD = useObservableState(poolsState$, RD.pending)
-  const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
-
+  const pricePool = usePricePoolMaya()
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(KUJIChain))
 
   const oWalletBalance = useMemo(
@@ -69,8 +60,6 @@ export const SendViewKUJI: React.FC<Props> = (props): JSX.Element => {
   )
 
   const { transfer$ } = useChainContext()
-
-  const { mayachainQuery } = useMayachainQueryContext()
 
   const { fees$, reloadFees } = useKujiContext()
 
@@ -108,7 +97,7 @@ export const SendViewKUJI: React.FC<Props> = (props): JSX.Element => {
               network={network}
               poolDetails={poolDetails}
               pricePool={pricePool}
-              mayachainQuery={mayachainQuery}
+              oPoolAddress={oPoolAddress}
             />
           </Styled.Container>
         </Spin>
@@ -132,7 +121,7 @@ export const SendViewKUJI: React.FC<Props> = (props): JSX.Element => {
             network={network}
             poolDetails={poolDetails}
             pricePool={pricePool}
-            mayachainQuery={mayachainQuery}
+            oPoolAddress={oPoolAddress}
           />
         </Styled.Container>
       )

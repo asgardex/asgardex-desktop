@@ -10,8 +10,6 @@ import { useObservableState } from 'observable-hooks'
 import { SendFormCOSMOS } from '../../../components/wallet/txs/send'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useCosmosContext } from '../../../contexts/CosmosContext'
-import { useMidgardContext } from '../../../contexts/MidgardContext'
-import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { liveData } from '../../../helpers/rx/liveData'
 import { getWalletBalanceByAddress } from '../../../helpers/walletHelper'
@@ -20,6 +18,7 @@ import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import { FeeRD } from '../../../services/chain/types'
 import { WalletBalances } from '../../../services/clients'
+import { PoolAddress, PoolDetails } from '../../../services/midgard/types'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAsset, WalletBalance } from '../../../services/wallet/types'
 import * as Styled from '../Interact/InteractView.styles'
@@ -27,9 +26,11 @@ import * as Styled from '../Interact/InteractView.styles'
 type Props = {
   asset: SelectedWalletAsset
   emptyBalance: WalletBalance
+  poolDetails: PoolDetails
+  oPoolAddress: O.Option<PoolAddress>
 }
 export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
-  const { asset, emptyBalance } = props
+  const { asset, emptyBalance, poolDetails, oPoolAddress } = props
 
   const { network } = useNetwork()
   const {
@@ -41,13 +42,6 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
     () => balancesState$(DEFAULT_BALANCES_FILTER),
     INITIAL_BALANCES_STATE
   )
-  const {
-    service: {
-      pools: { poolsState$ }
-    }
-  } = useMidgardContext()
-  const poolsRD = useObservableState(poolsState$, RD.pending)
-  const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
 
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(GAIAChain))
 
@@ -61,8 +55,6 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
   )
 
   const { transfer$ } = useChainContext()
-
-  const { thorchainQuery } = useThorchainQueryContext()
 
   const { fees$, reloadFees } = useCosmosContext()
 
@@ -97,9 +89,9 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
               fee={feeRD}
               reloadFeesHandler={reloadFees}
               validatePassword$={validatePassword$}
-              thorchainQuery={thorchainQuery}
               network={network}
               poolDetails={poolDetails}
+              oPoolAddress={oPoolAddress}
             />
           </Styled.Container>
         </Spin>
@@ -120,9 +112,9 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
             fee={feeRD}
             reloadFeesHandler={reloadFees}
             validatePassword$={validatePassword$}
-            thorchainQuery={thorchainQuery}
             network={network}
             poolDetails={poolDetails}
+            oPoolAddress={oPoolAddress}
           />
         </Styled.Container>
       )

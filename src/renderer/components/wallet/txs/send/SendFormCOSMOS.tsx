@@ -5,7 +5,6 @@ import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/re
 import { Network } from '@xchainjs/xchain-client'
 import { COSMOS_DECIMAL, GAIAChain } from '@xchainjs/xchain-cosmos'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
-import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import { Address, baseAmount, CryptoAmount, eqAsset } from '@xchainjs/xchain-util'
 import { formatAssetAmountCurrency, assetAmount, bn, assetToBase, BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
@@ -25,6 +24,7 @@ import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import { FeeRD, SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../../../services/clients'
+import { PoolAddress } from '../../../../services/midgard/types'
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
@@ -58,9 +58,9 @@ export type Props = {
   fee: FeeRD
   reloadFeesHandler: FP.Lazy<void>
   validatePassword$: ValidatePasswordHandler
-  thorchainQuery: ThorchainQuery
   network: Network
   poolDetails: PoolDetails
+  oPoolAddress: O.Option<PoolAddress>
 }
 
 export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
@@ -76,8 +76,8 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     fee: feeRD,
     reloadFeesHandler,
     validatePassword$,
-    thorchainQuery,
-    network
+    network,
+    oPoolAddress
   } = props
 
   const intl = useIntl()
@@ -98,11 +98,11 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [amountPriceValue, setAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
-  const [InboundAddress, setInboundAddress] = useState<string>('')
+
   const [warningMessage, setWarningMessage] = useState<string>('')
   const [form] = Form.useForm<FormValues>()
 
-  const [currentMemo, setCurrentMemo] = useState('')
+  const [currentMemo, setCurrentMemo] = useState<string>('')
   const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
   const [affiliateTracking, setAffiliateTracking] = useState<string>('')
 
@@ -126,15 +126,26 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
 
-  // useEffect to fetch data from query
-  useEffect(() => {
-    const fetchData = async () => {
-      const inboundDetails = await thorchainQuery.thorchainCache.getInboundDetails()
-      setInboundAddress(inboundDetails[GAIAChain].address)
-    }
-
-    fetchData()
-  }, [thorchainQuery])
+  const { inboundAddress } = useMemo(() => {
+    return FP.pipe(
+      oPoolAddress,
+      O.fold(
+        () => ({
+          inboundAddress: { THOR: '' },
+          routers: { THOR: O.none }
+        }),
+        (poolDetails) => {
+          const inboundAddress = {
+            THOR: poolDetails.address
+          }
+          const routers = {
+            THOR: poolDetails.router
+          }
+          return { inboundAddress, routers }
+        }
+      )
+    )
+  }, [oPoolAddress])
 
   const isFeeError = useMemo(() => {
     return FP.pipe(
@@ -171,17 +182,20 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   const addressValidator = useCallback(
     async (_: unknown, value: string) => {
       if (!value) {
+        setWarningMessage('')
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.empty' }))
       }
       if (!addressValidation(value.toLowerCase())) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
-      if (InboundAddress === value) {
+      if (inboundAddress.THOR === value) {
         const type = 'Inbound'
         setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
+      } else {
+        setWarningMessage('')
       }
     },
-    [InboundAddress, addressValidation, intl]
+    [inboundAddress, addressValidation, intl]
   )
 
   // max amount for RuneNative
@@ -233,7 +247,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
       const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
       setMaxAmountPriceValue(maxCryptoAmount)
     }
-  }, [amountToSend, asset, assetFee, maxAmount, network, poolDetails, pricePool, pricePool.asset, thorchainQuery])
+  }, [amountToSend, asset, assetFee, maxAmount, network, poolDetails, pricePool, pricePool.asset])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Spin } from 'antd'
 import * as FP from 'fp-ts/lib/function'
@@ -9,7 +10,6 @@ import { useObservableState } from 'observable-hooks'
 
 import { SendFormTHOR } from '../../../components/wallet/txs/send/'
 import { useChainContext } from '../../../contexts/ChainContext'
-import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
@@ -20,6 +20,7 @@ import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import { FeeRD } from '../../../services/chain/types'
 import { WalletBalances } from '../../../services/clients'
+import { PoolAddress } from '../../../services/mayaMigard/types'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAsset, WalletBalance } from '../../../services/wallet/types'
 import * as Styled from '../Interact/InteractView.styles'
@@ -27,10 +28,12 @@ import * as Styled from '../Interact/InteractView.styles'
 type Props = {
   asset: SelectedWalletAsset
   emptyBalance: WalletBalance
+  poolDetails: PoolDetails
+  oPoolAddress: O.Option<PoolAddress>
 }
 
 export const SendViewTHOR: React.FC<Props> = (props): JSX.Element => {
-  const { asset, emptyBalance } = props
+  const { asset, emptyBalance, poolDetails, oPoolAddress } = props
 
   const { network } = useNetwork()
   const {
@@ -42,13 +45,6 @@ export const SendViewTHOR: React.FC<Props> = (props): JSX.Element => {
     () => balancesState$(DEFAULT_BALANCES_FILTER),
     INITIAL_BALANCES_STATE
   )
-  const {
-    service: {
-      pools: { poolsState$ }
-    }
-  } = useMidgardContext()
-  const poolsRD = useObservableState(poolsState$, RD.pending)
-  const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
 
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(THORChain))
 
@@ -103,6 +99,7 @@ export const SendViewTHOR: React.FC<Props> = (props): JSX.Element => {
               thorchainQuery={thorchainQuery}
               network={network}
               poolDetails={poolDetails}
+              oPoolAddress={oPoolAddress}
             />
           </Styled.Container>
         </Spin>
@@ -126,6 +123,7 @@ export const SendViewTHOR: React.FC<Props> = (props): JSX.Element => {
             thorchainQuery={thorchainQuery}
             network={network}
             poolDetails={poolDetails}
+            oPoolAddress={oPoolAddress}
           />
         </Styled.Container>
       )

@@ -4,7 +4,6 @@ import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
-import { MayachainQuery } from '@xchainjs/xchain-mayachain-query'
 import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
 import { Address, baseAmount, CryptoAmount, eqAsset } from '@xchainjs/xchain-util'
 import { formatAssetAmountCurrency, assetAmount, bn, assetToBase, BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
@@ -25,6 +24,7 @@ import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import { FeeRD, SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../../../services/clients'
 import { KUJI_DECIMAL } from '../../../../services/kuji/const'
+import { PoolAddress } from '../../../../services/mayaMigard/types'
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
 import { PricePool } from '../../../../views/pools/Pools.types'
@@ -59,10 +59,10 @@ export type Props = {
   fee: FeeRD
   reloadFeesHandler: FP.Lazy<void>
   validatePassword$: ValidatePasswordHandler
-  mayachainQuery: MayachainQuery
   network: Network
   poolDetails: PoolDetails
   pricePool: PricePool
+  oPoolAddress: O.Option<PoolAddress>
 }
 
 export const SendFormKUJI: React.FC<Props> = (props): JSX.Element => {
@@ -78,7 +78,7 @@ export const SendFormKUJI: React.FC<Props> = (props): JSX.Element => {
     fee: feeRD,
     reloadFeesHandler,
     validatePassword$,
-    mayachainQuery,
+    oPoolAddress,
     network,
     pricePool
   } = props
@@ -99,11 +99,11 @@ export const SendFormKUJI: React.FC<Props> = (props): JSX.Element => {
   const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [amountPriceValue, setAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
-  const [InboundAddress, setInboundAddress] = useState<string>('')
+
   const [warningMessage, setWarningMessage] = useState<string>('')
   const [form] = Form.useForm<FormValues>()
 
-  const [currentMemo, setCurrentMemo] = useState('')
+  const [currentMemo, setCurrentMemo] = useState<string>('')
   const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
   const [affiliateTracking, setAffiliateTracking] = useState<string>('')
 
@@ -127,15 +127,26 @@ export const SendFormKUJI: React.FC<Props> = (props): JSX.Element => {
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
 
-  // useEffect to fetch data from query
-  useEffect(() => {
-    const fetchData = async () => {
-      const inboundDetails = await mayachainQuery.getInboundDetails()
-      setInboundAddress(inboundDetails[KUJIChain].address)
-    }
-
-    fetchData()
-  }, [mayachainQuery])
+  const { inboundAddress } = useMemo(() => {
+    return FP.pipe(
+      oPoolAddress,
+      O.fold(
+        () => ({
+          inboundAddress: { MAYA: '' },
+          routers: { MAYA: O.none }
+        }),
+        (poolDetails) => {
+          const inboundAddress = {
+            MAYA: poolDetails.address
+          }
+          const routers = {
+            MAYA: poolDetails.router
+          }
+          return { inboundAddress, routers }
+        }
+      )
+    )
+  }, [oPoolAddress])
 
   const isFeeError = useMemo(() => {
     return FP.pipe(
@@ -172,17 +183,20 @@ export const SendFormKUJI: React.FC<Props> = (props): JSX.Element => {
   const addressValidator = useCallback(
     async (_: unknown, value: string) => {
       if (!value) {
+        setWarningMessage('')
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.empty' }))
       }
       if (!addressValidation(value.toLowerCase())) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
-      if (InboundAddress === value) {
+      if (inboundAddress.MAYA === value) {
         const type = 'Inbound'
         setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
+      } else {
+        setWarningMessage('')
       }
     },
-    [InboundAddress, addressValidation, intl]
+    [inboundAddress, addressValidation, intl]
   )
 
   // max amount for RuneNative

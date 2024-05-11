@@ -3,9 +3,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { FeeOption, FeesWithRates, Network } from '@xchainjs/xchain-client'
-import { MayachainQuery } from '@xchainjs/xchain-mayachain-query'
-import { PoolDetails } from '@xchainjs/xchain-midgard'
-import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
   assetAmount,
@@ -30,6 +27,7 @@ import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { isDashAsset, isUSDAsset } from '../../../../helpers/assetHelper'
 import { getChainFeeBounds } from '../../../../helpers/chainHelper'
+import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../../helpers/poolHelperMaya'
 import { loadingString } from '../../../../helpers/stringHelper'
@@ -39,7 +37,8 @@ import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import { FeeRD, Memo, SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../../../services/clients'
-import { PoolDetails as PoolDetailsMaya } from '../../../../services/mayaMigard/types'
+import { PoolDetails as PoolDetailsMaya, PoolAddress as PoolAddressMaya } from '../../../../services/mayaMigard/types'
+import { PoolAddress, PoolDetails } from '../../../../services/midgard/types'
 import { FeesWithRatesRD } from '../../../../services/utxo/types'
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
@@ -76,10 +75,10 @@ export type Props = {
   feesWithRates: FeesWithRatesRD
   reloadFeesHandler: (memo?: Memo) => void
   validatePassword$: ValidatePasswordHandler
-  thorchainQuery: ThorchainQuery
-  mayachainQuery: MayachainQuery
   network: Network
   poolDetails: PoolDetails | PoolDetailsMaya
+  oPoolAddress: O.Option<PoolAddress>
+  oPoolAddressMaya: O.Option<PoolAddressMaya>
 }
 
 export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
@@ -95,8 +94,8 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     feesWithRates: feesWithRatesRD,
     reloadFeesHandler,
     validatePassword$,
-    thorchainQuery,
-    mayachainQuery,
+    oPoolAddress,
+    oPoolAddressMaya,
     network
   } = props
 
@@ -107,7 +106,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
   const [amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
 
   const pricePoolThor = usePricePool()
-  const pricePoolMaya = usePricePoolMaya() // Dash source of price truth
+  const pricePoolMaya = usePricePoolMaya()
   const pricePool = isDashAsset(asset) ? pricePoolMaya : pricePoolThor
 
   const {
@@ -122,8 +121,6 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
 
   const [selectedFeeOptionKey, setSelectedFeeOptionKey] = useState<FeeOption>(DEFAULT_FEE_OPTION)
 
-  const [InboundAddress, setInboundAddress] = useState<string>('')
-
   const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [feeRate, setFeeRate] = useState<number>(0)
   const [feeDeduction, setFeeDeduction] = useState<BaseAmount>(baseAmount(0))
@@ -135,7 +132,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
   const [showDetails, setShowDetails] = useState<boolean>(true)
   const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
 
-  const [currentMemo, setCurrentMemo] = useState('')
+  const [currentMemo, setCurrentMemo] = useState<string>('')
   const [affiliateTracking, setAffiliateTracking] = useState<string>('')
 
   const [form] = Form.useForm<FormValues>()
@@ -172,18 +169,24 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
 
   const feesAvailable = useMemo(() => O.isSome(oFeesWithRates), [oFeesWithRates])
 
-  // useEffect to fetch data from query switch queries based on asset
-  useEffect(() => {
-    const fetchData = async () => {
-      const inboundDetails = isDashAsset(asset)
-        ? await mayachainQuery.getInboundDetails()
-        : await thorchainQuery.thorchainCache.getInboundDetails()
-      setInboundAddress(inboundDetails[asset.chain].address)
-    }
-
-    fetchData()
-  }, [asset, asset.chain, mayachainQuery, thorchainQuery])
-
+  // useEffect to fetch data from query
+  const { inboundAddress } = useMemo(() => {
+    return FP.pipe(
+      sequenceTOption(oPoolAddress, oPoolAddressMaya),
+      O.fold(
+        () => ({
+          inboundAddress: { THOR: '', MAYA: '' }
+        }),
+        ([poolDetails, poolDetailsMaya]) => {
+          const inboundAddress = {
+            THOR: poolDetails.address,
+            MAYA: poolDetailsMaya.address
+          }
+          return { inboundAddress }
+        }
+      )
+    )
+  }, [oPoolAddress, oPoolAddressMaya])
   // Store latest fees as `ref`
   // needed to display previous fee while reloading
   useEffect(() => {
@@ -299,18 +302,21 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
   const addressValidator = useCallback(
     async (_: unknown, value: string) => {
       if (!value) {
+        setWarningMessage('')
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.empty' }))
       }
       if (!addressValidation(value)) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
-      if (InboundAddress === value) {
-        const type = 'Inbound'
-        // setRemoveMemoField(true)
+      if (inboundAddress.THOR === value || inboundAddress.MAYA === value) {
+        const dexInbound = inboundAddress.THOR === value ? 'Thorchain' : 'Mayachain'
+        const type = `${dexInbound} ${asset.chain} Inbound`
         setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
+      } else {
+        setWarningMessage('')
       }
     },
-    [InboundAddress, addressValidation, intl]
+    [inboundAddress, addressValidation, asset, intl]
   )
 
   const maxAmount: BaseAmount = useMemo(

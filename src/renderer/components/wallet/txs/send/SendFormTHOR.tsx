@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
 import { Address, baseAmount, CryptoAmount, eqAsset } from '@xchainjs/xchain-util'
@@ -20,14 +19,16 @@ import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { isRuneNativeAsset, isUSDAsset, THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
-import { getPoolPriceValue } from '../../../../helpers/poolHelper'
+import { getPoolPriceValue, isPoolDetails } from '../../../../helpers/poolHelper'
 import { loadingString } from '../../../../helpers/stringHelper'
 import { getRuneNativeAmountFromBalances } from '../../../../helpers/walletHelper'
-import { usePricePool } from '../../../../hooks/usePricePool'
+import { usePricePoolMaya } from '../../../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import { FeeRD, SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../../../services/clients'
+import { PoolDetails as PoolDetailsMaya } from '../../../../services/mayaMigard/types'
+import { PoolAddress } from '../../../../services/midgard/types'
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
@@ -64,7 +65,8 @@ export type Props = {
   validatePassword$: ValidatePasswordHandler
   thorchainQuery: ThorchainQuery
   network: Network
-  poolDetails: PoolDetails
+  poolDetails: PoolDetailsMaya
+  oPoolAddress: O.Option<PoolAddress>
 }
 
 export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
@@ -81,6 +83,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
     reloadFeesHandler,
     validatePassword$,
     thorchainQuery,
+    oPoolAddress,
     network
   } = props
 
@@ -88,7 +91,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
 
   const { asset } = balance
 
-  const pricePool = usePricePool()
+  const pricePool = usePricePoolMaya()
 
   const [amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
   const {
@@ -104,28 +107,51 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [amountPriceValue, setAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
-  const [currentMemo, setCurrentMemo] = useState('')
+  const [currentMemo, setCurrentMemo] = useState<string>('')
   const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
   const [affiliateTracking, setAffiliateTracking] = useState<string>('')
 
+  const [warningMessage, setWarningMessage] = useState<string>('')
+
   const [form] = Form.useForm<FormValues>()
+
+  const { inboundAddress } = useMemo(() => {
+    return FP.pipe(
+      oPoolAddress,
+      O.fold(
+        () => ({
+          inboundAddress: { MAYA: '' },
+          routers: { MAYA: O.none }
+        }),
+        (poolDetails) => {
+          const inboundAddress = {
+            MAYA: poolDetails.address
+          }
+          const routers = {
+            MAYA: poolDetails.router
+          }
+          return { inboundAddress, routers }
+        }
+      )
+    )
+  }, [oPoolAddress])
 
   const handleMemo = useCallback(() => {
     let memoValue = form.getFieldValue('memo') as string
 
-    // Check if a swap memo is detected
+    // Check if a swap memo is detected for (mayachain)
     if (checkMemo(memoValue)) {
-      memoValue = memoCorrection(memoValue)
+      memoValue = warningMessage === '' ? memoValue : memoCorrection(memoValue)
       setSwapMemoDetected(true)
 
       // Set affiliate tracking message
-      setAffiliateTracking(intl.formatMessage({ id: 'wallet.send.affiliateTracking' }))
+      setAffiliateTracking(warningMessage === '' ? '' : intl.formatMessage({ id: 'wallet.send.affiliateTracking' }))
     } else {
       setSwapMemoDetected(false)
     }
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
-  }, [form, intl])
+  }, [form, intl, warningMessage])
 
   const oRuneNativeAmount: O.Option<BaseAmount> = useMemo(() => {
     // return balance of current asset (if RuneNative)
@@ -181,14 +207,21 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
   const addressValidator = useCallback(
     async (_: unknown, value: string) => {
       if (!value) {
+        setWarningMessage('')
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.empty' }))
       }
-
       if (!addressValidation(value) && !thornameSend) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
+      if (inboundAddress.MAYA === value) {
+        const dexInbound = 'Mayachain'
+        const type = `${dexInbound} ${asset.chain} Inbound`
+        setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
+      } else {
+        setWarningMessage('')
+      }
     },
-    [addressValidation, intl, thornameSend]
+    [inboundAddress, addressValidation, asset.chain, intl, thornameSend]
   )
   const handleAddressInput = useCallback(async () => {
     const recipient = form.getFieldValue('recipient')
@@ -234,21 +267,27 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
 
   // useEffect to fetch data from query
   useEffect(() => {
-    const maxAmountPrice = getPoolPriceValue({
-      balance: { asset, amount: maxAmount },
-      poolDetails,
-      pricePool
-    })
-    const assetFeePrice = getPoolPriceValue({
-      balance: { asset, amount: assetFee.baseAmount },
-      poolDetails,
-      pricePool
-    })
-    const amountPrice = getPoolPriceValue({
-      balance: { asset, amount: amountToSend },
-      poolDetails,
-      pricePool
-    })
+    const maxAmountPrice = isPoolDetails(poolDetails)
+      ? getPoolPriceValue({
+          balance: { asset, amount: maxAmount },
+          poolDetails,
+          pricePool
+        })
+      : O.none
+    const assetFeePrice = isPoolDetails(poolDetails)
+      ? getPoolPriceValue({
+          balance: { asset, amount: assetFee.baseAmount },
+          poolDetails,
+          pricePool
+        })
+      : O.none
+    const amountPrice = isPoolDetails(poolDetails)
+      ? getPoolPriceValue({
+          balance: { asset, amount: amountToSend },
+          poolDetails,
+          pricePool
+        })
+      : O.none
     if (O.isSome(maxAmountPrice)) {
       const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
       setMaxAmountPriceValue(maxCryptoAmount)
@@ -529,6 +568,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
             <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
               <Styled.Input color="primary" size="large" disabled={isLoading} onChange={handleAddressInput} />
             </Form.Item>
+            {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d ">{warningMessage}</div>}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
             <Styled.FormItem rules={[{ required: true, validator: amountValidator }]} name="amount">
               <InputBigNumber
@@ -550,6 +590,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
             <div className="w-full px-20px pb-10px">{renderSlider}</div>
             <Styled.Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} disabled={isLoading} />
             {renderFeeError}
+
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.memo' })}</Styled.CustomLabel>
             <Form.Item name="memo">
               <Styled.Input size="large" disabled={isLoading} onChange={handleMemo} />

@@ -1,5 +1,6 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 
+import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
@@ -20,10 +21,13 @@ import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
-import { isEnabledChain } from '../../../../shared/utils/chain'
+import { isChainOfMaya, isEnabledChain } from '../../../../shared/utils/chain'
 import { BackLinkButton, RefreshButton } from '../../../components/uielements/button'
+import { useMidgardContext } from '../../../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { useDex } from '../../../hooks/useDex'
+import { PoolAddress } from '../../../services/midgard/types'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { SelectedWalletAsset } from '../../../services/wallet/types'
 import { SendViewEVM, SendViewTHOR, SendViewMAYA, SendViewCOSMOS, SendViewUTXO, SendViewKUJI } from './index'
@@ -38,6 +42,44 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
   const { dex } = useDex()
 
   const oSelectedAsset = useObservableState(selectedAsset$, O.none)
+
+  const {
+    service: {
+      pools: { selectedPoolAddress$, poolsState$: poolsStateThor$ },
+      setSelectedPoolAsset
+    }
+  } = useMidgardContext()
+  const {
+    service: {
+      pools: { selectedPoolAddress$: selectedPoolAddressMaya$, poolsState$: poolsStateMaya$ },
+      setSelectedPoolAsset: setSelectedPoolAssetMaya
+    }
+  } = useMidgardMayaContext()
+
+  useEffect(() => {
+    FP.pipe(
+      oSelectedAsset,
+      O.fold(
+        () => setSelectedPoolAsset(O.none), // If there's no asset, pass O.none
+        (asset) => {
+          setSelectedPoolAsset(O.some(asset.asset))
+          setSelectedPoolAssetMaya(O.some(asset.asset))
+        } // If there's an asset, wrap it in O.some and pass
+      )
+    )
+    // Reset selectedPoolAsset on view's unmount to avoid effects with depending streams
+    return () => {
+      setSelectedPoolAsset(O.none)
+      setSelectedPoolAssetMaya(O.none)
+    }
+  }, [setSelectedPoolAsset, setSelectedPoolAssetMaya, dex, oSelectedAsset])
+
+  const poolsStateThorRD = useObservableState(poolsStateThor$, RD.pending)
+  const poolsStateMayaRD = useObservableState(poolsStateMaya$, RD.pending)
+
+  const oPoolAddress: O.Option<PoolAddress> = useObservableState(selectedPoolAddress$, O.none)
+
+  const oPoolAddressMaya: O.Option<PoolAddress> = useObservableState(selectedPoolAddressMaya$, O.none)
 
   const renderSendView = useCallback(
     (asset: SelectedWalletAsset) => {
@@ -54,6 +96,8 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
           </h1>
         )
       }
+      const poolDetailsThor = RD.toNullable(poolsStateThorRD)?.poolDetails ?? []
+      const poolDetailsMaya = RD.toNullable(poolsStateMayaRD)?.poolDetails ?? []
       const DEFAULT_WALLET_BALANCE = {
         walletAddress: asset.walletAddress, // default wallet address
         walletType: asset.walletType, // default wallet type
@@ -69,23 +113,60 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
         case DOGEChain:
         case DASHChain:
         case LTCChain:
-          return <SendViewUTXO asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
+          return (
+            <SendViewUTXO
+              asset={asset}
+              emptyBalance={DEFAULT_WALLET_BALANCE}
+              poolDetails={!isChainOfMaya(asset.asset.chain) ? poolDetailsThor : poolDetailsMaya}
+              oPoolAddress={oPoolAddress}
+              oPoolAddressMaya={oPoolAddressMaya}
+            />
+          )
         case ETHChain:
         case ARBChain:
         case AVAXChain:
         case BSCChain:
-          return <SendViewEVM asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
+          return (
+            <SendViewEVM
+              asset={asset}
+              emptyBalance={DEFAULT_WALLET_BALANCE}
+              poolDetails={!isChainOfMaya(asset.asset.chain) ? poolDetailsThor : poolDetailsMaya}
+              oPoolAddress={oPoolAddress}
+              oPoolAddressMaya={oPoolAddressMaya}
+            />
+          )
         case THORChain:
-          return <SendViewTHOR asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
+          return (
+            <SendViewTHOR
+              asset={asset}
+              emptyBalance={DEFAULT_WALLET_BALANCE}
+              poolDetails={poolDetailsMaya}
+              oPoolAddress={oPoolAddressMaya}
+            />
+          )
         case MAYAChain:
-          return <SendViewMAYA asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
+          return <SendViewMAYA asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} poolDetails={poolDetailsMaya} />
         case GAIAChain:
-          return <SendViewCOSMOS asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
+          return (
+            <SendViewCOSMOS
+              asset={asset}
+              emptyBalance={DEFAULT_WALLET_BALANCE}
+              poolDetails={poolDetailsThor}
+              oPoolAddress={oPoolAddress}
+            />
+          )
         case KUJIChain:
-          return <SendViewKUJI asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} />
+          return (
+            <SendViewKUJI
+              asset={asset}
+              emptyBalance={DEFAULT_WALLET_BALANCE}
+              poolDetails={poolDetailsMaya}
+              oPoolAddress={oPoolAddressMaya}
+            />
+          )
       }
     },
-    [dex, intl]
+    [dex, poolsStateThorRD, poolsStateMayaRD, intl, oPoolAddress, oPoolAddressMaya]
   )
 
   return FP.pipe(

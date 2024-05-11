@@ -12,6 +12,7 @@
 - Fix Maya Asset pricing [#220] (https://github.com/asgardex/asgardex-desktop/pull/220)
 - Fix Cosmos Client & added Cosmos Ledger [#212](https://github.com/asgardex/asgardex-desktop/pull/213)
 - Update Dropdown action menu [#194] (https://github.com/asgardex/asgardex-desktop/pull/223)
+- Update poolAddress & pooldetail logic for all Sends [#227] (https://github.com/asgardex/asgardex-desktop/pull/228)
 
 # 1.21.6 (2024-04-24)
 
