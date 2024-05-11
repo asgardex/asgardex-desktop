@@ -10,7 +10,6 @@ import {
 } from '@heroicons/react/24/outline'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
-import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -30,7 +29,6 @@ import {
   baseAmount,
   formatAssetAmountCurrency,
   delay,
-  assetToBase,
   assetAmount,
   Address,
   isSynthAsset,
@@ -53,6 +51,7 @@ import {
   ASGARDEX_AFFILIATE_FEE_MIN,
   ASGARDEX_THORNAME
 } from '../../../shared/const'
+import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
@@ -129,7 +128,9 @@ import {
   LoadApproveFeeHandler
 } from '../../services/evm/types'
 import { PoolDetails as PoolDetailsMaya } from '../../services/mayaMigard/types'
+import { getPoolDetail as getPoolDetailMaya } from '../../services/mayaMigard/utils'
 import { PoolAddress, PoolDetails, PoolsDataMap } from '../../services/midgard/types'
+import { getPoolDetail } from '../../services/midgard/utils'
 import {
   ApiError,
   KeystoreState,
@@ -1555,15 +1556,31 @@ export const Swap = ({
     [intl, minAmountError, sourceAsset, reccommendedAmountIn]
   )
 
+  // sets the locked asset amount to be the asset pool depth
   useEffect(() => {
     if (lockedWallet) {
-      const fetchData = async () => {
-        const OneBitcoin = new CryptoAmount(assetToBase(assetAmount(500)), AssetBTC)
-        setLockedAssetAmount(await thorchainQuery.convert(OneBitcoin, sourceAsset))
+      const poolDetailBTC =
+        dex === 'THOR'
+          ? isPoolDetails(poolDetails)
+            ? getPoolDetail(poolDetails, sourceAsset)
+            : O.none
+          : getPoolDetailMaya(poolDetails, sourceAsset)
+      const poolDetailSource =
+        dex === 'THOR'
+          ? isPoolDetails(poolDetails)
+            ? getPoolDetail(poolDetails, sourceAsset)
+            : O.none
+          : getPoolDetailMaya(poolDetails, sourceAsset)
+      if (O.isSome(poolDetailBTC) && O.isSome(poolDetailSource)) {
+        const detail = poolDetailBTC.value
+        const detailSource = poolDetailSource.value
+        const amount = dex === 'THOR' ? baseAmount(detail.assetDepth) : baseAmount(detailSource.assetDepth)
+        setLockedAssetAmount(new CryptoAmount(convertBaseAmountDecimal(amount, sourceAssetDecimal), sourceAsset))
+      } else {
+        setLockedAssetAmount(new CryptoAmount(ONE_RUNE_BASE_AMOUNT, sourceAsset))
       }
-      fetchData()
     }
-  }, [lockedWallet, sourceAsset, thorchainQuery])
+  }, [dex, lockedWallet, poolDetails, pricePool.poolData, sourceAsset, sourceAssetDecimal, thorchainQuery])
 
   const priceAmountMax1e8: CryptoAmount = useMemo(() => {
     const result =

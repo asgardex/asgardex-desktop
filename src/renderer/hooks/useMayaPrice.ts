@@ -5,7 +5,7 @@ import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { ONE_MAYA_BASE_AMOUNT } from '../../shared/mock/amount'
+import { ONE_CACAO_BASE_AMOUNT } from '../../shared/mock/amount'
 import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
 import { sequenceTOption } from '../helpers/fpHelpers'
 import { PriceRD } from '../services/mayaMigard/types'
@@ -37,7 +37,7 @@ export const useMayaPrice = () => {
                   const { poolData } = pricePoolSelector(pricePools, O.some(pricePoolAsset))
                   return {
                     asset: pricePoolAsset,
-                    amount: getValueOfRuneInAsset(ONE_MAYA_BASE_AMOUNT, poolData)
+                    amount: getValueOfRuneInAsset(ONE_CACAO_BASE_AMOUNT, poolData)
                   }
                 }),
                 (oMayaPrice) =>
