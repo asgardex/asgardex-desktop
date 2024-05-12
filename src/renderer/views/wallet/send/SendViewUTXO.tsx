@@ -8,17 +8,14 @@ import { useObservableState } from 'observable-hooks'
 
 import { SendFormUTXO } from '../../../components/wallet/txs/send'
 import { useChainContext } from '../../../contexts/ChainContext'
-import { useMayachainQueryContext } from '../../../contexts/MayachainQueryContext'
-import { useMidgardContext } from '../../../contexts/MidgardContext'
-import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
-import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
-import { isDashAsset } from '../../../helpers/assetHelper'
 import { getWalletBalanceByAddress } from '../../../helpers/walletHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import { WalletBalances } from '../../../services/clients'
+import { PoolDetails as PoolDetailsMaya, PoolAddress as PoolAddressMaya } from '../../../services/mayaMigard/types'
+import { PoolAddress, PoolDetails } from '../../../services/midgard/types'
 import { FeesWithRatesLD } from '../../../services/utxo/types'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAsset, WalletBalance } from '../../../services/wallet/types'
@@ -27,9 +24,12 @@ import * as Styled from '../Interact/InteractView.styles'
 type Props = {
   asset: SelectedWalletAsset
   emptyBalance: WalletBalance
+  poolDetails: PoolDetails | PoolDetailsMaya
+  oPoolAddress: O.Option<PoolAddress>
+  oPoolAddressMaya: O.Option<PoolAddressMaya>
 }
 export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
-  const { asset, emptyBalance } = props
+  const { asset, emptyBalance, poolDetails, oPoolAddress, oPoolAddressMaya } = props
 
   const { network } = useNetwork()
 
@@ -42,18 +42,6 @@ export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
     () => balancesState$(DEFAULT_BALANCES_FILTER),
     INITIAL_BALANCES_STATE
   )
-  const {
-    service: {
-      pools: { poolsState$ }
-    }
-  } = useMidgardContext()
-  const {
-    service: {
-      pools: { poolsState$: poolsStateMaya$ }
-    }
-  } = useMidgardMayaContext() // Dash asset requires maya pools
-  const poolsRD = useObservableState(isDashAsset(asset.asset) ? poolsStateMaya$ : poolsState$, RD.pending)
-  const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
 
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(asset.asset.chain))
 
@@ -66,8 +54,6 @@ export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
     [asset.walletAddress, oBalances]
   )
   const { transfer$, utxoFeesWithRates$, reloadUtxoFeesWithRates$ } = useChainContext()
-  const { thorchainQuery } = useThorchainQueryContext()
-  const { mayachainQuery } = useMayachainQueryContext()
 
   const feesWithRatesLD: FeesWithRatesLD = useMemo(
     () => utxoFeesWithRates$(asset.asset),
@@ -96,10 +82,10 @@ export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
               feesWithRates={feesWithRatesRD}
               reloadFeesHandler={reloadUtxoFeesWithRates$(asset.asset)}
               validatePassword$={validatePassword$}
-              thorchainQuery={thorchainQuery}
-              mayachainQuery={mayachainQuery}
               network={network}
               poolDetails={poolDetails}
+              oPoolAddress={oPoolAddress}
+              oPoolAddressMaya={oPoolAddressMaya}
             />
           </Styled.Container>
         </Spin>
@@ -120,10 +106,10 @@ export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
             feesWithRates={feesWithRatesRD}
             reloadFeesHandler={reloadUtxoFeesWithRates$(asset.asset)}
             validatePassword$={validatePassword$}
-            thorchainQuery={thorchainQuery}
-            mayachainQuery={mayachainQuery}
             network={network}
             poolDetails={poolDetails}
+            oPoolAddress={oPoolAddress}
+            oPoolAddressMaya={oPoolAddressMaya}
           />
         </Styled.Container>
       )

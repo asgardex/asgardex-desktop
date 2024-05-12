@@ -61,9 +61,9 @@ export type Props = {
   reloadFeesHandler: FP.Lazy<void>
   validatePassword$: ValidatePasswordHandler
   network: Network
-  poolDetails: PoolDetails
   pricePool: PricePool
   mayaScanPrice: MayaScanPriceRD
+  poolDetails: PoolDetails
 }
 
 export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
