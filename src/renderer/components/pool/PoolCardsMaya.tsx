@@ -15,7 +15,7 @@ import { Button } from '../uielements/button'
 import { PoolsPeriodSelector } from '../uielements/pools/PoolsPeriodSelector'
 import { PoolStatus } from '../uielements/poolStatus'
 import * as Styled from './PoolCards.styles'
-import * as H from './PoolDetails.helpers'
+import * as H from './PoolDetailsMaya.helpers'
 
 export type Props = {
   poolDetail: PoolDetailRD
@@ -162,8 +162,8 @@ export const PoolCards: React.FC<Props> = (props) => {
           extra={<Button onClick={reloadData}>{intl.formatMessage({ id: 'common.retry' })}</Button>}
         />
       ),
-      ([poolDetail, poolStatsDetail]) =>
-        renderCards({
+      ([poolDetail, poolStatsDetail]) => {
+        return renderCards({
           isLoading: false,
           liquidity: H.getLiquidity(poolDetail, priceRatio),
           volume24: H.getVolume24(poolDetail, priceRatio),
@@ -173,6 +173,7 @@ export const PoolCards: React.FC<Props> = (props) => {
           totalTx: H.getTotalTx(poolStatsDetail),
           members: H.getMembers(poolStatsDetail)
         })
+      }
     )
   )
 }

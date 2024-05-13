@@ -23,14 +23,17 @@ import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
-import { getPoolTableRowsData, isPoolDetails, RUNE_PRICE_POOL } from '../../helpers/poolHelper'
+import { getPoolTableRowsData, isPoolDetails } from '../../helpers/poolHelper'
 import { getPoolTableRowsData as getPoolTableRowsDataMaya } from '../../helpers/poolHelperMaya'
-import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { useDex } from '../../hooks/useDex'
 import { useIncentivePendulum } from '../../hooks/useIncentivePendulum'
+import { useIncentivePendulumMaya } from '../../hooks/useIncentivePendulumMaya'
 import { usePoolCycle } from '../../hooks/usePoolCycle'
+import { usePoolCycleMaya } from '../../hooks/usePoolCycleMaya'
 import { usePoolFilter } from '../../hooks/usePoolFilter'
 import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
+import { usePricePool } from '../../hooks/usePricePool'
+import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
 import { useProtocolLimit } from '../../hooks/useProtocolLimit'
 import * as poolsRoutes from '../../routes/pools'
 import { DEFAULT_NETWORK } from '../../services/const'
@@ -58,16 +61,12 @@ export const PendingPools: React.FC = (): JSX.Element => {
 
   const {
     service: {
-      pools: { pendingPoolsState$, reloadPendingPools, selectedPricePool$ }
+      pools: { pendingPoolsState$, reloadPendingPools }
     }
   } = useMidgardContext()
   const {
     service: {
-      pools: {
-        pendingPoolsState$: pendingPoolStateMaya$,
-        reloadPendingPools: reloadPendingPoolsMaya,
-        selectedPricePool$: selectedPricePoolMaya$
-      }
+      pools: { pendingPoolsState$: pendingPoolStateMaya$, reloadPendingPools: reloadPendingPoolsMaya }
     }
   } = useMidgardMayaContext()
 
@@ -82,28 +81,38 @@ export const PendingPools: React.FC = (): JSX.Element => {
   const mayachainLastblockRD: MayachainLastblockRD = useObservableState(mayachainLastblockState$, RD.pending)
 
   const { reload: reloadLimit, data: limitRD } = useProtocolLimit()
-  const { data: incentivePendulumRD } = useIncentivePendulum()
+  const { data: incentivePendulumThorRD } = useIncentivePendulum()
+  const { data: incentivePendulumMayaRD } = useIncentivePendulumMaya()
+
+  const incentivePendulumRD = dex === 'THOR' ? incentivePendulumThorRD : incentivePendulumMayaRD
 
   const isDesktopView = Grid.useBreakpoint()?.lg ?? false
 
   // store previous data of pending pools to render these while reloading
   const previousPools = useRef<O.Option<PoolTableRowsData>>(O.none)
 
-  const { poolCycle, reloadPoolCycle } = usePoolCycle()
+  const { poolCycle: poolCycleThor, reloadPoolCycle } = usePoolCycle()
+  const { poolCycle: poolCycleMaya, reloadPoolCycle: reloadPoolCycleMaya } = usePoolCycleMaya()
+
+  const poolCycle = dex === 'THOR' ? poolCycleThor : poolCycleMaya
 
   const oNewPoolCycle = useMemo(() => FP.pipe(poolCycle, RD.toOption), [poolCycle])
 
   const refreshHandler = useCallback(() => {
-    reloadPendingPools()
-    reloadPendingPoolsMaya()
-    reloadLimit()
-    reloadPoolCycle()
-  }, [reloadLimit, reloadPendingPools, reloadPendingPoolsMaya, reloadPoolCycle])
+    if (dex === 'THOR') {
+      reloadPendingPools()
+      reloadPoolCycle()
+    } else {
+      reloadPendingPoolsMaya()
+      reloadPoolCycleMaya()
+    }
 
-  const selectedPricePool = useObservableState(
-    dex === 'THOR' ? selectedPricePool$ : selectedPricePoolMaya$,
-    dex === 'THOR' ? RUNE_PRICE_POOL : MAYA_PRICE_POOL
-  )
+    reloadLimit()
+  }, [dex, reloadLimit, reloadPendingPools, reloadPendingPoolsMaya, reloadPoolCycle, reloadPoolCycleMaya])
+
+  const pricePoolThor = usePricePool()
+  const pricePoolMaya = usePricePoolMaya()
+  const pricePool = dex === 'THOR' ? pricePoolThor : pricePoolMaya
 
   const renderBtnPoolsColumn = useCallback(
     (_: string, { asset }: PoolTableRowData) => {
@@ -170,12 +179,12 @@ export const PendingPools: React.FC = (): JSX.Element => {
       Shared.watchColumn(addPoolToWatchlist, removePoolFromWatchlist),
       Shared.poolColumn(intl.formatMessage({ id: 'common.pool' })),
       Shared.assetColumn(intl.formatMessage({ id: 'common.asset' })),
-      Shared.priceColumn(intl.formatMessage({ id: 'common.price' }), selectedPricePool.asset),
-      Shared.depthColumn(intl.formatMessage({ id: 'common.liquidity' }), selectedPricePool.asset),
+      Shared.priceColumn(intl.formatMessage({ id: 'common.price' }), pricePool.asset),
+      Shared.depthColumn(intl.formatMessage({ id: 'common.liquidity' }), pricePool.asset),
       blockLeftColumn,
       btnPendingPoolsColumn
     ],
-    [addPoolToWatchlist, removePoolFromWatchlist, intl, selectedPricePool.asset, blockLeftColumn, btnPendingPoolsColumn]
+    [addPoolToWatchlist, removePoolFromWatchlist, intl, pricePool, blockLeftColumn, btnPendingPoolsColumn]
   )
 
   const mobilePoolsColumns: ColumnsType<PoolTableRowData> = useMemo(
@@ -245,7 +254,7 @@ export const PendingPools: React.FC = (): JSX.Element => {
             const poolDetailsFiltered = A.filter<PoolDetail>(P.not(isEmptyPool))(poolDetails)
             const poolViewData = getPoolTableRowsData({
               poolDetails: poolDetailsFiltered,
-              pricePoolData: selectedPricePool.poolData,
+              pricePoolData: pricePool.poolData,
               watchlist: poolWatchList,
               network
             })
@@ -256,7 +265,7 @@ export const PendingPools: React.FC = (): JSX.Element => {
             const poolDetailsFiltered = A.filter<PoolDetailMaya>(P.not(isEmptyPool))(poolDetails)
             const poolViewData = getPoolTableRowsDataMaya({
               poolDetails: poolDetailsFiltered,
-              pricePoolData: selectedPricePool.poolData,
+              pricePoolData: pricePool.poolData,
               watchlist: poolWatchList,
               network
             })

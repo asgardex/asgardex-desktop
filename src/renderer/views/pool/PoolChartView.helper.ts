@@ -1,3 +1,4 @@
+import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { DepthHistoryItem, LiquidityHistoryItem, SwapHistoryItem } from '@xchainjs/xchain-midgard'
 import { baseAmount, baseToAsset, bnOrZero } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
@@ -16,6 +17,23 @@ export const getLiquidityFromHistoryItems = (depthHistory: PartialDepthHistoryIt
     A.map(({ startTime, runeDepth }: PartialDepthHistoryItem) => {
       const amount = baseToAsset(
         baseAmount(bnOrZero(runeDepth))
+          // Note: Pool depth = 2 x `runeDepth`
+          .times(2)
+      )
+
+      return {
+        time: Number(startTime),
+        amount
+      }
+    })
+  )
+
+export const getLiquidityFromHistoryItemsMaya = (depthHistory: PartialDepthHistoryItem[]): ChartDetails =>
+  FP.pipe(
+    depthHistory,
+    A.map(({ startTime, runeDepth }: PartialDepthHistoryItem) => {
+      const amount = baseToAsset(
+        baseAmount(bnOrZero(runeDepth), CACAO_DECIMAL)
           // Note: Pool depth = 2 x `runeDepth`
           .times(2)
       )
@@ -56,6 +74,35 @@ export const getVolumeFromHistoryItems = ({
       }
     })
   )
+
+export const getVolumeFromHistoryItemsMaya = ({
+  swapHistory,
+  liquidityHistory
+}: {
+  swapHistory: PartialSwapHistoryItem[]
+  liquidityHistory: PartialLiquidityHistoryItem[]
+}): ChartDetails => {
+  const result = FP.pipe(
+    A.zipWith(swapHistory, liquidityHistory, ({ startTime, totalVolume }, { addLiquidityVolume, withdrawVolume }) => ({
+      startTime,
+      totalVolume,
+      addLiquidityVolume,
+      withdrawVolume
+    })),
+    A.map(({ startTime, totalVolume, addLiquidityVolume, withdrawVolume }) => {
+      const amount = baseToAsset(
+        baseAmount(bnOrZero(totalVolume), CACAO_DECIMAL)
+          .plus(baseAmount(bnOrZero(addLiquidityVolume)))
+          .plus(baseAmount(bnOrZero(withdrawVolume)))
+      )
+      return {
+        time: Number(startTime),
+        amount
+      }
+    })
+  )
+  return result
+}
 
 export const INITIAL_CACHED_CHART_DATA: CachedChartData = {
   liquidity: { all: O.none, week: O.none, month: O.none, threeMonths: O.none, year: O.none },

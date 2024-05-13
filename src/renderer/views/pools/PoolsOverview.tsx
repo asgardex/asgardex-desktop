@@ -11,6 +11,8 @@ import { useMatch, useNavigate } from 'react-router'
 import * as RxOp from 'rxjs/operators'
 
 import { useMidgardContext } from '../../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
+import { useDex } from '../../hooks/useDex'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import * as poolsRoutes from '../../routes/pools'
@@ -35,6 +37,7 @@ type TabContent = {
 
 export const PoolsOverview: React.FC = (): JSX.Element => {
   const intl = useIntl()
+  const { dex } = useDex()
 
   const navigate = useNavigate()
 
@@ -45,8 +48,16 @@ export const PoolsOverview: React.FC = (): JSX.Element => {
       pools: { haltedChains$ }
     }
   } = useMidgardContext()
+  const {
+    service: {
+      pools: { haltedChains$: haltedChainsMaya$ }
+    }
+  } = useMidgardMayaContext()
 
-  const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
+  const [haltedChains] = useObservableState(
+    () => FP.pipe(dex === 'THOR' ? haltedChains$ : haltedChainsMaya$, RxOp.map(RD.getOrElse((): Chain[] => []))),
+    []
+  )
 
   const { mimirHalt } = useMimirHalt()
 

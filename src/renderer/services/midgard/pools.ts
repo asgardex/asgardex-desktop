@@ -753,7 +753,13 @@ const createPoolsService = ({
           selectedPoolAsset,
           O.fold(
             () => Rx.of(RD.initial),
-            (asset) => apiGetLiquidityHistory$({ pool: assetToString(asset), from: params.from, to: params.to })
+            (asset) =>
+              apiGetLiquidityHistory$({
+                pool: assetToString(asset),
+                interval: params.interval,
+                from: params.from,
+                to: params.to
+              })
           )
         )
       ),

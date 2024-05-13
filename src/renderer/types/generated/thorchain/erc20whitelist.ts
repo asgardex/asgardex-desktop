@@ -104,6 +104,28 @@ export const ERC20_WHITELIST: { asset: Asset; iconUrl: O.Option<string> }[] = [
   {
     asset: {
       chain: ETHChain,
+      symbol: "LUSD-0x5f98805A4E8be255a32880FDeC7F6728C6568bA0",
+      ticker: "LUSD",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://tokens.1inch.io/0x5f98805a4e8be255a32880fdec7f6728c6568ba0.png"
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "LUSD-0x5f98805A4E8be255a32880FDeC7F6728C6568bA0",
+      ticker: "LUSD",
+      synth: true,
+    },
+    iconUrl: O.some(
+      "https://tokens.1inch.io/0x5f98805a4e8be255a32880fdec7f6728c6568ba0.png"
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
       symbol: "HOT-0x6c6EE5e31d828De241282B9606C8e98Ea48526E2",
       ticker: "HOT",
       synth: false,

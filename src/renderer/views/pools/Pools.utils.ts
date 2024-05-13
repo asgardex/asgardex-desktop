@@ -17,7 +17,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
 import { PoolsWatchList } from '../../../shared/api/io'
-import { ONE_CACAO_BASE_AMOUNT, ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
+import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { isChainAsset, isUSDAsset } from '../../helpers/assetHelper'
 import { isAvaxChain, isEthChain } from '../../helpers/chainHelper'
 import { eqString, eqAsset } from '../../helpers/fp/eq'
@@ -63,17 +63,6 @@ export const getValueOfRuneInAsset = (inputRune: BaseAmount, pool: PoolData): Ba
 export const getValueOfAsset1InAsset2 = (inputAsset: BaseAmount, pool1: PoolData, pool2: PoolData): BaseAmount => {
   // formula: (A2 / R) * (R / A1) => A2/A1 => A2 per A1 ($ per Asset)
   const oneAsset = assetToBase(assetAmount(1))
-  // Note: All calculation needs to be done in `AssetAmount` (not `BaseAmount`)
-  const A2perR = baseToAsset(getValueOfRuneInAsset(oneAsset, pool2))
-  const RperA1 = baseToAsset(getValueOfAssetInRune(inputAsset, pool1))
-  const result = A2perR.amount().times(RperA1.amount())
-  // transform result back from `AssetAmount` into `BaseAmount`
-  return assetToBase(assetAmount(result))
-}
-
-export const getValueOfAsset1InAsset2Maya = (inputAsset: BaseAmount, pool1: PoolData, pool2: PoolData): BaseAmount => {
-  // formula: (A2 / R) * (R / A1) => A2/A1 => A2 per A1 ($ per Asset)
-  const oneAsset = assetToBase(assetAmount(1, 10))
   // Note: All calculation needs to be done in `AssetAmount` (not `BaseAmount`)
   const A2perR = baseToAsset(getValueOfRuneInAsset(oneAsset, pool2))
   const RperA1 = baseToAsset(getValueOfAssetInRune(inputAsset, pool1))
@@ -158,7 +147,7 @@ export const getPoolTableRowDataMaya = ({
       // convert string -> BN -> number - just for convenience
       const apy = bnOrZero(poolDetail.poolAPY).multipliedBy(100).decimalPlaces(2).toNumber()
 
-      const poolPrice = getValueOfAsset1InAsset2Maya(ONE_CACAO_BASE_AMOUNT, poolData, pricePoolData)
+      const poolPrice = getValueOfAsset1InAsset2(ONE_RUNE_BASE_AMOUNT, poolData, pricePoolData)
 
       // `depthAmount` is one side only, but we do need to show depth of both sides (asset + rune depth)
       const depthAmountInRune = baseAmount(poolDetail.runeDepth).times(2)
