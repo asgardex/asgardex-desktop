@@ -192,7 +192,7 @@ export const disableAllActions = ({
   mimirHalt: MimirHalt
 }) => {
   // Check `haltTHORChain` (provided by `mimir` endpoint) to disable all actions for all pools
-  if (mimirHalt.haltTHORChain) return true
+  if (mimirHalt.haltMAYAChain) return true
 
   // Dynamic check for the specific chain halt status
   const haltChainKey = `halt${chain}Chain` as keyof MimirHalt

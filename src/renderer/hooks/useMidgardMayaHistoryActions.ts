@@ -9,19 +9,19 @@ import * as RxOp from 'rxjs/operators'
 
 import { WalletAddress } from '../../shared/wallet/types'
 import { Filter } from '../components/poolActionsHistory/types'
-import { useMidgardContext } from '../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
 import { liveData } from '../helpers/rx/liveData'
 import { observableState, triggerStream } from '../helpers/stateHelper'
 import { LoadActionsParams, ActionsPage, ActionsPageRD } from '../services/midgard/types'
 
-export type UseMidgardHistoryActions = ReturnType<typeof useMidgardHistoryActions>
+export type UseMidgardHistoryActions = ReturnType<typeof useMidgardMayaHistoryActions>
 
-export const useMidgardHistoryActions = (itemsPerPage = 10) => {
+export const useMidgardMayaHistoryActions = (itemsPerPage = 10) => {
   const {
     service: {
       actions: { getActions$ }
     }
-  } = useMidgardContext()
+  } = useMidgardMayaContext()
 
   /**
    * Initial request params

@@ -12,18 +12,18 @@ import * as RxOp from 'rxjs/operators'
 
 import { PoolDetailsChart } from '../../components/uielements/chart'
 import { ChartDataType, ChartDetailsRD, ChartTimeFrame } from '../../components/uielements/chart/PoolDetailsChart.types'
-import { useMidgardContext } from '../../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { liveData } from '../../helpers/rx/liveData'
 import {
   GetLiquidityHistoryIntervalEnum,
   GetSwapHistoryIntervalEnum,
   SelectedPricePoolAsset
-} from '../../services/midgard/types'
+} from '../../services/mayaMigard/types'
 import {
   getCachedChartData,
   getDepthHistoryParams,
-  getLiquidityFromHistoryItems,
-  getVolumeFromHistoryItems,
+  getLiquidityFromHistoryItemsMaya,
+  getVolumeFromHistoryItemsMaya,
   INITIAL_CACHED_CHART_DATA,
   updateCachedChartData
 } from './PoolChartView.helper'
@@ -33,13 +33,13 @@ export type Props = {
   priceRatio: BigNumber
 }
 
-export const PoolChartView: React.FC<Props> = ({ priceRatio }) => {
+export const PoolChartViewMaya: React.FC<Props> = ({ priceRatio }) => {
   const {
     service: {
       reloadChartDataUI$,
       pools: { selectedPricePoolAsset$, getSelectedPoolSwapHistory$, getDepthHistory$, getPoolLiquidityHistory$ }
     }
-  } = useMidgardContext()
+  } = useMidgardMayaContext()
 
   type DataRequestParams = { timeFrame: ChartTimeFrame; dataType: ChartDataType }
   const savedParams = useRef<DataRequestParams>({
@@ -78,7 +78,7 @@ export const PoolChartView: React.FC<Props> = ({ priceRatio }) => {
                   () => dataType === 'liquidity',
                   // (1) get data for depth history
                   getDepthHistory$(requestParams).pipe(
-                    liveData.map(({ intervals }) => getLiquidityFromHistoryItems(intervals)),
+                    liveData.map(({ intervals }) => getLiquidityFromHistoryItemsMaya(intervals)),
                     // cache data
                     liveData.map((data) => {
                       cachedData.current = updateCachedChartData({
@@ -102,12 +102,12 @@ export const PoolChartView: React.FC<Props> = ({ priceRatio }) => {
                         interval: GetLiquidityHistoryIntervalEnum.Day
                       })
                     }),
-                    liveData.map(({ swapHistory, liquidityHistory }) =>
-                      getVolumeFromHistoryItems({
+                    liveData.map(({ swapHistory, liquidityHistory }) => {
+                      return getVolumeFromHistoryItemsMaya({
                         swapHistory: swapHistory.intervals,
                         liquidityHistory: liquidityHistory.intervals
                       })
-                    ),
+                    }),
                     // cache data
                     liveData.map((data) => {
                       cachedData.current = updateCachedChartData({
@@ -140,14 +140,19 @@ export const PoolChartView: React.FC<Props> = ({ priceRatio }) => {
     RD.initial
   )
 
-  const chartDataRDPriced: ChartDetailsRD = useMemo(
-    () =>
-      FP.pipe(
-        chartDataRD,
-        RD.map(FP.flow(A.map((detail) => ({ ...detail, amount: detail.amount.times(priceRatio) }))))
-      ),
-    [chartDataRD, priceRatio]
-  )
+  const chartDataRDPriced: ChartDetailsRD = useMemo(() => {
+    return FP.pipe(
+      chartDataRD,
+      RD.map(
+        FP.flow(
+          A.map((detail) => {
+            const updatedDetail = { ...detail, amount: detail.amount.times(priceRatio) }
+            return updatedDetail
+          })
+        )
+      )
+    )
+  }, [chartDataRD, priceRatio])
 
   const setTimeFrameCallback = useCallback(
     (timeFrame: ChartTimeFrame) => {

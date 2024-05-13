@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
+import { THORCHAIN_DECIMAL } from '@xchainjs/xchain-thorchain-query'
 import { BaseAmount, baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import { useObservableState } from 'observable-hooks'
@@ -20,8 +20,8 @@ export type IncentivePendulum = {
 export type IncentivePendulumRD = RD.RemoteData<Error, IncentivePendulum>
 
 export const getIncentivePendulum = (totalPooledRune: string, totalActiveBond: string): IncentivePendulum => {
-  const totalActiveBondAmount = baseAmount(totalActiveBond, CACAO_DECIMAL)
-  const totalPooledRuneAmount = baseAmount(totalPooledRune, CACAO_DECIMAL)
+  const totalActiveBondAmount = baseAmount(totalActiveBond, THORCHAIN_DECIMAL)
+  const totalPooledRuneAmount = baseAmount(totalPooledRune, THORCHAIN_DECIMAL)
   const incentivePendulumAmount = totalActiveBondAmount.gt(0)
     ? totalPooledRuneAmount.times(200).div(totalActiveBondAmount)
     : totalActiveBondAmount // zero

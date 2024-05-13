@@ -198,17 +198,26 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
                   {intl.formatMessage({ id: 'common.manage' })}
                 </FlatButton>
 
-                {AssetHelper.isRuneNativeAsset(asset) ||
-                  (AssetHelper.isCacaoAsset(asset) && (
-                    <BorderButton
-                      className="m-2 ml-2 min-w-[200px]"
-                      size="large"
-                      color="primary"
-                      onClick={disableSend ? undefined : walletActionDepositClick}
-                      disabled={disableSend}>
-                      {intl.formatMessage({ id: 'wallet.action.deposit' })}
-                    </BorderButton>
-                  ))}
+                {AssetHelper.isRuneNativeAsset(asset) && (
+                  <BorderButton
+                    className="m-2 ml-2 min-w-[200px]"
+                    size="large"
+                    color="primary"
+                    onClick={disableSend ? undefined : walletActionDepositClick}
+                    disabled={disableSend}>
+                    {intl.formatMessage({ id: 'wallet.action.deposit' })}
+                  </BorderButton>
+                )}
+                {AssetHelper.isCacaoAsset(asset) && (
+                  <BorderButton
+                    className="m-2 ml-2 min-w-[200px]"
+                    size="large"
+                    color="primary"
+                    onClick={disableSend ? undefined : walletActionDepositClick}
+                    disabled={disableSend}>
+                    {intl.formatMessage({ id: 'wallet.action.deposit' })}
+                  </BorderButton>
+                )}
               </Row>
             </Styled.ActionCol>
           </Styled.ActionWrapper>

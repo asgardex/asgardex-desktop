@@ -32,18 +32,23 @@ import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { ordBaseAmount, ordNumber } from '../../helpers/fp/ord'
 import * as PoolHelpers from '../../helpers/poolHelper'
-import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
+import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
 import { useDex } from '../../hooks/useDex'
 import { useIncentivePendulum } from '../../hooks/useIncentivePendulum'
 import { useIncentivePendulumMaya } from '../../hooks/useIncentivePendulumMaya'
 import { usePoolFilter } from '../../hooks/usePoolFilter'
 import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
+import { usePricePool } from '../../hooks/usePricePool'
+import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
 import { useProtocolLimit } from '../../hooks/useProtocolLimit'
 import * as poolsRoutes from '../../routes/pools'
 import * as saversRoutes from '../../routes/pools/savers'
 import { DEFAULT_NETWORK } from '../../services/const'
+import {
+  PoolsState as MayaPoolState,
+  GetPoolsPeriodEnum as GetPoolsPeriodEnumMaya
+} from '../../services/mayaMigard/types'
 import { PoolsState, DEFAULT_POOL_FILTERS, GetPoolsPeriodEnum } from '../../services/midgard/types'
-import { PoolsState as MayaPoolState, GetPoolsPeriodEnum as GetPoolsPeriodEnumMaya } from '../../services/midgard/types'
 import { hasImportedKeystore } from '../../services/wallet/util'
 import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
 import { filterTableData } from './Pools.utils'
@@ -61,7 +66,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
   } = useWalletContext()
   const {
     service: {
-      pools: { poolsState$, reloadPools, selectedPricePool$, poolsPeriod$, setPoolsPeriod }
+      pools: { poolsState$, reloadPools, poolsPeriod$, setPoolsPeriod }
     }
   } = useMidgardContext()
   const {
@@ -69,7 +74,6 @@ export const ActivePools: React.FC = (): JSX.Element => {
       pools: {
         poolsState$: mayaPoolsState$,
         reloadPools: reloadMayaPools,
-        selectedPricePool$: selectedPricePoolMaya$,
         poolsPeriod$: poolsPeriodMaya$,
         setPoolsPeriod: setPoolsPeriodMaya
       }
@@ -89,7 +93,10 @@ export const ActivePools: React.FC = (): JSX.Element => {
   const { setFilter: setPoolFilter, filter: poolFilter } = usePoolFilter('active')
   const { add: addPoolToWatchlist, remove: removePoolFromWatchlist, list: poolWatchList } = usePoolWatchlist()
 
-  const poolsRD = useObservableState(dex === 'THOR' ? poolsState$ : mayaPoolsState$, RD.pending)
+  const poolsThorRD = useObservableState(poolsState$, RD.pending)
+  const poolsMayaRD = useObservableState(mayaPoolsState$, RD.pending)
+
+  const poolsRD = dex === 'THOR' ? poolsThorRD : poolsMayaRD
 
   const isDesktopView = Grid.useBreakpoint()?.lg ?? false
   const isLargeScreen = Grid.useBreakpoint()?.xl ?? false
@@ -107,10 +114,9 @@ export const ActivePools: React.FC = (): JSX.Element => {
     reloadLimit()
   }, [dex, reloadLimit, reloadPools, reloadMayaPools])
 
-  const selectedPricePool = useObservableState(
-    dex === 'THOR' ? selectedPricePool$ : selectedPricePoolMaya$,
-    dex === 'THOR' ? PoolHelpers.RUNE_PRICE_POOL : MAYA_PRICE_POOL
-  )
+  const pricePoolThor = usePricePool()
+  const pricePoolMaya = usePricePoolMaya()
+  const pricePool = dex === 'THOR' ? pricePoolThor : pricePoolMaya
 
   const renderBtnPoolsColumn = useCallback(
     (_: string, { asset }: { asset: Asset }) => {
@@ -221,14 +227,14 @@ export const ActivePools: React.FC = (): JSX.Element => {
           <div className="whitespace-nowrap text-14 text-gray2 dark:text-gray2d">
             {formatAssetAmountCurrency({
               amount: baseToAsset(volumePrice),
-              asset: selectedPricePool.asset,
+              asset: pricePool.asset,
               decimal: 2
             })}
           </div>
         </div>
       </Styled.Label>
     ),
-    [selectedPricePool.asset]
+    [pricePool]
   )
 
   const sortVolumeColumn = useCallback(
@@ -290,15 +296,8 @@ export const ActivePools: React.FC = (): JSX.Element => {
           O.some(Shared.watchColumn<PoolTableRowData>(addPoolToWatchlist, removePoolFromWatchlist)),
           O.some(Shared.poolColumn<PoolTableRowData>(intl.formatMessage({ id: 'common.pool' }))),
           O.some(Shared.assetColumn<PoolTableRowData>(intl.formatMessage({ id: 'common.asset' }))),
-          O.some(
-            Shared.priceColumn<PoolTableRowData>(intl.formatMessage({ id: 'common.price' }), selectedPricePool.asset)
-          ),
-          O.some(
-            Shared.depthColumn<PoolTableRowData>(
-              intl.formatMessage({ id: 'common.liquidity' }),
-              selectedPricePool.asset
-            )
-          ),
+          O.some(Shared.priceColumn<PoolTableRowData>(intl.formatMessage({ id: 'common.price' }), pricePool.asset)),
+          O.some(Shared.depthColumn<PoolTableRowData>(intl.formatMessage({ id: 'common.liquidity' }), pricePool.asset)),
           O.some(volumeColumn<PoolTableRowData>()),
           isLargeScreen ? O.some(apyColumn<PoolTableRowData>(poolsPeriod, dex)) : O.none,
           O.some(btnPoolsColumn<PoolTableRowData>())
@@ -309,7 +308,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
       addPoolToWatchlist,
       removePoolFromWatchlist,
       intl,
-      selectedPricePool.asset,
+      pricePool,
       volumeColumn,
       isLargeScreen,
       apyColumn,
@@ -385,17 +384,17 @@ export const ActivePools: React.FC = (): JSX.Element => {
             const { poolDetails } = poolsState as PoolsState // Cast to the correct type
             const poolViewData = PoolHelpers.getPoolTableRowsData({
               poolDetails,
-              pricePoolData: selectedPricePool.poolData,
+              pricePoolData: pricePool.poolData,
               watchlist: poolWatchList,
               network
             })
             previousPools.current = O.some(poolViewData)
             return renderPoolsTable(poolViewData)
           } else {
-            const { poolDetails } = poolsState as MayaPoolState // Cast to the correct type
-            const poolViewData = PoolHelpers.getPoolTableRowsData({
+            const { poolDetails } = poolsState as MayaPoolState // Cast to the correct type)
+            const poolViewData = PoolHelpersMaya.getPoolTableRowsData({
               poolDetails,
-              pricePoolData: selectedPricePool.poolData,
+              pricePoolData: pricePool.poolData,
               watchlist: poolWatchList,
               network
             })

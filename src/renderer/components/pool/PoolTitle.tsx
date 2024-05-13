@@ -8,10 +8,11 @@ import * as FP from 'fp-ts/lib/function'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { AssetRuneNative } from '../../../shared/utils/asset'
+import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
 import { Action as ActionButtonAction, ActionButton } from '../../components/uielements/button/ActionButton'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { loadingString } from '../../helpers/stringHelper'
+import { useDex } from '../../hooks/useDex'
 import * as poolsRoutes from '../../routes/pools'
 import * as saversRoutes from '../../routes/pools/savers'
 import { AssetIcon } from '../uielements/assets/assetIcon'
@@ -40,6 +41,7 @@ export const PoolTitle: React.FC<Props> = ({
   // update for mayachainSwap
   const intl = useIntl()
   const navigate = useNavigate()
+  const { dex } = useDex()
 
   const title = useMemo(() => {
     const Star = watched ? Styled.StarFilled : Styled.StarOutlined
@@ -76,7 +78,7 @@ export const PoolTitle: React.FC<Props> = ({
         callback: () => {
           navigate(
             poolsRoutes.swap.path({
-              source: assetToString(AssetRuneNative),
+              source: assetToString(dex === 'THOR' ? AssetRuneNative : AssetCacao),
               target: assetToString(asset),
               sourceWalletType: DEFAULT_WALLET_TYPE,
               targetWalletType: DEFAULT_WALLET_TYPE
@@ -106,7 +108,7 @@ export const PoolTitle: React.FC<Props> = ({
     ]
 
     return <ActionButton size={isDesktopView ? 'large' : 'normal'} actions={actions} />
-  }, [intl, isAvailablePool, isDesktopView, navigate, asset])
+  }, [intl, isAvailablePool, isDesktopView, navigate, dex, asset])
 
   return (
     <Styled.Container>

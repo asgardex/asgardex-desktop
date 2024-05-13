@@ -14,6 +14,7 @@
 - Update Dropdown action menu [#194] (https://github.com/asgardex/asgardex-desktop/pull/223)
 - Update poolAddress & pooldetail logic for all Sends [#227] (https://github.com/asgardex/asgardex-desktop/pull/232)
 - Fix EVM send Dollar value bug [#230] (https://github.com/asgardex/asgardex-desktop/pull/231)
+- Fix Mayachain liquidity charts & stats [#224] ()
 
 # 1.21.6 (2024-04-24)
 
