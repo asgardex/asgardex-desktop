@@ -80,6 +80,7 @@ type Props = {
   poolDetails: PoolDetails
   poolDetailsMaya: PoolDetailsMaya
   pendingPoolDetails: PoolDetails
+  pendingPoolDetailsMaya: PoolDetailsMaya
   poolsData: PoolsDataMap
   poolsDataMaya: PoolsDataMap
   selectAssetHandler: (asset: SelectedWalletAsset) => void
@@ -125,32 +126,29 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
     localStorage.setItem('filterByValue', JSON.stringify(filterByValue))
   }, [filterByValue])
 
-  // State to store open panel keys
   const [openPanelKeys, setOpenPanelKeys] = useState<string[]>(() => {
-    // Initialize from localStorage if available
     const cachedKeys = localStorage.getItem('openPanelKeys')
     return cachedKeys ? JSON.parse(cachedKeys) : []
   })
 
-  // Effect to cache openPanelKeys changes
   useEffect(() => {
     localStorage.setItem('openPanelKeys', JSON.stringify(openPanelKeys))
   }, [openPanelKeys])
 
   const [allPanelKeys, setAllPanelKeys] = useState<string[]>()
-  // State track that user has changed collpase state
   const [collapseChangedByUser, setCollapseChangedByUser] = useState(false)
   const [collapseAll, setCollapseAll] = useState<boolean>(false)
 
   const handleRefreshClick = (chain: Chain) => {
-    // Assuming reloadBalancesByChain is a function that returns another function
     const lazyReload = reloadBalancesByChain(chain)
-    lazyReload() // Invoke the returned lazy function to perform the actual reload
+    lazyReload()
   }
+
+  // store previous data of asset data to render these while reloading
+  const previousAssetsTableData = useRef<WalletBalances[]>([])
 
   const handleCollapseAll = useCallback(() => {
     if (collapseAll) {
-      // Cache current open keys before collapsing
       localStorage.setItem('openPanelKeys', JSON.stringify(openPanelKeys))
       setOpenPanelKeys([])
     } else {
@@ -158,25 +156,10 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
       setOpenPanelKeys(previousOpenKeys)
     }
     setCollapseAll(!collapseAll)
-    // Toggle the collapseAll state
   }, [allPanelKeys, collapseAll, openPanelKeys])
-
-  // store previous data of asset data to render these while reloading
-  const previousAssetsTableData = useRef<WalletBalances[]>([])
-
-  // // get halt status from Mimir
-  // const { haltTHORChain, haltETHChain, haltBNGChain } = useMemo(
-  //   () =>
-  //     FP.pipe(
-  //       mimirHaltRD,
-  //       RD.getOrElse(() => ({ haltTHORChain: true, haltETHChain: true, haltBNBChain: true }))
-  //     ),
-  //   [mimirHaltRD]
-  // )
 
   const onRowHandler = useCallback(
     ({ asset, walletAddress, walletType, walletIndex, hdMode }: WalletBalance) => ({
-      // Disable click for NativeRUNE if Thorchain is halted
       onClick: () => selectAssetHandler({ asset, walletAddress, walletType, walletIndex, hdMode })
     }),
     [selectAssetHandler]
@@ -212,6 +195,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
     }),
     []
   )
+
   const balanceColumn: ColumnType<WalletBalance> = useMemo(
     () => ({
       render: ({ asset, amount }: WalletBalance) => {
@@ -227,7 +211,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           isAethAsset(asset) ||
           isArbChain(asset.chain)
         ) {
-          // First try to get the price of those assets from MayaChain poolDetails
           const priceOptionFromPoolDetails = getPoolPriceValueM({
             balance: { asset, amount },
             poolDetails: poolDetailsMaya,
@@ -242,7 +225,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
             })
           }
         } else {
-          // Then get the price for the remaining assets from THorchain Pool Details
           const priceOptionFromPoolDetails = getPoolPriceValue({
             balance: { asset, amount },
             poolDetails,
@@ -255,7 +237,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
               decimal: isUSDAsset(pricePool.asset) ? 2 : 4
             })
           } else {
-            // If not available, try to get it from pendingPoolDetails
             const priceOptionFromPendingPoolDetails = getPoolPriceValue({
               balance: { asset, amount },
               poolDetails: pendingPoolDetails,
@@ -320,7 +301,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
             }
           }
         ],
-        // 'swap' for RUNE
         A.concatW<ActionButtonAction>(
           isRuneNativeAsset(asset) && deepestPoolAsset !== null && dex !== 'MAYA'
             ? [
@@ -340,7 +320,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
               ]
             : []
         ),
-        // 'swap' for cacao
         A.concatW<ActionButtonAction>(
           isCacaoAsset(asset) && deepestPoolAsset !== null && dex !== 'THOR'
             ? [
@@ -360,8 +339,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
               ]
             : []
         ),
-
-        // 'swap' for synths assets of active pools only
         A.concatW<ActionButtonAction>(
           isSynthAsset(asset)
             ? [
@@ -381,7 +358,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
               ]
             : []
         ),
-        // 'swap' for assets of active pools only
         A.concatW<ActionButtonAction>(
           hasActivePool
             ? [
@@ -401,7 +377,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
               ]
             : []
         ),
-        // 'Earn' for assets of active pools only
         A.concatW<ActionButtonAction>(
           hasActivePool && dex !== 'MAYA'
             ? [
@@ -419,7 +394,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
               ]
             : []
         ),
-        // 'add' LP RUNE
         A.concatW<ActionButtonAction>(
           dex === 'THOR' && isRuneNativeAsset(asset) && deepestPoolAsset !== null
             ? [
@@ -438,7 +412,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
               ]
             : []
         ),
-        // 'add' LP CACAO
         A.concatW<ActionButtonAction>(
           dex === 'MAYA' && isCacaoAsset(asset) && deepestPoolAsset !== null
             ? [
@@ -457,7 +430,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
               ]
             : []
         ),
-        // 'add' LP for assets of active pools only
         A.concatW<ActionButtonAction>(
           hasActivePool
             ? [
@@ -476,8 +448,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
               ]
             : []
         ),
-
-        // 'deposit'  for dex chain only
         A.concatW<ActionButtonAction>(
           isRuneNativeAsset(asset) || isCacaoAsset(asset)
             ? [
@@ -510,19 +480,15 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
   )
 
   const columns = useMemo(() => {
-    // desktop
     if (screenMap?.lg ?? false) {
       return [iconColumn, tickerColumn, balanceColumn, actionColumn]
     }
-    // tablet
     if (screenMap?.sm ?? false) {
       return [iconColumn, tickerColumn, balanceColumn, actionColumn]
     }
-    // mobile
     if (screenMap?.xs ?? false) {
       return [iconColumn, balanceColumn, actionColumn]
     }
-
     return []
   }, [actionColumn, balanceColumn, iconColumn, screenMap?.lg, screenMap?.sm, screenMap?.xs, tickerColumn])
 
@@ -547,9 +513,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
       return FP.pipe(
         balancesRD,
         RD.fold(
-          // initial state
           () => renderAssetsTable({ tableData: [], loading: false }),
-          // loading state
           () => {
             const data = previousAssetsTableData.current[index] ?? []
             return renderAssetsTable({
@@ -557,15 +521,11 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
               loading: true
             })
           },
-          // error state
           ({ msg }: ApiError) => {
             return <ErrorView title={msg} />
           },
-          // success state
           (balances) => {
-            let sortedBalances = balances.sort((a, b) => {
-              return b.amount.amount().minus(a.amount.amount()).toNumber()
-            })
+            let sortedBalances = balances.sort((a, b) => b.amount.amount().minus(a.amount.amount()).toNumber())
 
             if (filterByValue) {
               sortedBalances = sortedBalances.filter(({ amount, asset }) => {
@@ -584,10 +544,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
               })
             }
             if ((dex === 'MAYA' && chain === 'THOR') || (dex === 'THOR' && chain === 'MAYA')) {
-              sortedBalances = sortedBalances.filter(({ asset }) => {
-                const filter = !asset.synth
-                return filter
-              })
+              sortedBalances = sortedBalances.filter(({ asset }) => !asset.synth)
             }
             previousAssetsTableData.current[index] = sortedBalances
             return renderAssetsTable({
@@ -601,16 +558,8 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
     [dex, filterByValue, poolDetails, poolDetailsMaya, pricePool, renderAssetsTable]
   )
 
-  // Panel
   const renderPanel = useCallback(
     ({ chain, walletType, walletAddress: oWalletAddress, balances: balancesRD }: ChainBalance, key: number) => {
-      /**
-       * We need to push initial value to the ledger-based streams
-       * 'cuz chainBalances$ stream is created by 'combineLatest'
-       * which will not emit anything if some of stream has
-       * not emitted at least once
-       * @see btcLedgerChainBalance$'s getOrElse branch at src/renderer/services/wallet/balances.ts
-       */
       if (O.isNone(oWalletAddress) && RD.isInitial(balancesRD)) {
         return null
       }
@@ -701,11 +650,8 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
     [disableRefresh, hidePrivateData, intl, renderBalances]
   )
 
-  // open all panels by default
   useEffect(() => {
-    // don't change openPanelKeys if user has already changed panel state
     if (!collapseChangedByUser) {
-      // filter out empty list of balances
       const keys = FP.pipe(
         chainBalances,
         A.map(({ balances }) => balances),
@@ -726,7 +672,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
     } else {
       setOpenPanelKeys([key])
     }
-    // user has changed collpase state
     setCollapseChangedByUser(true)
   }, [])
 
