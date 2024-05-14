@@ -85,6 +85,11 @@ export const AssetsView: React.FC = (): JSX.Element => {
         selectedPricePool$: mayaSelectedPricePool$,
         pendingPoolsState$: pendingPoolsStateMaya$
       }
+      pools: {
+        poolsState$: mayaPoolsState$,
+        selectedPricePool$: mayaSelectedPricePool$,
+        pendingPoolsState$: pendingPoolsStateMaya$
+      }
     }
   } = useMidgardMayaContext()
 

@@ -23,6 +23,7 @@ export const Slider: React.FC<Props> = ({
   labelPosition,
   tooltipVisible,
   error = false,
+  disabled = false,
   labels = ['0%', '50%', '100%'], // Default labels, you can modify them
   ...rest
 }): JSX.Element => {
@@ -49,6 +50,7 @@ export const Slider: React.FC<Props> = ({
         getTooltipPopupContainer={tooltipVisible ? getTooltipPopupContainer : undefined}
         tipFormatter={tipFormatter}
         error={error}
+        disabled={disabled}
         {...rest}
       />
       {withLabel && labelPosition !== 'top' && percentLabels}

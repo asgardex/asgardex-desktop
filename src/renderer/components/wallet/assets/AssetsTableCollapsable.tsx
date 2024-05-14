@@ -201,7 +201,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
       render: ({ asset, amount }: WalletBalance) => {
         const balance = formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, decimal: 3 })
         let price: string = noDataString // Default to "no data" string
-
         if (isUSDAsset(asset)) {
           price = balance.toString()
         } else if (

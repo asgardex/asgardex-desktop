@@ -29,6 +29,17 @@ export const ARB_TOKEN_WHITELIST: {
   {
     asset: {
       chain: ARBChain,
+      symbol: "GMX-0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a",
+      ticker: "GMX",
+      synth: true,
+    },
+    iconUrl: O.some(
+      "https://assets.coingecko.com/coins/images/18323/thumb/arbit.png?1696517814"
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
       symbol: "USDT-0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
       ticker: "USDT",
       synth: false,
@@ -106,9 +117,31 @@ export const ARB_TOKEN_WHITELIST: {
   {
     asset: {
       chain: ARBChain,
+      symbol: "GNS-0x18c11fd286c5ec11c3b683caa813b77f5163a122",
+      ticker: "GNS",
+      synth: true,
+    },
+    iconUrl: O.some(
+      "https://assets.coingecko.com/coins/images/19737/thumb/logo.png?1696519161"
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
       symbol: "DAI-0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
       ticker: "DAI",
       synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets.coingecko.com/coins/images/9956/thumb/Badge_Dai.png?1696509996"
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: "DAI-0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
+      ticker: "DAI",
+      synth: true,
     },
     iconUrl: O.some(
       "https://assets.coingecko.com/coins/images/9956/thumb/Badge_Dai.png?1696509996"
@@ -134,17 +167,6 @@ export const ARB_TOKEN_WHITELIST: {
     },
     iconUrl: O.some(
       "https://assets.coingecko.com/coins/images/12271/thumb/512x512_Logo_no_chop.png?1696512101"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "DAI-0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
-      ticker: "DAI",
-      synth: true,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/9956/thumb/Badge_Dai.png?1696509996"
     ),
   },
   {
