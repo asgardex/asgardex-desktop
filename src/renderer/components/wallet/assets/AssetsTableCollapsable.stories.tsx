@@ -177,7 +177,7 @@ const Template = (args: Partial<Record<EnabledChain, RDStatus>>) => {
       poolDetails={[]}
       poolDetailsMaya={[]}
       pendingPoolDetails={[]}
-      pendingPoolDetailsMaya={[]}
+      pendingPoolsDetailsMaya={[]}
       poolsData={{}}
       poolsDataMaya={{}}
       pricePool={RUNE_PRICE_POOL}

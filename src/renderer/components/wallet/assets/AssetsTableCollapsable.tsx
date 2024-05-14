@@ -79,7 +79,7 @@ type Props = {
   poolDetails: PoolDetails
   poolDetailsMaya: PoolDetailsMaya
   pendingPoolDetails: PoolDetails
-  pendingPoolDetailsMaya: PoolDetailsMaya
+  pendingPoolsDetailsMaya: PoolDetailsMaya
   poolsData: PoolsDataMap
   poolsDataMaya: PoolsDataMap
   selectAssetHandler: (asset: SelectedWalletAsset) => void
