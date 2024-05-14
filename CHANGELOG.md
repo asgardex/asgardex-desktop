@@ -1,6 +1,7 @@
 # 1.21.7 (2024-tba)
 
 # Add
+- Slip tolerance to Maya swaps [#226](https://github.com/asgardex/asgardex-desktop/pull/237)
 
 ## Updates/Fixes
 

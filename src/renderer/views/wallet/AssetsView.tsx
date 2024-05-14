@@ -86,7 +86,11 @@ export const AssetsView: React.FC = (): JSX.Element => {
   } = useMidgardContext()
   const {
     service: {
-      pools: { poolsState$: mayaPoolsState$, selectedPricePool$: mayaSelectedPricePool$ }
+      pools: {
+        poolsState$: mayaPoolsState$,
+        selectedPricePool$: mayaSelectedPricePool$,
+        pendingPoolsState$: pendingPoolsStateMaya$
+      }
     }
   } = useMidgardMayaContext()
 
@@ -97,7 +101,8 @@ export const AssetsView: React.FC = (): JSX.Element => {
   const { balancesByChain, errorsByChain } = useTotalWalletBalance()
 
   const poolsRD = useObservableState(poolsState$, RD.pending)
-  const pendingPoolsRD = useObservableState(pendingPoolsState$, RD.pending)
+  const pendingPoolsThorRD = useObservableState(pendingPoolsState$, RD.pending)
+  const pendingPoolsMayaRD = useObservableState(pendingPoolsStateMaya$, RD.pending)
 
   const selectedPricePool = useObservableState(selectedPricePool$, RUNE_PRICE_POOL)
 
@@ -129,7 +134,8 @@ export const AssetsView: React.FC = (): JSX.Element => {
   const poolsData = RD.toNullable(poolsRD)?.poolsData ?? {}
   const poolsDataMaya = RD.toNullable(poolsMayaRD)?.poolsData ?? {}
 
-  const pendingPoolsDetails = RD.toNullable(pendingPoolsRD)?.poolDetails ?? []
+  const pendingPoolsDetails = RD.toNullable(pendingPoolsThorRD)?.poolDetails ?? []
+  const pendingPoolsDetailsMaya = RD.toNullable(pendingPoolsMayaRD)?.poolDetails ?? []
 
   const { mimirHaltRD } = useMimirHalt()
 
@@ -179,6 +185,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
         poolDetails={poolDetails}
         poolDetailsMaya={poolDetailsMaya}
         pendingPoolDetails={pendingPoolsDetails}
+        pendingPoolDetailsMaya={pendingPoolsDetailsMaya}
         poolsData={poolsData}
         poolsDataMaya={poolsDataMaya}
         selectAssetHandler={selectAssetHandler}
