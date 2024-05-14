@@ -14,12 +14,7 @@ import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { AssetCacao } from '@xchainjs/xchain-mayachain'
-import {
-  isCacaoAsset,
-  MayachainQuery,
-  QuoteSwap,
-  QuoteSwapParams as QuoteSwapParamsMaya
-} from '@xchainjs/xchain-mayachain-query'
+import { MayachainQuery, QuoteSwap, QuoteSwapParams as QuoteSwapParamsMaya } from '@xchainjs/xchain-mayachain-query'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { InboundDetail, QuoteSwapParams, ThorchainQuery, TxDetails } from '@xchainjs/xchain-thorchain-query'
 import {
@@ -76,7 +71,8 @@ import {
   max1e10BaseAmount,
   getArbTokenAddress,
   isArbTokenAsset,
-  isAethAsset
+  isAethAsset,
+  isCacaoAsset
 } from '../../helpers/assetHelper'
 import {
   getChainAsset,

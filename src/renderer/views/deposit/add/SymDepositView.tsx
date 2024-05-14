@@ -4,7 +4,6 @@ import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { MayaChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, assetToString } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
@@ -191,7 +190,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
   )
 
   const { openExplorerTxUrl: openRuneExplorerTxUrl, getExplorerTxUrl: getRuneExplorerTxUrl } = useOpenExplorerTxUrl(
-    O.some(dex === 'THOR' ? THORChain : MayaChain)
+    O.some(dex === 'THOR' ? THORChain : MAYAChain)
   )
 
   const protocolLimitReached = useMemo(

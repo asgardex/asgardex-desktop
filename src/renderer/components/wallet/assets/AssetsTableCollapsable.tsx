@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao } from '@xchainjs/xchain-mayachain'
-import { assetUSDC } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
   Asset,
@@ -29,7 +28,7 @@ import { Dex } from '../../../../shared/api/types'
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString, isChainOfMaya } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
-import { DEFAULT_WALLET_TYPE } from '../../../const'
+import { AssetUSDC, DEFAULT_WALLET_TYPE } from '../../../const'
 import {
   isAethAsset,
   isCacaoAsset,
@@ -538,7 +537,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
                 return (
                   O.isSome(usdValue) &&
-                  new CryptoAmount(baseAmount(usdValue.value.amount()), assetUSDC).assetAmount.gt(1)
+                  new CryptoAmount(baseAmount(usdValue.value.amount()), AssetUSDC).assetAmount.gt(1)
                 )
               })
             }

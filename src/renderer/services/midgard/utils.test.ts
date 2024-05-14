@@ -7,7 +7,6 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { ETH_GAS_ASSET_DECIMAL as ETH_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { BtcChain } from '@xchainjs/xchain-mayachain-query'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, assetToBase, assetToString, baseAmount, bn } from '@xchainjs/xchain-util'
@@ -495,7 +494,7 @@ describe('services/midgard/utils/', () => {
 
     describe('getOutboundAssetFeeByChain', () => {
       const data: { chain: Chain; outbound_fee?: string }[] = [
-        { chain: BtcChain, outbound_fee: '1' },
+        { chain: BTCChain, outbound_fee: '1' },
         { chain: ETHChain, outbound_fee: '2' },
         { chain: GAIAChain, outbound_fee: '300' },
         { chain: LTCChain }, // no value

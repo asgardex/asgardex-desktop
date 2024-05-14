@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
-import { MayaChain } from '@xchainjs/xchain-mayachain-query'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Asset, assetToString, bn, Chain, baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
@@ -227,7 +227,7 @@ const SuccessRouteView: React.FC<Props> = ({
   }, [targetChain, updateTargetKeystoreAddress$])
 
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(
-    dex === 'THOR' ? O.some(THORChain) : O.some(MayaChain)
+    dex === 'THOR' ? O.some(THORChain) : O.some(MAYAChain)
   )
 
   const renderError = useCallback(
