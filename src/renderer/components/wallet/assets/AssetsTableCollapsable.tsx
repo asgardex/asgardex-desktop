@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { Network } from '@xchainjs/xchain-client'
+import { Balance, Network } from '@xchainjs/xchain-client'
 import { AssetCacao } from '@xchainjs/xchain-mayachain'
 import {
   Address,
   Asset,
   assetFromString,
   assetToString,
+  BaseAmount,
   baseAmount,
   baseToAsset,
   Chain,
@@ -26,19 +27,11 @@ import { useNavigate } from 'react-router'
 
 import { Dex } from '../../../../shared/api/types'
 import { AssetRuneNative } from '../../../../shared/utils/asset'
-import { chainToString, isChainOfMaya } from '../../../../shared/utils/chain'
+import { chainToString, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { AssetUSDC, DEFAULT_WALLET_TYPE } from '../../../const'
-import {
-  isAethAsset,
-  isCacaoAsset,
-  isDashAsset,
-  isKujiAsset,
-  isMayaAsset,
-  isRuneNativeAsset,
-  isUSDAsset
-} from '../../../helpers/assetHelper'
-import { getChainAsset, isArbChain } from '../../../helpers/chainHelper'
+import { isCacaoAsset, isMayaAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
+import { getChainAsset } from '../../../helpers/chainHelper'
 import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../helpers/poolHelperMaya'
 import { hiddenString, noDataString } from '../../../helpers/stringHelper'
@@ -70,6 +63,18 @@ import * as Styled from './AssetsTableCollapsable.styles'
 const { Panel } = Collapse
 
 export type AssetAction = 'send' | 'deposit'
+
+export type GetPoolPriceValueFnThor = (params: {
+  balance: Balance
+  poolDetails: PoolDetails
+  pricePool: PricePool
+}) => O.Option<BaseAmount>
+
+export type GetPoolPriceValueFnMaya = (params: {
+  balance: Balance
+  poolDetails: PoolDetailsMaya
+  pricePool: PricePool
+}) => O.Option<BaseAmount>
 
 type Props = {
   disableRefresh: boolean
@@ -200,68 +205,86 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
       render: ({ asset, amount }: WalletBalance) => {
         const balance = formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, decimal: 3 })
         let price: string = noDataString // Default to "no data" string
-        if (isUSDAsset(asset)) {
-          price = balance.toString()
-        } else if (
-          isCacaoAsset(asset) ||
-          isDashAsset(asset) ||
-          isKujiAsset(asset) ||
-          isAethAsset(asset) ||
-          isArbChain(asset.chain)
-        ) {
-          const priceOptionFromPoolDetails = getPoolPriceValueM({
-            balance: { asset, amount },
-            poolDetails: poolDetailsMaya,
-            pricePool: mayaPricePool
-          })
 
-          if (O.isSome(priceOptionFromPoolDetails)) {
-            price = formatAssetAmountCurrency({
-              amount: baseToAsset(priceOptionFromPoolDetails.value),
-              asset: mayaPricePool.asset,
-              decimal: isUSDAsset(mayaPricePool.asset) ? 2 : 4
+        // Helper function to format price
+        const formatPrice = (priceOption: O.Option<BaseAmount>, pricePoolAsset: Asset) => {
+          if (O.isSome(priceOption)) {
+            return formatAssetAmountCurrency({
+              amount: baseToAsset(priceOption.value),
+              asset: pricePoolAsset,
+              decimal: isUSDAsset(pricePoolAsset) ? 2 : 4
             })
           }
-        } else {
-          const priceOptionFromPoolDetails = getPoolPriceValue({
+          return null
+        }
+
+        // Helper function to get price from pool details
+        const getPriceThor = (
+          getPoolPriceValueFn: GetPoolPriceValueFnThor,
+          poolDetails: PoolDetails,
+          pricePool: PricePool
+        ) => {
+          const priceOption = getPoolPriceValueFn({
             balance: { asset, amount },
             poolDetails,
             pricePool
           })
-          if (O.isSome(priceOptionFromPoolDetails)) {
-            price = formatAssetAmountCurrency({
-              amount: baseToAsset(priceOptionFromPoolDetails.value),
-              asset: pricePool.asset,
-              decimal: isUSDAsset(pricePool.asset) ? 2 : 4
-            })
+          return formatPrice(priceOption, pricePool.asset)
+        }
+
+        const getPriceMaya = (
+          getPoolPriceValueFn: GetPoolPriceValueFnMaya,
+          poolDetails: PoolDetailsMaya,
+          pricePool: PricePool
+        ) => {
+          const priceOption = getPoolPriceValueFn({
+            balance: { asset, amount },
+            poolDetails,
+            pricePool
+          })
+          return formatPrice(priceOption, pricePool.asset)
+        }
+
+        // USD Asset case
+        if (isUSDAsset(asset)) {
+          price = balance.toString()
+        } else {
+          if (isChainOfMaya(asset.chain) && isChainOfThor(asset.chain)) {
+            // Chain is supported by both MAYA and THOR, prioritize THOR
+            price =
+              getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool) ||
+              getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool) ||
+              price
+          } else if (isChainOfMaya(asset.chain)) {
+            // Chain is supported only by MAYA
+            price = getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool) || price
+          } else if (isChainOfThor(asset.chain)) {
+            // Chain is supported only by THOR
+            price = getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool) || price
           } else {
+            // Handle pending pool details
             const priceOptionFromPendingPoolDetails = getPoolPriceValue({
               balance: { asset, amount },
               poolDetails: pendingPoolDetails,
               pricePool
             })
-            if (O.isSome(priceOptionFromPendingPoolDetails)) {
+            price = formatPrice(priceOptionFromPendingPoolDetails, pricePool.asset) || price
+          }
+
+          // Special case for Maya assets
+          if (price === noDataString && isMayaAsset(asset)) {
+            const mayaPrice = calculateMayaValueInUSD(amount, mayaScanPrice)
+            if (RD.isSuccess(mayaPrice)) {
               price = formatAssetAmountCurrency({
-                amount: baseToAsset(priceOptionFromPendingPoolDetails.value),
-                asset: pricePool.asset,
-                decimal: isUSDAsset(pricePool.asset) ? 2 : 4
+                amount: mayaPrice.value.assetAmount,
+                asset: mayaPrice.value.asset,
+                decimal: isUSDAsset(mayaPrice.value.asset) ? 2 : 6,
+                trimZeros: !isUSDAsset(mayaPrice.value.asset)
               })
-            } else {
-              price = noDataString
-            }
-            if (isMayaAsset(asset)) {
-              const mayaPrice = calculateMayaValueInUSD(amount, mayaScanPrice)
-              price = RD.isSuccess(mayaPrice)
-                ? formatAssetAmountCurrency({
-                    amount: mayaPrice.value.assetAmount,
-                    asset: mayaPrice.value.asset,
-                    decimal: isUSDAsset(mayaPrice.value.asset) ? 2 : 6,
-                    trimZeros: !isUSDAsset(mayaPrice.value.asset)
-                  })
-                : noDataString
             }
           }
         }
+
         return (
           <div className="flex flex-col items-end justify-center font-main">
             <div className="text-16 text-text0 dark:text-text0d">{hidePrivateData ? hiddenString : balance}</div>
@@ -288,177 +311,131 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         O.toNullable
       )
 
-      let actions: ActionButtonAction[] = []
+      const createAction = (labelId: string, callback: () => void) => ({
+        label: intl.formatMessage({ id: labelId }),
+        callback
+      })
 
-      actions = FP.pipe(
-        [
-          {
-            label: intl.formatMessage({ id: 'wallet.action.send' }),
-            callback: () => {
-              assetHandler(walletAsset, 'send')
-            }
-          }
-        ],
-        A.concatW<ActionButtonAction>(
-          isRuneNativeAsset(asset) && deepestPoolAsset !== null && dex !== 'MAYA'
-            ? [
-                {
-                  label: intl.formatMessage({ id: 'common.swap' }),
-                  callback: () => {
-                    navigate(
-                      poolsRoutes.swap.path({
-                        source: assetToString(asset),
-                        target: assetToString(deepestPoolAsset),
-                        sourceWalletType: walletType,
-                        targetWalletType: DEFAULT_WALLET_TYPE
-                      })
-                    )
-                  }
-                }
-              ]
-            : []
-        ),
-        A.concatW<ActionButtonAction>(
-          isCacaoAsset(asset) && deepestPoolAsset !== null && dex !== 'THOR'
-            ? [
-                {
-                  label: intl.formatMessage({ id: 'common.swap' }),
-                  callback: () => {
-                    navigate(
-                      poolsRoutes.swap.path({
-                        source: assetToString(asset),
-                        target: assetToString(deepestPoolAsset),
-                        sourceWalletType: walletType,
-                        targetWalletType: DEFAULT_WALLET_TYPE
-                      })
-                    )
-                  }
-                }
-              ]
-            : []
-        ),
-        A.concatW<ActionButtonAction>(
-          isSynthAsset(asset)
-            ? [
-                {
-                  label: intl.formatMessage({ id: 'common.swap' }),
-                  callback: () => {
-                    navigate(
-                      poolsRoutes.swap.path({
-                        source: `${asset.chain}/${asset.symbol}`,
-                        target: assetToString(dex === 'THOR' ? AssetRuneNative : AssetCacao),
-                        sourceWalletType: walletType,
-                        targetWalletType: DEFAULT_WALLET_TYPE
-                      })
-                    )
-                  }
-                }
-              ]
-            : []
-        ),
-        A.concatW<ActionButtonAction>(
-          hasActivePool
-            ? [
-                {
-                  label: intl.formatMessage({ id: 'common.swap' }),
-                  callback: () => {
-                    navigate(
-                      poolsRoutes.swap.path({
-                        source: assetToString(asset),
-                        target: assetToString(isRuneNativeAsset(asset) ? AssetCacao : AssetRuneNative),
-                        sourceWalletType: walletType,
-                        targetWalletType: DEFAULT_WALLET_TYPE
-                      })
-                    )
-                  }
-                }
-              ]
-            : []
-        ),
-        A.concatW<ActionButtonAction>(
-          hasActivePool && dex !== 'MAYA'
-            ? [
-                {
-                  label: intl.formatMessage({ id: 'common.earn' }),
-                  callback: () => {
-                    navigate(
-                      poolsRoutes.earn.path({
-                        asset: assetToString(asset),
-                        walletType: walletType
-                      })
-                    )
-                  }
-                }
-              ]
-            : []
-        ),
-        A.concatW<ActionButtonAction>(
-          dex === 'THOR' && isRuneNativeAsset(asset) && deepestPoolAsset !== null
-            ? [
-                {
-                  label: intl.formatMessage({ id: 'common.add' }),
-                  callback: () => {
-                    navigate(
-                      poolsRoutes.deposit.path({
-                        asset: assetToString(deepestPoolAsset),
-                        assetWalletType: DEFAULT_WALLET_TYPE,
-                        runeWalletType: walletType
-                      })
-                    )
-                  }
-                }
-              ]
-            : []
-        ),
-        A.concatW<ActionButtonAction>(
-          dex === 'MAYA' && isCacaoAsset(asset) && deepestPoolAsset !== null
-            ? [
-                {
-                  label: intl.formatMessage({ id: 'common.add' }),
-                  callback: () => {
-                    navigate(
-                      poolsRoutes.deposit.path({
-                        asset: assetToString(deepestPoolAsset),
-                        assetWalletType: DEFAULT_WALLET_TYPE,
-                        runeWalletType: walletType
-                      })
-                    )
-                  }
-                }
-              ]
-            : []
-        ),
-        A.concatW<ActionButtonAction>(
-          hasActivePool
-            ? [
-                {
-                  label: intl.formatMessage({ id: 'common.add' }),
-                  callback: () => {
-                    navigate(
-                      poolsRoutes.deposit.path({
-                        asset: assetToString(asset),
-                        assetWalletType: walletType,
-                        runeWalletType: DEFAULT_WALLET_TYPE
-                      })
-                    )
-                  }
-                }
-              ]
-            : []
-        ),
-        A.concatW<ActionButtonAction>(
-          isRuneNativeAsset(asset) || isCacaoAsset(asset)
-            ? [
-                {
-                  label: intl.formatMessage({ id: 'wallet.action.deposit' }),
-                  callback: () => {
-                    assetHandler(walletAsset, 'deposit')
-                  }
-                }
-              ]
-            : []
+      const actions: ActionButtonAction[] = [
+        createAction('wallet.action.send', () => assetHandler(walletAsset, 'send'))
+      ]
+
+      if (isRuneNativeAsset(asset) && deepestPoolAsset && dex !== 'MAYA') {
+        actions.push(
+          createAction('common.swap', () =>
+            navigate(
+              poolsRoutes.swap.path({
+                source: assetToString(asset),
+                target: assetToString(deepestPoolAsset),
+                sourceWalletType: walletType,
+                targetWalletType: DEFAULT_WALLET_TYPE
+              })
+            )
+          )
         )
-      )
+      }
+
+      if (isCacaoAsset(asset) && deepestPoolAsset && dex !== 'THOR') {
+        actions.push(
+          createAction('common.swap', () =>
+            navigate(
+              poolsRoutes.swap.path({
+                source: assetToString(asset),
+                target: assetToString(deepestPoolAsset),
+                sourceWalletType: walletType,
+                targetWalletType: DEFAULT_WALLET_TYPE
+              })
+            )
+          )
+        )
+      }
+
+      if (isSynthAsset(asset)) {
+        actions.push(
+          createAction('common.swap', () =>
+            navigate(
+              poolsRoutes.swap.path({
+                source: `${asset.chain}/${asset.symbol}`,
+                target: assetToString(dex === 'THOR' ? AssetRuneNative : AssetCacao),
+                sourceWalletType: walletType,
+                targetWalletType: DEFAULT_WALLET_TYPE
+              })
+            )
+          )
+        )
+      }
+
+      if (hasActivePool) {
+        actions.push(
+          createAction('common.swap', () =>
+            navigate(
+              poolsRoutes.swap.path({
+                source: assetToString(asset),
+                target: assetToString(isRuneNativeAsset(asset) ? AssetCacao : AssetRuneNative),
+                sourceWalletType: walletType,
+                targetWalletType: DEFAULT_WALLET_TYPE
+              })
+            )
+          )
+        )
+
+        if (dex !== 'MAYA') {
+          actions.push(
+            createAction('common.earn', () =>
+              navigate(
+                poolsRoutes.earn.path({
+                  asset: assetToString(asset),
+                  walletType: walletType
+                })
+              )
+            )
+          )
+        }
+
+        if (isRuneNativeAsset(asset) && dex === 'THOR' && deepestPoolAsset) {
+          actions.push(
+            createAction('common.add', () =>
+              navigate(
+                poolsRoutes.deposit.path({
+                  asset: assetToString(deepestPoolAsset),
+                  assetWalletType: DEFAULT_WALLET_TYPE,
+                  runeWalletType: walletType
+                })
+              )
+            )
+          )
+        }
+
+        if (isCacaoAsset(asset) && dex === 'MAYA' && deepestPoolAsset) {
+          actions.push(
+            createAction('common.add', () =>
+              navigate(
+                poolsRoutes.deposit.path({
+                  asset: assetToString(deepestPoolAsset),
+                  assetWalletType: DEFAULT_WALLET_TYPE,
+                  runeWalletType: walletType
+                })
+              )
+            )
+          )
+        }
+
+        actions.push(
+          createAction('common.add', () =>
+            navigate(
+              poolsRoutes.deposit.path({
+                asset: assetToString(asset),
+                assetWalletType: walletType,
+                runeWalletType: DEFAULT_WALLET_TYPE
+              })
+            )
+          )
+        )
+      }
+
+      if (isRuneNativeAsset(asset) || isCacaoAsset(asset)) {
+        actions.push(createAction('wallet.action.deposit', () => assetHandler(walletAsset, 'deposit')))
+      }
 
       return (
         <div className="flex justify-center">
