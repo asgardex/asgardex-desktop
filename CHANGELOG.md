@@ -1,6 +1,7 @@
 # 1.21.7 (2024-tba)
 
 # Add
+- Slip tolerance to Maya swaps [#226]()
 
 ## Updates/Fixes
 
