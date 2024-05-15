@@ -16,6 +16,7 @@
 - Update poolAddress & pooldetail logic for all Sends [#227] (https://github.com/asgardex/asgardex-desktop/pull/232)
 - Fix EVM send Dollar value bug [#230] (https://github.com/asgardex/asgardex-desktop/pull/231)
 - Fix Mayachain liquidity charts & stats [#224] (https://github.com/asgardex/asgardex-desktop/pull/234)
+- Improve Asset page performance & update Total title [#225] (https://github.com/asgardex/asgardex-desktop/pull/238)
 
 # 1.21.6 (2024-04-24)
 
