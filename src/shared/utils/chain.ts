@@ -11,7 +11,6 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { ChainAttributes } from '@xchainjs/xchain-thorchain-query'
 import { Chain } from '@xchainjs/xchain-util'
 
 /**
@@ -104,6 +103,14 @@ export const chainToString = (chain: Chain): string => {
     case KUJIChain:
       return 'KUJI'
   }
+}
+
+/**
+ * Represents chain attributes.
+ */
+export type ChainAttributes = {
+  blockReward: number
+  avgBlockTimeInSecs: number
 }
 
 export const DefaultChainAttributes: Record<Chain, ChainAttributes> = {

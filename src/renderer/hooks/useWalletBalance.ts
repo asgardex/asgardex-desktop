@@ -14,6 +14,11 @@ import { to1e8BaseAmount } from '../helpers/assetHelper'
 import { getPoolPriceValue } from '../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../helpers/poolHelperMaya'
 
+interface BalancesAndErrors {
+  balancesByChain: Record<string, BaseAmount>
+  errorsByChain: Record<string, string>
+}
+
 export const useTotalWalletBalance = () => {
   const { chainBalances$ } = useWalletContext()
   const {
@@ -55,7 +60,6 @@ export const useTotalWalletBalance = () => {
               },
               (walletBalances) => {
                 // Calculate the total balance for the chain
-
                 const totalForChain = walletBalances.reduce((acc, { asset, amount }) => {
                   let value = getPoolPriceValue({
                     balance: { asset, amount },
@@ -82,7 +86,10 @@ export const useTotalWalletBalance = () => {
     })
   )
 
-  const balancesAndErrors = useObservableState(balancesAndErrors$, { balancesByChain: {}, errorsByChain: {} })
+  const balancesAndErrors: BalancesAndErrors = useObservableState(balancesAndErrors$, {
+    balancesByChain: {},
+    errorsByChain: {}
+  })
 
   return balancesAndErrors
 }

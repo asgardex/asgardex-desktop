@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { XChainClient } from '@xchainjs/xchain-client'
-import { MayaChain } from '@xchainjs/xchain-mayachain-query'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/lib/Option'
@@ -132,7 +132,7 @@ export const AssetDetailsView: React.FC = (): JSX.Element => {
   const { openExplorerTxUrl } = useOpenExplorerTxUrl(
     FP.pipe(
       oSelectedAsset,
-      O.map(({ asset }) => (asset.synth ? (dex === 'THOR' ? THORChain : MayaChain) : asset.chain))
+      O.map(({ asset }) => (asset.synth ? (dex === 'THOR' ? THORChain : MAYAChain) : asset.chain))
     )
   )
 

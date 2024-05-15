@@ -4,7 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao, CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { MayaChain, MayachainQuery } from '@xchainjs/xchain-mayachain-query'
+import { MayachainQuery } from '@xchainjs/xchain-mayachain-query'
 import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
 import { MAYANameDetails } from '@xchainjs/xchain-mayamidgard-query'
 import {
@@ -486,7 +486,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
           onSuccess={onSuccessHandler}
           onClose={onCloseHandler}
           visible={showConfirmationModal}
-          chain={MayaChain}
+          chain={MAYAChain}
           description2={intl.formatMessage({ id: 'ledger.sign' })}
           addresses={O.none}
         />

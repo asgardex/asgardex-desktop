@@ -38,6 +38,7 @@ import { WalletType } from '../../../../shared/wallet/types'
 import { ZERO_ASSET_AMOUNT, ZERO_BASE_AMOUNT } from '../../../const'
 import {
   convertBaseAmountDecimal,
+  getArbTokenAddress,
   getAvaxTokenAddress,
   getBscTokenAddress,
   getEthTokenAddress,
@@ -468,7 +469,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
       oPoolAddress,
       O.chain(({ router }) => router)
     )
-    //tobeFixed
+
     const oTokenAddress: O.Option<string> = (() => {
       switch (chain) {
         case ETHChain:
@@ -477,6 +478,8 @@ export const SymDeposit: React.FC<Props> = (props) => {
           return getAvaxTokenAddress(asset)
         case BSCChain:
           return getBscTokenAddress(asset)
+        case ARBChain:
+          return getArbTokenAddress(asset)
         default:
           return O.none
       }

@@ -7,7 +7,7 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MayaChain } from '@xchainjs/xchain-mayachain-query'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 
 import { chainToString, isEnabledChain } from './chain'
@@ -61,7 +61,7 @@ describe('chain', () => {
       expect(chainToString(ARBChain)).toEqual('Arbitrum')
     })
     it('MAYA', () => {
-      expect(chainToString(MayaChain)).toEqual('MAYAChain')
+      expect(chainToString(MAYAChain)).toEqual('MAYAChain')
     })
   })
 })

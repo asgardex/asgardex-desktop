@@ -2,7 +2,7 @@ import React from 'react'
 
 import { StopOutlined } from '@ant-design/icons'
 import { Network } from '@xchainjs/xchain-client'
-import { MayaChain } from '@xchainjs/xchain-mayachain-query'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { NodeStatusEnum } from '@xchainjs/xchain-thornode'
 import { Address, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
@@ -17,7 +17,7 @@ export const NodeAddress: React.FC<{ address: Address; network: Network }> = ({ 
   <Col xs={18} lg={20} xl={24}>
     <Styled.AddressEllipsis
       address={address}
-      chain={address.startsWith('thor') ? THORChain : MayaChain}
+      chain={address.startsWith('thor') ? THORChain : MAYAChain}
       network={network}
     />
   </Col>

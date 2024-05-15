@@ -73,8 +73,8 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
   const intl = useIntl()
 
   const isHaltedChain = haltedChains.includes(chain)
-  const disableSwap = isHaltedChain || AssetHelper.isMayaAsset(asset) || asset.synth
-  const disableAdd = isHaltedChain || asset.synth || AssetHelper.isMayaAsset(asset)
+  const disableSwap = isHaltedChain || AssetHelper.isMayaAsset(asset)
+  const disableAdd = isHaltedChain || AssetHelper.isMayaAsset(asset)
 
   // If the chain is not halted, perform the action
 
@@ -189,15 +189,16 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
                   disabled={disableSwap}>
                   {intl.formatMessage({ id: 'common.swap' })}
                 </FlatButton>
-                <FlatButton
-                  className="m-2 ml-2 min-w-[200px]"
-                  size="large"
-                  color="primary"
-                  onClick={disableAdd ? undefined : walletActionManageClick}
-                  disabled={disableAdd}>
-                  {intl.formatMessage({ id: 'common.manage' })}
-                </FlatButton>
-
+                {!asset.synth && (
+                  <FlatButton
+                    className="m-2 ml-2 min-w-[200px]"
+                    size="large"
+                    color="primary"
+                    onClick={disableAdd ? undefined : walletActionManageClick}
+                    disabled={disableAdd}>
+                    {intl.formatMessage({ id: 'common.manage' })}
+                  </FlatButton>
+                )}
                 {AssetHelper.isRuneNativeAsset(asset) && (
                   <BorderButton
                     className="m-2 ml-2 min-w-[200px]"

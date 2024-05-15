@@ -39,12 +39,9 @@ export const AssetsView: React.FC = (): JSX.Element => {
   const intl = useIntl()
 
   const { chainBalances$, balancesState$, setSelectedAsset } = useWalletContext()
-
   const { network } = useNetwork()
   const { dex } = useDex()
-
   const { mayaScanPriceRD } = useMayaScanPrice()
-
   const { isPrivate } = usePrivateData()
 
   const [chainBalances] = useObservableState(
@@ -54,7 +51,6 @@ export const AssetsView: React.FC = (): JSX.Element => {
         RxOp.map<ChainBalances, ChainBalances>((chainBalances) =>
           FP.pipe(
             chainBalances,
-            // we show all balances
             A.filter(({ balancesType }) => balancesType === 'all')
           )
         )
@@ -64,21 +60,19 @@ export const AssetsView: React.FC = (): JSX.Element => {
 
   const getChainWeight = (chain: Chain, dex: Dex) => {
     const weights = dex === 'THOR' ? CHAIN_WEIGHTS_THOR : CHAIN_WEIGHTS_MAYA
-
-    // If the chain is enabled, use its defined weight, otherwise sort it to the end
     return isEnabledChain(chain) ? weights[chain] : Infinity
   }
 
-  const sortedBalances = chainBalances.sort((a, b) => {
-    const weightA = getChainWeight(a.chain, dex) // selectedDex should be either 'MAYA' or 'THOR'
-    const weightB = getChainWeight(b.chain, dex)
-    return weightA - weightB
-  })
+  const sortedBalances = useMemo(
+    () => chainBalances.sort((a, b) => getChainWeight(a.chain, dex) - getChainWeight(b.chain, dex)),
+    [chainBalances, dex]
+  )
 
   const [{ loading: loadingBalances }] = useObservableState(
     () => balancesState$(DEFAULT_BALANCES_FILTER),
     INITIAL_BALANCES_STATE
   )
+
   const {
     service: {
       pools: { poolsState$, selectedPricePool$, pendingPoolsState$ }
@@ -95,15 +89,11 @@ export const AssetsView: React.FC = (): JSX.Element => {
   } = useMidgardMayaContext()
 
   const selectedPricePoolMaya = useObservableState(mayaSelectedPricePool$, MAYA_PRICE_POOL)
-
   const poolsMayaRD = useObservableState(mayaPoolsState$, RD.pending)
-
   const { balancesByChain, errorsByChain } = useTotalWalletBalance()
-
   const poolsRD = useObservableState(poolsState$, RD.pending)
   const pendingPoolsThorRD = useObservableState(pendingPoolsState$, RD.pending)
   const pendingPoolsMayaRD = useObservableState(pendingPoolsStateMaya$, RD.pending)
-
   const selectedPricePool = useObservableState(selectedPricePool$, RUNE_PRICE_POOL)
 
   const selectAssetHandler = useCallback(
@@ -129,14 +119,15 @@ export const AssetsView: React.FC = (): JSX.Element => {
     [navigate, setSelectedAsset]
   )
 
-  const poolDetails = RD.toNullable(poolsRD)?.poolDetails ?? []
-  const poolDetailsMaya = RD.toNullable(poolsMayaRD)?.poolDetails ?? []
-  const poolsData = RD.toNullable(poolsRD)?.poolsData ?? {}
-  const poolsDataMaya = RD.toNullable(poolsMayaRD)?.poolsData ?? {}
-
-  const pendingPoolsDetails = RD.toNullable(pendingPoolsThorRD)?.poolDetails ?? []
-  const pendingPoolsDetailsMaya = RD.toNullable(pendingPoolsMayaRD)?.poolDetails ?? []
-
+  const poolDetails = useMemo(() => RD.toNullable(poolsRD)?.poolDetails ?? [], [poolsRD])
+  const poolDetailsMaya = useMemo(() => RD.toNullable(poolsMayaRD)?.poolDetails ?? [], [poolsMayaRD])
+  const poolsData = useMemo(() => RD.toNullable(poolsRD)?.poolsData ?? {}, [poolsRD])
+  const poolsDataMaya = useMemo(() => RD.toNullable(poolsMayaRD)?.poolsData ?? {}, [poolsMayaRD])
+  const pendingPoolsDetails = useMemo(() => RD.toNullable(pendingPoolsThorRD)?.poolDetails ?? [], [pendingPoolsThorRD])
+  const pendingPoolsDetailsMaya = useMemo(
+    () => RD.toNullable(pendingPoolsMayaRD)?.poolDetails ?? [],
+    [pendingPoolsMayaRD]
+  )
   const { mimirHaltRD } = useMimirHalt()
 
   const disableRefresh = useMemo(() => RD.isPending(poolsRD) || loadingBalances, [loadingBalances, poolsRD])
@@ -185,7 +176,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
         poolDetails={poolDetails}
         poolDetailsMaya={poolDetailsMaya}
         pendingPoolDetails={pendingPoolsDetails}
-        pendingPoolDetailsMaya={pendingPoolsDetailsMaya}
+        pendingPoolsDetailsMaya={pendingPoolsDetailsMaya}
         poolsData={poolsData}
         poolsDataMaya={poolsDataMaya}
         selectAssetHandler={selectAssetHandler}

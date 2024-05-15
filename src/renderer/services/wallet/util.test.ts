@@ -1,9 +1,8 @@
-import { AssetBSC, AssetDOGE } from '@xchainjs/xchain-thorchain-query'
 import { baseAmount } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 
 import { ASSETS_MAINNET } from '../../../shared/mock/assets'
-import { AssetBTC, AssetETH, AssetRuneNative } from '../../../shared/utils/asset'
+import { AssetBSC, AssetBTC, AssetDOGE, AssetETH, AssetRuneNative } from '../../../shared/utils/asset'
 import { eqOWalletBalance, eqWalletBalances } from '../../helpers/fp/eq'
 import { WalletBalances } from '../clients'
 import { KeystoreState } from './types'
