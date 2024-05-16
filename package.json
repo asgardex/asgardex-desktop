@@ -79,6 +79,7 @@
     "@devexperts/utils": "^1.0.0-alpha.14",
     "@headlessui/react": "^1.6.6",
     "@heroicons/react": "^2.0.12",
+    "@ledgerhq/evm-tools": "^1.0.19",
     "@ledgerhq/hw-app-btc": "^10.1.1",
     "@ledgerhq/hw-app-cosmos": "^6.29.1",
     "@ledgerhq/hw-app-eth": "^6.35.1 ",
