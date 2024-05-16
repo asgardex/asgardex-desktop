@@ -27,7 +27,6 @@ import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { isDashAsset, isUSDAsset } from '../../../../helpers/assetHelper'
 import { getChainFeeBounds } from '../../../../helpers/chainHelper'
-import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../../helpers/poolHelperMaya'
 import { loadingString } from '../../../../helpers/stringHelper'
@@ -169,23 +168,20 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
 
   const feesAvailable = useMemo(() => O.isSome(oFeesWithRates), [oFeesWithRates])
 
-  // useEffect to fetch data from query
   const { inboundAddress } = useMemo(() => {
-    return FP.pipe(
-      sequenceTOption(oPoolAddress, oPoolAddressMaya),
-      O.fold(
-        () => ({
-          inboundAddress: { THOR: '', MAYA: '' }
-        }),
-        ([poolDetails, poolDetailsMaya]) => {
-          const inboundAddress = {
-            THOR: poolDetails.address,
-            MAYA: poolDetailsMaya.address
-          }
-          return { inboundAddress }
-        }
+    const inboundAddress = {
+      THOR: FP.pipe(
+        oPoolAddress,
+        O.map((details) => details.address),
+        O.getOrElse(() => '')
+      ),
+      MAYA: FP.pipe(
+        oPoolAddressMaya,
+        O.map((details) => details.address),
+        O.getOrElse(() => '')
       )
-    )
+    }
+    return { inboundAddress }
   }, [oPoolAddress, oPoolAddressMaya])
   // Store latest fees as `ref`
   // needed to display previous fee while reloading

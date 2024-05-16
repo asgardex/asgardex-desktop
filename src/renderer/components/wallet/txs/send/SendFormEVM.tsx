@@ -188,26 +188,37 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   }, [form, intl, isChainAsset])
 
   const { inboundAddress, routers } = useMemo(() => {
-    return FP.pipe(
-      sequenceTOption(oPoolAddress, oPoolAddressMaya),
-      O.fold(
-        () => ({
-          inboundAddress: { THOR: '', MAYA: '' },
-          routers: { THOR: O.none, MAYA: O.none }
-        }),
-        ([poolDetails, poolDetailsMaya]) => {
-          const inboundAddress = {
-            THOR: poolDetails.address,
-            MAYA: poolDetailsMaya.address
-          }
-          const routers = {
-            THOR: poolDetails.router,
-            MAYA: poolDetailsMaya.router
-          }
-          return { inboundAddress, routers }
-        }
+    const inboundAddress = {
+      THOR: FP.pipe(
+        oPoolAddress,
+        O.map((details) => details.address),
+        O.getOrElse(() => '')
+      ),
+      MAYA: FP.pipe(
+        oPoolAddressMaya,
+        O.map((details) => details.address),
+        O.getOrElse(() => '')
       )
-    )
+    }
+
+    const routers = {
+      THOR: FP.pipe(
+        oPoolAddress,
+        O.fold(
+          () => O.none,
+          (details) => details.router
+        )
+      ),
+      MAYA: FP.pipe(
+        oPoolAddressMaya,
+        O.fold(
+          () => O.none,
+          (details) => details.router
+        )
+      )
+    }
+
+    return { inboundAddress, routers }
   }, [oPoolAddress, oPoolAddressMaya])
 
   useEffect(() => {
@@ -549,21 +560,25 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   const checkAddress = (routerOption: O.Option<string>, address: string): boolean =>
     O.fold(
       () => false, // If None, return false
-      (routerAddress: string) => routerAddress === address // If Some, compare the address
+      (routerAddress: string) => {
+        return routerAddress === address
+      } // If Some, compare the address
     )(routerOption)
 
   const onChangeAddress = useCallback(
     async ({ target }: React.ChangeEvent<HTMLInputElement>) => {
       const address = target.value
       // we have to validate input before storing into the state
+      const isNotAllowed = checkAddress(routers.MAYA, address) || (checkAddress(routers.THOR, address) && !isChainAsset)
+      setNotAllowed(isNotAllowed)
       addressValidator(undefined, address)
         .then(() => {
           setSendAddress(O.some(address))
-          setNotAllowed(checkAddress(routers.MAYA, address) || checkAddress(routers.THOR, address) || !isChainAsset) // remove for deposit || router
+          setNotAllowed(isNotAllowed)
         })
         .catch(() => setSendAddress(O.none))
     },
-    [addressValidator, isChainAsset, routers]
+    [addressValidator, isChainAsset, routers.MAYA, routers.THOR]
   )
 
   const reloadFees = useCallback(() => {
