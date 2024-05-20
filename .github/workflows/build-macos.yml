@@ -3,17 +3,12 @@ name: Electron build - macOS
 on:
   push:
     branches:
-      # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#onpushpull_requestbranchestags
       - 'release/**'
       - 'hotfix/**'
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [macOS-12]
+    runs-on: macOS-12
 
     steps:
       - name: Checkout git repo
@@ -24,7 +19,6 @@ jobs:
         with:
           python-version: '3.9'
 
-      # Cache Yarn dependencies
       - name: Cache Yarn dependencies
         uses: actions/cache@v4
         with:
@@ -41,7 +35,7 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Publish macOS binaries
+      - name: Build macOS binaries
         run: yarn package:ci
         env:
           NODE_OPTIONS: --max-old-space-size=7168
@@ -50,13 +44,16 @@ jobs:
           CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
           SIGNING_APPLE_ID: ${{ secrets.SIGNING_APPLE_ID }}
           SIGNING_APP_PASSWORD: ${{ secrets.SIGNING_APP_PASSWORD }}
-          SIGNING_TEAM_ID: ${{secrets.SIGNING_TEAM_ID}}
+          SIGNING_TEAM_ID: ${{ secrets.SIGNING_TEAM_ID }}
           REACT_APP_BLOCKCYPHER_API_KEY: ${{ secrets.REACT_APP_BLOCKCYPHER_API_KEY }}
           REACT_APP_ETHERSCAN_API_KEY: ${{ secrets.REACT_APP_ETHERSCAN_API_KEY }}
           REACT_APP_BSCSCAN_API_KEY: ${{ secrets.REACT_APP_BSCSCAN_API_KEY }}
           REACT_APP_ARBISCAN_API_KEY: ${{ secrets.REACT_APP_ARBISCAN_API_KEY }}
 
-      - name: Staple Notarisation Ticket
+      - name: Notarize app
+        run: yarn notarize
+
+      - name: Staple Notarization Ticket
         if: success()
         run: |
           xcrun stapler staple "./release/mac/ASGARDEX.app"

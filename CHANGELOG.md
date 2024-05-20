@@ -1,6 +1,7 @@
 # 1.21.7 (2024-tba)
 
 # Add
+
 - Slip tolerance to Maya swaps [#226](https://github.com/asgardex/asgardex-desktop/pull/237)
 
 ## Updates/Fixes
@@ -17,6 +18,7 @@
 - Fix EVM send Dollar value bug [#230] (https://github.com/asgardex/asgardex-desktop/pull/231)
 - Fix Mayachain liquidity charts & stats [#224] (https://github.com/asgardex/asgardex-desktop/pull/234)
 - Improve Asset page performance & update Total title [#225] (https://github.com/asgardex/asgardex-desktop/pull/238)
+- Update Mac Os Notarization logic [#242] (https://github.com/asgardex/asgardex-desktop/pull/243)
 
 # 1.21.6 (2024-04-24)
 

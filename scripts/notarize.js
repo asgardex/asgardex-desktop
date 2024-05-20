@@ -26,22 +26,19 @@ exports.default = async function notarizing(context) {
   const { SIGNING_APPLE_ID, SIGNING_APP_PASSWORD, SIGNING_TEAM_ID } = process.env
 
   if (isEmpty(SIGNING_APPLE_ID) || isEmpty(SIGNING_APP_PASSWORD)) {
-    console.log('SIGNING_APPLE_ID or SIGNING_APP_PASSWORD not set. Terminating noratization.')
+    console.log('SIGNING_APPLE_ID or SIGNING_APP_PASSWORD not set. Terminating notarization.')
     return
   }
 
-  // https://github.com/electron/electron-notarize#example-usage
   const options = {
     appBundleId: 'org.thorchain.asgardex',
     appPath: `${appOutDir}/${appName}.app`,
-    appleId: process.env.SIGNING_APPLE_ID,
-    appleIdPassword: process.env.SIGNING_APP_PASSWORD,
-    teamId: process.env.SIGNING_TEAM_ID
+    appleId: SIGNING_APPLE_ID,
+    appleIdPassword: SIGNING_APP_PASSWORD,
+    teamId: SIGNING_TEAM_ID
   }
 
-  if (!isEmpty(SIGNING_TEAM_ID)) options.teamId = SIGNING_TEAM_ID
-
-  console.log(`appPath`, options.appPath)
+  console.log(`appPath: ${options.appPath}`)
 
   try {
     await notarize(options)

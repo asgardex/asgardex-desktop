@@ -371,7 +371,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
             navigate(
               poolsRoutes.swap.path({
                 source: assetToString(asset),
-                target: assetToString(isRuneNativeAsset(asset) ? AssetCacao : AssetRuneNative),
+                target: assetToString(isRuneNativeAsset(asset) || dex === 'MAYA' ? AssetCacao : AssetRuneNative),
                 sourceWalletType: walletType,
                 targetWalletType: DEFAULT_WALLET_TYPE
               })
