@@ -1,3 +1,5 @@
+import { Network, RootDerivationPaths } from '@xchainjs/xchain-client'
+
 import { EvmHDMode } from './types'
 
 // ETH derivation pathes `Legacy`, `Ledger Live`, `MetaMask`
@@ -12,3 +14,14 @@ const DERIVATION_MAP: Record<EvmHDMode, string> = {
 
 export const getDerivationPath = (walletIndex: number, mode: EvmHDMode): string =>
   `${DERIVATION_MAP[mode]}`.replace(/{account}/, `${walletIndex}`)
+
+export const getDerivationPaths = (walletIndex: number, mode: EvmHDMode): RootDerivationPaths => {
+  const basePath = DERIVATION_MAP[mode].replace('{account}', `${walletIndex}`)
+
+  const paths: RootDerivationPaths = {
+    [Network.Mainnet]: `${[Network.Mainnet]}${basePath}`,
+    [Network.Testnet]: `${[Network.Testnet]}${basePath}`,
+    [Network.Stagenet]: `${[Network.Stagenet]}${basePath}`
+  }
+  return paths
+}

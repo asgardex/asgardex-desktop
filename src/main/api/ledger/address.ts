@@ -71,7 +71,7 @@ export const getAddress = async ({
               msg: `Invalid 'EthHDMode' - needed for ETH to get Ledger address`
             })
           } else {
-            res = await getETHAddress({ transport, walletIndex, evmHdMode: hdMode })
+            res = await getETHAddress({ transport, walletIndex, evmHDMode: hdMode })
           }
           break
         }
@@ -82,7 +82,7 @@ export const getAddress = async ({
               msg: `Invalid 'AvaxHDMode' - needed for AVAX to get Ledger address`
             })
           } else {
-            res = await getAVAXAddress({ transport, walletIndex, evmHdMode: hdMode })
+            res = await getAVAXAddress({ transport, walletIndex, evmHDMode: hdMode })
           }
           break
         }
@@ -93,7 +93,7 @@ export const getAddress = async ({
               msg: `Invalid 'BscHDMode' - needed for BSC to get Ledger address`
             })
           } else {
-            res = await getBSCAddress({ transport, walletIndex, evmHdMode: hdMode })
+            res = await getBSCAddress({ transport, walletIndex, evmHDMode: hdMode })
           }
           break
         }
@@ -104,7 +104,7 @@ export const getAddress = async ({
               msg: `Invalid 'ArbHDMode' - needed for ARB to get Ledger address`
             })
           } else {
-            res = await getARBAddress({ transport, walletIndex, evmHdMode: hdMode })
+            res = await getARBAddress({ transport, walletIndex, evmHDMode: hdMode })
           }
           break
         }
@@ -150,22 +150,22 @@ export const verifyLedgerAddress = async ({ chain, network, walletIndex, hdMode 
       break
     case ETHChain: {
       if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EthHDMode' - needed for ETH to verify Ledger address`)
-      result = await verifyETHAddress({ transport, walletIndex, evmHdMode: hdMode })
+      result = await verifyETHAddress({ transport, walletIndex, evmHDMode: hdMode })
       break
     }
     case AVAXChain: {
       if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for AVAX to verify Ledger address`)
-      result = await verifyAVAXAddress({ transport, walletIndex, evmHdMode: hdMode })
+      result = await verifyAVAXAddress({ transport, walletIndex, evmHDMode: hdMode })
       break
     }
     case BSCChain: {
       if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for BSC to verify Ledger address`)
-      result = await verifyBSCAddress({ transport, walletIndex, evmHdMode: hdMode })
+      result = await verifyBSCAddress({ transport, walletIndex, evmHDMode: hdMode })
       break
     }
     case ARBChain: {
       if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for ARB to verify Ledger address`)
-      result = await verifyARBAddress({ transport, walletIndex, evmHdMode: hdMode })
+      result = await verifyARBAddress({ transport, walletIndex, evmHDMode: hdMode })
       break
     }
     case GAIAChain:

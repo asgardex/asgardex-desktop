@@ -387,7 +387,6 @@ export const deposit = async ({
             res = await AVAX.deposit({
               asset,
               router,
-              transport,
               network,
               amount,
               memo,
@@ -428,7 +427,6 @@ export const deposit = async ({
             res = await BSC.deposit({
               asset,
               router,
-              transport,
               network,
               amount,
               memo,
