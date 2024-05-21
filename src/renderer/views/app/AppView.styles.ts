@@ -5,6 +5,7 @@ import { palette } from 'styled-theme'
 import { Alert as UIAlert } from '../../components/uielements/alert'
 import { media } from '../../helpers/styleHelper'
 
+// AppWrapper styled component
 export const AppWrapper = styled.div`
   height: 100vh;
   background: ${palette('background', 3)};
@@ -47,12 +48,11 @@ export const AppLayout = styled(A.Layout)`
 
 export const Alert = styled(UIAlert)`
   margin-bottom: 10px;
-  &:first-child {
-  }
+
   ${media.lg`
     margin-bottom: 40px;
 
-    &:first-child{
+    &:first-child {
       margin-bottom: 10px;
     }
   `}

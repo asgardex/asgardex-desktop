@@ -11,7 +11,7 @@ import { IntlProvider } from 'react-intl'
 import { getMessagesByLocale } from '../src/renderer/i18n'
 
 import * as mockApi from '../src/shared/mock/api'
-import type { DecoratorFn } from '@storybook/react';
+import type { Decorator } from '@storybook/react';
 
 import "../src/renderer/index.css"
 
@@ -26,12 +26,12 @@ const _darkTheme = { name: 'Dark', ...themes.dark }
 const locale = Locale.EN
 const messages = getMessagesByLocale(locale)
 
-const providerDecorator: DecoratorFn = (Story) => (
+const providerDecorator: Decorator = (Story) => (
   <AppProvider>
     {/* We use IntlProvider instead of our our custom I18nProvider to provide messages, but w/o dependencies to Electron/Node source, which can't run in storybook */}
     <IntlProvider locale={locale} messages={messages} defaultLocale={locale}>
       <ThemeProvider theme={lightTheme}>
-        <Styled.AppWrapper><Story/></Styled.AppWrapper>
+        <Styled.AppWrapper ><Story/></Styled.AppWrapper>
       </ThemeProvider>
     </IntlProvider>
   </AppProvider>
@@ -39,7 +39,7 @@ const providerDecorator: DecoratorFn = (Story) => (
 
 // Creates a `Router` decorator
 // based on https://divotion.com/blog/typescript-react-router-v6-inside-storybook-stories
-const reactRouterDecorator: DecoratorFn = (Story) => {
+const reactRouterDecorator: Decorator = (Story) => {
   return (
     <MemoryRouter>
       <Routes>

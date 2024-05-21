@@ -2,10 +2,8 @@ import * as Client from '@xchainjs/xchain-client'
 import { Network } from '@xchainjs/xchain-client'
 import * as Rx from 'rxjs'
 import { startWith, mapTo, distinctUntilChanged } from 'rxjs/operators'
-import * as RxOp from 'rxjs/operators'
 
 import { Dex } from '../../../shared/api/types'
-import { toClientNetwork } from '../../../shared/utils/client'
 import { observableState } from '../../helpers/stateHelper'
 import { SlipTolerance } from '../../types/asgardex'
 import { DEFAULT_DEX, DEFAULT_NETWORK, DEFAULT_SLIP_TOLERANCE } from '../const'
@@ -55,7 +53,7 @@ const dex$: Dex$ = getDex$.pipe(distinctUntilChanged())
 
 const privateData$: PrivateData$ = getPrivateData$.pipe(distinctUntilChanged())
 
-const clientNetwork$: Rx.Observable<Client.Network> = network$.pipe(RxOp.map(toClientNetwork))
+const clientNetwork$: Rx.Observable<Client.Network> = network$.pipe()
 
 /**
  * State of `Slip` tolerance
