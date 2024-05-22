@@ -18,6 +18,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isEnabledChain } from '../../../shared/utils/chain'
+import { isThorChain } from '../../helpers/chainHelper'
 import { observableState } from '../../helpers/stateHelper'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'
@@ -66,12 +67,13 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
           () => Rx.of(RD.initial),
           ({ asset }) => {
             const { chain } = asset
-            if (!isEnabledChain(chain))
+            if (!isEnabledChain(chain) || asset.synth || isThorChain(chain))
               return Rx.of(RD.failure<ApiError>({ errorId: ErrorId.GET_ASSET_TXS, msg: `Unsupported chain ${chain}` }))
             // If the asset is synthetic, use the THOR client tobefixed
-            if (asset && asset.synth) {
-              return THOR.txs$({ asset: O.none, walletAddress, walletIndex })
-            }
+            // if (asset && asset.synth) {
+            //   console.log(limit)
+            //   return THOR.txs$({ asset: O.none, walletAddress, walletIndex, limit })
+            // }
             switch (chain) {
               case BTCChain:
                 return BTC.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
@@ -86,7 +88,7 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
               case BSCChain:
                 return BSC.txs$({ asset: O.some(asset), limit, offset, walletAddress, walletIndex })
               case THORChain:
-                return THOR.txs$({ asset: O.none, walletAddress, walletIndex })
+                return THOR.txs$({ asset: O.some(asset), walletAddress, walletIndex })
               case MAYAChain:
                 return MAYA.txs$({ asset: O.none, walletAddress, walletIndex })
               case LTCChain:
