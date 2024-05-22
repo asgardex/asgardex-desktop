@@ -1,13 +1,14 @@
 import React, { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { Chain } from '@xchainjs/xchain-util'
+import { BaseAmount, Chain } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
+import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { Dex } from '../../../shared/api/types'
@@ -18,21 +19,24 @@ import { AssetsTableCollapsable } from '../../components/wallet/assets/AssetsTab
 import type { AssetAction } from '../../components/wallet/assets/AssetsTableCollapsable'
 import { TotalAssetValue } from '../../components/wallet/assets/TotalAssetValue'
 import { CHAIN_WEIGHTS_THOR, CHAIN_WEIGHTS_MAYA } from '../../const'
+import { ZERO_BASE_AMOUNT } from '../../const'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
+import { to1e8BaseAmount } from '../../helpers/assetHelper'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
+import { getPoolPriceValue } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
+import { getPoolPriceValue as getPoolPriceValueM } from '../../helpers/poolHelperMaya'
 import { useDex } from '../../hooks/useDex'
 import { useMayaScanPrice } from '../../hooks/useMayascanPrice'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePrivateData } from '../../hooks/usePrivateData'
-import { useTotalWalletBalance } from '../../hooks/useWalletBalance'
 import * as walletRoutes from '../../routes/wallet'
 import { reloadBalancesByChain } from '../../services/wallet'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
-import { ChainBalances, SelectedWalletAsset } from '../../services/wallet/types'
+import { SelectedWalletAsset } from '../../services/wallet/types'
 
 export const AssetsView: React.FC = (): JSX.Element => {
   const navigate = useNavigate()
@@ -44,19 +48,75 @@ export const AssetsView: React.FC = (): JSX.Element => {
   const { mayaScanPriceRD } = useMayaScanPrice()
   const { isPrivate } = usePrivateData()
 
-  const [chainBalances] = useObservableState(
-    () =>
-      FP.pipe(
-        chainBalances$,
-        RxOp.map<ChainBalances, ChainBalances>((chainBalances) =>
+  const {
+    service: {
+      pools: { poolsState$, selectedPricePool$, pendingPoolsState$ }
+    }
+  } = useMidgardContext()
+
+  const {
+    service: {
+      pools: {
+        poolsState$: mayaPoolsState$,
+        selectedPricePool$: mayaSelectedPricePool$,
+        pendingPoolsState$: pendingPoolsStateMaya$
+      }
+    }
+  } = useMidgardMayaContext()
+
+  const combinedBalances$ = Rx.combineLatest([
+    chainBalances$,
+    poolsState$,
+    selectedPricePool$,
+    mayaPoolsState$,
+    mayaSelectedPricePool$
+  ]).pipe(
+    RxOp.map(([chainBalances, poolsStateRD, selectedPricePool, poolsStateMayaRD, selectedPricePoolMaya]) => {
+      const balancesByChain: Record<string, BaseAmount> = {}
+      const errorsByChain: Record<string, string> = {}
+
+      chainBalances.forEach((chainBalance) => {
+        if (chainBalance.balancesType === 'all') {
           FP.pipe(
-            chainBalances,
-            A.filter(({ balancesType }) => balancesType === 'all')
+            chainBalance.balances,
+            RD.fold(
+              () => {}, // Ignore initial/loading states
+              () => {},
+              (error) => {
+                errorsByChain[chainBalance.chain] = `${error.msg} (errorId: ${error.errorId})`
+              },
+              (walletBalances) => {
+                const totalForChain = walletBalances.reduce((acc, { asset, amount }) => {
+                  let value = getPoolPriceValue({
+                    balance: { asset, amount },
+                    poolDetails: RD.isSuccess(poolsStateRD) ? poolsStateRD.value.poolDetails : [],
+                    pricePool: selectedPricePool
+                  })
+                  if (O.isNone(value)) {
+                    value = getPoolPriceValueM({
+                      balance: { asset, amount },
+                      poolDetails: RD.isSuccess(poolsStateMayaRD) ? poolsStateMayaRD.value.poolDetails : [],
+                      pricePool: selectedPricePoolMaya
+                    })
+                  }
+                  return acc.plus(to1e8BaseAmount(O.getOrElse(() => ZERO_BASE_AMOUNT)(value)))
+                }, ZERO_BASE_AMOUNT)
+                balancesByChain[`${chainBalance.chain}:${chainBalance.walletType}`] = totalForChain
+              }
+            )
           )
-        )
-      ),
-    []
+        }
+      })
+
+      return { chainBalances, balancesByChain, errorsByChain }
+    })
   )
+
+  const [{ chainBalances, balancesByChain, errorsByChain }] = useObservableState(() => combinedBalances$, {
+    chainBalances: [],
+    balancesByChain: {},
+    errorsByChain: {}
+  })
 
   const getChainWeight = (chain: Chain, dex: Dex) => {
     const weights = dex === 'THOR' ? CHAIN_WEIGHTS_THOR : CHAIN_WEIGHTS_MAYA
@@ -73,24 +133,8 @@ export const AssetsView: React.FC = (): JSX.Element => {
     INITIAL_BALANCES_STATE
   )
 
-  const {
-    service: {
-      pools: { poolsState$, selectedPricePool$, pendingPoolsState$ }
-    }
-  } = useMidgardContext()
-  const {
-    service: {
-      pools: {
-        poolsState$: mayaPoolsState$,
-        selectedPricePool$: mayaSelectedPricePool$,
-        pendingPoolsState$: pendingPoolsStateMaya$
-      }
-    }
-  } = useMidgardMayaContext()
-
   const selectedPricePoolMaya = useObservableState(mayaSelectedPricePool$, MAYA_PRICE_POOL)
   const poolsMayaRD = useObservableState(mayaPoolsState$, RD.pending)
-  const { balancesByChain, errorsByChain } = useTotalWalletBalance()
   const poolsRD = useObservableState(poolsState$, RD.pending)
   const pendingPoolsThorRD = useObservableState(pendingPoolsState$, RD.pending)
   const pendingPoolsMayaRD = useObservableState(pendingPoolsStateMaya$, RD.pending)
