@@ -68,5 +68,5 @@ jobs:
 
       - name: Run build
         env:
-          NODE_OPTIONS: --max-old-space-size=4096
+          NODE_OPTIONS: --max-old-space-size=7168
         run: yarn build

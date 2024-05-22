@@ -14,7 +14,7 @@ import { ZERO_ASSET_AMOUNT } from '../const'
 import { WalletBalances } from '../services/clients'
 import { NonEmptyWalletBalances, WalletBalance } from '../services/wallet/types'
 import { isLtcAsset, isRuneNativeAsset, isCacaoAsset, isMayaAsset } from './assetHelper'
-import { isBchChain, isDashChain, isDogeChain, isLtcChain, isMayaChain, isThorChain } from './chainHelper'
+import { isArbChain, isBchChain, isDashChain, isDogeChain, isLtcChain, isMayaChain, isThorChain } from './chainHelper'
 import { eqAddress, eqAsset, eqChain, eqWalletType } from './fp/eq'
 
 /**
@@ -201,6 +201,8 @@ export const isEnabledLedger = (chain: Chain, network: Network) => {
   if (isDogeChain(chain) && network === Network.Testnet) return false
   // No DASH support on `testnet`
   if (isDashChain(chain) && network === Network.Testnet) return false
+  // No DASH support on `testnet`
+  if (isArbChain(chain)) return false
   // Disable for these chains
   if (isMayaChain(chain)) return false
   return true
