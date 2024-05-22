@@ -8924,7 +8924,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-cosmos-sdk@npm:0.2.10":
+"@xchainjs/xchain-cosmos-sdk@npm:0.2.10, @xchainjs/xchain-cosmos-sdk@npm:^0.2.10":
   version: 0.2.10
   resolution: "@xchainjs/xchain-cosmos-sdk@npm:0.2.10"
   dependencies:
@@ -10006,6 +10006,7 @@ __metadata:
     "@xchainjs/xchain-bsc": "npm:0.5.0"
     "@xchainjs/xchain-client": "npm:0.16.7"
     "@xchainjs/xchain-cosmos": "npm:1.1.3"
+    "@xchainjs/xchain-cosmos-sdk": "npm:^0.2.10"
     "@xchainjs/xchain-crypto": "npm:0.3.4"
     "@xchainjs/xchain-dash": "npm:0.3.5"
     "@xchainjs/xchain-doge": "npm:0.7.19"

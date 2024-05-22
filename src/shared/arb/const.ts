@@ -1,17 +1,12 @@
-import {
-  ARBChain,
-  ARB_DECIMAL,
-  ARB_GAS_ASSET_DECIMAL,
-  AssetAETH,
-  LOWER_FEE_BOUND,
-  UPPER_FEE_BOUND
-} from '@xchainjs/xchain-arbitrum'
+import { ARBChain, ARB_DECIMAL, ARB_GAS_ASSET_DECIMAL, AssetAETH, LOWER_FEE_BOUND } from '@xchainjs/xchain-arbitrum'
 import { ExplorerProvider, FeeBounds, Network } from '@xchainjs/xchain-client'
 import { EVMClientParams } from '@xchainjs/xchain-evm'
 import { EtherscanProvider, RoutescanProvider } from '@xchainjs/xchain-evm-providers'
 import { BigNumber, ethers } from 'ethers'
 
 import { envOrDefault } from '../utils/env'
+
+export const UPPER_FEE_BOUND = 2000000000
 
 export const FEE_BOUNDS: Record<Network, FeeBounds | undefined> = {
   /* for main|stagenet use default values defined in ETH.Client */

@@ -56,9 +56,10 @@ export const sendTx$ = ({
   memo,
   feeOption = DEFAULT_FEE_OPTION,
   walletIndex,
-  hdMode
+  hdMode,
+  dex
 }: SendTxParams): TxHashLD => {
-  const { chain } = asset.synth ? AssetRuneNative : asset
+  const { chain } = asset.synth ? (dex === 'THOR' ? AssetRuneNative : AssetCacao) : asset
   if (!isEnabledChain(chain)) return txFailure$(`${chain} is not supported for 'sendTx$'`)
 
   switch (chain) {

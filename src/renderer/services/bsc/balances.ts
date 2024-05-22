@@ -9,6 +9,7 @@ import { validAssetForBSC } from '../../helpers/assetHelper'
 import { liveData } from '../../helpers/rx/liveData'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
+import { WalletBalance } from '../wallet/types'
 import { client$ } from './common'
 
 /**
@@ -24,6 +25,16 @@ const resetReloadBalances = () => {
 
 const reloadBalances = () => {
   setReloadBalances(true)
+}
+// temporary fix
+const targetSymbol = 'BSC-USD-0x55d398326f99059ff775485246999027b3197955'
+const newSymbol = 'USDT-0x55d398326f99059fF775485246999027B3197955'
+
+const replaceSymbol = (asset: Asset): Asset => {
+  if (asset.symbol === targetSymbol) {
+    return { ...asset, symbol: newSymbol }
+  }
+  return asset
 }
 
 // State of balances loaded by Client
@@ -51,7 +62,15 @@ const balances$: ({
       walletBalanceType: 'all'
     }),
     // Filter assets based on BSCERC20Whitelist (mainnet only)
-    liveData.map(FP.flow(A.filter(({ asset }) => validAssetForBSC(asset, network))))
+    liveData.map(
+      FP.flow(
+        A.map((balance: WalletBalance) => ({
+          ...balance,
+          asset: replaceSymbol(balance.asset)
+        })),
+        A.filter(({ asset }) => validAssetForBSC(asset, network))
+      )
+    )
   )
 }
 
