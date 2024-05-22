@@ -19,7 +19,7 @@
 - Fix Mayachain liquidity charts & stats [#224] (https://github.com/asgardex/asgardex-desktop/pull/234)
 - Improve Asset page performance & update Total title [#225] (https://github.com/asgardex/asgardex-desktop/pull/238)
 - Update Mac Os Notarization logic [#242] (https://github.com/asgardex/asgardex-desktop/pull/243)
-- Fix cpu hogging, reduced fetches [246] (https://github.com/asgardex/asgardex-desktop/pull/247)
+- Fix cpu hogging, reduced fetches [246] (https://github.com/asgardex/asgardex-desktop/pull/251)
 
 # 1.21.6 (2024-04-24)
 
