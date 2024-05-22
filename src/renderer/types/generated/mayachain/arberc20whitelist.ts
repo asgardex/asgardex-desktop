@@ -29,6 +29,28 @@ export const ARB_TOKEN_WHITELIST: {
   {
     asset: {
       chain: ARBChain,
+      symbol: "ARB-0x912ce59144191c1204e64559fe8253a0e49e6548",
+      ticker: "ARB",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets.coingecko.com/coins/images/16547/thumb/photo_2023-03-29_21.47.00.jpeg?1696516109"
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: "ARB-0x912ce59144191c1204e64559fe8253a0e49e6548",
+      ticker: "ARB",
+      synth: true,
+    },
+    iconUrl: O.some(
+      "https://assets.coingecko.com/coins/images/16547/thumb/photo_2023-03-29_21.47.00.jpeg?1696516109"
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
       symbol: "GMX-0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a",
       ticker: "GMX",
       synth: true,
