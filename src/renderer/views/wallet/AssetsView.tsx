@@ -36,7 +36,7 @@ import { usePrivateData } from '../../hooks/usePrivateData'
 import * as walletRoutes from '../../routes/wallet'
 import { reloadBalancesByChain } from '../../services/wallet'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
-import { SelectedWalletAsset } from '../../services/wallet/types'
+import { ChainBalances, SelectedWalletAsset } from '../../services/wallet/types'
 
 export const AssetsView: React.FC = (): JSX.Element => {
   const navigate = useNavigate()
@@ -122,11 +122,22 @@ export const AssetsView: React.FC = (): JSX.Element => {
     const weights = dex === 'THOR' ? CHAIN_WEIGHTS_THOR : CHAIN_WEIGHTS_MAYA
     return isEnabledChain(chain) ? weights[chain] : Infinity
   }
+  const getUniqueChainBalances = (balances: ChainBalances) => {
+    const seen = new Set()
+    return balances.filter((balance) => {
+      const duplicate = seen.has(balance.chain)
+      seen.add(balance.chain)
+      return !duplicate
+    })
+  }
 
-  const sortedBalances = useMemo(
-    () => chainBalances.sort((a, b) => getChainWeight(a.chain, dex) - getChainWeight(b.chain, dex)),
-    [chainBalances, dex]
-  )
+  const sortedBalances = useMemo(() => {
+    // First, filter out duplicates
+    const uniqueBalances = getUniqueChainBalances(chainBalances)
+
+    // Then, sort the unique balances
+    return uniqueBalances.sort((a, b) => getChainWeight(a.chain, dex) - getChainWeight(b.chain, dex))
+  }, [chainBalances, dex])
 
   const [{ loading: loadingBalances }] = useObservableState(
     () => balancesState$(DEFAULT_BALANCES_FILTER),
