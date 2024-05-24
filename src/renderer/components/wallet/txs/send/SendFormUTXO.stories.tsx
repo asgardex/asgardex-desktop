@@ -91,6 +91,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
       poolDetails={[]}
       oPoolAddress={O.none}
       oPoolAddressMaya={O.none}
+      dex="THOR"
     />
   )
 }

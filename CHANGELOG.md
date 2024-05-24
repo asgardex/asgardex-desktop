@@ -1,4 +1,10 @@
-# 1.21.7 (2024-tba)
+# 1.21.8 (2024-tba)
+
+## Updates/Fixes
+
+- Fix UTXO send price fetch [256](https://github.com/asgardex/asgardex-desktop/pull/257)
+
+# 1.21.7 (2024-05-23)
 
 # Add
 

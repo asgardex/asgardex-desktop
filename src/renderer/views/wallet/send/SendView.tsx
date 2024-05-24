@@ -60,14 +60,13 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
     FP.pipe(
       oSelectedAsset,
       O.fold(
-        () => setSelectedPoolAsset(O.none), // If there's no asset, pass O.none
+        () => setSelectedPoolAsset(O.none),
         (asset) => {
           setSelectedPoolAsset(O.some(asset.asset))
           setSelectedPoolAssetMaya(O.some(asset.asset))
-        } // If there's an asset, wrap it in O.some and pass
+        }
       )
     )
-    // Reset selectedPoolAsset on view's unmount to avoid effects with depending streams
     return () => {
       setSelectedPoolAsset(O.none)
       setSelectedPoolAssetMaya(O.none)
@@ -99,12 +98,12 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
       const poolDetailsThor = RD.toNullable(poolsStateThorRD)?.poolDetails ?? []
       const poolDetailsMaya = RD.toNullable(poolsStateMayaRD)?.poolDetails ?? []
       const DEFAULT_WALLET_BALANCE = {
-        walletAddress: asset.walletAddress, // default wallet address
-        walletType: asset.walletType, // default wallet type
-        walletIndex: asset.walletIndex, // default wallet index
-        hdMode: asset.hdMode, // default hd mode
-        amount: baseAmount(0), // default balance amount
-        asset: asset.asset // default asset
+        walletAddress: asset.walletAddress,
+        walletType: asset.walletType,
+        walletIndex: asset.walletIndex,
+        hdMode: asset.hdMode,
+        amount: baseAmount(0),
+        asset: asset.asset
       }
 
       switch (chain) {
@@ -120,6 +119,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
               poolDetails={!isChainOfMaya(asset.asset.chain) ? poolDetailsThor : poolDetailsMaya}
               oPoolAddress={oPoolAddress}
               oPoolAddressMaya={oPoolAddressMaya}
+              dex={dex}
             />
           )
         case ETHChain:
@@ -133,6 +133,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
               poolDetails={!isChainOfMaya(asset.asset.chain) ? poolDetailsThor : poolDetailsMaya}
               oPoolAddress={oPoolAddress}
               oPoolAddressMaya={oPoolAddressMaya}
+              dex={dex}
             />
           )
         case THORChain:

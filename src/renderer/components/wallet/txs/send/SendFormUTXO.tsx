@@ -22,10 +22,12 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
+import { Dex } from '../../../../../shared/api/types'
+import { isChainOfMaya } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
-import { isDashAsset, isUSDAsset } from '../../../../helpers/assetHelper'
+import { isUSDAsset } from '../../../../helpers/assetHelper'
 import { getChainFeeBounds } from '../../../../helpers/chainHelper'
 import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../../helpers/poolHelperMaya'
@@ -78,6 +80,7 @@ export type Props = {
   poolDetails: PoolDetails | PoolDetailsMaya
   oPoolAddress: O.Option<PoolAddress>
   oPoolAddressMaya: O.Option<PoolAddressMaya>
+  dex: Dex
 }
 
 export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
@@ -95,7 +98,8 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     validatePassword$,
     oPoolAddress,
     oPoolAddressMaya,
-    network
+    network,
+    dex
   } = props
 
   const intl = useIntl()
@@ -106,7 +110,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
 
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()
-  const pricePool = isDashAsset(asset) ? pricePoolMaya : pricePoolThor
+  const pricePool = !isChainOfMaya(asset.chain) ? pricePoolThor : pricePoolMaya
 
   const {
     state: sendTxState,
@@ -338,39 +342,42 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
 
   // useEffect to fetch data from query
   useEffect(() => {
-    const maxAmountPrice = isPoolDetails(poolDetails)
-      ? getPoolPriceValue({
-          balance: { asset, amount: maxAmount },
-          poolDetails,
-          pricePool
-        })
-      : getPoolPriceValueM({
-          balance: { asset, amount: maxAmount },
-          poolDetails,
-          pricePool
-        })
-    const amountPrice = isPoolDetails(poolDetails)
-      ? getPoolPriceValue({
-          balance: { asset, amount: amountToSend },
-          poolDetails,
-          pricePool
-        })
-      : getPoolPriceValueM({
-          balance: { asset, amount: amountToSend },
-          poolDetails,
-          pricePool
-        })
-    const assetFeePrice = isPoolDetails(poolDetails)
-      ? getPoolPriceValue({
-          balance: { asset, amount: assetFee.baseAmount },
-          poolDetails,
-          pricePool
-        })
-      : getPoolPriceValueM({
-          balance: { asset, amount: assetFee.baseAmount },
-          poolDetails,
-          pricePool
-        })
+    const maxAmountPrice =
+      isPoolDetails(poolDetails) && dex === 'THOR'
+        ? getPoolPriceValue({
+            balance: { asset, amount: maxAmount },
+            poolDetails,
+            pricePool
+          })
+        : getPoolPriceValueM({
+            balance: { asset, amount: maxAmount },
+            poolDetails,
+            pricePool
+          })
+    const amountPrice =
+      isPoolDetails(poolDetails) && dex === 'THOR'
+        ? getPoolPriceValue({
+            balance: { asset, amount: amountToSend },
+            poolDetails,
+            pricePool
+          })
+        : getPoolPriceValueM({
+            balance: { asset, amount: amountToSend },
+            poolDetails,
+            pricePool
+          })
+    const assetFeePrice =
+      isPoolDetails(poolDetails) && dex === 'THOR'
+        ? getPoolPriceValue({
+            balance: { asset, amount: assetFee.baseAmount },
+            poolDetails,
+            pricePool
+          })
+        : getPoolPriceValueM({
+            balance: { asset, amount: assetFee.baseAmount },
+            poolDetails,
+            pricePool
+          })
     if (O.isSome(assetFeePrice)) {
       const maxCryptoAmount = new CryptoAmount(assetFeePrice.value, pricePool.asset)
       setFeePriceValue(maxCryptoAmount)
@@ -383,7 +390,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
       const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
       setMaxAmountPriceValue(maxCryptoAmount)
     }
-  }, [amountToSend, asset, assetFee, maxAmount, network, poolDetails, pricePool])
+  }, [amountToSend, asset, assetFee, dex, maxAmount, network, poolDetails, pricePool])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {

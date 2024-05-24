@@ -7,6 +7,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 
+import { Dex } from '../../../../shared/api/types'
 import { ETHAddress } from '../../../../shared/ethereum/const'
 import { SendFormEVM } from '../../../components/wallet/txs/send'
 import { useChainContext } from '../../../contexts/ChainContext'
@@ -14,7 +15,6 @@ import { useEvmContext } from '../../../contexts/EvmContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
-import { useDex } from '../../../hooks/useDex'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { FeesRD, WalletBalances } from '../../../services/clients'
@@ -30,13 +30,14 @@ type Props = {
   poolDetails: PoolDetails | PoolDetailsMaya
   oPoolAddress: O.Option<PoolAddress>
   oPoolAddressMaya: O.Option<PoolAddressMaya>
+  dex: Dex
 }
 
 export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
-  const { asset, emptyBalance, poolDetails, oPoolAddress, oPoolAddressMaya } = props
+  const { dex, asset, emptyBalance, poolDetails, oPoolAddress, oPoolAddressMaya } = props
 
   const { network } = useNetwork()
-  const { dex } = useDex()
+
   const {
     balancesState$,
     keystoreService: { validatePassword$ }
