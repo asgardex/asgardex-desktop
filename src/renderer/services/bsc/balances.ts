@@ -29,10 +29,11 @@ const reloadBalances = () => {
 // temporary fix
 const targetSymbol = 'BSC-USD-0x55d398326f99059ff775485246999027b3197955'
 const newSymbol = 'USDT-0x55d398326f99059fF775485246999027B3197955'
+const newTicker = 'USDT'
 
 const replaceSymbol = (asset: Asset): Asset => {
   if (asset.symbol === targetSymbol) {
-    return { ...asset, symbol: newSymbol }
+    return { ...asset, symbol: newSymbol, ticker: newTicker }
   }
   return asset
 }

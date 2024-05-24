@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Client, defaultClientConfig, GAIAChain } from '@xchainjs/xchain-cosmos'
+import { Client, GAIAChain } from '@xchainjs/xchain-cosmos'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -29,12 +29,10 @@ const clientState$: ClientState$ = FP.pipe(
           getPhrase(keystore),
           O.map<string, ClientState>((phrase) => {
             try {
-              const cosmosInitParams = {
-                ...defaultClientConfig,
-                network: network,
-                phrase: phrase
-              }
-              const client = new Client(cosmosInitParams)
+              const client = new Client({
+                network,
+                phrase
+              })
               return RD.success(client)
             } catch (error) {
               console.error('Failed to create Cosmos client', error)

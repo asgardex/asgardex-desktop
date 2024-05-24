@@ -373,13 +373,11 @@ export const SymDeposit: React.FC<Props> = (props) => {
             (amount) => ({ asset: pricePool.asset, amount })
           )
         : FP.pipe(
-            !isPoolDetails(poolDetails)
-              ? getPoolPriceValueM({
-                  balance: { asset: AssetCacao, amount: runeAmountToDeposit },
-                  poolDetails,
-                  pricePool
-                })
-              : O.none,
+            getPoolPriceValueM({
+              balance: { asset: AssetCacao, amount: runeAmountToDeposit },
+              poolDetails,
+              pricePool
+            }),
             O.getOrElse(() => ZERO_BASE_AMOUNT),
             (amount) => ({ asset: pricePool.asset, amount })
           )
