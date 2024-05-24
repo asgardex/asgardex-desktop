@@ -340,7 +340,6 @@ export const Swap = ({
       ),
     [dex, oWalletBalances, poolAssets]
   )
-
   const hasSourceAssetLedger = useMemo(
     () => hasLedgerInBalancesByAsset(sourceAsset, allBalances),
     [sourceAsset, allBalances]
