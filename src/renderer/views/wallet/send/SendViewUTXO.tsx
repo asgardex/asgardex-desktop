@@ -6,6 +6,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 
+import { Dex } from '../../../../shared/api/types'
 import { SendFormUTXO } from '../../../components/wallet/txs/send'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
@@ -27,9 +28,10 @@ type Props = {
   poolDetails: PoolDetails | PoolDetailsMaya
   oPoolAddress: O.Option<PoolAddress>
   oPoolAddressMaya: O.Option<PoolAddressMaya>
+  dex: Dex
 }
 export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
-  const { asset, emptyBalance, poolDetails, oPoolAddress, oPoolAddressMaya } = props
+  const { dex, asset, emptyBalance, poolDetails, oPoolAddress, oPoolAddressMaya } = props
 
   const { network } = useNetwork()
 
@@ -86,6 +88,7 @@ export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
               poolDetails={poolDetails}
               oPoolAddress={oPoolAddress}
               oPoolAddressMaya={oPoolAddressMaya}
+              dex={dex}
             />
           </Styled.Container>
         </Spin>
@@ -110,6 +113,7 @@ export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
             poolDetails={poolDetails}
             oPoolAddress={oPoolAddress}
             oPoolAddressMaya={oPoolAddressMaya}
+            dex={dex}
           />
         </Styled.Container>
       )
