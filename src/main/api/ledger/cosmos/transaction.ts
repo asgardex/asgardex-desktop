@@ -35,7 +35,7 @@ export const send = async ({
 
     const clientLedger = new ClientLedger({ transport, ...defaultClientConfig })
     const txHash = await clientLedger.transfer({ walletIndex, asset: AssetATOM, recipient, amount, memo })
-    if (txHash) {
+    if (!txHash) {
       return E.left({
         errorId: LedgerErrorId.INVALID_RESPONSE,
         msg: `Missing tx hash - broadcasting ${assetToString(asset)} tx failed - `
