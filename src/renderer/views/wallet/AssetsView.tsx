@@ -125,9 +125,12 @@ export const AssetsView: React.FC = (): JSX.Element => {
   const getUniqueChainBalances = (balances: ChainBalances) => {
     const seen = new Set()
     return balances.filter((balance) => {
-      const duplicate = seen.has(balance.chain)
-      seen.add(balance.chain)
-      return !duplicate
+      const key = `${balance.chain}-${balance.walletType}`
+      if (seen.has(key)) {
+        return false
+      }
+      seen.add(key)
+      return true
     })
   }
 

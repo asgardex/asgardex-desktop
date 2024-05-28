@@ -4,6 +4,7 @@
 
 - Fix UTXO send price fetch [256](https://github.com/asgardex/asgardex-desktop/pull/257)
 - Fix Maya lp Bugs & BSC.USDT [#255](https://github.com/asgardex/asgardex-desktop/pull/258)
+- Update Thornode Leedger to use ClientLedger from xchainjs [#259](https://github.com/asgardex/asgardex-desktop/pull/260)
 
 # 1.21.7 (2024-05-23)
 

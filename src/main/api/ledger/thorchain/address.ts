@@ -1,14 +1,12 @@
 import type Transport from '@ledgerhq/hw-transport'
-import THORChainApp, { LedgerErrorType } from '@xchainjs/ledger-thorchain'
 import { Network } from '@xchainjs/xchain-client'
-import { getPrefix, THORChain } from '@xchainjs/xchain-thorchain'
+import { ClientLedger, defaultClientConfig, THORChain } from '@xchainjs/xchain-thorchain'
 import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
 import { VerifyAddressHandler } from '../types'
-import { fromLedgerErrorType, getDerivationPath } from './common'
 
 export const getAddress = async (
   transport: Transport,
@@ -16,17 +14,15 @@ export const getAddress = async (
   walletIndex: number
 ): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
-    const app = new THORChainApp(transport)
-    const prefix = getPrefix(network)
-    const path = getDerivationPath(walletIndex)
-    const { bech32Address, returnCode } = await app.getAddressAndPubKey(path, prefix)
-    if (!bech32Address || returnCode !== LedgerErrorType.NoErrors) {
+    const clientLedger = new ClientLedger({ transport, ...defaultClientConfig, network: network })
+    const address = await clientLedger.getAddressAsync(walletIndex)
+    if (!address) {
       return E.left({
-        errorId: fromLedgerErrorType(returnCode),
-        msg: `Getting 'bech32Address' from Ledger's THORChain App failed`
+        errorId: LedgerErrorId.GET_ADDRESS_FAILED,
+        msg: `Getting 'address' from Ledger's Cosmos app failed`
       })
     }
-    return E.right({ address: bech32Address, chain: THORChain, type: 'ledger', walletIndex, hdMode: 'default' })
+    return E.right({ address: address, chain: THORChain, type: 'ledger', walletIndex, hdMode: 'default' })
   } catch (error) {
     return E.left({
       errorId: LedgerErrorId.GET_ADDRESS_FAILED,
@@ -36,9 +32,7 @@ export const getAddress = async (
 }
 
 export const verifyAddress: VerifyAddressHandler = async ({ transport, network, walletIndex }) => {
-  const app = new THORChainApp(transport)
-  const prefix = getPrefix(network)
-  const path = getDerivationPath(walletIndex)
-  const _ = await app.showAddressAndPubKey(path, prefix)
+  const clientLedger = new ClientLedger({ transport, ...defaultClientConfig, network: network })
+  const _ = await clientLedger.getAddressAsync(walletIndex, true)
   return true
 }
