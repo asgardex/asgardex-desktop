@@ -71,7 +71,6 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
               const isArbAddress = address === ArbZeroAddress
               const amount = isArbAddress ? baseAmount(0) : params.amount
               const gasPrice = gasPrices[params.feeOption].amount().toFixed(0) // no round down needed
-              const signer = client.getWallet(params.walletIndex)
               const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
               return Rx.from(
                 // Call deposit function of Router contract
@@ -79,7 +78,6 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
                 // Amounts need to use `toFixed` to convert `BaseAmount` to `Bignumber`
                 // since `value` and `gasPrice` type is `Bignumber`
                 client.call<{ hash: TxHash }>({
-                  signer,
                   contractAddress: router,
                   abi: ROUTER_ABI,
                   funcName: 'depositWithExpiry',
@@ -171,17 +169,6 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     client: ArbClient,
     { walletIndex, contractAddress, spenderAddress }: ApproveParams
   ): TxHashLD => {
-    const signer = client.getWallet(walletIndex)
-
-    // check contract address before approving
-    if (!signer)
-      return Rx.of(
-        RD.failure({
-          msg: `Can't get signer from client`,
-          errorId: ErrorId.APPROVE_TX
-        })
-      )
-
     // send approve tx
     return FP.pipe(
       Rx.from(

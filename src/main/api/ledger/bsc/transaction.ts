@@ -1,6 +1,8 @@
 import type Transport from '@ledgerhq/hw-transport'
+import TransportNodeHid from '@ledgerhq/hw-transport-node-hid-singleton'
 import { FeeOption, Network, TxHash } from '@xchainjs/xchain-client'
 import * as BSC from '@xchainjs/xchain-evm'
+import { LedgerSigner } from '@xchainjs/xchain-evm'
 import { Address, Asset, assetToString, BaseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
@@ -9,23 +11,21 @@ import { isBscAsset } from '../../../../renderer/helpers/assetHelper'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { DEPOSIT_EXPIRATION_OFFSET, BscZeroAddress, defaultBscParams } from '../../../../shared/bsc/const'
 import { ROUTER_ABI } from '../../../../shared/evm/abi'
-import { getDerivationPath } from '../../../../shared/evm/ledger'
-import { getBlocktime } from '../../../../shared/evm/provider'
+import { getDerivationPaths } from '../../../../shared/evm/ledger'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
-import { LedgerSigner } from '../evm/LedgerSigner'
 /**
  * Sends BSC tx using Ledger
  */
 export const send = async ({
   asset,
-  transport,
   network,
   amount,
   memo,
   recipient,
   feeOption,
-  walletIndex
+  walletIndex,
+  evmHDMode
 }: {
   asset: Asset
   transport: Transport
@@ -38,7 +38,11 @@ export const send = async ({
   evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const clientledger = new BSC.ClientLedger({ transport, ...defaultBscParams, network: network })
+    const clientledger = new BSC.ClientLedger({
+      ...defaultBscParams,
+      network: network,
+      rootDerivationPaths: getDerivationPaths(walletIndex, evmHDMode)
+    })
     const txHash = await clientledger.transfer({ walletIndex, asset, recipient, amount, memo, feeOption })
 
     if (!txHash) {
@@ -61,7 +65,6 @@ export const send = async ({
  * Sends BSC deposit txs using Ledger
  */
 export const deposit = async ({
-  transport,
   asset,
   router,
   network,
@@ -74,7 +77,6 @@ export const deposit = async ({
 }: {
   asset: Asset
   router: Address
-  transport: Transport
   amount: BaseAmount
   network: Network
   recipient: Address
@@ -95,16 +97,23 @@ export const deposit = async ({
 
     const isETHAddress = address === BscZeroAddress
 
-    const clientledger = new BSC.ClientLedger({ transport, ...defaultBscParams, network: network })
+    const paths = getDerivationPaths(walletIndex, evmHDMode)
 
-    const app = await clientledger.getApp()
-    const path = getDerivationPath(walletIndex, evmHDMode)
+    const clientledger = new BSC.ClientLedger({
+      ...defaultBscParams,
+      rootDerivationPaths: getDerivationPaths(walletIndex, evmHDMode),
+      signer: new LedgerSigner({
+        transport: await TransportNodeHid.create(),
+        provider: defaultBscParams.providers[Network.Mainnet],
+        derivationPath: paths ? paths[network] : ''
+      })
+    })
+
     const provider = clientledger.getProvider()
-    const signer = new LedgerSigner({ provider, path, app })
 
     const gasPrices = await clientledger.estimateGasPrices()
     const gasPrice = gasPrices[feeOption].amount().toFixed(0) // no round down needed
-    const blockTime = await getBlocktime(provider)
+    const blockTime = (await provider.getBlock('latest')).timestamp
     const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
 
     // Note: `client.call` handling very - similar to `runSendPoolTx$` in `src/renderer/services/ethereum/transaction.ts`
@@ -112,7 +121,6 @@ export const deposit = async ({
     // Note2: Amounts need to use `toFixed` to convert `BaseAmount` to `Bignumber`
     // since `value` and `gasPrice` type is `Bignumber`
     const { hash } = await clientledger.call<{ hash: TxHash }>({
-      signer,
       contractAddress: router,
       abi: ROUTER_ABI,
       funcName: 'depositWithExpiry',

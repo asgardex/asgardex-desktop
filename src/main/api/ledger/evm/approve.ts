@@ -1,4 +1,3 @@
-import TransportNodeHidSingleton from '@ledgerhq/hw-transport-node-hid-singleton'
 import { FeeOption, TxHash } from '@xchainjs/xchain-client'
 import { ClientLedger } from '@xchainjs/xchain-evm'
 
@@ -7,44 +6,45 @@ import { defaultArbParams } from '../../../../shared/arb/const'
 import { defaultAvaxParams } from '../../../../shared/avax/const'
 import { defaultBscParams } from '../../../../shared/bsc/const'
 import { defaultEthParams } from '../../../../shared/ethereum/const'
+import { getDerivationPaths } from '../../../../shared/evm/ledger'
 
 export const approveLedgerERC20Token = async ({
   chain,
   network,
   contractAddress,
   spenderAddress,
-  walletIndex
+  walletIndex,
+  hdMode
 }: IPCLedgerApproveERC20TokenParams): Promise<TxHash> => {
   let clientParams
 
-  const transport = await TransportNodeHidSingleton.create()
   switch (chain) {
     case 'ETH':
       clientParams = {
-        transport,
         ...defaultEthParams,
-        network: network
+        network: network,
+        rootDerivationPaths: getDerivationPaths(walletIndex, hdMode)
       }
       break
     case 'ARB':
       clientParams = {
-        transport,
         ...defaultArbParams,
-        network: network
+        network: network,
+        rootDerivationPaths: getDerivationPaths(walletIndex, hdMode)
       }
       break
     case 'AVAX':
       clientParams = {
-        transport,
         ...defaultAvaxParams,
-        network: network
+        network: network,
+        rootDerivationPaths: getDerivationPaths(walletIndex, hdMode)
       }
       break
     case 'BSC':
       clientParams = {
-        transport,
         ...defaultBscParams,
-        network: network
+        network: network,
+        rootDerivationPaths: getDerivationPaths(walletIndex, hdMode)
       }
       break
     default:
@@ -58,8 +58,6 @@ export const approveLedgerERC20Token = async ({
     feeOption: FeeOption.Fast,
     walletIndex
   })
-
-  await transport.close()
 
   return transactionHash
 }

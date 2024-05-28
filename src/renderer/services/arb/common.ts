@@ -1,6 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ARBChain } from '@xchainjs/xchain-arbitrum'
-import * as ARB from '@xchainjs/xchain-evm'
+import { ARBChain, Client } from '@xchainjs/xchain-arbitrum'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -31,7 +30,7 @@ const clientState$: ClientState$ = FP.pipe(
           getPhrase(keystore),
           O.map<string, ClientState>((phrase) => {
             try {
-              const client = new ARB.Client({
+              const client = new Client({
                 ...defaultArbParams,
                 network: network,
                 phrase: phrase,
