@@ -72,6 +72,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
               const amount = isBscAddress ? baseAmount(0) : params.amount
               const gasPrice = gasPrices[params.feeOption].amount().toFixed(0) // no round down needed
               const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
+
               return Rx.from(
                 // Call deposit function of Router contract
                 // Note:
