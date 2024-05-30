@@ -15,7 +15,8 @@ const bonds: BondsMessages = {
   'bonds.node.add': 'Ajouter un nœud',
   'bonds.node.enterMessage': 'Entrez le nœud à surveiller',
   'bonds.validations.nodeAlreadyAdded': 'Le nœud est déjà ajouté',
-  'bonds.node.removeMessage': 'Êtes-vous sûr de vouloir supprimer le nœud {node} ?'
+  'bonds.node.removeMessage': 'Êtes-vous sûr de vouloir supprimer le nœud {node} ?',
+  'bonds.validations.bondStatusActive': "La déliaison d'un nœud actif n'est pas autorisée"
 }
 
 export default bonds

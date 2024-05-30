@@ -329,6 +329,7 @@ type BondsMessageKey =
   | 'bonds.node.removeMessage'
   | 'bonds.bondProvider'
   | 'bonds.validations.nodeAlreadyAdded'
+  | 'bonds.validations.bondStatusActive'
 
 export type BondsMessages = { [key in BondsMessageKey]: string }
 

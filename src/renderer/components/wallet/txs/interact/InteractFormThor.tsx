@@ -39,7 +39,7 @@ import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { FeeRD } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../services/clients'
 import { INITIAL_INTERACT_STATE } from '../../../../services/thorchain/const'
-import { InteractState, InteractStateHandler } from '../../../../services/thorchain/types'
+import { InteractState, InteractStateHandler, NodeInfos, NodeInfosRD } from '../../../../services/thorchain/types'
 import { ValidatePasswordHandler, WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
 import { TxModal } from '../../../modal/tx'
@@ -88,6 +88,7 @@ type Props = {
   poolDetails: PoolDetails
   nodeAddress: string | null
   bondAmount: string | null
+  nodes: NodeInfosRD
 }
 export const InteractFormThor: React.FC<Props> = (props) => {
   const {
@@ -107,7 +108,8 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     thorchainQuery,
     network,
     nodeAddress,
-    bondAmount
+    bondAmount,
+    nodes: nodesRD
   } = props
   const intl = useIntl()
 
@@ -118,6 +120,14 @@ export const InteractFormThor: React.FC<Props> = (props) => {
 
   const [_amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
 
+  const nodes: NodeInfos = useMemo(
+    () =>
+      FP.pipe(
+        nodesRD,
+        RD.getOrElse(() => [] as NodeInfos)
+      ),
+    [nodesRD]
+  )
   const [memo, setMemo] = useState<string>('')
   const amountToSend = useMemo(() => {
     switch (interactType) {
@@ -374,8 +384,15 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   )
 
   const addressValidator = useCallback(
-    async (_: unknown, value: string) =>
-      FP.pipe(
+    async (_: unknown, value: string) => {
+      const loweredCaseValue = value.toLowerCase()
+      const nodeIndex = nodes.findIndex(
+        ({ address, status }) => address.toLowerCase() === loweredCaseValue && status === 'Active'
+      )
+      if (interactType === 'unbond' && nodeIndex > -1) {
+        return Promise.reject(intl.formatMessage({ id: 'bonds.validations.bondStatusActive' }))
+      }
+      return FP.pipe(
         value,
         validateAddress(
           addressValidation,
@@ -386,10 +403,10 @@ export const InteractFormThor: React.FC<Props> = (props) => {
           (e) => Promise.reject(e),
           () => Promise.resolve()
         )
-      ),
-    [addressValidation, intl]
+      )
+    },
+    [addressValidation, interactType, intl, nodes]
   )
-
   // Send tx start time
   const [sendTxStartTime, setSendTxStartTime] = useState<number>(0)
 

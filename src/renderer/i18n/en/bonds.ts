@@ -15,7 +15,8 @@ const bonds: BondsMessages = {
   'bonds.node.add': 'Add node',
   'bonds.node.enterMessage': 'Enter node to monitor',
   'bonds.validations.nodeAlreadyAdded': 'Node is already added',
-  'bonds.node.removeMessage': 'Are you sure you want to remove node with address {node} ?'
+  'bonds.node.removeMessage': 'Are you sure you want to remove node with address {node} ?',
+  'bonds.validations.bondStatusActive': 'Unbonding from an active node is not allowed'
 }
 
 export default bonds

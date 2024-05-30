@@ -15,7 +15,8 @@ const bonds: BondsMessages = {
   'bonds.node.add': 'Añadir nodo',
   'bonds.node.enterMessage': 'Introduzca el nodo a supervisar',
   'bonds.validations.nodeAlreadyAdded': 'Nodo ya añadido',
-  'bonds.node.removeMessage': '¿Estás seguro de que quieres eliminar el nodo con dirección {node} ?'
+  'bonds.node.removeMessage': '¿Estás seguro de que quieres eliminar el nodo con dirección {node} ?',
+  'bonds.validations.bondStatusActive': 'Desvincularse de un nodo activo no está permitido'
 }
 
 export default bonds

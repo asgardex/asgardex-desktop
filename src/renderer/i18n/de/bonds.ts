@@ -15,7 +15,8 @@ const bonds: BondsMessages = {
   'bonds.node.add': 'Node hinzufügen',
   'bonds.node.enterMessage': 'Node Addresse eingeben',
   'bonds.validations.nodeAlreadyAdded': 'Node wurde bereits hinzugefügt',
-  'bonds.node.removeMessage': 'Bist Du sicher, dass Du die Node {node} entfernen möchtest?'
+  'bonds.node.removeMessage': 'Bist Du sicher, dass Du die Node {node} entfernen möchtest?',
+  'bonds.validations.bondStatusActive': 'Das Abtrennen von einem aktiven Knoten ist nicht erlaubt'
 }
 
 export default bonds
