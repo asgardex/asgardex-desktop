@@ -69,5 +69,5 @@ export const INITIAL_SEND_STATE: SendTxState = {
 
 export const INITIAL_SYM_DEPOSIT_ADDRESSES: SymDepositAddresses = {
   asset: O.none,
-  rune: O.none
+  dex: O.none
 }
