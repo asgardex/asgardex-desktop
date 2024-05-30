@@ -3,6 +3,7 @@ import React, { useCallback, useState } from 'react'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao } from '@xchainjs/xchain-mayachain'
+import { isCacaoAsset } from '@xchainjs/xchain-mayachain-query'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { Address, assetToString, Chain } from '@xchainjs/xchain-util'
 import { Asset } from '@xchainjs/xchain-util'
@@ -110,9 +111,10 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
       const newDex = dex === 'MAYA' ? 'THOR' : 'MAYA'
       changeDex(newDex)
     }
+    const routeAsset = AssetHelper.isRuneNativeAsset(asset) || isCacaoAsset(asset) ? AssetBTC : asset
 
     const path = poolsRoutes.deposit.path({
-      asset: assetToString(asset),
+      asset: assetToString(routeAsset),
       assetWalletType: walletType,
       runeWalletType: DEFAULT_WALLET_TYPE
     })

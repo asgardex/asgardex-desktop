@@ -498,7 +498,7 @@ describe('helpers/fp/eq', () => {
     const oRune: O.Option<WalletAddress> = O.some(rune)
     const asset: WalletAddress = mockWalletAddress({ chain: BSCChain })
     const oAsset: O.Option<WalletAddress> = O.some(asset)
-    const addresses: SymDepositAddresses = { rune: oRune, asset: oAsset }
+    const addresses: SymDepositAddresses = { dex: oRune, asset: oAsset }
 
     it('are equal', () => {
       expect(eqSymDepositAddresses.equals(addresses, addresses)).toBeTruthy()
@@ -506,20 +506,20 @@ describe('helpers/fp/eq', () => {
 
     it('are not equal', () => {
       expect(
-        eqSymDepositAddresses.equals(addresses, { asset: oAsset, rune: O.some({ ...rune, address: 'another' }) })
+        eqSymDepositAddresses.equals(addresses, { asset: oAsset, dex: O.some({ ...rune, address: 'another' }) })
       ).toBeFalsy()
       expect(
-        eqSymDepositAddresses.equals(addresses, { asset: oAsset, rune: O.some({ ...rune, type: 'ledger' }) })
+        eqSymDepositAddresses.equals(addresses, { asset: oAsset, dex: O.some({ ...rune, type: 'ledger' }) })
       ).toBeFalsy()
       expect(
-        eqSymDepositAddresses.equals(addresses, { asset: oAsset, rune: O.some({ ...rune, chain: BSCChain }) })
+        eqSymDepositAddresses.equals(addresses, { asset: oAsset, dex: O.some({ ...rune, chain: BSCChain }) })
       ).toBeFalsy()
       expect(
-        eqSymDepositAddresses.equals(addresses, { asset: oAsset, rune: O.some({ ...rune, walletIndex: 1 }) })
+        eqSymDepositAddresses.equals(addresses, { asset: oAsset, dex: O.some({ ...rune, walletIndex: 1 }) })
       ).toBeFalsy()
-      expect(eqSymDepositAddresses.equals(addresses, { asset: oAsset, rune: O.none })).toBeFalsy()
-      expect(eqSymDepositAddresses.equals(addresses, { asset: O.none, rune: oRune })).toBeFalsy()
-      expect(eqSymDepositAddresses.equals(addresses, { asset: O.none, rune: O.none })).toBeFalsy()
+      expect(eqSymDepositAddresses.equals(addresses, { asset: oAsset, dex: O.none })).toBeFalsy()
+      expect(eqSymDepositAddresses.equals(addresses, { asset: O.none, dex: oRune })).toBeFalsy()
+      expect(eqSymDepositAddresses.equals(addresses, { asset: O.none, dex: O.none })).toBeFalsy()
     })
   })
   describe('eqApiUrls', () => {

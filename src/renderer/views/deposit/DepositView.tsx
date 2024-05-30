@@ -29,7 +29,6 @@ import { sequenceTOption } from '../../helpers/fpHelpers'
 import { useDex } from '../../hooks/useDex'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useSymDepositAddresses } from '../../hooks/useSymDepositAddresses'
-import { useSymDepositAddressesMaya } from '../../hooks/useSymDepositAddressesMaya'
 import { DepositRouteParams } from '../../routes/pools/deposit'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
 import { PoolDetailRD as PoolDetailMayaRD } from '../../services/mayaMigard/types'
@@ -96,7 +95,7 @@ export const DepositView: React.FC<Props> = () => {
   const assetWalletType = routeAssetWalletType || DEFAULT_WALLET_TYPE
   const runeWalletType = routeRuneWalletType || DEFAULT_WALLET_TYPE
 
-  // if the user switches dex to thor chain we don't want THOR on the asset side
+  // if the user switches dex to thorchain we don't want THOR on the asset side
   const getAlternativeAsset = (): O.Option<Asset> => {
     return O.some(AssetBTC)
   }
@@ -151,19 +150,14 @@ export const DepositView: React.FC<Props> = () => {
   const oSelectedAssetWithDecimal = useMemo(() => RD.toOption(assetWithDecimalRD), [assetWithDecimalRD])
 
   const {
-    addresses: { rune: oRuneWalletAddress, asset: oAssetWalletAddressThor }
+    addresses: { rune: oDexWalletAddress, asset: oAssetWalletAddress }
   } = useSymDepositAddresses({
     asset: oRouteAsset,
+    dex,
     assetWalletType,
     runeWalletType
   })
 
-  const {
-    addresses: { rune: oCacaoWalletAddress, asset: oAssetWalletAddressMaya }
-  } = useSymDepositAddressesMaya({ asset: oRouteAsset, assetWalletType, runeWalletType })
-  // needed as with Mayachain the rune addresss now becomes the Maya address
-  const oDexWalletAddress = dex === 'THOR' ? oRuneWalletAddress : oCacaoWalletAddress
-  const oAssetWalletAddress = dex === 'THOR' ? oAssetWalletAddressThor : oAssetWalletAddressMaya
   /**
    * We have to get a new shares$ stream for every new address
    * @description /src/renderer/services/midgard/shares.ts

@@ -36,7 +36,7 @@ export type SymDepositMemo = { rune: Memo; asset: Memo }
 
 export type SymDepositAddresses = {
   asset: O.Option<WalletAddress>
-  rune: O.Option<WalletAddress>
+  dex: O.Option<WalletAddress>
 }
 
 export type DepositFees = { inFee: BaseAmount; outFee: BaseAmount; refundFee: BaseAmount }

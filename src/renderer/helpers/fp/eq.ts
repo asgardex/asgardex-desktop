@@ -238,7 +238,7 @@ export const eqLedgerAddress = Eq.struct<LedgerAddress>({
 export const eqOLedgerAddress = O.getEq(eqLedgerAddress)
 
 export const eqSymDepositAddresses = Eq.struct<SymDepositAddresses>({
-  rune: eqOWalletAddress,
+  dex: eqOWalletAddress,
   asset: eqOWalletAddress
 })
 
