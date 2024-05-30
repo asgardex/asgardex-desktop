@@ -16,7 +16,8 @@ const mockNodeInfo = (address: Address) => ({
   bondProviders: {
     nodeOperatorFee: baseAmount(100000000 * 400000),
     providers: []
-  }
+  },
+  signMembership: []
 })
 const addressValidation: AddressValidation = (_) => true
 

@@ -208,7 +208,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     liveData.map<Node[], NodeInfos>((nodes) =>
       FP.pipe(
         nodes,
-        A.map(({ bond, reward, status, node_address, bond_providers }) => {
+        A.map(({ bond, reward, status, node_address, bond_providers, signer_membership }) => {
           return {
             address: node_address,
             bond: baseAmount(bond, CACAO_DECIMAL),
@@ -222,7 +222,8 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
                     bond: baseAmount(provider.bond, CACAO_DECIMAL)
                   }))
                 : []
-            }
+            },
+            signMembership: signer_membership
           }
         })
       )

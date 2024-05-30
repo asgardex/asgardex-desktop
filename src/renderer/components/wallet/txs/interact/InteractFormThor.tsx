@@ -385,10 +385,8 @@ export const InteractFormThor: React.FC<Props> = (props) => {
 
   const addressValidator = useCallback(
     async (_: unknown, value: string) => {
-      const loweredCaseValue = value.toLowerCase()
-      const nodeIndex = nodes.findIndex(
-        ({ address, status }) => address.toLowerCase() === loweredCaseValue && status === 'Active'
-      )
+      const inputAddres = value.toLowerCase()
+      const nodeIndex = H.findNodeIndex(nodes, inputAddres)
       if (interactType === 'unbond' && nodeIndex > -1) {
         return Promise.reject(intl.formatMessage({ id: 'bonds.validations.bondStatusActive' }))
       }

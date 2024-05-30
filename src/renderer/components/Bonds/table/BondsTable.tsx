@@ -31,7 +31,7 @@ interface CustomExpandIconProps {
   onExpand: (record: string, event: React.MouseEvent<HTMLSpanElement, MouseEvent>) => void // Adjusted for <span>// Adjust YourRecordType accordingly
   record: string
 }
-type ProvidersWithStatus = Providers & { status: TN.NodeStatusEnum }
+type ProvidersWithStatus = Providers & { status: TN.NodeStatusEnum; signMembership: string[]; nodeAddress: Address }
 
 export const BondsTable: React.FC<Props> = ({
   nodes,
@@ -114,11 +114,11 @@ export const BondsTable: React.FC<Props> = ({
       dataIndex: 'action',
       key: 'action',
       render: (_, record) => {
-        const { bondAddress, bond, status } = record
+        const { bondAddress, bond, status, signMembership, nodeAddress } = record
         const isWalletAddress =
           walletAddresses.THOR.some((walletInfo) => walletInfo.address === bondAddress) ||
           walletAddresses.MAYA.some((walletInfo) => walletInfo.address === bondAddress)
-
+        const unbondDisabled = status === 'Active' || (signMembership.includes(nodeAddress) && status === 'Standby')
         return (
           <div className="flex">
             <TextButton
@@ -129,7 +129,7 @@ export const BondsTable: React.FC<Props> = ({
             </TextButton>
             <div className="flex border-solid border-gray1 dark:border-gray1d">
               <TextButton
-                disabled={!isWalletAddress || status === 'Active'}
+                disabled={!isWalletAddress || unbondDisabled}
                 size="normal"
                 onClick={() => goToAction('unbond', matchedNodeAddress, bond)}>
                 {intl.formatMessage({ id: 'deposit.interact.actions.unbond' })}
@@ -248,10 +248,11 @@ export const BondsTable: React.FC<Props> = ({
                 bondAddress: provider.bondAddress,
                 bond: provider.bond,
                 status: record.status,
+                member: record.signMembership,
+                nodeAddres: record.nodeAddress,
                 key: `${record.address}-${index}`
               }))}
               pagination={false}
-              rowClassName={(record) => (record.status === 'active' ? '' : '')}
             />
           ),
           rowExpandable: (record) => record.bondProviders.providers.length > 0,
