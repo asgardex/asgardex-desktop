@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
+import type * as TN from '@xchainjs/xchain-thornode'
 import { Address, baseAmount, BaseAmount } from '@xchainjs/xchain-util'
 import { ColumnType } from 'antd/lib/table'
 import * as FP from 'fp-ts/function'
@@ -30,6 +31,7 @@ interface CustomExpandIconProps {
   onExpand: (record: string, event: React.MouseEvent<HTMLSpanElement, MouseEvent>) => void // Adjusted for <span>// Adjust YourRecordType accordingly
   record: string
 }
+type ProvidersWithStatus = Providers & { status: TN.NodeStatusEnum; signMembership: string[]; nodeAddress: Address }
 
 export const BondsTable: React.FC<Props> = ({
   nodes,
@@ -100,7 +102,7 @@ export const BondsTable: React.FC<Props> = ({
     [intl, network, goToNode]
   )
 
-  const expandedTableColumns: ColumnType<Providers>[] = [
+  const expandedTableColumns: ColumnType<ProvidersWithStatus>[] = [
     {
       title: intl.formatMessage({ id: 'bonds.bondProvider' }),
       dataIndex: 'bondAddress',
@@ -111,11 +113,12 @@ export const BondsTable: React.FC<Props> = ({
       title: intl.formatMessage({ id: 'common.action' }),
       dataIndex: 'action',
       key: 'action',
-      render: (_, { bondAddress, bond }) => {
+      render: (_, record) => {
+        const { bondAddress, bond, status, signMembership, nodeAddress } = record
         const isWalletAddress =
           walletAddresses.THOR.some((walletInfo) => walletInfo.address === bondAddress) ||
           walletAddresses.MAYA.some((walletInfo) => walletInfo.address === bondAddress)
-
+        const unbondDisabled = status === 'Active' || (signMembership.includes(nodeAddress) && status === 'Standby')
         return (
           <div className="flex">
             <TextButton
@@ -126,7 +129,7 @@ export const BondsTable: React.FC<Props> = ({
             </TextButton>
             <div className="flex border-solid border-gray1 dark:border-gray1d">
               <TextButton
-                disabled={!isWalletAddress}
+                disabled={!isWalletAddress || unbondDisabled}
                 size="normal"
                 onClick={() => goToAction('unbond', matchedNodeAddress, bond)}>
                 {intl.formatMessage({ id: 'deposit.interact.actions.unbond' })}
@@ -244,6 +247,9 @@ export const BondsTable: React.FC<Props> = ({
               dataSource={record.bondProviders.providers.map((provider: Providers, index: string) => ({
                 bondAddress: provider.bondAddress,
                 bond: provider.bond,
+                status: record.status,
+                member: record.signMembership,
+                nodeAddres: record.nodeAddress,
                 key: `${record.address}-${index}`
               }))}
               pagination={false}

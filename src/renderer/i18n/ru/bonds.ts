@@ -15,7 +15,8 @@ const bonds: BondsMessages = {
   'bonds.node.add': 'Добавить узел',
   'bonds.node.enterMessage': 'Введите узел для отслеживания',
   'bonds.validations.nodeAlreadyAdded': 'Узел уже добавлен',
-  'bonds.node.removeMessage': 'Вы уверены, что хотите удалить узел {node} ?'
+  'bonds.node.removeMessage': 'Вы уверены, что хотите удалить узел {node} ?',
+  'bonds.validations.bondStatusActive': 'Развязывание с активным узлом не допускается'
 }
 
 export default bonds

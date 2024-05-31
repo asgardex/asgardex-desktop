@@ -1,6 +1,10 @@
+import { useState } from 'react'
+
+import * as RD from '@devexperts/remote-data-ts'
 import { Meta } from '@storybook/react'
 import { Network, TxHash } from '@xchainjs/xchain-client'
-import { assetAmount, assetToBase, BaseAmount, baseAmount } from '@xchainjs/xchain-util'
+import { NodeStatusEnum } from '@xchainjs/xchain-thornode'
+import { Address, assetAmount, assetToBase, BaseAmount, baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -24,6 +28,18 @@ type Args = {
   validAddress: boolean
   walletType: WalletType
 }
+
+const mockNodeInfo = (address: Address) => ({
+  bond: baseAmount(100000000 * 40000000),
+  award: baseAmount(100000000 * 400000),
+  status: NodeStatusEnum.Active,
+  address,
+  bondProviders: {
+    nodeOperatorFee: baseAmount(100000000 * 400000),
+    providers: []
+  },
+  signMembership: []
+})
 
 const Template = ({ interactType, txRDStatus, feeRDStatus, balance, validAddress, walletType }: Args) => {
   const interact$: InteractStateHandler = (_) => {
@@ -55,7 +71,7 @@ const Template = ({ interactType, txRDStatus, feeRDStatus, balance, validAddress
     })
   }
   const { thorchainQuery } = useThorchainQueryContext()
-
+  const [nodesList] = useState<Address[]>([])
   const feeRD: FeeRD = FP.pipe(
     feeRDStatus,
     getMockRDValueFactory<Error, BaseAmount>(
@@ -90,6 +106,7 @@ const Template = ({ interactType, txRDStatus, feeRDStatus, balance, validAddress
       poolDetails={[]}
       nodeAddress=""
       bondAmount=""
+      nodes={RD.success(nodesList.map((address) => mockNodeInfo(address)))}
     />
   )
 }

@@ -1,11 +1,14 @@
-import { bn } from '@xchainjs/xchain-util'
+import type * as TN from '@xchainjs/xchain-thornode'
+import { baseAmount, bn } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 
+import { NodeInfo } from '../../../../services/thorchain/types'
 import {
   getInteractTypeFromNullableString,
   isInteractType,
   validateCustomAmountInput,
-  validateUnboundAmountInput
+  validateUnboundAmountInput,
+  findNodeIndex
 } from './Interact.helpers'
 
 describe('wallet/interact/helpers', () => {
@@ -128,6 +131,70 @@ describe('wallet/interact/helpers', () => {
     it('undefined', () => {
       const result = getInteractTypeFromNullableString()
       expect(result).toBeNone()
+    })
+  })
+
+  describe('findNodeIndex', () => {
+    const nodes: NodeInfo[] = [
+      {
+        address: 'thor10czf2s89h79fsjmqqck85cdqeq536hw5ngz4lt',
+        bond: baseAmount(100000000 * 40000000),
+        award: baseAmount(100000000 * 400000),
+        status: 'Active' as TN.NodeStatusEnum,
+        bondProviders: { providers: [], nodeOperatorFee: baseAmount(100000000 * 400000) }, // Mock bondProviders
+        signMembership: []
+      },
+      {
+        address: 'thor16ery22gma35h2fduxr0swdfvz4s6yvy6yhskf6',
+        bond: baseAmount(100000000 * 40000000), // Mock bond value
+        award: baseAmount(100000000 * 400000), // Mock award value
+        status: 'Standby' as TN.NodeStatusEnum,
+        bondProviders: { providers: [], nodeOperatorFee: baseAmount(100000000 * 400000) }, // Mock bondProviders
+        signMembership: ['thor16ery22gma35h2fduxr0swdfvz4s6yvy6yhskf6']
+      },
+      {
+        address: 'thor13uy6szawgsj9xjs0gq2xddzmcup3zl63khp6gq',
+        bond: baseAmount(100000000 * 40000000), // Mock bond value
+        award: baseAmount(100000000 * 400000), // Mock award value
+        status: 'Standby' as TN.NodeStatusEnum,
+        bondProviders: { providers: [], nodeOperatorFee: baseAmount(100000000 * 400000) }, // Mock bondProviders
+        signMembership: []
+      }
+    ]
+
+    it('should find an active node', () => {
+      const result = findNodeIndex(nodes, 'thor10czf2s89h79fsjmqqck85cdqeq536hw5ngz4lt')
+      expect(result).toEqual(0)
+    })
+
+    it('should find a standby node with the address in signMembership', () => {
+      const result = findNodeIndex(nodes, 'thor16ery22gma35h2fduxr0swdfvz4s6yvy6yhskf6')
+      expect(result).toEqual(1)
+    })
+
+    it('should not find a node if the address does not match any active or standby nodes', () => {
+      const result = findNodeIndex(nodes, 'thor1invalidaddress1234567890')
+      expect(result).toEqual(-1)
+    })
+
+    it('should not find a node if the address matches a standby node but is not in signMembership', () => {
+      const result = findNodeIndex(nodes, 'thor18df3c5lhdskfsjmqqck85cdqeq536hw5ngz4lt')
+      expect(result).toEqual(-1)
+    })
+
+    it('should not find a node if the status does not match active or standby', () => {
+      const modifiedNodes = [
+        {
+          address: 'thor1nprw0w6ex8xh4tfl3vtkhqnjvds68kwshq9ax9',
+          bond: baseAmount(100000000 * 40000000), // Mock bond value
+          award: baseAmount(100000000 * 400000), // Mock award value
+          status: 'Disabled' as TN.NodeStatusEnum,
+          bondProviders: { providers: [], nodeOperatorFee: baseAmount(100000000 * 400000) }, // Mock bondProviders
+          signMembership: []
+        }
+      ]
+      const result = findNodeIndex(modifiedNodes, 'thor1nprw0w6ex8xh4tfl3vtkhqnjvds68kwshq9ax9')
+      expect(result).toEqual(-1)
     })
   })
 })

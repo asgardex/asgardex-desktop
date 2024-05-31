@@ -15,7 +15,8 @@ const bonds: BondsMessages = {
   'bonds.node.add': 'नोड जोड़ें',
   'bonds.node.enterMessage': 'ट्रैकिंग के लिए नोड दर्ज करें',
   'bonds.validations.nodeAlreadyAdded': 'नोड पहले से जोड़ा जा चुका है',
-  'bonds.node.removeMessage': 'क्या आप वाकई में नोड {node} को हटाना चाहते हैं?'
+  'bonds.node.removeMessage': 'क्या आप वाकई में नोड {node} को हटाना चाहते हैं?',
+  'bonds.validations.bondStatusActive': 'सक्रिय नोड से अनबॉन्डिंग की अनुमति नहीं है'
 }
 
 export default bonds

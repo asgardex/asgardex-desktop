@@ -127,6 +127,7 @@ export type NodeInfo = {
   award: BaseAmount
   status: TN.NodeStatusEnum
   bondProviders: BondProviders
+  signMembership: string[]
 }
 
 export type NodeInfoLD = LiveData<Error, NodeInfo>

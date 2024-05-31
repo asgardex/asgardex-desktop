@@ -9,7 +9,7 @@ import { IntlShape } from 'react-intl'
 import { optionFromNullableString } from '../../../../../shared/utils/fp'
 import { greaterThan, greaterThanEqualTo, validateBN } from '../../../../helpers/form/validation'
 import { emptyString } from '../../../../helpers/stringHelper'
-import { InteractState } from '../../../../services/thorchain/types'
+import { InteractState, NodeInfos } from '../../../../services/thorchain/types'
 import { InteractType } from './Interact.types'
 
 export const getInteractiveDescription = ({ state, intl }: { state: InteractState; intl: IntlShape }): string => {
@@ -89,3 +89,11 @@ export const isInteractType = (u: unknown): u is InteractType =>
 
 export const getInteractTypeFromNullableString = (s?: string): O.Option<InteractType> =>
   FP.pipe(s, optionFromNullableString, O.chain(O.fromPredicate(isInteractType)))
+
+export const findNodeIndex = (nodes: NodeInfos, inputaddress: string) => {
+  return nodes.findIndex(
+    ({ address, status, signMembership }) =>
+      (address.toLowerCase() === inputaddress && status === 'Active') ||
+      (signMembership.includes(inputaddress) && status === 'Standby')
+  )
+}
