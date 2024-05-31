@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset } from '@xchainjs/xchain-util'
@@ -8,12 +8,11 @@ import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { Dex } from '../../shared/api/types'
 import { isLedgerWallet } from '../../shared/utils/guard'
-import { WalletType } from '../../shared/wallet/types'
+import { WalletAddress, WalletType } from '../../shared/wallet/types'
 import { useChainContext } from '../contexts/ChainContext'
 import { useWalletContext } from '../contexts/WalletContext'
-import { INITIAL_SYM_DEPOSIT_ADDRESSES } from '../services/chain/const'
-import { SymDepositAddresses } from '../services/chain/types'
 import { ledgerAddressToWalletAddress } from '../services/wallet/util'
 
 /**
@@ -23,10 +22,12 @@ import { ledgerAddressToWalletAddress } from '../services/wallet/util'
  */
 export const useSymDepositAddresses = ({
   asset: oAsset,
+  dex,
   assetWalletType,
   runeWalletType
 }: {
   asset: O.Option<Asset>
+  dex: Dex
   assetWalletType: WalletType
   runeWalletType: WalletType
 }) => {
@@ -34,46 +35,32 @@ export const useSymDepositAddresses = ({
 
   const { getLedgerAddress$ } = useWalletContext()
 
-  const assetKeystoreAddress$ = useMemo(
-    () =>
-      FP.pipe(
-        oAsset,
-        O.fold(
-          () => Rx.of(O.none),
-          ({ chain }) => addressByChain$(chain)
-        )
-      ),
+  const [oDexWalletAddress, setODexWalletAddress] = useState<O.Option<WalletAddress>>(O.none)
+  const [oAssetWalletAddress, setOAssetWalletAddress] = useState<O.Option<WalletAddress>>(O.none)
+  const [oAssetLedgerWalletAddress, setOAssetLedgerWalletAddress] = useState<O.Option<WalletAddress>>(O.none)
 
-    [addressByChain$, oAsset]
-  )
-
-  // Track both keystore addresses at once to update global state once at once
-  const [{ asset: assetKeystoreAddress, rune: runeKeystoreAddress }]: [SymDepositAddresses, unknown] =
-    useObservableState(
-      () =>
-        FP.pipe(
-          Rx.combineLatest([assetKeystoreAddress$, addressByChain$(THORChain)]),
-          RxOp.switchMap(([asset, rune]) =>
-            Rx.of({
-              asset,
-              rune
-            })
-          )
-        ),
-      INITIAL_SYM_DEPOSIT_ADDRESSES
-    )
-
-  const [assetLedgerAddress] = useObservableState(
-    () =>
-      FP.pipe(
-        oAsset,
-        O.fold(
-          () => Rx.of(O.none),
-          ({ chain }) => FP.pipe(getLedgerAddress$(chain), RxOp.map(O.map(ledgerAddressToWalletAddress)))
-        )
-      ),
-    O.none
-  )
+  useEffect(() => {
+    const subscription = FP.pipe(addressByChain$(dex)).subscribe(setODexWalletAddress)
+    const oRouteAssetSubscription = FP.pipe(
+      oAsset,
+      O.fold(
+        () => Rx.of(O.none),
+        ({ chain }) => addressByChain$(chain)
+      )
+    ).subscribe(setOAssetWalletAddress)
+    const oLedgerAssetAddress = FP.pipe(
+      oAsset,
+      O.fold(
+        () => Rx.of(O.none),
+        ({ chain }) => FP.pipe(getLedgerAddress$(chain), RxOp.map(O.map(ledgerAddressToWalletAddress)))
+      )
+    ).subscribe(setOAssetLedgerWalletAddress)
+    return () => {
+      subscription.unsubscribe()
+      oRouteAssetSubscription.unsubscribe()
+      oLedgerAssetAddress.unsubscribe()
+    }
+  }, [addressByChain$, dex, getLedgerAddress$, oAsset])
 
   const [runeLedgerAddress] = useObservableState(
     () => FP.pipe(getLedgerAddress$(THORChain), RxOp.map(O.map(ledgerAddressToWalletAddress))),
@@ -81,8 +68,8 @@ export const useSymDepositAddresses = ({
   )
 
   const symDepositAddresses = {
-    asset: isLedgerWallet(assetWalletType) ? assetLedgerAddress : assetKeystoreAddress,
-    rune: isLedgerWallet(runeWalletType) ? runeLedgerAddress : runeKeystoreAddress
+    asset: isLedgerWallet(assetWalletType) ? oAssetLedgerWalletAddress : oAssetWalletAddress,
+    rune: isLedgerWallet(runeWalletType) ? runeLedgerAddress : oDexWalletAddress
   }
 
   return {
