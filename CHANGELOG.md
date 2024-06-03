@@ -6,7 +6,7 @@
 - Fix Maya lp Bugs & BSC.USDT [#255](https://github.com/asgardex/asgardex-desktop/pull/258)
 - Update Thornode Ledger to use ClientLedger from xchainjs [#259](https://github.com/asgardex/asgardex-desktop/pull/260)
 - Disable Unbonding if node is active [#233] (https://github.com/asgardex/asgardex-desktop/pull/263)
-- Fix no provider able to get balance [#264] (https://github.com/asgardex/asgardex-desktop/pull/264)
+- Fix no provider able to get balance [#264] (https://github.com/asgardex/asgardex-desktop/pull/272)
 
 # 1.21.7 (2024-05-23)
 
