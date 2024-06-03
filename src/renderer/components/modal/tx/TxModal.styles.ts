@@ -55,6 +55,9 @@ export const ResultButton = styled(UIButton)`
 
 export const ErrorView = styled(UIErrorView)`
   padding: 0px;
+  max-width: 100%;
+  word-break: break-word;
+  white-space: normal;
 `
 // Style for displaying the status of each stage in the transaction
 export const StageStatus = styled.div`

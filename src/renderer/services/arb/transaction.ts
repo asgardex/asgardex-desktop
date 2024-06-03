@@ -171,17 +171,6 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     client: ArbClient,
     { walletIndex, contractAddress, spenderAddress }: ApproveParams
   ): TxHashLD => {
-    const signer = client.getWallet(walletIndex)
-
-    // check contract address before approving
-    if (!signer)
-      return Rx.of(
-        RD.failure({
-          msg: `Can't get signer from client`,
-          errorId: ErrorId.APPROVE_TX
-        })
-      )
-
     // send approve tx
     return FP.pipe(
       Rx.from(
