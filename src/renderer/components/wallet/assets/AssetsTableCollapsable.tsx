@@ -123,7 +123,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
   const [filterByValue, setFilterByValue] = useState(() => {
     const cachedValue = localStorage.getItem('filterByValue')
-    return cachedValue ? JSON.parse(cachedValue) : false
+    return cachedValue ? JSON.parse(cachedValue) : true
   })
 
   useEffect(() => {
