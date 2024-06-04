@@ -2,6 +2,7 @@
 
 ## Updates/Fixes
 - Update Asset table UI [275] (https://github.com/asgardex/asgardex-desktop/pull/276)
+- Add MayaMidgard editable url to Advanced [236] (https://github.com/asgardex/asgardex-desktop/pull/277)
 
 # 1.21.8 (2024-06-03)
 
