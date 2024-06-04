@@ -442,7 +442,7 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
                         successMsg={intl.formatMessage({ id: 'setting.mayanode.node.valid' })}
                       />
                     </Section>
-                    <Section className="ml-20px" title="MAYANode RPC">
+                    <Section className="ml-20px mt-10px" title="MAYANode RPC">
                       <EditableUrl
                         className="w-full xl:w-3/4"
                         url={mayanodeRpcUrl}

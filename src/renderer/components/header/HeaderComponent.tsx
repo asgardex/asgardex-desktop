@@ -20,6 +20,7 @@ import * as appRoutes from '../../routes/app'
 import * as poolsRoutes from '../../routes/pools'
 import * as walletRoutes from '../../routes/wallet'
 import { MidgardStatusRD, MidgardUrlRD, PriceRD, SelectedPricePoolAsset } from '../../services/midgard/types'
+import { MidgardStatusRD as MidgardStatusMayaRD, MidgardUrlRD as MidgardMayaUrlRD } from '../../services/midgard/types'
 import { MimirRD } from '../../services/thorchain/types'
 import { ChangeKeystoreWalletHandler, KeystoreState, KeystoreWalletsUI } from '../../services/wallet/types'
 import { isLocked } from '../../services/wallet/util'
@@ -64,8 +65,10 @@ export type Props = {
   reloadVolume24Price: FP.Lazy<void>
   selectedPricePoolAsset: SelectedPricePoolAsset
   midgardStatus: MidgardStatusRD
+  midgardMayaStatus: MidgardStatusMayaRD
   mimir: MimirRD
   midgardUrl: MidgardUrlRD
+  midgardMayaUrl: MidgardMayaUrlRD
   thorchainNodeUrl: string
   thorchainRpcUrl: string
   mayachainNodeUrl: string
@@ -83,6 +86,7 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
     runePrice: runePriceRD,
     mayaPrice: mayaPriceRD,
     midgardStatus: midgardStatusRD,
+    midgardMayaStatus: midgardMayaStatusRD,
     mimir: mimirRD,
     reloadRunePrice,
     reloadMayaPrice,
@@ -93,6 +97,7 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
     changeWalletHandler$,
     setSelectedPricePool,
     midgardUrl: midgardUrlRD,
+    midgardMayaUrl: midgardMayaUrlRD,
     thorchainNodeUrl,
     thorchainRpcUrl,
     mayachainNodeUrl,
@@ -265,8 +270,10 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
       <HeaderNetStatus
         isDesktopView={isDesktopView}
         midgardStatus={midgardStatusRD}
+        midgardMayaStatus={midgardMayaStatusRD}
         mimirStatus={mimirRD}
         midgardUrl={midgardUrlRD}
+        midgardMayaUrl={midgardMayaUrlRD}
         thorchainNodeUrl={thorchainNodeUrl}
         thorchainRpcUrl={thorchainRpcUrl}
         mayachainNodeUrl={mayachainNodeUrl}
@@ -276,8 +283,10 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
     [
       isDesktopView,
       midgardStatusRD,
+      midgardMayaStatusRD,
       mimirRD,
       midgardUrlRD,
+      midgardMayaUrlRD,
       thorchainNodeUrl,
       thorchainRpcUrl,
       mayachainNodeUrl,
