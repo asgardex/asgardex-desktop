@@ -20,7 +20,7 @@ export const PlaygroundView: React.FC = (): JSX.Element => {
   const { service: midgardMayaService } = useMidgardMayaContext()
 
   const poolState = useObservableState(
-    dex === 'THOR' ? midgardService.pools.poolsState$ : midgardMayaService.pools.poolsState$,
+    dex.chain === 'THOR' ? midgardService.pools.poolsState$ : midgardMayaService.pools.poolsState$,
     RD.initial
   )
 

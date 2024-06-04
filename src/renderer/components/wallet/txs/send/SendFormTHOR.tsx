@@ -13,6 +13,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
+import { Dex } from '../../../../../shared/api/types'
 import { AssetRuneNative } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
@@ -67,6 +68,7 @@ export type Props = {
   network: Network
   poolDetails: PoolDetailsMaya
   oPoolAddress: O.Option<PoolAddress>
+  dex: Dex
 }
 
 export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
@@ -84,7 +86,8 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
     validatePassword$,
     thorchainQuery,
     oPoolAddress,
-    network
+    network,
+    dex
   } = props
 
   const intl = useIntl()
@@ -427,7 +430,8 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
         asset,
         amount: amountToSend,
         memo: currentMemo,
-        hdMode
+        hdMode,
+        dex
       })
     )
   }, [
@@ -440,7 +444,8 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
     asset,
     amountToSend,
     currentMemo,
-    hdMode
+    hdMode,
+    dex
   ])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)

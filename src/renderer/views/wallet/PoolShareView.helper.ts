@@ -36,7 +36,7 @@ export const getSharesTotal = (
             // https://github.com/thorchain/asgardex-electron/issues/1163
             assetDecimal: 8 /* FIXME: see previous comment ^ */
           })
-          const poolData = dex === 'THOR' ? toPoolData(poolDetail) : toPoolDataMaya(poolDetail)
+          const poolData = dex.chain === 'THOR' ? toPoolData(poolDetail) : toPoolDataMaya(poolDetail)
           // 2. price asset + rune
           const assetDepositPrice = getValueOfAsset1InAsset2(assetShare, poolData, pricePoolData)
           const runeDepositPrice = getValueOfRuneInAsset(runeShare, pricePoolData)
@@ -71,7 +71,7 @@ export const getPoolShareTableData = (
             assetDecimal: 8 /* FIXME: see previous comment ^ */
           })
           const sharePercent = ShareHelpers.getPoolShare(units, poolDetail)
-          const poolData = dex === 'THOR' ? toPoolData(poolDetail) : toPoolDataMaya(poolDetail)
+          const poolData = dex.chain === 'THOR' ? toPoolData(poolDetail) : toPoolDataMaya(poolDetail)
           const assetDepositPrice = getValueOfAsset1InAsset2(assetShare, poolData, pricePoolData)
           const runeDepositPrice = getValueOfRuneInAsset(runeShare, pricePoolData)
 

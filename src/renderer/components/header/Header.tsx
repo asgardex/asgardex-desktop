@@ -41,8 +41,8 @@ export const Header: React.FC = (): JSX.Element => {
   const { mayaPriceRD, reloadMayaPrice } = useMayaPrice()
   const { volume24PriceRD, reloadVolume24Price } = useVolume24Price()
   const { volume24PriceRD: volume24PriceMayaRD, reloadVolume24Price: reloadVolume24PriceMaya } = useVolume24PriceMaya()
-  const volume24HrRD = dex === 'THOR' ? volume24PriceRD : volume24PriceMayaRD
-  const reloadVolume24HrRD = dex === 'THOR' ? reloadVolume24Price : reloadVolume24PriceMaya
+  const volume24HrRD = dex.chain === 'THOR' ? volume24PriceRD : volume24PriceMayaRD
+  const reloadVolume24HrRD = dex.chain === 'THOR' ? reloadVolume24Price : reloadVolume24PriceMaya
   const pricePools = usePricePools()
 
   const midgardStatusRD = useObservableState(healthStatus$, RD.initial)

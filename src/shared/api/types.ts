@@ -1,16 +1,37 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { FeeRate, Network, TxHash, TxParams } from '@xchainjs/xchain-client'
 import { Keystore } from '@xchainjs/xchain-crypto'
-import { Address, Chain } from '@xchainjs/xchain-util'
+import { AssetCacao, MAYA_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { Address, Asset, Chain } from '@xchainjs/xchain-util'
 import * as E from 'fp-ts/lib/Either'
 import * as O from 'fp-ts/Option'
 
+import { THORCHAIN_DECIMAL } from '../../renderer/helpers/assetHelper'
 import { EvmHDMode } from '../evm/types'
 import { Locale } from '../i18n/types'
 import { HDMode, WalletAddress } from '../wallet/types'
 import { IPCLedgerAddressesIO, KeystoreWallets, PoolsStorageEncoded } from './io'
 
-export type Dex = 'THOR' | 'MAYA'
+type DexDetails = {
+  chain: Chain
+  asset: Asset // Adjust as needed
+  decimals: number
+  url: string
+}
+export const thorDetails: Dex = {
+  chain: THORChain,
+  asset: AssetRuneNative,
+  decimals: THORCHAIN_DECIMAL,
+  url: 'thoryeild.com'
+}
+export const mayaDetails: Dex = {
+  chain: MAYAChain,
+  asset: AssetCacao,
+  decimals: MAYA_DECIMAL,
+  url: 'Mayascan.com'
+}
+export type Dex = DexDetails
 
 // A version number starting from `1` to avoid to load deprecated files
 export type StorageVersion = { version: string }

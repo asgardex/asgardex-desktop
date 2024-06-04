@@ -1,4 +1,3 @@
-import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { baseAmount, BaseAmount, bn, bnOrZero } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -18,7 +17,7 @@ export const getRuneShare = (
   const runeDepth = bnOrZero(pool.runeDepth)
   // Default is 1 as neutral element for division
   const poolUnits = bn(pool.units || 1)
-  const dexAssetDecimal = dex === 'THOR' ? THORCHAIN_DECIMAL : CACAO_DECIMAL
+  const dexAssetDecimal = dex.decimals
   // formula: liquidityUnits * runeDepth / poolUnits
   const runeShare = liquidityUnits
     .multipliedBy(runeDepth)

@@ -52,7 +52,7 @@ export const Footer: React.FC<Props> = (props): JSX.Element => {
         <Col span={24} md={12}>
           <Row justify={screens.md ? 'start' : 'center'}>
             <FooterIcon url={ExternalUrl.DOCS} onClick={clickIconHandler}>
-              {dex === 'THOR' ? (
+              {dex.chain === 'THOR' ? (
                 <ThorChainIcon />
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>

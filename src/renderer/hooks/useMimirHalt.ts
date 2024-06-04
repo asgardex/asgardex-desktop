@@ -48,8 +48,8 @@ export const useMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: MimirHalt
 
   const { dex } = useDex()
 
-  const lastDexBlockState = dex === 'THOR' ? thorchainLastblockState$ : mayachainLastblockState$
-  const dexMimir = dex === 'THOR' ? mimir$ : mayaMimir$
+  const lastDexBlockState = dex.chain === 'THOR' ? thorchainLastblockState$ : mayachainLastblockState$
+  const dexMimir = dex.chain === 'THOR' ? mimir$ : mayaMimir$
   const createMimirGroup = (keys: string[], mimir: Mimir, lastHeight?: number) => {
     return keys.reduce((acc, key) => {
       acc[key] = getMimirStatus(mimir[key], lastHeight)
@@ -66,7 +66,7 @@ export const useMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: MimirHalt
             sequenceTRD(mimirRD, chainLastblockRD),
             RD.map(([mimir, lastblockItems]) => {
               const lastHeight =
-                dex === 'THOR'
+                dex.chain === 'THOR'
                   ? getLastHeightThorchain(lastblockItems as LastblockItems)
                   : getLastHeightMaya(lastblockItems as LastblockItemsMaya)
               const mapChainToKey = (prefix: string, chain: string) => `${prefix}${chain}Chain`

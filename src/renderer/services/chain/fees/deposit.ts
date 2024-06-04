@@ -4,7 +4,6 @@ import * as O from 'fp-ts/lib/Option'
 import * as RxOp from 'rxjs/operators'
 
 import { Dex } from '../../../../shared/api/types'
-import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
 import { eqOAsset } from '../../../helpers/fp/eq'
 import { liveData } from '../../../helpers/rx/liveData'
 import { observableState } from '../../../helpers/stateHelper'
@@ -30,7 +29,7 @@ const reloadSymDepositFees = (asset: Asset, dex: Dex) => {
     _reloadSymDepositFees(O.some(asset))
   }
   // (2) Reload fees for RUNE
-  dex === 'THOR' ? THOR.reloadFees() : MAYA.reloadFees()
+  dex.chain === 'THOR' ? THOR.reloadFees() : MAYA.reloadFees()
   // (3) Reload fees for asset, which are provided via `inbound_addresses` endpoint
   reloadInboundAddresses()
 }
@@ -48,9 +47,9 @@ const symDepositFees$: SymDepositFeesHandler = (initialAsset, dex) => {
       )
       return FP.pipe(
         liveData.sequenceS({
-          runeInFee: poolInboundFee$(dex === 'THOR' ? AssetRuneNative : AssetCacao, ''),
+          runeInFee: poolInboundFee$(dex.asset, ''),
           assetInFee: poolInboundFee$(asset, ''),
-          runeOutFee: poolOutboundFee$(dex === 'THOR' ? AssetRuneNative : AssetCacao),
+          runeOutFee: poolOutboundFee$(dex.asset),
           assetOutFee: poolOutboundFee$(asset)
         }),
         liveData.map(({ runeInFee, assetInFee, runeOutFee, assetOutFee }) => ({

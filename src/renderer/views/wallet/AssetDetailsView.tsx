@@ -2,8 +2,6 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { XChainClient } from '@xchainjs/xchain-client'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/lib/Option'
 import * as NEA from 'fp-ts/NonEmptyArray'
@@ -43,8 +41,8 @@ export const AssetDetailsView: React.FC = (): JSX.Element => {
   } = useMidgardMayaContext()
   const { dex, changeDex } = useDex()
 
-  const haltedChains$ = dex === 'THOR' ? haltedChainsThor$ : haltedChainsMaya$
-  const haltedChainsRD = useObservableState(dex === 'THOR' ? haltedChains$ : haltedChainsMaya$, RD.initial)
+  const haltedChains$ = dex.chain === 'THOR' ? haltedChainsThor$ : haltedChainsMaya$
+  const haltedChainsRD = useObservableState(dex.chain === 'THOR' ? haltedChains$ : haltedChainsMaya$, RD.initial)
   const haltedChains = useMemo(() => {
     return RD.isSuccess(haltedChainsRD) ? haltedChainsRD.value : []
   }, [haltedChainsRD])
@@ -132,7 +130,7 @@ export const AssetDetailsView: React.FC = (): JSX.Element => {
   const { openExplorerTxUrl } = useOpenExplorerTxUrl(
     FP.pipe(
       oSelectedAsset,
-      O.map(({ asset }) => (asset.synth ? (dex === 'THOR' ? THORChain : MAYAChain) : asset.chain))
+      O.map(({ asset }) => (asset.synth ? dex.chain : asset.chain))
     )
   )
 
@@ -147,7 +145,7 @@ export const AssetDetailsView: React.FC = (): JSX.Element => {
           balances={walletBalances}
           asset={asset}
           loadTxsHandler={loadTxs}
-          reloadBalancesHandler={reloadBalancesByChain(asset.synth ? THORChain : asset.chain)}
+          reloadBalancesHandler={reloadBalancesByChain(asset.synth ? dex.chain : asset.chain)}
           openExplorerTxUrl={openExplorerTxUrl}
           openExplorerAddressUrl={openExplorerAddressUrlHandler}
           walletAddress={walletAddress}

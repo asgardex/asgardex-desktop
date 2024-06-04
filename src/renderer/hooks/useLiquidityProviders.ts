@@ -41,7 +41,7 @@ export const useLiquidityProviders = ({
 
   useEffect(() => {
     // Determine the correct function based on the current value of `dex`
-    const getLiquidityProviders = dex === 'THOR' ? getLiquidityProvidersThor : getLiquidityProvidersMaya
+    const getLiquidityProviders = dex.chain === 'THOR' ? getLiquidityProvidersThor : getLiquidityProvidersMaya
 
     // Create the observable and subscribe
     const subscription = getLiquidityProviders(asset).subscribe(setProviders)

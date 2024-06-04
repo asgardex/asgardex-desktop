@@ -40,7 +40,7 @@ export const useSymDepositAddresses = ({
   const [oAssetLedgerWalletAddress, setOAssetLedgerWalletAddress] = useState<O.Option<WalletAddress>>(O.none)
 
   useEffect(() => {
-    const subscription = FP.pipe(addressByChain$(dex)).subscribe(setODexWalletAddress)
+    const subscription = FP.pipe(addressByChain$(dex.chain)).subscribe(setODexWalletAddress)
     const oRouteAssetSubscription = FP.pipe(
       oAsset,
       O.fold(

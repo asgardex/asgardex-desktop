@@ -7,6 +7,7 @@ import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { thorDetails } from '../../../../shared/api/types'
 import { mockValidatePassword$ } from '../../../../shared/mock/wallet'
 import { AssetBSC, AssetBTC, AssetETH, AssetRuneNative } from '../../../../shared/utils/asset'
 import { WalletType } from '../../../../shared/wallet/types'
@@ -138,7 +139,7 @@ const defaultProps: SymDepositProps = {
   symAssetMismatch: RD.initial,
   openAsymDepositTool: () => console.log('openAsymDepositTool'),
   hidePrivateData: false,
-  dex: 'THOR'
+  dex: thorDetails
 }
 
 export const Default: Story = () => <SymDeposit {...defaultProps} />

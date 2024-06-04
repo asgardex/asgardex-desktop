@@ -5,6 +5,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 
+import { thorDetails } from '../../../shared/api/types'
 import { Locale } from '../../../shared/i18n/types'
 import { getMockRDValueFactory, RDStatus, rdStatusOptions } from '../../../shared/mock/rdByStatus'
 import { ChangeDexHandler, ChangeNetworkHandler, OnlineStatus } from '../../services/app/types'
@@ -56,7 +57,7 @@ const Template = ({
       version={'1.0.0'}
       network={Network.Mainnet}
       changeNetwork={changeNetwork}
-      dex="THOR"
+      dex={thorDetails}
       changeDex={changeDex}
       togglePrivate={togglePrivate}
       isPrivate={isPrivate}

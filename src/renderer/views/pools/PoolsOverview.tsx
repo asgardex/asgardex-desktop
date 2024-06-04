@@ -55,7 +55,7 @@ export const PoolsOverview: React.FC = (): JSX.Element => {
   } = useMidgardMayaContext()
 
   const [haltedChains] = useObservableState(
-    () => FP.pipe(dex === 'THOR' ? haltedChains$ : haltedChainsMaya$, RxOp.map(RD.getOrElse((): Chain[] => []))),
+    () => FP.pipe(dex.chain === 'THOR' ? haltedChains$ : haltedChainsMaya$, RxOp.map(RD.getOrElse((): Chain[] => []))),
     []
   )
 

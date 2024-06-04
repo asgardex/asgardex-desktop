@@ -349,7 +349,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     const amountValue = O.getOrElse(() => ZERO_BASE_AMOUNT)(amountToSend)
 
     const maxAmountPrice =
-      isPoolDetails(poolDetails) && dex === 'THOR'
+      isPoolDetails(poolDetails) && dex.chain === 'THOR'
         ? getPoolPriceValue({
             balance: { asset, amount: maxAmount },
             poolDetails,
@@ -361,7 +361,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
             pricePool: pricePoolMaya
           })
     const amountPrice =
-      isPoolDetails(poolDetails) && dex === 'THOR'
+      isPoolDetails(poolDetails) && dex.chain === 'THOR'
         ? getPoolPriceValue({
             balance: { asset, amount: amountValue },
             poolDetails,
@@ -373,7 +373,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
             pricePool: pricePoolMaya
           })
     const assetFeePrice =
-      isPoolDetails(poolDetails) && dex === 'THOR'
+      isPoolDetails(poolDetails) && dex.chain === 'THOR'
         ? getPoolPriceValue({
             balance: { asset: sourceChainAsset, amount: assetFee.baseAmount },
             poolDetails,
@@ -631,7 +631,8 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
               asset,
               amount,
               feeOption: selectedFeeOption,
-              memo: currentMemo
+              memo: currentMemo,
+              dex
             })
           )
           return true
@@ -648,7 +649,8 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       walletAddress,
       asset,
       selectedFeeOption,
-      currentMemo
+      currentMemo,
+      dex
     ]
   )
   const submitDepositTx = useCallback(

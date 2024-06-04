@@ -73,12 +73,15 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
     }
   } = useMidgardMayaContext()
 
-  const poolsPeriod = useObservableState(dex === 'THOR' ? poolsPeriod$ : poolsPeriodMaya$, GetPoolsPeriodEnum._30d)
+  const poolsPeriod = useObservableState(
+    dex.chain === 'THOR' ? poolsPeriod$ : poolsPeriodMaya$,
+    GetPoolsPeriodEnum._30d
+  )
 
   const { maxSynthPerPoolDepth: maxSynthPerPoolDepthRD, reloadConstants } = useSynthConstants()
 
   const refreshHandler = useCallback(() => {
-    if (dex === 'THOR') {
+    if (dex.chain === 'THOR') {
       reloadPools()
     } else {
       reloadMayaPools()
@@ -87,11 +90,11 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
   }, [dex, reloadConstants, reloadPools, reloadMayaPools])
 
   const selectedPricePool = useObservableState(
-    dex === 'THOR' ? selectedPricePool$ : selectedPricePoolMaya$,
-    dex === 'THOR' ? PoolHelpers.RUNE_PRICE_POOL : MAYA_PRICE_POOL
+    dex.chain === 'THOR' ? selectedPricePool$ : selectedPricePoolMaya$,
+    dex.chain === 'THOR' ? PoolHelpers.RUNE_PRICE_POOL : MAYA_PRICE_POOL
   )
 
-  const poolsRD = useObservableState(dex === 'THOR' ? poolsState$ : mayaPoolsState$, RD.pending)
+  const poolsRD = useObservableState(dex.chain === 'THOR' ? poolsState$ : mayaPoolsState$, RD.pending)
 
   // store previous data of pools to render these while reloading
   const previousSavers = useRef<O.Option<SaversTableRowsData>>(O.none)
@@ -193,7 +196,7 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
       })
 
       const disabled =
-        disableAllPoolActions || disableTradingActions || disablePoolActions || walletLocked || dex === 'MAYA'
+        disableAllPoolActions || disableTradingActions || disablePoolActions || walletLocked || dex.chain === 'MAYA'
 
       const onClickHandler = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         event.preventDefault()
@@ -234,7 +237,7 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
       Shared.assetColumn(intl.formatMessage({ id: 'common.asset' })),
       depthColumn<SaversTableRowData>(selectedPricePool.asset),
       filledColumn<SaversTableRowData>(),
-      aprColumn<SaversTableRowData>(poolsPeriod, dex),
+      aprColumn<SaversTableRowData>(poolsPeriod, dex.chain),
       btnColumn()
     ],
     [

@@ -122,7 +122,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
   })
 
   const getChainWeight = (chain: Chain, dex: Dex) => {
-    const weights = dex === 'THOR' ? CHAIN_WEIGHTS_THOR : CHAIN_WEIGHTS_MAYA
+    const weights = dex.chain === 'THOR' ? CHAIN_WEIGHTS_THOR : CHAIN_WEIGHTS_MAYA
     return isEnabledChain(chain) ? weights[chain] : Infinity
   }
   const getUniqueChainBalances = (balances: ChainBalances) => {

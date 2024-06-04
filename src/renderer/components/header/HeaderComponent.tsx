@@ -10,7 +10,7 @@ import { useIntl } from 'react-intl'
 import { useMatch, Link, useNavigate, useLocation } from 'react-router-dom'
 import { palette, size } from 'styled-theme'
 
-import { Dex } from '../../../shared/api/types'
+import { Dex, mayaDetails, thorDetails } from '../../../shared/api/types'
 import { ReactComponent as CloseIcon } from '../../assets/svg/icon-close.svg'
 import { ReactComponent as MenuIcon } from '../../assets/svg/icon-menu.svg'
 import { ReactComponent as SwapIcon } from '../../assets/svg/icon-swap.svg'
@@ -325,7 +325,7 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
 
   const dexPrice = useMemo(() => {
     // Use 'dex' to determine which DEX prices to use
-    if (dex === 'THOR') {
+    if (dex.chain === 'THOR') {
       return {
         price: runePriceRD,
         reloadPrice: reloadRunePrice
@@ -338,7 +338,7 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
     }
   }, [dex, runePriceRD, reloadRunePrice, mayaPriceRD, reloadMayaPrice])
   const changeDexHandler = useCallback(() => {
-    changeDex(dex === 'THOR' ? 'MAYA' : 'THOR')
+    changeDex(dex.chain === 'THOR' ? mayaDetails : thorDetails)
   }, [changeDex, dex])
   return (
     <>

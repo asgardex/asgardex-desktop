@@ -54,8 +54,8 @@ export const ShareView: React.FC<Props> = ({
     pools: { selectedPricePoolAsset$: selectedPricePoolAssetMaya$, selectedPricePool$: selectedPricePoolMaya$ }
   } = midgardMayaService
 
-  const selectedPricePoolAsset$ = dex === 'THOR' ? selectedPricePoolAssetThor$ : selectedPricePoolAssetMaya$
-  const selectedPricePool$ = dex === 'THOR' ? selectedPricePoolThor$ : selectedPricePoolMaya$
+  const selectedPricePoolAsset$ = dex.chain === 'THOR' ? selectedPricePoolAssetThor$ : selectedPricePoolAssetMaya$
+  const selectedPricePool$ = dex.chain === 'THOR' ? selectedPricePoolThor$ : selectedPricePoolMaya$
 
   const intl = useIntl()
 
@@ -63,7 +63,7 @@ export const ShareView: React.FC<Props> = ({
 
   const { poolData: pricePoolData } = useObservableState(
     selectedPricePool$,
-    dex === 'THOR' ? RUNE_PRICE_POOL : MAYA_PRICE_POOL
+    dex.chain === 'THOR' ? RUNE_PRICE_POOL : MAYA_PRICE_POOL
   )
 
   const renderPoolShareReady = useCallback(

@@ -2,6 +2,7 @@ import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
 
+import { thorDetails } from '../../../../shared/api/types'
 import { AssetBSC, AssetETH } from '../../../../shared/utils/asset'
 import { AssetUSDCBSC, AssetUSDTERC20Testnet, ZERO_BASE_AMOUNT } from '../../../const'
 import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
@@ -16,19 +17,19 @@ import {
 describe('stake/Withdraw.helper', () => {
   describe('getWithdrawAmounts', () => {
     it('zero percentes', () => {
-      const withdraws = getWithdrawAmounts(baseAmount('193011422'), baseAmount('3202499'), 0, 'THOR')
+      const withdraws = getWithdrawAmounts(baseAmount('193011422'), baseAmount('3202499'), 0, thorDetails)
       expect(eqBaseAmount.equals(withdraws.rune, ZERO_BASE_AMOUNT)).toBeTruthy()
       expect(eqBaseAmount.equals(withdraws.asset, ZERO_BASE_AMOUNT)).toBeTruthy()
     })
 
     it('50 percentes', () => {
-      const withdraws = getWithdrawAmounts(baseAmount('193011422'), baseAmount('3202499'), 50, 'THOR')
+      const withdraws = getWithdrawAmounts(baseAmount('193011422'), baseAmount('3202499'), 50, thorDetails)
       expect(eqBaseAmount.equals(withdraws.rune, baseAmount(96505711))).toBeTruthy()
       expect(eqBaseAmount.equals(withdraws.asset, baseAmount(1601250))).toBeTruthy()
     })
 
     it('100 percentes', () => {
-      const withdraws = getWithdrawAmounts(baseAmount('193011422'), baseAmount('3202499'), 100, 'THOR')
+      const withdraws = getWithdrawAmounts(baseAmount('193011422'), baseAmount('3202499'), 100, thorDetails)
       expect(eqBaseAmount.equals(withdraws.rune, baseAmount(193011422))).toBeTruthy()
       expect(eqBaseAmount.equals(withdraws.asset, baseAmount(3202499))).toBeTruthy()
     })

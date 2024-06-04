@@ -43,7 +43,7 @@ export const Title = styled(Text)`
   width: auto;
   padding: 0;
 `
-export const Dex = styled(Text)<{ dex: 'THOR' | 'MAYA' }>`
+export const Dex = styled(Text)<{ dex: string }>`
   text-transform: uppercase;
   font-family: 'MainFontBold';
   font-size: 12px;

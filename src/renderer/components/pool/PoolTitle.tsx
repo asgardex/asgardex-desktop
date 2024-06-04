@@ -8,7 +8,6 @@ import * as FP from 'fp-ts/lib/function'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
 import { Action as ActionButtonAction, ActionButton } from '../../components/uielements/button/ActionButton'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { loadingString } from '../../helpers/stringHelper'
@@ -78,7 +77,7 @@ export const PoolTitle: React.FC<Props> = ({
         callback: () => {
           navigate(
             poolsRoutes.swap.path({
-              source: assetToString(dex === 'THOR' ? AssetRuneNative : AssetCacao),
+              source: assetToString(dex.asset),
               target: assetToString(asset),
               sourceWalletType: DEFAULT_WALLET_TYPE,
               targetWalletType: DEFAULT_WALLET_TYPE

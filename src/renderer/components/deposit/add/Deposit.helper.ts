@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { Asset, baseAmount, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
@@ -79,7 +78,7 @@ export const maxRuneAmountToDeposit = ({
   const maxAssetBalance = maxAssetBalanceToDeposit(assetBalance, assetFees.inFee)
   // asset balance needs to have `1e8` decimal to be in common with pool data (always `1e8`)
   const maxAssetBalance1e8 = to1e8BaseAmount(maxAssetBalance)
-  const decimal = dex === 'THOR' ? THORCHAIN_DECIMAL : CACAO_DECIMAL
+  const decimal = dex.decimals
   const maxRuneAmount = baseAmount(
     poolRuneBalance
       .amount()

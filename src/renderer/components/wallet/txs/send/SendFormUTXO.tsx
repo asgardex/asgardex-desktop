@@ -343,7 +343,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
   // useEffect to fetch data from query
   useEffect(() => {
     const maxAmountPrice =
-      isPoolDetails(poolDetails) && dex === 'THOR'
+      isPoolDetails(poolDetails) && dex.chain === 'THOR'
         ? getPoolPriceValue({
             balance: { asset, amount: maxAmount },
             poolDetails,
@@ -355,7 +355,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
             pricePool
           })
     const amountPrice =
-      isPoolDetails(poolDetails) && dex === 'THOR'
+      isPoolDetails(poolDetails) && dex.chain === 'THOR'
         ? getPoolPriceValue({
             balance: { asset, amount: amountToSend },
             poolDetails,
@@ -367,7 +367,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
             pricePool
           })
     const assetFeePrice =
-      isPoolDetails(poolDetails) && dex === 'THOR'
+      isPoolDetails(poolDetails) && dex.chain === 'THOR'
         ? getPoolPriceValue({
             balance: { asset, amount: assetFee.baseAmount },
             poolDetails,
@@ -516,7 +516,8 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
         asset,
         amount: amountToSend,
         feeOption: selectedFeeOptionKey,
-        memo: currentMemo
+        memo: currentMemo,
+        dex
       })
     )
   }, [
@@ -530,7 +531,8 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     asset,
     amountToSend,
     selectedFeeOptionKey,
-    currentMemo
+    currentMemo,
+    dex
   ])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)

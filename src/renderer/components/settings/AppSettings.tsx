@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Dropdown, Collapse } from 'antd'
 import { MenuProps } from 'antd/lib/menu'
 import { ItemType } from 'antd/lib/menu/hooks/useItems'
@@ -165,7 +167,10 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
   )
   const changeDexHandler: MenuProps['onClick'] = useCallback(
     ({ key }: { key: string }) => {
-      changeDex(key as Dex)
+      const newDex = AVAILABLE_DEXS.find((dex) => dex.chain === key)
+      if (newDex) {
+        changeDex(newDex)
+      }
     },
     [changeDex]
   )
@@ -183,10 +188,10 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
     }
   }, [])
   const dexTextColor = useCallback((dex: Dex) => {
-    switch (dex) {
-      case 'THOR':
+    switch (dex.chain) {
+      case THORChain:
         return 'text-turquoise'
-      case 'MAYA':
+      case MAYAChain:
         return 'text-cyanblue'
       default:
         return 'text-text2 dark:text-text2'
@@ -225,12 +230,12 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
             label: (
               <div
                 className={`flex items-center px-10px py-[8px] ${dexTextColor(n)} text-16 uppercase ${
-                  n === dex ? 'font-mainSemiBold' : 'font-main'
+                  n.chain === dex.chain ? 'font-mainSemiBold' : 'font-main'
                 }`}>
-                {n}
+                {n.chain}
               </div>
             ),
-            key: n
+            key: n.chain
           }))
         )}
       />
@@ -252,7 +257,7 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
     () => (
       <Dropdown overlay={dexMenu} trigger={['click']} placement="bottom">
         <div className="flex cursor-pointer justify-center ">
-          <h3 className={`font-main text-16 uppercase ${dexTextColor(dex)}`}>{dex}</h3>
+          <h3 className={`font-main text-16 uppercase ${dexTextColor(dex)}`}>{dex.chain}</h3>
           <DownIcon />
         </div>
       </Dropdown>

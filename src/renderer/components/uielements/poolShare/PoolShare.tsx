@@ -1,6 +1,5 @@
 import React, { RefObject, useCallback, useMemo, useRef } from 'react'
 
-import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { Address } from '@xchainjs/xchain-util'
 import {
   formatBN,
@@ -18,8 +17,6 @@ import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
 import { Dex } from '../../../../shared/api/types'
-import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
-import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { AssetWithDecimal } from '../../../types/asgardex'
 import { TooltipAddress } from '../common/Common.styles'
 import * as Styled from './PoolShare.styles'
@@ -60,8 +57,8 @@ export const PoolShare: React.FC<Props> = (props): JSX.Element => {
 
   const intl = useIntl()
 
-  const dexAsset = dex === 'THOR' ? AssetRuneNative : AssetCacao
-  const dexAssetDecimal = dex === 'THOR' ? THORCHAIN_DECIMAL : CACAO_DECIMAL
+  const dexAsset = dex.asset
+  const dexAssetDecimal = dex.decimals
 
   const { asset } = assetWD
 

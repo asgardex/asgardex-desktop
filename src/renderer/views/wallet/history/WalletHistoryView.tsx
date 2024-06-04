@@ -1,8 +1,6 @@
 import React, { useMemo, useCallback } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Row } from 'antd'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/lib/function'
@@ -63,9 +61,9 @@ export const WalletHistoryView: React.FC = () => {
     loading: loadingHistoryMaya
   } = useMayaMidgardHistoryActions(10)
 
-  const requestParams = dex === 'THOR' ? requestParamsThor : requestParamsMaya
+  const requestParams = dex.chain === 'THOR' ? requestParamsThor : requestParamsMaya
 
-  const { openExplorerTxUrl } = useOpenExplorerTxUrl(dex === 'THOR' ? O.some(THORChain) : O.some(MAYAChain))
+  const { openExplorerTxUrl } = useOpenExplorerTxUrl(O.some(dex.chain))
 
   const keystoreAddresses$ = useMemo<Rx.Observable<WalletAddresses>>(
     () =>
@@ -103,10 +101,10 @@ export const WalletHistoryView: React.FC = () => {
           FP.pipe(
             addresses,
             // Get first address by default
-            A.findFirst((address) => address.chain === dex),
+            A.findFirst((address) => address.chain === dex.chain),
             O.map(({ address }) => {
               const hist =
-                dex === 'THOR' ? loadHistory({ addresses: [address] }) : loadHistoryMaya({ addresses: [address] })
+                dex.chain === 'THOR' ? loadHistory({ addresses: [address] }) : loadHistoryMaya({ addresses: [address] })
               return hist
             })
           )
@@ -139,7 +137,7 @@ export const WalletHistoryView: React.FC = () => {
     [addresses, requestParams.addresses]
   )
 
-  const openAddressUrl = useOpenAddressUrl(dex === 'THOR' ? O.some(THORChain) : O.some(MAYAChain))
+  const openAddressUrl = useOpenAddressUrl(O.some(dex.chain))
 
   const openAddressUrlHandler = useCallback(() => {
     FP.pipe(
@@ -161,8 +159,8 @@ export const WalletHistoryView: React.FC = () => {
         network={network}
         availableFilters={HISTORY_FILTERS}
         currentFilter={currentFilter}
-        setFilter={dex === 'THOR' ? setFilter : setFilterMaya}
-        onWalletAddressChanged={dex === 'THOR' ? setAddress : setAddressMaya}
+        setFilter={dex.chain === 'THOR' ? setFilter : setFilterMaya}
+        onWalletAddressChanged={dex.chain === 'THOR' ? setAddress : setAddressMaya}
         onClickAddressIcon={openAddressUrlHandler}
         disabled={!RD.isSuccess(historyPage)}
         dex={dex}
@@ -187,7 +185,7 @@ export const WalletHistoryView: React.FC = () => {
     <>
       <Row justify="end" style={{ marginBottom: '20px' }}>
         <RefreshButton
-          onClick={dex === 'THOR' ? reloadHistory : reloadHistoryMaya}
+          onClick={dex.chain === 'THOR' ? reloadHistory : reloadHistoryMaya}
           disabled={loadingHistory || loadingHistoryMaya}
         />
       </Row>
@@ -196,11 +194,11 @@ export const WalletHistoryView: React.FC = () => {
         network={network}
         headerContent={headerContent}
         currentPage={requestParams.page + 1}
-        historyPageRD={dex === 'THOR' ? historyPage : historyPageMaya}
-        prevHistoryPage={dex === 'THOR' ? prevHistoryPage : prevHistoryPageMaya}
+        historyPageRD={dex.chain === 'THOR' ? historyPage : historyPageMaya}
+        prevHistoryPage={dex.chain === 'THOR' ? prevHistoryPage : prevHistoryPageMaya}
         openExplorerTxUrl={openExplorerTxUrl}
-        changePaginationHandler={dex === 'THOR' ? setPage : setPageMaya}
-        reloadHistory={dex === 'THOR' ? reloadHistory : reloadHistoryMaya}
+        changePaginationHandler={dex.chain === 'THOR' ? setPage : setPageMaya}
+        reloadHistory={dex.chain === 'THOR' ? reloadHistory : reloadHistoryMaya}
       />
     </>
   )

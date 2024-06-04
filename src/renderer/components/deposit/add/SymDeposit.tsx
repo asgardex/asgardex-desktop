@@ -8,7 +8,6 @@ import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { isAssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
@@ -55,7 +54,6 @@ import {
   isRuneNativeAsset,
   isUSDAsset,
   max1e8BaseAmount,
-  THORCHAIN_DECIMAL,
   to1e8BaseAmount
 } from '../../../helpers/assetHelper'
 import { getChainAsset, isAvaxChain, isBscChain, isEthChain } from '../../../helpers/chainHelper'
@@ -231,8 +229,8 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
   const { chain } = asset
 
-  const dexAsset = dex === 'THOR' ? AssetRuneNative : AssetCacao
-  const dexAssetDecimal = dex === 'THOR' ? THORCHAIN_DECIMAL : CACAO_DECIMAL
+  const dexAsset = dex.asset
+  const dexAssetDecimal = dex.decimals
 
   const prevAsset = useRef<O.Option<Asset>>(O.none)
 
@@ -261,7 +259,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     // Merge duplications
     (assets) => unionAssets(assets)(assets),
     // Filter RUNE | CACAO out - not selectable on asset side
-    A.filter(P.not(dex === 'THOR' ? isRuneNativeAsset : isCacaoAsset))
+    A.filter(P.not(dex.chain === 'THOR' ? isRuneNativeAsset : isCacaoAsset))
   )
 
   // can be Rune or cacao depending on dex selected
@@ -360,7 +358,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
   const priceRuneAmountToDepositMax1e8: AssetWithAmount = useMemo(() => {
     const result =
-      dex === 'THOR'
+      dex.chain === 'THOR'
         ? FP.pipe(
             isPoolDetails(poolDetails)
               ? PoolHelpers.getPoolPriceValue({
@@ -585,7 +583,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
   const oPriceRuneInFee: O.Option<AssetWithAmount> = useMemo(() => {
     const amount = depositFees.rune.inFee
 
-    return dex === 'THOR'
+    return dex.chain === 'THOR'
       ? FP.pipe(
           isPoolDetails(poolDetails)
             ? PoolHelpers.getPoolPriceValue({
@@ -648,7 +646,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
   const oPriceRuneOutFee: O.Option<AssetWithAmount> = useMemo(() => {
     const amount = depositFees.rune.outFee
 
-    return dex === 'THOR'
+    return dex.chain === 'THOR'
       ? FP.pipe(
           isPoolDetails(poolDetails)
             ? PoolHelpers.getPoolPriceValue({
@@ -712,7 +710,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     const asset = depositFees.asset.asset
     const amount = depositFees.asset.inFee
 
-    return dex === 'THOR'
+    return dex.chain === 'THOR'
       ? FP.pipe(
           isPoolDetails(poolDetails)
             ? PoolHelpers.getPoolPriceValue({
@@ -776,7 +774,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     const asset = depositFees.asset.asset
     const amount = depositFees.asset.outFee
 
-    return dex === 'THOR'
+    return dex.chain === 'THOR'
       ? FP.pipe(
           isPoolDetails(poolDetails)
             ? PoolHelpers.getPoolPriceValue({
@@ -1071,7 +1069,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
   const priceAmountToSwapMax1e8: CryptoAmount = useMemo(() => {
     const result =
-      dex === 'THOR'
+      dex.chain === 'THOR'
         ? FP.pipe(
             isPoolDetails(poolDetails)
               ? PoolHelpers.getPoolPriceValue({
@@ -1097,7 +1095,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
   const priceRuneAmountToDepsoitMax1e8: CryptoAmount = useMemo(() => {
     const result =
-      dex === 'THOR'
+      dex.chain === 'THOR'
         ? FP.pipe(
             isPoolDetails(poolDetails)
               ? PoolHelpers.getPoolPriceValue({
@@ -1146,7 +1144,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
   const priceAssetAmountToDepositMax1e8: AssetWithAmount = useMemo(() => {
     const result =
-      dex === 'THOR'
+      dex.chain === 'THOR'
         ? FP.pipe(
             isPoolDetails(poolDetails)
               ? PoolHelpers.getPoolPriceValue({
@@ -1939,7 +1937,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     const render = ({ dexAsset, asset: hasAsset }: LiquidityProviderHasAsymAssets, loading: boolean) => {
       const assets = FP.pipe(
         // Add optional assets to list
-        [dexAsset ? O.some(dex === 'THOR' ? AssetRuneNative : AssetCacao) : O.none, hasAsset ? O.some(asset) : O.none],
+        [dexAsset ? O.some(dex.asset) : O.none, hasAsset ? O.some(asset) : O.none],
         // filter `None` out from list
         A.filterMap(FP.identity)
       )
@@ -2411,7 +2409,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
           <div>
             <AssetInput
               className="w-full"
-              title={intl.formatMessage({ id: 'deposit.add.runeSide' }, { dex: dex })}
+              title={intl.formatMessage({ id: 'deposit.add.runeSide' }, { dex: dex.chain })}
               amount={{ amount: runeAmountToDeposit, asset: dexAsset }}
               priceAmount={priceRuneAmountToDepositMax1e8}
               assets={[]}
@@ -2536,11 +2534,11 @@ export const SymDeposit: React.FC<Props> = (props) => {
             {showDetails && (
               <>
                 <div className="flex w-full justify-between pl-10px text-[12px]">
-                  <div>{intl.formatMessage({ id: 'common.fee.inbound.rune' }, { dex: dex })}</div>
+                  <div>{intl.formatMessage({ id: 'common.fee.inbound.rune' }, { dex: dex.chain })}</div>
                   <div>{priceRuneInFeeLabel}</div>
                 </div>
                 <div className="flex w-full justify-between pl-10px text-[12px]">
-                  <div>{intl.formatMessage({ id: 'common.fee.outbound.rune' }, { dex: dex })}</div>
+                  <div>{intl.formatMessage({ id: 'common.fee.outbound.rune' }, { dex: dex.chain })}</div>
                   <div>{priceRuneOutFeeLabel}</div>
                 </div>
                 <div className="flex w-full justify-between pl-10px text-[12px]">
@@ -2572,7 +2570,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
                 </div>
                 {/* rune sender address */}
                 <div className="flex w-full items-center justify-between pl-10px text-[12px]">
-                  <div>{intl.formatMessage({ id: 'common.rune' }, { dex: dex })}</div>
+                  <div>{intl.formatMessage({ id: 'common.rune' }, { dex: dex.chain })}</div>
                   <div className="truncate pl-20px text-[13px] normal-case leading-normal">
                     {FP.pipe(
                       oDexAssetWB,
@@ -2632,7 +2630,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
                 </div>
                 {/* rune sender balance */}
                 <div className="flex w-full items-center justify-between pl-10px text-[12px]">
-                  <div>{intl.formatMessage({ id: 'common.rune' }, { dex: dex })}</div>
+                  <div>{intl.formatMessage({ id: 'common.rune' }, { dex: dex.chain })}</div>
                   <div className="truncate pl-20px text-[13px] normal-case leading-normal">{dexAssetBalanceLabel}</div>
                 </div>
                 {/* asset sender balance */}
@@ -2658,7 +2656,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
                       (memo) => (
                         <CopyLabel
                           className="whitespace-nowrap pl-0 uppercase text-gray2 dark:text-gray2d"
-                          label={intl.formatMessage({ id: 'common.transaction.short.rune' }, { dex: dex })}
+                          label={intl.formatMessage({ id: 'common.transaction.short.rune' }, { dex: dex.chain })}
                           key="memo-copy"
                           textToCopy={memo}
                         />
