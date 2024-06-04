@@ -49,7 +49,7 @@ describe('chain', () => {
       expect(chainToString(BSCChain)).toEqual('BNB Chain (BSC)')
     })
     it('GAIA', () => {
-      expect(chainToString(GAIAChain)).toEqual('Cosmos')
+      expect(chainToString(GAIAChain)).toEqual('GAIA')
     })
     it('LTC', () => {
       expect(chainToString(LTCChain)).toEqual('Litecoin')

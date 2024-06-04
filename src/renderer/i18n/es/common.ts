@@ -25,7 +25,7 @@ const common: CommonMessages = {
   'common.address.self': 'Auto',
   'common.to': 'A',
   'common.from': 'En',
-  'common.filterValue': 'Filtrar valores inferiores a 1$',
+  'common.filterValue': 'Filtrar saldos vacíos',
   'common.amount': 'Importe',
   'common.coin': 'Moneda',
   'common.collapseAll': 'Contraer todo',
