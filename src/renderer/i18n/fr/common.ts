@@ -24,7 +24,7 @@ const common: CommonMessages = {
   'common.address.self': 'Moi',
   'common.to': 'À',
   'common.from': 'De',
-  'common.filterValue': 'Filtrer les valeurs inférieures à 1$',
+  'common.filterValue': 'Filtrer les soldes vides',
   'common.amount': 'Montant',
   'common.coin': 'Coin',
   'common.collapseAll': 'Réduire tout',

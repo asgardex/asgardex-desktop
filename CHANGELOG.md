@@ -1,4 +1,9 @@
-# 1.21.8 (2024-tba)
+# 1.21.9 (2024-tba)
+
+## Updates/Fixes
+- Update Asset table UI [275] (https://github.com/asgardex/asgardex-desktop/pull/276)
+
+# 1.21.8 (2024-06-03)
 
 ## Updates/Fixes
 

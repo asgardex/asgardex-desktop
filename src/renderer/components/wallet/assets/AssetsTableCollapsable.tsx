@@ -29,7 +29,7 @@ import { Dex } from '../../../../shared/api/types'
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
-import { AssetUSDC, DEFAULT_WALLET_TYPE } from '../../../const'
+import { AssetUSDC, DEFAULT_WALLET_TYPE, ZERO_BASE_AMOUNT } from '../../../const'
 import { isCacaoAsset, isMayaAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
@@ -500,6 +500,20 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
             return <ErrorView title={msg} />
           },
           (balances) => {
+            // Check if balances array is empty
+            if (balances.length === 0) {
+              // Mock data to show at least one asset with zero baseAmount
+              balances = [
+                {
+                  asset: getChainAsset(chain),
+                  amount: ZERO_BASE_AMOUNT,
+                  walletAddress: 'mock-address',
+                  walletType: 'keystore',
+                  walletIndex: 0,
+                  hdMode: 'default'
+                }
+              ]
+            }
             let sortedBalances = balances.sort((a, b) => b.amount.amount().minus(a.amount.amount()).toNumber())
 
             if (filterByValue) {
@@ -511,11 +525,11 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
                   isChainOfMaya(asset.chain) || isCacaoAsset(asset)
                     ? getPoolPriceValueM({ balance: { asset, amount }, poolDetails: poolDetailsMaya, pricePool })
                     : getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool })
-
-                return (
+                const result =
                   O.isSome(usdValue) &&
-                  new CryptoAmount(baseAmount(usdValue.value.amount()), AssetUSDC).assetAmount.gt(1)
-                )
+                  usdValue.value.amount().gt(0) &&
+                  new CryptoAmount(baseAmount(usdValue.value.amount()), AssetUSDC)
+                return result
               })
             }
             if ((dex === 'MAYA' && chain === 'THOR') || (dex === 'THOR' && chain === 'MAYA')) {
@@ -551,8 +565,9 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           () => intl.formatMessage({ id: 'common.loading' }),
           (_: ApiError) => intl.formatMessage({ id: 'common.error' }),
           (balances) => {
-            const length = balances.length
-            const i18nKey = length <= 1 ? 'common.asset' : 'common.assets'
+            const nonZeroBalances = balances.filter((balance: Balance) => balance.amount.gt(0))
+            const length = nonZeroBalances.length
+            const i18nKey = length === 1 ? 'common.asset' : 'common.assets'
             return `(${length} ${intl.formatMessage({ id: i18nKey })})`
           }
         )

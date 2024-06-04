@@ -87,19 +87,22 @@ export const AssetsView: React.FC = (): JSX.Element => {
               },
               (walletBalances) => {
                 const totalForChain = walletBalances.reduce((acc, { asset, amount }) => {
-                  let value = getPoolPriceValue({
-                    balance: { asset, amount },
-                    poolDetails: RD.isSuccess(poolsStateRD) ? poolsStateRD.value.poolDetails : [],
-                    pricePool: selectedPricePool
-                  })
-                  if (O.isNone(value)) {
-                    value = getPoolPriceValueM({
+                  if (amount.amount().gt(0)) {
+                    let value = getPoolPriceValue({
                       balance: { asset, amount },
-                      poolDetails: RD.isSuccess(poolsStateMayaRD) ? poolsStateMayaRD.value.poolDetails : [],
-                      pricePool: selectedPricePoolMaya
+                      poolDetails: RD.isSuccess(poolsStateRD) ? poolsStateRD.value.poolDetails : [],
+                      pricePool: selectedPricePool
                     })
+                    if (O.isNone(value)) {
+                      value = getPoolPriceValueM({
+                        balance: { asset, amount },
+                        poolDetails: RD.isSuccess(poolsStateMayaRD) ? poolsStateMayaRD.value.poolDetails : [],
+                        pricePool: selectedPricePoolMaya
+                      })
+                    }
+                    acc = acc.plus(to1e8BaseAmount(O.getOrElse(() => ZERO_BASE_AMOUNT)(value)))
                   }
-                  return acc.plus(to1e8BaseAmount(O.getOrElse(() => ZERO_BASE_AMOUNT)(value)))
+                  return acc
                 }, ZERO_BASE_AMOUNT)
                 balancesByChain[`${chainBalance.chain}:${chainBalance.walletType}`] = totalForChain
               }

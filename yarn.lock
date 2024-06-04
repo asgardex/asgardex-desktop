@@ -9133,9 +9133,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-mayachain@npm:1.0.9":
-  version: 1.0.9
-  resolution: "@xchainjs/xchain-mayachain@npm:1.0.9"
+"@xchainjs/xchain-mayachain@npm:1.0.10":
+  version: 1.0.10
+  resolution: "@xchainjs/xchain-mayachain@npm:1.0.10"
   dependencies:
     "@cosmjs/amino": "npm:0.31.1"
     "@cosmjs/crypto": "npm:0.31.1"
@@ -9151,7 +9151,7 @@ __metadata:
     cosmjs-types: "npm:0.8.0"
     protobufjs: "npm:6.11.4"
     secp256k1: "npm:^5.0.0"
-  checksum: 10/2978836de70881ec3b70c2bc776f5787ee8ea2e43e3159217bbb68b276387589f4defe7870d8f9297040645702908a6384ada4c09ca88fa79e361e9b3fe5717b
+  checksum: 10/fdc47a07f5b3ccfba528dc4b209ce4cd24529a21c1c1f004f0bd27d8bd88dd1c50244ad393f93f18832cd33e463d1f37e2b801d3874ddb18760c37c8c449ae45
   languageName: node
   linkType: hard
 
@@ -10026,7 +10026,7 @@ __metadata:
     "@xchainjs/xchain-evm-providers": "npm:^0.1.12"
     "@xchainjs/xchain-kujira": "npm:0.1.20"
     "@xchainjs/xchain-litecoin": "npm:0.14.5"
-    "@xchainjs/xchain-mayachain": "npm:1.0.9"
+    "@xchainjs/xchain-mayachain": "npm:1.0.10"
     "@xchainjs/xchain-mayachain-query": "npm:0.1.15"
     "@xchainjs/xchain-mayamidgard": "npm:0.1.4"
     "@xchainjs/xchain-mayamidgard-query": "npm:0.1.13"
