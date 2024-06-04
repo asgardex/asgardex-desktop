@@ -17,6 +17,7 @@ type StoryArgs = {
   goToReleasePage: (version: string) => void
   changeLocale: (locale: Locale) => void
   onChangeMidgardUrl: (url: string) => void
+  onChangeMidgardMayaUrl: (url: string) => void
   onChangeThornodeNodeUrl: (url: string) => void
   onChangeThornodeRpcUrl: (url: string) => void
   onChangeMayanodeNodeUrl: (url: string) => void
@@ -37,6 +38,7 @@ const Template = ({
   checkForUpdates,
   goToReleasePage,
   onChangeMidgardUrl,
+  onChangeMidgardMayaUrl,
   onChangeThornodeRpcUrl,
   onChangeThornodeNodeUrl,
   onChangeMayanodeRpcUrl,
@@ -66,16 +68,19 @@ const Template = ({
       collapsed={collapsed}
       toggleCollapse={() => console.log('toggle')}
       midgardUrl={RD.pending}
+      midgardMayaUrl={RD.pending}
       thornodeNodeUrl="thornode-node-url"
       thornodeRpcUrl="thornode-rpc-url"
       mayanodeNodeUrl="mayanode-node-url"
       mayanodeRpcUrl="mayanode-rpc-url"
       onChangeMidgardUrl={onChangeMidgardUrl}
+      onChangeMidgardMayaUrl={onChangeMidgardMayaUrl}
       onChangeThornodeRpcUrl={onChangeThornodeRpcUrl}
       onChangeThornodeNodeUrl={onChangeThornodeNodeUrl}
       onChangeMayanodeRpcUrl={onChangeMayanodeRpcUrl}
       onChangeMayanodeNodeUrl={onChangeMayanodeNodeUrl}
       checkMidgardUrl$={(url, _) => Rx.of(RD.success(url))}
+      checkMidgardMayaUrl$={(url, _) => Rx.of(RD.success(url))}
       checkThornodeNodeUrl$={(url, _) => Rx.of(RD.success(url))}
       checkThornodeRpcUrl$={(url, _) => Rx.of(RD.success(url))}
       checkMayanodeNodeUrl$={(url, _) => Rx.of(RD.success(url))}
@@ -107,6 +112,9 @@ const meta: Meta<typeof Template> = {
     },
     onChangeMidgardUrl: {
       action: 'onChangeMidgardUrl'
+    },
+    onChangeMidgardMayaUrl: {
+      action: 'onChangeMidgardMayaUrl'
     },
     onChangeThornodeNodeUrl: {
       action: 'onChangeThornodeNodeUrl'

@@ -9,6 +9,7 @@ import { envOrDefault } from '../../../shared/utils/env'
 import { AppSettings } from '../../components/settings'
 import { useI18nContext } from '../../contexts/I18nContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useAppUpdate } from '../../hooks/useAppUpdate'
 import { useCollapsedSetting } from '../../hooks/useCollapsedSetting'
 import { useDex } from '../../hooks/useDex'
@@ -24,7 +25,15 @@ export const AppSettingsView: React.FC = (): JSX.Element => {
   const {
     service: { apiEndpoint$, setMidgardUrl, checkMidgardUrl$ }
   } = useMidgardContext()
+  const {
+    service: {
+      apiEndpoint$: apiEndpointMaya$,
+      setMidgardUrl: setMidgardMayaUrl,
+      checkMidgardUrl$: checkMidgardMayaUrl$
+    }
+  } = useMidgardMayaContext()
   const midgardUrl = useObservableState(apiEndpoint$, RD.initial)
+  const midgardMayaUrl = useObservableState(apiEndpointMaya$, RD.initial)
 
   const { isPrivate, changePrivateData } = usePrivateData()
 
@@ -62,6 +71,12 @@ export const AppSettingsView: React.FC = (): JSX.Element => {
     },
     [network, setMidgardUrl]
   )
+  const updateMidgardMayaUrlHandler = useCallback(
+    (url: string) => {
+      setMidgardMayaUrl(url, network)
+    },
+    [network, setMidgardMayaUrl]
+  )
 
   return (
     <AppSettings
@@ -80,12 +95,15 @@ export const AppSettingsView: React.FC = (): JSX.Element => {
       collapsed={collapsed}
       toggleCollapse={toggleCollapse}
       midgardUrl={midgardUrl}
+      midgardMayaUrl={midgardMayaUrl}
       onChangeMidgardUrl={updateMidgardUrlHandler}
+      onChangeMidgardMayaUrl={updateMidgardMayaUrlHandler}
       onChangeThornodeNodeUrl={setThornodeNodeUrl}
       onChangeThornodeRpcUrl={setThornodeRpcUrl}
       onChangeMayanodeNodeUrl={setMayanodeNodeUrl}
       onChangeMayanodeRpcUrl={setMayanodeRpcUrl}
       checkMidgardUrl$={checkMidgardUrl$}
+      checkMidgardMayaUrl$={checkMidgardMayaUrl$}
       thornodeRpcUrl={thornodeRpcUrl}
       thornodeNodeUrl={thornodeNodeUrl}
       checkThornodeRpcUrl$={checkThornodeRpcUrl$}

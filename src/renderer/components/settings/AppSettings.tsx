@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
@@ -16,6 +16,10 @@ import { LOCALES } from '../../i18n'
 import { AVAILABLE_DEXS, AVAILABLE_NETWORKS } from '../../services/const'
 import { CheckMayanodeNodeUrlHandler, CheckMayanodeRpcUrlHandler } from '../../services/mayachain/types'
 import { CheckMidgardUrlHandler, MidgardUrlRD } from '../../services/midgard/types'
+import {
+  CheckMidgardUrlHandler as CheckMidgardMayaUrlHandler,
+  MidgardUrlRD as MidgardMayaUrlRD
+} from '../../services/midgard/types'
 import { CheckThornodeNodeUrlHandler, CheckThornodeRpcUrlHandler } from '../../services/thorchain/types'
 import { DownIcon } from '../icons'
 import { Menu } from '../shared/menu'
@@ -41,8 +45,11 @@ export type Props = {
   collapsed: boolean
   toggleCollapse: FP.Lazy<void>
   midgardUrl: MidgardUrlRD
+  midgardMayaUrl: MidgardMayaUrlRD
   onChangeMidgardUrl: (url: string) => void
+  onChangeMidgardMayaUrl: (url: string) => void
   checkMidgardUrl$: CheckMidgardUrlHandler
+  checkMidgardMayaUrl$: CheckMidgardMayaUrlHandler
   checkThornodeNodeUrl$: CheckThornodeNodeUrlHandler
   checkMayanodeNodeUrl$: CheckMayanodeNodeUrlHandler
   onChangeThornodeNodeUrl: (url: string) => void
@@ -87,8 +94,11 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
     collapsed,
     toggleCollapse,
     midgardUrl: midgardUrlRD,
+    midgardMayaUrl: midgardMayaUrlRD,
     onChangeMidgardUrl,
+    onChangeMidgardMayaUrl,
     checkMidgardUrl$,
+    checkMidgardMayaUrl$,
     onChangeThornodeNodeUrl,
     onChangeMayanodeNodeUrl,
     checkThornodeNodeUrl$,
@@ -316,8 +326,18 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
     const empty = () => ''
     return FP.pipe(midgardUrlRD, RD.fold(empty, empty, empty, FP.identity))
   }, [midgardUrlRD])
+  const midgardMayaUrl = useMemo(() => {
+    const empty = () => ''
+    return FP.pipe(midgardMayaUrlRD, RD.fold(empty, empty, empty, FP.identity))
+  }, [midgardMayaUrlRD])
 
-  const [advancedActive, setAdvancedActive] = useState(false)
+  const [advancedActive, setAdvancedActive] = useState(() => {
+    const cachedValue = localStorage.getItem('advanceActive')
+    return cachedValue ? JSON.parse(cachedValue) : true
+  })
+  useEffect(() => {
+    localStorage.setItem('openPanelKeys', JSON.stringify(advancedActive))
+  }, [advancedActive])
 
   return (
     <div className="mt-50px flex-row bg-bg0 px-40px py-10px dark:bg-bg0d">
@@ -352,7 +372,7 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
                   className={`mb-0 !py-0 !pl-0 !pr-10px font-main !text-18 uppercase text-text0 dark:text-text0d ${
                     advancedActive ? 'opacity-100' : 'opacity-60'
                   }`}
-                  onClick={() => setAdvancedActive((v) => !v)}>
+                  onClick={() => setAdvancedActive((v: Boolean) => !v)}>
                   {intl.formatMessage({ id: 'common.advanced' })}
                 </TextButton>
                 <SwitchButton active={advancedActive} onChange={(active) => setAdvancedActive(active)}></SwitchButton>
@@ -398,6 +418,16 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
                     </Section>
                   </Section>
                   <Section className="mt-20px" title="Mayachain URls ">
+                    <Section className="ml-20px mt-10px" title="Midgard Mayachain">
+                      <EditableUrl
+                        className="w-full xl:w-3/4"
+                        url={midgardMayaUrl}
+                        onChange={onChangeMidgardMayaUrl}
+                        loading={RD.isPending(midgardMayaUrlRD)}
+                        checkUrl$={checkMidgardMayaUrl$}
+                        successMsg={intl.formatMessage({ id: 'midgard.url.valid' })}
+                      />
+                    </Section>
                     <Section className="ml-20px mt-10px" title="MayaNode API">
                       <EditableUrl
                         className="w-full xl:w-3/4"
