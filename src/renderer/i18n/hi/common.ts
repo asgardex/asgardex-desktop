@@ -24,7 +24,7 @@ const common: CommonMessages = {
   'common.isUpdate': 'THORName अपडेट करें',
   'common.to': 'प्राप्तकर्ता',
   'common.from': 'प्रेषक',
-  'common.filterValue': '1$ से नीचे के मूल्यों को फ़िल्टर करें',
+  'common.filterValue': 'खाली बैलेंस को फ़िल्टर करें',
   'common.amount': 'राशि',
   'common.address.self': 'स्वयं का',
   'common.coin': 'सिक्का',

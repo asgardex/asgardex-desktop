@@ -24,7 +24,7 @@ const common: CommonMessages = {
   'common.isUpdate': 'Обновить THORName',
   'common.to': 'Получатель',
   'common.from': 'Отправитель',
-  'common.filterValue': 'Фильтровать значения ниже 1$',
+  'common.filterValue': 'Фильтровать пустые балансы',
   'common.amount': 'Количество',
   'common.address.self': 'Свой',
   'common.coin': 'Монета',

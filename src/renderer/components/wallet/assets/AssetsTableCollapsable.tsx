@@ -514,7 +514,8 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
                 return (
                   O.isSome(usdValue) &&
-                  new CryptoAmount(baseAmount(usdValue.value.amount()), AssetUSDC).assetAmount.gt(1)
+                  usdValue.value.amount().gt(0) &&
+                  new CryptoAmount(baseAmount(usdValue.value.amount()), AssetUSDC)
                 )
               })
             }
@@ -551,8 +552,9 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           () => intl.formatMessage({ id: 'common.loading' }),
           (_: ApiError) => intl.formatMessage({ id: 'common.error' }),
           (balances) => {
-            const length = balances.length
-            const i18nKey = length <= 1 ? 'common.asset' : 'common.assets'
+            const nonZeroBalances = balances.filter((balance: Balance) => balance.amount.gt(0))
+            const length = nonZeroBalances.length
+            const i18nKey = length === 1 ? 'common.asset' : 'common.assets'
             return `(${length} ${intl.formatMessage({ id: i18nKey })})`
           }
         )

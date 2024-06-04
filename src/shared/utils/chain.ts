@@ -81,7 +81,7 @@ export const chainToString = (chain: Chain): string => {
     case BTCChain:
       return 'Bitcoin'
     case GAIAChain:
-      return 'Cosmos'
+      return 'GAIA'
     case DOGEChain:
       return 'Dogecoin'
     case ETHChain:
