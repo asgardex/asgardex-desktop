@@ -170,7 +170,7 @@ const EditableUrl: React.FC<Props> = (props): JSX.Element => {
           <div className="flex w-full items-center ">
             <Input
               id="url"
-              className={`w-full text-[16px]
+              className={`flex w-auto min-w-[300px] flex-grow text-[16px]
               ${RD.isSuccess(testUrlState) ? '!ring-turquoise' : ''}
               `}
               size="normal"
