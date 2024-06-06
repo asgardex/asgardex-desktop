@@ -7,7 +7,7 @@ import { EvmHDMode } from './types'
 // - Definitions in LedgerLive https://github.com/LedgerHQ/ledger-live/blob/develop/libs/ledger-live-common/src/derivation.ts#L43-L55
 // - Definitions in MetaMask https://github.com/MetaMask/metamask-extension/blob/develop/ui/pages/create-account/connect-hardware/index.js#L24-L31
 const DERIVATION_MAP: Record<EvmHDMode, string> = {
-  legacy: `m/44'/60'/{walletAccount}'/0`,
+  legacy: `m/44'/60'/0'/{walletIndex}`,
   ledgerlive: `m/44'/60'/{walletAccount}'/0/{walletIndex}`,
   metamask: `m/44'/60'/{walletAccount}'/0/{walletIndex}`
 }
