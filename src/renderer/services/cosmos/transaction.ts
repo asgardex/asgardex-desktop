@@ -40,7 +40,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
   }
 
   const sendLedgerTx = ({ network, params }: { network: Network; params: SendTxParams }): TxHashLD => {
-    const { asset, sender, amount, recipient, memo, walletIndex, feeAmount } = params
+    const { asset, sender, amount, recipient, memo, walletAccount, walletIndex, feeAmount } = params
 
     const sendLedgerTxParams: IPCLedgerSendTxParams = {
       chain: GAIAChain,
@@ -51,6 +51,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       sender,
       recipient,
       memo,
+      walletAccount,
       walletIndex,
       feeRate: NaN,
       feeOption: undefined,

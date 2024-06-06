@@ -71,7 +71,7 @@ export type Props = {
 
 export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
   const {
-    asset: { walletType, walletIndex, hdMode },
+    asset: { walletType, walletAccount, walletIndex, hdMode },
     poolDetails,
     balances,
     balance,
@@ -422,6 +422,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
     subscribeSendTxState(
       transfer$({
         walletType,
+        walletAccount,
         walletIndex,
         recipient,
         asset,
@@ -436,6 +437,7 @@ export const SendFormTHOR: React.FC<Props> = (props): JSX.Element => {
     subscribeSendTxState,
     transfer$,
     walletType,
+    walletAccount,
     walletIndex,
     asset,
     amountToSend,

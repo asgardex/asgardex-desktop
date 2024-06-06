@@ -16,7 +16,10 @@ const settings: SettingMessages = {
   'setting.notconnected': 'Offline',
   'setting.add.device': 'Gerät hinzufügen',
   'setting.wallet.index': 'Index',
+  'setting.wallet.account': 'Konto',
   'setting.wallet.index.info': 'Trage die Index-Nummer der Ledger Adresse ein, die Du verwenden möchtest',
+  'setting.wallet.account.info':
+    'Geben Sie die Kontonummer ein, um mehrere Konten innerhalb derselben Brieftasche zu verwalten',
   'setting.wallet.hdpath.legacy.info': 'Veralteter Derivation Pfad {path}',
   'setting.wallet.hdpath.ledgerlive.info': 'Ledger Live Derivation Pfad {path}',
   'setting.wallet.hdpath.metamask.info': 'Metamask Derivation Pfad {path}',

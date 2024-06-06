@@ -209,6 +209,7 @@ export const ledgerErrorIdToI18n = (errorId: LedgerErrorId, intl: IntlShape) => 
  * Type transformation
  */
 export const ledgerAddressToWalletAddress = ({
+  walletAccount,
   walletIndex,
   address,
   chain,
@@ -216,6 +217,7 @@ export const ledgerAddressToWalletAddress = ({
   hdMode
 }: LedgerAddress): WalletAddress => ({
   type,
+  walletAccount,
   walletIndex,
   address,
   chain,
@@ -225,7 +227,7 @@ export const ledgerAddressToWalletAddress = ({
 export const toIPCLedgerAddressesIO = (addresses: LedgerAddresses): IPCLedgerAddressesIO =>
   FP.pipe(
     addresses,
-    A.filterMap(({ keystoreId, address, chain, network, walletIndex, hdMode }) =>
+    A.filterMap(({ keystoreId, address, chain, network, walletAccount, walletIndex, hdMode }) =>
       FP.pipe(
         chain,
         O.fromPredicate(isEnabledChain),
@@ -234,6 +236,7 @@ export const toIPCLedgerAddressesIO = (addresses: LedgerAddresses): IPCLedgerAdd
           address,
           chain: enabledChain,
           network,
+          walletAccount,
           walletIndex,
           hdMode
         }))
@@ -244,11 +247,12 @@ export const toIPCLedgerAddressesIO = (addresses: LedgerAddresses): IPCLedgerAdd
 export const fromIPCLedgerAddressesIO = (addresses: IPCLedgerAddressesIO): LedgerAddresses =>
   FP.pipe(
     addresses,
-    A.map(({ keystoreId, address, chain, network, walletIndex, hdMode }) => ({
+    A.map(({ keystoreId, address, chain, network, walletAccount, walletIndex, hdMode }) => ({
       keystoreId,
       address,
       chain,
       network,
+      walletAccount,
       walletIndex,
       hdMode,
       type: 'ledger'

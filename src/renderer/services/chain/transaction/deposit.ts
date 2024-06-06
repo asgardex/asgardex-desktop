@@ -63,6 +63,7 @@ export const saverDeposit$ = ({
   memo,
   sender,
   walletType,
+  walletAccount,
   walletIndex,
   hdMode,
   dex
@@ -104,6 +105,7 @@ export const saverDeposit$ = ({
       return sendPoolTx$({
         sender,
         walletType,
+        walletAccount,
         walletIndex,
         hdMode,
         router: poolAddress.router,
@@ -209,10 +211,12 @@ export const symDeposit$ = ({
   amounts,
   memos,
   runeWalletType,
+  runeWalletAccount,
   runeWalletIndex,
   runeHDMode,
   runeSender,
   assetWalletType,
+  assetWalletAccount,
   assetWalletIndex,
   assetHDMode,
   assetSender,
@@ -254,6 +258,7 @@ export const symDeposit$ = ({
       return sendPoolTx$({
         sender: assetSender,
         walletType: assetWalletType,
+        walletAccount: assetWalletAccount,
         walletIndex: assetWalletIndex,
         hdMode: assetHDMode,
         router: poolAddresses.router,
@@ -283,6 +288,7 @@ export const symDeposit$ = ({
       return sendPoolTx$({
         sender: runeSender,
         walletType: runeWalletType,
+        walletAccount: runeWalletAccount,
         walletIndex: runeWalletIndex,
         hdMode: runeHDMode,
         router: O.none, // no router for RUNE

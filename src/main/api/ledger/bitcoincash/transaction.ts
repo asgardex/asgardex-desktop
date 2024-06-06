@@ -6,6 +6,7 @@ import * as E from 'fp-ts/lib/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
+import { getDerivationPaths } from './common'
 
 /**
  * Sends BCH tx using Ledger
@@ -18,6 +19,7 @@ export const send = async ({
   amount,
   feeRate,
   memo,
+  walletAccount,
   walletIndex
 }: {
   transport: Transport
@@ -27,6 +29,7 @@ export const send = async ({
   amount: BaseAmount
   feeRate: FeeRate
   memo?: string
+  walletAccount: number
   walletIndex: number
 }): Promise<E.Either<LedgerError, TxHash>> => {
   if (!sender) {
@@ -37,7 +40,12 @@ export const send = async ({
   }
 
   try {
-    const clientLedger = new ClientLedger({ transport, ...defaultBchParams, network: network })
+    const clientLedger = new ClientLedger({
+      transport,
+      ...defaultBchParams,
+      rootDerivationPaths: getDerivationPaths(walletIndex, walletAccount, network),
+      network: network
+    })
     const txHash = await clientLedger.transfer({ walletIndex, asset: AssetBCH, recipient, amount, memo, feeRate })
     if (!txHash) {
       return E.left({

@@ -9,7 +9,7 @@ import { isAvaxAsset } from '../../../../renderer/helpers/assetHelper'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { DEPOSIT_EXPIRATION_OFFSET, AvaxZeroAddress, defaultAvaxParams } from '../../../../shared/avax/const'
 import { ROUTER_ABI } from '../../../../shared/evm/abi'
-import { getDerivationPath } from '../../../../shared/evm/ledger'
+import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
@@ -25,7 +25,9 @@ export const send = async ({
   memo,
   recipient,
   feeOption,
-  walletIndex
+  walletAccount,
+  walletIndex,
+  evmHdMode
 }: {
   asset: Asset
   transport: Transport
@@ -34,11 +36,17 @@ export const send = async ({
   recipient: Address
   memo?: string
   feeOption: FeeOption
+  walletAccount: number
   walletIndex: number
-  evmHDMode: EvmHDMode
+  evmHdMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const ledgerClient = new AVAX.ClientLedger({ transport, ...defaultAvaxParams, network: network })
+    const ledgerClient = new AVAX.ClientLedger({
+      transport,
+      ...defaultAvaxParams,
+      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHdMode),
+      network: network
+    })
     const txHash = await ledgerClient.transfer({ walletIndex, asset, recipient, amount, memo, feeOption })
 
     if (!txHash) {
@@ -68,6 +76,7 @@ export const deposit = async ({
   amount,
   memo,
   recipient,
+  walletAccount,
   walletIndex,
   feeOption,
   evmHDMode
@@ -79,6 +88,7 @@ export const deposit = async ({
   network: Network
   recipient: Address
   memo?: string
+  walletAccount: number
   walletIndex: number
   feeOption: FeeOption
   evmHDMode: EvmHDMode
@@ -98,7 +108,7 @@ export const deposit = async ({
     const clientledger = new AVAX.ClientLedger({ transport, ...defaultAvaxParams, network: network })
 
     const app = await clientledger.getApp()
-    const path = getDerivationPath(walletIndex, evmHDMode)
+    const path = getDerivationPath(walletAccount, walletIndex, evmHDMode)
     const provider = clientledger.getProvider()
     const signer = new LedgerSigner({ provider, path, app })
 

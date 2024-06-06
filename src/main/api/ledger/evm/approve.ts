@@ -7,13 +7,16 @@ import { defaultArbParams } from '../../../../shared/arb/const'
 import { defaultAvaxParams } from '../../../../shared/avax/const'
 import { defaultBscParams } from '../../../../shared/bsc/const'
 import { defaultEthParams } from '../../../../shared/ethereum/const'
+import { getDerivationPaths } from '../../../../shared/evm/ledger'
 
 export const approveLedgerERC20Token = async ({
   chain,
   network,
   contractAddress,
   spenderAddress,
-  walletIndex
+  walletAccount,
+  walletIndex,
+  hdMode
 }: IPCLedgerApproveERC20TokenParams): Promise<TxHash> => {
   let clientParams
 
@@ -23,6 +26,7 @@ export const approveLedgerERC20Token = async ({
       clientParams = {
         transport,
         ...defaultEthParams,
+        rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, hdMode),
         network: network
       }
       break
@@ -30,6 +34,7 @@ export const approveLedgerERC20Token = async ({
       clientParams = {
         transport,
         ...defaultArbParams,
+        rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, hdMode),
         network: network
       }
       break
@@ -37,6 +42,7 @@ export const approveLedgerERC20Token = async ({
       clientParams = {
         transport,
         ...defaultAvaxParams,
+        rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, hdMode),
         network: network
       }
       break
@@ -44,6 +50,7 @@ export const approveLedgerERC20Token = async ({
       clientParams = {
         transport,
         ...defaultBscParams,
+        rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, hdMode),
         network: network
       }
       break

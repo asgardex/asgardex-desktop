@@ -30,14 +30,16 @@ const reloadBalances = () => {
 const balances$: ({
   walletType,
   network,
+  walletAccount,
   walletIndex,
   hdMode
 }: {
   walletType: WalletType
   network: Network
+  walletAccount: number
   walletIndex: number
   hdMode: HDMode
-}) => C.WalletBalancesLD = ({ walletType, walletIndex, network, hdMode }) => {
+}) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, network, hdMode }) => {
   // For testnet we limit requests by using pre-defined assets only
   // For mainnet we use the whiteList assets to avoid calling balances on airdropped scam tokens.
   const getAssets = (network: Network): Asset[] | undefined => {
@@ -60,6 +62,7 @@ const balances$: ({
       trigger$: reloadBalances$,
       assets,
       walletType,
+      walletAccount,
       walletIndex,
       hdMode,
       walletBalanceType: 'all'

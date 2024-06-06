@@ -79,7 +79,14 @@ export const Default: StoryObj<StoryArgs> = {
     return (
       <Component
         {...args}
-        asset={{ asset: AssetETH, walletAddress: 'eth-address', walletType, walletIndex: 0, hdMode: 'default' }}
+        asset={{
+          asset: AssetETH,
+          walletAddress: 'eth-address',
+          walletType,
+          walletAccount: 0,
+          walletIndex: 0,
+          hdMode: 'default'
+        }}
         transfer$={transfer$}
         balances={[ethBalance, dexBalance]}
         balance={ethBalance}

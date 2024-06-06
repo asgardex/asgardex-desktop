@@ -48,6 +48,7 @@ export const symWithdraw$ = ({
   memo,
   network,
   walletType,
+  walletAccount,
   walletIndex,
   hdMode,
   dexAsset,
@@ -78,6 +79,7 @@ export const symWithdraw$ = ({
       setState({ ...getState(), step: 2, withdraw: RD.progress({ loaded: 50, total }) })
       return sendPoolTx$({
         walletType,
+        walletAccount,
         walletIndex,
         hdMode,
         router: O.none, // no router for RUNE/MAYA
@@ -166,6 +168,7 @@ export const saverWithdraw$ = ({
   asset,
   memo,
   amount,
+  walletAccount,
   walletIndex,
   hdMode,
   sender,
@@ -205,6 +208,7 @@ export const saverWithdraw$ = ({
       setState({ ...getState(), step: 2, withdraw: RD.progress({ loaded: 50, total }) })
       return sendPoolTx$({
         walletType,
+        walletAccount,
         walletIndex,
         hdMode,
         router: poolAddress.router,

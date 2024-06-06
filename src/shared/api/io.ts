@@ -116,6 +116,7 @@ export const ipcLedgerSendTxParamsIO = t.type({
   feeAsset: t.union([assetIO, t.undefined]),
   amount: baseAmountIO,
   memo: t.union([t.string, t.undefined]),
+  walletAccount: t.number,
   walletIndex: t.number,
   feeRate: t.number,
   feeOption: t.union([feeOptionIO, t.undefined]),
@@ -134,6 +135,7 @@ export const ipcLedgerDepositTxParamsIO = t.type({
   recipient: t.union([t.string, t.undefined]),
   amount: baseAmountIO,
   memo: t.string,
+  walletAccount: t.number,
   walletIndex: t.number,
   feeOption: t.union([feeOptionIO, t.undefined]),
   nodeUrl: t.union([t.string, t.undefined]),
@@ -147,6 +149,7 @@ export const ipcLedgerApproveERC20TokenParamsIO = t.type({
   network: networkIO,
   contractAddress: t.string,
   spenderAddress: t.string,
+  walletAccount: t.number,
   walletIndex: t.number,
   hdMode: evmHDModeIO
 })
@@ -241,6 +244,7 @@ export const ipcLedgerAddressIO = t.type({
   address: t.string,
   chain: chainIO,
   network: networkIO,
+  walletAccount: t.number,
   walletIndex: t.number,
   hdMode: hdModeIO
 })

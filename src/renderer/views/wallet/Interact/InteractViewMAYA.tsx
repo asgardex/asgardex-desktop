@@ -146,7 +146,7 @@ export const InteractViewMAYA: React.FC = () => {
           <ErrorView title="Missing data for InteractiveView" subTitle={error?.message ?? error.toString()} />
         </div>
       ),
-      ([interactType, { walletType, walletIndex, hdMode }]) => (
+      ([interactType, { walletType, walletAccount, walletIndex, hdMode }]) => (
         <>
           <div className="relative mb-20px flex items-center justify-between">
             {' '}
@@ -172,6 +172,7 @@ export const InteractViewMAYA: React.FC = () => {
                     chain={assetChain}>
                     <InteractFormMaya
                       interactType={interactType}
+                      walletAccount={walletAccount}
                       walletIndex={walletIndex}
                       walletType={walletType}
                       hdMode={hdMode}

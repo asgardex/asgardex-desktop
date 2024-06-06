@@ -30,6 +30,7 @@ export const swap$ = ({
   memo,
   walletType,
   sender,
+  walletAccount,
   walletIndex,
   hdMode,
   dex
@@ -60,6 +61,7 @@ export const swap$ = ({
         memo,
         feeOption: ChainTxFeeOption.SWAP,
         sender,
+        walletAccount,
         walletIndex,
         hdMode,
         dex

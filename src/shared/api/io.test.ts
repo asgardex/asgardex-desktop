@@ -96,6 +96,7 @@ describe('shared/io', () => {
         sender: 'address-abc',
         recipient: 'address-abc',
         memo: 'memo-abc',
+        walletAccount: 0,
         walletIndex: 0,
         feeRate: 1,
         feeOption: FeeOption.Fast,
@@ -131,6 +132,7 @@ describe('shared/io', () => {
         sender: 'address-abc',
         recipient: 'address-abc',
         memo: 'memo-abc',
+        walletAccount: 0,
         walletIndex: 0,
         feeRate: 1,
         feeOption: undefined,
@@ -316,6 +318,7 @@ describe('ipcKeystorLedgerAddressesIO', () => {
       chain: ETHChain,
       network: Network.Mainnet,
       address: 'eth-address',
+      walletAccount: 0,
       walletIndex: 1,
       hdMode: 'metamask'
     }

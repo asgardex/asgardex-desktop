@@ -7,16 +7,30 @@ import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
 import { VerifyAddressHandler } from '../types'
+import { getDerivationPaths } from './common'
 
 export const getAddress = async (
   transport: Transport,
   network: Network,
+  walletAccount: number,
   walletIndex: number
 ): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
-    const clientLedger = new ClientLedger({ transport, ...defaultBchParams, network: network })
+    const clientLedger = new ClientLedger({
+      transport,
+      ...defaultBchParams,
+      rootDerivationPaths: getDerivationPaths(walletIndex, walletAccount, network),
+      network: network
+    })
     const bchAddress = await clientLedger.getAddressAsync(walletIndex)
-    return E.right({ address: bchAddress, chain: BCHChain, type: 'ledger', walletIndex, hdMode: 'default' })
+    return E.right({
+      address: bchAddress,
+      chain: BCHChain,
+      type: 'ledger',
+      walletAccount,
+      walletIndex,
+      hdMode: 'default'
+    })
   } catch (error) {
     return E.left({
       errorId: LedgerErrorId.GET_ADDRESS_FAILED,
@@ -26,8 +40,13 @@ export const getAddress = async (
     })
   }
 }
-export const verifyAddress: VerifyAddressHandler = async ({ transport, network, walletIndex }) => {
-  const clientLedger = new ClientLedger({ transport, ...defaultBchParams, network: network })
+export const verifyAddress: VerifyAddressHandler = async ({ transport, network, walletAccount, walletIndex }) => {
+  const clientLedger = new ClientLedger({
+    transport,
+    ...defaultBchParams,
+    rootDerivationPaths: getDerivationPaths(walletIndex, walletAccount, network),
+    network: network
+  })
   const _ = await clientLedger.getAddressAsync(walletIndex, true)
   return true
 }

@@ -11,12 +11,13 @@ import { VerifyAddressHandler } from '../types'
 export const getAddress = async (
   transport: Transport,
   network: Network,
-  walletIndex: number
+  walletIndex: number,
+  walletAccount: number
 ): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
     const clientLedger = new ClientLedger({ transport, ...defaultDogeParams, network: network })
     const address = await clientLedger.getAddressAsync(walletIndex)
-    return E.right({ address, chain: DOGEChain, type: 'ledger', walletIndex, hdMode: 'default' })
+    return E.right({ address, chain: DOGEChain, type: 'ledger', walletIndex, walletAccount, hdMode: 'default' })
   } catch (error) {
     return E.left({
       errorId: LedgerErrorId.GET_ADDRESS_FAILED,

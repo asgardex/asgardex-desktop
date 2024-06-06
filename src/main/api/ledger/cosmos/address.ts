@@ -9,6 +9,7 @@ import { WalletAddress } from '../../../../shared/wallet/types'
 
 export const getAddress = async (
   transport: Transport,
+  walletAccount: number,
   walletIndex: number,
   network: Network
 ): Promise<E.Either<LedgerError, WalletAddress>> => {
@@ -22,7 +23,7 @@ export const getAddress = async (
         msg: `Getting 'address' from Ledger's Cosmos app failed`
       })
     }
-    return E.right({ address, chain: GAIAChain, type: 'ledger', walletIndex, hdMode: 'default' })
+    return E.right({ address, chain: GAIAChain, type: 'ledger', walletIndex, walletAccount, hdMode: 'default' })
   } catch (error) {
     return E.left({
       errorId: LedgerErrorId.GET_ADDRESS_FAILED,

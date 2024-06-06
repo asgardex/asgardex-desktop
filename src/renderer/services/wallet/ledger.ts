@@ -143,12 +143,13 @@ export const createLedgerService = ({
       )
     )
 
-  const verifyLedgerAddress$: VerifyLedgerAddressHandler = ({ chain, network, walletIndex, hdMode }) =>
+  const verifyLedgerAddress$: VerifyLedgerAddressHandler = ({ chain, network, walletAccount, walletIndex, hdMode }) =>
     FP.pipe(
       Rx.from(
         window.apiHDWallet.verifyLedgerAddress({
           chain,
           network,
+          walletAccount,
           walletIndex,
           hdMode
         })
@@ -176,12 +177,13 @@ export const createLedgerService = ({
   /**
    * Add Ledger by asking address from it
    */
-  const addLedgerAddress$: AddLedgerAddressHandler = ({ id, chain, network, hdMode, walletIndex }) =>
+  const addLedgerAddress$: AddLedgerAddressHandler = ({ id, chain, network, hdMode, walletAccount, walletIndex }) =>
     FP.pipe(
       Rx.from(
         window.apiHDWallet.getLedgerAddress({
           chain,
           network,
+          walletAccount,
           walletIndex,
           hdMode
         })
@@ -201,6 +203,7 @@ export const createLedgerService = ({
           chain,
           network,
           hdMode,
+          walletAccount,
           walletIndex,
           address,
           type: 'ledger'

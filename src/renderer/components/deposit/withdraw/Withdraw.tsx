@@ -128,6 +128,7 @@ export const Withdraw: React.FC<Props> = ({
   const {
     type: runeWalletType,
     address: runeAddress,
+    walletAccount: runeWalletAccount,
     walletIndex: runeWalletIndex,
     hdMode: runeHDMode
   } = dexWalletAddress
@@ -398,13 +399,25 @@ export const Withdraw: React.FC<Props> = ({
         network,
         memo,
         walletType: runeWalletType,
+        walletAccount: runeWalletAccount,
         walletIndex: runeWalletIndex,
         hdMode: runeHDMode,
         dexAsset,
         dex
       })
     )
-  }, [subscribeWithdrawState, withdraw$, network, memo, runeWalletType, runeWalletIndex, runeHDMode, dexAsset, dex])
+  }, [
+    subscribeWithdrawState,
+    withdraw$,
+    network,
+    memo,
+    runeWalletType,
+    runeWalletAccount,
+    runeWalletIndex,
+    runeHDMode,
+    dexAsset,
+    dex
+  ])
 
   const uiFeesRD: UIFeesRD = useMemo(
     () =>

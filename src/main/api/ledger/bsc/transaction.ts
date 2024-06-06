@@ -9,7 +9,7 @@ import { isBscAsset } from '../../../../renderer/helpers/assetHelper'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { DEPOSIT_EXPIRATION_OFFSET, BscZeroAddress, defaultBscParams } from '../../../../shared/bsc/const'
 import { ROUTER_ABI } from '../../../../shared/evm/abi'
-import { getDerivationPath } from '../../../../shared/evm/ledger'
+import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
@@ -25,7 +25,9 @@ export const send = async ({
   memo,
   recipient,
   feeOption,
-  walletIndex
+  walletAccount,
+  walletIndex,
+  evmHdMode
 }: {
   asset: Asset
   transport: Transport
@@ -34,11 +36,17 @@ export const send = async ({
   recipient: Address
   memo?: string
   feeOption: FeeOption
+  walletAccount: number
   walletIndex: number
-  evmHDMode: EvmHDMode
+  evmHdMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const clientledger = new BSC.ClientLedger({ transport, ...defaultBscParams, network: network })
+    const clientledger = new BSC.ClientLedger({
+      transport,
+      ...defaultBscParams,
+      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHdMode),
+      network: network
+    })
     const txHash = await clientledger.transfer({ walletIndex, asset, recipient, amount, memo, feeOption })
 
     if (!txHash) {
@@ -68,9 +76,10 @@ export const deposit = async ({
   amount,
   memo,
   recipient,
+  walletAccount,
   walletIndex,
   feeOption,
-  evmHDMode
+  evmHdMode
 }: {
   asset: Asset
   router: Address
@@ -79,9 +88,10 @@ export const deposit = async ({
   network: Network
   recipient: Address
   memo?: string
+  walletAccount: number
   walletIndex: number
   feeOption: FeeOption
-  evmHDMode: EvmHDMode
+  evmHdMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const address = !isBscAsset(asset) ? BSC.getTokenAddress(asset) : BscZeroAddress
@@ -95,10 +105,15 @@ export const deposit = async ({
 
     const isETHAddress = address === BscZeroAddress
 
-    const clientledger = new BSC.ClientLedger({ transport, ...defaultBscParams, network: network })
+    const clientledger = new BSC.ClientLedger({
+      transport,
+      ...defaultBscParams,
+      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHdMode),
+      network: network
+    })
 
     const app = await clientledger.getApp()
-    const path = getDerivationPath(walletIndex, evmHDMode)
+    const path = getDerivationPath(walletIndex, walletAccount, evmHdMode)
     const provider = clientledger.getProvider()
     const signer = new LedgerSigner({ provider, path, app })
 

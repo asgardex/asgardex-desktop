@@ -68,7 +68,7 @@ export type Props = {
 
 export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
   const {
-    asset: { walletType, walletIndex, hdMode },
+    asset: { walletType, walletAccount, walletIndex, hdMode },
     poolDetails,
     pricePool,
     balances,
@@ -379,6 +379,7 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
     subscribeSendTxState(
       transfer$({
         walletType,
+        walletAccount,
         walletIndex,
         recipient,
         asset,
@@ -387,7 +388,18 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
         hdMode
       })
     )
-  }, [subscribeSendTxState, transfer$, walletType, walletIndex, recipientAddress, asset, amountToSend, form, hdMode])
+  }, [
+    recipientAddress,
+    subscribeSendTxState,
+    transfer$,
+    walletType,
+    walletAccount,
+    walletIndex,
+    asset,
+    amountToSend,
+    form,
+    hdMode
+  ])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
 

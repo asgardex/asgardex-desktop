@@ -69,6 +69,7 @@ type FormValues = {
 type Props = {
   interactType: InteractType
   walletType: WalletType
+  walletAccount: number
   walletIndex: number
   hdMode: HDMode
   balance: WalletBalance
@@ -90,6 +91,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
     balance,
     walletType,
     hdMode,
+    walletAccount,
     walletIndex,
     interactMaya$,
     openExplorerTxUrl,
@@ -437,13 +439,14 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
     subscribeInteractState(
       interactMaya$({
         walletType,
+        walletAccount,
         walletIndex,
         hdMode,
         amount: amountToSend,
         memo: getMemo()
       })
     )
-  }, [subscribeInteractState, interactMaya$, walletType, walletIndex, hdMode, amountToSend, getMemo])
+  }, [subscribeInteractState, interactMaya$, walletType, walletAccount, walletIndex, hdMode, amountToSend, getMemo])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
 

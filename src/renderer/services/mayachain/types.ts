@@ -72,6 +72,7 @@ export type SendTxParams = {
   amount: BaseAmount
   asset: Asset
   memo?: string
+  walletAccount: number
   walletIndex: number
   hdMode: HDMode
 }
@@ -80,6 +81,7 @@ export type TransactionService = {
   sendPoolTx$: (
     params: DepositParam & {
       walletType: WalletType
+      walletAccount: number
       walletIndex: number /* override walletIndex of DepositParam to avoid 'undefined' */
       hdMode: HDMode
     }
@@ -88,6 +90,7 @@ export type TransactionService = {
 
 export type InteractParams = {
   readonly walletType: WalletType
+  readonly walletAccount: number
   readonly walletIndex: number
   readonly hdMode: HDMode
   readonly amount: BaseAmount

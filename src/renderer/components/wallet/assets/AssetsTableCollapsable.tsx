@@ -163,8 +163,8 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
   }, [allPanelKeys, collapseAll, openPanelKeys])
 
   const onRowHandler = useCallback(
-    ({ asset, walletAddress, walletType, walletIndex, hdMode }: WalletBalance) => ({
-      onClick: () => selectAssetHandler({ asset, walletAddress, walletType, walletIndex, hdMode })
+    ({ asset, walletAddress, walletType, walletAccount, walletIndex, hdMode }: WalletBalance) => ({
+      onClick: () => selectAssetHandler({ asset, walletAddress, walletAccount, walletType, walletIndex, hdMode })
     }),
     [selectAssetHandler]
   )
@@ -297,8 +297,8 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
   )
 
   const renderActionColumn = useCallback(
-    ({ asset, walletAddress, walletIndex, walletType, hdMode }: WalletBalance) => {
-      const walletAsset: SelectedWalletAsset = { asset, walletAddress, walletIndex, walletType, hdMode }
+    ({ asset, walletAddress, walletAccount, walletIndex, walletType, hdMode }: WalletBalance) => {
+      const walletAsset: SelectedWalletAsset = { asset, walletAddress, walletAccount, walletIndex, walletType, hdMode }
       const normalizedAssetString = assetToString(asset).toUpperCase()
       const hasActivePool: boolean = FP.pipe(
         O.fromNullable(dex === 'THOR' ? poolsData[normalizedAssetString] : poolsDataMaya[normalizedAssetString]),
@@ -509,6 +509,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
                   amount: ZERO_BASE_AMOUNT,
                   walletAddress: 'mock-address',
                   walletType: 'keystore',
+                  walletAccount: 0,
                   walletIndex: 0,
                   hdMode: 'default'
                 }

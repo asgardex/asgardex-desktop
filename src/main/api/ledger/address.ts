@@ -33,6 +33,7 @@ import { getAddress as getTHORAddress, verifyAddress as verifyTHORAddress } from
 export const getAddress = async ({
   chain,
   network,
+  walletAccount,
   walletIndex,
   hdMode
 }: IPCLedgerAdddressParams): Promise<E.Either<LedgerError, WalletAddress>> => {
@@ -47,22 +48,22 @@ export const getAddress = async ({
     } else {
       switch (chain) {
         case THORChain:
-          res = await getTHORAddress(transport, network, walletIndex)
+          res = await getTHORAddress(transport, network, walletAccount, walletIndex)
           break
         case BTCChain:
-          res = await getBTCAddress(transport, network, walletIndex)
+          res = await getBTCAddress(transport, network, walletAccount, walletIndex)
           break
         case LTCChain:
-          res = await getLTCAddress(transport, network, walletIndex)
+          res = await getLTCAddress(transport, network, walletAccount, walletIndex)
           break
         case BCHChain:
-          res = await getBCHAddress(transport, network, walletIndex)
+          res = await getBCHAddress(transport, network, walletAccount, walletIndex)
           break
         case DOGEChain:
-          res = await getDOGEAddress(transport, network, walletIndex)
+          res = await getDOGEAddress(transport, network, walletAccount, walletIndex)
           break
         case DASHChain:
-          res = await getDASHAddress(transport, network, walletIndex)
+          res = await getDASHAddress(transport, network, walletAccount, walletIndex)
           break
         case ETHChain: {
           if (!isEvmHDMode(hdMode)) {
@@ -71,7 +72,7 @@ export const getAddress = async ({
               msg: `Invalid 'EthHDMode' - needed for ETH to get Ledger address`
             })
           } else {
-            res = await getETHAddress({ transport, walletIndex, evmHdMode: hdMode })
+            res = await getETHAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
           }
           break
         }
@@ -82,7 +83,7 @@ export const getAddress = async ({
               msg: `Invalid 'AvaxHDMode' - needed for AVAX to get Ledger address`
             })
           } else {
-            res = await getAVAXAddress({ transport, walletIndex, evmHdMode: hdMode })
+            res = await getAVAXAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
           }
           break
         }
@@ -93,7 +94,7 @@ export const getAddress = async ({
               msg: `Invalid 'BscHDMode' - needed for BSC to get Ledger address`
             })
           } else {
-            res = await getBSCAddress({ transport, walletIndex, evmHdMode: hdMode })
+            res = await getBSCAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
           }
           break
         }
@@ -104,12 +105,12 @@ export const getAddress = async ({
               msg: `Invalid 'ArbHDMode' - needed for ARB to get Ledger address`
             })
           } else {
-            res = await getARBAddress({ transport, walletIndex, evmHdMode: hdMode })
+            res = await getARBAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
           }
           break
         }
         case GAIAChain:
-          res = await getCOSMOSAddress(transport, walletIndex, network)
+          res = await getCOSMOSAddress(transport, walletAccount, walletIndex, network)
           break
       }
     }
@@ -123,7 +124,13 @@ export const getAddress = async ({
   }
 }
 
-export const verifyLedgerAddress = async ({ chain, network, walletIndex, hdMode }: IPCLedgerAdddressParams) => {
+export const verifyLedgerAddress = async ({
+  chain,
+  network,
+  walletAccount,
+  walletIndex,
+  hdMode
+}: IPCLedgerAdddressParams) => {
   const transport = await TransportNodeHidSingleton.create()
   let result = false
 
@@ -131,36 +138,36 @@ export const verifyLedgerAddress = async ({ chain, network, walletIndex, hdMode 
 
   switch (chain) {
     case THORChain:
-      result = await verifyTHORAddress({ transport, network, walletIndex })
+      result = await verifyTHORAddress({ transport, network, walletAccount, walletIndex })
       break
     case BTCChain:
-      result = await verifyBTCAddress({ transport, network, walletIndex })
+      result = await verifyBTCAddress({ transport, network, walletAccount, walletIndex })
       break
     case LTCChain:
-      result = await verifyLTCAddress({ transport, network, walletIndex })
+      result = await verifyLTCAddress({ transport, network, walletAccount, walletIndex })
       break
     case BCHChain:
-      result = await verifyBCHAddress({ transport, network, walletIndex })
+      result = await verifyBCHAddress({ transport, network, walletAccount, walletIndex })
       break
     case DOGEChain:
-      result = await verifyDOGEAddress({ transport, network, walletIndex })
+      result = await verifyDOGEAddress({ transport, network, walletAccount, walletIndex })
       break
     case DASHChain:
-      result = await verifyDASHAddress({ transport, network, walletIndex })
+      result = await verifyDASHAddress({ transport, network, walletAccount, walletIndex })
       break
     case ETHChain: {
       if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EthHDMode' - needed for ETH to verify Ledger address`)
-      result = await verifyETHAddress({ transport, walletIndex, evmHdMode: hdMode })
+      result = await verifyETHAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
       break
     }
     case AVAXChain: {
       if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for AVAX to verify Ledger address`)
-      result = await verifyAVAXAddress({ transport, walletIndex, evmHdMode: hdMode })
+      result = await verifyAVAXAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
       break
     }
     case BSCChain: {
       if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for BSC to verify Ledger address`)
-      result = await verifyBSCAddress({ transport, walletIndex, evmHdMode: hdMode })
+      result = await verifyBSCAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
       break
     }
     case ARBChain: {

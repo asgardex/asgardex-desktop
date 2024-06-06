@@ -8,5 +8,12 @@ export type WalletBalanceType = 'all' | 'confirmed'
 
 export type HDMode = 'default' | EvmHDMode
 
-export type WalletAddress = { address: Address; type: WalletType; chain: Chain; walletIndex: number; hdMode: HDMode }
+export type WalletAddress = {
+  address: Address
+  type: WalletType
+  chain: Chain
+  walletAccount: number
+  walletIndex: number
+  hdMode: HDMode
+}
 export type WalletAddresses = WalletAddress[]

@@ -68,6 +68,7 @@ export const deposit = async ({
   amount,
   memo,
   recipient,
+  walletAccount,
   walletIndex,
   feeOption,
   evmHDMode
@@ -79,6 +80,7 @@ export const deposit = async ({
   network: Network
   recipient: Address
   memo?: string
+  walletAccount: number
   walletIndex: number
   feeOption: FeeOption
   evmHDMode: EvmHDMode
@@ -98,7 +100,7 @@ export const deposit = async ({
     const clientledger = new ARB.ClientLedger({ transport, ...defaultArbParams, network: network })
 
     const app = await clientledger.getApp()
-    const path = getDerivationPath(walletIndex, evmHDMode)
+    const path = getDerivationPath(walletAccount, walletIndex, evmHDMode)
     const provider = clientledger.getProvider()
     const signer = new LedgerSigner({ provider, path, app })
 

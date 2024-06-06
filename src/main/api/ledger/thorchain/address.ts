@@ -11,6 +11,7 @@ import { VerifyAddressHandler } from '../types'
 export const getAddress = async (
   transport: Transport,
   network: Network,
+  walletAccount: number,
   walletIndex: number
 ): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
@@ -22,7 +23,14 @@ export const getAddress = async (
         msg: `Getting 'address' from Ledger's Cosmos app failed`
       })
     }
-    return E.right({ address: address, chain: THORChain, type: 'ledger', walletIndex, hdMode: 'default' })
+    return E.right({
+      address: address,
+      chain: THORChain,
+      type: 'ledger',
+      walletAccount,
+      walletIndex,
+      hdMode: 'default'
+    })
   } catch (error) {
     return E.left({
       errorId: LedgerErrorId.GET_ADDRESS_FAILED,

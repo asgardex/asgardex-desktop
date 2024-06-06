@@ -66,12 +66,14 @@ const defaultProps: SwapProps = {
         asset: AssetRuneNative,
         amount: assetToBase(assetAmount(100)),
         walletType: 'keystore',
+        walletAccount: 0,
         walletIndex: 0,
         walletAddress: 'wallet-address-rune',
         hdMode: 'default'
       },
       {
         asset: AssetBTC,
+        walletAccount: 0,
         walletIndex: 0,
         amount: assetToBase(assetAmount(1)),
         walletType: 'keystore',

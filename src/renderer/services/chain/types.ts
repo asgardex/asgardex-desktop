@@ -89,6 +89,7 @@ export type SaverDepositParams = {
   readonly amount: BaseAmount
   readonly memo: string
   readonly sender: Address
+  readonly walletAccount: number
   readonly walletIndex: number
   readonly walletType: WalletType
   readonly hdMode: HDMode
@@ -103,9 +104,11 @@ export type SymDepositParams = {
   readonly amounts: SymDepositAmounts
   readonly memos: SymDepositMemo
   readonly runeWalletType: WalletType
+  readonly runeWalletAccount: number
   readonly runeWalletIndex: number
   readonly runeHDMode: HDMode
   readonly runeSender: Address
+  readonly assetWalletAccount: number
   readonly assetWalletIndex: number
   readonly assetWalletType: WalletType
   readonly assetHDMode: HDMode
@@ -121,6 +124,7 @@ export type SendTxParams = {
   amount: BaseAmount
   memo: Memo
   feeOption?: FeeOption
+  walletAccount: number
   walletIndex: number
   feeAsset?: Asset
   gasLimit?: BigNumber
@@ -170,6 +174,7 @@ export type SwapTxParams = {
   readonly memo: string
   readonly walletType: WalletType
   readonly sender: Address
+  readonly walletAccount: number
   readonly walletIndex: number
   readonly hdMode: HDMode
   readonly dex: Dex
@@ -303,6 +308,7 @@ export type SymWithdrawParams = {
   readonly memo: Memo
   readonly network: Network
   readonly walletType: WalletType
+  readonly walletAccount: number
   readonly walletIndex: number
   readonly hdMode: HDMode
   readonly dex: Dex
@@ -318,6 +324,7 @@ export type SaverWithdrawParams = {
   readonly memo: Memo
   readonly network: Network
   readonly walletType: WalletType
+  readonly walletAccount: number
   readonly walletIndex: number
   readonly sender: Address
   readonly hdMode: HDMode

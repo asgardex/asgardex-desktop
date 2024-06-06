@@ -37,6 +37,7 @@ import { AssetIcon } from '../../components/uielements/assets/assetIcon/AssetIco
 import { QRCodeModal } from '../../components/uielements/qrCodeModal/QRCodeModal'
 import { PhraseCopyModal } from '../../components/wallet/phrase/PhraseCopyModal'
 import { getChainAsset, isArbChain, isAvaxChain, isBscChain, isEthChain } from '../../helpers/chainHelper'
+import { isEvmChain } from '../../helpers/evmHelper'
 import { eqChain, eqString } from '../../helpers/fp/eq'
 import { emptyString } from '../../helpers/stringHelper'
 import { getWalletNamesFromKeystoreWallets, isEnabledLedger } from '../../helpers/walletHelper'
@@ -78,8 +79,18 @@ type Props = {
   changeKeystoreWallet$: ChangeKeystoreWalletHandler
   renameKeystoreWallet$: RenameKeystoreWalletHandler
   exportKeystore: () => Promise<void>
-  addLedgerAddress$: (params: { chain: Chain; walletIndex: number; hdMode: HDMode }) => LedgerAddressLD
-  verifyLedgerAddress$: (params: { chain: Chain; walletIndex: number; hdMode: HDMode }) => VerifiedLedgerAddressLD
+  addLedgerAddress$: (params: {
+    chain: Chain
+    walletAccount: number
+    walletIndex: number
+    hdMode: HDMode
+  }) => LedgerAddressLD
+  verifyLedgerAddress$: (params: {
+    chain: Chain
+    walletAccount: number
+    walletIndex: number
+    hdMode: HDMode
+  }) => VerifiedLedgerAddressLD
   removeLedgerAddress: (chain: Chain) => void
   keystoreUnlocked: KeystoreUnlocked
   wallets: KeystoreWalletsUI
@@ -173,6 +184,21 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     [KUJIChain]: 0,
     [ARBChain]: 0
   })
+  const [walletAccountMap, setWalletAccountMap] = useState<Record<EnabledChain, number>>({
+    [BTCChain]: 0,
+    [BCHChain]: 0,
+    [LTCChain]: 0,
+    [THORChain]: 0,
+    [ETHChain]: 0,
+    [GAIAChain]: 0,
+    [DOGEChain]: 0,
+    [AVAXChain]: 0,
+    [BSCChain]: 0,
+    [MAYAChain]: 0,
+    [DASHChain]: 0,
+    [KUJIChain]: 0,
+    [ARBChain]: 0
+  })
 
   const {
     state: verifyLedgerAddressRD,
@@ -215,13 +241,14 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
   const [ledgerChainToAdd, setLedgerChainToAdd] = useState<O.Option<Chain>>(O.none)
 
   const addLedgerAddress = useCallback(
-    (chain: Chain, walletIndex: number) => {
+    (chain: Chain, walletAccount: number, walletIndex: number) => {
       resetAddLedgerAddressRD()
       setLedgerChainToAdd(O.some(chain))
       subscribeAddLedgerAddressRD(
         addLedgerAddress$({
           chain,
           walletIndex,
+          walletAccount,
           hdMode:
             isEthChain(chain) || isArbChain(chain) || isAvaxChain(chain) || isBscChain(chain) ? evmHDMode : 'default' // other Ledgers uses `default` path @St0mrzy note bsc & avax not ready yet for ledger
         })
@@ -232,11 +259,12 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
 
   const verifyLedgerAddressHandler = useCallback(
     (walletAddress: WalletAddress) => {
-      const { chain, walletIndex, address, hdMode } = walletAddress
+      const { chain, walletAccount, walletIndex, address, hdMode } = walletAddress
       setLedgerAddressToVerify(O.some({ chain, address }))
       subscribeVerifyLedgerAddressRD(
         verifyLedgerAddress$({
           chain,
+          walletAccount,
           walletIndex,
           hdMode
         })
@@ -253,6 +281,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
         }
 
         const selectedWalletIndex = walletIndexMap[chain]
+        const selectedAccountIndex = walletAccountMap[chain]
 
         // check
         const currentLedgerToAdd: boolean = FP.pipe(
@@ -273,7 +302,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
         )
 
         const addLedgerAddressHandler = () => {
-          addLedgerAddress(chain, selectedWalletIndex)
+          addLedgerAddress(chain, selectedAccountIndex, selectedWalletIndex)
         }
 
         return (
@@ -283,6 +312,22 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                 <Styled.AddLedgerButton onClick={addLedgerAddressHandler} loading={loading}>
                   <Styled.AddLedgerIcon /> {intl.formatMessage({ id: 'ledger.add.device' })}
                 </Styled.AddLedgerButton>
+                <>
+                  <div className="text-[12px] uppercase text-text2 dark:text-text2d">
+                    {intl.formatMessage({ id: 'setting.wallet.account' })}
+                  </div>
+                  <Styled.WalletIndexInput
+                    value={selectedAccountIndex.toString()}
+                    pattern="[0-9]+"
+                    onChange={(value) =>
+                      value !== null && +value >= 0 && setWalletAccountMap({ ...walletAccountMap, [chain]: +value })
+                    }
+                    style={{ width: 60 }}
+                    disabled={loading}
+                    onPressEnter={addLedgerAddressHandler}
+                  />
+                  <InfoIcon tooltip={intl.formatMessage({ id: 'setting.wallet.account.info' })} />
+                </>
                 <>
                   <div className="text-[12px] uppercase text-text2 dark:text-text2d">
                     {intl.formatMessage({ id: 'setting.wallet.index' })}
@@ -300,50 +345,48 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                   <InfoIcon tooltip={intl.formatMessage({ id: 'setting.wallet.index.info' })} />
                 </>
               </div>
-
-              {isEthChain(chain) ||
-                isArbChain(chain) ||
-                isAvaxChain(chain) ||
-                (isBscChain(chain) && (
-                  <StyledR.Radio.Group
-                    className="!flex flex-col items-start lg:flex-row lg:items-center lg:!pl-30px"
-                    onChange={onChangeEvmDerivationMode}
-                    value={evmHDMode}>
-                    <StyledR.Radio value="ledgerlive" key="ledgerlive">
-                      <Styled.EthDerivationModeRadioLabel>
-                        {intl.formatMessage({ id: 'common.ledgerlive' })}
-                        <InfoIcon
-                          tooltip={intl.formatMessage(
-                            { id: 'setting.wallet.hdpath.ledgerlive.info' },
-                            { path: getEvmDerivationPath(walletIndexMap[ETHChain], 'ledgerlive') }
-                          )}
-                        />
-                      </Styled.EthDerivationModeRadioLabel>
-                    </StyledR.Radio>
-                    <StyledR.Radio value="legacy" key="legacy">
-                      <Styled.EthDerivationModeRadioLabel>
-                        {intl.formatMessage({ id: 'common.legacy' })}
-                        <InfoIcon
-                          tooltip={intl.formatMessage(
-                            { id: 'setting.wallet.hdpath.legacy.info' },
-                            { path: getEvmDerivationPath(walletIndexMap[ETHChain], 'legacy') }
-                          )}
-                        />
-                      </Styled.EthDerivationModeRadioLabel>
-                    </StyledR.Radio>
-                    <StyledR.Radio value="metamask" key="metamask">
-                      <Styled.EthDerivationModeRadioLabel>
-                        {intl.formatMessage({ id: 'common.metamask' })}
-                        <InfoIcon
-                          tooltip={intl.formatMessage(
-                            { id: 'setting.wallet.hdpath.metamask.info' },
-                            { path: getEvmDerivationPath(walletIndexMap[ETHChain], 'metamask') }
-                          )}
-                        />
-                      </Styled.EthDerivationModeRadioLabel>
-                    </StyledR.Radio>
-                  </StyledR.Radio.Group>
-                ))}
+              {isEvmChain(chain) && (
+                <StyledR.Radio.Group
+                  className="!flex flex-col items-start lg:flex-row lg:items-center lg:!pl-30px"
+                  onChange={onChangeEvmDerivationMode}
+                  value={evmHDMode}>
+                  <StyledR.Radio value="ledgerlive" key="ledgerlive">
+                    <Styled.EthDerivationModeRadioLabel>
+                      {intl.formatMessage({ id: 'common.ledgerlive' })}
+                      <InfoIcon
+                        tooltip={intl.formatMessage(
+                          { id: 'setting.wallet.hdpath.ledgerlive.info' },
+                          {
+                            path: getEvmDerivationPath(walletAccountMap[chain], walletIndexMap[chain], 'ledgerlive')
+                          }
+                        )}
+                      />
+                    </Styled.EthDerivationModeRadioLabel>
+                  </StyledR.Radio>
+                  <StyledR.Radio value="legacy" key="legacy">
+                    <Styled.EthDerivationModeRadioLabel>
+                      {intl.formatMessage({ id: 'common.legacy' })}
+                      <InfoIcon
+                        tooltip={intl.formatMessage(
+                          { id: 'setting.wallet.hdpath.legacy.info' },
+                          { path: getEvmDerivationPath(walletAccountMap[chain], walletIndexMap[chain], 'ledgerlive') }
+                        )}
+                      />
+                    </Styled.EthDerivationModeRadioLabel>
+                  </StyledR.Radio>
+                  <StyledR.Radio value="metamask" key="metamask">
+                    <Styled.EthDerivationModeRadioLabel>
+                      {intl.formatMessage({ id: 'common.metamask' })}
+                      <InfoIcon
+                        tooltip={intl.formatMessage(
+                          { id: 'setting.wallet.hdpath.metamask.info' },
+                          { path: getEvmDerivationPath(walletAccountMap[chain], walletIndexMap[chain], 'ledgerlive') }
+                        )}
+                      />
+                    </Styled.EthDerivationModeRadioLabel>
+                  </StyledR.Radio>
+                </StyledR.Radio.Group>
+              )}
             </div>
             {currentLedgerToAdd && renderError}
           </>
@@ -364,12 +407,34 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
           </>
         )
       }
+      const renderAccount = (walletAddress: WalletAddress) => {
+        const { walletAccount, walletIndex } = walletAddress
+        return (
+          <>
+            <div className="flex w-full space-x-4">
+              <div className="text-[12px] uppercase text-text2 dark:text-text2d">
+                <div>{intl.formatMessage({ id: 'setting.wallet.account' })}</div>
+              </div>
+              <div className="text-[12px] uppercase text-text2 dark:text-text2d">{walletAccount}</div>
+              <div className="text-[12px] uppercase text-text2 dark:text-text2d">
+                {intl.formatMessage({ id: 'setting.wallet.index' })}
+              </div>
+              <div className="text-[12px] uppercase text-text2 dark:text-text2d">{walletIndex}</div>
+            </div>
+          </>
+        )
+      }
 
       return (
         <>
-          <WalletTypeLabel className="ml-40px mt-10px inline-block ">
-            {walletTypeToI18n('ledger', intl)}
-          </WalletTypeLabel>
+          <div className="flex-row">
+            <WalletTypeLabel className="ml-40px mt-10px inline-block ">
+              {walletTypeToI18n('ledger', intl)}
+            </WalletTypeLabel>
+            <div className="ml-40px mt-10px inline-block ">
+              {O.isSome(oAddress) ? renderAccount(oAddress.value) : <span></span>}
+            </div>
+          </div>
           <div className="mx-40px my-0 w-full overflow-hidden ">
             {FP.pipe(oAddress, O.fold(renderAddAddress, renderAddress))}
           </div>
@@ -379,6 +444,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     [
       intl,
       walletIndexMap,
+      walletAccountMap,
       ledgerChainToAdd,
       addLedgerAddressRD,
       evmHDMode,

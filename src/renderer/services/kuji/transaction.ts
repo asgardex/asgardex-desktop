@@ -28,6 +28,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       sender: params.sender,
       recipient: params.recipient,
       memo: params.memo,
+      walletAccount: params.walletAccount,
       walletIndex: params.walletIndex,
       feeRate: NaN,
       feeOption: undefined,
