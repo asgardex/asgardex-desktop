@@ -2,6 +2,7 @@ import React, { Fragment, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Tab } from '@headlessui/react'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
@@ -55,7 +56,8 @@ export const PoolsOverview: React.FC = (): JSX.Element => {
   } = useMidgardMayaContext()
 
   const [haltedChains] = useObservableState(
-    () => FP.pipe(dex.chain === 'THOR' ? haltedChains$ : haltedChainsMaya$, RxOp.map(RD.getOrElse((): Chain[] => []))),
+    () =>
+      FP.pipe(dex.chain === THORChain ? haltedChains$ : haltedChainsMaya$, RxOp.map(RD.getOrElse((): Chain[] => []))),
     []
   )
 

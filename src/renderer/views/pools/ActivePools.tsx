@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Asset,
   assetToString,
@@ -83,10 +84,10 @@ export const ActivePools: React.FC = (): JSX.Element => {
   const { data: incentivePendulumThorRD } = useIncentivePendulum()
   const { data: incentivePendulumMayaRD } = useIncentivePendulumMaya()
 
-  const incentivePendulumRD = dex.chain === 'THOR' ? incentivePendulumThorRD : incentivePendulumMayaRD
+  const incentivePendulumRD = dex.chain === THORChain ? incentivePendulumThorRD : incentivePendulumMayaRD
 
   const poolsPeriod = useObservableState(
-    dex.chain === 'THOR' ? poolsPeriod$ : poolsPeriodMaya$,
+    dex.chain === THORChain ? poolsPeriod$ : poolsPeriodMaya$,
     GetPoolsPeriodEnum._30d
   )
 
@@ -99,7 +100,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
   const poolsThorRD = useObservableState(poolsState$, RD.pending)
   const poolsMayaRD = useObservableState(mayaPoolsState$, RD.pending)
 
-  const poolsRD = dex.chain === 'THOR' ? poolsThorRD : poolsMayaRD
+  const poolsRD = dex.chain === THORChain ? poolsThorRD : poolsMayaRD
 
   const isDesktopView = Grid.useBreakpoint()?.lg ?? false
   const isLargeScreen = Grid.useBreakpoint()?.xl ?? false
@@ -108,7 +109,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
   const previousPools = useRef<O.Option<PoolTableRowsData>>(O.none)
 
   const refreshHandler = useCallback(() => {
-    if (dex.chain === 'THOR') {
+    if (dex.chain === THORChain) {
       reloadPools()
     } else {
       reloadMayaPools()
@@ -119,12 +120,12 @@ export const ActivePools: React.FC = (): JSX.Element => {
 
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()
-  const pricePool = dex.chain === 'THOR' ? pricePoolThor : pricePoolMaya
+  const pricePool = dex.chain === THORChain ? pricePoolThor : pricePoolMaya
 
   const renderBtnPoolsColumn = useCallback(
     (_: string, { asset }: { asset: Asset }) => {
       const actions: ActionButtonAction[] =
-        dex.chain === 'THOR'
+        dex.chain === THORChain
           ? [
               {
                 label: intl.formatMessage({ id: 'common.swap' }),
@@ -273,7 +274,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
       dex: string // Add a parameter to accept the 'dex' value
     ): ColumnType<T> => {
       // Determine which setPoolsPeriod function to use based on the 'dex' value
-      const currentSetPoolsPeriod = dex === 'THOR' ? setPoolsPeriod : setPoolsPeriodMaya
+      const currentSetPoolsPeriod = dex === THORChain ? setPoolsPeriod : setPoolsPeriodMaya
 
       return {
         key: 'apy',
@@ -383,7 +384,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
         Shared.renderTableError(intl.formatMessage({ id: 'common.refresh' }), refreshHandler),
         // success state
         (poolsState) => {
-          if (dex.chain === 'THOR') {
+          if (dex.chain === THORChain) {
             const { poolDetails } = poolsState as PoolsState // Cast to the correct type
             const poolViewData = PoolHelpers.getPoolTableRowsData({
               poolDetails,

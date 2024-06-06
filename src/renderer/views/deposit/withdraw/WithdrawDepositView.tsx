@@ -5,6 +5,7 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, BaseAmount, bn } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/function'
@@ -62,10 +63,10 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
   } = useMidgardMayaContext()
 
   const { dex } = useDex()
-  const selectedPricePoolAsset$ = dex.chain === 'THOR' ? selectedPricePoolAssetThor$ : selectedPricePoolAssetMaya$
+  const selectedPricePoolAsset$ = dex.chain === THORChain ? selectedPricePoolAssetThor$ : selectedPricePoolAssetMaya$
   const { symWithdrawFee$, reloadWithdrawFees, symWithdraw$ } = useChainContext()
-  const poolsState$ = dex.chain === 'THOR' ? poolsStateThor$ : poolsStateMaya$
-  const dexPrice = useObservableState(dex.chain === 'THOR' ? priceRatio$ : priceRatioMaya$, bn(1))
+  const poolsState$ = dex.chain === THORChain ? poolsStateThor$ : poolsStateMaya$
+  const dexPrice = useObservableState(dex.chain === THORChain ? priceRatio$ : priceRatioMaya$, bn(1))
 
   const [selectedPriceAssetRD]: [RD.RemoteData<Error, Asset>, unknown] = useObservableState(
     () =>
@@ -130,7 +131,7 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
 
   const reloadBalancesAndShares = useCallback(() => {
     reloadBalances()
-    if (dex.chain === 'THOR') {
+    if (dex.chain === THORChain) {
       reloadShares(5000)
     } else {
       reloadSharesMaya(5000)

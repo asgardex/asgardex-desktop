@@ -3,6 +3,7 @@ import React, { useCallback, useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, BaseAmount } from '@xchainjs/xchain-util'
 import { Spin } from 'antd'
 import BigNumber from 'bignumber.js'
@@ -54,8 +55,8 @@ export const ShareView: React.FC<Props> = ({
     pools: { selectedPricePoolAsset$: selectedPricePoolAssetMaya$, selectedPricePool$: selectedPricePoolMaya$ }
   } = midgardMayaService
 
-  const selectedPricePoolAsset$ = dex.chain === 'THOR' ? selectedPricePoolAssetThor$ : selectedPricePoolAssetMaya$
-  const selectedPricePool$ = dex.chain === 'THOR' ? selectedPricePoolThor$ : selectedPricePoolMaya$
+  const selectedPricePoolAsset$ = dex.chain === THORChain ? selectedPricePoolAssetThor$ : selectedPricePoolAssetMaya$
+  const selectedPricePool$ = dex.chain === THORChain ? selectedPricePoolThor$ : selectedPricePoolMaya$
 
   const intl = useIntl()
 
@@ -63,7 +64,7 @@ export const ShareView: React.FC<Props> = ({
 
   const { poolData: pricePoolData } = useObservableState(
     selectedPricePool$,
-    dex.chain === 'THOR' ? RUNE_PRICE_POOL : MAYA_PRICE_POOL
+    dex.chain === THORChain ? RUNE_PRICE_POOL : MAYA_PRICE_POOL
   )
 
   const renderPoolShareReady = useCallback(

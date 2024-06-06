@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Asset, assetToString, bn, Chain, baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
@@ -124,7 +125,7 @@ const SuccessRouteView: React.FC<Props> = ({
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()
 
-  const pricePool = dex.chain === 'THOR' ? pricePoolThor : pricePoolMaya
+  const pricePool = dex.chain === THORChain ? pricePoolThor : pricePoolMaya
 
   const { reloadSwapFees, swapFees$, addressByChain$, swap$, assetWithDecimal$ } = useChainContext()
 
@@ -136,13 +137,14 @@ const SuccessRouteView: React.FC<Props> = ({
   } = useWalletContext()
 
   const [haltedChains] = useObservableState(
-    () => FP.pipe(dex.chain === 'THOR' ? haltedChains$ : haltedChainsMaya$, RxOp.map(RD.getOrElse((): Chain[] => []))),
+    () =>
+      FP.pipe(dex.chain === THORChain ? haltedChains$ : haltedChainsMaya$, RxOp.map(RD.getOrElse((): Chain[] => []))),
     []
   )
   const { mimirHalt } = useMimirHalt()
 
   const reloadPools = useCallback(() => {
-    return dex.chain === 'THOR' ? reloadThorPools() : reloadMayaPools()
+    return dex.chain === THORChain ? reloadThorPools() : reloadMayaPools()
   }, [dex, reloadMayaPools, reloadThorPools])
 
   // switches sourcechain context eth | avax | bsc - needed for approve
@@ -150,16 +152,16 @@ const SuccessRouteView: React.FC<Props> = ({
 
   const keystore = useObservableState(keystoreState$, O.none)
 
-  const poolsStateRD = useObservableState(dex.chain === 'THOR' ? poolsState$ : mayaPoolsState$, RD.initial)
+  const poolsStateRD = useObservableState(dex.chain === THORChain ? poolsState$ : mayaPoolsState$, RD.initial)
   const pendingPoolsStateRD = useObservableState(
-    dex.chain === 'THOR' ? pendingPoolsState$ : pendingPoolsStateMaya$,
+    dex.chain === THORChain ? pendingPoolsState$ : pendingPoolsStateMaya$,
     RD.initial
   )
 
   useEffect(() => {
     // Source asset is the asset of the pool we need to interact with
     // Store it in global state, all depending streams will be updated then
-    dex.chain === 'THOR' ? setSelectedPoolAsset(O.some(sourceAsset)) : setSelectedPoolAssetMaya(O.some(sourceAsset))
+    dex.chain === THORChain ? setSelectedPoolAsset(O.some(sourceAsset)) : setSelectedPoolAssetMaya(O.some(sourceAsset))
     // Reset selectedPoolAsset on view's unmount to avoid effects with depending streams
     return () => {
       setSelectedPoolAsset(O.none)
@@ -190,7 +192,7 @@ const SuccessRouteView: React.FC<Props> = ({
   )
 
   const selectedPoolAddress = useObservableState(
-    dex.chain === 'THOR' ? selectedPoolAddress$ : selectedPoolAddressMaya$,
+    dex.chain === THORChain ? selectedPoolAddress$ : selectedPoolAddressMaya$,
     O.none
   )
 
@@ -252,7 +254,7 @@ const SuccessRouteView: React.FC<Props> = ({
 
   const reloadHandler = useCallback(() => {
     reloadBalances()
-    if (dex.chain === 'THOR') {
+    if (dex.chain === THORChain) {
       reloadInboundAddresses()
       reloadSelectedPoolDetail()
     } else {
@@ -270,7 +272,7 @@ const SuccessRouteView: React.FC<Props> = ({
 
   // reload inbound addresses at `onMount` to get always latest `pool address` + `feeRates`
   useEffect(() => {
-    if (dex.chain === 'THOR') {
+    if (dex.chain === THORChain) {
       reloadInboundAddresses()
     } else {
       reloadMayaInboundAddresses()

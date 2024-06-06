@@ -259,7 +259,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     // Merge duplications
     (assets) => unionAssets(assets)(assets),
     // Filter RUNE | CACAO out - not selectable on asset side
-    A.filter(P.not(dex.chain === 'THOR' ? isRuneNativeAsset : isCacaoAsset))
+    A.filter(P.not(dex.chain === THORChain ? isRuneNativeAsset : isCacaoAsset))
   )
 
   // can be Rune or cacao depending on dex selected
@@ -358,7 +358,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
   const priceRuneAmountToDepositMax1e8: AssetWithAmount = useMemo(() => {
     const result =
-      dex.chain === 'THOR'
+      dex.chain === THORChain
         ? FP.pipe(
             isPoolDetails(poolDetails)
               ? PoolHelpers.getPoolPriceValue({
@@ -583,7 +583,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
   const oPriceRuneInFee: O.Option<AssetWithAmount> = useMemo(() => {
     const amount = depositFees.rune.inFee
 
-    return dex.chain === 'THOR'
+    return dex.chain === THORChain
       ? FP.pipe(
           isPoolDetails(poolDetails)
             ? PoolHelpers.getPoolPriceValue({
@@ -646,7 +646,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
   const oPriceRuneOutFee: O.Option<AssetWithAmount> = useMemo(() => {
     const amount = depositFees.rune.outFee
 
-    return dex.chain === 'THOR'
+    return dex.chain === THORChain
       ? FP.pipe(
           isPoolDetails(poolDetails)
             ? PoolHelpers.getPoolPriceValue({
@@ -710,7 +710,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     const asset = depositFees.asset.asset
     const amount = depositFees.asset.inFee
 
-    return dex.chain === 'THOR'
+    return dex.chain === THORChain
       ? FP.pipe(
           isPoolDetails(poolDetails)
             ? PoolHelpers.getPoolPriceValue({
@@ -774,7 +774,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     const asset = depositFees.asset.asset
     const amount = depositFees.asset.outFee
 
-    return dex.chain === 'THOR'
+    return dex.chain === THORChain
       ? FP.pipe(
           isPoolDetails(poolDetails)
             ? PoolHelpers.getPoolPriceValue({
@@ -1069,7 +1069,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
   const priceAmountToSwapMax1e8: CryptoAmount = useMemo(() => {
     const result =
-      dex.chain === 'THOR'
+      dex.chain === THORChain
         ? FP.pipe(
             isPoolDetails(poolDetails)
               ? PoolHelpers.getPoolPriceValue({
@@ -1095,7 +1095,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
   const priceRuneAmountToDepsoitMax1e8: CryptoAmount = useMemo(() => {
     const result =
-      dex.chain === 'THOR'
+      dex.chain === THORChain
         ? FP.pipe(
             isPoolDetails(poolDetails)
               ? PoolHelpers.getPoolPriceValue({
@@ -1144,7 +1144,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
   const priceAssetAmountToDepositMax1e8: AssetWithAmount = useMemo(() => {
     const result =
-      dex.chain === 'THOR'
+      dex.chain === THORChain
         ? FP.pipe(
             isPoolDetails(poolDetails)
               ? PoolHelpers.getPoolPriceValue({

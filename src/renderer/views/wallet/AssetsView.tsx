@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { BaseAmount, Chain } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
@@ -122,7 +123,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
   })
 
   const getChainWeight = (chain: Chain, dex: Dex) => {
-    const weights = dex.chain === 'THOR' ? CHAIN_WEIGHTS_THOR : CHAIN_WEIGHTS_MAYA
+    const weights = dex.chain === THORChain ? CHAIN_WEIGHTS_THOR : CHAIN_WEIGHTS_MAYA
     return isEnabledChain(chain) ? weights[chain] : Infinity
   }
   const getUniqueChainBalances = (balances: ChainBalances) => {

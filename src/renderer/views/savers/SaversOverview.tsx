@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Asset,
   assetToString,
@@ -74,14 +75,14 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
   } = useMidgardMayaContext()
 
   const poolsPeriod = useObservableState(
-    dex.chain === 'THOR' ? poolsPeriod$ : poolsPeriodMaya$,
+    dex.chain === THORChain ? poolsPeriod$ : poolsPeriodMaya$,
     GetPoolsPeriodEnum._30d
   )
 
   const { maxSynthPerPoolDepth: maxSynthPerPoolDepthRD, reloadConstants } = useSynthConstants()
 
   const refreshHandler = useCallback(() => {
-    if (dex.chain === 'THOR') {
+    if (dex.chain === THORChain) {
       reloadPools()
     } else {
       reloadMayaPools()
@@ -90,11 +91,11 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
   }, [dex, reloadConstants, reloadPools, reloadMayaPools])
 
   const selectedPricePool = useObservableState(
-    dex.chain === 'THOR' ? selectedPricePool$ : selectedPricePoolMaya$,
-    dex.chain === 'THOR' ? PoolHelpers.RUNE_PRICE_POOL : MAYA_PRICE_POOL
+    dex.chain === THORChain ? selectedPricePool$ : selectedPricePoolMaya$,
+    dex.chain === THORChain ? PoolHelpers.RUNE_PRICE_POOL : MAYA_PRICE_POOL
   )
 
-  const poolsRD = useObservableState(dex.chain === 'THOR' ? poolsState$ : mayaPoolsState$, RD.pending)
+  const poolsRD = useObservableState(dex.chain === THORChain ? poolsState$ : mayaPoolsState$, RD.pending)
 
   // store previous data of pools to render these while reloading
   const previousSavers = useRef<O.Option<SaversTableRowsData>>(O.none)
@@ -140,7 +141,7 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
       dex: string // Add a parameter to accept the 'dex' value
     ): ColumnType<T> => {
       // Determine which setPoolsPeriod function to use based on the 'dex' value
-      const currentSetPoolsPeriod = dex === 'THOR' ? setPoolsPeriod : setPoolsPeriodMaya
+      const currentSetPoolsPeriod = dex === THORChain ? setPoolsPeriod : setPoolsPeriodMaya
 
       return {
         key: 'apr',

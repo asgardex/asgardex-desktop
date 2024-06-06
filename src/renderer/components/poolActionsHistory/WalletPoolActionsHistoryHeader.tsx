@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
@@ -57,7 +58,7 @@ export const WalletPoolActionsHistoryHeader: React.FC<Props> = (props) => {
       </Styled.FilterContainer>
       <Styled.LinkContainer>
         <Styled.Headline onClick={onClickAddressIcon}>
-          {dex.chain === 'THOR' ? `RuneScan` : 'MayaScan'}
+          {dex.chain === THORChain ? `RuneScan` : 'MayaScan'}
           <Styled.ExplorerLinkIcon />
         </Styled.Headline>
       </Styled.LinkContainer>

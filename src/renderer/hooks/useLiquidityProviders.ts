@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import { Asset } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
@@ -41,7 +42,7 @@ export const useLiquidityProviders = ({
 
   useEffect(() => {
     // Determine the correct function based on the current value of `dex`
-    const getLiquidityProviders = dex.chain === 'THOR' ? getLiquidityProvidersThor : getLiquidityProvidersMaya
+    const getLiquidityProviders = dex.chain === THORChain ? getLiquidityProvidersThor : getLiquidityProvidersMaya
 
     // Create the observable and subscribe
     const subscription = getLiquidityProviders(asset).subscribe(setProviders)

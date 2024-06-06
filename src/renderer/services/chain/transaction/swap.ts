@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { isSynthAsset } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -40,11 +41,11 @@ export const swap$ = ({
     RxOp.switchMap((poolAddresses) =>
       Rx.iif(
         () =>
-          dex.chain === 'THOR'
+          dex.chain === THORChain
             ? isRuneNativeAsset(asset) || isSynthAsset(asset)
             : isCacaoAsset(asset) || isSynthAsset(asset),
-        dex.chain === 'THOR' ? validateNode$() : mayaValidateNode$(),
-        dex.chain === 'THOR'
+        dex.chain === THORChain ? validateNode$() : mayaValidateNode$(),
+        dex.chain === THORChain
           ? midgardPoolsService.validatePool$(poolAddresses, chain)
           : mayaMidgardPoolsService.validatePool$(poolAddresses, chain)
       )

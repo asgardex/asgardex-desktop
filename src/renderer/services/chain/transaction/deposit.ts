@@ -4,6 +4,7 @@ import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { TxHash } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -239,10 +240,10 @@ export const symDeposit$ = ({
     RxOp.switchMap((poolAddresses) =>
       liveData.sequenceS({
         pool:
-          dex.chain === 'THOR'
+          dex.chain === THORChain
             ? midgardPoolsService.validatePool$(poolAddresses, chain)
             : mayaMidgardPoolsService.validatePool$(poolAddresses, chain),
-        node: dex.chain === 'THOR' ? validateNode$() : mayaValidateNode$()
+        node: dex.chain === THORChain ? validateNode$() : mayaValidateNode$()
       })
     ),
     // 2. send asset deposit txs

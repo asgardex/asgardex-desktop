@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useCallback, useRef } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Row, Col, Grid } from 'antd'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
@@ -334,7 +335,7 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
 
   const dexPrice = useMemo(() => {
     // Use 'dex' to determine which DEX prices to use
-    if (dex.chain === 'THOR') {
+    if (dex.chain === THORChain) {
       return {
         price: runePriceRD,
         reloadPrice: reloadRunePrice
@@ -347,7 +348,7 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
     }
   }, [dex, runePriceRD, reloadRunePrice, mayaPriceRD, reloadMayaPrice])
   const changeDexHandler = useCallback(() => {
-    changeDex(dex.chain === 'THOR' ? mayaDetails : thorDetails)
+    changeDex(dex.chain === THORChain ? mayaDetails : thorDetails)
   }, [changeDex, dex])
   return (
     <>

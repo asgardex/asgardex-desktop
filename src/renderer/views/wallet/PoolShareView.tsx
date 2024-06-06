@@ -3,6 +3,7 @@ import React, { useCallback, useMemo, useRef, useEffect, useState } from 'react'
 import { SyncOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Asset, Chain } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import * as A from 'fp-ts/Array'
@@ -76,15 +77,15 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   } = useMidgardMayaContext()
 
   const selectedPricePool$ = useMemo(
-    () => (dex.chain === 'THOR' ? selectedPricePoolThor$ : selectedPricePoolMaya$),
+    () => (dex.chain === THORChain ? selectedPricePoolThor$ : selectedPricePoolMaya$),
     [dex, selectedPricePoolMaya$, selectedPricePoolThor$]
   )
   const [selectedPricePool] = useObservableState(
     () => selectedPricePool$,
-    dex.chain === 'THOR' ? RUNE_PRICE_POOL : MAYA_PRICE_POOL
+    dex.chain === THORChain ? RUNE_PRICE_POOL : MAYA_PRICE_POOL
   )
-  const allPoolDetails$ = dex.chain === 'THOR' ? allPoolDetailsThor$ : allPoolDetailsMaya$
-  const poolsRD = useObservableState(dex.chain === 'THOR' ? poolsState$ : mayaPoolsState$, RD.pending)
+  const allPoolDetails$ = dex.chain === THORChain ? allPoolDetailsThor$ : allPoolDetailsMaya$
+  const poolsRD = useObservableState(dex.chain === THORChain ? poolsState$ : mayaPoolsState$, RD.pending)
   const { addressByChain$ } = useChainContext()
 
   const { getLedgerAddress$ } = useWalletContext()
@@ -92,7 +93,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   const { isPrivate } = usePrivateData()
 
   useEffect(() => {
-    if (dex.chain === 'THOR') {
+    if (dex.chain === THORChain) {
       reloadAllPools()
     } else {
       reloadAllMayaPools()
@@ -138,7 +139,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
           A.map(addressFromWalletAddress),
           // Dynamically choose the right function based on `dex`
           (addresses) =>
-            dex.chain === 'THOR' ? allSharesByAddressesThor$(addresses) : allSharesByAddressesMaya$(addresses)
+            dex.chain === THORChain ? allSharesByAddressesThor$(addresses) : allSharesByAddressesMaya$(addresses)
         )
       ),
       RxOp.startWith(RD.pending)
@@ -151,16 +152,16 @@ export const PoolShareView: React.FC = (): JSX.Element => {
     return () => subscription.unsubscribe()
   }, [dex, allSharesByAddressesThor$, allSharesByAddressesMaya$, addressByChain$, INCLUDED_CHAINS, getLedgerAddress$]) // Include all dependencies that affect the observable pipeline
 
-  const haltedChains$ = dex.chain === 'THOR' ? haltedChainsThor$ : haltedMayaChains$
+  const haltedChains$ = dex.chain === THORChain ? haltedChainsThor$ : haltedMayaChains$
   const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
   const { mimirHalt } = useMimirHalt()
   const poolDetailsRD = useObservableState(allPoolDetails$, RD.pending)
   const { poolData: pricePoolData } = useObservableState(
     selectedPricePool$,
-    dex.chain === 'THOR' ? RUNE_PRICE_POOL : MAYA_PRICE_POOL
+    dex.chain === THORChain ? RUNE_PRICE_POOL : MAYA_PRICE_POOL
   )
   const oPriceAsset = useObservableState<O.Option<Asset>>(
-    dex.chain === 'THOR' ? selectedPricePoolAsset$ : selectedPricePoolMayaAsset$,
+    dex.chain === THORChain ? selectedPricePoolAsset$ : selectedPricePoolMayaAsset$,
     O.none
   )
   const priceAsset = FP.pipe(oPriceAsset, O.toUndefined)
@@ -175,7 +176,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
     return FP.pipe(
       sequenceTOption(oDexNativeAddress, oMainnet),
       O.map(([dexAddress, _]) =>
-        dex.chain === 'THOR'
+        dex.chain === THORChain
           ? `https://app.thoryield.com/accounts?thor=${dexAddress}`
           : `https://www.mayascan.org/address/${dexAddress}`
       ),
@@ -203,7 +204,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   )
 
   const clickRefreshHandler = useCallback(() => {
-    if (dex.chain === 'THOR') {
+    if (dex.chain === THORChain) {
       reloadAllPools()
       reloadNetworkInfo()
     } else {
@@ -271,7 +272,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   const disableRefresh = useMemo(() => RD.isPending(poolsRD) || RD.isPending(allSharesRD), [allSharesRD, poolsRD])
 
   const refreshHandler = useCallback(() => {
-    if (dex.chain === 'THOR') {
+    if (dex.chain === THORChain) {
       reloadAllPools()
       reloadAllSharesByAddresses()
     } else {

@@ -103,7 +103,7 @@ export const NetworkLabel = styled(Text)<{ network: Network; dex: Dex }>`
   font-size: 12px;
 
   color: ${({ network, dex }) => {
-    if (dex.chain === 'THOR') {
+    if (dex.chain === THORChain) {
       switch (network) {
         case Network.Mainnet:
           return palette('primary', 0)

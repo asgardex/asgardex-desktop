@@ -64,7 +64,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
   const { reloadInboundAddresses: reloadInboundAddressesThor } = useThorchainContext()
   const { reloadInboundAddresses: reloadInboundAddressesMaya } = useMayachainContext()
 
-  const reloadInboundAddresses = dex.chain === 'THOR' ? reloadInboundAddressesThor : reloadInboundAddressesMaya
+  const reloadInboundAddresses = dex.chain === THORChain ? reloadInboundAddressesThor : reloadInboundAddressesMaya
   const {
     service: {
       pools: {
@@ -88,15 +88,15 @@ export const SymDepositView: React.FC<Props> = (props) => {
     }
   } = useMidgardMayaContext()
 
-  const availableAssets$ = dex.chain === 'THOR' ? availableAssetsThor$ : availableAssetsMaya$
-  const reloadSelectedPoolDetail = dex.chain === 'THOR' ? reloadSelectedPoolDetailThor : reloadSelectedPoolDetailMaya
+  const availableAssets$ = dex.chain === THORChain ? availableAssetsThor$ : availableAssetsMaya$
+  const reloadSelectedPoolDetail = dex.chain === THORChain ? reloadSelectedPoolDetailThor : reloadSelectedPoolDetailMaya
 
   const { symDepositFees$, symDeposit$, reloadSymDepositFees, saverDeposit$: asymDeposit$ } = useChainContext()
 
-  const poolsState = useObservableState(dex.chain === 'THOR' ? poolsState$ : poolsStateMaya$, RD.initial)
+  const poolsState = useObservableState(dex.chain === THORChain ? poolsState$ : poolsStateMaya$, RD.initial)
 
   const oPoolAddress: O.Option<PoolAddress> = useObservableState(
-    dex.chain === 'THOR' ? selectedPoolAddress$ : selectedPoolAddressMaya$,
+    dex.chain === THORChain ? selectedPoolAddress$ : selectedPoolAddressMaya$,
     O.none
   )
 
@@ -120,7 +120,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
     reloadInboundAddresses()
   }, [dex, reloadInboundAddresses])
 
-  const pricePool = dex.chain === 'THOR' ? pricePoolThor : pricePoolMaya
+  const pricePool = dex.chain === THORChain ? pricePoolThor : pricePoolMaya
 
   const [balancesState] = useObservableState(
     () =>
@@ -176,7 +176,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
   }, [reloadBalances])
 
   useEffect(() => {
-    if (dex.chain === 'THOR') {
+    if (dex.chain === THORChain) {
       reloadSelectedPoolDetail()
     } else {
       reloadSelectedPoolDetailMaya()
@@ -239,8 +239,8 @@ export const SymDepositView: React.FC<Props> = (props) => {
           disabled={true}
           poolAddress={O.none}
           reloadBalances={reloadBalances}
-          reloadShares={dex.chain === 'THOR' ? reloadShares : reloadSharesMaya}
-          reloadSelectedPoolDetail={dex.chain === 'THOR' ? reloadSelectedPoolDetail : reloadSelectedPoolDetailMaya}
+          reloadShares={dex.chain === THORChain ? reloadShares : reloadSharesMaya}
+          reloadSelectedPoolDetail={dex.chain === THORChain ? reloadSelectedPoolDetail : reloadSelectedPoolDetailMaya}
           poolData={ZERO_POOL_DATA}
           deposit$={symDeposit$}
           asymDeposit$={asymDeposit$}
@@ -328,7 +328,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
               reloadApproveFee={reloadApproveFee}
               pricePool={pricePool}
               reloadBalances={reloadBalances}
-              reloadShares={dex.chain === 'THOR' ? reloadShares : reloadSharesMaya}
+              reloadShares={dex.chain === THORChain ? reloadShares : reloadSharesMaya}
               reloadSelectedPoolDetail={reloadSelectedPoolDetail}
               availableAssets={availableAssets}
               deposit$={symDeposit$}

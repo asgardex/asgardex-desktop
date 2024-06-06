@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
 import * as O from 'fp-ts/Option'
@@ -124,7 +125,7 @@ export const PoolDetailsView: React.FC = () => {
   const { add: addToWatchList, remove: removeFromWatchList, list: watchedList } = usePoolWatchlist() //tbf
 
   const poolsPeriod = useObservableState(
-    dex.chain === 'THOR' ? poolsPeriod$ : poolsPeriodMaya$,
+    dex.chain === THORChain ? poolsPeriod$ : poolsPeriodMaya$,
     DEFAULT_GET_POOLS_PERIOD
   )
 
@@ -133,7 +134,7 @@ export const PoolDetailsView: React.FC = () => {
   // Set selected pool asset whenever an asset in route has been changed
   // Needed to get all data for this pool (pool details etc.)
   useEffect(() => {
-    if (dex.chain === 'THOR') {
+    if (dex.chain === THORChain) {
       setSelectedPoolAssetThor(oRouteAsset)
       // Reset selectedPoolAsset on view's unmount to avoid effects with depending streams
       return () => {
@@ -149,7 +150,7 @@ export const PoolDetailsView: React.FC = () => {
   }, [dex, oRouteAsset, setSelectedPoolAssetMaya, setSelectedPoolAssetThor])
 
   const oPriceSymbol = useObservableState(
-    dex.chain === 'THOR' ? selectedPricePoolAssetSymbol$ : selectedPricePoolAssetSymbolMaya$,
+    dex.chain === THORChain ? selectedPricePoolAssetSymbol$ : selectedPricePoolAssetSymbolMaya$,
     O.none
   )
   const priceSymbol = FP.pipe(
@@ -157,7 +158,7 @@ export const PoolDetailsView: React.FC = () => {
     O.getOrElse(() => '')
   )
 
-  const priceRatio = useObservableState(dex.chain === 'THOR' ? priceRatio$ : priceRatioMaya$, ONE_BN)
+  const priceRatio = useObservableState(dex.chain === THORChain ? priceRatio$ : priceRatioMaya$, ONE_BN)
 
   const historyActions = useMidgardHistoryActions()
   const historyActionsMaya = useMidgardMayaHistoryActions()
@@ -174,7 +175,7 @@ export const PoolDetailsView: React.FC = () => {
   const onRefreshData = useCallback(() => {
     // trigger reload of chart data, which will be handled in PoolChartView
 
-    if (dex.chain === 'THOR') {
+    if (dex.chain === THORChain) {
       reloadHistory()
       reloadSelectedPoolDetail()
       reloadPoolStatsDetail()
@@ -200,7 +201,7 @@ export const PoolDetailsView: React.FC = () => {
   const refreshButtonDisabled = useMemo(() => {
     return (
       FP.pipe(historyPageRD || historyPageMayaRD, RD.isPending) ||
-      FP.pipe(dex.chain === 'THOR' ? poolDetailThorRD : poolDetailMayaRD, RD.isPending)
+      FP.pipe(dex.chain === THORChain ? poolDetailThorRD : poolDetailMayaRD, RD.isPending)
     )
   }, [dex, historyPageMayaRD, historyPageRD, poolDetailMayaRD, poolDetailThorRD])
 
@@ -240,7 +241,7 @@ export const PoolDetailsView: React.FC = () => {
             }
             const watched = FP.pipe(watchedList, A.elem(eqAsset)(asset))
 
-            return dex.chain === 'THOR' ? (
+            return dex.chain === THORChain ? (
               <PoolDetails
                 asset={asset}
                 watched={watched}

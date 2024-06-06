@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Balance, Network } from '@xchainjs/xchain-client'
-import { AssetCacao } from '@xchainjs/xchain-mayachain'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
   Asset,
@@ -301,7 +302,9 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
       const walletAsset: SelectedWalletAsset = { asset, walletAddress, walletIndex, walletType, hdMode }
       const normalizedAssetString = assetToString(asset).toUpperCase()
       const hasActivePool: boolean = FP.pipe(
-        O.fromNullable(dex.chain === 'THOR' ? poolsData[normalizedAssetString] : poolsDataMaya[normalizedAssetString]),
+        O.fromNullable(
+          dex.chain === THORChain ? poolsData[normalizedAssetString] : poolsDataMaya[normalizedAssetString]
+        ),
         O.isSome
       )
 
@@ -320,7 +323,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         createAction('wallet.action.send', () => assetHandler(walletAsset, 'send'))
       ]
 
-      if (isRuneNativeAsset(asset) && deepestPoolAsset && dex.chain !== 'MAYA') {
+      if (isRuneNativeAsset(asset) && deepestPoolAsset && dex.chain !== MAYAChain) {
         actions.push(
           createAction('common.swap', () =>
             navigate(
@@ -335,7 +338,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         )
       }
 
-      if (isCacaoAsset(asset) && deepestPoolAsset && dex.chain !== 'THOR') {
+      if (isCacaoAsset(asset) && deepestPoolAsset && dex.chain !== THORChain) {
         actions.push(
           createAction('common.swap', () =>
             navigate(
@@ -371,7 +374,9 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
             navigate(
               poolsRoutes.swap.path({
                 source: assetToString(asset),
-                target: assetToString(isRuneNativeAsset(asset) || dex.chain === 'MAYA' ? AssetCacao : AssetRuneNative),
+                target: assetToString(
+                  isRuneNativeAsset(asset) || dex.chain === MAYAChain ? AssetCacao : AssetRuneNative
+                ),
                 sourceWalletType: walletType,
                 targetWalletType: DEFAULT_WALLET_TYPE
               })
@@ -379,7 +384,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           )
         )
 
-        if (dex.chain !== 'MAYA') {
+        if (dex.chain !== MAYAChain) {
           actions.push(
             createAction('common.earn', () =>
               navigate(
@@ -392,7 +397,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           )
         }
 
-        if (isRuneNativeAsset(asset) && dex.chain === 'THOR' && deepestPoolAsset) {
+        if (isRuneNativeAsset(asset) && dex.chain === THORChain && deepestPoolAsset) {
           actions.push(
             createAction('common.add', () =>
               navigate(
@@ -406,7 +411,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           )
         }
 
-        if (isCacaoAsset(asset) && dex.chain === 'MAYA' && deepestPoolAsset) {
+        if (isCacaoAsset(asset) && dex.chain === MAYAChain && deepestPoolAsset) {
           actions.push(
             createAction('common.add', () =>
               navigate(
@@ -532,7 +537,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
                 return result
               })
             }
-            if ((dex.chain === 'MAYA' && chain === 'THOR') || (dex.chain === 'THOR' && chain === 'MAYA')) {
+            if ((dex.chain === MAYAChain && chain === THORChain) || (dex.chain === THORChain && chain === MAYAChain)) {
               sortedBalances = sortedBalances.filter(({ asset }) => !asset.synth)
             }
             previousAssetsTableData.current[index] = sortedBalances

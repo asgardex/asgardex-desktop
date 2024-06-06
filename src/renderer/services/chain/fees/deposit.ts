@@ -1,3 +1,4 @@
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -29,7 +30,7 @@ const reloadSymDepositFees = (asset: Asset, dex: Dex) => {
     _reloadSymDepositFees(O.some(asset))
   }
   // (2) Reload fees for RUNE
-  dex.chain === 'THOR' ? THOR.reloadFees() : MAYA.reloadFees()
+  dex.chain === THORChain ? THOR.reloadFees() : MAYA.reloadFees()
   // (3) Reload fees for asset, which are provided via `inbound_addresses` endpoint
   reloadInboundAddresses()
 }

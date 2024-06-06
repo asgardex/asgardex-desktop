@@ -253,7 +253,7 @@ export const sendPoolTx$ = ({
       })
 
     case THORChain:
-      return dex.chain === 'THOR'
+      return dex.chain === THORChain
         ? THOR.sendPoolTx$({ walletType, amount, asset, memo, walletIndex, hdMode })
         : THOR.sendTx({ sender, walletType, asset, recipient, amount, memo, walletIndex, hdMode })
 
