@@ -269,6 +269,7 @@ export const Swap = ({
   const { chain: sourceChain } = sourceAsset.synth ? dex.asset : sourceAsset
 
   const lockedWallet: boolean = useMemo(() => isLocked(keystore) || !hasImportedKeystore(keystore), [keystore])
+  const [quoteOnly, setQuoteOnly] = useState<boolean>(false)
 
   const useSourceAssetLedger = isLedgerWallet(initialSourceWalletType)
   const prevChainFees = useRef<O.Option<SwapFees>>(O.none)
@@ -534,7 +535,7 @@ export const Swap = ({
   // Max amount to swap == users balances of source asset
   // Decimal always <= 1e8 based
   const maxAmountToSwapMax1e8: BaseAmount = useMemo(() => {
-    if (lockedWallet) {
+    if (lockedWallet || quoteOnly) {
       return lockedAssetAmount.baseAmount
     }
 
@@ -543,7 +544,14 @@ export const Swap = ({
       balanceAmountMax1e8: sourceAssetAmountMax1e8,
       feeAmount: swapFees.inFee.amount
     })
-  }, [lockedAssetAmount.baseAmount, lockedWallet, sourceAsset, sourceAssetAmountMax1e8, swapFees.inFee.amount])
+  }, [
+    lockedAssetAmount.baseAmount,
+    lockedWallet,
+    quoteOnly,
+    sourceAsset,
+    sourceAssetAmountMax1e8,
+    swapFees.inFee.amount
+  ])
 
   const setAmountToSwapMax1e8 = useCallback(
     (amountToSwap: BaseAmount) => {
@@ -1566,29 +1574,44 @@ export const Swap = ({
 
   // sets the locked asset amount to be the asset pool depth
   useEffect(() => {
-    if (lockedWallet) {
-      const poolDetailBTC =
+    if (lockedWallet || quoteOnly) {
+      const poolAsset =
+        (isRuneNativeAsset(sourceAsset) && dex.chain === 'THOR') || (isCacaoAsset(sourceAsset) && dex.chain === 'MAYA')
+          ? targetAsset
+          : sourceAsset
+      const poolDetail =
         dex.chain === 'THOR'
           ? isPoolDetails(poolDetails)
-            ? getPoolDetail(poolDetails, sourceAsset)
+            ? getPoolDetail(poolDetails, poolAsset)
             : O.none
-          : getPoolDetailMaya(poolDetails, sourceAsset)
-      const poolDetailSource =
-        dex.chain === 'THOR'
-          ? isPoolDetails(poolDetails)
-            ? getPoolDetail(poolDetails, sourceAsset)
-            : O.none
-          : getPoolDetailMaya(poolDetails, sourceAsset)
-      if (O.isSome(poolDetailBTC) && O.isSome(poolDetailSource)) {
-        const detail = poolDetailBTC.value
-        const detailSource = poolDetailSource.value
-        const amount = dex.chain === 'THOR' ? baseAmount(detail.assetDepth) : baseAmount(detailSource.assetDepth)
+          : getPoolDetailMaya(poolDetails, poolAsset)
+
+      if (O.isSome(poolDetail)) {
+        const detail = poolDetail.value
+        let amount: BaseAmount
+        if (isRuneNativeAsset(sourceAsset)) {
+          amount = baseAmount(detail.runeDepth)
+        } else if (isCacaoAsset(sourceAsset)) {
+          amount = baseAmount(detail.runeDepth)
+        } else {
+          amount = dex.chain === 'THOR' ? baseAmount(detail.assetDepth) : baseAmount(detail.assetDepth)
+        }
         setLockedAssetAmount(new CryptoAmount(convertBaseAmountDecimal(amount, sourceAssetDecimal), sourceAsset))
       } else {
         setLockedAssetAmount(new CryptoAmount(ONE_RUNE_BASE_AMOUNT, sourceAsset))
       }
     }
-  }, [dex, lockedWallet, poolDetails, pricePool.poolData, sourceAsset, sourceAssetDecimal, thorchainQuery])
+  }, [
+    dex,
+    lockedWallet,
+    poolDetails,
+    pricePool.poolData,
+    quoteOnly,
+    sourceAsset,
+    sourceAssetDecimal,
+    targetAsset,
+    thorchainQuery
+  ])
 
   const priceAmountMax1e8: CryptoAmount = useMemo(() => {
     const result =
@@ -1708,6 +1731,12 @@ export const Swap = ({
     setStreamingQuantity(0) // thornode decides the swap quantity
     setSlider(dex.chain === 'THOR' ? 26 : 0)
     setIsStreaming(dex.chain === 'THOR' ? true : false)
+  }
+  const quoteOnlyButton = () => {
+    setQuoteOnly(!quoteOnly)
+    setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
+    setQuote(O.none)
+    setQuoteMaya(O.none)
   }
 
   // Streaming Interval slider
@@ -2141,7 +2170,7 @@ export const Swap = ({
       return <></>
     }
 
-    if (lockedWallet) {
+    if (lockedWallet || quoteOnly) {
       return <></>
     }
 
@@ -2170,7 +2199,16 @@ export const Swap = ({
           : intl.formatMessage({ id: 'swap.errors.amount.thornodeQuoteError' }, { error: error[1] })}
       </ErrorLabel>
     )
-  }, [quoteErrors, lockedWallet, targetAsset.chain, targetAsset.symbol, sourceAssetDecimal, sourceAsset, intl])
+  }, [
+    quoteErrors,
+    lockedWallet,
+    quoteOnly,
+    targetAsset.chain,
+    targetAsset.symbol,
+    sourceAssetDecimal,
+    sourceAsset,
+    intl
+  ])
 
   const sourceChainFeeErrorLabel: JSX.Element = useMemo(() => {
     if (!sourceChainFeeError) {
@@ -2477,6 +2515,7 @@ export const Swap = ({
       network !== Network.Stagenet &&
       (disableSwapAction ||
         lockedWallet ||
+        quoteOnly ||
         isZeroAmountToSwap ||
         walletBalancesLoading ||
         sourceChainFeeError ||
@@ -2490,8 +2529,10 @@ export const Swap = ({
         customAddressEditActive ||
         quoteExpired),
     [
+      network,
       disableSwapAction,
       lockedWallet,
+      quoteOnly,
       isZeroAmountToSwap,
       walletBalancesLoading,
       sourceChainFeeError,
@@ -2499,13 +2540,12 @@ export const Swap = ({
       approveState,
       minAmountError,
       isCausedSlippage,
-      swapResultAmountMax,
+      swapResultAmountMax.baseAmount,
       zeroTargetBaseAmountMax1e8,
       oRecipientAddress,
       canSwap,
       customAddressEditActive,
-      quoteExpired,
-      network
+      quoteExpired
     ]
   )
 
@@ -2671,9 +2711,16 @@ export const Swap = ({
   const [showDetails, setShowDetails] = useState<boolean>(false)
 
   return (
-    <div className="my-50px flex w-full max-w-[500px] flex-col justify-between">
+    <div className="my-20px flex w-full max-w-[500px] flex-col justify-between">
       <div>
         {/* Note: Input value is shown as AssetAmount */}
+        <FlatButton
+          onClick={quoteOnlyButton}
+          size="small"
+          color={quoteOnly ? 'warning' : 'primary'}
+          className="mb-20px rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
+          {quoteOnly ? 'Quote Only' : 'Quote & Swap'}
+        </FlatButton>
         <AssetInput
           className="w-full"
           title={intl.formatMessage({ id: 'swap.input' })}

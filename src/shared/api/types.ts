@@ -15,7 +15,7 @@ import { IPCLedgerAddressesIO, KeystoreWallets, PoolsStorageEncoded } from './io
 
 type DexDetails = {
   chain: Chain
-  asset: Asset // Adjust as needed
+  asset: Asset
   decimals: number
   url: string
 }
