@@ -126,7 +126,7 @@ export type SendTxParams = {
   gasLimit?: BigNumber
   feeAmount?: BaseAmount
   hdMode: HDMode
-  dex?: Dex
+  dex: Dex
 }
 
 export type SendPoolTxParams = SendTxParams & {

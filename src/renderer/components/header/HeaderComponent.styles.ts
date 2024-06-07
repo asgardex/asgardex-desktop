@@ -1,4 +1,6 @@
 import { Network } from '@xchainjs/xchain-client'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Layout, Row, Drawer } from 'antd'
 import Text from 'antd/lib/typography/Text'
 import styled from 'styled-components'
@@ -80,10 +82,10 @@ export const DexLabel = styled(Text)<{ dex: Dex }>`
   font-size: 12px;
 
   color: ${({ dex }) => {
-    switch (dex) {
-      case 'THOR':
+    switch (dex.chain) {
+      case THORChain:
         return palette('primary', 0)
-      case 'MAYA':
+      case MAYAChain:
         return palette('secondary', 0)
       default:
         return palette('text', 2)
@@ -101,7 +103,7 @@ export const NetworkLabel = styled(Text)<{ network: Network; dex: Dex }>`
   font-size: 12px;
 
   color: ${({ network, dex }) => {
-    if (dex === 'THOR') {
+    if (dex.chain === THORChain) {
       switch (network) {
         case Network.Mainnet:
           return palette('primary', 0)

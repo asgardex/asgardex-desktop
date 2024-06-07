@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import { SyncOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
@@ -10,7 +11,7 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
 import { DEFAULT_LOCALE } from '../../../shared/i18n/const'
-import { ENABLED_CHAINS } from '../../../shared/utils/chain'
+import { chainToString, ENABLED_CHAINS } from '../../../shared/utils/chain'
 import { envOrDefault } from '../../../shared/utils/env'
 import { Footer } from '../../components/footer'
 import { Header } from '../../components/header'
@@ -77,10 +78,10 @@ export const AppView: React.FC = (): JSX.Element => {
       pools: { haltedChains$: haltedChainsMaya$ }
     }
   } = useMidgardMayaContext()
-  const reloadDexEndpoint = dex === 'THOR' ? reloadApiEndpoint : reloadApiEndpointMaya
-  const apiEndpoint = useObservableState(dex === 'THOR' ? apiEndpoint$ : apiEndpointMaya$, RD.initial)
+  const reloadDexEndpoint = dex.chain === THORChain ? reloadApiEndpoint : reloadApiEndpointMaya
+  const apiEndpoint = useObservableState(dex.chain === THORChain ? apiEndpoint$ : apiEndpointMaya$, RD.initial)
 
-  const haltedChainsRD = useObservableState(dex === 'THOR' ? haltedChains$ : haltedChainsMaya$, RD.initial)
+  const haltedChainsRD = useObservableState(dex.chain === THORChain ? haltedChains$ : haltedChainsMaya$, RD.initial)
 
   const prevHaltedChains = useRef<Chain[]>([])
   const prevMimirHalt = useRef<MimirHalt>(DEFAULT_MIMIR_HALT)
@@ -128,7 +129,7 @@ export const AppView: React.FC = (): JSX.Element => {
               // by removing duplicates
               unionChains(inboundHaltedChains)
             )
-            const dexChain = dex === 'THOR' ? 'THORChain' : 'MAYAChain'
+            const dexChain = chainToString(dex.chain)
             msg =
               haltedChains.length === 1
                 ? `${msg} ${intl.formatMessage({ id: 'halt.chain' }, { chain: haltedChains[0], dex: dexChain })}

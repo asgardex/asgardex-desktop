@@ -12,8 +12,8 @@ import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { baseAmount } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import * as FP from 'fp-ts/lib/function'
@@ -82,7 +82,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
 
   const renderSendView = useCallback(
     (asset: SelectedWalletAsset) => {
-      const chain = asset.asset.synth ? (dex === 'THOR' ? AssetRuneNative.chain : AssetCacao.chain) : asset.asset.chain
+      const chain = asset.asset.synth ? dex.chain : asset.asset.chain
       if (!isEnabledChain(chain)) {
         return (
           <h1>
@@ -143,10 +143,13 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
               emptyBalance={DEFAULT_WALLET_BALANCE}
               poolDetails={poolDetailsMaya}
               oPoolAddress={oPoolAddressMaya}
+              dex={dex}
             />
           )
         case MAYAChain:
-          return <SendViewMAYA asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} poolDetails={poolDetailsMaya} />
+          return (
+            <SendViewMAYA asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} poolDetails={poolDetailsMaya} dex={dex} />
+          )
         case GAIAChain:
           return (
             <SendViewCOSMOS
@@ -154,6 +157,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
               emptyBalance={DEFAULT_WALLET_BALANCE}
               poolDetails={poolDetailsThor}
               oPoolAddress={oPoolAddress}
+              dex={dex}
             />
           )
         case KUJIChain:
@@ -163,6 +167,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
               emptyBalance={DEFAULT_WALLET_BALANCE}
               poolDetails={poolDetailsMaya}
               oPoolAddress={oPoolAddressMaya}
+              dex={dex}
             />
           )
       }

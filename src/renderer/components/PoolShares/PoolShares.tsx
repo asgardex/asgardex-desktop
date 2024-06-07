@@ -8,7 +8,6 @@ import * as FP from 'fp-ts/lib/function'
 import { useIntl } from 'react-intl'
 
 import { Dex } from '../../../shared/api/types'
-import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { MimirHalt } from '../../services/thorchain/types'
 import { AssetLabel } from '../uielements/assets/assetLabel'
@@ -51,11 +50,7 @@ export const PoolShares: React.FC<Props> = ({
 
         return (
           <Row justify="center" align="middle">
-            <Tooltip
-              title={intl.formatMessage(
-                { id: titleId },
-                { asset: asset.ticker, rune: dex === 'THOR' ? AssetRuneNative.ticker : AssetCacao.ticker }
-              )}>
+            <Tooltip title={intl.formatMessage({ id: titleId }, { asset: asset.ticker, rune: dex.asset.ticker })}>
               {/* div needed for tooltip */}
               <div>
                 <Styled.AssetIcon asset={asset} size="normal" network={network} />
@@ -130,13 +125,13 @@ export const PoolShares: React.FC<Props> = ({
 
   const runeColumn: ColumnType<PoolShareTableRowData> = useMemo(
     () => ({
-      title: dex === 'THOR' ? AssetRuneNative.symbol : AssetCacao.symbol,
+      title: dex.asset.symbol,
       align: 'right',
       render: ({ runeShare }: PoolShareTableRowData) => (
         <Label align="right">
           {formatAssetAmountCurrency({
             amount: baseToAsset(runeShare),
-            asset: dex === 'THOR' ? AssetRuneNative : AssetCacao,
+            asset: dex.asset,
             decimal: 2
           })}
         </Label>
@@ -158,7 +153,7 @@ export const PoolShares: React.FC<Props> = ({
             isTextView={isDesktopView}
             title={intl.formatMessage(
               { id: 'poolshares.single.notsupported' },
-              { asset: asset.ticker, rune: dex === 'THOR' ? AssetRuneNative.ticker : AssetCacao.ticker }
+              { asset: asset.ticker, rune: dex.asset.ticker }
             )}
           />
         )
@@ -176,7 +171,7 @@ export const PoolShares: React.FC<Props> = ({
     () => [iconColumn, valueColumn, manageColumn],
     [iconColumn, valueColumn, manageColumn]
   )
-  const website = dex === 'THOR' ? 'thoryeild.com' : 'Mayascan.com'
+  const website = dex.url
   const renderAnalyticsInfo = useMemo(() => {
     return network !== Network.Testnet ? (
       <>

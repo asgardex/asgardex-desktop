@@ -1,8 +1,6 @@
 import React, { useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, assetToString } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 
@@ -37,7 +35,7 @@ export const PoolHistoryView: React.FC<Props> = ({ className, poolAsset, history
 
   const currentFilter = requestParams.type || 'ALL'
 
-  const { openExplorerTxUrl } = useOpenExplorerTxUrl(O.some(dex === 'THOR' ? THORChain : MAYAChain))
+  const { openExplorerTxUrl } = useOpenExplorerTxUrl(O.some(dex.chain))
 
   const headerContent = useMemo(
     () => (

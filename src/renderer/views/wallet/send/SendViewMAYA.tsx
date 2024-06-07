@@ -7,6 +7,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 
+import { Dex } from '../../../../shared/api/types'
 import { SendFormMAYA } from '../../../components/wallet/txs/send/'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useMayachainContext } from '../../../contexts/MayachainContext'
@@ -29,10 +30,11 @@ type Props = {
   asset: SelectedWalletAsset
   emptyBalance: WalletBalance
   poolDetails: PoolDetailsMaya
+  dex: Dex
 }
 
 export const SendViewMAYA: React.FC<Props> = (props): JSX.Element => {
-  const { asset, emptyBalance, poolDetails } = props
+  const { asset, emptyBalance, poolDetails, dex } = props
 
   const { network } = useNetwork()
   const {
@@ -103,6 +105,7 @@ export const SendViewMAYA: React.FC<Props> = (props): JSX.Element => {
               poolDetails={poolDetails}
               pricePool={pricePool}
               mayaScanPrice={mayaScanPriceRD}
+              dex={dex}
             />
           </Styled.Container>
         </Spin>
@@ -127,6 +130,7 @@ export const SendViewMAYA: React.FC<Props> = (props): JSX.Element => {
             poolDetails={poolDetails}
             pricePool={pricePool}
             mayaScanPrice={mayaScanPriceRD}
+            dex={dex}
           />
         </Styled.Container>
       )

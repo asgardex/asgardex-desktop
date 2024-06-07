@@ -8,6 +8,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 
+import { Dex } from '../../../../shared/api/types'
 import { SendFormTHOR } from '../../../components/wallet/txs/send/'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
@@ -30,10 +31,11 @@ type Props = {
   emptyBalance: WalletBalance
   poolDetails: PoolDetails
   oPoolAddress: O.Option<PoolAddress>
+  dex: Dex
 }
 
 export const SendViewTHOR: React.FC<Props> = (props): JSX.Element => {
-  const { asset, emptyBalance, poolDetails, oPoolAddress } = props
+  const { asset, emptyBalance, poolDetails, oPoolAddress, dex } = props
 
   const { network } = useNetwork()
   const {
@@ -100,6 +102,7 @@ export const SendViewTHOR: React.FC<Props> = (props): JSX.Element => {
               network={network}
               poolDetails={poolDetails}
               oPoolAddress={oPoolAddress}
+              dex={dex}
             />
           </Styled.Container>
         </Spin>
@@ -124,6 +127,7 @@ export const SendViewTHOR: React.FC<Props> = (props): JSX.Element => {
             network={network}
             poolDetails={poolDetails}
             oPoolAddress={oPoolAddress}
+            dex={dex}
           />
         </Styled.Container>
       )

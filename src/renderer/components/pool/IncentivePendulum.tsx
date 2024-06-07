@@ -6,7 +6,6 @@ import * as FP from 'fp-ts/lib/function'
 import { useIntl } from 'react-intl'
 
 import { Dex } from '../../../shared/api/types'
-import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
 import { IncentivePendulumRD } from '../../hooks/useIncentivePendulum'
 import type { AlertIconColor } from '../uielements/alert/'
 import { Tooltip } from '../uielements/common/Common.styles'
@@ -54,12 +53,12 @@ export const IncentivePendulum: React.FC<Props> = (props): JSX.Element => {
           {
             pooled: formatAssetAmountCurrency({
               amount: baseToAsset(totalPooledRuneAmount),
-              asset: dex === 'THOR' ? AssetRuneNative : AssetCacao,
+              asset: dex.asset,
               decimal: 0
             }),
             bonded: formatAssetAmountCurrency({
               amount: baseToAsset(totalActiveBondAmount),
-              asset: dex === 'THOR' ? AssetRuneNative : AssetCacao,
+              asset: dex.asset,
               decimal: 0
             })
           }

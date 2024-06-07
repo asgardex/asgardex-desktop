@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react'
 
 import Icon, { TwitterOutlined, BranchesOutlined, BugOutlined, GithubOutlined, GlobalOutlined } from '@ant-design/icons'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Row, Col, Grid } from 'antd'
 import { useNavigate } from 'react-router-dom'
 
@@ -52,7 +53,7 @@ export const Footer: React.FC<Props> = (props): JSX.Element => {
         <Col span={24} md={12}>
           <Row justify={screens.md ? 'start' : 'center'}>
             <FooterIcon url={ExternalUrl.DOCS} onClick={clickIconHandler}>
-              {dex === 'THOR' ? (
+              {dex.chain === THORChain ? (
                 <ThorChainIcon />
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>

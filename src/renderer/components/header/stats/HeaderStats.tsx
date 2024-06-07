@@ -106,7 +106,7 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
   }, [reloadRunePrice, runePriceRD])
 
   const label = useMemo(() => {
-    return dex === 'THOR' ? 'rune' : 'cacao'
+    return dex.asset.symbol.toLowerCase()
   }, [dex])
 
   const location = useLocation()
@@ -119,7 +119,7 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
   return (
     <Styled.Wrapper>
       <Styled.Container onClick={clickable ? changeDexHandler : undefined} clickable={clickable}>
-        <Styled.Dex dex={dex}>{dex}</Styled.Dex>
+        <Styled.Dex dex={dex.chain}>{dex.chain}</Styled.Dex>
       </Styled.Container>
       <Styled.Container onClick={reloadRunePriceHandler} clickable={!RD.isPending(runePriceRD)}>
         <Styled.Title>{intl.formatMessage({ id: `common.price.${label}` })}</Styled.Title>

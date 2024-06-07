@@ -3,7 +3,6 @@ import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
@@ -67,8 +66,8 @@ export const symWithdraw$ = ({
     // we start with  a small progress
     withdraw: RD.progress({ loaded: 25, total })
   })
-  const validateNode$ = dex === 'THOR' ? validateNodeThor$ : validateNodeMaya$
-  const chain = dex === 'THOR' ? THORChain : MAYAChain
+  const validateNode$ = dex.chain === THORChain ? validateNodeThor$ : validateNodeMaya$
+  const chain = dex.chain
   // All requests will be done in a sequence
   // to update `SymWithdrawState` step by step
   // 1. validate node
@@ -169,7 +168,8 @@ export const saverWithdraw$ = ({
   walletIndex,
   hdMode,
   sender,
-  walletType
+  walletType,
+  dex
 }: SaverWithdrawParams): WithdrawState$ => {
   // total of progress
   const total = O.some(100)
@@ -213,7 +213,8 @@ export const saverWithdraw$ = ({
         amount: amount, // parse in value from thornode withdraw quote dustAmount
         memo,
         sender,
-        feeOption: ChainTxFeeOption.WITHDRAW
+        feeOption: ChainTxFeeOption.WITHDRAW,
+        dex
       })
     }),
     liveData.chain((txHash) => {

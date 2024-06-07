@@ -2,7 +2,6 @@ import React, { useCallback, useState } from 'react'
 
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetCacao } from '@xchainjs/xchain-mayachain'
 import { isCacaoAsset } from '@xchainjs/xchain-mayachain-query'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { Address, assetToString, Chain } from '@xchainjs/xchain-util'
@@ -13,7 +12,7 @@ import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { Dex } from '../../../../shared/api/types'
+import { Dex, mayaDetails, thorDetails } from '../../../../shared/api/types'
 import { chainToString, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
 import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
@@ -68,7 +67,7 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
 
   const [currentPage, setCurrentPage] = useState(1)
 
-  const { chain } = asset.synth ? (dex === 'THOR' ? AssetRuneNative : AssetCacao) : asset
+  const { chain } = asset.synth ? dex.asset : asset
 
   const navigate = useNavigate()
   const intl = useIntl()
@@ -85,11 +84,11 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
 
   const walletActionSwapClick = useCallback(() => {
     // Determine if the asset's chain is supported by the current DEX
-    const currentChainSupported = dex === 'MAYA' ? isChainOfMaya(chain) : isChainOfThor(chain)
+    const currentChainSupported = dex.chain === 'MAYA' ? isChainOfMaya(chain) : isChainOfThor(chain)
 
     // If the current DEX doesn't support the asset's chain, switch DEXes
     if (!currentChainSupported) {
-      const newDex = dex === 'MAYA' ? 'THOR' : 'MAYA'
+      const newDex = dex.chain === 'MAYA' ? thorDetails : mayaDetails
       changeDex(newDex)
     }
 
@@ -104,11 +103,11 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
 
   const walletActionManageClick = useCallback(() => {
     // Determine if the asset's chain is supported by the current DEX
-    const currentChainSupported = dex === 'MAYA' ? isChainOfMaya(chain) : isChainOfThor(chain)
+    const currentChainSupported = dex.chain === 'MAYA' ? isChainOfMaya(chain) : isChainOfThor(chain)
 
     // If the current DEX doesn't support the asset's chain, switch DEXes
     if (!currentChainSupported) {
-      const newDex = dex === 'MAYA' ? 'THOR' : 'MAYA'
+      const newDex = dex.chain === 'MAYA' ? thorDetails : mayaDetails
       changeDex(newDex)
     }
     const routeAsset = AssetHelper.isRuneNativeAsset(asset) || isCacaoAsset(asset) ? AssetBTC : asset

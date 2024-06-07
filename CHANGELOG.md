@@ -1,14 +1,16 @@
 # 1.21.9 (2024-tba)
 
 ## Updates/Fixes
-- Update Asset table UI [275] (https://github.com/asgardex/asgardex-desktop/pull/276)
-- Add MayaMidgard editable url to Advanced [236] (https://github.com/asgardex/asgardex-desktop/pull/277)
+
+- Update Asset table UI [#275] (https://github.com/asgardex/asgardex-desktop/pull/276)
+- Add MayaMidgard editable url to Advanced [#236] (https://github.com/asgardex/asgardex-desktop/pull/277)
+- Code Clean up and more extrapolation [#278] (https://github.com/asgardex/asgardex-desktop/pull/279)
 
 # 1.21.8 (2024-06-03)
 
 ## Updates/Fixes
 
-- Fix UTXO send price fetch [256](https://github.com/asgardex/asgardex-desktop/pull/257)
+- Fix UTXO send price fetch [#256](https://github.com/asgardex/asgardex-desktop/pull/257)
 - Fix Maya lp Bugs & BSC.USDT [#255](https://github.com/asgardex/asgardex-desktop/pull/258)
 - Update Thornode Ledger to use ClientLedger from xchainjs [#259](https://github.com/asgardex/asgardex-desktop/pull/260)
 - Disable Unbonding if node is active [#233] (https://github.com/asgardex/asgardex-desktop/pull/263)
