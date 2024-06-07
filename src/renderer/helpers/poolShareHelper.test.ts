@@ -1,12 +1,13 @@
 import { assetAmount, assetToBase, bn } from '@xchainjs/xchain-util'
 
+import { thorDetails } from '../../shared/api/types'
 import { ZERO_BN } from '../const'
 import { eqBaseAmount } from './fp/eq'
 import { getAssetShare, getPoolShare, getRuneShare } from './poolShareHelper'
 
 describe('poolShareHelpers', () => {
   it('getRuneShare', () => {
-    const result = getRuneShare(bn('300000000'), { runeDepth: '12', units: '2' }, 'THOR')
+    const result = getRuneShare(bn('300000000'), { runeDepth: '12', units: '2' }, thorDetails)
     const expected = assetToBase(assetAmount(18))
     expect(eqBaseAmount.equals(result, expected)).toBeTruthy()
   })

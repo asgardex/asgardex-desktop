@@ -1,9 +1,7 @@
 import * as Client from '@xchainjs/xchain-client'
 import { Network } from '@xchainjs/xchain-client'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 
-import { Dex } from '../../shared/api/types'
+import { Dex, mayaDetails, thorDetails } from '../../shared/api/types'
 import { envOrDefault } from '../../shared/utils/env'
 import { isNetwork } from '../../shared/utils/guard'
 import { SlipTolerance } from '../types/asgardex'
@@ -24,7 +22,7 @@ export const AVAILABLE_NETWORKS: Network[] = envOrDefault(process.env.REACT_APP_
  * Enabled networks -`stagenet` + `mainnet` by default
  * Can be overridden by `REACT_APP_NETWORKS` defined in `.env`
  */
-export const AVAILABLE_DEXS: Dex[] = [THORChain, MAYAChain]
+export const AVAILABLE_DEXS: Dex[] = [thorDetails, mayaDetails]
 
 const ENV_NETWORK = process.env.REACT_APP_DEFAULT_NETWORK
 
@@ -43,4 +41,4 @@ export const MAX_ITEMS_PER_PAGE = 10
 
 export const MIDGARD_MAX_RETRY = 3
 
-export const DEFAULT_DEX = THORChain
+export const DEFAULT_DEX = thorDetails

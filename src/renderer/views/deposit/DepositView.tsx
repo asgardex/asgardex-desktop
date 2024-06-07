@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Chain } from '@xchainjs/xchain-util'
 import { Spin } from 'antd'
@@ -47,7 +46,7 @@ export const DepositView: React.FC<Props> = () => {
   const { reloadLiquidityProviders: reloadLiquidityProvidersThor } = useThorchainContext()
   const { reloadLiquidityProviders: reloadLiquidityProvidersMaya } = useMayachainContext()
 
-  const reloadLiquidityProviders = dex === 'THOR' ? reloadLiquidityProvidersThor : reloadLiquidityProvidersMaya
+  const reloadLiquidityProviders = dex.chain === THORChain ? reloadLiquidityProvidersThor : reloadLiquidityProvidersMaya
 
   const {
     asset: routeAsset,
@@ -80,10 +79,10 @@ export const DepositView: React.FC<Props> = () => {
     }
   } = useMidgardMayaContext()
 
-  const selectedPoolAsset$ = dex === 'THOR' ? selectedPoolAssetThor$ : selectedPoolAssetMaya$
+  const selectedPoolAsset$ = dex.chain === THORChain ? selectedPoolAssetThor$ : selectedPoolAssetMaya$
 
-  const haltedChains$ = dex === 'THOR' ? haltedChainsThor$ : haltedChainsMaya$
-  const shares$ = dex === 'THOR' ? sharesThor$ : sharesMaya$
+  const haltedChains$ = dex.chain === THORChain ? haltedChainsThor$ : haltedChainsMaya$
+  const shares$ = dex.chain === THORChain ? sharesThor$ : sharesMaya$
 
   const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
   const { mimirHalt } = useMimirHalt()
@@ -103,7 +102,7 @@ export const DepositView: React.FC<Props> = () => {
   // Set selected pool asset whenever an asset in route has been changed
   useEffect(() => {
     // Function to determine if the dex and the asset's chain are equal
-    const isDexEqualAssetChain = (asset: Asset) => dex === asset.chain
+    const isDexEqualAssetChain = (asset: Asset) => dex.chain === asset.chain
 
     O.fold(
       () => {},
@@ -114,17 +113,19 @@ export const DepositView: React.FC<Props> = () => {
           O.fold(
             () => {},
             (altAsset: Asset) => {
-              dex === 'THOR' ? setSelectedPoolAsset(O.some(altAsset)) : setSelectedPoolAssetMaya(O.some(altAsset))
+              dex.chain === THORChain
+                ? setSelectedPoolAsset(O.some(altAsset))
+                : setSelectedPoolAssetMaya(O.some(altAsset))
             }
           )(alternativeAsset)
         } else {
-          dex === 'THOR' ? setSelectedPoolAsset(O.some(asset)) : setSelectedPoolAssetMaya(O.some(asset))
+          dex.chain === THORChain ? setSelectedPoolAsset(O.some(asset)) : setSelectedPoolAssetMaya(O.some(asset))
         }
       }
     )(oRouteAsset)
 
     return () => {
-      dex === 'THOR' ? setSelectedPoolAsset(O.none) : setSelectedPoolAssetMaya(O.none)
+      dex.chain === THORChain ? setSelectedPoolAsset(O.none) : setSelectedPoolAssetMaya(O.none)
     }
   }, [dex, oRouteAsset, setSelectedPoolAsset, setSelectedPoolAssetMaya])
 
@@ -193,7 +194,7 @@ export const DepositView: React.FC<Props> = () => {
       oSelectedAssetWithDecimal,
       O.map(({ asset: { chain } }) => {
         reloadBalancesByChain(chain)()
-        reloadBalancesByChain(dex === 'THOR' ? THORChain : MAYAChain)()
+        reloadBalancesByChain(dex.chain)()
         return true
       })
     )
@@ -201,7 +202,7 @@ export const DepositView: React.FC<Props> = () => {
 
   const reloadHandler = useCallback(() => {
     reloadChainAndRuneBalances()
-    if (dex === 'THOR') {
+    if (dex.chain === THORChain) {
       reloadShares()
       reloadLiquidityProviders()
       reloadSelectedPoolDetail()
@@ -228,7 +229,7 @@ export const DepositView: React.FC<Props> = () => {
 
   const poolDetailThorRD: PoolDetailRD = useObservableState(selectedPoolDetailThor$, RD.initial)
   const poolDetailMayaRD: PoolDetailMayaRD = useObservableState(selectedPoolDetailMaya$, RD.initial)
-  const poolDetailRD = dex === 'THOR' ? poolDetailThorRD : poolDetailMayaRD
+  const poolDetailRD = dex.chain === THORChain ? poolDetailThorRD : poolDetailMayaRD
   const renderTopContent = useMemo(
     () => (
       <div className="relative mb-20px flex items-center justify-between">

@@ -163,7 +163,7 @@ export const filterWalletBalancesByAssetsForDex = (
     // Check if the balance is a synthetic asset and filter based on dex
 
     const walletAddressPrefix = balance.walletAddress.substring(0, 4).toUpperCase()
-    if (dex !== walletAddressPrefix && balance.asset.synth) {
+    if (dex.chain !== walletAddressPrefix && balance.asset.synth) {
       return false
     }
 

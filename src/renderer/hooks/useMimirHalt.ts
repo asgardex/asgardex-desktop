@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -48,8 +49,8 @@ export const useMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: MimirHalt
 
   const { dex } = useDex()
 
-  const lastDexBlockState = dex === 'THOR' ? thorchainLastblockState$ : mayachainLastblockState$
-  const dexMimir = dex === 'THOR' ? mimir$ : mayaMimir$
+  const lastDexBlockState = dex.chain === THORChain ? thorchainLastblockState$ : mayachainLastblockState$
+  const dexMimir = dex.chain === THORChain ? mimir$ : mayaMimir$
   const createMimirGroup = (keys: string[], mimir: Mimir, lastHeight?: number) => {
     return keys.reduce((acc, key) => {
       acc[key] = getMimirStatus(mimir[key], lastHeight)
@@ -66,7 +67,7 @@ export const useMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: MimirHalt
             sequenceTRD(mimirRD, chainLastblockRD),
             RD.map(([mimir, lastblockItems]) => {
               const lastHeight =
-                dex === 'THOR'
+                dex.chain === THORChain
                   ? getLastHeightThorchain(lastblockItems as LastblockItems)
                   : getLastHeightMaya(lastblockItems as LastblockItemsMaya)
               const mapChainToKey = (prefix: string, chain: string) => `${prefix}${chain}Chain`

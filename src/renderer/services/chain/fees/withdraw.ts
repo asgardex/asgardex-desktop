@@ -3,7 +3,6 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as RxOp from 'rxjs/operators'
 
-import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
 import { ZERO_BASE_AMOUNT } from '../../../const'
 import { isCacaoAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { eqOAsset } from '../../../helpers/fp/eq'
@@ -70,8 +69,8 @@ const symWithdrawFee$: SymWithdrawFeesHandler = (initialAsset, dex) =>
       //tobefixed
       return FP.pipe(
         liveData.sequenceS({
-          runeInFee: poolInboundFee$(dex === 'THOR' ? AssetRuneNative : AssetCacao, ''),
-          runeOutFee: poolOutboundFee$(dex === 'THOR' ? AssetRuneNative : AssetCacao),
+          runeInFee: poolInboundFee$(dex.asset, ''),
+          runeOutFee: poolOutboundFee$(dex.asset),
           assetOutFee: poolOutboundFee$(asset)
         }),
         liveData.map(({ runeInFee, runeOutFee, assetOutFee }) => ({

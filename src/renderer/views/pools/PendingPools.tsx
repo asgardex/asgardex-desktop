@@ -4,6 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetToString } from '@xchainjs/xchain-util'
 import { Grid } from 'antd'
 import { ColumnsType, ColumnType } from 'antd/lib/table'
@@ -76,7 +77,7 @@ export const PendingPools: React.FC = (): JSX.Element => {
   const { setFilter: setPoolFilter, filter: poolFilter } = usePoolFilter('pending')
   const { add: addPoolToWatchlist, remove: removePoolFromWatchlist, list: poolWatchList } = usePoolWatchlist()
 
-  const poolsRD = useObservableState(dex === 'THOR' ? pendingPoolsState$ : pendingPoolStateMaya$, RD.pending)
+  const poolsRD = useObservableState(dex.chain === THORChain ? pendingPoolsState$ : pendingPoolStateMaya$, RD.pending)
   const thorchainLastblockRD: ThorchainLastblockRD = useObservableState(thorchainLastblockState$, RD.pending)
   const mayachainLastblockRD: MayachainLastblockRD = useObservableState(mayachainLastblockState$, RD.pending)
 
@@ -84,7 +85,7 @@ export const PendingPools: React.FC = (): JSX.Element => {
   const { data: incentivePendulumThorRD } = useIncentivePendulum()
   const { data: incentivePendulumMayaRD } = useIncentivePendulumMaya()
 
-  const incentivePendulumRD = dex === 'THOR' ? incentivePendulumThorRD : incentivePendulumMayaRD
+  const incentivePendulumRD = dex.chain === THORChain ? incentivePendulumThorRD : incentivePendulumMayaRD
 
   const isDesktopView = Grid.useBreakpoint()?.lg ?? false
 
@@ -94,12 +95,12 @@ export const PendingPools: React.FC = (): JSX.Element => {
   const { poolCycle: poolCycleThor, reloadPoolCycle } = usePoolCycle()
   const { poolCycle: poolCycleMaya, reloadPoolCycle: reloadPoolCycleMaya } = usePoolCycleMaya()
 
-  const poolCycle = dex === 'THOR' ? poolCycleThor : poolCycleMaya
+  const poolCycle = dex.chain === THORChain ? poolCycleThor : poolCycleMaya
 
   const oNewPoolCycle = useMemo(() => FP.pipe(poolCycle, RD.toOption), [poolCycle])
 
   const refreshHandler = useCallback(() => {
-    if (dex === 'THOR') {
+    if (dex.chain === THORChain) {
       reloadPendingPools()
       reloadPoolCycle()
     } else {
@@ -112,7 +113,7 @@ export const PendingPools: React.FC = (): JSX.Element => {
 
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()
-  const pricePool = dex === 'THOR' ? pricePoolThor : pricePoolMaya
+  const pricePool = dex.chain === THORChain ? pricePoolThor : pricePoolMaya
 
   const renderBtnPoolsColumn = useCallback(
     (_: string, { asset }: PoolTableRowData) => {
@@ -156,7 +157,7 @@ export const PendingPools: React.FC = (): JSX.Element => {
 
       return (
         <TableAction>
-          <BlockLeftLabel>{deepest ? (dex === 'THOR' ? blocksLeft : blocksLeftMaya) : '--'}</BlockLeftLabel>
+          <BlockLeftLabel>{deepest ? (dex.chain === THORChain ? blocksLeft : blocksLeftMaya) : '--'}</BlockLeftLabel>
         </TableAction>
       )
     },

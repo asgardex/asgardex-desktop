@@ -5,6 +5,7 @@ import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/Option'
 
+import { thorDetails } from '../../../../shared/api/types'
 import { AssetBTC, AssetETH, AssetBSC } from '../../../../shared/utils/asset'
 import { AssetUSDTBSC, AssetUSDTERC20Testnet } from '../../../const'
 import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
@@ -45,7 +46,7 @@ describe('deposit/Deposit.helper', () => {
       inFee: baseAmount(200)
     }
   }
-  const dex = 'THOR'
+  const dex = thorDetails
 
   describe('maxRuneAmountToDeposit', () => {
     it('900', () => {

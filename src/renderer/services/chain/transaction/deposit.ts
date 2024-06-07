@@ -4,7 +4,6 @@ import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { TxHash } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
@@ -12,7 +11,6 @@ import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
 import {
   getArbAssetAddress,
   getAvaxAssetAddress,
@@ -226,7 +224,7 @@ export const symDeposit$ = ({
   const total = O.some(100)
 
   const { chain } = asset
-  const dexChain = dex === 'THOR' ? THORChain : MAYAChain
+  const dexChain = dex.chain
   // Observable state of to reflect status of all needed steps
   const {
     get$: getState$,
@@ -246,10 +244,10 @@ export const symDeposit$ = ({
     RxOp.switchMap((poolAddresses) =>
       liveData.sequenceS({
         pool:
-          dex === 'THOR'
+          dex.chain === THORChain
             ? midgardPoolsService.validatePool$(poolAddresses, chain)
             : mayaMidgardPoolsService.validatePool$(poolAddresses, chain),
-        node: dex === 'THOR' ? validateNode$() : mayaValidateNode$()
+        node: dex.chain === THORChain ? validateNode$() : mayaValidateNode$()
       })
     ),
     // 2. send asset deposit txs
@@ -292,7 +290,7 @@ export const symDeposit$ = ({
         walletIndex: runeWalletIndex,
         hdMode: runeHDMode,
         router: O.none, // no router for RUNE
-        asset: dex === 'THOR' ? AssetRuneNative : AssetCacao, //tobechecked
+        asset: dex.asset,
         recipient: '', // no recipient for RUNE || Cacao needed
         amount: amounts.rune,
         memo: memos.rune,

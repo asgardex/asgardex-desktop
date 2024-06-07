@@ -11,6 +11,10 @@ import { useIntl } from 'react-intl'
 
 import { useAppContext } from '../../../contexts/AppContext'
 import { OnlineStatus } from '../../../services/app/types'
+import {
+  MidgardStatusRD as MidgardMayaStatusRD,
+  MidgardUrlRD as MidgardMayaUrlRD
+} from '../../../services/mayaMigard/types'
 import { MidgardStatusRD, MidgardUrlRD } from '../../../services/midgard/types'
 import { MimirRD } from '../../../services/thorchain/types'
 import { DownIcon } from '../../icons'
@@ -31,8 +35,10 @@ type MenuItem = {
 export type Props = {
   isDesktopView: boolean
   midgardStatus: MidgardStatusRD
+  midgardMayaStatus: MidgardMayaStatusRD
   mimirStatus: MimirRD
   midgardUrl: MidgardUrlRD
+  midgardMayaUrl: MidgardMayaUrlRD
   thorchainNodeUrl: string
   thorchainRpcUrl: string
   mayachainNodeUrl: string
@@ -43,8 +49,10 @@ export const HeaderNetStatus: React.FC<Props> = (props): JSX.Element => {
   const {
     isDesktopView,
     midgardStatus: midgardStatusRD,
+    midgardMayaStatus: midgardMayaStatusRD,
     mimirStatus: mimirStatusRD,
     midgardUrl: midgardUrlRD,
+    midgardMayaUrl: midgardUrlMayaRD,
     thorchainNodeUrl,
     thorchainRpcUrl,
     mayachainNodeUrl,
@@ -71,6 +79,25 @@ export const HeaderNetStatus: React.FC<Props> = (props): JSX.Element => {
         )
       ),
     [midgardStatusRD]
+  )
+  const midgardMayaStatus: OnlineStatus = useMemo(
+    () =>
+      FP.pipe(
+        midgardMayaStatusRD,
+        RD.fold(
+          () => prevMidgardStatus.current,
+          () => prevMidgardStatus.current,
+          () => {
+            prevMidgardStatus.current = OnlineStatus.OFF
+            return prevMidgardStatus.current
+          },
+          () => {
+            prevMidgardStatus.current = OnlineStatus.ON
+            return prevMidgardStatus.current
+          }
+        )
+      ),
+    [midgardMayaStatusRD]
   )
 
   const prevThorchainStatus = useRef<OnlineStatus>(OnlineStatus.OFF)
@@ -121,16 +148,22 @@ export const HeaderNetStatus: React.FC<Props> = (props): JSX.Element => {
     if (
       midgardStatus === OnlineStatus.OFF ||
       thorchainStatus === OnlineStatus.OFF ||
-      mayachainStatus === OnlineStatus.OFF
+      mayachainStatus === OnlineStatus.OFF ||
+      midgardMayaStatus === OnlineStatus.OFF
     )
       return 'yellow'
     return 'green'
-  }, [midgardStatus, onlineStatus, thorchainStatus, mayachainStatus])
+  }, [onlineStatus, midgardStatus, thorchainStatus, mayachainStatus, midgardMayaStatus])
 
   const menuItems = useMemo((): MenuItem[] => {
     const notConnectedTxt = intl.formatMessage({ id: 'setting.notconnected' })
     const midgardUrl = FP.pipe(
       midgardUrlRD,
+      RD.getOrElse(() => '')
+    )
+
+    const midgardMayaUrl = FP.pipe(
+      midgardUrlMayaRD,
       RD.getOrElse(() => '')
     )
 
@@ -172,6 +205,18 @@ export const HeaderNetStatus: React.FC<Props> = (props): JSX.Element => {
         color: headerNetStatusColor({ onlineStatus: onlineStatus, clientStatus: thorchainStatus })
       },
       {
+        key: 'midgardMaya',
+        headline: 'Midgard Mayachain API',
+        url: `${midgardMayaUrl}/v2/doc`,
+        subheadline: headerNetStatusSubheadline({
+          url: O.some(midgardMayaUrl),
+          onlineStatus: onlineStatus,
+          clientStatus: midgardMayaStatus,
+          notConnectedTxt
+        }),
+        color: headerNetStatusColor({ onlineStatus: onlineStatus, clientStatus: midgardMayaStatus })
+      },
+      {
         key: 'mayachain',
         headline: 'Mayachain API',
         url: `${mayachainNodeUrl}/mayachain/doc/`,
@@ -199,8 +244,10 @@ export const HeaderNetStatus: React.FC<Props> = (props): JSX.Element => {
   }, [
     intl,
     midgardUrlRD,
+    midgardUrlMayaRD,
     onlineStatus,
     midgardStatus,
+    midgardMayaStatus,
     thorchainNodeUrl,
     thorchainStatus,
     thorchainRpcUrl,

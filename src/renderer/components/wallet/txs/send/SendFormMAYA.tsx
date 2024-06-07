@@ -13,6 +13,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
+import { Dex } from '../../../../../shared/api/types'
 import { AssetCacao } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
@@ -64,6 +65,7 @@ export type Props = {
   pricePool: PricePool
   mayaScanPrice: MayaScanPriceRD
   poolDetails: PoolDetails
+  dex: Dex
 }
 
 export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
@@ -81,7 +83,8 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
     reloadFeesHandler,
     validatePassword$,
     network,
-    mayaScanPrice
+    mayaScanPrice,
+    dex
   } = props
 
   const intl = useIntl()
@@ -385,7 +388,8 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
         asset,
         amount: amountToSend,
         memo: form.getFieldValue('memo'),
-        hdMode
+        hdMode,
+        dex
       })
     )
   }, [
@@ -398,7 +402,8 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
     asset,
     amountToSend,
     form,
-    hdMode
+    hdMode,
+    dex
   ])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)

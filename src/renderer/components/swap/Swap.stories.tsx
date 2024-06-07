@@ -9,6 +9,7 @@ import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { thorDetails } from '../../../shared/api/types'
 import { mockValidatePassword$ } from '../../../shared/mock/wallet'
 import { AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
 import { ONE_BN } from '../../const'
@@ -122,7 +123,7 @@ const defaultProps: SwapProps = {
   thorchainQuery: new ThorchainQuery(),
   mayachainQuery: new MayachainQuery(),
   reloadTxStatus: () => console.log('reloadBalances'),
-  dex: 'THOR'
+  dex: thorDetails
 }
 
 export const Default: StoryFn = () => <Component {...defaultProps} />

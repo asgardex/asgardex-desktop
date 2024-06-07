@@ -11,8 +11,8 @@ import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import { Chain } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
@@ -60,7 +60,7 @@ export const sendTx$ = ({
   hdMode,
   dex
 }: SendTxParams): TxHashLD => {
-  const { chain } = asset.synth ? (dex === 'THOR' ? AssetRuneNative : AssetCacao) : asset
+  const { chain } = asset.synth ? dex.asset : asset
   if (!isEnabledChain(chain)) return txFailure$(`${chain} is not supported for 'sendTx$'`)
 
   switch (chain) {
@@ -234,7 +234,7 @@ export const sendPoolTx$ = ({
   dex
 }: SendPoolTxParams): TxHashLD => {
   // update this to suit MayaChainSwap
-  const { chain } = asset.synth ? (dex === 'THOR' ? AssetRuneNative : AssetCacao) : asset
+  const { chain } = asset.synth ? dex.asset : asset
 
   if (!isEnabledChain(chain)) return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)
   switch (chain) {
@@ -292,7 +292,7 @@ export const sendPoolTx$ = ({
       })
 
     case THORChain:
-      return dex === 'THOR'
+      return dex.chain === THORChain
         ? THOR.sendPoolTx$({ walletType, amount, asset, memo, walletAccount, walletIndex, hdMode })
         : THOR.sendTx({ sender, walletType, asset, recipient, amount, memo, walletAccount, walletIndex, hdMode })
 
@@ -316,7 +316,8 @@ export const sendPoolTx$ = ({
         feeOption,
         walletAccount,
         walletIndex,
-        hdMode
+        hdMode,
+        dex
       })
   }
 }

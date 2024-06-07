@@ -4,6 +4,7 @@ import { Network, TxHash } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
 
+import { thorDetails } from '../../../../shared/api/types'
 import { AssetBSC, AssetRuneNative } from '../../../../shared/utils/asset'
 import { ZERO_BASE_AMOUNT } from '../../../const'
 import { mockWalletBalance } from '../../../helpers/test/testWalletHelper'
@@ -56,7 +57,7 @@ export const StoryBSC: StoryObj<AssetDetailsProps> = {
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}
-      dex={'THOR'}
+      dex={thorDetails}
       haltedChains={[]}
       changeDex={changeDex}
     />
@@ -74,7 +75,7 @@ export const StoryRuneTxSuccess: StoryObj<AssetDetailsProps> = {
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}
-      dex={'THOR'}
+      dex={thorDetails}
       haltedChains={[]}
       changeDex={changeDex}
     />
@@ -93,7 +94,7 @@ export const StoryRuneNoSend: StoryObj<AssetDetailsProps> = {
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={true}
-      dex={'THOR'}
+      dex={thorDetails}
       haltedChains={[]}
       changeDex={changeDex}
     />
@@ -112,7 +113,7 @@ export const StoryRuneTxError: StoryObj<AssetDetailsProps> = {
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}
-      dex={'THOR'}
+      dex={thorDetails}
       haltedChains={[]}
       changeDex={changeDex}
     />
@@ -131,7 +132,7 @@ export const StoryRuneNoBalances: StoryObj<AssetDetailsProps> = {
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}
-      dex={'THOR'}
+      dex={thorDetails}
       haltedChains={[]}
       changeDex={changeDex}
     />
@@ -150,7 +151,7 @@ export const StoryRuneFeeNotCovered: StoryObj<AssetDetailsProps> = {
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}
-      dex={'THOR'}
+      dex={thorDetails}
       haltedChains={[]}
       changeDex={changeDex}
     />

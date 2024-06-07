@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, assetToString } from '@xchainjs/xchain-util'
 import { Button } from 'antd'
 import { useObservableState } from 'observable-hooks'
@@ -20,7 +21,7 @@ export const PlaygroundView: React.FC = (): JSX.Element => {
   const { service: midgardMayaService } = useMidgardMayaContext()
 
   const poolState = useObservableState(
-    dex === 'THOR' ? midgardService.pools.poolsState$ : midgardMayaService.pools.poolsState$,
+    dex.chain === THORChain ? midgardService.pools.poolsState$ : midgardMayaService.pools.poolsState$,
     RD.initial
   )
 
