@@ -42,7 +42,7 @@ export const send = async ({
     const clientLedger = new ClientLedger({
       transport,
       ...defaultLtcParams,
-      rootDerivationPaths: getDerivationPaths(walletIndex, walletAccount, network),
+      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, network),
       network: network
     })
     const txHash = await clientLedger.transfer({ walletIndex, asset: AssetLTC, recipient, amount, memo, feeRate })

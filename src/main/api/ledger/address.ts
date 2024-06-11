@@ -176,7 +176,7 @@ export const verifyLedgerAddress = async ({
       break
     }
     case GAIAChain:
-      result = await verifyCOSMOSAddress(transport, walletIndex, network)
+      result = await verifyCOSMOSAddress(transport, walletAccount, walletIndex, network)
       break
   }
   await transport.close()

@@ -7,6 +7,7 @@ import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
 import { VerifyAddressHandler } from '../types'
+import { getDerivationPaths } from './common'
 
 export const getAddress = async (
   transport: Transport,
@@ -15,7 +16,12 @@ export const getAddress = async (
   walletIndex: number
 ): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
-    const clientLedger = new ClientLedger({ transport, ...defaultClientConfig, network: network })
+    const clientLedger = new ClientLedger({
+      transport,
+      ...defaultClientConfig,
+      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, network),
+      network: network
+    })
     const address = await clientLedger.getAddressAsync(walletIndex)
     if (!address) {
       return E.left({
@@ -39,8 +45,13 @@ export const getAddress = async (
   }
 }
 
-export const verifyAddress: VerifyAddressHandler = async ({ transport, network, walletIndex }) => {
-  const clientLedger = new ClientLedger({ transport, ...defaultClientConfig, network: network })
+export const verifyAddress: VerifyAddressHandler = async ({ transport, network, walletAccount, walletIndex }) => {
+  const clientLedger = new ClientLedger({
+    transport,
+    ...defaultClientConfig,
+    rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, network),
+    network: network
+  })
   const _ = await clientLedger.getAddressAsync(walletIndex, true)
   return true
 }

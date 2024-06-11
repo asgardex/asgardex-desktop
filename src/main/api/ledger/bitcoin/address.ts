@@ -13,7 +13,7 @@ export const verifyAddress: VerifyAddressHandler = async ({ transport, network, 
   const clientLedger = new ClientLedger({
     transport,
     ...btcInitParams,
-    rootDerivationPaths: getDerivationPaths(walletIndex, walletAccount, network),
+    rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, network),
     network: network
   })
   const _ = await clientLedger.getAddressAsync(walletIndex, true)

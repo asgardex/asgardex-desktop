@@ -63,7 +63,7 @@ import { walletTypeToI18n } from '../../services/wallet/util'
 import { AttentionIcon } from '../icons'
 import * as StyledR from '../shared/form/Radio.styles'
 import { BorderButton, FlatButton, TextButton } from '../uielements/button'
-import { WalletTypeLabel } from '../uielements/common/Common.styles'
+import { Tooltip, WalletTypeLabel } from '../uielements/common/Common.styles'
 import { InfoIcon } from '../uielements/info'
 import { Modal } from '../uielements/modal'
 import { WalletSelector } from '../uielements/wallet'
@@ -400,9 +400,30 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
             <div className="flex w-full items-center">
               <Styled.AddressEllipsis address={address} chain={chain} network={network} enableCopy={true} />
               <Styled.QRCodeIcon onClick={() => setShowQRModal(O.some({ asset: getChainAsset(chain), address }))} />
-              <Styled.AddressLinkIcon onClick={() => clickAddressLinkHandler(chain, address)} />
-              <Styled.EyeOutlined onClick={() => verifyLedgerAddressHandler(walletAddress)} />
-              <Styled.RemoveLedgerIcon onClick={() => removeLedgerAddress(chain)} />
+              <Tooltip
+                title={intl.formatMessage({
+                  id: 'wallet.ledger.viewAddress'
+                })}>
+                <Styled.AddressLinkIcon onClick={() => clickAddressLinkHandler(chain, address)} />
+              </Tooltip>
+              <Tooltip
+                title={intl.formatMessage(
+                  {
+                    id: 'wallet.ledger.verifyAddress.modal.description'
+                  },
+                  { address }
+                )}>
+                <Styled.EyeOutlined onClick={() => verifyLedgerAddressHandler(walletAddress)} />
+              </Tooltip>
+              <Tooltip
+                title={intl.formatMessage(
+                  {
+                    id: 'wallet.ledger.removeAddress'
+                  },
+                  { chain }
+                )}>
+                <Styled.RemoveLedgerIcon onClick={() => removeLedgerAddress(chain)} />
+              </Tooltip>
             </div>
           </>
         )
@@ -467,7 +488,12 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
             <div className="flex w-full items-center">
               <Styled.AddressEllipsis address={address} chain={chain} network={network} enableCopy={true} />
               <Styled.QRCodeIcon onClick={() => setShowQRModal(O.some({ asset: getChainAsset(chain), address }))} />
-              <Styled.AddressLinkIcon onClick={() => clickAddressLinkHandler(chain, address)} />
+              <Tooltip
+                title={intl.formatMessage({
+                  id: 'wallet.ledger.viewAddress'
+                })}>
+                <Styled.AddressLinkIcon onClick={() => clickAddressLinkHandler(chain, address)} />
+              </Tooltip>
             </div>
           </div>
         </>

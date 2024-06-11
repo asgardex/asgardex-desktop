@@ -14,6 +14,7 @@ import { blockcypherApiKey } from '../../../../shared/api/blockcypher'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
 import { removeAffiliate } from '../doge/common'
+import { getDerivationPaths } from './common'
 
 //======================
 // Bitgo
@@ -57,6 +58,7 @@ export const send = async ({
   amount,
   feeRate,
   memo,
+  walletAccount,
   walletIndex
 }: {
   transport: Transport
@@ -66,6 +68,7 @@ export const send = async ({
   amount: BaseAmount
   feeRate: FeeRate
   memo?: string
+  walletAccount: number
   walletIndex: number
 }): Promise<E.Either<LedgerError, TxHash>> => {
   if (!sender) {
@@ -79,6 +82,7 @@ export const send = async ({
     const dashClient = new ClientLedger({
       transport,
       ...defaultDashParams,
+      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, network),
       dataProviders: [BlockcypherDataProviders, BitgoProviders],
       network: network
     })

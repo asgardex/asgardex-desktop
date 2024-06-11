@@ -71,6 +71,7 @@ export const sendTx = async ({
               recipient,
               amount,
               memo,
+              walletAccount,
               walletIndex
             })
           }
@@ -123,6 +124,7 @@ export const sendTx = async ({
             amount,
             feeRate,
             memo,
+            walletAccount,
             walletIndex
           })
           break
@@ -135,6 +137,7 @@ export const sendTx = async ({
             amount,
             feeRate,
             memo,
+            walletAccount,
             walletIndex
           })
           break
@@ -280,6 +283,7 @@ export const sendTx = async ({
               asset,
               recipient,
               memo,
+              walletAccount,
               walletIndex,
               feeAmount
             })
@@ -329,7 +333,7 @@ export const deposit = async ({
               msg: `"nodeUrl" needs to be defined to send Ledger transaction on ${chainToString(chain)}`
             })
           } else {
-            res = await THOR.deposit({ transport, network, amount, asset, memo, walletIndex })
+            res = await THOR.deposit({ transport, network, amount, asset, memo, walletAccount, walletIndex })
           }
           break
         case ETHChain:

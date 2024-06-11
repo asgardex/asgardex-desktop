@@ -6,7 +6,7 @@ import * as E from 'fp-ts/lib/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
-import { dogeInitParams, removeAffiliate } from './common'
+import { dogeInitParams, getDerivationPaths, removeAffiliate } from './common'
 
 /**
  * Sends DOGE tx using Ledger
@@ -19,6 +19,7 @@ export const send = async ({
   amount,
   feeRate,
   memo,
+  walletAccount,
   walletIndex
 }: {
   transport: Transport
@@ -28,6 +29,7 @@ export const send = async ({
   amount: BaseAmount
   feeRate: FeeRate
   memo?: string
+  walletAccount: number
   walletIndex: number
 }): Promise<E.Either<LedgerError, TxHash>> => {
   if (!sender) {
@@ -38,8 +40,14 @@ export const send = async ({
   }
 
   try {
-    const dogeClient = new ClientLedger({ transport, ...dogeInitParams, network: network })
+    const dogeClient = new ClientLedger({
+      transport,
+      ...dogeInitParams,
+      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, network),
+      network: network
+    })
     const newMemo = memo !== undefined ? removeAffiliate(memo) : memo // removes affilaite to shorten memo.
+
     const txHash = await dogeClient.transfer({
       walletIndex,
       asset: AssetDOGE,

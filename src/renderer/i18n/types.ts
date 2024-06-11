@@ -310,6 +310,8 @@ type WalletMessageKey =
   | 'wallet.validations.shouldNotBeEmpty'
   | 'wallet.ledger.verifyAddress.modal.title'
   | 'wallet.ledger.verifyAddress.modal.description'
+  | 'wallet.ledger.removeAddress'
+  | 'wallet.ledger.viewAddress'
 
 export type WalletMessages = { [key in WalletMessageKey]: string }
 
