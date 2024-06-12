@@ -662,11 +662,12 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
 
     return FP.pipe(
       sequenceTOption(oNeedApprovement, oTokenAddress, oRouterAddress, oSourceAssetWB),
-      O.map(([_, tokenAddress, routerAddress, { walletAddress, walletIndex, walletType, hdMode }]) => ({
+      O.map(([_, tokenAddress, routerAddress, { walletAddress, walletAccount, walletIndex, walletType, hdMode }]) => ({
         network,
         spenderAddress: routerAddress,
         contractAddress: tokenAddress,
         fromAddress: walletAddress,
+        walletAccount,
         walletIndex,
         hdMode,
         walletType
@@ -882,7 +883,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
   const oWithdrawSaverParams: O.Option<SaverWithdrawParams> = useMemo(() => {
     return FP.pipe(
       sequenceTOption(oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote),
-      O.map(([poolAddress, { walletType, walletIndex, hdMode }, saversWithdrawQuote]) => {
+      O.map(([poolAddress, { walletType, walletAccount, walletIndex, hdMode }, saversWithdrawQuote]) => {
         const result = {
           poolAddress,
           asset: sourceChainAsset,
@@ -890,6 +891,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
           memo: saversWithdrawQuote.memo,
           network,
           walletType,
+          walletAccount,
           walletIndex,
           sender: address,
           hdMode,
@@ -1055,12 +1057,13 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
   const submitApproveTx = useCallback(() => {
     FP.pipe(
       oApproveParams,
-      O.map(({ walletIndex, walletType, hdMode, contractAddress, spenderAddress, fromAddress }) =>
+      O.map(({ walletAccount, walletIndex, walletType, hdMode, contractAddress, spenderAddress, fromAddress }) =>
         subscribeApproveState(
           approveERC20Token$({
             network,
             contractAddress,
             spenderAddress,
+            walletAccount,
             fromAddress,
             walletIndex,
             hdMode,

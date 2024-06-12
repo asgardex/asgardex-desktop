@@ -164,12 +164,13 @@ export const BondsView: React.FC = (): JSX.Element => {
       const networkPrefix = network === 'mainnet' ? '' : 's'
       const nodeChain = node.startsWith(`${networkPrefix}thor`) ? THORChain : MAYAChain
       const selectedAssetBalance = allBalances.filter((balance) => balance.asset.chain === nodeChain)
-      const { asset, walletAddress, walletType, walletIndex, hdMode } = selectedAssetBalance[0]
+      const { asset, walletAddress, walletType, walletAccount, walletIndex, hdMode } = selectedAssetBalance[0]
       setSelectedAsset(
         O.some({
           asset,
           walletAddress,
           walletType,
+          walletAccount,
           walletIndex,
           hdMode
         })

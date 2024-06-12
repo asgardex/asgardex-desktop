@@ -1288,7 +1288,7 @@ export const Swap = ({
     () => {
       const swapParamsThor = FP.pipe(
         sequenceTOption(oPoolAddress, oSourceAssetWB, oQuote),
-        O.map(([poolAddress, { walletType, walletAddress, walletIndex, hdMode }, txDetails]) => {
+        O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, txDetails]) => {
           return {
             poolAddress,
             asset: sourceAsset,
@@ -1296,6 +1296,7 @@ export const Swap = ({
             memo: shortenMemo(txDetails.memo), // short asset
             walletType,
             sender: walletAddress,
+            walletAccount,
             walletIndex,
             hdMode,
             dex
@@ -1304,7 +1305,7 @@ export const Swap = ({
       )
       const swapParamsMaya = FP.pipe(
         sequenceTOption(oPoolAddress, oSourceAssetWB, oQuoteMaya),
-        O.map(([poolAddress, { walletType, walletAddress, walletIndex, hdMode }, quoteSwap]) => {
+        O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, quoteSwap]) => {
           return {
             poolAddress,
             asset: sourceAsset,
@@ -1312,6 +1313,7 @@ export const Swap = ({
             memo: quoteSwap.memo, // The memo will be different based on the selected quote
             walletType,
             sender: walletAddress,
+            walletAccount,
             walletIndex,
             hdMode,
             dex
@@ -1406,11 +1408,12 @@ export const Swap = ({
 
     return FP.pipe(
       sequenceTOption(oNeedApprovement, oTokenAddress, oRouterAddress, oSourceAssetWB),
-      O.map(([_, tokenAddress, routerAddress, { walletAddress, walletIndex, walletType, hdMode }]) => ({
+      O.map(([_, tokenAddress, routerAddress, { walletAddress, walletAccount, walletIndex, walletType, hdMode }]) => ({
         network,
         spenderAddress: routerAddress,
         contractAddress: tokenAddress,
         fromAddress: walletAddress,
+        walletAccount,
         walletIndex,
         hdMode,
         walletType
@@ -1910,13 +1913,14 @@ export const Swap = ({
   const submitApproveTx = useCallback(() => {
     FP.pipe(
       oApproveParams,
-      O.map(({ walletIndex, walletType, hdMode, contractAddress, spenderAddress, fromAddress }) =>
+      O.map(({ walletAccount, walletIndex, walletType, hdMode, contractAddress, spenderAddress, fromAddress }) =>
         subscribeApproveState(
           approveERC20Token$({
             network,
             contractAddress,
             spenderAddress,
             fromAddress,
+            walletAccount,
             walletIndex,
             hdMode,
             walletType

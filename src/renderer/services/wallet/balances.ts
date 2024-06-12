@@ -119,12 +119,14 @@ export const createBalancesService = ({
   const getBalancesServiceByChain = ({
     chain,
     walletType,
+    walletAccount,
     walletIndex,
     hdMode,
     walletBalanceType
   }: {
     chain: Chain
     walletType: WalletType
+    walletAccount: number
     walletIndex: number
     hdMode: HDMode
     walletBalanceType: WalletBalanceType
@@ -142,21 +144,21 @@ export const createBalancesService = ({
         return {
           reloadBalances: BTC.reloadBalances,
           resetReloadBalances: BTC.resetReloadBalances,
-          balances$: BTC.balances$({ walletType, walletIndex, walletBalanceType, hdMode }),
+          balances$: BTC.balances$({ walletType, walletAccount, walletIndex, walletBalanceType, hdMode }),
           reloadBalances$: BTC.reloadBalances$
         }
       case DASHChain:
         return {
           reloadBalances: DASH.reloadBalances,
           resetReloadBalances: DASH.resetReloadBalances,
-          balances$: DASH.balances$({ walletType, walletIndex, hdMode }),
+          balances$: DASH.balances$({ walletType, walletAccount, walletIndex, hdMode }),
           reloadBalances$: DASH.reloadBalances$
         }
       case BCHChain:
         return {
           reloadBalances: BCH.reloadBalances,
           resetReloadBalances: BCH.resetReloadBalances,
-          balances$: BCH.balances$({ walletType, walletIndex, hdMode }),
+          balances$: BCH.balances$({ walletType, walletAccount, walletIndex, hdMode }),
           reloadBalances$: BCH.reloadBalances$
         }
       case ETHChain:
@@ -165,7 +167,7 @@ export const createBalancesService = ({
           resetReloadBalances: ETH.resetReloadBalances,
           balances$: FP.pipe(
             network$,
-            RxOp.switchMap((network) => ETH.balances$({ walletType, network, walletIndex, hdMode }))
+            RxOp.switchMap((network) => ETH.balances$({ walletType, network, walletAccount, walletIndex, hdMode }))
           ),
           reloadBalances$: ETH.reloadBalances$
         }
@@ -175,7 +177,7 @@ export const createBalancesService = ({
           resetReloadBalances: ARB.resetReloadBalances,
           balances$: FP.pipe(
             network$,
-            RxOp.switchMap((network) => ARB.balances$({ walletType, network, walletIndex, hdMode }))
+            RxOp.switchMap((network) => ARB.balances$({ walletType, network, walletAccount, walletIndex, hdMode }))
           ),
           reloadBalances$: ARB.reloadBalances$
         }
@@ -185,7 +187,7 @@ export const createBalancesService = ({
           resetReloadBalances: AVAX.resetReloadBalances,
           balances$: FP.pipe(
             network$,
-            RxOp.switchMap((network) => AVAX.balances$({ walletType, network, walletIndex, hdMode }))
+            RxOp.switchMap((network) => AVAX.balances$({ walletType, network, walletAccount, walletIndex, hdMode }))
           ),
           reloadBalances$: AVAX.reloadBalances$
         }
@@ -195,7 +197,7 @@ export const createBalancesService = ({
           resetReloadBalances: BSC.resetReloadBalances,
           balances$: FP.pipe(
             network$,
-            RxOp.switchMap((network) => BSC.balances$({ walletType, network, walletIndex, hdMode }))
+            RxOp.switchMap((network) => BSC.balances$({ walletType, network, walletAccount, walletIndex, hdMode }))
           ),
           reloadBalances$: BSC.reloadBalances$
         }
@@ -203,42 +205,42 @@ export const createBalancesService = ({
         return {
           reloadBalances: THOR.reloadBalances,
           resetReloadBalances: THOR.resetReloadBalances,
-          balances$: THOR.balances$({ walletType, walletIndex, hdMode }),
+          balances$: THOR.balances$({ walletType, walletAccount, walletIndex, hdMode }),
           reloadBalances$: THOR.reloadBalances$
         }
       case MAYAChain:
         return {
           reloadBalances: MAYA.reloadBalances,
           resetReloadBalances: MAYA.resetReloadBalances,
-          balances$: MAYA.balances$({ walletType, walletIndex, hdMode }),
+          balances$: MAYA.balances$({ walletType, walletAccount, walletIndex, hdMode }),
           reloadBalances$: MAYA.reloadBalances$
         }
       case LTCChain:
         return {
           reloadBalances: LTC.reloadBalances,
           resetReloadBalances: LTC.resetReloadBalances,
-          balances$: LTC.balances$({ walletType, walletIndex, hdMode }),
+          balances$: LTC.balances$({ walletType, walletAccount, walletIndex, hdMode }),
           reloadBalances$: LTC.reloadBalances$
         }
       case DOGEChain:
         return {
           reloadBalances: DOGE.reloadBalances,
           resetReloadBalances: DOGE.resetReloadBalances,
-          balances$: DOGE.balances$({ walletType, walletIndex, hdMode }),
+          balances$: DOGE.balances$({ walletType, walletAccount, walletIndex, hdMode }),
           reloadBalances$: DOGE.reloadBalances$
         }
       case KUJIChain:
         return {
           reloadBalances: KUJI.reloadBalances,
           resetReloadBalances: KUJI.resetReloadBalances,
-          balances$: KUJI.balances$({ walletType, walletIndex, hdMode }),
+          balances$: KUJI.balances$({ walletType, walletAccount, walletIndex, hdMode }),
           reloadBalances$: KUJI.reloadBalances$
         }
       case GAIAChain:
         return {
           reloadBalances: COSMOS.reloadBalances,
           resetReloadBalances: COSMOS.resetReloadBalances,
-          balances$: COSMOS.balances$({ walletType, walletIndex, hdMode }),
+          balances$: COSMOS.balances$({ walletType, walletAccount, walletIndex, hdMode }),
           reloadBalances$: COSMOS.reloadBalances$
         }
     }
@@ -269,17 +271,26 @@ export const createBalancesService = ({
   const getChainBalance$ = ({
     chain,
     walletType,
+    walletAccount,
     walletIndex,
     hdMode,
     walletBalanceType
   }: {
     chain: Chain
     walletType: WalletType
+    walletAccount: number
     walletIndex: number
     hdMode: HDMode
     walletBalanceType: WalletBalanceType
   }): WalletBalancesLD => {
-    const chainService = getBalancesServiceByChain({ chain, walletType, walletIndex, hdMode, walletBalanceType })
+    const chainService = getBalancesServiceByChain({
+      chain,
+      walletType,
+      walletAccount,
+      walletIndex,
+      hdMode,
+      walletBalanceType
+    })
     const reload$ = FP.pipe(
       chainService.reloadBalances$,
       RxOp.finalize(() => {
@@ -323,6 +334,7 @@ export const createBalancesService = ({
     getChainBalance$({
       chain: THORChain,
       walletType: 'keystore',
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
       walletBalanceType: 'all'
@@ -332,6 +344,7 @@ export const createBalancesService = ({
       walletType: 'keystore',
       chain: THORChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
       balances,
       balancesType: 'all'
@@ -346,6 +359,7 @@ export const createBalancesService = ({
     getChainBalance$({
       chain: MAYAChain,
       walletType: 'keystore',
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
       walletBalanceType: 'all'
@@ -355,6 +369,7 @@ export const createBalancesService = ({
       walletType: 'keystore',
       chain: MAYAChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
       balances,
       balancesType: 'all'
@@ -373,6 +388,7 @@ export const createBalancesService = ({
     walletBalanceType: WalletBalanceType
     getBalanceByAddress$: ({
       address,
+      walletAccount,
       walletType,
       walletIndex,
       hdMode,
@@ -380,6 +396,7 @@ export const createBalancesService = ({
     }: {
       address: Address
       walletType: WalletType
+      walletAccount: number
       walletIndex: number
       hdMode: HDMode
       walletBalanceType: WalletBalanceType
@@ -401,11 +418,18 @@ export const createBalancesService = ({
                 balances: RD.initial,
                 balancesType: walletBalanceType
               }),
-            ({ address, walletIndex, hdMode }) =>
+            ({ address, walletAccount, walletIndex, hdMode }) =>
               // Load balances by given Ledger address
               // and put it's RD state into `balances` of `ChainBalance`
               FP.pipe(
-                getBalanceByAddress$({ address, walletType: 'ledger', walletIndex, walletBalanceType, hdMode }),
+                getBalanceByAddress$({
+                  address,
+                  walletType: 'ledger',
+                  walletAccount,
+                  walletIndex,
+                  walletBalanceType,
+                  hdMode
+                }),
                 RxOp.map<WalletBalancesRD, ChainBalance>((balances) => ({
                   walletType: 'ledger',
                   chain,
@@ -446,8 +470,8 @@ export const createBalancesService = ({
     getChainBalance$({
       chain: LTCChain,
       walletType: 'keystore',
-      // walletIndex=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0,
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
+      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
       walletBalanceType: 'all'
     })
@@ -469,8 +493,8 @@ export const createBalancesService = ({
     getChainBalance$({
       chain: DASHChain,
       walletType: 'keystore',
-      // walletIndex=0 (as long as we don't support HD wallets for keystore)
-      walletIndex: 0,
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
+      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
       walletBalanceType: 'all'
     })
@@ -509,6 +533,7 @@ export const createBalancesService = ({
     getChainBalance$({
       chain: BCHChain,
       walletType: 'keystore',
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       walletBalanceType: 'all',
       hdMode: 'default'
@@ -518,6 +543,7 @@ export const createBalancesService = ({
       walletType: 'keystore',
       chain: BCHChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
       balances,
       balancesType: 'all'
@@ -558,6 +584,7 @@ export const createBalancesService = ({
     getChainBalance$({
       chain: BTCChain,
       walletType: 'keystore',
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
       walletBalanceType: 'all'
@@ -567,6 +594,7 @@ export const createBalancesService = ({
       walletType: 'keystore',
       chain: BTCChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
       balances,
       balancesType: 'all'
@@ -580,6 +608,7 @@ export const createBalancesService = ({
     getChainBalance$({
       chain: BTCChain,
       walletType: 'keystore',
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
       walletBalanceType: 'confirmed'
@@ -589,6 +618,7 @@ export const createBalancesService = ({
       walletType: 'keystore',
       chain: BTCChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
       balances,
       balancesType: 'confirmed'
@@ -603,6 +633,7 @@ export const createBalancesService = ({
     getChainBalance$({
       chain: DOGEChain,
       walletType: 'keystore',
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
       walletBalanceType: 'all'
@@ -612,6 +643,7 @@ export const createBalancesService = ({
       walletType: 'keystore',
       chain: DOGEChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
       balances,
       balancesType: 'all'
@@ -625,6 +657,7 @@ export const createBalancesService = ({
     getChainBalance$({
       chain: KUJIChain,
       walletType: 'keystore',
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
       walletBalanceType: 'all'
@@ -634,6 +667,7 @@ export const createBalancesService = ({
       walletType: 'keystore',
       chain: KUJIChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
       balances,
       balancesType: 'all'
@@ -660,6 +694,7 @@ export const createBalancesService = ({
   const ethBalances$ = getChainBalance$({
     chain: ETHChain,
     walletType: 'keystore',
+    walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
     walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
     hdMode: 'default',
     walletBalanceType: 'all'
@@ -672,6 +707,7 @@ export const createBalancesService = ({
       walletType: 'keystore',
       chain: ETHChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
       balances,
       balancesType: 'all'
@@ -681,6 +717,7 @@ export const createBalancesService = ({
   const arbBalances$ = getChainBalance$({
     chain: ARBChain,
     walletType: 'keystore',
+    walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
     walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
     hdMode: 'default',
     walletBalanceType: 'all'
@@ -694,6 +731,7 @@ export const createBalancesService = ({
       walletType: 'keystore',
       chain: ARBChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
       balances,
       balancesType: 'all'
@@ -703,6 +741,7 @@ export const createBalancesService = ({
   const avaxBalances$ = getChainBalance$({
     chain: AVAXChain,
     walletType: 'keystore',
+    walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
     walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
     hdMode: 'default',
     walletBalanceType: 'all'
@@ -716,6 +755,7 @@ export const createBalancesService = ({
       walletType: 'keystore',
       chain: AVAXChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
       balances,
       balancesType: 'all'
@@ -725,6 +765,7 @@ export const createBalancesService = ({
   const bscBalances$ = getChainBalance$({
     chain: BSCChain,
     walletType: 'keystore',
+    walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
     walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
     hdMode: 'default',
     walletBalanceType: 'all'
@@ -738,6 +779,7 @@ export const createBalancesService = ({
       walletType: 'keystore',
       chain: BSCChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
       balances,
       balancesType: 'all'
@@ -752,6 +794,7 @@ export const createBalancesService = ({
     getChainBalance$({
       chain: GAIAChain,
       walletType: 'keystore',
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
       walletBalanceType: 'all'
@@ -761,6 +804,7 @@ export const createBalancesService = ({
       walletType: 'keystore',
       chain: GAIAChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
       balances,
       balancesType: 'all'

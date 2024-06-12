@@ -11,10 +11,12 @@ import { WalletAddress } from '../../../../shared/wallet/types'
 
 export const getAddress = async ({
   transport,
+  walletAccount,
   walletIndex,
   evmHdMode
 }: {
   transport: Transport
+  walletAccount: number
   walletIndex: number
   evmHdMode: EvmHDMode
 }): Promise<E.Either<LedgerError, WalletAddress>> => {
@@ -23,7 +25,7 @@ export const getAddress = async ({
     const address = await clientLedger.getAddressAsync(walletIndex)
 
     if (address) {
-      return E.right({ address, chain: ARBChain, type: 'ledger', walletIndex, hdMode: evmHdMode })
+      return E.right({ address, chain: ARBChain, type: 'ledger', walletAccount, walletIndex, hdMode: evmHdMode })
     } else {
       return E.left({
         errorId: LedgerErrorId.INVALID_PUBKEY,

@@ -19,7 +19,8 @@ export const useLedger = (chain: Chain, id: KeystoreId) => {
   const { addLedgerAddress$, getLedgerAddress$, verifyLedgerAddress$, removeLedgerAddress } = useWalletContext()
 
   const verifyAddress = useCallback(
-    (walletIndex: number, hdMode: HDMode) => verifyLedgerAddress$({ chain, network, walletIndex, hdMode }),
+    (walletAccount: number, walletIndex: number, hdMode: HDMode) =>
+      verifyLedgerAddress$({ chain, network, walletAccount, walletIndex, hdMode }),
     [chain, verifyLedgerAddress$, network]
   )
   const removeAddress = useCallback(
@@ -38,7 +39,8 @@ export const useLedger = (chain: Chain, id: KeystoreId) => {
   )
 
   const addAddress = useCallback(
-    (walletIndex: number, hdMode: HDMode) => addLedgerAddress$({ id, chain, network, walletIndex, hdMode }),
+    (walletAccount: number, walletIndex: number, hdMode: HDMode) =>
+      addLedgerAddress$({ id, chain, network, walletAccount, walletIndex, hdMode }),
     [addLedgerAddress$, chain, id, network]
   )
 

@@ -160,6 +160,7 @@ export type LedgerTxParams = LedgerTHORTxParams | LedgerBNBTxParams
 export type IPCLedgerAdddressParams = {
   chain: Chain
   network: Network
+  walletAccount: number
   walletIndex: number
   hdMode: HDMode
 }

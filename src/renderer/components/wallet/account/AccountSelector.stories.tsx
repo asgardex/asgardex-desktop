@@ -18,6 +18,7 @@ const few: WalletBalances = [AssetBSC, ASSETS_MAINNET.BTC].map<WalletBalance>((a
   asset,
   amount: assetToBase(assetAmount(1)),
   walletAddress: `${assetToString(asset)} wallet`,
+  walletAccount: 0,
   walletIndex: 0,
   hdMode: 'default'
 }))

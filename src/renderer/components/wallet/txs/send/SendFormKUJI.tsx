@@ -69,7 +69,7 @@ export type Props = {
 
 export const SendFormKUJI: React.FC<Props> = (props): JSX.Element => {
   const {
-    asset: { walletType, walletIndex, hdMode },
+    asset: { walletType, walletAccount, walletIndex, hdMode },
     poolDetails,
     balances,
     balance,
@@ -372,6 +372,7 @@ export const SendFormKUJI: React.FC<Props> = (props): JSX.Element => {
     subscribeSendTxState(
       transfer$({
         walletType,
+        walletAccount,
         walletIndex,
         hdMode,
         recipient: form.getFieldValue('recipient'),
@@ -381,7 +382,19 @@ export const SendFormKUJI: React.FC<Props> = (props): JSX.Element => {
         dex
       })
     )
-  }, [subscribeSendTxState, transfer$, walletType, walletIndex, hdMode, form, asset, amountToSend, currentMemo, dex])
+  }, [
+    subscribeSendTxState,
+    transfer$,
+    walletType,
+    walletAccount,
+    walletIndex,
+    hdMode,
+    form,
+    asset,
+    amountToSend,
+    currentMemo,
+    dex
+  ])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
 

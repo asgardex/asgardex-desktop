@@ -103,7 +103,9 @@ const wallet: WalletMessages = {
   'wallet.validations.graterThen': 'Должно быть больше, чем {value}',
   'wallet.validations.shouldNotBeEmpty': 'Не должно быть пустым',
   'wallet.ledger.verifyAddress.modal.title': 'Проверка адреса Ledger',
-  'wallet.ledger.verifyAddress.modal.description': 'Проверьте адрес {address} на вашем устройстве'
+  'wallet.ledger.verifyAddress.modal.description': 'Проверьте адрес {address} на вашем устройстве',
+  'wallet.ledger.removeAddress': 'Удалить адрес Ledger для цепочки {chain}',
+  'wallet.ledger.viewAddress': 'Просмотреть адрес в проводнике'
 }
 
 export default wallet

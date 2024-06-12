@@ -42,6 +42,7 @@ export const sendTx = async ({
   memo,
   feeRate,
   feeOption,
+  walletAccount,
   walletIndex,
   nodeUrl,
   hdMode
@@ -70,6 +71,7 @@ export const sendTx = async ({
               recipient,
               amount,
               memo,
+              walletAccount,
               walletIndex
             })
           }
@@ -83,6 +85,7 @@ export const sendTx = async ({
             amount,
             feeRate,
             memo,
+            walletAccount,
             walletIndex
           })
           break
@@ -95,11 +98,22 @@ export const sendTx = async ({
             amount,
             feeRate,
             memo,
+            walletAccount,
             walletIndex
           })
           break
         case BCHChain:
-          res = await BCH.send({ transport, network, sender, recipient, amount, feeRate, memo, walletIndex })
+          res = await BCH.send({
+            transport,
+            network,
+            sender,
+            recipient,
+            amount,
+            feeRate,
+            memo,
+            walletAccount,
+            walletIndex
+          })
           break
         case DOGEChain:
           res = await DOGE.send({
@@ -110,6 +124,7 @@ export const sendTx = async ({
             amount,
             feeRate,
             memo,
+            walletAccount,
             walletIndex
           })
           break
@@ -122,6 +137,7 @@ export const sendTx = async ({
             amount,
             feeRate,
             memo,
+            walletAccount,
             walletIndex
           })
           break
@@ -149,6 +165,7 @@ export const sendTx = async ({
               recipient,
               amount,
               memo,
+              walletAccount,
               walletIndex,
               feeOption,
               evmHDMode: hdMode
@@ -179,9 +196,10 @@ export const sendTx = async ({
               recipient,
               amount,
               memo,
+              walletAccount,
               walletIndex,
               feeOption,
-              evmHDMode: hdMode
+              evmHdMode: hdMode
             })
           }
           break
@@ -209,9 +227,10 @@ export const sendTx = async ({
               recipient,
               amount,
               memo,
+              walletAccount,
               walletIndex,
               feeOption,
-              evmHDMode: hdMode
+              evmHdMode: hdMode
             })
           }
           break
@@ -264,6 +283,7 @@ export const sendTx = async ({
               asset,
               recipient,
               memo,
+              walletAccount,
               walletIndex,
               feeAmount
             })
@@ -289,6 +309,7 @@ export const deposit = async ({
   recipient,
   amount,
   memo,
+  walletAccount,
   walletIndex,
   feeOption,
   nodeUrl,
@@ -312,7 +333,7 @@ export const deposit = async ({
               msg: `"nodeUrl" needs to be defined to send Ledger transaction on ${chainToString(chain)}`
             })
           } else {
-            res = await THOR.deposit({ transport, network, amount, asset, memo, walletIndex })
+            res = await THOR.deposit({ transport, network, amount, asset, memo, walletAccount, walletIndex })
           }
           break
         case ETHChain:
@@ -349,6 +370,7 @@ export const deposit = async ({
               network,
               amount,
               memo,
+              walletAccount,
               walletIndex,
               recipient,
               feeOption,
@@ -390,6 +412,7 @@ export const deposit = async ({
               network,
               amount,
               memo,
+              walletAccount,
               walletIndex,
               recipient,
               feeOption,
@@ -431,10 +454,11 @@ export const deposit = async ({
               network,
               amount,
               memo,
+              walletAccount,
               walletIndex,
               recipient,
               feeOption,
-              evmHDMode: hdMode
+              evmHdMode: hdMode
             })
           }
           break

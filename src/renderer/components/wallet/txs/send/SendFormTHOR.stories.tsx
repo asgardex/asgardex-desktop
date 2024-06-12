@@ -55,7 +55,14 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
 
   return (
     <Component
-      asset={{ asset: AssetRuneNative, walletAddress: 'thorxyz', walletType, walletIndex: 0, hdMode: 'default' }}
+      asset={{
+        asset: AssetRuneNative,
+        walletAddress: 'thorxyz',
+        walletType,
+        walletAccount: 0,
+        walletIndex: 0,
+        hdMode: 'default'
+      }}
       transfer$={transfer$}
       balances={[dexBalance]}
       balance={dexBalance}

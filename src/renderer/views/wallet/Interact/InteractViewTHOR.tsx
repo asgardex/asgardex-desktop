@@ -175,7 +175,7 @@ export const InteractViewTHOR: React.FC = () => {
           <ErrorView title="Missing data for InteractiveView" subTitle={error?.message ?? error.toString()} />
         </div>
       ),
-      ([interactType, { walletType, walletIndex, hdMode }]) => (
+      ([interactType, { walletType, walletAccount, walletIndex, hdMode }]) => (
         <>
           <div className="relative mb-20px flex items-center justify-between">
             <Row justify="space-between">
@@ -200,6 +200,7 @@ export const InteractViewTHOR: React.FC = () => {
                     chain={assetChain}>
                     <InteractFormThor
                       interactType={interactType}
+                      walletAccount={walletAccount}
                       walletIndex={walletIndex}
                       walletType={walletType}
                       hdMode={hdMode}

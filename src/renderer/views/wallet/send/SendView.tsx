@@ -100,6 +100,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
       const DEFAULT_WALLET_BALANCE = {
         walletAddress: asset.walletAddress,
         walletType: asset.walletType,
+        walletAccount: asset.walletAccount,
         walletIndex: asset.walletIndex,
         hdMode: asset.hdMode,
         amount: baseAmount(0),

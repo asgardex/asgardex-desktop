@@ -70,7 +70,7 @@ export type Props = {
 
 export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
   const {
-    asset: { walletType, walletIndex, hdMode },
+    asset: { walletType, walletAccount, walletIndex, hdMode },
     poolDetails,
     pricePool,
     balances,
@@ -382,6 +382,7 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
     subscribeSendTxState(
       transfer$({
         walletType,
+        walletAccount,
         walletIndex,
         recipient,
         asset,
@@ -396,6 +397,7 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
     subscribeSendTxState,
     transfer$,
     walletType,
+    walletAccount,
     walletIndex,
     asset,
     amountToSend,

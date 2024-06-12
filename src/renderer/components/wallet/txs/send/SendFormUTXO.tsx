@@ -86,7 +86,7 @@ export type Props = {
 
 export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
   const {
-    asset: { walletType, walletIndex, hdMode, walletAddress },
+    asset: { walletType, walletAccount, walletIndex, hdMode, walletAddress },
     poolDetails,
     balances,
     balance,
@@ -510,6 +510,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     subscribeSendTxState(
       transfer$({
         walletType,
+        walletAccount,
         walletIndex,
         hdMode,
         sender: walletAddress,
@@ -525,6 +526,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     subscribeSendTxState,
     transfer$,
     walletType,
+    walletAccount,
     walletIndex,
     hdMode,
     walletAddress,

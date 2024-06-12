@@ -199,7 +199,9 @@ export const WalletIndexInput = styled(A.InputNumber)`
   background-color: ${palette('background', 1)};
   margin-left: 10px;
   margin-right: 5px;
-  max-width: 45px;
+  max-width: 50px;
+  border-radius: 8px;
+  padding: 0px;
 `
 
 export const WalletTypeLabel = styled(WalletTypeLabelUI)`
