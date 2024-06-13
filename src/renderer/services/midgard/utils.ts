@@ -165,12 +165,13 @@ export const getPoolDetail = (details: PoolDetails, asset: Asset): O.Option<Pool
         detail.asset,
         assetFromString,
         O.fromNullable,
-        O.map(
-          (detailAsset) =>
-            detailAsset.chain === asset.chain.toUpperCase() &&
-            detailAsset.symbol === asset.symbol.toUpperCase() &&
-            detailAsset.ticker === asset.ticker.toUpperCase()
-        ),
+        O.map((detailAsset) => {
+          const res =
+            detailAsset.chain.toUpperCase() === asset.chain.toUpperCase() &&
+            detailAsset.symbol.toUpperCase() === asset.symbol.toUpperCase() &&
+            detailAsset.ticker.toUpperCase() === asset.ticker.toUpperCase()
+          return res
+        }),
         O.getOrElse(() => false)
       )
     ),

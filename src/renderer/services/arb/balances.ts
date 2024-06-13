@@ -71,7 +71,19 @@ const balances$: ({
 
 // State of balances loaded by Client and Address
 const getBalanceByAddress$ = (network: Network) => {
-  const assets: Asset[] | undefined = network === Network.Testnet ? ArbAssetsTestnet : undefined
+  const getAssets = (network: Network): Asset[] | undefined => {
+    const assets: Asset[] | undefined = network === Network.Testnet ? ArbAssetsTestnet : undefined
+
+    return network === Network.Mainnet
+      ? FP.pipe(
+          ARB_TOKEN_WHITELIST,
+          A.filter(({ asset }) => !asset.synth),
+          A.map(({ asset }) => asset),
+          (whitelistedAssets) => [AssetAETH, ...whitelistedAssets]
+        )
+      : assets
+  }
+  const assets: Asset[] | undefined = getAssets(network)
   return C.balancesByAddress$({ client$, trigger$: reloadBalances$, assets, walletBalanceType: 'all' })
 }
 

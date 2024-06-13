@@ -59,29 +59,6 @@ export const UnlockForm: React.FC<Props> = (props): JSX.Element => {
 
   const [unlockError, setUnlockError] = useState<O.Option<Error>>(O.none)
 
-  /**
-   * Helper to auto-unlock wallet in development mode while hot-relaoding the app
-   * Wallet has to be imported and `REACT_APP_WALLET_PASSWORD` has to be set as env before
-   *
-   * TEMPORAY disabled in https://github.com/thorchain/asgardex-electron/pull/2348
-   */
-  // useEffect(() => {
-  //   if ($IS_DEV) {
-  //     const checkPassword = async () => {
-  //       const password = envOrDefault(process.env.REACT_APP_WALLET_PASSWORD, '')
-  //       if (password && keystore && hasImportedKeystore(keystore) && isLocked(keystore)) {
-  //         setUnlocking(true)
-  //         await unlockHandler(password).catch((error) => {
-  //           setUnlockError(O.some(error))
-  //         })
-  //         setUnlocking(false)
-  //         setValidPassword(true)
-  //       }
-  //     }
-  //     checkPassword()
-  //   }
-  // }, [keystore, unlockHandler])
-
   // Re-direct to previous view after unlocking the wallet
   useEffect(() => {
     if (!isLocked(keystore) && validPassword) {

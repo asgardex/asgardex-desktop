@@ -789,10 +789,11 @@ export const Swap = ({
 
   //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
   const applyBps = useMemo(() => {
+    const aff = ASGARDEX_AFFILIATE_FEE === 10 ? ASGARDEX_AFFILIATE_FEE : 10
     let applyBps: number
     const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
-    applyBps = network === Network.Stagenet ? 0 : ASGARDEX_AFFILIATE_FEE
-    applyBps = txFeeCovered ? ASGARDEX_AFFILIATE_FEE : 0
+    applyBps = network === Network.Stagenet ? 0 : aff
+    applyBps = txFeeCovered ? aff : 0
     return applyBps
   }, [network, priceAmountToSwapMax1e8])
 

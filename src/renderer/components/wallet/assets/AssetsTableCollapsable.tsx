@@ -10,10 +10,8 @@ import {
   assetFromString,
   assetToString,
   BaseAmount,
-  baseAmount,
   baseToAsset,
   Chain,
-  CryptoAmount,
   formatAssetAmountCurrency,
   isSynthAsset
 } from '@xchainjs/xchain-util'
@@ -30,7 +28,7 @@ import { Dex } from '../../../../shared/api/types'
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
-import { AssetUSDC, DEFAULT_WALLET_TYPE, ZERO_BASE_AMOUNT } from '../../../const'
+import { DEFAULT_WALLET_TYPE, ZERO_BASE_AMOUNT } from '../../../const'
 import { isCacaoAsset, isMayaAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
@@ -313,6 +311,17 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         O.chain(({ asset }) => O.fromNullable(assetFromString(asset))),
         O.toNullable
       )
+      const hasSaversAssets = FP.pipe(
+        poolDetails,
+        A.filter(({ saversDepth }) => Number(saversDepth) > 0),
+        A.filterMap(({ asset: assetString }) => O.fromNullable(assetFromString(assetString))),
+        A.exists(
+          (assetPool) =>
+            assetPool.chain.toUpperCase() === asset.chain.toUpperCase() &&
+            assetPool.symbol.toUpperCase() === asset.symbol.toUpperCase() &&
+            assetPool.ticker.toUpperCase() === asset.ticker.toUpperCase()
+        )
+      )
 
       const createAction = (labelId: string, callback: () => void) => ({
         label: intl.formatMessage({ id: labelId }),
@@ -384,7 +393,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           )
         )
 
-        if (dex.chain !== MAYAChain) {
+        if (dex.chain !== MAYAChain && hasSaversAssets) {
           actions.push(
             createAction('common.earn', () =>
               navigate(
@@ -527,14 +536,15 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
                 if ((isUSDAsset(asset) && !asset.synth && amount.amount().gt(1)) || isMayaAsset(asset)) {
                   return true
                 }
-                const usdValue =
+                let usdValue: O.Option<BaseAmount>
+                usdValue =
                   isChainOfMaya(asset.chain) || isCacaoAsset(asset)
                     ? getPoolPriceValueM({ balance: { asset, amount }, poolDetails: poolDetailsMaya, pricePool })
                     : getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool })
-                const result =
-                  O.isSome(usdValue) &&
-                  usdValue.value.amount().gt(0) &&
-                  new CryptoAmount(baseAmount(usdValue.value.amount()), AssetUSDC)
+                usdValue = O.isNone(usdValue)
+                  ? getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool })
+                  : usdValue
+                const result = O.isSome(usdValue) && usdValue.value.amount().gt(0)
                 return result
               })
             }

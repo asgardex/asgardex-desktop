@@ -56,7 +56,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       )
 
     const provider = client.getProvider()
-
+    console.log(params)
     return FP.pipe(
       sequenceSOption({ address: getArbAssetAddress(params.asset), router: params.router }),
       O.fold(
@@ -70,6 +70,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
             RxOp.switchMap(({ gasPrices, blockTime }) => {
               const isArbAddress = address === ArbZeroAddress
               const amount = isArbAddress ? baseAmount(0) : params.amount
+              console.log(params.amount.amount().toNumber())
               const gasPrice = gasPrices[params.feeOption].amount().toFixed(0) // no round down needed
               const signer = client.getWallet(params.walletIndex)
               const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
