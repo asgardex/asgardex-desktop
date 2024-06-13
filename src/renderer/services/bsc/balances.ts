@@ -5,10 +5,9 @@ import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
-import { BscAssetsTestnet } from '../../const'
+import { AssetUSDCBSC, AssetUSDTBSC, BscAssetsTestnet } from '../../const'
 import { liveData } from '../../helpers/rx/liveData'
 import { observableState } from '../../helpers/stateHelper'
-import { BSC_TOKEN_WHITELIST } from '../../types/generated/thorchain/bscerc20whitelist'
 import * as C from '../clients'
 import { WalletBalance } from '../wallet/types'
 import { client$ } from './common'
@@ -58,14 +57,7 @@ const balances$: ({
   const getAssets = (network: Network): Asset[] | undefined => {
     const assets: Asset[] | undefined = network === Network.Testnet ? BscAssetsTestnet : undefined
 
-    return network === Network.Mainnet
-      ? FP.pipe(
-          BSC_TOKEN_WHITELIST,
-          A.filter(({ asset }) => !asset.synth),
-          A.map(({ asset }) => asset),
-          (whitelistedAssets) => [AssetBSC, ...whitelistedAssets]
-        )
-      : assets
+    return network === Network.Mainnet ? [AssetBSC, AssetUSDTBSC, AssetUSDCBSC] : assets
   }
   const assets: Asset[] | undefined = getAssets(network)
   return FP.pipe(
