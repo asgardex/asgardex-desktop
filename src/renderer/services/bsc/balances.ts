@@ -60,6 +60,7 @@ const balances$: ({
     return network === Network.Mainnet ? [AssetBSC, AssetUSDTBSC, AssetUSDCBSC] : assets
   }
   const assets: Asset[] | undefined = getAssets(network)
+
   return FP.pipe(
     C.balances$({
       client$,

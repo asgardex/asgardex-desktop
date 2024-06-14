@@ -5,6 +5,8 @@
 - Update Asset table UI [#275] (https://github.com/asgardex/asgardex-desktop/pull/276)
 - Add MayaMidgard editable url to Advanced [#236] (https://github.com/asgardex/asgardex-desktop/pull/277)
 - Code Clean up and more extrapolation [#278] (https://github.com/asgardex/asgardex-desktop/pull/279)
+- Added accounts to ledger [#130] (https://github.com/asgardex/asgardex-desktop/pull/282)
+- Fix asset sorting [#287] (https://github.com/asgardex/asgardex-desktop/pull/288)
 
 # 1.21.8 (2024-06-03)
 

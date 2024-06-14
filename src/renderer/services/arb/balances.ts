@@ -1,13 +1,10 @@
-import { AssetAETH } from '@xchainjs/xchain-arbitrum'
 import { Network } from '@xchainjs/xchain-client'
 import { Asset } from '@xchainjs/xchain-util'
-import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { ArbAssetsTestnet } from '../../const'
 import { observableState } from '../../helpers/stateHelper'
-import { ARB_TOKEN_WHITELIST } from '../../types/generated/mayachain/arberc20whitelist'
 import * as C from '../clients'
 import { client$ } from './common'
 
@@ -41,20 +38,7 @@ const balances$: ({
   hdMode: HDMode
 }) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, network, hdMode }) => {
   // For testnet we limit requests by using pre-defined assets only
-  // For mainnet we use the whiteList assets to avoid calling balances on airdropped scam tokens.
-  const getAssets = (network: Network): Asset[] | undefined => {
-    const assets: Asset[] | undefined = network === Network.Testnet ? ArbAssetsTestnet : undefined
-
-    return network === Network.Mainnet
-      ? FP.pipe(
-          ARB_TOKEN_WHITELIST,
-          A.filter(({ asset }) => !asset.synth),
-          A.map(({ asset }) => asset),
-          (whitelistedAssets) => [AssetAETH, ...whitelistedAssets]
-        )
-      : assets
-  }
-  const assets: Asset[] | undefined = getAssets(network)
+  const assets: Asset[] | undefined = network === Network.Testnet ? ArbAssetsTestnet : undefined
   return FP.pipe(
     C.balances$({
       client$,
@@ -71,19 +55,7 @@ const balances$: ({
 
 // State of balances loaded by Client and Address
 const getBalanceByAddress$ = (network: Network) => {
-  const getAssets = (network: Network): Asset[] | undefined => {
-    const assets: Asset[] | undefined = network === Network.Testnet ? ArbAssetsTestnet : undefined
-
-    return network === Network.Mainnet
-      ? FP.pipe(
-          ARB_TOKEN_WHITELIST,
-          A.filter(({ asset }) => !asset.synth),
-          A.map(({ asset }) => asset),
-          (whitelistedAssets) => [AssetAETH, ...whitelistedAssets]
-        )
-      : assets
-  }
-  const assets: Asset[] | undefined = getAssets(network)
+  const assets: Asset[] | undefined = network === Network.Testnet ? ArbAssetsTestnet : undefined
   return C.balancesByAddress$({ client$, trigger$: reloadBalances$, assets, walletBalanceType: 'all' })
 }
 

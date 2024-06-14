@@ -1975,12 +1975,10 @@ export const Swap = ({
     network,
     intl
   ])
-
+  // assuming on a unsucessful tx that the swap state should remain the same
   const onCloseTxModal = useCallback(() => {
     resetSwapState()
-    reloadBalances()
-    setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
-  }, [resetSwapState, reloadBalances, setAmountToSwapMax1e8, initialAmountToSwapMax1e8])
+  }, [resetSwapState])
 
   const onFinishTxModal = useCallback(() => {
     resetSwapState()
