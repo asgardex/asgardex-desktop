@@ -88,7 +88,7 @@ describe('stake/Withdraw.helper', () => {
       expect(eqBaseAmount.equals(result, assetToBase(assetAmount(0.00045, withdrawAssetDecimal)))).toBeTruthy()
     })
 
-    it('witdhraw non chain asset (BSC.USDC)', () => {
+    it('withdraw non chain asset (BSC.USDC)', () => {
       const withdrawAssetDecimal = 8
       const params = {
         fees: {
