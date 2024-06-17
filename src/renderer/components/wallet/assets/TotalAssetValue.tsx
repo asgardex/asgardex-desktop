@@ -56,7 +56,7 @@ export const TotalAssetValue: React.FC<Props> = (props): JSX.Element => {
     ]
     // Define your color scheme
     return Object.entries(balancesByChain).map(([chain, balance], index) => ({
-      name: `${chain.split(':')[0]}_${index}`, // Add an index to make the key unique
+      name: `${chain.split(':')[0]}_${index}_${chain.split(':')[1]}`, // Add an index to make the key unique
       value: hidePrivateData ? 0 : baseToAsset(balance).amount().toNumber(),
       fillColor: COLORS[index % COLORS.length]
     }))
