@@ -22,6 +22,7 @@ export type HelpMenuMessages = {
   'menu.help.docs': string
   'menu.help.discord': string
   'menu.help.issues': string
+  'menu.help.license': string
 }
 
 export type ViewMenuMessages = {

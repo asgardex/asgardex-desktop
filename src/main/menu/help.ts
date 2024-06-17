@@ -24,6 +24,12 @@ const menu = (intl: IntlShape): MenuItemConstructorOptions => ({
       click() {
         openExternal(`${ExternalUrl.GITHUB_REPO}/issues`)
       }
+    },
+    {
+      label: intl.formatMessage({ id: 'menu.help.license' }),
+      click() {
+        openExternal(`${ExternalUrl.GITHUB_REPO}/blob/develop/LICENSE`)
+      }
     }
   ]
 })
