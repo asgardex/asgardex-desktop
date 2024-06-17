@@ -281,7 +281,6 @@ export const Swap = ({
     O.map(isLedgerWallet),
     O.getOrElse(() => false)
   )
-
   // For normal quotes
   const [oQuote, setQuote] = useState<O.Option<TxDetails>>(O.none)
   // For maya quotes
@@ -789,10 +788,11 @@ export const Swap = ({
 
   //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
   const applyBps = useMemo(() => {
+    const aff = ASGARDEX_AFFILIATE_FEE === 10 ? ASGARDEX_AFFILIATE_FEE : 10
     let applyBps: number
     const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
-    applyBps = network === Network.Stagenet ? 0 : ASGARDEX_AFFILIATE_FEE
-    applyBps = txFeeCovered ? ASGARDEX_AFFILIATE_FEE : 0
+    applyBps = network === Network.Stagenet ? 0 : aff
+    applyBps = txFeeCovered ? aff : 0
     return applyBps
   }, [network, priceAmountToSwapMax1e8])
 
@@ -1975,12 +1975,10 @@ export const Swap = ({
     network,
     intl
   ])
-
+  // assuming on a unsucessful tx that the swap state should remain the same
   const onCloseTxModal = useCallback(() => {
     resetSwapState()
-    reloadBalances()
-    setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
-  }, [resetSwapState, reloadBalances, setAmountToSwapMax1e8, initialAmountToSwapMax1e8])
+  }, [resetSwapState])
 
   const onFinishTxModal = useCallback(() => {
     resetSwapState()
@@ -2475,11 +2473,12 @@ export const Swap = ({
 
   useEffect(() => {
     // reset data whenever source asset has been changed
-    if (!eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
-      prevSourceAsset.current = O.some(sourceAsset)
+    if (O.some(prevSourceAsset.current) && !eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
       reloadFeesHandler()
       resetIsApprovedState()
       resetApproveState()
+    } else {
+      prevSourceAsset.current = O.some(sourceAsset)
     }
     if (!eqOAsset.equals(prevTargetAsset.current, O.some(targetAsset))) {
       prevTargetAsset.current = O.some(targetAsset)

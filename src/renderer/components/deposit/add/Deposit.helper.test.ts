@@ -7,7 +7,7 @@ import * as O from 'fp-ts/Option'
 
 import { thorDetails } from '../../../../shared/api/types'
 import { AssetBTC, AssetETH, AssetBSC } from '../../../../shared/utils/asset'
-import { AssetUSDTBSC, AssetUSDTERC20Testnet } from '../../../const'
+import { AssetUSDCBSC, AssetUSDTBSC, AssetUSDTERC20 } from '../../../const'
 import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { eqBaseAmount, eqODepositAssetFees, eqODepositFees } from '../../../helpers/fp/eq'
 import { DepositAssetFees, DepositFees, SymDepositFees, SymDepositFeesRD } from '../../../services/chain/types'
@@ -217,11 +217,11 @@ describe('deposit/Deposit.helper', () => {
 
   describe('minAssetAmountToDepositMax1e8', () => {
     const poolsData = {
-      'BSC.USDC-0X55D398326F99059FF775485246999027B3197955': {
+      'BSC.USDC-0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d': {
         assetBalance: assetToBase(assetAmount(20)), // 1 USDT = 0.05 RUNE
         dexBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDT
       },
-      'ETH.USDT-0xa3910454bf2cb59b8b3a401589a3bacc5ca42306': {
+      'ETH.USDT-0xdAC17F958D2ee523a2206206994597C13D831ec7': {
         assetBalance: assetToBase(assetAmount(20)), // 1 USDT = 0.05 RUNE
         dexBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDT
       },
@@ -310,7 +310,7 @@ describe('deposit/Deposit.helper', () => {
           outFee: assetToBase(assetAmount(0.0003, BSC_GAS_ASSET_DECIMAL)),
           refundFee: assetToBase(assetAmount(0.0003, BSC_GAS_ASSET_DECIMAL))
         },
-        asset: AssetUSDTBSC,
+        asset: AssetUSDCBSC,
         assetDecimal: depositAssetDecimal,
         poolsData
       }
@@ -343,7 +343,7 @@ describe('deposit/Deposit.helper', () => {
           outFee: assetToBase(assetAmount(0.03, ETH_GAS_ASSET_DECIMAL)),
           refundFee: assetToBase(assetAmount(0.03, ETH_GAS_ASSET_DECIMAL))
         },
-        asset: AssetUSDTERC20Testnet,
+        asset: AssetUSDTERC20,
         assetDecimal: depositAssetDecimal,
         poolsData
       }

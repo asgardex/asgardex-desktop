@@ -1,4 +1,3 @@
-import { AssetBSC } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { Asset } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
@@ -6,9 +5,9 @@ import * as FP from 'fp-ts/lib/function'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { BscAssetsTestnet } from '../../const'
+import { validAssetForBSC } from '../../helpers/assetHelper'
 import { liveData } from '../../helpers/rx/liveData'
 import { observableState } from '../../helpers/stateHelper'
-import { BSC_TOKEN_WHITELIST } from '../../types/generated/thorchain/bscerc20whitelist'
 import * as C from '../clients'
 import { WalletBalance } from '../wallet/types'
 import { client$ } from './common'
@@ -54,20 +53,9 @@ const balances$: ({
   hdMode: HDMode
 }) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, network, hdMode }) => {
   // For testnet we limit requests by using pre-defined assets only
-  // For mainnet we use the whiteList assets to avoid calling balances on airdropped scam tokens.
-  const getAssets = (network: Network): Asset[] | undefined => {
-    const assets: Asset[] | undefined = network === Network.Testnet ? BscAssetsTestnet : undefined
 
-    return network === Network.Mainnet
-      ? FP.pipe(
-          BSC_TOKEN_WHITELIST,
-          A.filter(({ asset }) => !asset.synth),
-          A.map(({ asset }) => asset),
-          (whitelistedAssets) => [AssetBSC, ...whitelistedAssets]
-        )
-      : assets
-  }
-  const assets: Asset[] | undefined = getAssets(network)
+  const assets: Asset[] | undefined = network === Network.Testnet ? BscAssetsTestnet : undefined
+
   return FP.pipe(
     C.balances$({
       client$,
@@ -80,6 +68,8 @@ const balances$: ({
       walletBalanceType: 'all'
     }),
     // Filter assets based on BSCERC20Whitelist (mainnet only)
+    // Filter assets based on BSCERC20Whitelist (mainnet only)
+    liveData.map(FP.flow(A.filter(({ asset }) => validAssetForBSC(asset, network)))),
     liveData.map(
       FP.flow(
         A.map((balance: WalletBalance) => ({
