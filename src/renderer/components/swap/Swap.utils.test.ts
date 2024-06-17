@@ -77,7 +77,7 @@ describe('components/swap/utils', () => {
 
   describe('minAmountToSwapMax1e8', () => {
     const poolsData: PoolsDataMap = {
-      'BSC.USDC-0X8AC76A51CC950D9822D68B83FE1AD97B32CD580D': {
+      'BSC.USDC-0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d': {
         assetBalance: assetToBase(assetAmount(20)), // 1 USDT = 0.05 RUNE
         dexBalance: assetToBase(assetAmount(1)) // 1 RUNE = 20 USDT
       },

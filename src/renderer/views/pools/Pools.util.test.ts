@@ -156,7 +156,7 @@ describe('views/pools/utils', () => {
       {
         asset: {
           chain: BSCChain,
-          symbol: 'BSC.USDT-0X55D398326F99059FF775485246999027B319795',
+          symbol: 'USDT-0x55d398326f99059fF775485246999027B3197955',
           ticker: 'USDT',
           synth: false
         }

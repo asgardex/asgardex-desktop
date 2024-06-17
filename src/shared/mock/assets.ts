@@ -12,7 +12,7 @@ export const ASSETS_MAINNET: AssetsMainnet = {
   ETH: { chain: ETHChain, symbol: 'ETH', ticker: 'ETH', synth: false },
   BTC: { chain: BTCChain, symbol: 'BTC', ticker: 'BTC', synth: false },
   DOGE: { chain: DOGEChain, symbol: 'DOGE', ticker: 'DOGE', synth: false },
-  USDT: { chain: BSCChain, symbol: 'BSC.USDT-0X55D398326F99059FF775485246999027B319795', ticker: 'USDT', synth: false }
+  USDT: { chain: BSCChain, symbol: 'BSC.USDT-0x55d398326f99059fF775485246999027B3197955', ticker: 'USDT', synth: false }
 }
 
 type ERCAssets = 'USDT'

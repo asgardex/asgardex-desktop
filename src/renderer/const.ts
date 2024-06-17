@@ -126,7 +126,7 @@ export const AssetUSDTAVAX: Asset = {
 // BSC.USDT mainnet
 export const AssetUSDTBSC: Asset = {
   chain: BSCChain,
-  symbol: 'USDC-0X55D398326F99059FF775485246999027B3197955',
+  symbol: 'USDT-0x55d398326f99059fF775485246999027B3197955',
   ticker: 'USDT',
   synth: false
 }
@@ -134,7 +134,7 @@ export const AssetUSDTBSC: Asset = {
 // BSC.USDC mainnet
 export const AssetUSDCBSC: Asset = {
   chain: BSCChain,
-  symbol: 'USDC-0X8AC76A51CC950D9822D68B83FE1AD97B32CD580D',
+  symbol: 'USDC-0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
   ticker: 'USDC',
   synth: false
 }
