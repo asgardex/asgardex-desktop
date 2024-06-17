@@ -390,4 +390,4 @@ Please use [bug report template](https://github.com/asgardex/asgardex-desktop/is
 
 ## License
 
-MIT [THORChain](https://github.com/thorchain)
+[MIT License](./LICENSE)

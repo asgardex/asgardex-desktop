@@ -23,7 +23,8 @@ const helpMenu: HelpMenuMessages = {
   'menu.help.learn': 'और जानें…',
   'menu.help.docs': 'दस्तावेज़ीकरण',
   'menu.help.discord': 'डिस्कॉर्ड',
-  'menu.help.issues': 'समस्याएं रिपोर्ट करें'
+  'menu.help.issues': 'समस्याएं रिपोर्ट करें',
+  'menu.help.license': 'लाइसेंस'
 }
 
 const viewMenu: ViewMenuMessages = {

@@ -29,7 +29,8 @@ export enum ExternalUrl {
   GITHUB_REPO = `https://github.com/asgardex/asgardex-desktop`,
   GITHUB_RELEASE = `https://github.com/asgardex/asgardex-desktop/releases/tag/v`,
   TWITTER = 'https://twitter.com/asgardex',
-  ASGARDEX = 'https://asgardex.com'
+  ASGARDEX = 'https://asgardex.com',
+  LICENSE = 'https://github.com/asgardex/asgardex-desktop?tab=MIT-1-ov-file'
 }
 
 // increase it by `1` if you want to ignore previous version of `UserNodesStorage`

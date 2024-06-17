@@ -23,7 +23,8 @@ const helpMenu: HelpMenuMessages = {
   'menu.help.learn': 'Mehr erfahren…',
   'menu.help.docs': 'Dokumentation',
   'menu.help.discord': 'Discord',
-  'menu.help.issues': 'Probleme melden'
+  'menu.help.issues': 'Probleme melden',
+  'menu.help.license': 'Lizenz'
 }
 
 const viewMenu: ViewMenuMessages = {
