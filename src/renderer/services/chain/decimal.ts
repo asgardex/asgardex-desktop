@@ -1,7 +1,10 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { ARB_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-arbitrum'
+import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
+import { BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { DASH_DECIMAL } from '@xchainjs/xchain-dash'
+import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { MidgardQuery } from '@xchainjs/xchain-midgard-query'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
@@ -11,7 +14,17 @@ import * as RxOp from 'rxjs/operators'
 
 import { isEnabledChain } from '../../../shared/utils/chain'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
-import { isArbChain, isBscChain, isDashChain, isKujiChain, isMayaChain, isThorChain } from '../../helpers/chainHelper'
+import {
+  isArbChain,
+  isBchChain,
+  isBscChain,
+  isBtcChain,
+  isDashChain,
+  isEthChain,
+  isKujiChain,
+  isMayaChain,
+  isThorChain
+} from '../../helpers/chainHelper'
 import { KUJI_DECIMAL } from '../kuji/const'
 import { AssetWithDecimalLD } from './types'
 
@@ -43,6 +56,15 @@ const getDecimal = (asset: Asset): Promise<number> => {
   }
   if (isKujiChain(chain)) {
     return Promise.resolve(KUJI_DECIMAL)
+  }
+  if (isBtcChain(chain)) {
+    return Promise.resolve(BTC_DECIMAL)
+  }
+  if (isBchChain(chain)) {
+    return Promise.resolve(BCH_DECIMAL)
+  }
+  if (isEthChain(chain)) {
+    return Promise.resolve(ETH_GAS_ASSET_DECIMAL)
   }
 
   const midgardQuery = new MidgardQuery()

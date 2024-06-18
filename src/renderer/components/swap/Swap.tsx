@@ -1292,7 +1292,7 @@ export const Swap = ({
           return {
             poolAddress,
             asset: sourceAsset,
-            amount: convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal),
+            amount: convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal),
             memo: shortenMemo(txDetails.memo), // short asset
             walletType,
             sender: walletAddress,
@@ -1309,7 +1309,7 @@ export const Swap = ({
           return {
             poolAddress,
             asset: sourceAsset,
-            amount: convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal),
+            amount: convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal),
             memo: quoteSwap.memo, // The memo will be different based on the selected quote
             walletType,
             sender: walletAddress,
@@ -1322,7 +1322,7 @@ export const Swap = ({
       )
       return dex.chain === THORChain ? swapParamsThor : swapParamsMaya
     },
-    [oPoolAddress, oSourceAssetWB, oQuote, oQuoteMaya, sourceAsset, amountToSwapMax1e8, sourceAssetDecimal, dex] // Include both quote dependencies
+    [oPoolAddress, oSourceAssetWB, oQuote, oQuoteMaya, dex, sourceAsset, amountToSwapMax1e8, sourceAssetAmount.decimal] // Include both quote dependencies
   )
 
   // Check to see slippage greater than tolerance
