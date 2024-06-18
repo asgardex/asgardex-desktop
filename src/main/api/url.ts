@@ -4,6 +4,7 @@ const EXTERNALS_WHITELIST = [
   'thorchain.net',
   'testnet.thorchain.net',
   'docs.thorchain.org',
+  'docs.mayaprotocol.com',
   'discord.gg',
   'twitter.com',
   'github.com',

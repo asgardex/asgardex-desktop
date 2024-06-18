@@ -59,7 +59,9 @@ export const Footer: React.FC<Props> = (props): JSX.Element => {
       <Row justify="space-between" align="middle">
         <Col span={24} md={12}>
           <Row justify={screens.md ? 'start' : 'center'}>
-            <FooterIcon url={ExternalUrl.DOCS} onClick={clickIconHandler}>
+            <FooterIcon
+              url={dex.chain === THORChain ? ExternalUrl.DOCSTHOR : ExternalUrl.DOCSMAYA}
+              onClick={clickIconHandler}>
               {dex.chain === THORChain ? (
                 <ThorChainIcon />
               ) : (

@@ -7,6 +7,7 @@
 - Code Clean up and more extrapolation [#278] (https://github.com/asgardex/asgardex-desktop/pull/279)
 - Added accounts to ledger [#130] (https://github.com/asgardex/asgardex-desktop/pull/282)
 - Fix asset sorting [#287] (https://github.com/asgardex/asgardex-desktop/pull/288)
+- Fix arb erc20 swapping bug [#271] (https://github.com/asgardex/asgardex-desktop/pull/291)
 
 # 1.21.8 (2024-06-03)
 
