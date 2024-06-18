@@ -2,12 +2,12 @@
 
 ## Updates/Fixes
 
-- Update Asset table UI [#275] (https://github.com/asgardex/asgardex-desktop/pull/276)
+- Update Asset table UI [#275](https://github.com/asgardex/asgardex-desktop/pull/276)
 - Add MayaMidgard editable url to Advanced [#236] (https://github.com/asgardex/asgardex-desktop/pull/277)
-- Code Clean up and more extrapolation [#278] (https://github.com/asgardex/asgardex-desktop/pull/279)
-- Added accounts to ledger [#130] (https://github.com/asgardex/asgardex-desktop/pull/282)
-- Fix asset sorting [#287] (https://github.com/asgardex/asgardex-desktop/pull/288)
-- Fix arb erc20 swapping bug [#271] (https://github.com/asgardex/asgardex-desktop/pull/291)
+- Code Clean up and more extrapolation [#278](https://github.com/asgardex/asgardex-desktop/pull/279)
+- Added accounts to ledger [#130](https://github.com/asgardex/asgardex-desktop/pull/282)
+- Fix asset sorting [#287](https://github.com/asgardex/asgardex-desktop/pull/288)
+- Fix arb erc20 swapping bug [#271](https://github.com/asgardex/asgardex-desktop/pull/291)
 
 # 1.21.8 (2024-06-03)
 
@@ -16,8 +16,8 @@
 - Fix UTXO send price fetch [#256](https://github.com/asgardex/asgardex-desktop/pull/257)
 - Fix Maya lp Bugs & BSC.USDT [#255](https://github.com/asgardex/asgardex-desktop/pull/258)
 - Update Thornode Ledger to use ClientLedger from xchainjs [#259](https://github.com/asgardex/asgardex-desktop/pull/260)
-- Disable Unbonding if node is active [#233] (https://github.com/asgardex/asgardex-desktop/pull/263)
-- Fix no provider able to get balance [#264] (https://github.com/asgardex/asgardex-desktop/pull/272)
+- Disable Unbonding if node is active [#233](https://github.com/asgardex/asgardex-desktop/pull/263)
+- Fix no provider able to get balance [#264](https://github.com/asgardex/asgardex-desktop/pull/272)
 
 # 1.21.7 (2024-05-23)
 
@@ -35,10 +35,10 @@
 - Fix Maya Asset pricing [#220] (https://github.com/asgardex/asgardex-desktop/pull/220)
 - Fix Cosmos Client & added Cosmos Ledger [#212](https://github.com/asgardex/asgardex-desktop/pull/213)
 - Update Dropdown action menu [#194] (https://github.com/asgardex/asgardex-desktop/pull/223)
-- Update poolAddress & pooldetail logic for all Sends [#227] (https://github.com/asgardex/asgardex-desktop/pull/232)
+- Update poolAddress & pooldetail logic for all Sends [#227](https://github.com/asgardex/asgardex-desktop/pull/232)
 - Fix EVM send Dollar value bug [#230] (https://github.com/asgardex/asgardex-desktop/pull/231)
 - Fix Mayachain liquidity charts & stats [#224] (https://github.com/asgardex/asgardex-desktop/pull/234)
-- Improve Asset page performance & update Total title [#225] (https://github.com/asgardex/asgardex-desktop/pull/238)
+- Improve Asset page performance & update Total title [#225](https://github.com/asgardex/asgardex-desktop/pull/238)
 - Update Mac Os Notarization logic [#242] (https://github.com/asgardex/asgardex-desktop/pull/243)
 - Fix cpu hogging, reduced fetches [#246] (https://github.com/asgardex/asgardex-desktop/pull/251)
 - Fixed transaction modal hanging [#192] (https://github.com/asgardex/asgardex-desktop/pull/252)
