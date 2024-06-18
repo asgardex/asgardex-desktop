@@ -24,7 +24,8 @@ export const ASGARDEX_AFFILIATE_FEE_MIN = 1001
 export const NINE_REALMS_CLIENT_HEADER = 'x-client-id'
 
 export enum ExternalUrl {
-  DOCS = 'https://docs.thorchain.org',
+  DOCSTHOR = 'https://docs.thorchain.org',
+  DOCSMAYA = 'https://docs.mayaprotocol.com/',
   DISCORD = 'https://discord.gg/hkeJxHS7d7',
   GITHUB_REPO = `https://github.com/asgardex/asgardex-desktop`,
   GITHUB_RELEASE = `https://github.com/asgardex/asgardex-desktop/releases/tag/v`,

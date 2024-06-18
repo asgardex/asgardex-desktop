@@ -50,7 +50,6 @@ const getDecimal = (asset: Asset): Promise<number> => {
   if (isMayaChain(chain)) {
     return Promise.resolve(CACAO_DECIMAL)
   }
-
   if (isDashChain(chain)) {
     return Promise.resolve(DASH_DECIMAL)
   }

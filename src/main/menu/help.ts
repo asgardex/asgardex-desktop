@@ -10,7 +10,7 @@ const menu = (intl: IntlShape): MenuItemConstructorOptions => ({
     {
       label: intl.formatMessage({ id: 'menu.help.learn' }),
       click() {
-        openExternal(ExternalUrl.DOCS)
+        openExternal(ExternalUrl.DOCSTHOR)
       }
     },
     {
