@@ -272,7 +272,7 @@ export const OpenLoan: React.FC<AddProps> = (props): JSX.Element => {
     [oWalletBalances, asset, sourceChainAsset, sourceWalletType]
   )
   // *********** FEES **************
-  const zeroSaverFees: SaverDepositFees = useMemo(() => Utils.getZeroSaverDepositFees(asset.asset), [asset])
+  const zeroSaverFees: SaverDepositFees = useMemo(() => Utils.getZeroLoanDepositFees(asset.asset), [asset])
 
   const prevSaverFees = useRef<O.Option<SaverDepositFees>>(O.none)
 

@@ -15,7 +15,9 @@ import {
   Saver,
   SaversApi,
   TransactionsApi,
-  TxStagesResponse
+  TxStagesResponse,
+  BorrowersApi,
+  Borrower
 } from '@xchainjs/xchain-thornode'
 import { Address, Asset, assetFromString, assetToString, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
 import { AxiosResponse } from 'axios'
@@ -52,7 +54,9 @@ import {
   InboundAddresses,
   InboundAddress,
   TxStagesLD,
-  TxStages
+  TxStages,
+  BorrowerProviderLD,
+  BorrowerProvider
 } from './types'
 
 const height: number | undefined = undefined
@@ -449,6 +453,68 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       RxOp.startWith(RD.pending)
     )
 
+  const apiGetBorrowerProvider$ = (asset: Asset, address: Address): LiveData<Error, Borrower> =>
+    FP.pipe(
+      thornodeUrl$,
+      liveData.chain((basePath) =>
+        FP.pipe(
+          Rx.from(new BorrowersApi(getThornodeAPIConfiguration(basePath)).borrower(assetToString(asset), address)),
+          RxOp.map((response: AxiosResponse<Borrower>) => RD.success(response.data)), // Extract data from AxiosResponse
+          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+        )
+      ),
+      RxOp.startWith(RD.pending)
+    )
+  const { stream$: reloadBorrowerProvider$, trigger: reloadBorrowerProvider } = triggerStream()
+
+  const getBorrowerProvider$ = (asset: Asset, address: Address, walletType?: WalletType): BorrowerProviderLD =>
+    FP.pipe(
+      reloadBorrowerProvider$,
+      RxOp.debounceTime(300),
+      RxOp.switchMap((_) => apiGetBorrowerProvider$(asset, address)),
+      liveData.map(
+        // transform Borrower -> BorrowerProvider
+        (provider): BorrowerProvider => {
+          const {
+            debt_issued,
+            debt_repaid,
+            debt_current,
+            collateral_deposited,
+            collateral_withdrawn,
+            collateral_current,
+            last_open_height,
+            last_repay_height
+          } = provider
+          /* 1e8 decimal by default, which is default decimal for ALL accets at THORChain  */
+          const debtIssued = baseAmount(debt_issued, THORCHAIN_DECIMAL)
+          const debtRepaid = baseAmount(debt_repaid, THORCHAIN_DECIMAL)
+          const debtCurrent = baseAmount(debt_current, THORCHAIN_DECIMAL)
+          const collateralDeposited = baseAmount(collateral_deposited, THORCHAIN_DECIMAL)
+          const collateralWithdrawn = baseAmount(collateral_withdrawn, THORCHAIN_DECIMAL)
+          const collaterlaCurrent = baseAmount(collateral_current, THORCHAIN_DECIMAL)
+          const lastOpenHeight = FP.pipe(last_open_height, O.fromPredicate(N.isNumber))
+          const lastRepayHeight = FP.pipe(last_repay_height, O.fromPredicate(N.isNumber))
+          return {
+            owner: provider.owner,
+            asset,
+            debtIssued,
+            debtRepaid,
+            debtCurrent,
+            collateralDeposited,
+            collateralWithdrawn,
+            collaterlaCurrent,
+            lastOpenHeight,
+            lastRepayHeight,
+            walletType
+          }
+        }
+      ),
+      RxOp.catchError(
+        (): BorrowerProviderLD => Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} borrower`)))
+      ),
+      RxOp.startWith(RD.pending)
+    )
+
   return {
     thornodeUrl$,
     reloadThornodeUrl,
@@ -467,6 +533,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     reloadLiquidityProviders,
     getSaverProvider$,
     reloadSaverProvider,
+    getBorrowerProvider$,
+    reloadBorrowerProvider,
     getTxStatus$,
     reloadTxStatus
   }

@@ -204,6 +204,23 @@ export type SaverProvider = {
 export type SaverProviderRD = RD.RemoteData<Error, SaverProvider>
 export type SaverProviderLD = LiveData<Error, SaverProvider>
 
+export type BorrowerProvider = {
+  owner: Address
+  asset: Asset
+  debtIssued: BaseAmount
+  debtRepaid: BaseAmount
+  debtCurrent: BaseAmount
+  collateralDeposited: BaseAmount
+  collateralWithdrawn: BaseAmount
+  collaterlaCurrent: BaseAmount
+  lastOpenHeight: O.Option<number>
+  lastRepayHeight: O.Option<number>
+  walletType?: WalletType
+}
+
+export type BorrowerProviderRD = RD.RemoteData<Error, BorrowerProvider>
+export type BorrowerProviderLD = LiveData<Error, BorrowerProvider>
+
 export type TxStages = {
   inboundObserved: {
     finalCount: number | undefined

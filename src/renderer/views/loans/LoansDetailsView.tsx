@@ -9,7 +9,7 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { SaversDetails } from '../../components/savers/SaversDetails'
+import { LoanDetails } from '../../components/loans/LoanDetails'
 import { ErrorView } from '../../components/shared/error'
 import { Spin } from '../../components/shared/loading'
 import { FlatButton } from '../../components/uielements/button'
@@ -19,7 +19,7 @@ import * as PoolHelpers from '../../helpers/poolHelper'
 import { usePricePool } from '../../hooks/usePricePool'
 import { PoolDetails } from '../../services/midgard/types'
 import { SaverProviderRD } from '../../services/thorchain/types'
-import { UpdateSaverProvider } from './Savers.types'
+import { UpdateSaverProvider } from './Loans.types'
 
 type Props = {
   asset: Asset
@@ -96,7 +96,7 @@ export const LoansDetailsView: React.FC<Props> = (props): JSX.Element => {
         )
 
         return (
-          <LoansDetails
+          <LoanDetails
             asset={asset}
             priceAsset={pricePool.asset}
             deposit={{ amount: depositValue, price: depositPrice }}
