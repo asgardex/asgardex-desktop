@@ -36,6 +36,8 @@ const {
   reloadLiquidityProviders,
   getSaverProvider$,
   reloadSaverProvider,
+  getBorrowerProvider$,
+  reloadBorrowerProvider,
   getTxStatus$,
   reloadTxStatus
 } = createThornodeService$(network$, clientUrl$)
@@ -91,6 +93,8 @@ export {
   reloadLiquidityProviders,
   getSaverProvider$,
   reloadSaverProvider,
+  getBorrowerProvider$,
+  reloadBorrowerProvider,
   getTxStatus$,
   reloadTxStatus
 }

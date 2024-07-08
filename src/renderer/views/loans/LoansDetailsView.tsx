@@ -18,8 +18,8 @@ import { eqAsset, eqString } from '../../helpers/fp/eq'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { usePricePool } from '../../hooks/usePricePool'
 import { PoolDetails } from '../../services/midgard/types'
-import { SaverProviderRD } from '../../services/thorchain/types'
-import { UpdateSaverProvider } from './Loans.types'
+import { BorrowerProviderRD } from '../../services/thorchain/types'
+import { UpdateBorrowerProvider } from './Loans.types'
 
 type Props = {
   asset: Asset
@@ -27,7 +27,7 @@ type Props = {
   poolDetails: PoolDetails
 }
 
-const eqUpdateSaverProvider = Eq.struct<UpdateSaverProvider>({
+const eqUpdaBorrowerProvider = Eq.struct<UpdateBorrowerProvider>({
   address: eqString,
   asset: eqAsset
 })
@@ -38,25 +38,25 @@ export const LoansDetailsView: React.FC<Props> = (props): JSX.Element => {
   const intl = useIntl()
 
   const pricePool = usePricePool()
-  const { getSaverProvider$, reloadSaverProvider } = useThorchainContext()
+  const { getBorrowerProvider$, reloadBorrowerProvider } = useThorchainContext()
 
-  const [saverProviderRD, updateSaverProvider$] = useObservableState<
-    SaverProviderRD,
+  const [borrowerProviderRD, updateBorrowerProvider$] = useObservableState<
+    BorrowerProviderRD,
     { address: Address; asset: Asset }
   >(
     (updated$) =>
       FP.pipe(
         updated$,
         RxOp.debounceTime(300),
-        RxOp.distinctUntilChanged(eqUpdateSaverProvider.equals),
-        RxOp.switchMap(({ address, asset }) => getSaverProvider$(asset, address))
+        RxOp.distinctUntilChanged(eqUpdaBorrowerProvider.equals),
+        RxOp.switchMap(({ address, asset }) => getBorrowerProvider$(asset, address))
       ),
     RD.initial
   )
 
   useEffect(() => {
-    updateSaverProvider$({ address, asset })
-  }, [address, asset, updateSaverProvider$])
+    updateBorrowerProvider$({ address, asset })
+  }, [address, asset, updateBorrowerProvider$])
 
   const renderLoading = () => (
     <div className="flex h-full w-full items-center justify-center">
@@ -65,7 +65,7 @@ export const LoansDetailsView: React.FC<Props> = (props): JSX.Element => {
   )
 
   return FP.pipe(
-    saverProviderRD,
+    borrowerProviderRD,
     RD.fold(
       () => renderLoading(),
       () => renderLoading(),
@@ -73,35 +73,44 @@ export const LoansDetailsView: React.FC<Props> = (props): JSX.Element => {
         <ErrorView
           title={intl.formatMessage({ id: 'common.error' })}
           subTitle={error?.message ?? error.toString()}
-          extra={<FlatButton onClick={reloadSaverProvider}>{intl.formatMessage({ id: 'common.retry' })}</FlatButton>}
+          extra={<FlatButton onClick={reloadBorrowerProvider}>{intl.formatMessage({ id: 'common.retry' })}</FlatButton>}
         />
       ),
-      ({ depositValue, redeemValue, growthPercent }) => {
-        const depositPrice = FP.pipe(
+      ({ debtCurrent, debtIssued, debtRepaid }) => {
+        const debtCurrentPrice = FP.pipe(
           PoolHelpers.getPoolPriceValue({
-            balance: { asset, amount: depositValue },
+            balance: { asset, amount: debtCurrent },
             poolDetails,
             pricePool
           }),
-          O.getOrElse(() => baseAmount(0, depositValue.decimal))
+          O.getOrElse(() => baseAmount(0, debtCurrent.decimal))
         )
 
-        const redeemPrice = FP.pipe(
+        const debtIssuedPrice = FP.pipe(
           PoolHelpers.getPoolPriceValue({
-            balance: { asset, amount: redeemValue },
+            balance: { asset, amount: debtIssued },
             poolDetails,
             pricePool
           }),
-          O.getOrElse(() => baseAmount(0, depositValue.decimal))
+          O.getOrElse(() => baseAmount(0, debtIssued.decimal))
+        )
+
+        const debtRepaidPrice = FP.pipe(
+          PoolHelpers.getPoolPriceValue({
+            balance: { asset, amount: debtRepaid },
+            poolDetails,
+            pricePool
+          }),
+          O.getOrElse(() => baseAmount(0, debtRepaid.decimal))
         )
 
         return (
           <LoanDetails
             asset={asset}
             priceAsset={pricePool.asset}
-            deposit={{ amount: depositValue, price: depositPrice }}
-            redeem={{ amount: redeemValue, price: redeemPrice }}
-            percent={growthPercent.times(100)}
+            current={{ amount: debtCurrent, price: debtCurrentPrice }}
+            issued={{ amount: debtIssued, price: debtIssuedPrice }}
+            repaid={{ amount: debtRepaid, price: debtRepaidPrice }}
           />
         )
       }

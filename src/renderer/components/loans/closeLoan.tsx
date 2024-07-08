@@ -146,7 +146,7 @@ export type LoanCloseProps = {
   dex: Dex
 }
 
-export const LoanClose: React.FC<LoanCloseProps> = (props): JSX.Element => {
+export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
   const {
     keystore,
     thorchainQuery,

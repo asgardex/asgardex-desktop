@@ -28,7 +28,7 @@ import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import * as O from 'fp-ts/lib/Option'
-import debounce from 'lodash/debounce'
+// import debounce from 'lodash/debounce'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
@@ -70,16 +70,16 @@ import {
   hasLedgerInBalancesByAsset
 } from '../../helpers/walletHelper'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
-import { INITIAL_SAVER_DEPOSIT_STATE } from '../../services/chain/const'
+import { INITIAL_BORROWER_DEPOSIT_STATE } from '../../services/chain/const'
 import {
-  SaverDepositFees,
-  SaverDepositFeesHandler,
-  SaverDepositFeesRD,
-  SaverDepositParams,
-  SaverDepositState,
-  SaverDepositStateHandler,
+  BorrowerDepositFees,
+  BorrowerDepositFeesHandler,
+  BorrowerDepositFeesRD,
+  BorrowerDepositParams,
+  BorrowerDepositStateHandler,
   FeeRD,
-  ReloadSaverDepositFeesHandler
+  ReloadBorrowerDepositFeesHandler,
+  BorrowerDepositState
 } from '../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../services/clients'
 import {
@@ -128,11 +128,11 @@ export type AddProps = {
   network: Network
   pricePool: PricePool
   poolAddress: O.Option<PoolAddress>
-  fees$: SaverDepositFeesHandler
+  fees$: BorrowerDepositFeesHandler
   sourceWalletType: WalletType
   onChangeAsset: ({ source, sourceWalletType }: { source: Asset; sourceWalletType: WalletType }) => void
   walletBalances: Pick<BalancesState, 'balances' | 'loading'>
-  saverDeposit$: SaverDepositStateHandler
+  borrowDeposit$: BorrowerDepositStateHandler
   goToTransaction: OpenExplorerTxUrl
   getExplorerTxUrl: GetExplorerTxUrl
   reloadSelectedPoolDetail: (delay?: number) => void
@@ -141,14 +141,14 @@ export type AddProps = {
   approveFee$: ApproveFeeHandler
   isApprovedERC20Token$: (params: IsApproveParams) => LiveData<ApiError, boolean>
   validatePassword$: ValidatePasswordHandler
-  reloadFees: ReloadSaverDepositFeesHandler
+  reloadFees: ReloadBorrowerDepositFeesHandler
   reloadBalances: FP.Lazy<void>
   disableSaverAction: boolean
   hidePrivateData: boolean
   dex: Dex
 }
 
-export const OpenLoan: React.FC<AddProps> = (props): JSX.Element => {
+export const Borrow: React.FC<AddProps> = (props): JSX.Element => {
   const {
     keystore,
     thorchainQuery,
@@ -161,7 +161,7 @@ export const OpenLoan: React.FC<AddProps> = (props): JSX.Element => {
     poolAddress: oPoolAddress,
     onChangeAsset,
     fees$,
-    saverDeposit$,
+    borrowDeposit$,
     validatePassword$,
     isApprovedERC20Token$,
     approveERC20Token$,
@@ -179,7 +179,7 @@ export const OpenLoan: React.FC<AddProps> = (props): JSX.Element => {
 
   const intl = useIntl()
 
-  const [oSaversQuote, setSaversQuote] = useState<O.Option<EstimateAddSaver>>(O.none)
+  const [oLoanQuote] = useState<O.Option<EstimateAddSaver>>(O.none)
 
   const { chain: sourceChain } = asset.asset
 
@@ -196,7 +196,7 @@ export const OpenLoan: React.FC<AddProps> = (props): JSX.Element => {
     state: depositState,
     reset: resetDepositState,
     subscribe: subscribeDepositState
-  } = useSubscriptionState<SaverDepositState>(INITIAL_SAVER_DEPOSIT_STATE)
+  } = useSubscriptionState<BorrowerDepositState>(INITIAL_BORROWER_DEPOSIT_STATE)
 
   const { balances: oWalletBalances, loading: walletBalancesLoading } = walletBalances
 
@@ -272,32 +272,32 @@ export const OpenLoan: React.FC<AddProps> = (props): JSX.Element => {
     [oWalletBalances, asset, sourceChainAsset, sourceWalletType]
   )
   // *********** FEES **************
-  const zeroSaverFees: SaverDepositFees = useMemo(() => Utils.getZeroLoanDepositFees(asset.asset), [asset])
+  const zeroBorrowerFees: BorrowerDepositFees = useMemo(() => Utils.getZeroLoanDepositFees(asset.asset), [asset])
 
-  const prevSaverFees = useRef<O.Option<SaverDepositFees>>(O.none)
+  const prevBorrowerFees = useRef<O.Option<BorrowerDepositFees>>(O.none)
 
-  const [saverFeesRD] = useObservableState<SaverDepositFeesRD>(
+  const [saverFeesRD] = useObservableState<BorrowerDepositFeesRD>(
     () =>
       FP.pipe(
         fees$(asset.asset),
         liveData.map((fees) => {
           // store every successfully loaded fees
-          prevSaverFees.current = O.some(fees)
+          prevBorrowerFees.current = O.some(fees)
           return fees
         })
       ),
-    RD.success(zeroSaverFees)
+    RD.success(zeroBorrowerFees)
   )
 
-  const saverFees: SaverDepositFees = useMemo(
+  const saverFees: BorrowerDepositFees = useMemo(
     () =>
       FP.pipe(
         saverFeesRD,
         RD.toOption,
-        O.alt(() => prevSaverFees.current),
-        O.getOrElse(() => zeroSaverFees)
+        O.alt(() => prevBorrowerFees.current),
+        O.getOrElse(() => zeroBorrowerFees)
       ),
-    [saverFeesRD, zeroSaverFees]
+    [saverFeesRD, zeroBorrowerFees]
   )
 
   const initialAmountToSendMax1e8 = useMemo(
@@ -368,26 +368,26 @@ export const OpenLoan: React.FC<AddProps> = (props): JSX.Element => {
   const reccommendedAmountIn: CryptoAmount = useMemo(
     () =>
       FP.pipe(
-        oSaversQuote,
+        oLoanQuote,
         O.fold(
           () => new CryptoAmount(baseAmount(0), asset.asset), // default value if oQuote is None
           (txDetails) => new CryptoAmount(baseAmount(txDetails.recommendedMinAmountIn), asset.asset)
         )
       ),
-    [oSaversQuote, asset]
+    [oLoanQuote, asset]
   )
 
   // Liquidity fee in for use later
   const liquidityFee: CryptoAmount = useMemo(
     () =>
       FP.pipe(
-        oSaversQuote,
+        oLoanQuote,
         O.fold(
           () => new CryptoAmount(baseAmount(0), asset.asset), // default value if oQuote is None
           (txDetails) => txDetails.fee.liquidity // already of type cryptoAmount
         )
       ),
-    [oSaversQuote, asset]
+    [oLoanQuote, asset]
   )
 
   // store liquidity fee
@@ -528,33 +528,33 @@ export const OpenLoan: React.FC<AddProps> = (props): JSX.Element => {
   const noMemo: boolean = useMemo(
     () =>
       FP.pipe(
-        oSaversQuote,
+        oLoanQuote,
         O.fold(
           () => false, // default value if oSaverWithdrawQuote is None
           (txDetails) => txDetails.memo === ''
         )
       ),
-    [oSaversQuote]
+    [oLoanQuote]
   )
   // memo check disable submit if no memo
   const quoteError: JSX.Element = useMemo(() => {
     if (
-      !O.isSome(oSaversQuote) ||
-      oSaversQuote.value.canAddSaver ||
-      !oSaversQuote.value.errors ||
-      oSaversQuote.value.errors.length === 0
+      !O.isSome(oLoanQuote) ||
+      oLoanQuote.value.canAddSaver ||
+      !oLoanQuote.value.errors ||
+      oLoanQuote.value.errors.length === 0
     ) {
       return <></>
     }
     // Select first error
-    const error = oSaversQuote.value.errors[0].split(':')
+    const error = oLoanQuote.value.errors[0].split(':')
 
     return (
       <ErrorLabel>
         {intl.formatMessage({ id: 'swap.errors.amount.thornodeQuoteError' }, { error: `${error}` })}
       </ErrorLabel>
     )
-  }, [oSaversQuote, intl])
+  }, [oLoanQuote, intl])
 
   // Disables the submit button
   const disableSubmit = useMemo(
@@ -563,22 +563,22 @@ export const OpenLoan: React.FC<AddProps> = (props): JSX.Element => {
     [isZeroAmountToSend, lockedWallet, minAmountError, noMemo, sourceChainFeeError, walletBalancesLoading]
   )
 
-  const debouncedEffect = useRef(
-    debounce((amountToSendMax1e8) => {
-      thorchainQuery
-        .estimateAddSaver(new CryptoAmount(amountToSendMax1e8, asset.asset))
-        .then((quote) => {
-          setSaversQuote(O.some(quote)) // Wrapping the quote in an Option
-        })
-        .catch((error) => {
-          console.error('Failed to get quote:', error)
-        })
-    }, 500)
-  )
+  // const debouncedEffect = useRef(
+  //   debounce((amountToSendMax1e8) => {
+  //     thorchainQuery
+  //       .getLoanQuoteOpen(asset.asset, new CryptoAmount(amountToSendMax1e8, asset.asset))
+  //       .then((quote) => {
+  //         setLoanQuote(O.some(quote)) // Wrapping the quote in an Option
+  //       })
+  //       .catch((error) => {
+  //         console.error('Failed to get quote:', error)
+  //       })
+  //   }, 500)
+  // )
 
   useEffect(() => {
     if (!amountToSendMax1e8.eq(baseAmount(0)) && !sourceChainFeeError) {
-      debouncedEffect.current(amountToSendMax1e8)
+      // debouncedEffect.current(amountToSendMax1e8)
     }
   }, [amountToSendMax1e8, sourceChainFeeError])
 
@@ -775,9 +775,9 @@ export const OpenLoan: React.FC<AddProps> = (props): JSX.Element => {
     setAmountToSendMax1e8(initialAmountToSendMax1e8)
   }, [initialAmountToSendMax1e8, setAmountToSendMax1e8])
 
-  const oEarnParams: O.Option<SaverDepositParams> = useMemo(() => {
+  const oBorrowParams: O.Option<BorrowerDepositParams> = useMemo(() => {
     return FP.pipe(
-      sequenceTOption(oPoolAddress, oSourceAssetWB, oSaversQuote),
+      sequenceTOption(oPoolAddress, oSourceAssetWB, oLoanQuote),
       O.map(([poolAddress, { walletType, walletAddress, walletIndex, hdMode }, saversQuote]) => {
         const result = {
           poolAddress,
@@ -793,7 +793,7 @@ export const OpenLoan: React.FC<AddProps> = (props): JSX.Element => {
         return result
       })
     )
-  }, [oPoolAddress, oSourceAssetWB, oSaversQuote, asset.asset, asset.baseAmount.decimal, amountToSendMax1e8, dex])
+  }, [oPoolAddress, oSourceAssetWB, oLoanQuote, asset.asset, asset.baseAmount.decimal, amountToSendMax1e8, dex])
 
   const onClickUseLedger = useCallback(
     (useLedger: boolean) => {
@@ -923,17 +923,17 @@ export const OpenLoan: React.FC<AddProps> = (props): JSX.Element => {
 
   const submitDepositTx = useCallback(() => {
     FP.pipe(
-      oEarnParams,
-      O.map((earnParams) => {
+      oBorrowParams,
+      O.map((borrowParams) => {
         // set start time
         setDepositStartTime(Date.now())
-        // subscribe to saverDeposit$
-        subscribeDepositState(saverDeposit$(earnParams))
+        // subscribe to borrowDeposit$
+        subscribeDepositState(borrowDeposit$(borrowParams))
 
         return true
       })
     )
-  }, [oEarnParams, subscribeDepositState, saverDeposit$])
+  }, [oBorrowParams, subscribeDepositState, borrowDeposit$])
 
   const {
     state: approveState,
@@ -1155,7 +1155,7 @@ export const OpenLoan: React.FC<AddProps> = (props): JSX.Element => {
     const description2 = intl.formatMessage({ id: 'ledger.sign' })
 
     const addresses = FP.pipe(
-      oEarnParams,
+      oBorrowParams,
       O.chain(({ poolAddress, sender }) => {
         const recipient = poolAddress.address
         if (useLedger) return O.some({ recipient, sender })
@@ -1180,7 +1180,7 @@ export const OpenLoan: React.FC<AddProps> = (props): JSX.Element => {
     sourceChain,
     intl,
     asset.asset,
-    oEarnParams,
+    oBorrowParams,
     network,
     submitDepositTx,
     submitApproveTx,
@@ -1500,7 +1500,7 @@ export const OpenLoan: React.FC<AddProps> = (props): JSX.Element => {
                   </div>
                   {/* inbound address */}
                   {FP.pipe(
-                    oEarnParams,
+                    oBorrowParams,
                     O.map(({ poolAddress: { address } }) =>
                       address ? (
                         <div className="flex w-full items-center justify-between pl-10px text-[12px]" key="pool-addr">
@@ -1552,7 +1552,7 @@ export const OpenLoan: React.FC<AddProps> = (props): JSX.Element => {
                   </div>
                   <div className="truncate pl-10px font-main text-[12px]">
                     {FP.pipe(
-                      oEarnParams,
+                      oBorrowParams,
                       O.map(({ memo }) => (
                         <Tooltip title={memo} key="tooltip-asset-memo">
                           {hidePrivateData ? hiddenString : memo}

@@ -17,8 +17,8 @@ import * as RxOp from 'rxjs/operators'
 
 import { isLedgerWallet, isWalletType } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
-import { AddSavers } from '../../components/savers/AddSavers'
-import { WithdrawSavers } from '../../components/savers/WithdrawSavers'
+import { Repay } from '../../components/loans/CloseLoan'
+import { Borrow } from '../../components/loans/OpenLoan'
 import { ErrorView } from '../../components/shared/error'
 import { Spin } from '../../components/shared/loading'
 import { BackLinkButton, FlatButton, RefreshButton } from '../../components/uielements/button'
@@ -40,8 +40,8 @@ import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { usePricePool } from '../../hooks/usePricePool'
 import { usePrivateData } from '../../hooks/usePrivateData'
 import * as poolsRoutes from '../../routes/pools'
-import { LoanRouteParams } from '../../routes/pools/loans'
-import * as saversRoutes from '../../routes/pools/savers'
+import { LoanRouteParams } from '../../routes/pools/lending'
+import * as lendingRoutes from '../../routes/pools/lending'
 import { saverDepositFee$ } from '../../services/chain'
 import { saverWithdrawFee$ } from '../../services/chain/fees'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
@@ -51,8 +51,8 @@ import { ledgerAddressToWalletAddress } from '../../services/wallet/util'
 import { LoansDetailsView } from './LoansDetailsView'
 
 enum TabIndex {
-  LOANOPEN = 0,
-  LOANCLOSE = 1
+  BORROW = 0,
+  REPAY = 1
 }
 
 type TabData = {
@@ -91,7 +91,13 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   const { isPrivate } = usePrivateData()
   const { getSaverProvider$, reloadSaverProvider, reloadInboundAddresses } = useThorchainContext()
 
-  const { assetWithDecimal$, addressByChain$, reloadSaverDepositFee, saverDeposit$, saverWithdraw$ } = useChainContext()
+  const {
+    assetWithDecimal$,
+    addressByChain$,
+    reloadSaverDepositFee,
+    saverDeposit$: borrowerDeposit$, // rename for sanity
+    saverWithdraw$: borrowerWithdraw$
+  } = useChainContext()
 
   const { approveERC20Token$, isApprovedERC20Token$, approveFee$, reloadApproveFee } = useEvmContext(chain)
   const {
@@ -193,7 +199,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
 
   const onChangeAssetHandler = useCallback(
     ({ source, sourceWalletType }: { source: Asset; sourceWalletType: WalletType }) => {
-      const path = saversRoutes.earn.path({
+      const path = lendingRoutes.borrow.path({
         asset: assetToString(source),
         walletType: sourceWalletType
       })
@@ -202,34 +208,34 @@ const Content: React.FC<Props> = (props): JSX.Element => {
     [navigate]
   )
 
-  const matchAddRoute = useMatch({
-    path: saversRoutes.earn.path({ asset: assetToString(asset), walletType }),
+  const matchBorrowRoute = useMatch({
+    path: lendingRoutes.borrow.path({ asset: assetToString(asset), walletType }),
     end: false
   })
-  const matchWithdrawRoute = useMatch({
-    path: saversRoutes.withdraw.path({ asset: assetToString(asset), walletType }),
+  const matchRepayRoute = useMatch({
+    path: lendingRoutes.repay.path({ asset: assetToString(asset), walletType }),
     end: false
   })
 
   const selectedIndex: number = useMemo(() => {
-    if (matchAddRoute) {
-      return TabIndex.LOANOPEN
-    } else if (matchWithdrawRoute) {
-      return TabIndex.LOANCLOSE
+    if (matchBorrowRoute) {
+      return TabIndex.BORROW
+    } else if (matchRepayRoute) {
+      return TabIndex.REPAY
     } else {
-      return TabIndex.LOANOPEN
+      return TabIndex.BORROW
     }
-  }, [matchAddRoute, matchWithdrawRoute])
+  }, [matchBorrowRoute, matchRepayRoute])
 
   const tabs = useMemo(
     (): TabData[] => [
       {
-        index: TabIndex.LOANOPEN,
-        label: intl.formatMessage({ id: 'common.loanOpen' })
+        index: TabIndex.BORROW,
+        label: intl.formatMessage({ id: 'common.borrow' })
       },
       {
-        index: TabIndex.LOANCLOSE,
-        label: intl.formatMessage({ id: 'common.loanClose' })
+        index: TabIndex.REPAY,
+        label: intl.formatMessage({ id: 'common.repay' })
       }
     ],
     [intl]
@@ -256,12 +262,13 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   if (keystoreState === undefined) {
     return <>{renderLoadingContent}</>
   }
+
   return (
     <>
       <div className=" relative mb-20px flex items-center justify-between">
-        <BackLinkButton className="absolute !m-0" path={poolsRoutes.savers.path()} />
+        <BackLinkButton className="absolute !m-0" path={poolsRoutes.lending.path()} />
         <h2 className="m-0 w-full text-center font-mainSemiBold text-16 uppercase text-turquoise">
-          {intl.formatMessage({ id: 'common.earn' })}
+          {intl.formatMessage({ id: 'common.borrow' })}
         </h2>
         <RefreshButton className="absolute right-0" onClick={reloadHandler} />
       </div>
@@ -289,9 +296,9 @@ const Content: React.FC<Props> = (props): JSX.Element => {
               }
               const getTabContentByIndex = (index: number) => {
                 switch (index) {
-                  case TabIndex.LOANOPEN:
+                  case TabIndex.BORROW:
                     return (
-                      <AddSavers
+                      <Borrow
                         keystore={keystore}
                         validatePassword$={validatePassword$}
                         thorchainQuery={thorchainQuery}
@@ -314,16 +321,16 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         isApprovedERC20Token$={isApprovedERC20Token$}
                         approveERC20Token$={approveERC20Token$}
                         poolAddress={oPoolAddress}
-                        saverDeposit$={saverDeposit$}
+                        borrowDeposit$={borrowerDeposit$}
                         hidePrivateData={isPrivate}
                         onChangeAsset={onChangeAssetHandler}
                         disableSaverAction={checkDisableSaverAction()}
                         dex={dex}
                       />
                     )
-                  case TabIndex.LOANCLOSE:
+                  case TabIndex.REPAY:
                     return (
-                      <WithdrawSavers
+                      <Repay
                         keystore={keystore}
                         poolDetails={poolDetails}
                         thorchainQuery={thorchainQuery}
@@ -346,7 +353,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         isApprovedERC20Token$={isApprovedERC20Token$}
                         approveERC20Token$={approveERC20Token$}
                         poolAddress={oPoolAddress}
-                        saverWithdraw$={saverWithdraw$}
+                        saverWithdraw$={borrowerWithdraw$}
                         hidePrivateData={isPrivate}
                         onChangeAsset={onChangeAssetHandler}
                         saverPosition={getSaverProvider$}
@@ -366,11 +373,11 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         selectedIndex={selectedIndex}
                         onChange={(index) => {
                           switch (index) {
-                            case TabIndex.LOANOPEN:
-                              navigate(saversRoutes.earn.path({ asset: assetToString(asset), walletType }))
+                            case TabIndex.BORROW:
+                              navigate(lendingRoutes.borrow.path({ asset: assetToString(asset), walletType }))
                               break
-                            case TabIndex.LOANCLOSE:
-                              navigate(saversRoutes.withdraw.path({ asset: assetToString(asset), walletType }))
+                            case TabIndex.REPAY:
+                              navigate(lendingRoutes.repay.path({ asset: assetToString(asset), walletType }))
                               break
                             default:
                             // nothing to do
