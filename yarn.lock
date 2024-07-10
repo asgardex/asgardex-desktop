@@ -9186,6 +9186,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@xchainjs/xchain-mayanode@npm:0.1.7":
+  version: 0.1.7
+  resolution: "@xchainjs/xchain-mayanode@npm:0.1.7"
+  dependencies:
+    axios: "npm:1.3.6"
+  checksum: 10/d6e33094f19cd2f920e9b942921e374a090a12962014bb9648856c8654712e38ef74f465fdabe85069d4dd8e3a49514b5d51bd74796f99012740b74bbc7cf2f0
+  languageName: node
+  linkType: hard
+
 "@xchainjs/xchain-midgard-query@npm:0.1.18":
   version: 0.1.18
   resolution: "@xchainjs/xchain-midgard-query@npm:0.1.18"
@@ -9253,6 +9262,15 @@ __metadata:
   dependencies:
     axios: "npm:1.3.6"
   checksum: 10/8ed7ab6b7248b1130c71aa3aaf566f50fd2fbd74624312d3b0ab7e9b0385ed4094db90947a8ad7f2203d0a4a6037a548d5e79bb508a4f22c511f04e1b19a17e0
+  languageName: node
+  linkType: hard
+
+"@xchainjs/xchain-thornode@npm:0.3.16":
+  version: 0.3.16
+  resolution: "@xchainjs/xchain-thornode@npm:0.3.16"
+  dependencies:
+    axios: "npm:1.3.6"
+  checksum: 10/6526c915f4e6c9d901ebcb1b682e5faa350a006d1a80405471e8b6e4dcd6621eadcaf30d35543166e73a7d6a41406c0bb17814c37988a1662312cd60738b1f2b
   languageName: node
   linkType: hard
 
@@ -10030,12 +10048,12 @@ __metadata:
     "@xchainjs/xchain-mayachain-query": "npm:0.1.15"
     "@xchainjs/xchain-mayamidgard": "npm:0.1.4"
     "@xchainjs/xchain-mayamidgard-query": "npm:0.1.13"
-    "@xchainjs/xchain-mayanode": "npm:0.1.6"
+    "@xchainjs/xchain-mayanode": "npm:0.1.7"
     "@xchainjs/xchain-midgard": "npm:0.5.7"
     "@xchainjs/xchain-midgard-query": "npm:0.1.18"
     "@xchainjs/xchain-thorchain": "npm:1.1.0"
     "@xchainjs/xchain-thorchain-query": "npm:0.7.13"
-    "@xchainjs/xchain-thornode": "npm:0.3.15"
+    "@xchainjs/xchain-thornode": "npm:0.3.16"
     "@xchainjs/xchain-util": "npm:0.13.6"
     "@xchainjs/xchain-utxo": "npm:0.1.9"
     "@xchainjs/xchain-utxo-providers": "npm:0.2.17"

@@ -104,6 +104,8 @@ const common: CommonMessages = {
   'common.lending': 'ऋण',
   'common.borrow': 'उधार लेना',
   'common.repay': 'वापस करना',
+  'common.collateral': 'बंधक',
+  'common.debt': 'ऋण',
   'common.earn': 'कमाई',
   'common.liquidity': 'तरलता',
   'common.withdraw': 'निकासी',

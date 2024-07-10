@@ -104,6 +104,8 @@ const common: CommonMessages = {
   'common.lending': 'Kreditvergabe',
   'common.borrow': 'Leihen',
   'common.repay': 'Zurückzahlen',
+  'common.collateral': 'Sicherheit',
+  'common.debt': 'Schuld',
   'common.earn': 'Verdienen',
   'common.liquidity': 'Liquidität',
   'common.withdraw': 'Auszahlen',

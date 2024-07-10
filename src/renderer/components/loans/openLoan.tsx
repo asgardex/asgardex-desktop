@@ -118,7 +118,7 @@ import * as Utils from './Loan.utils'
 
 export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
 
-export type AddProps = {
+export type BorrowProps = {
   keystore: KeystoreState
   thorchainQuery: ThorchainQuery
   poolAssets: Asset[]
@@ -143,12 +143,12 @@ export type AddProps = {
   validatePassword$: ValidatePasswordHandler
   reloadFees: ReloadBorrowerDepositFeesHandler
   reloadBalances: FP.Lazy<void>
-  disableSaverAction: boolean
+  disableLoanAction: boolean
   hidePrivateData: boolean
   dex: Dex
 }
 
-export const Borrow: React.FC<AddProps> = (props): JSX.Element => {
+export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   const {
     keystore,
     thorchainQuery,
@@ -172,7 +172,7 @@ export const Borrow: React.FC<AddProps> = (props): JSX.Element => {
     reloadSelectedPoolDetail,
     goToTransaction,
     getExplorerTxUrl,
-    disableSaverAction,
+    disableLoanAction,
     hidePrivateData,
     dex
   } = props
@@ -201,13 +201,13 @@ export const Borrow: React.FC<AddProps> = (props): JSX.Element => {
   const { balances: oWalletBalances, loading: walletBalancesLoading } = walletBalances
 
   /**
-   * Selectable source assets to add to savers.
-   * Based on saver depth
+   * Selectable source assets to loan.
+   * Based on loan depth
    */
   const selectableAssets: Asset[] = useMemo(() => {
     const result = FP.pipe(
       poolDetails,
-      A.filter(({ saversDepth }) => Number(saversDepth) > 0),
+      A.filter(({ totalCollateral }) => Number(totalCollateral) > 0),
       A.filterMap(({ asset: assetString }) => O.fromNullable(assetFromString(assetString)))
     )
     return result
@@ -276,7 +276,7 @@ export const Borrow: React.FC<AddProps> = (props): JSX.Element => {
 
   const prevBorrowerFees = useRef<O.Option<BorrowerDepositFees>>(O.none)
 
-  const [saverFeesRD] = useObservableState<BorrowerDepositFeesRD>(
+  const [loanFeesRD] = useObservableState<BorrowerDepositFeesRD>(
     () =>
       FP.pipe(
         fees$(asset.asset),
@@ -289,15 +289,15 @@ export const Borrow: React.FC<AddProps> = (props): JSX.Element => {
     RD.success(zeroBorrowerFees)
   )
 
-  const saverFees: BorrowerDepositFees = useMemo(
+  const loanFees: BorrowerDepositFees = useMemo(
     () =>
       FP.pipe(
-        saverFeesRD,
+        loanFeesRD,
         RD.toOption,
         O.alt(() => prevBorrowerFees.current),
         O.getOrElse(() => zeroBorrowerFees)
       ),
-    [saverFeesRD, zeroBorrowerFees]
+    [loanFeesRD, zeroBorrowerFees]
   )
 
   const initialAmountToSendMax1e8 = useMemo(
@@ -317,9 +317,9 @@ export const Borrow: React.FC<AddProps> = (props): JSX.Element => {
     return Utils.maxAmountToSendMax1e8({
       asset: asset.asset,
       balanceAmountMax1e8: sourceAssetAmountMax1e8,
-      feeAmount: saverFees.asset.inFee
+      feeAmount: loanFees.asset.inFee
     })
-  }, [lockedWallet, asset, sourceAssetAmountMax1e8, saverFees])
+  }, [lockedWallet, asset, sourceAssetAmountMax1e8, loanFees])
 
   // Set amount to send
   const setAmountToSendMax1e8 = useCallback(
@@ -519,10 +519,10 @@ export const Borrow: React.FC<AddProps> = (props): JSX.Element => {
     // ignore error check by having zero amounts or min amount errors
     if (minAmountError) return false
 
-    const { inFee } = saverFees.asset
+    const { inFee } = loanFees.asset
 
     return inFee.gt(sourceChainAssetAmount)
-  }, [minAmountError, sourceChainAssetAmount, saverFees])
+  }, [minAmountError, sourceChainAssetAmount, loanFees])
 
   // memo check disable submit if no memo
   const noMemo: boolean = useMemo(
@@ -756,7 +756,7 @@ export const Borrow: React.FC<AddProps> = (props): JSX.Element => {
     })
 
     const feeLabel = FP.pipe(
-      saverFeesRD,
+      loanFeesRD,
       RD.map(({ asset: { inFee, asset: feeAsset } }) =>
         formatAssetAmountCurrency({
           amount: baseToAsset(inFee),
@@ -768,8 +768,8 @@ export const Borrow: React.FC<AddProps> = (props): JSX.Element => {
       RD.getOrElse(() => noDataString)
     )
 
-    return intl.formatMessage({ id: 'savers.info.max.balance' }, { balance: balanceLabel, fee: feeLabel })
-  }, [sourceAssetAmountMax1e8, saverFeesRD, asset, intl])
+    return intl.formatMessage({ id: 'loan.info.max.balance' }, { balance: balanceLabel, fee: feeLabel })
+  }, [sourceAssetAmountMax1e8, loanFeesRD, asset, intl])
 
   const resetEnteredAmounts = useCallback(() => {
     setAmountToSendMax1e8(initialAmountToSendMax1e8)
@@ -778,12 +778,12 @@ export const Borrow: React.FC<AddProps> = (props): JSX.Element => {
   const oBorrowParams: O.Option<BorrowerDepositParams> = useMemo(() => {
     return FP.pipe(
       sequenceTOption(oPoolAddress, oSourceAssetWB, oLoanQuote),
-      O.map(([poolAddress, { walletType, walletAddress, walletIndex, hdMode }, saversQuote]) => {
+      O.map(([poolAddress, { walletType, walletAddress, walletIndex, hdMode }, loansQuote]) => {
         const result = {
           poolAddress,
           asset: asset.asset,
           amount: convertBaseAmountDecimal(amountToSendMax1e8, asset.baseAmount.decimal),
-          memo: saversQuote.memo !== '' ? saversQuote.memo.concat(`::${ASGARDEX_THORNAME}:0`) : '', // add tracking,
+          memo: loansQuote.memo !== '' ? loansQuote.memo.concat(`::${ASGARDEX_THORNAME}:0`) : '', // add tracking,
           walletType,
           sender: walletAddress,
           walletIndex,
@@ -869,10 +869,10 @@ export const Borrow: React.FC<AddProps> = (props): JSX.Element => {
     const txModalTitle = FP.pipe(
       depositRD,
       RD.fold(
-        () => 'savers.add.state.sending',
-        () => 'savers.add.state.pending',
-        () => 'savers.add.state.error',
-        () => 'savers.add.state.success'
+        () => 'loan.borrow.state.sending',
+        () => 'loan.borrow.state.pending',
+        () => 'loan.borrow.state.error',
+        () => 'loan.borrow.state.success'
       ),
       (id) => intl.formatMessage({ id })
     )
@@ -1211,15 +1211,15 @@ export const Borrow: React.FC<AddProps> = (props): JSX.Element => {
         tipFormatter={(value) => `${value}%`}
         withLabel
         tooltipPlacement={'top'}
-        disabled={disableSaverAction}
+        disabled={disableLoanAction}
       />
     )
-  }, [amountToSendMax1e8, disableSaverAction, maxAmountToSendMax1e8, reloadFeesHandler, setAmountToSendMax1e8])
+  }, [amountToSendMax1e8, disableLoanAction, maxAmountToSendMax1e8, reloadFeesHandler, setAmountToSendMax1e8])
 
   // Price of asset IN fee
   const oPriceAssetInFee: O.Option<AssetWithAmount> = useMemo(() => {
-    const asset = saverFees.asset.asset
-    const amount = saverFees.asset.inFee
+    const asset = loanFees.asset.asset
+    const amount = loanFees.asset.inFee
 
     return FP.pipe(
       PoolHelpers.getPoolPriceValue({
@@ -1229,12 +1229,12 @@ export const Borrow: React.FC<AddProps> = (props): JSX.Element => {
       }),
       O.map((amount) => ({ amount, asset: pricePool.asset }))
     )
-  }, [poolDetails, pricePool, saverFees])
+  }, [poolDetails, pricePool, loanFees])
 
   const priceFeesLabel = useMemo(
     () =>
       FP.pipe(
-        saverFeesRD,
+        loanFeesRD,
         RD.fold(
           () => loadingString,
           () => loadingString,
@@ -1266,13 +1266,13 @@ export const Borrow: React.FC<AddProps> = (props): JSX.Element => {
         )
       ),
 
-    [saverFeesRD, oPriceAssetInFee]
+    [loanFeesRD, oPriceAssetInFee]
   )
   // label for Price in fee
   const priceInFeeLabel = useMemo(
     () =>
       FP.pipe(
-        saverFeesRD,
+        loanFeesRD,
         RD.fold(
           () => loadingString,
           () => loadingString,
@@ -1304,7 +1304,7 @@ export const Borrow: React.FC<AddProps> = (props): JSX.Element => {
         )
       ),
 
-    [saverFeesRD, oPriceAssetInFee]
+    [loanFeesRD, oPriceAssetInFee]
   )
 
   //calculating transaction time from chain & quote
@@ -1360,15 +1360,48 @@ export const Borrow: React.FC<AddProps> = (props): JSX.Element => {
             }
           />
           <div className="w-full px-20px">{renderSlider}</div>
+          <div className="flex flex-col">
+            <AssetInput
+              className="w-full"
+              amount={{ amount: amountToSendMax1e8, asset: asset.asset }}
+              priceAmount={{ asset: priceAmountToSendMax1e8.asset, amount: priceAmountToSendMax1e8.baseAmount }}
+              assets={selectableAssets}
+              network={network}
+              onChangeAsset={setAsset}
+              onChange={setAmountToSendMax1e8}
+              onBlur={reloadFeesHandler}
+              showError={minAmountError}
+              hasLedger={hasLedger}
+              useLedger={useLedger}
+              useLedgerHandler={onClickUseLedger}
+              extraContent={
+                <div className="flex flex-col">
+                  <MaxBalanceButton
+                    className="ml-10px mt-5px"
+                    classNameButton="!text-gray2 dark:!text-gray2d"
+                    classNameIcon={
+                      // show warn icon if maxAmountToSendMax1e8 <= 0
+                      maxAmountToSendMax1e8.gt(zeroBaseAmountMax1e8)
+                        ? `text-gray2 dark:text-gray2d`
+                        : 'text-warning0 dark:text-warning0d'
+                    }
+                    size="medium"
+                    balance={{ amount: maxAmountToSendMax1e8, asset: asset.asset }}
+                    maxDollarValue={priceAmountMax1e8}
+                    onClick={() => setAmountToSendMax1e8(maxAmountToSendMax1e8)}
+                    maxInfoText={maxBalanceInfoTxt}
+                  />
+                  {minAmountError && renderMinAmount}
+                </div>
+              }
+            />
+          </div>
           <div className="flex flex-col items-center justify-between py-30px">
             {renderIsApprovedError}
             {(walletBalancesLoading || checkIsApproved) && (
               <LoadingView
                 className="mb-20px"
                 label={
-                  // We show only one loading state at time
-                  // Order matters: Show states with shortest loading time before others
-                  // (approve state takes just a short time to load, but needs to be displayed)
                   checkIsApproved
                     ? intl.formatMessage({ id: 'common.approve.checking' }, { asset: asset.asset.ticker })
                     : walletBalancesLoading
@@ -1429,7 +1462,7 @@ export const Borrow: React.FC<AddProps> = (props): JSX.Element => {
               {/* fees */}
               <div className="flex w-full items-center justify-between font-mainBold">
                 <BaseButton
-                  disabled={RD.isPending(saverFeesRD) || RD.isInitial(saverFeesRD)}
+                  disabled={RD.isPending(loanFeesRD) || RD.isInitial(loanFeesRD)}
                   className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
                   onClick={reloadFeesHandler}>
                   {intl.formatMessage({ id: 'common.fees.estimated' })}
@@ -1460,7 +1493,7 @@ export const Borrow: React.FC<AddProps> = (props): JSX.Element => {
                   </div>
                 </>
               )}
-              {/* Add saver transaction time only inbound */}
+              {/* Add loan transaction time only inbound */}
               <>
                 <div
                   className={`flex w-full justify-between ${showDetails ? 'pt-10px' : ''} font-mainBold text-[14px]`}>

@@ -11,19 +11,22 @@ import {
   ConstantsResponse,
   InboundAddressesResponse,
   LiquidityProvidersApi,
-  LiquidityProvider,
-  LiquidityProviderSummary
+  LiquidityProviderSummary,
+  LiquidityProvidersResponse,
+  Saver
 } from '@xchainjs/xchain-mayanode'
-import { Asset, assetFromString, assetToString, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
+import { SaversApi } from '@xchainjs/xchain-thornode'
+import { Address, Asset, assetFromString, assetToString, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
 import { AxiosResponse } from 'axios'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
-// import * as N from 'fp-ts/lib/number'
+import * as N from 'fp-ts/lib/number'
 import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isEnabledChain } from '../../../shared/utils/chain'
+import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { LiveData, liveData } from '../../helpers/rx/liveData'
@@ -41,7 +44,9 @@ import {
   MayachainConstantsLD,
   MayachainLastblockLD,
   InboundAddresses,
-  InboundAddress
+  InboundAddress,
+  SaverProviderLD,
+  SaverProvider
 } from './types'
 
 const height: number | undefined = undefined
@@ -244,24 +249,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
           Rx.from(
             new LiquidityProvidersApi(getMayanodeAPIConfiguration(basePath)).liquidityProviders(assetToString(asset))
           ),
-          RxOp.map((response: AxiosResponse<LiquidityProvider>) => {
-            // Assuming `response.data` is a single LiquidityProvider object, map it to a LiquidityProviderSummary object
-            const summary: LiquidityProviderSummary = {
-              asset: response.data.asset,
-              rune_address: response.data.cacao_address,
-              asset_address: response.data.asset_address,
-              last_add_height: response.data.last_add_height,
-              last_withdraw_height: response.data.last_withdraw_height,
-              units: response.data.units,
-              pending_rune: response.data.pending_cacao,
-              pending_asset: response.data.pending_asset,
-              pending_tx_id: response.data.pending_tx_id,
-              rune_deposit_value: response.data.cacao_deposit_value,
-              asset_deposit_value: response.data.asset_deposit_value
-            }
-
-            return RD.success([summary]) // Wrap summary in an array to match the expected LiveData<Error, LiquidityProviderSummary[]>
-          }),
+          RxOp.map((response: AxiosResponse<LiquidityProvidersResponse>) => RD.success(response.data)), // Extract data from AxiosResponse
           RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
         )
       )
@@ -346,53 +334,53 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     RxOp.shareReplay(1)
   )
 
-  // const apiGetSaverProvider$ = (asset: Asset, address: Address): LiveData<Error, Quote> =>
-  //   FP.pipe(
-  //     mayanodeUrl$,
-  //     liveData.chain((basePath) =>
-  //       FP.pipe(
-  //         Rx.from(new QuoteApi(getMayanodeAPIConfiguration(basePath)).saver(assetToString(asset), address)),
-  //         RxOp.map((response: AxiosResponse<Quote>) => RD.success(response.data)), // Extract data from AxiosResponse
-  //         RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
-  //       )
-  //     ),
-  //     RxOp.startWith(RD.pending)
-  //   )
+  const apiGetSaverProvider$ = (asset: Asset, address: Address): LiveData<Error, Saver> =>
+    FP.pipe(
+      mayanodeUrl$,
+      liveData.chain((basePath) =>
+        FP.pipe(
+          Rx.from(new SaversApi(getMayanodeAPIConfiguration(basePath)).saver(assetToString(asset), address)),
+          RxOp.map((response: AxiosResponse<Saver>) => RD.success(response.data)), // Extract data from AxiosResponse
+          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+        )
+      ),
+      RxOp.startWith(RD.pending)
+    )
 
-  // const { stream$: reloadSaverProvider$, trigger: reloadSaverProvider } = triggerStream()
+  const { stream$: reloadSaverProvider$, trigger: reloadSaverProvider } = triggerStream()
 
-  // const getSaverProvider$ = (asset: Asset, address: Address, walletType?: WalletType): SaverProviderLD =>
-  //   FP.pipe(
-  //     reloadSaverProvider$,
-  //     RxOp.debounceTime(300),
-  //     RxOp.switchMap((_) => apiGetSaverProvider$(asset, address)),
-  //     liveData.map(
-  //       // transform Saver -> SaverProvider
-  //       (provider): SaverProvider => {
-  //         const { asset_deposit_value, asset_redeem_value, growth_pct, last_add_height, last_withdraw_height } =
-  //           provider
-  //         /* 1e8 decimal by default, which is default decimal for ALL accets at MAYAChain  */
-  //         const depositValue = baseAmount(asset_deposit_value, CACAO_DECIMAL)
-  //         const redeemValue = baseAmount(asset_redeem_value, CACAO_DECIMAL)
-  //         const growthPercent = bnOrZero(growth_pct)
-  //         const addHeight = FP.pipe(last_add_height, O.fromPredicate(N.isNumber))
-  //         const withdrawHeight = FP.pipe(last_withdraw_height, O.fromPredicate(N.isNumber))
-  //         return {
-  //           address: provider.asset_address,
-  //           depositValue,
-  //           redeemValue,
-  //           growthPercent,
-  //           addHeight,
-  //           withdrawHeight,
-  //           walletType
-  //         }
-  //       }
-  //     ),
-  //     RxOp.catchError(
-  //       (): SaverProviderLD => Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} saver`)))
-  //     ),
-  //     RxOp.startWith(RD.pending)
-  //   )
+  const getSaverProvider$ = (asset: Asset, address: Address, walletType?: WalletType): SaverProviderLD =>
+    FP.pipe(
+      reloadSaverProvider$,
+      RxOp.debounceTime(300),
+      RxOp.switchMap((_) => apiGetSaverProvider$(asset, address)),
+      liveData.map(
+        // transform Saver -> SaverProvider
+        (provider): SaverProvider => {
+          const { asset_deposit_value, asset_redeem_value, growth_pct, last_add_height, last_withdraw_height } =
+            provider
+          /* 1e8 decimal by default, which is default decimal for ALL accets at MAYAChain  */
+          const depositValue = baseAmount(asset_deposit_value, CACAO_DECIMAL)
+          const redeemValue = baseAmount(asset_redeem_value, CACAO_DECIMAL)
+          const growthPercent = bnOrZero(growth_pct)
+          const addHeight = FP.pipe(last_add_height, O.fromPredicate(N.isNumber))
+          const withdrawHeight = FP.pipe(last_withdraw_height, O.fromPredicate(N.isNumber))
+          return {
+            address: provider.asset_address,
+            depositValue,
+            redeemValue,
+            growthPercent,
+            addHeight,
+            withdrawHeight,
+            walletType
+          }
+        }
+      ),
+      RxOp.catchError(
+        (): SaverProviderLD => Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} saver`)))
+      ),
+      RxOp.startWith(RD.pending)
+    )
 
   return {
     mayanodeUrl$,
@@ -409,8 +397,8 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     mimir$,
     reloadMimir,
     getLiquidityProviders,
-    reloadLiquidityProviders
-    // getSaverProvider$,
-    // reloadSaverProvider
+    reloadLiquidityProviders,
+    getSaverProvider$,
+    reloadSaverProvider
   }
 }

@@ -22,16 +22,15 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { FlatButton } from '../../components/uielements/button'
-import { PoolsPeriodSelector } from '../../components/uielements/pools/PoolsPeriodSelector'
 import { Table } from '../../components/uielements/table'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
-import { ordBigNumber } from '../../helpers/fp/ord'
+import { ordBaseAmount, ordBigNumber } from '../../helpers/fp/ord'
 import { sequenceTRD } from '../../helpers/fpHelpers'
+import { getLoansTableRowsData, ordCollateralByDepth } from '../../helpers/loans'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
-import { getSaversTableRowsData, ordSaversByDepth } from '../../helpers/savers'
 import { useDex } from '../../hooks/useDex'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
@@ -39,7 +38,7 @@ import { useSynthConstants } from '../../hooks/useSynthConstants'
 import * as poolsRoutes from '../../routes/pools'
 import * as lendingRoutes from '../../routes/pools/lending'
 import { PoolsState as PoolStateMaya, PoolDetails as PoolDetailsMaya } from '../../services/mayaMigard/types'
-import { GetPoolsPeriodEnum, PoolDetails, PoolsState } from '../../services/midgard/types'
+import { PoolDetails, PoolsState } from '../../services/midgard/types'
 import type { MimirHalt } from '../../services/thorchain/types'
 import * as Shared from '../pools/PoolsOverview.shared'
 import type { LoansTableRowData, LoansTableRowsData } from './Loans.types'
@@ -59,25 +58,14 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
 
   const {
     service: {
-      pools: { poolsState$, reloadPools, selectedPricePool$, poolsPeriod$, setPoolsPeriod }
+      pools: { poolsState$, reloadPools, selectedPricePool$ }
     }
   } = useMidgardContext()
   const {
     service: {
-      pools: {
-        poolsState$: mayaPoolsState$,
-        reloadPools: reloadMayaPools,
-        selectedPricePool$: selectedPricePoolMaya$,
-        poolsPeriod$: poolsPeriodMaya$,
-        setPoolsPeriod: setPoolsPeriodMaya
-      }
+      pools: { poolsState$: mayaPoolsState$, reloadPools: reloadMayaPools, selectedPricePool$: selectedPricePoolMaya$ }
     }
   } = useMidgardMayaContext()
-
-  const poolsPeriod = useObservableState(
-    dex.chain === THORChain ? poolsPeriod$ : poolsPeriodMaya$,
-    GetPoolsPeriodEnum._30d
-  )
 
   const { maxSynthPerPoolDepth: maxSynthPerPoolDepthRD, reloadConstants } = useSynthConstants()
 
@@ -98,36 +86,46 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
   const poolsRD = useObservableState(dex.chain === THORChain ? poolsState$ : mayaPoolsState$, RD.pending)
 
   // store previous data of pools to render these while reloading
-  const previousSavers = useRef<O.Option<LoansTableRowsData>>(O.none)
+  const previousCollateral = useRef<O.Option<LoansTableRowsData>>(O.none)
 
   const isDesktopView = Grid.useBreakpoint()?.lg ?? false
 
   const { add: addPoolToWatchlist, remove: removePoolFromWatchlist, list: poolWatchList } = usePoolWatchlist()
 
-  const depthColumn = useCallback(
-    <T extends { asset: Asset; depth: BaseAmount; depthPrice: BaseAmount }>(pricePoolAsset: Asset): ColumnType<T> => ({
-      key: 'depth',
+  const collateralColumn = useCallback(
+    <T extends { asset: Asset; collateral: BaseAmount; collateralPrice: BaseAmount }>(
+      pricePoolAsset: Asset
+    ): ColumnType<T> => ({
+      key: 'collateral',
       align: 'right',
-      title: intl.formatMessage({ id: 'common.liquidity' }),
-      render: ({ asset, depth, depthPrice }: { asset: Asset; depth: BaseAmount; depthPrice: BaseAmount }) => (
+      title: intl.formatMessage({ id: 'common.collateral' }),
+      render: ({
+        asset,
+        collateral,
+        collateralPrice
+      }: {
+        asset: Asset
+        collateral: BaseAmount
+        collateralPrice: BaseAmount
+      }) => (
         <div className="flex flex-col items-end justify-center font-main">
           <div className="whitespace-nowrap text-16 text-text0 dark:text-text0d">
             {formatAssetAmountCurrency({
-              amount: baseToAsset(depth),
+              amount: baseToAsset(collateral),
               asset,
               decimal: 3
             })}
           </div>
           <div className="whitespace-nowrap text-14 text-gray2 dark:text-gray2d">
             {formatAssetAmountCurrency({
-              amount: baseToAsset(depthPrice),
+              amount: baseToAsset(collateralPrice),
               asset: pricePoolAsset,
               decimal: 2
             })}
           </div>
         </div>
       ),
-      sorter: ordSaversByDepth,
+      sorter: ordCollateralByDepth,
       sortDirections: ['descend', 'ascend'],
       // Note: `defaultSortOrder` has no effect here, that's we do a default sort in `getPoolTableRowsData`
       defaultSortOrder: 'descend'
@@ -135,30 +133,28 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
     [intl]
   )
 
-  const aprColumn = useCallback(
-    <T extends { apr: BigNumber }>(
-      poolsPeriod: GetPoolsPeriodEnum | GetPoolsPeriodEnum,
-      dex: string // Add a parameter to accept the 'dex' value
-    ): ColumnType<T> => {
-      // Determine which setPoolsPeriod function to use based on the 'dex' value
-      const currentSetPoolsPeriod = dex === THORChain ? setPoolsPeriod : setPoolsPeriodMaya
-
-      return {
-        key: 'apr',
-        align: 'center',
-        title: (
-          <div className="flex flex-col items-center">
-            <div className="font-main text-[12px]">{intl.formatMessage({ id: 'pools.apr' })}</div>
-            <PoolsPeriodSelector selectedValue={poolsPeriod} onChange={currentSetPoolsPeriod} />
-          </div>
-        ),
-        render: ({ apr }: { apr: BigNumber }) => <div className="font-main text-16">{formatBN(apr, 2)}%</div>,
-        sorter: (a: { apr: BigNumber }, b: { apr: BigNumber }) => ordBigNumber.compare(a.apr, b.apr),
-        sortDirections: ['descend', 'ascend']
-      }
-    },
-    [intl, setPoolsPeriod, setPoolsPeriodMaya]
-  )
+  const debtColumn = useCallback(<T extends { debt: BaseAmount; asset: Asset }>(): ColumnType<T> => {
+    return {
+      key: 'debt',
+      align: 'center',
+      title: (
+        <div className="flex flex-col items-center">
+          <div className="font-main text-[12px]">{intl.formatMessage({ id: 'common.debt' })}</div>
+        </div>
+      ),
+      render: ({ debt, asset }: { debt: BaseAmount; asset: Asset }) => (
+        <div className="font-main text-16">
+          {formatAssetAmountCurrency({
+            amount: baseToAsset(debt),
+            asset,
+            decimal: 2
+          })}
+        </div>
+      ),
+      sorter: (a: { debt: BaseAmount }, b: { debt: BaseAmount }) => ordBaseAmount.compare(a.debt, b.debt),
+      sortDirections: ['descend', 'ascend']
+    }
+  }, [intl])
 
   const filledColumn = useCallback(
     <T extends { filled: BigNumber }>(): ColumnType<T> => ({
@@ -236,22 +232,20 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
       Shared.watchColumn(addPoolToWatchlist, removePoolFromWatchlist),
       Shared.poolColumn(intl.formatMessage({ id: 'common.pool' })),
       Shared.assetColumn(intl.formatMessage({ id: 'common.asset' })),
-      depthColumn<LoansTableRowData>(selectedPricePool.asset),
+      collateralColumn<LoansTableRowData>(selectedPricePool.asset),
       filledColumn<LoansTableRowData>(),
-      aprColumn<LoansTableRowData>(poolsPeriod, dex.chain),
+      debtColumn<LoansTableRowData>(),
       btnColumn()
     ],
     [
       addPoolToWatchlist,
-      aprColumn,
+      debtColumn,
       btnColumn,
-      depthColumn,
+      collateralColumn,
       filledColumn,
-      poolsPeriod,
       intl,
       removePoolFromWatchlist,
-      selectedPricePool.asset,
-      dex
+      selectedPricePool.asset
     ]
   )
 
@@ -298,28 +292,27 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
           () => renderTable([], true),
           // loading state
           () => {
-            const pools = O.getOrElse(() => [] as LoansTableRowsData)(previousSavers.current)
+            const pools = O.getOrElse(() => [] as LoansTableRowsData)(previousCollateral.current)
             return renderTable(pools, true)
           },
           // render error state
           Shared.renderTableError(intl.formatMessage({ id: 'common.refresh' }), refreshHandler),
           // success state
-          ([pools, maxSynthPerPoolDepth]): JSX.Element => {
+          ([pools]): JSX.Element => {
             const { poolDetails }: PoolsState | PoolStateMaya = pools
             // filter chain assets
             const poolDetailsFiltered: PoolDetails | PoolDetailsMaya = FP.pipe(
               poolDetails,
-              A.filter(({ saversDepth }) => Number(saversDepth) > 0)
+              A.filter(({ totalCollateral }) => Number(totalCollateral) > 0)
             )
 
-            const poolViewData = getSaversTableRowsData({
+            const poolViewData = getLoansTableRowsData({
               poolDetails: poolDetailsFiltered,
               pricePoolData: selectedPricePool.poolData,
               watchlist: poolWatchList,
-              maxSynthPerPoolDepth,
               network
             })
-            previousSavers.current = O.some(poolViewData)
+            previousCollateral.current = O.some(poolViewData)
             return renderTable(poolViewData)
           }
         )

@@ -69,7 +69,7 @@ import {
   hasLedgerInBalancesByAsset
 } from '../../helpers/walletHelper'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
-import { INITIAL_SAVER_WITHDRAW_STATE } from '../../services/chain/const'
+import { INITIAL_WITHDRAW_STATE } from '../../services/chain/const'
 import {
   FeeRD,
   ReloadSaverDepositFeesHandler,
@@ -89,7 +89,7 @@ import {
   LoadApproveFeeHandler
 } from '../../services/evm/types'
 import { PoolAddress } from '../../services/midgard/types'
-import { SaverProviderLD } from '../../services/thorchain/types'
+import { BorrowerProviderLD } from '../../services/thorchain/types'
 import {
   KeystoreState,
   BalancesState,
@@ -125,7 +125,7 @@ export type LoanCloseProps = {
   network: Network
   pricePool: PricePool
   poolAddress: O.Option<PoolAddress>
-  saverPosition: (asset: Asset, address: string) => SaverProviderLD
+  borrowerPosition: (asset: Asset, address: string) => BorrowerProviderLD
   fees$: SaverWithdrawFeesHandler
   sourceWalletType: WalletType
   onChangeAsset: ({ source, sourceWalletType }: { source: Asset; sourceWalletType: WalletType }) => void
@@ -139,9 +139,9 @@ export type LoanCloseProps = {
   isApprovedERC20Token$: (params: IsApproveParams) => LiveData<ApiError, boolean>
   validatePassword$: ValidatePasswordHandler
   reloadFees: ReloadSaverDepositFeesHandler
-  saverWithdraw$: SaverWithdrawStateHandler
+  loanRepay$: SaverWithdrawStateHandler
   reloadBalances: FP.Lazy<void>
-  disableSaverAction: boolean
+  disableLoanAction: boolean
   hidePrivateData: boolean
   dex: Dex
 }
@@ -157,7 +157,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     network,
     pricePool,
     poolAddress: oPoolAddress,
-    saverPosition,
+    borrowerPosition,
     onChangeAsset,
     address,
     fees$,
@@ -171,8 +171,8 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     reloadSelectedPoolDetail,
     goToTransaction,
     getExplorerTxUrl,
-    saverWithdraw$,
-    disableSaverAction,
+    loanRepay$,
+    disableLoanAction,
     hidePrivateData,
     dex
   } = props
@@ -198,7 +198,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     state: withdrawState,
     reset: resetWithdrawState,
     subscribe: subscribeWithdrawState
-  } = useSubscriptionState<WithdrawState>(INITIAL_SAVER_WITHDRAW_STATE)
+  } = useSubscriptionState<WithdrawState>(INITIAL_WITHDRAW_STATE)
 
   const { balances: oWalletBalances, loading: walletBalancesLoading } = walletBalances
 
@@ -245,13 +245,13 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     }
   }, [keystore, sourceAsset, sourceChain])
   /**
-   * Selectable source assets to add to savers.
-   * Based on savers the address has
+   * Selectable source assets to add to loan.
+   * Based on loan the address has
    */
   const selectableAssets: Asset[] = useMemo(() => {
     const result = FP.pipe(
       poolDetails,
-      A.filter(({ saversDepth }) => Number(saversDepth) > 0),
+      A.filter(({ totalCollateral }) => Number(totalCollateral) > 0),
       A.filterMap(({ asset: assetString }) => O.fromNullable(assetFromString(assetString)))
     )
     return result
@@ -272,32 +272,32 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
   const hasLedger = useMemo(() => hasLedgerInBalancesByAsset(sourceAsset, allBalances), [sourceAsset, allBalances])
 
   // *********** FEES **************
-  const zeroSaverFees: WithdrawAssetFees = useMemo(() => Utils.getZeroLoanWithdrawFees(sourceAsset), [sourceAsset])
+  const zeroLoanFees: WithdrawAssetFees = useMemo(() => Utils.getZeroLoanWithdrawFees(sourceAsset), [sourceAsset])
 
-  const prevSaverFees = useRef<O.Option<WithdrawAssetFees>>(O.none)
+  const prevLoanFees = useRef<O.Option<WithdrawAssetFees>>(O.none)
 
-  const [saverFeesRD] = useObservableState<SaverWithdrawFeesRD>(
+  const [loanFeesRD] = useObservableState<SaverWithdrawFeesRD>(
     () =>
       FP.pipe(
         fees$(sourceAsset),
         liveData.map((fees) => {
           // store every successfully loaded fees
-          prevSaverFees.current = O.some(fees)
+          prevLoanFees.current = O.some(fees)
           return fees
         })
       ),
-    RD.success(zeroSaverFees)
+    RD.success(zeroLoanFees)
   )
 
-  const saverFees: WithdrawAssetFees = useMemo(
+  const loanFees: WithdrawAssetFees = useMemo(
     () =>
       FP.pipe(
-        saverFeesRD,
+        loanFeesRD,
         RD.toOption,
-        O.alt(() => prevSaverFees.current),
-        O.getOrElse(() => zeroSaverFees)
+        O.alt(() => prevLoanFees.current),
+        O.getOrElse(() => zeroLoanFees)
       ),
-    [saverFeesRD, zeroSaverFees]
+    [loanFeesRD, zeroLoanFees]
   )
   // source chain asset
   const sourceChainAsset: Asset = useMemo(() => getChainAsset(sourceChain), [sourceChain])
@@ -324,29 +324,29 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     [oSourceAssetWB, asset]
   )
 
-  // User Saver redeem Amount for source asset
-  const [saverAssetAmount, setSaverAssetAmount] = useState<CryptoAmount>(
+  // User Loan redeem Amount for source asset
+  const [loanAssetAmount, setLoanAssetAmount] = useState<CryptoAmount>(
     new CryptoAmount(baseAmount(0, asset.baseAmount.decimal), sourceAsset)
   )
 
   useEffect(() => {
-    const subscription = saverPosition(sourceAsset, address).subscribe((saverProviderRD) => {
-      if (RD.isSuccess(saverProviderRD)) {
+    const subscription = borrowerPosition(sourceAsset, address).subscribe((borrowerProviderRD) => {
+      if (RD.isSuccess(borrowerProviderRD)) {
         // Replace with the actual check for RemoteData's success state
-        const saverProvider = saverProviderRD.value // Replace 'value' with the correct property if needed
-        setSaverAssetAmount(new CryptoAmount(saverProvider.redeemValue, sourceAsset))
+        const borrowerPosition = borrowerProviderRD.value // Replace 'value' with the correct property if needed
+        setLoanAssetAmount(new CryptoAmount(borrowerPosition.collaterlaCurrent, sourceAsset))
       }
     })
 
     return () => {
       subscription.unsubscribe()
     }
-  }, [address, saverPosition, sourceAsset])
+  }, [address, borrowerPosition, sourceAsset])
 
   // set init amount
   const initialAmountToWithdrawMax1e8 = useMemo(
-    () => baseAmount(0, saverAssetAmount.baseAmount.decimal),
-    [saverAssetAmount]
+    () => baseAmount(0, loanAssetAmount.baseAmount.decimal),
+    [loanAssetAmount]
   )
 
   const [
@@ -356,16 +356,16 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
   ] = useState(initialAmountToWithdrawMax1e8)
 
   /** Balance of source asset converted to <= 1e8 */
-  const saverAssetAmountMax1e8: BaseAmount = useMemo(
-    () => max1e8BaseAmount(saverAssetAmount.baseAmount),
-    [saverAssetAmount]
+  const loanAssetAmountMax1e8: BaseAmount = useMemo(
+    () => max1e8BaseAmount(loanAssetAmount.baseAmount),
+    [loanAssetAmount]
   )
-  // max amount to withdraw is 100% saver position
+  // max amount to withdraw is 100% loan position
   const maxAmountToWithdrawMax1e8: BaseAmount = useMemo(() => {
-    if (lockedWallet) return assetToBase(assetAmount(10000, saverAssetAmountMax1e8.decimal))
+    if (lockedWallet) return assetToBase(assetAmount(10000, loanAssetAmountMax1e8.decimal))
 
-    return saverAssetAmountMax1e8
-  }, [lockedWallet, saverAssetAmountMax1e8])
+    return loanAssetAmountMax1e8
+  }, [lockedWallet, loanAssetAmountMax1e8])
 
   // store maxAmountValue
   const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(
@@ -385,15 +385,15 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
   // Set amount to send
   const setAmountToWithdrawMax1e8 = useCallback(
     (amountToSend: BaseAmount) => {
-      const newAmount = baseAmount(amountToSend.amount(), saverAssetAmountMax1e8.decimal)
+      const newAmount = baseAmount(amountToSend.amount(), loanAssetAmountMax1e8.decimal)
       // dirty check - do nothing if prev. and next amounts are equal
       if (eqBaseAmount.equals(newAmount, amountToWithdrawMax1e8)) return {}
 
-      const newAmountToSend = newAmount.gt(saverAssetAmountMax1e8) ? saverAssetAmountMax1e8 : newAmount
+      const newAmountToSend = newAmount.gt(loanAssetAmountMax1e8) ? loanAssetAmountMax1e8 : newAmount
 
       _setAmountToWithdrawMax1e8({ ...newAmountToSend })
     },
-    [amountToWithdrawMax1e8, saverAssetAmountMax1e8]
+    [amountToWithdrawMax1e8, loanAssetAmountMax1e8]
   )
 
   // Chain Dust threshold, can't send less than this amount.
@@ -468,10 +468,10 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     // ignore error check by having zero amounts
     if (amountToWithdrawMax1e8) return false
 
-    const { inFee } = saverFees
+    const { inFee } = loanFees
     // check against in fee and dust threshold
     return inFee.gt(chainAssetBalance) || dustThreshold.baseAmount.gt(chainAssetBalance)
-  }, [amountToWithdrawMax1e8, saverFees, chainAssetBalance, dustThreshold.baseAmount])
+  }, [amountToWithdrawMax1e8, loanFees, chainAssetBalance, dustThreshold.baseAmount])
 
   const [oWithdrawBps, setWithdrawBps] = useState<O.Option<number>>(O.none) // init state
 
@@ -515,7 +515,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
       FP.pipe(
         oSaverWithdrawQuote,
         O.fold(
-          () => new CryptoAmount(saverFees.outFee, sourceChainAsset), // default value if oQuote is None
+          () => new CryptoAmount(loanFees.outFee, sourceChainAsset), // default value if oQuote is None
           (txDetails) => {
             const outboundFee = convertBaseAmountDecimal(txDetails.fee.outbound.baseAmount, sourceChainAssetDecimals)
             return new CryptoAmount(outboundFee, txDetails.fee.asset)
@@ -523,7 +523,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
           // already of type cryptoAmount
         )
       ),
-    [oSaverWithdrawQuote, saverFees.outFee, sourceChainAsset, sourceChainAssetDecimals]
+    [oSaverWithdrawQuote, loanFees.outFee, sourceChainAsset, sourceChainAssetDecimals]
   )
 
   // Outbound fee in for use later
@@ -532,14 +532,14 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
       FP.pipe(
         oSaverWithdrawQuote,
         O.fold(
-          () => new CryptoAmount(baseAmount(0, saverFees.inFee.decimal), sourceChainAsset), // default value if oQuote is None
+          () => new CryptoAmount(baseAmount(0, loanFees.inFee.decimal), sourceChainAsset), // default value if oQuote is None
           (txDetails) => {
             const liquidityFee = convertBaseAmountDecimal(txDetails.fee.liquidity.baseAmount, sourceChainAssetDecimals)
             return new CryptoAmount(liquidityFee, txDetails.fee.asset)
           }
         )
       ),
-    [oSaverWithdrawQuote, saverFees.inFee.decimal, sourceChainAsset, sourceChainAssetDecimals]
+    [oSaverWithdrawQuote, loanFees.inFee.decimal, sourceChainAsset, sourceChainAssetDecimals]
   )
 
   // Boolean on if amount to send is zero
@@ -568,13 +568,13 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
 
   const maxBalanceInfoTxt = useMemo(() => {
     const balanceLabel = formatAssetAmountCurrency({
-      amount: baseToAsset(saverAssetAmountMax1e8),
+      amount: baseToAsset(loanAssetAmountMax1e8),
       asset: sourceAsset,
       decimal: isUSDAsset(sourceAsset) ? 2 : 8, // use 8 decimal as same we use in maxAmountToSwapMax1e8
       trimZeros: !isUSDAsset(sourceAsset)
     })
     const feeLabel = FP.pipe(
-      saverFeesRD,
+      loanFeesRD,
       RD.map(({ asset: feeAsset, inFee }) =>
         formatAssetAmountCurrency({
           amount: baseToAsset(inFee),
@@ -586,8 +586,8 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
       RD.getOrElse(() => noDataString)
     )
 
-    return intl.formatMessage({ id: 'savers.info.max.redeem.value' }, { balance: balanceLabel, fee: feeLabel })
-  }, [saverAssetAmountMax1e8, sourceAsset, saverFeesRD, intl])
+    return intl.formatMessage({ id: 'loan.info.max.redeem.value' }, { balance: balanceLabel, fee: feeLabel })
+  }, [loanAssetAmountMax1e8, sourceAsset, loanFeesRD, intl])
 
   // State for values of `isApprovedERC20Token$`
   const {
@@ -1037,12 +1037,12 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
         // set start time
         setWithdrawStartTime(Date.now())
         // subscribe to saverWithdraw$
-        subscribeWithdrawState(saverWithdraw$(withdrawParams))
+        subscribeWithdrawState(loanRepay$(withdrawParams))
 
         return true
       })
     )
-  }, [oWithdrawSaverParams, saverWithdraw$, subscribeWithdrawState])
+  }, [oWithdrawSaverParams, loanRepay$, subscribeWithdrawState])
 
   const onApprove = useCallback(() => {
     if (useLedger) {
@@ -1159,8 +1159,8 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
 
   // Price of asset IN fee
   const oPriceAssetInFee: O.Option<CryptoAmount> = useMemo(() => {
-    const asset = saverFees.asset
-    const amount = saverFees.inFee
+    const asset = loanFees.asset
+    const amount = loanFees.inFee
 
     return FP.pipe(
       PoolHelpers.getPoolPriceValue({
@@ -1172,7 +1172,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
         return new CryptoAmount(amount, pricePool.asset)
       })
     )
-  }, [poolDetails, pricePool, saverFees.asset, saverFees.inFee])
+  }, [poolDetails, pricePool, loanFees.asset, loanFees.inFee])
 
   const oPriceAssetOutFee: O.Option<CryptoAmount> = useMemo(() => {
     const fee = outboundFee.plus(liquidityFee)
@@ -1203,7 +1203,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
   const priceFeesLabel = useMemo(
     () =>
       FP.pipe(
-        saverFeesRD,
+        loanFeesRD,
         RD.fold(
           () => loadingString,
           () => loadingString,
@@ -1238,13 +1238,13 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
         )
       ),
 
-    [saverFeesRD, liquidityFee.baseAmount, outboundFee.baseAmount, oPriceAssetFeeTotal]
+    [loanFeesRD, liquidityFee.baseAmount, outboundFee.baseAmount, oPriceAssetFeeTotal]
   )
   // label for Price in fee
   const priceInFeeLabel = useMemo(
     () =>
       FP.pipe(
-        saverFeesRD,
+        loanFeesRD,
         RD.fold(
           () => loadingString,
           () => loadingString,
@@ -1276,7 +1276,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
         )
       ),
 
-    [saverFeesRD, oPriceAssetInFee]
+    [loanFeesRD, oPriceAssetInFee]
   )
   //calculating transaction time from chain & quote
   const transactionTime: Time = useMemo(
@@ -1301,15 +1301,15 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
   const renderSlider = useMemo(() => {
     const percentage = amountToWithdrawMax1e8
       .amount()
-      .dividedBy(saverAssetAmount.baseAmount.amount())
+      .dividedBy(loanAssetAmount.baseAmount.amount())
       .multipliedBy(100)
       // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
       .decimalPlaces(0, BigNumber.ROUND_DOWN)
       .toNumber()
 
     const setAmountToWithdrawFromPercentValue = (percents: number) => {
-      const amountFromPercentage = saverAssetAmount.baseAmount.amount().multipliedBy(percents / 100)
-      setAmountToWithdrawMax1e8(baseAmount(amountFromPercentage, saverAssetAmount.baseAmount.decimal))
+      const amountFromPercentage = loanAssetAmount.baseAmount.amount().multipliedBy(percents / 100)
+      setAmountToWithdrawMax1e8(baseAmount(amountFromPercentage, loanAssetAmount.baseAmount.decimal))
     }
     // Update withdrawBps based on the selected percentage
     const newWithdrawBps = Math.floor(percentage * 100)
@@ -1325,10 +1325,10 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
         tipFormatter={(value) => `${value}%`}
         withLabel
         tooltipPlacement={'top'}
-        disabled={disableSaverAction}
+        disabled={disableLoanAction}
       />
     )
-  }, [amountToWithdrawMax1e8, disableSaverAction, reloadFeesHandler, saverAssetAmount, setAmountToWithdrawMax1e8])
+  }, [amountToWithdrawMax1e8, disableLoanAction, reloadFeesHandler, loanAssetAmount, setAmountToWithdrawMax1e8])
 
   const oWalletAddress: O.Option<Address> = useMemo(() => {
     return FP.pipe(

@@ -42,8 +42,8 @@ import { usePrivateData } from '../../hooks/usePrivateData'
 import * as poolsRoutes from '../../routes/pools'
 import { LoanRouteParams } from '../../routes/pools/lending'
 import * as lendingRoutes from '../../routes/pools/lending'
-import { saverDepositFee$ } from '../../services/chain'
-import { saverWithdrawFee$ } from '../../services/chain/fees'
+import { saverDepositFee$ as loanOpenFee$ } from '../../services/chain'
+import { saverWithdrawFee$ as loanRepayFee$ } from '../../services/chain/fees'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
 import { PoolAddress } from '../../services/midgard/types'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/wallet/const'
@@ -89,14 +89,14 @@ const Content: React.FC<Props> = (props): JSX.Element => {
 
   const { thorchainQuery } = useThorchainQueryContext()
   const { isPrivate } = usePrivateData()
-  const { getSaverProvider$, reloadSaverProvider, reloadInboundAddresses } = useThorchainContext()
+  const { getBorrowerProvider$, reloadBorrowerProvider, reloadInboundAddresses } = useThorchainContext()
 
   const {
     assetWithDecimal$,
     addressByChain$,
-    reloadSaverDepositFee,
-    saverDeposit$: borrowerDeposit$, // rename for sanity
-    saverWithdraw$: borrowerWithdraw$
+    reloadSaverDepositFee: reloadLoanDepositFee, // rename for sanity
+    saverDeposit$: loanOpen$, // rename for sanity
+    saverWithdraw$: loanRepay$
   } = useChainContext()
 
   const { approveERC20Token$, isApprovedERC20Token$, approveFee$, reloadApproveFee } = useEvmContext(chain)
@@ -178,8 +178,8 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   const reloadHandler = useCallback(() => {
     const lazyReload = reloadBalancesByChain(chain)
     lazyReload()
-    reloadSaverProvider()
-  }, [chain, reloadBalancesByChain, reloadSaverProvider])
+    reloadBorrowerProvider()
+  }, [chain, reloadBalancesByChain, reloadBorrowerProvider])
 
   const renderError = useCallback(
     (e: Error) => (
@@ -291,7 +291,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
               const disableTradingPoolActions = (chain: Chain) =>
                 PoolHelpers.disableTradingActions({ chain, haltedChains, mimirHalt })
 
-              const checkDisableSaverAction = () => {
+              const checkDisableLoanAction = () => {
                 return disableAllPoolActions(chain) || disableTradingPoolActions(chain)
               }
               const getTabContentByIndex = (index: number) => {
@@ -311,20 +311,20 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         network={network}
                         asset={new CryptoAmount(baseAmount(0, assetWD.decimal), assetWD.asset)}
                         pricePool={pricePool}
-                        fees$={saverDepositFee$}
+                        fees$={loanOpenFee$}
                         address={address}
                         reloadBalances={reloadHandler}
                         approveFee$={approveFee$}
                         reloadApproveFee={reloadApproveFee}
-                        reloadFees={reloadSaverDepositFee}
+                        reloadFees={reloadLoanDepositFee}
                         reloadSelectedPoolDetail={reloadSelectedPoolDetail}
                         isApprovedERC20Token$={isApprovedERC20Token$}
                         approveERC20Token$={approveERC20Token$}
                         poolAddress={oPoolAddress}
-                        borrowDeposit$={borrowerDeposit$}
+                        borrowDeposit$={loanOpen$}
                         hidePrivateData={isPrivate}
                         onChangeAsset={onChangeAssetHandler}
-                        disableSaverAction={checkDisableSaverAction()}
+                        disableLoanAction={checkDisableLoanAction()}
                         dex={dex}
                       />
                     )
@@ -338,7 +338,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         walletBalances={balancesState}
                         network={network}
                         pricePool={pricePool}
-                        fees$={saverWithdrawFee$}
+                        fees$={loanRepayFee$}
                         address={address}
                         validatePassword$={validatePassword$}
                         goToTransaction={openExplorerTxUrl}
@@ -348,16 +348,16 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         reloadBalances={reloadHandler}
                         approveFee$={approveFee$}
                         reloadApproveFee={reloadApproveFee}
-                        reloadFees={reloadSaverDepositFee}
+                        reloadFees={reloadLoanDepositFee}
                         reloadSelectedPoolDetail={reloadSelectedPoolDetail}
                         isApprovedERC20Token$={isApprovedERC20Token$}
                         approveERC20Token$={approveERC20Token$}
                         poolAddress={oPoolAddress}
-                        saverWithdraw$={borrowerWithdraw$}
+                        loanRepay$={loanRepay$}
                         hidePrivateData={isPrivate}
                         onChangeAsset={onChangeAssetHandler}
-                        saverPosition={getSaverProvider$}
-                        disableSaverAction={checkDisableSaverAction()}
+                        borrowerPosition={getBorrowerProvider$}
+                        disableLoanAction={checkDisableLoanAction()}
                         dex={dex}
                       />
                     )

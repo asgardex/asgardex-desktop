@@ -104,6 +104,8 @@ export type CommonMessageKey =
   | 'common.repay'
   | 'common.earn'
   | 'common.liquidity'
+  | 'common.collateral'
+  | 'common.debt'
   | 'common.withdraw'
   | 'common.approve'
   | 'common.accept'
@@ -551,6 +553,31 @@ type SaversMessageKey =
   | 'savers.withdraw.state.error'
 
 export type SaversMessages = { [key in SaversMessageKey]: string }
+
+type LoanMessageKey =
+  | 'loan.noLoans'
+  | 'loan.openLoan'
+  | 'loan.closeLoan'
+  | 'loan.detail.title'
+  | 'loan.detail.debt.title'
+  | 'loan.detail.collateral.title'
+  | 'loan.detail.age'
+  | 'loan.detail.repayed'
+  | 'loan.detail.assetAmount'
+  | 'loan.info.max.loan.value'
+  | 'loan.info.max.balance'
+  | 'loan.borrow.state.sending'
+  | 'loan.borrow.state.checkResults'
+  | 'loan.borrow.state.pending'
+  | 'loan.borrow.state.success'
+  | 'loan.borrow.state.error'
+  | 'loan.repay.state.sending'
+  | 'loan.repay.state.checkResults'
+  | 'loan.repay.state.pending'
+  | 'loan.repay.state.success'
+  | 'loan.repay.state.error'
+
+export type LoanMessages = { [key in LoanMessageKey]: string }
 
 export type HaltMessageKey =
   | 'halt.thorchain'

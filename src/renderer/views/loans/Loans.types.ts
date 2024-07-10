@@ -4,10 +4,10 @@ import BigNumber from 'bignumber.js'
 //tobefixed
 export type LoansTableRowData = {
   asset: Asset
-  depthPrice: BaseAmount
-  depth: BaseAmount
+  collateralPrice: BaseAmount
+  collateral: BaseAmount
   filled: BigNumber
-  apr: BigNumber
+  debt: BaseAmount
   key: string
   network: Network
   watched: boolean
