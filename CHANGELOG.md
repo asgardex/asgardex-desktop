@@ -1,4 +1,10 @@
-# 1.21.9 (2024-tba)
+# 1.22.0 (2024-07-tbh)
+
+## Updates/Fixes
+
+- Fix addresss indexing issue with ledger []()
+
+# 1.21.9 (2024-06-15)
 
 ## Updates/Fixes
 

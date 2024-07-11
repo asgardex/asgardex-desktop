@@ -13,25 +13,21 @@ import {
 import { blockcypherApiKey } from '../../../../shared/api/blockcypher'
 import { LedgerErrorId } from '../../../../shared/api/types'
 
-export const getDerivationPath = (walletAccount: number, walletIndex: number, network: Network): string => {
+export const getDerivationPath = (walletAccount: number, network: Network): string => {
   const DERIVATION_PATHES = {
-    [Network.Mainnet]: ["84'", "0'", `${walletAccount}'`, 0, walletIndex],
-    [Network.Testnet]: ["84'", "1'", `${walletAccount}'`, 0, walletIndex],
-    [Network.Stagenet]: ["84'", "0'", `${walletAccount}'`, 0, walletIndex]
+    [Network.Mainnet]: ["84'", "0'", `${walletAccount}'`, '0/'],
+    [Network.Testnet]: ["84'", "1'", `${walletAccount}'`, '0/'],
+    [Network.Stagenet]: ["84'", "0'", `${walletAccount}'`, '0/']
   }
   const path = DERIVATION_PATHES[network].join('/')
   return path
 }
 
-export const getDerivationPaths = (
-  walletAccount: number,
-  walletIndex: number,
-  network: Network
-): RootDerivationPaths => {
+export const getDerivationPaths = (walletAccount: number, network: Network): RootDerivationPaths => {
   const paths: RootDerivationPaths = {
-    [Network.Mainnet]: `${getDerivationPath(walletAccount, walletIndex, network)}`,
-    [Network.Testnet]: `${getDerivationPath(walletAccount, walletIndex, network)}`,
-    [Network.Stagenet]: `${getDerivationPath(walletAccount, walletIndex, network)}`
+    [Network.Mainnet]: `${getDerivationPath(walletAccount, network)}`,
+    [Network.Testnet]: `${getDerivationPath(walletAccount, network)}`,
+    [Network.Stagenet]: `${getDerivationPath(walletAccount, network)}`
   }
   return paths
 }

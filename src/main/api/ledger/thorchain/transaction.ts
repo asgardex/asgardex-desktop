@@ -36,7 +36,7 @@ export const send = async ({
     const clientLedger = new ClientLedger({
       transport,
       ...defaultClientConfig,
-      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, network),
+      rootDerivationPaths: getDerivationPaths(walletAccount, network),
       network: network
     })
     const txhash = await clientLedger.transfer({ walletIndex, asset: asset, recipient, amount, memo })
@@ -83,7 +83,7 @@ export const deposit = async ({
     const clientLedger = new ClientLedger({
       transport,
       ...defaultClientConfig,
-      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, network),
+      rootDerivationPaths: getDerivationPaths(walletAccount, network),
       network: network
     })
     const txhash = await clientLedger.deposit({ walletIndex, asset: asset, amount, memo })
