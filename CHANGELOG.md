@@ -1,4 +1,10 @@
-# 1.21.9 (2024-tba)
+# 1.22.0 (2024-07-tbh)
+
+## Updates/Fixes
+
+- Fix addresss indexing issue with ledger [#300](https://github.com/asgardex/asgardex-desktop/pull/300)
+
+# 1.21.9 (2024-06-15)
 
 ## Updates/Fixes
 
