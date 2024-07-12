@@ -12,7 +12,7 @@ import { SaverDepositFees, WithdrawAssetFees } from '../../services/chain/types'
  * assetAmountMax1e8 => balances of source asset (max 1e8)
  * feeAmount => fee of inbound tx
  */
-export const maxAmountToSendMax1e8 = ({
+export const maxAmountToLoanMax1e8 = ({
   asset,
   balanceAmountMax1e8,
   feeAmount

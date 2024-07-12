@@ -34,7 +34,6 @@ import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { useDex } from '../../hooks/useDex'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
-import { useSynthConstants } from '../../hooks/useSynthConstants'
 import * as poolsRoutes from '../../routes/pools'
 import * as lendingRoutes from '../../routes/pools/lending'
 import { PoolsState as PoolStateMaya, PoolDetails as PoolDetailsMaya } from '../../services/mayaMigard/types'
@@ -61,13 +60,12 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
       pools: { poolsState$, reloadPools, selectedPricePool$ }
     }
   } = useMidgardContext()
+
   const {
     service: {
       pools: { poolsState$: mayaPoolsState$, reloadPools: reloadMayaPools, selectedPricePool$: selectedPricePoolMaya$ }
     }
   } = useMidgardMayaContext()
-
-  const { maxSynthPerPoolDepth: maxSynthPerPoolDepthRD, reloadConstants } = useSynthConstants()
 
   const refreshHandler = useCallback(() => {
     if (dex.chain === THORChain) {
@@ -75,8 +73,7 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
     } else {
       reloadMayaPools()
     }
-    reloadConstants()
-  }, [dex, reloadConstants, reloadPools, reloadMayaPools])
+  }, [dex, reloadPools, reloadMayaPools])
 
   const selectedPricePool = useObservableState(
     dex.chain === THORChain ? selectedPricePool$ : selectedPricePoolMaya$,
@@ -133,28 +130,31 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
     [intl]
   )
 
-  const debtColumn = useCallback(<T extends { debt: BaseAmount; asset: Asset }>(): ColumnType<T> => {
-    return {
-      key: 'debt',
-      align: 'center',
-      title: (
-        <div className="flex flex-col items-center">
-          <div className="font-main text-[12px]">{intl.formatMessage({ id: 'common.debt' })}</div>
-        </div>
-      ),
-      render: ({ debt, asset }: { debt: BaseAmount; asset: Asset }) => (
-        <div className="font-main text-16">
-          {formatAssetAmountCurrency({
-            amount: baseToAsset(debt),
-            asset,
-            decimal: 2
-          })}
-        </div>
-      ),
-      sorter: (a: { debt: BaseAmount }, b: { debt: BaseAmount }) => ordBaseAmount.compare(a.debt, b.debt),
-      sortDirections: ['descend', 'ascend']
-    }
-  }, [intl])
+  const debtColumn = useCallback(
+    <T extends { debt: BaseAmount }>(pricePoolAsset: Asset): ColumnType<T> => {
+      return {
+        key: 'debt',
+        align: 'center',
+        title: (
+          <div className="flex flex-col items-center">
+            <div className="font-main text-[12px]">{intl.formatMessage({ id: 'common.debt' })}</div>
+          </div>
+        ),
+        render: ({ debt }: { debt: BaseAmount }) => (
+          <div className="font-main text-16">
+            {formatAssetAmountCurrency({
+              amount: baseToAsset(debt),
+              asset: pricePoolAsset,
+              decimal: 2
+            })}
+          </div>
+        ),
+        sorter: (a: { debt: BaseAmount }, b: { debt: BaseAmount }) => ordBaseAmount.compare(a.debt, b.debt),
+        sortDirections: ['descend', 'ascend']
+      }
+    },
+    [intl]
+  )
 
   const filledColumn = useCallback(
     <T extends { filled: BigNumber }>(): ColumnType<T> => ({
@@ -234,7 +234,7 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
       Shared.assetColumn(intl.formatMessage({ id: 'common.asset' })),
       collateralColumn<LoansTableRowData>(selectedPricePool.asset),
       filledColumn<LoansTableRowData>(),
-      debtColumn<LoansTableRowData>(),
+      debtColumn<LoansTableRowData>(selectedPricePool.asset),
       btnColumn()
     ],
     [
@@ -286,7 +286,7 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
   return (
     <>
       {FP.pipe(
-        sequenceTRD(poolsRD, maxSynthPerPoolDepthRD),
+        sequenceTRD(poolsRD),
         RD.fold(
           // initial state
           () => renderTable([], true),

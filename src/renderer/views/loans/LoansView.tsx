@@ -26,7 +26,6 @@ import { useChainContext } from '../../contexts/ChainContext'
 import { useEvmContext } from '../../contexts/EvmContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
-import { useThorchainQueryContext } from '../../contexts/ThorchainQueryContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { getAssetFromNullableString } from '../../helpers/assetHelper'
 import { eqChain, eqNetwork, eqWalletType } from '../../helpers/fp/eq'
@@ -87,9 +86,14 @@ const Content: React.FC<Props> = (props): JSX.Element => {
 
   const { dex } = useDex()
 
-  const { thorchainQuery } = useThorchainQueryContext()
   const { isPrivate } = usePrivateData()
-  const { getBorrowerProvider$, reloadBorrowerProvider, reloadInboundAddresses } = useThorchainContext()
+  const {
+    getBorrowerProvider$,
+    reloadBorrowerProvider,
+    reloadInboundAddresses,
+    getLoanQuoteOpen$,
+    reloadLoanQuoteOpen
+  } = useThorchainContext()
 
   const {
     assetWithDecimal$,
@@ -144,6 +148,37 @@ const Content: React.FC<Props> = (props): JSX.Element => {
         [BTCChain]: 'confirmed'
       }),
     INITIAL_BALANCES_STATE
+  )
+
+  const [oTargetKeystoreAddress, updateTargetKeystoreAddress$] = useObservableState<O.Option<Address>, Chain>(
+    (targetChain$) =>
+      FP.pipe(
+        targetChain$,
+        RxOp.distinctUntilChanged(eqChain.equals),
+        RxOp.switchMap(addressByChain$),
+        RxOp.map(addressFromOptionalWalletAddress)
+      ),
+    O.none
+  )
+
+  useEffect(() => {
+    updateTargetKeystoreAddress$(targetChain)
+  }, [targetChain, updateTargetKeystoreAddress$])
+
+  useEffect(() => {
+    updateSourceLedgerAddress$({ chain: sourceChain, network })
+  }, [network, sourceChain, updateSourceLedgerAddress$])
+
+  const isTargetLedger = FP.pipe(
+    oTargetWalletType,
+    O.map(isLedgerWallet),
+    O.getOrElse(() => false)
+  )
+  const oRecipient: O.Option<Address> = FP.pipe(
+    oRecipientAddress,
+    O.fromPredicate(O.isSome),
+    O.flatten,
+    O.alt(() => (isTargetLedger ? oTargetLedgerAddress : oTargetKeystoreAddress))
   )
 
   const assetRD: AssetWithDecimalRD = useObservableState(assetDecimal$, RD.initial)
@@ -301,7 +336,8 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                       <Borrow
                         keystore={keystore}
                         validatePassword$={validatePassword$}
-                        thorchainQuery={thorchainQuery}
+                        getLoanQuoteOpen={getLoanQuoteOpen$}
+                        reloadLoanQuoteOpen={reloadLoanQuoteOpen}
                         goToTransaction={openExplorerTxUrl}
                         getExplorerTxUrl={getExplorerTxUrl}
                         sourceWalletType={walletType}
@@ -313,6 +349,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         pricePool={pricePool}
                         fees$={loanOpenFee$}
                         address={address}
+                        recipientAddress={oRecipient}
                         reloadBalances={reloadHandler}
                         approveFee$={approveFee$}
                         reloadApproveFee={reloadApproveFee}
@@ -333,7 +370,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                       <Repay
                         keystore={keystore}
                         poolDetails={poolDetails}
-                        thorchainQuery={thorchainQuery}
                         asset={new CryptoAmount(baseAmount(0, assetWD.decimal), assetWD.asset)}
                         walletBalances={balancesState}
                         network={network}

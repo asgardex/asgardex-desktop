@@ -8,7 +8,6 @@ import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
-import { EstimateAddSaver, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
   Asset,
@@ -28,13 +27,12 @@ import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import * as O from 'fp-ts/lib/Option'
-// import debounce from 'lodash/debounce'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
 import { Dex } from '../../../shared/api/types'
-import { ASGARDEX_THORNAME } from '../../../shared/const'
+import { ASGARDEX_ADDRESS, ASGARDEX_THORNAME } from '../../../shared/const'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
@@ -90,6 +88,7 @@ import {
   LoadApproveFeeHandler
 } from '../../services/evm/types'
 import { PoolAddress } from '../../services/midgard/types'
+import { LoanOpenParams, LoanOpenQuote, LoanOpenQuoteLD } from '../../services/thorchain/types'
 import {
   ApiError,
   BalancesState,
@@ -120,11 +119,13 @@ export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
 
 export type BorrowProps = {
   keystore: KeystoreState
-  thorchainQuery: ThorchainQuery
+  getLoanQuoteOpen: (asset: Asset, amount: BaseAmount, targetAsset: Asset, destination: string, minOut?: string, affiliateBps?: number, affiliate?: string, height?: number) => LoanOpenQuoteLD
+  reloadLoanQuoteOpen: FP.Lazy<void>
   poolAssets: Asset[]
   poolDetails: PoolDetails
   asset: CryptoAmount
   address: Address
+  recipientAddress: O.Option<Address>,
   network: Network
   pricePool: PricePool
   poolAddress: O.Option<PoolAddress>
@@ -151,7 +152,8 @@ export type BorrowProps = {
 export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   const {
     keystore,
-    thorchainQuery,
+    getLoanQuoteOpen,
+    reloadLoanQuoteOpen,
     poolDetails,
     asset,
     sourceWalletType: initialSourceWalletType,
@@ -179,7 +181,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
 
   const intl = useIntl()
 
-  const [oLoanQuote] = useState<O.Option<EstimateAddSaver>>(O.none)
+  const [oLoanQuote, setLoanQuote] = useState<O.Option<LoanOpenQuote>>(O.none)
 
   const { chain: sourceChain } = asset.asset
 
@@ -300,69 +302,69 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     [loanFeesRD, zeroBorrowerFees]
   )
 
-  const initialAmountToSendMax1e8 = useMemo(
+  const initialAmountToLoanMax1e8 = useMemo(
     () => baseAmount(0, sourceAssetAmountMax1e8.decimal),
     [sourceAssetAmountMax1e8]
   )
 
   const [
     /* max. 1e8 decimal */
-    amountToSendMax1e8,
-    _setAmountToSendMax1e8 /* private - never set it directly, use setAmountToSendMax1e8() instead */
-  ] = useState(initialAmountToSendMax1e8)
+    amountToLoanMax1e8,
+    _setAmountToLoanMax1e8 /* private - never set it directly, use setAmountToLoanMax1e8() instead */
+  ] = useState(initialAmountToLoanMax1e8)
 
-  const maxAmountToSendMax1e8: BaseAmount = useMemo(() => {
+  const maxAmountToLoanMax1e8: BaseAmount = useMemo(() => {
     if (lockedWallet) return assetToBase(assetAmount(10000, sourceAssetAmountMax1e8.decimal))
 
-    return Utils.maxAmountToSendMax1e8({
+    return Utils.maxAmountToLoanMax1e8({
       asset: asset.asset,
       balanceAmountMax1e8: sourceAssetAmountMax1e8,
       feeAmount: loanFees.asset.inFee
     })
   }, [lockedWallet, asset, sourceAssetAmountMax1e8, loanFees])
 
-  // Set amount to send
-  const setAmountToSendMax1e8 = useCallback(
-    (amountToSend: BaseAmount) => {
-      const newAmount = baseAmount(amountToSend.amount(), sourceAssetAmountMax1e8.decimal)
+  // Set amount to loan
+  const setAmountToLoanMax1e8 = useCallback(
+    (amountToLoan: BaseAmount) => {
+      const newAmount = baseAmount(amountToLoan.amount(), sourceAssetAmountMax1e8.decimal)
       // dirty check - do nothing if prev. and next amounts are equal
-      if (eqBaseAmount.equals(newAmount, amountToSendMax1e8)) return {}
+      if (eqBaseAmount.equals(newAmount, amountToLoanMax1e8)) return {}
 
-      const newAmountToSend = newAmount.gt(maxAmountToSendMax1e8) ? maxAmountToSendMax1e8 : newAmount
+      const newAmountToLoan = newAmount.gt(maxAmountToLoanMax1e8) ? maxAmountToLoanMax1e8 : newAmount
 
-      _setAmountToSendMax1e8({ ...newAmountToSend })
+      _setAmountToLoanMax1e8({ ...newAmountToLoan })
     },
-    [amountToSendMax1e8, maxAmountToSendMax1e8, sourceAssetAmountMax1e8]
+    [amountToLoanMax1e8, maxAmountToLoanMax1e8, sourceAssetAmountMax1e8]
   )
   // price of amount to send
-  const priceAmountToSendMax1e8: CryptoAmount = useMemo(() => {
+  const priceAmountToLoanMax1e8: CryptoAmount = useMemo(() => {
     const result = FP.pipe(
       PoolHelpers.getPoolPriceValue({
-        balance: { asset: asset.asset, amount: amountToSendMax1e8 },
+        balance: { asset: asset.asset, amount: amountToLoanMax1e8 },
         poolDetails,
         pricePool
       }),
-      O.getOrElse(() => baseAmount(0, amountToSendMax1e8.decimal)),
+      O.getOrElse(() => baseAmount(0, amountToLoanMax1e8.decimal)),
       (amount) => ({ asset: pricePool.asset, amount })
     )
 
     return new CryptoAmount(result.amount, result.asset)
-  }, [amountToSendMax1e8, poolDetails, pricePool, asset])
+  }, [amountToLoanMax1e8, poolDetails, pricePool, asset])
 
   // price of amount to send
   const priceAmountMax1e8: CryptoAmount = useMemo(() => {
     const result = FP.pipe(
       PoolHelpers.getPoolPriceValue({
-        balance: { asset: asset.asset, amount: maxAmountToSendMax1e8 },
+        balance: { asset: asset.asset, amount: maxAmountToLoanMax1e8 },
         poolDetails,
         pricePool
       }),
-      O.getOrElse(() => baseAmount(0, amountToSendMax1e8.decimal)),
+      O.getOrElse(() => baseAmount(0, amountToLoanMax1e8.decimal)),
       (amount) => ({ asset: pricePool.asset, amount })
     )
 
     return new CryptoAmount(result.amount, result.asset)
-  }, [asset.asset, maxAmountToSendMax1e8, poolDetails, pricePool, amountToSendMax1e8.decimal])
+  }, [asset.asset, maxAmountToLoanMax1e8, poolDetails, pricePool, amountToLoanMax1e8.decimal])
 
   // Reccommend amount in for use later
   const reccommendedAmountIn: CryptoAmount = useMemo(
@@ -384,25 +386,25 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
         oLoanQuote,
         O.fold(
           () => new CryptoAmount(baseAmount(0), asset.asset), // default value if oQuote is None
-          (txDetails) => txDetails.fee.liquidity // already of type cryptoAmount
+          (txDetails) => txDetails.fees.liquidity // already of type cryptoAmount
         )
       ),
     [oLoanQuote, asset]
   )
 
-  // store liquidity fee
-  const [liquidityPriceValue, setLiquidityPriceValue] = useState<CryptoAmount>(
-    new CryptoAmount(baseAmount(0, asset.baseAmount.decimal), asset.asset)
-  )
+  const liquidityPriceValue: CryptoAmount = useMemo(() => {
+    const result = FP.pipe(
+      PoolHelpers.getPoolPriceValue({
+        balance: { asset: asset.asset, amount: liquidityFee.baseAmount },
+        poolDetails,
+        pricePool
+      }),
+      O.getOrElse(() => baseAmount(0, liquidityFee.baseAmount.decimal)),
+      (amount) => ({ asset: pricePool.asset, amount })
+    )
 
-  // useEffect to fetch data from query
-  useEffect(() => {
-    const fetchData = async () => {
-      setLiquidityPriceValue(await thorchainQuery.convert(liquidityFee, pricePool.asset))
-    }
-
-    fetchData()
-  }, [thorchainQuery, liquidityFee, pricePool.asset])
+    return new CryptoAmount(result.amount, result.asset)
+  }, [asset.asset, liquidityFee.baseAmount, poolDetails, pricePool])
 
   const formatAmount = (cryptoAmount: CryptoAmount) =>
     formatAssetAmountCurrency({
@@ -508,12 +510,12 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     )
   }, [needApprovement, network, oPoolAddress, oSourceAssetWB, asset.asset, sourceChain])
   // Boolean on if amount to send is zero
-  const isZeroAmountToSend = useMemo(() => amountToSendMax1e8.amount().isZero(), [amountToSendMax1e8])
+  const isZeroAmountToLoan = useMemo(() => amountToLoanMax1e8.amount().isZero(), [amountToLoanMax1e8])
   const minAmountError = useMemo(() => {
-    if (isZeroAmountToSend) return false
+    if (isZeroAmountToLoan) return false
 
-    return amountToSendMax1e8.lt(reccommendedAmountIn.baseAmount)
-  }, [amountToSendMax1e8, isZeroAmountToSend, reccommendedAmountIn])
+    return amountToLoanMax1e8.lt(reccommendedAmountIn.baseAmount)
+  }, [amountToLoanMax1e8, isZeroAmountToLoan, reccommendedAmountIn])
 
   const sourceChainFeeError: boolean = useMemo(() => {
     // ignore error check by having zero amounts or min amount errors
@@ -538,16 +540,11 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   )
   // memo check disable submit if no memo
   const quoteError: JSX.Element = useMemo(() => {
-    if (
-      !O.isSome(oLoanQuote) ||
-      oLoanQuote.value.canAddSaver ||
-      !oLoanQuote.value.errors ||
-      oLoanQuote.value.errors.length === 0
-    ) {
+    if (!O.isSome(oLoanQuote) || oLoanQuote.value.notes || !oLoanQuote.value.warning) {
       return <></>
     }
     // Select first error
-    const error = oLoanQuote.value.errors[0].split(':')
+    const error = oLoanQuote.value.warning[0].split(':')
 
     return (
       <ErrorLabel>
@@ -559,28 +556,51 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   // Disables the submit button
   const disableSubmit = useMemo(
     () =>
-      sourceChainFeeError || isZeroAmountToSend || lockedWallet || minAmountError || walletBalancesLoading || noMemo,
-    [isZeroAmountToSend, lockedWallet, minAmountError, noMemo, sourceChainFeeError, walletBalancesLoading]
+      sourceChainFeeError || isZeroAmountToLoan || lockedWallet || minAmountError || walletBalancesLoading || noMemo,
+    [isZeroAmountToLoan, lockedWallet, minAmountError, noMemo, sourceChainFeeError, walletBalancesLoading]
   )
 
-  // const debouncedEffect = useRef(
-  //   debounce((amountToSendMax1e8) => {
-  //     thorchainQuery
-  //       .getLoanQuoteOpen(asset.asset, new CryptoAmount(amountToSendMax1e8, asset.asset))
-  //       .then((quote) => {
-  //         setLoanQuote(O.some(quote)) // Wrapping the quote in an Option
-  //       })
-  //       .catch((error) => {
-  //         console.error('Failed to get quote:', error)
-  //       })
-  //   }, 500)
-  // )
+  const oQuoteLoanOpenData: O.Option<LoanOpenParams> = useMemo(
+    () =>
+      FP.pipe(
+        sequenceTOption(oRecipientAddress, oSourceAssetWB),
+        O.map(([{ walletAddress }]) => {
+          const address = destinationAddress
+          const affiliateAddress = ASGARDEX_ADDRESS === walletAddress ? undefined : ASGARDEX_THORNAME
+          const affiliateBps = 0
+          return {
+            asset: asset.asset,
+            amount: amountToLoanMax1e8,
+            targetAsset,
+            destination: address,
+            minOut: ,
+            affiliateBps,
+            affiliate: affiliateAddress
+          }
+        })
+      ),
+    [amountToLoanMax1e8, asset.asset, oSourceAssetWB]
+  )
 
   useEffect(() => {
-    if (!amountToSendMax1e8.eq(baseAmount(0)) && !sourceChainFeeError) {
-      // debouncedEffect.current(amountToSendMax1e8)
-    }
-  }, [amountToSendMax1e8, sourceChainFeeError])
+    FP.pipe(
+      sequenceTOption(oQuoteLoanOpenData),
+      O.fold(
+        () => {
+          setLoanQuote(O.none)
+        },
+        (params) => {
+          // Assuming params is the data needed for getLoanQuoteOpen$
+          return getLoanQuoteOpen(...params).subscribe((loanOpenQuoteLD) => {
+            if (RD.isSuccess(loanOpenQuoteLD)) {
+              const loanQuote = loanOpenQuoteLD.value // Assuming 'value' is the correct property
+              setLoanQuote(O.some(loanQuote))
+            }
+          })
+        }
+      )
+    )
+  }, [getLoanQuoteOpen, oQuoteLoanOpenData, oSourceAssetWB])
 
   const setAsset = useCallback(
     async (asset: Asset) => {
@@ -739,6 +759,10 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     FP.pipe(oApproveParams, O.map(reloadApproveFee))
   }, [oApproveParams, reloadApproveFee])
 
+  const reloadQuoteLoanOpenHandler = useCallback(() => {
+    FP.pipe(oQuoteLoanOpenData, O.map(reloadLoanQuoteOpen))
+  }, [reloadLoanQuoteOpen])
+
   const reloadFeesHandler = useCallback(() => {
     reloadFees(asset.asset)
   }, [reloadFees, asset])
@@ -751,7 +775,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     const balanceLabel = formatAssetAmountCurrency({
       amount: baseToAsset(sourceAssetAmountMax1e8),
       asset: asset.asset,
-      decimal: isUSDAsset(asset.asset) ? 2 : 8, // use 8 decimal as same we use in maxAmountToSendMax1e8
+      decimal: isUSDAsset(asset.asset) ? 2 : 8, // use 8 decimal as same we use in maxAmountToLoanMax1e8
       trimZeros: !isUSDAsset(asset.asset)
     })
 
@@ -761,7 +785,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
         formatAssetAmountCurrency({
           amount: baseToAsset(inFee),
           asset: feeAsset,
-          decimal: isUSDAsset(feeAsset) ? 2 : 8, // use 8 decimal as same we use in maxAmountToSendMax1e8
+          decimal: isUSDAsset(feeAsset) ? 2 : 8, // use 8 decimal as same we use in maxAmountToLoanMax1e8
           trimZeros: !isUSDAsset(feeAsset)
         })
       ),
@@ -772,8 +796,8 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   }, [sourceAssetAmountMax1e8, loanFeesRD, asset, intl])
 
   const resetEnteredAmounts = useCallback(() => {
-    setAmountToSendMax1e8(initialAmountToSendMax1e8)
-  }, [initialAmountToSendMax1e8, setAmountToSendMax1e8])
+    setAmountToLoanMax1e8(initialAmountToLoanMax1e8)
+  }, [initialAmountToLoanMax1e8, setAmountToLoanMax1e8])
 
   const oBorrowParams: O.Option<BorrowerDepositParams> = useMemo(() => {
     return FP.pipe(
@@ -782,7 +806,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
         const result = {
           poolAddress,
           asset: asset.asset,
-          amount: convertBaseAmountDecimal(amountToSendMax1e8, asset.baseAmount.decimal),
+          amount: convertBaseAmountDecimal(amountToLoanMax1e8, asset.baseAmount.decimal),
           memo: loansQuote.memo !== '' ? loansQuote.memo.concat(`::${ASGARDEX_THORNAME}:0`) : '', // add tracking,
           walletType,
           sender: walletAddress,
@@ -793,7 +817,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
         return result
       })
     )
-  }, [oPoolAddress, oSourceAssetWB, oLoanQuote, asset.asset, asset.baseAmount.decimal, amountToSendMax1e8, dex])
+  }, [oPoolAddress, oSourceAssetWB, oLoanQuote, asset.asset, asset.baseAmount.decimal, amountToLoanMax1e8, dex])
 
   const onClickUseLedger = useCallback(
     (useLedger: boolean) => {
@@ -826,12 +850,12 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
 
     return (
       <DepositAsset
-        source={O.some({ asset: asset.asset, amount: amountToSendMax1e8 })}
+        source={O.some({ asset: asset.asset, amount: amountToLoanMax1e8 })}
         stepDescription={stepDescription}
         network={network}
       />
     )
-  }, [intl, asset, depositState, amountToSendMax1e8, network])
+  }, [intl, asset, depositState, amountToLoanMax1e8, network])
 
   const onCloseTxModal = useCallback(() => {
     resetDepositState()
@@ -1188,24 +1212,24 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   ])
 
   const renderSlider = useMemo(() => {
-    const percentage = amountToSendMax1e8
+    const percentage = amountToLoanMax1e8
       .amount()
-      .dividedBy(maxAmountToSendMax1e8.amount())
+      .dividedBy(maxAmountToLoanMax1e8.amount())
       .multipliedBy(100)
       // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
       .decimalPlaces(0, BigNumber.ROUND_DOWN)
       .toNumber()
 
-    const setAmountToSendFromPercentValue = (percents: number) => {
-      const amountFromPercentage = maxAmountToSendMax1e8.amount().multipliedBy(percents / 100)
-      return setAmountToSendMax1e8(baseAmount(amountFromPercentage, amountToSendMax1e8.decimal))
+    const setAmountToLoanFromPercentValue = (percents: number) => {
+      const amountFromPercentage = maxAmountToLoanMax1e8.amount().multipliedBy(percents / 100)
+      return setAmountToLoanMax1e8(baseAmount(amountFromPercentage, amountToLoanMax1e8.decimal))
     }
 
     return (
       <Slider
         key={'swap percentage slider'}
         value={percentage}
-        onChange={setAmountToSendFromPercentValue}
+        onChange={setAmountToLoanFromPercentValue}
         onAfterChange={reloadFeesHandler}
         tooltipVisible
         tipFormatter={(value) => `${value}%`}
@@ -1214,7 +1238,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
         disabled={disableLoanAction}
       />
     )
-  }, [amountToSendMax1e8, disableLoanAction, maxAmountToSendMax1e8, reloadFeesHandler, setAmountToSendMax1e8])
+  }, [amountToLoanMax1e8, disableLoanAction, maxAmountToLoanMax1e8, reloadFeesHandler, setAmountToLoanMax1e8])
 
   // Price of asset IN fee
   const oPriceAssetInFee: O.Option<AssetWithAmount> = useMemo(() => {
@@ -1327,12 +1351,12 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
         <div className="flex flex-col">
           <AssetInput
             className="w-full"
-            amount={{ amount: amountToSendMax1e8, asset: asset.asset }}
-            priceAmount={{ asset: priceAmountToSendMax1e8.asset, amount: priceAmountToSendMax1e8.baseAmount }}
+            amount={{ amount: amountToLoanMax1e8, asset: asset.asset }}
+            priceAmount={{ asset: priceAmountToLoanMax1e8.asset, amount: priceAmountToLoanMax1e8.baseAmount }}
             assets={selectableAssets}
             network={network}
             onChangeAsset={setAsset}
-            onChange={setAmountToSendMax1e8}
+            onChange={setAmountToLoanMax1e8}
             onBlur={reloadFeesHandler}
             showError={minAmountError}
             hasLedger={hasLedger}
@@ -1344,15 +1368,15 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
                   className="ml-10px mt-5px"
                   classNameButton="!text-gray2 dark:!text-gray2d"
                   classNameIcon={
-                    // show warn icon if maxAmountToSendMax1e8 <= 0
-                    maxAmountToSendMax1e8.gt(zeroBaseAmountMax1e8)
+                    // show warn icon if maxAmountToLoanMax1e8 <= 0
+                    maxAmountToLoanMax1e8.gt(zeroBaseAmountMax1e8)
                       ? `text-gray2 dark:text-gray2d`
                       : 'text-warning0 dark:text-warning0d'
                   }
                   size="medium"
-                  balance={{ amount: maxAmountToSendMax1e8, asset: asset.asset }}
+                  balance={{ amount: maxAmountToLoanMax1e8, asset: asset.asset }}
                   maxDollarValue={priceAmountMax1e8}
-                  onClick={() => setAmountToSendMax1e8(maxAmountToSendMax1e8)}
+                  onClick={() => setAmountToLoanMax1e8(maxAmountToLoanMax1e8)}
                   maxInfoText={maxBalanceInfoTxt}
                 />
                 {minAmountError && renderMinAmount}
@@ -1363,12 +1387,12 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
           <div className="flex flex-col">
             <AssetInput
               className="w-full"
-              amount={{ amount: amountToSendMax1e8, asset: asset.asset }}
-              priceAmount={{ asset: priceAmountToSendMax1e8.asset, amount: priceAmountToSendMax1e8.baseAmount }}
+              amount={{ amount: amountToLoanMax1e8, asset: asset.asset }}
+              priceAmount={{ asset: priceAmountToLoanMax1e8.asset, amount: priceAmountToLoanMax1e8.baseAmount }}
               assets={selectableAssets}
               network={network}
               onChangeAsset={setAsset}
-              onChange={setAmountToSendMax1e8}
+              onChange={setAmountToLoanMax1e8}
               onBlur={reloadFeesHandler}
               showError={minAmountError}
               hasLedger={hasLedger}
@@ -1380,15 +1404,15 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
                     className="ml-10px mt-5px"
                     classNameButton="!text-gray2 dark:!text-gray2d"
                     classNameIcon={
-                      // show warn icon if maxAmountToSendMax1e8 <= 0
-                      maxAmountToSendMax1e8.gt(zeroBaseAmountMax1e8)
+                      // show warn icon if maxAmountToLoanMax1e8 <= 0
+                      maxAmountToLoanMax1e8.gt(zeroBaseAmountMax1e8)
                         ? `text-gray2 dark:text-gray2d`
                         : 'text-warning0 dark:text-warning0d'
                     }
                     size="medium"
-                    balance={{ amount: maxAmountToSendMax1e8, asset: asset.asset }}
+                    balance={{ amount: maxAmountToLoanMax1e8, asset: asset.asset }}
                     maxDollarValue={priceAmountMax1e8}
-                    onClick={() => setAmountToSendMax1e8(maxAmountToSendMax1e8)}
+                    onClick={() => setAmountToLoanMax1e8(maxAmountToLoanMax1e8)}
                     maxInfoText={maxBalanceInfoTxt}
                   />
                   {minAmountError && renderMinAmount}
@@ -1568,7 +1592,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
                       {walletBalancesLoading
                         ? loadingString
                         : formatAssetAmountCurrency({
-                            amount: baseToAsset(maxAmountToSendMax1e8),
+                            amount: baseToAsset(maxAmountToLoanMax1e8),
                             asset: asset.asset,
                             decimal: 8,
                             trimZeros: true

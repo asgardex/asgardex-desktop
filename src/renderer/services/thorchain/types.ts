@@ -204,6 +204,54 @@ export type SaverProvider = {
 export type SaverProviderRD = RD.RemoteData<Error, SaverProvider>
 export type SaverProviderLD = LiveData<Error, SaverProvider>
 
+export type BlockInformation = {
+  inboundConfirmationBlocks?: number
+  inboundConfirmationSeconds?: number
+  outboundDelayBlocks?: number
+  outbondDelaySeconds?: number
+}
+
+export type QuoteFees = {
+  asset: string
+  liquidity?: string
+  outbound?: string
+  total_bps?: number
+}
+
+export type LoanOpenQuote = {
+  inboundAddress: string
+  expectedWaitTime: BlockInformation
+  fees: QuoteFees
+  slippageBps?: number
+  streamingSlippageBps?: number
+  router?: string
+  expiry: number
+  warning: string
+  notes: string
+  dustThreshold?: string
+  recommendedMinAmountIn?: BaseAmount
+  memo?: string
+  expectedAmountOut: BaseAmount
+  expectedCollateralizationRatio: string
+  expectedCollateralDeposited: string
+  expectedDebtIssued: string
+  totalOpenLoanSeconds: number
+}
+
+export type LoanOpenQuoteRD = RD.RemoteData<Error, LoanOpenQuote>
+export type LoanOpenQuoteLD = LiveData<Error, LoanOpenQuote>
+
+export type LoanOpenParams = {
+  asset: Asset
+  amount: BaseAmount
+  targetAsset: Asset
+  destination: string
+  height?: number
+  minOut?: string
+  affiliateBps?: number
+  affiliate?: string
+}
+
 export type BorrowerProvider = {
   owner: Address
   asset: Asset
@@ -220,6 +268,29 @@ export type BorrowerProvider = {
 
 export type BorrowerProviderRD = RD.RemoteData<Error, BorrowerProvider>
 export type BorrowerProviderLD = LiveData<Error, BorrowerProvider>
+
+export type ThorchainPool = {
+  asset: Asset
+  shortCode: string
+  status: string
+  decimals: number
+  pendingInboundAsset: BaseAmount
+  pendingInboundRune: BaseAmount
+  balanceAsset: BaseAmount
+  balanceRune: BaseAmount
+  poolUnits: string
+  lpUnits: string
+  synthUnits: string
+  synthSupply: BaseAmount
+  saversDepth: BaseAmount
+  saversUnits: string
+  loanCollateral: BaseAmount
+  loanCollateralRemaining: BaseAmount
+  loanCr: number
+}
+
+export type ThorchainPoolRD = RD.RemoteData<Error, ThorchainPool>
+export type ThorchainPoolLD = LiveData<Error, ThorchainPool>
 
 export type TxStages = {
   inboundObserved: {
