@@ -3,7 +3,7 @@
 ## Updates/Fixes
 
 - Fix addresss indexing issue with ledger [#300](https://github.com/asgardex/asgardex-desktop/pull/300)
-- Fix BSC.USDT not showing [#303](https://github.com/asgardex/asgardex-desktop/pull/301)
+- Fix BSC.USDT not showing [#303](https://github.com/asgardex/asgardex-desktop/pull/304)
 
 # 1.21.9 (2024-06-15)
 
