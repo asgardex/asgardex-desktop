@@ -599,6 +599,7 @@ export type Messages = CommonMessages &
   SwapMessages &
   DepositMessages &
   SaversMessages &
+  LoanMessages &
   LedgerMessages &
   BondsMessages &
   PoolSharesMessage &

@@ -229,8 +229,8 @@ export type LoanOpenQuote = {
   warning: string
   notes: string
   dustThreshold?: string
-  recommendedMinAmountIn?: BaseAmount
-  memo?: string
+  recommendedMinAmountIn: BaseAmount
+  memo: string
   expectedAmountOut: BaseAmount
   expectedCollateralizationRatio: string
   expectedCollateralDeposited: string
@@ -250,6 +250,13 @@ export type LoanOpenParams = {
   minOut?: string
   affiliateBps?: number
   affiliate?: string
+}
+export type LoanRepayParams = {
+  poolAddress: string
+  asset: Asset
+  sender: string
+  memo: string
+  network: Network
 }
 
 export type BorrowerProvider = {

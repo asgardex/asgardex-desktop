@@ -39,7 +39,7 @@ import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { usePricePool } from '../../hooks/usePricePool'
 import { usePrivateData } from '../../hooks/usePrivateData'
 import * as poolsRoutes from '../../routes/pools'
-import { LoanRouteParams } from '../../routes/pools/lending'
+import { LoanRouteParams, LoanRouteTargetWalletType } from '../../routes/pools/lending'
 import * as lendingRoutes from '../../routes/pools/lending'
 import { saverDepositFee$ as loanOpenFee$ } from '../../services/chain'
 import { saverWithdrawFee$ as loanRepayFee$ } from '../../services/chain/fees'
@@ -71,12 +71,18 @@ const eqUpdateAddress = Eq.struct<UpdateAddress>({
   network: eqNetwork
 })
 
-type Props = { asset: Asset; walletType: WalletType }
+type Props = {
+  collateralAsset: Asset
+  collateralWalletType: WalletType
+  borrowAsset: Asset
+  borrowWalletType: WalletType
+}
 
 const Content: React.FC<Props> = (props): JSX.Element => {
-  const { asset, walletType } = props
+  const { collateralAsset, collateralWalletType, borrowAsset, borrowWalletType } = props
 
-  const { chain } = asset
+  const { chain: collateralAssetChain } = collateralAsset
+  const { chain: borrowAssetChain } = borrowAsset
 
   const intl = useIntl()
 
@@ -103,7 +109,8 @@ const Content: React.FC<Props> = (props): JSX.Element => {
     saverWithdraw$: loanRepay$
   } = useChainContext()
 
-  const { approveERC20Token$, isApprovedERC20Token$, approveFee$, reloadApproveFee } = useEvmContext(chain)
+  const { approveERC20Token$, isApprovedERC20Token$, approveFee$, reloadApproveFee } =
+    useEvmContext(collateralAssetChain)
   const {
     balancesState$,
     reloadBalancesByChain,
@@ -131,15 +138,23 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   useEffect(() => {
     // Asset is the asset of the pool we need to interact with
     // Store it in global state, all depending streams will be updated then
-    setSelectedPoolAsset(O.some(asset))
+    setSelectedPoolAsset(O.some(collateralAsset))
 
     // Reset selectedPoolAsset on view's unmount to avoid effects with depending streams
     return () => {
       setSelectedPoolAsset(O.none)
     }
-  }, [asset, setSelectedPoolAsset])
+  }, [collateralAsset, setSelectedPoolAsset])
 
-  const assetDecimal$: AssetWithDecimalLD = useMemo(() => assetWithDecimal$(asset), [assetWithDecimal$, asset])
+  const collateralAssetDecimal$: AssetWithDecimalLD = useMemo(
+    () => assetWithDecimal$(collateralAsset),
+    [assetWithDecimal$, collateralAsset]
+  )
+
+  const borrowAssetDecimal$: AssetWithDecimalLD = useMemo(
+    () => assetWithDecimal$(borrowAsset),
+    [assetWithDecimal$, borrowAsset]
+  )
 
   const [balancesState] = useObservableState(
     () =>
@@ -150,40 +165,32 @@ const Content: React.FC<Props> = (props): JSX.Element => {
     INITIAL_BALANCES_STATE
   )
 
-  const [oTargetKeystoreAddress, updateTargetKeystoreAddress$] = useObservableState<O.Option<Address>, Chain>(
-    (targetChain$) =>
+  const collateralAssetRD: AssetWithDecimalRD = useObservableState(collateralAssetDecimal$, RD.initial)
+  const borrowAssetRD: AssetWithDecimalRD = useObservableState(borrowAssetDecimal$, RD.initial)
+
+  const [collateralAddressRD, updateCollateralAddress$] = useObservableState<
+    RD.RemoteData<Error, Address>,
+    UpdateAddress
+  >(
+    (updated$) =>
       FP.pipe(
-        targetChain$,
-        RxOp.distinctUntilChanged(eqChain.equals),
-        RxOp.switchMap(addressByChain$),
-        RxOp.map(addressFromOptionalWalletAddress)
+        updated$,
+        RxOp.debounceTime(300),
+        RxOp.distinctUntilChanged(eqUpdateAddress.equals),
+        RxOp.switchMap(({ walletType, chain }) =>
+          isLedgerWallet(walletType)
+            ? FP.pipe(getLedgerAddress$(chain), RxOp.map(O.map(ledgerAddressToWalletAddress)))
+            : addressByChain$(collateralAssetChain)
+        ),
+        RxOp.map(addressFromOptionalWalletAddress),
+        RxOp.map((oAddress) =>
+          RD.fromOption(oAddress, () => new Error(`Could not get address for ${collateralWalletType}`))
+        )
       ),
-    O.none
+    RD.initial
   )
 
-  useEffect(() => {
-    updateTargetKeystoreAddress$(targetChain)
-  }, [targetChain, updateTargetKeystoreAddress$])
-
-  useEffect(() => {
-    updateSourceLedgerAddress$({ chain: sourceChain, network })
-  }, [network, sourceChain, updateSourceLedgerAddress$])
-
-  const isTargetLedger = FP.pipe(
-    oTargetWalletType,
-    O.map(isLedgerWallet),
-    O.getOrElse(() => false)
-  )
-  const oRecipient: O.Option<Address> = FP.pipe(
-    oRecipientAddress,
-    O.fromPredicate(O.isSome),
-    O.flatten,
-    O.alt(() => (isTargetLedger ? oTargetLedgerAddress : oTargetKeystoreAddress))
-  )
-
-  const assetRD: AssetWithDecimalRD = useObservableState(assetDecimal$, RD.initial)
-
-  const [addressRD, updateAddress$] = useObservableState<RD.RemoteData<Error, Address>, UpdateAddress>(
+  const [borrowAddressRD, updateBorrowAddress$] = useObservableState<RD.RemoteData<Error, Address>, UpdateAddress>(
     (updated$) =>
       FP.pipe(
         updated$,
@@ -195,14 +202,26 @@ const Content: React.FC<Props> = (props): JSX.Element => {
             : addressByChain$(chain)
         ),
         RxOp.map(addressFromOptionalWalletAddress),
-        RxOp.map((oAddress) => RD.fromOption(oAddress, () => new Error(`Could not get address for ${walletType}`)))
+        RxOp.map((oAddress) =>
+          RD.fromOption(oAddress, () => new Error(`Could not get address for ${borrowWalletType}`))
+        )
       ),
     RD.initial
   )
 
   useEffect(() => {
-    updateAddress$({ chain, network, walletType })
-  }, [network, walletType, updateAddress$, chain])
+    updateCollateralAddress$({ chain: collateralAssetChain, network, walletType: collateralWalletType })
+    updateBorrowAddress$({ chain: borrowAssetChain, network, walletType: borrowWalletType })
+  }, [
+    network,
+    updateBorrowAddress$,
+    collateralAssetChain,
+    collateralWalletType,
+    updateCollateralAddress$,
+    borrowAsset,
+    borrowWalletType,
+    borrowAssetChain
+  ])
 
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(THORChain))
 
@@ -211,10 +230,10 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   const poolsStateRD = useObservableState(poolsState$, RD.initial)
 
   const reloadHandler = useCallback(() => {
-    const lazyReload = reloadBalancesByChain(chain)
+    const lazyReload = reloadBalancesByChain(collateralAssetChain)
     lazyReload()
     reloadBorrowerProvider()
-  }, [chain, reloadBalancesByChain, reloadBorrowerProvider])
+  }, [collateralAssetChain, reloadBalancesByChain, reloadBorrowerProvider])
 
   const renderError = useCallback(
     (e: Error) => (
@@ -233,22 +252,66 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   )
 
   const onChangeAssetHandler = useCallback(
-    ({ source, sourceWalletType }: { source: Asset; sourceWalletType: WalletType }) => {
+    ({
+      collateral,
+      collateralWalletType,
+      borrow,
+      borrowWalletType: oTargetWalletType,
+      recipientAddress: oRecipientAddress
+    }: {
+      collateral: Asset
+      borrow: Asset
+      collateralWalletType: WalletType
+      borrowWalletType: O.Option<WalletType>
+      recipientAddress: O.Option<Address>
+    }) => {
+      const borrowWalletType = FP.pipe(
+        oTargetWalletType,
+        O.getOrElse<LoanRouteTargetWalletType>(() => 'custom')
+      )
+      const recipient = FP.pipe(oRecipientAddress, O.toUndefined)
+
       const path = lendingRoutes.borrow.path({
-        asset: assetToString(source),
-        walletType: sourceWalletType
+        asset: assetToString(collateral),
+        walletType: collateralWalletType,
+        borrowAsset: assetToString(borrow),
+        borrowWalletType: borrowWalletType,
+        recipient
       })
       navigate(path, { replace: true })
     },
     [navigate]
   )
 
+  const onChangeAssetRepayHandler = useCallback(
+    ({ source, sourceWalletType }: { source: Asset; sourceWalletType: WalletType }) => {
+      const path = lendingRoutes.borrow.path({
+        asset: assetToString(source),
+        walletType: sourceWalletType,
+        borrowAsset: assetToString(borrowAsset),
+        borrowWalletType
+      })
+      navigate(path, { replace: true })
+    },
+    [borrowAsset, borrowWalletType, navigate]
+  )
+
   const matchBorrowRoute = useMatch({
-    path: lendingRoutes.borrow.path({ asset: assetToString(asset), walletType }),
+    path: lendingRoutes.borrow.path({
+      asset: assetToString(collateralAsset),
+      walletType: collateralWalletType,
+      borrowAsset: assetToString(borrowAsset),
+      borrowWalletType: borrowWalletType
+    }),
     end: false
   })
   const matchRepayRoute = useMatch({
-    path: lendingRoutes.repay.path({ asset: assetToString(asset), walletType }),
+    path: lendingRoutes.repay.path({
+      asset: assetToString(borrowAsset),
+      walletType: borrowWalletType,
+      borrowAsset: assetToString(borrowAsset),
+      borrowWalletType: borrowWalletType
+    }),
     end: false
   })
 
@@ -310,12 +373,12 @@ const Content: React.FC<Props> = (props): JSX.Element => {
 
       <div className="flex h-screen flex-col items-center justify-center ">
         {FP.pipe(
-          sequenceTRD(poolsStateRD, assetRD, addressRD),
+          sequenceTRD(poolsStateRD, collateralAssetRD, collateralAddressRD, borrowAddressRD, borrowAssetRD),
           RD.fold(
             () => renderLoadingContent,
             () => renderLoadingContent,
             renderError,
-            ([{ poolDetails, assetDetails }, assetWD, address]) => {
+            ([{ poolDetails, assetDetails }, assetWD, collateralAddress, borrowAddress, borrowAssetWD]) => {
               const poolAssets: Asset[] = FP.pipe(
                 assetDetails,
                 A.map(({ asset }) => asset)
@@ -323,11 +386,8 @@ const Content: React.FC<Props> = (props): JSX.Element => {
               const disableAllPoolActions = (chain: Chain) =>
                 PoolHelpers.disableAllActions({ chain, haltedChains, mimirHalt })
 
-              const disableTradingPoolActions = (chain: Chain) =>
-                PoolHelpers.disableTradingActions({ chain, haltedChains, mimirHalt })
-
               const checkDisableLoanAction = () => {
-                return disableAllPoolActions(chain) || disableTradingPoolActions(chain)
+                return disableAllPoolActions(collateralAssetChain)
               }
               const getTabContentByIndex = (index: number) => {
                 switch (index) {
@@ -336,20 +396,22 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                       <Borrow
                         keystore={keystore}
                         validatePassword$={validatePassword$}
-                        getLoanQuoteOpen={getLoanQuoteOpen$}
+                        getLoanQuoteOpen$={getLoanQuoteOpen$}
                         reloadLoanQuoteOpen={reloadLoanQuoteOpen}
                         goToTransaction={openExplorerTxUrl}
                         getExplorerTxUrl={getExplorerTxUrl}
-                        sourceWalletType={walletType}
                         poolDetails={poolDetails}
                         poolAssets={poolAssets}
                         walletBalances={balancesState}
                         network={network}
-                        asset={new CryptoAmount(baseAmount(0, assetWD.decimal), assetWD.asset)}
+                        collateralAsset={assetWD}
+                        borrowAsset={borrowAssetWD}
                         pricePool={pricePool}
                         fees$={loanOpenFee$}
-                        address={address}
-                        recipientAddress={oRecipient}
+                        collateralWalletType={collateralWalletType}
+                        borrowWalletType={O.some(borrowWalletType)}
+                        collateralAddress={collateralAddress}
+                        borrowAddress={borrowAddress}
                         reloadBalances={reloadHandler}
                         approveFee$={approveFee$}
                         reloadApproveFee={reloadApproveFee}
@@ -375,11 +437,12 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         network={network}
                         pricePool={pricePool}
                         fees$={loanRepayFee$}
-                        address={address}
+                        address={collateralAddress}
                         validatePassword$={validatePassword$}
                         goToTransaction={openExplorerTxUrl}
                         getExplorerTxUrl={getExplorerTxUrl}
-                        sourceWalletType={walletType}
+                        sourceWalletType={collateralWalletType}
+                        // borrowWalletType={borrowWalletType}
                         poolAssets={poolAssets}
                         reloadBalances={reloadHandler}
                         approveFee$={approveFee$}
@@ -391,7 +454,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         poolAddress={oPoolAddress}
                         loanRepay$={loanRepay$}
                         hidePrivateData={isPrivate}
-                        onChangeAsset={onChangeAssetHandler}
+                        onChangeAsset={onChangeAssetRepayHandler}
                         borrowerPosition={getBorrowerProvider$}
                         disableLoanAction={checkDisableLoanAction()}
                         dex={dex}
@@ -410,10 +473,24 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         onChange={(index) => {
                           switch (index) {
                             case TabIndex.BORROW:
-                              navigate(lendingRoutes.borrow.path({ asset: assetToString(asset), walletType }))
+                              navigate(
+                                lendingRoutes.borrow.path({
+                                  asset: assetToString(collateralAsset),
+                                  walletType: collateralWalletType,
+                                  borrowAsset: assetToString(borrowAsset),
+                                  borrowWalletType: borrowWalletType
+                                })
+                              )
                               break
                             case TabIndex.REPAY:
-                              navigate(lendingRoutes.repay.path({ asset: assetToString(asset), walletType }))
+                              navigate(
+                                lendingRoutes.repay.path({
+                                  asset: assetToString(collateralAsset),
+                                  walletType: collateralWalletType,
+                                  borrowAsset: assetToString(borrowAsset),
+                                  borrowWalletType: borrowWalletType
+                                })
+                              )
                               break
                             default:
                             // nothing to do
@@ -466,7 +543,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                       </Tab.Group>
                     </div>
                     <div className="min-h-auto ml-0 mt-20px flex w-full bg-bg0 dark:bg-bg0d xl:ml-20px xl:mt-0 xl:min-h-full xl:w-1/3">
-                      <LoansDetailsView asset={asset} address={address} poolDetails={poolDetails} />
+                      <LoansDetailsView asset={collateralAsset} address={collateralAddress} poolDetails={poolDetails} />
                     </div>
                   </div>
                 </div>
@@ -480,27 +557,35 @@ const Content: React.FC<Props> = (props): JSX.Element => {
 }
 
 export const LoansView: React.FC = (): JSX.Element => {
-  const { asset, walletType } = useParams<LoanRouteParams>()
+  const { asset: collateralAsset, walletType, borrowAsset } = useParams<LoanRouteParams>()
 
   const oWalletType = useMemo(() => FP.pipe(walletType, O.fromPredicate(isWalletType)), [walletType])
-  const oAsset: O.Option<Asset> = useMemo(() => getAssetFromNullableString(asset), [asset])
+  const oAsset: O.Option<Asset> = useMemo(() => getAssetFromNullableString(collateralAsset), [collateralAsset])
+  const oBorrowAsset: O.Option<Asset> = useMemo(() => getAssetFromNullableString(borrowAsset), [borrowAsset])
 
   const intl = useIntl()
 
   return FP.pipe(
-    sequenceTOption(oAsset, oWalletType),
+    sequenceTOption(oAsset, oWalletType, oBorrowAsset),
     O.fold(
       () => (
         <ErrorView
           title={intl.formatMessage(
             { id: 'routes.invalid.params' },
             {
-              params: `asset: ${asset}, walletType: ${walletType}`
+              params: `asset: ${collateralAsset}, walletType: ${walletType}`
             }
           )}
         />
       ),
-      ([asset, walletType]) => <Content asset={asset} walletType={walletType} />
+      ([collateralAsset, collateralWalletType, borrowAsset]) => (
+        <Content
+          collateralAsset={collateralAsset}
+          collateralWalletType={collateralWalletType}
+          borrowAsset={borrowAsset}
+          borrowWalletType={collateralWalletType}
+        />
+      )
     )
   )
 }

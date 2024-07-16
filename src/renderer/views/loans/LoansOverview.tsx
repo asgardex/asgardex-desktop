@@ -23,7 +23,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { FlatButton } from '../../components/uielements/button'
 import { Table } from '../../components/uielements/table'
-import { DEFAULT_WALLET_TYPE } from '../../const'
+import { AssetUSDC, DEFAULT_WALLET_TYPE } from '../../const'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { ordBaseAmount, ordBigNumber } from '../../helpers/fp/ord'
@@ -198,7 +198,14 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
       const onClickHandler = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         event.preventDefault()
         event.stopPropagation()
-        navigate(lendingRoutes.borrow.path({ asset: assetToString(asset), walletType: DEFAULT_WALLET_TYPE }))
+        navigate(
+          lendingRoutes.borrow.path({
+            asset: assetToString(asset),
+            walletType: DEFAULT_WALLET_TYPE,
+            borrowAsset: assetToString(AssetUSDC), //tobefixed
+            borrowWalletType: DEFAULT_WALLET_TYPE
+          })
+        )
       }
 
       return (

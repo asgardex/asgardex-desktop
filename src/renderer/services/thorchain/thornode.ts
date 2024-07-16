@@ -695,7 +695,10 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
             outboundDelayBlocks: outbound_delay_blocks,
             outbondDelaySeconds: outbound_delay_seconds
           }
-          const recommendedMinAmountIn = baseAmount(recommended_min_amount_in, THORCHAIN_DECIMAL)
+          const recommendedMinAmountIn = baseAmount(
+            recommended_min_amount_in ? recommended_min_amount_in : 0,
+            THORCHAIN_DECIMAL
+          )
           const expectedAmountOut = baseAmount(expected_amount_out, THORCHAIN_DECIMAL)
 
           return {
@@ -710,7 +713,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
             notes,
             dustThreshold: dust_threshold,
             recommendedMinAmountIn,
-            memo,
+            memo: memo ? memo : '',
             expectedAmountOut,
             expectedCollateralizationRatio: expected_collateralization_ratio,
             expectedCollateralDeposited: expected_collateral_deposited,

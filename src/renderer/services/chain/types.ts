@@ -377,6 +377,10 @@ export type SaverWithdrawParams = {
 
 export type SaverWithdrawStateHandler = (p: SaverWithdrawParams) => WithdrawState$
 
+export type RepayLoanParams = {}
+
+export type RepayLoanStateHandler = (p: SaverWithdrawParams) => WithdrawState$
+
 /**
  * State to reflect status for sending
  *

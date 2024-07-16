@@ -22,7 +22,6 @@ import {
   assetFromString,
   CryptoAmount
 } from '@xchainjs/xchain-util'
-import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
@@ -99,7 +98,7 @@ import {
   TxHashRD
 } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
-import { AssetWithAmount } from '../../types/asgardex'
+import { AssetWithAmount, AssetWithDecimal } from '../../types/asgardex'
 import { PricePool } from '../../views/pools/Pools.types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
 import { TxModal } from '../modal/tx'
@@ -119,19 +118,42 @@ export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
 
 export type BorrowProps = {
   keystore: KeystoreState
-  getLoanQuoteOpen: (asset: Asset, amount: BaseAmount, targetAsset: Asset, destination: string, minOut?: string, affiliateBps?: number, affiliate?: string, height?: number) => LoanOpenQuoteLD
+  getLoanQuoteOpen$: (
+    asset: Asset,
+    amount: BaseAmount,
+    targetAsset: Asset,
+    destination: string,
+    minOut?: string,
+    affiliateBps?: number,
+    affiliate?: string,
+    height?: number
+  ) => LoanOpenQuoteLD
   reloadLoanQuoteOpen: FP.Lazy<void>
   poolAssets: Asset[]
   poolDetails: PoolDetails
-  asset: CryptoAmount
-  address: Address
-  recipientAddress: O.Option<Address>,
+  collateralAsset: AssetWithDecimal
+  borrowAsset: AssetWithDecimal
+  collateralAddress: Address
+  borrowAddress: Address
   network: Network
   pricePool: PricePool
   poolAddress: O.Option<PoolAddress>
   fees$: BorrowerDepositFeesHandler
-  sourceWalletType: WalletType
-  onChangeAsset: ({ source, sourceWalletType }: { source: Asset; sourceWalletType: WalletType }) => void
+  collateralWalletType: WalletType
+  borrowWalletType: O.Option<WalletType>
+  onChangeAsset: ({
+    collateral,
+    collateralWalletType,
+    borrow,
+    borrowWalletType,
+    recipientAddress
+  }: {
+    collateral: Asset
+    borrow: Asset
+    collateralWalletType: WalletType
+    borrowWalletType: O.Option<WalletType>
+    recipientAddress: O.Option<Address>
+  }) => void
   walletBalances: Pick<BalancesState, 'balances' | 'loading'>
   borrowDeposit$: BorrowerDepositStateHandler
   goToTransaction: OpenExplorerTxUrl
@@ -152,11 +174,14 @@ export type BorrowProps = {
 export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   const {
     keystore,
-    getLoanQuoteOpen,
-    reloadLoanQuoteOpen,
+    getLoanQuoteOpen$,
+    // reloadLoanQuoteOpen,
     poolDetails,
-    asset,
-    sourceWalletType: initialSourceWalletType,
+    collateralAsset,
+    collateralWalletType: initialSourceWalletType,
+    borrowAsset,
+    borrowWalletType: oInitialBorrowWalletType,
+    borrowAddress,
     walletBalances,
     network,
     pricePool,
@@ -183,10 +208,17 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
 
   const [oLoanQuote, setLoanQuote] = useState<O.Option<LoanOpenQuote>>(O.none)
 
-  const { chain: sourceChain } = asset.asset
+  const [creditRatio, setCreditRatio] = useState<number>(50)
+
+  const { chain: sourceChain } = collateralAsset.asset
 
   const lockedWallet: boolean = useMemo(() => isLocked(keystore) || !hasImportedKeystore(keystore), [keystore])
 
+  const [oBorrowWalletType, setBorrowWalletType] = useState<O.Option<WalletType>>(oInitialBorrowWalletType)
+
+  useEffect(() => {
+    setBorrowWalletType(oInitialBorrowWalletType)
+  }, [oInitialBorrowWalletType])
   const useLedger = isLedgerWallet(initialSourceWalletType)
 
   // Deposit start time
@@ -216,6 +248,18 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   }, [poolDetails])
 
   /**
+   * Selectable source assets to loan.
+   * Based on loan depth
+   */
+  const selectableTargetAssets: Asset[] = useMemo(() => {
+    const result = FP.pipe(
+      poolDetails,
+      A.filterMap(({ asset: assetString }) => O.fromNullable(assetFromString(assetString)))
+    )
+    return result
+  }, [poolDetails])
+
+  /**
    * All balances based on available assets
    */
   const allBalances: WalletBalances = useMemo(() => {
@@ -228,7 +272,10 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     return balances
   }, [selectableAssets, oWalletBalances])
 
-  const hasLedger = useMemo(() => hasLedgerInBalancesByAsset(asset.asset, allBalances), [asset, allBalances])
+  const hasLedger = useMemo(
+    () => hasLedgerInBalancesByAsset(collateralAsset.asset, allBalances),
+    [collateralAsset, allBalances]
+  )
 
   const sourceWalletType: WalletType = useMemo(() => (useLedger ? 'ledger' : 'keystore'), [useLedger])
 
@@ -237,11 +284,11 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     const oWalletBalances = NEA.fromArray(allBalances)
     const result = getWalletBalanceByAssetAndWalletType({
       oWalletBalances,
-      asset: asset.asset,
+      asset: collateralAsset.asset,
       walletType: sourceWalletType
     })
     return result
-  }, [asset, allBalances, sourceWalletType])
+  }, [collateralAsset, allBalances, sourceWalletType])
 
   // User balance for source asset
   const sourceAssetAmount: BaseAmount = useMemo(
@@ -249,9 +296,9 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
       FP.pipe(
         oSourceAssetWB,
         O.map(({ amount }) => amount),
-        O.getOrElse(() => baseAmount(0, asset.baseAmount.decimal))
+        O.getOrElse(() => baseAmount(0, collateralAsset.decimal))
       ),
-    [oSourceAssetWB, asset]
+    [oSourceAssetWB, collateralAsset]
   )
   /** Balance of source asset converted to <= 1e8 */
   const sourceAssetAmountMax1e8: BaseAmount = useMemo(() => max1e8BaseAmount(sourceAssetAmount), [sourceAssetAmount])
@@ -269,19 +316,22 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
           walletType: sourceWalletType
         }),
         O.map(({ amount }) => amount),
-        O.getOrElse(() => baseAmount(0, asset.baseAmount.decimal))
+        O.getOrElse(() => baseAmount(0, collateralAsset.decimal))
       ),
-    [oWalletBalances, asset, sourceChainAsset, sourceWalletType]
+    [oWalletBalances, collateralAsset, sourceChainAsset, sourceWalletType]
   )
   // *********** FEES **************
-  const zeroBorrowerFees: BorrowerDepositFees = useMemo(() => Utils.getZeroLoanDepositFees(asset.asset), [asset])
+  const zeroBorrowerFees: BorrowerDepositFees = useMemo(
+    () => Utils.getZeroLoanDepositFees(collateralAsset.asset),
+    [collateralAsset]
+  )
 
   const prevBorrowerFees = useRef<O.Option<BorrowerDepositFees>>(O.none)
 
   const [loanFeesRD] = useObservableState<BorrowerDepositFeesRD>(
     () =>
       FP.pipe(
-        fees$(asset.asset),
+        fees$(collateralAsset.asset),
         liveData.map((fees) => {
           // store every successfully loaded fees
           prevBorrowerFees.current = O.some(fees)
@@ -317,11 +367,11 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     if (lockedWallet) return assetToBase(assetAmount(10000, sourceAssetAmountMax1e8.decimal))
 
     return Utils.maxAmountToLoanMax1e8({
-      asset: asset.asset,
+      asset: collateralAsset.asset,
       balanceAmountMax1e8: sourceAssetAmountMax1e8,
       feeAmount: loanFees.asset.inFee
     })
-  }, [lockedWallet, asset, sourceAssetAmountMax1e8, loanFees])
+  }, [lockedWallet, collateralAsset, sourceAssetAmountMax1e8, loanFees])
 
   // Set amount to loan
   const setAmountToLoanMax1e8 = useCallback(
@@ -340,7 +390,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   const priceAmountToLoanMax1e8: CryptoAmount = useMemo(() => {
     const result = FP.pipe(
       PoolHelpers.getPoolPriceValue({
-        balance: { asset: asset.asset, amount: amountToLoanMax1e8 },
+        balance: { asset: collateralAsset.asset, amount: amountToLoanMax1e8 },
         poolDetails,
         pricePool
       }),
@@ -349,13 +399,13 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     )
 
     return new CryptoAmount(result.amount, result.asset)
-  }, [amountToLoanMax1e8, poolDetails, pricePool, asset])
+  }, [amountToLoanMax1e8, poolDetails, pricePool, collateralAsset])
 
   // price of amount to send
   const priceAmountMax1e8: CryptoAmount = useMemo(() => {
     const result = FP.pipe(
       PoolHelpers.getPoolPriceValue({
-        balance: { asset: asset.asset, amount: maxAmountToLoanMax1e8 },
+        balance: { asset: collateralAsset.asset, amount: maxAmountToLoanMax1e8 },
         poolDetails,
         pricePool
       }),
@@ -364,7 +414,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     )
 
     return new CryptoAmount(result.amount, result.asset)
-  }, [asset.asset, maxAmountToLoanMax1e8, poolDetails, pricePool, amountToLoanMax1e8.decimal])
+  }, [collateralAsset.asset, maxAmountToLoanMax1e8, poolDetails, pricePool, amountToLoanMax1e8.decimal])
 
   // Reccommend amount in for use later
   const reccommendedAmountIn: CryptoAmount = useMemo(
@@ -372,63 +422,53 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
       FP.pipe(
         oLoanQuote,
         O.fold(
-          () => new CryptoAmount(baseAmount(0), asset.asset), // default value if oQuote is None
-          (txDetails) => new CryptoAmount(baseAmount(txDetails.recommendedMinAmountIn), asset.asset)
+          () => new CryptoAmount(baseAmount(0), collateralAsset.asset), // default value if oQuote is None
+          (txDetails) => new CryptoAmount(txDetails.recommendedMinAmountIn, collateralAsset.asset)
         )
       ),
-    [oLoanQuote, asset]
+    [oLoanQuote, collateralAsset]
   )
 
-  // Liquidity fee in for use later
-  const liquidityFee: CryptoAmount = useMemo(
+  // Reccommend amount in for use later
+  const amountToBorrow: CryptoAmount = useMemo(
     () =>
       FP.pipe(
         oLoanQuote,
         O.fold(
-          () => new CryptoAmount(baseAmount(0), asset.asset), // default value if oQuote is None
-          (txDetails) => txDetails.fees.liquidity // already of type cryptoAmount
+          () => new CryptoAmount(baseAmount(0), collateralAsset.asset), // default value if oQuote is None
+          (txDetails) => new CryptoAmount(txDetails.expectedAmountOut, collateralAsset.asset)
         )
       ),
-    [oLoanQuote, asset]
+    [oLoanQuote, collateralAsset]
   )
 
-  const liquidityPriceValue: CryptoAmount = useMemo(() => {
+  // Expected debt issued
+  const debtAmount: CryptoAmount = useMemo(
+    () =>
+      FP.pipe(
+        oLoanQuote,
+        O.fold(
+          () => new CryptoAmount(baseAmount(0), collateralAsset.asset), // default value if oQuote is None
+          (txDetails) => new CryptoAmount(baseAmount(txDetails.expectedDebtIssued), collateralAsset.asset)
+        )
+      ),
+    [oLoanQuote, collateralAsset]
+  )
+
+  // price of amount to send
+  const priceAmountToBorrow: CryptoAmount = useMemo(() => {
     const result = FP.pipe(
       PoolHelpers.getPoolPriceValue({
-        balance: { asset: asset.asset, amount: liquidityFee.baseAmount },
+        balance: { asset: amountToBorrow.asset, amount: amountToBorrow.baseAmount },
         poolDetails,
         pricePool
       }),
-      O.getOrElse(() => baseAmount(0, liquidityFee.baseAmount.decimal)),
+      O.getOrElse(() => baseAmount(0, amountToBorrow.baseAmount.decimal)),
       (amount) => ({ asset: pricePool.asset, amount })
     )
 
     return new CryptoAmount(result.amount, result.asset)
-  }, [asset.asset, liquidityFee.baseAmount, poolDetails, pricePool])
-
-  const formatAmount = (cryptoAmount: CryptoAmount) =>
-    formatAssetAmountCurrency({
-      amount: cryptoAmount.assetAmount,
-      asset: cryptoAmount.asset,
-      decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
-      trimZeros: !isUSDAsset(cryptoAmount.asset)
-    })
-
-  const priceLiquidityFeeLabel = useMemo(() => {
-    const getFormattedFee = () => (liquidityFee ? formatAmount(liquidityFee) : '')
-
-    const getFormattedPrice = () =>
-      FP.pipe(
-        O.fromNullable(liquidityPriceValue),
-        O.map((cryptoAmount: CryptoAmount) => formatAmount(cryptoAmount)),
-        O.getOrElse(() => '')
-      )
-
-    const fee = getFormattedFee()
-    const price = getFormattedPrice()
-
-    return price ? `${price} (${fee})` : fee
-  }, [liquidityFee, liquidityPriceValue])
+  }, [amountToBorrow.asset, amountToBorrow.baseAmount, poolDetails, pricePool])
 
   const oChainAssetBalance: O.Option<BaseAmount> = useMemo(() => {
     const chainAsset = getChainAsset(sourceChain)
@@ -459,17 +499,17 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     //tobeFixed
     switch (sourceChain) {
       case ETHChain:
-        return isEthAsset(asset.asset) ? O.some(false) : O.some(isEthTokenAsset(asset.asset))
+        return isEthAsset(collateralAsset.asset) ? O.some(false) : O.some(isEthTokenAsset(collateralAsset.asset))
       case AVAXChain:
-        return isAvaxAsset(asset.asset) ? O.some(false) : O.some(isAvaxTokenAsset(asset.asset))
+        return isAvaxAsset(collateralAsset.asset) ? O.some(false) : O.some(isAvaxTokenAsset(collateralAsset.asset))
       case BSCChain:
-        return isBscAsset(asset.asset) ? O.some(false) : O.some(isBscTokenAsset(asset.asset))
+        return isBscAsset(collateralAsset.asset) ? O.some(false) : O.some(isBscTokenAsset(collateralAsset.asset))
       case ARBChain:
-        return isAethAsset(asset.asset) ? O.some(false) : O.some(isArbTokenAsset(asset.asset))
+        return isAethAsset(collateralAsset.asset) ? O.some(false) : O.some(isArbTokenAsset(collateralAsset.asset))
       default:
         return O.none
     }
-  }, [keystore, sourceChain, asset])
+  }, [keystore, sourceChain, collateralAsset])
 
   const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
     const oRouterAddress: O.Option<Address> = FP.pipe(
@@ -480,11 +520,11 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     const oTokenAddress: O.Option<string> = (() => {
       switch (sourceChain) {
         case ETHChain:
-          return getEthTokenAddress(asset.asset)
+          return getEthTokenAddress(collateralAsset.asset)
         case AVAXChain:
-          return getAvaxTokenAddress(asset.asset)
+          return getAvaxTokenAddress(collateralAsset.asset)
         case BSCChain:
-          return getBscTokenAddress(asset.asset)
+          return getBscTokenAddress(collateralAsset.asset)
         default:
           return O.none
       }
@@ -508,7 +548,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
         walletType
       }))
     )
-  }, [needApprovement, network, oPoolAddress, oSourceAssetWB, asset.asset, sourceChain])
+  }, [needApprovement, network, oPoolAddress, oSourceAssetWB, collateralAsset.asset, sourceChain])
   // Boolean on if amount to send is zero
   const isZeroAmountToLoan = useMemo(() => amountToLoanMax1e8.amount().isZero(), [amountToLoanMax1e8])
   const minAmountError = useMemo(() => {
@@ -563,64 +603,95 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   const oQuoteLoanOpenData: O.Option<LoanOpenParams> = useMemo(
     () =>
       FP.pipe(
-        sequenceTOption(oRecipientAddress, oSourceAssetWB),
-        O.map(([{ walletAddress }]) => {
-          const address = destinationAddress
+        sequenceTOption(O.some(borrowAddress), oSourceAssetWB),
+        O.map(([borrowAddress, { walletAddress }]) => {
+          const address = borrowAddress
           const affiliateAddress = ASGARDEX_ADDRESS === walletAddress ? undefined : ASGARDEX_THORNAME
           const affiliateBps = 0
+          const minOut = '0'
           return {
-            asset: asset.asset,
+            asset: collateralAsset.asset,
             amount: amountToLoanMax1e8,
-            targetAsset,
+            targetAsset: borrowAsset.asset,
             destination: address,
-            minOut: ,
+            minOut,
             affiliateBps,
             affiliate: affiliateAddress
           }
         })
       ),
-    [amountToLoanMax1e8, asset.asset, oSourceAssetWB]
+    [amountToLoanMax1e8, collateralAsset.asset, borrowAddress, borrowAsset, oSourceAssetWB]
   )
+
+  const hasFetched = useRef<boolean>(false)
+  const previousAmount = useRef<BaseAmount | null>(null)
 
   useEffect(() => {
     FP.pipe(
-      sequenceTOption(oQuoteLoanOpenData),
+      oQuoteLoanOpenData,
       O.fold(
         () => {
-          setLoanQuote(O.none)
+          hasFetched.current = false
         },
         (params) => {
-          // Assuming params is the data needed for getLoanQuoteOpen$
-          return getLoanQuoteOpen(...params).subscribe((loanOpenQuoteLD) => {
-            if (RD.isSuccess(loanOpenQuoteLD)) {
-              const loanQuote = loanOpenQuoteLD.value // Assuming 'value' is the correct property
-              setLoanQuote(O.some(loanQuote))
-            }
-          })
+          // Only fetch if amount has changed and is greater than 0
+          if (params.amount.lte(0) || hasFetched.current) {
+            setLoanQuote(O.none)
+          } else {
+            hasFetched.current = true
+            previousAmount.current = params.amount
+
+            getLoanQuoteOpen$(
+              params.asset,
+              params.amount,
+              params.targetAsset,
+              params.destination,
+              params.minOut,
+              params.affiliateBps,
+              params.affiliate
+            ).subscribe((loanOpenQuoteLD) => {
+              if (RD.isSuccess(loanOpenQuoteLD)) {
+                const loanQuote = loanOpenQuoteLD.value
+                setLoanQuote(O.some(loanQuote))
+              }
+            })
+          }
         }
       )
     )
-  }, [getLoanQuoteOpen, oQuoteLoanOpenData, oSourceAssetWB])
+  }, [getLoanQuoteOpen$, oLoanQuote, oQuoteLoanOpenData, oSourceAssetWB])
 
-  const setAsset = useCallback(
+  const setCollateralAsset = useCallback(
     async (asset: Asset) => {
       // delay to avoid render issues while switching
       await delay(100)
 
       onChangeAsset({
-        source: asset,
-        // back to default 'keystore' type
-        sourceWalletType: 'keystore'
+        collateral: asset,
+        collateralWalletType: 'keystore',
+        borrow: borrowAsset.asset,
+        borrowWalletType: oBorrowWalletType,
+        recipientAddress: O.some(borrowAddress)
       })
     },
-    [onChangeAsset]
+    [borrowAddress, borrowAsset.asset, oBorrowWalletType, onChangeAsset]
   )
-  // Reload balances at `onMount`
-  useEffect(() => {
-    reloadBalances()
-    reloadFees(asset.asset)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+
+  const setBorrowAsset = useCallback(
+    async (asset: Asset) => {
+      // delay to avoid render issues while switching
+      await delay(100)
+
+      onChangeAsset({
+        collateral: collateralAsset.asset,
+        collateralWalletType: 'keystore',
+        borrow: asset,
+        borrowWalletType: oBorrowWalletType,
+        recipientAddress: O.some(borrowAddress)
+      })
+    },
+    [borrowAddress, collateralAsset.asset, oBorrowWalletType, onChangeAsset]
+  )
 
   const prevApproveFee = useRef<O.Option<BaseAmount>>(O.none)
 
@@ -759,24 +830,24 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     FP.pipe(oApproveParams, O.map(reloadApproveFee))
   }, [oApproveParams, reloadApproveFee])
 
-  const reloadQuoteLoanOpenHandler = useCallback(() => {
-    FP.pipe(oQuoteLoanOpenData, O.map(reloadLoanQuoteOpen))
-  }, [reloadLoanQuoteOpen])
+  // const reloadQuoteLoanOpenHandler = useCallback(() => {
+  //   FP.pipe(oQuoteLoanOpenData, O.map(reloadLoanQuoteOpen))
+  // }, [oQuoteLoanOpenData, reloadLoanQuoteOpen])
 
   const reloadFeesHandler = useCallback(() => {
-    reloadFees(asset.asset)
-  }, [reloadFees, asset])
+    reloadFees(collateralAsset.asset)
+  }, [reloadFees, collateralAsset])
 
-  const zeroBaseAmountMax = useMemo(() => baseAmount(0, asset.baseAmount.decimal), [asset])
+  const zeroBaseAmountMax = useMemo(() => baseAmount(0, collateralAsset.decimal), [collateralAsset])
 
   const zeroBaseAmountMax1e8 = useMemo(() => max1e8BaseAmount(zeroBaseAmountMax), [zeroBaseAmountMax])
 
   const maxBalanceInfoTxt = useMemo(() => {
     const balanceLabel = formatAssetAmountCurrency({
       amount: baseToAsset(sourceAssetAmountMax1e8),
-      asset: asset.asset,
-      decimal: isUSDAsset(asset.asset) ? 2 : 8, // use 8 decimal as same we use in maxAmountToLoanMax1e8
-      trimZeros: !isUSDAsset(asset.asset)
+      asset: collateralAsset.asset,
+      decimal: isUSDAsset(collateralAsset.asset) ? 2 : 8, // use 8 decimal as same we use in maxAmountToLoanMax1e8
+      trimZeros: !isUSDAsset(collateralAsset.asset)
     })
 
     const feeLabel = FP.pipe(
@@ -793,7 +864,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     )
 
     return intl.formatMessage({ id: 'loan.info.max.balance' }, { balance: balanceLabel, fee: feeLabel })
-  }, [sourceAssetAmountMax1e8, loanFeesRD, asset, intl])
+  }, [sourceAssetAmountMax1e8, loanFeesRD, collateralAsset, intl])
 
   const resetEnteredAmounts = useCallback(() => {
     setAmountToLoanMax1e8(initialAmountToLoanMax1e8)
@@ -805,8 +876,8 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
       O.map(([poolAddress, { walletType, walletAddress, walletIndex, hdMode }, loansQuote]) => {
         const result = {
           poolAddress,
-          asset: asset.asset,
-          amount: convertBaseAmountDecimal(amountToLoanMax1e8, asset.baseAmount.decimal),
+          asset: collateralAsset.asset,
+          amount: convertBaseAmountDecimal(amountToLoanMax1e8, collateralAsset.decimal),
           memo: loansQuote.memo !== '' ? loansQuote.memo.concat(`::${ASGARDEX_THORNAME}:0`) : '', // add tracking,
           walletType,
           sender: walletAddress,
@@ -817,21 +888,49 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
         return result
       })
     )
-  }, [oPoolAddress, oSourceAssetWB, oLoanQuote, asset.asset, asset.baseAmount.decimal, amountToLoanMax1e8, dex])
+  }, [oPoolAddress, oSourceAssetWB, oLoanQuote, collateralAsset, amountToLoanMax1e8, dex])
 
   const onClickUseLedger = useCallback(
     (useLedger: boolean) => {
       const walletType: WalletType = useLedger ? 'ledger' : 'keystore'
-      onChangeAsset({ source: asset.asset, sourceWalletType: walletType })
+      onChangeAsset({
+        collateral: collateralAsset.asset,
+        collateralWalletType: walletType,
+        borrow: borrowAsset.asset,
+        borrowWalletType: oBorrowWalletType,
+        recipientAddress: O.some(borrowAddress)
+      })
       resetEnteredAmounts()
     },
-    [asset.asset, onChangeAsset, resetEnteredAmounts]
+    [borrowAddress, borrowAsset.asset, collateralAsset.asset, oBorrowWalletType, onChangeAsset, resetEnteredAmounts]
+  )
+
+  const onClickUseBorrowAssetLedger = useCallback(
+    (useLedger: boolean) => {
+      const walletType: WalletType = useLedger ? 'ledger' : 'keystore'
+      onChangeAsset({
+        collateral: collateralAsset.asset,
+        collateralWalletType: initialSourceWalletType,
+        borrow: borrowAsset.asset,
+        borrowWalletType: O.some(walletType),
+        recipientAddress: O.some(borrowAddress)
+      })
+      resetEnteredAmounts()
+    },
+    [
+      borrowAddress,
+      borrowAsset.asset,
+      collateralAsset.asset,
+      initialSourceWalletType,
+      onChangeAsset,
+      resetEnteredAmounts
+    ]
   )
 
   const txModalExtraContent = useMemo(() => {
     const stepDescriptions = [
       intl.formatMessage({ id: 'common.tx.healthCheck' }),
-      intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: asset.asset.ticker }),
+      intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: collateralAsset.asset.ticker }),
       intl.formatMessage({ id: 'common.tx.checkResult' })
     ]
     const stepDescription = FP.pipe(
@@ -850,12 +949,12 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
 
     return (
       <DepositAsset
-        source={O.some({ asset: asset.asset, amount: amountToLoanMax1e8 })}
+        source={O.some({ asset: collateralAsset.asset, amount: amountToLoanMax1e8 })}
         stepDescription={stepDescription}
         network={network}
       />
     )
-  }, [intl, asset, depositState, amountToLoanMax1e8, network])
+  }, [intl, collateralAsset, depositState, amountToLoanMax1e8, network])
 
   const onCloseTxModal = useCallback(() => {
     resetDepositState()
@@ -926,7 +1025,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
             txHash={oTxHash}
             onClick={goToTransaction}
             txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
-            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: asset.asset.ticker })}
+            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: collateralAsset.asset.ticker })}
           />
         }
         extra={txModalExtraContent}
@@ -940,7 +1039,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     goToTransaction,
     getExplorerTxUrl,
     intl,
-    asset.asset.ticker,
+    collateralAsset.asset.ticker,
     txModalExtraContent,
     sourceChain
   ])
@@ -1023,8 +1122,8 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   )
 
   const reset = useCallback(() => {
-    if (!eqOAsset.equals(prevAsset.current, O.some(asset.asset))) {
-      prevAsset.current = O.some(asset.asset)
+    if (!eqOAsset.equals(prevAsset.current, O.some(collateralAsset.asset))) {
+      prevAsset.current = O.some(collateralAsset.asset)
       // reset deposit state
       resetDepositState()
       // reset isApproved state
@@ -1034,7 +1133,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
       // reload fees
       reloadFeesHandler()
     }
-  }, [asset, reloadFeesHandler, resetApproveState, resetIsApprovedState, resetDepositState])
+  }, [collateralAsset, reloadFeesHandler, resetApproveState, resetIsApprovedState, resetDepositState])
 
   /**
    * Callback whenever assets have been changed
@@ -1042,8 +1141,8 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   useEffect(() => {
     let doReset = false
     // reset data whenever source asset has been changed
-    if (!eqOAsset.equals(prevAsset.current, O.some(asset.asset))) {
-      prevAsset.current = O.some(asset.asset)
+    if (!eqOAsset.equals(prevAsset.current, O.some(collateralAsset.asset))) {
+      prevAsset.current = O.some(collateralAsset.asset)
       doReset = true
     }
 
@@ -1052,7 +1151,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
 
     // Note: useEffect does depend on `sourceAssetProp`, `targetAssetProp` - ignore other values
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [asset.asset])
+  }, [collateralAsset.asset])
 
   type ModalState = 'deposit' | 'approve' | 'none'
   const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
@@ -1090,13 +1189,16 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
         () => <></>,
         (error) => (
           <p className="mb-20px p-0 text-center font-main text-[12px] uppercase text-error0 dark:text-error0d">
-            {intl.formatMessage({ id: 'common.approve.error' }, { asset: asset.asset.ticker, error: error.msg })}
+            {intl.formatMessage(
+              { id: 'common.approve.error' },
+              { asset: collateralAsset.asset.ticker, error: error.msg }
+            )}
           </p>
         ),
         (_) => <></>
       )
     )
-  }, [checkIsApprovedError, intl, isApprovedState, asset])
+  }, [checkIsApprovedError, intl, isApprovedState, collateralAsset])
   const disableSubmitApprove = useMemo(
     () => checkIsApprovedError || isApproveFeeError || walletBalancesLoading,
 
@@ -1111,7 +1213,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
             minAmountError ? 'dark:error-0d text-error0' : 'text-gray2 dark:text-gray2d'
           }`}>
           {`${intl.formatMessage({ id: 'common.min' })}: ${formatAssetAmountCurrency({
-            asset: asset.asset,
+            asset: collateralAsset.asset,
             amount: reccommendedAmountIn.assetAmount,
             trimZeros: true
           })}`}
@@ -1124,7 +1226,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
         />
       </div>
     ),
-    [intl, minAmountError, asset, reccommendedAmountIn]
+    [intl, minAmountError, collateralAsset, reccommendedAmountIn]
   )
 
   const renderPasswordConfirmationModal = useMemo(() => {
@@ -1167,7 +1269,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
 
     const description1 =
       // extra info for ERC20 assets only
-      isEvmChain(asset.asset.chain) && isEvmToken(asset.asset)
+      isEvmChain(collateralAsset.asset.chain) && isEvmToken(collateralAsset.asset)
         ? `${txtNeedsConnected} ${intl.formatMessage(
             {
               id: 'ledger.blindsign'
@@ -1203,7 +1305,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     showLedgerModal,
     sourceChain,
     intl,
-    asset.asset,
+    collateralAsset.asset,
     oBorrowParams,
     network,
     submitDepositTx,
@@ -1211,26 +1313,16 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     useLedger
   ])
 
-  const renderSlider = useMemo(() => {
-    const percentage = amountToLoanMax1e8
-      .amount()
-      .dividedBy(maxAmountToLoanMax1e8.amount())
-      .multipliedBy(100)
-      // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
-      .decimalPlaces(0, BigNumber.ROUND_DOWN)
-      .toNumber()
-
-    const setAmountToLoanFromPercentValue = (percents: number) => {
-      const amountFromPercentage = maxAmountToLoanMax1e8.amount().multipliedBy(percents / 100)
-      return setAmountToLoanMax1e8(baseAmount(amountFromPercentage, amountToLoanMax1e8.decimal))
+  const renderCrSlider = useMemo(() => {
+    const setCreditRatioPercentValue = (percents: number) => {
+      setCreditRatio(percents)
     }
 
     return (
       <Slider
-        key={'swap percentage slider'}
-        value={percentage}
-        onChange={setAmountToLoanFromPercentValue}
-        onAfterChange={reloadFeesHandler}
+        key={'Credit ratio slider'}
+        value={creditRatio}
+        onChange={setCreditRatioPercentValue}
         tooltipVisible
         tipFormatter={(value) => `${value}%`}
         withLabel
@@ -1238,7 +1330,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
         disabled={disableLoanAction}
       />
     )
-  }, [amountToLoanMax1e8, disableLoanAction, maxAmountToLoanMax1e8, reloadFeesHandler, setAmountToLoanMax1e8])
+  }, [creditRatio, disableLoanAction])
 
   // Price of asset IN fee
   const oPriceAssetInFee: O.Option<AssetWithAmount> = useMemo(() => {
@@ -1351,11 +1443,12 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
         <div className="flex flex-col">
           <AssetInput
             className="w-full"
-            amount={{ amount: amountToLoanMax1e8, asset: asset.asset }}
+            title={intl.formatMessage({ id: 'common.collateral' })}
+            amount={{ amount: amountToLoanMax1e8, asset: collateralAsset.asset }}
             priceAmount={{ asset: priceAmountToLoanMax1e8.asset, amount: priceAmountToLoanMax1e8.baseAmount }}
             assets={selectableAssets}
             network={network}
-            onChangeAsset={setAsset}
+            onChangeAsset={setCollateralAsset}
             onChange={setAmountToLoanMax1e8}
             onBlur={reloadFeesHandler}
             showError={minAmountError}
@@ -1374,7 +1467,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
                       : 'text-warning0 dark:text-warning0d'
                   }
                   size="medium"
-                  balance={{ amount: maxAmountToLoanMax1e8, asset: asset.asset }}
+                  balance={{ amount: maxAmountToLoanMax1e8, asset: collateralAsset.asset }}
                   maxDollarValue={priceAmountMax1e8}
                   onClick={() => setAmountToLoanMax1e8(maxAmountToLoanMax1e8)}
                   maxInfoText={maxBalanceInfoTxt}
@@ -1383,41 +1476,22 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
               </div>
             }
           />
-          <div className="w-full px-20px">{renderSlider}</div>
-          <div className="flex flex-col">
+          <div className="w-full px-20px">{renderCrSlider}</div>
+          <div className="flex flex-col pt-20px">
             <AssetInput
               className="w-full"
-              amount={{ amount: amountToLoanMax1e8, asset: asset.asset }}
-              priceAmount={{ asset: priceAmountToLoanMax1e8.asset, amount: priceAmountToLoanMax1e8.baseAmount }}
-              assets={selectableAssets}
+              title={intl.formatMessage({ id: 'common.borrow' })}
+              amount={{ amount: amountToBorrow.baseAmount, asset: borrowAsset.asset }}
+              priceAmount={{ asset: priceAmountToBorrow.asset, amount: priceAmountToBorrow.baseAmount }}
+              assets={selectableTargetAssets}
               network={network}
-              onChangeAsset={setAsset}
+              onChangeAsset={setBorrowAsset}
               onChange={setAmountToLoanMax1e8}
               onBlur={reloadFeesHandler}
               showError={minAmountError}
               hasLedger={hasLedger}
               useLedger={useLedger}
-              useLedgerHandler={onClickUseLedger}
-              extraContent={
-                <div className="flex flex-col">
-                  <MaxBalanceButton
-                    className="ml-10px mt-5px"
-                    classNameButton="!text-gray2 dark:!text-gray2d"
-                    classNameIcon={
-                      // show warn icon if maxAmountToLoanMax1e8 <= 0
-                      maxAmountToLoanMax1e8.gt(zeroBaseAmountMax1e8)
-                        ? `text-gray2 dark:text-gray2d`
-                        : 'text-warning0 dark:text-warning0d'
-                    }
-                    size="medium"
-                    balance={{ amount: maxAmountToLoanMax1e8, asset: asset.asset }}
-                    maxDollarValue={priceAmountMax1e8}
-                    onClick={() => setAmountToLoanMax1e8(maxAmountToLoanMax1e8)}
-                    maxInfoText={maxBalanceInfoTxt}
-                  />
-                  {minAmountError && renderMinAmount}
-                </div>
-              }
+              useLedgerHandler={onClickUseBorrowAssetLedger}
             />
           </div>
           <div className="flex flex-col items-center justify-between py-30px">
@@ -1427,7 +1501,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
                 className="mb-20px"
                 label={
                   checkIsApproved
-                    ? intl.formatMessage({ id: 'common.approve.checking' }, { asset: asset.asset.ticker })
+                    ? intl.formatMessage({ id: 'common.approve.checking' }, { asset: collateralAsset.asset.ticker })
                     : walletBalancesLoading
                     ? intl.formatMessage({ id: 'common.balance.loading' })
                     : undefined
@@ -1444,7 +1518,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
                     color="primary"
                     onClick={onSubmit}
                     disabled={disableSubmit}>
-                    {intl.formatMessage({ id: 'common.earn' })}
+                    {intl.formatMessage({ id: 'common.borrow' })}
                   </FlatButton>
                   {quoteError}
                 </div>
@@ -1483,6 +1557,17 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
             </BaseButton>
 
             <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
+              {/* debt */}
+              <div className="flex w-full items-center justify-between font-mainBold">
+                {intl.formatMessage({ id: 'common.debt' })}
+                <div>
+                  {formatAssetAmountCurrency({
+                    amount: debtAmount.assetAmount,
+                    asset: collateralAsset.asset,
+                    decimal: 0
+                  })}
+                </div>
+              </div>
               {/* fees */}
               <div className="flex w-full items-center justify-between font-mainBold">
                 <BaseButton
@@ -1510,10 +1595,6 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
                         decimal: 0
                       })}
                     </div>
-                  </div>
-                  <div className="flex w-full justify-between pl-10px text-[12px]">
-                    <div>{intl.formatMessage({ id: 'common.liquidity' })}</div>
-                    <div>{priceLiquidityFeeLabel}</div>
                   </div>
                 </>
               )}
@@ -1555,6 +1636,16 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
                       )}
                     </div>
                   </div>
+                  <div className="flex w-full items-center justify-between pl-10px text-[12px]">
+                    <div>{`${intl.formatMessage({ id: 'common.debt' })} ${intl.formatMessage({
+                      id: 'common.address'
+                    })}`}</div>
+                    <div className="truncate pl-20px text-[13px] normal-case leading-normal">
+                      <TooltipAddress title={borrowAddress} key="tooltip-recipient-addr">
+                        {borrowAddress}
+                      </TooltipAddress>
+                    </div>
+                  </div>
                   {/* inbound address */}
                   {FP.pipe(
                     oBorrowParams,
@@ -1593,7 +1684,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
                         ? loadingString
                         : formatAssetAmountCurrency({
                             amount: baseToAsset(maxAmountToLoanMax1e8),
-                            asset: asset.asset,
+                            asset: collateralAsset.asset,
                             decimal: 8,
                             trimZeros: true
                           })}

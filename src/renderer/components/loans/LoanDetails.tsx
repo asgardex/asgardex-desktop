@@ -54,7 +54,7 @@ export const LoanDetails: React.FC<Props> = (props): JSX.Element => {
   return hasSavings ? (
     <div className="flex w-full flex-col items-center p-20px">
       <h1 className="pb-10px pt-0 text-center font-mainSemiBold text-14 uppercase text-text2 dark:text-text2 lg:pt-[50px]">
-        {intl.formatMessage({ id: 'savers.detail.current.title' })}
+        {intl.formatMessage({ id: 'loan.detail.title' })}
       </h1>
 
       <div className="w-full border border-gray0 p-20px dark:border-gray0d">
@@ -64,7 +64,7 @@ export const LoanDetails: React.FC<Props> = (props): JSX.Element => {
         </div>
       </div>
       <h1 className="pb-10px pt-30px text-center font-mainSemiBold text-14 uppercase text-text2 dark:text-text2">
-        {intl.formatMessage({ id: 'savers.detail.redeem.title' })}
+        {intl.formatMessage({ id: 'loan.detail.debt.title' })}
       </h1>
       <div className="w-full border border-gray0 p-20px dark:border-gray0d">
         <div className="flex flex-col items-center font-main">
@@ -73,7 +73,7 @@ export const LoanDetails: React.FC<Props> = (props): JSX.Element => {
         </div>
       </div>
       <h1 className="pb-10px pt-30px text-center font-mainSemiBold text-14 uppercase text-text2 dark:text-text2">
-        {intl.formatMessage({ id: 'savers.detail.redeem.title' })}
+        {intl.formatMessage({ id: 'loan.detail.collateral.title' })}
       </h1>
       <div className="w-full border border-gray0 p-20px dark:border-gray0d">
         <div className="flex flex-col items-center font-main">
@@ -98,7 +98,7 @@ export const LoanDetails: React.FC<Props> = (props): JSX.Element => {
   ) : (
     <EmptyResult
       title={intl.formatMessage({
-        id: 'savers.noSavings'
+        id: 'loan.noLoans'
       })}
       className="h-full w-full py-50px"
     />
