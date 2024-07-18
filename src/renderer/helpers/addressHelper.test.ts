@@ -143,6 +143,7 @@ describe('helpers/addressHelper', () => {
         keystoreId: 1,
         network: Network.Mainnet,
         chain: BSCChain,
+        walletAccount: 0,
         walletIndex: 1,
         hdMode: 'default'
       },
@@ -152,6 +153,7 @@ describe('helpers/addressHelper', () => {
         keystoreId: 1,
         network: Network.Mainnet,
         chain: ETHChain,
+        walletAccount: 0,
         walletIndex: 1,
         hdMode: 'default'
       }

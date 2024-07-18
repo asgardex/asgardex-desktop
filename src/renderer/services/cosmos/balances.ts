@@ -21,11 +21,13 @@ const reloadBalances = () => {
 
 // State of balances loaded by Client
 const balances$ = ({
+  walletAccount,
   walletType,
   walletIndex,
   hdMode
 }: {
   walletType: WalletType
+  walletAccount: number
   walletIndex: number
   hdMode: HDMode
 }): C.WalletBalancesLD =>
@@ -33,6 +35,7 @@ const balances$ = ({
     client$,
     trigger$: reloadBalances$,
     walletType,
+    walletAccount,
     walletIndex,
     hdMode,
     walletBalanceType: 'all',

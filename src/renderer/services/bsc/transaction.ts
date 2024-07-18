@@ -119,6 +119,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       amount: params.amount,
       memo: params.memo,
       recipient: params.recipient,
+      walletAccount: params.walletAccount,
       walletIndex: params.walletIndex,
       feeOption: params.feeOption,
       nodeUrl: undefined,
@@ -200,6 +201,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     network,
     contractAddress,
     spenderAddress,
+    walletAccount,
     walletIndex,
     hdMode
   }: ApproveParams): TxHashLD => {
@@ -217,6 +219,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       network,
       contractAddress,
       spenderAddress,
+      walletAccount,
       walletIndex,
       hdMode
     }
@@ -324,6 +327,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       sender: params.sender,
       recipient: params.recipient,
       memo: params.memo,
+      walletAccount: params.walletAccount,
       walletIndex: params.walletIndex,
       feeRate: NaN,
       feeOption: params.feeOption,

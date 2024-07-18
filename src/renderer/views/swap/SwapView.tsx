@@ -247,11 +247,6 @@ const SuccessRouteView: React.FC<Props> = ({
     reloadTxStatus()
   }, [reloadTxStatus])
 
-  useEffect(() => {
-    // reload balances, whenever sourceAsset and targetAsset have been changed (both are properties of `reloadBalances` )
-    reloadBalances()
-  }, [reloadBalances])
-
   const reloadHandler = useCallback(() => {
     reloadBalances()
     if (dex.chain === THORChain) {
@@ -269,17 +264,6 @@ const SuccessRouteView: React.FC<Props> = ({
     reloadSelectedPoolDetail,
     reloadSelectedPoolDetailMaya
   ])
-
-  // reload inbound addresses at `onMount` to get always latest `pool address` + `feeRates`
-  useEffect(() => {
-    if (dex.chain === THORChain) {
-      reloadInboundAddresses()
-    } else {
-      reloadMayaInboundAddresses()
-    }
-    reloadBalances()
-    reloadHandler()
-  }, [dex, reloadBalances, reloadHandler, reloadInboundAddresses, reloadMayaInboundAddresses])
 
   const getStoredSlipTolerance = (): SlipTolerance =>
     FP.pipe(

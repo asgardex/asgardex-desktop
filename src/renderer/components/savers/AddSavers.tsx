@@ -496,11 +496,12 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
 
     return FP.pipe(
       sequenceTOption(oNeedApprovement, oTokenAddress, oRouterAddress, oSourceAssetWB),
-      O.map(([_, tokenAddress, routerAddress, { walletAddress, walletIndex, walletType, hdMode }]) => ({
+      O.map(([_, tokenAddress, routerAddress, { walletAddress, walletAccount, walletIndex, walletType, hdMode }]) => ({
         network,
         spenderAddress: routerAddress,
         contractAddress: tokenAddress,
         fromAddress: walletAddress,
+        walletAccount,
         walletIndex,
         hdMode,
         walletType
@@ -778,7 +779,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
   const oEarnParams: O.Option<SaverDepositParams> = useMemo(() => {
     return FP.pipe(
       sequenceTOption(oPoolAddress, oSourceAssetWB, oSaversQuote),
-      O.map(([poolAddress, { walletType, walletAddress, walletIndex, hdMode }, saversQuote]) => {
+      O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, saversQuote]) => {
         const result = {
           poolAddress,
           asset: asset.asset,
@@ -786,6 +787,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
           memo: saversQuote.memo !== '' ? saversQuote.memo.concat(`::${ASGARDEX_THORNAME}:0`) : '', // add tracking,
           walletType,
           sender: walletAddress,
+          walletAccount,
           walletIndex,
           hdMode,
           dex
@@ -952,13 +954,14 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
   const submitApproveTx = useCallback(() => {
     FP.pipe(
       oApproveParams,
-      O.map(({ walletIndex, walletType, hdMode, contractAddress, spenderAddress, fromAddress }) =>
+      O.map(({ walletAccount, walletIndex, walletType, hdMode, contractAddress, spenderAddress, fromAddress }) =>
         subscribeApproveState(
           approveERC20Token$({
             network,
             contractAddress,
             spenderAddress,
             fromAddress,
+            walletAccount,
             walletIndex,
             hdMode,
             walletType

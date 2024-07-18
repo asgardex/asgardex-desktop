@@ -44,6 +44,7 @@ describe('helpers/fp/ord', () => {
       amount: baseAmount('1'),
       asset: AssetRuneNative,
       walletAddress: '',
+      walletAccount: 0,
       walletIndex: 0,
       hdMode: 'default'
     }

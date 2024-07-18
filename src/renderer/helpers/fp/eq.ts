@@ -120,6 +120,7 @@ export const eqWalletBalances = A.getEq(eqWalletBalance)
 export const eqSelectedWalletAsset = Eq.struct<SelectedWalletAsset>({
   asset: eqAsset,
   walletAddress: eqAddress,
+  walletAccount: eqNumber,
   walletIndex: eqNumber,
   walletType: eqWalletType,
   hdMode: eqHDMode
@@ -164,6 +165,7 @@ export const eqApproveParams = Eq.struct<ApproveParams>({
   spenderAddress: eqAddress,
   contractAddress: eqAddress,
   fromAddress: eqAddress,
+  walletAccount: eqNumber,
   walletIndex: eqNumber,
   walletType: eqWalletType,
   hdMode: eqHDMode
@@ -218,6 +220,7 @@ export const eqWalletAddress = Eq.struct<WalletAddress>({
   type: eqString,
   chain: eqChain,
   walletIndex: eqNumber,
+  walletAccount: eqNumber,
   hdMode: eqHDMode
 })
 
@@ -231,6 +234,7 @@ export const eqLedgerAddress = Eq.struct<LedgerAddress>({
   network: eqNetwork,
   address: eqAddress,
   walletIndex: eqNumber,
+  walletAccount: eqNumber,
   hdMode: eqHDMode,
   type: eqWalletType
 })

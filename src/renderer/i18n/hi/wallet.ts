@@ -102,7 +102,9 @@ const wallet: WalletMessages = {
   'wallet.validations.graterThen': '{value} से अधिक होना चाहिए',
   'wallet.validations.shouldNotBeEmpty': 'खाली नहीं होना चाहिए',
   'wallet.ledger.verifyAddress.modal.title': 'Ledger पता की पुष्टि करें',
-  'wallet.ledger.verifyAddress.modal.description': 'अपने डिवाइस पर पता {address} की पुष्टि करें'
+  'wallet.ledger.verifyAddress.modal.description': 'अपने डिवाइस पर पता {address} की पुष्टि करें',
+  'wallet.ledger.removeAddress': 'चेन {chain} के लिए लेजर पता हटाएं',
+  'wallet.ledger.viewAddress': 'एक्सप्लोरर में पता देखें'
 }
 
 export default wallet

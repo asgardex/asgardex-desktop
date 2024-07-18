@@ -38,6 +38,7 @@ export const createTransactionService = (
     network: Network
     clientUrl: ClientUrl
     params: DepositParam & {
+      walletAccount: number
       walletIndex: number /* override walletIndex of DepositParam to avoid 'undefined' */
       hdMode: HDMode
     }
@@ -50,6 +51,7 @@ export const createTransactionService = (
       memo: params.memo,
       recipient: undefined,
       router: undefined,
+      walletAccount: params.walletAccount,
       walletIndex: params.walletIndex,
       feeOption: undefined,
       nodeUrl: clientUrl[network].node,
@@ -107,6 +109,7 @@ export const createTransactionService = (
 
   const sendPoolTx = ({
     walletType,
+    walletAccount,
     walletIndex,
     hdMode,
     asset,
@@ -115,13 +118,18 @@ export const createTransactionService = (
   }: DepositParam & {
     walletType: WalletType
     hdMode: HDMode
+    walletAccount: number
     walletIndex: number /* override walletIndex of DepositParam to avoid 'undefined' */
   }) =>
     FP.pipe(
       Rx.combineLatest([network$, clientUrl$]),
       RxOp.switchMap(([network, clientUrl]) => {
         if (isLedgerWallet(walletType))
-          return depositLedgerTx({ network, clientUrl, params: { walletIndex, hdMode, asset, amount, memo } })
+          return depositLedgerTx({
+            network,
+            clientUrl,
+            params: { walletAccount, walletIndex, hdMode, asset, amount, memo }
+          })
         return depositTx({ walletIndex, asset, amount, memo })
       })
     )
@@ -144,6 +152,7 @@ export const createTransactionService = (
       sender: params.sender,
       recipient: params.recipient,
       memo: params.memo,
+      walletAccount: params.walletAccount,
       walletIndex: params.walletIndex,
       feeRate: NaN,
       feeOption: undefined,

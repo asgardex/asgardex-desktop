@@ -16,7 +16,10 @@ const settings: SettingMessages = {
   'setting.notconnected': 'No conectado',
   'setting.add.device': 'AÑADIR DISPOSITIVO',
   'setting.wallet.index': 'Índice',
+  'setting.wallet.account': 'Cuenta',
   'setting.wallet.index.info': 'Introduzca el número de índice de la dirección del Ledger que desea utilizar',
+  'setting.wallet.account.info':
+    'Ingrese el número de cuenta para administrar varias cuentas dentro de la misma billetera',
   'setting.wallet.hdpath.legacy.info': 'Ruta de derivación heredada {path}',
   'setting.wallet.hdpath.ledgerlive.info': 'Ledger Live ruta de derivación {path}',
   'setting.wallet.hdpath.metamask.info': 'Metamask ruta de derivación {path}',

@@ -489,11 +489,12 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
     return FP.pipe(
       sequenceTOption(oNeedApprovement, oTokenAddress, oRouterAddress, oAssetWB),
-      O.map(([_, tokenAddress, routerAddress, { walletAddress, walletIndex, walletType, hdMode }]) => ({
+      O.map(([_, tokenAddress, routerAddress, { walletAddress, walletAccount, walletIndex, walletType, hdMode }]) => ({
         network,
         spenderAddress: routerAddress,
         contractAddress: tokenAddress,
         fromAddress: walletAddress,
+        walletAccount,
         walletIndex,
         walletType,
         hdMode
@@ -897,10 +898,12 @@ export const SymDeposit: React.FC<Props> = (props) => {
               rune: getDepositMemo({ asset, address: assetAddress }).concat(`:${ASGARDEX_THORNAME}:0`)
             },
             runeWalletType: dexAssetWB.walletType,
+            runeWalletAccount: dexAssetWB.walletAccount,
             runeWalletIndex: dexAssetWB.walletIndex,
             runeHDMode: dexAssetWB.hdMode,
             runeSender: runeAddress,
             assetWalletType: assetWB.walletType,
+            assetWalletAccount: assetWB.walletAccount,
             assetWalletIndex: assetWB.walletIndex,
             assetHDMode: assetWB.hdMode,
             assetSender: assetAddress,
@@ -923,6 +926,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
             memo: isRuneNativeAsset(asset) ? params.memos.rune : params.memos.asset,
             walletType: isRuneNativeAsset(asset) ? params.runeWalletType : params.assetWalletType,
             sender: isRuneNativeAsset(asset) ? params.runeSender : params.assetSender,
+            walletAccount: isRuneNativeAsset(asset) ? params.runeWalletAccount : params.assetWalletAccount,
             walletIndex: isRuneNativeAsset(asset) ? params.runeWalletIndex : params.assetWalletIndex,
             hdMode: isRuneNativeAsset(asset) ? params.runeHDMode : params.assetHDMode,
             dex
@@ -1791,13 +1795,14 @@ export const SymDeposit: React.FC<Props> = (props) => {
   const submitApproveTx = useCallback(() => {
     FP.pipe(
       oApproveParams,
-      O.map(({ walletIndex, walletType, contractAddress, spenderAddress, fromAddress, hdMode }) =>
+      O.map(({ walletAccount, walletIndex, walletType, contractAddress, spenderAddress, fromAddress, hdMode }) =>
         subscribeApproveState(
           approveERC20Token$({
             network,
             contractAddress,
             spenderAddress,
             fromAddress,
+            walletAccount,
             walletIndex,
             walletType,
             hdMode

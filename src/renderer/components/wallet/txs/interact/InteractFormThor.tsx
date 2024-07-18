@@ -73,6 +73,7 @@ type FormValues = {
 type Props = {
   interactType: InteractType
   walletType: WalletType
+  walletAccount: number
   walletIndex: number
   hdMode: HDMode
   balance: WalletBalance
@@ -98,6 +99,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     walletType,
     hdMode,
     walletIndex,
+    walletAccount,
     interact$,
     openExplorerTxUrl,
     getExplorerTxUrl,
@@ -467,13 +469,14 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     subscribeInteractState(
       interact$({
         walletType,
+        walletAccount,
         walletIndex,
         hdMode,
         amount: amountToSend,
         memo: getMemo()
       })
     )
-  }, [subscribeInteractState, interact$, walletType, walletIndex, hdMode, amountToSend, getMemo])
+  }, [subscribeInteractState, interact$, walletType, walletAccount, walletIndex, hdMode, amountToSend, getMemo])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
 

@@ -88,6 +88,7 @@ const Template = ({ interactType, txRDStatus, feeRDStatus, balance, validAddress
     <Component
       interactType={interactType}
       walletType={walletType}
+      walletAccount={0}
       walletIndex={0}
       hdMode="default"
       interact$={interact$}

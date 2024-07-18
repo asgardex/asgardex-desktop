@@ -26,6 +26,7 @@ export type SendTxParams = {
   amount: BaseAmount
   feeRate: number
   memo?: string
+  walletAccount: number
   walletIndex: number
   hdMode: HDMode
 }

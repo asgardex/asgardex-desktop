@@ -9,7 +9,7 @@ import { isEthAsset } from '../../../../renderer/helpers/assetHelper'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { DEPOSIT_EXPIRATION_OFFSET, ETHAddress, defaultEthParams } from '../../../../shared/ethereum/const'
 import { ROUTER_ABI } from '../../../../shared/evm/abi'
-import { getDerivationPath } from '../../../../shared/evm/ledger'
+import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
@@ -25,7 +25,9 @@ export const send = async ({
   memo,
   recipient,
   feeOption,
-  walletIndex
+  walletAccount,
+  walletIndex,
+  evmHDMode
 }: {
   asset: Asset
   transport: Transport
@@ -34,11 +36,17 @@ export const send = async ({
   recipient: Address
   memo?: string
   feeOption: FeeOption
+  walletAccount: number
   walletIndex: number
   evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const ledgerClient = new ETH.ClientLedger({ transport, ...defaultEthParams, network: network })
+    const ledgerClient = new ETH.ClientLedger({
+      transport,
+      ...defaultEthParams,
+      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
+      network: network
+    })
     const txHash = await ledgerClient.transfer({ walletIndex, asset, recipient, amount, memo, feeOption })
 
     if (!txHash) {
@@ -68,6 +76,7 @@ export const deposit = async ({
   amount,
   memo,
   recipient,
+  walletAccount,
   walletIndex,
   feeOption,
   evmHDMode
@@ -79,6 +88,7 @@ export const deposit = async ({
   network: Network
   recipient: Address
   memo?: string
+  walletAccount: number
   walletIndex: number
   feeOption: FeeOption
   evmHDMode: EvmHDMode
@@ -95,7 +105,12 @@ export const deposit = async ({
 
     const isETHAddress = address === ETHAddress
 
-    const ledgerClient = new ETH.ClientLedger({ transport, ...defaultEthParams, network: network })
+    const ledgerClient = new ETH.ClientLedger({
+      transport,
+      ...defaultEthParams,
+      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
+      network: network
+    })
 
     const provider = ledgerClient.getProvider()
     const gasPrices = await ledgerClient.estimateGasPrices(Protocol.THORCHAIN) // fetch gas prices from thorchain
@@ -104,7 +119,7 @@ export const deposit = async ({
     const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
 
     const app = await ledgerClient.getApp()
-    const path = getDerivationPath(walletIndex, evmHDMode)
+    const path = getDerivationPath(walletIndex, walletAccount, evmHDMode)
     const signer = new LedgerSigner({ provider, path, app })
     // Note: `client.call` handling very - similar to `runSendPoolTx$` in `src/renderer/services/ethereum/transaction.ts`
     // Call deposit function of Router contract

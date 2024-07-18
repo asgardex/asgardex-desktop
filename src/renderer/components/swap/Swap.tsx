@@ -281,7 +281,6 @@ export const Swap = ({
     O.map(isLedgerWallet),
     O.getOrElse(() => false)
   )
-
   // For normal quotes
   const [oQuote, setQuote] = useState<O.Option<TxDetails>>(O.none)
   // For maya quotes
@@ -789,10 +788,11 @@ export const Swap = ({
 
   //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
   const applyBps = useMemo(() => {
+    const aff = ASGARDEX_AFFILIATE_FEE === 10 ? ASGARDEX_AFFILIATE_FEE : 10
     let applyBps: number
     const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
-    applyBps = network === Network.Stagenet ? 0 : ASGARDEX_AFFILIATE_FEE
-    applyBps = txFeeCovered ? ASGARDEX_AFFILIATE_FEE : 0
+    applyBps = network === Network.Stagenet ? 0 : aff
+    applyBps = txFeeCovered ? aff : 0
     return applyBps
   }, [network, priceAmountToSwapMax1e8])
 
@@ -1288,14 +1288,15 @@ export const Swap = ({
     () => {
       const swapParamsThor = FP.pipe(
         sequenceTOption(oPoolAddress, oSourceAssetWB, oQuote),
-        O.map(([poolAddress, { walletType, walletAddress, walletIndex, hdMode }, txDetails]) => {
+        O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, txDetails]) => {
           return {
             poolAddress,
             asset: sourceAsset,
-            amount: convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal),
+            amount: convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal),
             memo: shortenMemo(txDetails.memo), // short asset
             walletType,
             sender: walletAddress,
+            walletAccount,
             walletIndex,
             hdMode,
             dex
@@ -1304,14 +1305,15 @@ export const Swap = ({
       )
       const swapParamsMaya = FP.pipe(
         sequenceTOption(oPoolAddress, oSourceAssetWB, oQuoteMaya),
-        O.map(([poolAddress, { walletType, walletAddress, walletIndex, hdMode }, quoteSwap]) => {
+        O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, quoteSwap]) => {
           return {
             poolAddress,
             asset: sourceAsset,
-            amount: convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal),
+            amount: convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal),
             memo: quoteSwap.memo, // The memo will be different based on the selected quote
             walletType,
             sender: walletAddress,
+            walletAccount,
             walletIndex,
             hdMode,
             dex
@@ -1320,7 +1322,7 @@ export const Swap = ({
       )
       return dex.chain === THORChain ? swapParamsThor : swapParamsMaya
     },
-    [oPoolAddress, oSourceAssetWB, oQuote, oQuoteMaya, sourceAsset, amountToSwapMax1e8, sourceAssetDecimal, dex] // Include both quote dependencies
+    [oPoolAddress, oSourceAssetWB, oQuote, oQuoteMaya, dex, sourceAsset, amountToSwapMax1e8, sourceAssetAmount.decimal] // Include both quote dependencies
   )
 
   // Check to see slippage greater than tolerance
@@ -1406,11 +1408,12 @@ export const Swap = ({
 
     return FP.pipe(
       sequenceTOption(oNeedApprovement, oTokenAddress, oRouterAddress, oSourceAssetWB),
-      O.map(([_, tokenAddress, routerAddress, { walletAddress, walletIndex, walletType, hdMode }]) => ({
+      O.map(([_, tokenAddress, routerAddress, { walletAddress, walletAccount, walletIndex, walletType, hdMode }]) => ({
         network,
         spenderAddress: routerAddress,
         contractAddress: tokenAddress,
         fromAddress: walletAddress,
+        walletAccount,
         walletIndex,
         hdMode,
         walletType
@@ -1910,13 +1913,14 @@ export const Swap = ({
   const submitApproveTx = useCallback(() => {
     FP.pipe(
       oApproveParams,
-      O.map(({ walletIndex, walletType, hdMode, contractAddress, spenderAddress, fromAddress }) =>
+      O.map(({ walletAccount, walletIndex, walletType, hdMode, contractAddress, spenderAddress, fromAddress }) =>
         subscribeApproveState(
           approveERC20Token$({
             network,
             contractAddress,
             spenderAddress,
             fromAddress,
+            walletAccount,
             walletIndex,
             hdMode,
             walletType
@@ -1971,12 +1975,10 @@ export const Swap = ({
     network,
     intl
   ])
-
+  // assuming on a unsucessful tx that the swap state should remain the same
   const onCloseTxModal = useCallback(() => {
     resetSwapState()
-    reloadBalances()
-    setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
-  }, [resetSwapState, reloadBalances, setAmountToSwapMax1e8, initialAmountToSwapMax1e8])
+  }, [resetSwapState])
 
   const onFinishTxModal = useCallback(() => {
     resetSwapState()
@@ -2471,11 +2473,12 @@ export const Swap = ({
 
   useEffect(() => {
     // reset data whenever source asset has been changed
-    if (!eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
-      prevSourceAsset.current = O.some(sourceAsset)
+    if (O.some(prevSourceAsset.current) && !eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
       reloadFeesHandler()
       resetIsApprovedState()
       resetApproveState()
+    } else {
+      prevSourceAsset.current = O.some(sourceAsset)
     }
     if (!eqOAsset.equals(prevTargetAsset.current, O.some(targetAsset))) {
       prevTargetAsset.current = O.some(targetAsset)

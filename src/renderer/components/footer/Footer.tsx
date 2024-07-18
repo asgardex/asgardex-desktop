@@ -1,6 +1,13 @@
 import React, { useCallback } from 'react'
 
-import Icon, { TwitterOutlined, BranchesOutlined, BugOutlined, GithubOutlined, GlobalOutlined } from '@ant-design/icons'
+import Icon, {
+  TwitterOutlined,
+  BranchesOutlined,
+  BugOutlined,
+  GithubOutlined,
+  GlobalOutlined,
+  FileTextOutlined
+} from '@ant-design/icons'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Row, Col, Grid } from 'antd'
 import { useNavigate } from 'react-router-dom'
@@ -52,7 +59,9 @@ export const Footer: React.FC<Props> = (props): JSX.Element => {
       <Row justify="space-between" align="middle">
         <Col span={24} md={12}>
           <Row justify={screens.md ? 'start' : 'center'}>
-            <FooterIcon url={ExternalUrl.DOCS} onClick={clickIconHandler}>
+            <FooterIcon
+              url={dex.chain === THORChain ? ExternalUrl.DOCSTHOR : ExternalUrl.DOCSMAYA}
+              onClick={clickIconHandler}>
               {dex.chain === THORChain ? (
                 <ThorChainIcon />
               ) : (
@@ -82,6 +91,9 @@ export const Footer: React.FC<Props> = (props): JSX.Element => {
             </FooterIcon>
             <FooterIcon url={ExternalUrl.TWITTER} onClick={clickIconHandler}>
               <TwitterOutlined />
+            </FooterIcon>
+            <FooterIcon url={ExternalUrl.LICENSE} onClick={clickIconHandler}>
+              <FileTextOutlined />
             </FooterIcon>
 
             {/* hidden in production build */}

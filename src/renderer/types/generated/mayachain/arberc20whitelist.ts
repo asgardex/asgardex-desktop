@@ -326,7 +326,7 @@ export const ARB_TOKEN_WHITELIST: {
   {
     asset: {
       chain: ARBChain,
-      symbol: "LEO-0x93864d81175095DD93360FFA2A529b8642F76A6E",
+      symbol: "LEO-0X93864D81175095DD93360FFA2A529B8642F76A6E",
       ticker: "LEO",
       synth: false,
     },
@@ -337,7 +337,7 @@ export const ARB_TOKEN_WHITELIST: {
   {
     asset: {
       chain: ARBChain,
-      symbol: "LEO-0x93864d81175095DD93360FFA2A529b8642F76A6E",
+      symbol: "LEO-0X93864D81175095DD93360FFA2A529B8642F76A6E",
       ticker: "LEO",
       synth: true,
     },

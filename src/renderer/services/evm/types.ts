@@ -25,6 +25,7 @@ export type SendTxParams = {
   amount: BaseAmount
   memo: Memo
   feeOption: FeeOption
+  walletAccount: number
   walletIndex: number
   hdMode: HDMode
   walletType: WalletType
@@ -41,6 +42,7 @@ export type SendPoolTxParams = SendTxParams & {
 export type ApproveParams = {
   network: Network
   walletType: WalletType
+  walletAccount: number
   walletIndex: number
   contractAddress: Address
   spenderAddress: Address

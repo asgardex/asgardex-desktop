@@ -135,6 +135,7 @@ describe('services/wallet/util/', () => {
           asset: ASSETS_MAINNET.ETH,
           amount: baseAmount(0),
           walletAddress: 'ADDRESS_ETH',
+          walletAccount: 0,
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -143,6 +144,7 @@ describe('services/wallet/util/', () => {
           asset: ASSETS_MAINNET.DOGE,
           amount: baseAmount(1),
           walletAddress: 'ADDRESS_DOGE',
+          walletAccount: 0,
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -151,6 +153,7 @@ describe('services/wallet/util/', () => {
           asset: ASSETS_MAINNET.BTC,
           amount: baseAmount(0),
           walletAddress: 'ADDRESS_BTC',
+          walletAccount: 0,
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -159,6 +162,7 @@ describe('services/wallet/util/', () => {
           asset: AssetBSC,
           amount: baseAmount(2),
           walletAddress: 'ADDRESS_BSC',
+          walletAccount: 0,
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -167,6 +171,7 @@ describe('services/wallet/util/', () => {
           asset: AssetRuneNative,
           amount: baseAmount(0),
           walletAddress: 'ADDRESS_RUNENATIVE',
+          walletAccount: 0,
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -184,6 +189,7 @@ describe('services/wallet/util/', () => {
           asset: ASSETS_MAINNET.ETH,
           amount: baseAmount(0),
           walletAddress: 'ADDRESS_ETH',
+          walletAccount: 0,
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -192,6 +198,7 @@ describe('services/wallet/util/', () => {
           asset: ASSETS_MAINNET.DOGE,
           amount: baseAmount(1),
           walletAddress: 'ADDRESS_DOGE',
+          walletAccount: 0,
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -200,6 +207,7 @@ describe('services/wallet/util/', () => {
           asset: ASSETS_MAINNET.BTC,
           amount: baseAmount(0),
           walletAddress: 'ADDRESS_BTC',
+          walletAccount: 0,
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -208,6 +216,7 @@ describe('services/wallet/util/', () => {
           asset: AssetBSC,
           amount: baseAmount(2),
           walletAddress: 'ADDRESS_BSC',
+          walletAccount: 0,
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -216,6 +225,7 @@ describe('services/wallet/util/', () => {
           asset: AssetRuneNative,
           amount: baseAmount(0),
           walletAddress: 'ADDRESS_RUNENATIVE',
+          walletAccount: 0,
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -239,6 +249,7 @@ describe('services/wallet/util/', () => {
           asset: ASSETS_MAINNET.ETH,
           amount: baseAmount(0),
           walletAddress: 'ADDRESS_ETH',
+          walletAccount: 0,
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -247,6 +258,7 @@ describe('services/wallet/util/', () => {
           asset: ASSETS_MAINNET.DOGE,
           amount: baseAmount(1),
           walletAddress: 'ADDRESS_DOGE',
+          walletAccount: 0,
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -255,6 +267,7 @@ describe('services/wallet/util/', () => {
           asset: ASSETS_MAINNET.BTC,
           amount: baseAmount(0),
           walletAddress: 'ADDRESS_BTC',
+          walletAccount: 0,
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -263,6 +276,7 @@ describe('services/wallet/util/', () => {
           asset: AssetBSC,
           amount: baseAmount(2),
           walletAddress: 'ADDRESS_BSC',
+          walletAccount: 0,
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -271,6 +285,7 @@ describe('services/wallet/util/', () => {
           asset: AssetRuneNative,
           amount: baseAmount(0),
           walletAddress: 'ADDRESS_RUNENATIVE',
+          walletAccount: 0,
           walletIndex: 0,
           walletType: 'keystore',
           hdMode: 'default'
@@ -285,6 +300,7 @@ describe('services/wallet/util/', () => {
             asset: AssetBSC,
             amount: baseAmount(2),
             walletAddress: 'ADDRESS_BSC',
+            walletAccount: 0,
             walletIndex: 0,
             walletType: 'keystore',
             hdMode: 'default'

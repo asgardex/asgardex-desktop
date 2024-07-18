@@ -19,7 +19,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
   const common = C.createTransactionService(client$)
 
   const sendLedgerTx = ({ network, params }: { network: Network; params: SendTxParams }): TxHashLD => {
-    const { amount, sender, recipient, memo, walletIndex, feeRate } = params
+    const { amount, sender, recipient, memo, walletIndex, feeRate, walletAccount } = params
     const sendLedgerTxParams: IPCLedgerSendTxParams = {
       chain: DASHChain,
       asset: AssetDASH,
@@ -32,6 +32,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       feeAmount: undefined,
       recipient,
       memo,
+      walletAccount,
       walletIndex,
       nodeUrl: undefined,
       hdMode: 'default'

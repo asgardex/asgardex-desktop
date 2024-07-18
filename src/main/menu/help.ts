@@ -10,7 +10,7 @@ const menu = (intl: IntlShape): MenuItemConstructorOptions => ({
     {
       label: intl.formatMessage({ id: 'menu.help.learn' }),
       click() {
-        openExternal(ExternalUrl.DOCS)
+        openExternal(ExternalUrl.DOCSTHOR)
       }
     },
     {
@@ -23,6 +23,12 @@ const menu = (intl: IntlShape): MenuItemConstructorOptions => ({
       label: intl.formatMessage({ id: 'menu.help.issues' }),
       click() {
         openExternal(`${ExternalUrl.GITHUB_REPO}/issues`)
+      }
+    },
+    {
+      label: intl.formatMessage({ id: 'menu.help.license' }),
+      click() {
+        openExternal(`${ExternalUrl.GITHUB_REPO}/blob/develop/LICENSE`)
       }
     }
   ]

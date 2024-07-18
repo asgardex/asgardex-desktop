@@ -102,6 +102,7 @@ export type WalletAccounts = WalletAccount[]
 export type WalletBalance = Balance & {
   walletAddress: Address
   walletType: WalletType
+  walletAccount: number
   walletIndex: number
   hdMode: HDMode
 }
@@ -111,6 +112,7 @@ export type SelectedWalletAsset = {
   asset: Asset
   walletAddress: Address
   walletType: WalletType
+  walletAccount: number
   walletIndex: number
   hdMode: HDMode
 }
@@ -198,11 +200,13 @@ export type VerifiedLedgerAddressLD = LiveData<Error, boolean>
 export type VerifyLedgerAddressHandler = ({
   chain,
   network,
+  walletAccount,
   walletIndex,
   hdMode
 }: {
   chain: Chain
   network: Network
+  walletAccount: number
   walletIndex: number
   hdMode: HDMode
 }) => VerifiedLedgerAddressLD
@@ -211,12 +215,14 @@ export type AddLedgerAddressHandler = ({
   id,
   chain,
   network,
+  walletAccount,
   walletIndex,
   hdMode
 }: {
   id: KeystoreId
   chain: Chain
   network: Network
+  walletAccount: number
   walletIndex: number
   hdMode: HDMode
 }) => LedgerAddressLD

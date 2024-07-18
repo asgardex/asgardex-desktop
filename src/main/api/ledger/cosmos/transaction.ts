@@ -6,6 +6,7 @@ import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
+import { getDerivationPaths } from './common'
 
 /**
  * Sends Cosmos tx using Ledger
@@ -16,7 +17,9 @@ export const send = async ({
   asset,
   memo,
   recipient,
-  walletIndex
+  walletAccount,
+  walletIndex,
+  network
 }: {
   transport: Transport
   network: Network
@@ -25,6 +28,7 @@ export const send = async ({
   feeAmount: BaseAmount
   recipient: Address
   memo?: string
+  walletAccount: number
   walletIndex: number
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
@@ -33,7 +37,11 @@ export const send = async ({
     if (!denom)
       throw Error(`Invalid asset ${assetToString(asset)} - Only ATOM asset is currently supported to transfer`)
 
-    const clientLedger = new ClientLedger({ transport, ...defaultClientConfig })
+    const clientLedger = new ClientLedger({
+      transport,
+      ...defaultClientConfig,
+      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, network)
+    })
     const txHash = await clientLedger.transfer({ walletIndex, asset: AssetATOM, recipient, amount, memo })
     if (!txHash) {
       return E.left({

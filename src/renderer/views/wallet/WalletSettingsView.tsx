@@ -193,26 +193,28 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
 
   const addLedgerAddressHandler = ({
     chain,
+    walletAccount,
     walletIndex,
     hdMode
   }: {
     chain: Chain
+    walletAccount: number
     walletIndex: number
     hdMode: HDMode
   }): LedgerAddressLD => {
-    if (isThorChain(chain)) return addLedgerThorAddress(walletIndex, hdMode)
-    if (isBtcChain(chain)) return addLedgerBtcAddress(walletIndex, hdMode)
-    if (isLtcChain(chain)) return addLedgerLtcAddress(walletIndex, hdMode)
-    if (isBchChain(chain)) return addLedgerBchAddress(walletIndex, hdMode)
-    if (isDogeChain(chain)) return addLedgerDOGEAddress(walletIndex, hdMode)
-    if (isEthChain(chain)) return addLedgerEthAddress(walletIndex, hdMode)
-    if (isArbChain(chain)) return addLedgerArbAddress(walletIndex, hdMode)
-    if (isAvaxChain(chain)) return addLedgerAvaxAddress(walletIndex, hdMode)
-    if (isBscChain(chain)) return addLedgerBscAddress(walletIndex, hdMode)
-    if (isCosmosChain(chain)) return addLedgerCosmosAddress(walletIndex, hdMode)
-    if (isMayaChain(chain)) return addLedgerMayaAddress(walletIndex, hdMode)
-    if (isDashChain(chain)) return addLedgerDashAddress(walletIndex, hdMode)
-    if (isKujiChain(chain)) return addLedgerKujiAddress(walletIndex, hdMode)
+    if (isThorChain(chain)) return addLedgerThorAddress(walletAccount, walletIndex, hdMode)
+    if (isBtcChain(chain)) return addLedgerBtcAddress(walletAccount, walletIndex, hdMode)
+    if (isLtcChain(chain)) return addLedgerLtcAddress(walletAccount, walletIndex, hdMode)
+    if (isBchChain(chain)) return addLedgerBchAddress(walletAccount, walletIndex, hdMode)
+    if (isDogeChain(chain)) return addLedgerDOGEAddress(walletAccount, walletIndex, hdMode)
+    if (isEthChain(chain)) return addLedgerEthAddress(walletAccount, walletIndex, hdMode)
+    if (isArbChain(chain)) return addLedgerArbAddress(walletAccount, walletIndex, hdMode)
+    if (isAvaxChain(chain)) return addLedgerAvaxAddress(walletAccount, walletIndex, hdMode)
+    if (isBscChain(chain)) return addLedgerBscAddress(walletAccount, walletIndex, hdMode)
+    if (isCosmosChain(chain)) return addLedgerCosmosAddress(walletAccount, walletIndex, hdMode)
+    if (isMayaChain(chain)) return addLedgerMayaAddress(walletAccount, walletIndex, hdMode)
+    if (isDashChain(chain)) return addLedgerDashAddress(walletAccount, walletIndex, hdMode)
+    if (isKujiChain(chain)) return addLedgerKujiAddress(walletAccount, walletIndex, hdMode)
 
     return Rx.of(
       RD.failure({
@@ -224,26 +226,28 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
 
   const verifyLedgerAddressHandler = ({
     chain,
+    walletAccount,
     walletIndex,
     hdMode
   }: {
     chain: Chain
+    walletAccount: number
     walletIndex: number
     hdMode: HDMode
   }): VerifiedLedgerAddressLD => {
-    if (isThorChain(chain)) return verifyLedgerThorAddress(walletIndex, hdMode)
-    if (isBtcChain(chain)) return verifyLedgerBtcAddress(walletIndex, hdMode)
-    if (isLtcChain(chain)) return verifyLedgerLtcAddress(walletIndex, hdMode)
-    if (isBchChain(chain)) return verifyLedgerBchAddress(walletIndex, hdMode)
-    if (isDogeChain(chain)) return verifyLedgerDOGEAddress(walletIndex, hdMode)
-    if (isEthChain(chain)) return verifyLedgerEthAddress(walletIndex, hdMode)
-    if (isArbChain(chain)) return verifyLedgerArbAddress(walletIndex, hdMode)
-    if (isAvaxChain(chain)) return verifyLedgerAvaxAddress(walletIndex, hdMode)
-    if (isBscChain(chain)) return verifyLedgerBscAddress(walletIndex, hdMode)
-    if (isCosmosChain(chain)) return verifyLedgerCosmosAddress(walletIndex, hdMode)
-    if (isMayaChain(chain)) return verifyLedgerMayaAddress(walletIndex, hdMode)
-    if (isDashChain(chain)) return verifyLedgerDashAddress(walletIndex, hdMode)
-    if (isKujiChain(chain)) return verifyLedgerKujiAddress(walletIndex, hdMode)
+    if (isThorChain(chain)) return verifyLedgerThorAddress(walletAccount, walletIndex, hdMode)
+    if (isBtcChain(chain)) return verifyLedgerBtcAddress(walletAccount, walletIndex, hdMode)
+    if (isLtcChain(chain)) return verifyLedgerLtcAddress(walletAccount, walletIndex, hdMode)
+    if (isBchChain(chain)) return verifyLedgerBchAddress(walletAccount, walletIndex, hdMode)
+    if (isDogeChain(chain)) return verifyLedgerDOGEAddress(walletAccount, walletIndex, hdMode)
+    if (isEthChain(chain)) return verifyLedgerEthAddress(walletAccount, walletIndex, hdMode)
+    if (isArbChain(chain)) return verifyLedgerArbAddress(walletAccount, walletIndex, hdMode)
+    if (isAvaxChain(chain)) return verifyLedgerAvaxAddress(walletAccount, walletIndex, hdMode)
+    if (isBscChain(chain)) return verifyLedgerBscAddress(walletAccount, walletIndex, hdMode)
+    if (isCosmosChain(chain)) return verifyLedgerCosmosAddress(walletAccount, walletIndex, hdMode)
+    if (isMayaChain(chain)) return verifyLedgerMayaAddress(walletAccount, walletIndex, hdMode)
+    if (isDashChain(chain)) return verifyLedgerDashAddress(walletAccount, walletIndex, hdMode)
+    if (isKujiChain(chain)) return verifyLedgerKujiAddress(walletAccount, walletIndex, hdMode)
 
     return Rx.of(RD.failure(Error(`Ledger address verification for ${chain} has not been implemented`)))
   }
@@ -403,7 +407,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     })
 
     return FP.pipe(
-      // combineLatest is for the future additional accounts
+      // combineLatest is for the future additional walletAccounts
       Rx.combineLatest(
         filterEnabledChains({
           THOR: [thorWalletAccount$],

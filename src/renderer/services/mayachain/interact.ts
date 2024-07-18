@@ -30,13 +30,14 @@ export const createInteractService$ =
     depositTx$: (
       _: DepositParam & {
         walletType: WalletType
+        walletAccount: number
         walletIndex: number /* override walletIndex of DepositParam to avoid 'undefined' */
         hdMode: HDMode
       }
     ) => LiveData<ApiError, string>,
     getTxStatus: (txHash: string, assetAddress: O.Option<Address>) => TxLD
   ) =>
-  ({ walletType, walletIndex, hdMode, amount, memo }: InteractParams): InteractState$ => {
+  ({ walletType, walletAccount, walletIndex, hdMode, amount, memo }: InteractParams): InteractState$ => {
     // total of progress
     const total = O.some(100)
 
@@ -57,6 +58,7 @@ export const createInteractService$ =
       // 1. send deposit tx
       depositTx$({
         walletType,
+        walletAccount,
         walletIndex,
         hdMode,
         asset: AssetCacao,

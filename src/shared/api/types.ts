@@ -1,7 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { FeeRate, Network, TxHash, TxParams } from '@xchainjs/xchain-client'
 import { Keystore } from '@xchainjs/xchain-crypto'
-import { AssetCacao, MAYA_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetCacao, CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Asset, Chain } from '@xchainjs/xchain-util'
 import * as E from 'fp-ts/lib/Either'
@@ -28,7 +28,7 @@ export const thorDetails: Dex = {
 export const mayaDetails: Dex = {
   chain: MAYAChain,
   asset: AssetCacao,
-  decimals: MAYA_DECIMAL,
+  decimals: CACAO_DECIMAL,
   url: 'Mayascan.com'
 }
 export type Dex = DexDetails
@@ -160,6 +160,7 @@ export type LedgerTxParams = LedgerTHORTxParams | LedgerBNBTxParams
 export type IPCLedgerAdddressParams = {
   chain: Chain
   network: Network
+  walletAccount: number
   walletIndex: number
   hdMode: HDMode
 }

@@ -6,6 +6,7 @@ import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
+import { getDerivationPaths } from './common'
 
 /**
  * Sends `MsgSend` message using Ledger
@@ -19,6 +20,7 @@ export const send = async ({
   amount,
   memo,
   recipient,
+  walletAccount,
   walletIndex
 }: {
   transport: Transport
@@ -27,10 +29,16 @@ export const send = async ({
   asset: Asset
   recipient: Address
   memo?: string
+  walletAccount: number
   walletIndex: number
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const clientLedger = new ClientLedger({ transport, ...defaultClientConfig, network: network })
+    const clientLedger = new ClientLedger({
+      transport,
+      ...defaultClientConfig,
+      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, network),
+      network: network
+    })
     const txhash = await clientLedger.transfer({ walletIndex, asset: asset, recipient, amount, memo })
 
     if (!txhash) {
@@ -60,6 +68,7 @@ export const deposit = async ({
   amount,
   asset,
   memo,
+  walletAccount,
   walletIndex
 }: {
   transport: Transport
@@ -67,10 +76,16 @@ export const deposit = async ({
   asset?: Asset
   network: Network
   memo: string
+  walletAccount: number
   walletIndex: number
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const clientLedger = new ClientLedger({ transport, ...defaultClientConfig, network: network })
+    const clientLedger = new ClientLedger({
+      transport,
+      ...defaultClientConfig,
+      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, network),
+      network: network
+    })
     const txhash = await clientLedger.deposit({ walletIndex, asset: asset, amount, memo })
     if (!txhash) {
       return E.left({

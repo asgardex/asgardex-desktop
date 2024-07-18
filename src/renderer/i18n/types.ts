@@ -315,6 +315,8 @@ type WalletMessageKey =
   | 'wallet.validations.shouldNotBeEmpty'
   | 'wallet.ledger.verifyAddress.modal.title'
   | 'wallet.ledger.verifyAddress.modal.description'
+  | 'wallet.ledger.removeAddress'
+  | 'wallet.ledger.viewAddress'
 
 export type WalletMessages = { [key in WalletMessageKey]: string }
 
@@ -394,7 +396,9 @@ type SettingMessageKey =
   | 'setting.connected'
   | 'setting.add.device'
   | 'setting.wallet.index'
+  | 'setting.wallet.account'
   | 'setting.wallet.index.info'
+  | 'setting.wallet.account.info'
   | 'setting.wallet.hdpath.legacy.info'
   | 'setting.wallet.hdpath.ledgerlive.info'
   | 'setting.wallet.hdpath.metamask.info'
