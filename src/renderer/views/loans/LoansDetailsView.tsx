@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { Address, Asset, baseAmount } from '@xchainjs/xchain-util'
+import { Address, Asset } from '@xchainjs/xchain-util'
+import * as A from 'fp-ts/Array'
 import * as Eq from 'fp-ts/lib/Eq'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -15,10 +16,9 @@ import { Spin } from '../../components/shared/loading'
 import { FlatButton } from '../../components/uielements/button'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { eqAsset, eqString } from '../../helpers/fp/eq'
-import * as PoolHelpers from '../../helpers/poolHelper'
 import { usePricePool } from '../../hooks/usePricePool'
 import { PoolDetails } from '../../services/midgard/types'
-import { BorrowerProviderRD } from '../../services/thorchain/types'
+import { BorrowerProviderRD, ThorchainLastblockRD } from '../../services/thorchain/types'
 import { UpdateBorrowerProvider } from './Loans.types'
 
 type Props = {
@@ -33,12 +33,14 @@ const eqUpdaBorrowerProvider = Eq.struct<UpdateBorrowerProvider>({
 })
 
 export const LoansDetailsView: React.FC<Props> = (props): JSX.Element => {
-  const { asset, address, poolDetails } = props
+  const { asset, address } = props
 
   const intl = useIntl()
 
   const pricePool = usePricePool()
-  const { getBorrowerProvider$, reloadBorrowerProvider } = useThorchainContext()
+  const { getBorrowerProvider$, reloadBorrowerProvider, thorchainLastblockState$ } = useThorchainContext()
+
+  const thorchainLastblockRD: ThorchainLastblockRD = useObservableState(thorchainLastblockState$, RD.pending)
 
   const [borrowerProviderRD, updateBorrowerProvider$] = useObservableState<
     BorrowerProviderRD,
@@ -52,6 +54,22 @@ export const LoansDetailsView: React.FC<Props> = (props): JSX.Element => {
         RxOp.switchMap(({ address, asset }) => getBorrowerProvider$(asset, address))
       ),
     RD.initial
+  )
+
+  const lastBlock = FP.pipe(
+    thorchainLastblockRD,
+    RD.fold(
+      () => O.none, // Handle the initial state
+      () => O.none, // Handle the loading state
+      () => O.none, // Handle the error state
+      (blocks) =>
+        FP.pipe(
+          blocks,
+          A.findFirst((blockInfo) => eqString.equals(blockInfo.chain, asset.chain)),
+          O.map(({ thorchain }) => Number(thorchain))
+        )
+    ),
+    O.getOrElse(() => 0) // Default to 0 if not found
   )
 
   useEffect(() => {
@@ -76,41 +94,26 @@ export const LoansDetailsView: React.FC<Props> = (props): JSX.Element => {
           extra={<FlatButton onClick={reloadBorrowerProvider}>{intl.formatMessage({ id: 'common.retry' })}</FlatButton>}
         />
       ),
-      ({ debtCurrent, debtIssued, debtRepaid }) => {
-        const debtCurrentPrice = FP.pipe(
-          PoolHelpers.getPoolPriceValue({
-            balance: { asset, amount: debtCurrent },
-            poolDetails,
-            pricePool
-          }),
-          O.getOrElse(() => baseAmount(0, debtCurrent.decimal))
-        )
-
-        const debtIssuedPrice = FP.pipe(
-          PoolHelpers.getPoolPriceValue({
-            balance: { asset, amount: debtIssued },
-            poolDetails,
-            pricePool
-          }),
-          O.getOrElse(() => baseAmount(0, debtIssued.decimal))
-        )
-
-        const debtRepaidPrice = FP.pipe(
-          PoolHelpers.getPoolPriceValue({
-            balance: { asset, amount: debtRepaid },
-            poolDetails,
-            pricePool
-          }),
-          O.getOrElse(() => baseAmount(0, debtRepaid.decimal))
-        )
+      (borrowerData) => {
+        const {
+          debtCurrent,
+          debtIssued,
+          debtRepaid,
+          collateralDeposited,
+          collateralWithdrawn,
+          collateralCurrent,
+          lastRepayHeight
+        } = borrowerData
 
         return (
           <LoanDetails
             asset={asset}
             priceAsset={pricePool.asset}
-            current={{ amount: debtCurrent, price: debtCurrentPrice }}
-            issued={{ amount: debtIssued, price: debtIssuedPrice }}
-            repaid={{ amount: debtRepaid, price: debtRepaidPrice }}
+            current={{ amount: collateralCurrent, price: debtCurrent }}
+            issued={{ amount: collateralDeposited, price: debtIssued }}
+            repaid={{ amount: collateralWithdrawn, price: debtRepaid }}
+            lastRepayHeight={lastRepayHeight}
+            lastBlockTC={lastBlock}
           />
         )
       }

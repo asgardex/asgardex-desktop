@@ -123,7 +123,7 @@ export type BorrowerDepositParams = {
   readonly memo: string
   readonly sender: Address
   readonly walletIndex: number
-  // readonly walletAccount: number
+  readonly walletAccount: number
   readonly walletType: WalletType
   readonly hdMode: HDMode
   readonly dex: Dex

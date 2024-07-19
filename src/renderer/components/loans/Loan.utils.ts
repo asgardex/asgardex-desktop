@@ -1,5 +1,6 @@
-import { Asset, BaseAmount, baseAmount } from '@xchainjs/xchain-util'
+import { Asset, BaseAmount, Chain, baseAmount } from '@xchainjs/xchain-util'
 
+import { DefaultChainAttributes } from '../../../shared/utils/chain'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { isChainAsset, max1e8BaseAmount } from '../../helpers/assetHelper'
 import { getChainAsset } from '../../helpers/chainHelper'
@@ -51,3 +52,12 @@ export const getZeroLoanWithdrawFees = (asset: Asset): WithdrawAssetFees => ({
   inFee: ZERO_BASE_AMOUNT,
   outFee: ZERO_BASE_AMOUNT
 })
+
+export const getBlockDate = (currentBlock: number, targetBlock: number, chain: Chain): Date => {
+  const blockDifference = targetBlock - currentBlock
+  const avgBlockTimeInSecs = DefaultChainAttributes[chain].avgBlockTimeInSecs
+  const timeDifferenceInSecs = blockDifference * avgBlockTimeInSecs
+  const newDate = new Date()
+  newDate.setSeconds(newDate.getSeconds() + timeDifferenceInSecs)
+  return newDate
+}

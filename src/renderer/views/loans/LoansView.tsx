@@ -389,6 +389,8 @@ const Content: React.FC<Props> = (props): JSX.Element => {
               const checkDisableLoanAction = () => {
                 return disableAllPoolActions(collateralAssetChain)
               }
+
+              console.log(collateralAddress)
               const getTabContentByIndex = (index: number) => {
                 switch (index) {
                   case TabIndex.BORROW:

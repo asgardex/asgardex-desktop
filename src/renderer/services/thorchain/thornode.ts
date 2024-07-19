@@ -590,7 +590,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
           const debtCurrent = baseAmount(debt_current, THORCHAIN_DECIMAL)
           const collateralDeposited = baseAmount(collateral_deposited, THORCHAIN_DECIMAL)
           const collateralWithdrawn = baseAmount(collateral_withdrawn, THORCHAIN_DECIMAL)
-          const collaterlaCurrent = baseAmount(collateral_current, THORCHAIN_DECIMAL)
+          const collateralCurrent = baseAmount(collateral_current, THORCHAIN_DECIMAL)
           const lastOpenHeight = FP.pipe(last_open_height, O.fromPredicate(N.isNumber))
           const lastRepayHeight = FP.pipe(last_repay_height, O.fromPredicate(N.isNumber))
           return {
@@ -601,7 +601,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
             debtCurrent,
             collateralDeposited,
             collateralWithdrawn,
-            collaterlaCurrent,
+            collateralCurrent,
             lastOpenHeight,
             lastRepayHeight,
             walletType

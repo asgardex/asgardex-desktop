@@ -270,7 +270,7 @@ export type BorrowerProvider = {
   debtCurrent: BaseAmount
   collateralDeposited: BaseAmount
   collateralWithdrawn: BaseAmount
-  collaterlaCurrent: BaseAmount
+  collateralCurrent: BaseAmount
   lastOpenHeight: O.Option<number>
   lastRepayHeight: O.Option<number>
   walletType?: WalletType

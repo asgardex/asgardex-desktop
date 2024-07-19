@@ -22,6 +22,7 @@ import {
   assetFromString,
   CryptoAmount
 } from '@xchainjs/xchain-util'
+import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
@@ -538,11 +539,12 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
 
     return FP.pipe(
       sequenceTOption(oNeedApprovement, oTokenAddress, oRouterAddress, oSourceAssetWB),
-      O.map(([_, tokenAddress, routerAddress, { walletAddress, walletIndex, walletType, hdMode }]) => ({
+      O.map(([_, tokenAddress, routerAddress, { walletAddress, walletAccount, walletIndex, walletType, hdMode }]) => ({
         network,
         spenderAddress: routerAddress,
         contractAddress: tokenAddress,
         fromAddress: walletAddress,
+        walletAccount,
         walletIndex,
         hdMode,
         walletType
@@ -873,7 +875,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   const oBorrowParams: O.Option<BorrowerDepositParams> = useMemo(() => {
     return FP.pipe(
       sequenceTOption(oPoolAddress, oSourceAssetWB, oLoanQuote),
-      O.map(([poolAddress, { walletType, walletAddress, walletIndex, hdMode }, loansQuote]) => {
+      O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, loansQuote]) => {
         const result = {
           poolAddress,
           asset: collateralAsset.asset,
@@ -881,6 +883,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
           memo: loansQuote.memo !== '' ? loansQuote.memo.concat(`::${ASGARDEX_THORNAME}:0`) : '', // add tracking,
           walletType,
           sender: walletAddress,
+          walletAccount,
           walletIndex,
           hdMode,
           dex
@@ -1075,13 +1078,14 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   const submitApproveTx = useCallback(() => {
     FP.pipe(
       oApproveParams,
-      O.map(({ walletIndex, walletType, hdMode, contractAddress, spenderAddress, fromAddress }) =>
+      O.map(({ walletAccount, walletIndex, walletType, hdMode, contractAddress, spenderAddress, fromAddress }) =>
         subscribeApproveState(
           approveERC20Token$({
             network,
             contractAddress,
             spenderAddress,
             fromAddress,
+            walletAccount,
             walletIndex,
             hdMode,
             walletType
@@ -1313,6 +1317,35 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     useLedger
   ])
 
+  const renderSlider = useMemo(() => {
+    const percentage = amountToLoanMax1e8
+      .amount()
+      .dividedBy(maxAmountToLoanMax1e8.amount())
+      .multipliedBy(100)
+      // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
+      .decimalPlaces(0, BigNumber.ROUND_DOWN)
+      .toNumber()
+
+    const setAmountToLoanFromPercentValue = (percents: number) => {
+      const amountFromPercentage = maxAmountToLoanMax1e8.amount().multipliedBy(percents / 100)
+      return setAmountToLoanMax1e8(baseAmount(amountFromPercentage, amountToLoanMax1e8.decimal))
+    }
+
+    return (
+      <Slider
+        key={'swap percentage slider'}
+        value={percentage}
+        onChange={setAmountToLoanFromPercentValue}
+        onAfterChange={reloadFeesHandler}
+        tooltipVisible
+        tipFormatter={(value) => `${value}%`}
+        withLabel
+        tooltipPlacement={'top'}
+        disabled={disableLoanAction}
+      />
+    )
+  }, [amountToLoanMax1e8, disableLoanAction, maxAmountToLoanMax1e8, reloadFeesHandler, setAmountToLoanMax1e8])
+
   const renderCrSlider = useMemo(() => {
     const setCreditRatioPercentValue = (percents: number) => {
       setCreditRatio(percents)
@@ -1476,7 +1509,14 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
               </div>
             }
           />
-          <div className="w-full px-20px">{renderCrSlider}</div>
+
+          <div className="w-full px-20px">{renderSlider}</div>
+          <div className="flex w-full flex-col items-center justify-center px-5">
+            <div className="flex pt-6 text-gray2 dark:text-gray2d">
+              {intl.formatMessage({ id: 'loan.detail.creditRatio' })}
+            </div>
+            <div className="w-1/2">{renderCrSlider}</div>
+          </div>
           <div className="flex flex-col pt-20px">
             <AssetInput
               className="w-full"

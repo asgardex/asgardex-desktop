@@ -183,7 +183,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
 
   const sourceWalletType: WalletType = useMemo(() => (useLedger ? 'ledger' : 'keystore'), [useLedger])
 
-  const [withdrawStartTime, setWithdrawStartTime] = useState<number>(0)
+  const [repayStartTime, setRepayStartTime] = useState<number>(0)
 
   const prevAsset = useRef<O.Option<Asset>>(O.none)
 
@@ -327,7 +327,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
       if (RD.isSuccess(borrowerProviderRD)) {
         // Replace with the actual check for RemoteData's success state
         const borrowerPosition = borrowerProviderRD.value // Replace 'value' with the correct property if needed
-        setLoanAssetAmount(new CryptoAmount(borrowerPosition.collaterlaCurrent, sourceAsset))
+        setLoanAssetAmount(new CryptoAmount(borrowerPosition.collateralCurrent, sourceAsset))
       }
     })
 
@@ -511,11 +511,6 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     },
     [onChangeAsset]
   )
-  // Reload balances at `onMount`
-  useEffect(() => {
-    reloadBalances()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const maxBalanceInfoTxt = useMemo(() => {
     const balanceLabel = formatAssetAmountCurrency({
@@ -613,11 +608,12 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
 
     return FP.pipe(
       sequenceTOption(oNeedApprovement, oTokenAddress, oRouterAddress, oSourceAssetWB),
-      O.map(([_, tokenAddress, routerAddress, { walletAddress, walletIndex, walletType, hdMode }]) => ({
+      O.map(([_, tokenAddress, routerAddress, { walletAddress, walletAccount, walletIndex, walletType, hdMode }]) => ({
         network,
         spenderAddress: routerAddress,
         contractAddress: tokenAddress,
         fromAddress: walletAddress,
+        walletAccount,
         walletIndex,
         hdMode,
         walletType
@@ -831,7 +827,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
   const oRepayLoanParams: O.Option<SaverWithdrawParams> = useMemo(() => {
     return FP.pipe(
       sequenceTOption(oPoolAddress, oSourceAssetWB),
-      O.map(([poolAddress, { walletType, walletIndex, hdMode }]) => {
+      O.map(([poolAddress, { walletType, walletAccount, walletIndex, hdMode }]) => {
         const result = {
           poolAddress,
           asset: sourceChainAsset,
@@ -839,6 +835,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
           memo: '',
           network,
           walletType,
+          walletAccount,
           walletIndex,
           sender: address,
           hdMode,
@@ -927,10 +924,10 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     const txModalTitle = FP.pipe(
       withdrawRD,
       RD.fold(
-        () => 'loan.withdraw.state.sending',
-        () => 'loan.withdraw.state.pending',
-        () => 'loan.withdraw.state.error',
-        () => 'loan.withdraw.state.success'
+        () => 'loan.repay.state.sending',
+        () => 'loan.repay.state.pending',
+        () => 'loan.repay.state.error',
+        () => 'loan.repay.state.success'
       ),
       (id) => intl.formatMessage({ id })
     )
@@ -952,7 +949,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
         title={txModalTitle}
         onClose={onCloseTxModal}
         onFinish={onFinishTxModal}
-        startTime={withdrawStartTime}
+        startTime={repayStartTime}
         txRD={withdrawRD}
         timerValue={timerValue}
         extraResult={
@@ -970,7 +967,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     withdrawState,
     onCloseTxModal,
     onFinishTxModal,
-    withdrawStartTime,
+    repayStartTime,
     goToTransaction,
     getExplorerTxUrl,
     intl,
@@ -978,13 +975,13 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     txModalExtraContent,
     sourceChain
   ])
-  // sumbit to withdraw state submit tx
-  const submitWithdrawTx = useCallback(() => {
+  // sumbit to repay state submit tx
+  const submitRepayTx = useCallback(() => {
     FP.pipe(
       oRepayLoanParams,
       O.map((params) => {
         // set start time
-        setWithdrawStartTime(Date.now())
+        setRepayStartTime(Date.now())
         // subscribe to loanRepay$
         subscribeWithdrawState(loanRepay$(params))
 
@@ -1004,13 +1001,14 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
   const submitApproveTx = useCallback(() => {
     FP.pipe(
       oApproveParams,
-      O.map(({ walletIndex, walletType, hdMode, contractAddress, spenderAddress, fromAddress }) =>
+      O.map(({ walletAccount, walletIndex, walletType, hdMode, contractAddress, spenderAddress, fromAddress }) =>
         subscribeApproveState(
           approveERC20Token$({
             network,
             contractAddress,
             spenderAddress,
             fromAddress,
+            walletAccount,
             walletIndex,
             hdMode,
             walletType
@@ -1024,8 +1022,8 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     if (showPasswordModal === 'none') return <></>
 
     const onSuccess = () => {
-      if (showPasswordModal === 'withdraw') submitWithdrawTx()
-      if (showPasswordModal === 'approve') submitWithdrawTx()
+      if (showPasswordModal === 'withdraw') submitRepayTx()
+      if (showPasswordModal === 'approve') submitRepayTx()
       setShowPasswordModal('none')
     }
     const onClose = () => {
@@ -1035,7 +1033,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     return (
       <WalletPasswordConfirmationModal onSuccess={onSuccess} onClose={onClose} validatePassword$={validatePassword$} />
     )
-  }, [showPasswordModal, submitWithdrawTx, validatePassword$])
+  }, [showPasswordModal, submitRepayTx, validatePassword$])
 
   const renderLedgerConfirmationModal = useMemo(() => {
     const visible = showLedgerModal === 'withdraw' || showLedgerModal === 'approve'
@@ -1230,9 +1228,6 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
       const amountFromPercentage = loanAssetAmount.baseAmount.amount().multipliedBy(percents / 100)
       setAmountToWithdrawMax1e8(baseAmount(amountFromPercentage, loanAssetAmount.baseAmount.decimal))
     }
-    // // Update withdrawBps based on the selected percentage
-    // const newWithdrawBps = Math.floor(percentage * 100)
-    // setWithdrawBps(O.some(newWithdrawBps > 0 ? newWithdrawBps : 0))
 
     return (
       <Slider
@@ -1450,7 +1445,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
                     </div>
                   </div>
                   {/* inbound address */}
-                  {/* {FP.pipe(
+                  {FP.pipe(
                     oRepayLoanParams,
                     O.map(({ poolAddress: { address } }) =>
                       address ? (
@@ -1463,7 +1458,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
                       ) : null
                     ),
                     O.toNullable
-                  )} */}
+                  )}
                 </>
               )}
 
