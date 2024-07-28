@@ -3,6 +3,12 @@
 ## Updates/Fixes
 
 - Fix addresss indexing issue with ledger [#300](https://github.com/asgardex/asgardex-desktop/pull/300)
+- Fix bsc usdt not showing [#304] ()
+- Fix usdt usdt crash [#305] ()
+
+## Add
+
+- Streaming added to MayaChain swaps [#305] ()
 
 # 1.21.9 (2024-06-15)
 

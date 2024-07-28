@@ -290,7 +290,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
             nodeOperatorFee: baseAmount(bond_providers.node_operator_fee, THORCHAIN_DECIMAL),
             providers: Array.isArray(bond_providers.providers)
               ? bond_providers.providers.map((provider) => ({
-                  bondAddress: provider.bond_address,
+                  bondAddress: provider.bond_address ? provider.bond_address : '',
                   bond: baseAmount(provider.bond, THORCHAIN_DECIMAL)
                 }))
               : []

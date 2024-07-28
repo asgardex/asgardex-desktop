@@ -5,7 +5,7 @@ import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/re
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { QuoteThornameParams, ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
+import { QuoteTHORNameParams, ThorchainQuery, ThornameDetails } from '@xchainjs/xchain-thorchain-query'
 import {
   Asset,
   assetAmount,
@@ -331,25 +331,25 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     const currentDate = new Date()
 
     form.validateFields()
-    const thorname = form.getFieldValue('thorname')
+    const name = form.getFieldValue('thorname')
     const chain = thornameRegister ? form.getFieldValue('chain') : form.getFieldValue('aliasChain')
     const yearsToAdd = form.getFieldValue('expiry')
-    const expirity =
+    const expiry =
       yearsToAdd === 1
         ? undefined
         : new Date(currentDate.getFullYear() + yearsToAdd, currentDate.getMonth(), currentDate.getDate())
     const chainAddress = thornameRegister ? form.getFieldValue('chainAddress') : form.getFieldValue('aliasAddress')
     const owner = balance.walletAddress
-    if (thorname !== undefined && chain !== undefined && chainAddress !== undefined) {
+    if (name !== undefined && chain !== undefined && chainAddress !== undefined) {
       const fetchThornameQuote = async () => {
         try {
-          const params: QuoteThornameParams = {
-            thorname,
+          const params: QuoteTHORNameParams = {
+            name,
             chain,
             chainAddress,
             owner,
             preferredAsset,
-            expirity: expirity,
+            expiry,
             isUpdate: thornameUpdate || isOwner
           }
 
