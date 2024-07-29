@@ -68,15 +68,17 @@ const balances$: ({
       walletBalanceType: 'all'
     }),
     // Filter assets based on BSCERC20Whitelist (mainnet only)
-    liveData.map(FP.flow(A.filter(({ asset }) => validAssetForBSC(asset, network)))),
     liveData.map(
       FP.flow(
-        A.map((balance: WalletBalance) => ({
-          ...balance,
-          asset: replaceSymbol(balance.asset)
-        }))
+        A.map((balance: WalletBalance) => {
+          return {
+            ...balance,
+            asset: replaceSymbol(balance.asset)
+          }
+        })
       )
-    )
+    ),
+    liveData.map(FP.flow(A.filter(({ asset }) => validAssetForBSC(asset, network))))
   )
 }
 
