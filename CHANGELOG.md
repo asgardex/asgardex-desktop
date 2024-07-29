@@ -1,10 +1,15 @@
-# 1.22.0 (2024-07-tbh)
+# 1.22.0 (2024-07-29)
 
 ## Updates/Fixes
 
 - Fix addresss indexing issue with ledger [#300](https://github.com/asgardex/asgardex-desktop/pull/300)
-- Fix BSC.USDT not showing [#303](https://github.com/asgardex/asgardex-desktop/pull/304)
-- Fix white screen on bondtab [#301] (https://github.com/asgardex/asgardex-desktop/pull/306)
+- Fix bsc usdt not showing [#304] (https://github.com/asgardex/asgardex-desktop/pull/305)
+- Fix usdt usdt crash [#305] (https://github.com/asgardex/asgardex-desktop/pull/306)
+- Fix white screen on bondtab [#301] (https://github.com/asgardex/asgardex-desktop/pull/307)
+
+## Add
+
+- Streaming added to MayaChain swaps [#305] (https://github.com/asgardex/asgardex-desktop/pull/306)
 
 # 1.21.9 (2024-06-15)
 

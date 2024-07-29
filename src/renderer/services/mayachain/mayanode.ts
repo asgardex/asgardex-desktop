@@ -11,8 +11,8 @@ import {
   ConstantsResponse,
   InboundAddressesResponse,
   LiquidityProvidersApi,
-  LiquidityProvider,
-  LiquidityProviderSummary
+  LiquidityProviderSummary,
+  LiquidityProvidersResponse
 } from '@xchainjs/xchain-mayanode'
 import { Asset, assetFromString, assetToString, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
 import { AxiosResponse } from 'axios'
@@ -219,7 +219,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
               providers: Array.isArray(bond_providers.providers)
                 ? bond_providers.providers.map((provider) => ({
                     bondAddress: provider.bond_address,
-                    bond: baseAmount(provider.bond, CACAO_DECIMAL)
+                    bond: baseAmount(provider.reward, CACAO_DECIMAL)
                   }))
                 : []
             },
@@ -244,24 +244,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
           Rx.from(
             new LiquidityProvidersApi(getMayanodeAPIConfiguration(basePath)).liquidityProviders(assetToString(asset))
           ),
-          RxOp.map((response: AxiosResponse<LiquidityProvider>) => {
-            // Assuming `response.data` is a single LiquidityProvider object, map it to a LiquidityProviderSummary object
-            const summary: LiquidityProviderSummary = {
-              asset: response.data.asset,
-              rune_address: response.data.cacao_address,
-              asset_address: response.data.asset_address,
-              last_add_height: response.data.last_add_height,
-              last_withdraw_height: response.data.last_withdraw_height,
-              units: response.data.units,
-              pending_rune: response.data.pending_cacao,
-              pending_asset: response.data.pending_asset,
-              pending_tx_id: response.data.pending_tx_id,
-              rune_deposit_value: response.data.cacao_deposit_value,
-              asset_deposit_value: response.data.asset_deposit_value
-            }
-
-            return RD.success([summary]) // Wrap summary in an array to match the expected LiveData<Error, LiquidityProviderSummary[]>
-          }),
+          RxOp.map((response: AxiosResponse<LiquidityProvidersResponse>) => RD.success(response.data)), // Extract data from AxiosResponse
           RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
         )
       )
@@ -278,7 +261,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
           const oAsset = O.fromNullable(assetFromString(provider.asset))
           const pendingDexAsset = FP.pipe(
             /* 1e8 decimal by default at MAYAChain */
-            baseAmount(bnOrZero(provider.pending_rune), CACAO_DECIMAL),
+            baseAmount(bnOrZero(provider.pending_cacao), CACAO_DECIMAL),
             O.fromPredicate((v) => v.gt(ZERO_BASE_AMOUNT)),
             O.map((amount1e8) => ({
               asset: AssetCacao,
@@ -296,7 +279,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
           )
 
           return {
-            dexAssetAddress: O.fromNullable(provider.rune_address),
+            dexAssetAddress: O.fromNullable(provider.cacao_address),
             assetAddress: O.fromNullable(provider.asset_address),
             pendingDexAsset,
             pendingAsset

@@ -32,6 +32,7 @@ export const createActionsService = (
               params.txid, // txid, assuming not used in this context
               params.asset, // asset from the rest parameters if available
               getRequestType(type), // type after processing
+              type,
               undefined, // affiliate, assuming not used in this context
               itemsPerPage, // limit parameter
               itemsPerPage * page // offset parameter
