@@ -118,7 +118,10 @@ export const BondsTable: React.FC<Props> = ({
         const isWalletAddress =
           walletAddresses.THOR.some((walletInfo) => walletInfo.address === bondAddress) ||
           walletAddresses.MAYA.some((walletInfo) => walletInfo.address === bondAddress)
-        const unbondDisabled = status === 'Active' || (signMembership.includes(nodeAddress) && status === 'Standby')
+
+        const unbondDisabled =
+          status === 'Active' || (status === 'Standby' && signMembership && signMembership.includes(nodeAddress))
+
         return (
           <div className="flex">
             <TextButton
