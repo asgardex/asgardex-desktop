@@ -1062,17 +1062,27 @@ export const Swap = ({
   }, [dex, oQuote, oQuoteMaya])
 
   // Quote slippage returned as a percent
-  const swapStreamingSlippage: number = useMemo(
-    () =>
-      FP.pipe(
-        oQuote,
-        O.fold(
-          () => 0, // default affiliate fee asset amount return as number not as BP
-          (txDetails) => txDetails.txEstimate.streamingSlipBasisPoints / 100
-        )
-      ),
-    [oQuote]
-  )
+  const swapStreamingSlippage: number = useMemo(() => {
+    // Handle each Option individually
+    const slipFromTxDetails = FP.pipe(
+      oQuote,
+      O.fold(
+        () => 0,
+        (txDetails) => txDetails.txEstimate.streamingSlipBasisPoints / 100
+      )
+    )
+    const slipFromQuoteSwap = FP.pipe(
+      oQuoteMaya,
+      O.fold(
+        () => 0,
+        (quoteSwap) => {
+          return quoteSwap.slipBasisPoints / 100
+        }
+      )
+    )
+    return dex.chain === THORChain ? slipFromTxDetails : slipFromQuoteSwap
+  }, [dex, oQuote, oQuoteMaya])
+
   // Quote expiry returned as a date
   const swapExpiry: Date = useMemo(() => {
     const swapExpiryThor = FP.pipe(
