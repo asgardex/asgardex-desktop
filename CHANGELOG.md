@@ -5,10 +5,11 @@
 - Fix addresss indexing issue with ledger [#300](https://github.com/asgardex/asgardex-desktop/pull/300)
 - Fix bsc usdt not showing [#304] (https://github.com/asgardex/asgardex-desktop/pull/305)
 - Fix usdt usdt crash [#305] (https://github.com/asgardex/asgardex-desktop/pull/306)
+- Fix white screen on bondtab [#301] (https://github.com/asgardex/asgardex-desktop/pull/307)
 
 ## Add
 
-- Streaming added to MayaChain swaps [#305] ()
+- Streaming added to MayaChain swaps [#305] (https://github.com/asgardex/asgardex-desktop/pull/306)
 
 # 1.21.9 (2024-06-15)
 
