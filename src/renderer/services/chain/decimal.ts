@@ -4,7 +4,6 @@ import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { DASH_DECIMAL } from '@xchainjs/xchain-dash'
-import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { MidgardQuery } from '@xchainjs/xchain-midgard-query'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
@@ -20,7 +19,6 @@ import {
   isBscChain,
   isBtcChain,
   isDashChain,
-  isEthChain,
   isKujiChain,
   isMayaChain,
   isThorChain
@@ -61,9 +59,6 @@ const getDecimal = (asset: Asset): Promise<number> => {
   }
   if (isBchChain(chain)) {
     return Promise.resolve(BCH_DECIMAL)
-  }
-  if (isEthChain(chain)) {
-    return Promise.resolve(ETH_GAS_ASSET_DECIMAL)
   }
 
   const midgardQuery = new MidgardQuery()

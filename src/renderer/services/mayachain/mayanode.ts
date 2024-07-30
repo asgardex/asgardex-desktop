@@ -224,7 +224,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
               providers: Array.isArray(bond_providers.providers)
                 ? bond_providers.providers.map((provider) => ({
                     bondAddress: provider.bond_address,
-                    bond: baseAmount(provider.bond, CACAO_DECIMAL)
+                    bond: baseAmount(provider.reward, CACAO_DECIMAL)
                   }))
                 : []
             },
@@ -266,7 +266,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
           const oAsset = O.fromNullable(assetFromString(provider.asset))
           const pendingDexAsset = FP.pipe(
             /* 1e8 decimal by default at MAYAChain */
-            baseAmount(bnOrZero(provider.pending_rune), CACAO_DECIMAL),
+            baseAmount(bnOrZero(provider.pending_cacao), CACAO_DECIMAL),
             O.fromPredicate((v) => v.gt(ZERO_BASE_AMOUNT)),
             O.map((amount1e8) => ({
               asset: AssetCacao,
@@ -284,7 +284,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
           )
 
           return {
-            dexAssetAddress: O.fromNullable(provider.rune_address),
+            dexAssetAddress: O.fromNullable(provider.cacao_address),
             assetAddress: O.fromNullable(provider.asset_address),
             pendingDexAsset,
             pendingAsset

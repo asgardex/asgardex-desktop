@@ -17,17 +17,32 @@ export const getDerivationPath = (walletAccount: number, walletIndex: number, mo
     .replace('{walletAccount}', walletAccount.toString())
     .replace('{walletIndex}', walletIndex.toString())
 }
+
+export const getDerivationPathLedger = (walletAccount: number): string => {
+  const DERIVATION_PATH = ["44'", "60'", `${walletAccount}'`, '0/']
+  const path = DERIVATION_PATH.join('/')
+  return path
+}
 export const getDerivationPaths = (
   walletAccount: number,
   walletIndex: number,
   mode: EvmHDMode
 ): RootDerivationPaths => {
-  const basePath = getDerivationPath(walletAccount, walletIndex, mode)
+  let paths: RootDerivationPaths
+  if (mode === 'legacy') {
+    const basePath = getDerivationPath(walletAccount, walletIndex, mode)
 
-  const paths: RootDerivationPaths = {
-    [Network.Mainnet]: `${basePath}`,
-    [Network.Testnet]: `${basePath}`,
-    [Network.Stagenet]: `${basePath}`
+    paths = {
+      [Network.Mainnet]: `${basePath}`,
+      [Network.Testnet]: `${basePath}`,
+      [Network.Stagenet]: `${basePath}`
+    }
+  } else {
+    paths = {
+      [Network.Mainnet]: `${getDerivationPathLedger(walletAccount)}`,
+      [Network.Testnet]: `${getDerivationPathLedger(walletAccount)}`,
+      [Network.Stagenet]: `${getDerivationPathLedger(walletAccount)}`
+    }
   }
   return paths
 }

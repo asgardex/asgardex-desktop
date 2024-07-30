@@ -43,7 +43,7 @@ export const send = async ({
     const dogeClient = new ClientLedger({
       transport,
       ...dogeInitParams,
-      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, network),
+      rootDerivationPaths: getDerivationPaths(walletAccount, network),
       network: network
     })
     const newMemo = memo !== undefined ? removeAffiliate(memo) : memo // removes affilaite to shorten memo.

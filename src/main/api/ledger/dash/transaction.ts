@@ -82,7 +82,7 @@ export const send = async ({
     const dashClient = new ClientLedger({
       transport,
       ...defaultDashParams,
-      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, network),
+      rootDerivationPaths: getDerivationPaths(walletAccount, network),
       dataProviders: [BlockcypherDataProviders, BitgoProviders],
       network: network
     })

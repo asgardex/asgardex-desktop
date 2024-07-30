@@ -43,7 +43,7 @@ export const send = async ({
     const clientLedger = new ClientLedger({
       transport,
       ...defaultBchParams,
-      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, network),
+      rootDerivationPaths: getDerivationPaths(walletAccount, network),
       network: network
     })
     const txHash = await clientLedger.transfer({ walletIndex, asset: AssetBCH, recipient, amount, memo, feeRate })
