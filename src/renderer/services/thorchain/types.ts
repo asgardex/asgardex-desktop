@@ -262,6 +262,39 @@ export type LoanRepayParams = {
   network: Network
 }
 
+export type LoanCloseQuote = {
+  inboundAddress: string
+  expectedWaitTime: BlockInformation
+  fees: QuoteFees
+  slippageBps?: number
+  streamingSlippageBps?: number
+  router?: string
+  expiry: number
+  warning: string
+  notes: string
+  dustThreshold?: string
+  recommendedMinAmountIn: BaseAmount
+  reccommendedGasRate: string
+  memo: string
+  expectedAmountOut: BaseAmount
+  expectedAmountIn: BaseAmount
+  expectedCollateralWithdrawn: string
+  expectedDebtRepaid: string
+  totalRepaymentSeconds: number
+}
+
+export type LoanCloseQuoteRD = RD.RemoteData<Error, LoanCloseQuote>
+export type LoanCloseQuoteLD = LiveData<Error, LoanCloseQuote>
+
+export type LoanCloseParams = {
+  asset: Asset
+  repayBps: number
+  collateralAsset: Asset
+  loanOwner: string
+  height?: number
+  minOut?: string
+}
+
 export type BorrowerProvider = {
   owner: Address
   asset: Asset

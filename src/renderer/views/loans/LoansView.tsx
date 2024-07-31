@@ -98,7 +98,9 @@ const Content: React.FC<Props> = (props): JSX.Element => {
     reloadBorrowerProvider,
     reloadInboundAddresses,
     getLoanQuoteOpen$,
-    reloadLoanQuoteOpen
+    reloadLoanQuoteOpen,
+    getLoanQuoteClose$,
+    reloadLoanQuoteClose
   } = useThorchainContext()
 
   const {
@@ -389,8 +391,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
               const checkDisableLoanAction = () => {
                 return disableAllPoolActions(collateralAssetChain)
               }
-
-              console.log(collateralAddress)
               const getTabContentByIndex = (index: number) => {
                 switch (index) {
                   case TabIndex.BORROW:
@@ -441,6 +441,8 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         fees$={loanRepayFee$}
                         address={collateralAddress}
                         validatePassword$={validatePassword$}
+                        getLoanQuoteClose$={getLoanQuoteClose$}
+                        reloadLoanQuoteClose={reloadLoanQuoteClose}
                         goToTransaction={openExplorerTxUrl}
                         getExplorerTxUrl={getExplorerTxUrl}
                         sourceWalletType={collateralWalletType}

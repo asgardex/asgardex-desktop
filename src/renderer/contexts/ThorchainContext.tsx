@@ -38,7 +38,9 @@ import {
   getTxStatus$,
   reloadTxStatus,
   getLoanQuoteOpen$,
-  reloadLoanQuoteOpen
+  reloadLoanQuoteOpen,
+  getLoanQuoteClose$,
+  reloadLoanQuoteClose
 } from '../services/thorchain'
 
 export type ThorchainContextValue = {
@@ -80,6 +82,8 @@ export type ThorchainContextValue = {
   reloadTxStatus: typeof reloadTxStatus
   getLoanQuoteOpen$: typeof getLoanQuoteOpen$
   reloadLoanQuoteOpen: typeof reloadLoanQuoteOpen
+  getLoanQuoteClose$: typeof getLoanQuoteClose$
+  reloadLoanQuoteClose: typeof reloadLoanQuoteClose
 }
 
 const initialContext: ThorchainContextValue = {
@@ -120,7 +124,9 @@ const initialContext: ThorchainContextValue = {
   getTxStatus$,
   reloadTxStatus,
   getLoanQuoteOpen$,
-  reloadLoanQuoteOpen
+  reloadLoanQuoteOpen,
+  getLoanQuoteClose$,
+  reloadLoanQuoteClose
 }
 
 const ThorchainContext = createContext<ThorchainContextValue | null>(null)

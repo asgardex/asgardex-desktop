@@ -21,7 +21,8 @@ import {
   PoolsApi,
   Pool,
   QuoteApi,
-  QuoteLoanOpenResponse
+  QuoteLoanOpenResponse,
+  QuoteLoanCloseResponse
 } from '@xchainjs/xchain-thornode'
 import {
   Address,
@@ -74,7 +75,9 @@ import {
   ThorchainPool,
   LoanOpenQuoteLD,
   LoanOpenQuote,
-  BlockInformation
+  BlockInformation,
+  LoanCloseQuote,
+  LoanCloseQuoteLD
 } from './types'
 
 const height: number | undefined = undefined
@@ -613,7 +616,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       ),
       RxOp.startWith(RD.pending)
     )
-  const apigetLoanQuoteOpen$ = (
+  const apiGetLoanQuoteOpen$ = (
     asset: Asset,
     amount: BaseAmount,
     targetAsset: Asset,
@@ -661,7 +664,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       reloadLoanQuoteOpen$,
       RxOp.debounceTime(300),
       RxOp.switchMap((_) =>
-        apigetLoanQuoteOpen$(asset, amount, targetAsset, destination, minOut, affiliateBps, affiliate, height)
+        apiGetLoanQuoteOpen$(asset, amount, targetAsset, destination, minOut, affiliateBps, affiliate, height)
       ),
       liveData.map(
         // transform quote -> quoteType
@@ -727,6 +730,115 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       ),
       RxOp.startWith(RD.pending)
     )
+  const apiGetLoanQuoteClose$ = (
+    fromAsset: Asset,
+    repayBps: number,
+    targetAsset: Asset,
+    loanOwner: string,
+    minOut?: string,
+    height?: number
+  ): LiveData<Error, QuoteLoanCloseResponse> =>
+    FP.pipe(
+      thornodeUrl$,
+      liveData.chain((basePath) =>
+        FP.pipe(
+          Rx.from(
+            new QuoteApi(getThornodeAPIConfiguration(basePath)).quoteloanclose(
+              height,
+              assetToString(fromAsset),
+              repayBps,
+              assetToString(targetAsset),
+              loanOwner,
+              minOut
+            )
+          ),
+          RxOp.map((response: AxiosResponse<QuoteLoanCloseResponse>) => RD.success(response.data)), // Extract data from AxiosResponse
+          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+        )
+      ),
+      RxOp.startWith(RD.pending)
+    )
+  const { stream$: reloadLoanQuoteClose$, trigger: reloadLoanQuoteClose } = triggerStream()
+
+  const getLoanQuoteClose$ = (
+    asset: Asset,
+    repayBps: number,
+    targetAsset: Asset,
+    loanOwner: string,
+    minOut?: string,
+    height?: number
+  ): LoanCloseQuoteLD =>
+    FP.pipe(
+      reloadLoanQuoteClose$,
+      RxOp.debounceTime(300),
+      RxOp.switchMap((_) => apiGetLoanQuoteClose$(asset, repayBps, targetAsset, loanOwner, minOut, height)),
+      liveData.map(
+        // transform quote -> quoteType
+        (quote): LoanCloseQuote => {
+          const {
+            inbound_address,
+            inbound_confirmation_blocks,
+            inbound_confirmation_seconds,
+            outbound_delay_blocks,
+            outbound_delay_seconds,
+            fees,
+            slippage_bps,
+            streaming_slippage_bps,
+            router,
+            expiry,
+            warning,
+            notes,
+            dust_threshold,
+            recommended_min_amount_in,
+            recommended_gas_rate,
+            memo,
+            expected_amount_out,
+            expected_amount_in,
+            expected_collateral_withdrawn,
+            expected_debt_repaid,
+            total_repay_seconds
+          } = quote
+          /* 1e8 decimal by default, which is default decimal for ALL accets at THORChain  */
+          const expectedWait: BlockInformation = {
+            inboundConfirmationBlocks: inbound_confirmation_blocks,
+            inboundConfirmationSeconds: inbound_confirmation_seconds,
+            outboundDelayBlocks: outbound_delay_blocks,
+            outbondDelaySeconds: outbound_delay_seconds
+          }
+          const recommendedMinAmountIn = baseAmount(
+            recommended_min_amount_in ? recommended_min_amount_in : 0,
+            THORCHAIN_DECIMAL
+          )
+          const expectedAmountOut = baseAmount(expected_amount_out, THORCHAIN_DECIMAL)
+          const expectedAmountIn = baseAmount(expected_amount_in, THORCHAIN_DECIMAL)
+
+          return {
+            inboundAddress: inbound_address ? inbound_address : '',
+            expectedWaitTime: expectedWait,
+            fees,
+            slippageBps: slippage_bps,
+            streamingSlippageBps: streaming_slippage_bps,
+            router,
+            expiry,
+            warning,
+            notes,
+            dustThreshold: dust_threshold,
+            recommendedMinAmountIn,
+            reccommendedGasRate: recommended_gas_rate ? recommended_gas_rate : '',
+            memo: memo ? memo : '',
+            expectedAmountOut,
+            expectedAmountIn,
+            expectedCollateralWithdrawn: expected_collateral_withdrawn,
+            expectedDebtRepaid: expected_debt_repaid,
+            totalRepaymentSeconds: total_repay_seconds
+          }
+        }
+      ),
+      RxOp.catchError(
+        (): LoanCloseQuoteLD => Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} loan open`)))
+      ),
+      RxOp.startWith(RD.pending)
+    )
 
   return {
     thornodeUrl$,
@@ -753,6 +865,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     getThorchainPool$,
     reloadThorchainPool,
     getLoanQuoteOpen$,
-    reloadLoanQuoteOpen
+    reloadLoanQuoteOpen,
+    getLoanQuoteClose$,
+    reloadLoanQuoteClose
   }
 }
