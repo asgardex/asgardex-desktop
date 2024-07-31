@@ -1164,7 +1164,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
         return new CryptoAmount(amount, pricePool.asset)
       })
     )
-  }, [poolDetails, pricePool])
+  }, [outboundFee, poolDetails, pricePool])
 
   const oPriceAssetFeeTotal: O.Option<CryptoAmount> = useMemo(() => {
     return FP.pipe(
