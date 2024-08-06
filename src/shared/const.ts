@@ -1,4 +1,3 @@
-import { DEFAULT_ENABLED_CHAINS } from './api/defaultChains'
 import { PoolsStorageEncoded } from './api/io'
 import { StoreFilesContent, UserChainStorage, UserNodesStorage } from './api/types'
 import { DEFAULT_EVM_HD_MODE } from './evm/types'
@@ -7,7 +6,7 @@ import { DEFAULT_MAYANODE_API_URLS, DEFAULT_MAYANODE_RPC_URLS } from './mayachai
 import { DEFAULT_MIDGARD_MAYA_URLS } from './mayaMidgard/const'
 import { DEFAULT_MIDGARD_URLS } from './midgard/const'
 import { DEFAULT_THORNODE_API_URLS, DEFAULT_THORNODE_RPC_URLS } from './thorchain/const'
-import { EnabledChain } from './utils/chain'
+import { DEFAULT_ENABLED_CHAINS, EnabledChain } from './utils/chain'
 
 export const ASGARDEX_IDENTIFIER = 999
 

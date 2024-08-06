@@ -1,6 +1,5 @@
 import * as E from 'fp-ts/Either'
 
-import { CHAIN_STRINGS } from '../api/defaultChains'
 import { PoolsStorageEncoded } from '../api/io'
 import {
   ApiLang,
@@ -13,7 +12,6 @@ import {
 } from '../api/types'
 import { ApiFileStoreService, CommonStorage } from '../api/types'
 import { Locale } from '../i18n/types'
-import { EnabledChain } from '../utils/chain'
 import { MOCK_KEYSTORE } from './wallet'
 
 // Mock "empty" `apiKeystore`
@@ -46,13 +44,6 @@ export const apiHDWallet: ApiHDWallet = {
   approveLedgerERC20Token: () => Promise.resolve(E.right('tx_hash')),
   saveLedgerAddresses: (_) => Promise.resolve(E.right([])),
   getLedgerAddresses: () => Promise.resolve(E.right([]))
-}
-
-export const mockEnabledChains: Record<EnabledChain, string> = {
-  BCHChain: CHAIN_STRINGS.BCHChain,
-  BTCChain: CHAIN_STRINGS.BTCChain,
-  DOGEChain: CHAIN_STRINGS.DOGEChain,
-  THORChain: CHAIN_STRINGS.THORChain
 }
 
 const commonStorageData: CommonStorage = {

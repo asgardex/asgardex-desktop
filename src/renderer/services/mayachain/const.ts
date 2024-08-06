@@ -1,8 +1,8 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 
-import { DEFAULT_ENABLED_CHAINS } from '../../../shared/api/defaultChains'
 import { DEFAULT_MAYANODE_API_URLS, DEFAULT_MAYANODE_RPC_URLS } from '../../../shared/mayachain/const'
+import { DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
 import { ClientUrl } from '../thorchain/types'
 import { InteractState, MimirHalt } from './types'
 

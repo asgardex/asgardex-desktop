@@ -24,7 +24,7 @@ import * as Rx from 'rxjs'
 import { from } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { DEFAULT_ENABLED_CHAINS } from '../../../shared/api/defaultChains'
+import { DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
 import { WalletType } from '../../../shared/wallet/types'
 import { SaversDetailsTable } from '../../components/savers/SaversDetailsTable'
 import { RefreshButton } from '../../components/uielements/button'

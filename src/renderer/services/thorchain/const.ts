@@ -1,8 +1,8 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 
-import { DEFAULT_ENABLED_CHAINS } from '../../../shared/api/defaultChains'
 import { DEFAULT_THORNODE_API_URLS, DEFAULT_THORNODE_RPC_URLS } from '../../../shared/thorchain/const'
+import { DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
 import { ClientUrl, InteractState, MimirHalt } from './types'
 
 export const INITIAL_INTERACT_STATE: InteractState = {
