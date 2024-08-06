@@ -38,6 +38,8 @@ export type CommonMessageKey =
   | 'common.general'
   | 'common.advanced'
   | 'common.privateData'
+  | 'common.disable'
+  | 'common.enable'
   | 'common.keystore'
   | 'common.keystorePassword'
   | 'common.ledger'

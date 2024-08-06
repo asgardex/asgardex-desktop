@@ -1,11 +1,13 @@
+import { DEFAULT_ENABLED_CHAINS } from './api/defaultChains'
 import { PoolsStorageEncoded } from './api/io'
-import { StoreFilesContent, UserNodesStorage } from './api/types'
+import { StoreFilesContent, UserChainStorage, UserNodesStorage } from './api/types'
 import { DEFAULT_EVM_HD_MODE } from './evm/types'
 import { DEFAULT_LOCALE } from './i18n/const'
 import { DEFAULT_MAYANODE_API_URLS, DEFAULT_MAYANODE_RPC_URLS } from './mayachain/const'
 import { DEFAULT_MIDGARD_MAYA_URLS } from './mayaMidgard/const'
 import { DEFAULT_MIDGARD_URLS } from './midgard/const'
 import { DEFAULT_THORNODE_API_URLS, DEFAULT_THORNODE_RPC_URLS } from './thorchain/const'
+import { EnabledChain } from './utils/chain'
 
 export const ASGARDEX_IDENTIFIER = 999
 
@@ -45,6 +47,13 @@ export const USER_NODES_STORAGE_DEFAULT: UserNodesStorage = {
 }
 
 // increase it by `1` if you want to ignore previous version of `common` storage
+const CHAINS_STORAGE_VERSION = '1'
+
+export const CHAINS_STORAGE_DEFAULT: UserChainStorage = {
+  version: CHAINS_STORAGE_VERSION,
+  chains: Object.keys(DEFAULT_ENABLED_CHAINS) as EnabledChain[]
+}
+// increase it by `1` if you want to ignore previous version of `common` storage
 const POOLS_STORAGE_VERSION = '1'
 
 const POOLS_STORAGE_DEFAULT: PoolsStorageEncoded = {
@@ -74,6 +83,7 @@ export const DEFAULT_STORAGES: StoreFilesContent = {
     mayanodeApi: DEFAULT_MAYANODE_API_URLS,
     mayanodeRpc: DEFAULT_MAYANODE_RPC_URLS
   },
+  userChains: CHAINS_STORAGE_DEFAULT,
   userNodes: USER_NODES_STORAGE_DEFAULT,
   pools: POOLS_STORAGE_DEFAULT
 }

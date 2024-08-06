@@ -7,7 +7,7 @@ import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
-import { isEnabledChain } from '../../../../shared/utils/chain'
+import { isSupportedChain } from '../../../../shared/utils/chain'
 import { LoadingView } from '../../../components/shared/loading'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { SelectedWalletAsset } from '../../../services/wallet/types'
@@ -26,7 +26,7 @@ export const InteractView: React.FC<Props> = (): JSX.Element => {
   const renderSendView = useCallback(
     (asset: SelectedWalletAsset) => {
       const chain = asset.asset.chain
-      if (!isEnabledChain(chain)) {
+      if (!isSupportedChain(chain)) {
         return (
           <h1>
             {intl.formatMessage(

@@ -1,9 +1,19 @@
 import * as E from 'fp-ts/Either'
 
+import { CHAIN_STRINGS } from '../api/defaultChains'
 import { PoolsStorageEncoded } from '../api/io'
-import { ApiLang, ApiKeystore, ApiUrl, ApiHDWallet, UserNodesStorage, IPCExportKeystoreParams } from '../api/types'
+import {
+  ApiLang,
+  ApiKeystore,
+  ApiUrl,
+  ApiHDWallet,
+  UserNodesStorage,
+  IPCExportKeystoreParams,
+  UserChainStorage
+} from '../api/types'
 import { ApiFileStoreService, CommonStorage } from '../api/types'
 import { Locale } from '../i18n/types'
+import { EnabledChain } from '../utils/chain'
 import { MOCK_KEYSTORE } from './wallet'
 
 // Mock "empty" `apiKeystore`
@@ -36,6 +46,13 @@ export const apiHDWallet: ApiHDWallet = {
   approveLedgerERC20Token: () => Promise.resolve(E.right('tx_hash')),
   saveLedgerAddresses: (_) => Promise.resolve(E.right([])),
   getLedgerAddresses: () => Promise.resolve(E.right([]))
+}
+
+export const mockEnabledChains: Record<EnabledChain, string> = {
+  BCHChain: CHAIN_STRINGS.BCHChain,
+  BTCChain: CHAIN_STRINGS.BTCChain,
+  DOGEChain: CHAIN_STRINGS.DOGEChain,
+  THORChain: CHAIN_STRINGS.THORChain
 }
 
 const commonStorageData: CommonStorage = {
@@ -108,5 +125,17 @@ export const apiPoolsStorage: ApiFileStoreService<PoolsStorageEncoded> = {
   save: (_: Partial<CommonStorage>) => Promise.resolve(poolsStorageData),
   remove: () => Promise.resolve(console.log('mock remove pools storage data')),
   get: () => Promise.resolve(poolsStorageData),
+  exists: () => Promise.resolve(true)
+}
+
+const userChainStorageData: UserChainStorage = {
+  chains: [],
+  version: '1'
+}
+
+export const apiChainStorage: ApiFileStoreService<UserChainStorage> = {
+  save: (_: Partial<CommonStorage>) => Promise.resolve(userChainStorageData),
+  remove: () => Promise.resolve(console.log('mock remove chain storage data')),
+  get: () => Promise.resolve(userChainStorageData),
   exists: () => Promise.resolve(true)
 }

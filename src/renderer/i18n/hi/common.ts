@@ -39,6 +39,8 @@ const common: CommonMessages = {
   'common.general': 'सामान्य',
   'common.advanced': 'उन्नत',
   'common.privateData': 'निजी डेटा',
+  'common.enable': 'सक्षम करें',
+  'common.disable': 'अक्षम करें',
   'common.remove': 'हटाएँ',
   'common.keystore': 'कीस्टोर',
   'common.keystorePassword': 'कीस्टोर पासवर्ड',

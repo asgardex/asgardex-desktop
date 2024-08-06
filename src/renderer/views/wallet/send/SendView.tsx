@@ -21,7 +21,7 @@ import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
-import { isChainOfMaya, isEnabledChain } from '../../../../shared/utils/chain'
+import { isChainOfMaya, isSupportedChain } from '../../../../shared/utils/chain'
 import { BackLinkButton, RefreshButton } from '../../../components/uielements/button'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
@@ -83,7 +83,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
   const renderSendView = useCallback(
     (asset: SelectedWalletAsset) => {
       const chain = asset.asset.synth ? dex.chain : asset.asset.chain
-      if (!isEnabledChain(chain)) {
+      if (!isSupportedChain(chain)) {
         return (
           <h1>
             {intl.formatMessage(

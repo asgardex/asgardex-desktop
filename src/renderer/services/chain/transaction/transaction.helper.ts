@@ -22,14 +22,14 @@ import { THORChain } from '@xchainjs/xchain-thorchain'
 import { BaseAmount, baseAmount } from '@xchainjs/xchain-util'
 import { Chain } from '@xchainjs/xchain-util'
 
-import { isEnabledChain } from '../../../../shared/utils/chain'
+import { isSupportedChain } from '../../../../shared/utils/chain'
 import { KUJI_DECIMAL } from '../../kuji/const'
 
 /**
  * Returns minimal amount (threshold) needed to send a tx on given chain
  */
 export const smallestAmountToSent = (chain: Chain, _network: Network): BaseAmount => {
-  if (!isEnabledChain(chain)) throw Error(`${chain} is not supported for 'smallestAmountToSent$'`)
+  if (!isSupportedChain(chain)) throw Error(`${chain} is not supported for 'smallestAmountToSent$'`)
 
   switch (chain) {
     case BTCChain:
@@ -69,5 +69,7 @@ export const smallestAmountToSent = (chain: Chain, _network: Network): BaseAmoun
     case LTCChain:
       // 1000 satoshi
       return baseAmount(1000, LTC_DECIMAL)
+    default:
+      throw Error(`${chain} is not supported for 'smallestAmountToSent$'`)
   }
 }

@@ -14,7 +14,8 @@ import { useIntl } from 'react-intl'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { ENABLED_CHAINS, getChainsForDex } from '../../../shared/utils/chain'
+import { DEFAULT_ENABLED_CHAINS } from '../../../shared/api/defaultChains'
+import { getChainsForDex } from '../../../shared/utils/chain'
 import { PoolShares as PoolSharesTable } from '../../components/PoolShares'
 import { PoolShareTableRowData } from '../../components/PoolShares/PoolShares.types'
 import { ErrorView } from '../../components/shared/error'
@@ -112,7 +113,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   }, [addressByChain$, dex])
   const INCLUDED_CHAINS = getChainsForDex(dex.chain)
   const [allSharesRD, setAllSharesRD] = useState<RD.RemoteData<Error, PoolShares>>(RD.initial)
-
+  const ENABLED_CHAINS = Object.keys(DEFAULT_ENABLED_CHAINS)
   useEffect(() => {
     const addresses$: WalletAddress$[] = FP.pipe(
       [...ENABLED_CHAINS],
@@ -150,7 +151,15 @@ export const PoolShareView: React.FC = (): JSX.Element => {
 
     // Cleanup on unmount or when deps change
     return () => subscription.unsubscribe()
-  }, [dex, allSharesByAddressesThor$, allSharesByAddressesMaya$, addressByChain$, INCLUDED_CHAINS, getLedgerAddress$]) // Include all dependencies that affect the observable pipeline
+  }, [
+    dex,
+    allSharesByAddressesThor$,
+    allSharesByAddressesMaya$,
+    addressByChain$,
+    INCLUDED_CHAINS,
+    getLedgerAddress$,
+    ENABLED_CHAINS
+  ]) // Include all dependencies that affect the observable pipeline
 
   const haltedChains$ = dex.chain === THORChain ? haltedChainsThor$ : haltedMayaChains$
   const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])

@@ -5,7 +5,7 @@ import * as IOG from 'io-ts/Guard'
 
 import { EvmHDMode } from '../evm/types'
 import { HDMode, WalletType } from '../wallet/types'
-import { EnabledChain, isEnabledChain } from './chain'
+import { EnabledChain, isSupportedChain } from './chain'
 
 export const nonEmptyStringGuard: IOG.Guard<unknown, string> = {
   is: (u: unknown): u is string => {
@@ -16,14 +16,14 @@ export const nonEmptyStringGuard: IOG.Guard<unknown, string> = {
   }
 }
 export const enabledChainGuard: IOG.Guard<unknown, EnabledChain> = {
-  is: (u: unknown): u is EnabledChain => nonEmptyStringGuard.is(u) && isEnabledChain(u)
+  is: (u: unknown): u is EnabledChain => nonEmptyStringGuard.is(u) && isSupportedChain(u)
 }
 
 const chainGuard: IOG.Guard<unknown, Chain> = {
   is: (u: unknown): u is Chain =>
     nonEmptyStringGuard.is(u) &&
     // we do support assets of enabled chains only
-    isEnabledChain(u)
+    isSupportedChain(u)
 }
 
 export const isNetwork = (u: unknown): u is Network =>
