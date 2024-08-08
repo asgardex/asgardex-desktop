@@ -11,7 +11,7 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { Dex } from '../../../shared/api/types'
-import { EnabledChain } from '../../../shared/utils/chain'
+import { DEFAULT_ENABLED_CHAINS, EnabledChain } from '../../../shared/utils/chain'
 import { RefreshButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
 import { AssetsTableCollapsable } from '../../components/wallet/assets/AssetsTableCollapsable'
@@ -64,6 +64,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
   const combinedBalances$ = useTotalWalletBalance()
 
   const [enabledChains, setEnabledChains] = useState<Set<EnabledChain>>(new Set())
+  const [disabledChains, setDisabledChains] = useState<EnabledChain[]>([])
 
   useEffect(() => {
     const subscription = userChains$.subscribe((chains: EnabledChain[]) => {
@@ -72,6 +73,12 @@ export const AssetsView: React.FC = (): JSX.Element => {
 
     return () => subscription.unsubscribe()
   }, [])
+
+  useEffect(() => {
+    const defaultChains = Object.keys(DEFAULT_ENABLED_CHAINS) as EnabledChain[]
+    const disabled = defaultChains.filter((chain) => !enabledChains.has(chain))
+    setDisabledChains(disabled)
+  }, [enabledChains])
 
   const [{ chainBalances, balancesByChain, errorsByChain }] = useObservableState(() => combinedBalances$, {
     chainBalances: [],
@@ -199,6 +206,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
         hidePrivateData={isPrivate}
         dex={dex}
         mayaScanPrice={mayaScanPriceRD}
+        disabledChains={disabledChains}
       />
     </>
   )

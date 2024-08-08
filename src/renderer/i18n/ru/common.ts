@@ -41,6 +41,8 @@ const common: CommonMessages = {
   'common.privateData': 'Личные данные',
   'common.enable': 'Включить',
   'common.disable': 'Отключить',
+  'common.disabledChains': 'Отключенные цепи',
+  'common.chainDisabled': 'Вы отключили эту цепочку, пожалуйста, включите ее, чтобы продолжить обмен',
   'common.remove': 'Удалить',
   'common.keystore': 'Keystore',
   'common.keystorePassword': 'Пароль Keystore',

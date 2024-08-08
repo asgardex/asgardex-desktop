@@ -40,6 +40,8 @@ const common: CommonMessages = {
   'common.privateData': 'Données privées',
   'common.enable': 'Activer',
   'common.disable': 'Désactiver',
+  'common.disabledChains': 'Chaînes désactivées',
+  'common.chainDisabled': 'Vous avez désactivé cette chaîne, veuillez l’activer pour continuer l’échange',
   'common.remove': 'Supprimer',
   'common.keystore': 'Keystore',
   'common.keystorePassword': 'Keystore mot de passe',

@@ -41,6 +41,8 @@ const common: CommonMessages = {
   'common.privateData': 'Private Data',
   'common.enable': 'Enable',
   'common.disable': 'Disable',
+  'common.disabledChains': 'Disabled Chains',
+  'common.chainDisabled': 'You have disabled {chain} chain, please enable to continue with swap',
   'common.remove': 'Remove',
   'common.keystore': 'Keystore',
   'common.keystorePassword': 'Keystore password',

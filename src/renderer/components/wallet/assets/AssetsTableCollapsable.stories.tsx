@@ -194,6 +194,7 @@ const Template = (args: Partial<Record<EnabledChain, RDStatus>>) => {
       hidePrivateData={false}
       dex={thorDetails}
       mayaScanPrice={RD.initial}
+      disabledChains={[]}
     />
   )
 }

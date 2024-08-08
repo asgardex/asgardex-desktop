@@ -26,7 +26,7 @@ import { useNavigate } from 'react-router'
 
 import { Dex } from '../../../../shared/api/types'
 import { AssetRuneNative } from '../../../../shared/utils/asset'
-import { chainToString, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
+import { chainToString, EnabledChain, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { DEFAULT_WALLET_TYPE, ZERO_BASE_AMOUNT } from '../../../const'
 import { isCacaoAsset, isMayaAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
@@ -93,6 +93,7 @@ type Props = {
   hidePrivateData: boolean
   dex: Dex
   mayaScanPrice: MayaScanPriceRD
+  disabledChains: EnabledChain[]
 }
 
 export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
@@ -111,7 +112,8 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
     network,
     hidePrivateData,
     dex,
-    mayaScanPrice
+    mayaScanPrice,
+    disabledChains
   } = props
 
   const intl = useIntl()
@@ -714,6 +716,20 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
             ? intl.formatMessage({ id: 'common.collapseAll' })
             : intl.formatMessage({ id: 'common.expandAll' })}
         </div>
+        {disabledChains.length > 0 ? (
+          <div className="flex items-center text-14 text-gray2 dark:border-gray1d dark:text-gray2d">
+            <p className="m-2 ">{intl.formatMessage({ id: 'common.disabledChains' })}</p>
+            <div className="flex space-x-2">
+              {disabledChains.map((chain) => (
+                <span key={chain} className="rounded bg-gray-200 px-2 py-1">
+                  {chain}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <></>
+        )}
       </Row>
 
       <Styled.Collapse
