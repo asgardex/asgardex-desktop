@@ -2536,7 +2536,9 @@ export const Swap = ({
         O.isNone(oRecipientAddress) ||
         !canSwap ||
         customAddressEditActive ||
-        quoteExpired),
+        quoteExpired ||
+        isTargetChainDisabled ||
+        isSourceChainDisabled),
     [
       network,
       disableSwapAction,
@@ -2554,7 +2556,9 @@ export const Swap = ({
       oRecipientAddress,
       canSwap,
       customAddressEditActive,
-      quoteExpired
+      quoteExpired,
+      isTargetChainDisabled,
+      isSourceChainDisabled
     ]
   )
 
