@@ -1,13 +1,16 @@
 import { Network } from '@xchainjs/xchain-client'
-import { AssetETH } from '@xchainjs/xchain-ethereum'
 import { Asset } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
+import { of, from } from 'rxjs'
+import { map, switchMap, tap, catchError } from 'rxjs/operators'
 
+import { etherscanApiKey } from '../../../shared/api/etherscan'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { ETHAssetsTestnet } from '../../const'
+import { validAssetForETH } from '../../helpers/assetHelper'
+import { liveData } from '../../helpers/rx/liveData'
 import { observableState } from '../../helpers/stateHelper'
-import { ERC20_WHITELIST } from '../../types/generated/thorchain/erc20whitelist'
 import * as C from '../clients'
 import { client$ } from './common'
 
@@ -26,7 +29,18 @@ const reloadBalances = () => {
   setReloadBalances(true)
 }
 
-// State of balances loaded by Client
+const fetchBalanceFromEtherscan = (address: string) => {
+  const url = `https://api.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=${etherscanApiKey}`
+  return fetch(url)
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.error) {
+        throw new Error(data.error.message)
+      }
+      return data.result
+    })
+}
+
 const balances$: ({
   walletType,
   network,
@@ -40,21 +54,7 @@ const balances$: ({
   walletIndex: number
   hdMode: HDMode
 }) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, network, hdMode }) => {
-  // For testnet we limit requests by using pre-defined assets only
-  // For mainnet we use the whiteList assets to avoid calling balances on airdropped scam tokens.
-  const getAssets = (network: Network): Asset[] | undefined => {
-    const assets: Asset[] | undefined = network === Network.Testnet ? ETHAssetsTestnet : undefined
-
-    return network === Network.Mainnet
-      ? FP.pipe(
-          ERC20_WHITELIST,
-          A.filter(({ asset }) => !asset.synth),
-          A.map(({ asset }) => asset),
-          (whitelistedAssets) => [AssetETH, ...whitelistedAssets]
-        )
-      : assets
-  }
-  const assets: Asset[] | undefined = getAssets(network)
+  const assets: Asset[] | undefined = network === Network.Testnet ? ETHAssetsTestnet : undefined
   return FP.pipe(
     C.balances$({
       client$,
@@ -65,7 +65,25 @@ const balances$: ({
       walletIndex,
       hdMode,
       walletBalanceType: 'all'
-    })
+    }),
+    switchMap((balances) =>
+      from(fetchBalanceFromEtherscan('0xf155e9cdd77a5d77073ab43d17f661507c08e23d')).pipe(
+        tap((data) => {
+          console.log('Balance from Etherscan API:', data)
+        }),
+        catchError((error) => {
+          console.error('Error fetching balance from Etherscan API:', error)
+          return of(null) // Return a default value or handle the error as needed
+        }),
+        map((etherscanBalance) => {
+          console.log(balances)
+          console.log(etherscanBalance)
+          // Here you can merge or use the etherscanBalance with your balances if needed
+          return balances
+        })
+      )
+    ),
+    liveData.map(FP.flow(A.filter(({ asset }) => validAssetForETH(asset, network))))
   )
 }
 
