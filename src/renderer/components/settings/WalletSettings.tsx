@@ -17,7 +17,7 @@ import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Address, Chain } from '@xchainjs/xchain-util'
-import { List, Collapse, RadioChangeEvent } from 'antd'
+import { List, Collapse, RadioChangeEvent, AutoComplete, message } from 'antd'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
 import * as O from 'fp-ts/lib/Option'
@@ -45,6 +45,7 @@ import { useSubscriptionState } from '../../hooks/useSubscriptionState'
 import * as appRoutes from '../../routes/app'
 import * as walletRoutes from '../../routes/wallet'
 import { userChains$, addChain, removeChain } from '../../services/storage/userChains'
+import { addAsset } from '../../services/storage/userChainTokens'
 import {
   KeystoreWalletsUI,
   RemoveKeystoreWalletHandler,
@@ -61,6 +62,7 @@ import {
   VerifiedLedgerAddressRD
 } from '../../services/wallet/types'
 import { walletTypeToI18n } from '../../services/wallet/util'
+import { ERC20_WHITELIST } from '../../types/generated/thorchain/erc20whitelist'
 import { AttentionIcon } from '../icons'
 import * as StyledR from '../shared/form/Radio.styles'
 import { BorderButton, FlatButton, TextButton } from '../uielements/button'
@@ -611,6 +613,39 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     }
   }, [exportKeystore, setExportKeystoreErrorMsg])
 
+  // Handler to update the search state
+  const [ethAssetSearch, setEthAssetSearch] = useState<string>('')
+  const [filteredAssets, setFilteredAssets] = useState<Asset[]>([])
+
+  const handleEthAssetSearch = useCallback((value: string) => {
+    const searchValue = value.toUpperCase()
+    setEthAssetSearch(searchValue)
+
+    // Filter and map to return only the asset objects
+    const matchedAssets = ERC20_WHITELIST.filter(
+      ({ asset }) => asset.symbol.toUpperCase().includes(searchValue) && !asset.synth
+    ).map(({ asset }) => asset)
+
+    setFilteredAssets(matchedAssets)
+  }, [])
+
+  const addAssetToEthChain = useCallback((asset: Asset) => {
+    addAsset(asset)
+    setEthAssetSearch('')
+    setFilteredAssets([])
+  }, [])
+
+  const onSelectAsset = useCallback(
+    (value: string) => {
+      const selectedAsset = filteredAssets.find((asset) => asset.symbol === value)
+      if (selectedAsset) {
+        addAssetToEthChain(selectedAsset)
+        message.success(`${selectedAsset.symbol} added to ETH chain successfully!`)
+      }
+    },
+    [addAssetToEthChain, filteredAssets]
+  )
+
   const renderAccounts = useMemo(
     () =>
       FP.pipe(
@@ -641,6 +676,24 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                       : intl.formatMessage({ id: 'common.enable' })}
                   </span>
                 </div>
+                {chain === ETHChain && (
+                  <div className="mx-40px mt-10px flex w-full items-center">
+                    <AutoComplete
+                      value={ethAssetSearch}
+                      onChange={handleEthAssetSearch} // Ensure this works correctly with AutoComplete's API
+                      onSelect={onSelectAsset}
+                      style={{ minWidth: 450, width: 'auto' }}
+                      placeholder={intl.formatMessage({ id: 'common.searchAsset' })}
+                      allowClear>
+                      {filteredAssets.map((asset) => (
+                        <AutoComplete.Option key={asset.symbol} value={asset.symbol}>
+                          <div>{asset.symbol}</div>
+                        </AutoComplete.Option>
+                      ))}
+                    </AutoComplete>
+                    <InfoIcon className="ml-10px" tooltip={intl.formatMessage({ id: 'common.addAssetManually' })} />
+                  </div>
+                )}
               </Styled.ListItem>
             )}
           />
@@ -653,9 +706,13 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
       network,
       renderLedgerAddress,
       renderLedgerNotSupported,
-      intl,
       enabledChains,
-      toggleChain
+      intl,
+      ethAssetSearch,
+      filteredAssets,
+      toggleChain,
+      handleEthAssetSearch,
+      onSelectAsset
     ]
   )
 

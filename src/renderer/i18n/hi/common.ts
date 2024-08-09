@@ -96,6 +96,7 @@ const common: CommonMessages = {
   'common.min': 'न्यूनतम',
   'common.search': 'खोज',
   'common.searchAsset': 'एसेट खोजें',
+  'common.addAssetManually': 'ERC20 नहीं दिख रहा है? संपत्ति को मैन्युअल रूप से जोड़ें',
   'common.searchExample': 'गैर सिंथ चेन.टिकर के लिए खोज उदाहरण जैसे कि btc.btc या सिंथ के लिए btc/btc',
   'common.excludeSynth': 'सिंथ्स को बाहर करें',
   'common.retry': 'पुनः प्रयास करें',

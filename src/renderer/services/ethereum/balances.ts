@@ -7,11 +7,12 @@ import { of } from 'rxjs'
 import { switchMap } from 'rxjs/operators'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
-import { ETHAssetsFallBack, ETHAssetsTestnet } from '../../const'
+import { ETHAssetsTestnet } from '../../const'
 import { validAssetForETH } from '../../helpers/assetHelper'
 import { liveData } from '../../helpers/rx/liveData'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
+import { userAssets$ } from '../storage/userChainTokens'
 import { client$ } from './common'
 
 /**
@@ -42,36 +43,36 @@ const balances$: ({
   walletIndex: number
   hdMode: HDMode
 }) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, network, hdMode }) => {
-  const assets: Asset[] | undefined = network === Network.Testnet ? ETHAssetsTestnet : undefined
-
+  // Use userAssets$ directly for the assets
   return FP.pipe(
-    C.balances$({
-      client$,
-      trigger$: reloadBalances$,
-      assets,
-      walletType,
-      walletAccount,
-      walletIndex,
-      hdMode,
-      walletBalanceType: 'all'
-    }),
-    switchMap((balanceResult) => {
+    userAssets$, // Directly use userAssets$
+    switchMap((assets) =>
+      C.balances$({
+        client$,
+        trigger$: reloadBalances$,
+        assets,
+        walletType,
+        walletAccount,
+        walletIndex,
+        hdMode,
+        walletBalanceType: 'all'
+      })
+    ),
+    switchMap((balanceResult) =>
       // Check if the balance call failed
-      if (RD.isFailure(balanceResult)) {
-        // Retry with fallback assets
-        return C.balances$({
-          client$,
-          trigger$: reloadBalances$,
-          assets: ETHAssetsFallBack,
-          walletType,
-          walletAccount,
-          walletIndex,
-          hdMode,
-          walletBalanceType: 'all'
-        })
-      }
-      return of(balanceResult)
-    }),
+      RD.isFailure(balanceResult)
+        ? C.balances$({
+            client$,
+            trigger$: reloadBalances$,
+            assets: [], // Retry with an empty asset list or handle the error accordingly
+            walletType,
+            walletAccount,
+            walletIndex,
+            hdMode,
+            walletBalanceType: 'all'
+          })
+        : of(balanceResult)
+    ),
     liveData.map(FP.flow(A.filter(({ asset }) => validAssetForETH(asset, network))))
   )
 }

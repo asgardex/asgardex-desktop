@@ -1,5 +1,6 @@
+import { ETHAssetsFallBack } from '../renderer/const'
 import { PoolsStorageEncoded } from './api/io'
-import { StoreFilesContent, UserChainStorage, UserNodesStorage } from './api/types'
+import { StoreFilesContent, UserAssetStorage, UserChainStorage, UserNodesStorage } from './api/types'
 import { DEFAULT_EVM_HD_MODE } from './evm/types'
 import { DEFAULT_LOCALE } from './i18n/const'
 import { DEFAULT_MAYANODE_API_URLS, DEFAULT_MAYANODE_RPC_URLS } from './mayachain/const'
@@ -52,6 +53,12 @@ export const CHAINS_STORAGE_DEFAULT: UserChainStorage = {
   version: CHAINS_STORAGE_VERSION,
   chains: Object.keys(DEFAULT_ENABLED_CHAINS) as EnabledChain[]
 }
+const ASSETS_STORAGE_VERSION = '1'
+
+export const ASSETS_STORAGE_DEFAULT: UserAssetStorage = {
+  version: ASSETS_STORAGE_VERSION,
+  assets: ETHAssetsFallBack
+}
 // increase it by `1` if you want to ignore previous version of `common` storage
 const POOLS_STORAGE_VERSION = '1'
 
@@ -83,6 +90,7 @@ export const DEFAULT_STORAGES: StoreFilesContent = {
     mayanodeRpc: DEFAULT_MAYANODE_RPC_URLS
   },
   userChains: CHAINS_STORAGE_DEFAULT,
+  userAssets: ASSETS_STORAGE_DEFAULT,
   userNodes: USER_NODES_STORAGE_DEFAULT,
   pools: POOLS_STORAGE_DEFAULT
 }
