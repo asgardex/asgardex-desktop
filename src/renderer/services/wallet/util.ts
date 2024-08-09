@@ -10,7 +10,7 @@ import { IntlShape } from 'react-intl'
 
 import { KeystoreWallets, KeystoreWallet, IPCLedgerAddressesIO } from '../../../shared/api/io'
 import { KeystoreId, LedgerErrorId } from '../../../shared/api/types'
-import { isEnabledChain } from '../../../shared/utils/chain'
+import { isSupportedChain } from '../../../shared/utils/chain'
 import { WalletAddress, WalletType } from '../../../shared/wallet/types'
 import { eqAsset } from '../../helpers/fp/eq'
 import { ordBaseAmount } from '../../helpers/fp/ord'
@@ -230,7 +230,7 @@ export const toIPCLedgerAddressesIO = (addresses: LedgerAddresses): IPCLedgerAdd
     A.filterMap(({ keystoreId, address, chain, network, walletAccount, walletIndex, hdMode }) =>
       FP.pipe(
         chain,
-        O.fromPredicate(isEnabledChain),
+        O.fromPredicate(isSupportedChain),
         O.map((enabledChain) => ({
           keystoreId,
           address,

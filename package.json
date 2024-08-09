@@ -1,7 +1,7 @@
 {
   "name": "asgardex",
   "productName": "ASGARDEX",
-  "version": "1.21.9",
+  "version": "1.22.1",
   "description": "WALLET AND EXCHANGE CLIENT FOR THORCHAIN",
   "main": "index.js",
   "scripts": {

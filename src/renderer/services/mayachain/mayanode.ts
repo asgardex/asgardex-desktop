@@ -23,7 +23,7 @@ import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { isEnabledChain } from '../../../shared/utils/chain'
+import { isSupportedChain } from '../../../shared/utils/chain'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { LiveData, liveData } from '../../helpers/rx/liveData'
@@ -99,7 +99,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
               A.filterMap(({ chain, address, ...rest }) =>
                 // validate chain
                 chain !== undefined &&
-                isEnabledChain(chain) &&
+                isSupportedChain(chain) &&
                 // address is required
                 !!address
                   ? O.some({ chain, address, ...rest })

@@ -27,7 +27,7 @@ import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
-import { isEnabledChain } from '../../shared/utils/chain'
+import { isSupportedChain } from '../../shared/utils/chain'
 import { LedgerAddresses } from '../services/wallet/types'
 import { eqChain } from './fp/eq'
 
@@ -37,37 +37,29 @@ export const truncateAddress = (addr: Address, chain: Chain, network: Network): 
   return `${first}...${last}`
 }
 
-export const getAddressPrefixLength = (chain: Chain, network: Network): number => {
-  if (!isEnabledChain(chain)) throw Error(`${chain} is not supported for 'getAddressPrefixLength'`)
+const chainPrefixLengthFunctions: Record<Chain, (network: Network) => number> = {
+  [BTCChain]: (network: Network) => getBitcoinPrefix(network).length,
+  [GAIAChain]: () => getCosmosPrefix().length,
+  [ETHChain]: () => getEvmPrefix().length,
+  [ARBChain]: () => getEvmPrefix().length,
+  [AVAXChain]: () => getEvmPrefix().length,
+  [BSCChain]: () => getEvmPrefix().length,
+  [DOGEChain]: (network: Network) => getDogePrefix(network).length,
+  [THORChain]: (network: Network) => getThorchainPrefix(network).length,
+  [MAYAChain]: (network: Network) => getMayachainPrefix(network).length,
+  [LTCChain]: (network: Network) => getLitecoinPrefix(network).length,
+  [DASHChain]: (network: Network) => getDashPrefix(network).length,
+  [BCHChain]: () => getBCHPrefix().length,
+  [KUJIChain]: () => 'kujira'.length // tobefixed
+}
 
-  switch (chain) {
-    case BTCChain:
-      return getBitcoinPrefix(network).length
-    case GAIAChain:
-      return getCosmosPrefix().length
-    case ETHChain:
-      return getEvmPrefix().length
-    case ARBChain:
-      return getEvmPrefix().length
-    case AVAXChain:
-      return getEvmPrefix().length
-    case BSCChain:
-      return getEvmPrefix().length
-    case DOGEChain:
-      return getDogePrefix(network).length
-    case THORChain:
-      return getThorchainPrefix(network).length
-    case MAYAChain:
-      return getMayachainPrefix(network).length
-    case LTCChain:
-      return getLitecoinPrefix(network).length
-    case DASHChain:
-      return getDashPrefix(network).length
-    case BCHChain:
-      return getBCHPrefix().length
-    case KUJIChain:
-      return 'kujira'.length // tobefixed
-  }
+export const getAddressPrefixLength = (chain: Chain, network: Network): number => {
+  if (!isSupportedChain(chain)) throw new Error(`${chain} is not supported for 'getAddressPrefixLength'`)
+
+  const getPrefixLength = chainPrefixLengthFunctions[chain]
+  if (!getPrefixLength) throw new Error(`No prefix length function found for chain ${chain}`)
+
+  return getPrefixLength(network)
 }
 
 /**

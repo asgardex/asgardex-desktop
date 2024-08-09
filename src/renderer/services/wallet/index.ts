@@ -1,4 +1,5 @@
 import { network$ } from '../app/service'
+import { userChains$ } from '../storage/userChains'
 import { createBalancesService } from './balances'
 import { setSelectedAsset, selectedAsset$, client$ } from './common'
 import { keystoreService, removeKeystoreWallet } from './keystore'
@@ -22,7 +23,8 @@ const {
 const { reloadBalances, reloadBalancesByChain, balancesState$, chainBalances$ } = createBalancesService({
   keystore$: keystoreService.keystoreState$,
   network$,
-  getLedgerAddress$
+  getLedgerAddress$,
+  userChains$
 })
 
 /**

@@ -27,7 +27,7 @@ import { useNavigate } from 'react-router-dom'
 import { KeystoreId } from '../../../shared/api/types'
 import { getDerivationPath as getEvmDerivationPath } from '../../../shared/evm/ledger'
 import { EvmHDMode } from '../../../shared/evm/types'
-import { chainToString, EnabledChain, isEnabledChain } from '../../../shared/utils/chain'
+import { chainToString, EnabledChain, isSupportedChain } from '../../../shared/utils/chain'
 import { isError } from '../../../shared/utils/guard'
 import { HDMode, WalletAddress } from '../../../shared/wallet/types'
 import { ReactComponent as UnlockOutlined } from '../../assets/svg/icon-unlock-warning.svg'
@@ -44,6 +44,7 @@ import { getWalletNamesFromKeystoreWallets, isEnabledLedger } from '../../helper
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
 import * as appRoutes from '../../routes/app'
 import * as walletRoutes from '../../routes/wallet'
+import { userChains$, addChain, removeChain } from '../../services/storage/userChains'
 import {
   KeystoreWalletsUI,
   RemoveKeystoreWalletHandler,
@@ -63,6 +64,7 @@ import { walletTypeToI18n } from '../../services/wallet/util'
 import { AttentionIcon } from '../icons'
 import * as StyledR from '../shared/form/Radio.styles'
 import { BorderButton, FlatButton, TextButton } from '../uielements/button'
+import { SwitchButton } from '../uielements/button/SwitchButton'
 import { Tooltip, WalletTypeLabel } from '../uielements/common/Common.styles'
 import { InfoIcon } from '../uielements/info'
 import { Modal } from '../uielements/modal'
@@ -549,6 +551,28 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
   )
 
   const [accountFilter, setAccountFilter] = useState(emptyString)
+  const [enabledChains, setEnabledChains] = useState<EnabledChain[]>([])
+
+  useEffect(() => {
+    const subscription = userChains$.subscribe(setEnabledChains)
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const toggleChain = useCallback(
+    (chain: EnabledChain) => {
+      const updatedChains = enabledChains.includes(chain)
+        ? enabledChains.filter((c) => c !== chain)
+        : [...enabledChains, chain]
+
+      setEnabledChains(updatedChains)
+      if (enabledChains.includes(chain)) {
+        removeChain(chain)
+      } else {
+        addChain(chain)
+      }
+    },
+    [enabledChains]
+  )
 
   const filterAccounts = useCallback(({ target }: React.ChangeEvent<HTMLInputElement>) => {
     const value = target.value
@@ -605,9 +629,17 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                   {/* keystore */}
                   {renderKeystoreAddress(chain, keystore)}
                   {/* ledger */}
-                  {isEnabledLedger(chain, network) && isEnabledChain(chain)
+                  {isEnabledLedger(chain, network) && isSupportedChain(chain)
                     ? renderLedgerAddress(chain, oLedger)
                     : renderLedgerNotSupported}
+                </div>
+                <div className="mx-40px mt-10px w-full">
+                  <SwitchButton active={enabledChains.includes(chain)} onChange={() => toggleChain(chain)} />
+                  <span className="ml-2 text-text0 dark:text-text0d">
+                    {enabledChains.includes(chain)
+                      ? intl.formatMessage({ id: 'common.disable' })
+                      : intl.formatMessage({ id: 'common.enable' })}
+                  </span>
                 </div>
               </Styled.ListItem>
             )}
@@ -615,7 +647,16 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
         )),
         O.getOrElse(() => <></>)
       ),
-    [oFilteredWalletAccounts, renderKeystoreAddress, network, renderLedgerAddress, renderLedgerNotSupported]
+    [
+      oFilteredWalletAccounts,
+      renderKeystoreAddress,
+      network,
+      renderLedgerAddress,
+      renderLedgerNotSupported,
+      intl,
+      enabledChains,
+      toggleChain
+    ]
   )
 
   const { state: changeWalletState, subscribe: subscribeChangeWalletState } =

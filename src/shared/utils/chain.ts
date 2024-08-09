@@ -13,39 +13,54 @@ import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 
-/**
- * All chains are currently supported by ASGDX
- * Whenever you want to support another chain, here is the first place to add it tobefixed
- */
-export const ENABLED_CHAINS = [
-  BCHChain,
-  BTCChain,
-  GAIAChain,
-  DOGEChain,
-  ETHChain,
-  LTCChain,
-  THORChain,
-  ARBChain,
-  AVAXChain,
-  BSCChain,
-  MAYAChain,
-  DASHChain,
-  KUJIChain
-] as const
+export const CHAIN_STRINGS: Record<Chain, string> = {
+  [BCHChain]: 'Bitcoin Cash',
+  [BTCChain]: 'Bitcoin',
+  [GAIAChain]: 'GAIA',
+  [DOGEChain]: 'Dogecoin',
+  [ETHChain]: 'Ethereum',
+  [LTCChain]: 'Litecoin',
+  [THORChain]: 'THORChain',
+  [ARBChain]: 'Arbitrum',
+  [AVAXChain]: 'Avax',
+  [BSCChain]: 'BNB Chain (BSC)',
+  [MAYAChain]: 'MAYAChain',
+  [DASHChain]: 'DASH',
+  [KUJIChain]: 'KUJI'
+}
 
-export type EnabledChain = typeof ENABLED_CHAINS[number]
+export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
+  [BCHChain]: CHAIN_STRINGS[BCHChain],
+  [BTCChain]: CHAIN_STRINGS[BTCChain],
+  [GAIAChain]: CHAIN_STRINGS[GAIAChain],
+  [DOGEChain]: CHAIN_STRINGS[DOGEChain],
+  [ETHChain]: CHAIN_STRINGS[ETHChain],
+  [LTCChain]: CHAIN_STRINGS[LTCChain],
+  [THORChain]: CHAIN_STRINGS[THORChain],
+  [ARBChain]: CHAIN_STRINGS[ARBChain],
+  [AVAXChain]: CHAIN_STRINGS[AVAXChain],
+  [BSCChain]: CHAIN_STRINGS[BSCChain],
+  [MAYAChain]: CHAIN_STRINGS[MAYAChain],
+  [DASHChain]: CHAIN_STRINGS[DASHChain],
+  [KUJIChain]: CHAIN_STRINGS[KUJIChain]
+}
 
-/**
- * Type guard
- * whether `Chain` is `EnableChain`
- */
-export const isEnabledChain = (u: string): u is EnabledChain => ENABLED_CHAINS.includes(u as EnabledChain)
+export type EnabledChain = keyof typeof DEFAULT_ENABLED_CHAINS
+
+// Function to get the enabled chains from storage, with a fallback to default chains
+
+// /**
+//  * Type guard
+//  * whether `Chain` is `supported`
+//  */
+export const isSupportedChain = (u: string): u is EnabledChain =>
+  Object.keys(DEFAULT_ENABLED_CHAINS).includes(u as EnabledChain)
 
 // Mapping of DEXs to their supported chains, Update this when new chains are added
 export const DEX_CHAINS: { [key: string]: ReadonlyArray<Chain> } = {
   MAYA: ['DASH', 'BTC', 'ETH', 'KUJI', 'THOR', 'MAYA', 'ARB'],
   // For THOR, filter out chains that are maya specific
-  THOR: ENABLED_CHAINS.filter((chain) => !['DASH', 'KUJI', 'MAYA', 'ARB'].includes(chain))
+  THOR: Object.keys(DEFAULT_ENABLED_CHAINS).filter((chain) => !['DASH', 'KUJI', 'MAYA', 'ARB'].includes(chain))
 }
 
 // Function to retrieve chains for a specific DEX
@@ -73,36 +88,7 @@ export const isChainOfThor = (chain: Chain): boolean => {
  * TODO (@veado) Return `Maybe<string>` instead of throwing an error
  */
 export const chainToString = (chain: Chain): string => {
-  if (!isEnabledChain(chain)) return `unknown chain ${chain}`
-
-  switch (chain) {
-    case BCHChain:
-      return 'Bitcoin Cash'
-    case BTCChain:
-      return 'Bitcoin'
-    case GAIAChain:
-      return 'GAIA'
-    case DOGEChain:
-      return 'Dogecoin'
-    case ETHChain:
-      return 'Ethereum'
-    case LTCChain:
-      return 'Litecoin'
-    case THORChain:
-      return 'THORChain'
-    case ARBChain:
-      return 'Arbitrum'
-    case AVAXChain:
-      return 'Avax'
-    case BSCChain:
-      return 'BNB Chain (BSC)'
-    case MAYAChain:
-      return 'MAYAChain'
-    case DASHChain:
-      return 'DASH'
-    case KUJIChain:
-      return 'KUJI'
-  }
+  return CHAIN_STRINGS[chain] || `unknown chain ${chain}`
 }
 
 /**

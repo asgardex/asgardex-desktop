@@ -104,7 +104,7 @@ export const AssetDetailsView: React.FC = (): JSX.Element => {
         RxOp.switchMap(
           O.fold(
             () => Rx.of(O.none),
-            ({ asset }) => clientByAsset$(asset)
+            ({ asset }) => clientByAsset$(asset, dex)
           )
         )
       ),

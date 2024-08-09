@@ -11,7 +11,7 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
 import { DEFAULT_LOCALE } from '../../../shared/i18n/const'
-import { chainToString, ENABLED_CHAINS } from '../../../shared/utils/chain'
+import { chainToString, DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
 import { envOrDefault } from '../../../shared/utils/env'
 import { Footer } from '../../components/footer'
 import { Header } from '../../components/header'
@@ -113,7 +113,7 @@ export const AppView: React.FC = (): JSX.Element => {
           msg = mimirHalt.haltTHORChain ? intl.formatMessage({ id: 'halt.thorchain' }) : msg
 
           if (!mimirHalt.haltTHORChain && !mimirHalt.haltTrading) {
-            const haltedChainsState: HaltedChainsState[] = ENABLED_CHAINS.map((chain) => {
+            const haltedChainsState: HaltedChainsState[] = Object.keys(DEFAULT_ENABLED_CHAINS).map((chain) => {
               return {
                 chain,
                 haltedChain: mimirHalt[`halt${chain}Chain`],

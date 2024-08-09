@@ -24,7 +24,7 @@ import * as Rx from 'rxjs'
 import { from } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { ENABLED_CHAINS } from '../../../shared/utils/chain'
+import { DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
 import { WalletType } from '../../../shared/wallet/types'
 import { SaversDetailsTable } from '../../components/savers/SaversDetailsTable'
 import { RefreshButton } from '../../components/uielements/button'
@@ -118,7 +118,7 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
   const poolAsset = useMemo(() => {
     return poolSavers ? poolSavers.map((detail) => assetFromStringEx(detail.asset)) : []
   }, [poolSavers])
-
+  const ENABLED_CHAINS = Object.keys(DEFAULT_ENABLED_CHAINS)
   useEffect(() => {
     // If poolAsset is Some, destructure and use its value
     if (poolAsset) {
@@ -191,7 +191,7 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
         subscriptions.forEach((sub) => sub.unsubscribe())
       }
     }
-  }, [addressByChain$, getLedgerAddress$, getSaverProvider$, poolAsset])
+  }, [ENABLED_CHAINS, addressByChain$, getLedgerAddress$, getSaverProvider$, poolAsset])
 
   useEffect(() => {
     const assetDetails: AssetProps[] = Object.keys(allSaverProviders)

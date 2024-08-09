@@ -19,7 +19,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 
-import { isEnabledChain } from '../../../../shared/utils/chain'
+import { isSupportedChain } from '../../../../shared/utils/chain'
 import { DEFAULT_FEE_OPTION } from '../../../components/wallet/txs/send/Send.const'
 import { LiveData, liveData } from '../../../helpers/rx/liveData'
 import * as ARB from '../../arb'
@@ -61,7 +61,7 @@ export const sendTx$ = ({
   dex
 }: SendTxParams): TxHashLD => {
   const { chain } = asset.synth ? dex.asset : asset
-  if (!isEnabledChain(chain)) return txFailure$(`${chain} is not supported for 'sendTx$'`)
+  if (!isSupportedChain(chain)) return txFailure$(`${chain} is not supported for 'sendTx$'`)
 
   switch (chain) {
     case BTCChain:
@@ -216,6 +216,8 @@ export const sendTx$ = ({
           })
         })
       )
+    default:
+      return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)
   }
 }
 
@@ -233,10 +235,10 @@ export const sendPoolTx$ = ({
   feeOption = DEFAULT_FEE_OPTION,
   dex
 }: SendPoolTxParams): TxHashLD => {
-  // update this to suit MayaChainSwap
   const { chain } = asset.synth ? dex.asset : asset
 
-  if (!isEnabledChain(chain)) return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)
+  if (!isSupportedChain(chain)) return txFailure$(`${chain} is not enabled`)
+
   switch (chain) {
     case ETHChain:
       return ETH.sendPoolTx$({
@@ -319,15 +321,17 @@ export const sendPoolTx$ = ({
         hdMode,
         dex
       })
+    default:
+      return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)
   }
 }
 
 export const txStatusByChain$ = ({ txHash, chain }: { txHash: TxHash; chain: Chain }): TxLD => {
-  if (!isEnabledChain(chain)) {
+  if (!isSupportedChain(chain)) {
     return Rx.of(
       RD.failure({
         errorId: ErrorId.GET_TX,
-        msg: `${chain} is not supported for 'txStatusByChain$'`
+        msg: `${chain} is not enabled`
       })
     )
   }
@@ -359,6 +363,13 @@ export const txStatusByChain$ = ({ txHash, chain }: { txHash: TxHash; chain: Cha
       return DASH.txStatus$(txHash, O.none)
     case KUJIChain:
       return KUJI.txStatus$(txHash, O.none)
+    default:
+      return Rx.of(
+        RD.failure({
+          errorId: ErrorId.GET_TX,
+          msg: `${chain} is not supported by 'txStatusByChain$'`
+        })
+      )
   }
 }
 
@@ -371,7 +382,7 @@ export const poolTxStatusByChain$ = ({
   chain: Chain
   assetAddress: O.Option<Address>
 }): TxLD => {
-  if (!isEnabledChain(chain)) {
+  if (!isSupportedChain(chain)) {
     return Rx.of(
       RD.failure({
         errorId: ErrorId.GET_TX,
@@ -399,5 +410,12 @@ export const poolTxStatusByChain$ = ({
     case DASHChain:
     case KUJIChain:
       return txStatusByChain$({ txHash, chain })
+    default:
+      return Rx.of(
+        RD.failure({
+          errorId: ErrorId.GET_TX,
+          msg: `${chain} is not supported for 'poolTxStatusByChain$'`
+        })
+      )
   }
 }

@@ -10,9 +10,9 @@ import { getDerivationPaths } from './common'
 
 export const getAddress = async (
   transport: Transport,
+  network: Network,
   walletAccount: number,
-  walletIndex: number,
-  network: Network
+  walletIndex: number
 ): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
     const clientLedger = new ClientLedger({

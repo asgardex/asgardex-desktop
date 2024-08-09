@@ -10,23 +10,23 @@ import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 
-import { chainToString, isEnabledChain } from './chain'
+import { chainToString, isSupportedChain } from './chain'
 
 describe('chain', () => {
-  it('isEnabledChain', () => {
-    expect(isEnabledChain('BTC')).toBeTruthy()
-    expect(isEnabledChain('BCH')).toBeTruthy()
-    expect(isEnabledChain('ETH')).toBeTruthy()
-    expect(isEnabledChain('ARB')).toBeTruthy()
-    expect(isEnabledChain('AVAX')).toBeTruthy()
-    expect(isEnabledChain('BSC')).toBeTruthy()
-    expect(isEnabledChain('THOR')).toBeTruthy()
-    expect(isEnabledChain('GAIA')).toBeTruthy()
-    expect(isEnabledChain('LTC')).toBeTruthy()
-    expect(isEnabledChain('GAIA')).toBeTruthy()
-    expect(isEnabledChain('ARB')).toBeTruthy()
-    expect(isEnabledChain('invalid')).toBeFalsy()
-    expect(isEnabledChain('')).toBeFalsy()
+  it('isSupportedChain', () => {
+    expect(isSupportedChain('BTC')).toBeTruthy()
+    expect(isSupportedChain('BCH')).toBeTruthy()
+    expect(isSupportedChain('ETH')).toBeTruthy()
+    expect(isSupportedChain('ARB')).toBeTruthy()
+    expect(isSupportedChain('AVAX')).toBeTruthy()
+    expect(isSupportedChain('BSC')).toBeTruthy()
+    expect(isSupportedChain('THOR')).toBeTruthy()
+    expect(isSupportedChain('GAIA')).toBeTruthy()
+    expect(isSupportedChain('LTC')).toBeTruthy()
+    expect(isSupportedChain('GAIA')).toBeTruthy()
+    expect(isSupportedChain('ARB')).toBeTruthy()
+    expect(isSupportedChain('invalid')).toBeFalsy()
+    expect(isSupportedChain('')).toBeFalsy()
   })
 
   describe('chainToString', () => {

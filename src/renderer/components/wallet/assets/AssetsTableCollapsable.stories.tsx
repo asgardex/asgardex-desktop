@@ -14,7 +14,7 @@ import * as O from 'fp-ts/Option'
 import { thorDetails } from '../../../../shared/api/types'
 import { getMockRDValueFactory, RDStatus } from '../../../../shared/mock/rdByStatus'
 import { AssetBTC, AssetETH, AssetLTC, AssetRuneNative, AssetMaya, AssetCacao } from '../../../../shared/utils/asset'
-import { EnabledChain, isEnabledChain } from '../../../../shared/utils/chain'
+import { EnabledChain, isSupportedChain } from '../../../../shared/utils/chain'
 import { WalletType } from '../../../../shared/wallet/types'
 import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
@@ -173,7 +173,7 @@ const Template = (args: Partial<Record<EnabledChain, RDStatus>>) => {
             chainBalances || [],
             A.map((chainBalance) => ({
               ...chainBalance,
-              balances: isEnabledChain(chain)
+              balances: isSupportedChain(chain)
                 ? getBalance(chain, args[chain], chainBalance.walletType)
                 : RD.failure<ApiError>({ errorId: ErrorId.GET_BALANCES, msg: `${chain} not supported` })
             }))
@@ -194,6 +194,7 @@ const Template = (args: Partial<Record<EnabledChain, RDStatus>>) => {
       hidePrivateData={false}
       dex={thorDetails}
       mayaScanPrice={RD.initial}
+      disabledChains={[]}
     />
   )
 }

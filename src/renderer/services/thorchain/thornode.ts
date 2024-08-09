@@ -27,7 +27,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { AssetRuneNative } from '../../../shared/utils/asset'
-import { isEnabledChain } from '../../../shared/utils/chain'
+import { isSupportedChain } from '../../../shared/utils/chain'
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
@@ -111,7 +111,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
               A.filterMap(({ chain, address, ...rest }) =>
                 // validate chain
                 chain !== undefined &&
-                isEnabledChain(chain) &&
+                isSupportedChain(chain) &&
                 // address is required
                 !!address
                   ? O.some({ chain, address, ...rest })
