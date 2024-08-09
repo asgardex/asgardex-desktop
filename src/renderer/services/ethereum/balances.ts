@@ -1,15 +1,13 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { Asset } from '@xchainjs/xchain-util'
-import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import { of } from 'rxjs'
 import { switchMap } from 'rxjs/operators'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
-import { ETHAssetsTestnet } from '../../const'
-import { validAssetForETH } from '../../helpers/assetHelper'
-import { liveData } from '../../helpers/rx/liveData'
+import { ETHAssetsFallBack, ETHAssetsTestnet } from '../../const'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
 import { userAssets$ } from '../storage/userChainTokens'
@@ -42,29 +40,28 @@ const balances$: ({
   walletAccount: number
   walletIndex: number
   hdMode: HDMode
-}) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, network, hdMode }) => {
-  // Use userAssets$ directly for the assets
+}) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, hdMode }) => {
   return FP.pipe(
-    userAssets$, // Directly use userAssets$
-    switchMap((assets) =>
-      C.balances$({
+    userAssets$,
+    switchMap((assets) => {
+      const ethAssets = assets.filter((asset) => asset.chain === ETHChain)
+      return C.balances$({
         client$,
         trigger$: reloadBalances$,
-        assets,
+        assets: ethAssets,
         walletType,
         walletAccount,
         walletIndex,
         hdMode,
         walletBalanceType: 'all'
       })
-    ),
+    }),
     switchMap((balanceResult) =>
-      // Check if the balance call failed
       RD.isFailure(balanceResult)
         ? C.balances$({
             client$,
             trigger$: reloadBalances$,
-            assets: [], // Retry with an empty asset list or handle the error accordingly
+            assets: ETHAssetsFallBack,
             walletType,
             walletAccount,
             walletIndex,
@@ -72,8 +69,7 @@ const balances$: ({
             walletBalanceType: 'all'
           })
         : of(balanceResult)
-    ),
-    liveData.map(FP.flow(A.filter(({ asset }) => validAssetForETH(asset, network))))
+    )
   )
 }
 

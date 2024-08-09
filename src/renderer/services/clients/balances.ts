@@ -9,9 +9,9 @@ import * as RxOp from 'rxjs/operators'
 import { catchError, startWith, map, shareReplay, debounceTime } from 'rxjs/operators'
 
 import { HDMode, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
-import { AVAXAssetsFallback, BSCAssetsFallBack, ETHAssetsFallBack } from '../../const'
 import { liveData } from '../../helpers/rx/liveData'
 import { replaceSymbol } from '../bsc/balances'
+import { userAssets$ } from '../storage/userChainTokens'
 import { ApiError, ErrorId, WalletBalance } from '../wallet/types'
 import { WalletBalancesLD, XChainClient$ } from './types'
 
@@ -165,7 +165,7 @@ type BalancesByAddress$ = ({
 }) => WalletBalancesLD
 
 export const balancesByAddress$: BalancesByAddress$ =
-  ({ client$, trigger$, assets, walletBalanceType }) =>
+  ({ client$, trigger$, walletBalanceType }) =>
   ({ address, walletType, walletAccount, walletIndex, hdMode }) =>
     Rx.combineLatest([trigger$.pipe(RxOp.debounceTime(300)), client$]).pipe(
       RxOp.mergeMap(([_, oClient]) => {
@@ -174,60 +174,36 @@ export const balancesByAddress$: BalancesByAddress$ =
           O.fold(
             () => Rx.of(RD.initial),
             (client) =>
-              loadBalances$({
-                client,
-                address,
-                walletType,
-                assets,
-                walletAccount,
-                walletIndex,
-                walletBalanceType,
-                hdMode
-              }).pipe(
-                RxOp.switchMap((result) => {
-                  if (RD.isFailure(result)) {
-                    const fallbackAssets = getFallbackAssets(client.getAssetInfo().asset.chain) // Implement this function to return the fallback assets for the chain
-                    return loadBalances$({
-                      client,
-                      address,
-                      walletType,
-                      assets: fallbackAssets,
-                      walletAccount,
-                      walletIndex,
-                      walletBalanceType,
-                      hdMode
-                    })
-                  }
-                  return Rx.of(result)
-                }),
-                liveData.map(
-                  FP.flow(
-                    A.map((balance: WalletBalance) => {
-                      return {
-                        ...balance,
-                        asset: replaceSymbol(balance.asset)
-                      }
-                    })
+              FP.pipe(
+                userAssets$,
+                RxOp.switchMap((assets) => {
+                  // Filter the assets by the client's chain
+                  const filteredAssets = assets.filter((asset) => asset.chain === client.getAssetInfo().asset.chain)
+                  return loadBalances$({
+                    client,
+                    address,
+                    walletType,
+                    assets: filteredAssets, // Use filtered assets
+                    walletAccount,
+                    walletIndex,
+                    walletBalanceType,
+                    hdMode
+                  }).pipe(
+                    liveData.map(
+                      FP.flow(
+                        A.map((balance: WalletBalance) => {
+                          return {
+                            ...balance,
+                            asset: replaceSymbol(balance.asset)
+                          }
+                        })
+                      )
+                    )
                   )
-                )
+                })
               )
           )
         )
       }),
       shareReplay(1)
     )
-
-// Helper function to get fallback assets based on the chain
-const getFallbackAssets = (chain: string): Asset[] => {
-  switch (chain) {
-    case 'ETH':
-      return ETHAssetsFallBack
-    case 'BSC':
-      return BSCAssetsFallBack
-    case 'AVAX':
-      return AVAXAssetsFallback
-    // Add more cases as needed
-    default:
-      return [] // Return an empty array if no fallback assets are defined for the chain
-  }
-}

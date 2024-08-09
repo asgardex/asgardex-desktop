@@ -62,6 +62,9 @@ import {
   VerifiedLedgerAddressRD
 } from '../../services/wallet/types'
 import { walletTypeToI18n } from '../../services/wallet/util'
+import { ARB_TOKEN_WHITELIST } from '../../types/generated/mayachain/arberc20whitelist'
+import { AVAX_TOKEN_WHITELIST } from '../../types/generated/thorchain/avaxerc20whitelist'
+import { BSC_TOKEN_WHITELIST } from '../../types/generated/thorchain/bscerc20whitelist'
 import { ERC20_WHITELIST } from '../../types/generated/thorchain/erc20whitelist'
 import { AttentionIcon } from '../icons'
 import * as StyledR from '../shared/form/Radio.styles'
@@ -614,24 +617,46 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
   }, [exportKeystore, setExportKeystoreErrorMsg])
 
   // Handler to update the search state
-  const [ethAssetSearch, setEthAssetSearch] = useState<string>('')
+  const [assetSearch, setAssetSearch] = useState<string>('')
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([])
 
-  const handleEthAssetSearch = useCallback((value: string) => {
+  const handleAssetSearch = useCallback((value: string, chain: Chain) => {
     const searchValue = value.toUpperCase()
-    setEthAssetSearch(searchValue)
+    setAssetSearch(searchValue)
 
-    // Filter and map to return only the asset objects
-    const matchedAssets = ERC20_WHITELIST.filter(
-      ({ asset }) => asset.symbol.toUpperCase().includes(searchValue) && !asset.synth
-    ).map(({ asset }) => asset)
+    let matchedAssets: Asset[]
+    switch (chain) {
+      case ETHChain:
+        matchedAssets = ERC20_WHITELIST.filter(
+          ({ asset }) => asset.symbol.toUpperCase().includes(searchValue) && !asset.synth
+        ).map(({ asset }) => asset)
+        break
+      case AVAXChain:
+        matchedAssets = AVAX_TOKEN_WHITELIST.filter(
+          ({ asset }) => asset.symbol.toUpperCase().includes(searchValue) && !asset.synth
+        ).map(({ asset }) => asset)
+        break
+      case BSCChain:
+        matchedAssets = BSC_TOKEN_WHITELIST.filter(
+          ({ asset }) => asset.symbol.toUpperCase().includes(searchValue) && !asset.synth
+        ).map(({ asset }) => asset)
+        break
+      case ARBChain:
+        matchedAssets = ARB_TOKEN_WHITELIST.filter(
+          ({ asset }) => asset.symbol.toUpperCase().includes(searchValue) && !asset.synth
+        ).map(({ asset }) => asset)
+        break
+      default:
+        matchedAssets = []
+        break
+    }
 
     setFilteredAssets(matchedAssets)
   }, [])
 
-  const addAssetToEthChain = useCallback((asset: Asset) => {
+  const addAssetToStorage = useCallback((asset: Asset) => {
     addAsset(asset)
-    setEthAssetSearch('')
+    setAssetSearch('')
     setFilteredAssets([])
   }, [])
 
@@ -639,11 +664,11 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     (value: string) => {
       const selectedAsset = filteredAssets.find((asset) => asset.symbol === value)
       if (selectedAsset) {
-        addAssetToEthChain(selectedAsset)
-        message.success(`${selectedAsset.symbol} added to ETH chain successfully!`)
+        addAssetToStorage(selectedAsset)
+        message.success(`${selectedAsset.symbol} added to ${selectedAsset.chain} successfully!`)
       }
     },
-    [addAssetToEthChain, filteredAssets]
+    [addAssetToStorage, filteredAssets]
   )
 
   const renderAccounts = useMemo(
@@ -676,11 +701,11 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                       : intl.formatMessage({ id: 'common.enable' })}
                   </span>
                 </div>
-                {chain === ETHChain && (
+                {(chain === ETHChain || chain === AVAXChain || chain === BSCChain || chain === ARBChain) && (
                   <div className="mx-40px mt-10px flex w-full items-center">
                     <AutoComplete
-                      value={ethAssetSearch}
-                      onChange={handleEthAssetSearch} // Ensure this works correctly with AutoComplete's API
+                      value={assetSearch}
+                      onChange={(value) => handleAssetSearch(value, chain)} // Ensure this works correctly with AutoComplete's API
                       onSelect={onSelectAsset}
                       style={{ minWidth: 450, width: 'auto' }}
                       placeholder={intl.formatMessage({ id: 'common.searchAsset' })}
@@ -708,11 +733,11 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
       renderLedgerNotSupported,
       enabledChains,
       intl,
-      ethAssetSearch,
+      assetSearch,
+      handleAssetSearch,
+      onSelectAsset,
       filteredAssets,
-      toggleChain,
-      handleEthAssetSearch,
-      onSelectAsset
+      toggleChain
     ]
   )
 

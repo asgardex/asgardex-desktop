@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { Asset } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
@@ -8,10 +9,10 @@ import { switchMap } from 'rxjs/operators'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { BSCAssetsFallBack, BscAssetsTestnet } from '../../const'
-import { validAssetForBSC } from '../../helpers/assetHelper'
 import { liveData } from '../../helpers/rx/liveData'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
+import { userAssets$ } from '../storage/userChainTokens'
 import { WalletBalance } from '../wallet/types'
 import { client$ } from './common'
 
@@ -54,21 +55,21 @@ const balances$: ({
   walletAccount: number
   walletIndex: number
   hdMode: HDMode
-}) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, network, hdMode }) => {
-  // For testnet we limit requests by using pre-defined assets only
-
-  const assets: Asset[] | undefined = network === Network.Testnet ? BscAssetsTestnet : undefined
-
+}) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, hdMode }) => {
   return FP.pipe(
-    C.balances$({
-      client$,
-      trigger$: reloadBalances$,
-      assets,
-      walletType,
-      walletAccount,
-      walletIndex,
-      hdMode,
-      walletBalanceType: 'all'
+    userAssets$,
+    switchMap((assets) => {
+      const bscAssets = assets.filter((asset) => asset.chain === BSCChain)
+      return C.balances$({
+        client$,
+        trigger$: reloadBalances$,
+        assets: bscAssets,
+        walletType,
+        walletAccount,
+        walletIndex,
+        hdMode,
+        walletBalanceType: 'all'
+      })
     }),
     // Filter assets based on BSCERC20Whitelist (mainnet only)
     switchMap((balanceResult) => {
@@ -97,8 +98,7 @@ const balances$: ({
           }
         })
       )
-    ),
-    liveData.map(FP.flow(A.filter(({ asset }) => validAssetForBSC(asset, network))))
+    )
   )
 }
 

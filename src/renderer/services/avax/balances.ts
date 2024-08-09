@@ -1,17 +1,16 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { AVAXChain } from '@xchainjs/xchain-avax'
 import { Network } from '@xchainjs/xchain-client'
 import { Asset } from '@xchainjs/xchain-util'
-import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import { of } from 'rxjs'
 import { switchMap } from 'rxjs/operators'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { AVAXAssetsFallback, AvaxAssetsTestnet } from '../../const'
-import { validAssetForAVAX } from '../../helpers/assetHelper'
-import { liveData } from '../../helpers/rx/liveData'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
+import { userAssets$ } from '../storage/userChainTokens'
 import { client$ } from './common'
 
 /**
@@ -42,19 +41,21 @@ const balances$: ({
   walletAccount: number
   walletIndex: number
   hdMode: HDMode
-}) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, network, hdMode }) => {
-  // For testnet we limit requests by using pre-defined assets only
-  const assets: Asset[] | undefined = network === Network.Testnet ? AvaxAssetsTestnet : undefined
+}) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, hdMode }) => {
   return FP.pipe(
-    C.balances$({
-      client$,
-      trigger$: reloadBalances$,
-      assets,
-      walletType,
-      walletAccount,
-      walletIndex,
-      hdMode,
-      walletBalanceType: 'all'
+    userAssets$,
+    switchMap((assets) => {
+      const avaxAssets = assets.filter((asset) => asset.chain === AVAXChain)
+      return C.balances$({
+        client$,
+        trigger$: reloadBalances$,
+        assets: avaxAssets,
+        walletType,
+        walletAccount,
+        walletIndex,
+        hdMode,
+        walletBalanceType: 'all'
+      })
     }),
     switchMap((balanceResult) => {
       // Check if the balance call failed
@@ -72,8 +73,7 @@ const balances$: ({
         })
       }
       return of(balanceResult)
-    }),
-    liveData.map(FP.flow(A.filter(({ asset }) => validAssetForAVAX(asset, network))))
+    })
   )
 }
 

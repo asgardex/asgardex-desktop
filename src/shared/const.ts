@@ -1,4 +1,4 @@
-import { ETHAssetsFallBack } from '../renderer/const'
+import { DEFAULT_USER_ASSETS } from '../renderer/const'
 import { PoolsStorageEncoded } from './api/io'
 import { StoreFilesContent, UserAssetStorage, UserChainStorage, UserNodesStorage } from './api/types'
 import { DEFAULT_EVM_HD_MODE } from './evm/types'
@@ -53,11 +53,12 @@ export const CHAINS_STORAGE_DEFAULT: UserChainStorage = {
   version: CHAINS_STORAGE_VERSION,
   chains: Object.keys(DEFAULT_ENABLED_CHAINS) as EnabledChain[]
 }
-const ASSETS_STORAGE_VERSION = '1'
+/// increase it by `1` if you want to ignore previous version of `common` storage
+const ASSETS_STORAGE_VERSION = '2'
 
 export const ASSETS_STORAGE_DEFAULT: UserAssetStorage = {
   version: ASSETS_STORAGE_VERSION,
-  assets: ETHAssetsFallBack
+  assets: DEFAULT_USER_ASSETS
 }
 // increase it by `1` if you want to ignore previous version of `common` storage
 const POOLS_STORAGE_VERSION = '1'
