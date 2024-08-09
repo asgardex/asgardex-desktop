@@ -13,44 +13,35 @@ import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Chain } from '@xchainjs/xchain-util'
 
-import { isEnabledChain } from '../../shared/utils/chain'
+import { isSupportedChain } from '../../shared/utils/chain'
 import { eqChain } from './fp/eq'
 
-// TODO (@veado) Return Maybe<Asset> instead of throwing an error
+// update here also when a new chain is added
+const chainAssets: Record<Chain, Asset> = {
+  BTC: AssetBTC,
+  ETH: AssetETH,
+  AVAX: AssetAVAX,
+  BSC: AssetBSC,
+  THOR: AssetRuneNative,
+  MAYA: AssetCacao,
+  GAIA: AssetATOM,
+  BCH: AssetBCH,
+  LTC: AssetLTC,
+  DOGE: AssetDOGE,
+  DASH: AssetDASH,
+  KUJI: AssetKUJI,
+  ARB: AssetAETH
+}
+
 export const getChainAsset = (chain: Chain): Asset => {
-  if (!isEnabledChain(chain)) throw Error(`${chain} is not supported for 'getChainAsset'`)
-  switch (chain) {
-    case BTCChain:
-      return AssetBTC
-    case ETHChain:
-      return AssetETH
-    case AVAXChain:
-      return AssetAVAX
-    case BSCChain:
-      return AssetBSC
-    case THORChain:
-      return AssetRuneNative
-    case MAYAChain:
-      return AssetCacao
-    case GAIAChain:
-      return AssetATOM
-    case BCHChain:
-      return AssetBCH
-    case LTCChain:
-      return AssetLTC
-    case DOGEChain:
-      return AssetDOGE
-    case DASHChain:
-      return AssetDASH
-    case KUJIChain:
-      return AssetKUJI
-    case ARBChain:
-      return AssetAETH
-  }
+  const asset = chainAssets[chain]
+  if (!asset) throw new Error(`No asset found for chain ${chain}`)
+
+  return asset
 }
 // TODO (@veado) Return Maybe<Asset> instead of throwing an error
 export const getChainFeeBounds = (chain: Chain): number => {
-  if (!isEnabledChain(chain)) throw Error(`${chain} is not supported for 'getChainAsset'`)
+  if (!isSupportedChain(chain)) throw Error(`${chain} is not supported for 'getChainAsset'`)
   switch (chain) {
     case BTCChain:
       return UPPER_FEE_BOUNDBTC
@@ -136,7 +127,7 @@ type ChainValues<T> = {
 export const filterEnabledChains = <T>(values: ChainValues<T>): T[] => {
   const result: T[] = []
   Object.entries(values).forEach(([chain, value]) => {
-    if (isEnabledChain(chain) && value) result.push(...value)
+    if (isSupportedChain(chain) && value) result.push(...value)
   })
 
   return result

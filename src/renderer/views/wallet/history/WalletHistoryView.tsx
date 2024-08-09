@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react'
+import React, { useMemo, useCallback, useState, useEffect } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -10,7 +10,7 @@ import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { ENABLED_CHAINS } from '../../../../shared/utils/chain'
+import { EnabledChain } from '../../../../shared/utils/chain'
 import { WalletAddress, WalletAddresses } from '../../../../shared/wallet/types'
 import { PoolActionsHistory } from '../../../components/poolActionsHistory'
 import { historyFilterToViewblockFilter } from '../../../components/poolActionsHistory/PoolActionsHistory.helper'
@@ -28,6 +28,7 @@ import { useMidgardHistoryActions } from '../../../hooks/useMidgardHistoryAction
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenAddressUrl } from '../../../hooks/useOpenAddressUrl'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
+import { userChains$ } from '../../../services/storage/userChains'
 import { ledgerAddressToWalletAddress } from '../../../services/wallet/util'
 
 const HISTORY_FILTERS: Filter[] = ['ALL', 'SWITCH', 'DEPOSIT', 'SWAP', 'WITHDRAW', 'DONATE', 'REFUND']
@@ -66,15 +67,22 @@ export const WalletHistoryView: React.FC = () => {
 
   const { openExplorerTxUrl } = useOpenExplorerTxUrl(O.some(dex.chain))
 
+  const [enabledChains, setEnabledChains] = useState<EnabledChain[]>([])
+
+  useEffect(() => {
+    const subscription = userChains$.subscribe(setEnabledChains)
+    return () => subscription.unsubscribe()
+  }, [])
+
   const keystoreAddresses$ = useMemo<Rx.Observable<WalletAddresses>>(
     () =>
       FP.pipe(
-        [...ENABLED_CHAINS],
+        [...enabledChains],
         A.map(addressByChain$),
         (addresses) => Rx.combineLatest(addresses),
         RxOp.map(A.filterMap(FP.identity))
       ),
-    [addressByChain$]
+    [enabledChains, addressByChain$]
   )
 
   const { getLedgerAddress$ } = useWalletContext()
@@ -82,14 +90,14 @@ export const WalletHistoryView: React.FC = () => {
   const ledgerAddresses$ = useMemo<Rx.Observable<WalletAddresses>>(
     () =>
       FP.pipe(
-        [...ENABLED_CHAINS],
+        [...enabledChains],
         A.map((chain) => getLedgerAddress$(chain)),
         (addresses) => Rx.combineLatest(addresses),
         // Accept `successfully` added addresses only
         RxOp.map(A.filterMap(FP.identity)),
         RxOp.map(A.map(ledgerAddressToWalletAddress))
       ),
-    [getLedgerAddress$]
+    [enabledChains, getLedgerAddress$]
   )
 
   const addresses$ = useMemo(

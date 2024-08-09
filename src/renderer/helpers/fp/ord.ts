@@ -4,7 +4,7 @@ import * as N from 'fp-ts/lib/number'
 import * as Ord from 'fp-ts/lib/Ord'
 import * as S from 'fp-ts/lib/string'
 
-import { isEnabledChain } from '../../../shared/utils/chain'
+import { isSupportedChain } from '../../../shared/utils/chain'
 import { WalletAddress } from '../../../shared/wallet/types'
 import { CURRENCY_WEIGHTS, CHAIN_WEIGHTS_THOR } from '../../const'
 import { WalletBalance } from '../../services/wallet/types'
@@ -58,8 +58,8 @@ export const ordWalletAddressByChain: Ord.Ord<WalletAddress> = {
   // comparing chains by its weights
   compare: (x, y) =>
     ordNumber.compare(
-      isEnabledChain(x.chain) ? CHAIN_WEIGHTS_THOR[x.chain] : 0,
-      isEnabledChain(y.chain) ? CHAIN_WEIGHTS_THOR[y.chain] : 0
+      isSupportedChain(x.chain) ? CHAIN_WEIGHTS_THOR[x.chain] : 0,
+      isSupportedChain(y.chain) ? CHAIN_WEIGHTS_THOR[y.chain] : 0
     )
 }
 

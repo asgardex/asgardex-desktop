@@ -10,7 +10,7 @@ import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { isEnabledChain } from '../../../shared/utils/chain'
+import { isSupportedChain } from '../../../shared/utils/chain'
 import { DEFAULT_GET_POOLS_PERIOD, ONE_BN, PRICE_POOLS_WHITELIST } from '../../const'
 import { validAssetForETH, isPricePoolAsset, midgardAssetFromString } from '../../helpers/assetHelper'
 import { isEthChain } from '../../helpers/chainHelper'
@@ -145,7 +145,7 @@ const createPoolsService = ({
                         midgardAssetFromString,
                         O.fold(
                           () => false,
-                          ({ chain }) => isEnabledChain(chain)
+                          ({ chain }) => isSupportedChain(chain)
                         )
                       )
                     )
@@ -313,7 +313,7 @@ const createPoolsService = ({
       // Filter out all unknown / invalid assets created from asset strings
       liveData.map(A.filterMap(({ asset }) => FP.pipe(asset, assetFromString, O.fromNullable))),
       // Filter pools by using enabled chains only
-      liveData.map(A.filter(({ chain }) => isEnabledChain(chain))),
+      liveData.map(A.filter(({ chain }) => isSupportedChain(chain))),
       RxOp.shareReplay(1)
     )
 
@@ -348,7 +348,7 @@ const createPoolsService = ({
             // Filter out all unknown / invalid assets created from asset strings
             RD.map(A.filterMap(({ asset }) => FP.pipe(asset, assetFromString, O.fromNullable))),
             // Filter pools by using enabled chains only
-            RD.map(A.filter(({ chain }) => isEnabledChain(chain))),
+            RD.map(A.filter(({ chain }) => isSupportedChain(chain))),
             // Filter pools based on ERC20Whitelist (mainnet + ETHChain only)
             RD.map(A.filter((asset) => !isEthChain(asset.chain) || validAssetForETH(asset, network)))
           )
@@ -420,7 +420,7 @@ const createPoolsService = ({
             // Filter out all unknown / invalid assets created from asset strings
             RD.map(A.filterMap(({ asset }) => FP.pipe(asset, assetFromString, O.fromNullable))),
             // Filter pools by using enabled chains only
-            RD.map(A.filter(({ chain }) => isEnabledChain(chain))),
+            RD.map(A.filter(({ chain }) => isSupportedChain(chain))),
             // Filter pools based on ERC20Whitelist (mainnet + ETH only)
             RD.map(A.filter((asset) => !isEthChain(asset.chain) || validAssetForETH(asset, network)))
           )

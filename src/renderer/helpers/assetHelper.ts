@@ -54,7 +54,7 @@ import {
   AssetSynthUsk,
   AssetSynthDash
 } from '../../shared/utils/asset'
-import { isEnabledChain } from '../../shared/utils/chain'
+import { isSupportedChain } from '../../shared/utils/chain'
 import { AssetTGTERC20, DEFAULT_PRICE_ASSETS, USD_PRICE_ASSETS } from '../const'
 import { ARB_TOKEN_WHITELIST } from '../types/generated/mayachain/arberc20whitelist'
 import { AVAX_TOKEN_WHITELIST } from '../types/generated/thorchain/avaxerc20whitelist'
@@ -530,9 +530,9 @@ export const isPricePoolAsset = (asset: Asset): asset is PricePoolAsset =>
   // all of PoolAsset except BSC.BNB -> see `PricePoolAsset`
   [...DEFAULT_PRICE_ASSETS, ...USD_PRICE_ASSETS].includes(asset)
 
-// How should this work for synths
+// How should this work for synths tobefixed
 export const isChainAsset = (asset: Asset): boolean =>
-  isEnabledChain(asset.chain) && eqAsset.equals(asset, getChainAsset(asset.chain))
+  isSupportedChain(asset.chain) && eqAsset.equals(asset, getChainAsset(asset.chain))
 
 export const isUSDAsset = ({ ticker }: Asset): boolean =>
   ticker.includes('USD') || ticker.includes('UST') || ticker.includes('DAI') || ticker.includes('usdt')

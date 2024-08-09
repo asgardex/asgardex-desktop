@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -9,11 +9,12 @@ import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { ENABLED_CHAINS } from '../../shared/utils/chain'
+import { EnabledChain } from '../../shared/utils/chain'
 import { useMayachainContext } from '../contexts/MayachainContext'
 import { useThorchainContext } from '../contexts/ThorchainContext'
 import { sequenceTRD } from '../helpers/fpHelpers'
 import { LastblockItems as LastblockItemsMaya } from '../services/mayachain/types'
+import { userChains$ } from '../services/storage/userChains'
 import { DEFAULT_MIMIR_HALT } from '../services/thorchain/const'
 import {
   MimirHaltRD,
@@ -48,6 +49,12 @@ export const useMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: MimirHalt
   const { mimir$: mayaMimir$, mayachainLastblockState$ } = useMayachainContext()
 
   const { dex } = useDex()
+  const [enabledChains, setEnabledChains] = useState<EnabledChain[]>([])
+
+  useEffect(() => {
+    const subscription = userChains$.subscribe(setEnabledChains)
+    return () => subscription.unsubscribe()
+  }, [])
 
   const lastDexBlockState = dex.chain === THORChain ? thorchainLastblockState$ : mayachainLastblockState$
   const dexMimir = dex.chain === THORChain ? mimir$ : mayaMimir$
@@ -72,9 +79,9 @@ export const useMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: MimirHalt
                   : getLastHeightMaya(lastblockItems as LastblockItemsMaya)
               const mapChainToKey = (prefix: string, chain: string) => `${prefix}${chain}Chain`
 
-              const haltChainKeys = ENABLED_CHAINS.map((chain) => mapChainToKey('halt', chain))
-              const haltTradingKeys = ENABLED_CHAINS.map((chain) => mapChainToKey('halt', chain) + 'Trading')
-              const pauseLPKeys = ENABLED_CHAINS.map((chain) => mapChainToKey('pauseLp', chain))
+              const haltChainKeys = enabledChains.map((chain) => mapChainToKey('halt', chain))
+              const haltTradingKeys = enabledChains.map((chain) => mapChainToKey('halt', chain) + 'Trading')
+              const pauseLPKeys = enabledChains.map((chain) => mapChainToKey('pauseLp', chain))
 
               const haltChain = createMimirGroup(haltChainKeys, mimir, lastHeight)
               const haltTrading = createMimirGroup(haltTradingKeys, mimir, lastHeight)

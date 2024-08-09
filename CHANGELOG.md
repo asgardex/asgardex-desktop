@@ -1,3 +1,10 @@
+# 1.22.1 (2024-08-)
+
+## Updates/Fixes
+
+## Add
+
+- Chain enabled disable [#281](https://github.com/asgardex/asgardex-desktop/pull/309)
 # 1.22.0 (2024-07-29)
 
 ## Updates/Fixes

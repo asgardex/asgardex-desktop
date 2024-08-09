@@ -11,7 +11,6 @@ import { Asset } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { isEnabledChain } from '../../../shared/utils/chain'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import {
   isArbChain,
@@ -29,10 +28,6 @@ import { AssetWithDecimalLD } from './types'
 // gets asset decimal from midgard-query tobefixed
 const getDecimal = (asset: Asset): Promise<number> => {
   const { chain } = asset.synth ? AssetRuneNative : asset
-
-  if (!isEnabledChain(chain)) {
-    return Promise.reject(new Error(`${chain} is not supported for 'getDecimal'`))
-  }
 
   if (isArbChain(chain)) {
     return Promise.resolve(ARB_GAS_ASSET_DECIMAL)
