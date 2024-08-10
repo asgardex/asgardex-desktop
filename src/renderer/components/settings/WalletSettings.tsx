@@ -45,7 +45,7 @@ import { useSubscriptionState } from '../../hooks/useSubscriptionState'
 import * as appRoutes from '../../routes/app'
 import * as walletRoutes from '../../routes/wallet'
 import { userChains$, addChain, removeChain } from '../../services/storage/userChains'
-import { addAsset } from '../../services/storage/userChainTokens'
+import { addAsset, removeAsset } from '../../services/storage/userChainTokens'
 import {
   KeystoreWalletsUI,
   RemoveKeystoreWalletHandler,
@@ -617,12 +617,25 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
   }, [exportKeystore, setExportKeystoreErrorMsg])
 
   // Handler to update the search state
-  const [assetSearch, setAssetSearch] = useState<string>('')
-  const [filteredAssets, setFilteredAssets] = useState<Asset[]>([])
+  const [assetSearch, setAssetSearch] = useState<{ [key in Chain]?: string }>({})
+  const [filteredAssets, setFilteredAssets] = useState<{ [key in Chain]?: Asset[] }>({})
+
+  const [isAddingByChain, setIsAddingByChain] = useState<{ [key in Chain]?: boolean }>({})
+
+  const toggleStorageMode = useCallback((chain: Chain) => {
+    setIsAddingByChain((prevState) => ({
+      ...prevState,
+      [chain]: !prevState[chain] // Toggle the current state for the specific chain
+    }))
+  }, [])
 
   const handleAssetSearch = useCallback((value: string, chain: Chain) => {
     const searchValue = value.toUpperCase()
-    setAssetSearch(searchValue)
+
+    setAssetSearch((prevState) => ({
+      ...prevState,
+      [chain]: searchValue
+    }))
 
     let matchedAssets: Asset[]
     switch (chain) {
@@ -650,25 +663,50 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
         matchedAssets = []
         break
     }
-
-    setFilteredAssets(matchedAssets)
+    setFilteredAssets((prevState) => ({
+      ...prevState,
+      [chain]: matchedAssets
+    }))
   }, [])
 
-  const addAssetToStorage = useCallback((asset: Asset) => {
+  const addAssetToStorage = useCallback((asset: Asset, chain: Chain) => {
     addAsset(asset)
-    setAssetSearch('')
-    setFilteredAssets([])
+
+    setAssetSearch((prevState) => ({
+      ...prevState,
+      [chain]: ''
+    }))
+
+    setFilteredAssets((prevState) => ({
+      ...prevState,
+      [chain]: []
+    }))
   }, [])
 
-  const onSelectAsset = useCallback(
-    (value: string) => {
-      const selectedAsset = filteredAssets.find((asset) => asset.symbol === value)
+  const handleRemoveAsset = useCallback(
+    (value: string, chain: Chain) => {
+      const selectedAsset = (filteredAssets[chain] || []).find((asset) => asset.symbol === value)
       if (selectedAsset) {
-        addAssetToStorage(selectedAsset)
-        message.success(`${selectedAsset.symbol} added to ${selectedAsset.chain} successfully!`)
+        removeAsset(selectedAsset)
       }
     },
-    [addAssetToStorage, filteredAssets]
+    [filteredAssets]
+  )
+
+  const onSelectAsset = useCallback(
+    (value: string, chain: Chain) => {
+      const selectedAsset = (filteredAssets[chain] || []).find((asset) => asset.symbol === value)
+      if (selectedAsset) {
+        if (isAddingByChain[chain]) {
+          addAssetToStorage(selectedAsset, chain)
+          message.success(`${selectedAsset.symbol} added to ${selectedAsset.chain} successfully!`)
+        } else {
+          handleRemoveAsset(selectedAsset.symbol, chain)
+          message.success(`${selectedAsset.symbol} removed from ${selectedAsset.chain} successfully!`)
+        }
+      }
+    },
+    [addAssetToStorage, filteredAssets, handleRemoveAsset, isAddingByChain]
   )
 
   const renderAccounts = useMemo(
@@ -703,14 +741,24 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                 </div>
                 {(chain === ETHChain || chain === AVAXChain || chain === BSCChain || chain === ARBChain) && (
                   <div className="mx-40px mt-10px flex w-full items-center">
+                    <SwitchButton
+                      active={!!isAddingByChain[chain]} // Use the toggle state for the specific chain
+                      onChange={() => toggleStorageMode(chain)} // Pass the specific chain to toggle the state
+                      className="mr-10px"
+                    />
+                    <span className="mr-2 text-text0 dark:text-text0d">
+                      {isAddingByChain[chain]
+                        ? intl.formatMessage({ id: 'common.add' })
+                        : intl.formatMessage({ id: 'common.remove' })}
+                    </span>
                     <AutoComplete
-                      value={assetSearch}
-                      onChange={(value) => handleAssetSearch(value, chain)} // Ensure this works correctly with AutoComplete's API
-                      onSelect={onSelectAsset}
+                      value={assetSearch[chain] || ''}
+                      onChange={(value) => handleAssetSearch(value, chain)}
+                      onSelect={(value: string) => onSelectAsset(value, chain)}
                       style={{ minWidth: 450, width: 'auto' }}
                       placeholder={intl.formatMessage({ id: 'common.searchAsset' })}
                       allowClear>
-                      {filteredAssets.map((asset) => (
+                      {(filteredAssets[chain] || []).map((asset: Asset) => (
                         <AutoComplete.Option key={asset.symbol} value={asset.symbol}>
                           <div>{asset.symbol}</div>
                         </AutoComplete.Option>
@@ -733,11 +781,13 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
       renderLedgerNotSupported,
       enabledChains,
       intl,
+      isAddingByChain,
       assetSearch,
-      handleAssetSearch,
-      onSelectAsset,
       filteredAssets,
-      toggleChain
+      toggleChain,
+      toggleStorageMode,
+      handleAssetSearch,
+      onSelectAsset
     ]
   )
 
