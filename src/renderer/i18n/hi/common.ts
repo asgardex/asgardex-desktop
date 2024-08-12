@@ -81,7 +81,7 @@ const common: CommonMessages = {
   'common.copyTxHash': 'Tx हैश कॉपी करें',
   'common.fee': 'शुल्क',
   'common.feeRate': 'शुल्क दर',
-  'common.fee.nodeOperator': 'नोड ऑपरेटर शुल्क',
+  'common.fee.nodeOperator': 'नोड ऑपरेटर शुल्क %',
   'common.fee.inbound': 'इनबाउंड',
   'common.fee.inbound.rune': 'इनबाउंड {dex}',
   'common.fee.inbound.asset': 'इनबाउंड एसेट',
