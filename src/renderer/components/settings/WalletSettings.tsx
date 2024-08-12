@@ -688,6 +688,15 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
       const selectedAsset = (filteredAssets[chain] || []).find((asset) => asset.symbol === value)
       if (selectedAsset) {
         removeAsset(selectedAsset)
+        setAssetSearch((prevState) => ({
+          ...prevState,
+          [chain]: ''
+        }))
+
+        setFilteredAssets((prevState) => ({
+          ...prevState,
+          [chain]: []
+        }))
       }
     },
     [filteredAssets]
@@ -764,7 +773,14 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                         </AutoComplete.Option>
                       ))}
                     </AutoComplete>
-                    <InfoIcon className="ml-10px" tooltip={intl.formatMessage({ id: 'common.addAssetManually' })} />
+                    <InfoIcon
+                      className="ml-10px"
+                      tooltip={
+                        isAddingByChain[chain]
+                          ? intl.formatMessage({ id: 'common.addAssetManually' })
+                          : intl.formatMessage({ id: 'common.remove' })
+                      }
+                    />
                   </div>
                 )}
               </Styled.ListItem>
