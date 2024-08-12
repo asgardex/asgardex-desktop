@@ -8,7 +8,8 @@ import {
   ApiHDWallet,
   UserNodesStorage,
   IPCExportKeystoreParams,
-  UserChainStorage
+  UserChainStorage,
+  UserAssetStorage
 } from '../api/types'
 import { ApiFileStoreService, CommonStorage } from '../api/types'
 import { Locale } from '../i18n/types'
@@ -128,5 +129,17 @@ export const apiChainStorage: ApiFileStoreService<UserChainStorage> = {
   save: (_: Partial<CommonStorage>) => Promise.resolve(userChainStorageData),
   remove: () => Promise.resolve(console.log('mock remove chain storage data')),
   get: () => Promise.resolve(userChainStorageData),
+  exists: () => Promise.resolve(true)
+}
+
+const userAssetStorageData: UserAssetStorage = {
+  assets: [],
+  version: '1'
+}
+
+export const apiAssetStorage: ApiFileStoreService<UserAssetStorage> = {
+  save: (_: Partial<CommonStorage>) => Promise.resolve(userAssetStorageData),
+  remove: () => Promise.resolve(console.log('mock remove chain storage data')),
+  get: () => Promise.resolve(userAssetStorageData),
   exists: () => Promise.resolve(true)
 }

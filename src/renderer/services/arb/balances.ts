@@ -1,14 +1,16 @@
+import * as RD from '@devexperts/remote-data-ts'
+import { ARBChain, AssetAETH } from '@xchainjs/xchain-arbitrum'
 import { Network } from '@xchainjs/xchain-client'
 import { Asset } from '@xchainjs/xchain-util'
-import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
+import { of } from 'rxjs'
+import { switchMap } from 'rxjs/operators'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { ArbAssetsTestnet } from '../../const'
-import { validAssetForARB } from '../../helpers/assetHelper'
-import { liveData } from '../../helpers/rx/liveData'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
+import { userAssets$ } from '../storage/userChainTokens'
 import { client$ } from './common'
 /**
  * `ObservableState` to reload `Balances`
@@ -38,21 +40,39 @@ const balances$: ({
   walletAccount: number
   walletIndex: number
   hdMode: HDMode
-}) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, network, hdMode }) => {
-  // For testnet we limit requests by using pre-defined assets only
-  const assets: Asset[] | undefined = network === Network.Testnet ? ArbAssetsTestnet : undefined
+}) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, hdMode }) => {
   return FP.pipe(
-    C.balances$({
-      client$,
-      trigger$: reloadBalances$,
-      assets,
-      walletType,
-      walletAccount,
-      walletIndex,
-      hdMode,
-      walletBalanceType: 'all'
+    userAssets$,
+    switchMap((assets) => {
+      const avaxAssets = assets.filter((asset) => asset.chain === ARBChain)
+      return C.balances$({
+        client$,
+        trigger$: reloadBalances$,
+        assets: avaxAssets,
+        walletType,
+        walletAccount,
+        walletIndex,
+        hdMode,
+        walletBalanceType: 'all'
+      })
     }),
-    liveData.map(FP.flow(A.filter(({ asset }) => validAssetForARB(asset, network))))
+    switchMap((balanceResult) => {
+      // Check if the balance call failed
+      if (RD.isFailure(balanceResult)) {
+        // Retry with fallback assets
+        return C.balances$({
+          client$,
+          trigger$: reloadBalances$,
+          assets: [AssetAETH],
+          walletType,
+          walletAccount,
+          walletIndex,
+          hdMode,
+          walletBalanceType: 'all'
+        })
+      }
+      return of(balanceResult)
+    })
   )
 }
 

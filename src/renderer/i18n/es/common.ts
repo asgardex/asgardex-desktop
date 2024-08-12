@@ -95,6 +95,7 @@ const common: CommonMessages = {
   'common.min': 'Mín',
   'common.search': 'Buscar en',
   'common.searchAsset': 'Buscar Activo',
+  'common.addAssetManually': '¿No se muestra ERC20? Agrega el activo manualmente',
   'common.searchExample':
     'Ejemplo de búsqueda para cadena no sintética.ticker, es decir, btc.btc o para sintético btc/btc',
   'common.retry': 'Reintentar',

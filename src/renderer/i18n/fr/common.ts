@@ -95,6 +95,7 @@ const common: CommonMessages = {
   'common.min': 'Minimum',
   'common.search': 'Rechercher',
   'common.searchAsset': 'Rechercher un actif',
+  'common.addAssetManually': 'ERC20 ne s’affiche pas ? Ajoutez l’actif manuellement',
   'common.searchExample': 'Exemple de recherche pour chaîne non synthétique.ticker ex. btc.btc ou pour synth btc/btc',
   'common.excludeSynth': 'Exclure les Synth',
   'common.retry': 'Réessayer',

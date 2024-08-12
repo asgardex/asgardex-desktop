@@ -1,14 +1,16 @@
-import { AssetAVAX } from '@xchainjs/xchain-avax'
+import * as RD from '@devexperts/remote-data-ts'
+import { AVAXChain } from '@xchainjs/xchain-avax'
 import { Network } from '@xchainjs/xchain-client'
 import { Asset } from '@xchainjs/xchain-util'
-import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
+import { of } from 'rxjs'
+import { switchMap } from 'rxjs/operators'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
-import { AvaxAssetsTestnet } from '../../const'
+import { AVAXAssetsFallback, AvaxAssetsTestnet } from '../../const'
 import { observableState } from '../../helpers/stateHelper'
-import { AVAX_TOKEN_WHITELIST } from '../../types/generated/thorchain/avaxerc20whitelist'
 import * as C from '../clients'
+import { userAssets$ } from '../storage/userChainTokens'
 import { client$ } from './common'
 
 /**
@@ -39,33 +41,38 @@ const balances$: ({
   walletAccount: number
   walletIndex: number
   hdMode: HDMode
-}) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, network, hdMode }) => {
-  // For testnet we limit requests by using pre-defined assets only
-  // For mainnet we use the whiteList assets to avoid calling balances on airdropped scam tokens.
-  const getAssets = (network: Network): Asset[] | undefined => {
-    const assets: Asset[] | undefined = network === Network.Testnet ? AvaxAssetsTestnet : undefined
-
-    return network === Network.Mainnet
-      ? FP.pipe(
-          AVAX_TOKEN_WHITELIST,
-          A.filter(({ asset }) => !asset.synth),
-          A.map(({ asset }) => asset),
-          (whitelistedAssets) => [AssetAVAX, ...whitelistedAssets]
-        )
-      : assets
-  }
-
-  const assets: Asset[] | undefined = getAssets(network)
+}) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, hdMode }) => {
   return FP.pipe(
-    C.balances$({
-      client$,
-      trigger$: reloadBalances$,
-      assets,
-      walletType,
-      walletAccount,
-      walletIndex,
-      hdMode,
-      walletBalanceType: 'all'
+    userAssets$,
+    switchMap((assets) => {
+      const avaxAssets = assets.filter((asset) => asset.chain === AVAXChain)
+      return C.balances$({
+        client$,
+        trigger$: reloadBalances$,
+        assets: avaxAssets,
+        walletType,
+        walletAccount,
+        walletIndex,
+        hdMode,
+        walletBalanceType: 'all'
+      })
+    }),
+    switchMap((balanceResult) => {
+      // Check if the balance call failed
+      if (RD.isFailure(balanceResult)) {
+        // Retry with fallback assets
+        return C.balances$({
+          client$,
+          trigger$: reloadBalances$,
+          assets: AVAXAssetsFallback,
+          walletType,
+          walletAccount,
+          walletIndex,
+          hdMode,
+          walletBalanceType: 'all'
+        })
+      }
+      return of(balanceResult)
     })
   )
 }
