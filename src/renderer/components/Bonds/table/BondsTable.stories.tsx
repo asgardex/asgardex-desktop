@@ -2,9 +2,9 @@ import React, { useCallback, useState } from 'react'
 
 import { Meta, Story } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
-import { NodeStatusEnum } from '@xchainjs/xchain-thornode'
 import { Address, baseAmount } from '@xchainjs/xchain-util'
 
+import { NodeStatusEnum } from '../../../services/thorchain/types'
 import { BondsTable } from './BondsTable'
 
 const mockNodeInfo = (address: Address) => ({

@@ -1,14 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
-import type * as TN from '@xchainjs/xchain-thornode'
 import { Address, baseAmount, BaseAmount } from '@xchainjs/xchain-util'
 import { ColumnType } from 'antd/lib/table'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import { FormattedMessage, useIntl } from 'react-intl'
 
-import { NodeInfo, NodeInfos, Providers } from '../../../services/thorchain/types'
+import { NodeInfo, NodeInfos, Providers, NodeStatusEnum } from '../../../services/thorchain/types'
 import { WalletAddressInfo } from '../../../views/wallet/BondsView'
 import { ConfirmationModal } from '../../modal/confirmation'
 import { TextButton } from '../../uielements/button'
@@ -31,7 +30,7 @@ interface CustomExpandIconProps {
   onExpand: (record: string, event: React.MouseEvent<HTMLSpanElement, MouseEvent>) => void // Adjusted for <span>// Adjust YourRecordType accordingly
   record: string
 }
-type ProvidersWithStatus = Providers & { status: TN.NodeStatusEnum; signMembership: string[]; nodeAddress: Address }
+type ProvidersWithStatus = Providers & { status: NodeStatusEnum; signMembership: string[]; nodeAddress: Address }
 
 export const BondsTable: React.FC<Props> = ({
   nodes,

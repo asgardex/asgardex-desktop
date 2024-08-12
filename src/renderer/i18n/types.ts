@@ -327,6 +327,7 @@ type BondsMessageKey =
   | 'bonds.award'
   | 'bonds.status'
   | 'bonds.status.active'
+  | 'bonds.status.ready'
   | 'bonds.status.standby'
   | 'bonds.status.disabled'
   | 'bonds.status.whitelisted'

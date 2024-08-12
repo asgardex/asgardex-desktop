@@ -14,7 +14,7 @@ import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
 import { AssetsWithAmount1e8, AssetWithAmount1e8 } from '../../types/asgardex'
 import * as C from '../clients'
-import { ClientUrl } from '../thorchain/types'
+import { ClientUrl, NodeStatusEnum } from '../thorchain/types'
 import { TxHashLD, TxHashRD } from '../wallet/types'
 
 /**
@@ -127,7 +127,7 @@ export type NodeInfo = {
   address: Address
   bond: BaseAmount
   award: BaseAmount
-  status: TN.NodeStatusEnum
+  status: NodeStatusEnum
   bondProviders: BondProviders
   signMembership: string[]
 }
