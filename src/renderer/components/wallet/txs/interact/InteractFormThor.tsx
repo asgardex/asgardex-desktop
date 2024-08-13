@@ -26,6 +26,7 @@ import * as O from 'fp-ts/lib/Option'
 import { debounce } from 'lodash'
 import { useIntl } from 'react-intl'
 
+import { ONE_RUNE_BASE_AMOUNT } from '../../../../../shared/mock/amount'
 import { AssetAVAX, AssetBTC, AssetDOGE, AssetETH, AssetRuneNative } from '../../../../../shared/utils/asset'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../shared/wallet/types'
@@ -223,7 +224,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
           // Set maxAmount to zero if we dont know anything about fees
           () => ZERO_BASE_AMOUNT,
           (fee) => {
-            return balance.amount.minus(fee)
+            return balance.amount.minus(fee.plus(ONE_RUNE_BASE_AMOUNT))
           }
         )
       ),
@@ -482,7 +483,9 @@ export const InteractFormThor: React.FC<Props> = (props) => {
 
   const reset = useCallback(() => {
     resetInteractState()
-    form.resetFields()
+    const allFields = form.getFieldsValue()
+    const fieldsToReset = Object.keys(allFields).filter((field) => field !== 'thorAddress')
+    form.resetFields(fieldsToReset)
     setHasProviderAddress(false)
     setMemo('')
     setAmountToSend(ZERO_BASE_AMOUNT)
@@ -636,7 +639,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     () =>
       FP.pipe(
         feeRD,
-        RD.map((fee) => [{ asset: AssetRuneNative, amount: fee }])
+        RD.map((fee) => [{ asset: AssetRuneNative, amount: fee.plus(ONE_RUNE_BASE_AMOUNT) }])
       ),
 
     [feeRD]
@@ -839,10 +842,15 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                   name="operatorFee"
                   rules={[
                     {
-                      required: true
+                      required: false
                     }
                   ]}>
-                  <Styled.Input disabled={isLoading} size="large" onChange={() => getMemo()} />
+                  <Styled.Input
+                    placeholder="Enter a % value, memo will populate with Basis Points automatically"
+                    disabled={isLoading}
+                    size="large"
+                    onChange={() => getMemo()}
+                  />
                 </Styled.FormItem>
               </Styled.InputContainer>
             )}
@@ -1098,9 +1106,9 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                 </div>
               </div>
 
-              <div className="ml-[-2px] flex w-full justify-between  pt-10px font-mainBold text-[14px]">
+              <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
                 {intl.formatMessage({ id: 'common.memo' })}
-                <div className="truncate pl-10px font-main text-[12px]">{memoLabel}</div>
+                <div className="overflow break-normal pl-10px font-main text-[12px]">{memoLabel}</div>
               </div>
             </>
           )}

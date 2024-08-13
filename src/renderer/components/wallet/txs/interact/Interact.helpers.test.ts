@@ -1,8 +1,7 @@
-import type * as TN from '@xchainjs/xchain-thornode'
 import { baseAmount, bn } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 
-import { NodeInfo } from '../../../../services/thorchain/types'
+import { NodeInfo, NodeStatusEnum } from '../../../../services/thorchain/types'
 import {
   getInteractTypeFromNullableString,
   isInteractType,
@@ -140,7 +139,7 @@ describe('wallet/interact/helpers', () => {
         address: 'thor10czf2s89h79fsjmqqck85cdqeq536hw5ngz4lt',
         bond: baseAmount(100000000 * 40000000),
         award: baseAmount(100000000 * 400000),
-        status: 'Active' as TN.NodeStatusEnum,
+        status: 'Active' as NodeStatusEnum,
         bondProviders: { providers: [], nodeOperatorFee: baseAmount(100000000 * 400000) }, // Mock bondProviders
         signMembership: []
       },
@@ -148,7 +147,7 @@ describe('wallet/interact/helpers', () => {
         address: 'thor16ery22gma35h2fduxr0swdfvz4s6yvy6yhskf6',
         bond: baseAmount(100000000 * 40000000), // Mock bond value
         award: baseAmount(100000000 * 400000), // Mock award value
-        status: 'Standby' as TN.NodeStatusEnum,
+        status: 'Standby' as NodeStatusEnum,
         bondProviders: { providers: [], nodeOperatorFee: baseAmount(100000000 * 400000) }, // Mock bondProviders
         signMembership: ['thor16ery22gma35h2fduxr0swdfvz4s6yvy6yhskf6']
       },
@@ -156,7 +155,7 @@ describe('wallet/interact/helpers', () => {
         address: 'thor13uy6szawgsj9xjs0gq2xddzmcup3zl63khp6gq',
         bond: baseAmount(100000000 * 40000000), // Mock bond value
         award: baseAmount(100000000 * 400000), // Mock award value
-        status: 'Standby' as TN.NodeStatusEnum,
+        status: 'Standby' as NodeStatusEnum,
         bondProviders: { providers: [], nodeOperatorFee: baseAmount(100000000 * 400000) }, // Mock bondProviders
         signMembership: []
       }
@@ -188,7 +187,7 @@ describe('wallet/interact/helpers', () => {
           address: 'thor1nprw0w6ex8xh4tfl3vtkhqnjvds68kwshq9ax9',
           bond: baseAmount(100000000 * 40000000), // Mock bond value
           award: baseAmount(100000000 * 400000), // Mock award value
-          status: 'Disabled' as TN.NodeStatusEnum,
+          status: 'Disabled' as NodeStatusEnum,
           bondProviders: { providers: [], nodeOperatorFee: baseAmount(100000000 * 400000) }, // Mock bondProviders
           signMembership: []
         }

@@ -2,10 +2,10 @@ import * as RD from '@devexperts/remote-data-ts'
 import { useCallback, useState } from '@storybook/addons'
 import { Meta, StoryFn } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
-import { NodeStatusEnum } from '@xchainjs/xchain-thornode'
 import { Address, baseAmount } from '@xchainjs/xchain-util'
 
 import { AddressValidation } from '../../services/clients'
+import { NodeStatusEnum } from '../../services/thorchain/types'
 import { Bonds as Component } from './Bonds'
 
 const mockNodeInfo = (address: Address) => ({

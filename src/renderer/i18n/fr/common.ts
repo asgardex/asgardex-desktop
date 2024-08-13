@@ -80,7 +80,7 @@ const common: CommonMessages = {
   'common.copyTxHash': "Copier l'URL de la hash",
   'common.fee': 'Frais',
   'common.feeRate': 'Taux de frais',
-  'common.fee.nodeOperator': 'Frais de lopérateur de nœud',
+  'common.fee.nodeOperator': 'Frais de lopérateur de nœud %',
   'common.fee.inbound': 'Inbound',
   'common.fee.inbound.rune': '{dex} inbound',
   'common.fee.inbound.asset': 'Actif inbound',

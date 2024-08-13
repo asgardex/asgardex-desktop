@@ -4,13 +4,12 @@ import { StopOutlined } from '@ant-design/icons'
 import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { NodeStatusEnum } from '@xchainjs/xchain-thornode'
 import { Address, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { Col } from 'antd'
 import { useIntl } from 'react-intl'
 
 import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
-import { NodeInfo, Providers } from '../../../services/thorchain/types'
+import { NodeInfo, Providers, NodeStatusEnum } from '../../../services/thorchain/types'
 import * as Styled from './BondsTable.styles'
 
 export const NodeAddress: React.FC<{ address: Address; network: Network }> = ({ address, network }) => (
@@ -69,6 +68,9 @@ export const Status: React.FC<{ data: NodeInfo }> = ({ data }) => {
     switch (status) {
       case NodeStatusEnum.Active: {
         return 'bonds.status.active'
+      }
+      case NodeStatusEnum.Ready: {
+        return 'bonds.status.ready'
       }
       case NodeStatusEnum.Standby: {
         return 'bonds.status.standby'

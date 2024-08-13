@@ -7,6 +7,7 @@ const bonds: BondsMessages = {
   'bonds.bondProvider': 'Поставщик облигаций',
   'bonds.award': 'Награда',
   'bonds.status': 'Статус',
+  'bonds.status.ready': 'Готов',
   'bonds.status.active': 'Активен',
   'bonds.status.standby': 'В ожидании',
   'bonds.status.disabled': 'Отключен',

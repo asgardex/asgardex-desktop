@@ -128,7 +128,7 @@ export type NodeInfo = {
   address: Address
   bond: BaseAmount
   award: BaseAmount
-  status: TN.NodeStatusEnum
+  status: NodeStatusEnum
   bondProviders: BondProviders
   signMembership: string[]
 }
@@ -263,3 +263,11 @@ export const erc20WhitelistIO = t.type({
 })
 
 export type ERC20Whitelist = t.TypeOf<typeof erc20WhitelistIO>
+
+export enum NodeStatusEnum {
+  Active = 'Active',
+  Whitelisted = 'Whitelisted',
+  Standby = 'Standby',
+  Ready = 'Ready',
+  Disabled = 'Disabled'
+}

@@ -1,6 +1,7 @@
 # 1.22.1 (2024-08-)
 
 ## Updates/Fixes
+- Bond tools update [#309](https://github.com/asgardex/asgardex-desktop/pull/315)
 
 ## Add
 

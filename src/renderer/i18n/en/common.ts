@@ -81,7 +81,7 @@ const common: CommonMessages = {
   'common.copyTxHash': 'Copy transaction hash',
   'common.fee': 'Fee',
   'common.feeRate': 'Fee Rate',
-  'common.fee.nodeOperator': 'Node Operator Fee',
+  'common.fee.nodeOperator': 'Node Operator Fee %',
   'common.fees': 'Fees',
   'common.fee.estimated': 'Estimated fee',
   'common.fees.estimated': 'Estimated fees',

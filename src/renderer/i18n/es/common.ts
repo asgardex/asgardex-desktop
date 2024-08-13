@@ -80,7 +80,7 @@ const common: CommonMessages = {
   'common.copyTxHash': 'Copiar hash de transacción',
   'common.fee': 'Tasa',
   'common.feeRate': 'Tasa tarifa',
-  'common.fee.nodeOperator': 'Tasa de operador de nodo',
+  'common.fee.nodeOperator': 'Tasa de operador de nodo %',
   'common.fees': 'Tasas',
   'common.fee.estimated': 'Tasa estimada',
   'common.fees.estimated': 'Tasas estimadas',
