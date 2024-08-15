@@ -13,7 +13,7 @@ import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { AssetCacao } from '@xchainjs/xchain-mayachain'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { MayachainQuery, QuoteSwap, QuoteSwapParams as QuoteSwapParamsMaya } from '@xchainjs/xchain-mayachain-query'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { InboundDetail, QuoteSwapParams, ThorchainQuery, TxDetails } from '@xchainjs/xchain-thorchain-query'
@@ -1756,7 +1756,7 @@ export const Swap = ({
   const resetToDefault = () => {
     setStreamingInterval(dex.chain === THORChain ? 1 : 3) // Default position
     setStreamingQuantity(0) // thornode | mayanode decides the swap quantity
-    setSlider(26)
+    setSlider(dex.chain === THORChain ? 26 : 76)
     setIsStreaming(true)
   }
   const quoteOnlyButton = () => {
@@ -2753,6 +2753,18 @@ export const Swap = ({
             </div>
           ) : (
             <></>
+          )}
+          {dex.chain === MAYAChain && (
+            // Temp fix, delete when ready
+            <div className="text-12 text-gray2 dark:border-gray1d dark:text-gray2d">
+              <div className="flex pb-4">
+                <div className="rounded text-warning0 dark:text-warning0d">
+                  {targetAsset.synth && (
+                    <>{`Currently mayanode cant handle streaming to synths, please drag interval slider to position 0 for limit swap`}</>
+                  )}
+                </div>
+              </div>
+            </div>
           )}
         </Row>
         <AssetInput
