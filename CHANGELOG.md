@@ -1,7 +1,8 @@
-# 1.22.1 (2024-08-)
+# 1.22.1 (2024-08-15)
 
 ## Updates/Fixes
 - Bond tools update [#309](https://github.com/asgardex/asgardex-desktop/pull/315)
+- Mayachain synth warning [#311](https://github.com/asgardex/asgardex-desktop/pull/315)
 
 ## Add
 

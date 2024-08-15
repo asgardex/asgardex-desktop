@@ -728,7 +728,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
             dataSource={walletAccounts}
             renderItem={({ chain, accounts: { keystore, ledger: oLedger } }, i: number) => (
               <Styled.ListItem key={i}>
-                <div className="flex w-full items-center">
+                <div className="flex w-full items-center justify-start">
                   <AssetIcon asset={getChainAsset(chain)} size="small" network={Network.Mainnet} />
                   <Styled.AccountTitle>{chain}</Styled.AccountTitle>
                 </div>
@@ -744,8 +744,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                   <SwitchButton active={enabledChains.includes(chain)} onChange={() => toggleChain(chain)} />
                   <span className="ml-2 text-text0 dark:text-text0d">
                     {enabledChains.includes(chain)
-                      ? intl.formatMessage({ id: 'common.disable' })
-                      : intl.formatMessage({ id: 'common.enable' })}
+                      ? intl.formatMessage({ id: 'common.disable' }, { chain: chain })
+                      : intl.formatMessage({ id: 'common.enable' }, { chain: chain })}
                   </span>
                 </div>
                 {(chain === ETHChain || chain === AVAXChain || chain === BSCChain || chain === ARBChain) && (
@@ -777,8 +777,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                       className="ml-10px"
                       tooltip={
                         isAddingByChain[chain]
-                          ? intl.formatMessage({ id: 'common.addAssetManually' })
-                          : intl.formatMessage({ id: 'common.remove' })
+                          ? intl.formatMessage({ id: 'common.addAsset' })
+                          : intl.formatMessage({ id: 'common.removeAsset' })
                       }
                     />
                   </div>
