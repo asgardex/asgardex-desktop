@@ -8,6 +8,7 @@ const bonds: BondsMessages = {
   'bonds.award': 'Récompense',
   'bonds.status': 'Statut',
   'bonds.status.active': 'Actif',
+  'bonds.status.ready': 'Prêt',
   'bonds.status.standby': 'En attente',
   'bonds.status.disabled': 'Désactivé',
   'bonds.status.whitelisted': 'Autorisé',

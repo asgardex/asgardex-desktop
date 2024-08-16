@@ -1,17 +1,17 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
-import * as A from 'fp-ts/lib/Array'
-import * as FP from 'fp-ts/lib/function'
+// import * as A from 'fp-ts/lib/Array'
+// import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { Dex } from '../../../shared/api/types'
-import { isEnabledChain } from '../../../shared/utils/chain'
+import { DEFAULT_ENABLED_CHAINS, EnabledChain } from '../../../shared/utils/chain'
 import { RefreshButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
 import { AssetsTableCollapsable } from '../../components/wallet/assets/AssetsTableCollapsable'
@@ -30,6 +30,7 @@ import { useNetwork } from '../../hooks/useNetwork'
 import { usePrivateData } from '../../hooks/usePrivateData'
 import { useTotalWalletBalance } from '../../hooks/useWalletBalance'
 import * as walletRoutes from '../../routes/wallet'
+import { userChains$ } from '../../services/storage/userChains'
 import { reloadBalancesByChain } from '../../services/wallet'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ChainBalances, SelectedWalletAsset } from '../../services/wallet/types'
@@ -62,35 +63,55 @@ export const AssetsView: React.FC = (): JSX.Element => {
 
   const combinedBalances$ = useTotalWalletBalance()
 
+  const [enabledChains, setEnabledChains] = useState<Set<EnabledChain>>(new Set())
+  const [disabledChains, setDisabledChains] = useState<EnabledChain[]>([])
+
+  useEffect(() => {
+    const subscription = userChains$.subscribe((chains: EnabledChain[]) => {
+      setEnabledChains(new Set(chains))
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    const defaultChains = Object.keys(DEFAULT_ENABLED_CHAINS) as EnabledChain[]
+    const disabled = defaultChains.filter((chain) => !enabledChains.has(chain))
+    setDisabledChains(disabled)
+  }, [enabledChains])
+
   const [{ chainBalances, balancesByChain, errorsByChain }] = useObservableState(() => combinedBalances$, {
     chainBalances: [],
     balancesByChain: {},
     errorsByChain: {}
   })
 
-  const getChainWeight = (chain: Chain, dex: Dex) => {
-    const weights = dex.chain === THORChain ? CHAIN_WEIGHTS_THOR : CHAIN_WEIGHTS_MAYA
-    return isEnabledChain(chain) ? weights[chain] : Infinity
-  }
-  const getUniqueChainBalances = (balances: ChainBalances) => {
-    const seen = new Set()
-    return balances.filter((balance) => {
-      const key = `${balance.chain}-${balance.walletType}`
-      if (seen.has(key)) {
-        return false
-      }
-      seen.add(key)
-      return true
-    })
-  }
-
   const sortedBalances = useMemo(() => {
+    const getUniqueChainBalances = (balances: ChainBalances) => {
+      const seen = new Set()
+      return balances.filter((balance) => {
+        if (!enabledChains.has(balance.chain)) {
+          return false
+        }
+        const key = `${balance.chain}-${balance.walletType}`
+        if (seen.has(key)) {
+          return false
+        }
+        seen.add(key)
+        return true
+      })
+    }
+    const getChainWeight = (chain: Chain, dex: Dex) => {
+      const weights = dex.chain === THORChain ? CHAIN_WEIGHTS_THOR : CHAIN_WEIGHTS_MAYA
+      return enabledChains.has(chain) ? weights[chain] : Infinity
+    }
+
     // First, filter out duplicates
     const uniqueBalances = getUniqueChainBalances(chainBalances)
 
     // Then, sort the unique balances
     return uniqueBalances.sort((a, b) => getChainWeight(a.chain, dex) - getChainWeight(b.chain, dex))
-  }, [chainBalances, dex])
+  }, [chainBalances, dex, enabledChains])
 
   const [{ loading: loadingBalances }] = useObservableState(
     () => balancesState$(DEFAULT_BALANCES_FILTER),
@@ -140,19 +161,10 @@ export const AssetsView: React.FC = (): JSX.Element => {
 
   const disableRefresh = useMemo(() => RD.isPending(poolsRD) || loadingBalances, [loadingBalances, poolsRD])
 
-  const chains = useMemo(
-    () =>
-      FP.pipe(
-        sortedBalances,
-        A.map(({ chain }) => chain)
-      ),
-    [sortedBalances]
-  )
-
   const refreshHandler = useCallback(async () => {
     const delay = 1000 // Delay in milliseconds
 
-    for (const [index, chain] of chains.entries()) {
+    for (const [index, chain] of Array.from(enabledChains).entries()) {
       if (index > 0) {
         await new Promise((resolve) => setTimeout(resolve, delay))
       }
@@ -160,7 +172,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
       const lazyReload = reloadBalancesByChain(chain)
       lazyReload() // Invoke the lazy function
     }
-  }, [chains])
+  }, [enabledChains])
 
   return (
     <>
@@ -194,6 +206,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
         hidePrivateData={isPrivate}
         dex={dex}
         mayaScanPrice={mayaScanPriceRD}
+        disabledChains={disabledChains}
       />
     </>
   )

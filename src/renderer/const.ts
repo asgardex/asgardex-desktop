@@ -1,4 +1,4 @@
-import { ARBChain, AssetARB } from '@xchainjs/xchain-arbitrum'
+import { ARBChain, AssetAETH, AssetARB } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -88,7 +88,7 @@ export const AssetUniH: Asset = {
 // ETH.USDT mainnet
 export const AssetUSDTDAC: Asset = {
   chain: ETHChain,
-  symbol: 'USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7',
+  symbol: 'USDT-0xdAC17F958D2ee523a2206206994597C13D831ec7',
   ticker: 'USDT',
   synth: false
 }
@@ -102,23 +102,23 @@ export const AssetUSDT62E: Asset = {
 // ETH.USDC mainnet
 export const AssetUSDC: Asset = {
   chain: ETHChain,
-  symbol: 'USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48',
+  symbol: 'USDC-0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
   ticker: 'USDC',
   synth: false
 }
 
-// AVAX.USDT mainnet
+// AVAX.USDC mainnet
 export const AssetUSDCAVAX: Asset = {
   chain: AVAXChain,
-  symbol: 'USDC-0X9702230A8EA53601F5CD2DC00FDBC13D4DF4A8C7',
+  symbol: 'USDC-0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
   ticker: 'USDT',
   synth: false
 }
 
-// AVAX.USDC mainnet
+// AVAX.USDT mainnet
 export const AssetUSDTAVAX: Asset = {
   chain: AVAXChain,
-  symbol: 'USDC-0XB97EF9EF8734C71904D8002F8B6BC66DD9C48A6E',
+  symbol: 'USDT-0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7',
   ticker: 'USDC',
   synth: false
 }
@@ -138,6 +138,25 @@ export const AssetUSDCBSC: Asset = {
   ticker: 'USDC',
   synth: false
 }
+
+export const ETHAssetsFallBack = [AssetETH, AssetUSDTDAC, AssetUSDC]
+export const BSCAssetsFallBack = [AssetBSC, AssetUSDCBSC, AssetUSDTBSC]
+export const AVAXAssetsFallback = [AssetAVAX, AssetUSDTAVAX, AssetUSDCAVAX]
+
+// for evm only
+export const DEFAULT_USER_ASSETS = [
+  AssetETH,
+  AssetUSDTDAC,
+  AssetUSDC,
+  AssetBSC,
+  AssetUSDCBSC,
+  AssetUSDTBSC,
+  AssetAVAX,
+  AssetUSDTAVAX,
+  AssetUSDCAVAX,
+  AssetARB,
+  AssetAETH
+]
 
 export const DEFAULT_PRICE_ASSETS: PricePoolAssets = [AssetRuneNative, AssetETH, AssetBTC, AssetCacao]
 

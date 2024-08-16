@@ -16,7 +16,8 @@ import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { isEnabledChain } from '../../../shared/utils/chain'
+import { Dex } from '../../../shared/api/types'
+import { isSupportedChain } from '../../../shared/utils/chain'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'
 import * as BTC from '../bitcoin'
@@ -35,7 +36,7 @@ import * as THOR from '../thorchain'
 import type { Chain$ } from './types'
 
 export const clientByChain$ = (chain: Chain): XChainClient$ => {
-  if (!isEnabledChain(chain)) return Rx.of(O.none)
+  if (!isSupportedChain(chain)) return Rx.of(O.none)
 
   switch (chain) {
     case BTCChain:
@@ -64,39 +65,50 @@ export const clientByChain$ = (chain: Chain): XChainClient$ => {
       return COSMOS.client$
     case KUJIChain:
       return KUJI.client$
+    default:
+      return Rx.of(O.none) // Add a default case to handle unsupported chains
   }
 }
-// mayachainSwap
-export const clientByAsset$ = (asset: Asset): XChainClient$ => {
+
+export const clientByAsset$ = (asset: Asset, dex: Dex): XChainClient$ => {
   const chain = asset.chain
-  if (!isEnabledChain(chain)) return Rx.of(O.none)
+  if (!isSupportedChain(chain)) return Rx.of(O.none)
+
+  // If the asset is synthetic, use the respective client based on dex.chain
+  if (asset.synth) {
+    if (dex.chain === THORChain) return THOR.client$
+    if (dex.chain === MAYAChain) return MAYA.client$
+  }
+
   switch (chain) {
     case BTCChain:
-      return asset.synth ? THOR.client$ : BTC.client$
+      return BTC.client$
     case DASHChain:
-      return asset.synth ? MAYA.client$ : DASH.client$
+      return DASH.client$
     case BCHChain:
-      return asset.synth ? THOR.client$ : BCH.client$
+      return BCH.client$
     case ETHChain:
-      return asset.synth ? THOR.client$ : ETH.client$
+      return ETH.client$
     case ARBChain:
-      return asset.synth ? MAYA.client$ : ARB.client$
+      return ARB.client$
     case AVAXChain:
-      return asset.synth ? THOR.client$ : AVAX.client$
+      return AVAX.client$
     case BSCChain:
-      return asset.synth ? THOR.client$ : BSC.client$
+      return BSC.client$
     case THORChain:
       return THOR.client$
     case MAYAChain:
       return MAYA.client$
     case LTCChain:
-      return asset.synth ? THOR.client$ : LTC.client$
+      return LTC.client$
     case DOGEChain:
-      return asset.synth ? THOR.client$ : DOGE.client$
+      return DOGE.client$
     case GAIAChain:
-      return asset.synth ? THOR.client$ : COSMOS.client$
+      return COSMOS.client$
     case KUJIChain:
-      return asset.synth ? MAYA.client$ : KUJI.client$
+      return KUJI.client$
+    default:
+      return Rx.of(O.none) // Add a default case to handle unsupported chains
   }
 }
 

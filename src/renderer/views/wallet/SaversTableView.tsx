@@ -24,7 +24,6 @@ import * as Rx from 'rxjs'
 import { from } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { ENABLED_CHAINS } from '../../../shared/utils/chain'
 import { WalletType } from '../../../shared/wallet/types'
 import { SaversDetailsTable } from '../../components/savers/SaversDetailsTable'
 import { RefreshButton } from '../../components/uielements/button'
@@ -43,6 +42,7 @@ import { useNetwork } from '../../hooks/useNetwork'
 import { usePricePool } from '../../hooks/usePricePool'
 import { usePrivateData } from '../../hooks/usePrivateData'
 import { WalletAddress$ } from '../../services/clients'
+import { userChains$ } from '../../services/storage/userChains'
 import { SaverProviderRD } from '../../services/thorchain/types'
 import { ledgerAddressToWalletAddress } from '../../services/wallet/util'
 
@@ -118,78 +118,81 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
   const poolAsset = useMemo(() => {
     return poolSavers ? poolSavers.map((detail) => assetFromStringEx(detail.asset)) : []
   }, [poolSavers])
-
   useEffect(() => {
-    // If poolAsset is Some, destructure and use its value
     if (poolAsset) {
-      // keystore addresses
-      const keystoreAddresses$ = FP.pipe(
-        [...ENABLED_CHAINS],
-        A.filter((chain) => !isThorChain(chain)),
-        A.map(addressByChain$)
-      )
-
-      // ledger addresses
-      const ledgerAddresses$ = (): WalletAddress$[] =>
-        FP.pipe(
-          [...ENABLED_CHAINS],
-          A.filter((chain) => !isThorChain(chain) || isMayaChain(chain)),
-          A.map((chain) => getLedgerAddress$(chain)),
-          A.map(RxOp.map(FP.flow(O.map(ledgerAddressToWalletAddress))))
+      // Subscribe to userChains$ to get the enabled chains
+      const userChainsSubscription = userChains$.subscribe((enabledChains) => {
+        // keystore addresses
+        const keystoreAddresses$ = FP.pipe(
+          enabledChains,
+          A.filter((chain) => !isThorChain(chain)),
+          A.map(addressByChain$)
         )
 
-      const combinedAddresses$ = Rx.combineLatest([...keystoreAddresses$, ...ledgerAddresses$()]).pipe(
-        RxOp.map((addressOptionsArray) =>
+        // ledger addresses
+        const ledgerAddresses$ = (): WalletAddress$[] =>
           FP.pipe(
-            addressOptionsArray,
-            A.filterMap(FP.identity) // This will remove the 'None' and extract values from 'Some'
+            enabledChains,
+            A.filter((chain) => !isThorChain(chain) || isMayaChain(chain)),
+            A.map((chain) => getLedgerAddress$(chain)),
+            A.map(RxOp.map(FP.flow(O.map(ledgerAddressToWalletAddress))))
           )
-        ),
-        RxOp.map((walletAddresses) =>
-          walletAddresses.map((walletAddress) => ({
-            chain: walletAddress.chain, // Assuming these fields exist on the emitted WalletAddress objects
-            address: walletAddress.address,
-            type: walletAddress.type
-          }))
+
+        const combinedAddresses$ = Rx.combineLatest([...keystoreAddresses$, ...ledgerAddresses$()]).pipe(
+          RxOp.map((addressOptionsArray) =>
+            FP.pipe(
+              addressOptionsArray,
+              A.filterMap(FP.identity) // This will remove the 'None' and extract values from 'Some'
+            )
+          ),
+          RxOp.map((walletAddresses) =>
+            walletAddresses.map((walletAddress) => ({
+              chain: walletAddress.chain,
+              address: walletAddress.address,
+              type: walletAddress.type
+            }))
+          )
         )
-      )
 
-      const subscriptions = poolAsset.map((asset) => {
-        return combinedAddresses$
-          .pipe(
-            RxOp.switchMap((walletAddresses) => {
-              // Filter only the addresses that match the asset's chain
-              const addressesForAssetChain = walletAddresses.filter((wa) => wa.chain === asset.chain)
-              if (addressesForAssetChain.length > 0) {
-                return Rx.combineLatest(
-                  addressesForAssetChain.map((walletAddress) =>
-                    getSaverProvider$(asset, walletAddress.address, walletAddress.type)
+        const subscriptions = poolAsset.map((asset) => {
+          return combinedAddresses$
+            .pipe(
+              RxOp.switchMap((walletAddresses) => {
+                // Filter only the addresses that match the asset's chain
+                const addressesForAssetChain = walletAddresses.filter((wa) => wa.chain === asset.chain)
+                if (addressesForAssetChain.length > 0) {
+                  return Rx.combineLatest(
+                    addressesForAssetChain.map((walletAddress) =>
+                      getSaverProvider$(asset, walletAddress.address, walletAddress.type)
+                    )
                   )
-                )
-              }
-              return from([null])
-            })
-          )
-          .subscribe((saverProviders) => {
-            // Check if saverProviders is not null
-            if (saverProviders !== null) {
-              saverProviders.forEach((saverProvider) => {
-                if (
-                  saverProvider !== null &&
-                  saverProvider._tag === 'RemoteSuccess' &&
-                  saverProvider.value.depositValue.amount().gt(0)
-                ) {
-                  const key = `${asset.chain}.${asset.symbol}.${saverProvider.value.walletType}`
-                  setAllSaverProviders((prev) => ({ ...prev, [key]: saverProvider }))
                 }
+                return from([null])
               })
-            }
-          })
-      })
+            )
+            .subscribe((saverProviders) => {
+              // Check if saverProviders is not null
+              if (saverProviders !== null) {
+                saverProviders.forEach((saverProvider) => {
+                  if (
+                    saverProvider !== null &&
+                    saverProvider._tag === 'RemoteSuccess' &&
+                    saverProvider.value.depositValue.amount().gt(0)
+                  ) {
+                    const key = `${asset.chain}.${asset.symbol}.${saverProvider.value.walletType}`
+                    setAllSaverProviders((prev) => ({ ...prev, [key]: saverProvider }))
+                  }
+                })
+              }
+            })
+        })
 
-      return () => {
-        subscriptions.forEach((sub) => sub.unsubscribe())
-      }
+        // Cleanup subscriptions
+        return () => {
+          subscriptions.forEach((sub) => sub.unsubscribe())
+          userChainsSubscription.unsubscribe()
+        }
+      })
     }
   }, [addressByChain$, getLedgerAddress$, getSaverProvider$, poolAsset])
 

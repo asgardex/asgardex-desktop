@@ -17,7 +17,7 @@ import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Address, Chain } from '@xchainjs/xchain-util'
-import { List, Collapse, RadioChangeEvent } from 'antd'
+import { List, Collapse, RadioChangeEvent, AutoComplete, message } from 'antd'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
 import * as O from 'fp-ts/lib/Option'
@@ -27,7 +27,7 @@ import { useNavigate } from 'react-router-dom'
 import { KeystoreId } from '../../../shared/api/types'
 import { getDerivationPath as getEvmDerivationPath } from '../../../shared/evm/ledger'
 import { EvmHDMode } from '../../../shared/evm/types'
-import { chainToString, EnabledChain, isEnabledChain } from '../../../shared/utils/chain'
+import { chainToString, EnabledChain, isSupportedChain } from '../../../shared/utils/chain'
 import { isError } from '../../../shared/utils/guard'
 import { HDMode, WalletAddress } from '../../../shared/wallet/types'
 import { ReactComponent as UnlockOutlined } from '../../assets/svg/icon-unlock-warning.svg'
@@ -44,6 +44,8 @@ import { getWalletNamesFromKeystoreWallets, isEnabledLedger } from '../../helper
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
 import * as appRoutes from '../../routes/app'
 import * as walletRoutes from '../../routes/wallet'
+import { userChains$, addChain, removeChain } from '../../services/storage/userChains'
+import { addAsset, removeAsset } from '../../services/storage/userChainTokens'
 import {
   KeystoreWalletsUI,
   RemoveKeystoreWalletHandler,
@@ -60,9 +62,14 @@ import {
   VerifiedLedgerAddressRD
 } from '../../services/wallet/types'
 import { walletTypeToI18n } from '../../services/wallet/util'
+import { ARB_TOKEN_WHITELIST } from '../../types/generated/mayachain/arberc20whitelist'
+import { AVAX_TOKEN_WHITELIST } from '../../types/generated/thorchain/avaxerc20whitelist'
+import { BSC_TOKEN_WHITELIST } from '../../types/generated/thorchain/bscerc20whitelist'
+import { ERC20_WHITELIST } from '../../types/generated/thorchain/erc20whitelist'
 import { AttentionIcon } from '../icons'
 import * as StyledR from '../shared/form/Radio.styles'
 import { BorderButton, FlatButton, TextButton } from '../uielements/button'
+import { SwitchButton } from '../uielements/button/SwitchButton'
 import { Tooltip, WalletTypeLabel } from '../uielements/common/Common.styles'
 import { InfoIcon } from '../uielements/info'
 import { Modal } from '../uielements/modal'
@@ -549,6 +556,28 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
   )
 
   const [accountFilter, setAccountFilter] = useState(emptyString)
+  const [enabledChains, setEnabledChains] = useState<EnabledChain[]>([])
+
+  useEffect(() => {
+    const subscription = userChains$.subscribe(setEnabledChains)
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const toggleChain = useCallback(
+    (chain: EnabledChain) => {
+      const updatedChains = enabledChains.includes(chain)
+        ? enabledChains.filter((c) => c !== chain)
+        : [...enabledChains, chain]
+
+      setEnabledChains(updatedChains)
+      if (enabledChains.includes(chain)) {
+        removeChain(chain)
+      } else {
+        addChain(chain)
+      }
+    },
+    [enabledChains]
+  )
 
   const filterAccounts = useCallback(({ target }: React.ChangeEvent<HTMLInputElement>) => {
     const value = target.value
@@ -587,6 +616,108 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     }
   }, [exportKeystore, setExportKeystoreErrorMsg])
 
+  // Handler to update the search state
+  const [assetSearch, setAssetSearch] = useState<{ [key in Chain]?: string }>({})
+  const [filteredAssets, setFilteredAssets] = useState<{ [key in Chain]?: Asset[] }>({})
+
+  const [isAddingByChain, setIsAddingByChain] = useState<{ [key in Chain]?: boolean }>({})
+
+  const toggleStorageMode = useCallback((chain: Chain) => {
+    setIsAddingByChain((prevState) => ({
+      ...prevState,
+      [chain]: !prevState[chain] // Toggle the current state for the specific chain
+    }))
+  }, [])
+
+  const handleAssetSearch = useCallback((value: string, chain: Chain) => {
+    const searchValue = value.toUpperCase()
+
+    setAssetSearch((prevState) => ({
+      ...prevState,
+      [chain]: searchValue
+    }))
+
+    let matchedAssets: Asset[]
+    switch (chain) {
+      case ETHChain:
+        matchedAssets = ERC20_WHITELIST.filter(
+          ({ asset }) => asset.symbol.toUpperCase().includes(searchValue) && !asset.synth
+        ).map(({ asset }) => asset)
+        break
+      case AVAXChain:
+        matchedAssets = AVAX_TOKEN_WHITELIST.filter(
+          ({ asset }) => asset.symbol.toUpperCase().includes(searchValue) && !asset.synth
+        ).map(({ asset }) => asset)
+        break
+      case BSCChain:
+        matchedAssets = BSC_TOKEN_WHITELIST.filter(
+          ({ asset }) => asset.symbol.toUpperCase().includes(searchValue) && !asset.synth
+        ).map(({ asset }) => asset)
+        break
+      case ARBChain:
+        matchedAssets = ARB_TOKEN_WHITELIST.filter(
+          ({ asset }) => asset.symbol.toUpperCase().includes(searchValue) && !asset.synth
+        ).map(({ asset }) => asset)
+        break
+      default:
+        matchedAssets = []
+        break
+    }
+    setFilteredAssets((prevState) => ({
+      ...prevState,
+      [chain]: matchedAssets
+    }))
+  }, [])
+
+  const addAssetToStorage = useCallback((asset: Asset, chain: Chain) => {
+    addAsset(asset)
+
+    setAssetSearch((prevState) => ({
+      ...prevState,
+      [chain]: ''
+    }))
+
+    setFilteredAssets((prevState) => ({
+      ...prevState,
+      [chain]: []
+    }))
+  }, [])
+
+  const handleRemoveAsset = useCallback(
+    (value: string, chain: Chain) => {
+      const selectedAsset = (filteredAssets[chain] || []).find((asset) => asset.symbol === value)
+      if (selectedAsset) {
+        removeAsset(selectedAsset)
+        setAssetSearch((prevState) => ({
+          ...prevState,
+          [chain]: ''
+        }))
+
+        setFilteredAssets((prevState) => ({
+          ...prevState,
+          [chain]: []
+        }))
+      }
+    },
+    [filteredAssets]
+  )
+
+  const onSelectAsset = useCallback(
+    (value: string, chain: Chain) => {
+      const selectedAsset = (filteredAssets[chain] || []).find((asset) => asset.symbol === value)
+      if (selectedAsset) {
+        if (isAddingByChain[chain]) {
+          addAssetToStorage(selectedAsset, chain)
+          message.success(`${selectedAsset.symbol} added to ${selectedAsset.chain} successfully!`)
+        } else {
+          handleRemoveAsset(selectedAsset.symbol, chain)
+          message.success(`${selectedAsset.symbol} removed from ${selectedAsset.chain} successfully!`)
+        }
+      }
+    },
+    [addAssetToStorage, filteredAssets, handleRemoveAsset, isAddingByChain]
+  )
+
   const renderAccounts = useMemo(
     () =>
       FP.pipe(
@@ -597,7 +728,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
             dataSource={walletAccounts}
             renderItem={({ chain, accounts: { keystore, ledger: oLedger } }, i: number) => (
               <Styled.ListItem key={i}>
-                <div className="flex w-full items-center">
+                <div className="flex w-full items-center justify-start">
                   <AssetIcon asset={getChainAsset(chain)} size="small" network={Network.Mainnet} />
                   <Styled.AccountTitle>{chain}</Styled.AccountTitle>
                 </div>
@@ -605,17 +736,75 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                   {/* keystore */}
                   {renderKeystoreAddress(chain, keystore)}
                   {/* ledger */}
-                  {isEnabledLedger(chain, network) && isEnabledChain(chain)
+                  {isEnabledLedger(chain, network) && isSupportedChain(chain)
                     ? renderLedgerAddress(chain, oLedger)
                     : renderLedgerNotSupported}
                 </div>
+                <div className="mx-40px mt-10px w-full">
+                  <SwitchButton active={enabledChains.includes(chain)} onChange={() => toggleChain(chain)} />
+                  <span className="ml-2 text-text0 dark:text-text0d">
+                    {enabledChains.includes(chain)
+                      ? intl.formatMessage({ id: 'common.disable' }, { chain: chain })
+                      : intl.formatMessage({ id: 'common.enable' }, { chain: chain })}
+                  </span>
+                </div>
+                {(chain === ETHChain || chain === AVAXChain || chain === BSCChain || chain === ARBChain) && (
+                  <div className="mx-40px mt-10px flex w-full items-center">
+                    <SwitchButton
+                      active={!!isAddingByChain[chain]} // Use the toggle state for the specific chain
+                      onChange={() => toggleStorageMode(chain)} // Pass the specific chain to toggle the state
+                      className="mr-10px"
+                    />
+                    <span className="mr-2 text-text0 dark:text-text0d">
+                      {isAddingByChain[chain]
+                        ? intl.formatMessage({ id: 'common.add' })
+                        : intl.formatMessage({ id: 'common.remove' })}
+                    </span>
+                    <AutoComplete
+                      value={assetSearch[chain] || ''}
+                      onChange={(value) => handleAssetSearch(value, chain)}
+                      onSelect={(value: string) => onSelectAsset(value, chain)}
+                      style={{ minWidth: 450, width: 'auto' }}
+                      placeholder={intl.formatMessage({ id: 'common.searchAsset' })}
+                      allowClear>
+                      {(filteredAssets[chain] || []).map((asset: Asset) => (
+                        <AutoComplete.Option key={asset.symbol} value={asset.symbol}>
+                          <div>{asset.symbol}</div>
+                        </AutoComplete.Option>
+                      ))}
+                    </AutoComplete>
+                    <InfoIcon
+                      className="ml-10px"
+                      tooltip={
+                        isAddingByChain[chain]
+                          ? intl.formatMessage({ id: 'common.addAsset' })
+                          : intl.formatMessage({ id: 'common.removeAsset' })
+                      }
+                    />
+                  </div>
+                )}
               </Styled.ListItem>
             )}
           />
         )),
         O.getOrElse(() => <></>)
       ),
-    [oFilteredWalletAccounts, renderKeystoreAddress, network, renderLedgerAddress, renderLedgerNotSupported]
+    [
+      oFilteredWalletAccounts,
+      renderKeystoreAddress,
+      network,
+      renderLedgerAddress,
+      renderLedgerNotSupported,
+      enabledChains,
+      intl,
+      isAddingByChain,
+      assetSearch,
+      filteredAssets,
+      toggleChain,
+      toggleStorageMode,
+      handleAssetSearch,
+      onSelectAsset
+    ]
   )
 
   const { state: changeWalletState, subscribe: subscribeChangeWalletState } =

@@ -25,7 +25,6 @@ export const send = async ({
   network: Network
   amount: BaseAmount
   asset: Asset
-  feeAmount: BaseAmount
   recipient: Address
   memo?: string
   walletAccount: number

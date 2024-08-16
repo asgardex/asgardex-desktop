@@ -1,14 +1,18 @@
+import * as RD from '@devexperts/remote-data-ts'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { Asset } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
+import { of } from 'rxjs'
+import { switchMap } from 'rxjs/operators'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
-import { BscAssetsTestnet } from '../../const'
-import { validAssetForBSC } from '../../helpers/assetHelper'
+import { BSCAssetsFallBack, BscAssetsTestnet } from '../../const'
 import { liveData } from '../../helpers/rx/liveData'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
+import { userAssets$ } from '../storage/userChainTokens'
 import { WalletBalance } from '../wallet/types'
 import { client$ } from './common'
 
@@ -31,7 +35,7 @@ const targetSymbol = 'BSC-USD-0x55d398326f99059ff775485246999027b3197955'
 const newSymbol = 'USDT-0x55d398326f99059fF775485246999027B3197955'
 const newTicker = 'USDT'
 
-const replaceSymbol = (asset: Asset): Asset => {
+export const replaceSymbol = (asset: Asset): Asset => {
   if (asset.symbol === targetSymbol) {
     return { ...asset, symbol: newSymbol, ticker: newTicker }
   }
@@ -51,23 +55,40 @@ const balances$: ({
   walletAccount: number
   walletIndex: number
   hdMode: HDMode
-}) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, network, hdMode }) => {
-  // For testnet we limit requests by using pre-defined assets only
-
-  const assets: Asset[] | undefined = network === Network.Testnet ? BscAssetsTestnet : undefined
-
+}) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, hdMode }) => {
   return FP.pipe(
-    C.balances$({
-      client$,
-      trigger$: reloadBalances$,
-      assets,
-      walletType,
-      walletAccount,
-      walletIndex,
-      hdMode,
-      walletBalanceType: 'all'
+    userAssets$,
+    switchMap((assets) => {
+      const bscAssets = assets.filter((asset) => asset.chain === BSCChain)
+      return C.balances$({
+        client$,
+        trigger$: reloadBalances$,
+        assets: bscAssets,
+        walletType,
+        walletAccount,
+        walletIndex,
+        hdMode,
+        walletBalanceType: 'all'
+      })
     }),
     // Filter assets based on BSCERC20Whitelist (mainnet only)
+    switchMap((balanceResult) => {
+      // Check if the balance call failed
+      if (RD.isFailure(balanceResult)) {
+        // Retry with fallback assets
+        return C.balances$({
+          client$,
+          trigger$: reloadBalances$,
+          assets: BSCAssetsFallBack,
+          walletType,
+          walletAccount,
+          walletIndex,
+          hdMode,
+          walletBalanceType: 'all'
+        })
+      }
+      return of(balanceResult)
+    }),
     liveData.map(
       FP.flow(
         A.map((balance: WalletBalance) => {
@@ -77,8 +98,7 @@ const balances$: ({
           }
         })
       )
-    ),
-    liveData.map(FP.flow(A.filter(({ asset }) => validAssetForBSC(asset, network))))
+    )
   )
 }
 

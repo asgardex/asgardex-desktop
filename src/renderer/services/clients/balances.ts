@@ -10,7 +10,9 @@ import { catchError, startWith, map, shareReplay, debounceTime } from 'rxjs/oper
 
 import { HDMode, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
 import { liveData } from '../../helpers/rx/liveData'
-import { ApiError, ErrorId } from '../wallet/types'
+import { replaceSymbol } from '../bsc/balances'
+import { userAssets$ } from '../storage/userChainTokens'
+import { ApiError, ErrorId, WalletBalance } from '../wallet/types'
 import { WalletBalancesLD, XChainClient$ } from './types'
 
 // Currently we have two parameters only for `getBalance` in XChainClient defined,
@@ -163,30 +165,45 @@ type BalancesByAddress$ = ({
 }) => WalletBalancesLD
 
 export const balancesByAddress$: BalancesByAddress$ =
-  ({ client$, trigger$, assets, walletBalanceType }) =>
+  ({ client$, trigger$, walletBalanceType }) =>
   ({ address, walletType, walletAccount, walletIndex, hdMode }) =>
-    Rx.combineLatest([trigger$.pipe(debounceTime(300)), client$]).pipe(
+    Rx.combineLatest([trigger$.pipe(RxOp.debounceTime(300)), client$]).pipe(
       RxOp.mergeMap(([_, oClient]) => {
         return FP.pipe(
           oClient,
           O.fold(
-            // if a client is not available, "reset" state to "initial"
             () => Rx.of(RD.initial),
-            // or start request and return state
             (client) =>
-              loadBalances$({
-                client,
-                address,
-                walletType,
-                assets,
-                walletAccount,
-                walletIndex,
-                walletBalanceType,
-                hdMode
-              })
+              FP.pipe(
+                userAssets$,
+                RxOp.switchMap((assets) => {
+                  // Filter the assets by the client's chain
+                  const filteredAssets = assets.filter((asset) => asset.chain === client.getAssetInfo().asset.chain)
+                  return loadBalances$({
+                    client,
+                    address,
+                    walletType,
+                    assets: filteredAssets, // Use filtered assets
+                    walletAccount,
+                    walletIndex,
+                    walletBalanceType,
+                    hdMode
+                  }).pipe(
+                    liveData.map(
+                      FP.flow(
+                        A.map((balance: WalletBalance) => {
+                          return {
+                            ...balance,
+                            asset: replaceSymbol(balance.asset)
+                          }
+                        })
+                      )
+                    )
+                  )
+                })
+              )
           )
         )
       }),
-      // cache it to avoid reloading data by every subscription
       shareReplay(1)
     )

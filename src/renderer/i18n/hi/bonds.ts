@@ -8,6 +8,7 @@ const bonds: BondsMessages = {
   'bonds.award': 'पुरस्कार',
   'bonds.status': 'स्थिति',
   'bonds.status.active': 'सक्रिय',
+  'bonds.status.ready': 'तैयार',
   'bonds.status.standby': 'प्रतीक्षा में',
   'bonds.status.disabled': 'निष्क्रिय',
   'bonds.status.whitelisted': 'श्वेतसूचीबद्ध',

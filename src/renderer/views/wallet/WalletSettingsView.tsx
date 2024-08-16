@@ -25,7 +25,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { LedgerErrorId } from '../../../shared/api/types'
 import { DEFAULT_EVM_HD_MODE, EvmHDMode } from '../../../shared/evm/types'
-import { isEnabledChain } from '../../../shared/utils/chain'
+import { isSupportedChain } from '../../../shared/utils/chain'
 import { HDMode } from '../../../shared/wallet/types'
 import { WalletSettings } from '../../components/settings'
 import { useArbContext } from '../../contexts/ArbContext'
@@ -292,7 +292,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
       window.apiUrl.openExternal(url)
     }
 
-    if (!isEnabledChain(chain)) {
+    if (!isSupportedChain(chain)) {
       console.warn(`${chain} is not supported for 'clickAddressLinkHandler'`)
     }
 

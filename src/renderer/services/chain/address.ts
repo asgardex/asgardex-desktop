@@ -15,7 +15,7 @@ import { Chain } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 
-import { isEnabledChain } from '../../../shared/utils/chain'
+import { isSupportedChain } from '../../../shared/utils/chain'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'
 import * as BTC from '../bitcoin'
@@ -36,7 +36,7 @@ import { client$ } from './client'
  * Returns keystore addresses by given chain
  */
 const addressByChain$ = (chain: Chain): WalletAddress$ => {
-  if (!isEnabledChain(chain)) return Rx.of(O.none)
+  if (!isSupportedChain(chain)) return Rx.of(O.none)
 
   switch (chain) {
     case BTCChain:
@@ -65,6 +65,8 @@ const addressByChain$ = (chain: Chain): WalletAddress$ => {
       return DOGE.address$
     case KUJIChain:
       return KUJI.address$
+    default:
+      return Rx.of(O.none)
   }
 }
 

@@ -1,7 +1,16 @@
 import * as E from 'fp-ts/Either'
 
 import { PoolsStorageEncoded } from '../api/io'
-import { ApiLang, ApiKeystore, ApiUrl, ApiHDWallet, UserNodesStorage, IPCExportKeystoreParams } from '../api/types'
+import {
+  ApiLang,
+  ApiKeystore,
+  ApiUrl,
+  ApiHDWallet,
+  UserNodesStorage,
+  IPCExportKeystoreParams,
+  UserChainStorage,
+  UserAssetStorage
+} from '../api/types'
 import { ApiFileStoreService, CommonStorage } from '../api/types'
 import { Locale } from '../i18n/types'
 import { MOCK_KEYSTORE } from './wallet'
@@ -108,5 +117,29 @@ export const apiPoolsStorage: ApiFileStoreService<PoolsStorageEncoded> = {
   save: (_: Partial<CommonStorage>) => Promise.resolve(poolsStorageData),
   remove: () => Promise.resolve(console.log('mock remove pools storage data')),
   get: () => Promise.resolve(poolsStorageData),
+  exists: () => Promise.resolve(true)
+}
+
+const userChainStorageData: UserChainStorage = {
+  chains: [],
+  version: '1'
+}
+
+export const apiChainStorage: ApiFileStoreService<UserChainStorage> = {
+  save: (_: Partial<CommonStorage>) => Promise.resolve(userChainStorageData),
+  remove: () => Promise.resolve(console.log('mock remove chain storage data')),
+  get: () => Promise.resolve(userChainStorageData),
+  exists: () => Promise.resolve(true)
+}
+
+const userAssetStorageData: UserAssetStorage = {
+  assets: [],
+  version: '1'
+}
+
+export const apiAssetStorage: ApiFileStoreService<UserAssetStorage> = {
+  save: (_: Partial<CommonStorage>) => Promise.resolve(userAssetStorageData),
+  remove: () => Promise.resolve(console.log('mock remove chain storage data')),
+  get: () => Promise.resolve(userAssetStorageData),
   exists: () => Promise.resolve(true)
 }

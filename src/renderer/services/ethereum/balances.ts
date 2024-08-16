@@ -1,14 +1,16 @@
+import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetETH } from '@xchainjs/xchain-ethereum'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { Asset } from '@xchainjs/xchain-util'
-import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
+import { of } from 'rxjs'
+import { switchMap } from 'rxjs/operators'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
-import { ETHAssetsTestnet } from '../../const'
+import { ETHAssetsFallBack, ETHAssetsTestnet } from '../../const'
 import { observableState } from '../../helpers/stateHelper'
-import { ERC20_WHITELIST } from '../../types/generated/thorchain/erc20whitelist'
 import * as C from '../clients'
+import { userAssets$ } from '../storage/userChainTokens'
 import { client$ } from './common'
 
 /**
@@ -26,7 +28,6 @@ const reloadBalances = () => {
   setReloadBalances(true)
 }
 
-// State of balances loaded by Client
 const balances$: ({
   walletType,
   network,
@@ -39,33 +40,36 @@ const balances$: ({
   walletAccount: number
   walletIndex: number
   hdMode: HDMode
-}) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, network, hdMode }) => {
-  // For testnet we limit requests by using pre-defined assets only
-  // For mainnet we use the whiteList assets to avoid calling balances on airdropped scam tokens.
-  const getAssets = (network: Network): Asset[] | undefined => {
-    const assets: Asset[] | undefined = network === Network.Testnet ? ETHAssetsTestnet : undefined
-
-    return network === Network.Mainnet
-      ? FP.pipe(
-          ERC20_WHITELIST,
-          A.filter(({ asset }) => !asset.synth),
-          A.map(({ asset }) => asset),
-          (whitelistedAssets) => [AssetETH, ...whitelistedAssets]
-        )
-      : assets
-  }
-  const assets: Asset[] | undefined = getAssets(network)
+}) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, hdMode }) => {
   return FP.pipe(
-    C.balances$({
-      client$,
-      trigger$: reloadBalances$,
-      assets,
-      walletType,
-      walletAccount,
-      walletIndex,
-      hdMode,
-      walletBalanceType: 'all'
-    })
+    userAssets$,
+    switchMap((assets) => {
+      const ethAssets = assets.filter((asset) => asset.chain === ETHChain)
+      return C.balances$({
+        client$,
+        trigger$: reloadBalances$,
+        assets: ethAssets,
+        walletType,
+        walletAccount,
+        walletIndex,
+        hdMode,
+        walletBalanceType: 'all'
+      })
+    }),
+    switchMap((balanceResult) =>
+      RD.isFailure(balanceResult)
+        ? C.balances$({
+            client$,
+            trigger$: reloadBalances$,
+            assets: ETHAssetsFallBack,
+            walletType,
+            walletAccount,
+            walletIndex,
+            hdMode,
+            walletBalanceType: 'all'
+          })
+        : of(balanceResult)
+    )
   )
 }
 

@@ -17,7 +17,7 @@ import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { isEnabledChain } from '../../../shared/utils/chain'
+import { isSupportedChain } from '../../../shared/utils/chain'
 import { isThorChain } from '../../helpers/chainHelper'
 import { observableState } from '../../helpers/stateHelper'
 import * as ARB from '../arb'
@@ -67,13 +67,9 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
           () => Rx.of(RD.initial),
           ({ asset }) => {
             const { chain } = asset
-            if (!isEnabledChain(chain) || asset.synth || isThorChain(chain))
+            if (!isSupportedChain(chain) || asset.synth || isThorChain(chain)) {
               return Rx.of(RD.failure<ApiError>({ errorId: ErrorId.GET_ASSET_TXS, msg: `Unsupported chain ${chain}` }))
-            // If the asset is synthetic, use the THOR client tobefixed
-            // if (asset && asset.synth) {
-            //   console.log(limit)
-            //   return THOR.txs$({ asset: O.none, walletAddress, walletIndex, limit })
-            // }
+            }
             switch (chain) {
               case BTCChain:
                 return BTC.txs$({ asset: O.none, limit, offset, walletAddress, walletIndex })
@@ -101,6 +97,10 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
                 return KUJI.txs$({ asset: O.none, walletAddress, walletIndex })
               case GAIAChain:
                 return COSMOS.txs$({ asset: O.none, walletAddress, walletIndex })
+              default:
+                return Rx.of(
+                  RD.failure<ApiError>({ errorId: ErrorId.GET_ASSET_TXS, msg: `Unsupported chain ${chain}` })
+                )
             }
           }
         )

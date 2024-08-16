@@ -34,7 +34,7 @@ import * as O from 'fp-ts/lib/Option'
 import * as P from 'fp-ts/lib/Predicate'
 
 import { AssetARB, AssetBTC, AssetETH, AssetKUJI } from '../../../shared/utils/asset'
-import { isEnabledChain } from '../../../shared/utils/chain'
+import { isSupportedChain } from '../../../shared/utils/chain'
 import { optionFromNullableString } from '../../../shared/utils/fp'
 import { convertBaseAmountDecimal, isUSDAsset, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { eqAsset, eqChain, eqOAddress } from '../../helpers/fp/eq'
@@ -229,7 +229,7 @@ export const getOutboundAssetFeeByChain = (
     O.chain(O.fromPredicate(isValidBN)),
     // Convert fee values to `BaseAmount` to put into `AssetWithAmount`
     O.chain((value) => {
-      if (!isEnabledChain(chain)) return O.none
+      if (!isSupportedChain(chain)) return O.none
 
       switch (chain) {
         case BCHChain:
@@ -275,6 +275,8 @@ export const getOutboundAssetFeeByChain = (
         }
         // 'MAYAChain can be ignored - fees for asset side only
         case MAYAChain:
+          return O.none
+        default:
           return O.none
       }
     })

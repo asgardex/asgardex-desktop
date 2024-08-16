@@ -10,6 +10,7 @@ import * as O from 'fp-ts/Option'
 import { THORCHAIN_DECIMAL } from '../../renderer/helpers/assetHelper'
 import { EvmHDMode } from '../evm/types'
 import { Locale } from '../i18n/types'
+import { EnabledChain } from '../utils/chain'
 import { HDMode, WalletAddress } from '../wallet/types'
 import { IPCLedgerAddressesIO, KeystoreWallets, PoolsStorageEncoded } from './io'
 
@@ -35,7 +36,11 @@ export type Dex = DexDetails
 
 // A version number starting from `1` to avoid to load deprecated files
 export type StorageVersion = { version: string }
+export type EnabledChains = { chains: EnabledChain[] }
+export type AddedAssets = { assets: Asset[] }
 export type ApiUrls = Record<Network, string>
+export type UserChainStorage = EnabledChains & StorageVersion
+export type UserAssetStorage = AddedAssets & StorageVersion
 export type UserNodesStorage = Readonly<Record<Network, Address[]> & StorageVersion>
 export type CommonStorage = Readonly<
   {
@@ -58,6 +63,8 @@ export type CommonStorage = Readonly<
  */
 export type StoreFilesContent = Readonly<{
   common: CommonStorage
+  userChains: UserChainStorage
+  userAssets: UserAssetStorage
   userNodes: UserNodesStorage
   pools: PoolsStorageEncoded
 }>
@@ -193,6 +200,8 @@ declare global {
     apiHDWallet: ApiHDWallet
     apiCommonStorage: ApiFileStoreService<StoreFileData<'common'>>
     apiUserNodesStorage: ApiFileStoreService<StoreFileData<'userNodes'>>
+    apiChainStorage: ApiFileStoreService<StoreFileData<'userChains'>>
+    apiAssetStorage: ApiFileStoreService<StoreFileData<'userAssets'>>
     apiPoolsStorage: ApiFileStoreService<StoreFileData<'pools'>>
     apiAppUpdate: ApiAppUpdate
   }
