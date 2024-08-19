@@ -180,6 +180,7 @@ const common: CommonMessages = {
   'common.ledgerlive': 'Ledger Live',
   'common.metamask': 'MetaMask',
   'common.unknown': 'Desconocido',
+  'common.featureUnderDevelopment': 'Función en desarrollo, no usar',
   'common.expandAll': 'Expandir todo',
   'common.excludeSynth': 'Excluir Sintéticos',
   'common.completeLp': 'Completar Lp',

@@ -181,6 +181,7 @@ const common: CommonMessages = {
   'common.legacy': 'पुराना',
   'common.ledgerlive': 'लेजर लाइव',
   'common.metamask': 'मेटामास्क',
-  'common.unknown': 'अज्ञात'
+  'common.unknown': 'अज्ञात',
+  'common.featureUnderDevelopment': 'विकासाधीन सुविधा, उपयोग न करें'
 }
 export default common

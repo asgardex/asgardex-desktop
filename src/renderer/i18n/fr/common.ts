@@ -181,7 +181,8 @@ const common: CommonMessages = {
   'common.legacy': 'Obsolète',
   'common.ledgerlive': 'Ledger Live',
   'common.metamask': 'MetaMask',
-  'common.unknown': 'Inconnu'
+  'common.unknown': 'Inconnu',
+  'common.featureUnderDevelopment': 'Fonction en cours de développement, ne pas utiliser'
 }
 
 export default common

@@ -182,6 +182,7 @@ export type CommonMessageKey =
   | 'common.ledgerlive'
   | 'common.metamask'
   | 'common.unknown'
+  | 'common.featureUnderDevelopment'
 
 export type CommonMessages = {
   [key in CommonMessageKey]: string

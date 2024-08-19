@@ -1299,6 +1299,12 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     <div className="flex w-full max-w-[500px] flex-col justify-between py-[60px]">
       <div>
         <div className="flex flex-col">
+          <div className="text-12 text-gray2 dark:border-gray1d dark:text-gray2d">
+            <div className="rounded text-warning0 dark:text-warning0d">
+              {intl.formatMessage({ id: 'common.featureUnderDevelopment' })}
+            </div>
+            <div className="flex pb-4"></div>
+          </div>
           <AssetInput
             className="w-full"
             amount={{ amount: amountToRepayMax1e8, asset: sourceAsset }}

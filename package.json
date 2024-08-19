@@ -83,7 +83,7 @@
     "@ledgerhq/hw-transport-node-hid-singleton": "^6.30.1",
     "@storybook/addon-viewport": "^8.1.4",
     "@types/electron-devtools-installer": "^2.2.2",
-    "@xchainjs/xchain-arbitrum": "0.1.7",
+    "@xchainjs/xchain-arbitrum": "0.1.14",
     "@xchainjs/xchain-avax": "0.5.0",
     "@xchainjs/xchain-bitcoin": "0.23.18",
     "@xchainjs/xchain-bitcoincash": "0.17.16",
