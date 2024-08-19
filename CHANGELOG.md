@@ -1,3 +1,12 @@
+# 1.22.2 (2024-08-)
+
+## Updates/Fixes
+
+
+## Add
+
+- Lending UI [#10] (https://github.com/asgardex/asgardex-desktop/pull/286) 
+
 # 1.22.1 (2024-08-15)
 
 ## Updates/Fixes
