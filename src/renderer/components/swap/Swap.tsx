@@ -298,11 +298,11 @@ export const Swap = ({
   const [oQuoteMaya, setQuoteMaya] = useState<O.Option<QuoteSwap>>(O.none)
 
   // Default Streaming interval set to 1 blocks
-  const [streamingInterval, setStreamingInterval] = useState<number>(dex.chain === THORChain ? 1 : 3)
-  // Default Streaming quantity set to 0 network computes the optimum
+  const [streamingInterval, setStreamingInterval] = useState<number>(dex.chain === THORChain ? 1 : 5)
+  // Default Streaming quantity set to 0, network computes the optimum
   const [streamingQuantity, setStreamingQuantity] = useState<number>(0)
   // Slide use state
-  const [slider, setSlider] = useState<number>(dex.chain === THORChain ? 26 : 76)
+  const [slider, setSlider] = useState<number>(dex.chain === THORChain ? 26 : 50)
 
   const [oTargetWalletType, setTargetWalletType] = useState<O.Option<WalletType>>(oInitialTargetWalletType)
 
@@ -1772,9 +1772,9 @@ export const Swap = ({
 
   // Function to reset the slider to default position
   const resetToDefault = () => {
-    setStreamingInterval(dex.chain === THORChain ? 1 : 3) // Default position
+    setStreamingInterval(dex.chain === THORChain ? 1 : 5) // Default position
     setStreamingQuantity(0) // thornode | mayanode decides the swap quantity
-    setSlider(dex.chain === THORChain ? 26 : 76)
+    setSlider(dex.chain === THORChain ? 26 : 50)
     setIsStreaming(true)
   }
   const quoteOnlyButton = () => {
@@ -1787,10 +1787,20 @@ export const Swap = ({
   // Streaming Interval slider
   const renderStreamerInterval = useMemo(() => {
     const calculateStreamingInterval = (slider: number) => {
-      if (slider >= 75) return 3
-      if (slider >= 50) return 2
-      if (slider >= 25) return 1
-      return 0
+      if (dex.chain === THORChain) {
+        if (slider >= 75) return 3
+        if (slider >= 50) return 2
+        if (slider >= 25) return 1
+        return 0
+      } else if (dex.chain === MAYAChain) {
+        if (slider >= 90) return 10
+        if (slider >= 70) return 8
+        if (slider >= 50) return 5
+        if (slider >= 30) return 3
+        if (slider >= 10) return 1
+        return 0
+      }
+      return 3 // Default for other chains
     }
     const streamingIntervalValue = calculateStreamingInterval(slider)
     const setInterval = (slider: number) => {
@@ -1819,7 +1829,7 @@ export const Swap = ({
         />
       </div>
     )
-  }, [slider, streamingInterval])
+  }, [dex.chain, slider, streamingInterval])
 
   // Streaming Quantity slider
   const renderStreamerQuantity = useMemo(() => {
