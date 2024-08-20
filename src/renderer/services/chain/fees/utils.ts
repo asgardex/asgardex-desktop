@@ -1,4 +1,4 @@
-import { Asset, baseAmount, assetToString, BaseAmount } from '@xchainjs/xchain-util'
+import { baseAmount, assetToString, BaseAmount, AnyAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/lib/Option'
 
@@ -10,7 +10,7 @@ import { PoolData } from '../../../views/pools/Pools.types'
 import { getValueOfAsset1InAsset2 } from '../../../views/pools/Pools.utils'
 import { PoolsDataMap } from '../../midgard/types'
 
-export const getPoolData = (poolsData: PoolsDataMap, asset: Asset): O.Option<PoolData> =>
+export const getPoolData = (poolsData: PoolsDataMap, asset: AnyAsset): O.Option<PoolData> =>
   FP.pipe(
     poolsData[assetToString(asset)],
     O.fromNullable,
@@ -25,8 +25,8 @@ export const priceFeeAmountForAsset = ({
   poolsData
 }: {
   feeAmount: BaseAmount
-  feeAsset: Asset
-  asset: Asset
+  feeAsset: AnyAsset
+  asset: AnyAsset
   assetDecimal: number
   poolsData: PoolsDataMap
 }): BaseAmount => {

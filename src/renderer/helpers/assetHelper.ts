@@ -4,21 +4,23 @@ import { AssetDASH } from '@xchainjs/xchain-dash'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
 import { AssetUSK } from '@xchainjs/xchain-kujira'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
+import { CompatibleAsset } from '@xchainjs/xchain-mayachain-query'
 import {
   Address,
-  Asset,
+  AnyAsset,
   assetAmount,
   AssetAmount,
   assetFromString,
+  AssetType,
   baseAmount,
   BaseAmount,
-  bn
+  bn,
+  TokenAsset
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
-import * as P from 'fp-ts/lib/Predicate'
 import * as S from 'fp-ts/lib/string'
 
 import { ArbZeroAddress } from '../../shared/arb/const'
@@ -82,110 +84,115 @@ import { sequenceTOption } from './fpHelpers'
  * */
 export const THORCHAIN_DECIMAL = 8
 
-export const isAssetInMayachainPools = (asset: Asset): boolean =>
+export const isAssetInMayachainPools = (asset: AnyAsset): boolean =>
   eqAsset.equals(asset, AssetCacao || AssetDASH || AssetKUJI)
+
+export const isCompatibleAsset = (asset: AnyAsset): asset is CompatibleAsset => {
+  return asset.type === AssetType.NATIVE || asset.type === AssetType.TOKEN || asset.type === AssetType.SYNTH
+}
 
 /**
  * Checks whether an asset is an RuneNative asset
  */
-export const isRuneNativeAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetRuneNative)
+export const isRuneNativeAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetRuneNative)
 
 /**
  * Checks whether an asset is a Rune (native or non-native) asset
  */
-export const isRuneAsset = (asset: Asset): boolean => isRuneNativeAsset(asset)
+export const isRuneAsset = (asset: AnyAsset): boolean => isRuneNativeAsset(asset)
 
 /**
  * Checks whether an asset is a LTC asset
  */
-export const isLtcAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetLTC)
+export const isLtcAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetLTC)
 
 /**
  * Checks whether an asset is a LTC asset
  */
-export const isLtcSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthLTC)
+export const isLtcSynthAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthLTC)
 
 /**
  * Checks whether an asset is a BCH asset
  */
-export const isBchAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetBCH)
+export const isBchAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetBCH)
 
 /**
  * Checks whether an asset is a Dash asset
  */
-export const isDashAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetDASH)
+export const isDashAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetDASH)
 
 /**
  * Checks whether an asset is a Dash asset
  */
-export const isDashSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthDash)
+export const isDashSynthAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthDash)
 
 /**
  * Checks whether an asset is a BCH synth asset
  */
-export const isBchSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthBCH)
+export const isBchSynthAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthBCH)
 
 /**
  * Checks whether an asset is a Cacao asset
  */
-export const isCacaoAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetCacao)
+export const isCacaoAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetCacao)
 
 /**
  * Checks whether an asset is a Maya asset
  */
-export const isMayaAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetMaya)
+export const isMayaAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetMaya)
 
 /**
  * Checks whether an asset is a BTC asset
  */
-export const isBtcAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetBTC)
+export const isBtcAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetBTC)
 
 /**
  * Checks whether an asset is a Btc synthetic asset
  */
-export const isBtcAssetSynth = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthBtc)
+export const isBtcAssetSynth = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthBtc)
 
 /**
  * Checks whether an asset is an ETH asset
  */
-export const isEthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetETH)
+export const isEthAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetETH)
 
 /**
  * Checks whether an asset is an ARB asset
  */
-export const isArbAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetARB)
+export const isArbAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetARB)
 
 /**
  * Checks whether an asset is an ARB ETH asset
  */
-export const isAethAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetAETH)
+export const isAethAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetAETH)
 /**
  * Checks whether an asset is an ARB synth asset
  */
-export const isArbSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthARB)
+export const isArbSynthAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthARB)
 
 /**
  * Checks whether an asset is an AVAX asset
  */
-export const isAvaxAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetAVAX)
+export const isAvaxAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetAVAX)
 /**
  * Checks whether an asset is an AVAX synth asset
  */
-export const isAvaxSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthAVAX || AssetSynthAVAXUSDC)
+export const isAvaxSynthAsset = (asset: AnyAsset): boolean =>
+  eqAsset.equals(asset, AssetSynthAVAX || AssetSynthAVAXUSDC)
 
 /**
  * Checks whether an asset is an BSC asset
  */
-export const isBscAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetBSC)
+export const isBscAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetBSC)
 /**
  * Checks whether an asset is an BSC synth asset
  */
-export const isBscSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthBSC)
+export const isBscSynthAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthBSC)
 
 /**
  * Checks whether an asset is an ETH synthetic
  */
-export const isEthSynthAsset = (asset: Asset): boolean => {
+export const isEthSynthAsset = (asset: AnyAsset): boolean => {
   const normalizedInputAsset = {
     ...asset,
     chain: asset.chain.toUpperCase(),
@@ -199,9 +206,9 @@ export const isEthSynthAsset = (asset: Asset): boolean => {
 /**
  * Checks whether an asset is an ETH synthetic
  */
-export const isEthSynthUSDCAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthEthUsdc)
+export const isEthSynthUSDCAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthEthUsdc)
 
-export const isEthSynthUSDTAsset = (asset: Asset): boolean => {
+export const isEthSynthUSDTAsset = (asset: AnyAsset): boolean => {
   const normalizedInputAsset = {
     ...asset,
     chain: asset.chain.toUpperCase(),
@@ -214,43 +221,43 @@ export const isEthSynthUSDTAsset = (asset: Asset): boolean => {
 /**
  * Checks whether an asset is a DOGE asset
  */
-export const isDogeAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetDOGE)
+export const isDogeAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetDOGE)
 /**
  * Checks whether an asset is a DOGE asset
  */
-export const isKujiAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetKUJI)
+export const isKujiAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetKUJI)
 
-export const isUskAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetUSK)
+export const isUskAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetUSK)
 /**
  * Checks whether an asset is a DOGE synth asset
  */
-export const isDogeSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthDOGE)
+export const isDogeSynthAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthDOGE)
 
 /**
  * Checks whether an asset is a Kuji synth asset
  */
-export const isKujiSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthKuji)
+export const isKujiSynthAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthKuji)
 
 /**
  * Checks whether an asset is a USK synth asset
  */
-export const isUskSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthUsk)
+export const isUskSynthAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthUsk)
 /**
  * Checks whether an asset is a ATOM asset
  */
-export const isAtomAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetATOM)
+export const isAtomAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetATOM)
 
 /**
  * Checks whether an asset is a ATOM synth asset
  */
-export const isAtomSynthAsset = (asset: Asset): boolean => eqAsset.equals(asset, AssetSynthATOM)
+export const isAtomSynthAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthATOM)
 
 /**
  * Check whether an asset is in a list
  */
 export const assetInList =
-  (asset: Asset) =>
-  (list: Asset[]): boolean =>
+  (asset: AnyAsset) =>
+  (list: AnyAsset[]): boolean =>
     FP.pipe(
       list,
       A.findFirst((assetInList) => {
@@ -262,7 +269,7 @@ export const assetInList =
 /**
  * Checks whether an ERC20 asset is white listed or not
  */
-export const assetInERC20Whitelist = (asset: Asset): boolean =>
+export const assetInERC20Whitelist = (asset: AnyAsset): boolean =>
   FP.pipe(
     ERC20_WHITELIST,
     A.map(({ asset }) => asset),
@@ -272,7 +279,7 @@ export const assetInERC20Whitelist = (asset: Asset): boolean =>
 /**
  * Get's icon url from white list
  */
-export const iconUrlInERC20Whitelist = (asset: Asset): O.Option<string> =>
+export const iconUrlInERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   FP.pipe(
     ERC20_WHITELIST,
     A.findFirst(({ asset: assetInList }) => eqAsset.equals(assetInList, asset)),
@@ -281,7 +288,7 @@ export const iconUrlInERC20Whitelist = (asset: Asset): O.Option<string> =>
 /**
  * Checks whether an ERC20 asset is white listed or not
  */
-export const assetInARBERC20Whitelist = (asset: Asset): boolean =>
+export const assetInARBERC20Whitelist = (asset: AnyAsset): boolean =>
   FP.pipe(
     ARB_TOKEN_WHITELIST,
     A.map(({ asset }) => asset),
@@ -291,7 +298,7 @@ export const assetInARBERC20Whitelist = (asset: Asset): boolean =>
 /**
  * Get's icon url from white list
  */
-export const iconUrlInARBERC20Whitelist = (asset: Asset): O.Option<string> =>
+export const iconUrlInARBERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   FP.pipe(
     ARB_TOKEN_WHITELIST,
     A.findFirst(({ asset: assetInList }) => eqAsset.equals(assetInList, asset)),
@@ -301,7 +308,7 @@ export const iconUrlInARBERC20Whitelist = (asset: Asset): O.Option<string> =>
 /**
  * Checks whether an ERC20 asset is white listed or not
  */
-export const assetInAVAXERC20Whitelist = (asset: Asset): boolean =>
+export const assetInAVAXERC20Whitelist = (asset: AnyAsset): boolean =>
   FP.pipe(
     AVAX_TOKEN_WHITELIST,
     A.map(({ asset }) => asset),
@@ -311,7 +318,7 @@ export const assetInAVAXERC20Whitelist = (asset: Asset): boolean =>
 /**
  * Get's icon url from white list
  */
-export const iconUrlInAVAXERC20Whitelist = (asset: Asset): O.Option<string> =>
+export const iconUrlInAVAXERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   FP.pipe(
     AVAX_TOKEN_WHITELIST,
     A.findFirst(({ asset: assetInList }) => eqAsset.equals(assetInList, asset)),
@@ -321,7 +328,7 @@ export const iconUrlInAVAXERC20Whitelist = (asset: Asset): O.Option<string> =>
 /**
  * Checks whether an ERC20 asset is white listed or not
  */
-export const assetInBSCERC20Whitelist = (asset: Asset): boolean =>
+export const assetInBSCERC20Whitelist = (asset: AnyAsset): boolean =>
   FP.pipe(
     BSC_TOKEN_WHITELIST,
     A.map(({ asset }) => asset),
@@ -331,7 +338,7 @@ export const assetInBSCERC20Whitelist = (asset: Asset): boolean =>
 /**
  * Get's icon url from white list
  */
-export const iconUrlInBSCERC20Whitelist = (asset: Asset): O.Option<string> =>
+export const iconUrlInBSCERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   FP.pipe(
     BSC_TOKEN_WHITELIST,
     A.findFirst(({ asset: assetInList }) => eqAsset.equals(assetInList, asset)),
@@ -344,7 +351,7 @@ export const iconUrlInBSCERC20Whitelist = (asset: Asset): O.Option<string> =>
  * (2) Always accept ETH
  * (3) ERC20 asset needs to be listed in `ERC20Whitelist`
  */
-export const validAssetForETH = (asset: Asset /* ETH or ERC20 asset */, network: Network): boolean =>
+export const validAssetForETH = (asset: AnyAsset /* ETH or ERC20 asset */, network: Network): boolean =>
   network !== Network.Mainnet /* (1) */ || isEthAsset(asset) /* (2) */ || assetInERC20Whitelist(asset)
 
 /**
@@ -354,7 +361,7 @@ export const validAssetForETH = (asset: Asset /* ETH or ERC20 asset */, network:
  * (2) Always accept ETH
  * (3) ERC20 asset needs to be listed in `ARBERC20Whitelist`
  */
-export const validAssetForARB = (asset: Asset /* ETH or ERC20 asset */, network: Network): boolean =>
+export const validAssetForARB = (asset: AnyAsset /* ETH or ERC20 asset */, network: Network): boolean =>
   network !== Network.Mainnet /* (1) */ ||
   isArbAsset(asset) ||
   isAethAsset(asset) /* (2) */ ||
@@ -367,7 +374,7 @@ export const validAssetForARB = (asset: Asset /* ETH or ERC20 asset */, network:
  * (2) Always accept AVAX
  * (3) ERC20 asset needs to be listed in `AVAXERC20Whitelist`
  */
-export const validAssetForAVAX = (asset: Asset /* AVAX or ERC20 asset */, network: Network): boolean =>
+export const validAssetForAVAX = (asset: AnyAsset /* AVAX or ERC20 asset */, network: Network): boolean =>
   network !== Network.Mainnet /* (1) */ || isAvaxAsset(asset) /* (2) */ || assetInAVAXERC20Whitelist(asset)
 
 /**
@@ -378,14 +385,14 @@ export const validAssetForAVAX = (asset: Asset /* AVAX or ERC20 asset */, networ
  * (3) ERC20 asset needs to be listed in `ERC20Whitelist`
  * BSC-USD is corrupted. Temporary fix until xchainjs fixes the issue
  */
-export const validAssetForBSC = (asset: Asset /* BSC or ERC20 asset */, network: Network): boolean => {
+export const validAssetForBSC = (asset: AnyAsset /* BSC or ERC20 asset */, network: Network): boolean => {
   return network !== Network.Mainnet || isBscAsset(asset) || assetInBSCERC20Whitelist(asset) // Check additional conditions
 }
 
 /**
  * Checks whether an ERC20 address is black listed or not
  */
-const addressInList = (address: Address, list: Asset[]): boolean => {
+const addressInList = (address: Address, list: TokenAsset[]): boolean => {
   const oChecksumAddress = getEthChecksumAddress(address)
   return FP.pipe(
     list,
@@ -443,12 +450,12 @@ export const addressInBscWhitelist = (address: Address): boolean => addressInLis
 /**
  * Check whether an asset is TGT asset
  */
-export const isTgtERC20Asset = (asset: Asset): boolean => eqAsset.equals(asset, AssetTGTERC20)
+export const isTgtERC20Asset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetTGTERC20)
 
 /**
  * Get ethereum token address (as check sum address) from a given asset
  */
-export const getEthTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
+export const getEthTokenAddress: (asset: TokenAsset) => O.Option<Address> = FP.flow(
   getTokenAddress,
   O.fromNullable,
   O.chain(getEthChecksumAddress)
@@ -457,7 +464,7 @@ export const getEthTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
 /**
  * Get arb token address (as check sum address) from a given asset
  */
-export const getArbTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
+export const getArbTokenAddress: (asset: TokenAsset) => O.Option<Address> = FP.flow(
   getTokenAddress,
   O.fromNullable,
   O.chain(getArbChecksumAddress)
@@ -466,7 +473,7 @@ export const getArbTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
 /**
  * Get avax token address (as check sum address) from a given asset
  */
-export const getAvaxTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
+export const getAvaxTokenAddress: (asset: TokenAsset) => O.Option<Address> = FP.flow(
   getTokenAddress,
   O.fromNullable,
   O.chain(getAvaxChecksumAddress)
@@ -475,7 +482,7 @@ export const getAvaxTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
 /**
  * Get Bsc token address (as check sum address) from a given asset
  */
-export const getBscTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
+export const getBscTokenAddress: (asset: TokenAsset) => O.Option<Address> = FP.flow(
   getTokenAddress,
   O.fromNullable,
   O.chain(getBscChecksumAddress)
@@ -484,73 +491,76 @@ export const getBscTokenAddress: (asset: Asset) => O.Option<Address> = FP.flow(
 /**
  * Get address (as check sum address) from an ETH or ETH token asset
  */
-export const getEthAssetAddress = (asset: Asset): O.Option<Address> =>
-  isEthAsset(asset) ? O.some(ETHAddress) : getEthTokenAddress(asset)
+export const getEthAssetAddress = (asset: AnyAsset): O.Option<Address> =>
+  isEthAsset(asset) ? O.some(ETHAddress) : getEthTokenAddress(asset as TokenAsset)
 
 /**
  * Get address (as check sum address) from an Arb or Arb token asset
  */
-export const getArbAssetAddress = (asset: Asset): O.Option<Address> =>
-  isAethAsset(asset) ? O.some(ArbZeroAddress) : getArbTokenAddress(asset)
+export const getArbAssetAddress = (asset: AnyAsset): O.Option<Address> =>
+  isAethAsset(asset) ? O.some(ArbZeroAddress) : getArbTokenAddress(asset as TokenAsset)
 
 /**
  * Get address (as check sum address) from an Avax or Avax token asset
  */
-export const getAvaxAssetAddress = (asset: Asset): O.Option<Address> =>
-  isAvaxAsset(asset) ? O.some(AvaxZeroAddress) : getAvaxTokenAddress(asset)
+export const getAvaxAssetAddress = (asset: AnyAsset): O.Option<Address> =>
+  isAvaxAsset(asset) ? O.some(AvaxZeroAddress) : getAvaxTokenAddress(asset as TokenAsset)
 
 /**
  * Get address (as check sum address) from an Bsc or Bsc token asset
  */
-export const getBscAssetAddress = (asset: Asset): O.Option<Address> =>
-  isBscAsset(asset) ? O.some(BscZeroAddress) : getBscTokenAddress(asset)
+export const getBscAssetAddress = (asset: AnyAsset): O.Option<Address> =>
+  isBscAsset(asset) ? O.some(BscZeroAddress) : getBscTokenAddress(asset as TokenAsset)
 
 /**
  * Check whether an asset is an ERC20 asset
  */
-export const isEthTokenAsset: (asset: Asset) => boolean = FP.flow(getEthTokenAddress, O.isSome)
+export const isEthTokenAsset: (asset: TokenAsset) => boolean = FP.flow(getEthTokenAddress, O.isSome)
 
 /**
  * Check whether an asset is an ERC20 asset
  */
-export const isArbTokenAsset: (asset: Asset) => boolean = FP.flow(getArbTokenAddress, O.isSome)
+export const isArbTokenAsset: (asset: TokenAsset) => boolean = FP.flow(getArbTokenAddress, O.isSome)
 
 /**
  * Check whether an asset is an ERC20 asset
  */
-export const isAvaxTokenAsset: (asset: Asset) => boolean = FP.flow(getAvaxTokenAddress, O.isSome)
+export const isAvaxTokenAsset: (asset: TokenAsset) => boolean = FP.flow(getAvaxTokenAddress, O.isSome)
 
 /**
  * Check whether an asset is an ERC20 asset
  */
-export const isBscTokenAsset: (asset: Asset) => boolean = FP.flow(getBscTokenAddress, O.isSome)
+export const isBscTokenAsset: (asset: TokenAsset) => boolean = FP.flow(getBscTokenAddress, O.isSome)
 
 // Type guard for `PricePoolAsset`
-export const isPricePoolAsset = (asset: Asset): asset is PricePoolAsset =>
+export const isPricePoolAsset = (asset: AnyAsset): asset is PricePoolAsset =>
   // all of PoolAsset except BSC.BNB -> see `PricePoolAsset`
   [...DEFAULT_PRICE_ASSETS, ...USD_PRICE_ASSETS].includes(asset)
 
 // How should this work for synths tobefixed
-export const isChainAsset = (asset: Asset): boolean =>
+export const isChainAsset = (asset: AnyAsset): boolean =>
   isSupportedChain(asset.chain) && eqAsset.equals(asset, getChainAsset(asset.chain))
 
-export const isUSDAsset = ({ ticker }: Asset): boolean =>
+export const isUSDAsset = ({ ticker }: AnyAsset): boolean =>
   ticker.includes('USD') || ticker.includes('UST') || ticker.includes('DAI') || ticker.includes('usdt')
 
-export const isUtxoAssetChain = ({ chain }: Asset) =>
+export const isUtxoAssetChain = ({ chain }: AnyAsset) =>
   isBtcChain(chain) || isBchChain(chain) || isLtcChain(chain) || isDogeChain(chain)
+
+// Assuming you have an appropriate `isTokenAsset` predicate function
+export const isTokenAsset = (asset: AnyAsset): asset is TokenAsset => asset.type === AssetType.TOKEN
 
 /**
  * Update ETH token (ERC20) addresses to be based on checksum addresses
  * Other assets then ETH tokens (ERC20) won't be updated and will be returned w/o any changes
  */
-export const updateEthChecksumAddress = (asset: Asset): Asset =>
+export const updateEthChecksumAddress = (asset: AnyAsset): AnyAsset =>
   FP.pipe(
     asset,
     // ETH chain only
     O.fromPredicate(({ chain }) => isEthChain(chain)),
     // ETH asset only
-    O.chain(O.fromPredicate(P.not(isEthAsset))),
+    O.chain(O.fromPredicate(isTokenAsset)),
     // Get token address as checksum address
     O.chain(FP.flow(getTokenAddress, O.fromNullable)),
     // Update asset for using a checksum address
@@ -562,7 +572,7 @@ export const updateEthChecksumAddress = (asset: Asset): Asset =>
 /**
  * Helper to get Midgard assets properly
  */
-export const midgardAssetFromString: (assetString: string) => O.Option<Asset> = FP.flow(
+export const midgardAssetFromString: (assetString: string) => O.Option<AnyAsset> = FP.flow(
   assetFromString,
   O.fromNullable,
   // FOR ETH tokens we need to update its addresses to have a valid check sum address
@@ -640,5 +650,5 @@ export const getTwoSigfigAssetAmount = (amount: AssetAmount) => {
 /**
  * Creates an asset from `nullable` string
  */
-export const getAssetFromNullableString = (assetString?: string): O.Option<Asset> =>
+export const getAssetFromNullableString = (assetString?: string): O.Option<AnyAsset> =>
   FP.pipe(O.fromNullable(assetString), O.map(S.toUpperCase), O.map(assetFromString), O.chain(O.fromNullable))

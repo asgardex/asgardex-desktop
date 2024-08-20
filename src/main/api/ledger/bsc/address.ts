@@ -11,7 +11,6 @@ import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
 
 export const getAddress = async ({
-  transport,
   walletAccount,
   walletIndex,
   evmHdMode
@@ -23,7 +22,6 @@ export const getAddress = async ({
 }): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
     const clientLedger = new ClientLedger({
-      transport,
       ...defaultBscParams,
       rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHdMode)
     })
@@ -45,7 +43,6 @@ export const getAddress = async ({
 }
 
 export const verifyAddress = async ({
-  transport,
   walletAccount,
   walletIndex,
   evmHdMode
@@ -56,7 +53,6 @@ export const verifyAddress = async ({
   evmHdMode: EvmHDMode
 }) => {
   const clientLedger = new ClientLedger({
-    transport,
     ...defaultBscParams,
     rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHdMode)
   })

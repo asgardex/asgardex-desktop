@@ -7,7 +7,7 @@ import { DASH_DECIMAL } from '@xchainjs/xchain-dash'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { MidgardQuery } from '@xchainjs/xchain-midgard-query'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
-import { Asset } from '@xchainjs/xchain-util'
+import { AnyAsset, AssetType } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -26,8 +26,8 @@ import { KUJI_DECIMAL } from '../kuji/const'
 import { AssetWithDecimalLD } from './types'
 
 // gets asset decimal from midgard-query tobefixed
-const getDecimal = (asset: Asset): Promise<number> => {
-  const { chain } = asset.synth ? AssetRuneNative : asset
+const getDecimal = (asset: AnyAsset): Promise<number> => {
+  const { chain } = asset.type === AssetType.SYNTH ? AssetRuneNative : asset
 
   if (isArbChain(chain)) {
     return Promise.resolve(ARB_GAS_ASSET_DECIMAL)
@@ -61,7 +61,7 @@ const getDecimal = (asset: Asset): Promise<number> => {
   return Rx.from(midgardQuery.getDecimalForAsset(asset)).toPromise()
 }
 
-export const assetWithDecimal$ = (asset: Asset): AssetWithDecimalLD =>
+export const assetWithDecimal$ = (asset: AnyAsset): AssetWithDecimalLD =>
   Rx.from(getDecimal(asset)).pipe(
     RxOp.map((decimal) =>
       RD.success({

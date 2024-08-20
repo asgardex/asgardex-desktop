@@ -2,7 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Story, Meta } from '@storybook/react'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { Network, TxHash } from '@xchainjs/xchain-client'
-import { assetAmount, assetToBase, baseAmount, Asset, assetToString } from '@xchainjs/xchain-util'
+import { assetAmount, assetToBase, baseAmount, assetToString, AnyAsset } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -55,7 +55,7 @@ const defaultProps: SymDepositProps = {
     assetWalletType,
     runeWalletType
   }: {
-    asset: Asset
+    asset: AnyAsset
     assetWalletType: WalletType
     runeWalletType: WalletType
   }) => console.log('change asset', assetToString(asset), assetWalletType, runeWalletType),

@@ -1,7 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
-import { Asset } from '@xchainjs/xchain-util'
+import { AnyAsset } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import { of } from 'rxjs'
@@ -35,7 +35,7 @@ const targetSymbol = 'BSC-USD-0x55d398326f99059ff775485246999027b3197955'
 const newSymbol = 'USDT-0x55d398326f99059fF775485246999027B3197955'
 const newTicker = 'USDT'
 
-export const replaceSymbol = (asset: Asset): Asset => {
+export const replaceSymbol = (asset: AnyAsset): AnyAsset => {
   if (asset.symbol === targetSymbol) {
     return { ...asset, symbol: newSymbol, ticker: newTicker }
   }
@@ -104,7 +104,7 @@ const balances$: ({
 
 // State of balances loaded by Client and Address
 const getBalanceByAddress$ = (network: Network) => {
-  const assets: Asset[] | undefined = network === Network.Testnet ? BscAssetsTestnet : undefined
+  const assets: AnyAsset[] | undefined = network === Network.Testnet ? BscAssetsTestnet : undefined
   return C.balancesByAddress$({ client$, trigger$: reloadBalances$, assets, walletBalanceType: 'all' })
 }
 

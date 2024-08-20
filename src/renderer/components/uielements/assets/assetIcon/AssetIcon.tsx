@@ -6,7 +6,7 @@ import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { Asset, isSynthAsset } from '@xchainjs/xchain-util'
+import { AnyAsset, isSynthAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
@@ -70,13 +70,13 @@ import { Size } from './AssetIcon.types'
 
 export type ComponentProps = {
   size?: Size
-  asset: Asset
+  asset: AnyAsset
   network: Network
 }
 
 type Props = ComponentProps & React.HTMLAttributes<HTMLDivElement>
 
-const chainIconMap = (asset: Asset): string | null => {
+const chainIconMap = (asset: AnyAsset): string | null => {
   switch (asset.chain) {
     case ARBChain:
       return arbIcon

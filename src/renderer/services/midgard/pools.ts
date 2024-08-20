@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { DefaultApi } from '@xchainjs/xchain-midgard'
-import { Asset, assetFromString, assetToString, bn, Chain, currencySymbolByAsset } from '@xchainjs/xchain-util'
+import { AnyAsset, assetFromString, assetToString, bn, Chain, currencySymbolByAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/lib/function'
@@ -223,7 +223,7 @@ const createPoolsService = ({
   /**
    * `PoolDetail data from Midgard
    */
-  const apiGetPoolDetail$ = (asset: Asset): PoolDetailLD =>
+  const apiGetPoolDetail$ = (asset: AnyAsset): PoolDetailLD =>
     FP.pipe(
       Rx.combineLatest([midgardDefaultApi$, poolsPeriod$]),
       RxOp.map(([apiRD, period]) =>

@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Asset, baseAmount, BaseAmount, Chain } from '@xchainjs/xchain-util'
+import { AnyAsset, baseAmount, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
 import * as FP from 'fp-ts/function'
@@ -28,7 +28,7 @@ import { PoolData } from '../../../views/pools/Pools.types'
  * Returns zero sym deposit fees
  * by given paired asset to deposit
  */
-export const getZeroSymDepositFees = (asset: Asset): SymDepositFees => ({
+export const getZeroSymDepositFees = (asset: AnyAsset): SymDepositFees => ({
   rune: { inFee: ZERO_BASE_AMOUNT, outFee: ZERO_BASE_AMOUNT, refundFee: ZERO_BASE_AMOUNT },
   asset: {
     asset: getChainAsset(asset.chain),
@@ -199,7 +199,7 @@ export const minAssetAmountToDepositMax1e8 = ({
   /* fee for deposit */
   fees: DepositAssetFees
   /* asset to deposit */
-  asset: Asset
+  asset: AnyAsset
   assetDecimal: number
   poolsData: PoolsDataMap
 }): BaseAmount => {

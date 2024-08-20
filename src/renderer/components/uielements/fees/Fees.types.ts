@@ -1,9 +1,9 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Asset, BaseAmount } from '@xchainjs/xchain-util'
+import { AnyAsset, BaseAmount } from '@xchainjs/xchain-util'
 
 export type UIFee = {
   amount: BaseAmount
-  asset: Asset
+  asset: AnyAsset
 }
 
 export type UISwapFees = {

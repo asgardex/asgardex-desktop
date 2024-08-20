@@ -2,7 +2,7 @@ import React, { useRef, useCallback, useState } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
 import {
-  Asset,
+  AnyAsset,
   assetAmount,
   assetToBase,
   BaseAmount,
@@ -25,11 +25,11 @@ export type Props = {
   title?: string
   amount: AssetWithAmount
   priceAmount: AssetWithAmount
-  assets: Asset[]
+  assets: AnyAsset[]
   network: Network
   disabled?: boolean
   showError?: boolean
-  onChangeAsset: (asset: Asset) => void
+  onChangeAsset: (asset: AnyAsset) => void
   onChange?: (value: BaseAmount) => void
   onBlur?: FP.Lazy<void>
   onFocus?: FP.Lazy<void>

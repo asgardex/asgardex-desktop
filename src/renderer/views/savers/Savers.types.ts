@@ -1,9 +1,9 @@
 import { Network } from '@xchainjs/xchain-client'
-import { BaseAmount, Asset, Address } from '@xchainjs/xchain-util'
+import { BaseAmount, AnyAsset, Address } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 
 export type SaversTableRowData = {
-  asset: Asset
+  asset: AnyAsset
   depthPrice: BaseAmount
   depth: BaseAmount
   filled: BigNumber
@@ -15,4 +15,4 @@ export type SaversTableRowData = {
 
 export type SaversTableRowsData = SaversTableRowData[]
 
-export type UpdateSaverProvider = { address: Address; asset: Asset }
+export type UpdateSaverProvider = { address: Address; asset: AnyAsset }

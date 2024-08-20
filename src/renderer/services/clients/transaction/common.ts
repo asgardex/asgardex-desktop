@@ -2,7 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { TxHash, XChainClient } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import * as ETH from '@xchainjs/xchain-evm'
-import { Address } from '@xchainjs/xchain-util'
+import { Address, TokenAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
@@ -27,7 +27,7 @@ export const loadTxs$ = ({
   // To do, fix filter by assets for avax and bsc
   const txAsset = FP.pipe(
     oAsset,
-    O.map((asset) => (asset.chain === ETHChain ? ETH.getTokenAddress(asset) || undefined : undefined)),
+    O.map((asset) => (asset.chain === ETHChain ? ETH.getTokenAddress(asset as TokenAsset) || undefined : undefined)),
     O.toUndefined
   )
 

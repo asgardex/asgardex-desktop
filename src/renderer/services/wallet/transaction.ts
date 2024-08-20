@@ -12,6 +12,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetType } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -67,7 +68,7 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
           () => Rx.of(RD.initial),
           ({ asset }) => {
             const { chain } = asset
-            if (!isSupportedChain(chain) || asset.synth || isThorChain(chain)) {
+            if (!isSupportedChain(chain) || asset.type === AssetType.SYNTH || isThorChain(chain)) {
               return Rx.of(RD.failure<ApiError>({ errorId: ErrorId.GET_ASSET_TXS, msg: `Unsupported chain ${chain}` }))
             }
             switch (chain) {

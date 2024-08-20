@@ -1,5 +1,5 @@
 import { FeeOption, Network } from '@xchainjs/xchain-client'
-import { Asset, assetFromString, BaseAmount, Chain, isValidAsset } from '@xchainjs/xchain-util'
+import { AnyAsset, assetFromString, BaseAmount, Chain, isValidAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as IOG from 'io-ts/Guard'
 
@@ -42,7 +42,7 @@ export const isHDMode = (u: unknown): u is HDMode => u === 'default' || isEvmHDM
 
 const assetGuard = IOG.struct({ symbol: nonEmptyStringGuard, ticker: nonEmptyStringGuard, chain: chainGuard })
 
-export const isAsset = (u: unknown): u is Asset => {
+export const isAsset = (u: unknown): u is AnyAsset => {
   if (assetGuard.is(u)) return true
 
   if (typeof u === 'string') {

@@ -1,6 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { Client, GAIAChain } from '@xchainjs/xchain-cosmos'
+import { Asset } from '@xchainjs/xchain-util'
 import * as E from 'fp-ts/lib/Either'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -24,7 +25,9 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     return FP.pipe(
       client$,
       RxOp.switchMap(FP.flow(O.fold<Client, Rx.Observable<Client>>(() => Rx.EMPTY, Rx.of))),
-      RxOp.switchMap((client) => Rx.from(client.transfer({ walletIndex, asset, amount, recipient, memo }))),
+      RxOp.switchMap((client) =>
+        Rx.from(client.transfer({ walletIndex, asset: asset as Asset, amount, recipient, memo }))
+      ),
       RxOp.map(RD.success),
       RxOp.catchError(
         (e): TxHashLD =>

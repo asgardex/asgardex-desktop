@@ -1,5 +1,5 @@
 import { AVAXChain } from '@xchainjs/xchain-avax'
-import { Asset, assetFromString } from '@xchainjs/xchain-util'
+import { AnyAsset, assetFromString } from '@xchainjs/xchain-util'
 import ansis from 'ansis'
 import axios from 'axios'
 import * as IO from 'fp-ts/IO'
@@ -18,11 +18,11 @@ import { writeFile, readFile } from '../src/main/utils/file'
 import { ERC20Whitelist, erc20WhitelistIO } from '../src/renderer/services/thorchain/types'
 
 const WHITELIST_URL =
-  'https://gitlab.com/thorchain/thornode/-/raw/develop/common/tokenlist/avaxtokens/avax_mainnet_V127.json'
+  'https://gitlab.com/thorchain/thornode/-/raw/develop/common/tokenlist/avaxtokens/avax_mainnet_latest.json'
 
 const PATH = './src/renderer/types/generated/thorchain/avaxerc20whitelist.ts'
 
-type AssetList = { asset: Asset; iconUrl: O.Option<string> }[]
+type AssetList = { asset: AnyAsset; iconUrl: O.Option<string> }[]
 
 const transformList = ({ tokens }: Pick<ERC20Whitelist, 'tokens'>): AssetList =>
   FP.pipe(
@@ -75,10 +75,10 @@ const createTemplate = (list: AssetList): string => {
      */
 
     import * as O from 'fp-ts/lib/Option'
-    import {Asset} from "@xchainjs/xchain-util";
+    import {TokenAsset} from "@xchainjs/xchain-util";
     import {AVAXChain} from "@xchainjs/xchain-avax";
 
-    export const AVAX_TOKEN_WHITELIST: { asset: Asset, iconUrl: O.Option<string> }[] = [${listAsString}]
+    export const AVAX_TOKEN_WHITELIST: { asset: TokenAsset, iconUrl: O.Option<string> }[] = [${listAsString}]
   `
 }
 

@@ -3,7 +3,7 @@ import { Story, Meta } from '@storybook/react'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { Network, TxHash } from '@xchainjs/xchain-client'
-import { Asset, assetAmount, assetToBase, assetToString, baseAmount, bn } from '@xchainjs/xchain-util'
+import { AnyAsset, assetAmount, assetToBase, assetToString, baseAmount, bn } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -58,7 +58,7 @@ const defaultProps: WitdrawProps = {
           })
       )
     ),
-  fees$: (_: Asset) =>
+  fees$: (_: AnyAsset) =>
     Rx.of(
       RD.success({
         rune: {
@@ -96,7 +96,7 @@ FeesNotCovered.storyName = 'error - fees not covered'
 export const ErrorNoFee: Story = () => {
   const props: WitdrawProps = {
     ...defaultProps,
-    fees$: (_: Asset) => Rx.of(RD.failure(Error('no fees')))
+    fees$: (_: AnyAsset) => Rx.of(RD.failure(Error('no fees')))
   }
   return <Withdraw {...props} />
 }

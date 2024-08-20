@@ -71,7 +71,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
               const isAvaxAddress = address === AvaxZeroAddress
               const amount = isAvaxAddress ? baseAmount(0) : params.amount
               const gasPrice = gasPrices[params.feeOption].amount().toFixed(0) // no round down needed
-              const signer = client.getWallet(params.walletIndex)
+
               const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
               return Rx.from(
                 // Call deposit function of Router contract
@@ -79,7 +79,6 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
                 // Amounts need to use `toFixed` to convert `BaseAmount` to `Bignumber`
                 // since `value` and `gasPrice` type is `Bignumber`
                 client.call<{ hash: TxHash }>({
-                  signer,
                   contractAddress: router,
                   abi: ROUTER_ABI,
                   funcName: 'depositWithExpiry',

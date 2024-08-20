@@ -11,7 +11,6 @@ import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { EstimateAddSaver, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
-  Asset,
   assetAmount,
   BaseAmount,
   baseAmount,
@@ -21,7 +20,10 @@ import {
   eqAsset,
   delay,
   assetFromString,
-  CryptoAmount
+  CryptoAmount,
+  AnyAsset,
+  TokenAsset,
+  Asset
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/Array'
@@ -121,7 +123,7 @@ export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
 export type AddProps = {
   keystore: KeystoreState
   thorchainQuery: ThorchainQuery
-  poolAssets: Asset[]
+  poolAssets: AnyAsset[]
   poolDetails: PoolDetails
   asset: CryptoAmount
   address: Address
@@ -130,7 +132,7 @@ export type AddProps = {
   poolAddress: O.Option<PoolAddress>
   fees$: SaverDepositFeesHandler
   sourceWalletType: WalletType
-  onChangeAsset: ({ source, sourceWalletType }: { source: Asset; sourceWalletType: WalletType }) => void
+  onChangeAsset: ({ source, sourceWalletType }: { source: AnyAsset; sourceWalletType: WalletType }) => void
   walletBalances: Pick<BalancesState, 'balances' | 'loading'>
   saverDeposit$: SaverDepositStateHandler
   goToTransaction: OpenExplorerTxUrl
@@ -190,7 +192,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
   // Deposit start time
   const [depositStartTime, setDepositStartTime] = useState<number>(0)
 
-  const prevAsset = useRef<O.Option<Asset>>(O.none)
+  const prevAsset = useRef<O.Option<AnyAsset>>(O.none)
 
   const {
     state: depositState,
@@ -204,7 +206,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
    * Selectable source assets to add to savers.
    * Based on saver depth
    */
-  const selectableAssets: Asset[] = useMemo(() => {
+  const selectableAssets: AnyAsset[] = useMemo(() => {
     const result = FP.pipe(
       poolDetails,
       A.filter(({ saversDepth }) => Number(saversDepth) > 0),
@@ -255,7 +257,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
   const sourceAssetAmountMax1e8: BaseAmount = useMemo(() => max1e8BaseAmount(sourceAssetAmount), [sourceAssetAmount])
 
   // source chain asset
-  const sourceChainAsset: Asset = useMemo(() => getChainAsset(sourceChain), [sourceChain])
+  const sourceChainAsset: AnyAsset = useMemo(() => getChainAsset(sourceChain), [sourceChain])
 
   // User balance for source chain asset
   const sourceChainAssetAmount: BaseAmount = useMemo(
@@ -457,13 +459,13 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     //tobeFixed
     switch (sourceChain) {
       case ETHChain:
-        return isEthAsset(asset.asset) ? O.some(false) : O.some(isEthTokenAsset(asset.asset))
+        return isEthAsset(asset.asset) ? O.some(false) : O.some(isEthTokenAsset(asset.asset as TokenAsset))
       case AVAXChain:
-        return isAvaxAsset(asset.asset) ? O.some(false) : O.some(isAvaxTokenAsset(asset.asset))
+        return isAvaxAsset(asset.asset) ? O.some(false) : O.some(isAvaxTokenAsset(asset.asset as TokenAsset))
       case BSCChain:
-        return isBscAsset(asset.asset) ? O.some(false) : O.some(isBscTokenAsset(asset.asset))
+        return isBscAsset(asset.asset) ? O.some(false) : O.some(isBscTokenAsset(asset.asset as TokenAsset))
       case ARBChain:
-        return isAethAsset(asset.asset) ? O.some(false) : O.some(isArbTokenAsset(asset.asset))
+        return isAethAsset(asset.asset) ? O.some(false) : O.some(isArbTokenAsset(asset.asset as TokenAsset))
       default:
         return O.none
     }
@@ -478,11 +480,11 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     const oTokenAddress: O.Option<string> = (() => {
       switch (sourceChain) {
         case ETHChain:
-          return getEthTokenAddress(asset.asset)
+          return getEthTokenAddress(asset.asset as TokenAsset)
         case AVAXChain:
-          return getAvaxTokenAddress(asset.asset)
+          return getAvaxTokenAddress(asset.asset as TokenAsset)
         case BSCChain:
-          return getBscTokenAddress(asset.asset)
+          return getBscTokenAddress(asset.asset as TokenAsset)
         default:
           return O.none
       }
@@ -567,7 +569,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
   const debouncedEffect = useRef(
     debounce((amountToSendMax1e8) => {
       thorchainQuery
-        .estimateAddSaver(new CryptoAmount(amountToSendMax1e8, asset.asset))
+        .estimateAddSaver(new CryptoAmount(amountToSendMax1e8, asset.asset as Asset | TokenAsset))
         .then((quote) => {
           setSaversQuote(O.some(quote)) // Wrapping the quote in an Option
         })
@@ -584,7 +586,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
   }, [amountToSendMax1e8, sourceChainFeeError])
 
   const setAsset = useCallback(
-    async (asset: Asset) => {
+    async (asset: AnyAsset) => {
       // delay to avoid render issues while switching
       await delay(100)
 

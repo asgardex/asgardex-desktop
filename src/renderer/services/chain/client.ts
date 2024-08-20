@@ -11,7 +11,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Asset, Chain } from '@xchainjs/xchain-util'
+import { AnyAsset, AssetType, Chain } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -70,12 +70,12 @@ export const clientByChain$ = (chain: Chain): XChainClient$ => {
   }
 }
 
-export const clientByAsset$ = (asset: Asset, dex: Dex): XChainClient$ => {
+export const clientByAsset$ = (asset: AnyAsset, dex: Dex): XChainClient$ => {
   const chain = asset.chain
   if (!isSupportedChain(chain)) return Rx.of(O.none)
 
   // If the asset is synthetic, use the respective client based on dex.chain
-  if (asset.synth) {
+  if (asset.type === AssetType.SYNTH) {
     if (dex.chain === THORChain) return THOR.client$
     if (dex.chain === MAYAChain) return MAYA.client$
   }

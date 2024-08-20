@@ -13,7 +13,7 @@ import {
   DepthHistoryItem,
   SwapHistoryItem
 } from '@xchainjs/xchain-mayamidgard'
-import { Address, Asset, BaseAmount, Chain } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -28,12 +28,12 @@ import { ApiError } from '../wallet/types'
 
 export type PoolAsset = string
 
-export type PoolAssets = Asset[]
+export type PoolAssets = AnyAsset[]
 export type PoolAssetsRD = RD.RemoteData<Error, PoolAssets>
 export type PoolAssetsLD = LiveData<Error, PoolAssets>
 
 export type PoolAssetDetail = {
-  asset: Asset
+  asset: AnyAsset
   assetPrice: BigNumber
 }
 
@@ -207,7 +207,7 @@ export type PendingPoolsState = {
 export type PendingPoolsStateRD = RD.RemoteData<Error, PendingPoolsState>
 export type PendingPoolsStateLD = LiveData<Error, PendingPoolsState>
 
-export type SelectedPoolAsset = O.Option<Asset>
+export type SelectedPoolAsset = O.Option<AnyAsset>
 export type SelectedPoolChain = O.Option<Chain>
 
 export type SelectedPricePoolAsset = O.Option<PricePoolAsset>
@@ -262,13 +262,13 @@ export type PoolLiquidityHistoryParams = {
 export type PoolLiquidityHistoryRD = RD.RemoteData<Error, LiquidityHistory>
 export type PoolLiquidityHistoryLD = LiveData<Error, LiquidityHistory>
 
-export type ApiGetSwapHistoryParams = { poolAsset?: Asset } & Omit<GetSwapHistoryRequest, 'pool'>
+export type ApiGetSwapHistoryParams = { poolAsset?: AnyAsset } & Omit<GetSwapHistoryRequest, 'pool'>
 export type GetSwapHistoryParams = Omit<ApiGetSwapHistoryParams, 'poolAsset'>
 export type SwapHistoryRD = RD.RemoteData<Error, SwapHistory>
 export type SwapHistoryLD = LiveData<Error, SwapHistory>
 export type SwapHistoryItems = SwapHistoryItem[]
 
-export type ApiGetDepthHistoryParams = { poolAsset: Asset } & Omit<GetDepthHistoryRequest, 'pool'>
+export type ApiGetDepthHistoryParams = { poolAsset: AnyAsset } & Omit<GetDepthHistoryRequest, 'pool'>
 export type GetDepthHistoryParams = Omit<ApiGetDepthHistoryParams, 'poolAsset'>
 export type DepthHistoryRD = RD.RemoteData<Error, DepthHistory>
 export type DepthHistoryLD = LiveData<Error, DepthHistory>
@@ -335,7 +335,7 @@ export type PoolShareType = DepositType | 'all'
  **/
 export type PoolShare = {
   units: BigNumber
-  asset: Asset
+  asset: AnyAsset
   assetAddress: O.Option<Address>
   runeAddress: O.Option<Address>
   assetAddedAmount: BaseAmount

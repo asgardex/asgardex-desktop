@@ -1,7 +1,8 @@
 import type Transport from '@ledgerhq/hw-transport'
+import TransportNodeHid from '@ledgerhq/hw-transport-node-hid-singleton'
 import { FeeOption, Network, TxHash } from '@xchainjs/xchain-client'
 import * as ARB from '@xchainjs/xchain-evm'
-import { Address, Asset, assetToString, BaseAmount } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, assetToString, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
 
@@ -13,34 +14,44 @@ import { getDerivationPath } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
-import { LedgerSigner } from '../evm/LedgerSigner'
 
 /**
  * Sends ETH tx using Ledger
  */
 export const send = async ({
   asset,
-  transport,
   network,
   amount,
   memo,
   recipient,
   feeOption,
-  walletIndex
+  walletAccount,
+  walletIndex,
+  evmHDMode
 }: {
-  asset: Asset
+  asset: AnyAsset
   transport: Transport
   amount: BaseAmount
   network: Network
   recipient: Address
   memo?: string
   feeOption: FeeOption
+  walletAccount: number
   walletIndex: number
   evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const clientledger = new ARB.ClientLedger({ transport, ...defaultArbParams, network: network })
-    const txHash = await clientledger.transfer({ walletIndex, asset, recipient, amount, memo, feeOption })
+    const clientledger = new ARB.ClientLedger({
+      ...defaultArbParams,
+      signer: new ARB.LedgerSigner({
+        transport: await TransportNodeHid.create(),
+        provider: defaultArbParams.providers[Network.Mainnet],
+        derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
+      }),
+      network: network
+    })
+    const arbAsset = asset as ARB.CompatibleAsset
+    const txHash = await clientledger.transfer({ walletIndex, asset: arbAsset, recipient, amount, memo, feeOption })
     if (!txHash) {
       return E.left({
         errorId: LedgerErrorId.INVALID_RESPONSE,
@@ -61,7 +72,6 @@ export const send = async ({
  * Sends ETH deposit txs using Ledger
  */
 export const deposit = async ({
-  transport,
   asset,
   router,
   network,
@@ -73,7 +83,7 @@ export const deposit = async ({
   feeOption,
   evmHDMode
 }: {
-  asset: Asset
+  asset: AnyAsset
   router: Address
   transport: Transport
   amount: BaseAmount
@@ -86,7 +96,7 @@ export const deposit = async ({
   evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const address = !isAethAsset(asset) ? ARB.getTokenAddress(asset) : ArbZeroAddress
+    const address = !isAethAsset(asset) ? ARB.getTokenAddress(asset as TokenAsset) : ArbZeroAddress
 
     if (!address) {
       return E.left({
@@ -97,12 +107,17 @@ export const deposit = async ({
 
     const isETHAddress = address === ArbZeroAddress
 
-    const clientledger = new ARB.ClientLedger({ transport, ...defaultArbParams, network: network })
+    const clientledger = new ARB.ClientLedger({
+      ...defaultArbParams,
+      signer: new ARB.LedgerSigner({
+        transport: await TransportNodeHid.create(),
+        provider: defaultArbParams.providers[Network.Mainnet],
+        derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
+      }),
+      network: network
+    })
 
-    const app = await clientledger.getApp()
-    const path = getDerivationPath(walletAccount, walletIndex, evmHDMode)
     const provider = clientledger.getProvider()
-    const signer = new LedgerSigner({ provider, path, app })
 
     const gasPrices = await clientledger.estimateGasPrices()
     const gasPrice = gasPrices[feeOption].amount().toFixed(0) // no round down needed
@@ -114,7 +129,6 @@ export const deposit = async ({
     // Note2: Amounts need to use `toFixed` to convert `BaseAmount` to `Bignumber`
     // since `value` and `gasPrice` type is `Bignumber`
     const { hash } = await clientledger.call<{ hash: TxHash }>({
-      signer,
       contractAddress: router,
       abi: ROUTER_ABI,
       funcName: 'depositWithExpiry',

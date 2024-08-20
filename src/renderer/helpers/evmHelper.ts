@@ -1,4 +1,4 @@
-import { Asset, Chain } from '@xchainjs/xchain-util'
+import { AnyAsset, Chain } from '@xchainjs/xchain-util'
 
 import { isAethAsset, isAvaxAsset, isBscAsset, isEthAsset } from './assetHelper'
 import { isArbChain, isAvaxChain, isBscChain, isEthChain } from './chainHelper'
@@ -17,6 +17,6 @@ export const isEvmChain = (chain: Chain): Boolean => {
  * @param asset - input
  * @returns - boolean if the asset is a erc/brc etc.
  */
-export const isEvmToken = (asset: Asset): Boolean => {
+export const isEvmToken = (asset: AnyAsset): Boolean => {
   return !isEthAsset(asset) || !isAethAsset(asset) || !isAvaxAsset(asset) || !isBscAsset(asset)
 }

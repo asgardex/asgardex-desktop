@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { Meta } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
-import { Asset } from '@xchainjs/xchain-util'
+import { AnyAsset } from '@xchainjs/xchain-util'
 
 import {
   AssetBCH,
@@ -21,11 +21,11 @@ const assets = [AssetBTC, AssetBSC, AssetRuneNative, AssetETH, AssetLTC, AssetBC
 type Args = {
   network: Network
   dialogHeadline: string
-  onSelect: (asset: Asset) => void
+  onSelect: (asset: AnyAsset) => void
 }
 
 const Template = ({ network, onSelect, dialogHeadline }: Args) => {
-  const [asset, setAsset] = useState<Asset>(AssetBSC)
+  const [asset, setAsset] = useState<AnyAsset>(AssetBSC)
   return (
     <Component
       asset={asset}

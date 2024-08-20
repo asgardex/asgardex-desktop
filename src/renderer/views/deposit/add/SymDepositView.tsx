@@ -5,7 +5,7 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Asset, assetToString } from '@xchainjs/xchain-util'
+import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
@@ -142,7 +142,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
       assetWalletType,
       runeWalletType
     }: {
-      asset: Asset
+      asset: AnyAsset
       assetWalletType: WalletType
       runeWalletType: WalletType
     }) => {

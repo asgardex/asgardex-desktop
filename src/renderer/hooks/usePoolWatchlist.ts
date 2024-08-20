@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { Asset } from '@xchainjs/xchain-util'
+import { AnyAsset } from '@xchainjs/xchain-util'
 import { useObservableState } from 'observable-hooks'
 
 import { PoolsWatchList } from '../../shared/api/io'
@@ -18,10 +18,10 @@ export const usePoolWatchlist = () => {
 
   const list = useObservableState<PoolsWatchList>(watchlist$, [])
 
-  const add = useCallback((poolAsset: Asset) => addToWatchlist(poolAsset, network), [addToWatchlist, network])
+  const add = useCallback((poolAsset: AnyAsset) => addToWatchlist(poolAsset, network), [addToWatchlist, network])
 
   const remove = useCallback(
-    (poolAsset: Asset) => removeFromWatchlist(poolAsset, network),
+    (poolAsset: AnyAsset) => removeFromWatchlist(poolAsset, network),
     [network, removeFromWatchlist]
   )
 

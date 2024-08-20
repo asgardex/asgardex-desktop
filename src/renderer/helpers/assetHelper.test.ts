@@ -1,7 +1,7 @@
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { assetAmount, baseAmount } from '@xchainjs/xchain-util'
+import { assetAmount, AssetType, baseAmount, TokenAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
@@ -108,13 +108,9 @@ describe('helpers/assetHelper', () => {
   })
 
   describe('isEthTokenAsset', () => {
-    it('is false for ETH', () => {
-      expect(isEthTokenAsset(AssetETH)).toBeFalsy()
-    })
     it('is true for ETH.USDT ', () => {
-      expect(isEthTokenAsset(ERC20_TESTNET.USDT)).toBeTruthy()
+      expect(isEthTokenAsset(ERC20_TESTNET.USDT as TokenAsset)).toBeTruthy()
     })
-    // ERC20_TESTNET.RUNE Removed as it does not exist.
   })
 
   describe('getEthAssetAddress', () => {
@@ -162,7 +158,7 @@ describe('helpers/assetHelper', () => {
           chain: ETHChain,
           symbol: 'VIU-0x519475b31653E46D20cD09F9FdcF3B12BDAcB4f5',
           ticker: 'VIU',
-          synth: false
+          type: AssetType.TOKEN
         })
       ).toBeNone()
     })
@@ -227,7 +223,9 @@ describe('helpers/assetHelper', () => {
       expect(isPricePoolAsset(AssetBSC)).toBeFalsy()
     })
     it('returns false for deprecated asset ', () => {
-      expect(isPricePoolAsset({ chain: BSCChain, symbol: 'RUNE-1AF', ticker: 'RUNE', synth: false })).toBeFalsy()
+      expect(
+        isPricePoolAsset({ chain: BSCChain, symbol: 'RUNE-1AF', ticker: 'RUNE', type: AssetType.TOKEN })
+      ).toBeFalsy()
     })
   })
 

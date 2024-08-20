@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 
 import { PlusIcon } from '@heroicons/react/24/outline'
-import { Asset, assetToString } from '@xchainjs/xchain-util'
+import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
@@ -12,7 +12,7 @@ import type { Props as BorderButtonProps } from './BorderButton'
 
 export type Props = BorderButtonProps & {
   className?: string
-  asset: Asset
+  asset: AnyAsset
   isTextView: boolean
 }
 export const ManageButton: React.FC<Props> = ({ asset, isTextView, ...otherProps }) => {

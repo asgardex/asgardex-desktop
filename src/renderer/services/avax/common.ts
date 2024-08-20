@@ -1,6 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { AVAXChain } from '@xchainjs/xchain-avax'
-import * as AVAX from '@xchainjs/xchain-evm'
+import { AVAXChain, Client } from '@xchainjs/xchain-avax'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -31,7 +30,7 @@ const clientState$: ClientState$ = FP.pipe(
           getPhrase(keystore),
           O.map<string, ClientState>((phrase) => {
             try {
-              const client = new AVAX.Client({
+              const client = new Client({
                 ...defaultAvaxParams,
                 network: network,
                 phrase: phrase,

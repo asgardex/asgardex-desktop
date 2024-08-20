@@ -14,7 +14,7 @@ import {
   LiquidityProviderSummary,
   LiquidityProvidersResponse
 } from '@xchainjs/xchain-mayanode'
-import { Asset, assetFromString, assetToString, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
+import { AnyAsset, assetFromString, assetToString, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
 import { AxiosResponse } from 'axios'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
@@ -236,7 +236,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     })
   )
 
-  const apiGetLiquidityProviders$ = (asset: Asset): LiveData<Error, LiquidityProviderSummary[]> =>
+  const apiGetLiquidityProviders$ = (asset: AnyAsset): LiveData<Error, LiquidityProviderSummary[]> =>
     FP.pipe(
       mayanodeUrl$,
       liveData.chain((basePath) =>
@@ -251,7 +251,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     )
   const { stream$: reloadLiquidityProviders$, trigger: reloadLiquidityProviders } = triggerStream()
 
-  const getLiquidityProviders = (asset: Asset): LiquidityProvidersLD =>
+  const getLiquidityProviders = (asset: AnyAsset): LiquidityProvidersLD =>
     FP.pipe(
       reloadLiquidityProviders$,
       RxOp.debounceTime(300),

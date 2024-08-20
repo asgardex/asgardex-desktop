@@ -1,7 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { FeeOption, Network } from '@xchainjs/xchain-client'
 import { FeesWithGasPricesAndLimits } from '@xchainjs/xchain-evm'
-import { Address, Asset, BaseAmount } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, Asset, BaseAmount } from '@xchainjs/xchain-util'
 import { ethers } from 'ethers'
 import * as O from 'fp-ts/lib/Option'
 
@@ -19,7 +19,7 @@ export type ApproveFeeHandler = (p: ApproveParams) => FeeLD
 export type LoadApproveFeeHandler = (p: ApproveParams) => void
 
 export type SendTxParams = {
-  asset: Asset
+  asset: AnyAsset
   recipient: Address
   sender?: Address
   amount: BaseAmount
@@ -70,7 +70,7 @@ export type TransactionService = {
 
 export type TxParams = {
   walletIndex?: number
-  asset?: Asset
+  asset?: AnyAsset
   amount: BaseAmount
   recipient: Address
   memo?: string

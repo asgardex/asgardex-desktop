@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { Asset, assetToString } from '@xchainjs/xchain-util'
+import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 
 import { PoolActionsHistory } from '../../components/poolActionsHistory'
@@ -13,7 +13,7 @@ import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { PoolHistoryActions } from './PoolHistoryView.types'
 
 type Props = {
-  poolAsset: Asset
+  poolAsset: AnyAsset
   historyActions: PoolHistoryActions
   className?: string
 }

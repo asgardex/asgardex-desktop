@@ -1,6 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ETHChain } from '@xchainjs/xchain-ethereum'
-import * as ETH from '@xchainjs/xchain-evm'
+import { ETHChain, Client } from '@xchainjs/xchain-ethereum'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -31,7 +30,7 @@ const clientState$: ClientState$ = FP.pipe(
           getPhrase(keystore),
           O.map<string, ClientState>((phrase) => {
             try {
-              const client = new ETH.ClientKeystore({
+              const client = new Client({
                 ...defaultEthParams,
                 network: network,
                 phrase: phrase,

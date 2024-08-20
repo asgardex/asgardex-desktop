@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Asset, Chain } from '@xchainjs/xchain-util'
+import { AnyAsset, Asset, Chain } from '@xchainjs/xchain-util'
 import { Spin } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
@@ -102,17 +102,17 @@ export const DepositView: React.FC<Props> = () => {
   // Set selected pool asset whenever an asset in route has been changed
   useEffect(() => {
     // Function to determine if the dex and the asset's chain are equal
-    const isDexEqualAssetChain = (asset: Asset) => dex.chain === asset.chain
+    const isDexEqualAssetChain = (asset: AnyAsset) => dex.chain === asset.chain
 
     O.fold(
       () => {},
-      (asset: Asset) => {
+      (asset: AnyAsset) => {
         if (isDexEqualAssetChain(asset)) {
           // If dex and asset's chain are equal, set an alternative asset
           const alternativeAsset = getAlternativeAsset()
           O.fold(
             () => {},
-            (altAsset: Asset) => {
+            (altAsset: AnyAsset) => {
               dex.chain === THORChain
                 ? setSelectedPoolAsset(O.some(altAsset))
                 : setSelectedPoolAssetMaya(O.some(altAsset))

@@ -1,33 +1,17 @@
-import { Asset, BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
+import { AnyAsset, Asset, BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
 import * as E from 'fp-ts/Either'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 
 import { isLedgerWallet } from '../../../shared/utils/guard'
-import { isChainAsset, isRuneNativeAsset, isUtxoAssetChain, max1e8BaseAmount } from '../../helpers/assetHelper'
+import { isChainAsset, isUtxoAssetChain, max1e8BaseAmount } from '../../helpers/assetHelper'
 import { eqAsset, eqChain } from '../../helpers/fp/eq'
 import { priceFeeAmountForAsset } from '../../services/chain/fees/utils'
 import { SwapFees } from '../../services/chain/types'
 import { PoolAssetDetail, PoolAssetDetails, PoolsDataMap } from '../../services/midgard/types'
 import { WalletBalances } from '../../services/wallet/types'
 import { AssetsToSwap } from './Swap.types'
-/**
- * @returns none - neither sourceAsset neither targetAsset is RUNE
- *          some(true) - targetAsset is RUNE
- *          some(false) - sourceAsset is RUNE
- */
-export const isRuneSwap = (sourceAsset: Asset, targetAsset: Asset) => {
-  if (isRuneNativeAsset(targetAsset)) {
-    return O.some(true)
-  }
-
-  if (isRuneNativeAsset(sourceAsset)) {
-    return O.some(false)
-  }
-
-  return O.none
-}
 
 /**
  * Returns `BaseAmount` with asgardex identifier - is now a affiliate address/thorname
@@ -38,7 +22,7 @@ export const getSwapLimit1e8 = (memo: string): BaseAmount => {
   return swapLimitFromMemo
 }
 
-export const pickPoolAsset = (assets: PoolAssetDetails, asset: Asset): O.Option<PoolAssetDetail> =>
+export const pickPoolAsset = (assets: PoolAssetDetails, asset: AnyAsset): O.Option<PoolAssetDetail> =>
   FP.pipe(
     assets,
     A.findFirst(
@@ -68,9 +52,9 @@ export const minAmountToSwapMax1e8 = ({
   poolsData
 }: {
   swapFees: SwapFees
-  inAsset: Asset
+  inAsset: AnyAsset
   inAssetDecimal: number
-  outAsset: Asset
+  outAsset: AnyAsset
   poolsData: PoolsDataMap
 }): BaseAmount => {
   const { inFee, outFee } = swapFees
@@ -155,7 +139,7 @@ export const maxAmountToSwapMax1e8 = ({
   balanceAmountMax1e8,
   feeAmount
 }: {
-  asset: Asset
+  asset: AnyAsset
   balanceAmountMax1e8: BaseAmount
   feeAmount: BaseAmount
 }): BaseAmount => {
@@ -167,7 +151,7 @@ export const maxAmountToSwapMax1e8 = ({
   return maxAmountToSwap.gt(baseAmount(0)) ? maxAmountToSwap : baseAmount(0)
 }
 
-export const assetsInWallet: (_: WalletBalances) => Asset[] = FP.flow(A.map(({ asset }) => asset))
+export const assetsInWallet: (_: WalletBalances) => AnyAsset[] = FP.flow(A.map(({ asset }) => asset))
 
 export const balancesToSwapFrom = ({
   assetsToSwap,

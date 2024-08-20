@@ -28,7 +28,8 @@ import {
   isValidBN,
   bn,
   BaseAmount,
-  Address
+  Address,
+  AnyAsset
 } from '@xchainjs/xchain-util'
 import { Chain } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
@@ -158,7 +159,7 @@ export const pricePoolSelectorFromRD = (
  * It returns `None` if no `PoolDetail` has been found
  * Adjusted to handle synth assets
  */
-export const getPoolDetail = (details: PoolDetails, asset: Asset): O.Option<PoolDetail> =>
+export const getPoolDetail = (details: PoolDetails, asset: AnyAsset): O.Option<PoolDetail> =>
   FP.pipe(
     details.find((detail: PoolDetail) =>
       FP.pipe(
@@ -379,7 +380,7 @@ export const getSharesByAssetAndType = ({
   type
 }: {
   shares: PoolShares
-  asset: Asset
+  asset: AnyAsset
   type: 'sym' | 'asym'
 }): O.Option<PoolShare> =>
   FP.pipe(

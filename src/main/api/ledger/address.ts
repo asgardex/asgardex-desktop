@@ -182,7 +182,7 @@ export const verifyLedgerAddress = async ({
     }
     case ARBChain: {
       if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for ARB to verify Ledger address`)
-      result = await verifyARBAddress({ transport, walletIndex, evmHdMode: hdMode })
+      result = await verifyARBAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
       break
     }
     case GAIAChain:

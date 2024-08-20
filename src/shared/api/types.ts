@@ -3,7 +3,7 @@ import { FeeRate, Network, TxHash, TxParams } from '@xchainjs/xchain-client'
 import { Keystore } from '@xchainjs/xchain-crypto'
 import { AssetCacao, CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
-import { Address, Asset, Chain } from '@xchainjs/xchain-util'
+import { Address, Asset, Chain, TokenAsset } from '@xchainjs/xchain-util'
 import * as E from 'fp-ts/lib/Either'
 import * as O from 'fp-ts/Option'
 
@@ -37,7 +37,7 @@ export type Dex = DexDetails
 // A version number starting from `1` to avoid to load deprecated files
 export type StorageVersion = { version: string }
 export type EnabledChains = { chains: EnabledChain[] }
-export type AddedAssets = { assets: Asset[] }
+export type AddedAssets = { assets: (Asset | TokenAsset)[] }
 export type ApiUrls = Record<Network, string>
 export type UserChainStorage = EnabledChains & StorageVersion
 export type UserAssetStorage = AddedAssets & StorageVersion

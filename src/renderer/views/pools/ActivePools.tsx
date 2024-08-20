@@ -4,7 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
-  Asset,
+  AnyAsset,
   assetToString,
   BaseAmount,
   baseToAsset,
@@ -123,7 +123,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
   const pricePool = dex.chain === THORChain ? pricePoolThor : pricePoolMaya
 
   const renderBtnPoolsColumn = useCallback(
-    (_: string, { asset }: { asset: Asset }) => {
+    (_: string, { asset }: { asset: AnyAsset }) => {
       const actions: ActionButtonAction[] =
         dex.chain === THORChain
           ? [
@@ -204,7 +204,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
   )
 
   const btnPoolsColumn = useCallback(
-    <T extends { asset: Asset }>(): ColumnType<T> => ({
+    <T extends { asset: AnyAsset }>(): ColumnType<T> => ({
       key: 'btn',
       title: Shared.renderRefreshBtnColTitle({
         title: intl.formatMessage({ id: 'common.refresh' }),
@@ -218,7 +218,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
   )
 
   const renderVolumeColumn = useCallback(
-    ({ asset, volumePrice, volumeAmount }: { asset: Asset; volumePrice: BaseAmount; volumeAmount: BaseAmount }) => (
+    ({ asset, volumePrice, volumeAmount }: { asset: AnyAsset; volumePrice: BaseAmount; volumeAmount: BaseAmount }) => (
       <Styled.Label align="right" nowrap>
         <div className="flex flex-col items-end justify-center font-main">
           <div className="whitespace-nowrap text-16 text-text0 dark:text-text0d">

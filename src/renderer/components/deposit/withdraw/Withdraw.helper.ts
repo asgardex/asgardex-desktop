@@ -1,4 +1,4 @@
-import { Asset, BaseAmount, baseAmount, bn } from '@xchainjs/xchain-util'
+import { AnyAsset, BaseAmount, baseAmount, bn } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
@@ -61,7 +61,7 @@ export const minAssetAmountToWithdrawMax1e8 = ({
 }: {
   fees: AssetWithAmount
   /* asset to withdraw */
-  asset: Asset
+  asset: AnyAsset
   assetDecimal: number
   poolsData: PoolsDataMap
 }): BaseAmount => {
