@@ -1,7 +1,7 @@
 # 1.22.2 (2024-08-)
 
 ## Updates/Fixes
-
+- Update Arb consts []
 
 ## Add
 
