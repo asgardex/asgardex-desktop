@@ -58,7 +58,7 @@ const chainAddressFunctions: Record<
         })
       )
     }
-    return getETHAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
+    return getETHAddress({ transport, walletAccount, walletIndex, evmHDMode: hdMode, network })
   },
   [AVAXChain]: (transport, network, walletAccount, walletIndex, hdMode) => {
     if (!isEvmHDMode(hdMode)) {
@@ -167,7 +167,7 @@ export const verifyLedgerAddress = async ({
       break
     case ETHChain: {
       if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EthHDMode' - needed for ETH to verify Ledger address`)
-      result = await verifyETHAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
+      result = await verifyETHAddress({ transport, walletAccount, walletIndex, evmHDMode: hdMode, network })
       break
     }
     case AVAXChain: {

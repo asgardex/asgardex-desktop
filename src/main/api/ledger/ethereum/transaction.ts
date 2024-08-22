@@ -2,7 +2,7 @@ import type Transport from '@ledgerhq/hw-transport'
 import TransportNodeHid from '@ledgerhq/hw-transport-node-hid-singleton'
 import { FeeOption, Network, Protocol, TxHash } from '@xchainjs/xchain-client'
 import * as ETH from '@xchainjs/xchain-evm'
-import { Address, AnyAsset, assetToString, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, Asset, assetToString, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
 
@@ -49,9 +49,9 @@ export const send = async ({
         derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
-      network: network
+      network
     })
-    const ethAsset = asset as ETH.CompatibleAsset
+    const ethAsset = asset as Asset
     const txHash = await ledgerClient.transfer({ walletIndex, asset: ethAsset, recipient, amount, memo, feeOption })
 
     if (!txHash) {
@@ -117,7 +117,7 @@ export const deposit = async ({
         derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
-      network: network
+      network
     })
 
     const provider = ledgerClient.getProvider()
@@ -130,6 +130,7 @@ export const deposit = async ({
     // Call deposit function of Router contract
     // Note2: Amounts need to use `toFixed` to convert `BaseAmount` to `Bignumber`
     // since `value` and `gasPrice` type is `Bignumber`
+
     const { hash } = await ledgerClient.call<{ hash: TxHash }>({
       contractAddress: router,
       abi: ROUTER_ABI,

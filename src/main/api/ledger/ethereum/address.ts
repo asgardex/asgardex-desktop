@@ -1,11 +1,13 @@
 import type Transport from '@ledgerhq/hw-transport'
+import TransportNodeHid from '@ledgerhq/hw-transport-node-hid-singleton'
+import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { ClientLedger } from '@xchainjs/xchain-evm'
+import * as ETH from '@xchainjs/xchain-evm'
 import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { defaultEthParams } from '../../../../shared/ethereum/const'
-import { getDerivationPaths } from '../../../../shared/evm/ledger'
+import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
@@ -13,21 +15,29 @@ import { WalletAddress } from '../../../../shared/wallet/types'
 export const getAddress = async ({
   walletAccount,
   walletIndex,
-  evmHdMode
+  evmHDMode,
+  network
 }: {
   transport: Transport
   walletAccount: number
   walletIndex: number
-  evmHdMode: EvmHDMode
+  evmHDMode: EvmHDMode
+  network: Network
 }): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
-    const clientLedger = new ClientLedger({
+    const ledgerClient = new ETH.ClientLedger({
       ...defaultEthParams,
-      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHdMode)
+      signer: new ETH.LedgerSigner({
+        transport: await TransportNodeHid.create(),
+        provider: defaultEthParams.providers[Network.Mainnet],
+        derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
+      }),
+      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
+      network
     })
-    const address = await clientLedger.getAddressAsync(walletIndex)
+    const address = await ledgerClient.getAddressAsync(walletIndex)
     if (address) {
-      return E.right({ address, chain: ETHChain, type: 'ledger', walletAccount, walletIndex, hdMode: evmHdMode })
+      return E.right({ address, chain: ETHChain, type: 'ledger', walletAccount, walletIndex, hdMode: evmHDMode })
     } else {
       return E.left({
         errorId: LedgerErrorId.INVALID_PUBKEY,
@@ -45,17 +55,25 @@ export const getAddress = async ({
 export const verifyAddress = async ({
   walletAccount,
   walletIndex,
-  evmHdMode
+  evmHDMode,
+  network
 }: {
   transport: Transport
   walletAccount: number
   walletIndex: number
-  evmHdMode: EvmHDMode
+  evmHDMode: EvmHDMode
+  network: Network
 }) => {
-  const clientLedger = new ClientLedger({
+  const ledgerClient = new ETH.ClientLedger({
     ...defaultEthParams,
-    rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHdMode)
+    signer: new ETH.LedgerSigner({
+      transport: await TransportNodeHid.create(),
+      provider: defaultEthParams.providers[Network.Mainnet],
+      derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
+    }),
+    rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
+    network
   })
-  const _ = await clientLedger.getAddressAsync(walletIndex, true)
+  const _ = await ledgerClient.getAddressAsync(walletIndex, true)
   return true
 }
