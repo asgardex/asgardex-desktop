@@ -1,15 +1,22 @@
 import type Transport from '@ledgerhq/hw-transport'
-import TransportNodeHid from '@ledgerhq/hw-transport-node-hid-singleton'
 import { FeeOption, Network, TxHash } from '@xchainjs/xchain-client'
-import * as AVAX from '@xchainjs/xchain-evm'
-import { Address, AnyAsset, assetToString, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
-import BigNumber from 'bignumber.js'
+import { ClientLedger, LedgerSigner, abi, getTokenAddress } from '@xchainjs/xchain-evm'
+import {
+  Address,
+  AnyAsset,
+  Asset,
+  assetToString,
+  BaseAmount,
+  getContractAddressFromAsset,
+  baseAmount,
+  TokenAsset
+} from '@xchainjs/xchain-util'
+import { ethers } from 'ethers'
 import * as E from 'fp-ts/Either'
 
-import { isAvaxAsset } from '../../../../renderer/helpers/assetHelper'
+import { isAvaxAsset, isAvaxTokenAsset } from '../../../../renderer/helpers/assetHelper'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { DEPOSIT_EXPIRATION_OFFSET, AvaxZeroAddress, defaultAvaxParams } from '../../../../shared/avax/const'
-import { ROUTER_ABI } from '../../../../shared/evm/abi'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
@@ -20,6 +27,7 @@ import { isError } from '../../../../shared/utils/guard'
  */
 export const send = async ({
   asset,
+  transport,
   network,
   amount,
   memo,
@@ -41,18 +49,24 @@ export const send = async ({
   evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const ledgerClient = new AVAX.ClientLedger({
+    const ledgerClient = new ClientLedger({
       ...defaultAvaxParams,
-      signer: new AVAX.LedgerSigner({
-        transport: await TransportNodeHid.create(),
+      signer: new LedgerSigner({
+        transport,
         provider: defaultAvaxParams.providers[Network.Mainnet],
         derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
       network: network
     })
-    const avaxAsset = asset as AVAX.CompatibleAsset
-    const txHash = await ledgerClient.transfer({ walletIndex, asset: avaxAsset, recipient, amount, memo, feeOption })
+    const txHash = await ledgerClient.transfer({
+      walletIndex,
+      asset: asset as Asset | TokenAsset,
+      recipient,
+      amount,
+      memo,
+      feeOption
+    })
 
     if (!txHash) {
       return E.left({
@@ -75,6 +89,7 @@ export const send = async ({
  */
 export const deposit = async ({
   asset,
+  transport,
   router,
   network,
   amount,
@@ -98,7 +113,7 @@ export const deposit = async ({
   evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const address = !isAvaxAsset(asset) ? AVAX.getTokenAddress(asset as TokenAsset) : AvaxZeroAddress
+    const address = !isAvaxAsset(asset) ? getTokenAddress(asset as TokenAsset) : AvaxZeroAddress
 
     if (!address) {
       return E.left({
@@ -107,12 +122,10 @@ export const deposit = async ({
       })
     }
 
-    const isETHAddress = address === AvaxZeroAddress
-
-    const ledgerClient = new AVAX.ClientLedger({
+    const ledgerClient = new ClientLedger({
       ...defaultAvaxParams,
-      signer: new AVAX.LedgerSigner({
-        transport: await TransportNodeHid.create(),
+      signer: new LedgerSigner({
+        transport,
         provider: defaultAvaxParams.providers[Network.Mainnet],
         derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
       }),
@@ -120,37 +133,56 @@ export const deposit = async ({
       network: network
     })
 
+    const isERC20 = isAvaxTokenAsset(asset as TokenAsset)
+    const checkSummedContractAddress = isERC20
+      ? ethers.utils.getAddress(getContractAddressFromAsset(asset as TokenAsset))
+      : ethers.constants.AddressZero
     const provider = ledgerClient.getProvider()
-
-    const gasPrices = await ledgerClient.estimateGasPrices()
-    const gasPrice = gasPrices[feeOption].amount().toFixed(0) // no round down needed
     const blockTime = await getBlocktime(provider)
     const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
+    const depositParams = [recipient, checkSummedContractAddress, amount.amount().toFixed(), memo, expiration]
 
-    // Note: `client.call` handling very - similar to `runSendPoolTx$` in `src/renderer/services/ethereum/transaction.ts`
-    // Call deposit function of Router contract
-    // Note2: Amounts need to use `toFixed` to convert `BaseAmount` to `Bignumber`
-    // since `value` and `gasPrice` type is `Bignumber`
-    const { hash } = await ledgerClient.call<{ hash: TxHash }>({
-      contractAddress: router,
-      abi: ROUTER_ABI,
-      funcName: 'depositWithExpiry',
-      funcParams: [
-        recipient,
-        address,
-        // Send `BaseAmount` w/o decimal and always round down for currencies
-        amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
-        memo,
-        expiration,
-        isETHAddress
-          ? {
-              // Send `BaseAmount` w/o decimal and always round down for currencies
-              value: amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
-              gasPrice
-            }
-          : { gasPrice }
-      ]
+    const routerContract = new ethers.Contract(router, abi.router)
+    const nativeAsset = ledgerClient.getAssetInfo()
+
+    const gasPrices = await ledgerClient.estimateGasPrices()
+
+    const unsignedTx = await routerContract.populateTransaction.depositWithExpiry(...depositParams)
+
+    const hash = await ledgerClient.transfer({
+      asset: nativeAsset.asset,
+      amount: isERC20 ? baseAmount(0, nativeAsset.decimal) : amount,
+      memo: unsignedTx.data,
+      recipient: router,
+      gasPrice: gasPrices[feeOption],
+      isMemoEncoded: true,
+      gasLimit: ethers.BigNumber.from(160000)
     })
+
+    // // Note: `client.call` handling very - similar to `runSendPoolTx$` in `src/renderer/services/ethereum/transaction.ts`
+    // // Call deposit function of Router contract
+    // // Note2: Amounts need to use `toFixed` to convert `BaseAmount` to `Bignumber`
+    // // since `value` and `gasPrice` type is `Bignumber`
+    // const { hash } = await ledgerClient.call<{ hash: TxHash }>({
+    //   contractAddress: router,
+    //   abi: ROUTER_ABI,
+    //   funcName: 'depositWithExpiry',
+    //   funcParams: [
+    //     recipient,
+    //     address,
+    //     // Send `BaseAmount` w/o decimal and always round down for currencies
+    //     amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
+    //     memo,
+    //     expiration,
+    //     isETHAddress
+    //       ? {
+    //           // Send `BaseAmount` w/o decimal and always round down for currencies
+    //           value: amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
+    //           gasPrice
+    //         }
+    //       : { gasPrice }
+    //   ]
+    // })
 
     return E.right(hash)
   } catch (error) {

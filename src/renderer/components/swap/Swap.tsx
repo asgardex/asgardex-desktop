@@ -276,7 +276,7 @@ export const Swap = ({
 }: SwapProps) => {
   const intl = useIntl()
 
-  const { chain: sourceChain } = sourceAsset.type ? dex.asset : sourceAsset
+  const { chain: sourceChain } = sourceAsset.type === AssetType.SYNTH ? dex.asset : sourceAsset
 
   const lockedWallet: boolean = useMemo(() => isLocked(keystore) || !hasImportedKeystore(keystore), [keystore])
   const [quoteOnly, setQuoteOnly] = useState<boolean>(false)
@@ -1407,6 +1407,7 @@ export const Swap = ({
 
   const needApprovement: O.Option<boolean> = useMemo(() => {
     // ERC20 token does need approval only
+
     switch (sourceChain) {
       case ETHChain:
         return isEthAsset(sourceAsset) ? O.some(false) : O.some(isEthTokenAsset(sourceAsset as TokenAsset))

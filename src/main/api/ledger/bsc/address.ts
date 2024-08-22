@@ -1,11 +1,12 @@
 import type Transport from '@ledgerhq/hw-transport'
 import { BSCChain } from '@xchainjs/xchain-bsc'
-import { ClientLedger } from '@xchainjs/xchain-evm'
+import { Network } from '@xchainjs/xchain-client'
+import * as BSC from '@xchainjs/xchain-evm'
 import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { defaultBscParams } from '../../../../shared/bsc/const'
-import { getDerivationPaths } from '../../../../shared/evm/ledger'
+import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
@@ -13,21 +14,30 @@ import { WalletAddress } from '../../../../shared/wallet/types'
 export const getAddress = async ({
   walletAccount,
   walletIndex,
-  evmHdMode
+  evmHDMode,
+  transport,
+  network
 }: {
   transport: Transport
   walletAccount: number
   walletIndex: number
-  evmHdMode: EvmHDMode
+  evmHDMode: EvmHDMode
+  network: Network
 }): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
-    const clientLedger = new ClientLedger({
+    const clientLedger = new BSC.ClientLedger({
       ...defaultBscParams,
-      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHdMode)
+      signer: new BSC.LedgerSigner({
+        transport,
+        provider: defaultBscParams.providers[Network.Mainnet],
+        derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
+      }),
+      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
+      network
     })
     const address = await clientLedger.getAddressAsync(walletIndex)
     if (address) {
-      return E.right({ address, chain: BSCChain, type: 'ledger', walletAccount, walletIndex, hdMode: evmHdMode })
+      return E.right({ address, chain: BSCChain, type: 'ledger', walletAccount, walletIndex, hdMode: evmHDMode })
     } else {
       return E.left({
         errorId: LedgerErrorId.INVALID_PUBKEY,
@@ -45,16 +55,22 @@ export const getAddress = async ({
 export const verifyAddress = async ({
   walletAccount,
   walletIndex,
-  evmHdMode
+  evmHDMode,
+  transport
 }: {
   transport: Transport
   walletAccount: number
   walletIndex: number
-  evmHdMode: EvmHDMode
+  evmHDMode: EvmHDMode
 }) => {
-  const clientLedger = new ClientLedger({
+  const clientLedger = new BSC.ClientLedger({
     ...defaultBscParams,
-    rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHdMode)
+    signer: new BSC.LedgerSigner({
+      transport,
+      provider: defaultBscParams.providers[Network.Mainnet],
+      derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
+    }),
+    rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode)
   })
   const _ = await clientLedger.getAddressAsync(walletIndex, true)
   return true

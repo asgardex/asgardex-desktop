@@ -1,8 +1,7 @@
 import type Transport from '@ledgerhq/hw-transport'
-import TransportNodeHid from '@ledgerhq/hw-transport-node-hid-singleton'
 import { FeeOption, Network, TxHash } from '@xchainjs/xchain-client'
 import * as BSC from '@xchainjs/xchain-evm'
-import { Address, AnyAsset, assetToString, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, Asset, assetToString, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
 
@@ -20,6 +19,7 @@ import { isError } from '../../../../shared/utils/guard'
  */
 export const send = async ({
   asset,
+  transport,
   network,
   amount,
   memo,
@@ -41,18 +41,25 @@ export const send = async ({
   evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const clientledger = new BSC.ClientLedger({
+    const clientLedger = new BSC.ClientLedger({
       ...defaultBscParams,
       signer: new BSC.LedgerSigner({
-        transport: await TransportNodeHid.create(),
+        transport,
         provider: defaultBscParams.providers[Network.Mainnet],
         derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
-      network: network
+      network
     })
-    const bscAsset = asset as BSC.CompatibleAsset
-    const txHash = await clientledger.transfer({ walletIndex, asset: bscAsset, recipient, amount, memo, feeOption })
+
+    const txHash = await clientLedger.transfer({
+      walletIndex,
+      asset: asset as Asset | TokenAsset,
+      recipient,
+      amount,
+      memo,
+      feeOption
+    })
 
     if (!txHash) {
       return E.left({
@@ -75,6 +82,7 @@ export const send = async ({
  */
 export const deposit = async ({
   asset,
+  transport,
   router,
   network,
   amount,
@@ -112,7 +120,7 @@ export const deposit = async ({
     const clientledger = new BSC.ClientLedger({
       ...defaultBscParams,
       signer: new BSC.LedgerSigner({
-        transport: await TransportNodeHid.create(),
+        transport,
         provider: defaultBscParams.providers[Network.Mainnet],
         derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
       }),

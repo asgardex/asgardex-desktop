@@ -80,7 +80,7 @@ const chainAddressFunctions: Record<
         })
       )
     }
-    return getBSCAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
+    return getBSCAddress({ transport, network, walletAccount, walletIndex, evmHDMode: hdMode })
   },
   [ARBChain]: (transport, network, walletAccount, walletIndex, hdMode) => {
     if (!isEvmHDMode(hdMode)) {
@@ -177,7 +177,7 @@ export const verifyLedgerAddress = async ({
     }
     case BSCChain: {
       if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for BSC to verify Ledger address`)
-      result = await verifyBSCAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
+      result = await verifyBSCAddress({ transport, walletAccount, walletIndex, evmHDMode: hdMode })
       break
     }
     case ARBChain: {

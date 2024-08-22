@@ -1,5 +1,4 @@
 import type Transport from '@ledgerhq/hw-transport'
-import TransportNodeHid from '@ledgerhq/hw-transport-node-hid-singleton'
 import { FeeOption, Network, TxHash } from '@xchainjs/xchain-client'
 import * as ARB from '@xchainjs/xchain-evm'
 import { Address, AnyAsset, assetToString, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
@@ -20,6 +19,7 @@ import { isError } from '../../../../shared/utils/guard'
  */
 export const send = async ({
   asset,
+  transport,
   network,
   amount,
   memo,
@@ -44,7 +44,7 @@ export const send = async ({
     const clientledger = new ARB.ClientLedger({
       ...defaultArbParams,
       signer: new ARB.LedgerSigner({
-        transport: await TransportNodeHid.create(),
+        transport,
         provider: defaultArbParams.providers[Network.Mainnet],
         derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
       }),
@@ -73,6 +73,7 @@ export const send = async ({
  */
 export const deposit = async ({
   asset,
+  transport,
   router,
   network,
   amount,
@@ -110,7 +111,7 @@ export const deposit = async ({
     const clientledger = new ARB.ClientLedger({
       ...defaultArbParams,
       signer: new ARB.LedgerSigner({
-        transport: await TransportNodeHid.create(),
+        transport,
         provider: defaultArbParams.providers[Network.Mainnet],
         derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
       }),

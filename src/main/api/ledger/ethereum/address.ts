@@ -1,5 +1,4 @@
 import type Transport from '@ledgerhq/hw-transport'
-import TransportNodeHid from '@ledgerhq/hw-transport-node-hid-singleton'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import * as ETH from '@xchainjs/xchain-evm'
@@ -13,6 +12,7 @@ import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
 
 export const getAddress = async ({
+  transport,
   walletAccount,
   walletIndex,
   evmHDMode,
@@ -28,7 +28,7 @@ export const getAddress = async ({
     const ledgerClient = new ETH.ClientLedger({
       ...defaultEthParams,
       signer: new ETH.LedgerSigner({
-        transport: await TransportNodeHid.create(),
+        transport,
         provider: defaultEthParams.providers[Network.Mainnet],
         derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
       }),
@@ -53,6 +53,7 @@ export const getAddress = async ({
 }
 
 export const verifyAddress = async ({
+  transport,
   walletAccount,
   walletIndex,
   evmHDMode,
@@ -67,7 +68,7 @@ export const verifyAddress = async ({
   const ledgerClient = new ETH.ClientLedger({
     ...defaultEthParams,
     signer: new ETH.LedgerSigner({
-      transport: await TransportNodeHid.create(),
+      transport,
       provider: defaultEthParams.providers[Network.Mainnet],
       derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
     }),

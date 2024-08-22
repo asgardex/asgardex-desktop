@@ -4995,6 +4995,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/devices@npm:^8.4.2":
+  version: 8.4.2
+  resolution: "@ledgerhq/devices@npm:8.4.2"
+  dependencies:
+    "@ledgerhq/errors": "npm:^6.18.0"
+    "@ledgerhq/logs": "npm:^6.12.0"
+    rxjs: "npm:^7.8.1"
+    semver: "npm:^7.3.5"
+  checksum: 10/067879661f9d61bc4dd1b212e946ec42bb0cc010139cbfa9c2720d209cedbb5fad0fff997cbde61b50e8a098a9a6e134c7e46657011b296f7cd0f67b588d6d2c
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/domain-service@npm:^1.1.20":
   version: 1.2.3
   resolution: "@ledgerhq/domain-service@npm:1.2.3"
@@ -5119,31 +5131,31 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-transport-node-hid-noevents@npm:^6.29.6":
-  version: 6.29.6
-  resolution: "@ledgerhq/hw-transport-node-hid-noevents@npm:6.29.6"
+"@ledgerhq/hw-transport-node-hid-noevents@npm:^6.30.3":
+  version: 6.30.3
+  resolution: "@ledgerhq/hw-transport-node-hid-noevents@npm:6.30.3"
   dependencies:
-    "@ledgerhq/devices": "npm:^8.3.0"
-    "@ledgerhq/errors": "npm:^6.16.4"
-    "@ledgerhq/hw-transport": "npm:^6.30.6"
+    "@ledgerhq/devices": "npm:^8.4.2"
+    "@ledgerhq/errors": "npm:^6.18.0"
+    "@ledgerhq/hw-transport": "npm:^6.31.2"
     "@ledgerhq/logs": "npm:^6.12.0"
-    node-hid: "npm:^2.1.2"
-  checksum: 10/4c20d717b43241ffc59d2fc5747f5effdc6c214c304f536b2ce2f0182eee9564bce84723c10b9566e0cdb05836fffbfc5247decb248439d615c78e8858c3ef0e
+    node-hid: "npm:2.1.2"
+  checksum: 10/0bb1e4999342ab2974093cdd1004305e2a7a871f57c85f9778fdc1dee9f0a11d2e46541204f8bfa54407a0a0b5e037f253a97632ef8f352c7adb02e43ed3dd87
   languageName: node
   linkType: hard
 
 "@ledgerhq/hw-transport-node-hid-singleton@npm:^6.30.1":
-  version: 6.30.6
-  resolution: "@ledgerhq/hw-transport-node-hid-singleton@npm:6.30.6"
+  version: 6.31.3
+  resolution: "@ledgerhq/hw-transport-node-hid-singleton@npm:6.31.3"
   dependencies:
-    "@ledgerhq/devices": "npm:^8.3.0"
-    "@ledgerhq/errors": "npm:^6.16.4"
-    "@ledgerhq/hw-transport": "npm:^6.30.6"
-    "@ledgerhq/hw-transport-node-hid-noevents": "npm:^6.29.6"
+    "@ledgerhq/devices": "npm:^8.4.2"
+    "@ledgerhq/errors": "npm:^6.18.0"
+    "@ledgerhq/hw-transport": "npm:^6.31.2"
+    "@ledgerhq/hw-transport-node-hid-noevents": "npm:^6.30.3"
     "@ledgerhq/logs": "npm:^6.12.0"
-    node-hid: "npm:^2.1.2"
+    node-hid: "npm:2.1.2"
     usb: "npm:2.9.0"
-  checksum: 10/b65efe74b31663f1d793b45883faf2ed18c227b727b37358c84630837d4c7acd6b32b78c8ca3860c751ea3cc7eb837f5d10cf24c14faf89ff6028faea320009b
+  checksum: 10/c8d7c844f9d00a93915df4e54772c2b631a5c32269961c0029941370c6577daddf892496c76c9e64040bcc28fbc177b9432de3a02b1c3140df956ceae3ebcce4
   languageName: node
   linkType: hard
 
@@ -19985,6 +19997,20 @@ __metadata:
   bin:
     node-gyp: bin/node-gyp.js
   checksum: 10/b9dddbe96507f6b9b3c46b716fea51116a9444b302e794f295bbf899bdd937390f4fcddab28cd2bc4fed2051234e8a2b81dd9b6279f5a8c0535bb72dd3daf781
+  languageName: node
+  linkType: hard
+
+"node-hid@npm:2.1.2":
+  version: 2.1.2
+  resolution: "node-hid@npm:2.1.2"
+  dependencies:
+    bindings: "npm:^1.5.0"
+    node-addon-api: "npm:^3.0.2"
+    node-gyp: "npm:latest"
+    prebuild-install: "npm:^7.1.1"
+  bin:
+    hid-showdevices: src/show-devices.js
+  checksum: 10/7b424d9f049221b439cfa3a092f415b608bcd316b819ff1fb0bf5234d766348d9fdaeaafa5ccece514c045825a936cb5617080168066d16b3aaeb0e9808e38f9
   languageName: node
   linkType: hard
 

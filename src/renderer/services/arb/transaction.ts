@@ -54,7 +54,6 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
         })
       )
 
-    const provider = client.getProvider()
     return FP.pipe(
       sequenceSOption({ address: getArbAssetAddress(params.asset), router: params.router }),
       O.fold(
@@ -63,7 +62,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
           FP.pipe(
             Rx.forkJoin({
               gasPrices: Rx.from(client.estimateGasPrices()),
-              blockTime: Rx.from(getBlocktime(provider))
+              blockTime: Rx.from(getBlocktime(client.getProvider()))
             }),
             RxOp.switchMap(({ gasPrices, blockTime }) => {
               const isERC20 = isArbTokenAsset(params.asset as TokenAsset)
@@ -96,13 +95,13 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
                       gasLimit: ethers.BigNumber.from(160000)
                     })
                   )
-                ),
-                RxOp.map((txResult) => txResult),
-                RxOp.map(RD.success),
-                RxOp.catchError((error): TxHashLD => failure$(error?.message ?? error.toString())),
-                RxOp.startWith(RD.pending)
+                )
               )
-            })
+            }),
+            RxOp.map((txResult) => txResult),
+            RxOp.map(RD.success),
+            RxOp.catchError((error): TxHashLD => failure$(error?.message ?? error.toString())),
+            RxOp.startWith(RD.pending)
           )
       )
     )
