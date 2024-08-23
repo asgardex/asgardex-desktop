@@ -209,7 +209,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
 
   const [oLoanQuote, setLoanQuote] = useState<O.Option<LoanOpenQuote>>(O.none)
 
-  const [creditRatio, setCreditRatio] = useState<number>(50)
+  const [collaterizationRatio] = useState<number>(50)
 
   const { chain: sourceChain } = collateralAsset.asset
   const featureDisabled = true // feature not ready
@@ -580,8 +580,6 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
       ),
     [oLoanQuote]
   )
-
-  console.log(noMemo)
   // memo check disable submit if no memo
   const quoteError: JSX.Element = useMemo(() => {
     if (!O.isSome(oLoanQuote) || oLoanQuote.value.notes || !oLoanQuote.value.warning) {
@@ -1363,25 +1361,6 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     )
   }, [amountToLoanMax1e8, disableLoanAction, maxAmountToLoanMax1e8, reloadFeesHandler, setAmountToLoanMax1e8])
 
-  const renderCrSlider = useMemo(() => {
-    const setCreditRatioPercentValue = (percents: number) => {
-      setCreditRatio(percents)
-    }
-
-    return (
-      <Slider
-        key={'Credit ratio slider'}
-        value={creditRatio}
-        onChange={setCreditRatioPercentValue}
-        tooltipVisible
-        tipFormatter={(value) => `${value}%`}
-        withLabel
-        tooltipPlacement={'top'}
-        disabled={disableLoanAction}
-      />
-    )
-  }, [creditRatio, disableLoanAction])
-
   // Price of asset IN fee
   const oPriceAssetInFee: O.Option<AssetWithAmount> = useMemo(() => {
     const asset = loanFees.asset.asset
@@ -1536,9 +1515,9 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
           <div className="w-full px-20px">{renderSlider}</div>
           <div className="flex w-full flex-col items-center justify-center px-5">
             <div className="flex pt-6 text-gray2 dark:text-gray2d">
-              {intl.formatMessage({ id: 'loan.detail.creditRatio' })}
+              {intl.formatMessage({ id: 'loan.detail.collaterizationRatio' })}
             </div>
-            <div className="w-1/2">{renderCrSlider}</div>
+            <div className="w-1/2">{`${collaterizationRatio}%`}</div>
           </div>
           <div className="flex flex-col pt-20px">
             <AssetInput

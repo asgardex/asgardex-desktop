@@ -368,7 +368,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
   }, [lockedWallet, saverAssetAmountMax1e8])
 
   // store maxAmountValue
-  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(
+  const [maxAmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(
     new CryptoAmount(baseAmount(0), sourceAsset)
   )
 
@@ -380,7 +380,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     }
 
     fetchData()
-  }, [sourceAsset, maxAmmountPriceValue, maxAmountToWithdrawMax1e8, thorchainQuery])
+  }, [sourceAsset, maxAmountPriceValue, maxAmountToWithdrawMax1e8, thorchainQuery])
 
   // Set amount to send
   const setAmountToWithdrawMax1e8 = useCallback(
@@ -1372,7 +1372,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
                   }
                   size="medium"
                   balance={{ amount: maxAmountToWithdrawMax1e8, asset: sourceAsset }}
-                  maxDollarValue={maxAmmountPriceValue}
+                  maxDollarValue={maxAmountPriceValue}
                   onClick={() => setAmountToWithdrawMax1e8(maxAmountToWithdrawMax1e8)}
                   maxInfoText={maxBalanceInfoTxt}
                 />

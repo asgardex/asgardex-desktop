@@ -509,7 +509,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
         },
         (params) => {
           // Only fetch if amount has changed and is greater than 0
-          if (params.repayBps === 0 || hasFetched.current) {
+          if (params.repayBps === 0 || hasFetched.current || loanAssetAmount.assetAmount.lte(0)) {
             setLoanQuote(O.none)
           } else {
             hasFetched.current = true
@@ -531,7 +531,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
         }
       )
     )
-  }, [getLoanQuoteClose$, oLoanQuote, oQuoteLoanCloseData, oSourceAssetWB])
+  }, [getLoanQuoteClose$, loanAssetAmount, oLoanQuote, oQuoteLoanCloseData, oSourceAssetWB])
 
   // Boolean on if amount to send is zero
   const zeroBaseAmountMax = useMemo(() => baseAmount(0, asset.baseAmount.decimal), [asset])
