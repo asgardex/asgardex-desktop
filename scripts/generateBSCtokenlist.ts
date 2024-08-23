@@ -18,7 +18,7 @@ import { writeFile, readFile } from '../src/main/utils/file'
 import { ERC20Whitelist, erc20WhitelistIO } from '../src/renderer/services/thorchain/types'
 
 const WHITELIST_URL =
-  'https://gitlab.com/thorchain/thornode/-/raw/develop/common/tokenlist/bsctokens/bsc_mainnet_V122.json'
+  'https://gitlab.com/thorchain/thornode/-/raw/develop/common/tokenlist/bsctokens/bsc_mainnet_latest.json'
 
 const PATH = './src/renderer/types/generated/thorchain/bscerc20whitelist.ts'
 
