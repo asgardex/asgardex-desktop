@@ -14,7 +14,7 @@ const loan: LoanMessages = {
   'loan.detail.lastRepay': 'Последний возврат займа',
   'loan.detail.repayed': 'Погашенная сумма',
   'loan.detail.assetAmount': 'Сумма актива',
-  'loan.detail.creditRatio': 'Кредитное соотношение',
+  'loan.detail.collaterizationRatio': 'Коэффициент Залогового Покрытия',
   'loan.info.max.loan.value': 'Максимальная сумма кредита',
   'loan.info.max.balance': 'Максимальный баланс',
   'loan.borrow.state.sending': 'Отправка транзакции открытия кредита',

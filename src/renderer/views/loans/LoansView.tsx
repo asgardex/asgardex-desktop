@@ -182,11 +182,11 @@ const Content: React.FC<Props> = (props): JSX.Element => {
         RxOp.switchMap(({ walletType, chain }) =>
           isLedgerWallet(walletType)
             ? FP.pipe(getLedgerAddress$(chain), RxOp.map(O.map(ledgerAddressToWalletAddress)))
-            : addressByChain$(collateralAssetChain)
+            : addressByChain$(chain)
         ),
         RxOp.map(addressFromOptionalWalletAddress),
         RxOp.map((oAddress) =>
-          RD.fromOption(oAddress, () => new Error(`Could not get address for ${collateralWalletType}`))
+          RD.fromOption(oAddress, () => new Error(`Could not get addr for ${collateralWalletType}`))
         )
       ),
     RD.initial

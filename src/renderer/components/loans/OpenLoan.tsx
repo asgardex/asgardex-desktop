@@ -212,7 +212,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   const [creditRatio, setCreditRatio] = useState<number>(50)
 
   const { chain: sourceChain } = collateralAsset.asset
-
+  const featureDisabled = true // feature not ready
   const lockedWallet: boolean = useMemo(() => isLocked(keystore) || !hasImportedKeystore(keystore), [keystore])
 
   const [oBorrowWalletType, setBorrowWalletType] = useState<O.Option<WalletType>>(oInitialBorrowWalletType)
@@ -580,6 +580,8 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
       ),
     [oLoanQuote]
   )
+
+  console.log(noMemo)
   // memo check disable submit if no memo
   const quoteError: JSX.Element = useMemo(() => {
     if (!O.isSome(oLoanQuote) || oLoanQuote.value.notes || !oLoanQuote.value.warning) {
@@ -598,8 +600,22 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   // Disables the submit button
   const disableSubmit = useMemo(
     () =>
-      sourceChainFeeError || isZeroAmountToLoan || lockedWallet || minAmountError || walletBalancesLoading || noMemo,
-    [isZeroAmountToLoan, lockedWallet, minAmountError, noMemo, sourceChainFeeError, walletBalancesLoading]
+      sourceChainFeeError ||
+      isZeroAmountToLoan ||
+      featureDisabled ||
+      lockedWallet ||
+      minAmountError ||
+      walletBalancesLoading ||
+      noMemo,
+    [
+      isZeroAmountToLoan,
+      lockedWallet,
+      minAmountError,
+      noMemo,
+      sourceChainFeeError,
+      walletBalancesLoading,
+      featureDisabled
+    ]
   )
 
   const oQuoteLoanOpenData: O.Option<LoanOpenParams> = useMemo(
@@ -896,6 +912,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   const onClickUseLedger = useCallback(
     (useLedger: boolean) => {
       const walletType: WalletType = useLedger ? 'ledger' : 'keystore'
+      console.log(oBorrowWalletType)
       onChangeAsset({
         collateral: collateralAsset.asset,
         collateralWalletType: walletType,
@@ -1474,6 +1491,12 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     <div className="flex w-full max-w-[500px] flex-col justify-between py-[60px]">
       <div>
         <div className="flex flex-col">
+          <div className="text-12 text-gray2 dark:border-gray1d dark:text-gray2d">
+            <div className="rounded text-warning0 dark:text-warning0d">
+              {intl.formatMessage({ id: 'common.featureUnderDevelopment' })}
+            </div>
+            <div className="flex pb-4"></div>
+          </div>
           <AssetInput
             className="w-full"
             title={intl.formatMessage({ id: 'common.collateral' })}

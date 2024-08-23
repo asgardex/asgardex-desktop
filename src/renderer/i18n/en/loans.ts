@@ -14,7 +14,7 @@ const loan: LoanMessages = {
   'loan.detail.lastRepay': 'Loan last repay',
   'loan.detail.repayed': 'Amount repayed',
   'loan.detail.assetAmount': 'Asset Amount ',
-  'loan.detail.creditRatio': 'Credit Ratio',
+  'loan.detail.collaterizationRatio': 'Collaterization Ratio',
   'loan.info.max.loan.value': 'Max value to loan',
   'loan.info.max.balance': 'Max balance',
   'loan.borrow.state.sending': 'Sending loan open transaction',

@@ -14,7 +14,7 @@ const loan: LoanMessages = {
   'loan.detail.lastRepay': 'Último reembolso del préstamo',
   'loan.detail.repayed': 'Cantidad reembolsada',
   'loan.detail.assetAmount': 'Cantidad de activos',
-  'loan.detail.creditRatio': 'Relación de crédito',
+  'loan.detail.collaterizationRatio': 'Ratio de Colateralización',
   'loan.info.max.loan.value': 'Valor máximo a prestar',
   'loan.info.max.balance': 'Saldo máximo',
   'loan.borrow.state.sending': 'Enviando transacción de apertura de préstamo',

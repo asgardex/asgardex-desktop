@@ -580,7 +580,7 @@ type LoanMessageKey =
   | 'loan.detail.lastRepay'
   | 'loan.detail.repayed'
   | 'loan.detail.assetAmount'
-  | 'loan.detail.creditRatio'
+  | 'loan.detail.collaterizationRatio'
   | 'loan.info.max.loan.value'
   | 'loan.info.max.balance'
   | 'loan.borrow.state.sending'
