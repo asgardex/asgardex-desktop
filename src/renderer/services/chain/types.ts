@@ -63,6 +63,26 @@ export type SaverDepositFeesHandler = (asset: Asset) => SaverDepositFeesLD
 export type ReloadSaverDepositFeesHandler = (asset: Asset) => void
 
 /**
+ * Borrower deposit fees
+ *
+ */
+export type BorrowerDepositFees = {
+  /** fee for asset txs */
+  readonly asset: DepositAssetFees
+}
+
+export type BorrowerDepositFeesRD = RD.RemoteData<Error, BorrowerDepositFees>
+export type BorrowerDepositFeesLD = LiveData<Error, BorrowerDepositFees>
+
+export type BorrowerDepositFeesParams = {
+  readonly asset: Asset
+}
+
+export type BorrowerDepositFeesHandler = (asset: Asset) => BorrowerDepositFeesLD
+
+export type ReloadBorrowerDepositFeesHandler = (asset: Asset) => void
+
+/**
  * Sym. deposit fees
  *
  */
@@ -91,6 +111,19 @@ export type SaverDepositParams = {
   readonly sender: Address
   readonly walletAccount: number
   readonly walletIndex: number
+  readonly walletType: WalletType
+  readonly hdMode: HDMode
+  readonly dex: Dex
+}
+
+export type BorrowerDepositParams = {
+  readonly poolAddress: PoolAddress
+  readonly asset: Asset
+  readonly amount: BaseAmount
+  readonly memo: string
+  readonly sender: Address
+  readonly walletIndex: number
+  readonly walletAccount: number
   readonly walletType: WalletType
   readonly hdMode: HDMode
   readonly dex: Dex
@@ -233,6 +266,24 @@ export type SaverDepositState$ = Rx.Observable<SaverDepositState>
 
 export type SaverDepositStateHandler = (p: SaverDepositParams) => SaverDepositState$
 
+/**
+ * State to reflect status of a borrowers deposit by doing different requests
+ */
+export type BorrowerDepositState = {
+  // Number of current step
+  readonly step: number
+  // Constant total amount of steps
+  readonly stepsTotal: 3
+  // deposit transaction
+  readonly depositTx: TxHashRD
+  // RD of all requests
+  readonly deposit: RD.RemoteData<ApiError, boolean>
+}
+
+export type BorrowerDepositState$ = Rx.Observable<BorrowerDepositState>
+
+export type BorrowerDepositStateHandler = (p: BorrowerDepositParams) => BorrowerDepositState$
+
 export type SymDepositValidationResult = { pool: boolean; node: boolean }
 export type SymDepositTxs = { rune: TxHashRD; asset: TxHashRD }
 export type SymDepositFinalityResult = { rune: Tx; asset: Tx }
@@ -332,6 +383,10 @@ export type SaverWithdrawParams = {
 }
 
 export type SaverWithdrawStateHandler = (p: SaverWithdrawParams) => WithdrawState$
+
+export type RepayLoanParams = {}
+
+export type RepayLoanStateHandler = (p: SaverWithdrawParams) => WithdrawState$
 
 /**
  * State to reflect status for sending

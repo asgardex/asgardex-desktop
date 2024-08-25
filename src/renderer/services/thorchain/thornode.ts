@@ -15,9 +15,25 @@ import {
   Saver,
   SaversApi,
   TransactionsApi,
-  TxStagesResponse
+  TxStagesResponse,
+  BorrowersApi,
+  Borrower,
+  PoolsApi,
+  Pool,
+  QuoteApi,
+  QuoteLoanOpenResponse,
+  QuoteLoanCloseResponse
 } from '@xchainjs/xchain-thornode'
-import { Address, Asset, assetFromString, assetToString, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
+import {
+  Address,
+  Asset,
+  assetFromString,
+  assetFromStringEx,
+  assetToString,
+  BaseAmount,
+  baseAmount,
+  bnOrZero
+} from '@xchainjs/xchain-util'
 import { AxiosResponse } from 'axios'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
@@ -53,6 +69,15 @@ import {
   InboundAddress,
   TxStagesLD,
   TxStages,
+  BorrowerProviderLD,
+  BorrowerProvider,
+  ThorchainPoolLD,
+  ThorchainPool,
+  LoanOpenQuoteLD,
+  LoanOpenQuote,
+  BlockInformation,
+  LoanCloseQuote,
+  LoanCloseQuoteLD,
   NodeStatusEnum
 } from './types'
 
@@ -450,6 +475,364 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       RxOp.startWith(RD.pending)
     )
 
+  const apiGetThorchainPool$ = (asset: Asset): LiveData<Error, Pool> =>
+    FP.pipe(
+      thornodeUrl$,
+      liveData.chain((basePath) =>
+        FP.pipe(
+          Rx.from(new PoolsApi(getThornodeAPIConfiguration(basePath)).pool(assetToString(asset))),
+          RxOp.map((response: AxiosResponse<Pool>) => RD.success(response.data)), // Extract data from AxiosResponse
+          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+        )
+      ),
+      RxOp.startWith(RD.pending)
+    )
+  const { stream$: reloadThorchainPool$, trigger: reloadThorchainPool } = triggerStream()
+
+  const getThorchainPool$ = (asset: Asset): ThorchainPoolLD =>
+    FP.pipe(
+      reloadThorchainPool$,
+      RxOp.debounceTime(300),
+      RxOp.switchMap((_) => apiGetThorchainPool$(asset)),
+      liveData.map(
+        // transform pool -> ThorchainPool
+        (pool): ThorchainPool => {
+          const {
+            asset,
+            short_code,
+            status,
+            decimals,
+            pending_inbound_asset,
+            pending_inbound_rune,
+            balance_asset,
+            balance_rune,
+            pool_units,
+            LP_units,
+            synth_units,
+            synth_supply,
+            savers_depth,
+            savers_units,
+            loan_collateral,
+            loan_collateral_remaining,
+            loan_cr
+          } = pool
+          /* 1e8 decimal by default, which is default decimal for ALL accets at THORChain  */
+          const poolAsset = assetFromStringEx(asset)
+          const shortCode = short_code ? short_code : ''
+          const assetDecimal = Number(decimals)
+          const pendingInboundAsset = baseAmount(pending_inbound_asset, THORCHAIN_DECIMAL)
+          const pendingInboundRune = baseAmount(pending_inbound_rune, THORCHAIN_DECIMAL)
+          const balanceAsset = baseAmount(balance_asset, THORCHAIN_DECIMAL)
+          const balanceRune = baseAmount(balance_rune, THORCHAIN_DECIMAL)
+          const synthSupply = baseAmount(synth_supply, THORCHAIN_DECIMAL)
+          const saversDepth = baseAmount(savers_depth, THORCHAIN_DECIMAL)
+          const loanCollateral = baseAmount(loan_collateral, THORCHAIN_DECIMAL)
+          const loanCollateralRemaining = baseAmount(loan_collateral_remaining, THORCHAIN_DECIMAL)
+
+          return {
+            asset: poolAsset,
+            shortCode,
+            status: status,
+            decimals: assetDecimal,
+            pendingInboundAsset,
+            pendingInboundRune,
+            balanceAsset,
+            balanceRune,
+            poolUnits: pool_units,
+            lpUnits: LP_units,
+            synthUnits: synth_units,
+            synthSupply,
+            saversDepth,
+            saversUnits: savers_units,
+            loanCollateral,
+            loanCollateralRemaining,
+            loanCr: Number(loan_cr)
+          }
+        }
+      ),
+      RxOp.catchError(
+        (): ThorchainPoolLD => Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} borrower`)))
+      ),
+      RxOp.startWith(RD.pending)
+    )
+
+  const apiGetBorrowerProvider$ = (asset: Asset, address: Address): LiveData<Error, Borrower> =>
+    FP.pipe(
+      thornodeUrl$,
+      liveData.chain((basePath) =>
+        FP.pipe(
+          Rx.from(new BorrowersApi(getThornodeAPIConfiguration(basePath)).borrower(assetToString(asset), address)),
+          RxOp.map((response: AxiosResponse<Borrower>) => RD.success(response.data)), // Extract data from AxiosResponse
+          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+        )
+      ),
+      RxOp.startWith(RD.pending)
+    )
+  const { stream$: reloadBorrowerProvider$, trigger: reloadBorrowerProvider } = triggerStream()
+
+  const getBorrowerProvider$ = (asset: Asset, address: Address, walletType?: WalletType): BorrowerProviderLD =>
+    FP.pipe(
+      reloadBorrowerProvider$,
+      RxOp.debounceTime(300),
+      RxOp.switchMap((_) => apiGetBorrowerProvider$(asset, address)),
+      liveData.map(
+        // transform Borrower -> BorrowerProvider
+        (provider): BorrowerProvider => {
+          const {
+            debt_issued,
+            debt_repaid,
+            debt_current,
+            collateral_deposited,
+            collateral_withdrawn,
+            collateral_current,
+            last_open_height,
+            last_repay_height
+          } = provider
+          /* 1e8 decimal by default, which is default decimal for ALL accets at THORChain  */
+          const debtIssued = baseAmount(debt_issued, THORCHAIN_DECIMAL)
+          const debtRepaid = baseAmount(debt_repaid, THORCHAIN_DECIMAL)
+          const debtCurrent = baseAmount(debt_current, THORCHAIN_DECIMAL)
+          const collateralDeposited = baseAmount(collateral_deposited, THORCHAIN_DECIMAL)
+          const collateralWithdrawn = baseAmount(collateral_withdrawn, THORCHAIN_DECIMAL)
+          const collateralCurrent = baseAmount(collateral_current, THORCHAIN_DECIMAL)
+          const lastOpenHeight = FP.pipe(last_open_height, O.fromPredicate(N.isNumber))
+          const lastRepayHeight = FP.pipe(last_repay_height, O.fromPredicate(N.isNumber))
+          return {
+            owner: provider.owner,
+            asset,
+            debtIssued,
+            debtRepaid,
+            debtCurrent,
+            collateralDeposited,
+            collateralWithdrawn,
+            collateralCurrent,
+            lastOpenHeight,
+            lastRepayHeight,
+            walletType
+          }
+        }
+      ),
+      RxOp.catchError(
+        (): BorrowerProviderLD => Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} borrower`)))
+      ),
+      RxOp.startWith(RD.pending)
+    )
+  const apiGetLoanQuoteOpen$ = (
+    asset: Asset,
+    amount: BaseAmount,
+    targetAsset: Asset,
+    destination: string,
+    minOut?: string,
+    affiliateBps?: number,
+    affiliate?: string,
+    height?: number
+  ): LiveData<Error, QuoteLoanOpenResponse> =>
+    FP.pipe(
+      thornodeUrl$,
+      liveData.chain((basePath) =>
+        FP.pipe(
+          Rx.from(
+            new QuoteApi(getThornodeAPIConfiguration(basePath)).quoteloanopen(
+              height,
+              assetToString(asset),
+              amount.amount().toNumber(),
+              assetToString(targetAsset),
+              destination,
+              minOut,
+              affiliateBps,
+              affiliate
+            )
+          ),
+          RxOp.map((response: AxiosResponse<QuoteLoanOpenResponse>) => RD.success(response.data)), // Extract data from AxiosResponse
+          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+        )
+      ),
+      RxOp.startWith(RD.pending)
+    )
+  const { stream$: reloadLoanQuoteOpen$, trigger: reloadLoanQuoteOpen } = triggerStream()
+
+  const getLoanQuoteOpen$ = (
+    asset: Asset,
+    amount: BaseAmount,
+    targetAsset: Asset,
+    destination: string,
+    minOut?: string,
+    affiliateBps?: number,
+    affiliate?: string,
+    height?: number
+  ): LoanOpenQuoteLD =>
+    FP.pipe(
+      reloadLoanQuoteOpen$,
+      RxOp.debounceTime(300),
+      RxOp.switchMap((_) =>
+        apiGetLoanQuoteOpen$(asset, amount, targetAsset, destination, minOut, affiliateBps, affiliate, height)
+      ),
+      liveData.map(
+        // transform quote -> quoteType
+        (quote): LoanOpenQuote => {
+          const {
+            inbound_address,
+            inbound_confirmation_blocks,
+            inbound_confirmation_seconds,
+            outbound_delay_blocks,
+            outbound_delay_seconds,
+            fees,
+            router,
+            expiry,
+            warning,
+            notes,
+            dust_threshold,
+            recommended_min_amount_in,
+            memo,
+            expected_amount_out,
+            expected_collateralization_ratio,
+            expected_collateral_deposited,
+            expected_debt_issued,
+            total_open_loan_seconds
+          } = quote
+          /* 1e8 decimal by default, which is default decimal for ALL accets at THORChain  */
+          const expectedWait: BlockInformation = {
+            inboundConfirmationBlocks: inbound_confirmation_blocks,
+            inboundConfirmationSeconds: inbound_confirmation_seconds,
+            outboundDelayBlocks: outbound_delay_blocks,
+            outbondDelaySeconds: outbound_delay_seconds
+          }
+          const recommendedMinAmountIn = baseAmount(
+            recommended_min_amount_in ? recommended_min_amount_in : 0,
+            THORCHAIN_DECIMAL
+          )
+          const expectedAmountOut = baseAmount(expected_amount_out, THORCHAIN_DECIMAL)
+
+          return {
+            inboundAddress: inbound_address ? inbound_address : '',
+            expectedWaitTime: expectedWait,
+            fees,
+            router,
+            expiry,
+            warning,
+            notes,
+            dustThreshold: dust_threshold,
+            recommendedMinAmountIn,
+            memo: memo ? memo : '',
+            expectedAmountOut,
+            expectedCollateralizationRatio: expected_collateralization_ratio,
+            expectedCollateralDeposited: expected_collateral_deposited,
+            expectedDebtIssued: expected_debt_issued,
+            totalOpenLoanSeconds: total_open_loan_seconds
+          }
+        }
+      ),
+      RxOp.catchError(
+        (): LoanOpenQuoteLD => Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} loan open`)))
+      ),
+      RxOp.startWith(RD.pending)
+    )
+  const apiGetLoanQuoteClose$ = (
+    fromAsset: Asset,
+    repayBps: number,
+    targetAsset: Asset,
+    loanOwner: string,
+    minOut?: string,
+    height?: number
+  ): LiveData<Error, QuoteLoanCloseResponse> =>
+    FP.pipe(
+      thornodeUrl$,
+      liveData.chain((basePath) =>
+        FP.pipe(
+          Rx.from(
+            new QuoteApi(getThornodeAPIConfiguration(basePath)).quoteloanclose(
+              height,
+              assetToString(fromAsset),
+              repayBps,
+              assetToString(targetAsset),
+              loanOwner,
+              minOut
+            )
+          ),
+          RxOp.map((response: AxiosResponse<QuoteLoanCloseResponse>) => RD.success(response.data)), // Extract data from AxiosResponse
+          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+        )
+      ),
+      RxOp.startWith(RD.pending)
+    )
+  const { stream$: reloadLoanQuoteClose$, trigger: reloadLoanQuoteClose } = triggerStream()
+
+  const getLoanQuoteClose$ = (
+    asset: Asset,
+    repayBps: number,
+    targetAsset: Asset,
+    loanOwner: string,
+    minOut?: string,
+    height?: number
+  ): LoanCloseQuoteLD =>
+    FP.pipe(
+      reloadLoanQuoteClose$,
+      RxOp.debounceTime(300),
+      RxOp.switchMap((_) => apiGetLoanQuoteClose$(asset, repayBps, targetAsset, loanOwner, minOut, height)),
+      liveData.map(
+        // transform quote -> quoteType
+        (quote): LoanCloseQuote => {
+          const {
+            inbound_address,
+            inbound_confirmation_blocks,
+            inbound_confirmation_seconds,
+            outbound_delay_blocks,
+            outbound_delay_seconds,
+            fees,
+            router,
+            expiry,
+            warning,
+            notes,
+            dust_threshold,
+            recommended_min_amount_in,
+            recommended_gas_rate,
+            memo,
+            expected_amount_out,
+            expected_amount_in,
+            expected_collateral_withdrawn,
+            expected_debt_repaid,
+            total_repay_seconds
+          } = quote
+          /* 1e8 decimal by default, which is default decimal for ALL accets at THORChain  */
+          const expectedWait: BlockInformation = {
+            inboundConfirmationBlocks: inbound_confirmation_blocks,
+            inboundConfirmationSeconds: inbound_confirmation_seconds,
+            outboundDelayBlocks: outbound_delay_blocks,
+            outbondDelaySeconds: outbound_delay_seconds
+          }
+          const recommendedMinAmountIn = baseAmount(
+            recommended_min_amount_in ? recommended_min_amount_in : 0,
+            THORCHAIN_DECIMAL
+          )
+          const expectedAmountOut = baseAmount(expected_amount_out, THORCHAIN_DECIMAL)
+          const expectedAmountIn = baseAmount(expected_amount_in, THORCHAIN_DECIMAL)
+
+          return {
+            inboundAddress: inbound_address ? inbound_address : '',
+            expectedWaitTime: expectedWait,
+            fees,
+            router,
+            expiry,
+            warning,
+            notes,
+            dustThreshold: dust_threshold,
+            recommendedMinAmountIn,
+            reccommendedGasRate: recommended_gas_rate ? recommended_gas_rate : '',
+            memo: memo ? memo : '',
+            expectedAmountOut,
+            expectedAmountIn,
+            expectedCollateralWithdrawn: expected_collateral_withdrawn,
+            expectedDebtRepaid: expected_debt_repaid,
+            totalRepaymentSeconds: total_repay_seconds
+          }
+        }
+      ),
+      RxOp.catchError(
+        (): LoanCloseQuoteLD => Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} loan open`)))
+      ),
+      RxOp.startWith(RD.pending)
+    )
+
   return {
     thornodeUrl$,
     reloadThornodeUrl,
@@ -468,7 +851,15 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     reloadLiquidityProviders,
     getSaverProvider$,
     reloadSaverProvider,
+    getBorrowerProvider$,
+    reloadBorrowerProvider,
     getTxStatus$,
-    reloadTxStatus
+    reloadTxStatus,
+    getThorchainPool$,
+    reloadThorchainPool,
+    getLoanQuoteOpen$,
+    reloadLoanQuoteOpen,
+    getLoanQuoteClose$,
+    reloadLoanQuoteClose
   }
 }

@@ -107,6 +107,11 @@ const common: CommonMessages = {
   'common.completeLp': 'выполнить ЛП',
   'common.swap': 'Обмен',
   'common.savers': 'Сбережения',
+  'common.lending': 'Кредитование',
+  'common.borrow': 'Занимать',
+  'common.repay': 'Погашать',
+  'common.collateral': 'Залог',
+  'common.debt': 'Долг',
   'common.earn': 'Заработок',
   'common.liquidity': 'Ликвидность',
   'common.withdraw': 'Вывести',
@@ -177,7 +182,8 @@ const common: CommonMessages = {
   'common.legacy': 'Устаревший',
   'common.ledgerlive': 'Ledger Live',
   'common.metamask': 'MetaMask',
-  'common.unknown': 'Неизвестен'
+  'common.unknown': 'Неизвестен',
+  'common.featureUnderDevelopment': 'Функция в разработке, не использовать'
 }
 
 export default common

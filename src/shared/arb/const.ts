@@ -22,8 +22,9 @@ export const DEPOSIT_EXPIRATION_OFFSET = 15 * 60 // 15min in seconds
 export const ArbZeroAddress = '0x0000000000000000000000000000000000000000'
 
 // =====Ethers providers=====
-const ARBITRUM_MAINNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider('https://rpc.ankr.com/arbitrum')
-const ARBITRUM_TESTNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider('https://rpc.ankr.com/arbitrum_sepolia')
+// Define JSON-RPC providers for mainnet and testnet
+const ARBITRUM_MAINNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider('https://arb1.arbitrum.io/rpc')
+const ARBITRUM_TESTNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider('https://goerli-rollup.arbitrum.io/rpc')
 
 const ethersJSProviders = {
   [Network.Mainnet]: ARBITRUM_MAINNET_ETHERS_PROVIDER,
@@ -35,7 +36,7 @@ const ethersJSProviders = {
 
 const ARB_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
   ARBITRUM_TESTNET_ETHERS_PROVIDER,
-  'https://api-sepolia.arbiscan.io',
+  'https://api-goerli.arbiscan.io',
   envOrDefault(process.env.REACT_APP_ARBISCAN_API_KEY, ''),
   ARBChain,
   AssetAETH,
@@ -79,15 +80,16 @@ const routescanProviders = {
 // =====ONLINE providers=====
 
 // =====Explorers=====
+// Define explorer providers for mainnet and testnet
 const ARB_MAINNET_EXPLORER = new ExplorerProvider(
   'https://arbiscan.io/',
   'https://arbiscan.io/address/%%ADDRESS%%',
   'https://arbiscan.io/tx/%%TX_ID%%'
 )
 const ARB_TESTNET_EXPLORER = new ExplorerProvider(
-  'https://sepolia.arbiscan.io/',
-  'https://sepolia.arbiscan.io/address/%%ADDRESS%%',
-  'https://sepolia.arbiscan.io/tx/%%TX_ID%%'
+  'https://goerli.arbiscan.io',
+  'https://goerli.arbiscan.io/address/%%ADDRESS%%',
+  'https://goerli.arbiscan.io/tx/%%TX_ID%%'
 )
 const arbExplorerProviders = {
   [Network.Mainnet]: ARB_MAINNET_EXPLORER,
@@ -107,21 +109,22 @@ const defaults = {
     approveGasLimit: BigNumber.from(200000),
     transferGasAssetGasLimit: BigNumber.from(23000),
     transferTokenGasLimit: BigNumber.from(100000),
-    gasPrice: BigNumber.from(30)
+    gasPrice: BigNumber.from(0.2 * 10 ** 9)
   },
   [Network.Testnet]: {
     approveGasLimit: BigNumber.from(200000),
     transferGasAssetGasLimit: BigNumber.from(23000),
     transferTokenGasLimit: BigNumber.from(100000),
-    gasPrice: BigNumber.from(30)
+    gasPrice: BigNumber.from(0.2 * 10 ** 9)
   },
   [Network.Stagenet]: {
     approveGasLimit: BigNumber.from(200000),
     transferGasAssetGasLimit: BigNumber.from(23000),
     transferTokenGasLimit: BigNumber.from(100000),
-    gasPrice: BigNumber.from(30)
+    gasPrice: BigNumber.from(0.2 * 10 ** 9)
   }
 }
+
 export const defaultArbParams: EVMClientParams = {
   chain: ARBChain,
   gasAsset: AssetAETH,
