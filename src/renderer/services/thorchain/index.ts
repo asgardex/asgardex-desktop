@@ -36,8 +36,16 @@ const {
   reloadLiquidityProviders,
   getSaverProvider$,
   reloadSaverProvider,
+  getBorrowerProvider$,
+  reloadBorrowerProvider,
   getTxStatus$,
-  reloadTxStatus
+  reloadTxStatus,
+  getThorchainPool$,
+  reloadThorchainPool,
+  getLoanQuoteOpen$,
+  reloadLoanQuoteOpen,
+  getLoanQuoteClose$,
+  reloadLoanQuoteClose
 } = createThornodeService$(network$, clientUrl$)
 
 const { txs$, tx$, txStatus$, subscribeTx, resetTx, sendTx, txRD$, sendPoolTx$ } = createTransactionService(
@@ -91,6 +99,14 @@ export {
   reloadLiquidityProviders,
   getSaverProvider$,
   reloadSaverProvider,
+  getBorrowerProvider$,
+  reloadBorrowerProvider,
   getTxStatus$,
-  reloadTxStatus
+  reloadTxStatus,
+  getThorchainPool$,
+  reloadThorchainPool,
+  getLoanQuoteOpen$,
+  reloadLoanQuoteOpen,
+  getLoanQuoteClose$,
+  reloadLoanQuoteClose
 }

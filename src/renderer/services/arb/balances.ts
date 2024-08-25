@@ -44,11 +44,11 @@ const balances$: ({
   return FP.pipe(
     userAssets$,
     switchMap((assets) => {
-      const avaxAssets = assets.filter((asset) => asset.chain === ARBChain)
+      const arbAssets = assets.filter((asset) => asset.chain === ARBChain)
       return C.balances$({
         client$,
         trigger$: reloadBalances$,
-        assets: avaxAssets,
+        assets: arbAssets,
         walletType,
         walletAccount,
         walletIndex,

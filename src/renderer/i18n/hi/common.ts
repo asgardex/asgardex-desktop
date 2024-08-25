@@ -107,6 +107,11 @@ const common: CommonMessages = {
   'common.completeLp': 'सामान्य Lp पूरा करें',
   'common.swap': 'स्वैप',
   'common.savers': 'बचत',
+  'common.lending': 'ऋण',
+  'common.borrow': 'उधार लेना',
+  'common.repay': 'वापस करना',
+  'common.collateral': 'बंधक',
+  'common.debt': 'ऋण',
   'common.earn': 'कमाई',
   'common.liquidity': 'तरलता',
   'common.withdraw': 'निकासी',
@@ -176,6 +181,7 @@ const common: CommonMessages = {
   'common.legacy': 'पुराना',
   'common.ledgerlive': 'लेजर लाइव',
   'common.metamask': 'मेटामास्क',
-  'common.unknown': 'अज्ञात'
+  'common.unknown': 'अज्ञात',
+  'common.featureUnderDevelopment': 'विकासाधीन सुविधा, उपयोग न करें'
 }
 export default common

@@ -381,17 +381,16 @@ const SuccessRouteView: React.FC<Props> = ({
           RD.fold(
             () => <></>,
             () => {
-              // Note: Ensure that `sourceAsset` and `targetAsset` are defined in your component's scope
               const mockAssetSource: SwapAsset = {
                 asset: sourceAsset,
-                decimal: 18, // Assuming 18 as a placeholder, replace with actual decimal value
-                price: baseAmount(0).amount() // Using BigNumber constructor
+                decimal: 18,
+                price: baseAmount(0).amount()
               }
 
               const mockAssetTarget: SwapAsset = {
                 asset: targetAsset,
-                decimal: 18, // Assuming 18 as a placeholder, replace with actual decimal value
-                price: baseAmount(0).amount() // Using BigNumber constructor
+                decimal: 18,
+                price: baseAmount(0).amount()
               }
 
               return (

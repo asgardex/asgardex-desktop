@@ -3,6 +3,11 @@
 ## Updates/Fixes
 
 - Update whitelists for evm [#325](https://github.com/asgardex/asgardex-desktop/pull/326)
+- Update Arb consts
+
+## Add
+
+- Lending UI [#10] (https://github.com/asgardex/asgardex-desktop/pull/286)
 
 # 1.22.1 (2024-08-15)
 

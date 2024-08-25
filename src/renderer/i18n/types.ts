@@ -105,8 +105,13 @@ export type CommonMessageKey =
   | 'common.swap'
   | 'common.chainDisabled'
   | 'common.savers'
+  | 'common.lending'
+  | 'common.borrow'
+  | 'common.repay'
   | 'common.earn'
   | 'common.liquidity'
+  | 'common.collateral'
+  | 'common.debt'
   | 'common.withdraw'
   | 'common.approve'
   | 'common.accept'
@@ -177,6 +182,7 @@ export type CommonMessageKey =
   | 'common.ledgerlive'
   | 'common.metamask'
   | 'common.unknown'
+  | 'common.featureUnderDevelopment'
 
 export type CommonMessages = {
   [key in CommonMessageKey]: string
@@ -560,6 +566,36 @@ type SaversMessageKey =
 
 export type SaversMessages = { [key in SaversMessageKey]: string }
 
+type LoanMessageKey =
+  | 'loan.noLoans'
+  | 'loan.openLoan'
+  | 'loan.closeLoan'
+  | 'loan.detail.title'
+  | 'loan.detail.debt.current'
+  | 'loan.detail.debt.issued'
+  | 'loan.detail.collateral.deposited'
+  | 'loan.detail.collateral.current'
+  | 'loan.detail.collateral.withdrawn'
+  | 'loan.detail.age'
+  | 'loan.detail.lastRepay'
+  | 'loan.detail.repayed'
+  | 'loan.detail.assetAmount'
+  | 'loan.detail.collaterizationRatio'
+  | 'loan.info.max.loan.value'
+  | 'loan.info.max.balance'
+  | 'loan.borrow.state.sending'
+  | 'loan.borrow.state.checkResults'
+  | 'loan.borrow.state.pending'
+  | 'loan.borrow.state.success'
+  | 'loan.borrow.state.error'
+  | 'loan.repay.state.sending'
+  | 'loan.repay.state.checkResults'
+  | 'loan.repay.state.pending'
+  | 'loan.repay.state.success'
+  | 'loan.repay.state.error'
+
+export type LoanMessages = { [key in LoanMessageKey]: string }
+
 export type HaltMessageKey =
   | 'halt.thorchain'
   | 'halt.trading'
@@ -580,6 +616,7 @@ export type Messages = CommonMessages &
   SwapMessages &
   DepositMessages &
   SaversMessages &
+  LoanMessages &
   LedgerMessages &
   BondsMessages &
   PoolSharesMessage &
