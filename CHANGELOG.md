@@ -4,6 +4,7 @@
 
 - Update whitelists for evm [#325](https://github.com/asgardex/asgardex-desktop/pull/326)
 - Update Arb consts
+- Update bonding tools [#327] (https://github.com/asgardex/asgardex-desktop/pull/330)
 
 ## Add
 
