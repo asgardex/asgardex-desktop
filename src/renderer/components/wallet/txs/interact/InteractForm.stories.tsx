@@ -104,8 +104,6 @@ const Template = ({ interactType, txRDStatus, feeRDStatus, balance, validAddress
       }}
       getExplorerTxUrl={(txHash: TxHash) => O.some(`url/asset-${txHash}`)}
       poolDetails={[]}
-      nodeAddress=""
-      bondAmount=""
       nodes={RD.success(nodesList.map((address) => mockNodeInfo(address)))}
     />
   )

@@ -5,7 +5,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { Client as MayachainClient } from '@xchainjs/xchain-mayachain'
 import { Client as ThorchainClient, THORChain, AssetRuneNative } from '@xchainjs/xchain-thorchain'
-import { Address, BaseAmount, Chain } from '@xchainjs/xchain-util'
+import { Address, Chain } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
@@ -160,7 +160,7 @@ export const BondsView: React.FC = (): JSX.Element => {
   )
 
   const routeToAction = useCallback(
-    (action: string, node: string, bond: BaseAmount) => {
+    (action: string, node: string) => {
       const networkPrefix = network === 'mainnet' ? '' : 's'
       const nodeChain = node.startsWith(`${networkPrefix}thor`) ? THORChain : MAYAChain
       const selectedAssetBalance = allBalances.filter((balance) => balance.asset.chain === nodeChain)
@@ -176,9 +176,7 @@ export const BondsView: React.FC = (): JSX.Element => {
         })
       )
       const path = walletRoutes.bondInteract.path({
-        interactType: action,
-        nodeAddress: node,
-        bondAmount: `${bond.amount().toString()}`
+        interactType: action
       })
       navigate(path)
     },
