@@ -48,9 +48,10 @@ export const getLoansTableRowData = ({
       const collateral = baseAmount(poolDetail.totalCollateral)
       const collateralPrice = getValueOfAsset1InAsset2(collateral, poolData, pricePoolData)
       const debt = baseAmount(poolDetail.totalDebtTor)
-      //tobefixed
-      const filled = bnOrZero(poolDetail.totalCollateral).times(100).div(0)
 
+      const filled = bnOrZero(poolDetail.totalCollateral).times(100).div(0)
+      // current supply -> 500 mil - circ supply * 33%
+      // add pool depths btc & eth / btc depth in rune
       const watched: boolean = FP.pipe(
         watchlist,
         A.findFirst((poolInList) => eqAsset.equals(poolInList, poolDetailAsset)),

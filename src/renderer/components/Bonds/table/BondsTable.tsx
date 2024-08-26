@@ -177,7 +177,8 @@ export const BondsTable: React.FC<Props> = ({
   useEffect(() => {
     const chains: (keyof typeof walletAddresses)[] = ['THOR', 'MAYA']
 
-    let matchedKey: string | undefined // Initialize matchedKey as undefined
+    // Initialize an array to store all matched keys
+    const matchedKeys: string[] = []
 
     for (const node of nodes) {
       const isMatchFound = node.bondProviders.providers.some((provider) =>
@@ -194,14 +195,13 @@ export const BondsTable: React.FC<Props> = ({
       )
 
       if (isMatchFound) {
-        matchedKey = node.address
-        break
+        matchedKeys.push(node.address)
       }
     }
 
-    if (matchedKey) {
-      setMatchedNodeAddress(matchedKey)
-      setExpandedRowKeys([matchedKey])
+    if (matchedKeys.length > 0) {
+      setMatchedNodeAddress(matchedKeys[0])
+      setExpandedRowKeys(matchedKeys)
     } else {
       setMatchedNodeAddress('')
       setExpandedRowKeys([])

@@ -649,10 +649,25 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     // clean address
     form.setFieldsValue({ providerAddress: undefined })
     form.setFieldsValue({ operatorFee: undefined })
+    FP.pipe(
+      feeRD,
+      RD.fold(
+        () => {}, // Handle the initial or loading state
+        () => {}, // Handle the pending state
+        (error) => {
+          console.error('Error calculating fee:', error)
+        },
+        (fee) => {
+          // Calculate the amountToSend
+          const amountToSend = fee.plus(ONE_RUNE_BASE_AMOUNT)
+          setAmountToSend(amountToSend)
+        }
+      )
+    )
     // toggle
     setHasProviderAddress((v) => !v)
     getMemo()
-  }, [form, getMemo])
+  }, [form, getMemo, feeRD])
 
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field

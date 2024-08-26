@@ -38,8 +38,8 @@ const common: CommonMessages = {
   'common.general': 'Allgemein',
   'common.advanced': 'Erweitert',
   'common.privateData': 'Private Daten',
-  'common.enable': 'Aktivieren {chain}',
-  'common.disable': 'Deaktivieren {chain}',
+  'common.enable': '{chain} aktiviert',
+  'common.disable': '{chain} deaktiviert',
   'common.disabledChains': 'Deaktivierte Ketten',
   'common.chainDisabled':
     'Sie haben die {chain}-Kette deaktiviert, bitte aktivieren Sie sie, um mit dem Tausch fortzufahren',
