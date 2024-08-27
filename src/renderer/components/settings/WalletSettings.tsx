@@ -744,8 +744,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                   <SwitchButton active={enabledChains.includes(chain)} onChange={() => toggleChain(chain)} />
                   <span className="ml-2 text-text0 dark:text-text0d">
                     {enabledChains.includes(chain)
-                      ? intl.formatMessage({ id: 'common.disable' }, { chain: chain })
-                      : intl.formatMessage({ id: 'common.enable' }, { chain: chain })}
+                      ? intl.formatMessage({ id: 'common.enable' }, { chain: chain })
+                      : intl.formatMessage({ id: 'common.disable' }, { chain: chain })}
                   </span>
                 </div>
                 {(chain === ETHChain || chain === AVAXChain || chain === BSCChain || chain === ARBChain) && (

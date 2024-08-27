@@ -6,7 +6,7 @@ import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -37,15 +37,8 @@ import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../servic
 import { SelectedWalletAssetRD } from '../../../services/wallet/types'
 import * as Styled from './InteractView.styles'
 
-function useQuery() {
-  return new URLSearchParams(useLocation().search)
-}
-
 export const InteractViewTHOR: React.FC = () => {
   const { interactType: routeInteractType } = useParams<walletRoutes.BondParams>()
-
-  const nodeAddress = useQuery().get('nodeAddress')
-  const bondAmount = useQuery().get('bondAmount')
 
   const { selectedAsset$ } = useWalletContext()
   const [selectedAssetRD] = useObservableState<SelectedWalletAssetRD>(
@@ -215,8 +208,6 @@ export const InteractViewTHOR: React.FC = () => {
                       thorchainQuery={thorchainQuery}
                       network={network}
                       poolDetails={poolDetails}
-                      nodeAddress={nodeAddress}
-                      bondAmount={bondAmount}
                       nodes={nodeInfos}
                     />
                   </Interact>

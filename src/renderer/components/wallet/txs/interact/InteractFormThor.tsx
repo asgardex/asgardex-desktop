@@ -70,6 +70,11 @@ type FormValues = {
   preferredAsset: string
   expiry: number
 }
+type UserNodeInfo = {
+  nodeAddress: string
+  walletAddress: string
+  bondAmount: BaseAmount
+}
 
 type Props = {
   interactType: InteractType
@@ -88,8 +93,6 @@ type Props = {
   thorchainQuery: ThorchainQuery
   network: Network
   poolDetails: PoolDetails
-  nodeAddress: string | null
-  bondAmount: string | null
   nodes: NodeInfosRD
 }
 export const InteractFormThor: React.FC<Props> = (props) => {
@@ -110,17 +113,17 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     validatePassword$,
     thorchainQuery,
     network,
-    nodeAddress,
-    bondAmount,
     nodes: nodesRD
   } = props
   const intl = useIntl()
 
   const { asset } = balance
+  const { walletAddress } = balance
   const pricePool = usePricePool()
 
   const [hasProviderAddress, setHasProviderAddress] = useState(false)
 
+  const [userNodeInfo, setUserNodeInfo] = useState<UserNodeInfo | undefined>(undefined)
   const [_amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
 
   const nodes: NodeInfos = useMemo(
@@ -131,6 +134,31 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       ),
     [nodesRD]
   )
+
+  useEffect(() => {
+    let foundNodeInfo: UserNodeInfo | undefined = undefined
+
+    for (const node of nodes) {
+      const matchingProvider = node.bondProviders.providers.find((provider) => walletAddress === provider.bondAddress)
+
+      if (matchingProvider) {
+        // If a matching provider is found, set the UserNodeInfo state
+        foundNodeInfo = {
+          nodeAddress: node.address,
+          walletAddress: matchingProvider.bondAddress,
+          bondAmount: matchingProvider.bond
+        }
+        break // Exit the loop after finding the first match
+      }
+    }
+
+    if (foundNodeInfo) {
+      setUserNodeInfo(foundNodeInfo)
+    } else {
+      setUserNodeInfo(undefined) // Reset the state if no match is found
+    }
+  }, [nodes, walletAddress]) // Re-run the effect if nodes or walletAddress changes
+
   const [memo, setMemo] = useState<string>('')
   const amountToSend = useMemo(() => {
     switch (interactType) {
@@ -221,14 +249,20 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       FP.pipe(
         oFee,
         O.fold(
-          // Set maxAmount to zero if we dont know anything about fees
           () => ZERO_BASE_AMOUNT,
           (fee) => {
-            return balance.amount.minus(fee.plus(ONE_RUNE_BASE_AMOUNT))
+            if (interactType === 'unbond') {
+              let maxAmountBalOrBond: BaseAmount = ZERO_BASE_AMOUNT
+              maxAmountBalOrBond = userNodeInfo ? userNodeInfo.bondAmount : ZERO_BASE_AMOUNT
+              return maxAmountBalOrBond
+            } else {
+              // For other interaction types, use the balance amount
+              return balance.amount.minus(fee.plus(ONE_RUNE_BASE_AMOUNT))
+            }
           }
         )
       ),
-    [oFee, balance.amount]
+    [oFee, interactType, userNodeInfo, balance.amount]
   )
 
   const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(maxAmount, asset)) // Initial state can be null or a suitable default
@@ -649,10 +683,25 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     // clean address
     form.setFieldsValue({ providerAddress: undefined })
     form.setFieldsValue({ operatorFee: undefined })
+    FP.pipe(
+      feeRD,
+      RD.fold(
+        () => {}, // Handle the initial or loading state
+        () => {}, // Handle the pending state
+        (error) => {
+          console.error('Error calculating fee:', error)
+        },
+        (fee) => {
+          // Calculate the amountToSend
+          const amountToSend = fee.plus(ONE_RUNE_BASE_AMOUNT)
+          setAmountToSend(amountToSend)
+        }
+      )
+    )
     // toggle
     setHasProviderAddress((v) => !v)
     getMemo()
-  }, [form, getMemo])
+  }, [form, getMemo, feeRD])
 
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field
@@ -673,9 +722,9 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   }, [interactType, reset])
 
   const [showDetails, setShowDetails] = useState<boolean>(true)
-  const address = nodeAddress ? nodeAddress : ''
+  const address = ''
   const amount = bn(0)
-  const bondBaseAmount = bondAmount ? baseAmount(Number(bondAmount), 8) : baseAmount(0)
+  const bondBaseAmount = userNodeInfo ? userNodeInfo.bondAmount : baseAmount(0)
   return (
     <Styled.Form
       form={form}
@@ -767,8 +816,8 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                     onChange={onChangeInput}
                   />
                 </Styled.FormItem>
-                {/* max. amount button (BOND/CUSTOM only) */}
-                {(interactType === 'bond' || interactType === 'custom') && (
+                {/* max. amount button (BOND/CUSTOM/UNBOND only) */}
+                {(interactType === 'bond' || interactType === 'custom' || interactType === 'unbond') && (
                   <MaxBalanceButton
                     className="mb-10px"
                     color="neutral"
@@ -779,11 +828,15 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                     onChange={() => getMemo()}
                   />
                 )}
-                {nodeAddress && (
+                {userNodeInfo && (
                   <div className="p-4">
                     <div className="ml-[-2px] flex w-full justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
                       {intl.formatMessage({ id: 'common.nodeAddress' })}
-                      <div className="truncate pl-10px font-main text-[12px]">{nodeAddress}</div>
+                      <div className="truncate pl-10px font-main text-[12px]">{userNodeInfo.nodeAddress}</div>
+                    </div>
+                    <div className="ml-[-2px] flex w-full justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                      {intl.formatMessage({ id: 'common.address.self' })}
+                      <div className="truncate pl-10px font-main text-[12px]">{walletAddress}</div>
                     </div>
                     <div className="ml-[-2px] flex w-full justify-between  py-10px font-mainBold text-[14px] text-gray2 dark:text-gray2d">
                       {intl.formatMessage({ id: 'bonds.currentBond' })}

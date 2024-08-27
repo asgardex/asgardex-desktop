@@ -2,15 +2,7 @@ import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import {
-  Asset,
-  assetToString,
-  BaseAmount,
-  baseToAsset,
-  Chain,
-  formatAssetAmountCurrency,
-  formatBN
-} from '@xchainjs/xchain-util'
+import { Asset, assetToString, BaseAmount, baseToAsset, Chain, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { Grid } from 'antd'
 import { ColumnsType, ColumnType } from 'antd/lib/table'
 import BigNumber from 'bignumber.js'
@@ -163,7 +155,7 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
       title: intl.formatMessage({ id: 'pools.filled' }),
       render: ({ filled }: { filled: BigNumber }) => (
         <div className="flex flex-col justify-start">
-          <div className="font-main text-16">{formatBN(filled, 2)}%</div>
+          <div className="font-main text-16">Full</div>
           <div className="relative my-[6px] h-[5px] w-full bg-gray1 dark:bg-gray1d">
             <div
               className="absolute h-[5px] bg-turquoise"

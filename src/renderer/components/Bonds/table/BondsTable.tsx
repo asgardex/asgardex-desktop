@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
-import { Address, baseAmount, BaseAmount } from '@xchainjs/xchain-util'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { THORChain } from '@xchainjs/xchain-thorchain'
+import { Address } from '@xchainjs/xchain-util'
 import { ColumnType } from 'antd/lib/table'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
@@ -20,7 +22,7 @@ type Props = {
   loading?: boolean
   removeNode: (node: Address) => void
   goToNode: (node: Address) => void
-  goToAction: (action: string, node: string, bond: BaseAmount) => void
+  goToAction: (action: string, node: string) => void
   network: Network
   className?: string
   walletAddresses: Record<'THOR' | 'MAYA', WalletAddressInfo[]>
@@ -100,6 +102,16 @@ export const BondsTable: React.FC<Props> = ({
     ],
     [intl, network, goToNode]
   )
+  const networkPrefix = network === 'mainnet' ? '' : 's'
+  const getNodeChain = (address: string) => {
+    if (address.startsWith(`${networkPrefix}maya`)) {
+      return MAYAChain
+    } else if (address.startsWith(`${networkPrefix}thor`)) {
+      return THORChain
+    } else {
+      return null // or throw an error if unexpected format
+    }
+  }
 
   const expandedTableColumns: ColumnType<ProvidersWithStatus>[] = [
     {
@@ -113,11 +125,17 @@ export const BondsTable: React.FC<Props> = ({
       dataIndex: 'action',
       key: 'action',
       render: (_, record) => {
-        const { bondAddress, bond, status, signMembership, nodeAddress } = record
+        const { bondAddress, status, signMembership, nodeAddress } = record
         const isWalletAddress =
           walletAddresses.THOR.some((walletInfo) => walletInfo.address === bondAddress) ||
           walletAddresses.MAYA.some((walletInfo) => walletInfo.address === bondAddress)
 
+        const nodeChain = getNodeChain(bondAddress)
+
+        const matchedAddresses = matchedNodeAddress.filter((address) => {
+          const addressChain = getNodeChain(address)
+          return addressChain === nodeChain
+        })
         const unbondDisabled =
           status === 'Active' || (status === 'Standby' && signMembership && signMembership.includes(nodeAddress))
 
@@ -126,14 +144,14 @@ export const BondsTable: React.FC<Props> = ({
             <TextButton
               disabled={!isWalletAddress}
               size="normal"
-              onClick={() => goToAction('bond', matchedNodeAddress, baseAmount(0))}>
+              onClick={() => goToAction('bond', matchedAddresses[0])}>
               {intl.formatMessage({ id: 'deposit.interact.actions.bond' })}
             </TextButton>
             <div className="flex border-solid border-gray1 dark:border-gray1d">
               <TextButton
                 disabled={!isWalletAddress || unbondDisabled}
                 size="normal"
-                onClick={() => goToAction('unbond', matchedNodeAddress, bond)}>
+                onClick={() => goToAction('unbond', matchedAddresses[0])}>
                 {intl.formatMessage({ id: 'deposit.interact.actions.unbond' })}
               </TextButton>
             </div>
@@ -171,39 +189,40 @@ export const BondsTable: React.FC<Props> = ({
     }
     // Add other columns for the expanded table as needed
   ]
-  const [matchedNodeAddress, setMatchedNodeAddress] = useState<string>('')
+  const [matchedNodeAddress, setMatchedNodeAddress] = useState<string[]>([])
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([])
 
   useEffect(() => {
     const chains: (keyof typeof walletAddresses)[] = ['THOR', 'MAYA']
 
-    let matchedKey: string | undefined // Initialize matchedKey as undefined
+    // Initialize an array to store all matched keys
+    const matchedKeys: string[] = []
 
     for (const node of nodes) {
-      const isMatchFound = node.bondProviders.providers.some((provider) =>
+      node.bondProviders.providers.some((provider) =>
         chains.some((chain) =>
           walletAddresses[chain].some((walletAddress) => {
             const networkPrefix = network === 'mainnet' ? '' : 's'
-            return (
+            const isMatch =
               (walletAddress.address.startsWith(`${networkPrefix}thor`) ||
                 walletAddress.address.startsWith(`${networkPrefix}maya`)) &&
               walletAddress.address === provider.bondAddress
-            )
+
+            if (isMatch) {
+              matchedKeys.push(node.address) // Store each matched key
+            }
+
+            return isMatch // Continue to check all providers and chains
           })
         )
       )
-
-      if (isMatchFound) {
-        matchedKey = node.address
-        break
-      }
     }
 
-    if (matchedKey) {
-      setMatchedNodeAddress(matchedKey)
-      setExpandedRowKeys([matchedKey])
+    if (matchedKeys.length > 0) {
+      setMatchedNodeAddress(matchedKeys)
+      setExpandedRowKeys(matchedKeys) // Expand all matched rows
     } else {
-      setMatchedNodeAddress('')
+      setMatchedNodeAddress([])
       setExpandedRowKeys([])
     }
   }, [network, nodes, walletAddresses])

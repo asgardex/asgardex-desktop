@@ -2764,18 +2764,6 @@ export const Swap = ({
           ) : (
             <></>
           )}
-          {dex.chain === MAYAChain && (
-            // Temp fix, delete when ready
-            <div className="text-12 text-gray2 dark:border-gray1d dark:text-gray2d">
-              <div className="flex pb-4">
-                <div className="rounded text-warning0 dark:text-warning0d">
-                  {targetAsset.synth && (
-                    <>{`Currently mayanode cant handle streaming to synths, please drag interval slider to position 0 for limit swap`}</>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
         </Row>
         <AssetInput
           className="w-full"
