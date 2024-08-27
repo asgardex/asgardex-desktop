@@ -28,6 +28,7 @@ import { useIntl } from 'react-intl'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
+import { isUSDAsset } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
 import { getBondMemo, getLeaveMemo, getUnbondMemo } from '../../../../helpers/memoHelper'
 import { getPoolPriceValue } from '../../../../helpers/poolHelperMaya'
@@ -912,6 +913,17 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
                 }),
                 O.toNullable
               )}
+              <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
+                {intl.formatMessage({ id: 'common.amount' })}
+                <div className="truncate pl-10px font-main text-[12px]">
+                  {formatAssetAmountCurrency({
+                    amount: baseToAsset(_amountToSend), // Find the value of swap slippage
+                    asset: AssetCacao,
+                    decimal: isUSDAsset(AssetCacao) ? 2 : 6,
+                    trimZeros: !isUSDAsset(AssetCacao)
+                  })}
+                </div>
+              </div>
 
               <div className="ml-[-2px] flex w-full items-start pt-10px font-mainBold text-[14px]">
                 {intl.formatMessage({ id: 'common.memo' })}
