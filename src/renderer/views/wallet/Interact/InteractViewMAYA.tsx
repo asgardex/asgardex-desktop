@@ -2,10 +2,12 @@ import React, { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Col, Row } from 'antd'
+import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 import { useNavigate, useParams } from 'react-router-dom'
+import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { ErrorView } from '../../../components/shared/error'
@@ -28,6 +30,9 @@ import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import * as walletRoutes from '../../../routes/wallet'
 import { FeeRD } from '../../../services/chain/types'
+import { getNodeInfos$ } from '../../../services/mayachain'
+import { NodeInfosRD } from '../../../services/mayachain/types'
+import { userNodes$ } from '../../../services/storage/userNodes'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAssetRD } from '../../../services/wallet/types'
@@ -120,6 +125,27 @@ export const InteractViewMAYA: React.FC = () => {
     RD.initial
   )
 
+  const [nodeInfos] = useObservableState<NodeInfosRD>(
+    () =>
+      FP.pipe(
+        Rx.combineLatest([userNodes$, getNodeInfos$]),
+        RxOp.switchMap(([userNodes, nodeInfos]) =>
+          Rx.of(
+            FP.pipe(
+              nodeInfos,
+              RD.map((data) =>
+                FP.pipe(
+                  data,
+                  A.filter(({ address }) => userNodes.includes(address))
+                )
+              )
+            )
+          )
+        )
+      ),
+    RD.initial
+  )
+
   const interactTypeChanged = useCallback(
     (type: InteractType) => {
       navigate(
@@ -187,6 +213,7 @@ export const InteractViewMAYA: React.FC = () => {
                       mayachainQuery={mayachainQuery}
                       network={network}
                       poolDetails={poolDetails}
+                      nodes={nodeInfos}
                     />
                   </Interact>
                 )
