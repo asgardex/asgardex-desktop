@@ -232,6 +232,7 @@ type WalletMessageKey =
   | 'wallet.nav.bonds'
   | 'wallet.nav.poolshares'
   | 'wallet.nav.savers'
+  | 'wallet.nav.runepool'
   | 'wallet.column.name'
   | 'wallet.column.ticker'
   | 'wallet.action.send'

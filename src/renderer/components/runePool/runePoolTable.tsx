@@ -9,9 +9,9 @@ import { hiddenString } from '../../helpers/stringHelper'
 import { ParentProps } from '../../views/wallet/SaversTableView'
 import * as Styled from '../PoolShares/PoolShares.styles'
 import { AssetIcon } from '../uielements/assets/assetIcon'
-import { SaversButton } from '../uielements/button/SaversButton'
+// import { SaversButton } from '../uielements/button/SaversButton'
 
-export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX.Element => {
+export const RunePoolTable: React.FC<ParentProps> = ({ assetDetails }): JSX.Element => {
   const intl = useIntl()
   const columns = [
     {
@@ -60,18 +60,18 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       title: 'Wallet Type',
       dataIndex: 'walletType',
       key: 'walletType'
-    },
-    {
-      title: intl.formatMessage({ id: 'common.managePosition' }),
-      key: 'manage',
-      render: (record: typeof dataSource[0]) => {
-        const assetDetail = assetDetails.find(
-          (detail) =>
-            detail.asset.chain === record.key.split('.')[0] && detail.asset.symbol === record.key.split('.')[1]
-        )
-        return assetDetail ? <SaversButton asset={assetDetail.asset} isTextView={true}></SaversButton> : 'N/A'
-      }
     }
+    // {
+    //   title: intl.formatMessage({ id: 'common.managePosition' }),
+    //   key: 'manage',
+    //   render: (record: typeof dataSource[0]) => {
+    //     const assetDetail = assetDetails.find(
+    //       (detail) =>
+    //         detail.asset.chain === record.key.split('.')[0] && detail.asset.symbol === record.key.split('.')[1]
+    //     )
+    //     return assetDetail ? <SaversButton asset={assetDetail.asset} isTextView={true}></SaversButton> : 'N/A'
+    //   }
+    // }
   ]
 
   const dataSource = assetDetails.map(({ asset, deposit, redeem, priceAsset, percent, walletType, privateData }) => {
