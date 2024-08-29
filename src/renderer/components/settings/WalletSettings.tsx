@@ -376,7 +376,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                       <InfoIcon
                         tooltip={intl.formatMessage(
                           { id: 'setting.wallet.hdpath.legacy.info' },
-                          { path: getEvmDerivationPath(walletAccountMap[chain], walletIndexMap[chain], 'ledgerlive') }
+                          { path: getEvmDerivationPath(walletAccountMap[chain], walletIndexMap[chain], 'legacy') }
                         )}
                       />
                     </Styled.EthDerivationModeRadioLabel>
@@ -387,7 +387,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                       <InfoIcon
                         tooltip={intl.formatMessage(
                           { id: 'setting.wallet.hdpath.metamask.info' },
-                          { path: getEvmDerivationPath(walletAccountMap[chain], walletIndexMap[chain], 'ledgerlive') }
+                          { path: getEvmDerivationPath(walletAccountMap[chain], walletIndexMap[chain], 'metamask') }
                         )}
                       />
                     </Styled.EthDerivationModeRadioLabel>
