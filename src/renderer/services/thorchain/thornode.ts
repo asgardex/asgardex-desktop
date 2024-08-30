@@ -506,7 +506,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
           const currentValue = baseAmount(value, THORCHAIN_DECIMAL)
           const depositAmount = baseAmount(deposit_amount, THORCHAIN_DECIMAL)
           const withdrawAmount = baseAmount(withdraw_amount, THORCHAIN_DECIMAL)
-          const profitAndLoss = bnOrZero(pnl)
+          const profitAndLoss = baseAmount(pnl, THORCHAIN_DECIMAL)
           const addHeight = FP.pipe(last_deposit_height, O.fromPredicate(N.isNumber))
           const withdrawHeight = FP.pipe(last_withdraw_height, O.fromPredicate(N.isNumber))
           return {

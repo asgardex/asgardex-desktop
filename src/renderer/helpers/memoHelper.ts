@@ -2,6 +2,11 @@ import { Address, Asset, BaseAmount } from '@xchainjs/xchain-util'
 
 const DELIMITER = ':'
 
+export enum Action {
+  add,
+  withdraw
+}
+
 // Helper to filter out invalid values
 const filterMemoPart = (part: unknown) => part !== null && part !== undefined
 
@@ -125,6 +130,11 @@ export const getDepositMemo = ({
   address?: string
   short?: boolean
 }) => mkMemo([`${short ? '+' : 'ADD'}`, assetToMemoString(asset), address || null])
+
+export const getRunePoolMemo = ({ action }: { action: Action }) => {
+  const poolAction = action === Action.add ? `+` : '-'
+  return mkMemo([`POOL${poolAction}`])
+}
 
 export type AssetCodes = {
   [key: string]: string

@@ -31,7 +31,7 @@ import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import * as walletRoutes from '../../../routes/wallet'
 import { FeeRD } from '../../../services/chain/types'
 import { userNodes$ } from '../../../services/storage/userNodes'
-import { NodeInfosRD } from '../../../services/thorchain/types'
+import { NodeInfosRD, RunePoolProviderRD } from '../../../services/thorchain/types'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAssetRD } from '../../../services/wallet/types'
@@ -111,7 +111,8 @@ export const InteractViewTHOR: React.FC = () => {
     )
   }, [oBalances, selectedAssetRD])
 
-  const { fees$, reloadFees, interact$, getNodeInfos$ } = useThorchainContext()
+  const { fees$, reloadFees, interact$, getNodeInfos$, getRunePoolProvider$, reloadRunePoolProvider } =
+    useThorchainContext()
 
   const [feeRD] = useObservableState<FeeRD>(
     () =>
@@ -142,6 +143,14 @@ export const InteractViewTHOR: React.FC = () => {
       ),
     RD.initial
   )
+
+  const [runePoolProvider] = useObservableState<RunePoolProviderRD>(() =>
+    FP.pipe(
+      oSelectedAsset,
+      O.map((selectedAsset) => getRunePoolProvider$(selectedAsset.walletAddress, selectedAsset.walletType)),
+      O.getOrElse(() => Rx.of(RD.initial as RunePoolProviderRD))
+    )
+  )
   const interactTypeChanged = useCallback(
     (type: InteractType) => {
       navigate(
@@ -154,8 +163,9 @@ export const InteractViewTHOR: React.FC = () => {
   )
   const reloadHandler = useCallback(() => {
     const lazyReload = reloadBalancesByChain(assetChain)
+    reloadRunePoolProvider()
     lazyReload() // Invoke the lazy function
-  }, [assetChain])
+  }, [assetChain, reloadRunePoolProvider])
 
   return FP.pipe(
     sequenceTRD(interactTypeRD, selectedAssetRD),
@@ -209,6 +219,7 @@ export const InteractViewTHOR: React.FC = () => {
                       network={network}
                       poolDetails={poolDetails}
                       nodes={nodeInfos}
+                      runePoolProvider={runePoolProvider}
                     />
                   </Interact>
                 )

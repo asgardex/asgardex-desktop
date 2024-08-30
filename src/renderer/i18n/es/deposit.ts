@@ -7,6 +7,7 @@ const deposit: DepositMessages = {
   'deposit.interact.actions.bond': 'Bono',
   'deposit.interact.actions.unbond': 'Libere',
   'deposit.interact.actions.leave': 'Deja',
+  'deposit.interact.actions.runePool': 'Piscina de Runa',
   'deposit.interact.actions.buyThorname': 'Comprar THORNombre',
   'deposit.interact.actions.checkThorname': 'Comprobar disponibilidad',
   'deposit.interact.actions.addBondProvider': 'Añadir proveedor de bonos',

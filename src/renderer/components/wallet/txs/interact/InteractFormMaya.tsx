@@ -163,6 +163,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
       case 'custom':
       case 'mayaname':
       case 'thorname':
+      case 'runePool':
         return _amountToSend
       case 'unbond':
       case 'leave':

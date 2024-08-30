@@ -10,12 +10,14 @@ import {
   Chain,
   formatAssetAmountCurrency,
   baseToAsset,
-  assetAmount
+  assetAmount,
+  bnOrZero
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
+import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -27,6 +29,7 @@ import { RunePoolTable } from '../../components/runePool/runePoolTable'
 import { RefreshButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
 import * as Styled from '../../components/wallet/assets/TotalValue.styles'
+import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useChainContext } from '../../contexts/ChainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
@@ -36,11 +39,16 @@ import { isThorChain } from '../../helpers/chainHelper'
 import { sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { hiddenString } from '../../helpers/stringHelper'
+import { filterWalletBalancesByAssets, getWalletBalanceByAssetAndWalletType } from '../../helpers/walletHelper'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePricePool } from '../../hooks/usePricePool'
 import { usePrivateData } from '../../hooks/usePrivateData'
+import { WalletBalances } from '../../services/clients'
 import { userChains$ } from '../../services/storage/userChains'
 import { RunePoolProviderRD } from '../../services/thorchain/types'
+import { balancesState$, setSelectedAsset } from '../../services/wallet'
+import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/wallet/const'
+import { WalletBalance } from '../../services/wallet/types'
 import { ledgerAddressToWalletAddress } from '../../services/wallet/util'
 
 type AssetProps = {
@@ -49,7 +57,7 @@ type AssetProps = {
   priceAsset: Asset
   value: BaseAmount
   deposit: { amount: BaseAmount; price: BaseAmount }
-  redeem: { amount: BaseAmount; price: BaseAmount }
+  withdraw: { amount: BaseAmount; price: BaseAmount }
   percent: BigNumber
   network: Network
   walletType: WalletType
@@ -73,6 +81,21 @@ export const RunepoolView: React.FC = (): JSX.Element => {
   const asset = AssetRuneNative
   const { addressByChain$ } = useChainContext()
   const { getLedgerAddress$ } = useWalletContext()
+
+  const [{ balances: oBalances }] = useObservableState(
+    () => balancesState$(DEFAULT_BALANCES_FILTER),
+    INITIAL_BALANCES_STATE
+  )
+  const allBalances: WalletBalances = useMemo(
+    () =>
+      FP.pipe(
+        oBalances,
+        // filter wallet balances to include assets available to swap only including synth balances
+        O.map((balances) => filterWalletBalancesByAssets(balances, [AssetRuneNative])),
+        O.getOrElse<WalletBalances>(() => [])
+      ),
+    [oBalances]
+  )
 
   const { getRunePoolProvider$, reloadRunePoolProvider } = useThorchainContext()
   const pricePool = usePricePool()
@@ -137,6 +160,21 @@ export const RunepoolView: React.FC = (): JSX.Element => {
     })
   }, [addressByChain$, getLedgerAddress$, getRunePoolProvider$])
 
+  const oSourceAssetWB: O.Option<WalletBalance> = useMemo(() => {
+    const oWalletBalances = NEA.fromArray(allBalances)
+    const firstKey = Object.keys(allRunePoolProviders)[0]
+    const walletType = firstKey ? (firstKey.split('.')[1] as WalletType) : DEFAULT_WALLET_TYPE
+
+    return getWalletBalanceByAssetAndWalletType({
+      oWalletBalances,
+      asset: AssetRuneNative,
+      walletType
+    })
+  }, [allBalances, allRunePoolProviders])
+  useEffect(() => {
+    setSelectedAsset(oSourceAssetWB)
+  }, [oSourceAssetWB])
+
   useEffect(() => {
     const assetDetails: AssetProps[] = Object.keys(allRunePoolProviders)
       .map((assetString) => {
@@ -167,14 +205,15 @@ export const RunepoolView: React.FC = (): JSX.Element => {
                 }),
                 O.getOrElse(() => baseAmount(0, withdrawAmount.decimal))
               )
+              const percent = bnOrZero(pnl.div(depositAmount).times(100).amount().toNumber())
               return {
                 key: pricePool.asset.chain,
                 asset,
                 value,
                 priceAsset: pricePool.asset,
                 deposit: { amount: depositAmount, price: depositPrice },
-                redeem: { amount: withdrawAmount, price: withdrawPrice },
-                percent: pnl.times(100),
+                withdraw: { amount: withdrawAmount, price: withdrawPrice },
+                percent,
                 walletType,
                 privateData: isPrivate
               }
@@ -189,7 +228,7 @@ export const RunepoolView: React.FC = (): JSX.Element => {
 
   const totalRedeemPrice = useMemo(() => {
     const sum = assetDetailsArray.reduce((acc, item) => {
-      return acc + baseToAsset(item.redeem.price).amount().toNumber()
+      return acc + baseToAsset(item.value).amount().toNumber()
     }, 0)
     const formattedTotal = formatAssetAmountCurrency({
       amount: assetAmount(sum),

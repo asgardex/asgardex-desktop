@@ -210,7 +210,7 @@ export type SaverProviderLD = LiveData<Error, SaverProvider>
 export type RunePoolProvider = {
   address: Address
   value: BaseAmount
-  pnl: BigNumber
+  pnl: BaseAmount
   depositAmount: BaseAmount
   withdrawAmount: BaseAmount
   addHeight: O.Option<number>
