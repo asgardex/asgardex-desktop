@@ -31,7 +31,8 @@ module.exports = {
         os: require.resolve('os-browserify/browser'),
         path: require.resolve('path-browserify'),
         fs: require.resolve('browserify-fs'),
-        assert: require.resolve('assert')
+        assert: require.resolve('assert'),
+        process: require.resolve('process/browser')
       }
 
       webpackConfig.ignoreWarnings = [/Failed to parse source map/]
@@ -42,6 +43,19 @@ module.exports = {
           test: /\.svg$/,
           use: ['@svgr/webpack'],
           issuer: /\.(js|ts)x?$/
+        },
+        {
+          test: /\.js$/,
+          include: /node_modules\/axios/, // Incluir solo axios
+          use: {
+            loader: 'babel-loader',
+            options: {
+              presets: ['@babel/preset-env']
+            }
+          },
+          resolve: {
+            fullySpecified: false
+          }
         }
       ]
 
