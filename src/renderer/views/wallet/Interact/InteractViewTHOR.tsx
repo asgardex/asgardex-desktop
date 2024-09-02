@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Col, Row } from 'antd'
@@ -144,13 +144,35 @@ export const InteractViewTHOR: React.FC = () => {
     RD.initial
   )
 
-  const [runePoolProvider] = useObservableState<RunePoolProviderRD>(() =>
-    FP.pipe(
-      oSelectedAsset,
-      O.map((selectedAsset) => getRunePoolProvider$(selectedAsset.walletAddress, selectedAsset.walletType)),
-      O.getOrElse(() => Rx.of(RD.initial as RunePoolProviderRD))
-    )
-  )
+  const [runePoolProviderRD, setRunePoolProviderRD] = useState<RunePoolProviderRD>(RD.initial)
+
+  useEffect(() => {
+    if (O.isSome(oWalletBalance)) {
+      setRunePoolProviderRD(RD.pending) // Set to pending while fetching data
+
+      const subscription = getRunePoolProvider$(
+        oWalletBalance.value.walletAddress,
+        oWalletBalance.value.walletType
+      ).subscribe({
+        next: (rdProvider) => {
+          FP.pipe(
+            rdProvider,
+            RD.fold(
+              () => setRunePoolProviderRD(RD.initial),
+              () => setRunePoolProviderRD(RD.pending),
+              (error) => setRunePoolProviderRD(RD.failure(error)),
+              (provider) => setRunePoolProviderRD(RD.success(provider))
+            )
+          )
+        },
+        error: (error) => setRunePoolProviderRD(RD.failure(error))
+      })
+
+      return () => subscription.unsubscribe() // Cleanup on unmount or when dependencies change
+    } else {
+      setRunePoolProviderRD(RD.initial) // Set to initial if no wallet balance
+    }
+  }, [oWalletBalance, getRunePoolProvider$])
   const interactTypeChanged = useCallback(
     (type: InteractType) => {
       navigate(
@@ -219,7 +241,7 @@ export const InteractViewTHOR: React.FC = () => {
                       network={network}
                       poolDetails={poolDetails}
                       nodes={nodeInfos}
-                      runePoolProvider={runePoolProvider}
+                      runePoolProvider={runePoolProviderRD}
                     />
                   </Interact>
                 )

@@ -102,7 +102,7 @@ type Props = {
   network: Network
   poolDetails: PoolDetails
   nodes: NodeInfosRD
-  runePoolProvider: RunePoolProviderRD | undefined
+  runePoolProvider: RunePoolProviderRD
 }
 export const InteractFormThor: React.FC<Props> = (props) => {
   const {
@@ -297,7 +297,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
           }
         )
       ),
-    [oFee, interactType, runePoolAction, userNodeInfo, runePoolProvider.value, balance.amount]
+    [oFee, interactType, runePoolAction, userNodeInfo, runePoolProvider, balance.amount]
   )
 
   const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(maxAmount, asset)) // Initial state can be null or a suitable default
