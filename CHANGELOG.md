@@ -1,8 +1,10 @@
 # 1.22.3 (2024-09-)
 
 ## Updates/Fixes
+- fix mapping error for evmHdmode [#335](https://github.com/asgardex/asgardex-desktop/pull/336)
 
 ## Add
+- Rune Pool Features added [#310](https://github.com/asgardex/asgardex-desktop/pull/338)
 
 # 1.22.2 (2024-08-28)
 
