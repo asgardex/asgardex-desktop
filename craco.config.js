@@ -46,7 +46,7 @@ module.exports = {
         },
         {
           test: /\.js$/,
-          include: /node_modules\/axios/, // Incluir solo axios
+          include: /node_modules\/axios/,
           use: {
             loader: 'babel-loader',
             options: {
