@@ -4,6 +4,8 @@ const runePool: RunePoolMessages = {
   'runePool.noRuneAdded': 'No has añadido al pool de runas',
   'runePool.detail.title': 'Posición del pool de runas',
   'runePool.detail.current.title': 'Valor del depósito',
+  'runePool.detail.titleDeposit': 'Depósito en RunePool',
+  'runePool.detail.titleWithdraw': 'Retiro del RunePool',
   'runePool.detail.redeem.title': 'Valor de canje',
   'runePool.detail.percent': 'Crecimiento',
   'runePool.detail.totalGrowth': 'Crecimiento en USD',

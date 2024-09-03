@@ -198,13 +198,16 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       case 'custom':
       case 'thorname':
       case 'mayaname':
-      case 'runePool':
         return _amountToSend
       case 'leave':
       case 'unbond':
         return ZERO_BASE_AMOUNT
+      case 'runePool': {
+        const amnt = runePoolAction === Action.add ? _amountToSend : ZERO_BASE_AMOUNT
+        return amnt
+      }
     }
-  }, [_amountToSend, interactType])
+  }, [_amountToSend, interactType, runePoolAction])
 
   const {
     state: interactState,
@@ -511,7 +514,10 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         break
       }
       case 'runePool': {
-        createMemo = getRunePoolMemo({ action: runePoolAction })
+        createMemo = getRunePoolMemo({
+          action: runePoolAction,
+          bps: H.getRunePoolWithdrawBps(runePoolProvider.value, _amountToSend)
+        })
         break
       }
       case 'custom': {
@@ -525,7 +531,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     }
     setMemo(createMemo)
     return createMemo
-  }, [_amountToSend, currentMemo, form, interactType, memo, runePoolAction])
+  }, [_amountToSend, currentMemo, form, interactType, memo, runePoolAction, runePoolProvider.value])
 
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
@@ -708,7 +714,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       case 'runePool': {
         const label =
           runePoolAction === Action.add
-            ? intl.formatMessage({ id: 'deposit.add.sym' })
+            ? intl.formatMessage({ id: 'wallet.action.deposit' })
             : intl.formatMessage({ id: 'deposit.withdraw.sym' })
         return label
       }
@@ -824,8 +830,8 @@ export const InteractFormThor: React.FC<Props> = (props) => {
             <span style={{ marginLeft: '10px', display: 'inline-block' }}>
               <Styled.InputLabel>
                 {runePoolAction === Action.add
-                  ? intl.formatMessage({ id: 'deposit.add.sym' })
-                  : intl.formatMessage({ id: 'deposit.withdraw.sym' })}
+                  ? intl.formatMessage({ id: 'runePool.detail.titleDeposit' })
+                  : intl.formatMessage({ id: 'runePool.detail.titleWithdraw' })}
               </Styled.InputLabel>
             </span>
           </div>
@@ -1234,7 +1240,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                 {intl.formatMessage({ id: 'common.amount' })}
                 <div className="truncate pl-10px font-main text-[12px]">
                   {formatAssetAmountCurrency({
-                    amount: baseToAsset(_amountToSend), // Find the value of swap slippage
+                    amount: baseToAsset(amountToSend),
                     asset: AssetRuneNative,
                     decimal: isUSDAsset(AssetRuneNative) ? 2 : 6,
                     trimZeros: !isUSDAsset(AssetRuneNative)

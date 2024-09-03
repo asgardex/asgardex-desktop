@@ -1,5 +1,7 @@
 import { Address, Asset, BaseAmount } from '@xchainjs/xchain-util'
 
+import { ASGARDEX_THORNAME } from '../../shared/const'
+
 const DELIMITER = ':'
 
 export enum Action {
@@ -131,9 +133,16 @@ export const getDepositMemo = ({
   short?: boolean
 }) => mkMemo([`${short ? '+' : 'ADD'}`, assetToMemoString(asset), address || null])
 
-export const getRunePoolMemo = ({ action }: { action: Action }) => {
+export const getRunePoolMemo = ({ action, bps }: { action: Action; bps: number }) => {
   const poolAction = action === Action.add ? `+` : '-'
-  return mkMemo([`POOL${poolAction}`])
+
+  const memoParts = [`POOL${poolAction}`]
+
+  if (action === Action.withdraw) {
+    memoParts.push(bps.toString(), ASGARDEX_THORNAME, '0')
+  }
+
+  return mkMemo(memoParts)
 }
 
 export type AssetCodes = {

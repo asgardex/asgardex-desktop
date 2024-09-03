@@ -571,6 +571,8 @@ export type SaversMessages = { [key in SaversMessageKey]: string }
 type RunePoolMessageKey =
   | 'runePool.noRuneAdded'
   | 'runePool.detail.title'
+  | 'runePool.detail.titleDeposit'
+  | 'runePool.detail.titleWithdraw'
   | 'runePool.detail.current.title'
   | 'runePool.detail.redeem.title'
   | 'runePool.detail.percent'

@@ -3,6 +3,8 @@ import { RunePoolMessages } from '../types'
 const runePool: RunePoolMessages = {
   'runePool.noRuneAdded': 'Sie haben dem Rune-Pool nichts hinzugefügt',
   'runePool.detail.title': 'Rune-Pool-Position',
+  'runePool.detail.titleDeposit': 'Einzahlung in den RunePool',
+  'runePool.detail.titleWithdraw': 'Auszahlung aus dem RunePool',
   'runePool.detail.current.title': 'Einzahlungswert',
   'runePool.detail.redeem.title': 'Einlösewert',
   'runePool.detail.percent': 'Wachstum',

@@ -3,6 +3,8 @@ import { RunePoolMessages } from '../types'
 const runePool: RunePoolMessages = {
   'runePool.noRuneAdded': 'आपने रून पूल में कुछ नहीं जोड़ा है',
   'runePool.detail.title': 'रून पूल स्थिति',
+  'runePool.detail.titleDeposit': 'रून पूल में जमा करें',
+  'runePool.detail.titleWithdraw': 'रून पूल से निकासी करें',
   'runePool.detail.current.title': 'जमा मूल्य',
   'runePool.detail.redeem.title': 'रिडीम मूल्य',
   'runePool.detail.percent': 'वृद्धि',

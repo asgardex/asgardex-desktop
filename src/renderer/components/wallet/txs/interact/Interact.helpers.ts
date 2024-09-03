@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { bn } from '@xchainjs/xchain-util'
+import { BaseAmount, bn } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
 import * as FP from 'fp-ts/lib/function'
@@ -102,4 +102,17 @@ export const findNodeIndex = (nodes: NodeInfos, inputaddress: string) => {
       (address.toLowerCase() === inputaddress && status === 'Active') ||
       (signMembership.includes(inputaddress) && status === 'Standby')
   )
+}
+
+export const getRunePoolWithdrawBps = (amountOne: BaseAmount, amountTwo: BaseAmount): number => {
+  const value1 = amountOne.amount()
+  const value2 = amountTwo.amount()
+
+  if (value1.isZero()) {
+    return 0
+  }
+
+  const bps = value2.div(value1).multipliedBy(10000).decimalPlaces(0, 1).toNumber()
+
+  return bps
 }
