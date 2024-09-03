@@ -8,8 +8,13 @@ const common: CommonMessages = {
   'common.greeting': 'Hallo {name}',
   'common.copyright': '©',
   'common.type': 'Typ',
+  'common.chain': 'Kette',
+  'common.store': 'Speichern',
   'common.address': 'Adresse',
   'common.addresses': 'Adressen',
+  'common.savedAddresses': 'Gespeicherte Adressen',
+  'common.addAddress': 'Adresse erfolgreich hinzugefügt',
+  'common.removeAddress': 'Adresse erfolgreich entfernt',
   'common.thorname': 'THORName',
   'common.thornameRegistrationSpecifics':
     'THORNames ermöglichen jedem, Cross-Chain-Wallet-Adressen mit einer Zeichenkette von 1-30 hexadezimalen Zeichen, einschließlich Sonderzeichen -+. THORNames sind auf 30 Zeichen begrenzt, einschließlich ^[a-zA-Z0-9+-]+$.',

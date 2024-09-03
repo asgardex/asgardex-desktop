@@ -23,6 +23,8 @@ const settings: SettingMessages = {
   'setting.wallet.hdpath.legacy.info': 'Ruta de derivación heredada {path}',
   'setting.wallet.hdpath.ledgerlive.info': 'Ledger Live ruta de derivación {path}',
   'setting.wallet.hdpath.metamask.info': 'Metamask ruta de derivación {path}',
+  'setting.wallet.storeAddress.info':
+    'Guarde sus direcciones de confianza en el almacenamiento local, se enumerarán bajo la cadena o en la vista de envío',
   'setting.thornode.node.error.unhealthy': 'THORNodo API parece no ser saludable comprobando "{endpoint}"',
   'setting.thornode.node.error.url': 'No válido THORNodo API URL. Vuelva a comprobarlo e inténtelo de nuevo',
   'setting.thornode.rpc.error.url': 'No válido THORNodo RPC URL. Vuelva a comprobarlo e inténtelo de nuevo',

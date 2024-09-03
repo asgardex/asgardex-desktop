@@ -8,8 +8,13 @@ const common: CommonMessages = {
   'common.greeting': 'Hello {name}',
   'common.copyright': '©',
   'common.type': 'Type',
+  'common.chain': 'Chain',
+  'common.store': 'Store',
   'common.address': 'Address',
   'common.addresses': 'Addresses',
+  'common.savedAddresses': 'Saved Addresses',
+  'common.addAddress': 'Address added successfully',
+  'common.removeAddress': 'Address removed sucessfully',
   'common.thorname': 'THORName',
   'common.thornameRegistrationSpecifics':
     'THORNames allow anyone to register cross-chain wallet addresses to a 1-30 long string of hexadecimal characters which include special characters -_+. THORNames are limited to 30 characters, including ^[a-zA-Z0-9+_-]+$',
