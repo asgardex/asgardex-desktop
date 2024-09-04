@@ -3,6 +3,7 @@ import { RunePoolMessages } from '../types'
 const runePool: RunePoolMessages = {
   'runePool.noRuneAdded': 'You have not added to the rune pool',
   'runePool.detail.title': 'Rune Pool Position',
+  'runePool.detail.availability': 'Rune Pool currently not available',
   'runePool.detail.titleDeposit': 'Deposit to RunePool',
   'runePool.detail.titleWithdraw': 'Withdraw from RunePool',
   'runePool.detail.current.title': 'Deposit value',
@@ -11,6 +12,8 @@ const runePool: RunePoolMessages = {
   'runePool.detail.totalGrowth': 'Growth Usd',
   'runePool.detail.priceGrowth': 'Price growth',
   'runePool.detail.assetAmount': 'Asset Amount',
+  'runePool.detail.daysLeft': 'Days remaining until you can withdraw',
+  'runePool.detail.blocksLeft': 'Blocks remaining until you can withdraw',
   'runePool.info.max.withdraw.value': 'Max value to withdraw',
   'runePool.info.max.balance': 'Max balance',
   'runePool.add.state.sending': 'Sending add rune transaction',

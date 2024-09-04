@@ -571,6 +571,7 @@ export type SaversMessages = { [key in SaversMessageKey]: string }
 type RunePoolMessageKey =
   | 'runePool.noRuneAdded'
   | 'runePool.detail.title'
+  | 'runePool.detail.availability'
   | 'runePool.detail.titleDeposit'
   | 'runePool.detail.titleWithdraw'
   | 'runePool.detail.current.title'
@@ -579,6 +580,8 @@ type RunePoolMessageKey =
   | 'runePool.detail.totalGrowth'
   | 'runePool.detail.priceGrowth'
   | 'runePool.detail.assetAmount'
+  | 'runePool.detail.daysLeft'
+  | 'runePool.detail.blocksLeft'
   | 'runePool.info.max.withdraw.value'
   | 'runePool.info.max.balance'
   | 'runePool.add.state.sending'

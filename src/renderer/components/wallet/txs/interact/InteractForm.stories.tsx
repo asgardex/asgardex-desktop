@@ -117,6 +117,7 @@ const Template = ({ interactType, txRDStatus, feeRDStatus, balance, validAddress
       poolDetails={[]}
       nodes={RD.success(nodesList.map((address) => mockNodeInfo(address)))}
       runePoolProvider={RD.success(mockRunePoolProvider)}
+      thorchainLastblock={RD.success([])}
     />
   )
 }

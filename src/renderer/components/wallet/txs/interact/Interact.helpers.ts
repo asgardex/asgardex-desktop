@@ -116,3 +116,20 @@ export const getRunePoolWithdrawBps = (amountOne: BaseAmount, amountTwo: BaseAmo
 
   return bps
 }
+
+export const getBlocksLeft = (
+  lastBlock: number,
+  lastDeposit: number,
+  runePoolMimir: number
+): { daysLeft: number; blocksLeft: number } => {
+  const blocksSinceDeposit = lastBlock - lastDeposit
+  const blocksLeft = Math.max(runePoolMimir - blocksSinceDeposit, 0)
+
+  const secondsLeft = blocksLeft * 6
+  const daysLeft = secondsLeft / (60 * 60 * 24)
+
+  return {
+    daysLeft,
+    blocksLeft
+  }
+}

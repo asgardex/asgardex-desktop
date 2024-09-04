@@ -3,6 +3,7 @@ import { RunePoolMessages } from '../types'
 const runePool: RunePoolMessages = {
   'runePool.noRuneAdded': 'Вы не добавили средства в пул рун',
   'runePool.detail.title': 'Позиция в пуле рун',
+  'runePool.detail.availability': 'Пул рун в настоящее время недоступен',
   'runePool.detail.titleDeposit': 'Депозит в RunePool',
   'runePool.detail.titleWithdraw': 'Вывод из RunePool',
   'runePool.detail.current.title': 'Стоимость депозита',
@@ -11,6 +12,8 @@ const runePool: RunePoolMessages = {
   'runePool.detail.totalGrowth': 'Рост в USD',
   'runePool.detail.priceGrowth': 'Рост цены',
   'runePool.detail.assetAmount': 'Количество активов',
+  'runePool.detail.daysLeft': 'Дней осталось до возможности вывода',
+  'runePool.detail.blocksLeft': 'Блоков осталось до возможности вывода',
   'runePool.info.max.withdraw.value': 'Максимальная сумма для вывода',
   'runePool.info.max.balance': 'Максимальный баланс',
   'runePool.add.state.sending': 'Отправка транзакции добавления рун',

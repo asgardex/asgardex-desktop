@@ -35,6 +35,8 @@ import { THORCHAIN_DECIMAL, isUSDAsset } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
 import { Action, getBondMemo, getLeaveMemo, getRunePoolMemo, getUnbondMemo } from '../../../../helpers/memoHelper'
 import { getPoolPriceValue } from '../../../../helpers/poolHelper'
+import { emptyString } from '../../../../helpers/stringHelper'
+import { useMimirConstants } from '../../../../hooks/useMimirConstants'
 import { usePricePool } from '../../../../hooks/usePricePool'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { FeeRD } from '../../../../services/chain/types'
@@ -43,10 +45,12 @@ import { INITIAL_INTERACT_STATE } from '../../../../services/thorchain/const'
 import {
   InteractState,
   InteractStateHandler,
+  LastblockItem,
   NodeInfos,
   NodeInfosRD,
   RunePoolProvider,
-  RunePoolProviderRD
+  RunePoolProviderRD,
+  ThorchainLastblockRD
 } from '../../../../services/thorchain/types'
 import { ValidatePasswordHandler, WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
@@ -103,6 +107,7 @@ type Props = {
   poolDetails: PoolDetails
   nodes: NodeInfosRD
   runePoolProvider: RunePoolProviderRD
+  thorchainLastblock: ThorchainLastblockRD
 }
 export const InteractFormThor: React.FC<Props> = (props) => {
   const {
@@ -123,13 +128,15 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     thorchainQuery,
     network,
     nodes: nodesRD,
-    runePoolProvider: runePoolProviderRd
+    runePoolProvider: runePoolProviderRd,
+    thorchainLastblock: thorchainLastblockRd
   } = props
   const intl = useIntl()
 
   const { asset } = balance
   const { walletAddress } = balance
   const pricePool = usePricePool()
+  const mimirKeys = useMimirConstants(['RUNEPOOLDEPOSITMATURITYBLOCKS', 'RUNEPOOLENABLED'])
 
   const [hasProviderAddress, setHasProviderAddress] = useState(false)
 
@@ -166,6 +173,42 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       RD.getOrElse(() => defaultRunePoolProvider)
     )
   }, [runePoolProviderRd])
+
+  const useRunePoolProviderMaturity = (
+    runePoolProviderRd: RD.RemoteData<Error, { addHeight: O.Option<number> }>,
+    thorchainLastblockRd: RD.RemoteData<Error, Pick<LastblockItem, 'chain' | 'thorchain'>[]>,
+    mimirKeys: { [key: string]: number }
+  ) => {
+    return useMemo(() => {
+      return FP.pipe(
+        RD.combine(runePoolProviderRd, thorchainLastblockRd),
+        RD.chain(([runePoolProvider, lastblocks]) => {
+          return FP.pipe(
+            runePoolProvider.addHeight,
+            O.fold(
+              () => RD.failure(new Error('addHeight is not available')),
+              (addHeight) => {
+                const thorchainBlock = lastblocks.find((block) => block.thorchain)
+                return thorchainBlock
+                  ? RD.success({
+                      addHeight,
+                      lastBlock: thorchainBlock.thorchain,
+                      runePoolMimir: mimirKeys['RUNEPOOLDEPOSITMATURITYBLOCKS']
+                    })
+                  : RD.failure(new Error('Thorchain block not found'))
+              }
+            )
+          )
+        }),
+        RD.map(({ addHeight, lastBlock, runePoolMimir }) => {
+          return H.getBlocksLeft(lastBlock, addHeight, runePoolMimir)
+        })
+      )
+    }, [runePoolProviderRd, thorchainLastblockRd, mimirKeys])
+  }
+
+  const runePoolData = useRunePoolProviderMaturity(runePoolProviderRd, thorchainLastblockRd, mimirKeys)
+  const runePoolAvialable = mimirKeys['RUNEPOOLENABLED'] === 1
 
   useEffect(() => {
     let foundNodeInfo: UserNodeInfo | undefined = undefined
@@ -833,6 +876,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                   ? intl.formatMessage({ id: 'runePool.detail.titleDeposit' })
                   : intl.formatMessage({ id: 'runePool.detail.titleWithdraw' })}
               </Styled.InputLabel>
+              {!runePoolAvialable && intl.formatMessage({ id: 'runePool.detail.availability' })}
             </span>
           </div>
         )}
@@ -1171,7 +1215,9 @@ export const InteractFormThor: React.FC<Props> = (props) => {
           <FlatButton
             className="mt-10px min-w-[200px]"
             loading={isLoading}
-            disabled={isLoading || !!form.getFieldsError().filter(({ errors }) => errors.length).length}
+            disabled={
+              isLoading || !runePoolAvialable || !!form.getFieldsError().filter(({ errors }) => errors.length).length
+            }
             type="submit"
             size="large">
             {submitLabel}
@@ -1236,6 +1282,44 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                 }),
                 O.toNullable
               )}
+              {interactType === 'runePool' && (
+                <>
+                  {' '}
+                  <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
+                    {intl.formatMessage({ id: 'runePool.detail.daysLeft' })}
+                    <div className="truncate pl-10px font-main text-[12px]">
+                      {RD.fold(
+                        () => <p>{emptyString}</p>,
+                        () => <p>{emptyString}</p>,
+                        (error: Error) => <p>Error: {error.message}</p>,
+                        (data: { daysLeft: number; blocksLeft: number }) => (
+                          <div>
+                            <p>
+                              {intl.formatMessage({ id: 'common.time.days' }, { days: `${data.daysLeft.toFixed(0)}` })}
+                            </p>
+                          </div>
+                        )
+                      )(runePoolData)}
+                    </div>
+                  </div>
+                  <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
+                    {intl.formatMessage({ id: 'runePool.detail.blocksLeft' })}
+                    <div className="truncate pl-10px font-main text-[12px]">
+                      {RD.fold(
+                        () => <p>{emptyString}</p>,
+                        () => <p>{emptyString}</p>,
+                        (error: Error) => <p>Error: {error.message}</p>,
+                        (data: { daysLeft: number; blocksLeft: number }) => (
+                          <div>
+                            <p>{data.blocksLeft.toString()}</p>
+                          </div>
+                        )
+                      )(runePoolData)}
+                    </div>
+                  </div>
+                </>
+              )}
+
               <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
                 {intl.formatMessage({ id: 'common.amount' })}
                 <div className="truncate pl-10px font-main text-[12px]">

@@ -31,7 +31,7 @@ import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import * as walletRoutes from '../../../routes/wallet'
 import { FeeRD } from '../../../services/chain/types'
 import { userNodes$ } from '../../../services/storage/userNodes'
-import { NodeInfosRD, RunePoolProviderRD } from '../../../services/thorchain/types'
+import { NodeInfosRD, RunePoolProviderRD, ThorchainLastblockRD } from '../../../services/thorchain/types'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAssetRD } from '../../../services/wallet/types'
@@ -111,8 +111,15 @@ export const InteractViewTHOR: React.FC = () => {
     )
   }, [oBalances, selectedAssetRD])
 
-  const { fees$, reloadFees, interact$, getNodeInfos$, getRunePoolProvider$, reloadRunePoolProvider } =
-    useThorchainContext()
+  const {
+    fees$,
+    reloadFees,
+    interact$,
+    getNodeInfos$,
+    getRunePoolProvider$,
+    reloadRunePoolProvider,
+    thorchainLastblockState$
+  } = useThorchainContext()
 
   const [feeRD] = useObservableState<FeeRD>(
     () =>
@@ -122,6 +129,8 @@ export const InteractViewTHOR: React.FC = () => {
       ),
     RD.initial
   )
+
+  const thorchainLastblockRD: ThorchainLastblockRD = useObservableState(thorchainLastblockState$, RD.pending)
 
   const [nodeInfos] = useObservableState<NodeInfosRD>(
     () =>
@@ -242,6 +251,7 @@ export const InteractViewTHOR: React.FC = () => {
                       poolDetails={poolDetails}
                       nodes={nodeInfos}
                       runePoolProvider={runePoolProviderRD}
+                      thorchainLastblock={thorchainLastblockRD}
                     />
                   </Interact>
                 )
