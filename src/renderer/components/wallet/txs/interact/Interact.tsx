@@ -34,6 +34,7 @@ export const Interact: React.FC<Props> = ({
       { type: 'bond', label: intl.formatMessage({ id: 'deposit.interact.actions.bond' }) },
       { type: 'unbond', label: intl.formatMessage({ id: 'deposit.interact.actions.unbond' }) },
       { type: 'leave', label: intl.formatMessage({ id: 'deposit.interact.actions.leave' }) },
+      { type: 'runePool', label: intl.formatMessage({ id: 'deposit.interact.actions.runePool' }) },
       { type: 'custom', label: intl.formatMessage({ id: 'common.custom' }) },
       { type: `${name}`, label: intl.formatMessage({ id: `common.${name}` }) }
     ],

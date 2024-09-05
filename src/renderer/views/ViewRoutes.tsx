@@ -26,6 +26,7 @@ import { ImportsView } from './wallet/importsView'
 import { InteractView } from './wallet/Interact'
 import { NoWalletView } from './wallet/NoWalletView'
 import { PoolShareView } from './wallet/PoolShareView'
+import { RunepoolView } from './wallet/RunepoolView'
 import { SaversDetailsView } from './wallet/SaversTableView'
 import { SendView } from './wallet/send'
 import { UnlockView } from './wallet/UnlockView'
@@ -110,6 +111,14 @@ export const ViewRoutes: React.FC<{}> = (): JSX.Element => {
         element={
           <WalletAuth>
             <SaversDetailsView />
+          </WalletAuth>
+        }
+      />
+      <Route
+        path={walletRoutes.runepool.template}
+        element={
+          <WalletAuth>
+            <RunepoolView />
           </WalletAuth>
         }
       />

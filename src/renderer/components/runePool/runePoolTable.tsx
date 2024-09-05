@@ -6,12 +6,12 @@ import { useIntl } from 'react-intl'
 import { ZERO_BN } from '../../const'
 import { isUSDAsset } from '../../helpers/assetHelper'
 import { hiddenString } from '../../helpers/stringHelper'
-import { ParentProps } from '../../views/wallet/SaversTableView'
+import { ParentProps } from '../../views/wallet/RunepoolView'
 import * as Styled from '../PoolShares/PoolShares.styles'
 import { AssetIcon } from '../uielements/assets/assetIcon'
-import { SaversButton } from '../uielements/button/SaversButton'
+import { RunePoolButton } from '../uielements/button/RunePoolButton'
 
-export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX.Element => {
+export const RunePoolTable: React.FC<ParentProps> = ({ assetDetails }): JSX.Element => {
   const intl = useIntl()
   const columns = [
     {
@@ -32,27 +32,27 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       key: 'asset'
     },
     {
-      title: intl.formatMessage({ id: 'savers.detail.current.title' }),
+      title: intl.formatMessage({ id: 'runePool.detail.current.title' }),
       dataIndex: 'priceDepositLabel',
       key: 'priceDeposit'
     },
     {
-      title: intl.formatMessage({ id: 'savers.detail.assetAmount' }),
+      title: intl.formatMessage({ id: 'runePool.detail.assetAmount' }),
       dataIndex: 'depositValueLabel',
       key: 'assetValue'
     },
     {
-      title: intl.formatMessage({ id: 'savers.detail.redeem.title' }),
-      dataIndex: 'redeemValueLabel',
-      key: 'redeemValue'
+      title: intl.formatMessage({ id: 'runePool.detail.redeem.title' }),
+      dataIndex: 'withdrawValueLabel',
+      key: 'withdrawValue'
     },
     {
-      title: intl.formatMessage({ id: 'savers.detail.totalGrowth' }),
-      dataIndex: 'redeemDepositLabel',
-      key: 'redeemDeposit'
+      title: intl.formatMessage({ id: 'runePool.detail.totalGrowth' }),
+      dataIndex: 'withdrawDepositLabel',
+      key: 'withdrawDeposit'
     },
     {
-      title: intl.formatMessage({ id: 'savers.detail.percent' }),
+      title: intl.formatMessage({ id: 'runePool.detail.percent' }),
       dataIndex: 'growthValueLabel',
       key: 'growthValue'
     },
@@ -64,17 +64,13 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
     {
       title: intl.formatMessage({ id: 'common.managePosition' }),
       key: 'manage',
-      render: (record: typeof dataSource[0]) => {
-        const assetDetail = assetDetails.find(
-          (detail) =>
-            detail.asset.chain === record.key.split('.')[0] && detail.asset.symbol === record.key.split('.')[1]
-        )
-        return assetDetail ? <SaversButton asset={assetDetail.asset} isTextView={true}></SaversButton> : 'N/A'
+      render: () => {
+        return <RunePoolButton interactType="runePool" isTextView={true}></RunePoolButton>
       }
     }
   ]
 
-  const dataSource = assetDetails.map(({ asset, deposit, redeem, priceAsset, percent, walletType, privateData }) => {
+  const dataSource = assetDetails.map(({ asset, deposit, value, priceAsset, percent, walletType, privateData }) => {
     const depositValueLabel = privateData
       ? hiddenString
       : formatAssetAmountCurrency({ amount: baseToAsset(deposit.amount), asset, decimal: 3 })
@@ -86,18 +82,18 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
           asset: priceAsset,
           decimal: isUSDAsset(priceAsset) ? 2 : 6
         })
-    const redeemValueLabel = privateData
+    const withdrawValueLabel = privateData
       ? hiddenString
-      : formatAssetAmountCurrency({ amount: baseToAsset(redeem.amount), asset, decimal: 3 })
+      : formatAssetAmountCurrency({ amount: baseToAsset(value), asset, decimal: 3 })
 
-    const redeemDepositLabel = privateData
+    const withdrawDepositLabel = privateData
       ? hiddenString
       : formatAssetAmountCurrency({
-          amount: baseToAsset(redeem.price),
+          amount: baseToAsset(value.minus(deposit.amount)),
           asset: priceAsset,
           decimal: isUSDAsset(priceAsset) ? 2 : 6
         })
-    const gV = redeem.amount.minus(deposit.amount)
+    const gV = value.minus(deposit.amount)
     const growthValue = privateData
       ? hiddenString
       : formatAssetAmountCurrency({
@@ -119,9 +115,9 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
     return {
       key: `${asset.chain}.${asset.symbol}.${walletType}`,
       depositValueLabel,
-      redeemValueLabel,
+      withdrawValueLabel,
       priceDepositLabel,
-      redeemDepositLabel,
+      withdrawDepositLabel,
       growthValue,
       growthValueLabel,
       percentLabel,

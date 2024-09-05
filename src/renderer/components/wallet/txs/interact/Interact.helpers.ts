@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { bn } from '@xchainjs/xchain-util'
+import { BaseAmount, bn } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
 import * as FP from 'fp-ts/lib/function'
@@ -85,7 +85,13 @@ export const validateCustomAmountInput = ({
 }
 
 export const isInteractType = (u: unknown): u is InteractType =>
-  u === 'bond' || u === 'unbond' || u === 'leave' || u === 'custom' || u === 'thorname' || u === 'mayaname'
+  u === 'bond' ||
+  u === 'unbond' ||
+  u === 'leave' ||
+  u === 'custom' ||
+  u === 'thorname' ||
+  u === 'mayaname' ||
+  u === 'runePool'
 
 export const getInteractTypeFromNullableString = (s?: string): O.Option<InteractType> =>
   FP.pipe(s, optionFromNullableString, O.chain(O.fromPredicate(isInteractType)))
@@ -96,4 +102,34 @@ export const findNodeIndex = (nodes: NodeInfos, inputaddress: string) => {
       (address.toLowerCase() === inputaddress && status === 'Active') ||
       (signMembership.includes(inputaddress) && status === 'Standby')
   )
+}
+
+export const getRunePoolWithdrawBps = (amountOne: BaseAmount, amountTwo: BaseAmount): number => {
+  const value1 = amountOne.amount()
+  const value2 = amountTwo.amount()
+
+  if (value1.isZero()) {
+    return 0
+  }
+
+  const bps = value2.div(value1).multipliedBy(10000).decimalPlaces(0, 1).toNumber()
+
+  return bps
+}
+
+export const getBlocksLeft = (
+  lastBlock: number,
+  lastDeposit: number,
+  runePoolMimir: number
+): { daysLeft: number; blocksLeft: number } => {
+  const blocksSinceDeposit = lastBlock - lastDeposit
+  const blocksLeft = Math.max(runePoolMimir - blocksSinceDeposit, 0)
+
+  const secondsLeft = blocksLeft * 6
+  const daysLeft = secondsLeft / (60 * 60 * 24)
+
+  return {
+    daysLeft,
+    blocksLeft
+  }
 }

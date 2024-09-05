@@ -232,6 +232,7 @@ type WalletMessageKey =
   | 'wallet.nav.bonds'
   | 'wallet.nav.poolshares'
   | 'wallet.nav.savers'
+  | 'wallet.nav.runepool'
   | 'wallet.column.name'
   | 'wallet.column.ticker'
   | 'wallet.action.send'
@@ -472,6 +473,7 @@ type DepositMessageKey =
   | 'deposit.interact.actions.addBondProvider'
   | 'deposit.interact.actions.unbond'
   | 'deposit.interact.actions.leave'
+  | 'deposit.interact.actions.runePool'
   | 'deposit.interact.actions.buyThorname'
   | 'deposit.interact.actions.checkThorname'
   | 'deposit.share.title'
@@ -566,6 +568,36 @@ type SaversMessageKey =
 
 export type SaversMessages = { [key in SaversMessageKey]: string }
 
+type RunePoolMessageKey =
+  | 'runePool.noRuneAdded'
+  | 'runePool.detail.title'
+  | 'runePool.detail.availability'
+  | 'runePool.detail.titleDeposit'
+  | 'runePool.detail.titleWithdraw'
+  | 'runePool.detail.current.title'
+  | 'runePool.detail.redeem.title'
+  | 'runePool.detail.percent'
+  | 'runePool.detail.totalGrowth'
+  | 'runePool.detail.priceGrowth'
+  | 'runePool.detail.assetAmount'
+  | 'runePool.detail.daysLeft'
+  | 'runePool.detail.blocksLeft'
+  | 'runePool.detail.warning'
+  | 'runePool.info.max.withdraw.value'
+  | 'runePool.info.max.balance'
+  | 'runePool.add.state.sending'
+  | 'runePool.add.state.checkResults'
+  | 'runePool.add.state.pending'
+  | 'runePool.add.state.success'
+  | 'runePool.add.state.error'
+  | 'runePool.withdraw.state.sending'
+  | 'runePool.withdraw.state.checkResults'
+  | 'runePool.withdraw.state.pending'
+  | 'runePool.withdraw.state.success'
+  | 'runePool.withdraw.state.error'
+
+export type RunePoolMessages = { [key in RunePoolMessageKey]: string }
+
 type LoanMessageKey =
   | 'loan.noLoans'
   | 'loan.openLoan'
@@ -616,6 +648,7 @@ export type Messages = CommonMessages &
   SwapMessages &
   DepositMessages &
   SaversMessages &
+  RunePoolMessages &
   LoanMessages &
   LedgerMessages &
   BondsMessages &
