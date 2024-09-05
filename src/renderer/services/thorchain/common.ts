@@ -87,8 +87,16 @@ const clientState$: ClientState$ = FP.pipe(
             FP.pipe(
               getPhrase(keystore),
               O.map<string, ClientState>((phrase) => {
+                const getDefaultClientUrls = (): Record<Network, string[]> => {
+                  return {
+                    [Network.Testnet]: ['deprecated'],
+                    [Network.Stagenet]: ['https://stagenet-rpc.ninerealms.com'],
+                    [Network.Mainnet]: ['https://rpc.ninerealms.com']
+                  }
+                }
                 try {
                   const client = new Client({
+                    clientUrls: getDefaultClientUrls(),
                     network,
                     phrase
                   })
