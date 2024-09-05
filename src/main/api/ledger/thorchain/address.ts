@@ -1,6 +1,6 @@
 import type Transport from '@ledgerhq/hw-transport'
 import { Network } from '@xchainjs/xchain-client'
-import { ClientLedger, defaultClientConfig, THORChain } from '@xchainjs/xchain-thorchain'
+import { ClientLedger, defaultClientConfig, getDefaultClientUrls, THORChain } from '@xchainjs/xchain-thorchain'
 import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
@@ -19,6 +19,7 @@ export const getAddress = async (
     const clientLedger = new ClientLedger({
       transport,
       ...defaultClientConfig,
+      clientUrls: getDefaultClientUrls(),
       rootDerivationPaths: getDerivationPaths(walletAccount, network),
       network: network
     })

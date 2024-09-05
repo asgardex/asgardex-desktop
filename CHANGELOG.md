@@ -1,4 +1,10 @@
-# 1.22.3 (2024-09-)
+# 1.22.4 (2024-09-)
+
+## Updates/Fixes
+
+- fix config for thorchain ledger []()
+
+# 1.22.3 (2024-09-5)
 
 ## Updates/Fixes
 

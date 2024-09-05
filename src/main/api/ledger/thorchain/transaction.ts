@@ -1,6 +1,6 @@
 import type Transport from '@ledgerhq/hw-transport'
 import { Network, TxHash } from '@xchainjs/xchain-client'
-import { ClientLedger, defaultClientConfig } from '@xchainjs/xchain-thorchain'
+import { ClientLedger, defaultClientConfig, getDefaultClientUrls } from '@xchainjs/xchain-thorchain'
 import { Address, Asset, BaseAmount } from '@xchainjs/xchain-util'
 import * as E from 'fp-ts/Either'
 
@@ -36,6 +36,7 @@ export const send = async ({
     const clientLedger = new ClientLedger({
       transport,
       ...defaultClientConfig,
+      clientUrls: getDefaultClientUrls(),
       rootDerivationPaths: getDerivationPaths(walletAccount, network),
       network: network
     })
@@ -83,6 +84,7 @@ export const deposit = async ({
     const clientLedger = new ClientLedger({
       transport,
       ...defaultClientConfig,
+      clientUrls: getDefaultClientUrls(),
       rootDerivationPaths: getDerivationPaths(walletAccount, network),
       network: network
     })
