@@ -158,32 +158,6 @@ export const deposit = async ({
       isMemoEncoded: true,
       gasLimit: ethers.BigNumber.from(160000)
     })
-
-    // // Note: `client.call` handling very - similar to `runSendPoolTx$` in `src/renderer/services/ethereum/transaction.ts`
-    // // Call deposit function of Router contract
-    // // Note2: Amounts need to use `toFixed` to convert `BaseAmount` to `Bignumber`
-    // // since `value` and `gasPrice` type is `Bignumber`
-    // const { hash } = await ledgerClient.call<{ hash: TxHash }>({
-    //   contractAddress: router,
-    //   abi: ROUTER_ABI,
-    //   funcName: 'depositWithExpiry',
-    //   funcParams: [
-    //     recipient,
-    //     address,
-    //     // Send `BaseAmount` w/o decimal and always round down for currencies
-    //     amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
-    //     memo,
-    //     expiration,
-    //     isETHAddress
-    //       ? {
-    //           // Send `BaseAmount` w/o decimal and always round down for currencies
-    //           value: amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
-    //           gasPrice
-    //         }
-    //       : { gasPrice }
-    //   ]
-    // })
-
     return E.right(hash)
   } catch (error) {
     return E.left({

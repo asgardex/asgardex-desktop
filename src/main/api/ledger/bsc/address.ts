@@ -1,12 +1,11 @@
 import type Transport from '@ledgerhq/hw-transport'
-import { BSCChain } from '@xchainjs/xchain-bsc'
+import { BSCChain, ClientLedger } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
-import * as BSC from '@xchainjs/xchain-evm'
 import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { defaultBscParams } from '../../../../shared/bsc/const'
-import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
+import { getDerivationPaths } from '../../../../shared/evm/ledger'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
@@ -25,13 +24,9 @@ export const getAddress = async ({
   network: Network
 }): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
-    const clientLedger = new BSC.ClientLedger({
+    const clientLedger = new ClientLedger({
       ...defaultBscParams,
-      signer: new BSC.LedgerSigner({
-        transport,
-        provider: defaultBscParams.providers[Network.Mainnet],
-        derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
-      }),
+      transport,
       rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
       network
     })
@@ -63,13 +58,9 @@ export const verifyAddress = async ({
   walletIndex: number
   evmHDMode: EvmHDMode
 }) => {
-  const clientLedger = new BSC.ClientLedger({
+  const clientLedger = new ClientLedger({
     ...defaultBscParams,
-    signer: new BSC.LedgerSigner({
-      transport,
-      provider: defaultBscParams.providers[Network.Mainnet],
-      derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
-    }),
+    transport,
     rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode)
   })
   const _ = await clientLedger.getAddressAsync(walletIndex, true)

@@ -1,8 +1,9 @@
 import type Transport from '@ledgerhq/hw-transport'
 import { FeeOption, Network, TxHash } from '@xchainjs/xchain-client'
 import * as BSC from '@xchainjs/xchain-evm'
-import { Address, AnyAsset, Asset, assetToString, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, Asset, assetToString, baseAmount, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
+import { ethers } from 'ethers'
 import * as E from 'fp-ts/Either'
 
 import { isBscAsset } from '../../../../renderer/helpers/assetHelper'
@@ -135,31 +136,33 @@ export const deposit = async ({
     const blockTime = await getBlocktime(provider)
     const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
 
-    // Note: `client.call` handling very - similar to `runSendPoolTx$` in `src/renderer/services/ethereum/transaction.ts`
-    // Call deposit function of Router contract
-    // Note2: Amounts need to use `toFixed` to convert `BaseAmount` to `Bignumber`
-    // since `value` and `gasPrice` type is `Bignumber`
-    const { hash } = await clientledger.call<{ hash: TxHash }>({
-      contractAddress: router,
-      abi: ROUTER_ABI,
-      funcName: 'depositWithExpiry',
-      funcParams: [
-        recipient,
-        address,
-        // Send `BaseAmount` w/o decimal and always round down for currencies
-        amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
-        memo,
-        expiration,
-        isETHAddress
-          ? {
-              // Send `BaseAmount` w/o decimal and always round down for currencies
-              value: amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
-              gasPrice
-            }
-          : { gasPrice }
-      ]
-    })
+    const depositParams = [
+      recipient,
+      address,
+      amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
+      memo,
+      expiration,
+      isETHAddress
+        ? {
+            value: amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
+            gasPrice
+          }
+        : { gasPrice }
+    ]
 
+    const routerContract = new ethers.Contract(router, ROUTER_ABI)
+    const unsignedTx = await routerContract.populateTransaction.depositWithExpiry(...depositParams)
+    const nativeAsset = clientledger.getAssetInfo()
+
+    const hash = await clientledger.transfer({
+      asset: nativeAsset.asset,
+      amount: isETHAddress ? amount : baseAmount(0, nativeAsset.decimal),
+      memo: unsignedTx.data,
+      recipient: router,
+      gasPrice: gasPrices.fast,
+      isMemoEncoded: true,
+      gasLimit: ethers.BigNumber.from(160000)
+    })
     return E.right(hash)
   } catch (error) {
     return E.left({
