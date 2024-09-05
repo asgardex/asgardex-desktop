@@ -1,8 +1,8 @@
-# 1.22.4 (2024-09-)
+# 1.22.4 (2024-09-6)
 
 ## Updates/Fixes
 
-- fix config for thorchain ledger []()
+- fix config for thorchain ledger [#344](https://github.com/asgardex/asgardex-desktop/pull/345)
 
 # 1.22.3 (2024-09-5)
 
