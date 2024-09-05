@@ -730,7 +730,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
   const handleAddAddress = useCallback(() => {
     if (newAddress.name && newAddress.address && newAddress.chain) {
       addAddress({ name: newAddress.name, address: newAddress.address, chain: newAddress.chain })
-      setNewAddress({})
+      setNewAddress({ chain: '', name: '', address: '' })
       message.success(intl.formatMessage({ id: 'common.addAddress' }))
     } else {
       message.error(intl.formatMessage({ id: 'common.error' }))
@@ -749,6 +749,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     () => (
       <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
         <AutoComplete
+          key={newAddress.chain || 'autocomplete'}
           style={{ width: 150, marginRight: 8 }}
           placeholder={intl.formatMessage({ id: 'common.chain' })}
           options={enabledChains.map((chain) => ({ value: chain }))}
