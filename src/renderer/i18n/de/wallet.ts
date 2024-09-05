@@ -10,6 +10,7 @@ const wallet: WalletMessages = {
   'wallet.nav.bonds': 'Bonds',
   'wallet.nav.poolshares': 'Anteile',
   'wallet.nav.savers': 'Sparer',
+  'wallet.nav.runepool': 'Rune-Pool',
   'wallet.column.name': 'Name',
   'wallet.column.ticker': 'Ticker',
   'wallet.action.send': 'Senden',

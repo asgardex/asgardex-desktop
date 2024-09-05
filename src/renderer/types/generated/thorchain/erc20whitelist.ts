@@ -13,6 +13,73 @@ export const ERC20_WHITELIST: { asset: Asset; iconUrl: O.Option<string> }[] = [
   {
     asset: {
       chain: ETHChain,
+      symbol: "AVA-0xa6C0c097741D55ECd9a3A7DeF3A8253fD022ceB9",
+      ticker: "AVA",
+      synth: false,
+    },
+    iconUrl: O.some("https://etherscan.io/token/images/avafoundation_32.png"),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "MLT-0x9506d37f70eB4C3d79C398d326C871aBBf10521d",
+      ticker: "MLT",
+      synth: false,
+    },
+    iconUrl: O.some("https://etherscan.io/token/images/milcglobal_32.png"),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "UNIBOT-0xf819d9Cb1c2A819Fd991781A822dE3ca8607c3C9",
+      ticker: "UNIBOT",
+      synth: false,
+    },
+    iconUrl: O.some("https://etherscan.io/token/images/unibot_32.png"),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "COINBT-0x6fA5E1c43b5a466CBD1CAe7993B67C982400d481",
+      ticker: "COINBT",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://pbs.twimg.com/profile_images/1686114809052344321/szVc9Wbh_400x400.jpg"
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "PEPE-0x6982508145454Ce325dDbE47a25d4ec3d2311933",
+      ticker: "PEPE",
+      synth: false,
+    },
+    iconUrl: O.some("https://etherscan.io/token/images/pepe_32.png"),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "VERSE-0x249cA82617eC3DfB2589c4c17ab7EC9765350a18",
+      ticker: "VERSE",
+      synth: false,
+    },
+    iconUrl: O.some("https://etherscan.io/token/images/bitcoin-verse_32.png"),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "HYVE-0xd794DD1CAda4cf79C9EebaAb8327a1B0507ef7d4",
+      ticker: "HYVE",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://assets.coingecko.com/coins/images/13072/small/bAe1G-lD_400x400.png?1654056255"
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
       symbol: "RAZE-0x5Eaa69B29f99C84Fe5dE8200340b4e9b4Ab38EaC",
       ticker: "RAZE",
       synth: false,
@@ -10918,6 +10985,106 @@ export const ERC20_WHITELIST: { asset: Asset; iconUrl: O.Option<string> }[] = [
     },
     iconUrl: O.some(
       "https://raw.githubusercontent.com/sushiswap/assets/master/blockchains/ethereum/assets/0x72B886d09C117654aB7dA13A14d603001dE0B777/logo.png"
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "OKB-0x75231F58b43240C9718Dd58B4967c5114342a86c",
+      ticker: "OKB",
+      synth: false,
+    },
+    iconUrl: O.some("https://static.coinall.ltd/cdn/wallet/logo/okb.png"),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "XVG-0x85614A474dBeED440d5BBDB8aC50b0f22367F997",
+      ticker: "XVG",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://raw.githubusercontent.com/vergecurrency/verge-graphics/master/XVGETH/Verge_Token_erc-20_icon_square-192x192.png"
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "wZNN-0xb2e96a63479C2Edd2FD62b382c89D5CA79f572d3",
+      ticker: "wZNN",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://tokens.1inch.io/0xb2e96a63479c2edd2fd62b382c89d5ca79f572d3.png"
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "USDV-0x0E573Ce2736Dd9637A0b21058352e1667925C7a8",
+      ticker: "USDV",
+      synth: false,
+    },
+    iconUrl: O.some("https://usdv.money/static/features/home/token.svg"),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "BLUR-0x5283D291DBCF85356A21bA090E6db59121208b44",
+      ticker: "BLUR",
+      synth: false,
+    },
+    iconUrl: O.some("https://etherscan.io/token/images/blurio_32.png"),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "RLB-0x046EeE2cc3188071C02BfC1745A6b17c656e3f3d",
+      ticker: "RLB",
+      synth: false,
+    },
+    iconUrl: O.some("https://etherscan.io/token/images/rollbitcoin_32.png"),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "TONCOIN-0x582d872A1B094FC48F5DE31D3B73F2D9bE47def1",
+      ticker: "TONCOIN",
+      synth: false,
+    },
+    iconUrl: O.some("https://etherscan.io/token/images/rollbitcoin_32.png"),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "vTHOR-0x815C23eCA83261b6Ec689b60Cc4a58b54BC24D8D",
+      ticker: "vTHOR",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://static.thorswap.net/token-list/images/eth.vthor-0x815c23eca83261b6ec689b60cc4a58b54bc24d8d.png"
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "FLIP-0x826180541412D574cf1336d22c0C0a287822678A",
+      ticker: "FLIP",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://static.thorswap.net/token-list/images/eth.flip-0x826180541412d574cf1336d22c0c0a287822678a.png"
+    ),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "LENDS-0x2C06BA9e7F0dACcbC1f6A33EA67e85bb68fbEE3a",
+      ticker: "LENDS",
+      synth: false,
+    },
+    iconUrl: O.some(
+      "https://app.lends.so/tokens/eth.lends-0x2c06ba9e7f0daccbc1f6a33ea67e85bb68fbee3a.svg"
     ),
   },
 ];

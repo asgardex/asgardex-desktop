@@ -22,7 +22,9 @@ import {
   Pool,
   QuoteApi,
   QuoteLoanOpenResponse,
-  QuoteLoanCloseResponse
+  QuoteLoanCloseResponse,
+  RUNEPoolApi,
+  RUNEProvider
 } from '@xchainjs/xchain-thornode'
 import {
   Address,
@@ -78,7 +80,9 @@ import {
   BlockInformation,
   LoanCloseQuote,
   LoanCloseQuoteLD,
-  NodeStatusEnum
+  NodeStatusEnum,
+  RunePoolProviderLD,
+  RunePoolProvider
 } from './types'
 
 const height: number | undefined = undefined
@@ -474,7 +478,54 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       ),
       RxOp.startWith(RD.pending)
     )
+  const apiGetRunePoolProvider$ = (address: Address): LiveData<Error, RUNEProvider> =>
+    FP.pipe(
+      thornodeUrl$,
+      liveData.chain((basePath) =>
+        FP.pipe(
+          Rx.from(new RUNEPoolApi(getThornodeAPIConfiguration(basePath)).runeProvider(address)),
+          RxOp.map((response: AxiosResponse<RUNEProvider>) => RD.success(response.data)), // Extract data from AxiosResponse
+          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+        )
+      ),
+      RxOp.startWith(RD.pending)
+    )
 
+  const { stream$: reloadRunePoolProvider$, trigger: reloadRunePoolProvider } = triggerStream()
+
+  const getRunePoolProvider$ = (address: Address, walletType?: WalletType): RunePoolProviderLD =>
+    FP.pipe(
+      reloadRunePoolProvider$,
+      RxOp.debounceTime(300),
+      RxOp.switchMap((_) => apiGetRunePoolProvider$(address)),
+      liveData.map(
+        // transform RUNEPool -> RunepoolProvider
+        (provider): RunePoolProvider => {
+          const { value, pnl, deposit_amount, withdraw_amount, last_deposit_height, last_withdraw_height } = provider
+          /* 1e8 decimal by default, which is default decimal for ALL accets at THORChain  */
+          const currentValue = baseAmount(value, THORCHAIN_DECIMAL)
+          const depositAmount = baseAmount(deposit_amount, THORCHAIN_DECIMAL)
+          const withdrawAmount = baseAmount(withdraw_amount, THORCHAIN_DECIMAL)
+          const profitAndLoss = baseAmount(pnl, THORCHAIN_DECIMAL)
+          const addHeight = FP.pipe(last_deposit_height, O.fromPredicate(N.isNumber))
+          const withdrawHeight = FP.pipe(last_withdraw_height, O.fromPredicate(N.isNumber))
+          return {
+            address: provider.rune_address,
+            value: currentValue,
+            pnl: profitAndLoss,
+            depositAmount,
+            withdrawAmount,
+            addHeight,
+            withdrawHeight,
+            walletType
+          }
+        }
+      ),
+      RxOp.catchError(
+        (): RunePoolProviderLD => Rx.of(RD.failure(Error(`Failed to load info for ${address} provider`)))
+      ),
+      RxOp.startWith(RD.pending)
+    )
   const apiGetThorchainPool$ = (asset: Asset): LiveData<Error, Pool> =>
     FP.pipe(
       thornodeUrl$,
@@ -851,6 +902,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     reloadLiquidityProviders,
     getSaverProvider$,
     reloadSaverProvider,
+    getRunePoolProvider$,
+    reloadRunePoolProvider,
     getBorrowerProvider$,
     reloadBorrowerProvider,
     getTxStatus$,

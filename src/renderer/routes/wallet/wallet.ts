@@ -49,6 +49,12 @@ export const savers: Route<void> = {
     return this.template
   }
 }
+export const runepool: Route<void> = {
+  template: `${base.template}/runepool`,
+  path() {
+    return this.template
+  }
+}
 
 export type InteractParams = {
   interactType: InteractType

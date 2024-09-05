@@ -207,6 +207,20 @@ export type SaverProvider = {
 export type SaverProviderRD = RD.RemoteData<Error, SaverProvider>
 export type SaverProviderLD = LiveData<Error, SaverProvider>
 
+export type RunePoolProvider = {
+  address: Address
+  value: BaseAmount
+  pnl: BaseAmount
+  depositAmount: BaseAmount
+  withdrawAmount: BaseAmount
+  addHeight: O.Option<number>
+  withdrawHeight: O.Option<number>
+  walletType?: WalletType
+}
+
+export type RunePoolProviderRD = RD.RemoteData<Error, RunePoolProvider>
+export type RunePoolProviderLD = LiveData<Error, RunePoolProvider>
+
 export type BlockInformation = {
   inboundConfirmationBlocks?: number
   inboundConfirmationSeconds?: number
