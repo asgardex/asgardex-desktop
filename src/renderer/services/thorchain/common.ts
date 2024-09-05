@@ -87,8 +87,16 @@ const clientState$: ClientState$ = FP.pipe(
             FP.pipe(
               getPhrase(keystore),
               O.map<string, ClientState>((phrase) => {
+                const getDefaultClientUrls = (): Record<Network, string[]> => {
+                  return {
+                    [Network.Testnet]: [clientUrl[Network.Testnet].rpc],
+                    [Network.Stagenet]: [clientUrl[Network.Stagenet].rpc],
+                    [Network.Mainnet]: [clientUrl[Network.Mainnet].rpc]
+                  }
+                }
                 try {
                   const client = new Client({
+                    clientUrls: getDefaultClientUrls(),
                     network,
                     phrase
                   })

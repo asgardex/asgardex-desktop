@@ -73,6 +73,7 @@ const getFileStoreApi = <FileName extends StoreFileName>(
 contextBridge.exposeInMainWorld('apiCommonStorage', getFileStoreApi('common'))
 contextBridge.exposeInMainWorld('apiUserNodesStorage', getFileStoreApi('userNodes'))
 contextBridge.exposeInMainWorld('apiChainStorage', getFileStoreApi('userChains'))
+contextBridge.exposeInMainWorld('apiAddressStorage', getFileStoreApi('userAddresses'))
 contextBridge.exposeInMainWorld('apiAssetStorage', getFileStoreApi('userAssets'))
 contextBridge.exposeInMainWorld('apiPoolsStorage', getFileStoreApi('pools'))
 

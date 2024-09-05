@@ -22,6 +22,8 @@ const settings: SettingMessages = {
   'setting.wallet.hdpath.legacy.info': 'Устаревший путь деривации {path}',
   'setting.wallet.hdpath.ledgerlive.info': 'Путь деривации Ledger Live {path}',
   'setting.wallet.hdpath.metamask.info': 'Путь деривации Metamask {path}',
+  'setting.wallet.storeAddress.info':
+    'Сохраните свои доверенные адреса в локальном хранилище, они будут перечислены под цепочкой или в режиме отправки',
   'setting.thornode.node.error.unhealthy': 'API THORNode выдаёт дичь при проверке "{endpoint}"',
   'setting.thornode.node.error.url': 'Неверный URL API THORNode. Пожалуйста, перепроверьте и попробуйте еще раз',
   'setting.thornode.rpc.error.url': 'Неверный URL RPC THORNode. Пожалуйста, перепроверьте и попробуйте еще раз',

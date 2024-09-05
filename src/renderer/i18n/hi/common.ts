@@ -8,8 +8,13 @@ const common: CommonMessages = {
   'common.greeting': 'स्वागत है, {name}',
   'common.copyright': '©',
   'common.type': 'प्रकार',
+  'common.chain': 'श्रृंखला',
+  'common.store': 'भंडारण',
   'common.address': 'पता',
   'common.addresses': 'पते',
+  'common.savedAddresses': 'सहेजे गए पते',
+  'common.addAddress': 'पता सफलतापूर्वक जोड़ा गया',
+  'common.removeAddress': 'पता सफलतापूर्वक हटाया गया',
   'common.thorname': 'THORName',
   'common.thornameRegistrationSpecifics':
     'THORNames हर किसी को 1-30 हेक्साडेसिमल वर्णों का उपयोग करके क्रॉस-चेन वॉलेट पते पंजीकृत करने की अनुमति देते हैं, विशेष प्रतीक -+ को शामिल करते हुए। THORNames को 30 वर्णों तक सीमित किया गया है, जिसमें ^[a-zA-Z0-9+-]+$ शामिल है।',

@@ -5468,7 +5468,7 @@ export const ERC20_WHITELIST: { asset: Asset; iconUrl: O.Option<string> }[] = [
   {
     asset: {
       chain: ETHChain,
-      symbol: "GALA-0x15D4c048F83bd7e37d49eA4C83a07267Ec4203dA",
+      symbol: "GALA-0xd1d2Eb1B1e90B638588728b4130137D262C87cae",
       ticker: "GALA",
       synth: false,
     },

@@ -8,8 +8,13 @@ const common: CommonMessages = {
   'common.greeting': 'Hola {name}',
   'common.copyright': '©',
   'common.type': 'Tipo',
+  'common.store': 'Almacenar',
+  'common.chain': 'Cadena',
   'common.address': 'Dirección',
   'common.addresses': 'Direcciones',
+  'common.savedAddresses': 'Direcciones guardadas',
+  'common.addAddress': 'Dirección agregada con éxito',
+  'common.removeAddress': 'Dirección eliminada con éxito',
   'common.thorname': 'THORNombre',
   'common.thornameRegistrationSpecifics':
     'Los THORNombres permiten a cualquiera registrar direcciones de monedero de cadena cruzada a una cadena larga de 1-30 caracteres hexadecimales que incluyen caracteres especiales -_+. Los THORNames están limitados a 30 caracteres, incluyendo ^[a-zA-Z0-9+_-]+$.',

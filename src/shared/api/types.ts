@@ -34,12 +34,20 @@ export const mayaDetails: Dex = {
 }
 export type Dex = DexDetails
 
+export type TrustedAddress = {
+  name: string
+  chain: Chain
+  address: Address
+}
+
 // A version number starting from `1` to avoid to load deprecated files
 export type StorageVersion = { version: string }
 export type EnabledChains = { chains: EnabledChain[] }
+export type TrustedAddresses = { addresses: TrustedAddress[] }
 export type AddedAssets = { assets: Asset[] }
 export type ApiUrls = Record<Network, string>
 export type UserChainStorage = EnabledChains & StorageVersion
+export type UserTrustedAddressStorage = TrustedAddresses & StorageVersion
 export type UserAssetStorage = AddedAssets & StorageVersion
 export type UserNodesStorage = Readonly<Record<Network, Address[]> & StorageVersion>
 export type CommonStorage = Readonly<
@@ -64,6 +72,7 @@ export type CommonStorage = Readonly<
 export type StoreFilesContent = Readonly<{
   common: CommonStorage
   userChains: UserChainStorage
+  userAddresses: UserTrustedAddressStorage
   userAssets: UserAssetStorage
   userNodes: UserNodesStorage
   pools: PoolsStorageEncoded
@@ -201,6 +210,7 @@ declare global {
     apiCommonStorage: ApiFileStoreService<StoreFileData<'common'>>
     apiUserNodesStorage: ApiFileStoreService<StoreFileData<'userNodes'>>
     apiChainStorage: ApiFileStoreService<StoreFileData<'userChains'>>
+    apiAddressStorage: ApiFileStoreService<StoreFileData<'userAddresses'>>
     apiAssetStorage: ApiFileStoreService<StoreFileData<'userAssets'>>
     apiPoolsStorage: ApiFileStoreService<StoreFileData<'pools'>>
     apiAppUpdate: ApiAppUpdate

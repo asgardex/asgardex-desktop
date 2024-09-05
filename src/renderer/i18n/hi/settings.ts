@@ -22,6 +22,8 @@ const settings: SettingMessages = {
   'setting.wallet.hdpath.legacy.info': 'पुराना डेरिवेशन पथ {path}',
   'setting.wallet.hdpath.ledgerlive.info': 'Ledger Live डेरिवेशन पथ {path}',
   'setting.wallet.hdpath.metamask.info': 'Metamask डेरिवेशन पथ {path}',
+  'setting.wallet.storeAddress.info':
+    'अपने विश्वसनीय पतों को स्थानीय भंडारण में सहेजें, वे श्रृंखला के तहत या भेजें दृश्य में सूचीबद्ध होंगे',
   'setting.thornode.node.error.unhealthy': 'THORNode API "{endpoint}" की जाँच करते समय अस्वस्थ प्रतीत होता है',
   'setting.thornode.node.error.url': 'THORNode API URL अमान्य है। कृपया पुनः जांच करें और प्रयास करें',
   'setting.thornode.rpc.error.url': 'THORNode RPC URL अमान्य है। कृपया पुनः जांच करें और प्रयास करें',

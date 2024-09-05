@@ -8,8 +8,13 @@ const common: CommonMessages = {
   'common.greeting': 'Добро пожаловать, {name}',
   'common.copyright': '©',
   'common.type': 'Тип',
+  'common.chain': 'Цепь',
+  'common.store': 'Хранить',
   'common.address': 'Адрес',
   'common.addresses': 'Адреса',
+  'common.savedAddresses': 'Сохраненные адреса',
+  'common.addAddress': 'Адрес успешно добавлен',
+  'common.removeAddress': 'Адрес успешно удален',
   'common.thorname': 'THORName',
   'common.thornameRegistrationSpecifics':
     'THORNames позволяют каждому зарегистрировать кросс-цепочечные адреса кошельков с использованием строки из 1-30 шестнадцатеричных символов, включая специальные символы -+. THORNames ограничены 30 символами, включая ^[a-zA-Z0-9+-]+$.',
