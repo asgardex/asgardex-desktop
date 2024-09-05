@@ -89,9 +89,9 @@ const clientState$: ClientState$ = FP.pipe(
               O.map<string, ClientState>((phrase) => {
                 const getDefaultClientUrls = (): Record<Network, string[]> => {
                   return {
-                    [Network.Testnet]: ['deprecated'],
-                    [Network.Stagenet]: ['https://stagenet-rpc.ninerealms.com'],
-                    [Network.Mainnet]: ['https://rpc.ninerealms.com']
+                    [Network.Testnet]: [clientUrl[Network.Testnet].rpc],
+                    [Network.Stagenet]: [clientUrl[Network.Stagenet].rpc],
+                    [Network.Mainnet]: [clientUrl[Network.Mainnet].rpc]
                   }
                 }
                 try {
