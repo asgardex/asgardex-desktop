@@ -321,6 +321,14 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     ),
     [intl]
   )
+  const renderRunePoolWarning = useMemo(
+    () => (
+      <Label size="big" color="warning">
+        {intl.formatMessage({ id: 'runePool.detail.warning' })}
+      </Label>
+    ),
+    [intl]
+  )
 
   // max amount for RuneNative
   const maxAmount: BaseAmount = useMemo(
@@ -878,6 +886,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
               </Styled.InputLabel>
               {!runePoolAvialable && intl.formatMessage({ id: 'runePool.detail.availability' })}
             </span>
+            {runePoolProvider.value.gt(0) && runePoolAction === Action.add && renderRunePoolWarning}
           </div>
         )}
 
@@ -1216,7 +1225,13 @@ export const InteractFormThor: React.FC<Props> = (props) => {
             className="mt-10px min-w-[200px]"
             loading={isLoading}
             disabled={
-              isLoading || !runePoolAvialable || !!form.getFieldsError().filter(({ errors }) => errors.length).length
+              isLoading ||
+              !runePoolAvialable ||
+              (runePoolAction === Action.withdraw &&
+                runePoolData &&
+                RD.isSuccess(runePoolData) &&
+                runePoolData.value.blocksLeft > 0) ||
+              !!form.getFieldsError().filter(({ errors }) => errors.length).length
             }
             type="submit"
             size="large">
@@ -1284,7 +1299,6 @@ export const InteractFormThor: React.FC<Props> = (props) => {
               )}
               {interactType === 'runePool' && (
                 <>
-                  {' '}
                   <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
                     {intl.formatMessage({ id: 'runePool.detail.daysLeft' })}
                     <div className="truncate pl-10px font-main text-[12px]">
@@ -1295,23 +1309,8 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                         (data: { daysLeft: number; blocksLeft: number }) => (
                           <div>
                             <p>
-                              {intl.formatMessage({ id: 'common.time.days' }, { days: `${data.daysLeft.toFixed(0)}` })}
+                              {intl.formatMessage({ id: 'common.time.days' }, { days: `${data.daysLeft.toFixed(1)}` })}
                             </p>
-                          </div>
-                        )
-                      )(runePoolData)}
-                    </div>
-                  </div>
-                  <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
-                    {intl.formatMessage({ id: 'runePool.detail.blocksLeft' })}
-                    <div className="truncate pl-10px font-main text-[12px]">
-                      {RD.fold(
-                        () => <p>{emptyString}</p>,
-                        () => <p>{emptyString}</p>,
-                        (error: Error) => <p>Error: {error.message}</p>,
-                        (data: { daysLeft: number; blocksLeft: number }) => (
-                          <div>
-                            <p>{data.blocksLeft.toString()}</p>
                           </div>
                         )
                       )(runePoolData)}

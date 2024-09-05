@@ -14,6 +14,7 @@ const runePool: RunePoolMessages = {
   'runePool.detail.assetAmount': 'संपत्ति की मात्रा',
   'runePool.detail.daysLeft': 'निकासी करने तक शेष दिन',
   'runePool.detail.blocksLeft': 'निकासी करने तक शेष ब्लॉक',
+  'runePool.detail.warning': 'रूण पूल में जमा करने से निकासी अवधि रीसेट हो जाएगी',
   'runePool.info.max.withdraw.value': 'निकासी के लिए अधिकतम मूल्य',
   'runePool.info.max.balance': 'अधिकतम शेष राशि',
   'runePool.add.state.sending': 'रून जोड़ने का ट्रांजैक्शन भेजा जा रहा है',

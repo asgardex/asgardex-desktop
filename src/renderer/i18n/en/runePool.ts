@@ -14,6 +14,7 @@ const runePool: RunePoolMessages = {
   'runePool.detail.assetAmount': 'Asset Amount',
   'runePool.detail.daysLeft': 'Days remaining until you can withdraw',
   'runePool.detail.blocksLeft': 'Blocks remaining until you can withdraw',
+  'runePool.detail.warning': 'Depositing to Rune pool will reset the withdraw period',
   'runePool.info.max.withdraw.value': 'Max value to withdraw',
   'runePool.info.max.balance': 'Max balance',
   'runePool.add.state.sending': 'Sending add rune transaction',

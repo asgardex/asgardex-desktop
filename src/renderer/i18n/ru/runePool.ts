@@ -14,6 +14,7 @@ const runePool: RunePoolMessages = {
   'runePool.detail.assetAmount': 'Количество активов',
   'runePool.detail.daysLeft': 'Дней осталось до возможности вывода',
   'runePool.detail.blocksLeft': 'Блоков осталось до возможности вывода',
+  'runePool.detail.warning': 'Депозит в пул Rune сбросит период вывода средств',
   'runePool.info.max.withdraw.value': 'Максимальная сумма для вывода',
   'runePool.info.max.balance': 'Максимальный баланс',
   'runePool.add.state.sending': 'Отправка транзакции добавления рун',

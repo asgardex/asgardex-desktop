@@ -14,6 +14,7 @@ const runePool: RunePoolMessages = {
   'runePool.detail.assetAmount': 'Asset-Menge',
   'runePool.detail.daysLeft': 'Verbleibende Tage bis zur Abhebung',
   'runePool.detail.blocksLeft': 'Verbleibende Blöcke bis zur Abhebung',
+  'runePool.detail.warning': 'Eine Einzahlung in den Rune-Pool setzt den Auszahlungszeitraum zurück',
   'runePool.info.max.withdraw.value': 'Maximaler Abhebungswert',
   'runePool.info.max.balance': 'Maximaler Kontostand',
   'runePool.add.state.sending': 'Rune-Transaktion wird gesendet',

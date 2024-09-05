@@ -14,6 +14,7 @@ const runePool: RunePoolMessages = {
   'runePool.detail.assetAmount': "Quantité d'actif",
   'runePool.detail.daysLeft': 'Jours restants avant de pouvoir retirer',
   'runePool.detail.blocksLeft': 'Blocs restants avant de pouvoir retirer',
+  'runePool.detail.warning': 'Déposer dans le pool de Rune réinitialisera la période de retrait',
   'runePool.info.max.withdraw.value': 'Valeur maximale à retirer',
   'runePool.info.max.balance': 'Solde maximum',
   'runePool.add.state.sending': "Envoi de la transaction d'ajout de runes",
