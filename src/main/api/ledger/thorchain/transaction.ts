@@ -6,7 +6,7 @@ import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
-import { getDerivationPaths } from './common'
+import { getDefaultClientUrls, getDerivationPaths } from './common'
 
 /**
  * Sends `MsgSend` message using Ledger
@@ -36,6 +36,7 @@ export const send = async ({
     const clientLedger = new ClientLedger({
       transport,
       ...defaultClientConfig,
+      clientUrls: getDefaultClientUrls(),
       rootDerivationPaths: getDerivationPaths(walletAccount, network),
       network: network
     })
@@ -83,6 +84,7 @@ export const deposit = async ({
     const clientLedger = new ClientLedger({
       transport,
       ...defaultClientConfig,
+      clientUrls: getDefaultClientUrls(),
       rootDerivationPaths: getDerivationPaths(walletAccount, network),
       network: network
     })
