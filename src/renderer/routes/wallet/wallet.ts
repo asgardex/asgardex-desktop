@@ -49,6 +49,12 @@ export const savers: Route<void> = {
     return this.template
   }
 }
+export const runepool: Route<void> = {
+  template: `${base.template}/runepool`,
+  path() {
+    return this.template
+  }
+}
 
 export type InteractParams = {
   interactType: InteractType
@@ -62,15 +68,12 @@ export const interact: Route<InteractParams> = {
 
 export type BondParams = {
   interactType: string
-  nodeAddress: string
-  bondAmount: string
 }
 export const bondInteract: Route<BondParams> = {
   template: `${assets.template}/interact/:interactType`,
-  path({ interactType, nodeAddress, bondAmount }) {
+  path({ interactType }) {
     const basePath = `${assets.template}/interact/${interactType}`
-    const queryString = `?nodeAddress=${encodeURIComponent(nodeAddress)}&bondAmount=${encodeURIComponent(bondAmount)}`
-    return `${basePath}${queryString}`
+    return `${basePath}`
   }
 }
 

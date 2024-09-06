@@ -5,10 +5,12 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import * as appRoutes from '../routes/app'
 import * as playgroundRoutes from '../routes/playground'
 import * as poolsRoutes from '../routes/pools'
+import * as lendingRoutes from '../routes/pools/lending'
 import * as saversRoutes from '../routes/pools/savers'
 import * as walletRoutes from '../routes/wallet'
 import { AppSettingsView } from './app/AppSettingsView'
 import { DepositView } from './deposit/DepositView'
+import { LoansView } from './loans/LoansView'
 import { NoContentView } from './NoContentView'
 import { PlaygroundView } from './playground/PlaygroundView'
 import { PoolDetailsView } from './pool/PoolDetailsView'
@@ -24,6 +26,7 @@ import { ImportsView } from './wallet/importsView'
 import { InteractView } from './wallet/Interact'
 import { NoWalletView } from './wallet/NoWalletView'
 import { PoolShareView } from './wallet/PoolShareView'
+import { RunepoolView } from './wallet/RunepoolView'
 import { SaversDetailsView } from './wallet/SaversTableView'
 import { SendView } from './wallet/send'
 import { UnlockView } from './wallet/UnlockView'
@@ -41,6 +44,7 @@ export const ViewRoutes: React.FC<{}> = (): JSX.Element => {
       <Route path={poolsRoutes.active.template} element={<PoolsOverview />} />
       <Route path={poolsRoutes.pending.template} element={<PoolsOverview />} />
       <Route path={poolsRoutes.savers.template} element={<PoolsOverview />} />
+      <Route path={poolsRoutes.lending.template} element={<PoolsOverview />} />
 
       <Route path={poolsRoutes.detail.template} element={<PoolDetailsView />} />
       <Route path={poolsRoutes.swap.template} element={<SwapView />} />
@@ -49,6 +53,22 @@ export const ViewRoutes: React.FC<{}> = (): JSX.Element => {
         element={
           <WalletAuth>
             <SaversView />
+          </WalletAuth>
+        }
+      />
+      <Route
+        path={lendingRoutes.borrow.template}
+        element={
+          <WalletAuth>
+            <LoansView />
+          </WalletAuth>
+        }
+      />
+      <Route
+        path={lendingRoutes.repay.template}
+        element={
+          <WalletAuth>
+            <LoansView />
           </WalletAuth>
         }
       />
@@ -91,6 +111,14 @@ export const ViewRoutes: React.FC<{}> = (): JSX.Element => {
         element={
           <WalletAuth>
             <SaversDetailsView />
+          </WalletAuth>
+        }
+      />
+      <Route
+        path={walletRoutes.runepool.template}
+        element={
+          <WalletAuth>
+            <RunepoolView />
           </WalletAuth>
         }
       />

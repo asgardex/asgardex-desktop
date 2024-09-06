@@ -24,7 +24,7 @@ import * as O from 'fp-ts/lib/Option'
 import { FormattedMessage, useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { KeystoreId } from '../../../shared/api/types'
+import { KeystoreId, TrustedAddress, TrustedAddresses } from '../../../shared/api/types'
 import { getDerivationPath as getEvmDerivationPath } from '../../../shared/evm/ledger'
 import { EvmHDMode } from '../../../shared/evm/types'
 import { chainToString, EnabledChain, isSupportedChain } from '../../../shared/utils/chain'
@@ -44,6 +44,7 @@ import { getWalletNamesFromKeystoreWallets, isEnabledLedger } from '../../helper
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
 import * as appRoutes from '../../routes/app'
 import * as walletRoutes from '../../routes/wallet'
+import { userAddresses$, addAddress, removeAddress } from '../../services/storage/userAddresses'
 import { userChains$, addChain, removeChain } from '../../services/storage/userChains'
 import { addAsset, removeAsset } from '../../services/storage/userChainTokens'
 import {
@@ -376,7 +377,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                       <InfoIcon
                         tooltip={intl.formatMessage(
                           { id: 'setting.wallet.hdpath.legacy.info' },
-                          { path: getEvmDerivationPath(walletAccountMap[chain], walletIndexMap[chain], 'ledgerlive') }
+                          { path: getEvmDerivationPath(walletAccountMap[chain], walletIndexMap[chain], 'legacy') }
                         )}
                       />
                     </Styled.EthDerivationModeRadioLabel>
@@ -387,7 +388,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                       <InfoIcon
                         tooltip={intl.formatMessage(
                           { id: 'setting.wallet.hdpath.metamask.info' },
-                          { path: getEvmDerivationPath(walletAccountMap[chain], walletIndexMap[chain], 'ledgerlive') }
+                          { path: getEvmDerivationPath(walletAccountMap[chain], walletIndexMap[chain], 'metamask') }
                         )}
                       />
                     </Styled.EthDerivationModeRadioLabel>
@@ -429,7 +430,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                   },
                   { chain }
                 )}>
-                <Styled.RemoveLedgerIcon onClick={() => removeLedgerAddress(chain)} />
+                <Styled.RemoveAddressIcon onClick={() => removeLedgerAddress(chain)} />
               </Tooltip>
             </div>
           </>
@@ -718,6 +719,91 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     [addAssetToStorage, filteredAssets, handleRemoveAsset, isAddingByChain]
   )
 
+  const [trustedAddresses, setTrustedAddresses] = useState<TrustedAddresses>()
+  const [newAddress, setNewAddress] = useState<Partial<TrustedAddress>>({})
+
+  useEffect(() => {
+    const subscription = userAddresses$.subscribe((addresses) => setTrustedAddresses({ addresses }))
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleAddAddress = useCallback(() => {
+    if (newAddress.name && newAddress.address && newAddress.chain) {
+      addAddress({ name: newAddress.name, address: newAddress.address, chain: newAddress.chain })
+      setNewAddress({ chain: '', name: '', address: '' })
+      message.success(intl.formatMessage({ id: 'common.addAddress' }))
+    } else {
+      message.error(intl.formatMessage({ id: 'common.error' }))
+    }
+  }, [newAddress, intl])
+
+  const handleRemoveAddress = useCallback(
+    (address: TrustedAddress) => {
+      removeAddress(address)
+      message.success(intl.formatMessage({ id: 'common.removeAddress' }))
+    },
+    [intl]
+  )
+
+  const renderAddAddressForm = useCallback(
+    () => (
+      <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <AutoComplete
+          key={newAddress.chain || 'autocomplete'}
+          style={{ width: 150, marginRight: 8 }}
+          placeholder={intl.formatMessage({ id: 'common.chain' })}
+          options={enabledChains.map((chain) => ({ value: chain }))}
+          value={newAddress.chain}
+          onChange={(value) => setNewAddress((prev) => ({ ...prev, chain: value }))}
+          filterOption={(inputValue, option) =>
+            option ? option.value.toLowerCase().includes(inputValue.toLowerCase()) : false
+          }
+        />
+        <Styled.Input
+          placeholder={intl.formatMessage({ id: 'wallet.column.name' })}
+          value={newAddress.name}
+          onChange={(e) => setNewAddress((prev) => ({ ...prev, name: e.target.value }))}
+        />
+        <Styled.Input
+          placeholder={intl.formatMessage({ id: 'common.address' })}
+          value={newAddress.address}
+          onChange={(e) => setNewAddress((prev) => ({ ...prev, address: e.target.value }))}
+        />
+        <div className="mr-30px flex items-center md:mr-0">
+          <Styled.AddLedgerButton onClick={handleAddAddress}>
+            <Styled.AddLedgerIcon /> {intl.formatMessage({ id: 'common.store' })}
+          </Styled.AddLedgerButton>
+          <InfoIcon className="ml-10px" tooltip={intl.formatMessage({ id: 'setting.wallet.storeAddress.info' })} />
+        </div>
+      </div>
+    ),
+    [newAddress, handleAddAddress, intl, enabledChains]
+  )
+
+  const renderTrustedAddresses = useCallback(
+    (chain: Chain) => (
+      <List
+        dataSource={trustedAddresses?.addresses.filter((addr) => addr.chain === chain) || []}
+        renderItem={(item) => (
+          <List.Item>
+            <div className="flex w-full items-center justify-between">
+              <List.Item.Meta
+                title={<div className="text-text0 dark:text-text0d">{item.name}</div>}
+                description={
+                  <div className="flex w-full items-center ">
+                    {' '}
+                    <Styled.AddressEllipsis address={item.address} chain={chain} network={network} enableCopy={true} />
+                    <Styled.RemoveAddressIcon onClick={() => handleRemoveAddress(item)} />
+                  </div>
+                }
+              />
+            </div>
+          </List.Item>
+        )}
+      />
+    ),
+    [trustedAddresses?.addresses, network, handleRemoveAddress]
+  )
   const renderAccounts = useMemo(
     () =>
       FP.pipe(
@@ -733,9 +819,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                   <Styled.AccountTitle>{chain}</Styled.AccountTitle>
                 </div>
                 <div className="mt-10px w-full">
-                  {/* keystore */}
+                  {/* Render keystore and ledger addresses as before */}
                   {renderKeystoreAddress(chain, keystore)}
-                  {/* ledger */}
                   {isEnabledLedger(chain, network) && isSupportedChain(chain)
                     ? renderLedgerAddress(chain, oLedger)
                     : renderLedgerNotSupported}
@@ -744,15 +829,30 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                   <SwitchButton active={enabledChains.includes(chain)} onChange={() => toggleChain(chain)} />
                   <span className="ml-2 text-text0 dark:text-text0d">
                     {enabledChains.includes(chain)
-                      ? intl.formatMessage({ id: 'common.disable' }, { chain: chain })
-                      : intl.formatMessage({ id: 'common.enable' }, { chain: chain })}
+                      ? intl.formatMessage({ id: 'common.enable' }, { chain: chain })
+                      : intl.formatMessage({ id: 'common.disable' }, { chain: chain })}
                   </span>
                 </div>
+
+                {/* Render Trusted Addresses */}
+                <div className="mx-40px mt-10px w-full">
+                  {/* {renderAddAddressForm(chain)} */}
+                  {trustedAddresses?.addresses.some((addr) => addr.chain === chain) && (
+                    <div className="text-text0 dark:text-text0d">
+                      <h4 className="text-text0 dark:text-text0d">
+                        {intl.formatMessage({ id: 'common.savedAddresses' })}
+                      </h4>
+                      {renderTrustedAddresses(chain)}
+                    </div>
+                  )}
+                </div>
+
+                {/* Asset Management Section */}
                 {(chain === ETHChain || chain === AVAXChain || chain === BSCChain || chain === ARBChain) && (
                   <div className="mx-40px mt-10px flex w-full items-center">
                     <SwitchButton
-                      active={!!isAddingByChain[chain]} // Use the toggle state for the specific chain
-                      onChange={() => toggleStorageMode(chain)} // Pass the specific chain to toggle the state
+                      active={!!isAddingByChain[chain]}
+                      onChange={() => toggleStorageMode(chain)}
                       className="mr-10px"
                     />
                     <span className="mr-2 text-text0 dark:text-text0d">
@@ -797,6 +897,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
       renderLedgerNotSupported,
       enabledChains,
       intl,
+      trustedAddresses?.addresses,
+      renderTrustedAddresses,
       isAddingByChain,
       assetSearch,
       filteredAssets,
@@ -1010,6 +1112,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                   size="large"
                 />
               </div>
+              <div className="mx-20px mt-10px">{renderAddAddressForm()}</div>
               {renderAccounts}
             </Styled.AccountCard>
           </div>

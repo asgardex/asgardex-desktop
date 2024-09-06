@@ -7,7 +7,7 @@ import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
 import { VerifyAddressHandler } from '../types'
-import { getDerivationPaths } from './common'
+import { getDefaultClientUrls, getDerivationPaths } from './common'
 
 export const getAddress = async (
   transport: Transport,
@@ -19,6 +19,7 @@ export const getAddress = async (
     const clientLedger = new ClientLedger({
       transport,
       ...defaultClientConfig,
+      clientUrls: getDefaultClientUrls(),
       rootDerivationPaths: getDerivationPaths(walletAccount, network),
       network: network
     })

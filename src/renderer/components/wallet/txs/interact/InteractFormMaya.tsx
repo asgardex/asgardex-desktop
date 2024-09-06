@@ -12,6 +12,7 @@ import {
   CryptoAmount,
   assetAmount,
   assetToBase,
+  baseAmount,
   baseToAsset,
   bn,
   formatAssetAmountCurrency
@@ -27,6 +28,7 @@ import { useIntl } from 'react-intl'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
+import { isUSDAsset } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
 import { getBondMemo, getLeaveMemo, getUnbondMemo } from '../../../../helpers/memoHelper'
 import { getPoolPriceValue } from '../../../../helpers/poolHelperMaya'
@@ -35,7 +37,7 @@ import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { FeeRD } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../services/clients'
 import { INITIAL_INTERACT_STATE } from '../../../../services/mayachain/const'
-import { InteractState, InteractStateHandler } from '../../../../services/mayachain/types'
+import { InteractState, InteractStateHandler, NodeInfos, NodeInfosRD } from '../../../../services/mayachain/types'
 import { ValidatePasswordHandler, WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
 import { TxModal } from '../../../modal/tx'
@@ -65,6 +67,11 @@ type FormValues = {
   preferredAsset: string
   expiry: number
 }
+type UserNodeInfo = {
+  nodeAddress: string
+  walletAddress: string
+  bondAmount: BaseAmount
+}
 
 type Props = {
   interactType: InteractType
@@ -83,6 +90,7 @@ type Props = {
   mayachainQuery: MayachainQuery
   network: Network
   poolDetails: PoolDetails
+  nodes: NodeInfosRD
 }
 export const InteractFormMaya: React.FC<Props> = (props) => {
   const {
@@ -101,16 +109,52 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
     reloadFeesHandler,
     validatePassword$,
     mayachainQuery,
-    network
+    network,
+    nodes: nodesRD
   } = props
   const intl = useIntl()
 
   const { asset } = balance
+  const { walletAddress } = balance
   const pricePool = usePricePoolMaya()
 
   const [hasProviderAddress, setHasProviderAddress] = useState(false)
 
+  const [userNodeInfo, setUserNodeInfo] = useState<UserNodeInfo | undefined>(undefined)
   const [_amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
+
+  const nodes: NodeInfos = useMemo(
+    () =>
+      FP.pipe(
+        nodesRD,
+        RD.getOrElse(() => [] as NodeInfos)
+      ),
+    [nodesRD]
+  )
+
+  useEffect(() => {
+    let foundNodeInfo: UserNodeInfo | undefined = undefined
+
+    for (const node of nodes) {
+      const matchingProvider = node.bondProviders.providers.find((provider) => walletAddress === provider.bondAddress)
+
+      if (matchingProvider) {
+        // If a matching provider is found, set the UserNodeInfo state
+        foundNodeInfo = {
+          nodeAddress: node.address,
+          walletAddress: matchingProvider.bondAddress,
+          bondAmount: matchingProvider.bond
+        }
+        break // Exit the loop after finding the first match
+      }
+    }
+
+    if (foundNodeInfo) {
+      setUserNodeInfo(foundNodeInfo)
+    } else {
+      setUserNodeInfo(undefined) // Reset the state if no match is found
+    }
+  }, [nodes, walletAddress]) // Re-run the effect if nodes or walletAddress changes
 
   const [memo, setMemo] = useState<string>('')
   const amountToSend = useMemo(() => {
@@ -119,6 +163,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
       case 'custom':
       case 'mayaname':
       case 'thorname':
+      case 'runePool':
         return _amountToSend
       case 'unbond':
       case 'leave':
@@ -608,6 +653,8 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
 
   const [showDetails, setShowDetails] = useState<boolean>(true)
 
+  const bondBaseAmount = userNodeInfo ? userNodeInfo.bondAmount : baseAmount(0)
+
   return (
     <Styled.Form
       form={form}
@@ -706,6 +753,29 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
                     disabled={isLoading}
                     onChange={() => getMemo()}
                   />
+                )}
+                {userNodeInfo && (
+                  <div className="p-4">
+                    <div className="ml-[-2px] flex w-full justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                      {intl.formatMessage({ id: 'common.nodeAddress' })}
+                      <div className="truncate pl-10px font-main text-[12px]">{userNodeInfo.nodeAddress}</div>
+                    </div>
+                    <div className="ml-[-2px] flex w-full justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                      {intl.formatMessage({ id: 'common.address.self' })}
+                      <div className="truncate pl-10px font-main text-[12px]">{walletAddress}</div>
+                    </div>
+                    <div className="ml-[-2px] flex w-full justify-between  py-10px font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                      {intl.formatMessage({ id: 'bonds.currentBond' })}
+                      <div className="truncate pl-10px font-main text-[12px]">
+                        {formatAssetAmountCurrency({
+                          asset: AssetCacao,
+                          amount: baseToAsset(bondBaseAmount),
+                          trimZeros: true,
+                          decimal: 0
+                        })}
+                      </div>
+                    </div>
+                  </div>
                 )}
                 <Styled.Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} disabled={isLoading} />
                 {isFeeError && renderFeeError}
@@ -844,6 +914,17 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
                 }),
                 O.toNullable
               )}
+              <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
+                {intl.formatMessage({ id: 'common.amount' })}
+                <div className="truncate pl-10px font-main text-[12px]">
+                  {formatAssetAmountCurrency({
+                    amount: baseToAsset(_amountToSend), // Find the value of swap slippage
+                    asset: AssetCacao,
+                    decimal: isUSDAsset(AssetCacao) ? 2 : 6,
+                    trimZeros: !isUSDAsset(AssetCacao)
+                  })}
+                </div>
+              </div>
 
               <div className="ml-[-2px] flex w-full items-start pt-10px font-mainBold text-[14px]">
                 {intl.formatMessage({ id: 'common.memo' })}

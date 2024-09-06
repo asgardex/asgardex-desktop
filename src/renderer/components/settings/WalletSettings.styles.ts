@@ -178,7 +178,7 @@ export const AddLedgerIcon = styled(PlusCircleOutlined)`
   color: ${palette('primary', 0)};
 `
 
-export const RemoveLedgerIcon = styled(RemoveIcon)`
+export const RemoveAddressIcon = styled(RemoveIcon)`
   margin-left: 5px;
   cursor: pointer;
   width: ${ICON_SIZE}px;

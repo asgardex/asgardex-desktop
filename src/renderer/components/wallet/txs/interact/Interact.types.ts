@@ -1,1 +1,1 @@
-export type InteractType = 'bond' | 'unbond' | 'leave' | 'custom' | 'thorname' | 'mayaname'
+export type InteractType = 'bond' | 'unbond' | 'leave' | 'custom' | 'thorname' | 'mayaname' | 'runePool'

@@ -33,8 +33,16 @@ import {
   reloadLiquidityProviders,
   getSaverProvider$,
   reloadSaverProvider,
+  getRunePoolProvider$,
+  reloadRunePoolProvider,
+  getBorrowerProvider$,
+  reloadBorrowerProvider,
   getTxStatus$,
-  reloadTxStatus
+  reloadTxStatus,
+  getLoanQuoteOpen$,
+  reloadLoanQuoteOpen,
+  getLoanQuoteClose$,
+  reloadLoanQuoteClose
 } from '../services/thorchain'
 
 export type ThorchainContextValue = {
@@ -70,8 +78,16 @@ export type ThorchainContextValue = {
   reloadLiquidityProviders: typeof reloadLiquidityProviders
   getSaverProvider$: typeof getSaverProvider$
   reloadSaverProvider: typeof reloadSaverProvider
+  getRunePoolProvider$: typeof getRunePoolProvider$
+  reloadRunePoolProvider: typeof reloadRunePoolProvider
+  getBorrowerProvider$: typeof getBorrowerProvider$
+  reloadBorrowerProvider: typeof reloadBorrowerProvider
   getTxStatus$: typeof getTxStatus$
   reloadTxStatus: typeof reloadTxStatus
+  getLoanQuoteOpen$: typeof getLoanQuoteOpen$
+  reloadLoanQuoteOpen: typeof reloadLoanQuoteOpen
+  getLoanQuoteClose$: typeof getLoanQuoteClose$
+  reloadLoanQuoteClose: typeof reloadLoanQuoteClose
 }
 
 const initialContext: ThorchainContextValue = {
@@ -105,10 +121,18 @@ const initialContext: ThorchainContextValue = {
   reloadThorchainLastblock,
   getLiquidityProviders,
   reloadLiquidityProviders,
+  getBorrowerProvider$,
+  reloadBorrowerProvider,
   getSaverProvider$,
   reloadSaverProvider,
+  getRunePoolProvider$,
+  reloadRunePoolProvider,
   getTxStatus$,
-  reloadTxStatus
+  reloadTxStatus,
+  getLoanQuoteOpen$,
+  reloadLoanQuoteOpen,
+  getLoanQuoteClose$,
+  reloadLoanQuoteClose
 }
 
 const ThorchainContext = createContext<ThorchainContextValue | null>(null)

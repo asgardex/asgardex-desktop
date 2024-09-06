@@ -14,7 +14,7 @@ import { WalletType } from '../../../../../shared/wallet/types'
 import { useThorchainQueryContext } from '../../../../contexts/ThorchainQueryContext'
 import { mockWalletBalance } from '../../../../helpers/test/testWalletHelper'
 import { FeeRD } from '../../../../services/chain/types'
-import { InteractStateHandler, NodeStatusEnum } from '../../../../services/thorchain/types'
+import { InteractStateHandler, NodeStatusEnum, RunePoolProvider } from '../../../../services/thorchain/types'
 import { ApiError, ErrorId, WalletBalance } from '../../../../services/wallet/types'
 import { InteractType } from './Interact.types'
 import { InteractFormThor as Component } from './InteractFormThor'
@@ -71,6 +71,17 @@ const Template = ({ interactType, txRDStatus, feeRDStatus, balance, validAddress
   }
   const { thorchainQuery } = useThorchainQueryContext()
   const [nodesList] = useState<Address[]>([])
+
+  const mockRunePoolProvider: RunePoolProvider = {
+    address: 'thor1exampleaddress',
+    value: baseAmount(1000), // Replace with the appropriate base amount
+    pnl: baseAmount(100),
+    depositAmount: baseAmount(1000),
+    withdrawAmount: baseAmount(500),
+    addHeight: O.some(12345),
+    withdrawHeight: O.some(12346),
+    walletType: 'keystore'
+  }
   const feeRD: FeeRD = FP.pipe(
     feeRDStatus,
     getMockRDValueFactory<Error, BaseAmount>(
@@ -104,9 +115,9 @@ const Template = ({ interactType, txRDStatus, feeRDStatus, balance, validAddress
       }}
       getExplorerTxUrl={(txHash: TxHash) => O.some(`url/asset-${txHash}`)}
       poolDetails={[]}
-      nodeAddress=""
-      bondAmount=""
       nodes={RD.success(nodesList.map((address) => mockNodeInfo(address)))}
+      runePoolProvider={RD.success(mockRunePoolProvider)}
+      thorchainLastblock={RD.success([])}
     />
   )
 }

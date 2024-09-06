@@ -8,8 +8,13 @@ const common: CommonMessages = {
   'common.greeting': 'Добро пожаловать, {name}',
   'common.copyright': '©',
   'common.type': 'Тип',
+  'common.chain': 'Цепь',
+  'common.store': 'Хранить',
   'common.address': 'Адрес',
   'common.addresses': 'Адреса',
+  'common.savedAddresses': 'Сохраненные адреса',
+  'common.addAddress': 'Адрес успешно добавлен',
+  'common.removeAddress': 'Адрес успешно удален',
   'common.thorname': 'THORName',
   'common.thornameRegistrationSpecifics':
     'THORNames позволяют каждому зарегистрировать кросс-цепочечные адреса кошельков с использованием строки из 1-30 шестнадцатеричных символов, включая специальные символы -+. THORNames ограничены 30 символами, включая ^[a-zA-Z0-9+-]+$.',
@@ -39,8 +44,8 @@ const common: CommonMessages = {
   'common.general': 'Основной',
   'common.advanced': 'Продвинутый',
   'common.privateData': 'Личные данные',
-  'common.enable': 'Включить {chain}',
-  'common.disable': 'Отключить {chain}',
+  'common.enable': '{chain} включена',
+  'common.disable': '{chain} отключена',
   'common.disabledChains': 'Отключенные цепи',
   'common.chainDisabled': 'Вы отключили цепочку {chain}, пожалуйста, включите её, чтобы продолжить обмен',
   'common.remove': 'Удалить',
@@ -107,6 +112,11 @@ const common: CommonMessages = {
   'common.completeLp': 'выполнить ЛП',
   'common.swap': 'Обмен',
   'common.savers': 'Сбережения',
+  'common.lending': 'Кредитование',
+  'common.borrow': 'Занимать',
+  'common.repay': 'Погашать',
+  'common.collateral': 'Залог',
+  'common.debt': 'Долг',
   'common.earn': 'Заработок',
   'common.liquidity': 'Ликвидность',
   'common.withdraw': 'Вывести',
@@ -177,7 +187,8 @@ const common: CommonMessages = {
   'common.legacy': 'Устаревший',
   'common.ledgerlive': 'Ledger Live',
   'common.metamask': 'MetaMask',
-  'common.unknown': 'Неизвестен'
+  'common.unknown': 'Неизвестен',
+  'common.featureUnderDevelopment': 'Функция в разработке, не использовать'
 }
 
 export default common

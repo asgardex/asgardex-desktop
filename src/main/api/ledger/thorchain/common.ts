@@ -19,3 +19,11 @@ export const getDerivationPaths = (walletAccount: number, network: Network): Roo
   }
   return paths
 }
+
+export const getDefaultClientUrls = (): Record<Network, string[]> => {
+  return {
+    [Network.Testnet]: ['deprecated'],
+    [Network.Stagenet]: ['https://stagenet-rpc.ninerealms.com'],
+    [Network.Mainnet]: ['https://rpc.ninerealms.com']
+  }
+}

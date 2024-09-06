@@ -23,6 +23,8 @@ const settings: SettingMessages = {
   'setting.wallet.hdpath.legacy.info': 'Veralteter Derivation Pfad {path}',
   'setting.wallet.hdpath.ledgerlive.info': 'Ledger Live Derivation Pfad {path}',
   'setting.wallet.hdpath.metamask.info': 'Metamask Derivation Pfad {path}',
+  'setting.wallet.storeAddress.info':
+    'Speichern Sie Ihre vertrauenswürdigen Adressen im lokalen Speicher, sie werden unter der Kette oder in der Sendeansicht aufgelistet',
   'setting.thornode.node.error.unhealthy':
     'THORNode API URL scheint "unhealthy" zu sein beim Überprüfen von "{endpoint}"',
   'setting.thornode.node.error.url': 'Ungültige THORNode API URL. Bitte überprüfe diese und versuche es erneut.',

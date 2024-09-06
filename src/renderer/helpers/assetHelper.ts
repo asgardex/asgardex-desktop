@@ -282,7 +282,7 @@ export const assetInERC20Whitelist = (asset: AnyAsset): boolean =>
 export const iconUrlInERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   FP.pipe(
     ERC20_WHITELIST,
-    A.findFirst(({ asset: assetInList }) => eqAsset.equals(assetInList, asset)),
+    A.findFirst(({ asset: assetInList }) => assetInList.symbol.toUpperCase() === asset.symbol.toUpperCase()),
     O.chain(({ iconUrl }) => iconUrl)
   )
 /**
@@ -301,7 +301,7 @@ export const assetInARBERC20Whitelist = (asset: AnyAsset): boolean =>
 export const iconUrlInARBERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   FP.pipe(
     ARB_TOKEN_WHITELIST,
-    A.findFirst(({ asset: assetInList }) => eqAsset.equals(assetInList, asset)),
+    A.findFirst(({ asset: assetInList }) => assetInList.symbol.toUpperCase() === asset.symbol.toUpperCase()),
     O.chain(({ iconUrl }) => iconUrl)
   )
 
@@ -321,7 +321,7 @@ export const assetInAVAXERC20Whitelist = (asset: AnyAsset): boolean =>
 export const iconUrlInAVAXERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   FP.pipe(
     AVAX_TOKEN_WHITELIST,
-    A.findFirst(({ asset: assetInList }) => eqAsset.equals(assetInList, asset)),
+    A.findFirst(({ asset: assetInList }) => assetInList.symbol.toUpperCase() === asset.symbol.toUpperCase()),
     O.chain(({ iconUrl }) => iconUrl)
   )
 
@@ -341,7 +341,7 @@ export const assetInBSCERC20Whitelist = (asset: AnyAsset): boolean =>
 export const iconUrlInBSCERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   FP.pipe(
     BSC_TOKEN_WHITELIST,
-    A.findFirst(({ asset: assetInList }) => eqAsset.equals(assetInList, asset)),
+    A.findFirst(({ asset: assetInList }) => assetInList.symbol.toUpperCase() === asset.symbol.toUpperCase()),
     O.chain(({ iconUrl }) => iconUrl)
   )
 /**

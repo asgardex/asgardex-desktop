@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { Address, BaseAmount } from '@xchainjs/xchain-util'
+import { Address } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -20,7 +20,7 @@ type Props = {
   nodes: NodeInfosRD
   removeNode: (node: Address) => void
   goToNode: (node: Address) => void
-  goToAction: (action: string, node: string, bond: BaseAmount) => void
+  goToAction: (action: string, node: string) => void
   network: Network
   addNode: (node: Address, network: Network) => void
   addressValidationThor: AddressValidation

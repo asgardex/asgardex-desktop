@@ -8,8 +8,12 @@ export type CommonMessageKey =
   | 'common.dex'
   | 'common.faqs'
   | 'common.type'
+  | 'common.chain'
   | 'common.address'
   | 'common.addresses'
+  | 'common.savedAddresses'
+  | 'common.addAddress'
+  | 'common.removeAddress'
   | 'common.thorname'
   | 'common.thornameRegistrationSpecifics'
   | 'common.thornameError'
@@ -101,12 +105,18 @@ export type CommonMessageKey =
   | 'common.reload'
   | 'common.action'
   | 'common.add'
+  | 'common.store'
   | 'common.completeLp'
   | 'common.swap'
   | 'common.chainDisabled'
   | 'common.savers'
+  | 'common.lending'
+  | 'common.borrow'
+  | 'common.repay'
   | 'common.earn'
   | 'common.liquidity'
+  | 'common.collateral'
+  | 'common.debt'
   | 'common.withdraw'
   | 'common.approve'
   | 'common.accept'
@@ -177,6 +187,7 @@ export type CommonMessageKey =
   | 'common.ledgerlive'
   | 'common.metamask'
   | 'common.unknown'
+  | 'common.featureUnderDevelopment'
 
 export type CommonMessages = {
   [key in CommonMessageKey]: string
@@ -226,6 +237,7 @@ type WalletMessageKey =
   | 'wallet.nav.bonds'
   | 'wallet.nav.poolshares'
   | 'wallet.nav.savers'
+  | 'wallet.nav.runepool'
   | 'wallet.column.name'
   | 'wallet.column.ticker'
   | 'wallet.action.send'
@@ -404,6 +416,7 @@ type SettingMessageKey =
   | 'setting.wallet.hdpath.legacy.info'
   | 'setting.wallet.hdpath.ledgerlive.info'
   | 'setting.wallet.hdpath.metamask.info'
+  | 'setting.wallet.storeAddress.info'
   | 'setting.thornode.node.error.url'
   | 'setting.thornode.node.error.unhealthy'
   | 'setting.thornode.rpc.error.url'
@@ -466,6 +479,7 @@ type DepositMessageKey =
   | 'deposit.interact.actions.addBondProvider'
   | 'deposit.interact.actions.unbond'
   | 'deposit.interact.actions.leave'
+  | 'deposit.interact.actions.runePool'
   | 'deposit.interact.actions.buyThorname'
   | 'deposit.interact.actions.checkThorname'
   | 'deposit.share.title'
@@ -560,6 +574,66 @@ type SaversMessageKey =
 
 export type SaversMessages = { [key in SaversMessageKey]: string }
 
+type RunePoolMessageKey =
+  | 'runePool.noRuneAdded'
+  | 'runePool.detail.title'
+  | 'runePool.detail.availability'
+  | 'runePool.detail.titleDeposit'
+  | 'runePool.detail.titleWithdraw'
+  | 'runePool.detail.current.title'
+  | 'runePool.detail.redeem.title'
+  | 'runePool.detail.percent'
+  | 'runePool.detail.totalGrowth'
+  | 'runePool.detail.priceGrowth'
+  | 'runePool.detail.assetAmount'
+  | 'runePool.detail.daysLeft'
+  | 'runePool.detail.blocksLeft'
+  | 'runePool.detail.warning'
+  | 'runePool.info.max.withdraw.value'
+  | 'runePool.info.max.balance'
+  | 'runePool.add.state.sending'
+  | 'runePool.add.state.checkResults'
+  | 'runePool.add.state.pending'
+  | 'runePool.add.state.success'
+  | 'runePool.add.state.error'
+  | 'runePool.withdraw.state.sending'
+  | 'runePool.withdraw.state.checkResults'
+  | 'runePool.withdraw.state.pending'
+  | 'runePool.withdraw.state.success'
+  | 'runePool.withdraw.state.error'
+
+export type RunePoolMessages = { [key in RunePoolMessageKey]: string }
+
+type LoanMessageKey =
+  | 'loan.noLoans'
+  | 'loan.openLoan'
+  | 'loan.closeLoan'
+  | 'loan.detail.title'
+  | 'loan.detail.debt.current'
+  | 'loan.detail.debt.issued'
+  | 'loan.detail.collateral.deposited'
+  | 'loan.detail.collateral.current'
+  | 'loan.detail.collateral.withdrawn'
+  | 'loan.detail.age'
+  | 'loan.detail.lastRepay'
+  | 'loan.detail.repayed'
+  | 'loan.detail.assetAmount'
+  | 'loan.detail.collaterizationRatio'
+  | 'loan.info.max.loan.value'
+  | 'loan.info.max.balance'
+  | 'loan.borrow.state.sending'
+  | 'loan.borrow.state.checkResults'
+  | 'loan.borrow.state.pending'
+  | 'loan.borrow.state.success'
+  | 'loan.borrow.state.error'
+  | 'loan.repay.state.sending'
+  | 'loan.repay.state.checkResults'
+  | 'loan.repay.state.pending'
+  | 'loan.repay.state.success'
+  | 'loan.repay.state.error'
+
+export type LoanMessages = { [key in LoanMessageKey]: string }
+
 export type HaltMessageKey =
   | 'halt.thorchain'
   | 'halt.trading'
@@ -580,6 +654,8 @@ export type Messages = CommonMessages &
   SwapMessages &
   DepositMessages &
   SaversMessages &
+  RunePoolMessages &
+  LoanMessages &
   LedgerMessages &
   BondsMessages &
   PoolSharesMessage &

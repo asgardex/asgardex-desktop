@@ -207,6 +207,148 @@ export type SaverProvider = {
 export type SaverProviderRD = RD.RemoteData<Error, SaverProvider>
 export type SaverProviderLD = LiveData<Error, SaverProvider>
 
+export type RunePoolProvider = {
+  address: Address
+  value: BaseAmount
+  pnl: BaseAmount
+  depositAmount: BaseAmount
+  withdrawAmount: BaseAmount
+  addHeight: O.Option<number>
+  withdrawHeight: O.Option<number>
+  walletType?: WalletType
+}
+
+export type RunePoolProviderRD = RD.RemoteData<Error, RunePoolProvider>
+export type RunePoolProviderLD = LiveData<Error, RunePoolProvider>
+
+export type BlockInformation = {
+  inboundConfirmationBlocks?: number
+  inboundConfirmationSeconds?: number
+  outboundDelayBlocks?: number
+  outbondDelaySeconds?: number
+}
+
+export type QuoteFees = {
+  asset: string
+  liquidity?: string
+  outbound?: string
+  total_bps?: number
+}
+
+export type LoanOpenQuote = {
+  inboundAddress: string
+  expectedWaitTime: BlockInformation
+  fees: QuoteFees
+  slippageBps?: number
+  streamingSlippageBps?: number
+  router?: string
+  expiry: number
+  warning: string
+  notes: string
+  dustThreshold?: string
+  recommendedMinAmountIn: BaseAmount
+  memo: string
+  expectedAmountOut: BaseAmount
+  expectedCollateralizationRatio: string
+  expectedCollateralDeposited: string
+  expectedDebtIssued: string
+  totalOpenLoanSeconds: number
+}
+
+export type LoanOpenQuoteRD = RD.RemoteData<Error, LoanOpenQuote>
+export type LoanOpenQuoteLD = LiveData<Error, LoanOpenQuote>
+
+export type LoanOpenParams = {
+  asset: AnyAsset
+  amount: BaseAmount
+  targetAsset: AnyAsset
+  destination: string
+  height?: number
+  minOut?: string
+  affiliateBps?: number
+  affiliate?: string
+}
+export type LoanRepayParams = {
+  poolAddress: string
+  asset: AnyAsset
+  sender: string
+  memo: string
+  network: Network
+}
+
+export type LoanCloseQuote = {
+  inboundAddress: string
+  expectedWaitTime: BlockInformation
+  fees: QuoteFees
+  slippageBps?: number
+  streamingSlippageBps?: number
+  router?: string
+  expiry: number
+  warning: string
+  notes: string
+  dustThreshold?: string
+  recommendedMinAmountIn: BaseAmount
+  reccommendedGasRate: string
+  memo: string
+  expectedAmountOut: BaseAmount
+  expectedAmountIn: BaseAmount
+  expectedCollateralWithdrawn: string
+  expectedDebtRepaid: string
+  totalRepaymentSeconds: number
+}
+
+export type LoanCloseQuoteRD = RD.RemoteData<Error, LoanCloseQuote>
+export type LoanCloseQuoteLD = LiveData<Error, LoanCloseQuote>
+
+export type LoanCloseParams = {
+  asset: AnyAsset
+  repayBps: number
+  collateralAsset: AnyAsset
+  loanOwner: string
+  height?: number
+  minOut?: string
+}
+
+export type BorrowerProvider = {
+  owner: Address
+  asset: AnyAsset
+  debtIssued: BaseAmount
+  debtRepaid: BaseAmount
+  debtCurrent: BaseAmount
+  collateralDeposited: BaseAmount
+  collateralWithdrawn: BaseAmount
+  collateralCurrent: BaseAmount
+  lastOpenHeight: O.Option<number>
+  lastRepayHeight: O.Option<number>
+  walletType?: WalletType
+}
+
+export type BorrowerProviderRD = RD.RemoteData<Error, BorrowerProvider>
+export type BorrowerProviderLD = LiveData<Error, BorrowerProvider>
+
+export type ThorchainPool = {
+  asset: AnyAsset
+  shortCode: string
+  status: string
+  decimals: number
+  pendingInboundAsset: BaseAmount
+  pendingInboundRune: BaseAmount
+  balanceAsset: BaseAmount
+  balanceRune: BaseAmount
+  poolUnits: string
+  lpUnits: string
+  synthUnits: string
+  synthSupply: BaseAmount
+  saversDepth: BaseAmount
+  saversUnits: string
+  loanCollateral: BaseAmount
+  loanCollateralRemaining: BaseAmount
+  loanCr: number
+}
+
+export type ThorchainPoolRD = RD.RemoteData<Error, ThorchainPool>
+export type ThorchainPoolLD = LiveData<Error, ThorchainPool>
+
 export type TxStages = {
   inboundObserved: {
     finalCount: number | undefined

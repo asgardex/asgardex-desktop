@@ -9,7 +9,8 @@ import {
   UserNodesStorage,
   IPCExportKeystoreParams,
   UserChainStorage,
-  UserAssetStorage
+  UserAssetStorage,
+  UserTrustedAddressStorage
 } from '../api/types'
 import { ApiFileStoreService, CommonStorage } from '../api/types'
 import { Locale } from '../i18n/types'
@@ -129,6 +130,18 @@ export const apiChainStorage: ApiFileStoreService<UserChainStorage> = {
   save: (_: Partial<CommonStorage>) => Promise.resolve(userChainStorageData),
   remove: () => Promise.resolve(console.log('mock remove chain storage data')),
   get: () => Promise.resolve(userChainStorageData),
+  exists: () => Promise.resolve(true)
+}
+
+const userAddressStorageData: UserTrustedAddressStorage = {
+  addresses: [],
+  version: '1'
+}
+
+export const apiAddressStorage: ApiFileStoreService<UserTrustedAddressStorage> = {
+  save: (_: Partial<CommonStorage>) => Promise.resolve(userAddressStorageData),
+  remove: () => Promise.resolve(console.log('mock remove address storage data')),
+  get: () => Promise.resolve(userAddressStorageData),
   exists: () => Promise.resolve(true)
 }
 

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Col, Row } from 'antd'
@@ -6,7 +6,7 @@ import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -31,21 +31,14 @@ import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import * as walletRoutes from '../../../routes/wallet'
 import { FeeRD } from '../../../services/chain/types'
 import { userNodes$ } from '../../../services/storage/userNodes'
-import { NodeInfosRD } from '../../../services/thorchain/types'
+import { NodeInfosRD, RunePoolProviderRD, ThorchainLastblockRD } from '../../../services/thorchain/types'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAssetRD } from '../../../services/wallet/types'
 import * as Styled from './InteractView.styles'
 
-function useQuery() {
-  return new URLSearchParams(useLocation().search)
-}
-
 export const InteractViewTHOR: React.FC = () => {
   const { interactType: routeInteractType } = useParams<walletRoutes.BondParams>()
-
-  const nodeAddress = useQuery().get('nodeAddress')
-  const bondAmount = useQuery().get('bondAmount')
 
   const { selectedAsset$ } = useWalletContext()
   const [selectedAssetRD] = useObservableState<SelectedWalletAssetRD>(
@@ -118,7 +111,15 @@ export const InteractViewTHOR: React.FC = () => {
     )
   }, [oBalances, selectedAssetRD])
 
-  const { fees$, reloadFees, interact$, getNodeInfos$ } = useThorchainContext()
+  const {
+    fees$,
+    reloadFees,
+    interact$,
+    getNodeInfos$,
+    getRunePoolProvider$,
+    reloadRunePoolProvider,
+    thorchainLastblockState$
+  } = useThorchainContext()
 
   const [feeRD] = useObservableState<FeeRD>(
     () =>
@@ -128,6 +129,8 @@ export const InteractViewTHOR: React.FC = () => {
       ),
     RD.initial
   )
+
+  const thorchainLastblockRD: ThorchainLastblockRD = useObservableState(thorchainLastblockState$, RD.pending)
 
   const [nodeInfos] = useObservableState<NodeInfosRD>(
     () =>
@@ -149,6 +152,36 @@ export const InteractViewTHOR: React.FC = () => {
       ),
     RD.initial
   )
+
+  const [runePoolProviderRD, setRunePoolProviderRD] = useState<RunePoolProviderRD>(RD.initial)
+
+  useEffect(() => {
+    if (O.isSome(oWalletBalance)) {
+      setRunePoolProviderRD(RD.pending) // Set to pending while fetching data
+
+      const subscription = getRunePoolProvider$(
+        oWalletBalance.value.walletAddress,
+        oWalletBalance.value.walletType
+      ).subscribe({
+        next: (rdProvider) => {
+          FP.pipe(
+            rdProvider,
+            RD.fold(
+              () => setRunePoolProviderRD(RD.initial),
+              () => setRunePoolProviderRD(RD.pending),
+              (error) => setRunePoolProviderRD(RD.failure(error)),
+              (provider) => setRunePoolProviderRD(RD.success(provider))
+            )
+          )
+        },
+        error: (error) => setRunePoolProviderRD(RD.failure(error))
+      })
+
+      return () => subscription.unsubscribe() // Cleanup on unmount or when dependencies change
+    } else {
+      setRunePoolProviderRD(RD.initial) // Set to initial if no wallet balance
+    }
+  }, [oWalletBalance, getRunePoolProvider$])
   const interactTypeChanged = useCallback(
     (type: InteractType) => {
       navigate(
@@ -161,8 +194,9 @@ export const InteractViewTHOR: React.FC = () => {
   )
   const reloadHandler = useCallback(() => {
     const lazyReload = reloadBalancesByChain(assetChain)
+    reloadRunePoolProvider()
     lazyReload() // Invoke the lazy function
-  }, [assetChain])
+  }, [assetChain, reloadRunePoolProvider])
 
   return FP.pipe(
     sequenceTRD(interactTypeRD, selectedAssetRD),
@@ -215,9 +249,9 @@ export const InteractViewTHOR: React.FC = () => {
                       thorchainQuery={thorchainQuery}
                       network={network}
                       poolDetails={poolDetails}
-                      nodeAddress={nodeAddress}
-                      bondAmount={bondAmount}
                       nodes={nodeInfos}
+                      runePoolProvider={runePoolProviderRD}
+                      thorchainLastblock={thorchainLastblockRD}
                     />
                   </Interact>
                 )

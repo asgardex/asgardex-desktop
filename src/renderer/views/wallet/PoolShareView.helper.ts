@@ -33,9 +33,7 @@ export const getSharesTotal = (
           const assetShare = ShareHelpers.getAssetShare({
             liquidityUnits: units,
             detail: poolDetail,
-            // FIXME: (@Veado) Fix decimal
-            // https://github.com/thorchain/asgardex-electron/issues/1163
-            assetDecimal: 8 /* FIXME: see previous comment ^ */
+            assetDecimal: 8
           })
           const poolData = dex.chain === THORChain ? toPoolData(poolDetail) : toPoolDataMaya(poolDetail)
           // 2. price asset + rune

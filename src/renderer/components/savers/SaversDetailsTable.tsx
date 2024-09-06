@@ -57,11 +57,6 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       key: 'growthValue'
     },
     {
-      title: intl.formatMessage({ id: 'savers.detail.priceGrowth' }),
-      dataIndex: 'percentLabel',
-      key: 'percentLabel'
-    },
-    {
       title: 'Wallet Type',
       dataIndex: 'walletType',
       key: 'walletType'

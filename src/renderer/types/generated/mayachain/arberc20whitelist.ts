@@ -6863,4 +6863,13 @@ export const ARB_TOKEN_WHITELIST: {
       "https://assets.coingecko.com/coins/images/22308/thumb/ezgif-2-e7fb84364d.png?1696521653"
     ),
   },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: "WEWE-0x7787bfD77E1caac0A6AcADA87f4CF97031569824",
+      ticker: "WEWE",
+      type: 1,
+    },
+    iconUrl: O.some(""),
+  },
 ];

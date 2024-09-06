@@ -47,12 +47,6 @@ export const AVAX_TOKEN_WHITELIST: {
     ),
   },
   {
-    asset: { chain: AVAXChain, symbol: "BUSD", ticker: "BUSD", type: 0 },
-    iconUrl: O.some(
-      "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0x9C9e5fD8bbc25984B178FdCE6117Defa39d2db39/logo.png"
-    ),
-  },
-  {
     asset: {
       chain: AVAXChain,
       symbol: "JOE-0xce347E069B68C53A9ED5e7DA5952529cAF8ACCd4",
@@ -185,36 +179,6 @@ export const AVAX_TOKEN_WHITELIST: {
     ),
   },
   {
-    asset: { chain: AVAXChain, symbol: "DAI", ticker: "DAI", type: 0 },
-    iconUrl: O.some(
-      "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0xd586E7F844cEa2F87f50152665BCbc2C279D8d70/logo.png"
-    ),
-  },
-  {
-    asset: { chain: AVAXChain, symbol: "LINK", ticker: "LINK", type: 0 },
-    iconUrl: O.some(
-      "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0x5947BB275c521040051D82396192181b413227A3/logo.png"
-    ),
-  },
-  {
-    asset: { chain: AVAXChain, symbol: "USDT", ticker: "USDT", type: 0 },
-    iconUrl: O.some(
-      "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0xc7198437980c041c805A1EDcbA50c1Ce5db95118/logo.png"
-    ),
-  },
-  {
-    asset: { chain: AVAXChain, symbol: "WBTC", ticker: "WBTC", type: 0 },
-    iconUrl: O.some(
-      "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0x50b7545627a5162F82A992c33b87aDc75187B218/logo.png"
-    ),
-  },
-  {
-    asset: { chain: AVAXChain, symbol: "WETH", ticker: "WETH", type: 0 },
-    iconUrl: O.some(
-      "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB/logo.png"
-    ),
-  },
-  {
     asset: {
       chain: AVAXChain,
       symbol: "YAK-0x59414b3089ce2AF0010e7523Dea7E2b35d776ec7",
@@ -234,12 +198,6 @@ export const AVAX_TOKEN_WHITELIST: {
     },
     iconUrl: O.some(
       "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0x8729438EB15e2C8B576fCc6AeCdA6A148776C0F5/logo.png"
-    ),
-  },
-  {
-    asset: { chain: AVAXChain, symbol: "USDC", ticker: "USDC", type: 0 },
-    iconUrl: O.some(
-      "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664/logo.png"
     ),
   },
   {
@@ -306,12 +264,6 @@ export const AVAX_TOKEN_WHITELIST: {
     },
     iconUrl: O.some(
       "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0xd6070ae98b8069de6B494332d1A1a81B6179D960/logo.png"
-    ),
-  },
-  {
-    asset: { chain: AVAXChain, symbol: "AAVE", ticker: "AAVE", type: 0 },
-    iconUrl: O.some(
-      "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0x63a72806098Bd3D9520cC43356dD78afe5D386D9/logo.png"
     ),
   },
   {
@@ -422,12 +374,6 @@ export const AVAX_TOKEN_WHITELIST: {
     },
     iconUrl: O.some(
       "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0x22d4002028f537599bE9f666d1c4Fa138522f9c8/logo.png"
-    ),
-  },
-  {
-    asset: { chain: AVAXChain, symbol: "ALPHA", ticker: "ALPHA", type: 0 },
-    iconUrl: O.some(
-      "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0x2147EFFF675e4A4eE1C2f918d181cDBd7a8E208f/logo.png"
     ),
   },
   {
@@ -890,12 +836,6 @@ export const AVAX_TOKEN_WHITELIST: {
     },
     iconUrl: O.some(
       "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0xb279f8DD152B99Ec1D84A489D32c35bC0C7F5674/logo.png"
-    ),
-  },
-  {
-    asset: { chain: AVAXChain, symbol: "BTC", ticker: "BTC", type: 0 },
-    iconUrl: O.some(
-      "https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0x152b9d0FdC40C096757F570A51E494bd4b943E50/logo.png"
     ),
   },
   {

@@ -8,8 +8,13 @@ const common: CommonMessages = {
   'common.greeting': 'Hallo {name}',
   'common.copyright': '©',
   'common.type': 'Typ',
+  'common.chain': 'Kette',
+  'common.store': 'Speichern',
   'common.address': 'Adresse',
   'common.addresses': 'Adressen',
+  'common.savedAddresses': 'Gespeicherte Adressen',
+  'common.addAddress': 'Adresse erfolgreich hinzugefügt',
+  'common.removeAddress': 'Adresse erfolgreich entfernt',
   'common.thorname': 'THORName',
   'common.thornameRegistrationSpecifics':
     'THORNames ermöglichen jedem, Cross-Chain-Wallet-Adressen mit einer Zeichenkette von 1-30 hexadezimalen Zeichen, einschließlich Sonderzeichen -+. THORNames sind auf 30 Zeichen begrenzt, einschließlich ^[a-zA-Z0-9+-]+$.',
@@ -38,8 +43,8 @@ const common: CommonMessages = {
   'common.general': 'Allgemein',
   'common.advanced': 'Erweitert',
   'common.privateData': 'Private Daten',
-  'common.enable': 'Aktivieren {chain}',
-  'common.disable': 'Deaktivieren {chain}',
+  'common.enable': '{chain} aktiviert',
+  'common.disable': '{chain} deaktiviert',
   'common.disabledChains': 'Deaktivierte Ketten',
   'common.chainDisabled':
     'Sie haben die {chain}-Kette deaktiviert, bitte aktivieren Sie sie, um mit dem Tausch fortzufahren',
@@ -108,6 +113,11 @@ const common: CommonMessages = {
   'common.completeLp': 'abgeschlossene LP',
   'common.swap': 'Swap',
   'common.savers': 'Savers',
+  'common.lending': 'Kreditvergabe',
+  'common.borrow': 'Leihen',
+  'common.repay': 'Zurückzahlen',
+  'common.collateral': 'Sicherheit',
+  'common.debt': 'Schuld',
   'common.earn': 'Verdienen',
   'common.liquidity': 'Liquidität',
   'common.withdraw': 'Auszahlen',
@@ -178,7 +188,8 @@ const common: CommonMessages = {
   'common.legacy': 'Veraltet',
   'common.ledgerlive': 'Ledger Live',
   'common.metamask': 'MetaMask',
-  'common.unknown': 'Unbekannt'
+  'common.unknown': 'Unbekannt',
+  'common.featureUnderDevelopment': 'Funktion in Entwicklung, nicht verwenden'
 }
 
 export default common

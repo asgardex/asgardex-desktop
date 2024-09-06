@@ -33,14 +33,25 @@ import { HDMode, WalletType } from '../../../../../shared/wallet/types'
 import { AssetUSDTDAC, ZERO_BASE_AMOUNT } from '../../../../const'
 import { THORCHAIN_DECIMAL, isUSDAsset } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
-import { getBondMemo, getLeaveMemo, getUnbondMemo } from '../../../../helpers/memoHelper'
+import { Action, getBondMemo, getLeaveMemo, getRunePoolMemo, getUnbondMemo } from '../../../../helpers/memoHelper'
 import { getPoolPriceValue } from '../../../../helpers/poolHelper'
+import { emptyString } from '../../../../helpers/stringHelper'
+import { useMimirConstants } from '../../../../hooks/useMimirConstants'
 import { usePricePool } from '../../../../hooks/usePricePool'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { FeeRD } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../services/clients'
 import { INITIAL_INTERACT_STATE } from '../../../../services/thorchain/const'
-import { InteractState, InteractStateHandler, NodeInfos, NodeInfosRD } from '../../../../services/thorchain/types'
+import {
+  InteractState,
+  InteractStateHandler,
+  LastblockItem,
+  NodeInfos,
+  NodeInfosRD,
+  RunePoolProvider,
+  RunePoolProviderRD,
+  ThorchainLastblockRD
+} from '../../../../services/thorchain/types'
 import { ValidatePasswordHandler, WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
 import { TxModal } from '../../../modal/tx'
@@ -49,6 +60,7 @@ import * as StyledR from '../../../shared/form/Radio.styles'
 import { BaseButton, FlatButton, ViewTxButton } from '../../../uielements/button'
 import { CheckButton } from '../../../uielements/button/CheckButton'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
+import { SwitchButton } from '../../../uielements/button/SwitchButton'
 import { UIFees, UIFeesRD } from '../../../uielements/fees'
 import { InfoIcon } from '../../../uielements/info'
 import { InputBigNumber } from '../../../uielements/input'
@@ -70,6 +82,11 @@ type FormValues = {
   preferredAsset: string
   expiry: number
 }
+type UserNodeInfo = {
+  nodeAddress: string
+  walletAddress: string
+  bondAmount: BaseAmount
+}
 
 type Props = {
   interactType: InteractType
@@ -88,9 +105,9 @@ type Props = {
   thorchainQuery: ThorchainQuery
   network: Network
   poolDetails: PoolDetails
-  nodeAddress: string | null
-  bondAmount: string | null
   nodes: NodeInfosRD
+  runePoolProvider: RunePoolProviderRD
+  thorchainLastblock: ThorchainLastblockRD
 }
 export const InteractFormThor: React.FC<Props> = (props) => {
   const {
@@ -110,18 +127,22 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     validatePassword$,
     thorchainQuery,
     network,
-    nodeAddress,
-    bondAmount,
-    nodes: nodesRD
+    nodes: nodesRD,
+    runePoolProvider: runePoolProviderRd,
+    thorchainLastblock: thorchainLastblockRd
   } = props
   const intl = useIntl()
 
   const { asset } = balance
+  const { walletAddress } = balance
   const pricePool = usePricePool()
+  const mimirKeys = useMimirConstants(['RUNEPOOLDEPOSITMATURITYBLOCKS', 'RUNEPOOLENABLED'])
 
   const [hasProviderAddress, setHasProviderAddress] = useState(false)
 
+  const [userNodeInfo, setUserNodeInfo] = useState<UserNodeInfo | undefined>(undefined)
   const [_amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
+  const [runePoolAction, setRunePoolAction] = useState<Action>(Action.add)
 
   const nodes: NodeInfos = useMemo(
     () =>
@@ -131,6 +152,88 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       ),
     [nodesRD]
   )
+  const runePoolProvider: RunePoolProvider = useMemo(() => {
+    const defaultRunePoolProvider: RunePoolProvider = {
+      address: '',
+      value: baseAmount(0),
+      pnl: baseAmount(0),
+      depositAmount: baseAmount(0),
+      withdrawAmount: baseAmount(0),
+      addHeight: O.none,
+      withdrawHeight: O.none,
+      walletType: undefined
+    }
+
+    if (!runePoolProviderRd) {
+      return defaultRunePoolProvider
+    }
+
+    return FP.pipe(
+      runePoolProviderRd,
+      RD.getOrElse(() => defaultRunePoolProvider)
+    )
+  }, [runePoolProviderRd])
+
+  const useRunePoolProviderMaturity = (
+    runePoolProviderRd: RD.RemoteData<Error, { addHeight: O.Option<number> }>,
+    thorchainLastblockRd: RD.RemoteData<Error, Pick<LastblockItem, 'chain' | 'thorchain'>[]>,
+    mimirKeys: { [key: string]: number }
+  ) => {
+    return useMemo(() => {
+      return FP.pipe(
+        RD.combine(runePoolProviderRd, thorchainLastblockRd),
+        RD.chain(([runePoolProvider, lastblocks]) => {
+          return FP.pipe(
+            runePoolProvider.addHeight,
+            O.fold(
+              () => RD.failure(new Error('addHeight is not available')),
+              (addHeight) => {
+                const thorchainBlock = lastblocks.find((block) => block.thorchain)
+                return thorchainBlock
+                  ? RD.success({
+                      addHeight,
+                      lastBlock: thorchainBlock.thorchain,
+                      runePoolMimir: mimirKeys['RUNEPOOLDEPOSITMATURITYBLOCKS']
+                    })
+                  : RD.failure(new Error('Thorchain block not found'))
+              }
+            )
+          )
+        }),
+        RD.map(({ addHeight, lastBlock, runePoolMimir }) => {
+          return H.getBlocksLeft(lastBlock, addHeight, runePoolMimir)
+        })
+      )
+    }, [runePoolProviderRd, thorchainLastblockRd, mimirKeys])
+  }
+
+  const runePoolData = useRunePoolProviderMaturity(runePoolProviderRd, thorchainLastblockRd, mimirKeys)
+  const runePoolAvialable = mimirKeys['RUNEPOOLENABLED'] === 1
+
+  useEffect(() => {
+    let foundNodeInfo: UserNodeInfo | undefined = undefined
+
+    for (const node of nodes) {
+      const matchingProvider = node.bondProviders.providers.find((provider) => walletAddress === provider.bondAddress)
+
+      if (matchingProvider) {
+        // If a matching provider is found, set the UserNodeInfo state
+        foundNodeInfo = {
+          nodeAddress: node.address,
+          walletAddress: matchingProvider.bondAddress,
+          bondAmount: matchingProvider.bond
+        }
+        break // Exit the loop after finding the first match
+      }
+    }
+
+    if (foundNodeInfo) {
+      setUserNodeInfo(foundNodeInfo)
+    } else {
+      setUserNodeInfo(undefined) // Reset the state if no match is found
+    }
+  }, [nodes, walletAddress]) // Re-run the effect if nodes or walletAddress changes
+
   const [memo, setMemo] = useState<string>('')
   const amountToSend = useMemo(() => {
     switch (interactType) {
@@ -142,8 +245,12 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       case 'leave':
       case 'unbond':
         return ZERO_BASE_AMOUNT
+      case 'runePool': {
+        const amnt = runePoolAction === Action.add ? _amountToSend : ZERO_BASE_AMOUNT
+        return amnt
+      }
     }
-  }, [_amountToSend, interactType])
+  }, [_amountToSend, interactType, runePoolAction])
 
   const {
     state: interactState,
@@ -214,6 +321,14 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     ),
     [intl]
   )
+  const renderRunePoolWarning = useMemo(
+    () => (
+      <Label size="big" color="warning">
+        {intl.formatMessage({ id: 'runePool.detail.warning' })}
+      </Label>
+    ),
+    [intl]
+  )
 
   // max amount for RuneNative
   const maxAmount: BaseAmount = useMemo(
@@ -221,14 +336,22 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       FP.pipe(
         oFee,
         O.fold(
-          // Set maxAmount to zero if we dont know anything about fees
           () => ZERO_BASE_AMOUNT,
           (fee) => {
-            return balance.amount.minus(fee.plus(ONE_RUNE_BASE_AMOUNT))
+            if (interactType === 'unbond') {
+              let maxAmountBalOrBond: BaseAmount = ZERO_BASE_AMOUNT
+              maxAmountBalOrBond = userNodeInfo ? userNodeInfo.bondAmount : ZERO_BASE_AMOUNT
+              return maxAmountBalOrBond
+            } else if (interactType === 'runePool' && runePoolAction === Action.withdraw) {
+              return runePoolProvider.value.gt(0) ? runePoolProvider.value : ZERO_BASE_AMOUNT
+            } else {
+              // For other interaction types, use the balance amount
+              return balance.amount.minus(fee.plus(ONE_RUNE_BASE_AMOUNT))
+            }
           }
         )
       ),
-    [oFee, balance.amount]
+    [oFee, interactType, runePoolAction, userNodeInfo, runePoolProvider, balance.amount]
   )
 
   const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(maxAmount, asset)) // Initial state can be null or a suitable default
@@ -240,7 +363,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       pricePool
     })
 
-    if ((maxAmount && interactType === 'bond') || interactType === 'custom') {
+    if ((maxAmount && interactType === 'bond') || interactType === 'custom' || interactType === 'runePool') {
       if (O.isSome(maxAmountPrice)) {
         const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
         setMaxAmountPriceValue(maxCryptoAmount)
@@ -271,6 +394,14 @@ export const InteractFormThor: React.FC<Props> = (props) => {
             }
           })
         case 'custom':
+          return H.validateCustomAmountInput({
+            input: value,
+            errors: {
+              msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
+              msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterOrEqualThan' }, { amount: '0' })
+            }
+          })
+        case 'runePool':
           return H.validateCustomAmountInput({
             input: value,
             errors: {
@@ -433,6 +564,13 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         createMemo = getLeaveMemo(thorAddress)
         break
       }
+      case 'runePool': {
+        createMemo = getRunePoolMemo({
+          action: runePoolAction,
+          bps: H.getRunePoolWithdrawBps(runePoolProvider.value, _amountToSend)
+        })
+        break
+      }
       case 'custom': {
         createMemo = currentMemo
         break
@@ -444,7 +582,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     }
     setMemo(createMemo)
     return createMemo
-  }, [_amountToSend, currentMemo, form, interactType, memo])
+  }, [_amountToSend, currentMemo, form, interactType, memo, runePoolAction, runePoolProvider.value])
 
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
@@ -624,6 +762,13 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         return intl.formatMessage({ id: 'deposit.interact.actions.unbond' })
       case 'leave':
         return intl.formatMessage({ id: 'deposit.interact.actions.leave' })
+      case 'runePool': {
+        const label =
+          runePoolAction === Action.add
+            ? intl.formatMessage({ id: 'wallet.action.deposit' })
+            : intl.formatMessage({ id: 'deposit.withdraw.sym' })
+        return label
+      }
       case 'custom':
         return intl.formatMessage({ id: 'wallet.action.send' })
       case 'thorname':
@@ -633,26 +778,45 @@ export const InteractFormThor: React.FC<Props> = (props) => {
           return intl.formatMessage({ id: 'deposit.interact.actions.buyThorname' })
         }
     }
-  }, [interactType, hasProviderAddress, intl, isOwner])
+  }, [interactType, hasProviderAddress, intl, runePoolAction, isOwner])
 
   const uiFeesRD: UIFeesRD = useMemo(
     () =>
       FP.pipe(
         feeRD,
-        RD.map((fee) => [{ asset: AssetRuneNative, amount: fee.plus(ONE_RUNE_BASE_AMOUNT) }])
+        RD.map((fee) => [
+          {
+            asset: AssetRuneNative,
+            amount: interactType === 'bond' ? fee.plus(ONE_RUNE_BASE_AMOUNT) : fee
+          }
+        ])
       ),
-
-    [feeRD]
+    [feeRD, interactType]
   )
 
   const onClickHasProviderAddress = useCallback(() => {
     // clean address
     form.setFieldsValue({ providerAddress: undefined })
     form.setFieldsValue({ operatorFee: undefined })
+    FP.pipe(
+      feeRD,
+      RD.fold(
+        () => {}, // Handle the initial or loading state
+        () => {}, // Handle the pending state
+        (error) => {
+          console.error('Error calculating fee:', error)
+        },
+        (fee) => {
+          // Calculate the amountToSend
+          const amountToSend = fee.plus(ONE_RUNE_BASE_AMOUNT)
+          setAmountToSend(amountToSend)
+        }
+      )
+    )
     // toggle
     setHasProviderAddress((v) => !v)
     getMemo()
-  }, [form, getMemo])
+  }, [form, getMemo, feeRD])
 
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field
@@ -673,9 +837,10 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   }, [interactType, reset])
 
   const [showDetails, setShowDetails] = useState<boolean>(true)
-  const address = nodeAddress ? nodeAddress : ''
+  const address = ''
   const amount = bn(0)
-  const bondBaseAmount = bondAmount ? baseAmount(Number(bondAmount), 8) : baseAmount(0)
+  const bondBaseAmount = userNodeInfo ? userNodeInfo.bondAmount : baseAmount(0)
+
   return (
     <Styled.Form
       form={form}
@@ -703,6 +868,26 @@ export const InteractFormThor: React.FC<Props> = (props) => {
               <Styled.Input disabled={isLoading} onChange={handleMemo} size="large" />
             </Form.Item>
           </Styled.InputContainer>
+        )}
+        {/** Rune Pool Only */}
+        {interactType === 'runePool' && (
+          <div>
+            <span style={{ display: 'inline-block' }}>
+              <SwitchButton
+                active={runePoolAction === Action.add}
+                onChange={(active) => setRunePoolAction(active ? Action.add : Action.withdraw)}
+              />
+            </span>
+            <span style={{ marginLeft: '10px', display: 'inline-block' }}>
+              <Styled.InputLabel>
+                {runePoolAction === Action.add
+                  ? intl.formatMessage({ id: 'runePool.detail.titleDeposit' })
+                  : intl.formatMessage({ id: 'runePool.detail.titleWithdraw' })}
+              </Styled.InputLabel>
+              {!runePoolAvialable && intl.formatMessage({ id: 'runePool.detail.availability' })}
+            </span>
+            {runePoolProvider.value.gt(0) && runePoolAction === Action.add && renderRunePoolWarning}
+          </div>
         )}
 
         {/* Node address input (BOND/UNBOND/LEAVE only) */}
@@ -749,7 +934,10 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         {/* Amount input (BOND/UNBOND/CUSTOM only) */}
         {!hasProviderAddress && (
           <>
-            {(interactType === 'bond' || interactType === 'unbond' || interactType === 'custom') && (
+            {(interactType === 'bond' ||
+              interactType === 'unbond' ||
+              interactType === 'custom' ||
+              interactType === 'runePool') && (
               <Styled.InputContainer>
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.amount' })}</Styled.InputLabel>
                 <Styled.FormItem
@@ -767,8 +955,11 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                     onChange={onChangeInput}
                   />
                 </Styled.FormItem>
-                {/* max. amount button (BOND/CUSTOM only) */}
-                {(interactType === 'bond' || interactType === 'custom') && (
+                {/* max. amount button (BOND/CUSTOM/UNBOND only) */}
+                {(interactType === 'bond' ||
+                  interactType === 'custom' ||
+                  interactType === 'unbond' ||
+                  interactType === 'runePool') && (
                   <MaxBalanceButton
                     className="mb-10px"
                     color="neutral"
@@ -779,11 +970,15 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                     onChange={() => getMemo()}
                   />
                 )}
-                {nodeAddress && (
+                {userNodeInfo && (interactType === 'bond' || interactType === 'unbond') && (
                   <div className="p-4">
                     <div className="ml-[-2px] flex w-full justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
                       {intl.formatMessage({ id: 'common.nodeAddress' })}
-                      <div className="truncate pl-10px font-main text-[12px]">{nodeAddress}</div>
+                      <div className="truncate pl-10px font-main text-[12px]">{userNodeInfo.nodeAddress}</div>
+                    </div>
+                    <div className="ml-[-2px] flex w-full justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                      {intl.formatMessage({ id: 'common.address.self' })}
+                      <div className="truncate pl-10px font-main text-[12px]">{walletAddress}</div>
                     </div>
                     <div className="ml-[-2px] flex w-full justify-between  py-10px font-mainBold text-[14px] text-gray2 dark:text-gray2d">
                       {intl.formatMessage({ id: 'bonds.currentBond' })}
@@ -1029,7 +1224,15 @@ export const InteractFormThor: React.FC<Props> = (props) => {
           <FlatButton
             className="mt-10px min-w-[200px]"
             loading={isLoading}
-            disabled={isLoading || !!form.getFieldsError().filter(({ errors }) => errors.length).length}
+            disabled={
+              isLoading ||
+              !runePoolAvialable ||
+              (runePoolAction === Action.withdraw &&
+                runePoolData &&
+                RD.isSuccess(runePoolData) &&
+                runePoolData.value.blocksLeft > 0) ||
+              !!form.getFieldsError().filter(({ errors }) => errors.length).length
+            }
             type="submit"
             size="large">
             {submitLabel}
@@ -1094,11 +1297,33 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                 }),
                 O.toNullable
               )}
+              {interactType === 'runePool' && (
+                <>
+                  <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
+                    {intl.formatMessage({ id: 'runePool.detail.daysLeft' })}
+                    <div className="truncate pl-10px font-main text-[12px]">
+                      {RD.fold(
+                        () => <p>{emptyString}</p>,
+                        () => <p>{emptyString}</p>,
+                        (error: Error) => <p>Error: {error.message}</p>,
+                        (data: { daysLeft: number; blocksLeft: number }) => (
+                          <div>
+                            <p>
+                              {intl.formatMessage({ id: 'common.time.days' }, { days: `${data.daysLeft.toFixed(1)}` })}
+                            </p>
+                          </div>
+                        )
+                      )(runePoolData)}
+                    </div>
+                  </div>
+                </>
+              )}
+
               <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
                 {intl.formatMessage({ id: 'common.amount' })}
                 <div className="truncate pl-10px font-main text-[12px]">
                   {formatAssetAmountCurrency({
-                    amount: baseToAsset(_amountToSend), // Find the value of swap slippage
+                    amount: baseToAsset(amountToSend),
                     asset: AssetRuneNative,
                     decimal: isUSDAsset(AssetRuneNative) ? 2 : 6,
                     trimZeros: !isUSDAsset(AssetRuneNative)

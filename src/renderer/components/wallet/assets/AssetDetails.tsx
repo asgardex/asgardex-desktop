@@ -237,7 +237,7 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
           </TextButton>
         </Col>
         <Col span={24}>
-          {asset.type === AssetType.SYNTH ? (
+          {asset.type === AssetType.SYNTH || AssetRuneNative ? (
             <WarningView
               subTitle={intl.formatMessage(
                 { id: 'wallet.txs.history.disabled' },

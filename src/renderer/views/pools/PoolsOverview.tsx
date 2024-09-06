@@ -18,16 +18,18 @@ import { useKeystoreState } from '../../hooks/useKeystoreState'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import * as poolsRoutes from '../../routes/pools'
 import { PoolType } from '../../services/midgard/types'
+import { LoansOverview } from '../loans/LoansOverview'
 import { SaversOverview } from '../savers/SaversOverview'
 import { ActivePools } from './ActivePools'
 import { PendingPools } from './PendingPools'
 
-type TabType = PoolType | 'savers'
+type TabType = PoolType | 'savers' | 'lending'
 
 const TAB_INDEX: Record<TabType, number> = {
   active: 0,
   pending: 1,
-  savers: 2
+  savers: 2,
+  lending: 3
 }
 
 type TabContent = {
@@ -65,16 +67,19 @@ export const PoolsOverview: React.FC = (): JSX.Element => {
 
   const matchPoolsPendingRoute = useMatch({ path: poolsRoutes.pending.path(), end: false })
   const matchPoolsSaversRoute = useMatch({ path: poolsRoutes.savers.path(), end: false })
+  const matchPoolsLendingRoute = useMatch({ path: poolsRoutes.lending.path(), end: false })
 
   const selectedIndex: number = useMemo(() => {
     if (matchPoolsSaversRoute) {
       return TAB_INDEX['savers']
     } else if (matchPoolsPendingRoute) {
       return TAB_INDEX['pending']
+    } else if (matchPoolsLendingRoute) {
+      return TAB_INDEX['lending']
     } else {
       return TAB_INDEX['active']
     }
-  }, [matchPoolsPendingRoute, matchPoolsSaversRoute])
+  }, [matchPoolsLendingRoute, matchPoolsPendingRoute, matchPoolsSaversRoute])
 
   const tabs = useMemo(
     (): TabContent[] => [
@@ -92,6 +97,11 @@ export const PoolsOverview: React.FC = (): JSX.Element => {
         index: TAB_INDEX['savers'],
         label: intl.formatMessage({ id: 'common.savers' }),
         content: <SaversOverview haltedChains={haltedChains} mimirHalt={mimirHalt} walletLocked={walletLocked} />
+      },
+      {
+        index: TAB_INDEX['lending'],
+        label: intl.formatMessage({ id: 'common.lending' }),
+        content: <LoansOverview haltedChains={haltedChains} mimirHalt={mimirHalt} walletLocked={walletLocked} />
       }
     ],
     [intl, haltedChains, mimirHalt, walletLocked]
