@@ -1,12 +1,12 @@
 import type Transport from '@ledgerhq/hw-transport'
 import { Network, TxHash } from '@xchainjs/xchain-client'
-import { ClientLedger, defaultClientConfig, getDefaultClientUrls } from '@xchainjs/xchain-thorchain'
+import { ClientLedger, defaultClientConfig } from '@xchainjs/xchain-thorchain'
 import { Address, Asset, BaseAmount } from '@xchainjs/xchain-util'
 import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
-import { getDerivationPaths } from './common'
+import { getDefaultClientUrls, getDerivationPaths } from './common'
 
 /**
  * Sends `MsgSend` message using Ledger
