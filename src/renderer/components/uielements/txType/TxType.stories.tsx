@@ -5,7 +5,7 @@ import { TxType } from './TxType'
 
 const types = ['Swap', 'Deposit', 'Withdraw', 'Donate', 'Refund'] as const
 
-type InputType = (typeof types)[number]
+type InputType = typeof types[number]
 
 const mapType = (type: InputType): MidgardTxType => {
   switch (type) {
