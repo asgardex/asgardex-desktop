@@ -11,7 +11,7 @@ const Template = () => {
     <PoolActionsHistoryFilter
       currentFilter={filter}
       onFilterChanged={setFilter}
-      availableFilters={['ALL', 'SWITCH', 'DEPOSIT', 'SWAP', 'WITHDRAW', 'DONATE', 'REFUND']}
+      availableFilters={['ALL', 'DEPOSIT', 'SWAP', 'WITHDRAW', 'DONATE', 'REFUND']}
     />
   )
 }

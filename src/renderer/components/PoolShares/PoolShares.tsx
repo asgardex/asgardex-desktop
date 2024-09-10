@@ -150,6 +150,8 @@ export const PoolShares: React.FC<Props> = ({
           <Styled.ManageButton
             disabled={disablePool || type === 'asym'}
             asset={asset}
+            variant="manage"
+            useBorderButton={false}
             isTextView={isDesktopView}
             title={intl.formatMessage(
               { id: 'poolshares.single.notsupported' },

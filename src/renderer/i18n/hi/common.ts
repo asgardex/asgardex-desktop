@@ -137,7 +137,7 @@ const common: CommonMessages = {
   'common.tx.view': '{assetTicker} लेन-देन देखें',
   'common.modal.confirmTitle': 'क्रिया की पुष्टि करें',
   'common.value': 'मात्रा',
-  'common.manage': 'LP प्रबंधन',
+  'common.manage': 'प्रबंधन',
   'common.managePosition': 'स्थिति प्रबंधन',
   'common.analytics': 'विश्लेषण',
   'common.asset.base': 'आधार',
