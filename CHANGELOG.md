@@ -1,3 +1,9 @@
+# 1.22.5 (2024-09-)
+
+## Add
+
+- Add trade asset table [#321](https://github.com/asgardex/asgardex-desktop/pull/322)
+
 # 1.22.4 (2024-09-6)
 
 ## Updates/Fixes

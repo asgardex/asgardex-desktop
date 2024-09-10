@@ -70,6 +70,7 @@ const common: CommonMessages = {
   'common.settings': 'सेटिंग्स',
   'common.asset': 'एसेट',
   'common.assets': 'एसेट्स',
+  'common.tradeAssets': 'संपत्तियों का व्यापार',
   'common.rune': '{dex}',
   'common.pool': 'पूल',
   'common.pool.inbound': 'इनबाउंड पूल',

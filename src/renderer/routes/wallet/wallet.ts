@@ -36,6 +36,12 @@ export const assets: Route<void> = {
     return this.template
   }
 }
+export const tradeAssets: Route<void> = {
+  template: `${base.template}/tradeAssets`,
+  path() {
+    return this.template
+  }
+}
 
 export const poolShares: Route<void> = {
   template: `${base.template}/poolshares`,

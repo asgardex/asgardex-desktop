@@ -326,6 +326,18 @@ export type BorrowerProvider = {
 export type BorrowerProviderRD = RD.RemoteData<Error, BorrowerProvider>
 export type BorrowerProviderLD = LiveData<Error, BorrowerProvider>
 
+export type TradeAccount = {
+  asset: AnyAsset
+  units: BaseAmount
+  owner: Address
+  lastAddHeight: O.Option<number>
+  lastWithdrawHeight: O.Option<number>
+  walletType: WalletType
+}
+
+export type TradeAccountRD = RD.RemoteData<Error, TradeAccount[]>
+export type TradeAccountLD = LiveData<Error, TradeAccount[]>
+
 export type ThorchainPool = {
   asset: AnyAsset
   shortCode: string

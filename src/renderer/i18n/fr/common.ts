@@ -69,6 +69,7 @@ const common: CommonMessages = {
   'common.settings': 'Réglages',
   'common.asset': 'Actif',
   'common.assets': 'Actifs',
+  'common.tradeAssets': 'Négocier des actifs',
   'common.rune': '{dex}',
   'common.pool': 'Pool',
   'common.pool.inbound': 'Pool Inbound',

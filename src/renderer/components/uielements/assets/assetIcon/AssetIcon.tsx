@@ -20,7 +20,6 @@ import {
   isRuneNativeAsset,
   isTgtERC20Asset,
   isAtomAsset,
-  isBtcAssetSynth,
   isArbAsset,
   isAvaxAsset,
   isBscAsset,
@@ -28,20 +27,9 @@ import {
   iconUrlInBSCERC20Whitelist,
   isCacaoAsset,
   isMayaAsset,
-  isLtcSynthAsset,
-  isEthSynthAsset,
-  isArbSynthAsset,
-  isAvaxSynthAsset,
-  isBscSynthAsset,
-  isAtomSynthAsset,
-  isDogeSynthAsset,
-  isBchSynthAsset,
   isDashAsset,
   isKujiAsset,
-  isKujiSynthAsset,
   isUskAsset,
-  isUskSynthAsset,
-  isDashSynthAsset,
   iconUrlInARBERC20Whitelist,
   isAethAsset
 } from '../../../../helpers/assetHelper'
@@ -94,27 +82,23 @@ const chainIconMap = (asset: AnyAsset): string | null => {
 export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = '', network }): JSX.Element => {
   const imgUrl = useMemo(() => {
     // BTC
-    if (isBtcAsset(asset) || isBtcAssetSynth(asset)) {
+    if (isBtcAsset(asset)) {
       return btcIcon
     }
     // ETH || AETH
     if (isEthAsset(asset) || isAethAsset(asset)) {
       return ethIcon
     }
-    // ETH synth
-    if (isEthSynthAsset(asset)) {
-      return ethIcon
-    }
     // ARB
-    if (isArbAsset(asset) || isArbSynthAsset(asset)) {
+    if (isArbAsset(asset)) {
       return arbIcon
     }
     // AVAX
-    if (isAvaxAsset(asset) || isAvaxSynthAsset(asset)) {
+    if (isAvaxAsset(asset)) {
       return avaxIcon
     }
     // BSC
-    if (isBscAsset(asset) || isBscSynthAsset(asset)) {
+    if (isBscAsset(asset)) {
       return bscIcon
     }
     // RUNE
@@ -126,15 +110,15 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
       return cacaoIcon
     }
     // Dash
-    if (isDashAsset(asset) || isDashSynthAsset(asset)) {
+    if (isDashAsset(asset)) {
       return dashIcon
     }
     // LTC
-    if (isLtcAsset(asset) || isLtcSynthAsset(asset)) {
+    if (isLtcAsset(asset)) {
       return `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/litecoin/info/logo.png`
     }
     // BCH
-    if (isBchAsset(asset) || isBchSynthAsset(asset)) {
+    if (isBchAsset(asset)) {
       return `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/bitcoincash/info/logo.png`
     }
 
@@ -143,21 +127,21 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     }
 
     // DOGE
-    if (isDogeAsset(asset) || isDogeSynthAsset(asset)) {
+    if (isDogeAsset(asset)) {
       return dogeIcon
     }
 
     // KUJI
-    if (isKujiAsset(asset) || isKujiSynthAsset(asset)) {
+    if (isKujiAsset(asset)) {
       return kujiIcon
     }
     // USK
-    if (isUskAsset(asset) || isUskSynthAsset(asset)) {
+    if (isUskAsset(asset)) {
       return uskIcon
     }
 
     // Atom
-    if (isAtomAsset(asset) || isAtomSynthAsset(asset)) {
+    if (isAtomAsset(asset)) {
       return atomIcon
     }
     // Hack for USDP // 1inch doesn't supply

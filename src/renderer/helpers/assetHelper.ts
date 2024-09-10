@@ -37,24 +37,9 @@ import {
   AssetBSC,
   AssetLTC,
   AssetRuneNative,
-  AssetSynthBtc,
-  AssetSynthEth,
   AssetCacao,
   AssetMaya,
-  AssetSynthLTC,
-  AssetSynthARB,
-  AssetSynthAVAX,
-  AssetSynthBSC,
-  AssetSynthDOGE,
-  AssetSynthATOM,
-  AssetSynthBCH,
-  AssetSynthAVAXUSDC,
-  AssetSynthEthUsdc,
-  AssetSynthEthUsdt,
-  AssetKUJI,
-  AssetSynthKuji,
-  AssetSynthUsk,
-  AssetSynthDash
+  AssetKUJI
 } from '../../shared/utils/asset'
 import { isSupportedChain } from '../../shared/utils/chain'
 import { AssetTGTERC20, DEFAULT_PRICE_ASSETS, USD_PRICE_ASSETS } from '../const'
@@ -104,153 +89,88 @@ export const isRuneAsset = (asset: AnyAsset): boolean => isRuneNativeAsset(asset
 /**
  * Checks whether an asset is a LTC asset
  */
-export const isLtcAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetLTC)
-
-/**
- * Checks whether an asset is a LTC asset
- */
-export const isLtcSynthAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthLTC)
+export const isLtcAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetLTC.chain && asset.symbol.toUpperCase() === AssetLTC.symbol.toUpperCase()
 
 /**
  * Checks whether an asset is a BCH asset
  */
-export const isBchAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetBCH)
+export const isBchAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetBCH.chain && asset.symbol.toUpperCase() === AssetBCH.symbol.toUpperCase()
 
 /**
  * Checks whether an asset is a Dash asset
  */
-export const isDashAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetDASH)
+export const isDashAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetDASH.chain && asset.symbol.toUpperCase() === AssetDASH.symbol.toUpperCase()
 
 /**
- * Checks whether an asset is a Dash asset
+ * Checks whether an asset is a native | synth | trade Cacao asset
  */
-export const isDashSynthAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthDash)
+export const isCacaoAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetCacao.chain && asset.symbol.toUpperCase() === AssetCacao.symbol.toUpperCase()
 
 /**
- * Checks whether an asset is a BCH synth asset
+ * Checks whether an asset is a native | synth | trade Maya asset
  */
-export const isBchSynthAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthBCH)
+export const isMayaAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetMaya.chain && asset.symbol.toUpperCase() === AssetMaya.symbol.toUpperCase()
 
 /**
- * Checks whether an asset is a Cacao asset
+ * Checks whether an asset is a native | synth | trade BTC asset
  */
-export const isCacaoAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetCacao)
+export const isBtcAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetBTC.chain && asset.symbol.toUpperCase() === AssetBTC.symbol.toUpperCase()
 
 /**
- * Checks whether an asset is a Maya asset
+ * Checks whether an asset is a native | synth | trade ETH asset
  */
-export const isMayaAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetMaya)
-
-/**
- * Checks whether an asset is a BTC asset
- */
-export const isBtcAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetBTC)
-
-/**
- * Checks whether an asset is a Btc synthetic asset
- */
-export const isBtcAssetSynth = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthBtc)
-
-/**
- * Checks whether an asset is an ETH asset
- */
-export const isEthAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetETH)
+export const isEthAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetETH.chain && asset.symbol.toUpperCase() === AssetETH.symbol.toUpperCase()
 
 /**
  * Checks whether an asset is an ARB asset
  */
-export const isArbAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetARB)
+export const isArbAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetARB.chain && asset.symbol.toUpperCase() === AssetARB.symbol.toUpperCase()
 
 /**
  * Checks whether an asset is an ARB ETH asset
  */
-export const isAethAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetAETH)
-/**
- * Checks whether an asset is an ARB synth asset
- */
-export const isArbSynthAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthARB)
+export const isAethAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetAETH.chain && asset.symbol.toUpperCase() === AssetAETH.symbol.toUpperCase()
 
 /**
  * Checks whether an asset is an AVAX asset
  */
-export const isAvaxAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetAVAX)
-/**
- * Checks whether an asset is an AVAX synth asset
- */
-export const isAvaxSynthAsset = (asset: AnyAsset): boolean =>
-  eqAsset.equals(asset, AssetSynthAVAX || AssetSynthAVAXUSDC)
+export const isAvaxAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetAVAX.chain && asset.symbol.toUpperCase() === AssetAVAX.symbol.toUpperCase()
 
 /**
  * Checks whether an asset is an BSC asset
  */
-export const isBscAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetBSC)
-/**
- * Checks whether an asset is an BSC synth asset
- */
-export const isBscSynthAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthBSC)
-
-/**
- * Checks whether an asset is an ETH synthetic
- */
-export const isEthSynthAsset = (asset: AnyAsset): boolean => {
-  const normalizedInputAsset = {
-    ...asset,
-    chain: asset.chain.toUpperCase(),
-    symbol: asset.symbol.toUpperCase(),
-    ticker: asset.ticker.toUpperCase()
-  }
-
-  return eqAsset.equals(normalizedInputAsset, AssetSynthEth)
-}
-
-/**
- * Checks whether an asset is an ETH synthetic
- */
-export const isEthSynthUSDCAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthEthUsdc)
-
-export const isEthSynthUSDTAsset = (asset: AnyAsset): boolean => {
-  const normalizedInputAsset = {
-    ...asset,
-    chain: asset.chain.toUpperCase(),
-    symbol: asset.symbol.toUpperCase(),
-    ticker: asset.ticker.toUpperCase()
-  }
-  return eqAsset.equals(normalizedInputAsset, AssetSynthEthUsdt)
-}
+export const isBscAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetBSC.chain && asset.symbol.toUpperCase() === AssetBSC.symbol.toUpperCase()
 
 /**
  * Checks whether an asset is a DOGE asset
  */
-export const isDogeAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetDOGE)
+export const isDogeAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetDOGE.chain && asset.symbol.toUpperCase() === AssetDOGE.symbol.toUpperCase()
 /**
- * Checks whether an asset is a DOGE asset
+ * Checks whether an asset is a Kuji asset
  */
-export const isKujiAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetKUJI)
+export const isKujiAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetKUJI.chain && asset.symbol.toUpperCase() === AssetKUJI.symbol.toUpperCase()
 
-export const isUskAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetUSK)
-/**
- * Checks whether an asset is a DOGE synth asset
- */
-export const isDogeSynthAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthDOGE)
+export const isUskAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetUSK.chain && asset.symbol.toUpperCase() === AssetUSK.symbol.toUpperCase()
 
-/**
- * Checks whether an asset is a Kuji synth asset
- */
-export const isKujiSynthAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthKuji)
-
-/**
- * Checks whether an asset is a USK synth asset
- */
-export const isUskSynthAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthUsk)
 /**
  * Checks whether an asset is a ATOM asset
  */
-export const isAtomAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetATOM)
-
-/**
- * Checks whether an asset is a ATOM synth asset
- */
-export const isAtomSynthAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetSynthATOM)
+export const isAtomAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetATOM.chain && asset.symbol.toUpperCase() === AssetATOM.symbol.toUpperCase()
 
 /**
  * Check whether an asset is in a list

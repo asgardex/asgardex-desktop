@@ -25,6 +25,9 @@ const wallet: WalletMessages = {
   'wallet.balance.total.poolAssets': 'Общий баланс активов кошелька',
   'wallet.balance.total.poolAssets.info':
     'Общий баланс активов кошелька с использованием данных пулов от Thorchain & Mayachain. Пулы являются источником истины для определения цен в THORChain.',
+  'wallet.balance.total.tradeAssets': 'Общая сумма торговых активов',
+  'wallet.balance.total.tradeAssets.info':
+    'Общая сумма торговых активов с использованием данных пулов Thorchain. Пулы являются источником для определения цен на THORChain',
   'wallet.shares.total': 'Итоговая стоимость',
   'wallet.connect.instruction': 'Пожалуйста подключите ваш кошелёк',
   'wallet.lock.label': 'Заблокировать кошелёк',
