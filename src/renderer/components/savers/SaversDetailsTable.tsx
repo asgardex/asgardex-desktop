@@ -9,7 +9,7 @@ import { hiddenString } from '../../helpers/stringHelper'
 import { ParentProps } from '../../views/wallet/SaversTableView'
 import * as Styled from '../PoolShares/PoolShares.styles'
 import { AssetIcon } from '../uielements/assets/assetIcon'
-import { SaversButton } from '../uielements/button/SaversButton'
+import { ManageButton } from '../uielements/button/ManageButton'
 
 export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX.Element => {
   const intl = useIntl()
@@ -69,7 +69,11 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
           (detail) =>
             detail.asset.chain === record.key.split('.')[0] && detail.asset.symbol === record.key.split('.')[1]
         )
-        return assetDetail ? <SaversButton asset={assetDetail.asset} isTextView={true}></SaversButton> : 'N/A'
+        return assetDetail ? (
+          <ManageButton asset={assetDetail.asset} variant="savers" isTextView={true}></ManageButton>
+        ) : (
+          'N/A'
+        )
       }
     }
   ]

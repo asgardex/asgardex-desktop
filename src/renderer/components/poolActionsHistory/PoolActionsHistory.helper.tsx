@@ -82,8 +82,10 @@ export const historyFilterToViewblockFilter = (filter: Filter) => {
       return 'withdrawLiquidity'
     case 'DONATE':
       return 'donate'
-    case 'SWITCH':
-      return 'switch'
+    case 'SEND':
+      return 'send'
+    case 'RUNEPOOLDEPOSIT':
+      return 'runePoolDeposit'
     // 'ALL' and others will be matched to viewblock's 'all'
     case 'ALL':
     case 'REFUND': // does not exist at viewblock

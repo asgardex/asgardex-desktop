@@ -202,8 +202,11 @@ describe('PoolActionsHistory.helper', () => {
     it('REFUND', () => {
       expect(historyFilterToViewblockFilter('REFUND')).toEqual('all')
     })
-    it('SWITCH', () => {
-      expect(historyFilterToViewblockFilter('SWITCH')).toEqual('switch')
+    it('SEND', () => {
+      expect(historyFilterToViewblockFilter('SEND')).toEqual('send')
+    })
+    it('RUNEPOOLDEPOSIT', () => {
+      expect(historyFilterToViewblockFilter('RUNEPOOLDEPOSIT')).toEqual('runePoolDeposit')
     })
     it('ALL', () => {
       expect(historyFilterToViewblockFilter('ALL')).toEqual('all')

@@ -19,8 +19,10 @@ const meta: Meta<typeof Component> = {
   args: {
     isTextView: true,
     asset: AssetRuneNative,
+    variant: 'manage',
     disabled: false,
-    size: 'normal'
+    size: 'normal',
+    useBorderButton: true
   }
 }
 

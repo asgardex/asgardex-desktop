@@ -9,7 +9,7 @@ import { hiddenString } from '../../helpers/stringHelper'
 import { ParentProps } from '../../views/wallet/RunepoolView'
 import * as Styled from '../PoolShares/PoolShares.styles'
 import { AssetIcon } from '../uielements/assets/assetIcon'
-import { RunePoolButton } from '../uielements/button/RunePoolButton'
+import { ManageButton } from '../uielements/button/ManageButton'
 
 export const RunePoolTable: React.FC<ParentProps> = ({ assetDetails }): JSX.Element => {
   const intl = useIntl()
@@ -65,7 +65,13 @@ export const RunePoolTable: React.FC<ParentProps> = ({ assetDetails }): JSX.Elem
       title: intl.formatMessage({ id: 'common.managePosition' }),
       key: 'manage',
       render: () => {
-        return <RunePoolButton interactType="runePool" isTextView={true}></RunePoolButton>
+        return (
+          <ManageButton
+            variant="runePool"
+            interactType="runePool"
+            useBorderButton={false}
+            isTextView={true}></ManageButton>
+        )
       }
     }
   ]

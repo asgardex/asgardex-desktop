@@ -119,7 +119,13 @@ export const PendingPools: React.FC = (): JSX.Element => {
     (_: string, { asset }: PoolTableRowData) => {
       return (
         <TableAction>
-          <ManageButton className="min-w-[120px]" asset={asset} isTextView={isDesktopView} />
+          <ManageButton
+            className="min-w-[120px]"
+            variant="manage"
+            useBorderButton={true}
+            asset={asset}
+            isTextView={isDesktopView}
+          />
         </TableAction>
       )
     },
