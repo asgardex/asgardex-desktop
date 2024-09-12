@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { isCacaoAsset } from '@xchainjs/xchain-mayachain-query'
 import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
 import { Address, baseAmount, CryptoAmount, eqAsset } from '@xchainjs/xchain-util'
 import { formatAssetAmountCurrency, assetAmount, bn, assetToBase, BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
@@ -19,7 +18,7 @@ import { isChainOfMaya } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
-import { isKujiAsset, isMayaAsset, isUSDAsset } from '../../../../helpers/assetHelper'
+import { isMayaAsset, isUSDAsset } from '../../../../helpers/assetHelper'
 import { getChainAsset } from '../../../../helpers/chainHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import { getPoolPriceValue } from '../../../../helpers/poolHelperMaya'
@@ -117,7 +116,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [amountPriceValue, setAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [recipientAddress, setRecipientAddress] = useState<Address>('')
-  const isChainAsset = isKujiAsset(asset) || isCacaoAsset(asset)
+  const isChainAsset = asset.chain === getChainAsset(asset.chain).chain
   const [warningMessage, setWarningMessage] = useState<string>('')
   const [form] = Form.useForm<FormValues>()
   const [showDetails, setShowDetails] = useState<boolean>(true)

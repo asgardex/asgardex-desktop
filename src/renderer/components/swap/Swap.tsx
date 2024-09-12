@@ -269,6 +269,7 @@ export const Swap = ({
   const intl = useIntl()
 
   const { chain: sourceChain } = sourceAsset.synth ? dex.asset : sourceAsset
+  const { chain: targetChain } = targetAsset.synth ? dex.asset : targetAsset
 
   const lockedWallet: boolean = useMemo(() => isLocked(keystore) || !hasImportedKeystore(keystore), [keystore])
   const [quoteOnly, setQuoteOnly] = useState<boolean>(false)
@@ -310,8 +311,8 @@ export const Swap = ({
   const [enabledChains, setEnabledChains] = useState<Set<EnabledChain>>(new Set())
   const [disabledChains, setDisabledChains] = useState<EnabledChain[]>([])
 
-  const isTargetChainDisabled = disabledChains.includes(targetAsset.chain)
-  const isSourceChainDisabled = disabledChains.includes(sourceAsset.chain)
+  const isTargetChainDisabled = disabledChains.includes(targetChain)
+  const isSourceChainDisabled = disabledChains.includes(sourceChain)
 
   useEffect(() => {
     const subscription = userChains$.subscribe((chains: EnabledChain[]) => {
