@@ -1,15 +1,16 @@
 import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetKUJI } from '@xchainjs/xchain-kujira'
 import { Spin } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 
-import { Dex } from '../../../../shared/api/types'
+import { Dex, TrustedAddresses } from '../../../../shared/api/types'
 import { SendFormMAYA } from '../../../components/wallet/txs/send/'
 import { useChainContext } from '../../../contexts/ChainContext'
+import { useKujiContext } from '../../../contexts/KujiContext'
 import { useMayachainContext } from '../../../contexts/MayachainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { liveData } from '../../../helpers/rx/liveData'
@@ -28,13 +29,14 @@ import * as Styled from '../Interact/InteractView.styles'
 
 type Props = {
   asset: SelectedWalletAsset
+  trustedAddresses: TrustedAddresses | undefined
   emptyBalance: WalletBalance
   poolDetails: PoolDetailsMaya
   dex: Dex
 }
 
 export const SendViewMAYA: React.FC<Props> = (props): JSX.Element => {
-  const { asset, emptyBalance, poolDetails, dex } = props
+  const { asset, trustedAddresses, emptyBalance, poolDetails, dex } = props
 
   const { network } = useNetwork()
   const {
@@ -51,7 +53,7 @@ export const SendViewMAYA: React.FC<Props> = (props): JSX.Element => {
 
   const { mayaScanPriceRD } = useMayaScanPrice()
 
-  const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(MAYAChain))
+  const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(asset.asset.chain))
 
   const oWalletBalance = useMemo(
     () =>
@@ -66,9 +68,9 @@ export const SendViewMAYA: React.FC<Props> = (props): JSX.Element => {
 
   const { transfer$ } = useChainContext()
 
-  //const { mayachainQuery } = useMayachainQueryContext()
-
-  const { fees$, reloadFees } = useMayachainContext()
+  const kujiContext = useKujiContext()
+  const mayachainContext = useMayachainContext()
+  const { fees$, reloadFees } = asset.asset === AssetKUJI ? kujiContext : mayachainContext
 
   const [feeRD] = useObservableState<FeeRD>(
     () =>
@@ -79,7 +81,7 @@ export const SendViewMAYA: React.FC<Props> = (props): JSX.Element => {
     RD.initial
   )
 
-  const { validateAddress } = useValidateAddress(MAYAChain)
+  const { validateAddress } = useValidateAddress(asset.asset.chain)
 
   return FP.pipe(
     oWalletBalance,
@@ -89,6 +91,7 @@ export const SendViewMAYA: React.FC<Props> = (props): JSX.Element => {
           <Styled.Container>
             <SendFormMAYA
               asset={asset}
+              trustedAddresses={trustedAddresses}
               balances={FP.pipe(
                 oBalances,
                 O.getOrElse<WalletBalances>(() => [])
@@ -114,6 +117,7 @@ export const SendViewMAYA: React.FC<Props> = (props): JSX.Element => {
         <Styled.Container>
           <SendFormMAYA
             asset={asset}
+            trustedAddresses={trustedAddresses}
             balances={FP.pipe(
               oBalances,
               O.getOrElse<WalletBalances>(() => [])

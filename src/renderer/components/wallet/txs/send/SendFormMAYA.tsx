@@ -3,22 +3,23 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { CACAO_DECIMAL, MAYA_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { isCacaoAsset } from '@xchainjs/xchain-mayachain-query'
 import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
 import { Address, baseAmount, CryptoAmount, eqAsset } from '@xchainjs/xchain-util'
 import { formatAssetAmountCurrency, assetAmount, bn, assetToBase, BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
 import BigNumber from 'bignumber.js'
+import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
-import { Dex } from '../../../../../shared/api/types'
-import { AssetCacao } from '../../../../../shared/utils/asset'
+import { Dex, TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
-import { isCacaoAsset, isUSDAsset, isMayaAsset } from '../../../../helpers/assetHelper'
+import { isKujiAsset, isMayaAsset, isUSDAsset } from '../../../../helpers/assetHelper'
+import { getChainAsset } from '../../../../helpers/chainHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import { getPoolPriceValue } from '../../../../helpers/poolHelperMaya'
 import { loadingString } from '../../../../helpers/stringHelper'
@@ -52,6 +53,7 @@ export type FormValues = {
 
 export type Props = {
   asset: SelectedWalletAsset
+  trustedAddresses: TrustedAddresses | undefined
   balances: WalletBalances
   balance: WalletBalance
   transfer$: SendTxStateHandler
@@ -71,6 +73,7 @@ export type Props = {
 export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
   const {
     asset: { walletType, walletAccount, walletIndex, hdMode },
+    trustedAddresses,
     poolDetails,
     pricePool,
     balances,
@@ -93,7 +96,6 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
 
   const mayascanPriceInUsd = calculateMayaValueInUSD(balance.amount, mayaScanPrice)
 
-  const assetDecimal = isCacaoAsset(asset) ? CACAO_DECIMAL : MAYA_DECIMAL
   const [amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
   const amountToSendMayaPrice = calculateMayaValueInUSD(amountToSend, mayaScanPrice)
   const {
@@ -107,10 +109,51 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
   const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [amountPriceValue, setAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+  const [recipientAddress, setRecipientAddress] = useState<Address>('')
+  const isChainAsset = isKujiAsset(asset) || isCacaoAsset(asset)
 
   const [form] = Form.useForm<FormValues>()
   const [showDetails, setShowDetails] = useState<boolean>(true)
   const [currentMemo, setCurrentMemo] = useState('')
+
+  const oSavedAddresses: O.Option<TrustedAddress[]> = useMemo(
+    () =>
+      FP.pipe(O.fromNullable(trustedAddresses?.addresses), O.map(A.filter((address) => address.chain === asset.chain))),
+    [trustedAddresses, asset.chain]
+  )
+
+  const handleSavedAddressSelect = useCallback(
+    (value: string) => {
+      form.setFieldsValue({ recipient: value })
+      setRecipientAddress(value)
+    },
+    [form]
+  )
+
+  const renderSavedAddressesDropdown = useMemo(
+    () =>
+      FP.pipe(
+        oSavedAddresses,
+        O.fold(
+          () => null,
+          (addresses) => (
+            <Form.Item label={intl.formatMessage({ id: 'common.savedAddresses' })} className="mb-20px">
+              <Styled.CustomSelect
+                placeholder={intl.formatMessage({ id: 'common.savedAddresses' })}
+                onChange={(value) => handleSavedAddressSelect(value as string)}
+                style={{ width: '100%' }}>
+                {addresses.map((address) => (
+                  <Styled.CustomSelect.Option key={address.address} value={address.address}>
+                    {address.name}: {address.address}
+                  </Styled.CustomSelect.Option>
+                ))}
+              </Styled.CustomSelect>
+            </Form.Item>
+          )
+        )
+      ),
+    [oSavedAddresses, intl, handleSavedAddressSelect]
+  )
 
   const handleMemo = useCallback(() => {
     const memoValue = form.getFieldValue('memo') as string
@@ -119,53 +162,45 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
     setCurrentMemo(memoValue)
   }, [form])
 
-  const oCacaoAmount: O.Option<BaseAmount> = useMemo(() => {
-    // return balance of current asset (if Cacao)
-    if (isCacaoAsset(asset)) {
-      return O.some(balance.amount)
-    }
-    // or check list of other assets to get Cacao balance
-    return FP.pipe(balances, getCacaoAmountFromBalances, O.map(assetToBase))
-  }, [asset, balance.amount, balances])
-
-  const oMayaAmount: O.Option<BaseAmount> = useMemo(() => {
-    // return balance of current asset (if Cacao)
-    if (isMayaAsset(asset)) {
-      return O.some(balance.amount)
-    }
-    // or check list of other assets to get Cacao balance
-    return FP.pipe(balances, getCacaoAmountFromBalances, O.map(assetToBase))
-  }, [asset, balance.amount, balances])
-
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
+
+  const oAssetAmount: O.Option<BaseAmount> = useMemo(() => {
+    // return balance of current asset
+    if (isChainAsset) {
+      return O.some(balance.amount)
+    }
+    // or check list of other assets to get balance
+    return FP.pipe(getCacaoAmountFromBalances(balances, getChainAsset(asset.chain)), O.map(assetToBase))
+  }, [asset.chain, balance.amount, balances, isChainAsset])
 
   const isFeeError = useMemo(() => {
     return FP.pipe(
-      sequenceTOption(oFee, oCacaoAmount),
+      sequenceTOption(oFee, oAssetAmount),
       O.fold(
         // Missing (or loading) fees does not mean we can't sent something. No error then.
-        () => !O.isNone(oFee),
-        ([fee, cacaoAmount]) => {
-          const feeCover = cacaoAmount.lt(fee)
-          return feeCover
-        }
+        () => false,
+        ([fee, assetAmount]) => assetAmount.lt(fee)
       )
     )
-  }, [oCacaoAmount, oFee])
+  }, [oAssetAmount, oFee])
 
   const renderFeeError = useMemo(() => {
     if (!isFeeError) return <></>
 
-    const amount = FP.pipe(
-      oCacaoAmount,
-      // no Cacao asset == zero amount
+    const amount: BaseAmount = FP.pipe(
+      oAssetAmount,
+      // no eth asset == zero amount
       O.getOrElse(() => ZERO_BASE_AMOUNT)
     )
 
     const msg = intl.formatMessage(
       { id: 'wallet.errors.fee.notCovered' },
       {
-        balance: formatAssetAmountCurrency({ amount: baseToAsset(amount), asset: AssetCacao, trimZeros: true })
+        balance: formatAssetAmountCurrency({
+          amount: baseToAsset(amount),
+          asset: getChainAsset(asset.chain),
+          trimZeros: true
+        })
       }
     )
 
@@ -174,9 +209,7 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
         {msg}
       </Styled.Label>
     )
-  }, [oCacaoAmount, intl, isFeeError])
-
-  const [recipientAddress, setRecipientAddress] = useState<Address>('')
+  }, [isFeeError, oAssetAmount, intl, asset.chain])
 
   const addressValidator = useCallback(
     async (_: unknown, value: string) => {
@@ -198,29 +231,27 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
     }
   }, [form])
 
-  // max amount for Cacao
+  // max amount for asset
   const maxAmount: BaseAmount = useMemo(() => {
-    const maxCacaoAmount = FP.pipe(
-      sequenceTOption(oFee, isCacaoAsset(asset) ? oCacaoAmount : oMayaAmount),
+    const maxAmount = FP.pipe(
+      sequenceTOption(oFee, oAssetAmount),
       O.fold(
-        // Set maxAmount to zero if we dont know anything about Cacao and fee amounts
         () => ZERO_BASE_AMOUNT,
-        ([fee, runeAmount]) => {
-          const max = runeAmount.minus(fee)
+        ([fee, assetAmount]) => {
+          const max = isChainAsset ? assetAmount.minus(fee) : balance.amount
           const zero = baseAmount(0, max.decimal)
           return max.gt(zero) ? max : zero
         }
       )
     )
-    return isCacaoAsset(asset) ? maxCacaoAmount : balance.amount
-  }, [oFee, asset, oCacaoAmount, oMayaAmount, balance.amount])
+    return maxAmount
+  }, [oFee, oAssetAmount, isChainAsset, balance.amount])
 
   // store maxAmountValue wrong CryptoAmount
   const [maxAmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(
-    new CryptoAmount(baseAmount(0, assetDecimal), asset)
+    new CryptoAmount(baseAmount(0, balance.amount.decimal), asset)
   )
 
-  // // useEffect to fetch data from query
   // useEffect to fetch data from query
   useEffect(() => {
     const maxAmountPrice = getPoolPriceValue({
@@ -295,8 +326,16 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
       trimZeros: !isUSDAsset(asset)
     })
 
-    const price = isCacaoAsset(asset)
-      ? FP.pipe(
+    const price = isMayaAsset(asset)
+      ? RD.isSuccess(amountToSendMayaPrice)
+        ? formatAssetAmountCurrency({
+            amount: amountToSendMayaPrice.value.assetAmount,
+            asset: amountToSendMayaPrice.value.asset,
+            decimal: isUSDAsset(amountToSendMayaPrice.value.asset) ? 2 : 6,
+            trimZeros: !isUSDAsset(amountToSendMayaPrice.value.asset)
+          })
+        : ''
+      : FP.pipe(
           O.some(amountPriceValue), // Assuming this is Option<CryptoAmount>
           O.map((cryptoAmount: CryptoAmount) =>
             eqAsset(asset, cryptoAmount.asset)
@@ -310,14 +349,6 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
           ),
           O.getOrElse(() => '')
         )
-      : RD.isSuccess(amountToSendMayaPrice)
-      ? formatAssetAmountCurrency({
-          amount: amountToSendMayaPrice.value.assetAmount,
-          asset: amountToSendMayaPrice.value.asset,
-          decimal: isUSDAsset(amountToSendMayaPrice.value.asset) ? 2 : 6,
-          trimZeros: !isUSDAsset(amountToSendMayaPrice.value.asset)
-        })
-      : ''
 
     return price ? `${price} (${amount}) ` : amount
   }, [amountPriceValue, amountToSend, amountToSendMayaPrice, asset])
@@ -335,9 +366,9 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
       const errors = {
         msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
         msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterThan' }, { amount: '0' }),
-        msg3: isCacaoAsset(asset)
-          ? intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalanceAndFee' })
-          : intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalance' })
+        msg3: isMayaAsset(asset)
+          ? intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalance' })
+          : intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalanceAndFee' })
       }
       return validateTxAmountInput({ input: value, maxAmount: baseToAsset(maxAmount), errors })
     },
@@ -433,14 +464,14 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
           onSuccess={onSuccessHandler}
           onClose={onCloseHandler}
           visible={showConfirmationModal}
-          chain={MAYAChain}
+          chain={asset.chain}
           description2={intl.formatMessage({ id: 'ledger.sign' })}
           addresses={O.none}
         />
       )
     }
     return null
-  }, [intl, network, submitTx, showConfirmationModal, validatePassword$, walletType])
+  }, [walletType, submitTx, validatePassword$, network, showConfirmationModal, asset.chain, intl])
 
   const renderTxModal = useMemo(
     () =>
@@ -473,12 +504,12 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
       FP.pipe(
         feeRD,
         RD.map((fee) => {
-          setAssetFee(new CryptoAmount(fee, AssetCacao))
-          return [{ asset: AssetCacao, amount: fee }]
+          setAssetFee(new CryptoAmount(fee, getChainAsset(asset.chain)))
+          return [{ asset: getChainAsset(asset.chain), amount: fee }]
         })
       ),
 
-    [feeRD]
+    [asset, feeRD]
   )
 
   const onChangeInput = useCallback(
@@ -486,11 +517,11 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
       // we have to validate input before storing into the state
       amountValidator(undefined, value)
         .then(() => {
-          setAmountToSend(assetToBase(assetAmount(value, assetDecimal)))
+          setAmountToSend(assetToBase(assetAmount(value, balance.amount.decimal)))
         })
         .catch(() => {}) // do nothing, Ant' form does the job for us to show an error message
     },
-    [amountValidator, assetDecimal]
+    [amountValidator, balance.amount.decimal]
   )
 
   const addMaxAmountHandler = useCallback(() => setAmountToSend(maxAmount), [maxAmount])
@@ -512,12 +543,11 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
           onFinish={() => setShowConfirmationModal(true)}
           labelCol={{ span: 24 }}>
           <Styled.SubForm>
-            <div className="flex">
-              <Styled.CustomLabel size="big">
-                {intl.formatMessage({ id: 'common.address' })}
-                {renderWalletType}
-              </Styled.CustomLabel>
-            </div>
+            {renderSavedAddressesDropdown}
+            <Styled.CustomLabel size="big">
+              {intl.formatMessage({ id: 'common.address' })}
+              {renderWalletType}
+            </Styled.CustomLabel>
 
             <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
               <Styled.Input color="primary" size="large" disabled={isLoading} onChange={handleAddressInput} />
@@ -528,7 +558,7 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
                 min={0}
                 size="large"
                 disabled={isLoading}
-                decimal={assetDecimal}
+                decimal={balance.amount.decimal}
                 onChange={onChangeInput}
               />
             </Styled.FormItem>
@@ -537,10 +567,10 @@ export const SendFormMAYA: React.FC<Props> = (props): JSX.Element => {
               color="neutral"
               balance={{ amount: maxAmount, asset: asset }}
               maxDollarValue={
-                isCacaoAsset(asset)
-                  ? maxAmountPriceValue
-                  : RD.isSuccess(mayascanPriceInUsd)
-                  ? mayascanPriceInUsd.value
+                isMayaAsset(asset)
+                  ? RD.isSuccess(mayascanPriceInUsd)
+                    ? mayascanPriceInUsd.value
+                    : maxAmountPriceValue
                   : maxAmountPriceValue
               }
               onClick={addMaxAmountHandler}

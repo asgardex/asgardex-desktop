@@ -9,11 +9,12 @@ import { Address, baseAmount, CryptoAmount, eqAsset } from '@xchainjs/xchain-uti
 import { formatAssetAmountCurrency, assetAmount, bn, assetToBase, BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
 import BigNumber from 'bignumber.js'
+import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
-import { Dex } from '../../../../../shared/api/types'
+import { Dex, TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
@@ -50,6 +51,7 @@ export type FormValues = {
 
 export type Props = {
   asset: SelectedWalletAsset
+  trustedAddresses: TrustedAddresses | undefined
   balances: WalletBalances
   balance: WalletBalance
   transfer$: SendTxStateHandler
@@ -68,6 +70,7 @@ export type Props = {
 export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   const {
     asset: { walletType, walletAccount, walletIndex, hdMode },
+    trustedAddresses,
     poolDetails,
     balances,
     balance,
@@ -108,6 +111,44 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   const [currentMemo, setCurrentMemo] = useState<string>('')
   const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
   const [affiliateTracking, setAffiliateTracking] = useState<string>('')
+
+  const oSavedAddresses: O.Option<TrustedAddress[]> = useMemo(
+    () =>
+      FP.pipe(O.fromNullable(trustedAddresses?.addresses), O.map(A.filter((address) => address.chain === asset.chain))),
+    [trustedAddresses, asset.chain]
+  )
+
+  const handleSavedAddressSelect = useCallback(
+    (value: string) => {
+      form.setFieldsValue({ recipient: value })
+    },
+    [form]
+  )
+
+  const renderSavedAddressesDropdown = useMemo(
+    () =>
+      FP.pipe(
+        oSavedAddresses,
+        O.fold(
+          () => null,
+          (addresses) => (
+            <Form.Item label={intl.formatMessage({ id: 'common.savedAddresses' })} className="mb-20px">
+              <Styled.CustomSelect
+                placeholder={intl.formatMessage({ id: 'common.savedAddresses' })}
+                onChange={(value) => handleSavedAddressSelect(value as string)}
+                style={{ width: '100%' }}>
+                {addresses.map((address) => (
+                  <Styled.CustomSelect.Option key={address.address} value={address.address}>
+                    {address.name}: {address.address}
+                  </Styled.CustomSelect.Option>
+                ))}
+              </Styled.CustomSelect>
+            </Form.Item>
+          )
+        )
+      ),
+    [oSavedAddresses, intl, handleSavedAddressSelect]
+  )
 
   const handleMemo = useCallback(() => {
     let memoValue = form.getFieldValue('memo') as string
@@ -508,6 +549,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
           onFinish={() => setShowConfirmationModal(true)}
           labelCol={{ span: 24 }}>
           <Styled.SubForm>
+            {renderSavedAddressesDropdown}
             <Styled.CustomLabel size="big">
               {intl.formatMessage({ id: 'common.address' })}
               {renderWalletType}

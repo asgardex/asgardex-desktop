@@ -8,7 +8,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 
-import { Dex } from '../../../../shared/api/types'
+import { Dex, TrustedAddresses } from '../../../../shared/api/types'
 import { SendFormTHOR } from '../../../components/wallet/txs/send/'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
@@ -28,6 +28,7 @@ import * as Styled from '../Interact/InteractView.styles'
 
 type Props = {
   asset: SelectedWalletAsset
+  trustedAddresses: TrustedAddresses | undefined
   emptyBalance: WalletBalance
   poolDetails: PoolDetails
   oPoolAddress: O.Option<PoolAddress>
@@ -35,7 +36,7 @@ type Props = {
 }
 
 export const SendViewTHOR: React.FC<Props> = (props): JSX.Element => {
-  const { asset, emptyBalance, poolDetails, oPoolAddress, dex } = props
+  const { asset, trustedAddresses, emptyBalance, poolDetails, oPoolAddress, dex } = props
 
   const { network } = useNetwork()
   const {
@@ -86,6 +87,7 @@ export const SendViewTHOR: React.FC<Props> = (props): JSX.Element => {
           <Styled.Container>
             <SendFormTHOR
               asset={asset}
+              trustedAddresses={trustedAddresses}
               balances={FP.pipe(
                 oBalances,
                 O.getOrElse<WalletBalances>(() => [])
@@ -111,6 +113,7 @@ export const SendViewTHOR: React.FC<Props> = (props): JSX.Element => {
         <Styled.Container>
           <SendFormTHOR
             asset={asset}
+            trustedAddresses={trustedAddresses}
             balances={FP.pipe(
               oBalances,
               O.getOrElse<WalletBalances>(() => [])

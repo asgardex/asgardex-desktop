@@ -7,7 +7,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 
-import { Dex } from '../../../../shared/api/types'
+import { Dex, TrustedAddresses } from '../../../../shared/api/types'
 import { SendFormCOSMOS } from '../../../components/wallet/txs/send'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useCosmosContext } from '../../../contexts/CosmosContext'
@@ -26,13 +26,14 @@ import * as Styled from '../Interact/InteractView.styles'
 
 type Props = {
   asset: SelectedWalletAsset
+  trustedAddresses: TrustedAddresses | undefined
   emptyBalance: WalletBalance
   poolDetails: PoolDetails
   oPoolAddress: O.Option<PoolAddress>
   dex: Dex
 }
 export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
-  const { asset, emptyBalance, poolDetails, oPoolAddress, dex } = props
+  const { asset, trustedAddresses, emptyBalance, poolDetails, oPoolAddress, dex } = props
 
   const { network } = useNetwork()
   const {
@@ -79,6 +80,7 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
           <Styled.Container>
             <SendFormCOSMOS
               asset={asset}
+              trustedAddresses={trustedAddresses}
               balances={FP.pipe(
                 oBalances,
                 O.getOrElse<WalletBalances>(() => [])
@@ -103,6 +105,7 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
         <Styled.Container>
           <SendFormCOSMOS
             asset={asset}
+            trustedAddresses={trustedAddresses}
             balances={FP.pipe(
               oBalances,
               O.getOrElse<WalletBalances>(() => [])

@@ -1,5 +1,5 @@
 import { Meta } from '@storybook/react'
-import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
+import { BTC_DECIMAL, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { FeeRates, Fees, FeesWithRates, FeeType, Network, TxHash } from '@xchainjs/xchain-client'
 import { Address, assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
@@ -72,7 +72,10 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
       () => Error('getting fees failed')
     )
   )
-
+  const addresses = [
+    { address: 'btc-address-1', chain: BTCChain, name: 'BTC Address 1' },
+    { address: 'btc-address-2', chain: BTCChain, name: 'BTC Address 2' }
+  ]
   return (
     <Component
       asset={{
@@ -83,6 +86,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
         walletIndex: 0,
         hdMode: 'default'
       }}
+      trustedAddresses={{ addresses }}
       transfer$={transfer$}
       balances={[btcBalance, dexBalance]}
       balance={btcBalance}

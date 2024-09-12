@@ -1,5 +1,6 @@
 import { Meta } from '@storybook/react'
 import { Network, TxHash } from '@xchainjs/xchain-client'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, assetToBase, BaseAmount, baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -53,6 +54,11 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
     amount: assetToBase(assetAmount(balance))
   })
 
+  const addresses = [
+    { address: 'thor-address-1', chain: THORChain, name: 'THOR Address 1' },
+    { address: 'thor-address-2', chain: THORChain, name: 'THOR Address 2' }
+  ]
+
   return (
     <Component
       asset={{
@@ -63,6 +69,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
         walletIndex: 0,
         hdMode: 'default'
       }}
+      trustedAddresses={{ addresses }}
       transfer$={transfer$}
       balances={[dexBalance]}
       balance={dexBalance}
