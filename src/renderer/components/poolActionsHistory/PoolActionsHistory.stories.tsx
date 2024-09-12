@@ -152,7 +152,7 @@ const Template = ({ dataStatus }: { dataStatus: RDStatus }) => {
       addresses={MOCK_WALLET_ADDRESSES}
       selectedAddress={O.none}
       network={Network.Testnet}
-      availableFilters={['ALL', 'SWITCH', 'DEPOSIT', 'SWAP', 'WITHDRAW', 'DONATE', 'REFUND']}
+      availableFilters={['ALL', 'SEND', 'RUNEPOOLDEPOSIT', 'DEPOSIT', 'SWAP', 'WITHDRAW', 'DONATE', 'REFUND']}
       currentFilter={filter}
       setFilter={setFilter}
       onWalletAddressChanged={(address: WalletAddress) => {

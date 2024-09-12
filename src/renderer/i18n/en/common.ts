@@ -147,6 +147,8 @@ const common: CommonMessages = {
   'common.noResult': 'No result',
   'common.rate': 'Rate',
   'common.tx.type.swap': 'Swap',
+  'common.tx.type.send': 'Send',
+  'common.tx.type.runePoolDeposit': 'RunePool Deposit',
   'common.tx.type.donate': 'Donate',
   'common.tx.type.refund': 'Refund',
   'common.tx.type.deposit': 'Deposit',

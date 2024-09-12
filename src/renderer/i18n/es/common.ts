@@ -145,6 +145,8 @@ const common: CommonMessages = {
   'common.rate': 'Tarifa',
   'common.tx.type.swap': 'Intercambiar',
   'common.tx.type.donate': 'Donar',
+  'common.tx.type.send': 'Enviar',
+  'common.tx.type.runePoolDeposit': 'Depósito en RunePool',
   'common.tx.type.refund': 'Reembolso',
   'common.tx.type.deposit': 'Depósito',
   'common.tx.type.withdraw': 'Retirar',

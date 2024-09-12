@@ -371,7 +371,8 @@ export type TxType =
   | 'WITHDRAW'
   | 'DONATE'
   | 'REFUND'
-  | 'SWITCH'
+  | 'SEND'
+  | 'RUNEPOOLDEPOSIT'
   // in case asgardex does not know about any other action type we will display
   // 'unknown' tx type to avoid filtering out any tx
   | 'UNKNOWN'
