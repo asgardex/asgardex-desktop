@@ -3,8 +3,8 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { COSMOS_DECIMAL, GAIAChain } from '@xchainjs/xchain-cosmos'
-import { PoolDetails } from '@xchainjs/xchain-midgard'
+import { isCacaoAsset } from '@xchainjs/xchain-mayachain-query'
+import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
 import { Address, baseAmount, CryptoAmount, eqAsset } from '@xchainjs/xchain-util'
 import { formatAssetAmountCurrency, assetAmount, bn, assetToBase, BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
@@ -15,13 +15,19 @@ import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
 import { Dex, TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
+import { isChainOfMaya } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
-import { isRuneNativeAsset, isUSDAsset } from '../../../../helpers/assetHelper'
-import { getPoolPriceValue } from '../../../../helpers/poolHelper'
+import { isKujiAsset, isMayaAsset, isUSDAsset } from '../../../../helpers/assetHelper'
+import { getChainAsset } from '../../../../helpers/chainHelper'
+import { sequenceTOption } from '../../../../helpers/fpHelpers'
+import { getPoolPriceValue } from '../../../../helpers/poolHelperMaya'
 import { loadingString } from '../../../../helpers/stringHelper'
+import { getCacaoAmountFromBalances } from '../../../../helpers/walletHelper'
+import { calculateMayaValueInUSD, MayaScanPriceRD } from '../../../../hooks/useMayascanPrice'
 import { usePricePool } from '../../../../hooks/usePricePool'
+import { usePricePoolMaya } from '../../../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import { FeeRD, SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
@@ -38,7 +44,6 @@ import { ShowDetails } from '../../../uielements/showDetails'
 import { Slider } from '../../../uielements/slider'
 import { AccountSelector } from '../../account'
 import * as H from '../TxForm.helpers'
-import { checkMemo, memoCorrection } from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as Shared from './Send.shared'
@@ -62,6 +67,7 @@ export type Props = {
   reloadFeesHandler: FP.Lazy<void>
   validatePassword$: ValidatePasswordHandler
   network: Network
+  mayaScanPrice: MayaScanPriceRD
   poolDetails: PoolDetails
   oPoolAddress: O.Option<PoolAddress>
   dex: Dex
@@ -82,6 +88,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     reloadFeesHandler,
     validatePassword$,
     network,
+    mayaScanPrice,
     oPoolAddress,
     dex
   } = props
@@ -90,10 +97,14 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
 
   const { asset } = balance
 
-  const pricePool = usePricePool()
+  const pricePoolThor = usePricePool()
+  const pricePoolMaya = usePricePoolMaya()
+  const pricePool = !isChainOfMaya(asset.chain) ? pricePoolThor : pricePoolMaya
+
+  const mayascanPriceInUsd = calculateMayaValueInUSD(balance.amount, mayaScanPrice)
 
   const [amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
-
+  const amountToSendMayaPrice = calculateMayaValueInUSD(amountToSend, mayaScanPrice)
   const {
     state: sendTxState,
     reset: resetSendTxState,
@@ -101,13 +112,15 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   } = useSubscriptionState<SendTxState>(INITIAL_SEND_STATE)
 
   const isLoading = useMemo(() => RD.isPending(sendTxState.status), [sendTxState.status])
-  const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
-  const [amountPriceValue, setAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
-  const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
+  const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+  const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+  const [amountPriceValue, setAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+  const [recipientAddress, setRecipientAddress] = useState<Address>('')
+  const isChainAsset = isKujiAsset(asset) || isCacaoAsset(asset)
   const [warningMessage, setWarningMessage] = useState<string>('')
   const [form] = Form.useForm<FormValues>()
-
+  const [showDetails, setShowDetails] = useState<boolean>(true)
   const [currentMemo, setCurrentMemo] = useState<string>('')
   const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
   const [affiliateTracking, setAffiliateTracking] = useState<string>('')
@@ -121,6 +134,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   const handleSavedAddressSelect = useCallback(
     (value: string) => {
       form.setFieldsValue({ recipient: value })
+      setRecipientAddress(value)
     },
     [form]
   )
@@ -154,8 +168,8 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     let memoValue = form.getFieldValue('memo') as string
 
     // Check if a swap memo is detected
-    if (checkMemo(memoValue)) {
-      memoValue = memoCorrection(memoValue)
+    if (H.checkMemo(memoValue)) {
+      memoValue = H.memoCorrection(memoValue)
       setSwapMemoDetected(true)
 
       // Set affiliate tracking message
@@ -170,6 +184,52 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
 
+  const oAssetAmount: O.Option<BaseAmount> = useMemo(() => {
+    // return balance of current asset
+    if (isChainAsset) {
+      return O.some(balance.amount)
+    }
+    // or check list of other assets to get balance
+    return FP.pipe(getCacaoAmountFromBalances(balances, getChainAsset(asset.chain)), O.map(assetToBase))
+  }, [asset.chain, balance.amount, balances, isChainAsset])
+
+  const isFeeError = useMemo(() => {
+    return FP.pipe(
+      sequenceTOption(oFee, oAssetAmount),
+      O.fold(
+        // Missing (or loading) fees does not mean we can't sent something. No error then.
+        () => false,
+        ([fee, assetAmount]) => assetAmount.lt(fee)
+      )
+    )
+  }, [oAssetAmount, oFee])
+
+  const renderFeeError = useMemo(() => {
+    if (!isFeeError) return <></>
+
+    const amount: BaseAmount = FP.pipe(
+      oAssetAmount,
+      // no eth asset == zero amount
+      O.getOrElse(() => ZERO_BASE_AMOUNT)
+    )
+
+    const msg = intl.formatMessage(
+      { id: 'wallet.errors.fee.notCovered' },
+      {
+        balance: formatAssetAmountCurrency({
+          amount: baseToAsset(amount),
+          asset: getChainAsset(asset.chain),
+          trimZeros: true
+        })
+      }
+    )
+
+    return (
+      <Styled.Label size="big" color="error">
+        {msg}
+      </Styled.Label>
+    )
+  }, [isFeeError, oAssetAmount, intl, asset.chain])
   const { inboundAddress } = useMemo(() => {
     return FP.pipe(
       oPoolAddress,
@@ -191,38 +251,6 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     )
   }, [oPoolAddress])
 
-  const isFeeError = useMemo(() => {
-    return FP.pipe(
-      oFee,
-      O.fold(
-        // Missing (or loading) fees does not mean we can't sent something. No error then.
-        () => !O.isNone(oFee),
-        (fee) => balance.amount.amount().isLessThan(fee.amount())
-      )
-    )
-  }, [balance.amount, oFee])
-
-  const renderFeeError = useMemo(() => {
-    if (!isFeeError) return <></>
-
-    const msg = intl.formatMessage(
-      { id: 'wallet.errors.fee.notCovered' },
-      {
-        balance: formatAssetAmountCurrency({
-          amount: baseToAsset(balance.amount),
-          asset: asset,
-          trimZeros: true
-        })
-      }
-    )
-
-    return (
-      <Styled.Label size="big" color="error">
-        {msg}
-      </Styled.Label>
-    )
-  }, [isFeeError, intl, balance.amount, asset])
-
   const addressValidator = useCallback(
     async (_: unknown, value: string) => {
       if (!value) {
@@ -241,26 +269,34 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     },
     [inboundAddress, addressValidation, intl]
   )
+  const handleAddressInput = useCallback(async () => {
+    const recipient = form.getFieldValue('recipient')
 
-  // max amount for RuneNative
+    if (recipient) {
+      setRecipientAddress(recipient)
+    }
+  }, [form])
+
+  // max amount for asset
   const maxAmount: BaseAmount = useMemo(() => {
-    const maxRuneAmount = FP.pipe(
-      oFee,
+    const maxAmount = FP.pipe(
+      sequenceTOption(oFee, oAssetAmount),
       O.fold(
-        // Set maxAmount to zero if we dont know anything about RuneNative and fee amounts
         () => ZERO_BASE_AMOUNT,
-        (fee) => {
-          const max = balance.amount.minus(fee)
+        ([fee, assetAmount]) => {
+          const max = isChainAsset ? assetAmount.minus(fee) : balance.amount
           const zero = baseAmount(0, max.decimal)
           return max.gt(zero) ? max : zero
         }
       )
     )
-    return isRuneNativeAsset(asset) ? maxRuneAmount : balance.amount
-  }, [oFee, asset, balance.amount])
+    return maxAmount
+  }, [oFee, oAssetAmount, isChainAsset, balance.amount])
 
-  // store maxAmountValue
-  const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
+  // store maxAmountValue wrong CryptoAmount
+  const [maxAmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(
+    new CryptoAmount(baseAmount(0, balance.amount.decimal), asset)
+  )
 
   // useEffect to fetch data from query
   useEffect(() => {
@@ -269,29 +305,30 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
       poolDetails,
       pricePool
     })
-    const amountPrice = getPoolPriceValue({
-      balance: { asset, amount: amountToSend },
-      poolDetails,
-      pricePool
-    })
+
     const assetFeePrice = getPoolPriceValue({
       balance: { asset, amount: assetFee.baseAmount },
       poolDetails,
       pricePool
     })
+    const amountPrice = getPoolPriceValue({
+      balance: { asset, amount: amountToSend },
+      poolDetails,
+      pricePool
+    })
+    if (O.isSome(maxAmountPrice)) {
+      const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
+      setMaxAmountPriceValue(maxCryptoAmount)
+    }
     if (O.isSome(assetFeePrice)) {
       const maxCryptoAmount = new CryptoAmount(assetFeePrice.value, pricePool.asset)
       setFeePriceValue(maxCryptoAmount)
     }
     if (O.isSome(amountPrice)) {
-      const amountPriceAmount = new CryptoAmount(amountPrice.value, pricePool.asset)
-      setAmountPriceValue(amountPriceAmount)
+      const maxCryptoAmount = new CryptoAmount(amountPrice.value, pricePool.asset)
+      setAmountPriceValue(maxCryptoAmount)
     }
-    if (O.isSome(maxAmountPrice)) {
-      const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
-      setMaxAmountPriceValue(maxCryptoAmount)
-    }
-  }, [amountToSend, asset, assetFee, maxAmount, network, poolDetails, pricePool, pricePool.asset])
+  }, [amountToSend, asset, assetFee, maxAmount, pricePool, network, poolDetails, mayaScanPrice])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {
@@ -321,14 +358,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     )
 
     return price ? `${price} (${fee}) ` : fee
-  }, [feePriceValue, assetFee, asset])
-
-  useEffect(() => {
-    // Whenever `amountToSend` has been updated, we put it back into input field
-    form.setFieldsValue({
-      amount: baseToAsset(amountToSend).amount()
-    })
-  }, [amountToSend, form])
+  }, [feePriceValue, assetFee.assetAmount, assetFee.asset, asset])
 
   const amountLabel = useMemo(() => {
     if (!amountToSend) {
@@ -342,23 +372,39 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
       trimZeros: !isUSDAsset(asset)
     })
 
-    const price = FP.pipe(
-      O.some(amountPriceValue), // Assuming this is Option<CryptoAmount>
-      O.map((cryptoAmount: CryptoAmount) =>
-        eqAsset(asset, cryptoAmount.asset)
-          ? ''
-          : formatAssetAmountCurrency({
-              amount: cryptoAmount.assetAmount,
-              asset: cryptoAmount.asset,
-              decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
-              trimZeros: !isUSDAsset(cryptoAmount.asset)
-            })
-      ),
-      O.getOrElse(() => '')
-    )
+    const price = isMayaAsset(asset)
+      ? RD.isSuccess(amountToSendMayaPrice)
+        ? formatAssetAmountCurrency({
+            amount: amountToSendMayaPrice.value.assetAmount,
+            asset: amountToSendMayaPrice.value.asset,
+            decimal: isUSDAsset(amountToSendMayaPrice.value.asset) ? 2 : 6,
+            trimZeros: !isUSDAsset(amountToSendMayaPrice.value.asset)
+          })
+        : ''
+      : FP.pipe(
+          O.some(amountPriceValue), // Assuming this is Option<CryptoAmount>
+          O.map((cryptoAmount: CryptoAmount) =>
+            eqAsset(asset, cryptoAmount.asset)
+              ? ''
+              : formatAssetAmountCurrency({
+                  amount: cryptoAmount.assetAmount,
+                  asset: cryptoAmount.asset,
+                  decimal: isUSDAsset(cryptoAmount.asset) ? 2 : 6,
+                  trimZeros: !isUSDAsset(cryptoAmount.asset)
+                })
+          ),
+          O.getOrElse(() => '')
+        )
 
     return price ? `${price} (${amount}) ` : amount
-  }, [amountPriceValue, amountToSend, asset])
+  }, [amountPriceValue, amountToSend, amountToSendMayaPrice, asset])
+
+  useEffect(() => {
+    // Whenever `amountToSend` has been updated, we put it back into input field
+    form.setFieldsValue({
+      amount: baseToAsset(amountToSend).amount()
+    })
+  }, [amountToSend, form])
 
   const amountValidator = useCallback(
     async (_: unknown, value: BigNumber) => {
@@ -366,9 +412,9 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
       const errors = {
         msg1: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeNumber' }),
         msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterThan' }, { amount: '0' }),
-        msg3: isRuneNativeAsset(asset)
-          ? intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalanceAndFee' })
-          : intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalance' })
+        msg3: isMayaAsset(asset)
+          ? intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalance' })
+          : intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalanceAndFee' })
       }
       return validateTxAmountInput({ input: value, maxAmount: baseToAsset(maxAmount), errors })
     },
@@ -408,31 +454,32 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
 
   const submitTx = useCallback(() => {
     setSendTxStartTime(Date.now())
+    const recipient = recipientAddress
 
     subscribeSendTxState(
       transfer$({
         walletType,
         walletAccount,
         walletIndex,
-        hdMode,
-        recipient: form.getFieldValue('recipient'),
+        recipient,
         asset,
         amount: amountToSend,
-        memo: currentMemo,
+        memo: form.getFieldValue('memo'),
+        hdMode,
         dex
       })
     )
   }, [
+    recipientAddress,
     subscribeSendTxState,
     transfer$,
     walletType,
     walletAccount,
     walletIndex,
-    hdMode,
-    form,
     asset,
     amountToSend,
-    currentMemo,
+    form,
+    hdMode,
     dex
   ])
 
@@ -463,14 +510,14 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
           onSuccess={onSuccessHandler}
           onClose={onCloseHandler}
           visible={showConfirmationModal}
-          chain={GAIAChain}
+          chain={asset.chain}
           description2={intl.formatMessage({ id: 'ledger.sign' })}
           addresses={O.none}
         />
       )
     }
     return null
-  }, [intl, network, submitTx, showConfirmationModal, validatePassword$, walletType])
+  }, [walletType, submitTx, validatePassword$, network, showConfirmationModal, asset.chain, intl])
 
   const renderTxModal = useMemo(
     () =>
@@ -503,8 +550,8 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
       FP.pipe(
         feeRD,
         RD.map((fee) => {
-          setAssetFee(new CryptoAmount(fee, asset))
-          return [{ asset: asset, amount: fee }]
+          setAssetFee(new CryptoAmount(fee, getChainAsset(asset.chain)))
+          return [{ asset: getChainAsset(asset.chain), amount: fee }]
         })
       ),
 
@@ -516,19 +563,14 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
       // we have to validate input before storing into the state
       amountValidator(undefined, value)
         .then(() => {
-          setAmountToSend(assetToBase(assetAmount(value, COSMOS_DECIMAL)))
+          setAmountToSend(assetToBase(assetAmount(value, balance.amount.decimal)))
         })
-        .catch(() => {}) // do nothing, antd form does the job for us to show an error message
+        .catch(() => {}) // do nothing, Ant' form does the job for us to show an error message
     },
-    [amountValidator]
+    [amountValidator, balance.amount.decimal]
   )
 
   const addMaxAmountHandler = useCallback(() => setAmountToSend(maxAmount), [maxAmount])
-
-  const [recipientAddress, setRecipientAddress] = useState<Address>('')
-  const handleOnKeyUp = useCallback(() => {
-    setRecipientAddress(form.getFieldValue('recipient'))
-  }, [form])
 
   const oMatchedWalletType: O.Option<WalletType> = useMemo(
     () => H.matchedWalletType(balances, recipientAddress),
@@ -536,8 +578,6 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   )
 
   const renderWalletType = useMemo(() => H.renderedWalletType(oMatchedWalletType), [oMatchedWalletType])
-  const [showDetails, setShowDetails] = useState<boolean>(true)
-  const disableSubmit = useMemo(() => isFeeError || RD.isPending(feeRD), [feeRD, isFeeError])
 
   return (
     <>
@@ -554,8 +594,9 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
               {intl.formatMessage({ id: 'common.address' })}
               {renderWalletType}
             </Styled.CustomLabel>
+
             <Form.Item rules={[{ required: true, validator: addressValidator }]} name="recipient">
-              <Styled.Input color="primary" size="large" disabled={isLoading} onKeyUp={handleOnKeyUp} />
+              <Styled.Input color="primary" size="large" disabled={isLoading} onChange={handleAddressInput} />
             </Form.Item>
             {warningMessage && <div className="pb-20px text-warning0 dark:text-warning0d ">{warningMessage}</div>}
             <Styled.CustomLabel size="big">{intl.formatMessage({ id: 'common.amount' })}</Styled.CustomLabel>
@@ -564,15 +605,21 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
                 min={0}
                 size="large"
                 disabled={isLoading}
-                decimal={COSMOS_DECIMAL}
+                decimal={balance.amount.decimal}
                 onChange={onChangeInput}
               />
             </Styled.FormItem>
             <MaxBalanceButton
-              className="mb-10px"
+              className="mb-10px "
               color="neutral"
               balance={{ amount: maxAmount, asset: asset }}
-              maxDollarValue={maxAmmountPriceValue}
+              maxDollarValue={
+                isMayaAsset(asset)
+                  ? RD.isSuccess(mayascanPriceInUsd)
+                    ? mayascanPriceInUsd.value
+                    : maxAmountPriceValue
+                  : maxAmountPriceValue
+              }
               onClick={addMaxAmountHandler}
               disabled={isLoading}
             />
@@ -588,16 +635,13 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
           <FlatButton
             className="mt-40px min-w-[200px]"
             loading={isLoading}
-            disabled={disableSubmit}
+            disabled={isFeeError}
             type="submit"
             size="large">
             {intl.formatMessage({ id: 'wallet.action.send' })}
           </FlatButton>
-        </Styled.Form>
-        <div className="w-full pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
-          {/* memo */}
-          <div className={`my-20px w-full font-main text-[12px] uppercase dark:border-gray1d`}>
-            <div className={`w-full pt-10 font-main text-[12px] uppercase dark:border-gray1d`}>
+          <div className="w-full pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
+            <div className={`my-20px w-full font-main text-[12px] uppercase dark:border-gray1d`}>
               <BaseButton
                 className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
                 onClick={() => setShowDetails((current) => !current)}>
@@ -608,20 +652,21 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
                   <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
                 )}
               </BaseButton>
+
+              {showDetails && (
+                <>
+                  <ShowDetails
+                    recipient={recipientAddress}
+                    amountLabel={amountLabel}
+                    priceFeeLabel={priceFeeLabel}
+                    currentMemo={currentMemo}
+                    asset={asset}
+                  />
+                </>
+              )}
             </div>
-            {showDetails && (
-              <>
-                <ShowDetails
-                  recipient={recipientAddress}
-                  amountLabel={amountLabel}
-                  priceFeeLabel={priceFeeLabel}
-                  currentMemo={currentMemo}
-                  asset={asset}
-                />
-              </>
-            )}
           </div>
-        </div>
+        </Styled.Form>
       </Styled.Container>
       {showConfirmationModal && renderConfirmationModal}
       {renderTxModal}

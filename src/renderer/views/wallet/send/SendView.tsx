@@ -32,7 +32,7 @@ import { PoolAddress } from '../../../services/midgard/types'
 import { userAddresses$ } from '../../../services/storage/userAddresses'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { SelectedWalletAsset } from '../../../services/wallet/types'
-import { SendViewEVM, SendViewTHOR, SendViewMAYA, SendViewCOSMOS, SendViewUTXO } from './index'
+import { SendViewCOSMOS, SendViewEVM, SendViewUTXO } from './index'
 
 type Props = {}
 
@@ -149,49 +149,19 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
             />
           )
         case THORChain:
-          return (
-            <SendViewTHOR
-              asset={asset}
-              trustedAddresses={trustedAddresses}
-              emptyBalance={DEFAULT_WALLET_BALANCE}
-              poolDetails={poolDetailsMaya}
-              oPoolAddress={oPoolAddressMaya}
-              dex={dex}
-            />
-          )
         case MAYAChain:
         case KUJIChain:
-          return (
-            <SendViewMAYA
-              asset={asset}
-              trustedAddresses={trustedAddresses}
-              emptyBalance={DEFAULT_WALLET_BALANCE}
-              poolDetails={poolDetailsMaya}
-              dex={dex}
-            />
-          )
         case GAIAChain:
           return (
             <SendViewCOSMOS
               asset={asset}
               trustedAddresses={trustedAddresses}
               emptyBalance={DEFAULT_WALLET_BALANCE}
-              poolDetails={poolDetailsThor}
-              oPoolAddress={oPoolAddress}
+              poolDetails={!isChainOfMaya(asset.asset.chain) ? poolDetailsThor : poolDetailsMaya}
+              oPoolAddress={!isChainOfMaya(asset.asset.chain) ? oPoolAddress : oPoolAddressMaya}
               dex={dex}
             />
           )
-        // case KUJIChain:
-        //   return (
-        //     <SendViewKUJI
-        //       asset={asset}
-        //       trustedAddresses={trustedAddresses}
-        //       emptyBalance={DEFAULT_WALLET_BALANCE}
-        //       poolDetails={poolDetailsMaya}
-        //       oPoolAddress={oPoolAddressMaya}
-        //       dex={dex}
-        //     />
-        //   )
       }
     },
     [dex, poolsStateThorRD, poolsStateMayaRD, intl, trustedAddresses, oPoolAddress, oPoolAddressMaya]

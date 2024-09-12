@@ -176,6 +176,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   const handleSavedAddressSelect = useCallback(
     (value: string) => {
       form.setFieldsValue({ recipient: value })
+      setRecipientAddress(value)
     },
     [form]
   )
