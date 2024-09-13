@@ -130,39 +130,6 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     [trustedAddresses, asset.chain]
   )
 
-  const handleSavedAddressSelect = useCallback(
-    (value: string) => {
-      form.setFieldsValue({ recipient: value })
-      setRecipientAddress(value)
-    },
-    [form]
-  )
-
-  const renderSavedAddressesDropdown = useMemo(
-    () =>
-      FP.pipe(
-        oSavedAddresses,
-        O.fold(
-          () => null,
-          (addresses) => (
-            <Form.Item label={intl.formatMessage({ id: 'common.savedAddresses' })} className="mb-20px">
-              <Styled.CustomSelect
-                placeholder={intl.formatMessage({ id: 'common.savedAddresses' })}
-                onChange={(value) => handleSavedAddressSelect(value as string)}
-                style={{ width: '100%' }}>
-                {addresses.map((address) => (
-                  <Styled.CustomSelect.Option key={address.address} value={address.address}>
-                    {address.name}: {address.address}
-                  </Styled.CustomSelect.Option>
-                ))}
-              </Styled.CustomSelect>
-            </Form.Item>
-          )
-        )
-      ),
-    [oSavedAddresses, intl, handleSavedAddressSelect]
-  )
-
   const handleMemo = useCallback(() => {
     let memoValue = form.getFieldValue('memo') as string
 
@@ -268,14 +235,67 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     },
     [inboundAddress, addressValidation, intl]
   )
+
+  const [matchedAddresses, setMatchedAddresses] = useState<O.Option<TrustedAddress[]>>(O.none)
+
+  const handleSavedAddressSelect = useCallback(
+    (value: string) => {
+      form.setFieldsValue({ recipient: value })
+
+      setRecipientAddress(value)
+
+      if (value) {
+        const matched = FP.pipe(
+          oSavedAddresses,
+          O.map((addresses) => addresses.filter((address) => address.address.includes(value))),
+          O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0))
+        )
+        setMatchedAddresses(matched)
+      }
+
+      addressValidator(undefined, value).catch(() => {})
+    },
+    [form, addressValidator, oSavedAddresses]
+  )
+
+  const renderSavedAddressesDropdown = useMemo(
+    () =>
+      FP.pipe(
+        oSavedAddresses,
+        O.fold(
+          () => null,
+          (addresses) => (
+            <Form.Item label={intl.formatMessage({ id: 'common.savedAddresses' })} className="mb-20px">
+              <Styled.CustomSelect
+                placeholder={intl.formatMessage({ id: 'common.savedAddresses' })}
+                onChange={(value) => handleSavedAddressSelect(value as string)}
+                style={{ width: '100%' }}>
+                {addresses.map((address) => (
+                  <Styled.CustomSelect.Option key={address.address} value={address.address}>
+                    {address.name}: {address.address}
+                  </Styled.CustomSelect.Option>
+                ))}
+              </Styled.CustomSelect>
+            </Form.Item>
+          )
+        )
+      ),
+    [oSavedAddresses, intl, handleSavedAddressSelect]
+  )
+
   const handleAddressInput = useCallback(async () => {
     const recipient = form.getFieldValue('recipient')
+    setRecipientAddress(recipient)
 
     if (recipient) {
-      setRecipientAddress(recipient)
+      const matched = FP.pipe(
+        oSavedAddresses,
+        O.map((addresses) => addresses.filter((address) => address.address.includes(recipient))),
+        O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0)) // Use O.none for empty arrays
+      )
+      setMatchedAddresses(matched)
     }
-  }, [form])
-
+  }, [form, oSavedAddresses])
   // max amount for asset
   const maxAmount: BaseAmount = useMemo(() => {
     const maxAmount = FP.pipe(
@@ -576,8 +596,10 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     [balances, recipientAddress]
   )
 
-  const renderWalletType = useMemo(() => H.renderedWalletType(oMatchedWalletType), [oMatchedWalletType])
-
+  const renderWalletType = useMemo(
+    () => H.renderedWalletType(oMatchedWalletType, matchedAddresses),
+    [matchedAddresses, oMatchedWalletType]
+  )
   return (
     <>
       <Styled.Container>

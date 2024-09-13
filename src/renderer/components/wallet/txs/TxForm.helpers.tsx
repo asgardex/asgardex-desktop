@@ -6,6 +6,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { IntlShape } from 'react-intl'
 
+import { TrustedAddress } from '../../../../shared/api/types'
 import { ASGARDEX_AFFILIATE_FEE, ASGARDEX_THORNAME } from '../../../../shared/const'
 import { WalletType } from '../../../../shared/wallet/types'
 import { emptyString } from '../../../helpers/stringHelper'
@@ -15,16 +16,30 @@ import { TxHashRD } from '../../../services/wallet/types'
 import { WalletTypeLabel } from '../../uielements/common/Common.styles'
 import * as Styled from './TxForm.styles'
 
-export const renderedWalletType = (oMatchedWalletType: O.Option<WalletType>) =>
+export const renderedWalletType = (oWalletType: O.Option<WalletType>, oTrustedAddresses: O.Option<TrustedAddress[]>) =>
   FP.pipe(
-    oMatchedWalletType,
+    oTrustedAddresses,
     O.fold(
-      () => <></>,
-      (matchedWalletType) => (
-        <Styled.WalletTypeLabelWrapper>
-          <WalletTypeLabel>{matchedWalletType}</WalletTypeLabel>
-        </Styled.WalletTypeLabelWrapper>
-      )
+      () => <></>, // Handle None case
+      (trustedAddresses) =>
+        trustedAddresses.length > 0 ? (
+          <Styled.WalletTypeLabelWrapper>
+            <WalletTypeLabel>{trustedAddresses[0].name}</WalletTypeLabel> {/* Display TrustedAddress name */}
+          </Styled.WalletTypeLabelWrapper>
+        ) : (
+          FP.pipe(
+            // If no trusted addresses, check wallet type
+            oWalletType,
+            O.fold(
+              () => <></>,
+              (walletType) => (
+                <Styled.WalletTypeLabelWrapper>
+                  <WalletTypeLabel>{walletType}</WalletTypeLabel> {/* Display WalletType */}
+                </Styled.WalletTypeLabelWrapper>
+              )
+            )
+          )
+        )
     )
   )
 

@@ -120,8 +120,16 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     (value: string) => {
       form.setFieldsValue({ recipient: value })
       setRecipientAddress(value)
+      if (value) {
+        const matched = FP.pipe(
+          oSavedAddresses,
+          O.map((addresses) => addresses.filter((address) => address.address.includes(value))),
+          O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0))
+        )
+        setMatchedAddresses(matched)
+      }
     },
-    [form]
+    [form, oSavedAddresses]
   )
 
   const renderSavedAddressesDropdown = useMemo(
@@ -686,16 +694,30 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     [isLoading, selectedFee]
   )
 
-  const handleOnKeyUp = useCallback(() => {
-    setRecipientAddress(form.getFieldValue('recipient'))
-  }, [form])
+  const [matchedAddresses, setMatchedAddresses] = useState<O.Option<TrustedAddress[]>>(O.none)
 
+  const handleOnKeyUp = useCallback(async () => {
+    const recipient = form.getFieldValue('recipient')
+    setRecipientAddress(recipient)
+
+    if (recipient) {
+      const matched = FP.pipe(
+        oSavedAddresses,
+        O.map((addresses) => addresses.filter((address) => address.address.includes(recipient))),
+        O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0)) // Use O.none for empty arrays
+      )
+      setMatchedAddresses(matched)
+    }
+  }, [form, oSavedAddresses])
   const oMatchedWalletType: O.Option<WalletType> = useMemo(
     () => matchedWalletType(balances, recipientAddress),
     [balances, recipientAddress]
   )
 
-  const renderWalletType = useMemo(() => renderedWalletType(oMatchedWalletType), [oMatchedWalletType])
+  const renderWalletType = useMemo(
+    () => renderedWalletType(oMatchedWalletType, matchedAddresses),
+    [oMatchedWalletType, matchedAddresses]
+  )
 
   return (
     <>

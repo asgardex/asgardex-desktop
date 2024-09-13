@@ -177,8 +177,16 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     (value: string) => {
       form.setFieldsValue({ recipient: value })
       setRecipientAddress(value)
+      if (value) {
+        const matched = FP.pipe(
+          oSavedAddresses,
+          O.map((addresses) => addresses.filter((address) => address.address.includes(value))),
+          O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0))
+        )
+        setMatchedAddresses(matched)
+      }
     },
-    [form]
+    [form, oSavedAddresses]
   )
 
   const renderSavedAddressesDropdown = useMemo(
@@ -607,10 +615,18 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         return routerAddress === address
       } // If Some, compare the address
     )(routerOption)
-
+  const [matchedAddresses, setMatchedAddresses] = useState<O.Option<TrustedAddress[]>>(O.none)
   const onChangeAddress = useCallback(
     async ({ target }: React.ChangeEvent<HTMLInputElement>) => {
       const address = target.value
+      if (address) {
+        const matched = FP.pipe(
+          oSavedAddresses,
+          O.map((addresses) => addresses.filter((address) => address.address.includes(address.address))),
+          O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0)) // Use O.none for empty arrays
+        )
+        setMatchedAddresses(matched)
+      }
       // we have to validate input before storing into the state
       const isNotAllowed = checkAddress(routers.MAYA, address) || (checkAddress(routers.THOR, address) && !isChainAsset)
       setNotAllowed(isNotAllowed)
@@ -621,7 +637,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         })
         .catch(() => setSendAddress(O.none))
     },
-    [addressValidator, isChainAsset, routers.MAYA, routers.THOR]
+    [addressValidator, isChainAsset, oSavedAddresses, routers.MAYA, routers.THOR]
   )
 
   const reloadFees = useCallback(() => {
@@ -915,7 +931,10 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     [balances, recipientAddress]
   )
 
-  const renderWalletType = useMemo(() => H.renderedWalletType(oMatchedWalletType), [oMatchedWalletType])
+  const renderWalletType = useMemo(
+    () => H.renderedWalletType(oMatchedWalletType, matchedAddresses),
+    [matchedAddresses, oMatchedWalletType]
+  )
 
   return (
     <>
