@@ -19,11 +19,12 @@ import {
 import { Form } from 'antd'
 import { RadioChangeEvent } from 'antd/lib/radio'
 import BigNumber from 'bignumber.js'
+import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
-import { Dex } from '../../../../../shared/api/types'
+import { Dex, TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
 import { isChainOfMaya } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
@@ -68,6 +69,7 @@ export type FormValues = {
 
 export type Props = {
   asset: SelectedWalletAsset
+  trustedAddresses: TrustedAddresses | undefined
   balances: WalletBalances
   balance: WalletBalance
   transfer$: SendTxStateHandler
@@ -87,6 +89,7 @@ export type Props = {
 export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
   const {
     asset: { walletType, walletAccount, walletIndex, hdMode, walletAddress },
+    trustedAddresses,
     poolDetails,
     balances,
     balance,
@@ -106,6 +109,53 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
   const intl = useIntl()
 
   const { asset } = balance
+
+  const oSavedAddresses: O.Option<TrustedAddress[]> = useMemo(
+    () =>
+      FP.pipe(O.fromNullable(trustedAddresses?.addresses), O.map(A.filter((address) => address.chain === asset.chain))),
+    [trustedAddresses, asset.chain]
+  )
+  const [form] = Form.useForm<FormValues>()
+  const handleSavedAddressSelect = useCallback(
+    (value: string) => {
+      form.setFieldsValue({ recipient: value })
+      setRecipientAddress(value)
+      if (value) {
+        const matched = FP.pipe(
+          oSavedAddresses,
+          O.map((addresses) => addresses.filter((address) => address.address.includes(value))),
+          O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0))
+        )
+        setMatchedAddresses(matched)
+      }
+    },
+    [form, oSavedAddresses]
+  )
+
+  const renderSavedAddressesDropdown = useMemo(
+    () =>
+      FP.pipe(
+        oSavedAddresses,
+        O.fold(
+          () => null,
+          (addresses) => (
+            <Form.Item label={intl.formatMessage({ id: 'common.savedAddresses' })} className="mb-20px">
+              <Styled.CustomSelect
+                placeholder={intl.formatMessage({ id: 'common.savedAddresses' })}
+                onChange={(value) => handleSavedAddressSelect(value as string)}
+                style={{ width: '100%' }}>
+                {addresses.map((address) => (
+                  <Styled.CustomSelect.Option key={address.address} value={address.address}>
+                    {address.name}: {address.address}
+                  </Styled.CustomSelect.Option>
+                ))}
+              </Styled.CustomSelect>
+            </Form.Item>
+          )
+        )
+      ),
+    [oSavedAddresses, intl, handleSavedAddressSelect]
+  )
 
   const [amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
 
@@ -138,8 +188,6 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
 
   const [currentMemo, setCurrentMemo] = useState<string>('')
   const [affiliateTracking, setAffiliateTracking] = useState<string>('')
-
-  const [form] = Form.useForm<FormValues>()
 
   const handleMemo = useCallback(() => {
     let memoValue = form.getFieldValue('memo') as string
@@ -646,16 +694,30 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     [isLoading, selectedFee]
   )
 
-  const handleOnKeyUp = useCallback(() => {
-    setRecipientAddress(form.getFieldValue('recipient'))
-  }, [form])
+  const [matchedAddresses, setMatchedAddresses] = useState<O.Option<TrustedAddress[]>>(O.none)
 
+  const handleOnKeyUp = useCallback(async () => {
+    const recipient = form.getFieldValue('recipient')
+    setRecipientAddress(recipient)
+
+    if (recipient) {
+      const matched = FP.pipe(
+        oSavedAddresses,
+        O.map((addresses) => addresses.filter((address) => address.address.includes(recipient))),
+        O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0)) // Use O.none for empty arrays
+      )
+      setMatchedAddresses(matched)
+    }
+  }, [form, oSavedAddresses])
   const oMatchedWalletType: O.Option<WalletType> = useMemo(
     () => matchedWalletType(balances, recipientAddress),
     [balances, recipientAddress]
   )
 
-  const renderWalletType = useMemo(() => renderedWalletType(oMatchedWalletType), [oMatchedWalletType])
+  const renderWalletType = useMemo(
+    () => renderedWalletType(oMatchedWalletType, matchedAddresses),
+    [oMatchedWalletType, matchedAddresses]
+  )
 
   return (
     <>
@@ -672,6 +734,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
           onFinish={() => setShowConfirmationModal(true)}
           labelCol={{ span: 24 }}>
           <Styled.SubForm>
+            {renderSavedAddressesDropdown}
             <Styled.CustomLabel size="big">
               {intl.formatMessage({ id: 'common.address' })}
               {renderWalletType}

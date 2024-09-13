@@ -1,6 +1,3 @@
 export { SendFormEVM } from './SendFormEVM'
-export { SendFormTHOR } from './SendFormTHOR'
 export { SendFormCOSMOS } from './SendFormCOSMOS'
-export { SendFormMAYA } from './SendFormMAYA'
 export { SendFormUTXO } from './SendFormUTXO'
-export { SendFormKUJI } from './SendFormKUJI'

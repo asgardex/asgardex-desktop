@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
@@ -21,6 +21,7 @@ import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
+import { TrustedAddresses } from '../../../../shared/api/types'
 import { isChainOfMaya, isSupportedChain } from '../../../../shared/utils/chain'
 import { BackLinkButton, RefreshButton } from '../../../components/uielements/button'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
@@ -28,9 +29,10 @@ import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { useDex } from '../../../hooks/useDex'
 import { PoolAddress } from '../../../services/midgard/types'
+import { userAddresses$ } from '../../../services/storage/userAddresses'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { SelectedWalletAsset } from '../../../services/wallet/types'
-import { SendViewEVM, SendViewTHOR, SendViewMAYA, SendViewCOSMOS, SendViewUTXO, SendViewKUJI } from './index'
+import { SendViewCOSMOS, SendViewEVM, SendViewUTXO } from './index'
 
 type Props = {}
 
@@ -40,6 +42,13 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
   const { selectedAsset$ } = useWalletContext()
 
   const { dex } = useDex()
+
+  const [trustedAddresses, setTrustedAddresses] = useState<TrustedAddresses>()
+
+  useEffect(() => {
+    const subscription = userAddresses$.subscribe((addresses) => setTrustedAddresses({ addresses }))
+    return () => subscription.unsubscribe()
+  }, [])
 
   const oSelectedAsset = useObservableState(selectedAsset$, O.none)
 
@@ -116,6 +125,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
           return (
             <SendViewUTXO
               asset={asset}
+              trustedAddresses={trustedAddresses}
               emptyBalance={DEFAULT_WALLET_BALANCE}
               poolDetails={!isChainOfMaya(asset.asset.chain) ? poolDetailsThor : poolDetailsMaya}
               oPoolAddress={oPoolAddress}
@@ -130,6 +140,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
           return (
             <SendViewEVM
               asset={asset}
+              trustedAddresses={trustedAddresses}
               emptyBalance={DEFAULT_WALLET_BALANCE}
               poolDetails={!isChainOfMaya(asset.asset.chain) ? poolDetailsThor : poolDetailsMaya}
               oPoolAddress={oPoolAddress}
@@ -138,42 +149,22 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
             />
           )
         case THORChain:
-          return (
-            <SendViewTHOR
-              asset={asset}
-              emptyBalance={DEFAULT_WALLET_BALANCE}
-              poolDetails={poolDetailsMaya}
-              oPoolAddress={oPoolAddressMaya}
-              dex={dex}
-            />
-          )
         case MAYAChain:
-          return (
-            <SendViewMAYA asset={asset} emptyBalance={DEFAULT_WALLET_BALANCE} poolDetails={poolDetailsMaya} dex={dex} />
-          )
+        case KUJIChain:
         case GAIAChain:
           return (
             <SendViewCOSMOS
               asset={asset}
+              trustedAddresses={trustedAddresses}
               emptyBalance={DEFAULT_WALLET_BALANCE}
-              poolDetails={poolDetailsThor}
-              oPoolAddress={oPoolAddress}
-              dex={dex}
-            />
-          )
-        case KUJIChain:
-          return (
-            <SendViewKUJI
-              asset={asset}
-              emptyBalance={DEFAULT_WALLET_BALANCE}
-              poolDetails={poolDetailsMaya}
-              oPoolAddress={oPoolAddressMaya}
+              poolDetails={!isChainOfMaya(asset.asset.chain) ? poolDetailsThor : poolDetailsMaya}
+              oPoolAddress={!isChainOfMaya(asset.asset.chain) ? oPoolAddress : oPoolAddressMaya}
               dex={dex}
             />
           )
       }
     },
-    [dex, poolsStateThorRD, poolsStateMayaRD, intl, oPoolAddress, oPoolAddressMaya]
+    [dex, poolsStateThorRD, poolsStateMayaRD, intl, trustedAddresses, oPoolAddress, oPoolAddressMaya]
   )
 
   return FP.pipe(
