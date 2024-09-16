@@ -84,8 +84,9 @@ type FormValues = {
 }
 type UserNodeInfo = {
   nodeAddress: string
-  walletAddress: string
-  bondAmount: BaseAmount
+  bondProviderAddress?: string
+  bondAmount?: BaseAmount
+  isNodeAddress: boolean
 }
 
 type Props = {
@@ -214,25 +215,34 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     let foundNodeInfo: UserNodeInfo | undefined = undefined
 
     for (const node of nodes) {
-      const matchingProvider = node.bondProviders.providers.find((provider) => walletAddress === provider.bondAddress)
+      const normalizedNodeAddress = node.address.toLowerCase()
+      const normalizedWalletAddress = walletAddress.toLowerCase()
 
-      if (matchingProvider) {
-        // If a matching provider is found, set the UserNodeInfo state
+      // Check if the wallet address matches the node address
+      const isNodeAddress = normalizedNodeAddress === normalizedWalletAddress
+
+      // Check if the wallet address matches any bond provider address
+      const matchingProvider = node.bondProviders.providers.find(
+        (provider) => normalizedWalletAddress === provider.bondAddress.toLowerCase()
+      )
+
+      if (isNodeAddress || matchingProvider) {
         foundNodeInfo = {
           nodeAddress: node.address,
-          walletAddress: matchingProvider.bondAddress,
-          bondAmount: matchingProvider.bond
+          isNodeAddress,
+          bondProviderAddress: matchingProvider?.bondAddress,
+          bondAmount: matchingProvider?.bond
         }
-        break // Exit the loop after finding the first match
+        break
       }
     }
 
     if (foundNodeInfo) {
       setUserNodeInfo(foundNodeInfo)
     } else {
-      setUserNodeInfo(undefined) // Reset the state if no match is found
+      setUserNodeInfo(undefined)
     }
-  }, [nodes, walletAddress]) // Re-run the effect if nodes or walletAddress changes
+  }, [nodes, walletAddress])
 
   const [memo, setMemo] = useState<string>('')
   const amountToSend = useMemo(() => {
@@ -340,7 +350,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
           (fee) => {
             if (interactType === 'unbond') {
               let maxAmountBalOrBond: BaseAmount = ZERO_BASE_AMOUNT
-              maxAmountBalOrBond = userNodeInfo ? userNodeInfo.bondAmount : ZERO_BASE_AMOUNT
+              maxAmountBalOrBond = userNodeInfo?.bondAmount ? userNodeInfo.bondAmount : ZERO_BASE_AMOUNT
               return maxAmountBalOrBond
             } else if (interactType === 'runePool' && runePoolAction === Action.withdraw) {
               return runePoolProvider.value.gt(0) ? runePoolProvider.value : ZERO_BASE_AMOUNT
@@ -839,7 +849,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   const [showDetails, setShowDetails] = useState<boolean>(true)
   const address = ''
   const amount = bn(0)
-  const bondBaseAmount = userNodeInfo ? userNodeInfo.bondAmount : baseAmount(0)
+  const bondBaseAmount = userNodeInfo?.bondAmount ? userNodeInfo.bondAmount : baseAmount(0)
 
   return (
     <Styled.Form
@@ -908,7 +918,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         )}
 
         {/* Provider address input (BOND/UNBOND/ only) */}
-        {(interactType === 'bond' || interactType === 'unbond') && (
+        {(interactType === 'bond' || interactType === 'unbond') && !userNodeInfo?.bondProviderAddress && (
           <Styled.InputContainer style={{ paddingBottom: '20px' }}>
             <CheckButton checked={hasProviderAddress} clickHandler={onClickHasProviderAddress} disabled={isLoading}>
               {intl.formatMessage({ id: 'deposit.interact.label.bondprovider' })}

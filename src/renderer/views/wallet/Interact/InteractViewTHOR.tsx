@@ -52,14 +52,22 @@ export const InteractViewTHOR: React.FC = () => {
       ),
     RD.initial
   )
-
   const oSelectedAsset = useObservableState(selectedAsset$, O.none)
-
   const assetChain = useMemo(
     () =>
       FP.pipe(
         oSelectedAsset,
         O.map((selectedAsset) => selectedAsset.asset.chain),
+        O.getOrElse(() => '') // Replace "defaultChain" with an appropriate default value
+      ),
+    [oSelectedAsset]
+  )
+
+  const walletAddress = useMemo(
+    () =>
+      FP.pipe(
+        oSelectedAsset,
+        O.map((selectedAsset) => selectedAsset.walletAddress),
         O.getOrElse(() => '') // Replace "defaultChain" with an appropriate default value
       ),
     [oSelectedAsset]
@@ -135,22 +143,39 @@ export const InteractViewTHOR: React.FC = () => {
   const [nodeInfos] = useObservableState<NodeInfosRD>(
     () =>
       FP.pipe(
-        Rx.combineLatest([userNodes$, getNodeInfos$]),
-        RxOp.switchMap(([userNodes, nodeInfos]) =>
-          Rx.of(
-            FP.pipe(
-              nodeInfos,
-              RD.map((data) =>
-                FP.pipe(
-                  data,
-                  A.filter(({ address }) => userNodes.includes(address))
-                )
+        // No need to check for oSelectedAsset anymore, go directly to Rx.combineLatest
+        Rx.combineLatest([userNodes$, getNodeInfos$]).pipe(
+          RxOp.switchMap(([userNodes, nodeInfos]) => {
+            return Rx.of(
+              FP.pipe(
+                nodeInfos,
+                RD.map((data) => {
+                  return FP.pipe(
+                    data,
+                    A.filter(({ address, bondProviders }) => {
+                      const normalizedNodeAddress = address.toLowerCase()
+                      const normalizedWalletAddress = walletAddress.toLowerCase()
+
+                      const isNodeAddress =
+                        normalizedNodeAddress === normalizedWalletAddress || userNodes.includes(normalizedNodeAddress)
+
+                      const isBondProvider = bondProviders.providers.some(({ bondAddress }) => {
+                        const normalizedBondAddress = bondAddress.toLowerCase()
+                        return (
+                          normalizedBondAddress === normalizedWalletAddress || userNodes.includes(normalizedBondAddress)
+                        )
+                      })
+
+                      return isNodeAddress || isBondProvider
+                    })
+                  )
+                })
               )
             )
-          )
+          })
         )
       ),
-    RD.initial
+    RD.pending // Set initial state as `pending` to indicate loading
   )
 
   const [runePoolProviderRD, setRunePoolProviderRD] = useState<RunePoolProviderRD>(RD.initial)
@@ -192,6 +217,7 @@ export const InteractViewTHOR: React.FC = () => {
     },
     [navigate]
   )
+
   const reloadHandler = useCallback(() => {
     const lazyReload = reloadBalancesByChain(assetChain)
     reloadRunePoolProvider()
