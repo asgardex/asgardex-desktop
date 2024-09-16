@@ -760,15 +760,16 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
           }
         />
         <Styled.Input
-          placeholder={intl.formatMessage({ id: 'wallet.column.name' })}
-          value={newAddress.name}
-          onChange={(e) => setNewAddress((prev) => ({ ...prev, name: e.target.value }))}
-        />
-        <Styled.Input
           placeholder={intl.formatMessage({ id: 'common.address' })}
           value={newAddress.address}
           onChange={(e) => setNewAddress((prev) => ({ ...prev, address: e.target.value }))}
         />
+        <Styled.Input
+          placeholder={intl.formatMessage({ id: 'wallet.column.name' })}
+          value={newAddress.name}
+          onChange={(e) => setNewAddress((prev) => ({ ...prev, name: e.target.value }))}
+        />
+
         <div className="mr-30px flex items-center md:mr-0">
           <Styled.AddLedgerButton onClick={handleAddAddress}>
             <Styled.AddLedgerIcon /> {intl.formatMessage({ id: 'common.store' })}
