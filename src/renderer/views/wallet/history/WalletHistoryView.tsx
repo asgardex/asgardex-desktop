@@ -31,7 +31,7 @@ import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { userChains$ } from '../../../services/storage/userChains'
 import { ledgerAddressToWalletAddress } from '../../../services/wallet/util'
 
-const HISTORY_FILTERS: Filter[] = ['ALL', 'SWITCH', 'DEPOSIT', 'SWAP', 'WITHDRAW', 'DONATE', 'REFUND']
+const HISTORY_FILTERS: Filter[] = ['ALL', 'SEND', 'DEPOSIT', 'SWAP', 'WITHDRAW', 'DONATE', 'REFUND', 'RUNEPOOLDEPOSIT']
 
 export const WalletHistoryView: React.FC = () => {
   const { network } = useNetwork()

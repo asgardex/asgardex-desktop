@@ -11,6 +11,10 @@ const getTxTypeI18nKey = (type: MidgardTxType): CommonMessageKey | undefined => 
       return 'common.tx.type.withdraw'
     case 'SWAP':
       return 'common.tx.type.swap'
+    case 'SEND':
+      return 'common.tx.type.send'
+    case 'RUNEPOOLDEPOSIT':
+      return 'common.tx.type.runePoolDeposit'
     case 'DONATE':
       return 'common.tx.type.donate'
     case 'REFUND':

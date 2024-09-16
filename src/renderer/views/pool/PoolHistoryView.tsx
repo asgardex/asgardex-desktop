@@ -18,7 +18,7 @@ type Props = {
   className?: string
 }
 
-const HISTORY_FILTERS: Filter[] = ['ALL', 'DEPOSIT', 'SWAP', 'WITHDRAW', 'DONATE', 'REFUND']
+const HISTORY_FILTERS: Filter[] = ['ALL', 'DEPOSIT', 'SEND', 'RUNEPOOLDEPOSIT', 'SWAP', 'WITHDRAW', 'DONATE', 'REFUND']
 
 export const PoolHistoryView: React.FC<Props> = ({ className, poolAsset, historyActions }) => {
   const { loadHistory, reloadHistory, requestParams, historyPage, prevHistoryPage, setFilter, setPage } = historyActions

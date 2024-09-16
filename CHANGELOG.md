@@ -1,8 +1,9 @@
-# 1.22.5 (2024-09-)
+# 1.22.5 (2024-09-6)
 
-## Add
-
+## Updates/Fixes
 - Add trade asset table [#321](https://github.com/asgardex/asgardex-desktop/pull/322)
+- add saved address to send screen [#343](https://github.com/asgardex/asgardex-desktop/pull/349)
+- fix asset mismatch and lp retrieval tool [350](https://github.com/asgardex/asgardex-desktop/pull/351)
 
 # 1.22.4 (2024-09-6)
 

@@ -1,5 +1,7 @@
 import { Meta } from '@storybook/react'
 import { Network, TxHash } from '@xchainjs/xchain-client'
+import { THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetMAYA } from '@xchainjs/xchain-thorchain-query'
 import { assetAmount, assetToBase, BaseAmount, baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -10,11 +12,12 @@ import { getMockRDValueFactory, RDStatus } from '../../../../../shared/mock/rdBy
 import { mockValidatePassword$ } from '../../../../../shared/mock/wallet'
 import { AssetRuneNative } from '../../../../../shared/utils/asset'
 import { WalletType } from '../../../../../shared/wallet/types'
-import { useThorchainQueryContext } from '../../../../contexts/ThorchainQueryContext'
+import { AssetUSDC } from '../../../../const'
 import { mockWalletBalance } from '../../../../helpers/test/testWalletHelper'
+import { MayaScanPrice, MayaScanPriceRD } from '../../../../hooks/useMayascanPrice'
 import { FeeRD, SendTxStateHandler } from '../../../../services/chain/types'
 import { ApiError, ErrorId, WalletBalance } from '../../../../services/wallet/types'
-import { SendFormTHOR as Component } from './SendFormTHOR'
+import { SendFormCOSMOS as Component } from './SendFormCOSMOS'
 
 type Args = {
   txRDStatus: RDStatus
@@ -47,12 +50,26 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
       () => Error('getting fees failed')
     )
   )
-  const { thorchainQuery } = useThorchainQueryContext()
 
   const dexBalance: WalletBalance = mockWalletBalance({
     amount: assetToBase(assetAmount(balance))
   })
 
+  const addresses = [
+    { address: 'thor-address-1', chain: THORChain, name: 'THOR Address 1' },
+    { address: 'thor-address-2', chain: THORChain, name: 'THOR Address 2' }
+  ]
+  const mayaScanPriceRD: MayaScanPriceRD = FP.pipe(
+    'success', // Replace with 'pending' or 'error' to mock other states
+    getMockRDValueFactory<Error, MayaScanPrice>(
+      () => ({
+        mayaPriceInCacao: { asset: AssetMAYA, amount: baseAmount(10, 6) },
+        mayaPriceInUsd: { asset: AssetUSDC, amount: baseAmount(15, 4) },
+        cacaoPriceInUsd: { asset: AssetUSDC, amount: baseAmount(1.5, 6) }
+      }),
+      () => Error('Error fetching maya price')
+    )
+  )
   return (
     <Component
       asset={{
@@ -63,6 +80,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
         walletIndex: 0,
         hdMode: 'default'
       }}
+      trustedAddresses={{ addresses }}
       transfer$={transfer$}
       balances={[dexBalance]}
       balance={dexBalance}
@@ -75,11 +93,11 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
         console.log(`Open explorer - tx hash ${txHash}`)
         return Promise.resolve(true)
       }}
-      thorchainQuery={thorchainQuery}
       getExplorerTxUrl={(txHash: TxHash) => O.some(`url/asset-${txHash}`)}
       poolDetails={[]}
       oPoolAddress={O.none}
       dex={thorDetails}
+      mayaScanPrice={mayaScanPriceRD}
     />
   )
 }

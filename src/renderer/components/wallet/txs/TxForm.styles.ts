@@ -9,13 +9,6 @@ import { Button as UIButton } from '../../uielements/button/Button'
 import { Fees as UIFees } from '../../uielements/fees'
 import { Label as UILabel } from '../../uielements/label'
 
-// export const Col = styled(A.Col)`
-//   padding: 20px 30px;
-//   justify-content: center; /* Align children vertically in the center */
-//   align-items: center;
-//   background: ${palette('background', 1)};
-// `
-
 export const Container = styled('div')`
   min-height: 100%;
   width: 100%;
@@ -153,4 +146,23 @@ export const SettingsWrapper = styled(`div`)`
     width: auto;
     padding: 0 10px;
   `}
+`
+export const CustomSelect = styled(A.Select)`
+  background: inherit !important;
+  color: ${palette('text', 0)};
+
+  .ant-select-selector {
+    background: inherit !important;
+    border: none;
+  }
+  .ant-select-arrow {
+    color: ${palette('text', 0)};
+  }
+  .ant-select-dropdown {
+    background: inherit !important;
+    color: ${palette('text', 0)};
+  }
+  &:hover {
+    border-color: ${palette('primary', 0)};
+  }
 `

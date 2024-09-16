@@ -7,7 +7,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 
-import { Dex } from '../../../../shared/api/types'
+import { Dex, TrustedAddresses } from '../../../../shared/api/types'
 import { SendFormUTXO } from '../../../components/wallet/txs/send'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
@@ -25,6 +25,7 @@ import * as Styled from '../Interact/InteractView.styles'
 
 type Props = {
   asset: SelectedWalletAsset
+  trustedAddresses: TrustedAddresses | undefined
   emptyBalance: WalletBalance
   poolDetails: PoolDetails | PoolDetailsMaya
   oPoolAddress: O.Option<PoolAddress>
@@ -32,7 +33,7 @@ type Props = {
   dex: Dex
 }
 export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
-  const { dex, asset, emptyBalance, poolDetails, oPoolAddress, oPoolAddressMaya } = props
+  const { dex, asset, trustedAddresses, emptyBalance, poolDetails, oPoolAddress, oPoolAddressMaya } = props
 
   const { network } = useNetwork()
 
@@ -73,6 +74,7 @@ export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
           <Styled.Container>
             <SendFormUTXO
               asset={asset}
+              trustedAddresses={trustedAddresses}
               balances={FP.pipe(
                 oBalances,
                 O.getOrElse<WalletBalances>(() => [])
@@ -102,6 +104,7 @@ export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
               oBalances,
               O.getOrElse<WalletBalances>(() => [])
             )}
+            trustedAddresses={trustedAddresses}
             balance={walletBalance}
             transfer$={transfer$}
             openExplorerTxUrl={openExplorerTxUrl}

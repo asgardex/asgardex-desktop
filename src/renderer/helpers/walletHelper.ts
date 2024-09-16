@@ -12,7 +12,7 @@ import { WalletAddress, WalletType } from '../../shared/wallet/types'
 import { ZERO_ASSET_AMOUNT } from '../const'
 import { WalletBalances } from '../services/clients'
 import { NonEmptyWalletBalances, WalletBalance } from '../services/wallet/types'
-import { isLtcAsset, isRuneNativeAsset, isCacaoAsset, isMayaAsset } from './assetHelper'
+import { isLtcAsset, isRuneNativeAsset, isMayaAsset } from './assetHelper'
 import { isArbChain, isBchChain, isDashChain, isDogeChain, isLtcChain, isMayaChain, isThorChain } from './chainHelper'
 import { eqAddress, eqAsset, eqChain, eqWalletType } from './fp/eq'
 
@@ -137,8 +137,8 @@ export const getLtcAmountFromBalances = (balances: WalletBalances): O.Option<Ass
 export const getRuneNativeAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
   getAssetAmountFromBalances(balances, isRuneNativeAsset)
 
-export const getCacaoAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
-  getAssetAmountFromBalances(balances, isCacaoAsset || isMayaAsset)
+export const getCacaoAmountFromBalances = (balances: WalletBalances, assetToFind: Asset): O.Option<AssetAmount> =>
+  getAssetAmountFromBalances(balances, (asset) => asset === assetToFind)
 export const getMayaAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
   getAssetAmountFromBalances(balances, isMayaAsset)
 

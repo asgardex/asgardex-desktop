@@ -78,7 +78,6 @@ export const useLiquidityProviders = ({
     () =>
       FP.pipe(
         symLiquidityProvider,
-        // transform `LiquidityProvider` -> `PendingAssets`
         RD.map((oLiquidityProvider) =>
           FP.pipe(
             oLiquidityProvider,
@@ -99,7 +98,7 @@ export const useLiquidityProviders = ({
         RD.map(
           A.filter(
             (provider) =>
-              // rune side
+              // dex side
               (eqOString.equals(provider.dexAssetAddress, O.some(dexAssetAddress)) &&
                 O.isNone(provider.assetAddress)) ||
               // asset side
@@ -147,17 +146,14 @@ export const useLiquidityProviders = ({
           A.findFirstMap(({ dexAssetAddress: oDexAssetAddress, assetAddress: oAssetAddress }) =>
             FP.pipe(
               sequenceTOption(oDexAssetAddress, oAssetAddress),
-              O.chain(([providerDexAssetAddress, providerAssetAddress]) =>
-                // check asset side for given RUNE address
-                (eqAddress.equals(providerDexAssetAddress.toLowerCase(), dexAssetAddress) &&
-                  !eqAddress.equals(providerAssetAddress.toLowerCase(), assetAddress)) ||
-                // check rune side for given asset address
-                (eqAddress.equals(providerAssetAddress.toLowerCase(), assetAddress) &&
-                  !eqAddress.equals(providerDexAssetAddress.toLowerCase(), dexAssetAddress))
-                  ? // If there is a missmatch, return this discovered pair (which is a previous deposit pair)
-                    O.some({ dexAssetAddress: providerDexAssetAddress, assetAddress: providerAssetAddress })
+              O.chain(([providerDexAssetAddress, providerAssetAddress]) => {
+                const isDexMatch = eqAddress.equals(providerDexAssetAddress, dexAssetAddress)
+                const isAssetMatch = eqAddress.equals(providerAssetAddress, assetAddress)
+                const isMismatch = (isDexMatch && !isAssetMatch) || (isAssetMatch && !isDexMatch)
+                return isMismatch
+                  ? O.some({ dexAssetAddress: providerDexAssetAddress, assetAddress: providerAssetAddress })
                   : O.none
-              )
+              })
             )
           )
         )

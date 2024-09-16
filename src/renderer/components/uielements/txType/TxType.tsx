@@ -4,6 +4,8 @@ import { useIntl } from 'react-intl'
 
 import { ReactComponent as DonateIcon } from '../../../assets/svg/tx-donate.svg'
 import { ReactComponent as RefundIcon } from '../../../assets/svg/tx-refund.svg'
+import { ReactComponent as RunePoolIcon } from '../../../assets/svg/tx-runePool.svg'
+import { ReactComponent as SendIcon } from '../../../assets/svg/tx-send.svg'
 import { ReactComponent as DepositIcon } from '../../../assets/svg/tx-stake.svg'
 import { ReactComponent as SwapIcon } from '../../../assets/svg/tx-swap.svg'
 import { ReactComponent as WithdrawIcon } from '../../../assets/svg/tx-withdraw.svg'
@@ -29,6 +31,10 @@ const getIcon = (type: MidgardTxType) => {
       return <DonateIcon />
     case 'REFUND':
       return <RefundIcon />
+    case 'SEND':
+      return <SendIcon />
+    case 'RUNEPOOLDEPOSIT':
+      return <RunePoolIcon />
     default:
       return <></>
   }
