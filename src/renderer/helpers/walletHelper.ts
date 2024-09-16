@@ -137,7 +137,7 @@ export const getLtcAmountFromBalances = (balances: WalletBalances): O.Option<Ass
 export const getRuneNativeAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
   getAssetAmountFromBalances(balances, isRuneNativeAsset)
 
-export const getCacaoAmountFromBalances = (balances: WalletBalances, assetToFind: Asset): O.Option<AssetAmount> =>
+export const getCacaoAmountFromBalances = (balances: WalletBalances, assetToFind: AnyAsset): O.Option<AssetAmount> =>
   getAssetAmountFromBalances(balances, (asset) => asset === assetToFind)
 export const getMayaAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
   getAssetAmountFromBalances(balances, isMayaAsset)
