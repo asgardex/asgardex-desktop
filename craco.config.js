@@ -1,3 +1,5 @@
+const path = require('path')
+
 const { GitRevisionPlugin } = require('git-revision-webpack-plugin')
 const TerserPlugin = require('terser-webpack-plugin')
 const webpack = require('webpack')
@@ -46,7 +48,7 @@ module.exports = {
         },
         {
           test: /\.js$/,
-          include: /node_modules\/axios/,
+          include: path.resolve(__dirname, 'node_modules/axios'),
           use: {
             loader: 'babel-loader',
             options: {
@@ -68,7 +70,7 @@ module.exports = {
         $IS_DEV: JSON.stringify(process.env.NODE_ENV !== 'production')
       }),
       new webpack.ProvidePlugin({
-        process: 'process/browser',
+        process: path.resolve('node_modules/process/browser.js'),
         Buffer: ['buffer', 'Buffer']
       })
     ]
