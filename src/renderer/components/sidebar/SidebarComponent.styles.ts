@@ -8,11 +8,12 @@ import { palette, size } from 'styled-theme'
 
 import { Dex } from '../../../shared/api/types'
 import { ReactComponent as UIAsgardexLogo } from '../../assets/svg/logo-asgardex.svg'
+import { Label as UILabel } from '../uielements/label'
 
 export const HeaderContainer = styled(Layout.Header)`
-  height: ${size('headerHeight', '70px')};
-  width: 100%;
-  background-color: ${palette('background', 3)};
+  width: 240px;
+  height: 100%;
+  background-color: ${palette('background', 0)};
 
   /* id's defined in svg */
   #asgardex_logo {
@@ -60,7 +61,7 @@ export const HeaderContainer = styled(Layout.Header)`
     background: ${palette('gradient', 0)};
   }
 
-  padding: 0px;
+  padding: 20px 0;
 `
 
 export const AsgardexLogo = styled(UIAsgardexLogo)`
@@ -91,7 +92,7 @@ export const DexLabel = styled(Text)<{ dex: Dex }>`
 export const NetworkLabel = styled(Text)<{ network: Network; dex: Dex }>`
   position: absolute;
   right: 19px;
-  bottom: -13px;
+  bottom: -20px;
   text-transform: uppercase;
   padding: 0;
   font-family: 'MainFontRegular';
@@ -125,6 +126,9 @@ export const NetworkLabel = styled(Text)<{ network: Network; dex: Dex }>`
 `
 
 export const LogoWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
   height: ${size('headerHeight', '70px')};
 `
@@ -158,4 +162,40 @@ export const HeaderDrawerItem = styled(Row)<{ selected?: boolean }>`
   &.last {
     border: none;
   }
+`
+
+export const IconWrapper = styled.div`
+  svg {
+    /* needed to be to align svg vertical middle in a row */
+    display: block;
+    color: ${palette('text', 1)};
+  }
+  display: inline;
+  font-size: 18px;
+  :first-child {
+    color: ${palette('text', 1)};
+    margin-left: 0;
+  }
+  color: ${palette('text', 1)};
+  cursor: pointer;
+  margin-left: 12px;
+
+  /* Make sure following id is defined in svg */
+  #thorchain_logo {
+    > :not(:first-child) {
+      fill: ${palette('text', 1)};
+    }
+  }
+`
+
+export const Icon = styled.img`
+  border-radius: 50%;
+  width: 40px;
+  height: 30px;
+`
+export const TextLabel = styled(UILabel).attrs({ textTransform: 'uppercase' })`
+  color: inherit;
+  font-size: 14px;
+  font-family: 'MainFontRegular';
+  padding: 0;
 `
