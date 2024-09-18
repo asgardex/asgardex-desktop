@@ -1,14 +1,13 @@
 import React from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
-import { Address } from '@xchainjs/xchain-util'
-import { Asset } from '@xchainjs/xchain-util'
+import { Address, AnyAsset } from '@xchainjs/xchain-util'
 
 import { AssetIcon, Size } from '../assetIcon'
 import * as Styled from './AssetAddress.styles'
 
 export type Props = {
-  asset: Asset
+  asset: AnyAsset
   address: Address
   network: Network
   size?: Size

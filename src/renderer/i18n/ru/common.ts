@@ -70,6 +70,7 @@ const common: CommonMessages = {
   'common.settings': 'Настройки',
   'common.asset': 'Актив',
   'common.assets': 'Актива(ов)',
+  'common.tradeAssets': 'Торговля активами',
   'common.rune': '{dex}',
   'common.pool': 'Пул',
   'common.pool.inbound': 'Вход. пула',

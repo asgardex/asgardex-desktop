@@ -1,7 +1,7 @@
 import type Transport from '@ledgerhq/hw-transport'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { ClientLedger, defaultClientConfig } from '@xchainjs/xchain-thorchain'
-import { Address, Asset, BaseAmount } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, BaseAmount } from '@xchainjs/xchain-util'
 import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
@@ -26,7 +26,7 @@ export const send = async ({
   transport: Transport
   amount: BaseAmount
   network: Network
-  asset: Asset
+  asset: AnyAsset
   recipient: Address
   memo?: string
   walletAccount: number
@@ -74,7 +74,7 @@ export const deposit = async ({
 }: {
   transport: Transport
   amount: BaseAmount
-  asset?: Asset
+  asset?: AnyAsset
   network: Network
   memo: string
   walletAccount: number

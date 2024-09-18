@@ -4,7 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Asset, BaseAmount } from '@xchainjs/xchain-util'
+import { AnyAsset, BaseAmount } from '@xchainjs/xchain-util'
 import { Spin } from 'antd'
 import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/lib/function'
@@ -60,7 +60,7 @@ export const ShareView: React.FC<Props> = ({
 
   const intl = useIntl()
 
-  const oPriceAsset = useObservableState<O.Option<Asset>>(selectedPricePoolAsset$, O.none)
+  const oPriceAsset = useObservableState<O.Option<AnyAsset>>(selectedPricePoolAsset$, O.none)
 
   const { poolData: pricePoolData } = useObservableState(
     selectedPricePool$,

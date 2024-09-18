@@ -20,7 +20,9 @@ import {
   eqAsset,
   delay,
   assetFromString,
-  CryptoAmount
+  CryptoAmount,
+  AnyAsset,
+  TokenAsset
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/Array'
@@ -120,9 +122,9 @@ export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
 export type BorrowProps = {
   keystore: KeystoreState
   getLoanQuoteOpen$: (
-    asset: Asset,
+    asset: AnyAsset,
     amount: BaseAmount,
-    targetAsset: Asset,
+    targetAsset: AnyAsset,
     destination: string,
     minOut?: string,
     affiliateBps?: number,
@@ -130,7 +132,7 @@ export type BorrowProps = {
     height?: number
   ) => LoanOpenQuoteLD
   reloadLoanQuoteOpen: FP.Lazy<void>
-  poolAssets: Asset[]
+  poolAssets: AnyAsset[]
   poolDetails: PoolDetails
   collateralAsset: AssetWithDecimal
   borrowAsset: AssetWithDecimal
@@ -149,8 +151,8 @@ export type BorrowProps = {
     borrowWalletType,
     recipientAddress
   }: {
-    collateral: Asset
-    borrow: Asset
+    collateral: AnyAsset
+    borrow: AnyAsset
     collateralWalletType: WalletType
     borrowWalletType: O.Option<WalletType>
     recipientAddress: O.Option<Address>
@@ -225,7 +227,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   // Deposit start time
   const [depositStartTime, setDepositStartTime] = useState<number>(0)
 
-  const prevAsset = useRef<O.Option<Asset>>(O.none)
+  const prevAsset = useRef<O.Option<AnyAsset>>(O.none)
 
   const {
     state: depositState,
@@ -239,7 +241,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
    * Selectable source assets to loan.
    * Based on loan depth
    */
-  const selectableAssets: Asset[] = useMemo(() => {
+  const selectableAssets: AnyAsset[] = useMemo(() => {
     const result = FP.pipe(
       poolDetails,
       A.filter(({ totalCollateral }) => Number(totalCollateral) > 0),
@@ -252,7 +254,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
    * Selectable source assets to loan.
    * Based on loan depth
    */
-  const selectableTargetAssets: Asset[] = useMemo(() => {
+  const selectableTargetAssets: AnyAsset[] = useMemo(() => {
     const result = FP.pipe(
       poolDetails,
       A.filterMap(({ asset: assetString }) => O.fromNullable(assetFromString(assetString)))
@@ -332,7 +334,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   const [loanFeesRD] = useObservableState<BorrowerDepositFeesRD>(
     () =>
       FP.pipe(
-        fees$(collateralAsset.asset),
+        fees$(collateralAsset.asset as Asset),
         liveData.map((fees) => {
           // store every successfully loaded fees
           prevBorrowerFees.current = O.some(fees)
@@ -500,13 +502,21 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     //tobeFixed
     switch (sourceChain) {
       case ETHChain:
-        return isEthAsset(collateralAsset.asset) ? O.some(false) : O.some(isEthTokenAsset(collateralAsset.asset))
+        return isEthAsset(collateralAsset.asset)
+          ? O.some(false)
+          : O.some(isEthTokenAsset(collateralAsset.asset as TokenAsset))
       case AVAXChain:
-        return isAvaxAsset(collateralAsset.asset) ? O.some(false) : O.some(isAvaxTokenAsset(collateralAsset.asset))
+        return isAvaxAsset(collateralAsset.asset)
+          ? O.some(false)
+          : O.some(isAvaxTokenAsset(collateralAsset.asset as TokenAsset))
       case BSCChain:
-        return isBscAsset(collateralAsset.asset) ? O.some(false) : O.some(isBscTokenAsset(collateralAsset.asset))
+        return isBscAsset(collateralAsset.asset)
+          ? O.some(false)
+          : O.some(isBscTokenAsset(collateralAsset.asset as TokenAsset))
       case ARBChain:
-        return isAethAsset(collateralAsset.asset) ? O.some(false) : O.some(isArbTokenAsset(collateralAsset.asset))
+        return isAethAsset(collateralAsset.asset)
+          ? O.some(false)
+          : O.some(isArbTokenAsset(collateralAsset.asset as TokenAsset))
       default:
         return O.none
     }
@@ -521,11 +531,11 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     const oTokenAddress: O.Option<string> = (() => {
       switch (sourceChain) {
         case ETHChain:
-          return getEthTokenAddress(collateralAsset.asset)
+          return getEthTokenAddress(collateralAsset.asset as TokenAsset)
         case AVAXChain:
-          return getAvaxTokenAddress(collateralAsset.asset)
+          return getAvaxTokenAddress(collateralAsset.asset as TokenAsset)
         case BSCChain:
-          return getBscTokenAddress(collateralAsset.asset)
+          return getBscTokenAddress(collateralAsset.asset as TokenAsset)
         default:
           return O.none
       }
@@ -678,7 +688,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   }, [getLoanQuoteOpen$, oLoanQuote, oQuoteLoanOpenData, oSourceAssetWB])
 
   const setCollateralAsset = useCallback(
-    async (asset: Asset) => {
+    async (asset: AnyAsset) => {
       // delay to avoid render issues while switching
       await delay(100)
 
@@ -694,7 +704,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   )
 
   const setBorrowAsset = useCallback(
-    async (asset: Asset) => {
+    async (asset: AnyAsset) => {
       // delay to avoid render issues while switching
       await delay(100)
 
@@ -851,7 +861,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   // }, [oQuoteLoanOpenData, reloadLoanQuoteOpen])
 
   const reloadFeesHandler = useCallback(() => {
-    reloadFees(collateralAsset.asset)
+    reloadFees(collateralAsset.asset as Asset)
   }, [reloadFees, collateralAsset])
 
   const zeroBaseAmountMax = useMemo(() => baseAmount(0, collateralAsset.decimal), [collateralAsset])

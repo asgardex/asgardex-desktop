@@ -3,7 +3,7 @@ import { useCallback, useMemo, useRef } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
-  Asset,
+  AnyAsset,
   assetToString,
   BaseAmount,
   baseToAsset,
@@ -105,11 +105,13 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
   const { add: addPoolToWatchlist, remove: removePoolFromWatchlist, list: poolWatchList } = usePoolWatchlist()
 
   const depthColumn = useCallback(
-    <T extends { asset: Asset; depth: BaseAmount; depthPrice: BaseAmount }>(pricePoolAsset: Asset): ColumnType<T> => ({
+    <T extends { asset: AnyAsset; depth: BaseAmount; depthPrice: BaseAmount }>(
+      pricePoolAsset: AnyAsset
+    ): ColumnType<T> => ({
       key: 'depth',
       align: 'right',
       title: intl.formatMessage({ id: 'common.liquidity' }),
-      render: ({ asset, depth, depthPrice }: { asset: Asset; depth: BaseAmount; depthPrice: BaseAmount }) => (
+      render: ({ asset, depth, depthPrice }: { asset: AnyAsset; depth: BaseAmount; depthPrice: BaseAmount }) => (
         <div className="flex flex-col items-end justify-center font-main">
           <div className="whitespace-nowrap text-16 text-text0 dark:text-text0d">
             {formatAssetAmountCurrency({
@@ -182,7 +184,7 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
   )
 
   const renderBtnColumn = useCallback(
-    (_: string, { asset }: { asset: Asset }) => {
+    (_: string, { asset }: { asset: AnyAsset }) => {
       const { chain } = asset
       const disableAllPoolActions = PoolHelpers.disableAllActions({ chain, haltedChains, mimirHalt })
       const disableTradingActions = PoolHelpers.disableTradingActions({
@@ -218,7 +220,7 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
   )
 
   const btnColumn = useCallback(
-    <T extends { asset: Asset }>(): ColumnType<T> => ({
+    <T extends { asset: AnyAsset }>(): ColumnType<T> => ({
       key: 'btn',
       title: Shared.renderRefreshBtnColTitle({
         title: intl.formatMessage({ id: 'common.refresh' }),

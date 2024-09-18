@@ -1,4 +1,4 @@
-import { Address, Asset, BaseAmount } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, BaseAmount } from '@xchainjs/xchain-util'
 
 import { ASGARDEX_THORNAME } from '../../shared/const'
 
@@ -15,7 +15,7 @@ const filterMemoPart = (part: unknown) => part !== null && part !== undefined
 const mkMemo = (values: Array<string | null | undefined | number>) => values.filter(filterMemoPart).join(DELIMITER)
 
 // Helper to create asset string from asset used in memo's
-const assetToMemoString = ({ chain, symbol }: Asset) => `${chain}.${symbol}`
+const assetToMemoString = ({ chain, symbol }: AnyAsset) => `${chain}.${symbol}`
 
 /**
  * Memo to switch
@@ -63,9 +63,9 @@ export const getWithdrawMemo = ({
   targetAsset,
   short = true
 }: {
-  asset: Asset
+  asset: AnyAsset
   percent: number
-  targetAsset?: Asset
+  targetAsset?: AnyAsset
   short?: boolean
 }) => {
   const target = targetAsset ? assetToMemoString(targetAsset) : null
@@ -91,7 +91,7 @@ export const getSwapMemo = ({
   affiliateName,
   affiliateBps
 }: {
-  targetAsset: Asset
+  targetAsset: AnyAsset
   targetAddress: Address
   toleranceBps: number | undefined
   streamingInterval: number
@@ -128,7 +128,7 @@ export const getDepositMemo = ({
   address = '',
   short = true
 }: {
-  asset: Asset
+  asset: AnyAsset
   address?: string
   short?: boolean
 }) => mkMemo([`${short ? '+' : 'ADD'}`, assetToMemoString(asset), address || null])

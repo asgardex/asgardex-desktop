@@ -91,7 +91,7 @@ const chainSendFunctions: Record<
         msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(AVAXChain)}`
       })
     }
-    return AVAX.send({ ...params, feeOption: params.feeOption, evmHdMode: params.hdMode })
+    return AVAX.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode })
   },
   [BSCChain]: async (params) => {
     if (!params.asset) {
@@ -112,7 +112,7 @@ const chainSendFunctions: Record<
         msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(BSCChain)}`
       })
     }
-    return BSC.send({ ...params, feeOption: params.feeOption, evmHdMode: params.hdMode })
+    return BSC.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode })
   },
   [ARBChain]: async (params) => {
     if (!params.asset) {
@@ -375,7 +375,7 @@ const chainDepositFunctions: Record<
       walletIndex: params.walletIndex,
       recipient: params.recipient,
       feeOption: params.feeOption,
-      evmHdMode: params.hdMode
+      evmHDMode: params.hdMode
     })
   }
 }

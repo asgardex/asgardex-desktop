@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
-import { Asset } from '@xchainjs/xchain-util'
+import { AnyAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import { useIntl } from 'react-intl'
 
@@ -10,7 +10,7 @@ import { QRCode } from '../qrCode/QRCode'
 import * as Styled from './QRCodeModal.styles'
 
 export type Props = {
-  asset: Asset
+  asset: AnyAsset
   address: string
   network: Network
   visible?: boolean

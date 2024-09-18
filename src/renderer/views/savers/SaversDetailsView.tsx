@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { Address, Asset, baseAmount } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, baseAmount } from '@xchainjs/xchain-util'
 import * as Eq from 'fp-ts/lib/Eq'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -22,7 +22,7 @@ import { SaverProviderRD } from '../../services/thorchain/types'
 import { UpdateSaverProvider } from './Savers.types'
 
 type Props = {
-  asset: Asset
+  asset: AnyAsset
   address: Address
   poolDetails: PoolDetails
 }
@@ -42,7 +42,7 @@ export const SaversDetailsView: React.FC<Props> = (props): JSX.Element => {
 
   const [saverProviderRD, updateSaverProvider$] = useObservableState<
     SaverProviderRD,
-    { address: Address; asset: Asset }
+    { address: Address; asset: AnyAsset }
   >(
     (updated$) =>
       FP.pipe(

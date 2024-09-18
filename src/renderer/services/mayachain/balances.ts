@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { baseAmount } from '@xchainjs/xchain-util'
+import { AssetType, baseAmount } from '@xchainjs/xchain-util'
 import { map } from 'rxjs/operators'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
@@ -48,7 +48,8 @@ const balances$ = ({
       const transformedData = RD.map((balances: WalletBalance[]) =>
         balances.map((balance: WalletBalance) => {
           //temporary fix till xchainjs does it properly
-          const transformedAmount = balance.asset.synth ? baseAmount(balance.amount.amount(), 8) : balance.amount
+          const transformedAmount =
+            balance.asset.type === AssetType.SYNTH ? baseAmount(balance.amount.amount(), 8) : balance.amount
           return {
             ...balance,
             amount: transformedAmount

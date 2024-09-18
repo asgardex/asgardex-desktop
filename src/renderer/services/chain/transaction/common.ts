@@ -13,7 +13,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Address } from '@xchainjs/xchain-util'
+import { Address, AssetType } from '@xchainjs/xchain-util'
 import { Chain } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -60,9 +60,8 @@ export const sendTx$ = ({
   hdMode,
   dex
 }: SendTxParams): TxHashLD => {
-  const { chain } = asset.synth ? dex.asset : asset
+  const { chain } = asset.type === AssetType.SYNTH ? dex.asset : asset
   if (!isSupportedChain(chain)) return txFailure$(`${chain} is not supported for 'sendTx$'`)
-
   switch (chain) {
     case BTCChain:
       return FP.pipe(
@@ -235,7 +234,7 @@ export const sendPoolTx$ = ({
   feeOption = DEFAULT_FEE_OPTION,
   dex
 }: SendPoolTxParams): TxHashLD => {
-  const { chain } = asset.synth ? dex.asset : asset
+  const { chain } = asset.type === AssetType.SYNTH ? dex.asset : asset
 
   if (!isSupportedChain(chain)) return txFailure$(`${chain} is not enabled`)
 

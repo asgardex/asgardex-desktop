@@ -1,11 +1,11 @@
 import { Network } from '@xchainjs/xchain-client'
-import { BaseAmount, Asset } from '@xchainjs/xchain-util'
+import { BaseAmount, AnyAsset } from '@xchainjs/xchain-util'
 import { NonEmptyArray } from 'fp-ts/lib/NonEmptyArray'
 
 import { GetPoolsStatusEnum } from '../../services/midgard/types'
 
 // List of assets used for pricing
-export type PricePoolAsset = Asset
+export type PricePoolAsset = AnyAsset
 export type PricePoolAssets = PricePoolAsset[]
 
 export type PricePoolCurrencyWeights = Record<string, number>
@@ -22,7 +22,7 @@ export type PricePool = {
 export type PricePools = NonEmptyArray<PricePool>
 
 export type PoolTableRowData = {
-  asset: Asset
+  asset: AnyAsset
   depthAmount: BaseAmount
   depthPrice: BaseAmount
   volumeAmount: BaseAmount

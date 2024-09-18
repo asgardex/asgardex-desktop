@@ -1,4 +1,4 @@
-import { AssetBTC, BTCChain, blockstreamExplorerProviders, defaultBTCParams } from '@xchainjs/xchain-bitcoin'
+import { AssetBTC, BTCChain, defaultBTCParams } from '@xchainjs/xchain-bitcoin'
 import { Network, RootDerivationPaths } from '@xchainjs/xchain-client'
 import { UtxoClientParams } from '@xchainjs/xchain-utxo'
 import {
@@ -100,7 +100,6 @@ const BlockcypherDataProviders: UtxoOnlineDataProviders = {
 export const btcInitParams: UtxoClientParams = {
   ...defaultBTCParams,
   dataProviders: [BlockcypherDataProviders, HaskoinDataProviders, BitgoProviders],
-  explorerProviders: blockstreamExplorerProviders,
   feeBounds: {
     lower: LOWER_FEE_BOUND,
     upper: UPPER_FEE_BOUND

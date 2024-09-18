@@ -1,10 +1,9 @@
 import React, { RefObject, useCallback, useMemo, useRef } from 'react'
 
-import { Address } from '@xchainjs/xchain-util'
+import { Address, AnyAsset } from '@xchainjs/xchain-util'
 import {
   formatBN,
   BaseAmount,
-  Asset,
   baseToAsset,
   formatAssetAmountCurrency,
   baseAmount,
@@ -25,7 +24,7 @@ import { PoolShareCard } from './PoolShareCard'
 export type Props = {
   asset: AssetWithDecimal
   runePrice: BaseAmount
-  priceAsset?: Asset
+  priceAsset?: AnyAsset
   /**
    * Shares of Rune and selected Asset.
    * Note: Decimal needs to be based on **original asset decimals**
@@ -80,7 +79,7 @@ export const PoolShare: React.FC<Props> = (props): JSX.Element => {
   const ref: RefObject<HTMLDivElement> = useRef(null)
 
   const renderRedemptionCol = useCallback(
-    (amount: BaseAmount, price: BaseAmount, asset: Asset) => (
+    (amount: BaseAmount, price: BaseAmount, asset: AnyAsset) => (
       <Col span={smallWidth ? 24 : 12}>
         <Styled.LabelPrimary loading={loading}>
           {formatAssetAmountCurrency({ amount: baseToAsset(amount), asset, decimal: 2 })}

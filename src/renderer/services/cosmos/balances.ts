@@ -1,4 +1,3 @@
-import { AssetATOM } from '../../../shared/utils/asset'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
@@ -38,18 +37,14 @@ const balances$ = ({
     walletAccount,
     walletIndex,
     hdMode,
-    walletBalanceType: 'all',
-    // ATOM only - no IBC assets etc.
-    assets: [AssetATOM]
+    walletBalanceType: 'all'
   })
 
 // State of balances loaded by Client and Address
 const getBalanceByAddress$ = C.balancesByAddress$({
   client$,
   trigger$: reloadBalances$,
-  walletBalanceType: 'all',
-  // ATOM only - no IBC assets etc.
-  assets: [AssetATOM]
+  walletBalanceType: 'all'
 })
 
 export { balances$, reloadBalances, getBalanceByAddress$, reloadBalances$, resetReloadBalances }

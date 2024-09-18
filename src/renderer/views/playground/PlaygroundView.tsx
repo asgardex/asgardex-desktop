@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Asset, assetToString } from '@xchainjs/xchain-util'
+import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import { Button } from 'antd'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -42,7 +42,7 @@ export const PlaygroundView: React.FC = (): JSX.Element => {
               {!hasPools && <h3>No pools available.</h3>}
               {hasPools && (
                 <ul>
-                  {s.poolAssets.map((pool: Asset, index: number) => (
+                  {s.poolAssets.map((pool: AnyAsset, index: number) => (
                     <li key={index}>{assetToString(pool)}</li>
                   ))}
                 </ul>

@@ -1,7 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { TxHash, XChainClient } from '@xchainjs/xchain-client'
 import { TxsPage, Fees } from '@xchainjs/xchain-client'
-import { Address, Asset } from '@xchainjs/xchain-util'
+import { Address, AnyAsset } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 
@@ -31,7 +31,11 @@ export type LoadTxsParams = {
   offset?: number
 }
 
-export type TxsParams = { asset: O.Option<Asset>; walletAddress: O.Option<string>; walletIndex: number } & LoadTxsParams
+export type TxsParams = {
+  asset: O.Option<AnyAsset>
+  walletAddress: O.Option<string>
+  walletIndex: number
+} & LoadTxsParams
 
 export type TxsPageRD = RD.RemoteData<ApiError, TxsPage>
 export type TxsPageLD = LiveData<ApiError, TxsPage>

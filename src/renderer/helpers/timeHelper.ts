@@ -1,5 +1,5 @@
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Asset } from '@xchainjs/xchain-util'
+import { AnyAsset, AssetType } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 
@@ -34,14 +34,18 @@ type QuoteDetails = {
   streamingTransactionSeconds?: number
 }
 
-export const calculateTransactionTime = (sourceChain: string, txDetails?: QuoteDetails, targetAsset?: Asset): Time => {
+export const calculateTransactionTime = (
+  sourceChain: string,
+  txDetails?: QuoteDetails,
+  targetAsset?: AnyAsset
+): Time => {
   const inboundTime =
     txDetails && txDetails.inboundConfSeconds
       ? txDetails.inboundConfSeconds
       : DefaultChainAttributes[sourceChain].avgBlockTimeInSecs
   const outboundTime =
     txDetails && targetAsset
-      ? targetAsset.synth || targetAsset?.chain === THORChain
+      ? targetAsset.type === AssetType.SYNTH || targetAsset?.chain === THORChain
         ? 0
         : txDetails.outboundDelaySeconds
       : 0
@@ -50,7 +54,7 @@ export const calculateTransactionTime = (sourceChain: string, txDetails?: QuoteD
 
   const totalSwapTime = Math.max(
     txDetails && targetAsset
-      ? targetAsset.synth || targetAsset?.chain === THORChain
+      ? targetAsset.type === AssetType.SYNTH || targetAsset?.chain === THORChain
         ? Number(inboundTime) + confirmationTime + streamingTime
         : Number(txDetails.totalTransactionSeconds) + Number(inboundTime) + confirmationTime + streamingTime
       : Number(inboundTime) + confirmationTime

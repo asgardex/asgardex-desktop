@@ -70,6 +70,7 @@ const common: CommonMessages = {
   'common.history': 'Verlauf',
   'common.settings': 'Einstellungen',
   'common.assets': 'Assets',
+  'common.tradeAssets': 'Handel mit Vermögenswerten',
   'common.asset': 'Asset',
   'common.rune': '{dex}',
   'common.pool': 'Pool',

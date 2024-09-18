@@ -1,4 +1,4 @@
-import { Asset, assetToString, BaseAmount, Chain } from '@xchainjs/xchain-util'
+import { AnyAsset, assetToString, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as N from 'fp-ts/lib/number'
 import * as Ord from 'fp-ts/lib/Ord'
@@ -35,7 +35,7 @@ export const ordChain: Ord.Ord<Chain> = {
 /**
  * Comparing Assets
  **/
-export const ordAsset: Ord.Ord<Asset> = {
+export const ordAsset: Ord.Ord<AnyAsset> = {
   equals: eqAsset.equals,
   // comparing by using`assetToString`
   compare: (x, y) => ordString.compare(assetToString(x), assetToString(y))

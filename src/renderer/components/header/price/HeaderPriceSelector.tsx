@@ -1,6 +1,6 @@
 import React, { useMemo, useCallback } from 'react'
 
-import { Asset, assetFromString, assetToString } from '@xchainjs/xchain-util'
+import { AnyAsset, assetFromString, assetToString } from '@xchainjs/xchain-util'
 import { Row, Dropdown } from 'antd'
 import { MenuProps } from 'antd/lib/menu'
 import { ItemType } from 'antd/lib/menu/hooks/useItems'
@@ -38,7 +38,7 @@ export const HeaderPriceSelector: React.FC<Props> = (props): JSX.Element => {
         onClick={changeItem}
         items={FP.pipe(
           assets,
-          A.map<Asset, ItemType>((asset) => ({
+          A.map<AnyAsset, ItemType>((asset) => ({
             label: (
               <HeaderDropdownMenuItemText strong className="px-10px py-[8px]">
                 {toHeaderCurrencyLabel(asset)}

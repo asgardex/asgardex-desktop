@@ -3,7 +3,7 @@ import React, { useCallback, useState, useMemo, useRef, Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { ArchiveBoxXMarkIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { Asset, assetToString, Chain } from '@xchainjs/xchain-util'
+import { AnyAsset, assetToString, AssetType, Chain } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
@@ -22,9 +22,9 @@ import { AssetData } from '../assetData'
 import { AssetIcon } from '../assetIcon/AssetIcon'
 
 export type Props = {
-  asset: Asset
-  assets: Asset[]
-  onSelect: (_: Asset) => void
+  asset: AnyAsset
+  assets: AnyAsset[]
+  onSelect: (_: AnyAsset) => void
   open: boolean
   onClose: FP.Lazy<void>
   className?: string
@@ -37,7 +37,7 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
     asset,
     open,
     assets = [],
-    onSelect = (_: Asset) => {},
+    onSelect = (_: AnyAsset) => {},
     headline = emptyString,
     network,
     onClose,
@@ -54,7 +54,7 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
   const intl = useIntl()
 
   const handleChangeAsset = useCallback(
-    async (asset: Asset) => {
+    async (asset: AnyAsset) => {
       onSelect(asset)
       clearSearchValue()
     },
@@ -67,7 +67,7 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
         assets,
         A.filter((asset) => {
           // Exclude synthetic assets if excludeSynth is true
-          if (excludeSynth && asset.synth) {
+          if (excludeSynth && asset.type === AssetType.SYNTH) {
             return false
           }
           if (searchValue) {
@@ -77,7 +77,10 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
               // Extract the term after 'synth' keyword
               const searchTerm = lowerSearchValue.replace('synth', '').trim()
               // Check if the asset is synthetic and if it includes the search term
-              return asset.synth && (searchTerm ? assetToString(asset).toLowerCase().includes(searchTerm) : true)
+              return (
+                asset.type === AssetType.SYNTH &&
+                (searchTerm ? assetToString(asset).toLowerCase().includes(searchTerm) : true)
+              )
             }
             // If the search value doesn't start with 'synth', perform a normal search
             return assetToString(asset).toLowerCase().includes(lowerSearchValue)
@@ -157,7 +160,7 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
   const chainFilter = useMemo(() => {
     const uniqueChains = assets.reduce((acc, asset) => {
       // Only add the chain if the asset is not synthetic
-      if (!asset.synth) {
+      if (asset.type !== AssetType.SYNTH) {
         acc.add(asset.chain)
       }
       return acc

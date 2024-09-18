@@ -2,7 +2,14 @@ import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Asset, assetToString, BaseAmount, baseToAsset, Chain, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import {
+  AnyAsset,
+  assetToString,
+  BaseAmount,
+  baseToAsset,
+  Chain,
+  formatAssetAmountCurrency
+} from '@xchainjs/xchain-util'
 import { Grid } from 'antd'
 import { ColumnsType, ColumnType } from 'antd/lib/table'
 import BigNumber from 'bignumber.js'
@@ -82,8 +89,8 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
   const { add: addPoolToWatchlist, remove: removePoolFromWatchlist, list: poolWatchList } = usePoolWatchlist()
 
   const collateralColumn = useCallback(
-    <T extends { asset: Asset; collateral: BaseAmount; collateralPrice: BaseAmount }>(
-      pricePoolAsset: Asset
+    <T extends { asset: AnyAsset; collateral: BaseAmount; collateralPrice: BaseAmount }>(
+      pricePoolAsset: AnyAsset
     ): ColumnType<T> => ({
       key: 'collateral',
       align: 'right',
@@ -93,7 +100,7 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
         collateral,
         collateralPrice
       }: {
-        asset: Asset
+        asset: AnyAsset
         collateral: BaseAmount
         collateralPrice: BaseAmount
       }) => (
@@ -123,7 +130,7 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
   )
 
   const debtColumn = useCallback(
-    <T extends { debt: BaseAmount }>(pricePoolAsset: Asset): ColumnType<T> => {
+    <T extends { debt: BaseAmount }>(pricePoolAsset: AnyAsset): ColumnType<T> => {
       return {
         key: 'debt',
         align: 'center',
@@ -170,7 +177,7 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
   )
 
   const renderBtnColumn = useCallback(
-    (_: string, { asset }: { asset: Asset }) => {
+    (_: string, { asset }: { asset: AnyAsset }) => {
       const { chain } = asset
       const disableAllPoolActions = PoolHelpers.disableAllActions({ chain, haltedChains, mimirHalt })
       const disableTradingActions = PoolHelpers.disableTradingActions({
@@ -213,7 +220,7 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
   )
 
   const btnColumn = useCallback(
-    <T extends { asset: Asset }>(): ColumnType<T> => ({
+    <T extends { asset: AnyAsset }>(): ColumnType<T> => ({
       key: 'btn',
       title: Shared.renderRefreshBtnColTitle({
         title: intl.formatMessage({ id: 'common.refresh' }),

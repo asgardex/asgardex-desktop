@@ -12,7 +12,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { assetAmount, bn, Asset, assetToString, baseAmount, Chain } from '@xchainjs/xchain-util'
+import { assetAmount, bn, assetToString, baseAmount, Chain, AssetType, TokenAsset } from '@xchainjs/xchain-util'
 
 import { AssetBTC, AssetETH, AssetRuneNative } from '../shared/utils/asset'
 import { EnabledChain } from '../shared/utils/chain'
@@ -26,42 +26,42 @@ import { PricePoolCurrencyWeights, PricePoolAssets, PoolData } from './views/poo
 //
 
 // ETH.USDT
-export const AssetUSDTERC20: Asset = {
+export const AssetUSDTERC20: TokenAsset = {
   chain: ETHChain,
   symbol: 'USDT-0xdAC17F958D2ee523a2206206994597C13D831ec7',
   ticker: 'USDT',
-  synth: false
+  type: AssetType.TOKEN
 }
 
 // ETH.USDT - testnet only
-export const AssetUSDTERC20Testnet: Asset = {
+export const AssetUSDTERC20Testnet: TokenAsset = {
   chain: ETHChain,
   symbol: 'USDT-0xa3910454bf2cb59b8b3a401589a3bacc5ca42306',
   ticker: 'USDT',
-  synth: false
+  type: AssetType.TOKEN
 }
 
 export const AssetXRuneAddress = '0x69fa0fee221ad11012bab0fdb45d444d3d2ce71c'
 const AssetXRuneSymbol = 'XRUNE'
-export const AssetXRune: Asset = {
+export const AssetXRune: TokenAsset = {
   chain: ETHChain,
   symbol: `${AssetXRuneSymbol}-${AssetXRuneAddress}`,
   ticker: AssetXRuneSymbol,
-  synth: false
+  type: AssetType.TOKEN
 }
 
-export const AssetXRuneTestnet: Asset = {
+export const AssetXRuneTestnet: TokenAsset = {
   chain: ETHChain,
   symbol: 'XRUNE-0x8626db1a4f9f3e1002eeb9a4f3c6d391436ffc23',
   ticker: 'XRUNE',
-  synth: false
+  type: AssetType.TOKEN
 }
 
-export const AssetTGTERC20: Asset = {
+export const AssetTGTERC20: TokenAsset = {
   chain: ETHChain,
   symbol: 'TGT-0x108a850856db3f85d0269a2693d896b394c80325',
   ticker: 'TGT',
-  synth: false
+  type: AssetType.TOKEN
 }
 
 // This hardcode list is for testnet only
@@ -74,11 +74,11 @@ export const ArbAssetsTestnet = [AssetARB]
 // https://etherscan.io/address/0x4bf5dc91E2555449293D7824028Eb8Fe5879B689
 export const AssetUniHAddress = '0x4bf5dc91E2555449293D7824028Eb8Fe5879B689'
 const AssetUniHSymbol = 'UNIH'
-export const AssetUniH: Asset = {
+export const AssetUniH: TokenAsset = {
   chain: ETHChain,
   symbol: `${AssetUniHSymbol}-${AssetUniHAddress}`,
   ticker: AssetUniHSymbol,
-  synth: false
+  type: AssetType.TOKEN
 }
 
 //
@@ -86,57 +86,56 @@ export const AssetUniH: Asset = {
 //
 
 // ETH.USDT mainnet
-export const AssetUSDTDAC: Asset = {
+export const AssetUSDTDAC: TokenAsset = {
   chain: ETHChain,
   symbol: 'USDT-0xdAC17F958D2ee523a2206206994597C13D831ec7',
   ticker: 'USDT',
-  synth: false
+  type: AssetType.TOKEN
 }
 // ETH.USDT testnet
-export const AssetUSDT62E: Asset = {
+export const AssetUSDT62E: TokenAsset = {
   chain: ETHChain,
   symbol: 'USDT-0x62e273709Da575835C7f6aEf4A31140Ca5b1D190',
   ticker: 'USDT',
-  synth: false
+  type: AssetType.TOKEN
 }
 // ETH.USDC mainnet
-export const AssetUSDC: Asset = {
+export const AssetUSDC: TokenAsset = {
   chain: ETHChain,
   symbol: 'USDC-0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
   ticker: 'USDC',
-  synth: false
+  type: AssetType.TOKEN
 }
 
 // AVAX.USDC mainnet
-export const AssetUSDCAVAX: Asset = {
+export const AssetUSDCAVAX: TokenAsset = {
   chain: AVAXChain,
   symbol: 'USDC-0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
   ticker: 'USDT',
-  synth: false
+  type: AssetType.TOKEN
 }
 
 // AVAX.USDT mainnet
-export const AssetUSDTAVAX: Asset = {
+export const AssetUSDTAVAX: TokenAsset = {
   chain: AVAXChain,
   symbol: 'USDT-0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7',
   ticker: 'USDC',
-  synth: false
+  type: AssetType.TOKEN
 }
-
 // BSC.USDT mainnet
-export const AssetUSDTBSC: Asset = {
+export const AssetUSDTBSC: TokenAsset = {
   chain: BSCChain,
   symbol: 'USDT-0x55d398326f99059fF775485246999027B3197955',
   ticker: 'USDT',
-  synth: false
+  type: AssetType.TOKEN
 }
 
 // BSC.USDC mainnet
-export const AssetUSDCBSC: Asset = {
+export const AssetUSDCBSC: TokenAsset = {
   chain: BSCChain,
   symbol: 'USDC-0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
   ticker: 'USDC',
-  synth: false
+  type: AssetType.TOKEN
 }
 
 export const ETHAssetsFallBack = [AssetETH, AssetUSDTDAC, AssetUSDC]

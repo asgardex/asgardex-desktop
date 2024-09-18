@@ -13,7 +13,6 @@ import { eqAsset, eqBaseAmount } from '../../helpers/fp/eq'
 import { mockWalletBalance } from '../../helpers/test/testWalletHelper'
 import { PoolsDataMap } from '../../services/midgard/types'
 import {
-  isRuneSwap,
   pickPoolAsset,
   calcRefundFee,
   minAmountToSwapMax1e8,
@@ -24,20 +23,6 @@ import {
 } from './Swap.utils'
 
 describe('components/swap/utils', () => {
-  describe('isRuneSwap', () => {
-    it('should return none if no RUNE asset', () => {
-      expect(isRuneSwap(ASSETS_MAINNET.DOGE, AssetBSC)).toBeNone()
-    })
-
-    it('should return some(true) if target asset is RUNE', () => {
-      expect(isRuneSwap(ASSETS_MAINNET.BTC, AssetRuneNative)).toEqual(O.some(true))
-    })
-
-    it('should return some(false) if source asset is RUNE', () => {
-      expect(isRuneSwap(AssetRuneNative, ASSETS_MAINNET.ETH)).toEqual(O.some(false))
-    })
-  })
-
   describe('pickPoolAsset', () => {
     it('should be none', () => {
       expect(pickPoolAsset([], AssetBSC)).toBeNone()

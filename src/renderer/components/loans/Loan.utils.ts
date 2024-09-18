@@ -1,4 +1,4 @@
-import { Asset, BaseAmount, Chain, baseAmount } from '@xchainjs/xchain-util'
+import { AnyAsset, BaseAmount, Chain, baseAmount } from '@xchainjs/xchain-util'
 
 import { DefaultChainAttributes } from '../../../shared/utils/chain'
 import { ZERO_BASE_AMOUNT } from '../../const'
@@ -18,7 +18,7 @@ export const maxAmountToLoanMax1e8 = ({
   balanceAmountMax1e8,
   feeAmount
 }: {
-  asset: Asset
+  asset: AnyAsset
   balanceAmountMax1e8: BaseAmount
   feeAmount: BaseAmount
 }): BaseAmount => {
@@ -34,7 +34,7 @@ export const maxAmountToLoanMax1e8 = ({
  * Returns zero sym deposit fees
  * by given paired asset to deposit
  */
-export const getZeroLoanDepositFees = (asset: Asset): SaverDepositFees => ({
+export const getZeroLoanDepositFees = (asset: AnyAsset): SaverDepositFees => ({
   asset: {
     asset: getChainAsset(asset.chain),
     inFee: ZERO_BASE_AMOUNT,
@@ -47,7 +47,7 @@ export const getZeroLoanDepositFees = (asset: Asset): SaverDepositFees => ({
  * Returns zero sym deposit fees
  * by given paired asset to deposit
  */
-export const getZeroLoanWithdrawFees = (asset: Asset): WithdrawAssetFees => ({
+export const getZeroLoanWithdrawFees = (asset: AnyAsset): WithdrawAssetFees => ({
   asset,
   inFee: ZERO_BASE_AMOUNT,
   outFee: ZERO_BASE_AMOUNT

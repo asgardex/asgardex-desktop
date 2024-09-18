@@ -5,7 +5,7 @@ import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { Asset } from '@xchainjs/xchain-util'
+import { AnyAsset } from '@xchainjs/xchain-util'
 import { useIntl } from 'react-intl'
 
 import { TooltipAddress } from '../common/Common.styles'
@@ -18,7 +18,7 @@ type CustomProps = {
   expectedTxMined?: string
   feeRate?: number
   upperFeeBound?: number
-  asset: Asset
+  asset: AnyAsset
 }
 
 type Props = CustomProps

@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 
 import { BanknotesIcon, PlusIcon } from '@heroicons/react/24/outline'
-import { Asset, assetToString } from '@xchainjs/xchain-util'
+import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
@@ -17,7 +17,7 @@ export type ButtonVariant = 'runePool' | 'savers' | 'manage'
 
 export type Props = Omit<ButtonProps, 'onClick'> & {
   variant: ButtonVariant
-  asset?: Asset
+  asset?: AnyAsset
   interactType?: InteractType
   isTextView: boolean
   useBorderButton?: boolean

@@ -51,7 +51,11 @@ export const createFeesService = (client$: Client$): FeesService => {
     const { fast: fastGP, fastest: fastestGP, average: averageGP } = gasPrices
     // Estimate gas limit
     const gasLimit = await client.estimateGasLimit({
-      ...params
+      from: params.from,
+      asset: params.asset as Asset,
+      amount: params.amount,
+      recipient: params.recipient,
+      memo: params.memo
     })
     const fees: Fees = {
       type: FeeType.PerByte,

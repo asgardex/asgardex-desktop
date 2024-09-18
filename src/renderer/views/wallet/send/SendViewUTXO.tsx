@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { Asset } from '@xchainjs/xchain-util'
 import { Spin } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
@@ -59,7 +60,7 @@ export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
   const { transfer$, utxoFeesWithRates$, reloadUtxoFeesWithRates$ } = useChainContext()
 
   const feesWithRatesLD: FeesWithRatesLD = useMemo(
-    () => utxoFeesWithRates$(asset.asset),
+    () => utxoFeesWithRates$(asset.asset as Asset),
     [asset.asset, utxoFeesWithRates$]
   )
   const feesWithRatesRD = useObservableState(feesWithRatesLD, RD.initial)
@@ -84,7 +85,7 @@ export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
               getExplorerTxUrl={getExplorerTxUrl}
               addressValidation={validateAddress}
               feesWithRates={feesWithRatesRD}
-              reloadFeesHandler={reloadUtxoFeesWithRates$(asset.asset)}
+              reloadFeesHandler={reloadUtxoFeesWithRates$(asset.asset as Asset)}
               validatePassword$={validatePassword$}
               network={network}
               poolDetails={poolDetails}
@@ -110,7 +111,7 @@ export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
             getExplorerTxUrl={getExplorerTxUrl}
             addressValidation={validateAddress}
             feesWithRates={feesWithRatesRD}
-            reloadFeesHandler={reloadUtxoFeesWithRates$(asset.asset)}
+            reloadFeesHandler={reloadUtxoFeesWithRates$(asset.asset as Asset)}
             validatePassword$={validatePassword$}
             network={network}
             poolDetails={poolDetails}

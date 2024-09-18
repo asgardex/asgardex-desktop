@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Asset } from '@xchainjs/xchain-util'
+import { AnyAsset } from '@xchainjs/xchain-util'
 
 import * as Styled from './AssetLabel.styles'
 
@@ -15,7 +15,7 @@ import * as Styled from './AssetLabel.styles'
  */
 
 export type Props = {
-  asset: Asset
+  asset: AnyAsset
   // `className` is needed by `styled components`
   className?: string
 }

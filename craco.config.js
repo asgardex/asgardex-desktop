@@ -1,3 +1,5 @@
+const path = require('path')
+
 const { GitRevisionPlugin } = require('git-revision-webpack-plugin')
 const TerserPlugin = require('terser-webpack-plugin')
 const webpack = require('webpack')
@@ -31,7 +33,8 @@ module.exports = {
         os: require.resolve('os-browserify/browser'),
         path: require.resolve('path-browserify'),
         fs: require.resolve('browserify-fs'),
-        assert: require.resolve('assert')
+        assert: require.resolve('assert'),
+        process: require.resolve('process/browser')
       }
 
       webpackConfig.ignoreWarnings = [/Failed to parse source map/]
@@ -42,6 +45,19 @@ module.exports = {
           test: /\.svg$/,
           use: ['@svgr/webpack'],
           issuer: /\.(js|ts)x?$/
+        },
+        {
+          test: /\.js$/,
+          include: path.resolve(__dirname, 'node_modules/axios'),
+          use: {
+            loader: 'babel-loader',
+            options: {
+              presets: ['@babel/preset-env']
+            }
+          },
+          resolve: {
+            fullySpecified: false
+          }
         }
       ]
 
@@ -54,7 +70,7 @@ module.exports = {
         $IS_DEV: JSON.stringify(process.env.NODE_ENV !== 'production')
       }),
       new webpack.ProvidePlugin({
-        process: 'process/browser',
+        process: path.resolve('node_modules/process/browser.js'),
         Buffer: ['buffer', 'Buffer']
       })
     ]

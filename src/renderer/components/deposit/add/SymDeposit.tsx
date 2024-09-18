@@ -11,12 +11,13 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
-  Asset,
+  AnyAsset,
   baseAmount,
   BaseAmount,
   baseToAsset,
   CryptoAmount,
-  formatAssetAmountCurrency
+  formatAssetAmountCurrency,
+  TokenAsset
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/lib/Array'
@@ -133,7 +134,7 @@ import { PendingAssetsWarning } from './PendingAssetsWarning'
 
 export type Props = {
   asset: AssetWithDecimal
-  availableAssets: Asset[]
+  availableAssets: AnyAsset[]
   walletBalances: Pick<BalancesState, 'balances' | 'loading'>
   poolAddress: O.Option<PoolAddress>
   pricePool: PricePool
@@ -157,7 +158,7 @@ export type Props = {
     assetWalletType,
     runeWalletType
   }: {
-    asset: Asset
+    asset: AnyAsset
     assetWalletType: WalletType
     runeWalletType: WalletType
   }) => void
@@ -229,7 +230,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
   const dexAsset = dex.asset
   const dexAssetDecimal = dex.decimals
 
-  const prevAsset = useRef<O.Option<Asset>>(O.none)
+  const prevAsset = useRef<O.Option<AnyAsset>>(O.none)
 
   const isRuneLedger = isLedgerWallet(runeWalletType)
 
@@ -445,13 +446,13 @@ export const SymDeposit: React.FC<Props> = (props) => {
     // ERC20 token does need approval only
     switch (chain) {
       case ETHChain:
-        return isEthAsset(asset) ? O.some(false) : O.some(isEthTokenAsset(asset))
+        return isEthAsset(asset) ? O.some(false) : O.some(isEthTokenAsset(asset as TokenAsset))
       case AVAXChain:
-        return isAvaxAsset(asset) ? O.some(false) : O.some(isAvaxTokenAsset(asset))
+        return isAvaxAsset(asset) ? O.some(false) : O.some(isAvaxTokenAsset(asset as TokenAsset))
       case BSCChain:
-        return isBscAsset(asset) ? O.some(false) : O.some(isBscTokenAsset(asset))
+        return isBscAsset(asset) ? O.some(false) : O.some(isBscTokenAsset(asset as TokenAsset))
       case ARBChain:
-        return isAethAsset(asset) ? O.some(false) : O.some(isArbTokenAsset(asset))
+        return isAethAsset(asset) ? O.some(false) : O.some(isArbTokenAsset(asset as TokenAsset))
       default:
         return O.none
     }
@@ -466,13 +467,13 @@ export const SymDeposit: React.FC<Props> = (props) => {
     const oTokenAddress: O.Option<string> = (() => {
       switch (chain) {
         case ETHChain:
-          return getEthTokenAddress(asset)
+          return getEthTokenAddress(asset as TokenAsset)
         case AVAXChain:
-          return getAvaxTokenAddress(asset)
+          return getAvaxTokenAddress(asset as TokenAsset)
         case BSCChain:
-          return getBscTokenAddress(asset)
+          return getBscTokenAddress(asset as TokenAsset)
         case ARBChain:
-          return getArbTokenAddress(asset)
+          return getArbTokenAddress(asset as TokenAsset)
         default:
           return O.none
       }
@@ -1339,7 +1340,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
   )
 
   const onChangeAssetHandler = useCallback(
-    (asset: Asset) => {
+    (asset: AnyAsset) => {
       onChangeAsset({ asset, assetWalletType, runeWalletType })
     },
     [assetWalletType, onChangeAsset, runeWalletType]
@@ -1368,7 +1369,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
   }
 
   const renderFeeError = useCallback(
-    (fee: BaseAmount, amount: BaseAmount, asset: Asset) => {
+    (fee: BaseAmount, amount: BaseAmount, asset: AnyAsset) => {
       const msg = intl.formatMessage(
         { id: 'deposit.add.error.chainFeeNotCovered' },
         {
@@ -2274,7 +2275,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     }: {
       minAmount: BaseAmount
       minAmountInfo: string
-      asset: Asset
+      asset: AnyAsset
       isError: boolean
     }) => (
       <div className="flex w-full items-center pl-10px pt-5px">

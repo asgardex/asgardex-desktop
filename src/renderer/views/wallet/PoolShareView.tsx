@@ -4,7 +4,7 @@ import { SyncOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Address, Asset, Chain } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, Chain } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
@@ -164,7 +164,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
     selectedPricePool$,
     dex.chain === THORChain ? RUNE_PRICE_POOL : MAYA_PRICE_POOL
   )
-  const oPriceAsset = useObservableState<O.Option<Asset>>(
+  const oPriceAsset = useObservableState<O.Option<AnyAsset>>(
     dex.chain === THORChain ? selectedPricePoolAsset$ : selectedPricePoolMayaAsset$,
     O.none
   )

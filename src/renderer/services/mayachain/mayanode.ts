@@ -16,7 +16,7 @@ import {
   Saver
 } from '@xchainjs/xchain-mayanode'
 import { SaversApi } from '@xchainjs/xchain-thornode'
-import { Address, Asset, assetFromString, assetToString, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, assetFromString, assetToString, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
 import { AxiosResponse } from 'axios'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
@@ -241,7 +241,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     })
   )
 
-  const apiGetLiquidityProviders$ = (asset: Asset): LiveData<Error, LiquidityProviderSummary[]> =>
+  const apiGetLiquidityProviders$ = (asset: AnyAsset): LiveData<Error, LiquidityProviderSummary[]> =>
     FP.pipe(
       mayanodeUrl$,
       liveData.chain((basePath) =>
@@ -256,7 +256,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     )
   const { stream$: reloadLiquidityProviders$, trigger: reloadLiquidityProviders } = triggerStream()
 
-  const getLiquidityProviders = (asset: Asset): LiquidityProvidersLD =>
+  const getLiquidityProviders = (asset: AnyAsset): LiquidityProvidersLD =>
     FP.pipe(
       reloadLiquidityProviders$,
       RxOp.debounceTime(300),
@@ -334,7 +334,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     RxOp.shareReplay(1)
   )
 
-  const apiGetSaverProvider$ = (asset: Asset, address: Address): LiveData<Error, Saver> =>
+  const apiGetSaverProvider$ = (asset: AnyAsset, address: Address): LiveData<Error, Saver> =>
     FP.pipe(
       mayanodeUrl$,
       liveData.chain((basePath) =>
@@ -349,7 +349,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
 
   const { stream$: reloadSaverProvider$, trigger: reloadSaverProvider } = triggerStream()
 
-  const getSaverProvider$ = (asset: Asset, address: Address, walletType?: WalletType): SaverProviderLD =>
+  const getSaverProvider$ = (asset: AnyAsset, address: Address, walletType?: WalletType): SaverProviderLD =>
     FP.pipe(
       reloadSaverProvider$,
       RxOp.debounceTime(300),

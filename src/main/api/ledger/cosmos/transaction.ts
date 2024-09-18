@@ -1,7 +1,8 @@
 import type Transport from '@ledgerhq/hw-transport'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { AssetATOM, ClientLedger, defaultClientConfig, getDenom } from '@xchainjs/xchain-cosmos'
-import { Address, Asset, assetToString, BaseAmount } from '@xchainjs/xchain-util'
+import { CompatibleAsset } from '@xchainjs/xchain-cosmos/lib/types'
+import { Address, AnyAsset, assetToString, BaseAmount } from '@xchainjs/xchain-util'
 import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
@@ -24,14 +25,14 @@ export const send = async ({
   transport: Transport
   network: Network
   amount: BaseAmount
-  asset: Asset
+  asset: AnyAsset
   recipient: Address
   memo?: string
   walletAccount: number
   walletIndex: number
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const denom = getDenom(asset)
+    const denom = getDenom(asset as CompatibleAsset)
 
     if (!denom)
       throw Error(`Invalid asset ${assetToString(asset)} - Only ATOM asset is currently supported to transfer`)

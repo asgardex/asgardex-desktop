@@ -1,6 +1,13 @@
 import React from 'react'
 
-import { Asset, baseAmount, BaseAmount, baseToAsset, formatAssetAmountCurrency, formatBN } from '@xchainjs/xchain-util'
+import {
+  AnyAsset,
+  baseAmount,
+  BaseAmount,
+  baseToAsset,
+  formatAssetAmountCurrency,
+  formatBN
+} from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { useIntl } from 'react-intl'
 
@@ -9,8 +16,8 @@ import { isUSDAsset } from '../../helpers/assetHelper'
 import { EmptyResult } from '../shared/result/EmptyResult'
 
 type Props = {
-  asset: Asset
-  priceAsset: Asset
+  asset: AnyAsset
+  priceAsset: AnyAsset
   deposit: { amount: BaseAmount; price: BaseAmount }
   redeem: { amount: BaseAmount; price: BaseAmount }
   percent: BigNumber

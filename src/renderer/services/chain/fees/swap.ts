@@ -1,5 +1,5 @@
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Asset, isSynthAsset } from '@xchainjs/xchain-util'
+import { AnyAsset, AssetType, isSynthAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as RxOp from 'rxjs/operators'
@@ -17,11 +17,17 @@ import { poolOutboundFee$, poolInboundFee$ } from './common'
 
 /**
  * Returns zero swap fees
- * by given `in` / `out` assets of a swap
+ * by given `in` / `out` assets of a swap tobeFixed
  */
-export const getZeroSwapFees = ({ inAsset, outAsset }: { inAsset: Asset; outAsset: Asset }): SwapFees => ({
-  inFee: { amount: ZERO_BASE_AMOUNT, asset: getChainAsset(inAsset.synth ? THORChain : inAsset.chain) },
-  outFee: { amount: ZERO_BASE_AMOUNT, asset: getChainAsset(outAsset.synth ? THORChain : outAsset.chain) }
+export const getZeroSwapFees = ({ inAsset, outAsset }: { inAsset: AnyAsset; outAsset: AnyAsset }): SwapFees => ({
+  inFee: {
+    amount: ZERO_BASE_AMOUNT,
+    asset: getChainAsset(inAsset.type === AssetType.SYNTH ? THORChain : inAsset.chain)
+  },
+  outFee: {
+    amount: ZERO_BASE_AMOUNT,
+    asset: getChainAsset(inAsset.type === AssetType.SYNTH ? THORChain : outAsset.chain)
+  }
 })
 
 // state of `SwapFeesParams` used for reloading swap fees

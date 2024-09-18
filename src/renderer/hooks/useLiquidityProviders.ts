@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
-import { Asset } from '@xchainjs/xchain-util'
+import { AnyAsset } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -30,7 +30,7 @@ export const useLiquidityProviders = ({
   assetAddress,
   dex
 }: {
-  asset: Asset
+  asset: AnyAsset
   dexAssetAddress: Address
   assetAddress: Address
   dex: Dex

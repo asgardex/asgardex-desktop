@@ -1,7 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Balance, Network, Tx, TxHash } from '@xchainjs/xchain-client'
 import { Keystore } from '@xchainjs/xchain-crypto'
-import { Address, Asset, Chain } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, Chain } from '@xchainjs/xchain-util'
 import { getMonoid } from 'fp-ts/Array'
 import * as FP from 'fp-ts/lib/function'
 import { NonEmptyArray } from 'fp-ts/lib/NonEmptyArray'
@@ -109,7 +109,7 @@ export type WalletBalance = Balance & {
 export type WalletBalances = WalletBalance[]
 
 export type SelectedWalletAsset = {
-  asset: Asset
+  asset: AnyAsset
   walletAddress: Address
   walletType: WalletType
   walletAccount: number

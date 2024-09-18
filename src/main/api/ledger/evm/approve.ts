@@ -1,4 +1,3 @@
-import TransportNodeHidSingleton from '@ledgerhq/hw-transport-node-hid-singleton'
 import { FeeOption, TxHash } from '@xchainjs/xchain-client'
 import { ClientLedger } from '@xchainjs/xchain-evm'
 
@@ -20,11 +19,9 @@ export const approveLedgerERC20Token = async ({
 }: IPCLedgerApproveERC20TokenParams): Promise<TxHash> => {
   let clientParams
 
-  const transport = await TransportNodeHidSingleton.create()
   switch (chain) {
     case 'ETH':
       clientParams = {
-        transport,
         ...defaultEthParams,
         rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, hdMode),
         network: network
@@ -32,7 +29,6 @@ export const approveLedgerERC20Token = async ({
       break
     case 'ARB':
       clientParams = {
-        transport,
         ...defaultArbParams,
         rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, hdMode),
         network: network
@@ -40,7 +36,6 @@ export const approveLedgerERC20Token = async ({
       break
     case 'AVAX':
       clientParams = {
-        transport,
         ...defaultAvaxParams,
         rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, hdMode),
         network: network
@@ -48,7 +43,6 @@ export const approveLedgerERC20Token = async ({
       break
     case 'BSC':
       clientParams = {
-        transport,
         ...defaultBscParams,
         rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, hdMode),
         network: network
@@ -65,8 +59,6 @@ export const approveLedgerERC20Token = async ({
     feeOption: FeeOption.Fast,
     walletIndex
   })
-
-  await transport.close()
 
   return transactionHash
 }

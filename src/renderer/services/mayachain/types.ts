@@ -1,7 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Client, DepositParam } from '@xchainjs/xchain-mayachain'
 import type * as TN from '@xchainjs/xchain-mayanode'
-import { Address, Asset, BaseAmount, Chain } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as O from 'fp-ts/Option'
 import * as t from 'io-ts'
@@ -70,7 +70,7 @@ export type SendTxParams = {
   sender?: Address
   recipient: Address
   amount: BaseAmount
-  asset: Asset
+  asset: AnyAsset
   memo?: string
   walletAccount: number
   walletIndex: number

@@ -7,7 +7,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Asset } from '@xchainjs/xchain-util'
+import { AnyAsset, Asset, AssetType } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
@@ -36,16 +36,16 @@ const {
 } = midgardMayaService
 
 /**
- * Fees for pool outbound txs (swap/deposit/withdraw/earn)
+ * Fees for pool outbound txs (swap/deposit/withdraw/earn) tobefixed
  */
-export const poolOutboundFee$ = (asset: Asset): PoolFeeLD => {
+export const poolOutboundFee$ = (asset: AnyAsset): PoolFeeLD => {
   // special case for RUNE - not provided in `inbound_addresses` endpoint
-  if (isRuneNativeAsset(asset) || asset.synth) {
+  if (isRuneNativeAsset(asset) || asset.type === AssetType.SYNTH) {
     return FP.pipe(
       THOR.fees$(),
       liveData.map((fees) => ({ amount: fees.fast.times(3), asset: AssetRuneNative }))
     )
-  } else if (isCacaoAsset(asset) || asset.synth) {
+  } else if (isCacaoAsset(asset)) {
     return FP.pipe(
       MAYA.fees$(),
       liveData.map((fees) => ({ amount: fees.fast.times(3), asset: AssetCacao }))
@@ -59,7 +59,7 @@ export const poolOutboundFee$ = (asset: Asset): PoolFeeLD => {
 /**
  * Fees for pool inbound txs (swap/deposit/withdraw/earn)
  */
-export const poolInboundFee$ = (asset: Asset, memo: string): PoolFeeLD => {
+export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
   switch (asset.chain) {
     case DOGEChain:
       return FP.pipe(

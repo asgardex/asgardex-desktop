@@ -14,7 +14,12 @@ import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { MayachainQuery, QuoteSwap, QuoteSwapParams as QuoteSwapParamsMaya } from '@xchainjs/xchain-mayachain-query'
+import {
+  CompatibleAsset,
+  MayachainQuery,
+  QuoteSwap,
+  QuoteSwapParams as QuoteSwapParamsMaya
+} from '@xchainjs/xchain-mayachain-query'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { InboundDetail, QuoteSwapParams, ThorchainQuery, TxDetails } from '@xchainjs/xchain-thorchain-query'
 import {
@@ -27,7 +32,10 @@ import {
   assetAmount,
   Address,
   isSynthAsset,
-  CryptoAmount
+  CryptoAmount,
+  AssetType,
+  AnyAsset,
+  TokenAsset
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import BigNumber from 'bignumber.js'
@@ -173,7 +181,7 @@ export type SwapProps = {
   thorchainQuery: ThorchainQuery
   mayachainQuery: MayachainQuery
   keystore: KeystoreState
-  poolAssets: Asset[]
+  poolAssets: AnyAsset[]
   assets: {
     source: SwapAsset
     target: SwapAsset
@@ -207,8 +215,8 @@ export type SwapProps = {
     targetWalletType,
     recipientAddress
   }: {
-    source: Asset
-    target: Asset
+    source: AnyAsset
+    target: AnyAsset
     sourceWalletType: WalletType
     targetWalletType: O.Option<WalletType>
     recipientAddress: O.Option<Address>
@@ -268,8 +276,8 @@ export const Swap = ({
 }: SwapProps) => {
   const intl = useIntl()
 
-  const { chain: sourceChain } = sourceAsset.synth ? dex.asset : sourceAsset
-  const { chain: targetChain } = targetAsset.synth ? dex.asset : targetAsset
+  const { chain: sourceChain } = sourceAsset.type === AssetType.SYNTH ? dex.asset : sourceAsset
+  const { chain: targetChain } = targetAsset.type === AssetType.SYNTH ? dex.asset : targetAsset
 
   const lockedWallet: boolean = useMemo(() => isLocked(keystore) || !hasImportedKeystore(keystore), [keystore])
   const [quoteOnly, setQuoteOnly] = useState<boolean>(false)
@@ -334,8 +342,8 @@ export const Swap = ({
   // ZERO `BaseAmount` for target Asset <= 1e8
   const zeroTargetBaseAmountMax1e8 = useMemo(() => max1e8BaseAmount(zeroTargetBaseAmountMax), [zeroTargetBaseAmountMax])
 
-  const prevSourceAsset = useRef<O.Option<Asset>>(O.none)
-  const prevTargetAsset = useRef<O.Option<Asset>>(O.none)
+  const prevSourceAsset = useRef<O.Option<AnyAsset>>(O.none)
+  const prevTargetAsset = useRef<O.Option<AnyAsset>>(O.none)
 
   const [customAddressEditActive, setCustomAddressEditActive] = useState(false)
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -665,7 +673,11 @@ export const Swap = ({
     const swapOutFeeThor = FP.pipe(
       oQuote,
       O.fold(
-        () => new CryptoAmount(swapFees.outFee.amount, targetAsset.synth ? AssetRuneNative : targetAsset),
+        () =>
+          new CryptoAmount(
+            swapFees.outFee.amount,
+            targetAsset.type === AssetType.SYNTH ? AssetRuneNative : targetAsset
+          ),
         (txDetails) => {
           const txOutFee = txDetails.txEstimate.totalFees.outboundFee
           return txOutFee
@@ -675,7 +687,7 @@ export const Swap = ({
     const swapOutFeeMaya = FP.pipe(
       oQuoteMaya,
       O.fold(
-        () => new CryptoAmount(swapFees.outFee.amount, targetAsset.synth ? AssetCacao : targetAsset),
+        () => new CryptoAmount(swapFees.outFee.amount, targetAsset.type === AssetType.SYNTH ? AssetCacao : targetAsset),
         (quoteSwap) => {
           const txOutFee = quoteSwap.fees.outboundFee
           return txOutFee
@@ -897,9 +909,12 @@ export const Swap = ({
       FP.pipe(
         sequenceTOption(oRecipientAddress, oSourceWalletAddress),
         O.map(([destinationAddress, sourceWalletAddress]) => {
-          const fromAsset = sourceAsset
-          const destinationAsset = targetAsset
-          const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
+          const fromAsset = sourceAsset as CompatibleAsset
+          const destinationAsset = targetAsset as CompatibleAsset
+          const amount = new CryptoAmount(
+            convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal),
+            sourceAsset as CompatibleAsset
+          )
           const address = destinationAddress
           const fromAdd = sourceWalletAddress
           const streamingInt = isStreaming ? streamingInterval : 0
@@ -976,10 +991,13 @@ export const Swap = ({
             affiliateBps: applyBps
           }
           const estimateMayaDexSwap: QuoteSwapParamsMaya = {
-            fromAsset: sourceAsset,
-            destinationAsset: targetAsset,
+            fromAsset: sourceAsset as CompatibleAsset,
+            destinationAsset: targetAsset as CompatibleAsset,
             fromAddress: sourceWalletAddress,
-            amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset),
+            amount: new CryptoAmount(
+              convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal),
+              sourceAsset as CompatibleAsset
+            ),
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
             toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100, // convert to basis points,
@@ -1390,15 +1408,16 @@ export const Swap = ({
 
   const needApprovement: O.Option<boolean> = useMemo(() => {
     // ERC20 token does need approval only
+
     switch (sourceChain) {
       case ETHChain:
-        return isEthAsset(sourceAsset) ? O.some(false) : O.some(isEthTokenAsset(sourceAsset))
+        return isEthAsset(sourceAsset) ? O.some(false) : O.some(isEthTokenAsset(sourceAsset as TokenAsset))
       case AVAXChain:
-        return isAvaxAsset(sourceAsset) ? O.some(false) : O.some(isAvaxTokenAsset(sourceAsset))
+        return isAvaxAsset(sourceAsset) ? O.some(false) : O.some(isAvaxTokenAsset(sourceAsset as TokenAsset))
       case BSCChain:
-        return isBscAsset(sourceAsset) ? O.some(false) : O.some(isBscTokenAsset(sourceAsset))
+        return isBscAsset(sourceAsset) ? O.some(false) : O.some(isBscTokenAsset(sourceAsset as TokenAsset))
       case ARBChain:
-        return isAethAsset(sourceAsset) ? O.some(false) : O.some(isArbTokenAsset(sourceAsset))
+        return isAethAsset(sourceAsset) ? O.some(false) : O.some(isArbTokenAsset(sourceAsset as TokenAsset))
       default:
         return O.none
     }
@@ -1412,13 +1431,13 @@ export const Swap = ({
     const oTokenAddress: O.Option<string> = (() => {
       switch (sourceChain) {
         case ETHChain:
-          return getEthTokenAddress(sourceAsset)
+          return getEthTokenAddress(sourceAsset as TokenAsset)
         case AVAXChain:
-          return getAvaxTokenAddress(sourceAsset)
+          return getAvaxTokenAddress(sourceAsset as TokenAsset)
         case BSCChain:
-          return getBscTokenAddress(sourceAsset)
+          return getBscTokenAddress(sourceAsset as TokenAsset)
         case ARBChain:
-          return getArbTokenAddress(sourceAsset)
+          return getArbTokenAddress(sourceAsset as TokenAsset)
         default:
           return O.none
       }
@@ -1534,7 +1553,7 @@ export const Swap = ({
   const [swapStartTime, setSwapStartTime] = useState<number>(0)
 
   const setSourceAsset = useCallback(
-    async (asset: Asset) => {
+    async (asset: AnyAsset) => {
       // delay to avoid render issues while switching
       await delay(100)
       setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
@@ -1553,7 +1572,7 @@ export const Swap = ({
   )
 
   const setTargetAsset = useCallback(
-    async (asset: Asset) => {
+    async (asset: AnyAsset) => {
       // delay to avoid render issues while switching
       await delay(100)
       onChangeAsset({
@@ -1674,7 +1693,7 @@ export const Swap = ({
    * Zero balances are ignored.
    * Duplications of assets are merged.
    */
-  const selectableSourceAssets: Asset[] = useMemo(
+  const selectableSourceAssets: AnyAsset[] = useMemo(
     () =>
       FP.pipe(
         allBalances,
@@ -1696,7 +1715,7 @@ export const Swap = ({
    * Duplications of assets are merged.
    */
   const selectableTargetAssets = useMemo(
-    (): Asset[] =>
+    (): AnyAsset[] =>
       FP.pipe(
         poolAssets,
         // Create synth version of assets (excluding assetRuneNative)
@@ -3129,7 +3148,7 @@ export const Swap = ({
                         <div className={`flex items-center`}>
                           {intl.formatMessage(
                             { id: 'common.confirmation.time' },
-                            { chain: targetAsset.synth ? THORChain : targetAsset.chain }
+                            { chain: targetAsset.type === AssetType.SYNTH ? THORChain : targetAsset.chain }
                           )}
                         </div>
                         <div>{formatSwapTime(Number(transactionTime.confirmation))}</div>
@@ -3177,7 +3196,7 @@ export const Swap = ({
                     {FP.pipe(
                       oSwapParams,
                       O.map(({ poolAddress: { address }, asset }) =>
-                        address && !asset.synth ? (
+                        address && asset.type !== AssetType.SYNTH ? (
                           <div className="flex w-full items-center justify-between pl-10px text-[12px]" key="pool-addr">
                             <div>{intl.formatMessage({ id: 'common.pool.inbound' })}</div>
                             <TooltipAddress title={address}>
@@ -3325,7 +3344,7 @@ export const Swap = ({
                       <div className={`flex items-center`}>
                         {intl.formatMessage(
                           { id: 'common.confirmation.time' },
-                          { chain: targetAsset.synth ? THORChain : targetAsset.chain }
+                          { chain: targetAsset.type === AssetType.SYNTH ? THORChain : targetAsset.chain }
                         )}
                       </div>
                       <div>{formatSwapTime(Number(transactionTime.confirmation))}</div>

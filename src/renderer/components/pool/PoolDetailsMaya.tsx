@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { Asset } from '@xchainjs/xchain-util'
+import { AnyAsset } from '@xchainjs/xchain-util'
 import * as A from 'antd'
 import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/lib/function'
@@ -19,7 +19,7 @@ import * as H from './PoolDetails.helpers'
 import { PoolTitle } from './PoolTitle'
 
 export type Props = {
-  asset: Asset
+  asset: AnyAsset
   watched: boolean
   watch: FP.Lazy<void>
   unwatch: FP.Lazy<void>
@@ -31,7 +31,7 @@ export type Props = {
   priceRatio: BigNumber
   priceSymbol: string
   HistoryView: React.ComponentType<{
-    poolAsset: Asset
+    poolAsset: AnyAsset
     historyActions: PoolHistoryActions
   }>
   ChartView: React.ComponentType<{ priceRatio: BigNumber }>
