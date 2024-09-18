@@ -104,6 +104,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
 
   const isDesktopView = Grid.useBreakpoint()?.lg ?? false
   const isLargeScreen = Grid.useBreakpoint()?.xl ?? false
+  const isXLargeScreen = Grid.useBreakpoint()?.xxl ?? false
 
   // store previous data of pools to render these while reloading
   const previousPools = useRef<O.Option<PoolTableRowsData>>(O.none)
@@ -301,8 +302,12 @@ export const ActivePools: React.FC = (): JSX.Element => {
           O.some(Shared.poolColumn<PoolTableRowData>(intl.formatMessage({ id: 'common.pool' }))),
           O.some(Shared.assetColumn<PoolTableRowData>(intl.formatMessage({ id: 'common.asset' }))),
           O.some(Shared.priceColumn<PoolTableRowData>(intl.formatMessage({ id: 'common.price' }), pricePool.asset)),
-          O.some(Shared.depthColumn<PoolTableRowData>(intl.formatMessage({ id: 'common.liquidity' }), pricePool.asset)),
-          O.some(volumeColumn<PoolTableRowData>()),
+          isXLargeScreen
+            ? O.some(
+                Shared.depthColumn<PoolTableRowData>(intl.formatMessage({ id: 'common.liquidity' }), pricePool.asset)
+              )
+            : O.none,
+          isXLargeScreen ? O.some(volumeColumn<PoolTableRowData>()) : O.none,
           isLargeScreen ? O.some(apyColumn<PoolTableRowData>(poolsPeriod, dex.chain)) : O.none,
           O.some(btnPoolsColumn<PoolTableRowData>())
         ],
@@ -315,6 +320,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
       pricePool,
       volumeColumn,
       isLargeScreen,
+      isXLargeScreen,
       apyColumn,
       poolsPeriod,
       dex,

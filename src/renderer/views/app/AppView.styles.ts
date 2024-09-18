@@ -40,8 +40,7 @@ export const AppWrapper = styled.div`
 
 export const AppLayout = styled(A.Layout)`
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  flex-direction: row;
   height: 100%;
   background: ${palette('background', 3)};
 `
