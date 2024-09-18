@@ -80,7 +80,6 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
   const {
     keystore,
     wallets,
-    network,
     dex,
     changeDex = FP.constVoid,
     pricePools: oPricePools,
@@ -176,41 +175,6 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
   )
 
   const headerHeight = useMemo(() => size('headerHeight', '70px')({ theme }), [theme])
-
-  const renderMainNav = useMemo(
-    () => (
-      <div className="flex h-full flex-row">
-        {items.map(({ label, key, path, icon: Icon }) => {
-          const selected = activeKey === key
-          return (
-            <div
-              key={key}
-              className={`
-                  flex
-                  h-full cursor-pointer items-center
-                  justify-center border-y-[3px] border-solid border-transparent
-                  hover:border-b-turquoise
-                  focus-visible:outline-none
-                   ${selected ? 'border-b-turquoise' : 'border-b-transparent'}
-                  mr-20px pl-10px pr-15px
-              font-mainBold text-18
-              uppercase transition duration-300
-              ease-in-out
-              ${selected ? 'text-turquoise' : 'text-text2 dark:text-text2d'}
-            hover:text-turquoise
-              `}
-              onClick={() => navigate(path)}>
-              <div className="flex flex-row items-center">
-                <Icon className="pr-5px" />
-                <span className="">{label}</span>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-    ),
-    [activeKey, items, navigate]
-  )
 
   const links = useMemo(
     () =>
@@ -321,18 +285,6 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
     [headerHeight]
   )
 
-  const renderLogo = useMemo(
-    () => (
-      <Styled.LogoWrapper>
-        <Styled.AsgardexLogo />
-        <Styled.NetworkLabel network={network} dex={dex}>
-          {network}
-        </Styled.NetworkLabel>
-      </Styled.LogoWrapper>
-    ),
-    [network, dex]
-  )
-
   const dexPrice = useMemo(() => {
     // Use 'dex' to determine which DEX prices to use
     if (dex.chain === THORChain) {
@@ -357,8 +309,7 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
           {isDesktopView && (
             <>
               <Col>
-                <Row justify="space-between" align="middle" style={{ height: headerHeight }}>
-                  {renderLogo}
+                <Row align="middle" style={{ height: headerHeight }}>
                   <HeaderStats
                     dex={dex}
                     changeDexHandler={changeDexHandler}
@@ -369,7 +320,6 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
                   />
                 </Row>
               </Col>
-              {renderMainNav}
               <Col>
                 <Row align="middle">
                   {renderHeaderNetStatus}
@@ -388,23 +338,16 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
           )}
           {!isDesktopView && (
             <>
-              <Col>
-                <Row align="middle" style={{ height: headerHeight }}>
-                  {renderLogo}
-                </Row>
-              </Col>
-              <Col flex={1}>
-                <Row>
-                  <HeaderStats
-                    dex={dex}
-                    changeDexHandler={changeDexHandler}
-                    runePrice={runePriceRD}
-                    reloadRunePrice={reloadRunePrice}
-                    volume24Price={volume24PriceRD}
-                    reloadVolume24Price={reloadVolume24Price}
-                  />
-                </Row>
-              </Col>
+              <Row align="middle">
+                <HeaderStats
+                  dex={dex}
+                  changeDexHandler={changeDexHandler}
+                  runePrice={runePriceRD}
+                  reloadRunePrice={reloadRunePrice}
+                  volume24Price={volume24PriceRD}
+                  reloadVolume24Price={reloadVolume24Price}
+                />
+              </Row>
               <Col>
                 <Row align="middle" style={{ height: headerHeight, cursor: 'pointer' }} onClick={toggleMenu}>
                   {menuVisible ? (
