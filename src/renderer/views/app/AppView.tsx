@@ -4,6 +4,7 @@ import { SyncOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
+import { Grid } from 'antd'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
 import * as O from 'fp-ts/Option'
@@ -13,8 +14,8 @@ import { useIntl } from 'react-intl'
 import { DEFAULT_LOCALE } from '../../../shared/i18n/const'
 import { chainToString, DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
 import { envOrDefault } from '../../../shared/utils/env'
-import { Footer } from '../../components/footer'
 import { Header } from '../../components/header'
+import { Sidebar } from '../../components/sidebar'
 import { BorderButton } from '../../components/uielements/button'
 import { useI18nContext } from '../../contexts/I18nContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
@@ -48,6 +49,8 @@ export const AppView: React.FC = (): JSX.Element => {
   const currentLocale = useObservableState(locale$, DEFAULT_LOCALE)
 
   const { isLight } = useTheme()
+
+  const isDesktopView = Grid.useBreakpoint()?.lg ?? false
 
   // locale
   useEffect(() => {
@@ -256,15 +259,15 @@ export const AppView: React.FC = (): JSX.Element => {
     <Styled.AppWrapper>
       <Styled.AppLayout>
         <AppUpdateView />
-        <Header />
+        {isDesktopView && <Sidebar commitHash={envOrDefault($COMMIT_HASH, '')} isDev={$IS_DEV} publicIP={publicIP} />}
         <View>
+          <Header />
           {renderMidgardError}
           {renderImportKeystoreWalletsError}
           {renderImportLedgerAddressesError}
           {renderHaltedChainsWarning}
           <ViewRoutes />
         </View>
-        <Footer commitHash={envOrDefault($COMMIT_HASH, '')} isDev={$IS_DEV} publicIP={publicIP} />
       </Styled.AppLayout>
     </Styled.AppWrapper>
   )
