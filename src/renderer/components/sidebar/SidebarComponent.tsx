@@ -185,7 +185,7 @@ export const SidebarComponent: React.FC<Props> = (props): JSX.Element => {
               )}
             </FooterIcon>
             {publicIP && (
-              <div className="hidden h-8 items-center px-20px text-[14px] text-gray2 dark:text-gray2d">
+              <div className="h-8 items-center px-20px text-[14px] text-gray2 dark:text-gray2d">
                 Public IP: {publicIP}
               </div>
             )}
