@@ -96,6 +96,7 @@ export type CommonMessageKey =
   | 'common.fees.estimated'
   | 'common.max'
   | 'common.min'
+  | 'common.half'
   | 'common.search'
   | 'common.searchAsset'
   | 'common.addAsset'

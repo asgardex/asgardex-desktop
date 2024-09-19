@@ -101,6 +101,7 @@ const common: CommonMessages = {
   'common.fees.estimated': 'Voraussichtliche Gebühren',
   'common.max': 'Max',
   'common.min': 'Min',
+  'common.half': 'Half',
   'common.search': 'Suche',
   'common.searchAsset': 'Suche Asset',
   'common.addAsset': 'Token wird nicht angezeigt? Manuell hinzufügen',

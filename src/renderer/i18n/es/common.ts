@@ -99,6 +99,7 @@ const common: CommonMessages = {
   'common.fee.affiliate': 'Afiliado',
   'common.max': 'Máx',
   'common.min': 'Mín',
+  'common.half': 'Mitad',
   'common.search': 'Buscar en',
   'common.searchAsset': 'Buscar Activo',
   'common.addAsset': '¿El token no aparece? Añadir manualmente',

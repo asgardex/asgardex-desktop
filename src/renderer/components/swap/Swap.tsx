@@ -38,7 +38,6 @@ import {
   TokenAsset
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
-import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
@@ -69,7 +68,6 @@ import {
   to1e8BaseAmount,
   THORCHAIN_DECIMAL,
   isUSDAsset,
-  isChainAsset,
   isRuneNativeAsset,
   isAvaxTokenAsset,
   isBscTokenAsset,
@@ -156,7 +154,6 @@ import { SwapAssets } from '../modal/tx/extra'
 import { LoadingView } from '../shared/loading'
 import { AssetInput } from '../uielements/assets/assetInput'
 import { BaseButton, FlatButton, ViewTxButton } from '../uielements/button'
-import { MaxBalanceButton } from '../uielements/button/MaxBalanceButton'
 import { Tooltip, TooltipAddress, WalletTypeLabel } from '../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../uielements/fees'
 import { InfoIcon } from '../uielements/info'
@@ -1594,30 +1591,6 @@ export const Swap = ({
     return amountToSwapMax1e8.lt(minAmountIn)
   }, [amountToSwapMax1e8, isZeroAmountToSwap, reccommendedAmountIn.baseAmount])
 
-  const renderMinAmount = useMemo(
-    () => (
-      <div className="flex w-full items-center pl-10px pt-5px">
-        <p
-          className={`m-0 pr-5px font-main text-[12px] uppercase ${
-            minAmountError ? 'dark:error-0d text-error0' : 'text-gray2 dark:text-gray2d'
-          }`}>
-          {`${intl.formatMessage({ id: 'common.min' })}: ${formatAssetAmountCurrency({
-            asset: sourceAsset,
-            amount: reccommendedAmountIn.assetAmount,
-            trimZeros: true
-          })}`}
-        </p>
-        <InfoIcon
-          // override color
-          className={`${minAmountError ? '' : 'text-gray2 dark:text-gray2d'}`}
-          color={minAmountError ? 'error' : 'neutral'}
-          tooltip={intl.formatMessage({ id: 'swap.min.amount.info' })}
-        />
-      </div>
-    ),
-    [intl, minAmountError, sourceAsset, reccommendedAmountIn]
-  )
-
   // sets the locked asset amount to be the asset pool depth
   useEffect(() => {
     if (lockedWallet || quoteOnly) {
@@ -1659,32 +1632,6 @@ export const Swap = ({
     targetAsset,
     thorchainQuery
   ])
-
-  const priceAmountMax1e8: CryptoAmount = useMemo(() => {
-    const result =
-      dex.chain === THORChain
-        ? FP.pipe(
-            isPoolDetails(poolDetails)
-              ? PoolHelpers.getPoolPriceValue({
-                  balance: { asset: sourceAsset, amount: maxAmountToSwapMax1e8 },
-                  poolDetails,
-                  pricePool
-                })
-              : O.none,
-            O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal)),
-            (amount) => ({ asset: pricePool.asset, amount })
-          )
-        : FP.pipe(
-            getPoolPriceValueM({
-              balance: { asset: sourceAsset, amount: maxAmountToSwapMax1e8 },
-              poolDetails,
-              pricePool
-            }),
-            O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal)),
-            (amount) => ({ asset: pricePool.asset, amount })
-          )
-    return new CryptoAmount(result.amount, result.asset)
-  }, [amountToSwapMax1e8.decimal, dex, maxAmountToSwapMax1e8, poolDetails, pricePool, sourceAsset])
 
   /**
    * Selectable source assets to swap from.
@@ -1743,34 +1690,13 @@ export const Swap = ({
   const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
   const [showLedgerModal, setShowLedgerModal] = useState<ModalState>('none')
 
-  const renderSlider = useMemo(() => {
-    const percentage = amountToSwapMax1e8
-      .amount()
-      .dividedBy(maxAmountToSwapMax1e8.amount())
-      .multipliedBy(100)
-      // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
-      .decimalPlaces(0, BigNumber.ROUND_DOWN)
-      .toNumber()
-
-    const setAmountToSwapFromPercentValue = (percents: number) => {
+  const setAmountToSwapFromPercentValue = useCallback(
+    (percents: number) => {
       const amountFromPercentage = maxAmountToSwapMax1e8.amount().multipliedBy(percents / 100)
       return setAmountToSwapMax1e8(baseAmount(amountFromPercentage, maxAmountToSwapMax1e8.decimal))
-    }
-
-    return (
-      <Slider
-        key={'swap percentage slider'}
-        value={percentage}
-        onChange={setAmountToSwapFromPercentValue}
-        onAfterChange={reloadFeesHandler}
-        tooltipVisible
-        tipFormatter={(value) => `${value}%`}
-        withLabel
-        tooltipPlacement={'top'}
-        disabled={disableSwapAction}
-      />
-    )
-  }, [amountToSwapMax1e8, maxAmountToSwapMax1e8, reloadFeesHandler, disableSwapAction, setAmountToSwapMax1e8])
+    },
+    [maxAmountToSwapMax1e8, setAmountToSwapMax1e8]
+  )
 
   // Function to reset the slider to default position
   const resetToDefault = () => {
@@ -2725,32 +2651,6 @@ export const Swap = ({
     return dex.chain === THORChain ? transactionTimeThor : transactionTimeMaya
   }, [dex, oQuote, oQuoteMaya, sourceChain, targetAsset])
 
-  const maxBalanceInfoTxt = useMemo(() => {
-    const balanceLabel = formatAssetAmountCurrency({
-      amount: baseToAsset(sourceAssetAmountMax1e8),
-      asset: sourceAsset,
-      decimal: isUSDAsset(sourceAsset) ? 2 : 8, // use 8 decimal as same we use in maxAmountToSwapMax1e8
-      trimZeros: !isUSDAsset(sourceAsset)
-    })
-
-    const feeLabel = FP.pipe(
-      swapFeesRD,
-      RD.map(({ inFee: { amount, asset: feeAsset } }) =>
-        formatAssetAmountCurrency({
-          amount: baseToAsset(amount),
-          asset: feeAsset,
-          decimal: isUSDAsset(feeAsset) ? 2 : 8, // use 8 decimal as same we use in maxAmountToSwapMax1e8
-          trimZeros: !isUSDAsset(feeAsset)
-        })
-      ),
-      RD.getOrElse(() => noDataString)
-    )
-
-    return isChainAsset(sourceAsset)
-      ? intl.formatMessage({ id: 'swap.info.max.balanceMinusFee' }, { balance: balanceLabel, fee: feeLabel })
-      : intl.formatMessage({ id: 'swap.info.max.balance' }, { balance: balanceLabel })
-  }, [sourceAssetAmountMax1e8, sourceAsset, swapFeesRD, intl])
-
   const [showDetails, setShowDetails] = useState<boolean>(false)
 
   return (
@@ -2758,13 +2658,12 @@ export const Swap = ({
       <div>
         {/* Note: Input value is shown as AssetAmount */}
         <Row>
-          {' '}
           <FlatButton
             onClick={quoteOnlyButton}
             size="small"
             color={quoteOnly ? 'warning' : 'primary'}
             className="mb-20px  rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
-            {quoteOnly ? 'Quote Only' : 'Quote & Swap'}
+            {quoteOnly ? 'Preview Only' : 'Preview & Swap'}
           </FlatButton>
           {disabledChains.length > 0 ? (
             <div className="text-12 text-gray2 dark:border-gray1d dark:text-gray2d">
@@ -2792,64 +2691,17 @@ export const Swap = ({
           priceAmount={{ asset: priceAmountToSwapMax1e8.asset, amount: priceAmountToSwapMax1e8.baseAmount }}
           assets={selectableSourceAssets}
           network={network}
+          hasAmountShortcut
           onChangeAsset={setSourceAsset}
           onChange={setAmountToSwapMax1e8}
+          onChangePercent={setAmountToSwapFromPercentValue}
           onBlur={reloadFeesHandler}
           showError={minAmountError}
           hasLedger={hasSourceAssetLedger}
           useLedger={useSourceAssetLedger}
           useLedgerHandler={onClickUseSourceAssetLedger}
-          extraContent={
-            <div className="flex flex-col">
-              <MaxBalanceButton
-                className="ml-10px mt-5px"
-                classNameButton="!text-gray2 dark:!text-gray2d"
-                classNameIcon={
-                  // show warn icon if maxAmountToSwapMax <= 0
-                  maxAmountToSwapMax1e8.gt(zeroTargetBaseAmountMax1e8)
-                    ? `text-gray2 dark:text-gray2d`
-                    : 'text-warning0 dark:text-warning0d'
-                }
-                size="medium"
-                balance={{ amount: maxAmountToSwapMax1e8, asset: sourceAsset }}
-                maxDollarValue={priceAmountMax1e8}
-                onClick={() => setAmountToSwapMax1e8(maxAmountToSwapMax1e8)}
-                maxInfoText={maxBalanceInfoTxt}
-                disabled={walletBalancesLoading}
-                hidePrivateData={hidePrivateData}
-              />
-              {minAmountError && renderMinAmount}
-            </div>
-          }
         />
-        <div className="w-full p-20px">{renderSlider}</div>
-        <div>
-          <div className="flex w-full pb-20px pt-20px">
-            <div className="w-full ">
-              <div className="w-9/10 px-20px pb-20px">{renderStreamerInterval}</div>
-              <div className="w-9/10 px-20px pb-20px">{renderStreamerQuantity}</div>
-              <div className="w-9/10 px-20px">{renderStreamerReturns}</div>
-            </div>
-            <div className="flex">
-              <TooltipAddress title="Reset to streaming default">
-                <BaseButton
-                  onClick={resetToDefault}
-                  className=" rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
-                  <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
-                </BaseButton>
-              </TooltipAddress>
-            </div>
-            <div className="m-40px flex flex-col justify-center ">
-              <div className=" border-gray1 dark:border-gray1d"></div>
-              <BaseButton
-                onClick={onSwitchAssets}
-                className="group rounded-full !p-10px hover:rotate-180 hover:shadow-full dark:hover:shadow-fulld">
-                <ArrowsUpDownIcon className="ease h-[40px] w-[40px] text-turquoise " />
-              </BaseButton>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-col">
+        <div className="relative mt-0.5 flex flex-col">
           <AssetInput
             className="w-full md:w-auto"
             title={intl.formatMessage({ id: 'swap.output' })}
@@ -2867,6 +2719,34 @@ export const Swap = ({
             useLedgerHandler={onClickUseTargetAssetLedger}
             hasLedger={hasTargetAssetLedger}
           />
+          <div className="absolute -top-30px left-[calc(50%-30px)] flex w-full flex-col justify-center">
+            <div className="w-60px h-60px">
+              <BaseButton
+                size="small"
+                onClick={onSwitchAssets}
+                className="group rounded-full border border-solid border-turquoise bg-bg0 !p-10px hover:rotate-180 hover:shadow-full dark:bg-bg0d dark:hover:shadow-fulld">
+                <ArrowsUpDownIcon className="ease h-[40px] w-[40px] text-turquoise " />
+              </BaseButton>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div className="flex w-full pb-20px pt-20px">
+            <div className="w-full ">
+              <div className="w-9/10 px-20px pb-20px">{renderStreamerInterval}</div>
+              <div className="w-9/10 px-20px pb-20px">{renderStreamerQuantity}</div>
+              <div className="w-9/10 px-20px">{renderStreamerReturns}</div>
+            </div>
+            <div className="flex">
+              <TooltipAddress title="Reset to streaming default">
+                <BaseButton
+                  onClick={resetToDefault}
+                  className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
+                  <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
+                </BaseButton>
+              </TooltipAddress>
+            </div>
+          </div>
         </div>
         {!lockedWallet &&
           FP.pipe(
