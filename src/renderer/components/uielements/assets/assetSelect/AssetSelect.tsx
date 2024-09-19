@@ -16,6 +16,7 @@ export type Props = {
   className?: string
   showAssetName?: boolean
   dialogHeadline?: string
+  shadowless?: boolean
   disabled?: boolean
   network: Network
 }
@@ -29,6 +30,7 @@ export const AssetSelect: React.FC<Props> = (props): JSX.Element => {
     dialogHeadline = emptyString,
     showAssetName = true,
     disabled = false,
+    shadowless = false,
     network
   } = props
 
@@ -61,7 +63,9 @@ export const AssetSelect: React.FC<Props> = (props): JSX.Element => {
         network={network}
       />
       <BaseButton
-        className={`group px-10px py-[2px] ${!disableButton ? 'hover:shadow-full hover:dark:shadow-fulld' : ''}
+        className={`group px-10px py-[2px] ${
+          !disableButton && !shadowless ? 'hover:shadow-full hover:dark:shadow-fulld' : ''
+        }
         focus:outline-none ${className}`}
         disabled={disableButton}
         onClick={buttonClickHandler}>
