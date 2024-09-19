@@ -10,7 +10,9 @@ jestConfig = {
   ...jestConfig,
   globals: { ...jestConfig.globals, crypto: require('crypto') },
   extensionsToTreatAsEsm: ['.ts'],
-  transformIgnorePatterns: ['node_modules/(?!(axios|@xchainjs/.*|@ledgerhq/domain-service|@ledgerhq/hw-app-eth)/)'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(axios|@xchainjs/.*|@ledgerhq/domain-service|@ledgerhq/hw-app-eth|@cosmjs/tendermint-rpc)/)'
+  ],
   moduleNameMapper: {
     '\\.(css|less)$': '<rootDir>/__mocks__/styleMock.js',
     '@ledgerhq/evm-tools/': '<rootDir>/node_modules/@ledgerhq/evm-tools/lib/selectors',
