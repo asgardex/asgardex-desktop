@@ -99,6 +99,7 @@ const common: CommonMessages = {
   'common.fees.estimated': 'Frais estimés',
   'common.max': 'Maximum',
   'common.min': 'Minimum',
+  'common.half': 'Moitié',
   'common.search': 'Rechercher',
   'common.searchAsset': 'Rechercher un actif',
   'common.addAsset': `Le jeton ne s'affiche pas ? Ajouter manuellement`,

@@ -100,6 +100,7 @@ const common: CommonMessages = {
   'common.fees.estimated': 'Ориентировочные комиссии',
   'common.max': 'Макс.',
   'common.min': 'Мин.',
+  'common.half': 'половина',
   'common.search': 'Поиск',
   'common.searchAsset': 'Поиск актива',
   'common.addAsset': 'Токен не отображается? Добавить вручную',

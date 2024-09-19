@@ -100,6 +100,7 @@ const common: CommonMessages = {
   'common.fee.affiliate': 'Affiliate',
   'common.max': 'Max',
   'common.min': 'Min',
+  'common.half': 'Half',
   'common.search': 'Search',
   'common.searchAsset': 'Search Asset',
   'common.addAsset': 'Token not showing? add manually',

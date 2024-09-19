@@ -100,6 +100,7 @@ const common: CommonMessages = {
   'common.fees.estimated': 'अनुमानित शुल्क',
   'common.max': 'अधिकतम',
   'common.min': 'न्यूनतम',
+  'common.half': 'आधा',
   'common.search': 'खोज',
   'common.searchAsset': 'एसेट खोजें',
   'common.addAsset': 'टोकन नहीं दिख रहा? मैन्युअल रूप से जोड़ें',
