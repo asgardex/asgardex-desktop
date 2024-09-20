@@ -87,7 +87,7 @@ export const InputSearch = forwardRef<HTMLInputElement, Props>((props, ref): JSX
   }
 
   return (
-    <div className={`relative  ${className}`}>
+    <div className={`relative ${className}`}>
       <MagnifyingGlassIcon
         className={`absolute top-[50%] ${iconOffsetL[size]} ${
           iconSize[size]
