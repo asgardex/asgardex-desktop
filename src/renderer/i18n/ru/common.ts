@@ -146,6 +146,7 @@ const common: CommonMessages = {
   'common.asset.base': 'Базовый',
   'common.asset.change': 'Сменить актив',
   'common.asset.quickSelect': 'Быстрый выбор L1',
+  'common.asset.chooseAsset': 'Выберите актив',
   'common.noResult': 'Нет результата',
   'common.rate': 'Курс',
   'common.tx.type.swap': 'Обмен',

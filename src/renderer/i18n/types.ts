@@ -148,6 +148,7 @@ export type CommonMessageKey =
   | 'common.asset.base'
   | 'common.asset.change'
   | 'common.asset.quickSelect'
+  | 'common.asset.chooseAsset'
   | 'common.noResult'
   | 'common.rate'
   | 'common.tx.type.swap'

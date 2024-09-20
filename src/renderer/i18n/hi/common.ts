@@ -145,6 +145,7 @@ const common: CommonMessages = {
   'common.asset.base': 'आधार',
   'common.asset.change': 'संपत्ति बदलें',
   'common.asset.quickSelect': 'त्वरित चयन L1',
+  'common.asset.chooseAsset': 'एक संपत्ति चुनें',
   'common.noResult': 'कोई परिणाम नहीं',
   'common.rate': 'दर',
   'common.tx.type.swap': 'अदला-बदली',
