@@ -10028,6 +10028,7 @@ __metadata:
     browserify-fs: "npm:^1.0.0"
     caniuse-lite: "npm:^1.0.30001346"
     chart.js: "npm:^3.8.0"
+    clsx: "npm:^2.1.1"
     concurrently: "npm:^7.2.1"
     cosmos-client: "npm:0.39.2"
     cross-env: "npm:^7.0.3"
@@ -11920,6 +11921,13 @@ __metadata:
   version: 2.1.0
   resolution: "clsx@npm:2.1.0"
   checksum: 10/2e0ce7c3b6803d74fc8147c408f88e79245583202ac14abd9691e2aebb9f312de44270b79154320d10bb7804a9197869635d1291741084826cff20820f31542b
+  languageName: node
+  linkType: hard
+
+"clsx@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "clsx@npm:2.1.1"
+  checksum: 10/cdfb57fa6c7649bbff98d9028c2f0de2f91c86f551179541cf784b1cfdc1562dcb951955f46d54d930a3879931a980e32a46b598acaea274728dbe068deca919
   languageName: node
   linkType: hard
 
