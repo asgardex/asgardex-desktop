@@ -34,8 +34,7 @@ module.exports = {
         path: require.resolve('path-browserify'),
         fs: require.resolve('browserify-fs'),
         assert: require.resolve('assert'),
-        process: require.resolve('process/browser'),
-        'text-encoding': require.resolve('text-encoding')
+        process: require.resolve('process/browser')
       }
 
       webpackConfig.ignoreWarnings = [/Failed to parse source map/]
