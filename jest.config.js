@@ -8,6 +8,7 @@ let jestConfig = createJestConfig(cracoConfig)
 
 jestConfig = {
   ...jestConfig,
+  setupFiles: ['<rootDir>/setup.jest.js'],
   globals: { ...jestConfig.globals, crypto: require('crypto') },
   testEnvironment: 'jsdom',
   extensionsToTreatAsEsm: ['.ts'],
