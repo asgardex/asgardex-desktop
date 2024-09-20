@@ -47,7 +47,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
               Rx.of(
                 RD.failure({
                   errorId: ErrorId.SEND_LEDGER_TX,
-                  msg: `Sending Ledger Kuji tx failed. (${msg})`
+                  msg: `Sending Ledger Xrd tx failed. (${msg})`
                 })
               ),
             (txHash) => Rx.of(RD.success(txHash))

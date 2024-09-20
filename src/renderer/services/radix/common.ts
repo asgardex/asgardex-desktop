@@ -13,11 +13,11 @@ import { getPhrase } from '../wallet/util'
 import { Client$, ClientState, ClientState$ } from './types'
 
 /**
- * Stream to create an observable `KujichainClient` depending on existing phrase in keystore
+ * Stream to create an observable `XrdchainClient` depending on existing phrase in keystore
  *
- * Whenever a phrase has been added to keystore, a new `KujichainClient` will be created.
+ * Whenever a phrase has been added to keystore, a new `XrdchainClient` will be created.
  * By the other hand: Whenever a phrase has been removed, `ClientState` is set to `initial`
- * A `KujichainClient` will never be created as long as no phrase is available
+ * A `XrdchainClient` will never be created as long as no phrase is available
  */
 const clientState$: ClientState$ = FP.pipe(
   Rx.combineLatest([keystoreService.keystoreState$, clientNetwork$]),
