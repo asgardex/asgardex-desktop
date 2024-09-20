@@ -117,6 +117,7 @@
     "bignumber.js": "9.0.0",
     "caniuse-lite": "^1.0.30001346",
     "chart.js": "^3.8.0",
+    "clsx": "^2.1.1",
     "cosmos-client": "0.39.2",
     "dayjs": "^1.11.10",
     "dotenv": "^16.4.5",
