@@ -6,6 +6,7 @@ import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { DASH_DECIMAL } from '@xchainjs/xchain-dash'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { MidgardQuery } from '@xchainjs/xchain-midgard-query'
+import { XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, AssetType } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
@@ -20,7 +21,8 @@ import {
   isDashChain,
   isKujiChain,
   isMayaChain,
-  isThorChain
+  isThorChain,
+  isXrdChain
 } from '../../helpers/chainHelper'
 import { KUJI_DECIMAL } from '../kuji/const'
 import { AssetWithDecimalLD } from './types'
@@ -48,6 +50,9 @@ const getDecimal = (asset: AnyAsset): Promise<number> => {
   }
   if (isKujiChain(chain)) {
     return Promise.resolve(KUJI_DECIMAL)
+  }
+  if (isXrdChain(chain)) {
+    return Promise.resolve(XRD_DECIMAL)
   }
   if (isBtcChain(chain)) {
     return Promise.resolve(BTC_DECIMAL)

@@ -11,6 +11,7 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { RadixChain } from '@xchainjs/xchain-radix'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, bn, assetToString, baseAmount, Chain, AssetType, TokenAsset } from '@xchainjs/xchain-util'
 
@@ -175,7 +176,8 @@ export const CHAIN_WEIGHTS_THOR: Record<EnabledChain, number> = {
   [GAIAChain]: 9,
   [ARBChain]: 10,
   [DASHChain]: 11,
-  [KUJIChain]: 12
+  [KUJIChain]: 12,
+  [RadixChain]: 13
 }
 
 // Weight of chains
@@ -194,7 +196,8 @@ export const CHAIN_WEIGHTS_MAYA: Record<EnabledChain, number> = {
   [LTCChain]: 9,
   [AVAXChain]: 10,
   [DOGEChain]: 11,
-  [GAIAChain]: 12
+  [GAIAChain]: 12,
+  [RadixChain]: 13
 }
 
 // Weight of currencies needed for pricing

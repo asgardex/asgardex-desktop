@@ -5,6 +5,7 @@ import { getTokenAddress } from '@xchainjs/xchain-evm'
 import { AssetUSK } from '@xchainjs/xchain-kujira'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { CompatibleAsset } from '@xchainjs/xchain-mayachain-query'
+import { AssetXRD } from '@xchainjs/xchain-radix'
 import {
   Address,
   AnyAsset,
@@ -70,7 +71,7 @@ import { sequenceTOption } from './fpHelpers'
 export const THORCHAIN_DECIMAL = 8
 
 export const isAssetInMayachainPools = (asset: AnyAsset): boolean =>
-  eqAsset.equals(asset, AssetCacao || AssetDASH || AssetKUJI)
+  eqAsset.equals(asset, AssetCacao || AssetDASH || AssetKUJI || AssetXRD)
 
 export const isCompatibleAsset = (asset: AnyAsset): asset is CompatibleAsset => {
   return asset.type === AssetType.NATIVE || asset.type === AssetType.TOKEN || asset.type === AssetType.SYNTH
@@ -162,6 +163,11 @@ export const isDogeAsset = (asset: AnyAsset): boolean =>
  */
 export const isKujiAsset = (asset: AnyAsset): boolean =>
   asset.chain === AssetKUJI.chain && asset.symbol.toUpperCase() === AssetKUJI.symbol.toUpperCase()
+/**
+ * Checks whether an asset is a Radix asset
+ */
+export const isXrdAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetXRD.chain && asset.symbol.toUpperCase() === AssetXRD.symbol.toUpperCase()
 
 export const isUskAsset = (asset: AnyAsset): boolean =>
   asset.chain === AssetUSK.chain && asset.symbol.toUpperCase() === AssetUSK.symbol.toUpperCase()
