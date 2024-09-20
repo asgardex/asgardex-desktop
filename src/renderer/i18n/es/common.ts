@@ -193,7 +193,8 @@ const common: CommonMessages = {
   'common.expandAll': 'Expandir todo',
   'common.excludeSynth': 'Excluir Sintéticos',
   'common.completeLp': 'Completar Lp',
-  'common.asset.quickSelect': 'Selección Rápida L1'
+  'common.asset.quickSelect': 'Selección Rápida L1',
+  'common.asset.chooseAsset': 'Elige un activo'
 }
 
 export default common

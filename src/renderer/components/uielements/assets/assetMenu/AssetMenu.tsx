@@ -4,6 +4,7 @@ import { Dialog, Transition } from '@headlessui/react'
 import { ArchiveBoxXMarkIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { AnyAsset, assetToString, AssetType, Chain } from '@xchainjs/xchain-util'
+import clsx from 'clsx'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
@@ -15,7 +16,6 @@ import { eqAsset } from '../../../../helpers/fp/eq'
 import { emptyString } from '../../../../helpers/stringHelper'
 import { FilterCheckbox } from '../../../wallet/assets/AssetsTableCollapsable.styles'
 import { BaseButton } from '../../button'
-import { Tooltip } from '../../common/Common.styles'
 import { InputSearch } from '../../input'
 import { Label } from '../../label'
 import { AssetData } from '../assetData'
@@ -107,20 +107,19 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
             </div>
           ),
           (assets) => (
-            <div className="w-full overflow-y-auto">
+            <div className="w-[calc(100%-32px)] overflow-y-auto">
               {FP.pipe(
                 assets,
                 NEA.map((assetInList) => {
                   const selected = eqAsset.equals(asset, assetInList)
                   return (
                     <BaseButton
-                      className={`w-full !justify-between !pr-20px
-                        hover:bg-gray0 hover:dark:bg-gray0d`}
+                      className="w-full !justify-between !pr-20px hover:bg-gray0 hover:dark:bg-gray0d"
                       key={assetToString(assetInList)}
                       onClick={() => handleChangeAsset(assetInList)}
                       disabled={selected}>
                       <AssetData asset={assetInList} network={network} className="" />
-                      {selected && <CheckIcon className="h-20px w-20px  text-turquoise" />}
+                      {selected && <CheckIcon className="h-20px w-20px text-turquoise" />}
                     </BaseButton>
                   )
                 })
@@ -168,18 +167,29 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
 
     // Render unique chains as clickable icons in a horizontal row
     return (
-      <div className="my-4 flex flex-row flex-wrap justify-center gap-4 ">
-        {/* Adjust Tailwind classes as needed */}
-        {Array.from(uniqueChains).map((chain) => (
-          <div key={chain} onClick={() => handleChainSelect(chain)} className="cursor-pointer">
-            <div className="rounded-full hover:shadow-lg dark:hover:shadow-turquoise">
-              <AssetIcon asset={getChainAsset(chain)} network={network} />
+      <div className="flex w-full flex-col px-4 pb-4">
+        <h6 className="text-base font-normal text-text2 dark:text-text2d">
+          {intl.formatMessage({ id: 'common.asset.quickSelect' })}
+        </h6>
+        <div className="flex flex-row space-x-2 overflow-x-scroll pb-2">
+          {Array.from(uniqueChains).map((chain) => (
+            <div key={chain} onClick={() => handleChainSelect(chain)} className="cursor-pointer">
+              <div
+                className={clsx(
+                  'flex flex-col items-center',
+                  'space-y-2 px-4 py-2',
+                  'rounded-lg border border-solid border-bg2 dark:border-bg2d',
+                  'hover:bg-bg2 dark:hover:bg-bg2d'
+                )}>
+                <AssetIcon asset={getChainAsset(chain)} network={network} />
+                <span className="text-text2 dark:text-text2d">{chain}</span>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     )
-  }, [assets, handleChainSelect, network])
+  }, [assets, handleChainSelect, network, intl])
 
   // Ref to `InputSearch` - needed for intial focus in dialog
   // @see https://headlessui.com/react/dialog#managing-initial-focus
@@ -216,44 +226,47 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95">
             <Dialog.Panel
-              className="relative mx-auto flex h-[75%] max-h-[500px] min-h-[350px] max-w-[250px] flex-col
-        items-center bg-bg0
-         p-20px shadow-full dark:bg-bg0d dark:shadow-fulld md:max-w-[350px] md:p-40px
-          ">
-              <BaseButton
-                className="absolute right-20px top-20px !p-0 text-gray1 hover:text-gray2 dark:text-gray1d hover:dark:text-gray2d"
-                onClick={() => onClose()}>
-                <XMarkIcon className="h-20px w-20px text-inherit" />
-              </BaseButton>
-              {headline && (
-                <h1 className="my-0 px-5px text-center text-[16px] uppercase text-text2 dark:text-text2d">
-                  {headline}
-                </h1>
-              )}
+              className={clsx(
+                'mx-auto flex flex-col items-center py-5',
+                'h-3/4 max-h-[600px] min-h-[350px] w-full max-w-[360px] md:max-w-[480px]',
+                'bg-bg0 dark:bg-bg0d',
+                'rounded-lg border border-solid border-gray1 dark:border-gray0d'
+              )}>
+              <div className="flex w-full items-center justify-between px-5">
+                {headline && (
+                  <h1 className="my-0 text-center text-xl uppercase text-text2 dark:text-text2d">{headline}</h1>
+                )}
+                <BaseButton
+                  className="!p-0 text-gray1 hover:text-gray2 dark:text-gray1d hover:dark:text-gray2d"
+                  onClick={() => onClose()}>
+                  <XMarkIcon className="h-20px w-20px text-inherit" />
+                </BaseButton>
+              </div>
+              <div className="my-4 h-[1px] w-full bg-gray1 dark:bg-gray0d" />
               {chainFilter}
-              <Tooltip title={intl.formatMessage({ id: 'common.searchExample' })}>
+              <div className="w-full px-4">
                 <InputSearch
                   ref={inputSearchRef}
-                  className="my-10px"
+                  className="w-full"
+                  classNameInput="rounded-lg py-2"
                   size="normal"
                   onChange={searchHandler}
                   onCancel={clearSearchValue}
                   onEnter={onEnterHandler}
                   placeholder={intl.formatMessage({ id: 'common.searchAsset' })}
                 />
-              </Tooltip>
-
-              <div className="flex items-center justify-start">
-                <Label className="mr-2 cursor-pointer text-sm font-medium text-text2 dark:text-text2d">
-                  {intl.formatMessage({ id: 'common.excludeSynth' })}
-                </Label>
-                <FilterCheckbox
-                  id="synth-toggle"
-                  type="checkbox"
-                  className="cursor-pointer rounded border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                  checked={excludeSynth}
-                  onChange={(e) => setExcludeSynth(e.target.checked)}
-                />
+                <div className="flex items-center justify-start">
+                  <Label className="mr-2 cursor-pointer text-sm font-medium text-text2 dark:text-text2d">
+                    {intl.formatMessage({ id: 'common.excludeSynth' })}
+                  </Label>
+                  <FilterCheckbox
+                    id="synth-toggle"
+                    type="checkbox"
+                    className="cursor-pointer rounded border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                    checked={excludeSynth}
+                    onChange={(e) => setExcludeSynth(e.target.checked)}
+                  />
+                </div>
               </div>
               {renderAssets}
             </Dialog.Panel>

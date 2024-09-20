@@ -179,7 +179,7 @@ export const AssetInput: React.FC<Props> = (props): JSX.Element => {
           asset={asset}
           assets={assets}
           network={network}
-          dialogHeadline={intl.formatMessage({ id: 'common.asset.quickSelect' })}
+          dialogHeadline={intl.formatMessage({ id: 'common.asset.chooseAsset' })}
           shadowless
           disabled={disabled}
         />
