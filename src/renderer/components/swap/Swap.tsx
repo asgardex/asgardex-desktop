@@ -35,7 +35,8 @@ import {
   CryptoAmount,
   AssetType,
   AnyAsset,
-  TokenAsset
+  TokenAsset,
+  SynthAsset
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import * as A from 'fp-ts/Array'
@@ -1673,8 +1674,9 @@ export const Swap = ({
                 asset,
                 {
                   ...asset,
+                  type: AssetType.SYNTH, // Ensure the type is correctly set for SynthAsset
                   synth: true
-                }
+                } as SynthAsset // Cast to SynthAsset
               ]
         ),
         // Remove source assets from List
