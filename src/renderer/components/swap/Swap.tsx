@@ -1666,7 +1666,6 @@ export const Swap = ({
     (): AnyAsset[] =>
       FP.pipe(
         poolAssets,
-        // Create synth version of assets (excluding assetRuneNative)
         A.chain((asset) =>
           isRuneNativeAsset(asset) || isCacaoAsset(asset)
             ? [asset]
@@ -1674,15 +1673,12 @@ export const Swap = ({
                 asset,
                 {
                   ...asset,
-                  type: AssetType.SYNTH, // Ensure the type is correctly set for SynthAsset
+                  type: AssetType.SYNTH,
                   synth: true
-                } as SynthAsset // Cast to SynthAsset
+                } as SynthAsset
               ]
         ),
-        // Remove source assets from List
         A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
-
-        // Merge duplications
         (assets) => unionAssets(assets)(assets)
       ),
     [poolAssets, sourceAsset]
