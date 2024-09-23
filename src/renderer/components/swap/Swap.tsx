@@ -35,7 +35,8 @@ import {
   CryptoAmount,
   AssetType,
   AnyAsset,
-  TokenAsset
+  TokenAsset,
+  SynthAsset
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import * as A from 'fp-ts/Array'
@@ -1666,7 +1667,6 @@ export const Swap = ({
     (): AnyAsset[] =>
       FP.pipe(
         poolAssets,
-        // Create synth version of assets (excluding assetRuneNative)
         A.chain((asset) =>
           isRuneNativeAsset(asset) || isCacaoAsset(asset)
             ? [asset]
@@ -1674,14 +1674,12 @@ export const Swap = ({
                 asset,
                 {
                   ...asset,
+                  type: AssetType.SYNTH,
                   synth: true
-                }
+                } as SynthAsset
               ]
         ),
-        // Remove source assets from List
         A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
-
-        // Merge duplications
         (assets) => unionAssets(assets)(assets)
       ),
     [poolAssets, sourceAsset]
