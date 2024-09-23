@@ -10637,6 +10637,7 @@ __metadata:
     os-browserify: "npm:^0.3.0"
     path-browserify: "npm:^1.0.1"
     postcss: "npm:8.4.47"
+    prebuild-install: "npm:^7.1.2"
     prettier: "npm:^2.6.2"
     prettier-plugin-tailwindcss: "npm:^0.1.13"
     process: "npm:^0.11.10"
@@ -23377,6 +23378,28 @@ __metadata:
   bin:
     prebuild-install: bin.js
   checksum: 10/6c70a2f82fbda8903497c560a761b000d861a3e772322c8bed012be0f0a084b5aaca4438a3fad1bd3a24210765f4fae06ddd89ea04dc4c034dde693cc0d9d5f4
+  languageName: node
+  linkType: hard
+
+"prebuild-install@npm:^7.1.2":
+  version: 7.1.2
+  resolution: "prebuild-install@npm:7.1.2"
+  dependencies:
+    detect-libc: "npm:^2.0.0"
+    expand-template: "npm:^2.0.3"
+    github-from-package: "npm:0.0.0"
+    minimist: "npm:^1.2.3"
+    mkdirp-classic: "npm:^0.5.3"
+    napi-build-utils: "npm:^1.0.1"
+    node-abi: "npm:^3.3.0"
+    pump: "npm:^3.0.0"
+    rc: "npm:^1.2.7"
+    simple-get: "npm:^4.0.0"
+    tar-fs: "npm:^2.0.0"
+    tunnel-agent: "npm:^0.6.0"
+  bin:
+    prebuild-install: bin.js
+  checksum: 10/32d5c026cc978dd02762b9ad3c765178aee8383aeac4303fed3cd226eff53100db038d4791b03ae1ebc7d213a7af392d26e32095579cedb8dba1d00ad08ecd46
   languageName: node
   linkType: hard
 

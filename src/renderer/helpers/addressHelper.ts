@@ -52,7 +52,7 @@ const chainPrefixLengthFunctions: Record<Chain, (network: Network) => number> = 
   [DASHChain]: (network: Network) => getDashPrefix(network).length,
   [BCHChain]: () => getBCHPrefix().length,
   [KUJIChain]: () => 'kujira'.length, // tobefixed
-  [RadixChain]: () => 'xrd'.length // tobefixed
+  [RadixChain]: () => 'account_'.length // tobefixed
 }
 
 export const getAddressPrefixLength = (chain: Chain, network: Network): number => {

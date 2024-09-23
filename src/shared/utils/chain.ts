@@ -154,5 +154,9 @@ export const DefaultChainAttributes: Record<Chain, ChainAttributes> = {
   ARB: {
     blockReward: 0,
     avgBlockTimeInSecs: 3
+  },
+  XRD: {
+    blockReward: 0,
+    avgBlockTimeInSecs: 10
   }
 }
