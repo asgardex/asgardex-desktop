@@ -1,9 +1,13 @@
 # 1.22.5 (2024-09-6)
 
+## Add
+- re-design application layout[#357](https://github.com/asgardex/asgardex-desktop/pull/357)
+
 ## Updates/Fixes
 
 - Add trade asset table [#321](https://github.com/asgardex/asgardex-desktop/pull/322)
 - add saved address to send screen [#343](https://github.com/asgardex/asgardex-desktop/pull/349)
+- Update cosmos to fix client [#55] (https://github.com/asgardex/asgardex-desktop/pull/358)
 - fix asset mismatch and lp retrieval tool [350](https://github.com/asgardex/asgardex-desktop/pull/351)
 - redesign swap screen [#359](https://github.com/asgardex/asgardex-desktop/pull/359)
 - redesign asset select modal [#362](https://github.com/asgardex/asgardex-desktop/pull/362)
