@@ -12,6 +12,7 @@
 - redesign swap screen [#359](https://github.com/asgardex/asgardex-desktop/pull/359)
 - redesign asset select modal [#362](https://github.com/asgardex/asgardex-desktop/pull/362)
 - Updated electron package [electron](https://github.com/asgardex/asgardex-desktop/pull/360)
+- Added chain Radix [#294](https://github.com/asgardex/asgardex-desktop/pull/363)
 
 # 1.22.4 (2024-09-6)
 

@@ -9,7 +9,7 @@ let jestConfig = createJestConfig(cracoConfig)
 jestConfig = {
   ...jestConfig,
   setupFiles: ['<rootDir>/setup.jest.js'],
-  globals: { ...jestConfig.globals, crypto: require('crypto') },
+  globals: { ...jestConfig.globals },
   testEnvironment: 'jsdom',
   extensionsToTreatAsEsm: ['.ts'],
   transformIgnorePatterns: [
@@ -21,11 +21,7 @@ jestConfig = {
     '@ledgerhq/domain-service/': '<rootDir>/node_modules/@ledgerhq/domain-service/lib/signers',
     '@ledgerhq/cryptoassets/': '<rootDir>/node_modules/@ledgerhq/cryptoassets/lib/data/evm'
   },
-  watchPlugins: [
-    // Remove or comment out the following line if you don't want to use it
-    'jest-watch-typeahead/filename'
-    // 'jest-watch-typeahead/testname',
-  ]
+  watchPlugins: ['jest-watch-typeahead/filename']
 }
 
 module.exports = jestConfig
