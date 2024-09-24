@@ -101,7 +101,7 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
               case GAIAChain:
                 return COSMOS.txs$({ asset: O.none, walletAddress, walletIndex })
               case RadixChain:
-                return XRD.txs$({ asset: O.none, walletAddress, walletIndex })
+                return XRD.txs$({ asset: O.some(asset), walletAddress, walletIndex })
               default:
                 return Rx.of(
                   RD.failure<ApiError>({ errorId: ErrorId.GET_ASSET_TXS, msg: `Unsupported chain ${chain}` })

@@ -63,7 +63,7 @@ export const isSupportedChain = (u: string): u is EnabledChain =>
 export const DEX_CHAINS: { [key: string]: ReadonlyArray<Chain> } = {
   MAYA: ['DASH', 'BTC', 'ETH', 'KUJI', 'THOR', 'MAYA', 'ARB', 'XRD'],
   // For THOR, filter out chains that are maya specific
-  THOR: Object.keys(DEFAULT_ENABLED_CHAINS).filter((chain) => !['DASH', 'KUJI', 'MAYA', 'ARB'].includes(chain))
+  THOR: Object.keys(DEFAULT_ENABLED_CHAINS).filter((chain) => !['DASH', 'KUJI', 'MAYA', 'ARB', 'XRD'].includes(chain))
 }
 
 // Function to retrieve chains for a specific DEX

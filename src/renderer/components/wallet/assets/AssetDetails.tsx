@@ -63,7 +63,6 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
     haltedChains,
     changeDex
   } = props
-
   const [currentPage, setCurrentPage] = useState(1)
 
   const { chain } = asset.type === AssetType.SYNTH ? dex.asset : asset
