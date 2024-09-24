@@ -18,7 +18,7 @@ import { envOrDefault } from './utils/env'
 
 require('dotenv').config()
 
-export const ASGARDEX_THORNAME = envOrDefault(process.env.REACT_APP_ASGARDEX_THORNAME, '')
+export const ASGARDEX_THORNAME = envOrDefault(process.env.REACT_APP_ASGARDEX_THORNAME, 'dx')
 
 export const ASGARDEX_IDENTIFIER = 999
 
