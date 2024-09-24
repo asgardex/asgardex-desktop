@@ -14,6 +14,12 @@ module.exports = {
       // ^ https://gist.github.com/msafi/d1b8571aa921feaaa0f893ab24bb727b
       webpackConfig.target = 'web'
 
+      // Add wasm support in resolve
+      webpackConfig.resolve = {
+        ...webpackConfig.resolve,
+        extensions: [...webpackConfig.resolve.extensions, '.wasm'] // Add .wasm to resolve
+      }
+
       // Turn off `mangle` is needed to fix "Expected property "1" of type BigInteger, got n" issue while sending BCH txs
       // One solution is disabling `mangle` for some `reserved` identifiers
       // as described in https://github.com/bitcoinjs/bitcoinjs-lib/issues/959#issuecomment-351040758
@@ -41,6 +47,18 @@ module.exports = {
 
       webpackConfig.module.rules = [
         ...webpackConfig.module.rules,
+        {
+          test: /\.wasm$/, // Rule for WASM files
+          type: 'javascript/auto', // Set type for WebAssembly
+          use: {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]', // Keep original name and extension
+              outputPath: 'wasm', // Output to wasm folder
+              publicPath: '/wasm/' // Serve from /wasm path
+            }
+          }
+        },
         {
           test: /\.svg$/,
           use: ['@svgr/webpack'],

@@ -9,7 +9,7 @@ const common = (_ /* env */, argv) => ({
   },
   devtool: argv.mode === 'production' ? false : 'source-map',
   resolve: {
-    extensions: ['.ts', '.js']
+    extensions: ['.ts', '.js', '.wasm'] // Add `.wasm` here to resolve WASM files
   },
   module: {
     rules: [
