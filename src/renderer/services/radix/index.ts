@@ -6,7 +6,10 @@ import { client$, clientState$, address$, addressUI$, explorerUrl$ } from './com
 import { createFeesService } from './fees'
 import { createTransactionService } from './transaction'
 
-const { subscribeTx, txRD$, resetTx, sendTx, txs$, tx$, txStatus$ } = createTransactionService(client$, network$)
+const { subscribeTx, txRD$, resetTx, sendTx, sendPoolTx$, txs$, tx$, txStatus$ } = createTransactionService(
+  client$,
+  network$
+)
 const { reloadFees, fees$ } = createFeesService({ client$, chain: RadixChain })
 
 export {
@@ -24,6 +27,7 @@ export {
   txRD$,
   resetTx,
   sendTx,
+  sendPoolTx$,
   txs$,
   tx$,
   txStatus$,

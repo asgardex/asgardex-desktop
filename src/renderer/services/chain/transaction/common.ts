@@ -295,6 +295,18 @@ export const sendPoolTx$ = ({
         hdMode,
         feeOption
       })
+    case RadixChain:
+      return XRD.sendPoolTx$({
+        walletType,
+        router,
+        recipient,
+        asset,
+        amount,
+        memo,
+        walletAccount,
+        walletIndex,
+        hdMode
+      })
 
     case THORChain:
       return dex.chain === THORChain
@@ -311,7 +323,6 @@ export const sendPoolTx$ = ({
     case DASHChain:
     case GAIAChain:
     case KUJIChain:
-    case RadixChain:
       return sendTx$({
         sender,
         walletType,
