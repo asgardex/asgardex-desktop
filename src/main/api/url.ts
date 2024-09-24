@@ -50,7 +50,8 @@ const EXTERNALS_WHITELIST = [
   'midgard.ninerealms.com',
   'asgardex.com',
   'arbiscan.io',
-  'mainnet.radixdlt.com'
+  'mainnet.radixdlt.com',
+  'dashboard.radixdlt.com'
 ]
 
 export const openExternal = (target: string) => {

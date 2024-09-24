@@ -70,7 +70,7 @@ export const ADDRESS_STORAGE_DEFAULT: UserTrustedAddressStorage = {
   addresses: []
 }
 /// increase it by `1` if you want to ignore previous version of `common` storage
-const ASSETS_STORAGE_VERSION = '2'
+const ASSETS_STORAGE_VERSION = '3'
 
 export const ASSETS_STORAGE_DEFAULT: UserAssetStorage = {
   version: ASSETS_STORAGE_VERSION,

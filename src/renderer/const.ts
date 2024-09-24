@@ -1,4 +1,4 @@
-import { ARBChain, AssetAETH, AssetARB } from '@xchainjs/xchain-arbitrum'
+import { ARBChain, AssetARB } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -139,24 +139,13 @@ export const AssetUSDCBSC: TokenAsset = {
   type: AssetType.TOKEN
 }
 
-export const ETHAssetsFallBack = [AssetETH, AssetUSDTDAC, AssetUSDC]
-export const BSCAssetsFallBack = [AssetBSC, AssetUSDCBSC, AssetUSDTBSC]
-export const AVAXAssetsFallback = [AssetAVAX, AssetUSDTAVAX, AssetUSDCAVAX]
+export const ETHAssetsFallBack = [AssetUSDTDAC, AssetUSDC]
+export const BSCAssetsFallBack = [AssetUSDCBSC, AssetUSDTBSC]
+export const AVAXAssetsFallback = [AssetUSDTAVAX, AssetUSDCAVAX]
+export const ARBAssetsFallback = [AssetARB]
 
 // for evm only
-export const DEFAULT_USER_ASSETS = [
-  AssetETH,
-  AssetUSDTDAC,
-  AssetUSDC,
-  AssetBSC,
-  AssetUSDCBSC,
-  AssetUSDTBSC,
-  AssetAVAX,
-  AssetUSDTAVAX,
-  AssetUSDCAVAX,
-  AssetARB,
-  AssetAETH
-]
+export const DEFAULT_USER_ASSETS = [AssetUSDTDAC, AssetUSDC, AssetUSDCBSC, AssetUSDTBSC, AssetUSDTAVAX, AssetUSDCAVAX]
 
 export const DEFAULT_PRICE_ASSETS: PricePoolAssets = [AssetRuneNative, AssetETH, AssetBTC, AssetCacao]
 
