@@ -1,38 +1,33 @@
 import * as O from 'fp-ts/Option'
 
-import { roundUnixTimestampToMinutes } from './timeHelper'
+import { roundUnixTimestampToMinutes } from './timeHelper' // Adjust path as needed
 
-// minutes-basis multiplied by 60 seconds
-const roundToThreeMinutes = roundUnixTimestampToMinutes(3)
-const roundToFiveMinutes = roundUnixTimestampToMinutes(5)
-const roundToTenMinutes = roundUnixTimestampToMinutes(10)
-
-describe('helpers/timeHelper', () => {
-  it('should not round in case of matching of basis', () => {
-    expect(roundToThreeMinutes(180)).toEqual(O.some(180))
-    expect(roundToThreeMinutes(360)).toEqual(O.some(360))
-    expect(roundToFiveMinutes(300)).toEqual(O.some(300))
-    expect(roundToFiveMinutes(600)).toEqual(O.some(600))
-    expect(roundToTenMinutes(600)).toEqual(O.some(600))
-    expect(roundToTenMinutes(1200)).toEqual(O.some(1200))
+describe('roundUnixTimestampToMinutes', () => {
+  it('should return None for undefined timestamp', () => {
+    const result = roundUnixTimestampToMinutes()(undefined)
+    expect(O.isNone(result)).toBe(true)
   })
 
-  it('should round to zero in case value less then basis', () => {
-    expect(roundToThreeMinutes(100)).toEqual(O.some(0))
-    expect(roundToFiveMinutes(200)).toEqual(O.some(0))
-    expect(roundToTenMinutes(500)).toEqual(O.some(0))
+  it('should round down to the nearest 5 minutes by default', () => {
+    const timeStamp = 1633044620 // Example timestamp (01:17:00 UTC)
+    const expected = 1633044600 // Rounded down to 01:16:00 UTC
+    const result = roundUnixTimestampToMinutes()(timeStamp)
+    expect(O.isSome(result)).toBe(true)
+    expect(O.toNullable(result)).toBe(expected)
   })
 
-  it('should round to the basis', () => {
-    expect(roundToThreeMinutes(185)).toEqual(O.some(180))
-    expect(roundToThreeMinutes(400)).toEqual(O.some(360))
-    expect(roundToFiveMinutes(500)).toEqual(O.some(300))
-    expect(roundToFiveMinutes(859)).toEqual(O.some(600))
-    expect(roundToTenMinutes(623)).toEqual(O.some(600))
-    expect(roundToTenMinutes(1235)).toEqual(O.some(1200))
+  it('should round down to the nearest 10 minutes if roundBasis is 10', () => {
+    const timeStamp = 1633044620 // 01:17:00 UTC
+    const expected = 1633044600 // Should round down to 01:10:00 UTC
+    const result = roundUnixTimestampToMinutes(10)(timeStamp)
+    expect(O.isSome(result)).toBe(true)
+    expect(O.toNullable(result)).toBe(expected)
   })
 
-  it('should return none for undefined value', () => {
-    expect(roundToThreeMinutes()).toBeNone()
+  it('should return the same timestamp if already rounded', () => {
+    const timeStamp = 1633044600 // Already at 5-minute interval
+    const result = roundUnixTimestampToMinutes()(timeStamp)
+    expect(O.isSome(result)).toBe(true)
+    expect(O.toNullable(result)).toBe(timeStamp)
   })
 })

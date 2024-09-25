@@ -6,9 +6,13 @@ import { eqBaseAmount } from './fp/eq'
 import { getAssetShare, getPoolShare, getRuneShare } from './poolShareHelper'
 
 describe('poolShareHelpers', () => {
-  it('getRuneShare', () => {
-    const result = getRuneShare(bn('300000000'), { runeDepth: '12', units: '2' }, thorDetails)
-    const expected = assetToBase(assetAmount(18))
+  it('calculates the correct rune share', () => {
+    const liquidityUnits = bn('300000000')
+    const pool = { runeDepth: '12', units: '2' }
+
+    const result = getRuneShare(liquidityUnits, pool, thorDetails)
+    const expected = assetToBase(assetAmount(18, 8))
+
     expect(eqBaseAmount.equals(result, expected)).toBeTruthy()
   })
 

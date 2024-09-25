@@ -10,6 +10,7 @@ import bscIcon from '!file-loader!../../assets/svg/asset-bsc.svg'
 import btcIcon from '!file-loader!../../assets/svg/asset-btc.svg'
 import dashIcon from '!file-loader!../../assets/svg/asset-dash.svg'
 import ethIcon from '!file-loader!../../assets/svg/asset-eth.svg'
+import xrdIcon from '!file-loader!../../assets/svg/asset-radix.svg'
 import runeIcon from '!file-loader!../../assets/svg/asset-rune.svg'
 import xRuneIcon from '!file-loader!../../assets/svg/asset-xrune.svg'
 import cacaoIcon from '../../assets/png/asset-cacao.png'
@@ -56,5 +57,6 @@ export {
   dashIcon,
   kujiIcon,
   uskIcon,
-  mayaIconT
+  mayaIconT,
+  xrdIcon
 }

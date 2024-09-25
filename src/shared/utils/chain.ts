@@ -10,6 +10,7 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { RadixChain as RADIXChain } from '@xchainjs/xchain-radix'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 
@@ -26,7 +27,8 @@ export const CHAIN_STRINGS: Record<Chain, string> = {
   [BSCChain]: 'BNB Chain (BSC)',
   [MAYAChain]: 'MAYAChain',
   [DASHChain]: 'DASH',
-  [KUJIChain]: 'KUJI'
+  [KUJIChain]: 'KUJI',
+  [RADIXChain]: 'RADIX'
 }
 
 export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
@@ -42,7 +44,8 @@ export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
   [BSCChain]: CHAIN_STRINGS[BSCChain],
   [MAYAChain]: CHAIN_STRINGS[MAYAChain],
   [DASHChain]: CHAIN_STRINGS[DASHChain],
-  [KUJIChain]: CHAIN_STRINGS[KUJIChain]
+  [KUJIChain]: CHAIN_STRINGS[KUJIChain],
+  [RADIXChain]: CHAIN_STRINGS[RADIXChain]
 }
 
 export type EnabledChain = keyof typeof DEFAULT_ENABLED_CHAINS
@@ -58,9 +61,9 @@ export const isSupportedChain = (u: string): u is EnabledChain =>
 
 // Mapping of DEXs to their supported chains, Update this when new chains are added
 export const DEX_CHAINS: { [key: string]: ReadonlyArray<Chain> } = {
-  MAYA: ['DASH', 'BTC', 'ETH', 'KUJI', 'THOR', 'MAYA', 'ARB'],
+  MAYA: ['DASH', 'BTC', 'ETH', 'KUJI', 'THOR', 'MAYA', 'ARB', 'XRD'],
   // For THOR, filter out chains that are maya specific
-  THOR: Object.keys(DEFAULT_ENABLED_CHAINS).filter((chain) => !['DASH', 'KUJI', 'MAYA', 'ARB'].includes(chain))
+  THOR: Object.keys(DEFAULT_ENABLED_CHAINS).filter((chain) => !['DASH', 'KUJI', 'MAYA', 'ARB', 'XRD'].includes(chain))
 }
 
 // Function to retrieve chains for a specific DEX
@@ -151,5 +154,9 @@ export const DefaultChainAttributes: Record<Chain, ChainAttributes> = {
   ARB: {
     blockReward: 0,
     avgBlockTimeInSecs: 3
+  },
+  XRD: {
+    blockReward: 0,
+    avgBlockTimeInSecs: 10
   }
 }

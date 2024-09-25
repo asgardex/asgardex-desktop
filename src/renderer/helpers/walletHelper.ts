@@ -13,7 +13,16 @@ import { ZERO_ASSET_AMOUNT } from '../const'
 import { WalletBalances } from '../services/clients'
 import { NonEmptyWalletBalances, WalletBalance } from '../services/wallet/types'
 import { isLtcAsset, isRuneNativeAsset, isMayaAsset } from './assetHelper'
-import { isArbChain, isBchChain, isDashChain, isDogeChain, isLtcChain, isMayaChain, isThorChain } from './chainHelper'
+import {
+  isArbChain,
+  isBchChain,
+  isDashChain,
+  isDogeChain,
+  isLtcChain,
+  isMayaChain,
+  isThorChain,
+  isXrdChain
+} from './chainHelper'
 import { eqAddress, eqAsset, eqChain, eqWalletType } from './fp/eq'
 
 /**
@@ -204,6 +213,7 @@ export const isEnabledLedger = (chain: Chain, network: Network) => {
   if (isArbChain(chain)) return false
   // Disable for these chains
   if (isMayaChain(chain)) return false
+  if (isXrdChain(chain)) return false
   return true
 }
 
