@@ -7,7 +7,7 @@ const settings: SettingMessages = {
   'setting.multiwallet.management': 'Multi wallets management',
   'setting.client': 'Client',
   'setting.accounts': 'Accounts',
-  'setting.export': 'Export Keystore',
+  'setting.export': 'Export',
   'setting.lock': 'Lock',
   'setting.view.phrase': 'View Phrase',
   'setting.version': 'Version',
