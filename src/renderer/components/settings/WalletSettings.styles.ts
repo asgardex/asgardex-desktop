@@ -15,11 +15,20 @@ import {
 } from '../uielements/common/Common.styles'
 import { Label as UILabel } from '../uielements/label'
 
+export const AutoComplete = styled(A.AutoComplete)`
+  .ant-select-selector {
+    border-color: ${palette('background', 2)} !important;
+    background-color: ${palette('background', 0)} !important;
+    color: ${palette('text', 0)};
+  }
+`
+
 export const Input = styled(A.Input)`
   border-color: ${palette('gray', 1)};
   max-width: 300px;
 
   .ant-input {
+    background-color: ${palette('background', 0)} !important;
     color: ${palette('text', 0)};
   }
 
@@ -27,10 +36,6 @@ export const Input = styled(A.Input)`
   .anticon-close-circle svg {
     color: ${palette('gray', 1)};
   }
-
-  ${media.md`
-  margin: 0 10px 0 10px;
-  `}
 `
 
 export const Subtitle = styled(UILabel)`
@@ -90,13 +95,19 @@ export const AccountCard = styled(A.Card)`
   }
 `
 
+export const List = styled(A.List)`
+  li {
+    border-bottom: 1px solid ${palette('gray', 0)};
+  }
+`
+
 export const ListItem = styled(A.List.Item)`
   padding: 40px 20px;
   flex-direction: column;
   align-items: start;
 
   border-bottom: none;
-  border-bottom: 1px solid ${palette('gray', 0)};
+  border-bottom: 1px solid ${palette('gray', 0)} !important;
   .ant-list-item {
     border-bottom: 1px solid ${palette('gray', 0)};
   }
@@ -107,7 +118,7 @@ export const AccountTitle = styled(UILabel)`
   padding-left: 10px;
   text-transform: uppercase;
   font-weight: normal;
-  font-size: 27px;
+  font-size: 20px;
   line-height: 25px;
   letter-spacing: 2px;
 `
