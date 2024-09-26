@@ -2304,7 +2304,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     () => (
       <div className="flex flex-col">
         <MaxBalanceButton
-          className="ml-10px mt-5px"
+          className="mt-5px"
           classNameButton="!text-gray2 dark:!text-gray2d"
           classNameIcon={
             // show warn icon if maxAmountToSwapMax <= 0
@@ -2353,7 +2353,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     () => (
       <div className="flex flex-col">
         <MaxBalanceButton
-          className="ml-10px mt-5px"
+          className="mt-5px"
           classNameButton="!text-gray2 dark:!text-gray2d"
           classNameIcon={
             // show warn icon if maxAmountToSwapMax <= 0
