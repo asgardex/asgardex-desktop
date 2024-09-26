@@ -37,18 +37,22 @@ export type Props = {
 
 type SectionProps = {
   title: string
+  subtitle: string
   children?: React.ReactNode
   className?: string
 }
 
-const Section: React.FC<SectionProps> = ({ title, className, children }) => (
+const Section: React.FC<SectionProps> = ({ title, subtitle, className, children }) => (
   <div
     className={clsx(
       'flex w-full items-center justify-between py-6 px-4',
       'border-b border-solid border-gray0 border-opacity-5 last:border-none dark:border-gray0d',
       className
     )}>
-    <h2 className="mb-5px font-main text-[16px] uppercase text-text2 dark:text-text2d">{title}</h2>
+    <div className="flex flex-col">
+      <h2 className="mb-5px font-main text-[16px] uppercase text-text2 dark:text-text2d">{title}</h2>
+      <span className="font-main text-gray1 dark:text-gray1d">{subtitle}</span>
+    </div>
     <div className="flex flex-col">{children}</div>
   </div>
 )
@@ -283,10 +287,19 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
 
   return (
     <div>
-      <Section title={intl.formatMessage({ id: 'common.network' })}>{renderNetworkMenu}</Section>
-      <Section title={intl.formatMessage({ id: 'common.dex' })}>{renderDexMenu}</Section>
-      <Section title={intl.formatMessage({ id: 'setting.language' })}>{renderLangMenu}</Section>
-      <Section title={intl.formatMessage({ id: 'setting.version' })}>
+      {/* // TODO: locale for subtitle */}
+      <Section
+        title={intl.formatMessage({ id: 'common.network' })}
+        subtitle="Network to connect to. Mainnet is Recommended">
+        {renderNetworkMenu}
+      </Section>
+      <Section title={intl.formatMessage({ id: 'common.dex' })} subtitle="Decentralised  exchange to connect to">
+        {renderDexMenu}
+      </Section>
+      <Section title={intl.formatMessage({ id: 'setting.language' })} subtitle="Preferred language">
+        {renderLangMenu}
+      </Section>
+      <Section title={intl.formatMessage({ id: 'setting.version' })} subtitle="Asgardex Software Version">
         <div className="flex max-w-[240px] flex-col space-y-1">
           <div className="flex min-w-[240px] items-center justify-between">
             <Styled.Label>v{version}</Styled.Label>
