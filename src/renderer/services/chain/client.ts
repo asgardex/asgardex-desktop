@@ -10,8 +10,9 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { RadixChain } from '@xchainjs/xchain-radix'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Asset, Chain } from '@xchainjs/xchain-util'
+import { AnyAsset, AssetType, Chain } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -32,6 +33,7 @@ import * as KUJI from '../kuji'
 import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
 import { selectedPoolChain$ } from '../midgard/common'
+import * as XRD from '../radix'
 import * as THOR from '../thorchain'
 import type { Chain$ } from './types'
 
@@ -65,17 +67,19 @@ export const clientByChain$ = (chain: Chain): XChainClient$ => {
       return COSMOS.client$
     case KUJIChain:
       return KUJI.client$
+    case RadixChain:
+      return XRD.client$
     default:
       return Rx.of(O.none) // Add a default case to handle unsupported chains
   }
 }
 
-export const clientByAsset$ = (asset: Asset, dex: Dex): XChainClient$ => {
+export const clientByAsset$ = (asset: AnyAsset, dex: Dex): XChainClient$ => {
   const chain = asset.chain
   if (!isSupportedChain(chain)) return Rx.of(O.none)
 
   // If the asset is synthetic, use the respective client based on dex.chain
-  if (asset.synth) {
+  if (asset.type === AssetType.SYNTH) {
     if (dex.chain === THORChain) return THOR.client$
     if (dex.chain === MAYAChain) return MAYA.client$
   }
@@ -107,6 +111,8 @@ export const clientByAsset$ = (asset: Asset, dex: Dex): XChainClient$ => {
       return COSMOS.client$
     case KUJIChain:
       return KUJI.client$
+    case RadixChain:
+      return XRD.client$
     default:
       return Rx.of(O.none) // Add a default case to handle unsupported chains
   }

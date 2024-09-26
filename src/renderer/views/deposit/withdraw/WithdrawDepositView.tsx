@@ -6,7 +6,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Asset, BaseAmount, bn } from '@xchainjs/xchain-util'
+import { AnyAsset, BaseAmount, bn } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/lib/Option'
@@ -68,13 +68,13 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
   const poolsState$ = dex.chain === THORChain ? poolsStateThor$ : poolsStateMaya$
   const dexPrice = useObservableState(dex.chain === THORChain ? priceRatio$ : priceRatioMaya$, bn(1))
 
-  const [selectedPriceAssetRD]: [RD.RemoteData<Error, Asset>, unknown] = useObservableState(
+  const [selectedPriceAssetRD]: [RD.RemoteData<Error, AnyAsset>, unknown] = useObservableState(
     () =>
       FP.pipe(
         selectedPricePoolAsset$,
         map((asset) => RD.fromOption(asset, () => Error(''))),
         // In case there is no asset for any reason set basic RUNE asset as alt value
-        map(RD.alt((): RD.RemoteData<Error, Asset> => RD.success(AssetRuneNative)))
+        map(RD.alt((): RD.RemoteData<Error, AnyAsset> => RD.success(AssetRuneNative)))
       ),
     RD.initial
   )
@@ -195,7 +195,7 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
       assetPrice: BigNumber
       poolShare: PoolShare
       poolDetail: PoolDetail | PoolDetailMaya
-      selectedPriceAsset: Asset
+      selectedPriceAsset: AnyAsset
       poolsData: PoolsDataMap
     }) => (
       <Withdraw

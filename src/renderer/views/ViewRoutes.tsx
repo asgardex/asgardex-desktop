@@ -29,6 +29,7 @@ import { PoolShareView } from './wallet/PoolShareView'
 import { RunepoolView } from './wallet/RunepoolView'
 import { SaversDetailsView } from './wallet/SaversTableView'
 import { SendView } from './wallet/send'
+import { TradeAssetsView } from './wallet/TradeAssetsView'
 import { UnlockView } from './wallet/UnlockView'
 import { WalletAuth } from './wallet/WalletAuth'
 import { WalletSettingsAuth } from './wallet/WalletSettingsAuth'
@@ -95,6 +96,14 @@ export const ViewRoutes: React.FC<{}> = (): JSX.Element => {
         element={
           <WalletAuth>
             <AssetsView />
+          </WalletAuth>
+        }
+      />
+      <Route
+        path={walletRoutes.tradeAssets.template}
+        element={
+          <WalletAuth>
+            <TradeAssetsView />
           </WalletAuth>
         }
       />

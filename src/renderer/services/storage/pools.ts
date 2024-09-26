@@ -1,5 +1,5 @@
 import { Network } from '@xchainjs/xchain-client'
-import { Asset } from '@xchainjs/xchain-util'
+import { AnyAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
 import * as E from 'fp-ts/lib/Either'
@@ -54,7 +54,7 @@ const watchlist$: Rx.Observable<PoolsWatchList> = FP.pipe(
   RxOp.shareReplay(1)
 )
 
-const addToWatchlist = (poolAsset: Asset, network: Network) => {
+const addToWatchlist = (poolAsset: AnyAsset, network: Network) => {
   const current: PoolsWatchLists = watchlists()
   FP.pipe(
     current[network],
@@ -74,7 +74,7 @@ const addToWatchlist = (poolAsset: Asset, network: Network) => {
   )
 }
 
-const removeFromWatchlist = (poolAsset: Asset, network: Network) => {
+const removeFromWatchlist = (poolAsset: AnyAsset, network: Network) => {
   const current: PoolsWatchLists = watchlists()
   FP.pipe(
     current[network],

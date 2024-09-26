@@ -1,10 +1,10 @@
-import { Asset, BaseAmount } from '@xchainjs/xchain-util'
+import { AnyAsset, BaseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 
 import { PoolShareType } from '../../services/midgard/types'
 
 export type PoolShareTableRowData = {
-  asset: Asset
+  asset: AnyAsset
   runeShare: BaseAmount
   assetShare: BaseAmount
   sharePercent: BigNumber

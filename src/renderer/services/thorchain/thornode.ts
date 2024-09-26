@@ -24,11 +24,13 @@ import {
   QuoteLoanOpenResponse,
   QuoteLoanCloseResponse,
   RUNEPoolApi,
-  RUNEProvider
+  RUNEProvider,
+  TradeAccountApi,
+  TradeAccountResponse
 } from '@xchainjs/xchain-thornode'
 import {
   Address,
-  Asset,
+  AnyAsset,
   assetFromString,
   assetFromStringEx,
   assetToString,
@@ -82,7 +84,9 @@ import {
   LoanCloseQuoteLD,
   NodeStatusEnum,
   RunePoolProviderLD,
-  RunePoolProvider
+  RunePoolProvider,
+  TradeAccount,
+  TradeAccountLD
 } from './types'
 
 const height: number | undefined = undefined
@@ -333,7 +337,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     RxOp.shareReplay(1)
   )
 
-  const apiGetLiquidityProviders$ = (asset: Asset): LiveData<Error, LiquidityProviderSummary[]> =>
+  const apiGetLiquidityProviders$ = (asset: AnyAsset): LiveData<Error, LiquidityProviderSummary[]> =>
     FP.pipe(
       thornodeUrl$,
       liveData.chain((basePath) =>
@@ -348,7 +352,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     )
   const { stream$: reloadLiquidityProviders$, trigger: reloadLiquidityProviders } = triggerStream()
 
-  const getLiquidityProviders = (asset: Asset): LiquidityProvidersLD =>
+  const getLiquidityProviders = (asset: AnyAsset): LiquidityProvidersLD =>
     FP.pipe(
       reloadLiquidityProviders$,
       RxOp.debounceTime(300),
@@ -402,17 +406,22 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
         RxOp.map((response) => {
           if ('data' in response) {
             const responseData = response.data
-            if (typeof responseData === 'object' && responseData !== null) {
+            if (responseData && typeof responseData === 'object') {
               const result: Mimir = {}
               for (const [key, value] of Object.entries(responseData)) {
-                result[key] = Number(value)
+                const numberValue = Number(value)
+                if (!isNaN(numberValue)) {
+                  result[key] = numberValue
+                } else {
+                  return RD.failure(new Error(`Invalid value for key ${key}: ${value}`))
+                }
               }
               return RD.success(result as Mimir)
             } else {
-              return RD.failure(new Error('Unexpected response format'))
+              return RD.failure(new Error('Unexpected response format: responseData is not an object'))
             }
           } else {
-            return RD.failure(new Error('Response is not AxiosResponse'))
+            return RD.failure(new Error('Response is not an AxiosResponse'))
           }
         })
       )
@@ -431,7 +440,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     RxOp.shareReplay(1)
   )
 
-  const apiGetSaverProvider$ = (asset: Asset, address: Address): LiveData<Error, Saver> =>
+  const apiGetSaverProvider$ = (asset: AnyAsset, address: Address): LiveData<Error, Saver> =>
     FP.pipe(
       thornodeUrl$,
       liveData.chain((basePath) =>
@@ -446,7 +455,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
 
   const { stream$: reloadSaverProvider$, trigger: reloadSaverProvider } = triggerStream()
 
-  const getSaverProvider$ = (asset: Asset, address: Address, walletType?: WalletType): SaverProviderLD =>
+  const getSaverProvider$ = (asset: AnyAsset, address: Address, walletType?: WalletType): SaverProviderLD =>
     FP.pipe(
       reloadSaverProvider$,
       RxOp.debounceTime(300),
@@ -526,7 +535,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       ),
       RxOp.startWith(RD.pending)
     )
-  const apiGetThorchainPool$ = (asset: Asset): LiveData<Error, Pool> =>
+  const apiGetThorchainPool$ = (asset: AnyAsset): LiveData<Error, Pool> =>
     FP.pipe(
       thornodeUrl$,
       liveData.chain((basePath) =>
@@ -540,7 +549,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     )
   const { stream$: reloadThorchainPool$, trigger: reloadThorchainPool } = triggerStream()
 
-  const getThorchainPool$ = (asset: Asset): ThorchainPoolLD =>
+  const getThorchainPool$ = (asset: AnyAsset): ThorchainPoolLD =>
     FP.pipe(
       reloadThorchainPool$,
       RxOp.debounceTime(300),
@@ -607,7 +616,49 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       RxOp.startWith(RD.pending)
     )
 
-  const apiGetBorrowerProvider$ = (asset: Asset, address: Address): LiveData<Error, Borrower> =>
+  const apiGetTradeAccount$ = (address: Address): LiveData<Error, TradeAccountResponse[]> =>
+    FP.pipe(
+      thornodeUrl$, // Fetch the base URL
+      liveData.chain((basePath) =>
+        FP.pipe(
+          Rx.from(new TradeAccountApi(getThornodeAPIConfiguration(basePath)).tradeAccount(address)), // Call the API
+          RxOp.map(
+            (response: AxiosResponse<TradeAccountResponse>) =>
+              RD.success(Array.isArray(response.data) ? response.data : [response.data]) // Handle single object as array
+          ),
+          RxOp.catchError((e: Error) => Rx.of(RD.failure(e))) // Handle errors
+        )
+      ),
+      RxOp.startWith(RD.pending) // Start with pending state
+    )
+
+  const { stream$: reloadTradeAccount$, trigger: reloadTradeAccount } = triggerStream()
+
+  const getTradeAccount$ = (address: Address, walletType: WalletType): TradeAccountLD =>
+    FP.pipe(
+      reloadTradeAccount$,
+      RxOp.debounceTime(300),
+      RxOp.switchMap((_) => apiGetTradeAccount$(address)),
+      liveData.map((tradeAccounts) =>
+        tradeAccounts.map((tradeAccount): TradeAccount => {
+          const { owner, units, asset, last_add_height, last_withdraw_height } = tradeAccount
+          /* 1e8 decimal by default, which is default decimal for ALL accets at THORChain  */
+          const tradeAssetUnits = baseAmount(units, THORCHAIN_DECIMAL)
+          return {
+            owner,
+            asset: assetFromStringEx(asset),
+            units: tradeAssetUnits,
+            lastAddHeight: FP.pipe(last_add_height, O.fromPredicate(N.isNumber)),
+            lastWithdrawHeight: FP.pipe(last_withdraw_height, O.fromPredicate(N.isNumber)),
+            walletType
+          }
+        })
+      ),
+      RxOp.catchError((): TradeAccountLD => Rx.of(RD.failure(Error(`Failed to load info for ${address} owner`)))),
+      RxOp.startWith(RD.pending)
+    )
+
+  const apiGetBorrowerProvider$ = (asset: AnyAsset, address: Address): LiveData<Error, Borrower> =>
     FP.pipe(
       thornodeUrl$,
       liveData.chain((basePath) =>
@@ -621,7 +672,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     )
   const { stream$: reloadBorrowerProvider$, trigger: reloadBorrowerProvider } = triggerStream()
 
-  const getBorrowerProvider$ = (asset: Asset, address: Address, walletType?: WalletType): BorrowerProviderLD =>
+  const getBorrowerProvider$ = (asset: AnyAsset, address: Address, walletType?: WalletType): BorrowerProviderLD =>
     FP.pipe(
       reloadBorrowerProvider$,
       RxOp.debounceTime(300),
@@ -669,9 +720,9 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       RxOp.startWith(RD.pending)
     )
   const apiGetLoanQuoteOpen$ = (
-    asset: Asset,
+    asset: AnyAsset,
     amount: BaseAmount,
-    targetAsset: Asset,
+    targetAsset: AnyAsset,
     destination: string,
     minOut?: string,
     affiliateBps?: number,
@@ -703,9 +754,9 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
   const { stream$: reloadLoanQuoteOpen$, trigger: reloadLoanQuoteOpen } = triggerStream()
 
   const getLoanQuoteOpen$ = (
-    asset: Asset,
+    asset: AnyAsset,
     amount: BaseAmount,
-    targetAsset: Asset,
+    targetAsset: AnyAsset,
     destination: string,
     minOut?: string,
     affiliateBps?: number,
@@ -779,9 +830,9 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       RxOp.startWith(RD.pending)
     )
   const apiGetLoanQuoteClose$ = (
-    fromAsset: Asset,
+    fromAsset: AnyAsset,
     repayBps: number,
-    targetAsset: Asset,
+    targetAsset: AnyAsset,
     loanOwner: string,
     minOut?: string,
     height?: number
@@ -809,9 +860,9 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
   const { stream$: reloadLoanQuoteClose$, trigger: reloadLoanQuoteClose } = triggerStream()
 
   const getLoanQuoteClose$ = (
-    asset: Asset,
+    asset: AnyAsset,
     repayBps: number,
-    targetAsset: Asset,
+    targetAsset: AnyAsset,
     loanOwner: string,
     minOut?: string,
     height?: number
@@ -913,6 +964,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     getLoanQuoteOpen$,
     reloadLoanQuoteOpen,
     getLoanQuoteClose$,
-    reloadLoanQuoteClose
+    reloadLoanQuoteClose,
+    getTradeAccount$,
+    reloadTradeAccount
   }
 }

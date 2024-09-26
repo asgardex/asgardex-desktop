@@ -8,12 +8,11 @@ import { palette, size } from 'styled-theme'
 
 import { Dex } from '../../../shared/api/types'
 import { ReactComponent as UIAsgardexLogo } from '../../assets/svg/logo-asgardex.svg'
-import { media } from '../../helpers/styleHelper'
 
 export const HeaderContainer = styled(Layout.Header)`
   height: ${size('headerHeight', '70px')};
-  width: 100vw;
-  background-color: ${palette('background', 0)};
+  width: 100%;
+  background-color: ${palette('background', 3)};
 
   /* id's defined in svg */
   #asgardex_logo {
@@ -61,11 +60,7 @@ export const HeaderContainer = styled(Layout.Header)`
     background: ${palette('gradient', 0)};
   }
 
-  padding: 0 5px;
-
-  ${media.lg`
-    padding: 0 20px;
-  `}
+  padding: 0px;
 `
 
 export const AsgardexLogo = styled(UIAsgardexLogo)`

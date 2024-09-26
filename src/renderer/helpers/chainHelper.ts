@@ -10,6 +10,7 @@ import { AssetETH, ETHChain } from '@xchainjs/xchain-ethereum'
 import { AssetKUJI, KUJIChain } from '@xchainjs/xchain-kujira'
 import { AssetLTC, LTCChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDLTC } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetXRD, RadixChain } from '@xchainjs/xchain-radix'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Chain } from '@xchainjs/xchain-util'
 
@@ -30,7 +31,8 @@ const chainAssets: Record<Chain, Asset> = {
   DOGE: AssetDOGE,
   DASH: AssetDASH,
   KUJI: AssetKUJI,
-  ARB: AssetAETH
+  ARB: AssetAETH,
+  XRD: AssetXRD
 }
 
 export const getChainAsset = (chain: Chain): Asset => {
@@ -114,6 +116,10 @@ export const isDogeChain = (chain: Chain): boolean => eqChain.equals(chain, DOGE
  * Check whether chain is KUJI chain
  */
 export const isKujiChain = (chain: Chain): boolean => eqChain.equals(chain, KUJIChain)
+/**
+ * Check whether chain is KUJI chain
+ */
+export const isXrdChain = (chain: Chain): boolean => eqChain.equals(chain, RadixChain)
 
 /**
  * Check whether chain is Cosmos (GAIA) chain
@@ -161,6 +167,8 @@ export const getChain = (chain: string): Chain => {
       return DASHChain
     case 'KUJI':
       return KUJIChain
+    case 'XRD':
+      return RadixChain
     default:
       throw Error('Unknown chain')
   }

@@ -6,9 +6,11 @@ import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
+  AnyAsset,
   Asset,
   assetFromString,
   assetToString,
+  AssetType,
   BaseAmount,
   baseToAsset,
   Chain,
@@ -208,7 +210,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         let price: string = noDataString // Default to "no data" string
 
         // Helper function to format price
-        const formatPrice = (priceOption: O.Option<BaseAmount>, pricePoolAsset: Asset) => {
+        const formatPrice = (priceOption: O.Option<BaseAmount>, pricePoolAsset: AnyAsset) => {
           if (O.isSome(priceOption)) {
             return formatAssetAmountCurrency({
               amount: baseToAsset(priceOption.value),
@@ -535,7 +537,10 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
             if (filterByValue) {
               sortedBalances = sortedBalances.filter(({ amount, asset }) => {
-                if ((isUSDAsset(asset) && !asset.synth && amount.amount().gt(1)) || isMayaAsset(asset)) {
+                if (
+                  (isUSDAsset(asset) && asset.type !== AssetType.SYNTH && amount.amount().gt(1)) ||
+                  isMayaAsset(asset)
+                ) {
                   return true
                 }
                 let usdValue: O.Option<BaseAmount>
@@ -551,7 +556,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
               })
             }
             if ((dex.chain === MAYAChain && chain === THORChain) || (dex.chain === THORChain && chain === MAYAChain)) {
-              sortedBalances = sortedBalances.filter(({ asset }) => !asset.synth)
+              sortedBalances = sortedBalances.filter(({ asset }) => asset.type !== AssetType.SYNTH)
             }
             previousAssetsTableData.current[index] = sortedBalances
             return renderAssetsTable({

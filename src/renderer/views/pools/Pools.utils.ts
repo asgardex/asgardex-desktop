@@ -4,13 +4,13 @@ import { type PoolDetail } from '@xchainjs/xchain-midgard'
 import {
   baseAmount,
   assetFromString,
-  Asset,
   assetToBase,
   assetAmount,
   BaseAmount,
   bnOrZero,
   assetToString,
-  baseToAsset
+  baseToAsset,
+  AnyAsset
 } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/lib/function'
@@ -185,7 +185,7 @@ export const getPoolTableRowDataMaya = ({
 
 export const getBlocksLeftForPendingPool = (
   lastblocks: Array<Pick<LastblockItem, 'chain' | 'thorchain'>>,
-  asset: Asset,
+  asset: AnyAsset,
   oNewPoolCycle: O.Option<number>
 ): O.Option<number> => {
   const oLastHeight = FP.pipe(
@@ -201,7 +201,7 @@ export const getBlocksLeftForPendingPool = (
 }
 export const getBlocksLeftForPendingMayaPool = (
   lastblocks: Array<Pick<LastblockItemMaya, 'chain' | 'mayachain'>>,
-  asset: Asset,
+  asset: AnyAsset,
   oNewPoolCycle: O.Option<number>
 ): O.Option<number> => {
   const oLastHeight = FP.pipe(
@@ -218,7 +218,7 @@ export const getBlocksLeftForPendingMayaPool = (
 
 export const getBlocksLeftForPendingPoolAsString = (
   lastblocks: Array<Pick<LastblockItem, 'chain' | 'thorchain'>>,
-  asset: Asset,
+  asset: AnyAsset,
   poolCycle: O.Option<number>
 ): string => {
   return FP.pipe(
@@ -231,7 +231,7 @@ export const getBlocksLeftForPendingPoolAsString = (
 }
 export const getBlocksLeftForPendingPoolAsStringMaya = (
   lastblocks: Array<Pick<LastblockItemMaya, 'chain' | 'mayachain'>>,
-  asset: Asset,
+  asset: AnyAsset,
   poolCycle: O.Option<number>
 ): string => {
   return FP.pipe(

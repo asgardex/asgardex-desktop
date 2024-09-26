@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { FeeOption, Fees, Network, Tx } from '@xchainjs/xchain-client'
-import { Address, Asset, BaseAmount, Chain } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, Asset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -40,7 +40,7 @@ export type SymDepositAddresses = {
 }
 
 export type DepositFees = { inFee: BaseAmount; outFee: BaseAmount; refundFee: BaseAmount }
-export type DepositAssetFees = DepositFees & { asset: Asset }
+export type DepositAssetFees = DepositFees & { asset: AnyAsset }
 
 /**
  * Saver deposit fees
@@ -55,12 +55,12 @@ export type SaverDepositFeesRD = RD.RemoteData<Error, SaverDepositFees>
 export type SaverDepositFeesLD = LiveData<Error, SaverDepositFees>
 
 export type SaverDepositFeesParams = {
-  readonly asset: Asset
+  readonly asset: AnyAsset
 }
 
-export type SaverDepositFeesHandler = (asset: Asset) => SaverDepositFeesLD
+export type SaverDepositFeesHandler = (asset: AnyAsset) => SaverDepositFeesLD
 
-export type ReloadSaverDepositFeesHandler = (asset: Asset) => void
+export type ReloadSaverDepositFeesHandler = (asset: AnyAsset) => void
 
 /**
  * Borrower deposit fees
@@ -97,15 +97,15 @@ export type SymDepositFeesRD = RD.RemoteData<Error, SymDepositFees>
 export type SymDepositFeesLD = LiveData<Error, SymDepositFees>
 
 export type SymDepositFeesParams = {
-  readonly asset: Asset
+  readonly asset: AnyAsset
 }
 
-export type SymDepositFeesHandler = (asset: Asset, dex: Dex) => SymDepositFeesLD
-export type ReloadSymDepositFeesHandler = (asset: Asset, dex: Dex) => void
+export type SymDepositFeesHandler = (asset: AnyAsset, dex: Dex) => SymDepositFeesLD
+export type ReloadSymDepositFeesHandler = (asset: AnyAsset, dex: Dex) => void
 
 export type SaverDepositParams = {
   readonly poolAddress: PoolAddress
-  readonly asset: Asset
+  readonly asset: AnyAsset
   readonly amount: BaseAmount
   readonly memo: string
   readonly sender: Address
@@ -118,7 +118,7 @@ export type SaverDepositParams = {
 
 export type BorrowerDepositParams = {
   readonly poolAddress: PoolAddress
-  readonly asset: Asset
+  readonly asset: AnyAsset
   readonly amount: BaseAmount
   readonly memo: string
   readonly sender: Address
@@ -133,7 +133,7 @@ export type SymDepositAmounts = { rune: BaseAmount; asset: BaseAmount }
 
 export type SymDepositParams = {
   readonly poolAddress: PoolAddress
-  readonly asset: Asset
+  readonly asset: AnyAsset
   readonly amounts: SymDepositAmounts
   readonly memos: SymDepositMemo
   readonly runeWalletType: WalletType
@@ -151,7 +151,7 @@ export type SymDepositParams = {
 
 export type SendTxParams = {
   walletType: WalletType
-  asset: Asset
+  asset: AnyAsset
   sender?: Address
   recipient: Address
   amount: BaseAmount
@@ -159,7 +159,7 @@ export type SendTxParams = {
   feeOption?: FeeOption
   walletAccount: number
   walletIndex: number
-  feeAsset?: Asset
+  feeAsset?: AnyAsset
   gasLimit?: BigNumber
   feeAmount?: BaseAmount
   hdMode: HDMode
@@ -202,7 +202,7 @@ export type SwapTxState$ = Rx.Observable<SwapTxState>
  */
 export type SwapTxParams = {
   readonly poolAddress: PoolAddress
-  readonly asset: Asset
+  readonly asset: AnyAsset
   readonly amount: BaseAmount
   readonly memo: string
   readonly walletType: WalletType
@@ -223,7 +223,7 @@ export type SwapHandler = (p: SwapTxParams) => SwapTxState$
 export type SwapTxType = 'in' | ' out'
 
 export type SwapOutTx = {
-  readonly asset: Asset
+  readonly asset: AnyAsset
   readonly memo: Memo
 }
 
@@ -240,9 +240,9 @@ export type SwapFeesRD = RD.RemoteData<Error, SwapFees>
 export type SwapFeesLD = LiveData<Error, SwapFees>
 
 export type SwapFeesParams = {
-  readonly inAsset: Asset
+  readonly inAsset: AnyAsset
   readonly memo: string
-  readonly outAsset: Asset
+  readonly outAsset: AnyAsset
 }
 
 export type SwapFeesHandler = (p: SwapFeesParams) => SwapFeesLD
@@ -324,20 +324,20 @@ export type SymWithdrawFees = {
 export type SymWithdrawFeesRD = RD.RemoteData<Error, SymWithdrawFees>
 export type SymWithdrawFeesLD = LiveData<Error, SymWithdrawFees>
 
-export type SymWithdrawFeesHandler = (asset: Asset, dex: Dex) => SymWithdrawFeesLD
-export type ReloadWithdrawFeesHandler = (asset: Asset, dex: Dex) => void
+export type SymWithdrawFeesHandler = (asset: AnyAsset, dex: Dex) => SymWithdrawFeesLD
+export type ReloadWithdrawFeesHandler = (asset: AnyAsset, dex: Dex) => void
 
 /**
  * Saver Withdraw Fees
  */
 export type WithdrawAssetFees = WithdrawFees & {
   /** fee asset */
-  asset: Asset
+  asset: AnyAsset
 }
 
 export type SaverWithdrawFeesRD = RD.RemoteData<Error, WithdrawAssetFees>
 export type SaverWithdrawFeesLD = LiveData<Error, WithdrawAssetFees>
-export type SaverWithdrawFeesHandler = (asset: Asset) => SaverWithdrawFeesLD
+export type SaverWithdrawFeesHandler = (asset: AnyAsset) => SaverWithdrawFeesLD
 
 /**
  * State to reflect status of a sym / saver. withdraw by doing different requests
@@ -370,7 +370,7 @@ export type SymWithdrawStateHandler = (p: SymWithdrawParams) => WithdrawState$
 
 export type SaverWithdrawParams = {
   readonly poolAddress: PoolAddress
-  readonly asset: Asset
+  readonly asset: AnyAsset
   readonly amount: BaseAmount
   readonly memo: Memo
   readonly network: Network

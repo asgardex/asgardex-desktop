@@ -1,13 +1,13 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ARBChain, AssetAETH } from '@xchainjs/xchain-arbitrum'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { Network } from '@xchainjs/xchain-client'
-import { Asset } from '@xchainjs/xchain-util'
+import { AnyAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import { of } from 'rxjs'
 import { switchMap } from 'rxjs/operators'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
-import { ArbAssetsTestnet } from '../../const'
+import { ARBAssetsFallback, ArbAssetsTestnet } from '../../const'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
 import { userAssets$ } from '../storage/userChainTokens'
@@ -63,7 +63,7 @@ const balances$: ({
         return C.balances$({
           client$,
           trigger$: reloadBalances$,
-          assets: [AssetAETH],
+          assets: ARBAssetsFallback,
           walletType,
           walletAccount,
           walletIndex,
@@ -78,7 +78,7 @@ const balances$: ({
 
 // State of balances loaded by Client and Address
 const getBalanceByAddress$ = (network: Network) => {
-  const assets: Asset[] | undefined = network === Network.Testnet ? ArbAssetsTestnet : undefined
+  const assets: AnyAsset[] | undefined = network === Network.Testnet ? ArbAssetsTestnet : undefined
   return C.balancesByAddress$({ client$, trigger$: reloadBalances$, assets, walletBalanceType: 'all' })
 }
 

@@ -10,6 +10,7 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { RadixChain } from '@xchainjs/xchain-radix'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
@@ -29,6 +30,7 @@ import * as ETH from '../ethereum'
 import * as KUJI from '../kuji'
 import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
+import * as XRD from '../radix'
 import * as THOR from '../thorchain'
 import { client$ } from './client'
 
@@ -65,6 +67,8 @@ const addressByChain$ = (chain: Chain): WalletAddress$ => {
       return DOGE.address$
     case KUJIChain:
       return KUJI.address$
+    case RadixChain:
+      return XRD.address$
     default:
       return Rx.of(O.none)
   }

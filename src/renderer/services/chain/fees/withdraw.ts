@@ -1,4 +1,4 @@
-import { Asset } from '@xchainjs/xchain-util'
+import { AnyAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as RxOp from 'rxjs/operators'
@@ -19,7 +19,7 @@ import { poolOutboundFee$, poolInboundFee$ } from './common'
  * Returns zero withdraw fees
  * by given asset to withdraw
  */
-const getZeroWithdrawFees = (asset: Asset): SymWithdrawFees => ({
+const getZeroWithdrawFees = (asset: AnyAsset): SymWithdrawFees => ({
   rune: {
     inFee: ZERO_BASE_AMOUNT,
     outFee: ZERO_BASE_AMOUNT
@@ -35,10 +35,10 @@ const {
   get$: reloadWithdrawFees$,
   get: reloadWithdrawFeeState,
   set: _reloadSymDepositFees
-} = observableState<O.Option<Asset>>(O.none)
+} = observableState<O.Option<AnyAsset>>(O.none)
 
 // Triggers reloading of deposit fees
-const reloadWithdrawFees = (asset: Asset) => {
+const reloadWithdrawFees = (asset: AnyAsset) => {
   // (1) update reload state only, if prev. vs. current assets are different
   if (!eqOAsset.equals(O.some(asset), reloadWithdrawFeeState())) {
     _reloadSymDepositFees(O.some(asset))

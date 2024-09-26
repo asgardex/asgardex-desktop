@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { Asset, AssetAmount, assetToString, formatAssetAmount } from '@xchainjs/xchain-util'
+import { AnyAsset, AssetAmount, assetToString, formatAssetAmount } from '@xchainjs/xchain-util'
 import { Grid } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import { useIntl } from 'react-intl'
@@ -18,7 +18,7 @@ import { AssetIcon } from '../uielements/assets/assetIcon'
 import * as Styled from './PoolTitle.styles'
 
 export type Props = {
-  asset: Asset
+  asset: AnyAsset
   watched: boolean
   watch: FP.Lazy<void>
   unwatch: FP.Lazy<void>

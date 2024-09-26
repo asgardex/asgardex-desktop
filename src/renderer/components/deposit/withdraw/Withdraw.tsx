@@ -4,7 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
-  Asset,
+  AnyAsset,
   baseAmount,
   BaseAmount,
   baseToAsset,
@@ -63,7 +63,7 @@ export type Props = {
   dexBalance: O.Option<BaseAmount>
   dexWalletAddress: WalletAddress
   /** Selected price asset */
-  selectedPriceAsset: Asset
+  selectedPriceAsset: AnyAsset
   /** Callback to reload fees */
   reloadFees: ReloadWithdrawFeesHandler
   /**

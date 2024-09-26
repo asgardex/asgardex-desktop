@@ -5,7 +5,7 @@ import { Tab } from '@headlessui/react'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Address, Asset, assetToString, baseAmount, Chain, CryptoAmount } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, assetToString, baseAmount, Chain, CryptoAmount } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
 import * as Eq from 'fp-ts/lib/Eq'
 import * as FP from 'fp-ts/lib/function'
@@ -72,9 +72,9 @@ const eqUpdateAddress = Eq.struct<UpdateAddress>({
 })
 
 type Props = {
-  collateralAsset: Asset
+  collateralAsset: AnyAsset
   collateralWalletType: WalletType
-  borrowAsset: Asset
+  borrowAsset: AnyAsset
   borrowWalletType: WalletType
 }
 
@@ -261,8 +261,8 @@ const Content: React.FC<Props> = (props): JSX.Element => {
       borrowWalletType: oTargetWalletType,
       recipientAddress: oRecipientAddress
     }: {
-      collateral: Asset
-      borrow: Asset
+      collateral: AnyAsset
+      borrow: AnyAsset
       collateralWalletType: WalletType
       borrowWalletType: O.Option<WalletType>
       recipientAddress: O.Option<Address>
@@ -286,7 +286,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   )
 
   const onChangeAssetRepayHandler = useCallback(
-    ({ source, sourceWalletType }: { source: Asset; sourceWalletType: WalletType }) => {
+    ({ source, sourceWalletType }: { source: AnyAsset; sourceWalletType: WalletType }) => {
       const path = lendingRoutes.borrow.path({
         asset: assetToString(source),
         walletType: sourceWalletType,
@@ -381,7 +381,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
             () => renderLoadingContent,
             renderError,
             ([{ poolDetails, assetDetails }, assetWD, collateralAddress, borrowAddress, borrowAssetWD]) => {
-              const poolAssets: Asset[] = FP.pipe(
+              const poolAssets: AnyAsset[] = FP.pipe(
                 assetDetails,
                 A.map(({ asset }) => asset)
               )
@@ -564,8 +564,8 @@ export const LoansView: React.FC = (): JSX.Element => {
   const { asset: collateralAsset, walletType, borrowAsset } = useParams<LoanRouteParams>()
 
   const oWalletType = useMemo(() => FP.pipe(walletType, O.fromPredicate(isWalletType)), [walletType])
-  const oAsset: O.Option<Asset> = useMemo(() => getAssetFromNullableString(collateralAsset), [collateralAsset])
-  const oBorrowAsset: O.Option<Asset> = useMemo(() => getAssetFromNullableString(borrowAsset), [borrowAsset])
+  const oAsset: O.Option<AnyAsset> = useMemo(() => getAssetFromNullableString(collateralAsset), [collateralAsset])
+  const oBorrowAsset: O.Option<AnyAsset> = useMemo(() => getAssetFromNullableString(borrowAsset), [borrowAsset])
 
   const intl = useIntl()
 

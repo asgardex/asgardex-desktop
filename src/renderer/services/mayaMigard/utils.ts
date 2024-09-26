@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ARB_GAS_ASSET_DECIMAL, ARBChain } from '@xchainjs/xchain-arbitrum'
+import { ARB_GAS_ASSET_DECIMAL, ARBChain, AssetAETH } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
@@ -14,6 +14,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-mayamidgard'
+import { AssetXRD, RadixChain, XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import {
   assetFromString,
@@ -24,7 +25,8 @@ import {
   isValidBN,
   bn,
   BaseAmount,
-  Address
+  Address,
+  AnyAsset
 } from '@xchainjs/xchain-util'
 import { Chain } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
@@ -33,7 +35,7 @@ import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import * as O from 'fp-ts/lib/Option'
 import * as P from 'fp-ts/lib/Predicate'
 
-import { AssetARB, AssetBTC, AssetETH, AssetKUJI } from '../../../shared/utils/asset'
+import { AssetBTC, AssetETH, AssetKUJI } from '../../../shared/utils/asset'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { optionFromNullableString } from '../../../shared/utils/fp'
 import { convertBaseAmountDecimal, isUSDAsset, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
@@ -155,7 +157,7 @@ export const pricePoolSelectorFromRD = (
  * It returns `None` if no `PoolDetail` has been found
  * Adjusted to handle synth assets
  */
-export const getPoolDetail = (details: PoolDetails, asset: Asset): O.Option<PoolDetail> =>
+export const getPoolDetail = (details: PoolDetails, asset: AnyAsset): O.Option<PoolDetail> =>
   FP.pipe(
     details.find((detail: PoolDetail) =>
       FP.pipe(
@@ -251,7 +253,7 @@ export const getOutboundAssetFeeByChain = (
           })
         case ETHChain: {
           return O.some({
-            // Convertion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
+            // Convertion of decimal needed: 1e10 (by default in MayaChain) -> 1e18 (ETH)
             amount: convertBaseAmountDecimal(baseAmount(value, CACAO_DECIMAL), ETH_GAS_ASSET_DECIMAL),
             asset: AssetETH
           })
@@ -266,11 +268,16 @@ export const getOutboundAssetFeeByChain = (
             amount: baseAmount(value, KUJI_DECIMAL),
             asset: AssetKUJI
           })
+        case RadixChain:
+          return O.some({
+            amount: baseAmount(value, XRD_DECIMAL),
+            asset: AssetXRD
+          })
         case ARBChain: {
           return O.some({
-            // Convertion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ARB)
+            // Convertion of decimal needed: 1e10 (by default in MayaChain) -> 1e18 (ARB)
             amount: convertBaseAmountDecimal(baseAmount(value, CACAO_DECIMAL), ARB_GAS_ASSET_DECIMAL),
-            asset: AssetARB
+            asset: AssetAETH
           })
         }
         // 'MAYAChain can be ignored - fees for asset side only

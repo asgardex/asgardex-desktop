@@ -1,5 +1,5 @@
 import { Keystore } from '@xchainjs/xchain-crypto'
-import { assetToString, assetFromString, Asset, BaseAmount, baseAmount } from '@xchainjs/xchain-util'
+import { assetToString, assetFromString, BaseAmount, baseAmount, AnyAsset } from '@xchainjs/xchain-util'
 import * as E from 'fp-ts/lib/Either'
 import * as FP from 'fp-ts/lib/function'
 import * as t from 'io-ts'
@@ -8,7 +8,7 @@ import * as IOG from 'io-ts/Guard'
 
 import { enabledChainGuard, isAsset, isBaseAmount, isEvmHDMode, isFeeOption, isHDMode, isNetwork } from '../utils/guard'
 
-const assetDecoder: IOD.Decoder<unknown, Asset> = FP.pipe(
+const assetDecoder: IOD.Decoder<unknown, AnyAsset> = FP.pipe(
   IOD.string,
   IOD.parse((assetString) =>
     FP.pipe(

@@ -14,6 +14,7 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { RadixChain } from '@xchainjs/xchain-radix'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Chain } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
@@ -43,6 +44,7 @@ import { useLitecoinContext } from '../../contexts/LitecoinContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useWalletContext } from '../../contexts/WalletContext'
+import { useXrdContext } from '../../contexts/XrdContext'
 import {
   filterEnabledChains,
   isBchChain,
@@ -57,7 +59,8 @@ import {
   isBscChain,
   isMayaChain,
   isDashChain,
-  isKujiChain
+  isKujiChain,
+  isXrdChain
 } from '../../helpers/chainHelper'
 import { sequenceTOptionFromArray } from '../../helpers/fpHelpers'
 import { useCollapsedSetting } from '../../hooks/useCollapsedSetting'
@@ -100,6 +103,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
   const { addressUI$: mayaAddressUI$ } = useMayachainContext()
   const { addressUI$: dashAddressUI$ } = useDashContext()
   const { addressUI$: kujiAddressUI$ } = useKujiContext()
+  const { addressUI$: xrdAddressUI$ } = useXrdContext()
 
   const evmHDMode: EvmHDMode = useObservableState(ethHDMode$, DEFAULT_EVM_HD_MODE)
 
@@ -130,6 +134,12 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     address: oKujiLedgerWalletAddress,
     removeAddress: removeLedgerKujiAddress
   } = useLedger(KUJIChain, keystoreId)
+  const {
+    addAddress: addLedgerXrdAddress,
+    verifyAddress: verifyLedgerXrdAddress,
+    address: oXrdLedgerWalletAddress,
+    removeAddress: removeLedgerXrdAddress
+  } = useLedger(RadixChain, keystoreId)
 
   const {
     addAddress: addLedgerLtcAddress,
@@ -215,6 +225,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     if (isMayaChain(chain)) return addLedgerMayaAddress(walletAccount, walletIndex, hdMode)
     if (isDashChain(chain)) return addLedgerDashAddress(walletAccount, walletIndex, hdMode)
     if (isKujiChain(chain)) return addLedgerKujiAddress(walletAccount, walletIndex, hdMode)
+    if (isXrdChain(chain)) return addLedgerXrdAddress(walletAccount, walletIndex, hdMode)
 
     return Rx.of(
       RD.failure({
@@ -248,6 +259,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     if (isMayaChain(chain)) return verifyLedgerMayaAddress(walletAccount, walletIndex, hdMode)
     if (isDashChain(chain)) return verifyLedgerDashAddress(walletAccount, walletIndex, hdMode)
     if (isKujiChain(chain)) return verifyLedgerKujiAddress(walletAccount, walletIndex, hdMode)
+    if (isXrdChain(chain)) return verifyLedgerXrdAddress(walletAccount, walletIndex, hdMode)
 
     return Rx.of(RD.failure(Error(`Ledger address verification for ${chain} has not been implemented`)))
   }
@@ -266,6 +278,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     if (isMayaChain(chain)) return removeLedgerMayaAddress()
     if (isDashChain(chain)) return removeLedgerDashAddress()
     if (isKujiChain(chain)) return removeLedgerKujiAddress()
+    if (isXrdChain(chain)) return removeLedgerXrdAddress()
 
     return FP.constVoid
   }
@@ -285,6 +298,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
   const oMayaClient = useObservableState(clientByChain$(MAYAChain), O.none)
   const oDashClient = useObservableState(clientByChain$(DASHChain), O.none)
   const oKujiClient = useObservableState(clientByChain$(KUJIChain), O.none)
+  const oXrdClient = useObservableState(clientByChain$(RadixChain), O.none)
 
   const clickAddressLinkHandler = (chain: Chain, address: Address) => {
     const openExplorerAddressUrl = (client: XChainClient) => {
@@ -335,6 +349,9 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
         break
       case KUJIChain:
         FP.pipe(oKujiClient, O.map(openExplorerAddressUrl))
+        break
+      case RadixChain:
+        FP.pipe(oXrdClient, O.map(openExplorerAddressUrl))
         break
     }
   }
@@ -405,6 +422,11 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
       ledgerAddress: oKujiLedgerWalletAddress,
       chain: KUJIChain
     })
+    const xrdWalletAccount$ = walletAccount$({
+      addressUI$: xrdAddressUI$,
+      ledgerAddress: oXrdLedgerWalletAddress,
+      chain: RadixChain
+    })
 
     return FP.pipe(
       // combineLatest is for the future additional walletAccounts
@@ -422,7 +444,8 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
           GAIA: [cosmosWalletAccount$],
           MAYA: [mayaWalletAccount$],
           DASH: [dashWalletAccount$],
-          KUJI: [kujiWalletAccount$]
+          KUJI: [kujiWalletAccount$],
+          XRD: [xrdWalletAccount$]
         })
       ),
       RxOp.map(A.filter(O.isSome)),
@@ -454,7 +477,9 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     dashAddressUI$,
     oDashLedgerWalletAddress,
     kujiAddressUI$,
-    oKujiLedgerWalletAddress
+    oKujiLedgerWalletAddress,
+    xrdAddressUI$,
+    oXrdLedgerWalletAddress
   ])
 
   const walletAccounts = useObservableState(walletAccounts$, O.none)

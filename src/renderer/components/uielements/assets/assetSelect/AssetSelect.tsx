@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react'
 
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { Asset } from '@xchainjs/xchain-util'
+import { AnyAsset } from '@xchainjs/xchain-util'
 
 import { emptyString } from '../../../../helpers/stringHelper'
 import { BaseButton } from '../../button'
@@ -10,12 +10,13 @@ import { AssetData } from '../assetData'
 import { AssetMenu } from '../assetMenu'
 
 export type Props = {
-  asset: Asset
-  assets: Asset[]
-  onSelect: (_: Asset) => void
+  asset: AnyAsset
+  assets: AnyAsset[]
+  onSelect: (_: AnyAsset) => void
   className?: string
   showAssetName?: boolean
   dialogHeadline?: string
+  shadowless?: boolean
   disabled?: boolean
   network: Network
 }
@@ -24,11 +25,12 @@ export const AssetSelect: React.FC<Props> = (props): JSX.Element => {
   const {
     asset,
     assets = [],
-    onSelect = (_: Asset) => {},
+    onSelect = (_: AnyAsset) => {},
     className = '',
     dialogHeadline = emptyString,
     showAssetName = true,
     disabled = false,
+    shadowless = false,
     network
   } = props
 
@@ -40,7 +42,7 @@ export const AssetSelect: React.FC<Props> = (props): JSX.Element => {
   }, [])
 
   const handleChangeAsset = useCallback(
-    async (asset: Asset) => {
+    async (asset: AnyAsset) => {
       onSelect(asset)
       setOpenMenu(false)
     },
@@ -61,7 +63,9 @@ export const AssetSelect: React.FC<Props> = (props): JSX.Element => {
         network={network}
       />
       <BaseButton
-        className={`group px-10px py-[2px] ${!disableButton ? 'hover:shadow-full hover:dark:shadow-fulld' : ''}
+        className={`group px-10px py-[2px] ${
+          !disableButton && !shadowless ? 'hover:shadow-full hover:dark:shadow-fulld' : ''
+        }
         focus:outline-none ${className}`}
         disabled={disableButton}
         onClick={buttonClickHandler}>

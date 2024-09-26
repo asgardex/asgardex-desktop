@@ -12,8 +12,9 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { RadixChain } from '@xchainjs/xchain-radix'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Address } from '@xchainjs/xchain-util'
+import { Address, AssetType } from '@xchainjs/xchain-util'
 import { Chain } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -34,6 +35,7 @@ import * as ETH from '../../ethereum'
 import * as KUJI from '../../kuji'
 import * as LTC from '../../litecoin'
 import * as MAYA from '../../mayachain'
+import * as XRD from '../../radix'
 import * as THOR from '../../thorchain'
 import { ApiError, ErrorId, TxHashLD, TxLD } from '../../wallet/types'
 import { SendPoolTxParams, SendTxParams } from '../types'
@@ -60,9 +62,8 @@ export const sendTx$ = ({
   hdMode,
   dex
 }: SendTxParams): TxHashLD => {
-  const { chain } = asset.synth ? dex.asset : asset
+  const { chain } = asset.type === AssetType.SYNTH ? dex.asset : asset
   if (!isSupportedChain(chain)) return txFailure$(`${chain} is not supported for 'sendTx$'`)
-
   switch (chain) {
     case BTCChain:
       return FP.pipe(
@@ -104,6 +105,8 @@ export const sendTx$ = ({
       return MAYA.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode })
     case KUJIChain:
       return KUJI.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode })
+    case RadixChain:
+      return XRD.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode })
 
     case GAIAChain:
       return FP.pipe(
@@ -235,7 +238,7 @@ export const sendPoolTx$ = ({
   feeOption = DEFAULT_FEE_OPTION,
   dex
 }: SendPoolTxParams): TxHashLD => {
-  const { chain } = asset.synth ? dex.asset : asset
+  const { chain } = asset.type === AssetType.SYNTH ? dex.asset : asset
 
   if (!isSupportedChain(chain)) return txFailure$(`${chain} is not enabled`)
 
@@ -291,6 +294,18 @@ export const sendPoolTx$ = ({
         walletIndex,
         hdMode,
         feeOption
+      })
+    case RadixChain:
+      return XRD.sendPoolTx$({
+        walletType,
+        router,
+        recipient,
+        asset,
+        amount,
+        memo,
+        walletAccount,
+        walletIndex,
+        hdMode
       })
 
     case THORChain:
@@ -363,6 +378,8 @@ export const txStatusByChain$ = ({ txHash, chain }: { txHash: TxHash; chain: Cha
       return DASH.txStatus$(txHash, O.none)
     case KUJIChain:
       return KUJI.txStatus$(txHash, O.none)
+    case RadixChain:
+      return XRD.txStatus$(txHash, O.none)
     default:
       return Rx.of(
         RD.failure({
@@ -409,6 +426,7 @@ export const poolTxStatusByChain$ = ({
     case LTCChain:
     case DASHChain:
     case KUJIChain:
+    case RadixChain:
       return txStatusByChain$({ txHash, chain })
     default:
       return Rx.of(

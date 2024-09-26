@@ -11,7 +11,9 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { RadixChain } from '@xchainjs/xchain-radix'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetType } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -34,6 +36,7 @@ import * as ETH from '../ethereum'
 import * as KUJI from '../kuji'
 import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
+import * as XRD from '../radix'
 import * as THOR from '../thorchain'
 import { client$, selectedAsset$ } from './common'
 import { INITIAL_LOAD_TXS_PROPS } from './const'
@@ -67,7 +70,7 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
           () => Rx.of(RD.initial),
           ({ asset }) => {
             const { chain } = asset
-            if (!isSupportedChain(chain) || asset.synth || isThorChain(chain)) {
+            if (!isSupportedChain(chain) || asset.type === AssetType.SYNTH || isThorChain(chain)) {
               return Rx.of(RD.failure<ApiError>({ errorId: ErrorId.GET_ASSET_TXS, msg: `Unsupported chain ${chain}` }))
             }
             switch (chain) {
@@ -97,6 +100,8 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
                 return KUJI.txs$({ asset: O.none, walletAddress, walletIndex })
               case GAIAChain:
                 return COSMOS.txs$({ asset: O.none, walletAddress, walletIndex })
+              case RadixChain:
+                return XRD.txs$({ asset: O.some(asset), walletAddress, walletIndex })
               default:
                 return Rx.of(
                   RD.failure<ApiError>({ errorId: ErrorId.GET_ASSET_TXS, msg: `Unsupported chain ${chain}` })

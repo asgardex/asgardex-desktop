@@ -1,8 +1,9 @@
 import type Transport from '@ledgerhq/hw-transport'
 import { FeeOption, Network, TxHash } from '@xchainjs/xchain-client'
 import * as ARB from '@xchainjs/xchain-evm'
-import { Address, Asset, assetToString, BaseAmount } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, assetToString, baseAmount, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
+import { ethers } from 'ethers'
 import * as E from 'fp-ts/Either'
 
 import { isAethAsset } from '../../../../renderer/helpers/assetHelper'
@@ -13,7 +14,6 @@ import { getDerivationPath } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
-import { LedgerSigner } from '../evm/LedgerSigner'
 
 /**
  * Sends ETH tx using Ledger
@@ -26,21 +26,33 @@ export const send = async ({
   memo,
   recipient,
   feeOption,
-  walletIndex
+  walletAccount,
+  walletIndex,
+  evmHDMode
 }: {
-  asset: Asset
+  asset: AnyAsset
   transport: Transport
   amount: BaseAmount
   network: Network
   recipient: Address
   memo?: string
   feeOption: FeeOption
+  walletAccount: number
   walletIndex: number
   evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const clientledger = new ARB.ClientLedger({ transport, ...defaultArbParams, network: network })
-    const txHash = await clientledger.transfer({ walletIndex, asset, recipient, amount, memo, feeOption })
+    const clientledger = new ARB.ClientLedger({
+      ...defaultArbParams,
+      signer: new ARB.LedgerSigner({
+        transport,
+        provider: defaultArbParams.providers[Network.Mainnet],
+        derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
+      }),
+      network: network
+    })
+    const arbAsset = asset as ARB.CompatibleAsset
+    const txHash = await clientledger.transfer({ walletIndex, asset: arbAsset, recipient, amount, memo, feeOption })
     if (!txHash) {
       return E.left({
         errorId: LedgerErrorId.INVALID_RESPONSE,
@@ -61,8 +73,8 @@ export const send = async ({
  * Sends ETH deposit txs using Ledger
  */
 export const deposit = async ({
-  transport,
   asset,
+  transport,
   router,
   network,
   amount,
@@ -73,7 +85,7 @@ export const deposit = async ({
   feeOption,
   evmHDMode
 }: {
-  asset: Asset
+  asset: AnyAsset
   router: Address
   transport: Transport
   amount: BaseAmount
@@ -86,7 +98,7 @@ export const deposit = async ({
   evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const address = !isAethAsset(asset) ? ARB.getTokenAddress(asset) : ArbZeroAddress
+    const address = !isAethAsset(asset) ? ARB.getTokenAddress(asset as TokenAsset) : ArbZeroAddress
 
     if (!address) {
       return E.left({
@@ -97,42 +109,49 @@ export const deposit = async ({
 
     const isETHAddress = address === ArbZeroAddress
 
-    const clientledger = new ARB.ClientLedger({ transport, ...defaultArbParams, network: network })
+    const clientledger = new ARB.ClientLedger({
+      ...defaultArbParams,
+      signer: new ARB.LedgerSigner({
+        transport,
+        provider: defaultArbParams.providers[Network.Mainnet],
+        derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
+      }),
+      network: network
+    })
 
-    const app = await clientledger.getApp()
-    const path = getDerivationPath(walletAccount, walletIndex, evmHDMode)
     const provider = clientledger.getProvider()
-    const signer = new LedgerSigner({ provider, path, app })
 
     const gasPrices = await clientledger.estimateGasPrices()
     const gasPrice = gasPrices[feeOption].amount().toFixed(0) // no round down needed
     const blockTime = await getBlocktime(provider)
     const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
 
-    // Note: `client.call` handling very - similar to `runSendPoolTx$` in `src/renderer/services/ethereum/transaction.ts`
-    // Call deposit function of Router contract
-    // Note2: Amounts need to use `toFixed` to convert `BaseAmount` to `Bignumber`
-    // since `value` and `gasPrice` type is `Bignumber`
-    const { hash } = await clientledger.call<{ hash: TxHash }>({
-      signer,
-      contractAddress: router,
-      abi: ROUTER_ABI,
-      funcName: 'depositWithExpiry',
-      funcParams: [
-        recipient,
-        address,
-        // Send `BaseAmount` w/o decimal and always round down for currencies
-        amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
-        memo,
-        expiration,
-        isETHAddress
-          ? {
-              // Send `BaseAmount` w/o decimal and always round down for currencies
-              value: amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
-              gasPrice
-            }
-          : { gasPrice }
-      ]
+    const depositParams = [
+      recipient,
+      address,
+      amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
+      memo,
+      expiration,
+      isETHAddress
+        ? {
+            value: amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
+            gasPrice
+          }
+        : { gasPrice }
+    ]
+
+    const routerContract = new ethers.Contract(router, ROUTER_ABI)
+    const unsignedTx = await routerContract.populateTransaction.depositWithExpiry(...depositParams)
+    const nativeAsset = clientledger.getAssetInfo()
+
+    const hash = await clientledger.transfer({
+      asset: nativeAsset.asset,
+      amount: isETHAddress ? amount : baseAmount(0, nativeAsset.decimal),
+      memo: unsignedTx.data,
+      recipient: router,
+      gasPrice: gasPrices.fast,
+      isMemoEncoded: true,
+      gasLimit: ethers.BigNumber.from(160000)
     })
 
     return E.right(hash)

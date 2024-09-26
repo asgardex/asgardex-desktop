@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { Address, Asset } from '@xchainjs/xchain-util'
+import { Address, AnyAsset } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
 import * as Eq from 'fp-ts/lib/Eq'
 import * as FP from 'fp-ts/lib/function'
@@ -22,7 +22,7 @@ import { BorrowerProviderRD, ThorchainLastblockRD } from '../../services/thorcha
 import { UpdateBorrowerProvider } from './Loans.types'
 
 type Props = {
-  asset: Asset
+  asset: AnyAsset
   address: Address
   poolDetails: PoolDetails
 }
@@ -44,7 +44,7 @@ export const LoansDetailsView: React.FC<Props> = (props): JSX.Element => {
 
   const [borrowerProviderRD, updateBorrowerProvider$] = useObservableState<
     BorrowerProviderRD,
-    { address: Address; asset: Asset }
+    { address: Address; asset: AnyAsset }
   >(
     (updated$) =>
       FP.pipe(

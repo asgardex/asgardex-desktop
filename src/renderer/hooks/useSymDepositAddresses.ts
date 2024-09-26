@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Asset } from '@xchainjs/xchain-util'
+import { AnyAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
@@ -26,7 +26,7 @@ export const useSymDepositAddresses = ({
   assetWalletType,
   runeWalletType
 }: {
-  asset: O.Option<Asset>
+  asset: O.Option<AnyAsset>
   dex: Dex
   assetWalletType: WalletType
   runeWalletType: WalletType

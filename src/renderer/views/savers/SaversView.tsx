@@ -5,7 +5,7 @@ import { Tab } from '@headlessui/react'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Address, Asset, assetToString, baseAmount, Chain, CryptoAmount } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, assetToString, baseAmount, Chain, CryptoAmount } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
 import * as Eq from 'fp-ts/lib/Eq'
 import * as FP from 'fp-ts/lib/function'
@@ -72,7 +72,7 @@ const eqUpdateAddress = Eq.struct<UpdateAddress>({
   network: eqNetwork
 })
 
-type Props = { asset: Asset; walletType: WalletType }
+type Props = { asset: AnyAsset; walletType: WalletType }
 
 const Content: React.FC<Props> = (props): JSX.Element => {
   const { asset, walletType } = props
@@ -192,7 +192,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   )
 
   const onChangeAssetHandler = useCallback(
-    ({ source, sourceWalletType }: { source: Asset; sourceWalletType: WalletType }) => {
+    ({ source, sourceWalletType }: { source: AnyAsset; sourceWalletType: WalletType }) => {
       const path = saversRoutes.earn.path({
         asset: assetToString(source),
         walletType: sourceWalletType
@@ -274,7 +274,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
             () => renderLoadingContent,
             renderError,
             ([{ poolDetails, assetDetails }, assetWD, address]) => {
-              const poolAssets: Asset[] = FP.pipe(
+              const poolAssets: AnyAsset[] = FP.pipe(
                 assetDetails,
                 A.map(({ asset }) => asset)
               )
@@ -440,7 +440,7 @@ export const SaversView: React.FC = (): JSX.Element => {
   const { asset, walletType } = useParams<SaversRouteParams>()
 
   const oWalletType = useMemo(() => FP.pipe(walletType, O.fromPredicate(isWalletType)), [walletType])
-  const oAsset: O.Option<Asset> = useMemo(() => getAssetFromNullableString(asset), [asset])
+  const oAsset: O.Option<AnyAsset> = useMemo(() => getAssetFromNullableString(asset), [asset])
 
   const intl = useIntl()
 

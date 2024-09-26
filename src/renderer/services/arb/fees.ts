@@ -51,7 +51,7 @@ export const createFeesService = (client$: Client$): FeesService => {
     // Estimate gas limit
     const gasLimit = await client.estimateGasLimit({
       from: params.from,
-      asset: params.asset,
+      asset: params.asset as Asset,
       amount: params.amount,
       recipient: params.recipient,
       memo: params.memo

@@ -21,7 +21,9 @@ import {
   formatAssetAmountCurrency,
   eqAsset,
   CryptoAmount,
-  assetFromStringEx
+  assetFromStringEx,
+  TokenAsset,
+  AnyAsset
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/Array'
@@ -116,12 +118,12 @@ export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
 
 export type LoanCloseProps = {
   keystore: KeystoreState
-  poolAssets: Asset[]
+  poolAssets: AnyAsset[]
   poolDetails: PoolDetails
   getLoanQuoteClose$: (
-    asset: Asset,
+    asset: AnyAsset,
     repayBps: number,
-    targetAsset: Asset,
+    targetAsset: AnyAsset,
     loanOwner: string,
     minOut?: string,
     height?: number
@@ -132,10 +134,10 @@ export type LoanCloseProps = {
   network: Network
   pricePool: PricePool
   poolAddress: O.Option<PoolAddress>
-  borrowerPosition: (asset: Asset, address: string) => BorrowerProviderLD
+  borrowerPosition: (asset: AnyAsset, address: string) => BorrowerProviderLD
   fees$: SaverWithdrawFeesHandler
   sourceWalletType: WalletType
-  onChangeAsset: ({ source, sourceWalletType }: { source: Asset; sourceWalletType: WalletType }) => void
+  onChangeAsset: ({ source, sourceWalletType }: { source: AnyAsset; sourceWalletType: WalletType }) => void
   walletBalances: Pick<BalancesState, 'balances' | 'loading'>
   goToTransaction: OpenExplorerTxUrl
   getExplorerTxUrl: GetExplorerTxUrl
@@ -198,7 +200,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
 
   const [repayStartTime, setRepayStartTime] = useState<number>(0)
 
-  const prevAsset = useRef<O.Option<Asset>>(O.none)
+  const prevAsset = useRef<O.Option<AnyAsset>>(O.none)
 
   const {
     state: withdrawState,
@@ -239,13 +241,13 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     //tobeFixed
     switch (sourceChain) {
       case ETHChain:
-        return isEthAsset(sourceAsset) ? O.some(false) : O.some(isEthTokenAsset(sourceAsset))
+        return isEthAsset(sourceAsset) ? O.some(false) : O.some(isEthTokenAsset(sourceAsset as TokenAsset))
       case AVAXChain:
-        return isAvaxAsset(sourceAsset) ? O.some(false) : O.some(isAvaxTokenAsset(sourceAsset))
+        return isAvaxAsset(sourceAsset) ? O.some(false) : O.some(isAvaxTokenAsset(sourceAsset as TokenAsset))
       case BSCChain:
-        return isBscAsset(sourceAsset) ? O.some(false) : O.some(isBscTokenAsset(sourceAsset))
+        return isBscAsset(sourceAsset) ? O.some(false) : O.some(isBscTokenAsset(sourceAsset as TokenAsset))
       case ARBChain:
-        return isAethAsset(sourceAsset) ? O.some(false) : O.some(isArbTokenAsset(sourceAsset))
+        return isAethAsset(sourceAsset) ? O.some(false) : O.some(isArbTokenAsset(sourceAsset as TokenAsset))
       default:
         return O.none
     }
@@ -254,7 +256,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
    * Selectable source assets to add to loan.
    * Based on loan the address has
    */
-  const selectableAssets: Asset[] = useMemo(() => {
+  const selectableAssets: AnyAsset[] = useMemo(() => {
     const result = FP.pipe(
       poolDetails,
       A.filter(({ totalCollateral }) => Number(totalCollateral) > 0),
@@ -539,7 +541,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
   const zeroBaseAmountMax1e8 = useMemo(() => max1e8BaseAmount(zeroBaseAmountMax), [zeroBaseAmountMax])
 
   const setAsset = useCallback(
-    async (asset: Asset) => {
+    async (asset: AnyAsset) => {
       // delay to avoid render issues while switching
       await delay(100)
 
@@ -630,11 +632,11 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     const oTokenAddress: O.Option<string> = (() => {
       switch (sourceChain) {
         case ETHChain:
-          return getEthTokenAddress(sourceAsset)
+          return getEthTokenAddress(sourceAsset as TokenAsset)
         case AVAXChain:
-          return getAvaxTokenAddress(sourceAsset)
+          return getAvaxTokenAddress(sourceAsset as TokenAsset)
         case BSCChain:
-          return getBscTokenAddress(sourceAsset)
+          return getBscTokenAddress(sourceAsset as TokenAsset)
         default:
           return O.none
       }

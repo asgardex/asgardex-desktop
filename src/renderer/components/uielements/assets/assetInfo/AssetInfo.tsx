@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
-import { Address } from '@xchainjs/xchain-util'
-import { Asset, formatAssetAmount, assetToString, AssetAmount } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, AssetType } from '@xchainjs/xchain-util'
+import { formatAssetAmount, assetToString, AssetAmount } from '@xchainjs/xchain-util'
 import { Grid } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -19,7 +19,7 @@ import { AssetIcon } from '../assetIcon'
 import * as Styled from './AssetInfo.styles'
 
 type Props = {
-  asset: O.Option<Asset>
+  asset: O.Option<AnyAsset>
   // balances are optional:
   // No balances == don't render price
   // balances == render price
@@ -160,7 +160,7 @@ export const AssetInfo: React.FC<Props> = (props): JSX.Element => {
         <Styled.AssetSubtitle>
           {FP.pipe(
             oAsset,
-            O.map(({ chain, synth }) => (synth ? 'synth' : chain)),
+            O.map(({ chain, type }) => (type === AssetType.SYNTH ? 'synth' : chain)),
             O.getOrElse(() => loadingString)
           )}
         </Styled.AssetSubtitle>

@@ -1,5 +1,5 @@
 import { BSCChain } from '@xchainjs/xchain-bsc'
-import { Asset, assetFromString } from '@xchainjs/xchain-util'
+import { AnyAsset, assetFromString } from '@xchainjs/xchain-util'
 import ansis from 'ansis'
 import axios from 'axios'
 import * as IO from 'fp-ts/IO'
@@ -22,7 +22,7 @@ const WHITELIST_URL =
 
 const PATH = './src/renderer/types/generated/thorchain/bscerc20whitelist.ts'
 
-type AssetList = { asset: Asset; iconUrl: O.Option<string> }[]
+type AssetList = { asset: AnyAsset; iconUrl: O.Option<string> }[]
 
 const transformList = ({ tokens }: Pick<ERC20Whitelist, 'tokens'>): AssetList =>
   FP.pipe(
@@ -75,10 +75,10 @@ const createTemplate = (list: AssetList): string => {
      */
 
     import * as O from 'fp-ts/lib/Option'
-    import {Asset} from "@xchainjs/xchain-util";
+    import {TokenAsset} from "@xchainjs/xchain-util";
     import {BSCChain} from "@xchainjs/xchain-bsc";
 
-    export const BSC_TOKEN_WHITELIST: { asset: Asset, iconUrl: O.Option<string> }[] = [${listAsString}]
+    export const BSC_TOKEN_WHITELIST: { asset: TokenAsset, iconUrl: O.Option<string> }[] = [${listAsString}]
   `
 }
 

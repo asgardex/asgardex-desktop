@@ -6,7 +6,7 @@ import {
   formatAssetAmountCurrency,
   baseToAsset,
   baseAmount,
-  Asset,
+  AnyAsset,
   isSynthAsset
 } from '@xchainjs/xchain-util'
 import { useIntl } from 'react-intl'
@@ -27,7 +27,7 @@ import * as Styled from './AssetData.styles'
  */
 
 export type Props = {
-  asset: Asset
+  asset: AnyAsset
   walletType?: WalletType
   noTicker?: boolean
   amount?: BaseAmount

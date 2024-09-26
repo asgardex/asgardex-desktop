@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Asset, BaseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import { AnyAsset, BaseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
@@ -11,8 +11,8 @@ import { EmptyResult } from '../shared/result/EmptyResult'
 import { getBlockDate } from './Loan.utils'
 
 type Props = {
-  asset: Asset
-  priceAsset: Asset
+  asset: AnyAsset
+  priceAsset: AnyAsset
   current: { amount: BaseAmount; price: BaseAmount }
   issued: { amount: BaseAmount; price: BaseAmount }
   repaid: { amount: BaseAmount; price: BaseAmount }

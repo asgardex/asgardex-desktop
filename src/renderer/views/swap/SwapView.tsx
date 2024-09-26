@@ -4,7 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Address, Asset, assetToString, bn, Chain, baseAmount } from '@xchainjs/xchain-util'
+import { Address, assetToString, bn, Chain, baseAmount, AnyAsset, AssetType } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
 import * as Eq from 'fp-ts/lib/Eq'
@@ -65,8 +65,8 @@ const eqUpdateLedgerAddress = Eq.struct<UpdateLedgerAddress>({
 })
 
 type Props = {
-  sourceAsset: Asset
-  targetAsset: Asset
+  sourceAsset: AnyAsset
+  targetAsset: AnyAsset
   sourceWalletType: WalletType
   targetWalletType: O.Option<WalletType>
   recipientAddress: O.Option<Address>
@@ -80,8 +80,8 @@ const SuccessRouteView: React.FC<Props> = ({
   recipientAddress: oRecipientAddress
 }): JSX.Element => {
   const { dex } = useDex()
-  const { chain: sourceChain } = sourceAsset.synth ? dex.asset : sourceAsset
-  const { chain: targetChain } = targetAsset.synth ? dex.asset : targetAsset
+  const { chain: sourceChain } = sourceAsset.type === AssetType.SYNTH ? dex.asset : sourceAsset
+  const { chain: targetChain } = targetAsset.type === AssetType.SYNTH ? dex.asset : targetAsset
 
   const intl = useIntl()
   const navigate = useNavigate()
@@ -288,8 +288,8 @@ const SuccessRouteView: React.FC<Props> = ({
       targetWalletType: oTargetWalletType,
       recipientAddress: oRecipientAddress
     }: {
-      source: Asset
-      target: Asset
+      source: AnyAsset
+      target: AnyAsset
       sourceWalletType: WalletType
       targetWalletType: O.Option<WalletType>
       recipientAddress: O.Option<Address>
@@ -466,7 +466,7 @@ const SuccessRouteView: React.FC<Props> = ({
               if (!targetAssetDetail)
                 return renderError(Error(`Missing pool for target asset ${assetToString(targetAsset.asset)}`))
 
-              const poolAssets: Asset[] = FP.pipe(
+              const poolAssets: AnyAsset[] = FP.pipe(
                 assetDetails,
                 A.map(({ asset }) => asset)
               )
@@ -549,12 +549,12 @@ export const SwapView: React.FC = (): JSX.Element => {
   const sourceAssetString = source && source.match('_synth_') ? source.replace('_synth_', '/') : source
   const targetAssetString = target && target.match('_synth_') ? target.replace('_synth_', '/') : target
 
-  const oSourceAsset: O.Option<Asset> = useMemo(
+  const oSourceAsset: O.Option<AnyAsset> = useMemo(
     () => getAssetFromNullableString(sourceAssetString),
     [sourceAssetString]
   )
 
-  const oTargetAsset: O.Option<Asset> = useMemo(() => {
+  const oTargetAsset: O.Option<AnyAsset> = useMemo(() => {
     const asset = getAssetFromNullableString(targetAssetString)
     return asset
   }, [targetAssetString])

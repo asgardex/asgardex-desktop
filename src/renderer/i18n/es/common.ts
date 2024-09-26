@@ -69,6 +69,7 @@ const common: CommonMessages = {
   'common.settings': 'Ajustes',
   'common.asset': 'Activo',
   'common.assets': 'Activos',
+  'common.tradeAssets': 'Comerciar activos',
   'common.rune': 'RUNE',
   'common.pool': 'Fondo',
   'common.pool.inbound': 'Fondo entrada',
@@ -98,6 +99,7 @@ const common: CommonMessages = {
   'common.fee.affiliate': 'Afiliado',
   'common.max': 'Máx',
   'common.min': 'Mín',
+  'common.half': 'Mitad',
   'common.search': 'Buscar en',
   'common.searchAsset': 'Buscar Activo',
   'common.addAsset': '¿El token no aparece? Añadir manualmente',
@@ -191,7 +193,8 @@ const common: CommonMessages = {
   'common.expandAll': 'Expandir todo',
   'common.excludeSynth': 'Excluir Sintéticos',
   'common.completeLp': 'Completar Lp',
-  'common.asset.quickSelect': 'Selección Rápida L1'
+  'common.asset.quickSelect': 'Selección Rápida L1',
+  'common.asset.chooseAsset': 'Elige un activo'
 }
 
 export default common

@@ -1,8 +1,8 @@
-import React, { useRef, useCallback, useState } from 'react'
+import React, { useRef, useCallback } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
 import {
-  Asset,
+  AnyAsset,
   assetAmount,
   assetToBase,
   BaseAmount,
@@ -15,6 +15,7 @@ import { useIntl } from 'react-intl'
 
 import { isUSDAsset } from '../../../../helpers/assetHelper'
 import { AssetWithAmount, FixmeType } from '../../../../types/asgardex'
+import { Button } from '../../button'
 import { CheckButton } from '../../button/CheckButton'
 import { InputBigNumber } from '../../input'
 import { AssetSelect } from '../assetSelect'
@@ -25,11 +26,12 @@ export type Props = {
   title?: string
   amount: AssetWithAmount
   priceAmount: AssetWithAmount
-  assets: Asset[]
+  assets: AnyAsset[]
   network: Network
   disabled?: boolean
   showError?: boolean
-  onChangeAsset: (asset: Asset) => void
+  hasAmountShortcut?: boolean
+  onChangeAsset: (asset: AnyAsset) => void
   onChange?: (value: BaseAmount) => void
   onBlur?: FP.Lazy<void>
   onFocus?: FP.Lazy<void>
@@ -40,6 +42,7 @@ export type Props = {
   extraContent?: React.ReactNode
   className?: string
   classNameInput?: string
+  onChangePercent?: (percents: number) => void
 }
 
 /**
@@ -50,6 +53,22 @@ export type Props = {
  *
  * Decimal of `InputBigNumber` depends on `decimal` of given `amount`.
  */
+
+const amountShortcuts = [
+  {
+    textId: 'common.min',
+    amount: 0
+  },
+  {
+    textId: 'common.half',
+    amount: 50
+  },
+  {
+    textId: 'common.max',
+    amount: 100
+  }
+]
+
 export const AssetInput: React.FC<Props> = (props): JSX.Element => {
   const {
     title,
@@ -58,13 +77,13 @@ export const AssetInput: React.FC<Props> = (props): JSX.Element => {
     priceAmount: { amount: priceAmount, asset: priceAsset },
     assets,
     network,
+    hasAmountShortcut = false,
     disabled = false,
     showError = false,
     asLabel = false,
     onChangeAsset,
     onChange = FP.constVoid,
-    onBlur = FP.constVoid,
-    onFocus = FP.constVoid,
+    onChangePercent,
     useLedger,
     hasLedger,
     useLedgerHandler,
@@ -76,8 +95,6 @@ export const AssetInput: React.FC<Props> = (props): JSX.Element => {
 
   const intl = useIntl()
 
-  const [focused, setFocused] = useState(false)
-
   const onChangeHandler = useCallback(
     (value: BigNumber) => {
       onChange(assetToBase(assetAmount(value, amount.decimal)))
@@ -85,53 +102,54 @@ export const AssetInput: React.FC<Props> = (props): JSX.Element => {
     [amount.decimal, onChange]
   )
 
+  const onChangePercentHandler = useCallback(
+    (percents: number) => {
+      if (onChangePercent) onChangePercent(percents)
+    },
+    [onChangePercent]
+  )
+
   const handleClickWrapper = useCallback(() => {
     inputWrapperRef.current?.firstChild?.focus()
   }, [])
 
-  const onFocusHandler = useCallback(() => {
-    setFocused(true)
-    onFocus()
-  }, [onFocus])
-
-  const onBlurHandler = useCallback(() => {
-    setFocused(false)
-    onBlur()
-  }, [onBlur])
-
   return (
-    <div className={`flex flex-col ${className}`}>
-      <div
-        className={`
-      relative
-      flex
-      border-gray1 dark:border-gray1d
-      ${showError ? 'border-error0 dark:border-error0d' : ''}
-      ${focused ? 'shadow-full dark:shadow-fulld' : ''}
-      ease
-      border
-      uppercase
-      ${classNameInput}`}
-        ref={inputWrapperRef}
-        onClick={handleClickWrapper}>
-        {/* title */}
+    <div
+      className={`flex  flex-col
+          rounded-lg border border-gray1 py-2 px-4
+          dark:border-gray0d ${className}`}>
+      <div className="flex items-center justify-between">
         {title && (
           <p
-            className={`absolute left-[10px] top-[-15px] p-5px font-main text-[14px]
-    ${showError ? 'text-error0 dark:text-error0d' : 'text-gray2 dark:text-gray2d'} m-0 bg-bg0 dark:bg-bg0d`}>
+            className={`m-0 bg-bg0 font-main text-[14px] dark:bg-bg0d
+              ${showError ? 'text-error0 dark:text-error0d' : 'text-gray2 dark:text-gray2d'}`}>
             {title}
           </p>
         )}
-
-        <div
-          className="flex w-full flex-col
-        py-20px
-        ">
+        {hasAmountShortcut && (
+          <div className="flex items-center space-x-2">
+            {amountShortcuts.map(({ textId, amount }) => (
+              <Button key={textId} typevalue="outline" sizevalue="small" onClick={() => onChangePercentHandler(amount)}>
+                {intl.formatMessage({ id: textId })}
+              </Button>
+            ))}
+          </div>
+        )}
+      </div>
+      <div
+        className={`
+          flex
+          ${showError ? 'border-error0 dark:border-error0d' : ''}
+          ease
+          uppercase
+          ${classNameInput}
+        `}
+        ref={inputWrapperRef}
+        onClick={handleClickWrapper}>
+        <div className="flex w-full flex-col py-1">
           <InputBigNumber
             value={baseToAsset(amount).amount()}
             onChange={onChangeHandler}
-            onBlur={onBlurHandler}
-            onFocus={onFocusHandler}
             size="xlarge"
             ghost
             error={showError}
@@ -139,19 +157,13 @@ export const AssetInput: React.FC<Props> = (props): JSX.Element => {
             decimal={amount.decimal}
             // override text style of input for acting as label only
             className={`
-        w-full
-        border-r
-        border-gray1
-        leading-none
-        dark:border-gray1d
-          ${asLabel ? 'text-text0 !opacity-100 dark:text-text0d' : ''}`}
+              w-full
+              px-0
+              leading-none
+              ${asLabel ? 'text-text0 !opacity-100 dark:text-text0d' : ''}`}
           />
 
-          <p
-            className="mb-0 border-r border-gray1 px-15px font-main text-[14px]
-        leading-none
-        text-gray1 dark:border-gray1d dark:text-gray1d
-        ">
+          <p className="mb-0 font-main text-[14px] leading-none text-gray1 dark:text-gray1d">
             {formatAssetAmountCurrency({
               amount: baseToAsset(priceAmount),
               asset: priceAsset,
@@ -167,7 +179,8 @@ export const AssetInput: React.FC<Props> = (props): JSX.Element => {
           asset={asset}
           assets={assets}
           network={network}
-          dialogHeadline={intl.formatMessage({ id: 'common.asset.quickSelect' })}
+          dialogHeadline={intl.formatMessage({ id: 'common.asset.chooseAsset' })}
+          shadowless
           disabled={disabled}
         />
       </div>

@@ -1,4 +1,4 @@
-import { BaseAmount, Asset, Address } from '@xchainjs/xchain-util'
+import { BaseAmount, Address, AnyAsset } from '@xchainjs/xchain-util'
 import { Option } from 'fp-ts/lib/Option'
 
 import { WalletType } from '../../shared/wallet/types'
@@ -12,19 +12,19 @@ export type Pair = {
 }
 
 export type AssetWithAmount = {
-  asset: Asset
+  asset: AnyAsset
   amount: BaseAmount
 }
 
 export type AssetWithAddress = {
-  asset: Asset
+  asset: AnyAsset
   address: Address
 }
 
 export type AssetsWithAddress = AssetWithAddress[]
 
 export type AssetWithWalletType = {
-  asset: Asset
+  asset: AnyAsset
   walletType: WalletType
 }
 
@@ -34,14 +34,14 @@ export type AssetWithWalletType = {
  * which uses 1e8 decimal for all assets
  */
 export type AssetWithAmount1e8 = {
-  asset: Asset
+  asset: AnyAsset
   amount1e8: BaseAmount
 }
 
 export type AssetsWithAmount1e8 = AssetWithAmount1e8[]
 
 export type AssetWithDecimal = {
-  asset: Asset
+  asset: AnyAsset
   decimal: number
 }
 

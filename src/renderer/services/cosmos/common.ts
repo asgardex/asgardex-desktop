@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Client, GAIAChain } from '@xchainjs/xchain-cosmos'
+import { Client, defaultClientConfig, GAIAChain } from '@xchainjs/xchain-cosmos'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -30,6 +30,7 @@ const clientState$: ClientState$ = FP.pipe(
           O.map<string, ClientState>((phrase) => {
             try {
               const client = new Client({
+                ...defaultClientConfig,
                 network,
                 phrase
               })

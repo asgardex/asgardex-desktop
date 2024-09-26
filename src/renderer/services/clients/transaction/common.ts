@@ -2,7 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { TxHash, XChainClient } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import * as ETH from '@xchainjs/xchain-evm'
-import { Address } from '@xchainjs/xchain-util'
+import { Address, TokenAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
@@ -27,38 +27,42 @@ export const loadTxs$ = ({
   // To do, fix filter by assets for avax and bsc
   const txAsset = FP.pipe(
     oAsset,
-    O.map((asset) => (asset.chain === ETHChain ? ETH.getTokenAddress(asset) || undefined : undefined)),
+    O.map((asset) => (asset.chain === ETHChain ? ETH.getTokenAddress(asset as TokenAsset) || undefined : undefined)),
     O.toUndefined
   )
 
-  const address = FP.pipe(
+  const address$ = FP.pipe(
     walletAddress,
-    /* TODO (@asgdx-team) Make sure we use correct index by introducing HD wallets in the future */
-    O.getOrElse(() => client.getAddress(walletIndex))
+    O.fold(
+      () => Rx.from(client.getAddressAsync(walletIndex)),
+      (address) => Rx.of(address)
+    )
   )
 
-  return Rx.from(
-    client.getTransactions({
-      address,
-      asset: txAsset,
-      limit,
-      offset
-    })
-  ).pipe(
-    // Use the tap operator to log the response
-    RxOp.map(RD.success),
-    RxOp.catchError((error) => {
-      console.error('getTransactions error:', error) // Also log the error
-      return Rx.of(
-        RD.failure<ApiError>({
-          errorId: ErrorId.GET_ASSET_TXS,
-          msg: error?.message ?? error.toString(),
-          // Error code needs to be parsed this way - NOT accessible via `error?.status`
-          statusCode: JSON.parse(JSON.stringify(error))?.status
+  return address$.pipe(
+    RxOp.switchMap((address) =>
+      Rx.from(
+        client.getTransactions({
+          address,
+          asset: txAsset,
+          limit,
+          offset
         })
+      ).pipe(
+        RxOp.map(RD.success),
+        RxOp.catchError((error) => {
+          console.error('getTransactions error:', error)
+          return Rx.of(
+            RD.failure<ApiError>({
+              errorId: ErrorId.GET_ASSET_TXS,
+              msg: error?.message ?? error.toString(),
+              statusCode: JSON.parse(JSON.stringify(error))?.status
+            })
+          )
+        }),
+        RxOp.startWith(RD.pending)
       )
-    }),
-    RxOp.startWith(RD.pending)
+    )
   )
 }
 

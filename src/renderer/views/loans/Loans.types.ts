@@ -1,9 +1,9 @@
 import { Network } from '@xchainjs/xchain-client'
-import { BaseAmount, Asset, Address } from '@xchainjs/xchain-util'
+import { BaseAmount, Address, AnyAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 //tobefixed
 export type LoansTableRowData = {
-  asset: Asset
+  asset: AnyAsset
   collateralPrice: BaseAmount
   collateral: BaseAmount
   filled: BigNumber
@@ -15,4 +15,4 @@ export type LoansTableRowData = {
 
 export type LoansTableRowsData = LoansTableRowData[]
 
-export type UpdateBorrowerProvider = { address: Address; asset: Asset }
+export type UpdateBorrowerProvider = { address: Address; asset: AnyAsset }

@@ -49,7 +49,9 @@ const EXTERNALS_WHITELIST = [
   'finder.kujira.network',
   'midgard.ninerealms.com',
   'asgardex.com',
-  'arbiscan.io'
+  'arbiscan.io',
+  'mainnet.radixdlt.com',
+  'dashboard.radixdlt.com'
 ]
 
 export const openExternal = (target: string) => {

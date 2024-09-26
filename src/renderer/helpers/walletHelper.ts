@@ -1,6 +1,5 @@
 import { Network } from '@xchainjs/xchain-client'
-import { Address, Chain } from '@xchainjs/xchain-util'
-import { Asset, AssetAmount, baseToAsset } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, AssetType, Chain, AssetAmount, baseToAsset } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
@@ -14,7 +13,16 @@ import { ZERO_ASSET_AMOUNT } from '../const'
 import { WalletBalances } from '../services/clients'
 import { NonEmptyWalletBalances, WalletBalance } from '../services/wallet/types'
 import { isLtcAsset, isRuneNativeAsset, isMayaAsset } from './assetHelper'
-import { isArbChain, isBchChain, isDashChain, isDogeChain, isLtcChain, isMayaChain, isThorChain } from './chainHelper'
+import {
+  isArbChain,
+  isBchChain,
+  isDashChain,
+  isDogeChain,
+  isLtcChain,
+  isMayaChain,
+  isThorChain,
+  isXrdChain
+} from './chainHelper'
 import { eqAddress, eqAsset, eqChain, eqWalletType } from './fp/eq'
 
 /**
@@ -23,7 +31,7 @@ import { eqAddress, eqAsset, eqChain, eqWalletType } from './fp/eq'
  *
  * Note: Returns `None` if `Asset` has not been found this list.
  * */
-export const getAssetAmountByAsset = (balances: WalletBalances, assetToFind: Asset): O.Option<AssetAmount> =>
+export const getAssetAmountByAsset = (balances: WalletBalances, assetToFind: AnyAsset): O.Option<AssetAmount> =>
   FP.pipe(
     balances,
     A.findFirst(({ asset }) => eqAsset.equals(asset, assetToFind)),
@@ -32,7 +40,7 @@ export const getAssetAmountByAsset = (balances: WalletBalances, assetToFind: Ass
 
 export const getWalletBalanceByAsset = (
   oWalletBalances: O.Option<NonEmptyWalletBalances>,
-  asset: Asset
+  asset: AnyAsset
 ): O.Option<WalletBalance> =>
   FP.pipe(
     oWalletBalances,
@@ -50,7 +58,7 @@ export const getWalletBalanceByAssetAndWalletType = ({
   walletType
 }: {
   oWalletBalances: O.Option<NonEmptyWalletBalances>
-  asset: Asset
+  asset: AnyAsset
   walletType: WalletType
 }): O.Option<WalletBalance> =>
   FP.pipe(
@@ -82,7 +90,7 @@ export const getWalletBalanceByAddressAndAsset = ({
 }: {
   balances: NonEmptyWalletBalances
   address: Address
-  asset: Asset
+  asset: AnyAsset
 }): O.Option<WalletBalance> =>
   FP.pipe(
     balances,
@@ -105,7 +113,7 @@ export const getWalletAssetAmountFromBalances =
     )
 
 // TODO (@asgdx-team) Add tests
-export const hasLedgerInBalancesByAsset = (asset: Asset, balances: WalletBalances): boolean =>
+export const hasLedgerInBalancesByAsset = (asset: AnyAsset, balances: WalletBalances): boolean =>
   FP.pipe(
     balances,
     A.findFirst(
@@ -119,7 +127,7 @@ export const hasLedgerInBalancesByAsset = (asset: Asset, balances: WalletBalance
 
 export const getAssetAmountFromBalances = (
   balances: WalletBalances,
-  isAsset: (asset: Asset) => boolean
+  isAsset: (asset: AnyAsset) => boolean
 ): O.Option<AssetAmount> =>
   FP.pipe(
     balances,
@@ -129,7 +137,7 @@ export const getAssetAmountFromBalances = (
     O.map(({ amount }) => baseToAsset(amount))
   )
 
-export const getEVMAmountFromBalances = (balances: WalletBalances, assetToFind: Asset): O.Option<AssetAmount> =>
+export const getEVMAmountFromBalances = (balances: WalletBalances, assetToFind: AnyAsset): O.Option<AssetAmount> =>
   getAssetAmountFromBalances(balances, (asset) => asset === assetToFind)
 
 export const getLtcAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
@@ -138,12 +146,12 @@ export const getLtcAmountFromBalances = (balances: WalletBalances): O.Option<Ass
 export const getRuneNativeAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
   getAssetAmountFromBalances(balances, isRuneNativeAsset)
 
-export const getCacaoAmountFromBalances = (balances: WalletBalances, assetToFind: Asset): O.Option<AssetAmount> =>
+export const getCacaoAmountFromBalances = (balances: WalletBalances, assetToFind: AnyAsset): O.Option<AssetAmount> =>
   getAssetAmountFromBalances(balances, (asset) => asset === assetToFind)
 export const getMayaAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
   getAssetAmountFromBalances(balances, isMayaAsset)
 
-export const filterWalletBalancesByAssets = (balances: NonEmptyWalletBalances, assets: Asset[]): WalletBalances => {
+export const filterWalletBalancesByAssets = (balances: NonEmptyWalletBalances, assets: AnyAsset[]): WalletBalances => {
   return balances.filter((balance) => {
     const assetIndex = assets.findIndex(
       (asset) =>
@@ -156,14 +164,14 @@ export const filterWalletBalancesByAssets = (balances: NonEmptyWalletBalances, a
 }
 export const filterWalletBalancesByAssetsForDex = (
   balances: NonEmptyWalletBalances,
-  assets: Asset[],
+  assets: AnyAsset[],
   dex: Dex
 ): WalletBalances => {
   return balances.filter((balance) => {
     // Check if the balance is a synthetic asset and filter based on dex
 
     const walletAddressPrefix = balance.walletAddress.substring(0, 4).toUpperCase()
-    if (dex.chain !== walletAddressPrefix && balance.asset.synth) {
+    if (dex.chain !== walletAddressPrefix && balance.asset.type === AssetType.SYNTH) {
       return false
     }
 
@@ -205,6 +213,7 @@ export const isEnabledLedger = (chain: Chain, network: Network) => {
   if (isArbChain(chain)) return false
   // Disable for these chains
   if (isMayaChain(chain)) return false
+  if (isXrdChain(chain)) return false
   return true
 }
 

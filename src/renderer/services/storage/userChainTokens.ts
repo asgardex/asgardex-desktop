@@ -1,4 +1,4 @@
-import { Asset } from '@xchainjs/xchain-util'
+import { TokenAsset } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
@@ -30,19 +30,19 @@ window.apiAssetStorage.get().then(
   (_) => setStorageState(O.none /* any error while parsing JSON file*/)
 )
 
-const userAssets$: Rx.Observable<Asset[]> = FP.pipe(
+const userAssets$: Rx.Observable<TokenAsset[]> = FP.pipe(
   Rx.combineLatest([getStorageState$]),
   RxOp.map(([storageState]) =>
     FP.pipe(
       storageState,
       O.map((assets) => assets.assets),
-      O.getOrElse((): Asset[] => [])
+      O.getOrElse((): TokenAsset[] => [])
     )
   ),
   RxOp.shareReplay(1)
 )
 
-const addAsset = (asset: Asset) => {
+const addAsset = (asset: TokenAsset) => {
   const savedAssets: UserAssetStorage = FP.pipe(
     getStorageState(),
     O.getOrElse(() => ASSETS_STORAGE_DEFAULT)
@@ -64,7 +64,7 @@ const addAsset = (asset: Asset) => {
   )
 }
 
-const removeAsset = (asset: Asset) => {
+const removeAsset = (asset: TokenAsset) => {
   const savedAssets: UserAssetStorage = FP.pipe(
     getStorageState(),
     O.getOrElse(() => ASSETS_STORAGE_DEFAULT)

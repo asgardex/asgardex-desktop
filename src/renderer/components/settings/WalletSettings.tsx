@@ -15,8 +15,9 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { RadixChain } from '@xchainjs/xchain-radix'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Asset, Address, Chain } from '@xchainjs/xchain-util'
+import { Asset, Address, Chain, TokenAsset } from '@xchainjs/xchain-util'
 import { List, Collapse, RadioChangeEvent, AutoComplete, message } from 'antd'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
@@ -190,7 +191,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     [MAYAChain]: 0,
     [DASHChain]: 0,
     [KUJIChain]: 0,
-    [ARBChain]: 0
+    [ARBChain]: 0,
+    [RadixChain]: 0
   })
   const [walletAccountMap, setWalletAccountMap] = useState<Record<EnabledChain, number>>({
     [BTCChain]: 0,
@@ -205,7 +207,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     [MAYAChain]: 0,
     [DASHChain]: 0,
     [KUJIChain]: 0,
-    [ARBChain]: 0
+    [ARBChain]: 0,
+    [RadixChain]: 0
   })
 
   const {
@@ -619,7 +622,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
 
   // Handler to update the search state
   const [assetSearch, setAssetSearch] = useState<{ [key in Chain]?: string }>({})
-  const [filteredAssets, setFilteredAssets] = useState<{ [key in Chain]?: Asset[] }>({})
+  const [filteredAssets, setFilteredAssets] = useState<{ [key in Chain]?: TokenAsset[] }>({})
 
   const [isAddingByChain, setIsAddingByChain] = useState<{ [key in Chain]?: boolean }>({})
 
@@ -638,27 +641,27 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
       [chain]: searchValue
     }))
 
-    let matchedAssets: Asset[]
+    let matchedAssets: TokenAsset[]
     switch (chain) {
       case ETHChain:
-        matchedAssets = ERC20_WHITELIST.filter(
-          ({ asset }) => asset.symbol.toUpperCase().includes(searchValue) && !asset.synth
-        ).map(({ asset }) => asset)
+        matchedAssets = ERC20_WHITELIST.filter(({ asset }) => asset.symbol.toUpperCase().includes(searchValue)).map(
+          ({ asset }) => asset
+        )
         break
       case AVAXChain:
-        matchedAssets = AVAX_TOKEN_WHITELIST.filter(
-          ({ asset }) => asset.symbol.toUpperCase().includes(searchValue) && !asset.synth
+        matchedAssets = AVAX_TOKEN_WHITELIST.filter(({ asset }) =>
+          asset.symbol.toUpperCase().includes(searchValue)
         ).map(({ asset }) => asset)
         break
       case BSCChain:
-        matchedAssets = BSC_TOKEN_WHITELIST.filter(
-          ({ asset }) => asset.symbol.toUpperCase().includes(searchValue) && !asset.synth
-        ).map(({ asset }) => asset)
+        matchedAssets = BSC_TOKEN_WHITELIST.filter(({ asset }) => asset.symbol.toUpperCase().includes(searchValue)).map(
+          ({ asset }) => asset
+        )
         break
       case ARBChain:
-        matchedAssets = ARB_TOKEN_WHITELIST.filter(
-          ({ asset }) => asset.symbol.toUpperCase().includes(searchValue) && !asset.synth
-        ).map(({ asset }) => asset)
+        matchedAssets = ARB_TOKEN_WHITELIST.filter(({ asset }) => asset.symbol.toUpperCase().includes(searchValue)).map(
+          ({ asset }) => asset
+        )
         break
       default:
         matchedAssets = []
@@ -670,7 +673,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     }))
   }, [])
 
-  const addAssetToStorage = useCallback((asset: Asset, chain: Chain) => {
+  const addAssetToStorage = useCallback((asset: TokenAsset, chain: Chain) => {
     addAsset(asset)
 
     setAssetSearch((prevState) => ({
@@ -868,7 +871,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                       style={{ minWidth: 450, width: 'auto' }}
                       placeholder={intl.formatMessage({ id: 'common.searchAsset' })}
                       allowClear>
-                      {(filteredAssets[chain] || []).map((asset: Asset) => (
+                      {(filteredAssets[chain] || []).map((asset: TokenAsset) => (
                         <AutoComplete.Option key={asset.symbol} value={asset.symbol}>
                           <div>{asset.symbol}</div>
                         </AutoComplete.Option>

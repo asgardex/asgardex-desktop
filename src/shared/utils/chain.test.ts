@@ -8,6 +8,7 @@ import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { RadixChain } from '@xchainjs/xchain-radix'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 
 import { chainToString, isSupportedChain } from './chain'
@@ -25,6 +26,7 @@ describe('chain', () => {
     expect(isSupportedChain('LTC')).toBeTruthy()
     expect(isSupportedChain('GAIA')).toBeTruthy()
     expect(isSupportedChain('ARB')).toBeTruthy()
+    expect(isSupportedChain('XRD')).toBeTruthy()
     expect(isSupportedChain('invalid')).toBeFalsy()
     expect(isSupportedChain('')).toBeFalsy()
   })
@@ -62,6 +64,9 @@ describe('chain', () => {
     })
     it('MAYA', () => {
       expect(chainToString(MAYAChain)).toEqual('MAYAChain')
+    })
+    it('XRD', () => {
+      expect(chainToString(RadixChain)).toEqual('RADIX')
     })
   })
 })

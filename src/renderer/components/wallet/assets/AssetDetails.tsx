@@ -2,10 +2,9 @@ import React, { useCallback, useState } from 'react'
 
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
-import { isCacaoAsset } from '@xchainjs/xchain-mayachain-query'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
-import { Address, assetToString, Chain } from '@xchainjs/xchain-util'
-import { Asset } from '@xchainjs/xchain-util'
+import { Address, assetToString, AssetType, Chain } from '@xchainjs/xchain-util'
+import { AnyAsset } from '@xchainjs/xchain-util'
 import { Row, Col } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -34,7 +33,7 @@ export type Props = {
   walletType: WalletType
   txsPageRD: TxsPageRD
   balances: O.Option<NonEmptyWalletBalances>
-  asset: Asset
+  asset: AnyAsset
   openExplorerTxUrl: OpenExplorerTxUrl
   openExplorerAddressUrl?: FP.Lazy<void>
   reloadBalancesHandler?: FP.Lazy<void>
@@ -64,10 +63,9 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
     haltedChains,
     changeDex
   } = props
-
   const [currentPage, setCurrentPage] = useState(1)
 
-  const { chain } = asset.synth ? dex.asset : asset
+  const { chain } = asset.type === AssetType.SYNTH ? dex.asset : asset
 
   const navigate = useNavigate()
   const intl = useIntl()
@@ -110,7 +108,7 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
       const newDex = dex.chain === 'MAYA' ? thorDetails : mayaDetails
       changeDex(newDex)
     }
-    const routeAsset = AssetHelper.isRuneNativeAsset(asset) || isCacaoAsset(asset) ? AssetBTC : asset
+    const routeAsset = AssetHelper.isRuneNativeAsset(asset) || AssetHelper.isCacaoAsset(asset) ? AssetBTC : asset
 
     const path = poolsRoutes.deposit.path({
       asset: assetToString(routeAsset),
@@ -190,7 +188,7 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
                   disabled={disableSwap}>
                   {intl.formatMessage({ id: 'common.swap' })}
                 </FlatButton>
-                {!asset.synth && (
+                {asset.type !== AssetType.SYNTH && (
                   <FlatButton
                     className="m-2 ml-2 min-w-[200px]"
                     size="large"
@@ -238,11 +236,11 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
           </TextButton>
         </Col>
         <Col span={24}>
-          {asset.synth || AssetRuneNative ? (
+          {asset.type === AssetType.SYNTH || AssetRuneNative ? (
             <WarningView
               subTitle={intl.formatMessage(
                 { id: 'wallet.txs.history.disabled' },
-                { chain: `${chainToString(chain)} ${asset.synth ? 'synth' : ''}` }
+                { chain: `${chainToString(chain)} ${asset.type === AssetType.SYNTH ? 'synth' : ''}` }
               )}
               extra={
                 <FlatButton size="normal" color="neutral" onClick={openExplorerAddressUrl}>

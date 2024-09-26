@@ -1,9 +1,9 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { isApproved } from '@xchainjs/xchain-evm'
-import { baseAmount } from '@xchainjs/xchain-util'
-import BigNumber from 'bignumber.js'
+import { abi, isApproved } from '@xchainjs/xchain-evm'
+import { baseAmount, getContractAddressFromAsset, TokenAsset } from '@xchainjs/xchain-util'
+import { ethers } from 'ethers'
 import * as E from 'fp-ts/lib/Either'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
@@ -19,11 +19,10 @@ import {
   ipcLedgerSendTxParamsIO
 } from '../../../shared/api/io'
 import { LedgerError } from '../../../shared/api/types'
-import { DEPOSIT_EXPIRATION_OFFSET, ETHAddress } from '../../../shared/ethereum/const'
-import { ROUTER_ABI } from '../../../shared/evm/abi'
+import { DEPOSIT_EXPIRATION_OFFSET } from '../../../shared/ethereum/const'
 import { getBlocktime } from '../../../shared/evm/provider'
 import { isError, isEvmHDMode, isLedgerWallet } from '../../../shared/utils/guard'
-import { addressInERC20Whitelist, getEthAssetAddress } from '../../helpers/assetHelper'
+import { addressInERC20Whitelist, getEthAssetAddress, isEthTokenAsset } from '../../helpers/assetHelper'
 import { sequenceSOption } from '../../helpers/fpHelpers'
 import { LiveData } from '../../helpers/rx/liveData'
 import { Network$ } from '../app/types'
@@ -61,47 +60,47 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       sequenceSOption({ address: getEthAssetAddress(params.asset), router: params.router }),
       O.fold(
         () => failure$(`Invalid values: Asset ${params.asset} / router address ${params.router}`),
-        ({ address, router }) =>
+        ({ router }) =>
           FP.pipe(
             Rx.forkJoin({
               gasPrices: Rx.from(client.estimateGasPrices()),
               blockTime: Rx.from(getBlocktime(provider))
             }),
             RxOp.switchMap(({ gasPrices, blockTime }) => {
-              const isETHAddress = address === ETHAddress
-              const amount = isETHAddress ? baseAmount(0) : params.amount
-              const gasPrice = gasPrices[params.feeOption].amount().toFixed(0) // no round down needed
-              const signer = client.getWallet(params.walletIndex)
+              const isERC20 = isEthTokenAsset(params.asset as TokenAsset)
+              const checkSummedContractAddress = isERC20
+                ? ethers.utils.getAddress(getContractAddressFromAsset(params.asset as TokenAsset))
+                : ethers.constants.AddressZero
+
               const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
-              return Rx.from(
-                // Call deposit function of Router contract
-                // Note:
-                // Amounts need to use `toFixed` to convert `BaseAmount` to `Bignumber`
-                // since `value` and `gasPrice` type is `Bignumber`
-                client.call<{ hash: TxHash }>({
-                  signer,
-                  contractAddress: router,
-                  abi: ROUTER_ABI,
-                  funcName: 'depositWithExpiry',
-                  funcParams: [
-                    params.recipient,
-                    address,
-                    // Send `BaseAmount` w/o decimal and always round down for currencies
-                    amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
-                    params.memo,
-                    expiration,
-                    isETHAddress
-                      ? {
-                          // Send `BaseAmount` w/o decimal and always round down for currencies
-                          value: params.amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
-                          gasPrice
-                        }
-                      : { gasPrice }
-                  ]
-                })
+              const depositParams = [
+                params.recipient,
+                checkSummedContractAddress,
+                params.amount.amount().toFixed(),
+                params.memo,
+                expiration
+              ]
+
+              const routerContract = new ethers.Contract(router, abi.router)
+              const nativeAsset = client.getAssetInfo()
+
+              return Rx.from(routerContract.populateTransaction.depositWithExpiry(...depositParams)).pipe(
+                RxOp.switchMap((unsignedTx) =>
+                  Rx.from(
+                    client.transfer({
+                      asset: nativeAsset.asset,
+                      amount: isERC20 ? baseAmount(0, nativeAsset.decimal) : params.amount,
+                      memo: unsignedTx.data,
+                      recipient: router,
+                      gasPrice: gasPrices[params.feeOption],
+                      isMemoEncoded: true,
+                      gasLimit: ethers.BigNumber.from(160000)
+                    })
+                  )
+                )
               )
             }),
-            RxOp.map((txResult) => txResult.hash),
+            RxOp.map((txResult) => txResult),
             RxOp.map(RD.success),
             RxOp.catchError((error): TxHashLD => failure$(error?.message ?? error.toString())),
             RxOp.startWith(RD.pending)

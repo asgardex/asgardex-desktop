@@ -14,11 +14,14 @@ import { DEFAULT_MIDGARD_MAYA_URLS } from './mayaMidgard/const'
 import { DEFAULT_MIDGARD_URLS } from './midgard/const'
 import { DEFAULT_THORNODE_API_URLS, DEFAULT_THORNODE_RPC_URLS } from './thorchain/const'
 import { DEFAULT_ENABLED_CHAINS, EnabledChain } from './utils/chain'
+import { envOrDefault } from './utils/env'
+
+require('dotenv').config()
+
+export const ASGARDEX_THORNAME = envOrDefault(process.env.REACT_APP_ASGARDEX_THORNAME, 'dx')
 
 export const ASGARDEX_IDENTIFIER = 999
 
-// Thorname for affialiate address
-export const ASGARDEX_THORNAME = 'dx'
 // Asgardex full address
 export const ASGARDEX_ADDRESS = 'thor1rr6rahhd4sy76a7rdxkjaen2q4k4pw2g06w7qp'
 
@@ -53,7 +56,7 @@ export const USER_NODES_STORAGE_DEFAULT: UserNodesStorage = {
 }
 
 // increase it by `1` if you want to ignore previous version of `common` storage
-const CHAINS_STORAGE_VERSION = '1'
+const CHAINS_STORAGE_VERSION = '2'
 
 export const CHAINS_STORAGE_DEFAULT: UserChainStorage = {
   version: CHAINS_STORAGE_VERSION,
@@ -67,7 +70,7 @@ export const ADDRESS_STORAGE_DEFAULT: UserTrustedAddressStorage = {
   addresses: []
 }
 /// increase it by `1` if you want to ignore previous version of `common` storage
-const ASSETS_STORAGE_VERSION = '2'
+const ASSETS_STORAGE_VERSION = '3'
 
 export const ASSETS_STORAGE_DEFAULT: UserAssetStorage = {
   version: ASSETS_STORAGE_VERSION,

@@ -14,7 +14,12 @@ import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { MayachainQuery, QuoteSwap, QuoteSwapParams as QuoteSwapParamsMaya } from '@xchainjs/xchain-mayachain-query'
+import {
+  CompatibleAsset,
+  MayachainQuery,
+  QuoteSwap,
+  QuoteSwapParams as QuoteSwapParamsMaya
+} from '@xchainjs/xchain-mayachain-query'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { InboundDetail, QuoteSwapParams, ThorchainQuery, TxDetails } from '@xchainjs/xchain-thorchain-query'
 import {
@@ -27,10 +32,13 @@ import {
   assetAmount,
   Address,
   isSynthAsset,
-  CryptoAmount
+  CryptoAmount,
+  AssetType,
+  AnyAsset,
+  TokenAsset,
+  SynthAsset
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
-import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
@@ -61,7 +69,6 @@ import {
   to1e8BaseAmount,
   THORCHAIN_DECIMAL,
   isUSDAsset,
-  isChainAsset,
   isRuneNativeAsset,
   isAvaxTokenAsset,
   isBscTokenAsset,
@@ -148,7 +155,7 @@ import { SwapAssets } from '../modal/tx/extra'
 import { LoadingView } from '../shared/loading'
 import { AssetInput } from '../uielements/assets/assetInput'
 import { BaseButton, FlatButton, ViewTxButton } from '../uielements/button'
-import { MaxBalanceButton } from '../uielements/button/MaxBalanceButton'
+import { Collapse } from '../uielements/collapse'
 import { Tooltip, TooltipAddress, WalletTypeLabel } from '../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../uielements/fees'
 import { InfoIcon } from '../uielements/info'
@@ -173,7 +180,7 @@ export type SwapProps = {
   thorchainQuery: ThorchainQuery
   mayachainQuery: MayachainQuery
   keystore: KeystoreState
-  poolAssets: Asset[]
+  poolAssets: AnyAsset[]
   assets: {
     source: SwapAsset
     target: SwapAsset
@@ -207,8 +214,8 @@ export type SwapProps = {
     targetWalletType,
     recipientAddress
   }: {
-    source: Asset
-    target: Asset
+    source: AnyAsset
+    target: AnyAsset
     sourceWalletType: WalletType
     targetWalletType: O.Option<WalletType>
     recipientAddress: O.Option<Address>
@@ -268,8 +275,8 @@ export const Swap = ({
 }: SwapProps) => {
   const intl = useIntl()
 
-  const { chain: sourceChain } = sourceAsset.synth ? dex.asset : sourceAsset
-  const { chain: targetChain } = targetAsset.synth ? dex.asset : targetAsset
+  const { chain: sourceChain } = sourceAsset.type === AssetType.SYNTH ? dex.asset : sourceAsset
+  const { chain: targetChain } = targetAsset.type === AssetType.SYNTH ? dex.asset : targetAsset
 
   const lockedWallet: boolean = useMemo(() => isLocked(keystore) || !hasImportedKeystore(keystore), [keystore])
   const [quoteOnly, setQuoteOnly] = useState<boolean>(false)
@@ -334,8 +341,8 @@ export const Swap = ({
   // ZERO `BaseAmount` for target Asset <= 1e8
   const zeroTargetBaseAmountMax1e8 = useMemo(() => max1e8BaseAmount(zeroTargetBaseAmountMax), [zeroTargetBaseAmountMax])
 
-  const prevSourceAsset = useRef<O.Option<Asset>>(O.none)
-  const prevTargetAsset = useRef<O.Option<Asset>>(O.none)
+  const prevSourceAsset = useRef<O.Option<AnyAsset>>(O.none)
+  const prevTargetAsset = useRef<O.Option<AnyAsset>>(O.none)
 
   const [customAddressEditActive, setCustomAddressEditActive] = useState(false)
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -665,7 +672,11 @@ export const Swap = ({
     const swapOutFeeThor = FP.pipe(
       oQuote,
       O.fold(
-        () => new CryptoAmount(swapFees.outFee.amount, targetAsset.synth ? AssetRuneNative : targetAsset),
+        () =>
+          new CryptoAmount(
+            swapFees.outFee.amount,
+            targetAsset.type === AssetType.SYNTH ? AssetRuneNative : targetAsset
+          ),
         (txDetails) => {
           const txOutFee = txDetails.txEstimate.totalFees.outboundFee
           return txOutFee
@@ -675,7 +686,7 @@ export const Swap = ({
     const swapOutFeeMaya = FP.pipe(
       oQuoteMaya,
       O.fold(
-        () => new CryptoAmount(swapFees.outFee.amount, targetAsset.synth ? AssetCacao : targetAsset),
+        () => new CryptoAmount(swapFees.outFee.amount, targetAsset.type === AssetType.SYNTH ? AssetCacao : targetAsset),
         (quoteSwap) => {
           const txOutFee = quoteSwap.fees.outboundFee
           return txOutFee
@@ -773,7 +784,7 @@ export const Swap = ({
     const affiliateMaya = FP.pipe(
       oQuoteMaya,
       O.fold(
-        () => new CryptoAmount(baseAmount(0), AssetRuneNative), // default affiliate fee asset amount
+        () => new CryptoAmount(baseAmount(0), AssetCacao), // default affiliate fee asset amount
         (quoteSwap) => {
           const fee = quoteSwap.fees.affiliateFee
           return fee
@@ -897,9 +908,12 @@ export const Swap = ({
       FP.pipe(
         sequenceTOption(oRecipientAddress, oSourceWalletAddress),
         O.map(([destinationAddress, sourceWalletAddress]) => {
-          const fromAsset = sourceAsset
-          const destinationAsset = targetAsset
-          const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
+          const fromAsset = sourceAsset as CompatibleAsset
+          const destinationAsset = targetAsset as CompatibleAsset
+          const amount = new CryptoAmount(
+            convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal),
+            sourceAsset as CompatibleAsset
+          )
           const address = destinationAddress
           const fromAdd = sourceWalletAddress
           const streamingInt = isStreaming ? streamingInterval : 0
@@ -976,10 +990,13 @@ export const Swap = ({
             affiliateBps: applyBps
           }
           const estimateMayaDexSwap: QuoteSwapParamsMaya = {
-            fromAsset: sourceAsset,
-            destinationAsset: targetAsset,
+            fromAsset: sourceAsset as CompatibleAsset,
+            destinationAsset: targetAsset as CompatibleAsset,
             fromAddress: sourceWalletAddress,
-            amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset),
+            amount: new CryptoAmount(
+              convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal),
+              sourceAsset as CompatibleAsset
+            ),
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
             toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100, // convert to basis points,
@@ -1390,15 +1407,16 @@ export const Swap = ({
 
   const needApprovement: O.Option<boolean> = useMemo(() => {
     // ERC20 token does need approval only
+
     switch (sourceChain) {
       case ETHChain:
-        return isEthAsset(sourceAsset) ? O.some(false) : O.some(isEthTokenAsset(sourceAsset))
+        return isEthAsset(sourceAsset) ? O.some(false) : O.some(isEthTokenAsset(sourceAsset as TokenAsset))
       case AVAXChain:
-        return isAvaxAsset(sourceAsset) ? O.some(false) : O.some(isAvaxTokenAsset(sourceAsset))
+        return isAvaxAsset(sourceAsset) ? O.some(false) : O.some(isAvaxTokenAsset(sourceAsset as TokenAsset))
       case BSCChain:
-        return isBscAsset(sourceAsset) ? O.some(false) : O.some(isBscTokenAsset(sourceAsset))
+        return isBscAsset(sourceAsset) ? O.some(false) : O.some(isBscTokenAsset(sourceAsset as TokenAsset))
       case ARBChain:
-        return isAethAsset(sourceAsset) ? O.some(false) : O.some(isArbTokenAsset(sourceAsset))
+        return isAethAsset(sourceAsset) ? O.some(false) : O.some(isArbTokenAsset(sourceAsset as TokenAsset))
       default:
         return O.none
     }
@@ -1412,13 +1430,13 @@ export const Swap = ({
     const oTokenAddress: O.Option<string> = (() => {
       switch (sourceChain) {
         case ETHChain:
-          return getEthTokenAddress(sourceAsset)
+          return getEthTokenAddress(sourceAsset as TokenAsset)
         case AVAXChain:
-          return getAvaxTokenAddress(sourceAsset)
+          return getAvaxTokenAddress(sourceAsset as TokenAsset)
         case BSCChain:
-          return getBscTokenAddress(sourceAsset)
+          return getBscTokenAddress(sourceAsset as TokenAsset)
         case ARBChain:
-          return getArbTokenAddress(sourceAsset)
+          return getArbTokenAddress(sourceAsset as TokenAsset)
         default:
           return O.none
       }
@@ -1534,7 +1552,7 @@ export const Swap = ({
   const [swapStartTime, setSwapStartTime] = useState<number>(0)
 
   const setSourceAsset = useCallback(
-    async (asset: Asset) => {
+    async (asset: AnyAsset) => {
       // delay to avoid render issues while switching
       await delay(100)
       setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
@@ -1553,7 +1571,7 @@ export const Swap = ({
   )
 
   const setTargetAsset = useCallback(
-    async (asset: Asset) => {
+    async (asset: AnyAsset) => {
       // delay to avoid render issues while switching
       await delay(100)
       onChangeAsset({
@@ -1574,30 +1592,6 @@ export const Swap = ({
     const minAmountIn = convertBaseAmountDecimal(reccommendedAmountIn.baseAmount, amountToSwapMax1e8.decimal)
     return amountToSwapMax1e8.lt(minAmountIn)
   }, [amountToSwapMax1e8, isZeroAmountToSwap, reccommendedAmountIn.baseAmount])
-
-  const renderMinAmount = useMemo(
-    () => (
-      <div className="flex w-full items-center pl-10px pt-5px">
-        <p
-          className={`m-0 pr-5px font-main text-[12px] uppercase ${
-            minAmountError ? 'dark:error-0d text-error0' : 'text-gray2 dark:text-gray2d'
-          }`}>
-          {`${intl.formatMessage({ id: 'common.min' })}: ${formatAssetAmountCurrency({
-            asset: sourceAsset,
-            amount: reccommendedAmountIn.assetAmount,
-            trimZeros: true
-          })}`}
-        </p>
-        <InfoIcon
-          // override color
-          className={`${minAmountError ? '' : 'text-gray2 dark:text-gray2d'}`}
-          color={minAmountError ? 'error' : 'neutral'}
-          tooltip={intl.formatMessage({ id: 'swap.min.amount.info' })}
-        />
-      </div>
-    ),
-    [intl, minAmountError, sourceAsset, reccommendedAmountIn]
-  )
 
   // sets the locked asset amount to be the asset pool depth
   useEffect(() => {
@@ -1641,32 +1635,6 @@ export const Swap = ({
     thorchainQuery
   ])
 
-  const priceAmountMax1e8: CryptoAmount = useMemo(() => {
-    const result =
-      dex.chain === THORChain
-        ? FP.pipe(
-            isPoolDetails(poolDetails)
-              ? PoolHelpers.getPoolPriceValue({
-                  balance: { asset: sourceAsset, amount: maxAmountToSwapMax1e8 },
-                  poolDetails,
-                  pricePool
-                })
-              : O.none,
-            O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal)),
-            (amount) => ({ asset: pricePool.asset, amount })
-          )
-        : FP.pipe(
-            getPoolPriceValueM({
-              balance: { asset: sourceAsset, amount: maxAmountToSwapMax1e8 },
-              poolDetails,
-              pricePool
-            }),
-            O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal)),
-            (amount) => ({ asset: pricePool.asset, amount })
-          )
-    return new CryptoAmount(result.amount, result.asset)
-  }, [amountToSwapMax1e8.decimal, dex, maxAmountToSwapMax1e8, poolDetails, pricePool, sourceAsset])
-
   /**
    * Selectable source assets to swap from.
    *
@@ -1674,7 +1642,7 @@ export const Swap = ({
    * Zero balances are ignored.
    * Duplications of assets are merged.
    */
-  const selectableSourceAssets: Asset[] = useMemo(
+  const selectableSourceAssets: AnyAsset[] = useMemo(
     () =>
       FP.pipe(
         allBalances,
@@ -1696,10 +1664,9 @@ export const Swap = ({
    * Duplications of assets are merged.
    */
   const selectableTargetAssets = useMemo(
-    (): Asset[] =>
+    (): AnyAsset[] =>
       FP.pipe(
         poolAssets,
-        // Create synth version of assets (excluding assetRuneNative)
         A.chain((asset) =>
           isRuneNativeAsset(asset) || isCacaoAsset(asset)
             ? [asset]
@@ -1707,14 +1674,12 @@ export const Swap = ({
                 asset,
                 {
                   ...asset,
+                  type: AssetType.SYNTH,
                   synth: true
-                }
+                } as SynthAsset
               ]
         ),
-        // Remove source assets from List
         A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
-
-        // Merge duplications
         (assets) => unionAssets(assets)(assets)
       ),
     [poolAssets, sourceAsset]
@@ -1724,34 +1689,13 @@ export const Swap = ({
   const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
   const [showLedgerModal, setShowLedgerModal] = useState<ModalState>('none')
 
-  const renderSlider = useMemo(() => {
-    const percentage = amountToSwapMax1e8
-      .amount()
-      .dividedBy(maxAmountToSwapMax1e8.amount())
-      .multipliedBy(100)
-      // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
-      .decimalPlaces(0, BigNumber.ROUND_DOWN)
-      .toNumber()
-
-    const setAmountToSwapFromPercentValue = (percents: number) => {
+  const setAmountToSwapFromPercentValue = useCallback(
+    (percents: number) => {
       const amountFromPercentage = maxAmountToSwapMax1e8.amount().multipliedBy(percents / 100)
       return setAmountToSwapMax1e8(baseAmount(amountFromPercentage, maxAmountToSwapMax1e8.decimal))
-    }
-
-    return (
-      <Slider
-        key={'swap percentage slider'}
-        value={percentage}
-        onChange={setAmountToSwapFromPercentValue}
-        onAfterChange={reloadFeesHandler}
-        tooltipVisible
-        tipFormatter={(value) => `${value}%`}
-        withLabel
-        tooltipPlacement={'top'}
-        disabled={disableSwapAction}
-      />
-    )
-  }, [amountToSwapMax1e8, maxAmountToSwapMax1e8, reloadFeesHandler, disableSwapAction, setAmountToSwapMax1e8])
+    },
+    [maxAmountToSwapMax1e8, setAmountToSwapMax1e8]
+  )
 
   // Function to reset the slider to default position
   const resetToDefault = () => {
@@ -1760,12 +1704,18 @@ export const Swap = ({
     setSlider(dex.chain === THORChain ? 26 : 50)
     setIsStreaming(true)
   }
+
   const quoteOnlyButton = () => {
     setQuoteOnly(!quoteOnly)
     setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
     setQuote(O.none)
     setQuoteMaya(O.none)
   }
+
+  const labelMin = useMemo(
+    () => (slider <= 0 ? `Limit Swap` : `` || slider < 50 ? 'Time Optimised' : `Price Optimised`),
+    [slider]
+  )
 
   // Streaming Interval slider
   const renderStreamerInterval = useMemo(() => {
@@ -1795,8 +1745,6 @@ export const Swap = ({
     const tipFormatter =
       slider === 0 ? 'Caution tx could be refunded' : `${streamingIntervalValue} Block interval between swaps`
 
-    const labelMin = slider <= 0 ? `Limit Swap` : `` || slider < 50 ? 'Time Optimised' : `Price Optimised`
-
     return (
       <div>
         <Slider
@@ -1812,7 +1760,7 @@ export const Swap = ({
         />
       </div>
     )
-  }, [dex.chain, slider, streamingInterval])
+  }, [dex.chain, labelMin, slider, streamingInterval])
 
   // Streaming Quantity slider
   const renderStreamerQuantity = useMemo(() => {
@@ -2706,32 +2654,6 @@ export const Swap = ({
     return dex.chain === THORChain ? transactionTimeThor : transactionTimeMaya
   }, [dex, oQuote, oQuoteMaya, sourceChain, targetAsset])
 
-  const maxBalanceInfoTxt = useMemo(() => {
-    const balanceLabel = formatAssetAmountCurrency({
-      amount: baseToAsset(sourceAssetAmountMax1e8),
-      asset: sourceAsset,
-      decimal: isUSDAsset(sourceAsset) ? 2 : 8, // use 8 decimal as same we use in maxAmountToSwapMax1e8
-      trimZeros: !isUSDAsset(sourceAsset)
-    })
-
-    const feeLabel = FP.pipe(
-      swapFeesRD,
-      RD.map(({ inFee: { amount, asset: feeAsset } }) =>
-        formatAssetAmountCurrency({
-          amount: baseToAsset(amount),
-          asset: feeAsset,
-          decimal: isUSDAsset(feeAsset) ? 2 : 8, // use 8 decimal as same we use in maxAmountToSwapMax1e8
-          trimZeros: !isUSDAsset(feeAsset)
-        })
-      ),
-      RD.getOrElse(() => noDataString)
-    )
-
-    return isChainAsset(sourceAsset)
-      ? intl.formatMessage({ id: 'swap.info.max.balanceMinusFee' }, { balance: balanceLabel, fee: feeLabel })
-      : intl.formatMessage({ id: 'swap.info.max.balance' }, { balance: balanceLabel })
-  }, [sourceAssetAmountMax1e8, sourceAsset, swapFeesRD, intl])
-
   const [showDetails, setShowDetails] = useState<boolean>(false)
 
   return (
@@ -2739,13 +2661,12 @@ export const Swap = ({
       <div>
         {/* Note: Input value is shown as AssetAmount */}
         <Row>
-          {' '}
           <FlatButton
             onClick={quoteOnlyButton}
             size="small"
             color={quoteOnly ? 'warning' : 'primary'}
             className="mb-20px  rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
-            {quoteOnly ? 'Quote Only' : 'Quote & Swap'}
+            {quoteOnly ? 'Preview Only' : 'Preview & Swap'}
           </FlatButton>
           {disabledChains.length > 0 ? (
             <div className="text-12 text-gray2 dark:border-gray1d dark:text-gray2d">
@@ -2773,64 +2694,17 @@ export const Swap = ({
           priceAmount={{ asset: priceAmountToSwapMax1e8.asset, amount: priceAmountToSwapMax1e8.baseAmount }}
           assets={selectableSourceAssets}
           network={network}
+          hasAmountShortcut
           onChangeAsset={setSourceAsset}
           onChange={setAmountToSwapMax1e8}
+          onChangePercent={setAmountToSwapFromPercentValue}
           onBlur={reloadFeesHandler}
           showError={minAmountError}
           hasLedger={hasSourceAssetLedger}
           useLedger={useSourceAssetLedger}
           useLedgerHandler={onClickUseSourceAssetLedger}
-          extraContent={
-            <div className="flex flex-col">
-              <MaxBalanceButton
-                className="ml-10px mt-5px"
-                classNameButton="!text-gray2 dark:!text-gray2d"
-                classNameIcon={
-                  // show warn icon if maxAmountToSwapMax <= 0
-                  maxAmountToSwapMax1e8.gt(zeroTargetBaseAmountMax1e8)
-                    ? `text-gray2 dark:text-gray2d`
-                    : 'text-warning0 dark:text-warning0d'
-                }
-                size="medium"
-                balance={{ amount: maxAmountToSwapMax1e8, asset: sourceAsset }}
-                maxDollarValue={priceAmountMax1e8}
-                onClick={() => setAmountToSwapMax1e8(maxAmountToSwapMax1e8)}
-                maxInfoText={maxBalanceInfoTxt}
-                disabled={walletBalancesLoading}
-                hidePrivateData={hidePrivateData}
-              />
-              {minAmountError && renderMinAmount}
-            </div>
-          }
         />
-        <div className="w-full p-20px">{renderSlider}</div>
-        <div>
-          <div className="flex w-full pb-20px pt-20px">
-            <div className="w-full ">
-              <div className="w-9/10 px-20px pb-20px">{renderStreamerInterval}</div>
-              <div className="w-9/10 px-20px pb-20px">{renderStreamerQuantity}</div>
-              <div className="w-9/10 px-20px">{renderStreamerReturns}</div>
-            </div>
-            <div className="flex">
-              <TooltipAddress title="Reset to streaming default">
-                <BaseButton
-                  onClick={resetToDefault}
-                  className=" rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
-                  <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
-                </BaseButton>
-              </TooltipAddress>
-            </div>
-            <div className="m-40px flex flex-col justify-center ">
-              <div className=" border-gray1 dark:border-gray1d"></div>
-              <BaseButton
-                onClick={onSwitchAssets}
-                className="group rounded-full !p-10px hover:rotate-180 hover:shadow-full dark:hover:shadow-fulld">
-                <ArrowsUpDownIcon className="ease h-[40px] w-[40px] text-turquoise " />
-              </BaseButton>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-col">
+        <div className="relative mt-1 flex flex-col">
           <AssetInput
             className="w-full md:w-auto"
             title={intl.formatMessage({ id: 'swap.output' })}
@@ -2848,33 +2722,483 @@ export const Swap = ({
             useLedgerHandler={onClickUseTargetAssetLedger}
             hasLedger={hasTargetAssetLedger}
           />
+          <div className="absolute -top-[32px] left-[calc(50%-30px)] flex w-full flex-col justify-center">
+            <div className="w-60px h-60px">
+              <BaseButton
+                size="small"
+                onClick={onSwitchAssets}
+                className="group rounded-full border border-solid border-turquoise bg-bg0 !p-10px hover:rotate-180 hover:shadow-full dark:bg-bg0d dark:hover:shadow-fulld">
+                <ArrowsUpDownIcon className="ease h-[40px] w-[40px] text-turquoise " />
+              </BaseButton>
+            </div>
+          </div>
         </div>
-        {!lockedWallet &&
-          FP.pipe(
-            oRecipientAddress,
-            O.map((address) => (
-              <div className="mt-20px flex flex-col  px-10px" key="edit-address">
-                <div className="flex items-center">
-                  <h3 className="font-[12px] !mb-0 mr-10px w-auto p-0 font-main uppercase text-text2 dark:text-text2d">
-                    {intl.formatMessage({ id: 'common.recipient' })}
-                  </h3>
-                  <WalletTypeLabel key="target-w-type">{getWalletTypeLabel(oTargetWalletType, intl)}</WalletTypeLabel>
-                </div>
-                <EditableAddress
-                  key={address}
-                  asset={targetAsset}
-                  network={network}
-                  address={address}
-                  onChangeAddress={onChangeRecipientAddress}
-                  onChangeEditableAddress={onChangeEditableRecipientAddress}
-                  onChangeEditableMode={(editModeActive) => setCustomAddressEditActive(editModeActive)}
-                  addressValidator={addressValidator}
-                  hidePrivateData={hidePrivateData}
-                />
+        <div className="mt-1 space-y-1">
+          <Collapse
+            header={
+              <div className="flex flex-row items-center justify-between">
+                <span className="m-0 font-main text-[14px] text-gray2 dark:text-gray2d">
+                  {intl.formatMessage({ id: 'common.swap' })} {intl.formatMessage({ id: 'common.settings' })} (
+                  {labelMin})
+                </span>
               </div>
-            )),
-            O.toNullable
-          )}
+            }>
+            <div className="flex flex-col p-4">
+              <div className="flex w-full flex-col space-y-4 px-2">
+                <div>{renderStreamerInterval}</div>
+                <div>{renderStreamerQuantity}</div>
+                <div>{renderStreamerReturns}</div>
+              </div>
+              <div className="flex justify-end">
+                <TooltipAddress title="Reset to streaming default">
+                  <BaseButton
+                    onClick={resetToDefault}
+                    className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
+                    <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
+                  </BaseButton>
+                </TooltipAddress>
+              </div>
+            </div>
+          </Collapse>
+          <Collapse
+            header={
+              <div className="flex flex-row items-center justify-between">
+                <span className="m-0 font-main text-[14px] text-gray2 dark:text-gray2d">
+                  {intl.formatMessage({ id: 'common.swap' })} {intl.formatMessage({ id: 'common.details' })}
+                </span>
+              </div>
+            }>
+            {!isLocked(keystore) ? (
+              <div className={`w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d`}>
+                <BaseButton
+                  className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+                  onClick={() => setShowDetails((current) => !current)}>
+                  {intl.formatMessage({ id: 'common.details' })}
+                  {showDetails ? (
+                    <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+                  ) : (
+                    <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
+                  )}
+                </BaseButton>
+
+                <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
+                  {/* Rate */}
+                  <div className={`flex w-full justify-between font-mainBold text-[14px]`}>
+                    <BaseButton
+                      className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                      onClick={() =>
+                        // toggle rate
+                        setRateDirection((current) => (current === 'fromSource' ? 'fromTarget' : 'fromSource'))
+                      }>
+                      {intl.formatMessage({ id: 'common.rate' })}
+                      <ArrowsRightLeftIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                    </BaseButton>
+                    <div>{rateLabel}</div>
+                  </div>
+                  {/* fees */}
+                  <div className="flex w-full items-center justify-between font-mainBold">
+                    <BaseButton
+                      disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
+                      className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                      onClick={reloadFeesHandler}>
+                      {intl.formatMessage({ id: 'common.fees.estimated' })}
+                      <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                    </BaseButton>
+                    <div>{priceSwapFeesLabel}</div>
+                  </div>
+
+                  {showDetails && (
+                    <>
+                      {O.isSome(needApprovement) && (
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          <div>{intl.formatMessage({ id: 'common.approve' })}</div>
+                          <div>{priceApproveFeeLabel}</div>
+                        </div>
+                      )}
+                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                        <div>{intl.formatMessage({ id: 'common.fee.inbound' })}</div>
+                        <div>{priceSwapInFeeLabel}</div>
+                      </div>
+                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                        <div>{intl.formatMessage({ id: 'common.fee.outbound' })}</div>
+                        <div>{priceSwapOutFeeLabel}</div>
+                      </div>
+                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                        <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
+                        <div>{priceAffiliateFeeLabel}</div>
+                      </div>
+                    </>
+                  )}
+                  {/* Slippage */}
+                  {!isStreaming ? (
+                    <>
+                      <div
+                        className={`flex w-full justify-between ${
+                          showDetails ? 'pt-10px' : ''
+                        } font-mainBold text-[14px] ${isCausedSlippage ? 'text-error0 dark:text-error0d' : ''}`}>
+                        <div>{intl.formatMessage({ id: 'swap.slip.title' })}</div>
+                        <div>
+                          {formatAssetAmountCurrency({
+                            amount: priceAmountToSwapMax1e8.assetAmount.times(
+                              (swapSlippage > 0 ? swapSlippage : slipTolerance) / 100
+                            ), // Find the value of swap slippage
+                            asset: priceAmountToSwapMax1e8.asset,
+                            decimal: isUSDAsset(priceAmountToSwapMax1e8.asset) ? 2 : 6,
+                            trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)
+                          }) + ` (${swapSlippage.toFixed(2)}%)`}
+                        </div>
+                      </div>
+
+                      {showDetails && (
+                        <>
+                          <div className="flex w-full justify-between pl-10px text-[12px]">
+                            <div
+                              className={`flex items-center ${
+                                disableSlippage ? 'text-warning0 dark:text-warning0d' : ''
+                              }`}>
+                              {intl.formatMessage({ id: 'swap.slip.tolerance' })}
+                              {disableSlippage ? (
+                                <InfoIcon
+                                  className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                                  tooltip={intl.formatMessage({ id: 'swap.slip.tolerance.ledger-disabled.info' })}
+                                  color="warning"
+                                />
+                              ) : (
+                                <InfoIcon
+                                  className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                                  tooltip={intl.formatMessage({ id: 'swap.slip.tolerance.info' })}
+                                />
+                              )}
+                            </div>
+                            <div>
+                              {/* we don't show slippage tolerance whenever slippage is disabled (e.g. due memo restriction for Ledger BTC) */}
+                              {disableSlippage ? (
+                                <>{noDataString}</>
+                              ) : (
+                                <SelectableSlipTolerance value={slipTolerance} onChange={changeSlipTolerance} />
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex w-full justify-between pl-10px text-[12px]">
+                            <div
+                              className={`flex items-center ${
+                                disableSlippage ? 'text-warning0 dark:text-warning0d' : ''
+                              }`}>
+                              {intl.formatMessage({ id: 'swap.min.result.protected' })}
+                              <InfoIcon
+                                className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                                tooltip={
+                                  disableSlippage
+                                    ? intl.formatMessage({ id: 'swap.slip.tolerance.ledger-disabled.info' })
+                                    : intl.formatMessage({ id: 'swap.min.result.info' }, { tolerance: slipTolerance })
+                                }
+                              />
+                            </div>
+                            <div>{swapMinResultLabel}</div>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <div
+                        className={`flex w-full justify-between ${
+                          showDetails ? 'pt-10px' : ''
+                        } font-mainBold text-[14px] ${isCausedSlippage ? 'text-error0 dark:text-error0d' : ''}`}>
+                        <div>{intl.formatMessage({ id: 'swap.slip.title' })}</div>
+                        <div>
+                          {formatAssetAmountCurrency({
+                            amount: priceAmountToSwapMax1e8.assetAmount.times(swapStreamingSlippage / 100), // Find the value of swap slippage
+                            asset: priceAmountToSwapMax1e8.asset,
+                            decimal: isUSDAsset(priceAmountToSwapMax1e8.asset) ? 2 : 6,
+                            trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)
+                          }) + ` (${swapStreamingSlippage.toFixed(2)}%)`}
+                        </div>
+                      </div>
+                      {showDetails && (
+                        <>
+                          <div className="flex w-full justify-between pl-10px text-[12px]">
+                            <div className={`flex items-center `}>
+                              {intl.formatMessage({ id: 'swap.streaming.interval' })}
+                              <InfoIcon
+                                className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                                tooltip={intl.formatMessage({ id: 'swap.streaming.interval.info' })}
+                              />
+                            </div>
+                            <div>{streamingInterval}</div>
+                          </div>
+                          <div className="flex w-full justify-between pl-10px text-[12px]">
+                            <div className={`flex items-center`}>
+                              {intl.formatMessage({ id: 'swap.streaming.quantity' })}
+                              <InfoIcon
+                                className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                                tooltip={intl.formatMessage({ id: 'swap.streaming.quantity.info' })}
+                              />
+                            </div>
+                            <div>{streamingQuantity}</div>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
+                  {/* Swap Time Inbound / swap / Outbound */}
+                  <>
+                    <div
+                      className={`flex w-full justify-between ${
+                        showDetails ? 'pt-10px' : ''
+                      } font-mainBold text-[14px]`}>
+                      <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
+                      <div>{formatSwapTime(Number(transactionTime.totalSwap))}</div>
+                    </div>
+                    {showDetails && (
+                      <>
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.inbound.time' })}</div>
+                          <div>{formatSwapTime(Number(transactionTime.inbound))}</div>
+                        </div>
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          <div className={`flex items-center`}>
+                            {intl.formatMessage({ id: 'common.streaming.time' })}
+                          </div>
+                          <div>{formatSwapTime(Number(transactionTime.streaming))}</div>
+                        </div>
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          <div className={`flex items-center`}>
+                            {intl.formatMessage({ id: 'common.outbound.time' })}
+                          </div>
+                          <div>{formatSwapTime(Number(transactionTime.outbound))}</div>
+                        </div>
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          <div className={`flex items-center`}>
+                            {intl.formatMessage(
+                              { id: 'common.confirmation.time' },
+                              { chain: targetAsset.type === AssetType.SYNTH ? THORChain : targetAsset.chain }
+                            )}
+                          </div>
+                          <div>{formatSwapTime(Number(transactionTime.confirmation))}</div>
+                        </div>
+                      </>
+                    )}
+                  </>
+                  {/* addresses */}
+                  {showDetails && (
+                    <>
+                      <div className={`w-full pt-10px font-mainBold text-[14px]`}>
+                        {intl.formatMessage({ id: 'common.addresses' })}
+                      </div>
+                      {/* sender address */}
+                      <div className="flex w-full items-center justify-between pl-10px text-[12px]">
+                        <div>{intl.formatMessage({ id: 'common.sender' })}</div>
+                        <div className="truncate pl-20px text-[13px] normal-case leading-normal">
+                          {FP.pipe(
+                            oSourceWalletAddress,
+                            O.map((address) => (
+                              <TooltipAddress title={address} key="tooltip-sender-addr">
+                                {hidePrivateData ? hiddenString : address}
+                              </TooltipAddress>
+                            )),
+                            O.getOrElse(() => <>{noDataString}</>)
+                          )}
+                        </div>
+                      </div>
+                      {/* recipient address */}
+                      <div className="flex w-full items-center justify-between pl-10px text-[12px]">
+                        <div>{intl.formatMessage({ id: 'common.recipient' })}</div>
+                        <div className="truncate pl-20px text-[13px] normal-case leading-normal">
+                          {FP.pipe(
+                            oRecipientAddress,
+                            O.map((address) => (
+                              <TooltipAddress title={address} key="tooltip-target-addr">
+                                {hidePrivateData ? hiddenString : address}
+                              </TooltipAddress>
+                            )),
+                            O.getOrElse(() => <>{noDataString}</>)
+                          )}
+                        </div>
+                      </div>
+                      {/* inbound address */}
+                      {FP.pipe(
+                        oSwapParams,
+                        O.map(({ poolAddress: { address }, asset }) =>
+                          address && asset.type !== AssetType.SYNTH ? (
+                            <div
+                              className="flex w-full items-center justify-between pl-10px text-[12px]"
+                              key="pool-addr">
+                              <div>{intl.formatMessage({ id: 'common.pool.inbound' })}</div>
+                              <TooltipAddress title={address}>
+                                <div className="truncate pl-20px text-[13px] normal-case leading-normal">{address}</div>
+                              </TooltipAddress>
+                            </div>
+                          ) : null
+                        ),
+                        O.toNullable
+                      )}
+                    </>
+                  )}
+
+                  {/* balances */}
+                  {showDetails && (
+                    <>
+                      <div className={`w-full pt-10px text-[14px]`}>
+                        <BaseButton
+                          disabled={walletBalancesLoading}
+                          className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                          onClick={reloadBalances}>
+                          {intl.formatMessage({ id: 'common.balances' })}
+                          <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                        </BaseButton>
+                      </div>
+                      {/* sender balance */}
+                      <div className="flex w-full items-center justify-between pl-10px text-[12px]">
+                        <div>{intl.formatMessage({ id: 'common.sender' })}</div>
+                        <div className="truncate pl-20px text-[13px] normal-case leading-normal">
+                          {walletBalancesLoading
+                            ? loadingString
+                            : hidePrivateData
+                            ? hiddenString
+                            : formatAssetAmountCurrency({
+                                amount: baseToAsset(sourceAssetAmountMax1e8),
+                                asset: sourceAsset,
+                                decimal: 8,
+                                trimZeros: true
+                              })}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {/* memo */}
+                  {showDetails && (
+                    <>
+                      <div className="ml-[-2px] flex w-full items-start pt-10px font-mainBold text-[14px]">
+                        {memoTitle}
+                      </div>
+                      <div className="truncate pl-10px font-main text-[12px]">
+                        {hidePrivateData ? hiddenString : memoLabel}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
+                  <div className="font-main text-[14px] text-gray2 dark:text-gray2d">
+                    {/* Rate */}
+                    <div className={`flex w-full justify-between font-mainBold text-[14px]`}>
+                      <BaseButton
+                        className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                        onClick={() =>
+                          // toggle rate
+                          setRateDirection((current) => (current === 'fromSource' ? 'fromTarget' : 'fromSource'))
+                        }>
+                        {intl.formatMessage({ id: 'common.rate' })}
+                        <ArrowsRightLeftIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                      </BaseButton>
+                      <div>{rateLabel}</div>
+                    </div>
+                    {/* fees */}
+                    <div className="flex w-full items-center justify-between font-mainBold">
+                      <BaseButton
+                        disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
+                        className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                        onClick={reloadFeesHandler}>
+                        {intl.formatMessage({ id: 'common.fees.estimated' })}
+                        <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                      </BaseButton>
+                      <div>{priceSwapFeesLabel}</div>
+                    </div>
+                    <div className="flex w-full justify-between pl-10px text-[12px]">
+                      <div>{intl.formatMessage({ id: 'common.fee.inbound' })}</div>
+                      <div>{priceSwapInFeeLabel}</div>
+                    </div>
+                    <div className="flex w-full justify-between pl-10px text-[12px]">
+                      <div>{intl.formatMessage({ id: 'swap.slip.title' })}</div>
+                      <div>
+                        {formatAssetAmountCurrency({
+                          amount: priceAmountToSwapMax1e8.assetAmount.times(
+                            isStreaming ? swapStreamingSlippage / 100 : swapSlippage / 100
+                          ), // Find the value of swap slippage
+                          asset: priceAmountToSwapMax1e8.asset,
+                          decimal: isUSDAsset(priceAmountToSwapMax1e8.asset) ? 2 : 6,
+                          trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)
+                        }) + ` (${isStreaming ? swapStreamingSlippage.toFixed(2) : swapSlippage.toFixed(2)}%)`}
+                      </div>
+                    </div>
+                    <div className="flex w-full justify-between pl-10px text-[12px]">
+                      <div>{intl.formatMessage({ id: 'common.fee.outbound' })}</div>
+                      <div>{priceSwapOutFeeLabel}</div>
+                    </div>
+                    <div className="flex w-full justify-between pl-10px text-[12px]">
+                      <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
+                      <div>{priceAffiliateFeeLabel}</div>
+                    </div>
+
+                    {/* Transaction time */}
+                    <>
+                      <div
+                        className={`flex w-full justify-between ${
+                          showDetails ? 'pt-10px' : ''
+                        } font-mainBold text-[14px]`}>
+                        <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
+                        <div>{formatSwapTime(Number(transactionTime.totalSwap))}</div>
+                      </div>
+                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                        <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.inbound.time' })}</div>
+                        <div>{formatSwapTime(Number(transactionTime.inbound))}</div>
+                      </div>
+                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                        <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.streaming.time' })}</div>
+                        <div>{formatSwapTime(Number(transactionTime.streaming))}</div>
+                      </div>
+                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                        <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.outbound.time' })}</div>
+                        <div>{formatSwapTime(Number(transactionTime.outbound))}</div>
+                      </div>
+                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                        <div className={`flex items-center`}>
+                          {intl.formatMessage(
+                            { id: 'common.confirmation.time' },
+                            { chain: targetAsset.type === AssetType.SYNTH ? THORChain : targetAsset.chain }
+                          )}
+                        </div>
+                        <div>{formatSwapTime(Number(transactionTime.confirmation))}</div>
+                      </div>
+                    </>
+                  </div>
+                </div>
+              </>
+            )}
+          </Collapse>
+          {!lockedWallet &&
+            FP.pipe(
+              oRecipientAddress,
+              O.map((address) => (
+                <div
+                  className="flex flex-col rounded-lg border border-solid border-gray1 px-4 py-2 dark:border-gray0d"
+                  key="edit-address">
+                  <div className="flex items-center">
+                    <h3 className="font-[12px] !mb-0 mr-10px w-auto p-0 font-main uppercase text-gray2 dark:text-gray2d">
+                      {intl.formatMessage({ id: 'common.recipient' })}
+                    </h3>
+                    <WalletTypeLabel key="target-w-type">{getWalletTypeLabel(oTargetWalletType, intl)}</WalletTypeLabel>
+                  </div>
+                  <EditableAddress
+                    key={address}
+                    asset={targetAsset}
+                    network={network}
+                    address={address}
+                    onChangeAddress={onChangeRecipientAddress}
+                    onChangeEditableAddress={onChangeEditableRecipientAddress}
+                    onChangeEditableMode={(editModeActive) => setCustomAddressEditActive(editModeActive)}
+                    addressValidator={addressValidator}
+                    hidePrivateData={hidePrivateData}
+                  />
+                </div>
+              )),
+              O.toNullable
+            )}
+          {!isLocked(keystore) && <div className="w-full">{renderSwapExpiry}</div>}
+        </div>
       </div>
 
       {(walletBalancesLoading || checkIsApproved) && (
@@ -2931,309 +3255,6 @@ export const Swap = ({
                 )}
               </>
             )}
-            <div className="w-full px-20px pb-10px">{renderSwapExpiry}</div>
-            <div className={`mx-50px w-full px-10px font-main text-[12px] uppercase dark:border-gray1d`}>
-              <BaseButton
-                className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
-                onClick={() => setShowDetails((current) => !current)}>
-                {intl.formatMessage({ id: 'common.details' })}
-                {showDetails ? (
-                  <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
-                ) : (
-                  <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
-                )}
-              </BaseButton>
-
-              <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
-                {/* Rate */}
-                <div className={`flex w-full justify-between font-mainBold text-[14px]`}>
-                  <BaseButton
-                    className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
-                    onClick={() =>
-                      // toggle rate
-                      setRateDirection((current) => (current === 'fromSource' ? 'fromTarget' : 'fromSource'))
-                    }>
-                    {intl.formatMessage({ id: 'common.rate' })}
-                    <ArrowsRightLeftIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
-                  </BaseButton>
-                  <div>{rateLabel}</div>
-                </div>
-                {/* fees */}
-                <div className="flex w-full items-center justify-between font-mainBold">
-                  <BaseButton
-                    disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
-                    className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
-                    onClick={reloadFeesHandler}>
-                    {intl.formatMessage({ id: 'common.fees.estimated' })}
-                    <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
-                  </BaseButton>
-                  <div>{priceSwapFeesLabel}</div>
-                </div>
-
-                {showDetails && (
-                  <>
-                    {O.isSome(needApprovement) && (
-                      <div className="flex w-full justify-between pl-10px text-[12px]">
-                        <div>{intl.formatMessage({ id: 'common.approve' })}</div>
-                        <div>{priceApproveFeeLabel}</div>
-                      </div>
-                    )}
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div>{intl.formatMessage({ id: 'common.fee.inbound' })}</div>
-                      <div>{priceSwapInFeeLabel}</div>
-                    </div>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div>{intl.formatMessage({ id: 'common.fee.outbound' })}</div>
-                      <div>{priceSwapOutFeeLabel}</div>
-                    </div>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
-                      <div>{priceAffiliateFeeLabel}</div>
-                    </div>
-                  </>
-                )}
-                {/* Slippage */}
-                {!isStreaming ? (
-                  <>
-                    <div
-                      className={`flex w-full justify-between ${
-                        showDetails ? 'pt-10px' : ''
-                      } font-mainBold text-[14px] ${isCausedSlippage ? 'text-error0 dark:text-error0d' : ''}`}>
-                      <div>{intl.formatMessage({ id: 'swap.slip.title' })}</div>
-                      <div>
-                        {formatAssetAmountCurrency({
-                          amount: priceAmountToSwapMax1e8.assetAmount.times(
-                            (swapSlippage > 0 ? swapSlippage : slipTolerance) / 100
-                          ), // Find the value of swap slippage
-                          asset: priceAmountToSwapMax1e8.asset,
-                          decimal: isUSDAsset(priceAmountToSwapMax1e8.asset) ? 2 : 6,
-                          trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)
-                        }) + ` (${swapSlippage.toFixed(2)}%)`}
-                      </div>
-                    </div>
-
-                    {showDetails && (
-                      <>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div
-                            className={`flex items-center ${
-                              disableSlippage ? 'text-warning0 dark:text-warning0d' : ''
-                            }`}>
-                            {intl.formatMessage({ id: 'swap.slip.tolerance' })}
-                            {disableSlippage ? (
-                              <InfoIcon
-                                className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                                tooltip={intl.formatMessage({ id: 'swap.slip.tolerance.ledger-disabled.info' })}
-                                color="warning"
-                              />
-                            ) : (
-                              <InfoIcon
-                                className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                                tooltip={intl.formatMessage({ id: 'swap.slip.tolerance.info' })}
-                              />
-                            )}
-                          </div>
-                          <div>
-                            {/* we don't show slippage tolerance whenever slippage is disabled (e.g. due memo restriction for Ledger BTC) */}
-                            {disableSlippage ? (
-                              <>{noDataString}</>
-                            ) : (
-                              <SelectableSlipTolerance value={slipTolerance} onChange={changeSlipTolerance} />
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div
-                            className={`flex items-center ${
-                              disableSlippage ? 'text-warning0 dark:text-warning0d' : ''
-                            }`}>
-                            {intl.formatMessage({ id: 'swap.min.result.protected' })}
-                            <InfoIcon
-                              className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                              tooltip={
-                                disableSlippage
-                                  ? intl.formatMessage({ id: 'swap.slip.tolerance.ledger-disabled.info' })
-                                  : intl.formatMessage({ id: 'swap.min.result.info' }, { tolerance: slipTolerance })
-                              }
-                            />
-                          </div>
-                          <div>{swapMinResultLabel}</div>
-                        </div>
-                      </>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <div
-                      className={`flex w-full justify-between ${
-                        showDetails ? 'pt-10px' : ''
-                      } font-mainBold text-[14px] ${isCausedSlippage ? 'text-error0 dark:text-error0d' : ''}`}>
-                      <div>{intl.formatMessage({ id: 'swap.slip.title' })}</div>
-                      <div>
-                        {formatAssetAmountCurrency({
-                          amount: priceAmountToSwapMax1e8.assetAmount.times(swapStreamingSlippage / 100), // Find the value of swap slippage
-                          asset: priceAmountToSwapMax1e8.asset,
-                          decimal: isUSDAsset(priceAmountToSwapMax1e8.asset) ? 2 : 6,
-                          trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)
-                        }) + ` (${swapStreamingSlippage.toFixed(2)}%)`}
-                      </div>
-                    </div>
-                    {showDetails && (
-                      <>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div className={`flex items-center `}>
-                            {intl.formatMessage({ id: 'swap.streaming.interval' })}
-                            <InfoIcon
-                              className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                              tooltip={intl.formatMessage({ id: 'swap.streaming.interval.info' })}
-                            />
-                          </div>
-                          <div>{streamingInterval}</div>
-                        </div>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div className={`flex items-center`}>
-                            {intl.formatMessage({ id: 'swap.streaming.quantity' })}
-                            <InfoIcon
-                              className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                              tooltip={intl.formatMessage({ id: 'swap.streaming.quantity.info' })}
-                            />
-                          </div>
-                          <div>{streamingQuantity}</div>
-                        </div>
-                      </>
-                    )}
-                  </>
-                )}
-                {/* Swap Time Inbound / swap / Outbound */}
-                <>
-                  <div
-                    className={`flex w-full justify-between ${showDetails ? 'pt-10px' : ''} font-mainBold text-[14px]`}>
-                    <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
-                    <div>{formatSwapTime(Number(transactionTime.totalSwap))}</div>
-                  </div>
-                  {showDetails && (
-                    <>
-                      <div className="flex w-full justify-between pl-10px text-[12px]">
-                        <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.inbound.time' })}</div>
-                        <div>{formatSwapTime(Number(transactionTime.inbound))}</div>
-                      </div>
-                      <div className="flex w-full justify-between pl-10px text-[12px]">
-                        <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.streaming.time' })}</div>
-                        <div>{formatSwapTime(Number(transactionTime.streaming))}</div>
-                      </div>
-                      <div className="flex w-full justify-between pl-10px text-[12px]">
-                        <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.outbound.time' })}</div>
-                        <div>{formatSwapTime(Number(transactionTime.outbound))}</div>
-                      </div>
-                      <div className="flex w-full justify-between pl-10px text-[12px]">
-                        <div className={`flex items-center`}>
-                          {intl.formatMessage(
-                            { id: 'common.confirmation.time' },
-                            { chain: targetAsset.synth ? THORChain : targetAsset.chain }
-                          )}
-                        </div>
-                        <div>{formatSwapTime(Number(transactionTime.confirmation))}</div>
-                      </div>
-                    </>
-                  )}
-                </>
-                {/* addresses */}
-                {showDetails && (
-                  <>
-                    <div className={`w-full pt-10px font-mainBold text-[14px]`}>
-                      {intl.formatMessage({ id: 'common.addresses' })}
-                    </div>
-                    {/* sender address */}
-                    <div className="flex w-full items-center justify-between pl-10px text-[12px]">
-                      <div>{intl.formatMessage({ id: 'common.sender' })}</div>
-                      <div className="truncate pl-20px text-[13px] normal-case leading-normal">
-                        {FP.pipe(
-                          oSourceWalletAddress,
-                          O.map((address) => (
-                            <TooltipAddress title={address} key="tooltip-sender-addr">
-                              {hidePrivateData ? hiddenString : address}
-                            </TooltipAddress>
-                          )),
-                          O.getOrElse(() => <>{noDataString}</>)
-                        )}
-                      </div>
-                    </div>
-                    {/* recipient address */}
-                    <div className="flex w-full items-center justify-between pl-10px text-[12px]">
-                      <div>{intl.formatMessage({ id: 'common.recipient' })}</div>
-                      <div className="truncate pl-20px text-[13px] normal-case leading-normal">
-                        {FP.pipe(
-                          oRecipientAddress,
-                          O.map((address) => (
-                            <TooltipAddress title={address} key="tooltip-target-addr">
-                              {hidePrivateData ? hiddenString : address}
-                            </TooltipAddress>
-                          )),
-                          O.getOrElse(() => <>{noDataString}</>)
-                        )}
-                      </div>
-                    </div>
-                    {/* inbound address */}
-                    {FP.pipe(
-                      oSwapParams,
-                      O.map(({ poolAddress: { address }, asset }) =>
-                        address && !asset.synth ? (
-                          <div className="flex w-full items-center justify-between pl-10px text-[12px]" key="pool-addr">
-                            <div>{intl.formatMessage({ id: 'common.pool.inbound' })}</div>
-                            <TooltipAddress title={address}>
-                              <div className="truncate pl-20px text-[13px] normal-case leading-normal">{address}</div>
-                            </TooltipAddress>
-                          </div>
-                        ) : null
-                      ),
-                      O.toNullable
-                    )}
-                  </>
-                )}
-
-                {/* balances */}
-                {showDetails && (
-                  <>
-                    <div className={`w-full pt-10px text-[14px]`}>
-                      <BaseButton
-                        disabled={walletBalancesLoading}
-                        className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
-                        onClick={reloadBalances}>
-                        {intl.formatMessage({ id: 'common.balances' })}
-                        <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
-                      </BaseButton>
-                    </div>
-                    {/* sender balance */}
-                    <div className="flex w-full items-center justify-between pl-10px text-[12px]">
-                      <div>{intl.formatMessage({ id: 'common.sender' })}</div>
-                      <div className="truncate pl-20px text-[13px] normal-case leading-normal">
-                        {walletBalancesLoading
-                          ? loadingString
-                          : hidePrivateData
-                          ? hiddenString
-                          : formatAssetAmountCurrency({
-                              amount: baseToAsset(sourceAssetAmountMax1e8),
-                              asset: sourceAsset,
-                              decimal: 8,
-                              trimZeros: true
-                            })}
-                      </div>
-                    </div>
-                  </>
-                )}
-                {/* memo */}
-                {showDetails && (
-                  <>
-                    <div className="ml-[-2px] flex w-full items-start pt-10px font-mainBold text-[14px]">
-                      {memoTitle}
-                    </div>
-                    <div className="truncate pl-10px font-main text-[12px]">
-                      {hidePrivateData ? hiddenString : memoLabel}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
           </>
         ) : (
           <>
@@ -3247,93 +3268,6 @@ export const Swap = ({
                 ? intl.formatMessage({ id: 'wallet.add.label' })
                 : isLocked(keystore) && intl.formatMessage({ id: 'wallet.unlock.label' })}
             </FlatButton>
-            <>
-              <div className={`mx-50px w-full px-10px font-main text-[12px] uppercase dark:border-gray1d`}>
-                <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
-                  {/* Rate */}
-                  <div className={`flex w-full justify-between font-mainBold text-[14px]`}>
-                    <BaseButton
-                      className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
-                      onClick={() =>
-                        // toggle rate
-                        setRateDirection((current) => (current === 'fromSource' ? 'fromTarget' : 'fromSource'))
-                      }>
-                      {intl.formatMessage({ id: 'common.rate' })}
-                      <ArrowsRightLeftIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
-                    </BaseButton>
-                    <div>{rateLabel}</div>
-                  </div>
-                  {/* fees */}
-                  <div className="flex w-full items-center justify-between font-mainBold">
-                    <BaseButton
-                      disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
-                      className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
-                      onClick={reloadFeesHandler}>
-                      {intl.formatMessage({ id: 'common.fees.estimated' })}
-                      <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
-                    </BaseButton>
-                    <div>{priceSwapFeesLabel}</div>
-                  </div>
-                  <div className="flex w-full justify-between pl-10px text-[12px]">
-                    <div>{intl.formatMessage({ id: 'common.fee.inbound' })}</div>
-                    <div>{priceSwapInFeeLabel}</div>
-                  </div>
-                  <div className="flex w-full justify-between pl-10px text-[12px]">
-                    <div>{intl.formatMessage({ id: 'swap.slip.title' })}</div>
-                    <div>
-                      {formatAssetAmountCurrency({
-                        amount: priceAmountToSwapMax1e8.assetAmount.times(
-                          isStreaming ? swapStreamingSlippage / 100 : swapSlippage / 100
-                        ), // Find the value of swap slippage
-                        asset: priceAmountToSwapMax1e8.asset,
-                        decimal: isUSDAsset(priceAmountToSwapMax1e8.asset) ? 2 : 6,
-                        trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)
-                      }) + ` (${isStreaming ? swapStreamingSlippage.toFixed(2) : swapSlippage.toFixed(2)}%)`}
-                    </div>
-                  </div>
-                  <div className="flex w-full justify-between pl-10px text-[12px]">
-                    <div>{intl.formatMessage({ id: 'common.fee.outbound' })}</div>
-                    <div>{priceSwapOutFeeLabel}</div>
-                  </div>
-                  <div className="flex w-full justify-between pl-10px text-[12px]">
-                    <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
-                    <div>{priceAffiliateFeeLabel}</div>
-                  </div>
-
-                  {/* Transaction time */}
-                  <>
-                    <div
-                      className={`flex w-full justify-between ${
-                        showDetails ? 'pt-10px' : ''
-                      } font-mainBold text-[14px]`}>
-                      <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
-                      <div>{formatSwapTime(Number(transactionTime.totalSwap))}</div>
-                    </div>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.inbound.time' })}</div>
-                      <div>{formatSwapTime(Number(transactionTime.inbound))}</div>
-                    </div>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.streaming.time' })}</div>
-                      <div>{formatSwapTime(Number(transactionTime.streaming))}</div>
-                    </div>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.outbound.time' })}</div>
-                      <div>{formatSwapTime(Number(transactionTime.outbound))}</div>
-                    </div>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div className={`flex items-center`}>
-                        {intl.formatMessage(
-                          { id: 'common.confirmation.time' },
-                          { chain: targetAsset.synth ? THORChain : targetAsset.chain }
-                        )}
-                      </div>
-                      <div>{formatSwapTime(Number(transactionTime.confirmation))}</div>
-                    </div>
-                  </>
-                </div>
-              </div>
-            </>
           </>
         )}
       </div>

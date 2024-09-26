@@ -1,6 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { BSCChain } from '@xchainjs/xchain-bsc'
-import * as BSC from '@xchainjs/xchain-evm'
+import { BSCChain, Client } from '@xchainjs/xchain-bsc'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -31,7 +30,7 @@ const clientState$: ClientState$ = FP.pipe(
           getPhrase(keystore),
           O.map<string, ClientState>((phrase) => {
             try {
-              const client = new BSC.Client({
+              const client = new Client({
                 ...defaultBscParams,
                 network: network,
                 phrase: phrase

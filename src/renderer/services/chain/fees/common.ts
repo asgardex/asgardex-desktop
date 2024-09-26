@@ -6,8 +6,9 @@ import { DOGEChain } from '@xchainjs/xchain-doge'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { RadixChain } from '@xchainjs/xchain-radix'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Asset } from '@xchainjs/xchain-util'
+import { AnyAsset, Asset, AssetType } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
@@ -24,6 +25,7 @@ import * as LTC from '../../litecoin'
 import * as MAYA from '../../mayachain'
 import { service as midgardMayaService } from '../../mayaMigard/service'
 import { service as midgardService } from '../../midgard/service'
+import * as XRD from '../../radix'
 import * as THOR from '../../thorchain'
 import { FeesWithRatesLD } from '../../utxo/types'
 import { PoolFeeLD } from '../types'
@@ -36,16 +38,16 @@ const {
 } = midgardMayaService
 
 /**
- * Fees for pool outbound txs (swap/deposit/withdraw/earn)
+ * Fees for pool outbound txs (swap/deposit/withdraw/earn) tobefixed
  */
-export const poolOutboundFee$ = (asset: Asset): PoolFeeLD => {
+export const poolOutboundFee$ = (asset: AnyAsset): PoolFeeLD => {
   // special case for RUNE - not provided in `inbound_addresses` endpoint
-  if (isRuneNativeAsset(asset) || asset.synth) {
+  if (isRuneNativeAsset(asset) || asset.type === AssetType.SYNTH) {
     return FP.pipe(
       THOR.fees$(),
       liveData.map((fees) => ({ amount: fees.fast.times(3), asset: AssetRuneNative }))
     )
-  } else if (isCacaoAsset(asset) || asset.synth) {
+  } else if (isCacaoAsset(asset)) {
     return FP.pipe(
       MAYA.fees$(),
       liveData.map((fees) => ({ amount: fees.fast.times(3), asset: AssetCacao }))
@@ -59,7 +61,7 @@ export const poolOutboundFee$ = (asset: Asset): PoolFeeLD => {
 /**
  * Fees for pool inbound txs (swap/deposit/withdraw/earn)
  */
-export const poolInboundFee$ = (asset: Asset, memo: string): PoolFeeLD => {
+export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
   switch (asset.chain) {
     case DOGEChain:
       return FP.pipe(
@@ -99,6 +101,11 @@ export const poolInboundFee$ = (asset: Asset, memo: string): PoolFeeLD => {
     case KUJIChain:
       return FP.pipe(
         KUJI.fees$(),
+        liveData.map((fees) => ({ asset, amount: fees.fast }))
+      )
+    case RadixChain:
+      return FP.pipe(
+        XRD.fees$(),
         liveData.map((fees) => ({ asset, amount: fees.fast }))
       )
     case DASHChain:

@@ -11,10 +11,11 @@ import * as Styled from './AssetsNav.styles'
 
 enum MenuKey {
   ASSETS = 'assets',
+  TRADEASSETS = 'tradeAssets',
   POOLSHARES = 'poolshares',
   SAVERS = 'savers',
-  BONDS = 'bonds',
   RUNEPOOL = 'runepool',
+  BONDS = 'bonds',
   HISTORY = 'history',
   WALLETSETTINGS = 'walletsettings',
   UNKNOWN = 'unknown'
@@ -38,6 +39,11 @@ export const AssetsNav: React.FC = (): JSX.Element => {
           key: MenuKey.ASSETS,
           label: intl.formatMessage({ id: 'common.assets' }),
           path: walletRoutes.assets.path()
+        },
+        {
+          key: MenuKey.TRADEASSETS,
+          label: intl.formatMessage({ id: 'common.tradeAssets' }),
+          path: walletRoutes.tradeAssets.path()
         },
         {
           key: MenuKey.POOLSHARES,
@@ -69,6 +75,7 @@ export const AssetsNav: React.FC = (): JSX.Element => {
   )
 
   const assetsRoute = matchPath(walletRoutes.assets.path(), pathname)
+  const tradeAssetsRoute = matchPath(walletRoutes.tradeAssets.path(), pathname)
   const poolSharesRoute = matchPath(walletRoutes.poolShares.path(), pathname)
   const saversRoute = matchPath(walletRoutes.savers.path(), pathname)
   const runepoolRoute = matchPath(walletRoutes.runepool.path(), pathname)
@@ -78,6 +85,8 @@ export const AssetsNav: React.FC = (): JSX.Element => {
   const activeMenu: MenuKey = useMemo(() => {
     if (assetsRoute) {
       return MenuKey.ASSETS
+    } else if (tradeAssetsRoute) {
+      return MenuKey.TRADEASSETS
     } else if (poolSharesRoute) {
       return MenuKey.POOLSHARES
     } else if (saversRoute) {
@@ -91,7 +100,7 @@ export const AssetsNav: React.FC = (): JSX.Element => {
     } else {
       return MenuKey.UNKNOWN
     }
-  }, [assetsRoute, poolSharesRoute, saversRoute, runepoolRoute, bondsRoute, matchHistoryRoute])
+  }, [assetsRoute, tradeAssetsRoute, poolSharesRoute, saversRoute, runepoolRoute, bondsRoute, matchHistoryRoute])
 
   return (
     <>

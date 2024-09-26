@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Balance, XChainClient } from '@xchainjs/xchain-client'
-import { Address, Asset } from '@xchainjs/xchain-util'
+import { Address, AnyAsset } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -20,7 +20,7 @@ import { WalletBalancesLD, XChainClient$ } from './types'
 // @see `xchain-btc` PR 490 https://github.com/xchainjs/xchainjs-lib/pull/490/files#diff-8fc736951c0a12557cfeea25b9e6671889c2bd252e728501d7bd6c914e6cf5b8R105-R107
 // TEmproary workaround: Override `XChainClient` interface here
 export interface XChainClientOverride extends XChainClient {
-  getBalance(address: Address, assets?: Asset[], confirmedOnly?: boolean): Promise<Balance[]>
+  getBalance(address: Address, assets?: AnyAsset[], confirmedOnly?: boolean): Promise<Balance[]>
 }
 /**
  * Observable to request balances by given `XChainClient` and `Address` (optional)
@@ -44,7 +44,7 @@ const loadBalances$ = <C extends XChainClientOverride>({
   client: C
   walletType: WalletType
   address?: Address
-  assets?: Asset[]
+  assets?: AnyAsset[]
   walletAccount: number
   walletIndex: number
   hdMode: HDMode
@@ -53,11 +53,35 @@ const loadBalances$ = <C extends XChainClientOverride>({
   FP.pipe(
     address,
     O.fromNullable,
-    // Try to use client address, if parameter `address` is undefined
-    O.alt(() => O.tryCatch(() => client.getAddress(walletIndex))),
     O.fold(
-      // TODO (@Veado) i18n
-      () => Rx.of(RD.failure<ApiError>({ errorId: ErrorId.GET_BALANCES, msg: 'Could not get address' })),
+      // If `address` is not available, get it asynchronously using `getAddressAsync`
+      () =>
+        Rx.from(client.getAddressAsync(walletIndex)).pipe(
+          RxOp.switchMap((walletAddress) =>
+            Rx.from(client.getBalance(walletAddress, assets, walletBalanceType === 'confirmed')).pipe(
+              map(RD.success),
+              liveData.map(
+                A.map((balance) => ({
+                  ...balance,
+                  walletType,
+                  walletAddress,
+                  walletAccount,
+                  walletIndex,
+                  hdMode
+                }))
+              ),
+              catchError((error: Error) =>
+                Rx.of(RD.failure<ApiError>({ errorId: ErrorId.GET_BALANCES, msg: error.message || 'Unknown error' }))
+              ),
+              startWith(RD.pending)
+            )
+          ),
+          catchError((error: Error) =>
+            Rx.of(RD.failure<ApiError>({ errorId: ErrorId.GET_BALANCES, msg: error.message || 'Unknown error' }))
+          ),
+          startWith(RD.pending)
+        ),
+      // If `address` is already provided, use it directly
       (walletAddress) =>
         Rx.from(client.getBalance(walletAddress, assets, walletBalanceType === 'confirmed')).pipe(
           map(RD.success),
@@ -92,7 +116,7 @@ type Balances$ = ({
   walletType: WalletType
   client$: XChainClient$
   trigger$: Rx.Observable<boolean>
-  assets?: Asset[]
+  assets?: AnyAsset[]
   walletAccount: number
   walletIndex: number
   hdMode: HDMode
@@ -148,7 +172,7 @@ type BalancesByAddress$ = ({
 }: {
   client$: XChainClient$
   trigger$: Rx.Observable<boolean>
-  assets?: Asset[]
+  assets?: AnyAsset[]
   walletBalanceType: WalletBalanceType
 }) => ({
   address,

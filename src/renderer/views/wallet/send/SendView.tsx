@@ -13,8 +13,9 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { RadixChain } from '@xchainjs/xchain-radix'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { baseAmount } from '@xchainjs/xchain-util'
+import { AssetType, baseAmount } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
@@ -91,7 +92,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
 
   const renderSendView = useCallback(
     (asset: SelectedWalletAsset) => {
-      const chain = asset.asset.synth ? dex.chain : asset.asset.chain
+      const chain = asset.asset.type === AssetType.SYNTH ? dex.chain : asset.asset.chain
       if (!isSupportedChain(chain)) {
         return (
           <h1>
@@ -152,6 +153,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
         case MAYAChain:
         case KUJIChain:
         case GAIAChain:
+        case RadixChain:
           return (
             <SendViewCOSMOS
               asset={asset}
@@ -177,7 +179,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
             <BackLinkButton />
             <RefreshButton
               onClick={reloadBalancesByChain(
-                selectedAsset.asset.synth ? THORChain : selectedAsset.asset.chain
+                selectedAsset.asset.type === AssetType.SYNTH ? THORChain : selectedAsset.asset.chain
               )}></RefreshButton>
           </Row>
           <div className="flex flex-col justify-center"> {renderSendView(selectedAsset)}</div>

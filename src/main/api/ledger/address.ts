@@ -13,6 +13,7 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { RadixChain } from '@xchainjs/xchain-radix'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import * as E from 'fp-ts/Either'
@@ -58,7 +59,7 @@ const chainAddressFunctions: Record<
         })
       )
     }
-    return getETHAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
+    return getETHAddress({ transport, walletAccount, walletIndex, evmHDMode: hdMode, network })
   },
   [AVAXChain]: (transport, network, walletAccount, walletIndex, hdMode) => {
     if (!isEvmHDMode(hdMode)) {
@@ -80,7 +81,7 @@ const chainAddressFunctions: Record<
         })
       )
     }
-    return getBSCAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
+    return getBSCAddress({ transport, network, walletAccount, walletIndex, evmHDMode: hdMode })
   },
   [ARBChain]: (transport, network, walletAccount, walletIndex, hdMode) => {
     if (!isEvmHDMode(hdMode)) {
@@ -96,7 +97,7 @@ const chainAddressFunctions: Record<
   [GAIAChain]: getCOSMOSAddress
 }
 
-const unsupportedChains: Chain[] = [MAYAChain, KUJIChain]
+const unsupportedChains: Chain[] = [MAYAChain, KUJIChain, RadixChain]
 
 export const getAddress = async ({
   chain,
@@ -167,7 +168,7 @@ export const verifyLedgerAddress = async ({
       break
     case ETHChain: {
       if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EthHDMode' - needed for ETH to verify Ledger address`)
-      result = await verifyETHAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
+      result = await verifyETHAddress({ transport, walletAccount, walletIndex, evmHDMode: hdMode, network })
       break
     }
     case AVAXChain: {
@@ -177,12 +178,12 @@ export const verifyLedgerAddress = async ({
     }
     case BSCChain: {
       if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for BSC to verify Ledger address`)
-      result = await verifyBSCAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
+      result = await verifyBSCAddress({ transport, walletAccount, walletIndex, evmHDMode: hdMode })
       break
     }
     case ARBChain: {
       if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for ARB to verify Ledger address`)
-      result = await verifyARBAddress({ transport, walletIndex, evmHdMode: hdMode })
+      result = await verifyARBAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
       break
     }
     case GAIAChain:

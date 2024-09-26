@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback } from 'react'
 
 import { CheckCircleIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { Address, Asset } from '@xchainjs/xchain-util'
+import { Address, AnyAsset } from '@xchainjs/xchain-util'
 import { Form, Tooltip } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
@@ -17,7 +17,7 @@ import { Input } from '../uielements/input/Input'
 import { CopyLabel } from '../uielements/label'
 
 export type EditableAddressProps = {
-  asset: Asset
+  asset: AnyAsset
   address: Address
   network: Network
   onChangeAddress: (address: Address) => void

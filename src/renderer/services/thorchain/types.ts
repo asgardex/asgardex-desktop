@@ -2,7 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { Client, DepositParam } from '@xchainjs/xchain-thorchain'
 import type * as TN from '@xchainjs/xchain-thornode'
-import { Address, Asset, BaseAmount, Chain } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as O from 'fp-ts/Option'
 import * as t from 'io-ts'
@@ -71,7 +71,7 @@ export type SendTxParams = {
   sender?: Address
   recipient: Address
   amount: BaseAmount
-  asset: Asset
+  asset: AnyAsset
   memo?: string
   walletAccount: number
   walletIndex: number
@@ -259,9 +259,9 @@ export type LoanOpenQuoteRD = RD.RemoteData<Error, LoanOpenQuote>
 export type LoanOpenQuoteLD = LiveData<Error, LoanOpenQuote>
 
 export type LoanOpenParams = {
-  asset: Asset
+  asset: AnyAsset
   amount: BaseAmount
-  targetAsset: Asset
+  targetAsset: AnyAsset
   destination: string
   height?: number
   minOut?: string
@@ -270,7 +270,7 @@ export type LoanOpenParams = {
 }
 export type LoanRepayParams = {
   poolAddress: string
-  asset: Asset
+  asset: AnyAsset
   sender: string
   memo: string
   network: Network
@@ -301,9 +301,9 @@ export type LoanCloseQuoteRD = RD.RemoteData<Error, LoanCloseQuote>
 export type LoanCloseQuoteLD = LiveData<Error, LoanCloseQuote>
 
 export type LoanCloseParams = {
-  asset: Asset
+  asset: AnyAsset
   repayBps: number
-  collateralAsset: Asset
+  collateralAsset: AnyAsset
   loanOwner: string
   height?: number
   minOut?: string
@@ -311,7 +311,7 @@ export type LoanCloseParams = {
 
 export type BorrowerProvider = {
   owner: Address
-  asset: Asset
+  asset: AnyAsset
   debtIssued: BaseAmount
   debtRepaid: BaseAmount
   debtCurrent: BaseAmount
@@ -326,8 +326,20 @@ export type BorrowerProvider = {
 export type BorrowerProviderRD = RD.RemoteData<Error, BorrowerProvider>
 export type BorrowerProviderLD = LiveData<Error, BorrowerProvider>
 
+export type TradeAccount = {
+  asset: AnyAsset
+  units: BaseAmount
+  owner: Address
+  lastAddHeight: O.Option<number>
+  lastWithdrawHeight: O.Option<number>
+  walletType: WalletType
+}
+
+export type TradeAccountRD = RD.RemoteData<Error, TradeAccount[]>
+export type TradeAccountLD = LiveData<Error, TradeAccount[]>
+
 export type ThorchainPool = {
-  asset: Asset
+  asset: AnyAsset
   shortCode: string
   status: string
   decimals: number

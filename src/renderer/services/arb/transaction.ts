@@ -2,7 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { abi, isApproved } from '@xchainjs/xchain-evm'
-import { baseAmount, getContractAddressFromAsset } from '@xchainjs/xchain-util'
+import { baseAmount, getContractAddressFromAsset, TokenAsset } from '@xchainjs/xchain-util'
 import { ethers } from 'ethers'
 import * as E from 'fp-ts/lib/Either'
 import * as FP from 'fp-ts/lib/function'
@@ -54,7 +54,6 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
         })
       )
 
-    const provider = client.getProvider()
     return FP.pipe(
       sequenceSOption({ address: getArbAssetAddress(params.asset), router: params.router }),
       O.fold(
@@ -63,12 +62,12 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
           FP.pipe(
             Rx.forkJoin({
               gasPrices: Rx.from(client.estimateGasPrices()),
-              blockTime: Rx.from(getBlocktime(provider))
+              blockTime: Rx.from(getBlocktime(client.getProvider()))
             }),
             RxOp.switchMap(({ gasPrices, blockTime }) => {
-              const isERC20 = isArbTokenAsset(params.asset)
+              const isERC20 = isArbTokenAsset(params.asset as TokenAsset)
               const checkSummedContractAddress = isERC20
-                ? ethers.utils.getAddress(getContractAddressFromAsset(params.asset))
+                ? ethers.utils.getAddress(getContractAddressFromAsset(params.asset as TokenAsset))
                 : ethers.constants.AddressZero
 
               const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
@@ -96,13 +95,13 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
                       gasLimit: ethers.BigNumber.from(160000)
                     })
                   )
-                ),
-                RxOp.map((txResult) => txResult),
-                RxOp.map(RD.success),
-                RxOp.catchError((error): TxHashLD => failure$(error?.message ?? error.toString())),
-                RxOp.startWith(RD.pending)
+                )
               )
-            })
+            }),
+            RxOp.map((txResult) => txResult),
+            RxOp.map(RD.success),
+            RxOp.catchError((error): TxHashLD => failure$(error?.message ?? error.toString())),
+            RxOp.startWith(RD.pending)
           )
       )
     )

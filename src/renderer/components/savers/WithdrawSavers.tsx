@@ -21,7 +21,9 @@ import {
   delay,
   formatAssetAmountCurrency,
   eqAsset,
-  CryptoAmount
+  CryptoAmount,
+  AnyAsset,
+  TokenAsset
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/Array'
@@ -118,17 +120,17 @@ export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
 export type WithDrawProps = {
   keystore: KeystoreState
   thorchainQuery: ThorchainQuery
-  poolAssets: Asset[]
+  poolAssets: AnyAsset[]
   poolDetails: PoolDetails
   asset: CryptoAmount
   address: Address
   network: Network
   pricePool: PricePool
   poolAddress: O.Option<PoolAddress>
-  saverPosition: (asset: Asset, address: string) => SaverProviderLD
+  saverPosition: (asset: AnyAsset, address: string) => SaverProviderLD
   fees$: SaverWithdrawFeesHandler
   sourceWalletType: WalletType
-  onChangeAsset: ({ source, sourceWalletType }: { source: Asset; sourceWalletType: WalletType }) => void
+  onChangeAsset: ({ source, sourceWalletType }: { source: AnyAsset; sourceWalletType: WalletType }) => void
   walletBalances: Pick<BalancesState, 'balances' | 'loading'>
   goToTransaction: OpenExplorerTxUrl
   getExplorerTxUrl: GetExplorerTxUrl
@@ -192,7 +194,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
 
   const [withdrawStartTime, setWithdrawStartTime] = useState<number>(0)
 
-  const prevAsset = useRef<O.Option<Asset>>(O.none)
+  const prevAsset = useRef<O.Option<AnyAsset>>(O.none)
 
   const {
     state: withdrawState,
@@ -233,13 +235,13 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     //tobeFixed
     switch (sourceChain) {
       case ETHChain:
-        return isEthAsset(sourceAsset) ? O.some(false) : O.some(isEthTokenAsset(sourceAsset))
+        return isEthAsset(sourceAsset) ? O.some(false) : O.some(isEthTokenAsset(sourceAsset as TokenAsset))
       case AVAXChain:
-        return isAvaxAsset(sourceAsset) ? O.some(false) : O.some(isAvaxTokenAsset(sourceAsset))
+        return isAvaxAsset(sourceAsset) ? O.some(false) : O.some(isAvaxTokenAsset(sourceAsset as TokenAsset))
       case BSCChain:
-        return isBscAsset(sourceAsset) ? O.some(false) : O.some(isBscTokenAsset(sourceAsset))
+        return isBscAsset(sourceAsset) ? O.some(false) : O.some(isBscTokenAsset(sourceAsset as TokenAsset))
       case ARBChain:
-        return isAethAsset(sourceAsset) ? O.some(false) : O.some(isArbTokenAsset(sourceAsset))
+        return isAethAsset(sourceAsset) ? O.some(false) : O.some(isArbTokenAsset(sourceAsset as TokenAsset))
       default:
         return O.none
     }
@@ -248,7 +250,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
    * Selectable source assets to add to savers.
    * Based on savers the address has
    */
-  const selectableAssets: Asset[] = useMemo(() => {
+  const selectableAssets: AnyAsset[] = useMemo(() => {
     const result = FP.pipe(
       poolDetails,
       A.filter(({ saversDepth }) => Number(saversDepth) > 0),
@@ -548,7 +550,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
   const zeroBaseAmountMax1e8 = useMemo(() => max1e8BaseAmount(zeroBaseAmountMax), [zeroBaseAmountMax])
 
   const setAsset = useCallback(
-    async (asset: Asset) => {
+    async (asset: AnyAsset) => {
       // delay to avoid render issues while switching
       await delay(100)
 
@@ -644,11 +646,11 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     const oTokenAddress: O.Option<string> = (() => {
       switch (sourceChain) {
         case ETHChain:
-          return getEthTokenAddress(sourceAsset)
+          return getEthTokenAddress(sourceAsset as TokenAsset)
         case AVAXChain:
-          return getAvaxTokenAddress(sourceAsset)
+          return getAvaxTokenAddress(sourceAsset as TokenAsset)
         case BSCChain:
-          return getBscTokenAddress(sourceAsset)
+          return getBscTokenAddress(sourceAsset as TokenAsset)
         default:
           return O.none
       }

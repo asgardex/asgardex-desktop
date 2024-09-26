@@ -1,19 +1,27 @@
 import type Transport from '@ledgerhq/hw-transport'
 import { FeeOption, Network, TxHash } from '@xchainjs/xchain-client'
-import * as AVAX from '@xchainjs/xchain-evm'
-import { Address, Asset, assetToString, BaseAmount } from '@xchainjs/xchain-util'
-import BigNumber from 'bignumber.js'
+import { ClientLedger, LedgerSigner, abi, getTokenAddress } from '@xchainjs/xchain-evm'
+import {
+  Address,
+  AnyAsset,
+  Asset,
+  assetToString,
+  BaseAmount,
+  getContractAddressFromAsset,
+  baseAmount,
+  TokenAsset
+} from '@xchainjs/xchain-util'
+import { ethers } from 'ethers'
 import * as E from 'fp-ts/Either'
 
-import { isAvaxAsset } from '../../../../renderer/helpers/assetHelper'
+import { isAvaxAsset, isAvaxTokenAsset } from '../../../../renderer/helpers/assetHelper'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { DEPOSIT_EXPIRATION_OFFSET, AvaxZeroAddress, defaultAvaxParams } from '../../../../shared/avax/const'
-import { ROUTER_ABI } from '../../../../shared/evm/abi'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
-import { LedgerSigner } from '../evm/LedgerSigner'
+
 /**
  * Sends ETH tx using Ledger
  */
@@ -27,9 +35,9 @@ export const send = async ({
   feeOption,
   walletAccount,
   walletIndex,
-  evmHdMode
+  evmHDMode
 }: {
-  asset: Asset
+  asset: AnyAsset
   transport: Transport
   amount: BaseAmount
   network: Network
@@ -38,16 +46,27 @@ export const send = async ({
   feeOption: FeeOption
   walletAccount: number
   walletIndex: number
-  evmHdMode: EvmHDMode
+  evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const ledgerClient = new AVAX.ClientLedger({
-      transport,
+    const ledgerClient = new ClientLedger({
       ...defaultAvaxParams,
-      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHdMode),
+      signer: new LedgerSigner({
+        transport,
+        provider: defaultAvaxParams.providers[Network.Mainnet],
+        derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
+      }),
+      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
       network: network
     })
-    const txHash = await ledgerClient.transfer({ walletIndex, asset, recipient, amount, memo, feeOption })
+    const txHash = await ledgerClient.transfer({
+      walletIndex,
+      asset: asset as Asset | TokenAsset,
+      recipient,
+      amount,
+      memo,
+      feeOption
+    })
 
     if (!txHash) {
       return E.left({
@@ -66,11 +85,11 @@ export const send = async ({
 }
 
 /**
- * Sends ETH deposit txs using Ledger
+ * Sends Avax deposit txs using Ledger
  */
 export const deposit = async ({
-  transport,
   asset,
+  transport,
   router,
   network,
   amount,
@@ -81,7 +100,7 @@ export const deposit = async ({
   feeOption,
   evmHDMode
 }: {
-  asset: Asset
+  asset: AnyAsset
   router: Address
   transport: Transport
   amount: BaseAmount
@@ -94,7 +113,7 @@ export const deposit = async ({
   evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const address = !isAvaxAsset(asset) ? AVAX.getTokenAddress(asset) : AvaxZeroAddress
+    const address = !isAvaxAsset(asset) ? getTokenAddress(asset as TokenAsset) : AvaxZeroAddress
 
     if (!address) {
       return E.left({
@@ -103,46 +122,42 @@ export const deposit = async ({
       })
     }
 
-    const isETHAddress = address === AvaxZeroAddress
-
-    const clientledger = new AVAX.ClientLedger({ transport, ...defaultAvaxParams, network: network })
-
-    const app = await clientledger.getApp()
-    const path = getDerivationPath(walletAccount, walletIndex, evmHDMode)
-    const provider = clientledger.getProvider()
-    const signer = new LedgerSigner({ provider, path, app })
-
-    const gasPrices = await clientledger.estimateGasPrices()
-    const gasPrice = gasPrices[feeOption].amount().toFixed(0) // no round down needed
-    const blockTime = await getBlocktime(provider)
-    const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
-
-    // Note: `client.call` handling very - similar to `runSendPoolTx$` in `src/renderer/services/ethereum/transaction.ts`
-    // Call deposit function of Router contract
-    // Note2: Amounts need to use `toFixed` to convert `BaseAmount` to `Bignumber`
-    // since `value` and `gasPrice` type is `Bignumber`
-    const { hash } = await clientledger.call<{ hash: TxHash }>({
-      signer,
-      contractAddress: router,
-      abi: ROUTER_ABI,
-      funcName: 'depositWithExpiry',
-      funcParams: [
-        recipient,
-        address,
-        // Send `BaseAmount` w/o decimal and always round down for currencies
-        amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
-        memo,
-        expiration,
-        isETHAddress
-          ? {
-              // Send `BaseAmount` w/o decimal and always round down for currencies
-              value: amount.amount().toFixed(0, BigNumber.ROUND_DOWN),
-              gasPrice
-            }
-          : { gasPrice }
-      ]
+    const ledgerClient = new ClientLedger({
+      ...defaultAvaxParams,
+      signer: new LedgerSigner({
+        transport,
+        provider: defaultAvaxParams.providers[Network.Mainnet],
+        derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
+      }),
+      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
+      network: network
     })
 
+    const isERC20 = isAvaxTokenAsset(asset as TokenAsset)
+    const checkSummedContractAddress = isERC20
+      ? ethers.utils.getAddress(getContractAddressFromAsset(asset as TokenAsset))
+      : ethers.constants.AddressZero
+    const provider = ledgerClient.getProvider()
+    const blockTime = await getBlocktime(provider)
+    const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
+    const depositParams = [recipient, checkSummedContractAddress, amount.amount().toFixed(), memo, expiration]
+
+    const routerContract = new ethers.Contract(router, abi.router)
+    const nativeAsset = ledgerClient.getAssetInfo()
+
+    const gasPrices = await ledgerClient.estimateGasPrices()
+
+    const unsignedTx = await routerContract.populateTransaction.depositWithExpiry(...depositParams)
+
+    const hash = await ledgerClient.transfer({
+      asset: nativeAsset.asset,
+      amount: isERC20 ? baseAmount(0, nativeAsset.decimal) : amount,
+      memo: unsignedTx.data,
+      recipient: router,
+      gasPrice: gasPrices[feeOption],
+      isMemoEncoded: true,
+      gasLimit: ethers.BigNumber.from(160000)
+    })
     return E.right(hash)
   } catch (error) {
     return E.left({

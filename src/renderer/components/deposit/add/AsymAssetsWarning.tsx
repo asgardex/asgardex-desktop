@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 
 import { ArrowTopRightOnSquareIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { Network } from '@xchainjs/xchain-client'
-import { Asset, assetToString } from '@xchainjs/xchain-util'
+import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import { FormattedMessage, useIntl } from 'react-intl'
 
@@ -13,7 +13,7 @@ import { BorderButton, TextButton } from '../../uielements/button'
 
 export type AsymAssetsWarningProps = {
   network: Network
-  assets: Asset[]
+  assets: AnyAsset[]
   loading: boolean
   onClickOpenAsymTool: FP.Lazy<void>
   className?: string
