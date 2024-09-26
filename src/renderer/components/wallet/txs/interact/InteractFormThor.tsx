@@ -86,7 +86,7 @@ type UserNodeInfo = {
   nodeAddress: string
   bondProviderAddress?: string
   bondAmount?: BaseAmount
-  isNodeAddress: boolean
+  isNodeOperatorAddress: boolean
 }
 
 type Props = {
@@ -215,21 +215,21 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     let foundNodeInfo: UserNodeInfo | undefined = undefined
 
     for (const node of nodes) {
-      const normalizedNodeAddress = node.address.toLowerCase()
+      const normalizedNodeOperatorAddress = node.nodeOperatorAddress.toLowerCase()
       const normalizedWalletAddress = walletAddress.toLowerCase()
 
       // Check if the wallet address matches the node address
-      const isNodeAddress = normalizedNodeAddress === normalizedWalletAddress
+      const isNodeOperatorAddress = normalizedNodeOperatorAddress === normalizedWalletAddress
 
       // Check if the wallet address matches any bond provider address
       const matchingProvider = node.bondProviders.providers.find(
         (provider) => normalizedWalletAddress === provider.bondAddress.toLowerCase()
       )
 
-      if (isNodeAddress || matchingProvider) {
+      if (isNodeOperatorAddress || matchingProvider) {
         foundNodeInfo = {
           nodeAddress: node.address,
-          isNodeAddress,
+          isNodeOperatorAddress,
           bondProviderAddress: matchingProvider?.bondAddress,
           bondAmount: matchingProvider?.bond
         }

@@ -30,7 +30,6 @@ import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import * as walletRoutes from '../../../routes/wallet'
 import { FeeRD } from '../../../services/chain/types'
-import { userNodes$ } from '../../../services/storage/userNodes'
 import { NodeInfosRD, RunePoolProviderRD, ThorchainLastblockRD } from '../../../services/thorchain/types'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
@@ -58,16 +57,6 @@ export const InteractViewTHOR: React.FC = () => {
       FP.pipe(
         oSelectedAsset,
         O.map((selectedAsset) => selectedAsset.asset.chain),
-        O.getOrElse(() => '') // Replace "defaultChain" with an appropriate default value
-      ),
-    [oSelectedAsset]
-  )
-
-  const walletAddress = useMemo(
-    () =>
-      FP.pipe(
-        oSelectedAsset,
-        O.map((selectedAsset) => selectedAsset.walletAddress),
         O.getOrElse(() => '') // Replace "defaultChain" with an appropriate default value
       ),
     [oSelectedAsset]
@@ -142,40 +131,53 @@ export const InteractViewTHOR: React.FC = () => {
 
   const [nodeInfos] = useObservableState<NodeInfosRD>(
     () =>
-      FP.pipe(
-        // No need to check for oSelectedAsset anymore, go directly to Rx.combineLatest
-        Rx.combineLatest([userNodes$, getNodeInfos$]).pipe(
-          RxOp.switchMap(([userNodes, nodeInfos]) => {
-            return Rx.of(
-              FP.pipe(
-                nodeInfos,
-                RD.map((data) => {
-                  return FP.pipe(
-                    data,
-                    A.filter(({ address, bondProviders }) => {
-                      const normalizedNodeAddress = address.toLowerCase()
-                      const normalizedWalletAddress = walletAddress.toLowerCase()
+      selectedAsset$.pipe(
+        RxOp.switchMap((oSelectedAsset) => {
+          if (O.isNone(oSelectedAsset)) {
+            return Rx.of(RD.pending)
+          }
+          const selectedAsset = oSelectedAsset.value
+          const walletAddress = selectedAsset.walletAddress
 
-                      const isNodeAddress =
-                        normalizedNodeAddress === normalizedWalletAddress || userNodes.includes(normalizedNodeAddress)
+          return Rx.combineLatest([getNodeInfos$, Rx.of(walletAddress)]).pipe(
+            RxOp.switchMap(([nodeInfos, walletAddress]) => {
+              if (!walletAddress || walletAddress === '') {
+                return Rx.of(RD.pending)
+              }
+              // Ensure nodeInfos is not in `RD.pending`
+              if (RD.isPending(nodeInfos)) {
+                return Rx.of(RD.pending)
+              }
 
-                      const isBondProvider = bondProviders.providers.some(({ bondAddress }) => {
-                        const normalizedBondAddress = bondAddress.toLowerCase()
-                        return (
-                          normalizedBondAddress === normalizedWalletAddress || userNodes.includes(normalizedBondAddress)
-                        )
+              return Rx.of(
+                FP.pipe(
+                  nodeInfos,
+                  RD.map((data) => {
+                    return FP.pipe(
+                      data,
+                      A.filter(({ bondProviders, nodeOperatorAddress }) => {
+                        const normalizedOperatorNodeAddress = nodeOperatorAddress.toLowerCase()
+                        const normalizedWalletAddress = walletAddress.toLowerCase()
+
+                        const isNodeOperatorAddress = normalizedOperatorNodeAddress === normalizedWalletAddress
+
+                        const isBondProvider = bondProviders.providers.some(({ bondAddress }) => {
+                          const normalizedBondAddress = bondAddress.toLowerCase()
+                          const isMatch = normalizedBondAddress === normalizedWalletAddress
+                          return isMatch
+                        })
+
+                        return isNodeOperatorAddress || isBondProvider
                       })
-
-                      return isNodeAddress || isBondProvider
-                    })
-                  )
-                })
+                    )
+                  })
+                )
               )
-            )
-          })
-        )
+            })
+          )
+        })
       ),
-    RD.pending // Set initial state as `pending` to indicate loading
+    RD.pending
   )
 
   const [runePoolProviderRD, setRunePoolProviderRD] = useState<RunePoolProviderRD>(RD.initial)

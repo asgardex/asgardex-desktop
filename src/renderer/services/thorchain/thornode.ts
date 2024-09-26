@@ -315,22 +315,33 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     liveData.map<Node[], NodeInfos>((nodes) =>
       FP.pipe(
         nodes,
-        A.map(({ total_bond, current_award, status, node_address, bond_providers, signer_membership }) => ({
-          address: node_address,
-          bond: baseAmount(total_bond, THORCHAIN_DECIMAL),
-          award: baseAmount(current_award, THORCHAIN_DECIMAL),
-          status: status as NodeStatusEnum,
-          bondProviders: {
-            nodeOperatorFee: baseAmount(bond_providers.node_operator_fee, THORCHAIN_DECIMAL),
-            providers: Array.isArray(bond_providers.providers)
-              ? bond_providers.providers.map((provider) => ({
-                  bondAddress: provider.bond_address ? provider.bond_address : '',
-                  bond: baseAmount(provider.bond, THORCHAIN_DECIMAL)
-                }))
-              : []
-          },
-          signMembership: signer_membership
-        }))
+        A.map(
+          ({
+            total_bond,
+            current_award,
+            status,
+            node_address,
+            bond_providers,
+            signer_membership,
+            node_operator_address
+          }) => ({
+            address: node_address,
+            bond: baseAmount(total_bond, THORCHAIN_DECIMAL),
+            award: baseAmount(current_award, THORCHAIN_DECIMAL),
+            nodeOperatorAddress: node_operator_address,
+            status: status as NodeStatusEnum,
+            bondProviders: {
+              nodeOperatorFee: baseAmount(bond_providers.node_operator_fee, THORCHAIN_DECIMAL),
+              providers: Array.isArray(bond_providers.providers)
+                ? bond_providers.providers.map((provider) => ({
+                    bondAddress: provider.bond_address ? provider.bond_address : '',
+                    bond: baseAmount(provider.bond, THORCHAIN_DECIMAL)
+                  }))
+                : []
+            },
+            signMembership: signer_membership
+          })
+        )
       )
     ),
     RxOp.startWith(RD.initial),

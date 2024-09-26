@@ -151,9 +151,9 @@ export const BondsView: React.FC = (): JSX.Element => {
               FP.pipe(
                 [...thorData, ...mayaData],
                 A.map((nodeInfo) => {
-                  const normalizedAddress = nodeInfo.address.toLowerCase()
+                  const normalizedNodeOperatorAddress = nodeInfo.nodeOperatorAddress.toLowerCase()
 
-                  const isUserNodeAddress = normalizedUserNodes.includes(normalizedAddress)
+                  const isUserNodeOperatorAddress = normalizedUserNodes.includes(normalizedNodeOperatorAddress)
 
                   const isUserBondProvider = nodeInfo.bondProviders.providers.some((provider) => {
                     const normalizedBondAddress = provider.bondAddress.toLowerCase()
@@ -164,11 +164,11 @@ export const BondsView: React.FC = (): JSX.Element => {
 
                   return {
                     ...nodeInfo,
-                    isUserNodeAddress,
+                    isUserNodeOperatorAddress,
                     isUserBondProvider
                   }
                 }),
-                A.filter((nodeInfo) => nodeInfo.isUserNodeAddress || nodeInfo.isUserBondProvider)
+                A.filter((nodeInfo) => nodeInfo.isUserNodeOperatorAddress || nodeInfo.isUserBondProvider)
               )
             )
           )
