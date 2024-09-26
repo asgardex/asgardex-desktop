@@ -406,17 +406,22 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
         RxOp.map((response) => {
           if ('data' in response) {
             const responseData = response.data
-            if (typeof responseData === 'object' && responseData !== null) {
+            if (responseData && typeof responseData === 'object') {
               const result: Mimir = {}
               for (const [key, value] of Object.entries(responseData)) {
-                result[key] = Number(value)
+                const numberValue = Number(value)
+                if (!isNaN(numberValue)) {
+                  result[key] = numberValue
+                } else {
+                  return RD.failure(new Error(`Invalid value for key ${key}: ${value}`))
+                }
               }
               return RD.success(result as Mimir)
             } else {
-              return RD.failure(new Error('Unexpected response format'))
+              return RD.failure(new Error('Unexpected response format: responseData is not an object'))
             }
           } else {
-            return RD.failure(new Error('Response is not AxiosResponse'))
+            return RD.failure(new Error('Response is not an AxiosResponse'))
           }
         })
       )

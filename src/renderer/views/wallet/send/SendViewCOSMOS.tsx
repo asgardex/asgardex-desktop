@@ -4,6 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { RadixChain } from '@xchainjs/xchain-radix'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Spin } from 'antd'
 import * as FP from 'fp-ts/lib/function'
@@ -18,6 +19,7 @@ import { useKujiContext } from '../../../contexts/KujiContext'
 import { useMayachainContext } from '../../../contexts/MayachainContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
+import { useXrdContext } from '../../../contexts/XrdContext'
 import { liveData } from '../../../helpers/rx/liveData'
 import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
 import { useMayaScanPrice } from '../../../hooks/useMayascanPrice'
@@ -75,6 +77,7 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
   const mayachainContext = useMayachainContext()
   const gaiaContext = useCosmosContext()
   const thorContext = useThorchainContext()
+  const xrdContext = useXrdContext()
   let fees$: () => FeesLD
   let reloadFees: () => void
 
@@ -94,6 +97,10 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
     case THORChain:
       fees$ = thorContext.fees$
       reloadFees = thorContext.reloadFees
+      break
+    case RadixChain:
+      fees$ = xrdContext.fees$
+      reloadFees = xrdContext.reloadFees
       break
     default:
       throw new Error('Unsupported chain')

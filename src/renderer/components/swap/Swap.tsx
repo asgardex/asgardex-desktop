@@ -784,7 +784,7 @@ export const Swap = ({
     const affiliateMaya = FP.pipe(
       oQuoteMaya,
       O.fold(
-        () => new CryptoAmount(baseAmount(0), AssetRuneNative), // default affiliate fee asset amount
+        () => new CryptoAmount(baseAmount(0), AssetCacao), // default affiliate fee asset amount
         (quoteSwap) => {
           const fee = quoteSwap.fees.affiliateFee
           return fee

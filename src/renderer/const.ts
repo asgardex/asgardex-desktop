@@ -1,4 +1,4 @@
-import { ARBChain, AssetAETH, AssetARB } from '@xchainjs/xchain-arbitrum'
+import { ARBChain, AssetARB } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -11,6 +11,7 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { RadixChain } from '@xchainjs/xchain-radix'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, bn, assetToString, baseAmount, Chain, AssetType, TokenAsset } from '@xchainjs/xchain-util'
 
@@ -138,24 +139,13 @@ export const AssetUSDCBSC: TokenAsset = {
   type: AssetType.TOKEN
 }
 
-export const ETHAssetsFallBack = [AssetETH, AssetUSDTDAC, AssetUSDC]
-export const BSCAssetsFallBack = [AssetBSC, AssetUSDCBSC, AssetUSDTBSC]
-export const AVAXAssetsFallback = [AssetAVAX, AssetUSDTAVAX, AssetUSDCAVAX]
+export const ETHAssetsFallBack = [AssetUSDTDAC, AssetUSDC]
+export const BSCAssetsFallBack = [AssetUSDCBSC, AssetUSDTBSC]
+export const AVAXAssetsFallback = [AssetUSDTAVAX, AssetUSDCAVAX]
+export const ARBAssetsFallback = [AssetARB]
 
 // for evm only
-export const DEFAULT_USER_ASSETS = [
-  AssetETH,
-  AssetUSDTDAC,
-  AssetUSDC,
-  AssetBSC,
-  AssetUSDCBSC,
-  AssetUSDTBSC,
-  AssetAVAX,
-  AssetUSDTAVAX,
-  AssetUSDCAVAX,
-  AssetARB,
-  AssetAETH
-]
+export const DEFAULT_USER_ASSETS = [AssetUSDTDAC, AssetUSDC, AssetUSDCBSC, AssetUSDTBSC, AssetUSDTAVAX, AssetUSDCAVAX]
 
 export const DEFAULT_PRICE_ASSETS: PricePoolAssets = [AssetRuneNative, AssetETH, AssetBTC, AssetCacao]
 
@@ -175,7 +165,8 @@ export const CHAIN_WEIGHTS_THOR: Record<EnabledChain, number> = {
   [GAIAChain]: 9,
   [ARBChain]: 10,
   [DASHChain]: 11,
-  [KUJIChain]: 12
+  [KUJIChain]: 12,
+  [RadixChain]: 13
 }
 
 // Weight of chains
@@ -194,7 +185,8 @@ export const CHAIN_WEIGHTS_MAYA: Record<EnabledChain, number> = {
   [LTCChain]: 9,
   [AVAXChain]: 10,
   [DOGEChain]: 11,
-  [GAIAChain]: 12
+  [GAIAChain]: 12,
+  [RadixChain]: 13
 }
 
 // Weight of currencies needed for pricing

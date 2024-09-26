@@ -160,15 +160,15 @@ export const AssetsView: React.FC = (): JSX.Element => {
   const disableRefresh = useMemo(() => RD.isPending(poolsRD) || loadingBalances, [loadingBalances, poolsRD])
 
   const refreshHandler = useCallback(async () => {
-    const delay = 1000 // Delay in milliseconds
+    const delay = 1000
+    const chains = Array.from(enabledChains || []) // Safeguard
 
-    for (const [index, chain] of Array.from(enabledChains).entries()) {
+    for (const [index, chain] of chains.entries()) {
       if (index > 0) {
         await new Promise((resolve) => setTimeout(resolve, delay))
       }
-
       const lazyReload = reloadBalancesByChain(chain)
-      lazyReload() // Invoke the lazy function
+      lazyReload()
     }
   }, [enabledChains])
 

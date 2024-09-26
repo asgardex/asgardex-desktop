@@ -14,6 +14,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-mayamidgard'
+import { AssetXRD, RadixChain, XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import {
   assetFromString,
@@ -266,6 +267,11 @@ export const getOutboundAssetFeeByChain = (
           return O.some({
             amount: baseAmount(value, KUJI_DECIMAL),
             asset: AssetKUJI
+          })
+        case RadixChain:
+          return O.some({
+            amount: baseAmount(value, XRD_DECIMAL),
+            asset: AssetXRD
           })
         case ARBChain: {
           return O.some({

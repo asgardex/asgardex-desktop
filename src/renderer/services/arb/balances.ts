@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ARBChain, AssetAETH } from '@xchainjs/xchain-arbitrum'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { Network } from '@xchainjs/xchain-client'
 import { AnyAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
@@ -7,7 +7,7 @@ import { of } from 'rxjs'
 import { switchMap } from 'rxjs/operators'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
-import { ArbAssetsTestnet } from '../../const'
+import { ARBAssetsFallback, ArbAssetsTestnet } from '../../const'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
 import { userAssets$ } from '../storage/userChainTokens'
@@ -63,7 +63,7 @@ const balances$: ({
         return C.balances$({
           client$,
           trigger$: reloadBalances$,
-          assets: [AssetAETH],
+          assets: ARBAssetsFallback,
           walletType,
           walletAccount,
           walletIndex,

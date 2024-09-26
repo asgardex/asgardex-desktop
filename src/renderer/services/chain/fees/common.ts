@@ -6,6 +6,7 @@ import { DOGEChain } from '@xchainjs/xchain-doge'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { RadixChain } from '@xchainjs/xchain-radix'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, Asset, AssetType } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
@@ -24,6 +25,7 @@ import * as LTC from '../../litecoin'
 import * as MAYA from '../../mayachain'
 import { service as midgardMayaService } from '../../mayaMigard/service'
 import { service as midgardService } from '../../midgard/service'
+import * as XRD from '../../radix'
 import * as THOR from '../../thorchain'
 import { FeesWithRatesLD } from '../../utxo/types'
 import { PoolFeeLD } from '../types'
@@ -99,6 +101,11 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
     case KUJIChain:
       return FP.pipe(
         KUJI.fees$(),
+        liveData.map((fees) => ({ asset, amount: fees.fast }))
+      )
+    case RadixChain:
+      return FP.pipe(
+        XRD.fees$(),
         liveData.map((fees) => ({ asset, amount: fees.fast }))
       )
     case DASHChain:
