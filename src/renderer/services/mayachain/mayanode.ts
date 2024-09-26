@@ -311,11 +311,15 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
           if (typeof response === 'object' && response !== null) {
             const result: Mimir = {}
             for (const [key, value] of Object.entries(response)) {
-              result[key] = Number(value)
+              const numberValue = Number(value)
+              if (isNaN(numberValue)) {
+                return RD.failure(new Error(`Invalid value for key "${key}": ${value} cannot be converted to a number`))
+              }
+              result[key] = numberValue
             }
             return RD.success(result as Mimir)
           } else {
-            return RD.failure(new Error('Unexpected response format'))
+            return RD.failure(new Error('Unexpected response format: response is not a valid object'))
           }
         })
       )

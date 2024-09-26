@@ -11,6 +11,7 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { RadixChain } from '@xchainjs/xchain-radix'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Chain } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
@@ -40,6 +41,7 @@ import * as ETH from '../ethereum'
 import * as KUJI from '../kuji'
 import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
+import * as XRD from '../radix'
 import * as THOR from '../thorchain'
 import { INITIAL_BALANCES_STATE } from './const'
 import {
@@ -82,6 +84,7 @@ export const createBalancesService = ({
       if (enabledChains.includes(DOGEChain)) DOGE.reloadBalances()
       if (enabledChains.includes(GAIAChain)) COSMOS.reloadBalances()
       if (enabledChains.includes(KUJIChain)) KUJI.reloadBalances()
+      if (enabledChains.includes(RadixChain)) XRD.reloadBalances()
     })
   }
 
@@ -99,7 +102,8 @@ export const createBalancesService = ({
     [LTCChain]: LTC.reloadBalances,
     [DOGEChain]: DOGE.reloadBalances,
     [KUJIChain]: KUJI.reloadBalances,
-    [GAIAChain]: COSMOS.reloadBalances
+    [GAIAChain]: COSMOS.reloadBalances,
+    [RadixChain]: XRD.reloadBalances
   }
 
   const reloadBalancesByChain =
@@ -258,6 +262,13 @@ export const createBalancesService = ({
             resetReloadBalances: COSMOS.resetReloadBalances,
             balances$: COSMOS.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: COSMOS.reloadBalances$
+          }
+        case RadixChain:
+          return {
+            reloadBalances: XRD.reloadBalances,
+            resetReloadBalances: XRD.resetReloadBalances,
+            balances$: XRD.balances$({ walletType, walletAccount, walletIndex, hdMode }),
+            reloadBalances$: XRD.reloadBalances$
           }
         default:
           return {
@@ -843,12 +854,46 @@ export const createBalancesService = ({
   )
 
   /**
+   * Transforms Radix balances into `ChainBalance`
+   */
+  const xrdChainBalance$: ChainBalance$ = Rx.combineLatest([
+    XRD.addressUI$,
+    getChainBalance$({
+      chain: RadixChain,
+      walletType: 'keystore',
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
+      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
+      hdMode: 'default',
+      walletBalanceType: 'all'
+    })
+  ]).pipe(
+    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
+      walletType: 'keystore',
+      chain: RadixChain,
+      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
+      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
+      balances,
+      balancesType: 'all'
+    }))
+  )
+
+  /**
    * Cosmos Ledger balances
    */
   const cosmosLedgerChainBalance$: ChainBalance$ = ledgerChainBalance$({
     chain: GAIAChain,
     walletBalanceType: 'all',
     getBalanceByAddress$: COSMOS.getBalanceByAddress$
+  })
+
+  /**
+   * Radix Ledger balances
+   */
+  const xrdLedgerChainBalance$: ChainBalance$ = ledgerChainBalance$({
+    chain: RadixChain,
+    walletBalanceType: 'all',
+    getBalanceByAddress$: XRD.getBalanceByAddress$
   })
 
   /**
@@ -923,7 +968,8 @@ export const createBalancesService = ({
     LTC: [ltcBalance$, ltcLedgerChainBalance$],
     DOGE: [dogeChainBalance$, dogeLedgerChainBalance$],
     GAIA: [cosmosChainBalance$, cosmosLedgerChainBalance$],
-    KUJI: [kujiChainBalance$, kujiLedgerChainBalance$]
+    KUJI: [kujiChainBalance$, kujiLedgerChainBalance$],
+    XRD: [xrdChainBalance$, xrdLedgerChainBalance$]
   }
 
   // Combine enabled chains with their corresponding balance observables

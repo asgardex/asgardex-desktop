@@ -13,6 +13,7 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { RadixChain } from '@xchainjs/xchain-radix'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import * as E from 'fp-ts/Either'
@@ -97,7 +98,7 @@ const chainAddressFunctions: Record<
   [GAIAChain]: getCOSMOSAddress
 }
 
-const unsupportedChains: Chain[] = [MAYAChain, KUJIChain]
+const unsupportedChains: Chain[] = [MAYAChain, KUJIChain, RadixChain]
 
 export const getAddress = async ({
   chain,

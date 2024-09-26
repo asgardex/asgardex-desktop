@@ -177,6 +177,29 @@ In case Node might run into memory issues locally set `--max-old-space-size` as 
 export NODE_OPTIONS="--max-old-space-size=4096"
 ```
 
+## Tips & tricks for windows
+
+You may need to install the following dependencies in your local machine in order to build the native libraries used by Asgardex
+
+1. Install python3
+2. Install 'Microsoft C++ build tools'
+
+## Tips & tricks for Linux
+
+You may need to install the following dependencies in your local machine in order to build the native libraries used by Asgardex
+
+1. Install python3
+2. Install dependency build-essential
+
+```bash
+sudo apt-get install build-essential
+```
+3. Install dependency libudev-dev
+
+```bash
+sudo apt-get install libudev-dev
+```
+
 ### Generate ERC20/BEP20 & Avax & ARB asset white list
 
 Whenever [THORChain ERC20 asset whitelist](https://gitlab.com/thorchain/thornode/-/blob/develop/bifrost/pkg/chainclients/ethereum/token_list.json) has been updated (usually with a [new release of THORNode](https://gitlab.com/thorchain/thornode/-/tags)), run following script to auto-generate this list for ASGARDEX
