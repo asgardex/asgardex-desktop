@@ -8,7 +8,7 @@ import * as Styled from './Alert.styles'
 export type Props = Omit<AlertProps, 'showIcon' | 'icon'>
 
 export const Alert: React.FC<Props> = (props): JSX.Element => {
-  const { description } = props
+  const { description, ...rest } = props
 
-  return <Styled.Alert showIcon icon={<InfoCircleOutlined />} description={description} {...props} />
+  return <Styled.Alert showIcon icon={<InfoCircleOutlined />} description={description} {...rest} />
 }
