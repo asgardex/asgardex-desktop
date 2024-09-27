@@ -16,6 +16,7 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import {
   CompatibleAsset,
+  MayaChain,
   MayachainQuery,
   QuoteSwap,
   QuoteSwapParams as QuoteSwapParamsMaya
@@ -35,7 +36,8 @@ import {
   CryptoAmount,
   AssetType,
   AnyAsset,
-  TokenAsset
+  TokenAsset,
+  SynthAsset
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import * as A from 'fp-ts/Array'
@@ -1666,10 +1668,24 @@ export const Swap = ({
     (): AnyAsset[] =>
       FP.pipe(
         poolAssets,
+        A.chain((asset) =>
+          isRuneNativeAsset(asset) || isCacaoAsset(asset)
+            ? [asset]
+            : dex.chain === MayaChain
+            ? [
+                asset,
+                {
+                  ...asset,
+                  type: AssetType.SYNTH,
+                  synth: true
+                } as SynthAsset
+              ]
+            : [asset]
+        ),
         A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
         (assets) => unionAssets(assets)(assets)
       ),
-    [poolAssets, sourceAsset]
+    [poolAssets, sourceAsset, dex]
   )
   type ModalState = 'swap' | 'approve' | 'none'
   const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
