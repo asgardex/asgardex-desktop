@@ -193,25 +193,30 @@ export const BondsView: React.FC = (): JSX.Element => {
   )
 
   const routeToAction = useCallback(
-    (action: string, node: string) => {
+    (action: string, node: string, walletType: string) => {
       const networkPrefix = network === 'mainnet' ? '' : 's'
       const nodeChain = node.startsWith(`${networkPrefix}thor`) ? THORChain : MAYAChain
-      const selectedAssetBalance = allBalances.filter((balance) => balance.asset.chain === nodeChain)
-      const { asset, walletAddress, walletType, walletAccount, walletIndex, hdMode } = selectedAssetBalance[0]
-      setSelectedAsset(
-        O.some({
-          asset,
-          walletAddress,
-          walletType,
-          walletAccount,
-          walletIndex,
-          hdMode
-        })
+      const selectedAssetBalance = allBalances.filter(
+        (balance) => balance.asset.chain === nodeChain && balance.walletType === walletType
       )
-      const path = walletRoutes.bondInteract.path({
-        interactType: action
-      })
-      navigate(path)
+      if (selectedAssetBalance.length > 0) {
+        const { asset, walletAddress, walletType, walletAccount, walletIndex, hdMode } = selectedAssetBalance[0]
+        setSelectedAsset(
+          O.some({
+            asset,
+            walletAddress,
+            walletType, // This comes from the selected balance
+            walletAccount,
+            walletIndex,
+            hdMode
+          })
+        )
+
+        const path = walletRoutes.bondInteract.path({
+          interactType: action
+        })
+        navigate(path)
+      }
     },
     [allBalances, navigate, network, setSelectedAsset]
   )
