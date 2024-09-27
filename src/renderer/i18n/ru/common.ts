@@ -106,7 +106,6 @@ const common: CommonMessages = {
   'common.addAsset': 'Токен не отображается? Добавить вручную',
   'common.removeAsset': 'Удалить актив из вида кошелька',
   'common.searchExample': 'Пример поиска для не синтетической цепи.ticker, например, btc.btc или для синтетики btc/btc',
-  'common.excludeSynth': 'Исключить синтезы',
   'common.retry': 'Повторить',
   'common.reload': 'Обновить',
   'common.action': 'Действие',

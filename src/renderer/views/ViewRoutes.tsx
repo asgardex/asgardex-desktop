@@ -8,7 +8,7 @@ import * as poolsRoutes from '../routes/pools'
 import * as lendingRoutes from '../routes/pools/lending'
 import * as saversRoutes from '../routes/pools/savers'
 import * as walletRoutes from '../routes/wallet'
-import { AppSettingsView } from './app/AppSettingsView'
+import { AppSettings } from './app/AppSettings'
 import { DepositView } from './deposit/DepositView'
 import { LoansView } from './loans/LoansView'
 import { NoContentView } from './NoContentView'
@@ -32,7 +32,6 @@ import { SendView } from './wallet/send'
 import { TradeAssetsView } from './wallet/TradeAssetsView'
 import { UnlockView } from './wallet/UnlockView'
 import { WalletAuth } from './wallet/WalletAuth'
-import { WalletSettingsAuth } from './wallet/WalletSettingsAuth'
 
 export const ViewRoutes: React.FC<{}> = (): JSX.Element => {
   const location = useLocation()
@@ -173,15 +172,7 @@ export const ViewRoutes: React.FC<{}> = (): JSX.Element => {
         }
       />
 
-      <Route
-        path={appRoutes.settings.template}
-        element={
-          <>
-            <AppSettingsView />
-            <WalletSettingsAuth />
-          </>
-        }
-      />
+      <Route path={appRoutes.settings.template} element={<AppSettings />} />
       {/* playground - DEV only */}
       <Route path={playgroundRoutes.base.template} element={<PlaygroundView />} />
       {/* 404 */}

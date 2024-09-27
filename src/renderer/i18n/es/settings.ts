@@ -7,7 +7,7 @@ const settings: SettingMessages = {
   'setting.multiwallet.management': 'Gestión de varios monederos',
   'setting.client': 'Cliente',
   'setting.accounts': 'Cuentas',
-  'setting.export': 'Exportar almacén de claves',
+  'setting.export': 'Exportar',
   'setting.lock': 'Cerradura',
   'setting.view.phrase': 'Ver la frase',
   'setting.version': 'Versión',

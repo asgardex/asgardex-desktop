@@ -3,25 +3,16 @@ import React, { useCallback } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { useObservableState } from 'observable-hooks'
 
-import { ExternalUrl } from '../../../shared/const'
-import { DEFAULT_LOCALE } from '../../../shared/i18n/const'
-import { envOrDefault } from '../../../shared/utils/env'
-import { AppSettings } from '../../components/settings'
-import { useI18nContext } from '../../contexts/I18nContext'
+import { AppExpertMode } from '../../components/settings/AppExpertMode'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
-import { useAppUpdate } from '../../hooks/useAppUpdate'
-import { useCollapsedSetting } from '../../hooks/useCollapsedSetting'
-import { useDex } from '../../hooks/useDex'
 import { useMayachainClientUrl } from '../../hooks/useMayachainClientUrl'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePrivateData } from '../../hooks/usePrivateData'
 import { useThorchainClientUrl } from '../../hooks/useThorchainClientUrl'
 
-export const AppSettingsView: React.FC = (): JSX.Element => {
-  const { network, changeNetwork } = useNetwork()
-  const { dex, changeDex } = useDex()
-  const { appUpdater, checkForUpdates } = useAppUpdate()
+export const AppExpertModeView: React.FC = (): JSX.Element => {
+  const { network } = useNetwork()
   const {
     service: { apiEndpoint$, setMidgardUrl, checkMidgardUrl$ }
   } = useMidgardContext()
@@ -36,8 +27,6 @@ export const AppSettingsView: React.FC = (): JSX.Element => {
   const midgardMayaUrl = useObservableState(apiEndpointMaya$, RD.initial)
 
   const { isPrivate, changePrivateData } = usePrivateData()
-
-  const { collapsed, toggle: toggleCollapse } = useCollapsedSetting('app')
 
   const {
     node: thornodeNodeUrl,
@@ -57,14 +46,6 @@ export const AppSettingsView: React.FC = (): JSX.Element => {
     checkNode$: checkMayanodeNodeUrl$
   } = useMayachainClientUrl()
 
-  const { changeLocale, locale$ } = useI18nContext()
-  const currentLocale = useObservableState(locale$, DEFAULT_LOCALE)
-
-  const goToReleasePage = useCallback(
-    (version: string) => window.apiUrl.openExternal(`${ExternalUrl.GITHUB_RELEASE}${version}`),
-    []
-  )
-
   const updateMidgardUrlHandler = useCallback(
     (url: string) => {
       setMidgardUrl(url, network)
@@ -79,21 +60,9 @@ export const AppSettingsView: React.FC = (): JSX.Element => {
   )
 
   return (
-    <AppSettings
-      locale={currentLocale}
-      changeLocale={changeLocale}
-      network={network}
-      dex={dex}
-      changeNetwork={changeNetwork}
-      changeDex={changeDex}
+    <AppExpertMode
       togglePrivate={changePrivateData}
       isPrivate={isPrivate}
-      version={envOrDefault($VERSION, '-')}
-      appUpdateState={appUpdater}
-      checkForUpdates={checkForUpdates}
-      goToReleasePage={goToReleasePage}
-      collapsed={collapsed}
-      toggleCollapse={toggleCollapse}
       midgardUrl={midgardUrl}
       midgardMayaUrl={midgardMayaUrl}
       onChangeMidgardUrl={updateMidgardUrlHandler}

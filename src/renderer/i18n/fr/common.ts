@@ -105,7 +105,6 @@ const common: CommonMessages = {
   'common.addAsset': `Le jeton ne s'affiche pas ? Ajouter manuellement`,
   'common.removeAsset': "Supprimer l'actif de la vue du portefeuille",
   'common.searchExample': 'Exemple de recherche pour chaîne non synthétique.ticker ex. btc.btc ou pour synth btc/btc',
-  'common.excludeSynth': 'Exclure les Synth',
   'common.retry': 'Réessayer',
   'common.reload': 'Recharger',
   'common.action': 'Action',

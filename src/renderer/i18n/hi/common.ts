@@ -106,7 +106,6 @@ const common: CommonMessages = {
   'common.addAsset': 'टोकन नहीं दिख रहा? मैन्युअल रूप से जोड़ें',
   'common.removeAsset': 'वॉलेट दृश्य से संपत्ति हटाएं',
   'common.searchExample': 'गैर सिंथ चेन.टिकर के लिए खोज उदाहरण जैसे कि btc.btc या सिंथ के लिए btc/btc',
-  'common.excludeSynth': 'सिंथ्स को बाहर करें',
   'common.retry': 'पुनः प्रयास करें',
   'common.reload': 'पुनः लोड करें',
   'common.action': 'क्रिया',

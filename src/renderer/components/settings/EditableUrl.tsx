@@ -217,7 +217,7 @@ const EditableUrl: React.FC<Props> = (props): JSX.Element => {
   )
 
   return (
-    <div className={`${className}`}>
+    <div className={className}>
       {FP.pipe(editableUrl, O.fold(renderUrl, renderEditableUrl))}
       {renderTestUrlResult}
     </div>
