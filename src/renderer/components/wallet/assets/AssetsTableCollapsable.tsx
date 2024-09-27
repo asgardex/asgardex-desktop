@@ -623,13 +623,13 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
 
           <Col flex="0 1 auto" span={3} style={{ textAlign: 'right' }}>
             <Styled.HeaderLabel color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>
-              {isEvmChain(chain) && (
-                //@asgardexTeam Add Locale for tool tip
-                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                {isEvmChain(chain) && (
+                  // @asgardexTeam Add Locale for tooltip
                   <InfoIcon tooltip={'Token not showing, add contract in wallet settings'} color="primary" />
-                  <span style={{ marginLeft: '5px' }}>{assetsTxt}</span>
-                </span>
-              )}
+                )}
+                <span style={{ marginLeft: isEvmChain(chain) ? '5px' : '0' }}>{assetsTxt}</span>
+              </span>
             </Styled.HeaderLabel>
           </Col>
           <Col flex="0 0 12rem" span={1}>
