@@ -16,6 +16,7 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import {
   CompatibleAsset,
+  MayaChain,
   MayachainQuery,
   QuoteSwap,
   QuoteSwapParams as QuoteSwapParamsMaya
@@ -1670,7 +1671,8 @@ export const Swap = ({
         A.chain((asset) =>
           isRuneNativeAsset(asset) || isCacaoAsset(asset)
             ? [asset]
-            : [
+            : dex.chain === MayaChain
+            ? [
                 asset,
                 {
                   ...asset,
@@ -1678,13 +1680,13 @@ export const Swap = ({
                   synth: true
                 } as SynthAsset
               ]
+            : [asset]
         ),
         A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
         (assets) => unionAssets(assets)(assets)
       ),
-    [poolAssets, sourceAsset]
+    [poolAssets, sourceAsset, dex]
   )
-
   type ModalState = 'swap' | 'approve' | 'none'
   const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
   const [showLedgerModal, setShowLedgerModal] = useState<ModalState>('none')

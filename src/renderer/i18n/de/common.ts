@@ -107,7 +107,6 @@ const common: CommonMessages = {
   'common.addAsset': 'Token wird nicht angezeigt? Manuell hinzufügen',
   'common.removeAsset': 'Asset aus der Wallet-Ansicht entfernen',
   'common.searchExample': 'Suchbeispiel für nicht-synth chain.ticker, z.B. btc.btc oder für synth btc/btc',
-  'common.excludeSynth': 'Synths ausschließen',
   'common.retry': 'Wiederholen',
   'common.reload': 'Neuladen',
   'common.action': 'Aktion',
