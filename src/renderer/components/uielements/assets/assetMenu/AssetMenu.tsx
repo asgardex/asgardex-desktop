@@ -14,10 +14,8 @@ import { useIntl } from 'react-intl'
 import { getChainAsset } from '../../../../helpers/chainHelper'
 import { eqAsset } from '../../../../helpers/fp/eq'
 import { emptyString } from '../../../../helpers/stringHelper'
-import { FilterCheckbox } from '../../../wallet/assets/AssetsTableCollapsable.styles'
 import { BaseButton } from '../../button'
 import { InputSearch } from '../../input'
-import { Label } from '../../label'
 import { AssetData } from '../assetData'
 import { AssetIcon } from '../assetIcon/AssetIcon'
 
@@ -45,7 +43,6 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
   } = props
 
   const [searchValue, setSearchValue] = useState<string>(emptyString)
-  const [excludeSynth, setExcludeSynth] = useState(false)
 
   const clearSearchValue = useCallback(() => {
     setSearchValue(emptyString)
@@ -66,30 +63,15 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
       FP.pipe(
         assets,
         A.filter((asset) => {
-          // Exclude synthetic assets if excludeSynth is true
-          if (excludeSynth && asset.type === AssetType.SYNTH) {
-            return false
-          }
           if (searchValue) {
             const lowerSearchValue = searchValue.toLowerCase()
-            // Check if the search value starts with 'synth'
-            if (lowerSearchValue.startsWith('synth')) {
-              // Extract the term after 'synth' keyword
-              const searchTerm = lowerSearchValue.replace('synth', '').trim()
-              // Check if the asset is synthetic and if it includes the search term
-              return (
-                asset.type === AssetType.SYNTH &&
-                (searchTerm ? assetToString(asset).toLowerCase().includes(searchTerm) : true)
-              )
-            }
-            // If the search value doesn't start with 'synth', perform a normal search
             return assetToString(asset).toLowerCase().includes(lowerSearchValue)
           }
           // If there's no search value, return all assets
           return true
         })
       ),
-    [assets, excludeSynth, searchValue]
+    [assets, searchValue]
   )
 
   const renderAssets = useMemo(
@@ -255,18 +237,6 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
                   onEnter={onEnterHandler}
                   placeholder={intl.formatMessage({ id: 'common.searchAsset' })}
                 />
-                <div className="flex items-center justify-start">
-                  <Label className="mr-2 cursor-pointer text-sm font-medium text-text2 dark:text-text2d">
-                    {intl.formatMessage({ id: 'common.excludeSynth' })}
-                  </Label>
-                  <FilterCheckbox
-                    id="synth-toggle"
-                    type="checkbox"
-                    className="cursor-pointer rounded border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                    checked={excludeSynth}
-                    onChange={(e) => setExcludeSynth(e.target.checked)}
-                  />
-                </div>
               </div>
               {renderAssets}
             </Dialog.Panel>

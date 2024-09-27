@@ -35,8 +35,7 @@ import {
   CryptoAmount,
   AssetType,
   AnyAsset,
-  TokenAsset,
-  SynthAsset
+  TokenAsset
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import * as A from 'fp-ts/Array'
@@ -1667,24 +1666,11 @@ export const Swap = ({
     (): AnyAsset[] =>
       FP.pipe(
         poolAssets,
-        A.chain((asset) =>
-          isRuneNativeAsset(asset) || isCacaoAsset(asset)
-            ? [asset]
-            : [
-                asset,
-                {
-                  ...asset,
-                  type: AssetType.SYNTH,
-                  synth: true
-                } as SynthAsset
-              ]
-        ),
         A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
         (assets) => unionAssets(assets)(assets)
       ),
     [poolAssets, sourceAsset]
   )
-
   type ModalState = 'swap' | 'approve' | 'none'
   const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
   const [showLedgerModal, setShowLedgerModal] = useState<ModalState>('none')
