@@ -151,9 +151,7 @@ export const BondsView: React.FC = (): JSX.Element => {
               FP.pipe(
                 [...thorData, ...mayaData],
                 A.map((nodeInfo) => {
-                  const normalizedNodeOperatorAddress = nodeInfo.nodeOperatorAddress.toLowerCase()
-
-                  const isUserNodeOperatorAddress = normalizedUserNodes.includes(normalizedNodeOperatorAddress)
+                  const isUserStoredNodeAddress = normalizedUserNodes.includes(nodeInfo.address)
 
                   const isUserBondProvider = nodeInfo.bondProviders.providers.some((provider) => {
                     const normalizedBondAddress = provider.bondAddress.toLowerCase()
@@ -164,11 +162,11 @@ export const BondsView: React.FC = (): JSX.Element => {
 
                   return {
                     ...nodeInfo,
-                    isUserNodeOperatorAddress,
+                    isUserStoredNodeAddress,
                     isUserBondProvider
                   }
                 }),
-                A.filter((nodeInfo) => nodeInfo.isUserNodeOperatorAddress || nodeInfo.isUserBondProvider)
+                A.filter((nodeInfo) => nodeInfo.isUserStoredNodeAddress || nodeInfo.isUserBondProvider)
               )
             )
           )
@@ -182,7 +180,7 @@ export const BondsView: React.FC = (): JSX.Element => {
   // Effect to subscribe to the observable and update state
   useEffect(() => {
     const subscription = nodeInfos$.subscribe(setNodeInfos)
-    return () => subscription.unsubscribe() // Cleanup on unmount
+    return () => subscription.unsubscribe()
   }, [nodeInfos$, setNodeInfos])
 
   const removeNodeByAddress = useCallback(

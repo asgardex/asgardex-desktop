@@ -760,6 +760,37 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     [estimateThornameHandler]
   )
 
+  const amountLabel = useMemo(() => {
+    switch (interactType) {
+      case 'bond':
+        return `${intl.formatMessage({ id: 'deposit.interact.actions.bond' })} ${intl.formatMessage({
+          id: 'common.amount'
+        })}`
+
+      case 'unbond':
+        return `${intl.formatMessage({ id: 'deposit.interact.actions.unbond' })} ${intl.formatMessage({
+          id: 'common.amount'
+        })}`
+      case 'leave':
+        return intl.formatMessage({ id: 'deposit.interact.actions.leave' })
+      case 'runePool': {
+        return intl.formatMessage({
+          id: 'common.amount'
+        })
+      }
+      case 'custom':
+        return `${intl.formatMessage({
+          id: 'common.custom'
+        })} ${intl.formatMessage({
+          id: 'common.amount'
+        })}`
+      case 'thorname':
+        return intl.formatMessage({
+          id: 'common.amount'
+        })
+    }
+  }, [interactType, intl])
+
   const submitLabel = useMemo(() => {
     switch (interactType) {
       case 'bond':
@@ -1330,10 +1361,10 @@ export const InteractFormThor: React.FC<Props> = (props) => {
               )}
 
               <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
-                {intl.formatMessage({ id: 'common.amount' })}
+                {amountLabel}
                 <div className="truncate pl-10px font-main text-[12px]">
                   {formatAssetAmountCurrency({
-                    amount: baseToAsset(amountToSend),
+                    amount: interactType === 'unbond' ? baseToAsset(_amountToSend) : baseToAsset(amountToSend),
                     asset: AssetRuneNative,
                     decimal: isUSDAsset(AssetRuneNative) ? 2 : 6,
                     trimZeros: !isUSDAsset(AssetRuneNative)
