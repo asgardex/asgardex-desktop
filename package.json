@@ -25,7 +25,7 @@
     "generate:bscerc20whitelist": "./node_modules/.bin/ts-node --project tsconfig.scripts.json ./scripts/generateBSCtokenlist.ts",
     "generate:arberc20whitelist": "./node_modules/.bin/ts-node --project tsconfig.scripts.json ./scripts/generateARBtokenlist.ts",
     "storybook": "NODE_OPTIONS=\"--max-old-space-size=4096\" sb dev -p 9009 ",
-    "build-storybook": "NODE_OPTIONS=\"--max-old-space-size=4096\" sb build",
+    "build-storybook": "NODE_OPTIONS=\"--max-old-space-size=8192\" sb build",
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "prepare": "husky install"
   },
@@ -98,7 +98,7 @@
     "@xchainjs/xchain-evm-providers": "1.0.7",
     "@xchainjs/xchain-kujira": "1.0.2",
     "@xchainjs/xchain-litecoin": "1.0.2",
-    "@xchainjs/xchain-mayachain": "2.0.4",
+    "@xchainjs/xchain-mayachain": "2.0.3",
     "@xchainjs/xchain-mayachain-query": "1.0.4",
     "@xchainjs/xchain-mayamidgard": "0.1.6",
     "@xchainjs/xchain-mayamidgard-query": "0.1.19",

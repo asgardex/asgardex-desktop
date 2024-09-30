@@ -140,6 +140,7 @@ describe('wallet/interact/helpers', () => {
         bond: baseAmount(100000000 * 40000000),
         award: baseAmount(100000000 * 400000),
         status: 'Active' as NodeStatusEnum,
+        nodeOperatorAddress: '',
         bondProviders: { providers: [], nodeOperatorFee: baseAmount(100000000 * 400000) }, // Mock bondProviders
         signMembership: []
       },
@@ -148,6 +149,7 @@ describe('wallet/interact/helpers', () => {
         bond: baseAmount(100000000 * 40000000), // Mock bond value
         award: baseAmount(100000000 * 400000), // Mock award value
         status: 'Standby' as NodeStatusEnum,
+        nodeOperatorAddress: '',
         bondProviders: { providers: [], nodeOperatorFee: baseAmount(100000000 * 400000) }, // Mock bondProviders
         signMembership: ['thor16ery22gma35h2fduxr0swdfvz4s6yvy6yhskf6']
       },
@@ -156,6 +158,7 @@ describe('wallet/interact/helpers', () => {
         bond: baseAmount(100000000 * 40000000), // Mock bond value
         award: baseAmount(100000000 * 400000), // Mock award value
         status: 'Standby' as NodeStatusEnum,
+        nodeOperatorAddress: '',
         bondProviders: { providers: [], nodeOperatorFee: baseAmount(100000000 * 400000) }, // Mock bondProviders
         signMembership: []
       }
@@ -187,6 +190,7 @@ describe('wallet/interact/helpers', () => {
           address: 'thor1nprw0w6ex8xh4tfl3vtkhqnjvds68kwshq9ax9',
           bond: baseAmount(100000000 * 40000000), // Mock bond value
           award: baseAmount(100000000 * 400000), // Mock award value
+          nodeOperatorAddress: '',
           status: 'Disabled' as NodeStatusEnum,
           bondProviders: { providers: [], nodeOperatorFee: baseAmount(100000000 * 400000) }, // Mock bondProviders
           signMembership: []

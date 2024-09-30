@@ -30,7 +30,6 @@ import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import * as walletRoutes from '../../../routes/wallet'
 import { FeeRD } from '../../../services/chain/types'
-import { userNodes$ } from '../../../services/storage/userNodes'
 import { NodeInfosRD, RunePoolProviderRD, ThorchainLastblockRD } from '../../../services/thorchain/types'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
@@ -52,9 +51,7 @@ export const InteractViewTHOR: React.FC = () => {
       ),
     RD.initial
   )
-
   const oSelectedAsset = useObservableState(selectedAsset$, O.none)
-
   const assetChain = useMemo(
     () =>
       FP.pipe(
@@ -134,23 +131,53 @@ export const InteractViewTHOR: React.FC = () => {
 
   const [nodeInfos] = useObservableState<NodeInfosRD>(
     () =>
-      FP.pipe(
-        Rx.combineLatest([userNodes$, getNodeInfos$]),
-        RxOp.switchMap(([userNodes, nodeInfos]) =>
-          Rx.of(
-            FP.pipe(
-              nodeInfos,
-              RD.map((data) =>
+      selectedAsset$.pipe(
+        RxOp.switchMap((oSelectedAsset) => {
+          if (O.isNone(oSelectedAsset)) {
+            return Rx.of(RD.pending)
+          }
+          const selectedAsset = oSelectedAsset.value
+          const walletAddress = selectedAsset.walletAddress
+
+          return Rx.combineLatest([getNodeInfos$, Rx.of(walletAddress)]).pipe(
+            RxOp.switchMap(([nodeInfos, walletAddress]) => {
+              if (!walletAddress || walletAddress === '') {
+                return Rx.of(RD.pending)
+              }
+              // Ensure nodeInfos is not in `RD.pending`
+              if (RD.isPending(nodeInfos)) {
+                return Rx.of(RD.pending)
+              }
+
+              return Rx.of(
                 FP.pipe(
-                  data,
-                  A.filter(({ address }) => userNodes.includes(address))
+                  nodeInfos,
+                  RD.map((data) => {
+                    return FP.pipe(
+                      data,
+                      A.filter(({ bondProviders, nodeOperatorAddress }) => {
+                        const normalizedOperatorNodeAddress = nodeOperatorAddress.toLowerCase()
+                        const normalizedWalletAddress = walletAddress.toLowerCase()
+
+                        const isNodeOperatorAddress = normalizedOperatorNodeAddress === normalizedWalletAddress
+
+                        const isBondProvider = bondProviders.providers.some(({ bondAddress }) => {
+                          const normalizedBondAddress = bondAddress.toLowerCase()
+                          const isMatch = normalizedBondAddress === normalizedWalletAddress
+                          return isMatch
+                        })
+
+                        return isNodeOperatorAddress || isBondProvider
+                      })
+                    )
+                  })
                 )
               )
-            )
+            })
           )
-        )
+        })
       ),
-    RD.initial
+    RD.pending
   )
 
   const [runePoolProviderRD, setRunePoolProviderRD] = useState<RunePoolProviderRD>(RD.initial)
@@ -192,6 +219,7 @@ export const InteractViewTHOR: React.FC = () => {
     },
     [navigate]
   )
+
   const reloadHandler = useCallback(() => {
     const lazyReload = reloadBalancesByChain(assetChain)
     reloadRunePoolProvider()

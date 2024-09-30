@@ -9709,9 +9709,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-cosmos-sdk@npm:1.0.4":
-  version: 1.0.4
-  resolution: "@xchainjs/xchain-cosmos-sdk@npm:1.0.4"
+"@xchainjs/xchain-cosmos-sdk@npm:1.0.3":
+  version: 1.0.3
+  resolution: "@xchainjs/xchain-cosmos-sdk@npm:1.0.3"
   dependencies:
     "@cosmjs/crypto": "npm:0.31.1"
     "@cosmjs/encoding": "npm:0.31.1"
@@ -9724,7 +9724,7 @@ __metadata:
     bech32: "npm:^1.1.3"
     bip32: "npm:^2.0.6"
     secp256k1: "npm:^5.0.0"
-  checksum: 10/1524f9d06c3d308186ed59d2a90b2786227b128e172defddd187c0c27e8ccad05b3dcb81d8a2d86f7902f05dd016eb95b537dba753dc217bd3c7f03a8f574167
+  checksum: 10/12d801a569f60a27e8f4092a249911f760be1a2ec9f8491614f04a955f61d3d079286dccb5932f54645e40a7cad09981307089a64bce7a8b7583a8366e1b995b
   languageName: node
   linkType: hard
 
@@ -9911,16 +9911,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-mayachain@npm:2.0.4":
-  version: 2.0.4
-  resolution: "@xchainjs/xchain-mayachain@npm:2.0.4"
+"@xchainjs/xchain-mayachain@npm:2.0.3":
+  version: 2.0.3
+  resolution: "@xchainjs/xchain-mayachain@npm:2.0.3"
   dependencies:
     "@cosmjs/amino": "npm:0.31.1"
     "@cosmjs/crypto": "npm:0.31.1"
     "@cosmjs/encoding": "npm:0.31.1"
     "@cosmjs/proto-signing": "npm:0.31.1"
     "@xchainjs/xchain-client": "npm:1.0.3"
-    "@xchainjs/xchain-cosmos-sdk": "npm:1.0.4"
+    "@xchainjs/xchain-cosmos-sdk": "npm:1.0.3"
     "@xchainjs/xchain-util": "npm:1.0.2"
     axios: "npm:1.7.4"
     bech32: "npm:^1.1.3"
@@ -9929,7 +9929,7 @@ __metadata:
     cosmjs-types: "npm:0.8.0"
     protobufjs: "npm:6.11.4"
     secp256k1: "npm:^5.0.0"
-  checksum: 10/1f06a10f3585896e1e20510a9ef991097194f47d2b32bca60281ceabeac2bde0b427c9febbc2a826de9b58b7190f4cb7b6a136773f666c534c54549c837d93f1
+  checksum: 10/916185b0ca9d42ec05e82b40fd29c206f6013a8534f462aa12f00b219222173d84c0b84a9c60a35a258a0d71d0740424a8e4d29870b3b521c25a0f280df03fa6
   languageName: node
   linkType: hard
 
@@ -10904,7 +10904,7 @@ __metadata:
     "@xchainjs/xchain-evm-providers": "npm:1.0.7"
     "@xchainjs/xchain-kujira": "npm:1.0.2"
     "@xchainjs/xchain-litecoin": "npm:1.0.2"
-    "@xchainjs/xchain-mayachain": "npm:2.0.4"
+    "@xchainjs/xchain-mayachain": "npm:2.0.3"
     "@xchainjs/xchain-mayachain-query": "npm:1.0.4"
     "@xchainjs/xchain-mayamidgard": "npm:0.1.6"
     "@xchainjs/xchain-mayamidgard-query": "npm:0.1.19"

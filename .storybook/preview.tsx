@@ -20,6 +20,9 @@ window.apiHDWallet = { ...mockApi.apiHDWallet }
 window.apiKeystore = { ...mockApi.apiKeystore }
 window.apiLang = { ...mockApi.apiLang }
 window.apiUrl = { ...mockApi.apiUrl }
+window.apiAssetStorage = { ...mockApi.apiAssetStorage }
+window.apiCommonStorage = { ...mockApi.apiCommonStorage }
+window.apiChainStorage = { ...mockApi.apiChainStorage }
 
 const lightTheme = { name: 'Light', ...themes.light }
 const _darkTheme = { name: 'Dark', ...themes.dark }

@@ -89,9 +89,13 @@ export const hasFormErrors = (form: FormInstance) =>
   !!form.getFieldsError().filter(({ errors }) => errors.length).length
 
 // detecting a swap memo
-export function checkMemo(memo: string): boolean {
-  // Check if the memo is not empty and starts with '=' or 'SWAP'
-  if (memo === '') return false
+export function checkMemo(memo: string | undefined): boolean {
+  // Ensure memo is a valid string and not undefined or empty
+  if (!memo || typeof memo !== 'string') {
+    return false
+  }
+
+  // Check if the memo starts with '=', 'SWAP', 'swap', 's', or 'S'
   if (
     memo.startsWith('=') ||
     memo.startsWith('SWAP') ||
@@ -101,6 +105,7 @@ export function checkMemo(memo: string): boolean {
   ) {
     return true
   }
+
   return false
 }
 
