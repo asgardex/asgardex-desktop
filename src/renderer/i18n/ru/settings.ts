@@ -7,7 +7,7 @@ const settings: SettingMessages = {
   'setting.multiwallet.management': 'Управление мульти-кошельками',
   'setting.client': 'Клиент',
   'setting.accounts': 'Учётные записи',
-  'setting.export': 'Экспортировать Keystore',
+  'setting.export': 'Экспортировать',
   'setting.lock': 'Заблокировать',
   'setting.view.phrase': 'Показать секретную фразу',
   'setting.language': 'Язык',

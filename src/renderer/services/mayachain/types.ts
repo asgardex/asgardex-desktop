@@ -125,6 +125,7 @@ export type BondProviders = {
 
 export type NodeInfo = {
   address: Address
+  nodeOperatorAddress: Address
   bond: BaseAmount
   award: BaseAmount
   status: NodeStatusEnum

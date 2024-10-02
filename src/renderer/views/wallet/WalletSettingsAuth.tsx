@@ -8,7 +8,6 @@ import * as RxOp from 'rxjs/operators'
 
 import { UnlockWalletSettings } from '../../components/settings'
 import { useWalletContext } from '../../contexts/WalletContext'
-import { useCollapsedSetting } from '../../hooks/useCollapsedSetting'
 import * as walletRoutes from '../../routes/wallet'
 import { INITIAL_KEYSTORE_STATE } from '../../services/wallet/const'
 import { isKeystoreUnlocked } from '../../services/wallet/types'
@@ -26,8 +25,6 @@ export const WalletSettingsAuth: React.FC = (): JSX.Element => {
   // In other case it will jump to `UnlockWalletSettings` right after changing a wallet in `WalletSettingsView`
   const keystoreState = useObservableState(FP.pipe(keystoreState$, RxOp.delay(100)), INITIAL_KEYSTORE_STATE)
 
-  const { collapsed, toggle: toggleCollapse } = useCollapsedSetting('wallet')
-
   const unlockWalletHandler = useCallback(() => {
     navigate(walletRoutes.base.path(location.pathname))
   }, [location.pathname, navigate])
@@ -38,14 +35,7 @@ export const WalletSettingsAuth: React.FC = (): JSX.Element => {
     O.chain(FP.flow(O.fromPredicate(isKeystoreUnlocked))),
     O.fold(
       // keystore locked / not imported
-      () => (
-        <UnlockWalletSettings
-          keystoreState={keystoreState}
-          unlockHandler={unlockWalletHandler}
-          collapsed={collapsed}
-          toggleCollapse={toggleCollapse}
-        />
-      ),
+      () => <UnlockWalletSettings keystoreState={keystoreState} unlockHandler={unlockWalletHandler} />,
       // keystore unlocked
       (keystoreUnlocked) => <WalletSettingsView keystoreUnlocked={keystoreUnlocked} />
     )

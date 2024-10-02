@@ -23,28 +23,28 @@ export const approveLedgerERC20Token = async ({
     case 'ETH':
       clientParams = {
         ...defaultEthParams,
-        rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, hdMode),
+        rootDerivationPaths: getDerivationPaths(walletAccount, hdMode),
         network: network
       }
       break
     case 'ARB':
       clientParams = {
         ...defaultArbParams,
-        rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, hdMode),
+        rootDerivationPaths: getDerivationPaths(walletAccount, hdMode),
         network: network
       }
       break
     case 'AVAX':
       clientParams = {
         ...defaultAvaxParams,
-        rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, hdMode),
+        rootDerivationPaths: getDerivationPaths(walletAccount, hdMode),
         network: network
       }
       break
     case 'BSC':
       clientParams = {
         ...defaultBscParams,
-        rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, hdMode),
+        rootDerivationPaths: getDerivationPaths(walletAccount, hdMode),
         network: network
       }
       break

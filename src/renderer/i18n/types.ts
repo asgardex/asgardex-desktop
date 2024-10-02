@@ -102,7 +102,6 @@ export type CommonMessageKey =
   | 'common.addAsset'
   | 'common.removeAsset'
   | 'common.searchExample'
-  | 'common.excludeSynth'
   | 'common.retry'
   | 'common.reload'
   | 'common.action'

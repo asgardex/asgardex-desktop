@@ -152,7 +152,7 @@ const userAssetStorageData: UserAssetStorage = {
 
 export const apiAssetStorage: ApiFileStoreService<UserAssetStorage> = {
   save: (_: Partial<CommonStorage>) => Promise.resolve(userAssetStorageData),
-  remove: () => Promise.resolve(console.log('mock remove chain storage data')),
+  remove: () => Promise.resolve(console.log('mock remove asset storage data')),
   get: () => Promise.resolve(userAssetStorageData),
   exists: () => Promise.resolve(true)
 }

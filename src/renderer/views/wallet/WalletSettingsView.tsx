@@ -63,7 +63,6 @@ import {
   isXrdChain
 } from '../../helpers/chainHelper'
 import { sequenceTOptionFromArray } from '../../helpers/fpHelpers'
-import { useCollapsedSetting } from '../../hooks/useCollapsedSetting'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
 import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
 import { useLedger } from '../../hooks/useLedger'
@@ -87,8 +86,6 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
   const { lock, remove, change$, rename$ } = useKeystoreState()
 
   const { network } = useNetwork()
-
-  const { collapsed, toggle: toggleCollapse } = useCollapsedSetting('wallet')
 
   const { address$: thorAddressUI$ } = useThorchainContext()
   const { addressUI$: ethAddressUI$, ethHDMode$, updateEvmHDMode } = useEthereumContext()
@@ -500,8 +497,6 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
       walletAccounts={walletAccounts}
       clickAddressLinkHandler={clickAddressLinkHandler}
       validatePassword$={validatePassword$}
-      collapsed={collapsed}
-      toggleCollapse={toggleCollapse}
       evmHDMode={evmHDMode}
       updateEvmHDMode={updateEvmHDMode}
     />

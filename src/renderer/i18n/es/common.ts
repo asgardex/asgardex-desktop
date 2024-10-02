@@ -191,7 +191,6 @@ const common: CommonMessages = {
   'common.unknown': 'Desconocido',
   'common.featureUnderDevelopment': 'Función en desarrollo, no usar',
   'common.expandAll': 'Expandir todo',
-  'common.excludeSynth': 'Excluir Sintéticos',
   'common.completeLp': 'Completar Lp',
   'common.asset.quickSelect': 'Selección Rápida L1',
   'common.asset.chooseAsset': 'Elige un activo'

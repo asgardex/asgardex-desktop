@@ -20,6 +20,8 @@ export const Alert = styled(A.Alert)`
     color: ${palette('text', 0)};
   }
 
+  border-radius: 8px;
+
   &.ant-alert-info {
     border-color: ${palette('gray', 1)};
     > .ant-alert-icon > svg {

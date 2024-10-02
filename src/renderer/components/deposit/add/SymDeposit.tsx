@@ -54,7 +54,7 @@ import {
   max1e8BaseAmount,
   to1e8BaseAmount
 } from '../../../helpers/assetHelper'
-import { getChainAsset, isAvaxChain, isBscChain, isEthChain } from '../../../helpers/chainHelper'
+import { getChainAsset, isArbChain, isAvaxChain, isBscChain, isEthChain } from '../../../helpers/chainHelper'
 import { isEvmChain, isEvmToken } from '../../../helpers/evmHelper'
 import { unionAssets } from '../../../helpers/fp/array'
 import { eqBaseAmount, eqOAsset, eqOApproveParams, eqAsset } from '../../../helpers/fp/eq'
@@ -1657,7 +1657,9 @@ export const SymDeposit: React.FC<Props> = (props) => {
       // `0x` needs to be removed from tx hash in case of ETH
       // @see https://github.com/thorchain/asgardex-electron/issues/1787#issuecomment-931934508
       O.map((txHash) =>
-        isEthChain(chain) || isAvaxChain(chain) || isBscChain(chain) ? txHash.replace(/0x/i, '') : txHash
+        isEthChain(chain) || isAvaxChain(chain) || isBscChain(chain) || isArbChain(chain)
+          ? txHash.replace(/0x/i, '')
+          : txHash
       )
     )
 
@@ -2304,7 +2306,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     () => (
       <div className="flex flex-col">
         <MaxBalanceButton
-          className="ml-10px mt-5px"
+          className="mt-5px"
           classNameButton="!text-gray2 dark:!text-gray2d"
           classNameIcon={
             // show warn icon if maxAmountToSwapMax <= 0
@@ -2353,7 +2355,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     () => (
       <div className="flex flex-col">
         <MaxBalanceButton
-          className="ml-10px mt-5px"
+          className="mt-5px"
           classNameButton="!text-gray2 dark:!text-gray2d"
           classNameIcon={
             // show warn icon if maxAmountToSwapMax <= 0

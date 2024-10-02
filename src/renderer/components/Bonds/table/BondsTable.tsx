@@ -22,7 +22,7 @@ type Props = {
   loading?: boolean
   removeNode: (node: Address) => void
   goToNode: (node: Address) => void
-  goToAction: (action: string, node: string) => void
+  goToAction: (action: string, node: string, walletType: string) => void
   network: Network
   className?: string
   walletAddresses: Record<'THOR' | 'MAYA', WalletAddressInfo[]>
@@ -126,32 +126,40 @@ export const BondsTable: React.FC<Props> = ({
       key: 'action',
       render: (_, record) => {
         const { bondAddress, status, signMembership, nodeAddress } = record
-        const isWalletAddress =
-          walletAddresses.THOR.some((walletInfo) => walletInfo.address === bondAddress) ||
-          walletAddresses.MAYA.some((walletInfo) => walletInfo.address === bondAddress)
+
+        // Check if the bond address matches a wallet address in either THOR or MAYA
+        const matchedWalletInfo =
+          walletAddresses.THOR.find((walletInfo) => walletInfo.address === bondAddress) ||
+          walletAddresses.MAYA.find((walletInfo) => walletInfo.address === bondAddress)
+
+        // Check if the bond address belongs to the current user's wallet
+        const isWalletAddress = !!matchedWalletInfo
 
         const nodeChain = getNodeChain(bondAddress)
-
         const matchedAddresses = matchedNodeAddress.filter((address) => {
           const addressChain = getNodeChain(address)
           return addressChain === nodeChain
         })
+
         const unbondDisabled =
           status === 'Active' || (status === 'Standby' && signMembership && signMembership.includes(nodeAddress))
+
+        // Store walletType for the address and pass it to bond/unbond actions
+        const walletType = matchedWalletInfo?.walletType || 'Unknown'
 
         return (
           <div className="flex">
             <TextButton
               disabled={!isWalletAddress}
               size="normal"
-              onClick={() => goToAction('bond', matchedAddresses[0])}>
+              onClick={() => goToAction('bond', matchedAddresses[0], walletType)}>
               {intl.formatMessage({ id: 'deposit.interact.actions.bond' })}
             </TextButton>
             <div className="flex border-solid border-gray1 dark:border-gray1d">
               <TextButton
                 disabled={!isWalletAddress || unbondDisabled}
                 size="normal"
-                onClick={() => goToAction('unbond', matchedAddresses[0])}>
+                onClick={() => goToAction('unbond', matchedAddresses[0], walletType)}>
                 {intl.formatMessage({ id: 'deposit.interact.actions.unbond' })}
               </TextButton>
             </div>
@@ -189,6 +197,7 @@ export const BondsTable: React.FC<Props> = ({
     }
     // Add other columns for the expanded table as needed
   ]
+
   const [matchedNodeAddress, setMatchedNodeAddress] = useState<string[]>([])
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([])
 

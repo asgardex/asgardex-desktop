@@ -345,7 +345,7 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
   }, [advancedActive])
 
   return (
-    <div className="mt-50px flex-row bg-bg0 px-40px py-10px dark:bg-bg0d">
+    <div className="flex-row bg-bg0 px-40px dark:bg-bg0d">
       <CStyled.Collapse
         expandIcon={({ isActive }) => <CStyled.ExpandIcon rotate={isActive ? 90 : 0} />}
         activeKey={collapsed ? '0' : '1'}

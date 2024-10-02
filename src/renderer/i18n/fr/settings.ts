@@ -7,7 +7,7 @@ const settings: SettingMessages = {
   'setting.multiwallet.management': 'Gestion multi portefeuilles',
   'setting.client': 'Client',
   'setting.accounts': 'Comptes',
-  'setting.export': 'Exporter la clé privée',
+  'setting.export': 'Exporter',
   'setting.lock': 'Verrouiller',
   'setting.view.phrase': 'Afficher la phrase de récupération',
   'setting.language': 'Langue',

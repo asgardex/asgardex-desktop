@@ -5,7 +5,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { Client as MayachainClient } from '@xchainjs/xchain-mayachain'
 import { Client as ThorchainClient, THORChain, AssetRuneNative } from '@xchainjs/xchain-thorchain'
-import { Address, Chain } from '@xchainjs/xchain-util'
+import { Address } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
@@ -27,6 +27,7 @@ import { filterWalletBalancesByAssets } from '../../helpers/walletHelper'
 import { useValidateAddress } from '../../hooks/useValidateAddress'
 import * as walletRoutes from '../../routes/wallet'
 import { DEFAULT_NETWORK } from '../../services/const'
+import { NodeInfo } from '../../services/thorchain/types'
 import { balancesState$ } from '../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/wallet/const'
 import { WalletBalances } from '../../services/wallet/types'
@@ -59,23 +60,25 @@ export const BondsView: React.FC = (): JSX.Element => {
   )
   const { balances: oWalletBalances } = balancesState
   const allBalances: WalletBalances = useMemo(() => {
-    const balances = FP.pipe(
+    return FP.pipe(
       oWalletBalances,
-      // filter wallet balances
       O.map((balances) => filterWalletBalancesByAssets(balances, [AssetRuneNative, AssetCacao])),
       O.getOrElse<WalletBalances>(() => [])
     )
-    return balances
   }, [oWalletBalances])
 
   const { validateAddress: validateAddressThor } = useValidateAddress(THORChain)
   const { validateAddress: validateAddressMaya } = useValidateAddress(MAYAChain)
+
+  // State to track fetched wallet addresses
   const [walletAddresses, setWalletAddresses] = useState<Record<'THOR' | 'MAYA', WalletAddressInfo[]>>({
     THOR: [],
     MAYA: []
   })
 
-  // reload both chain nodes
+  // State to track if wallet addresses have been fetched
+  const [addressesFetched, setAddressesFetched] = useState(false)
+
   const reloadNodeInfos = useCallback(() => {
     reloadNodeInfosThor()
     reloadNodeInfosMaya()
@@ -97,24 +100,39 @@ export const BondsView: React.FC = (): JSX.Element => {
     [oClientThor, oClientMaya]
   )
 
-  // Effect to fetch wallet addresses on load
+  // Effect to fetch wallet addresses first
   useEffect(() => {
-    // Temporary storage for addresses
-    const addressesByChain: Record<Chain, Array<{ address: string; walletType: string }>> = {
+    const addressesByChain: Record<'THOR' | 'MAYA', WalletAddressInfo[]> = {
       THOR: [],
       MAYA: []
     }
 
-    allBalances.forEach(({ asset, walletAddress, walletType }) => {
-      addressesByChain[asset.chain].push({ address: walletAddress, walletType })
-      addNodeAddress(walletAddress, network)
-    })
+    if (allBalances.length > 0) {
+      allBalances.forEach(({ asset, walletAddress, walletType }) => {
+        if (asset.chain === 'THOR' || asset.chain === 'MAYA') {
+          addressesByChain[asset.chain].push({ address: walletAddress, walletType })
+        }
+      })
 
-    // Set the state with the accumulated addresses
-    setWalletAddresses(addressesByChain)
-  }, [addNodeAddress, allBalances, network])
+      setWalletAddresses(addressesByChain)
+      setAddressesFetched(true)
+    } else {
+      setAddressesFetched(true)
+    }
+  }, [allBalances, addNodeAddress, network])
+
+  const [nodeInfos, setNodeInfos] = useState<RD.RemoteData<Error, NodeInfo[]>>(RD.initial)
 
   const nodeInfos$ = useMemo(() => {
+    if (!addressesFetched) {
+      return Rx.of(RD.initial)
+    }
+
+    const walletAddressSet = new Set([
+      ...walletAddresses.THOR.map((addr) => addr.address.toLowerCase()),
+      ...walletAddresses.MAYA.map((addr) => addr.address.toLowerCase())
+    ])
+
     return FP.pipe(
       Rx.combineLatest([
         userNodes$,
@@ -123,34 +141,47 @@ export const BondsView: React.FC = (): JSX.Element => {
           getNodeInfosMaya$.pipe(RxOp.startWith(RD.initial))
         ])
       ]),
-      RxOp.switchMap(([userNodes, [nodeInfosThor, nodeInfosMaya]]) =>
-        Rx.of(
+      RxOp.switchMap(([userNodes, [nodeInfosThor, nodeInfosMaya]]) => {
+        const normalizedUserNodes = userNodes.map((node) => node.toLowerCase())
+
+        return Rx.of(
           FP.pipe(
             RD.combine(nodeInfosThor, nodeInfosMaya),
             RD.map(([thorData, mayaData]) =>
               FP.pipe(
-                [...thorData, ...mayaData], // Assuming already in NodeInfo format
-                A.filter(({ address }) => userNodes.includes(address)), // Keep nodes that are in userNodes
-                A.map((nodeInfo) => ({
-                  ...nodeInfo,
-                  // Identify if the user is a bond provider
-                  isUserBondProvider: nodeInfo.bondProviders.providers.some((provider) =>
-                    userNodes.includes(provider.bondAddress)
-                  )
-                }))
+                [...thorData, ...mayaData],
+                A.map((nodeInfo) => {
+                  const isUserStoredNodeAddress = normalizedUserNodes.includes(nodeInfo.address)
+
+                  const isUserBondProvider = nodeInfo.bondProviders.providers.some((provider) => {
+                    const normalizedBondAddress = provider.bondAddress.toLowerCase()
+                    const isWalletAddress = walletAddressSet.has(normalizedBondAddress)
+
+                    return isWalletAddress
+                  })
+
+                  return {
+                    ...nodeInfo,
+                    isUserStoredNodeAddress,
+                    isUserBondProvider
+                  }
+                }),
+                A.filter((nodeInfo) => nodeInfo.isUserStoredNodeAddress || nodeInfo.isUserBondProvider)
               )
             )
           )
         )
-      ),
+      }),
       RxOp.startWith(RD.initial),
       RxOp.shareReplay(1)
     )
-  }, [userNodes$, getNodeInfos$, getNodeInfosMaya$])
+  }, [addressesFetched, userNodes$, getNodeInfos$, getNodeInfosMaya$, walletAddresses])
 
-  const [nodeInfos] = useObservableState(() => nodeInfos$, RD.initial)
-
-  const loadingNodeInfos = useMemo(() => RD.isPending(nodeInfos), [nodeInfos])
+  // Effect to subscribe to the observable and update state
+  useEffect(() => {
+    const subscription = nodeInfos$.subscribe(setNodeInfos)
+    return () => subscription.unsubscribe()
+  }, [nodeInfos$, setNodeInfos])
 
   const removeNodeByAddress = useCallback(
     (node: Address) => {
@@ -160,25 +191,30 @@ export const BondsView: React.FC = (): JSX.Element => {
   )
 
   const routeToAction = useCallback(
-    (action: string, node: string) => {
+    (action: string, node: string, walletType: string) => {
       const networkPrefix = network === 'mainnet' ? '' : 's'
       const nodeChain = node.startsWith(`${networkPrefix}thor`) ? THORChain : MAYAChain
-      const selectedAssetBalance = allBalances.filter((balance) => balance.asset.chain === nodeChain)
-      const { asset, walletAddress, walletType, walletAccount, walletIndex, hdMode } = selectedAssetBalance[0]
-      setSelectedAsset(
-        O.some({
-          asset,
-          walletAddress,
-          walletType,
-          walletAccount,
-          walletIndex,
-          hdMode
-        })
+      const selectedAssetBalance = allBalances.filter(
+        (balance) => balance.asset.chain === nodeChain && balance.walletType === walletType
       )
-      const path = walletRoutes.bondInteract.path({
-        interactType: action
-      })
-      navigate(path)
+      if (selectedAssetBalance.length > 0) {
+        const { asset, walletAddress, walletType, walletAccount, walletIndex, hdMode } = selectedAssetBalance[0]
+        setSelectedAsset(
+          O.some({
+            asset,
+            walletAddress,
+            walletType, // This comes from the selected balance
+            walletAccount,
+            walletIndex,
+            hdMode
+          })
+        )
+
+        const path = walletRoutes.bondInteract.path({
+          interactType: action
+        })
+        navigate(path)
+      }
     },
     [allBalances, navigate, network, setSelectedAsset]
   )
@@ -186,7 +222,7 @@ export const BondsView: React.FC = (): JSX.Element => {
   return (
     <>
       <Row justify="end" style={{ marginBottom: '20px' }}>
-        <RefreshButton onClick={reloadNodeInfos} disabled={loadingNodeInfos} />
+        <RefreshButton onClick={reloadNodeInfos} disabled={RD.isPending(nodeInfos)} />
       </Row>
       <AssetsNav />
       <Bonds

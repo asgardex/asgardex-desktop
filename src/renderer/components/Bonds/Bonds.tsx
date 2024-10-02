@@ -20,7 +20,7 @@ type Props = {
   nodes: NodeInfosRD
   removeNode: (node: Address) => void
   goToNode: (node: Address) => void
-  goToAction: (action: string, node: string) => void
+  goToAction: (action: string, node: string, walletType: string) => void
   network: Network
   addNode: (node: Address, network: Network) => void
   addressValidationThor: AddressValidation
