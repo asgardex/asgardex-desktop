@@ -1,3 +1,5 @@
+const path = require('path')
+
 const { createJestConfig } = require('@craco/craco')
 
 // Use jest config created by `craco`
@@ -10,10 +12,10 @@ jestConfig = {
   ...jestConfig,
   setupFiles: ['<rootDir>/setup.jest.js'],
   globals: { ...jestConfig.globals },
-  testEnvironment: 'jsdom',
+  testEnvironment: path.resolve(__dirname, 'jest.environment.js'),
   extensionsToTreatAsEsm: ['.ts'],
   transformIgnorePatterns: [
-    'node_modules/(?!(axios|@xchainjs/.*|@ledgerhq/domain-service|@ledgerhq/hw-app-eth|@cosmjs/tendermint-rpc)/)'
+    'node_modules/(?!(axios|@xchainjs/.*|@ledgerhq/domain-service|@ledgerhq/hw-app-eth|@cosmjs/tendermint-rpc|@bitcoin-js/tiny-secp256k1-asmjs|uint8array-tools)/)'
   ],
   moduleNameMapper: {
     '\\.(css|less)$': '<rootDir>/__mocks__/styleMock.js',
