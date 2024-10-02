@@ -116,7 +116,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [amountPriceValue, setAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [recipientAddress, setRecipientAddress] = useState<Address>('')
-  const isChainAsset = asset.chain === getChainAsset(asset.chain).chain
+  const isChainAsset = asset === getChainAsset(asset.chain)
   const [warningMessage, setWarningMessage] = useState<string>('')
   const [form] = Form.useForm<FormValues>()
   const [showDetails, setShowDetails] = useState<boolean>(true)
@@ -159,22 +159,33 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     return FP.pipe(getCacaoAmountFromBalances(balances, getChainAsset(asset.chain)), O.map(assetToBase))
   }, [asset.chain, balance.amount, balances, isChainAsset])
 
+  const oChainAssetAmount: O.Option<BaseAmount> = useMemo(() => {
+    // return balance of current asset
+    if (isChainAsset) {
+      return O.some(balance.amount)
+    }
+    // or check list of other assets to get balance
+    return FP.pipe(getCacaoAmountFromBalances(balances, getChainAsset(asset.chain)), O.map(assetToBase))
+  }, [asset.chain, balance.amount, balances, isChainAsset])
+
   const isFeeError = useMemo(() => {
     return FP.pipe(
-      sequenceTOption(oFee, oAssetAmount),
+      sequenceTOption(oFee, oChainAssetAmount),
       O.fold(
         // Missing (or loading) fees does not mean we can't sent something. No error then.
         () => false,
-        ([fee, assetAmount]) => assetAmount.lt(fee)
+        ([fee, assetAmount]) => {
+          return assetAmount.lt(fee)
+        }
       )
     )
-  }, [oAssetAmount, oFee])
+  }, [oChainAssetAmount, oFee])
 
   const renderFeeError = useMemo(() => {
     if (!isFeeError) return <></>
 
     const amount: BaseAmount = FP.pipe(
-      oAssetAmount,
+      oChainAssetAmount,
       // no eth asset == zero amount
       O.getOrElse(() => ZERO_BASE_AMOUNT)
     )
@@ -195,7 +206,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
         {msg}
       </Styled.Label>
     )
-  }, [isFeeError, oAssetAmount, intl, asset.chain])
+  }, [isFeeError, oChainAssetAmount, intl, asset.chain])
   const { inboundAddress } = useMemo(() => {
     return FP.pipe(
       oPoolAddress,

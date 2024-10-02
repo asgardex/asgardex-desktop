@@ -1,6 +1,14 @@
+# 1.22.6 (2024-10-6)
+
+## Updates/Fixes
+
+- fixed Maya.maya send [#378](https://github.com/asgardex/asgardex-desktop/pull/379)
+- fix Evm deriv paths [#](https://github.com/asgardex/asgardex-desktop/pull/379)
+
 # 1.22.5 (2024-09-6)
 
 ## Add
+
 - re-design application layout[#357](https://github.com/asgardex/asgardex-desktop/pull/357)
 
 ## Updates/Fixes

@@ -619,25 +619,31 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   const onChangeAddress = useCallback(
     async ({ target }: React.ChangeEvent<HTMLInputElement>) => {
       const address = target.value
+
       if (address) {
         const matched = FP.pipe(
           oSavedAddresses,
-          O.map((addresses) => addresses.filter((address) => address.address.includes(address.address))),
-          O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0)) // Use O.none for empty arrays
+          O.map((addresses) => addresses.filter((addr) => addr.address.toLowerCase().includes(address.toLowerCase()))),
+          O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0))
         )
         setMatchedAddresses(matched)
+
+        // Validate the address
+        const isNotAllowed =
+          checkAddress(routers.MAYA, address) || (checkAddress(routers.THOR, address) && !isChainAsset)
+        setNotAllowed(isNotAllowed)
+
+        addressValidator(undefined, address)
+          .then(() => {
+            setRecipientAddress(O.some(address))
+            setNotAllowed(isNotAllowed)
+          })
+          .catch(() => {
+            setRecipientAddress(O.none)
+          })
       }
-      // we have to validate input before storing into the state
-      const isNotAllowed = checkAddress(routers.MAYA, address) || (checkAddress(routers.THOR, address) && !isChainAsset)
-      setNotAllowed(isNotAllowed)
-      addressValidator(undefined, address)
-        .then(() => {
-          setRecipientAddress(O.some(address))
-          setNotAllowed(isNotAllowed)
-        })
-        .catch(() => setRecipientAddress(O.none))
     },
-    [addressValidator, isChainAsset, oSavedAddresses, routers.MAYA, routers.THOR, setRecipientAddress]
+    [addressValidator, isChainAsset, oSavedAddresses, routers.MAYA, routers.THOR]
   )
 
   const reloadFees = useCallback(() => {
@@ -922,7 +928,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   }, [amountToSend, feeOptionsLabel, feesAvailable, isLoading, selectedFeeOption])
 
   const handleOnKeyUp = useCallback(() => {
-    setRecipientAddress(form.getFieldValue('recipient'))
+    setRecipientAddress(O.some(form.getFieldValue('recipient')))
   }, [form])
 
   const oMatchedWalletType: O.Option<WalletType> = useMemo(() => {
@@ -930,7 +936,6 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       recipientAddress,
       O.getOrElse(() => '')
     )
-
     return H.matchedWalletType(balances, recipientAddressValue)
   }, [balances, recipientAddress])
 

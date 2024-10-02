@@ -54,9 +54,9 @@ export const send = async ({
       signer: new LedgerSigner({
         transport,
         provider: defaultAvaxParams.providers[Network.Mainnet],
-        derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
+        derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
-      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
+      rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
       network: network
     })
     const txHash = await ledgerClient.transfer({
@@ -127,9 +127,9 @@ export const deposit = async ({
       signer: new LedgerSigner({
         transport,
         provider: defaultAvaxParams.providers[Network.Mainnet],
-        derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
+        derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
-      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
+      rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
       network: network
     })
 
@@ -150,6 +150,7 @@ export const deposit = async ({
     const unsignedTx = await routerContract.populateTransaction.depositWithExpiry(...depositParams)
 
     const hash = await ledgerClient.transfer({
+      walletIndex,
       asset: nativeAsset.asset,
       amount: isERC20 ? baseAmount(0, nativeAsset.decimal) : amount,
       memo: unsignedTx.data,

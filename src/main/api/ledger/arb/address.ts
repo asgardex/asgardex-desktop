@@ -23,7 +23,7 @@ export const getAddress = async ({
   try {
     const clientLedger = new ClientLedger({
       ...defaultArbParams,
-      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHdMode)
+      rootDerivationPaths: getDerivationPaths(walletAccount, evmHdMode)
     })
     const address = await clientLedger.getAddressAsync(walletIndex)
 
@@ -55,7 +55,7 @@ export const verifyAddress = async ({
 }) => {
   const clientLedger = new ClientLedger({
     ...defaultArbParams,
-    rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHdMode)
+    rootDerivationPaths: getDerivationPaths(walletAccount, evmHdMode)
   })
   const _ = await clientLedger.getAddressAsync(walletIndex, true)
   return true

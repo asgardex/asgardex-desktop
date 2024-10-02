@@ -30,9 +30,9 @@ export const getAddress = async ({
       signer: new ETH.LedgerSigner({
         transport,
         provider: defaultEthParams.providers[Network.Mainnet],
-        derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
+        derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
-      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
+      rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
       network
     })
     const address = await ledgerClient.getAddressAsync(walletIndex)
@@ -70,9 +70,9 @@ export const verifyAddress = async ({
     signer: new ETH.LedgerSigner({
       transport,
       provider: defaultEthParams.providers[Network.Mainnet],
-      derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
+      derivationPath: getDerivationPath(walletAccount, evmHDMode)
     }),
-    rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
+    rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
     network
   })
   const _ = await ledgerClient.getAddressAsync(walletIndex, true)
