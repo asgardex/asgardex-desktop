@@ -1,6 +1,7 @@
 import { Address, Chain } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
+import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { WalletAddress } from '../../../shared/wallet/types'
@@ -10,14 +11,14 @@ import { WalletAddress$, XChainClient$ } from '../clients/types'
 
 export const addressUI$: (client$: XChainClient$, chain: Chain) => WalletAddress$ = (client$, chain) =>
   client$.pipe(
-    RxOp.map(
-      O.chain((client) =>
-        O.tryCatch(() =>
-          client.getAddress(
-            /* TODO (@asgdx team) Check if we still can use `0` as default index in the future by introducing HD wallets */
-            0
+    RxOp.switchMap(
+      O.fold(
+        () => Rx.of<O.Option<Address>>(O.none),
+        (client) =>
+          Rx.from(client.getAddressAsync(0)).pipe(
+            RxOp.map((address: Address): O.Option<Address> => O.some(address)),
+            RxOp.catchError(() => Rx.of<O.Option<Address>>(O.none))
           )
-        )
       )
     ),
     RxOp.distinctUntilChanged(eqOString.equals),
@@ -27,8 +28,8 @@ export const addressUI$: (client$: XChainClient$, chain: Chain) => WalletAddress
           address,
           chain,
           type: 'keystore',
-          walletAccount: 0 /* as long as we don't have HD wallets introduced, walletAccount will always be 0 */,
-          walletIndex: 0 /* As long as we don't have HD wallets introduced, keystore will be always 0 */,
+          walletAccount: 0,
+          walletIndex: 0,
           hdMode: 'default'
         }))
       )

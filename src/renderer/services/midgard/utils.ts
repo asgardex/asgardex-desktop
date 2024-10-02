@@ -18,6 +18,7 @@ import { LTC_DECIMAL } from '@xchainjs/xchain-litecoin'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
+import { RadixChain } from '@xchainjs/xchain-radix'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   assetFromString,
@@ -294,6 +295,7 @@ export const getOutboundAssetFeeByChain = (
         case MAYAChain:
         case KUJIChain:
         case ARBChain:
+        case RadixChain:
           return O.none
         default:
           return O.none

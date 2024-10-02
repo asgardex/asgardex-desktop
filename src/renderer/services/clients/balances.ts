@@ -53,11 +53,35 @@ const loadBalances$ = <C extends XChainClientOverride>({
   FP.pipe(
     address,
     O.fromNullable,
-    // Try to use client address, if parameter `address` is undefined
-    O.alt(() => O.tryCatch(() => client.getAddress(walletIndex))),
     O.fold(
-      // TODO (@Veado) i18n
-      () => Rx.of(RD.failure<ApiError>({ errorId: ErrorId.GET_BALANCES, msg: 'Could not get address' })),
+      // If `address` is not available, get it asynchronously using `getAddressAsync`
+      () =>
+        Rx.from(client.getAddressAsync(walletIndex)).pipe(
+          RxOp.switchMap((walletAddress) =>
+            Rx.from(client.getBalance(walletAddress, assets, walletBalanceType === 'confirmed')).pipe(
+              map(RD.success),
+              liveData.map(
+                A.map((balance) => ({
+                  ...balance,
+                  walletType,
+                  walletAddress,
+                  walletAccount,
+                  walletIndex,
+                  hdMode
+                }))
+              ),
+              catchError((error: Error) =>
+                Rx.of(RD.failure<ApiError>({ errorId: ErrorId.GET_BALANCES, msg: error.message || 'Unknown error' }))
+              ),
+              startWith(RD.pending)
+            )
+          ),
+          catchError((error: Error) =>
+            Rx.of(RD.failure<ApiError>({ errorId: ErrorId.GET_BALANCES, msg: error.message || 'Unknown error' }))
+          ),
+          startWith(RD.pending)
+        ),
+      // If `address` is already provided, use it directly
       (walletAddress) =>
         Rx.from(client.getBalance(walletAddress, assets, walletBalanceType === 'confirmed')).pipe(
           map(RD.success),

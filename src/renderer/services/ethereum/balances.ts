@@ -45,6 +45,7 @@ const balances$: ({
     userAssets$,
     switchMap((assets) => {
       const ethAssets = assets.filter((asset) => asset.chain === ETHChain)
+
       return C.balances$({
         client$,
         trigger$: reloadBalances$,

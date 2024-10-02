@@ -29,6 +29,7 @@ import {
   isMayaAsset,
   isDashAsset,
   isKujiAsset,
+  isXrdAsset,
   isUskAsset,
   iconUrlInARBERC20Whitelist,
   isAethAsset
@@ -51,7 +52,8 @@ import {
   usdpIcon,
   dashIcon,
   kujiIcon,
-  uskIcon
+  uskIcon,
+  xrdIcon
 } from '../../../icons'
 import * as Styled from './AssetIcon.styles'
 import { Size } from './AssetIcon.types'
@@ -134,6 +136,10 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     // KUJI
     if (isKujiAsset(asset)) {
       return kujiIcon
+    }
+    // XRD
+    if (isXrdAsset(asset)) {
+      return xrdIcon
     }
     // USK
     if (isUskAsset(asset)) {
