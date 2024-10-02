@@ -70,6 +70,7 @@ export type CommonMessageKey =
   | 'common.asset'
   | 'common.assets'
   | 'common.tradeAssets'
+  | 'common.tradeAccount'
   | 'common.rune'
   | 'common.price'
   | 'common.price.rune'

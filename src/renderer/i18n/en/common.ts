@@ -71,6 +71,7 @@ const common: CommonMessages = {
   'common.asset': 'Asset',
   'common.assets': 'Assets',
   'common.tradeAssets': 'Trade Assets',
+  'common.tradeAccount': 'Trade Account',
   'common.rune': '{dex}',
   'common.pool': 'Pool',
   'common.pool.inbound': 'Pool Inbound',

@@ -8,13 +8,11 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
-import { useNavigate } from 'react-router-dom'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { RefreshButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
-import type { AssetAction } from '../../components/wallet/assets/AssetsTableCollapsable'
 import { TotalAssetValue } from '../../components/wallet/assets/TotalAssetValue'
 import { TradeAssetsTableCollapsable } from '../../components/wallet/assets/TradeAssetsTableCollapsable'
 import { ZERO_BASE_AMOUNT } from '../../const'
@@ -26,12 +24,11 @@ import { getPoolPriceValue, RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePrivateData } from '../../hooks/usePrivateData'
-import * as walletRoutes from '../../routes/wallet'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ChainBalance, SelectedWalletAsset } from '../../services/wallet/types'
 
 export const TradeAssetsView: React.FC = (): JSX.Element => {
-  const navigate = useNavigate()
+  // const navigate = useNavigate()
   const intl = useIntl()
 
   const { balancesState$, setSelectedAsset } = useWalletContext()
@@ -97,26 +94,25 @@ export const TradeAssetsView: React.FC = (): JSX.Element => {
   const selectAssetHandler = useCallback(
     (selectedAsset: SelectedWalletAsset) => {
       setSelectedAsset(O.some(selectedAsset))
-      navigate(walletRoutes.assetDetail.path())
     },
-    [navigate, setSelectedAsset]
+    [setSelectedAsset]
   )
 
-  const assetHandler = useCallback(
-    (selectedAsset: SelectedWalletAsset, action: AssetAction) => {
-      setSelectedAsset(O.some(selectedAsset))
-      console.log(selectedAsset)
-      switch (action) {
-        case 'send':
-          navigate(walletRoutes.send.path())
-          break
-        case 'deposit':
-          navigate(walletRoutes.interact.path({ interactType: 'bond' }))
-          break
-      }
-    },
-    [navigate, setSelectedAsset]
-  )
+  // const assetHandler = useCallback(
+  //   (selectedAsset: SelectedWalletAsset, action: AssetAction) => {
+  //     setSelectedAsset(O.some(selectedAsset))
+  //     console.log(selectedAsset)
+  //     switch (action) {
+  //       case 'send':
+  //         navigate(walletRoutes.send.path())
+  //         break
+  //       case 'deposit':
+  //         navigate(walletRoutes.interact.path({ interactType: 'bond' }))
+  //         break
+  //     }
+  //   },
+  //   [navigate, setSelectedAsset]
+  // )
 
   const poolDetails = useMemo(() => RD.toNullable(poolsRD)?.poolDetails ?? [], [poolsRD])
   const poolsData = useMemo(() => RD.toNullable(poolsRD)?.poolsData ?? {}, [poolsRD])
@@ -189,7 +185,6 @@ export const TradeAssetsView: React.FC = (): JSX.Element => {
         pendingPoolDetails={pendingPoolsDetails}
         poolsData={poolsData}
         selectAssetHandler={selectAssetHandler}
-        assetHandler={assetHandler}
         mimirHalt={mimirHaltRD}
         network={network}
         hidePrivateData={isPrivate}

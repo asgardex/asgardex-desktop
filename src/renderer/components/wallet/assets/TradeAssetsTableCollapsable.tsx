@@ -2,22 +2,36 @@ import React, { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Balance, Network } from '@xchainjs/xchain-client'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { AnyAsset, BaseAmount, baseToAsset, Chain, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import {
+  AnyAsset,
+  assetFromString,
+  assetToString,
+  BaseAmount,
+  baseToAsset,
+  Chain,
+  formatAssetAmountCurrency,
+  TradeAsset
+} from '@xchainjs/xchain-util'
 import { Col, Row } from 'antd'
+import { ColumnType } from 'antd/lib/table'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
+import { useNavigate } from 'react-router-dom'
 
 import { DEFAULT_EVM_HD_MODE } from '../../../../shared/evm/types'
 import { chainToString, EnabledChain } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
-import { CHAIN_WEIGHTS_THOR } from '../../../const'
+import { CHAIN_WEIGHTS_THOR, DEFAULT_WALLET_TYPE } from '../../../const'
 import { isUSDAsset } from '../../../helpers/assetHelper'
-import { getPoolPriceValue } from '../../../helpers/poolHelper'
+import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
 import { hiddenString } from '../../../helpers/stringHelper'
+import { useDex } from '../../../hooks/useDex'
+import * as poolsRoutes from '../../../routes/pools'
 import { PoolsDataMap } from '../../../services/midgard/types'
 import { MimirHaltRD, TradeAccount, TradeAccountRD } from '../../../services/thorchain/types'
 import { reloadBalancesByChain } from '../../../services/wallet'
@@ -28,7 +42,7 @@ import { Collapse } from '../../settings/Common.styles'
 import { ErrorView } from '../../shared/error'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { ReloadButton } from '../../uielements/button'
-import { AssetAction } from './AssetsTableCollapsable'
+import { Action as ActionButtonAction, ActionButton } from '../../uielements/button/ActionButton'
 import * as Styled from './AssetsTableCollapsable.styles'
 
 const { Panel } = Collapse
@@ -47,7 +61,6 @@ type Props = {
   poolDetails: PoolDetails
   pendingPoolDetails: PoolDetails
   selectAssetHandler: (asset: SelectedWalletAsset) => void
-  assetHandler: (asset: SelectedWalletAsset, action: AssetAction) => void
   mimirHalt: MimirHaltRD
   network: Network
   hidePrivateData: boolean
@@ -57,7 +70,7 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
   disableRefresh,
   tradeAccountBalances,
   pricePool,
-  // poolsData,
+  poolsData,
   poolDetails,
   selectAssetHandler,
   // mimirHalt,
@@ -65,7 +78,8 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
   hidePrivateData
 }) => {
   const intl = useIntl()
-  // const navigate = useNavigate()
+  const navigate = useNavigate()
+  const { dex } = useDex()
   const handleRefreshClick = useCallback((chain: Chain) => {
     const lazyReload = reloadBalancesByChain(chain)
     lazyReload()
@@ -134,8 +148,61 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
     }),
     [hidePrivateData, poolDetails, pricePool]
   )
+  const renderActionColumn = useCallback(
+    ({ asset, walletType }: WalletBalance) => {
+      // const walletAsset: SelectedWalletAsset = { asset, walletAddress, walletAccount, walletIndex, walletType, hdMode }
+      const normalizedAssetString = `${asset.chain}.${asset.symbol}`
+      const hasActivePool: boolean = FP.pipe(O.fromNullable(poolsData[normalizedAssetString]), O.isSome)
 
-  const columns = useMemo(() => [iconColumn, tickerColumn, balanceColumn], [iconColumn, tickerColumn, balanceColumn])
+      const deepestPoolAsset = FP.pipe(
+        getDeepestPool(poolDetails),
+        O.chain(({ asset }) => O.fromNullable(assetFromString(asset))),
+        O.toNullable
+      )
+
+      const createAction = (labelId: string, callback: () => void) => ({
+        label: intl.formatMessage({ id: labelId }),
+        callback
+      })
+
+      const actions: ActionButtonAction[] = []
+
+      if (deepestPoolAsset && hasActivePool && dex.chain !== MAYAChain) {
+        actions.push(
+          createAction('common.swap', () =>
+            navigate(
+              poolsRoutes.swap.path({
+                source: assetToString(asset),
+                target: assetToString(deepestPoolAsset as TradeAsset),
+                sourceWalletType: walletType,
+                targetWalletType: DEFAULT_WALLET_TYPE
+              })
+            )
+          )
+        )
+      }
+
+      return (
+        <div className="flex justify-center">
+          <ActionButton size="normal" actions={actions} />
+        </div>
+      )
+    },
+    [dex, poolsData, poolDetails, intl, navigate]
+  )
+
+  const actionColumn: ColumnType<WalletBalance> = useMemo(
+    () => ({
+      width: 150,
+      render: renderActionColumn
+    }),
+    [renderActionColumn]
+  )
+
+  const columns = useMemo(
+    () => [iconColumn, tickerColumn, balanceColumn, actionColumn],
+    [iconColumn, tickerColumn, actionColumn, balanceColumn]
+  )
 
   const onRowHandler = useCallback(
     ({ asset, walletAddress, walletType, walletAccount, walletIndex, hdMode }: WalletBalance) => ({
@@ -258,7 +325,7 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
       <Panel header={header} key="trade-account">
         {RD.isSuccess(tradeAccountBalances) && (
           <>
-            <Styled.Label>Trade Account</Styled.Label>
+            <Styled.Label>{intl.formatMessage({ id: 'common.tradeAccount' })}</Styled.Label>
             {renderBalances({ balancesRD: tradeAccountBalances, index: 0 })}
           </>
         )}
