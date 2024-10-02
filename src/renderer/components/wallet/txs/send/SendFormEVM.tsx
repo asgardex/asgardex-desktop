@@ -341,6 +341,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
           O.map((addresses) => addresses.filter((address) => address.address.includes(value))),
           O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0))
         )
+        console.log(matched)
         setMatchedAddresses(matched)
       }
       addressValidator(undefined, value).catch(() => {})
@@ -622,11 +623,12 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       if (address) {
         const matched = FP.pipe(
           oSavedAddresses,
-          O.map((addresses) => addresses.filter((address) => address.address.includes(address.address))),
-          O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0)) // Use O.none for empty arrays
+          O.map((addresses) => addresses.filter((addr) => addr.address.toLowerCase().includes(address.toLowerCase()))),
+          O.chain(O.fromPredicate((filteredAddresses) => filteredAddresses.length > 0))
         )
         setMatchedAddresses(matched)
       }
+
       // we have to validate input before storing into the state
       const isNotAllowed = checkAddress(routers.MAYA, address) || (checkAddress(routers.THOR, address) && !isChainAsset)
       setNotAllowed(isNotAllowed)
@@ -930,7 +932,6 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       recipientAddress,
       O.getOrElse(() => '')
     )
-
     return H.matchedWalletType(balances, recipientAddressValue)
   }, [balances, recipientAddress])
 

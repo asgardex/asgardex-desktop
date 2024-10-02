@@ -3,6 +3,7 @@
 ## Updates/Fixes
 
 - fixed Maya.maya send [#378](https://github.com/asgardex/asgardex-desktop/pull/379)
+- fix Evm deriv paths [#](https://github.com/asgardex/asgardex-desktop/pull/379)
 
 # 1.22.5 (2024-09-6)
 

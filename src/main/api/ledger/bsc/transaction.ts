@@ -47,9 +47,9 @@ export const send = async ({
       signer: new BSC.LedgerSigner({
         transport,
         provider: defaultBscParams.providers[Network.Mainnet],
-        derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
+        derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
-      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
+      rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
       network
     })
 
@@ -123,9 +123,9 @@ export const deposit = async ({
       signer: new BSC.LedgerSigner({
         transport,
         provider: defaultBscParams.providers[Network.Mainnet],
-        derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
+        derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
-      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
+      rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
       network: network
     })
 
@@ -155,6 +155,7 @@ export const deposit = async ({
     const nativeAsset = clientledger.getAssetInfo()
 
     const hash = await clientledger.transfer({
+      walletIndex,
       asset: nativeAsset.asset,
       amount: isETHAddress ? amount : baseAmount(0, nativeAsset.decimal),
       memo: unsignedTx.data,

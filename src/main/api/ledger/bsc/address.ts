@@ -27,7 +27,7 @@ export const getAddress = async ({
     const clientLedger = new ClientLedger({
       ...defaultBscParams,
       transport,
-      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
+      rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
       network
     })
     const address = await clientLedger.getAddressAsync(walletIndex)
@@ -61,7 +61,7 @@ export const verifyAddress = async ({
   const clientLedger = new ClientLedger({
     ...defaultBscParams,
     transport,
-    rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode)
+    rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode)
   })
   const _ = await clientLedger.getAddressAsync(walletIndex, true)
   return true

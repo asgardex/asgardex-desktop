@@ -28,9 +28,9 @@ export const getAddress = async ({
       signer: new LedgerSigner({
         transport,
         provider: defaultAvaxParams.providers[Network.Mainnet],
-        derivationPath: getDerivationPath(walletAccount, walletIndex, evmHdMode)
+        derivationPath: getDerivationPath(walletAccount, evmHdMode)
       }),
-      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHdMode)
+      rootDerivationPaths: getDerivationPaths(walletAccount, evmHdMode)
     })
     const address = await clientLedger.getAddressAsync(walletIndex)
 
@@ -66,9 +66,9 @@ export const verifyAddress = async ({
     signer: new LedgerSigner({
       transport,
       provider: defaultAvaxParams.providers[Network.Mainnet],
-      derivationPath: getDerivationPath(walletAccount, walletIndex, evmHdMode)
+      derivationPath: getDerivationPath(walletAccount, evmHdMode)
     }),
-    rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHdMode)
+    rootDerivationPaths: getDerivationPaths(walletAccount, evmHdMode)
   })
   const _ = await clientLedger.getAddressAsync(walletIndex, true)
   return true
