@@ -755,7 +755,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     const subscription = userAddresses$.subscribe((addresses) => setTrustedAddresses({ addresses }))
     return () => subscription.unsubscribe()
   }, [])
-  console.log(trustedAddresses)
+
   const handleAddAddress = useCallback(() => {
     if (newAddress.name && newAddress.address && newAddress.chain) {
       addAddress({ name: newAddress.name, address: newAddress.address, chain: newAddress.chain })
