@@ -237,6 +237,7 @@ type WalletMessageKey =
   | 'wallet.name.error.empty'
   | 'wallet.name.error.duplicated'
   | 'wallet.name.error.rename'
+  | 'wallet.nav.portfolio'
   | 'wallet.nav.deposits'
   | 'wallet.nav.bonds'
   | 'wallet.nav.poolshares'
