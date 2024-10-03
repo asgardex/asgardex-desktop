@@ -34,7 +34,6 @@ export const swap$ = ({
   hdMode,
   dex
 }: SwapTxParams): SwapTxState$ => {
-  // udpate this to suit mayaChainSwap
   const { chain } = asset.type === AssetType.SYNTH ? dex.asset : asset
 
   const requests$ = Rx.of(poolAddresses).pipe(

@@ -47,9 +47,9 @@ export const send = async ({
       signer: new ETH.LedgerSigner({
         transport,
         provider: defaultEthParams.providers[Network.Mainnet],
-        derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
+        derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
-      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
+      rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
       network
     })
     const ethAsset = asset as Asset
@@ -116,9 +116,9 @@ export const deposit = async ({
       signer: new ETH.LedgerSigner({
         transport,
         provider: defaultEthParams.providers[Network.Mainnet],
-        derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
+        derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
-      rootDerivationPaths: getDerivationPaths(walletAccount, walletIndex, evmHDMode),
+      rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
       network
     })
 
@@ -147,6 +147,7 @@ export const deposit = async ({
     const nativeAsset = ledgerClient.getAssetInfo()
 
     const hash = await ledgerClient.transfer({
+      walletIndex,
       asset: nativeAsset.asset,
       amount: isETHAddress ? amount : baseAmount(0, nativeAsset.decimal),
       memo: unsignedTx.data,

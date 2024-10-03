@@ -37,7 +37,7 @@ import { RemoveWalletConfirmationModal } from '../../components/modal/confirmati
 import { AssetIcon } from '../../components/uielements/assets/assetIcon/AssetIcon'
 import { QRCodeModal } from '../../components/uielements/qrCodeModal/QRCodeModal'
 import { PhraseCopyModal } from '../../components/wallet/phrase/PhraseCopyModal'
-import { getChainAsset, isArbChain, isAvaxChain, isBscChain, isEthChain } from '../../helpers/chainHelper'
+import { getChainAsset } from '../../helpers/chainHelper'
 import { isEvmChain } from '../../helpers/evmHelper'
 import { eqChain, eqString } from '../../helpers/fp/eq'
 import { emptyString } from '../../helpers/stringHelper'
@@ -281,10 +281,9 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
       subscribeAddLedgerAddressRD(
         addLedgerAddress$({
           chain,
-          walletIndex,
           walletAccount,
-          hdMode:
-            isEthChain(chain) || isArbChain(chain) || isAvaxChain(chain) || isBscChain(chain) ? evmHDMode : 'default' // other Ledgers uses `default` path @St0mrzy note bsc & avax not ready yet for ledger
+          walletIndex,
+          hdMode: isEvmChain(chain) ? evmHDMode : 'default' // other Ledgers uses `default` path
         })
       )
     },
@@ -313,9 +312,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
         const onChangeEvmDerivationMode = (e: RadioChangeEvent) => {
           updateEvmHDMode(e.target.value as EvmHDMode)
         }
-
-        const selectedWalletIndex = walletIndexMap[chain]
         const selectedAccountIndex = walletAccountMap[chain]
+        const selectedWalletIndex = walletIndexMap[chain]
 
         // check
         const currentLedgerToAdd: boolean = FP.pipe(
@@ -391,7 +389,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                         tooltip={intl.formatMessage(
                           { id: 'setting.wallet.hdpath.ledgerlive.info' },
                           {
-                            path: getEvmDerivationPath(walletAccountMap[chain], walletIndexMap[chain], 'ledgerlive')
+                            path: getEvmDerivationPath(walletAccountMap[chain], 'ledgerlive')
                           }
                         )}
                       />
@@ -403,7 +401,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                       <InfoIcon
                         tooltip={intl.formatMessage(
                           { id: 'setting.wallet.hdpath.legacy.info' },
-                          { path: getEvmDerivationPath(walletAccountMap[chain], walletIndexMap[chain], 'legacy') }
+                          { path: getEvmDerivationPath(walletAccountMap[chain], 'legacy') }
                         )}
                       />
                     </Styled.EthDerivationModeRadioLabel>
@@ -414,7 +412,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                       <InfoIcon
                         tooltip={intl.formatMessage(
                           { id: 'setting.wallet.hdpath.metamask.info' },
-                          { path: getEvmDerivationPath(walletAccountMap[chain], walletIndexMap[chain], 'metamask') }
+                          { path: getEvmDerivationPath(walletAccountMap[chain], 'metamask') }
                         )}
                       />
                     </Styled.EthDerivationModeRadioLabel>

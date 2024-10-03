@@ -47,7 +47,7 @@ export const send = async ({
       signer: new ARB.LedgerSigner({
         transport,
         provider: defaultArbParams.providers[Network.Mainnet],
-        derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
+        derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       network: network
     })
@@ -114,7 +114,7 @@ export const deposit = async ({
       signer: new ARB.LedgerSigner({
         transport,
         provider: defaultArbParams.providers[Network.Mainnet],
-        derivationPath: getDerivationPath(walletAccount, walletIndex, evmHDMode)
+        derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       network: network
     })
@@ -145,6 +145,7 @@ export const deposit = async ({
     const nativeAsset = clientledger.getAssetInfo()
 
     const hash = await clientledger.transfer({
+      walletIndex,
       asset: nativeAsset.asset,
       amount: isETHAddress ? amount : baseAmount(0, nativeAsset.decimal),
       memo: unsignedTx.data,
