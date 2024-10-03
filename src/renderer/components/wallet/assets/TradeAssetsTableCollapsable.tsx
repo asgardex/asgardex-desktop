@@ -169,7 +169,7 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
 
       if (deepestPoolAsset && hasActivePool && dex.chain !== MAYAChain) {
         actions.push(
-          createAction('common.swap', () =>
+          createAction('common.trade', () =>
             navigate(
               poolsRoutes.swap.path({
                 source: assetToString(asset),
@@ -181,7 +181,7 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
           )
         )
       }
-
+      console.log(actions)
       return (
         <div className="flex justify-center">
           <ActionButton size="normal" actions={actions} />

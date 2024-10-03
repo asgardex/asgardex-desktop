@@ -72,6 +72,7 @@ const common: CommonMessages = {
   'common.assets': 'Assets',
   'common.tradeAssets': 'Handel mit Vermögenswerten',
   'common.tradeAccount': 'Handelskonto',
+  'common.trade': 'Handel',
   'common.asset': 'Asset',
   'common.rune': '{dex}',
   'common.pool': 'Pool',
