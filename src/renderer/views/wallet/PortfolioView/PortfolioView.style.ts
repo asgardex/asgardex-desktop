@@ -10,7 +10,6 @@ export const Title = styled(Label)`
   text-transform: uppercase;
   color: ${palette('gray', 2)};
   width: auto;
-  text-align: center;
 
   ${media.sm`
   font-size: 11px;
