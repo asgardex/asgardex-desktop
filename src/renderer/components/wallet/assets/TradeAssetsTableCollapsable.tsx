@@ -12,8 +12,7 @@ import {
   BaseAmount,
   baseToAsset,
   Chain,
-  formatAssetAmountCurrency,
-  TradeAsset
+  formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
 import { Col, Row } from 'antd'
 import { ColumnType } from 'antd/lib/table'
@@ -149,7 +148,7 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
     [hidePrivateData, poolDetails, pricePool]
   )
   const renderActionColumn = useCallback(
-    ({ asset, walletType }: WalletBalance) => {
+    ({ asset, walletType, walletAddress }: WalletBalance) => {
       // const walletAsset: SelectedWalletAsset = { asset, walletAddress, walletAccount, walletIndex, walletType, hdMode }
       const normalizedAssetString = `${asset.chain}.${asset.symbol}`
       const hasActivePool: boolean = FP.pipe(O.fromNullable(poolsData[normalizedAssetString]), O.isSome)
@@ -173,15 +172,16 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
             navigate(
               poolsRoutes.swap.path({
                 source: assetToString(asset),
-                target: assetToString(deepestPoolAsset as TradeAsset),
+                target: `${deepestPoolAsset.chain}~${deepestPoolAsset.symbol}`,
                 sourceWalletType: walletType,
-                targetWalletType: DEFAULT_WALLET_TYPE
+                targetWalletType: DEFAULT_WALLET_TYPE,
+                recipient: walletAddress
               })
             )
           )
         )
       }
-      console.log(actions)
+
       return (
         <div className="flex justify-center">
           <ActionButton size="normal" actions={actions} />

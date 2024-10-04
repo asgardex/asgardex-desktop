@@ -97,23 +97,6 @@ export const TradeAssetsView: React.FC = (): JSX.Element => {
     },
     [setSelectedAsset]
   )
-
-  // const assetHandler = useCallback(
-  //   (selectedAsset: SelectedWalletAsset, action: AssetAction) => {
-  //     setSelectedAsset(O.some(selectedAsset))
-  //     console.log(selectedAsset)
-  //     switch (action) {
-  //       case 'send':
-  //         navigate(walletRoutes.send.path())
-  //         break
-  //       case 'deposit':
-  //         navigate(walletRoutes.interact.path({ interactType: 'bond' }))
-  //         break
-  //     }
-  //   },
-  //   [navigate, setSelectedAsset]
-  // )
-
   const poolDetails = useMemo(() => RD.toNullable(poolsRD)?.poolDetails ?? [], [poolsRD])
   const poolsData = useMemo(() => RD.toNullable(poolsRD)?.poolsData ?? {}, [poolsRD])
   const pendingPoolsDetails = useMemo(() => RD.toNullable(pendingPoolsThorRD)?.poolDetails ?? [], [pendingPoolsThorRD])
