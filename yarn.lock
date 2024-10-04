@@ -10923,7 +10923,6 @@ __metadata:
     autoprefixer: "npm:^10.4.8"
     axios: "npm:1.7.5"
     babel-loader: "npm:^9.2.1"
-    bignumber.js: "npm:9.0.0"
     browserify-fs: "npm:^1.0.0"
     chart.js: "npm:^3.8.0"
     clsx: "npm:^2.1.1"
@@ -11745,7 +11744,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bignumber.js@npm:^9.0.0":
+"bignumber.js@npm:9.0.0":
+  version: 9.0.0
+  resolution: "bignumber.js@npm:9.0.0"
+  checksum: 10/7406d0d11dfdd2183e19be745f0d5913e3773ded5fbca2a310221e719f15fd8ec6b8d7991031a6081a6276a8e12e27d58ead60f73dcbb9d697ebe9e2dd0ad7e0
+  languageName: node
+  linkType: hard
+
+"bignumber.js@npm:^7.2.1":
+  version: 7.2.1
+  resolution: "bignumber.js@npm:7.2.1"
+  checksum: 10/9bfd02d93cba7d61607b9d52ffb3176844af5712f7f6a0530350daf7852894215fbaa8e6090a9fc841b297b39d475abb90451d3533bc939d1e96a4bfe293e226
+  languageName: node
+  linkType: hard
+
+"bignumber.js@npm:^9.1.2":
   version: 9.1.2
   resolution: "bignumber.js@npm:9.1.2"
   checksum: 10/d89b8800a987225d2c00dcbf8a69dc08e92aa0880157c851c287b307d31ceb2fc2acb0c62c3e3a3d42b6c5fcae9b004035f13eb4386e56d529d7edac18d5c9d8

@@ -209,6 +209,7 @@ export const sendTx$ = ({
           return DASH.sendTx({
             walletType,
             recipient,
+            asset,
             amount,
             feeRate: rates[feeOption],
             memo,

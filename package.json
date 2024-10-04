@@ -115,7 +115,6 @@
     "antd": "^4.20.7",
     "axios": "1.7.5",
     "babel-loader": "^9.2.1",
-    "bignumber.js": "9.0.0",
     "chart.js": "^3.8.0",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.10",
@@ -225,7 +224,6 @@
   "resolutions": {
     "@svgr/webpack": "^6.2.1",
     "@ledgerhq/hw-transport": "6.30.6",
-    "bignumber.js": "^9.0.0",
     "secp256k1": "4.0.3"
   },
   "packageManager": "yarn@4.2.2"

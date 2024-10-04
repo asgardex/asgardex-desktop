@@ -1,7 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { FeeRate, FeesWithRates } from '@xchainjs/xchain-client'
-import { Client } from '@xchainjs/xchain-dash'
-import { Address, BaseAmount } from '@xchainjs/xchain-util'
+import { ClientKeystore as Client } from '@xchainjs/xchain-dash'
+import { Address, AnyAsset, BaseAmount } from '@xchainjs/xchain-util'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
@@ -21,6 +21,7 @@ export type FeesWithRatesLD = LiveData<Error, FeesWithRates>
 
 export type SendTxParams = {
   walletType: WalletType
+  asset: AnyAsset
   sender?: Address
   recipient: string
   amount: BaseAmount
