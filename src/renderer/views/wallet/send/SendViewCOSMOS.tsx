@@ -6,6 +6,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetType } from '@xchainjs/xchain-util'
 import { Spin } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
@@ -45,6 +46,8 @@ type Props = {
 export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
   const { asset, trustedAddresses, emptyBalance, poolDetails, dex, oPoolAddress } = props
 
+  const { chain } = asset.asset.type === AssetType.SYNTH ? dex.asset : asset.asset
+
   const { network } = useNetwork()
   const {
     balancesState$,
@@ -58,7 +61,7 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
 
   const { mayaScanPriceRD } = useMayaScanPrice()
 
-  const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(asset.asset.chain))
+  const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(chain))
 
   const oWalletBalance = useMemo(
     () =>
@@ -81,7 +84,7 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
   let fees$: () => FeesLD
   let reloadFees: () => void
 
-  switch (asset.asset.chain) {
+  switch (chain) {
     case KUJIChain:
       fees$ = kujiContext.fees$
       reloadFees = kujiContext.reloadFees
@@ -115,7 +118,7 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
     RD.initial
   )
 
-  const { validateAddress } = useValidateAddress(asset.asset.chain)
+  const { validateAddress } = useValidateAddress(chain)
 
   return FP.pipe(
     oWalletBalance,
