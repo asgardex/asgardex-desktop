@@ -17,11 +17,15 @@ import { useMatch, useNavigate } from 'react-router-dom'
 import { Dex } from '../../../shared/api/types'
 import { ExternalUrl } from '../../../shared/const'
 import { ReactComponent as DiscordIcon } from '../../assets/svg/discord.svg'
+import { ReactComponent as SettingsIcon } from '../../assets/svg/icon-cog.svg'
+import { ReactComponent as PortfolioIcon } from '../../assets/svg/icon-portfolio.svg'
 import { ReactComponent as SwapIcon } from '../../assets/svg/icon-swap.svg'
 import { ReactComponent as WalletIcon } from '../../assets/svg/icon-wallet.svg'
 import { ReactComponent as ThorChainIcon } from '../../assets/svg/logo-thorchain.svg'
+import * as appRoutes from '../../routes/app'
 import * as playgroundRoutes from '../../routes/playground'
 import * as poolsRoutes from '../../routes/pools'
+import * as portfolioRoutes from '../../routes/portfolio'
 import * as walletRoutes from '../../routes/wallet'
 import { mayaIconT } from '../icons'
 import * as Styled from './SidebarComponent.styles'
@@ -43,8 +47,10 @@ const FooterIcon: React.FC<IconProps> = (props: IconProps): JSX.Element => {
 }
 
 enum TabKey {
-  POOLS = 'POOLS',
   WALLET = 'WALLET',
+  PORTFOLIO = 'PORTFOLIO',
+  POOLS = 'POOLS',
+  SETTINGS = 'SETTINGS',
   UNKNOWN = 'UNKNOWN'
 }
 
@@ -71,20 +77,38 @@ export const SidebarComponent: React.FC<Props> = (props): JSX.Element => {
   const navigate = useNavigate()
 
   const matchPoolsRoute = useMatch({ path: poolsRoutes.base.path(), end: false })
+  const matchPortfolioRoute = useMatch({ path: portfolioRoutes.base.path(), end: false })
   const matchWalletRoute = useMatch({ path: walletRoutes.base.path(), end: false })
+  const matchSettingsRoute = useMatch({ path: appRoutes.settings.path(), end: false })
 
   const activeKey: TabKey = useMemo(() => {
     if (matchPoolsRoute) {
       return TabKey.POOLS
+    } else if (matchPortfolioRoute) {
+      return TabKey.PORTFOLIO
     } else if (matchWalletRoute) {
       return TabKey.WALLET
+    } else if (matchSettingsRoute) {
+      return TabKey.SETTINGS
     } else {
       return TabKey.UNKNOWN
     }
-  }, [matchPoolsRoute, matchWalletRoute])
+  }, [matchPoolsRoute, matchPortfolioRoute, matchWalletRoute, matchSettingsRoute])
 
   const items: Tab[] = useMemo(
     () => [
+      {
+        key: TabKey.WALLET,
+        label: intl.formatMessage({ id: 'common.wallet' }),
+        path: walletRoutes.base.path(),
+        icon: WalletIcon
+      },
+      {
+        key: TabKey.PORTFOLIO,
+        label: intl.formatMessage({ id: 'wallet.nav.portfolio' }),
+        path: portfolioRoutes.base.path(),
+        icon: PortfolioIcon
+      },
       {
         key: TabKey.POOLS,
         label: intl.formatMessage({ id: 'common.pools' }),
@@ -92,10 +116,10 @@ export const SidebarComponent: React.FC<Props> = (props): JSX.Element => {
         icon: SwapIcon
       },
       {
-        key: TabKey.WALLET,
-        label: intl.formatMessage({ id: 'common.wallet' }),
-        path: walletRoutes.base.path(),
-        icon: WalletIcon
+        key: TabKey.SETTINGS,
+        label: intl.formatMessage({ id: 'common.settings' }),
+        path: appRoutes.settings.path(),
+        icon: SettingsIcon
       }
     ],
     [intl]
@@ -123,7 +147,7 @@ export const SidebarComponent: React.FC<Props> = (props): JSX.Element => {
               `}
               onClick={() => navigate(path)}>
               <div className="flex flex-row items-center py-3 pl-8">
-                <Icon className="pr-5px" />
+                <Icon className="w-8 pr-5px" />
                 <span>{label}</span>
               </div>
             </div>
