@@ -1393,7 +1393,18 @@ export const Swap = ({
       )
       return dex.chain === THORChain ? swapParamsThor : swapParamsMaya
     },
-    [oPoolAddress, oSourceAssetWB, oQuote, oQuoteMaya, dex, sourceAsset, amountToSwapMax1e8, sourceAssetAmount.decimal] // Include both quote dependencies
+    [
+      oPoolAddress,
+      oSourceAssetWB,
+      oQuote,
+      oPriceSwapInFee,
+      oQuoteMaya,
+      dex,
+      amountToSwapMax1e8,
+      sourceAssetAmount.decimal,
+      sourceAsset,
+      sourceChainAssetAmount
+    ] // Include both quote dependencies
   )
 
   // Check to see slippage greater than tolerance
