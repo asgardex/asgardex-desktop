@@ -3087,6 +3087,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.20.0":
+  version: 7.25.7
+  resolution: "@babel/runtime@npm:7.25.7"
+  dependencies:
+    regenerator-runtime: "npm:^0.14.0"
+  checksum: 10/73411fe0f1bff3a962586cef05b30f49e554b6563767e6d84f7d79d605b2c20e7fc3df291a3aebef69043181a8f893afdab9e6672557a5c2d08b9377d6f678cd
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.18.10, @babel/template@npm:^7.18.6, @babel/template@npm:^7.3.3":
   version: 7.18.10
   resolution: "@babel/template@npm:7.18.10"
@@ -6716,6 +6725,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rc-component/context@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "@rc-component/context@npm:1.4.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    rc-util: "npm:^5.27.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/77b84e6cea11d7adbf68a89a49142d96129abbe485449851702d83d34ba507872404adacee39171dd47e9000556260cc76ab327e09f3320937ecb0c7e6906caa
+  languageName: node
+  linkType: hard
+
 "@remix-run/router@npm:1.2.1":
   version: 1.2.1
   resolution: "@remix-run/router@npm:1.2.1"
@@ -8162,6 +8184,13 @@ __metadata:
   version: 1.0.3
   resolution: "@tsconfig/node16@npm:1.0.3"
   checksum: 10/3a8b657dd047495b7ad23437d6afd20297ce90380ff0bdee93fc7d39a900dbd8d9e26e53ff6b465e7967ce2adf0b218782590ce9013285121e6a5928fbd6819f
+  languageName: node
+  linkType: hard
+
+"@tsconfig/node18@npm:^18.2.4":
+  version: 18.2.4
+  resolution: "@tsconfig/node18@npm:18.2.4"
+  checksum: 10/80623cb9c129c78d51fe6c4a256ba986f12f02ff02dc2a1e5b33dd13a7983f767b6792cfcd51b3dd1c8256ea105f1fea31f64a2070564e37787ab3d9a1a1e7e3
   languageName: node
   linkType: hard
 
@@ -10877,6 +10906,7 @@ __metadata:
     "@testing-library/react": "npm:^13.3.0"
     "@testing-library/react-hooks": "npm:^8.0.0"
     "@testing-library/user-event": "npm:^14.2.0"
+    "@tsconfig/node18": "npm:^18.2.4"
     "@types/bchaddrjs": "npm:^0.4.0"
     "@types/electron-devtools-installer": "npm:^2.2.2"
     "@types/fs-extra": "npm:^9.0.13"
@@ -10965,6 +10995,7 @@ __metadata:
     prettier-plugin-tailwindcss: "npm:^0.1.13"
     process: "npm:^0.11.10"
     qrcode: "npm:^1.5.3"
+    rc-table: "npm:^7.48.0"
     react: "npm:^18.2.0"
     react-chartjs-2: "npm:^4.1.0"
     react-circular-progressbar: "npm:^2.0.4"
@@ -24634,6 +24665,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rc-table@npm:^7.48.0":
+  version: 7.48.0
+  resolution: "rc-table@npm:7.48.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    "@rc-component/context": "npm:^1.4.0"
+    classnames: "npm:^2.2.5"
+    rc-resize-observer: "npm:^1.1.0"
+    rc-util: "npm:^5.41.0"
+    rc-virtual-list: "npm:^3.14.2"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/5f1c6fc74333f4888f9f9a28c44ee571feec23be739d78c3a00d2fc67d811fbabd802ce39294cac66e4b7f3b8d1eda18c3e9c7eef0c3f5f58cd1a7db3abf6141
+  languageName: node
+  linkType: hard
+
 "rc-table@npm:~7.25.3":
   version: 7.25.3
   resolution: "rc-table@npm:7.25.3"
@@ -24770,6 +24818,34 @@ __metadata:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
   checksum: 10/f9f16119e14ddbe39bb33f1ae7a3024126e16503debd991f08340b3a61d42c0e9bf2e5a78787e86683822320938ca22583a230dee64c9593918f5f59d823b399
+  languageName: node
+  linkType: hard
+
+"rc-util@npm:^5.27.0, rc-util@npm:^5.36.0, rc-util@npm:^5.41.0":
+  version: 5.43.0
+  resolution: "rc-util@npm:5.43.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.18.3"
+    react-is: "npm:^18.2.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/6d5be9d79182c6b4c5a033ad6517b2940d3d2ac42a8e77ef5735591d182f8236f61bc7628d61e82a122d2046ec849462f3fe57c08d3a2a20279646785c34ec4a
+  languageName: node
+  linkType: hard
+
+"rc-virtual-list@npm:^3.14.2":
+  version: 3.14.8
+  resolution: "rc-virtual-list@npm:3.14.8"
+  dependencies:
+    "@babel/runtime": "npm:^7.20.0"
+    classnames: "npm:^2.2.6"
+    rc-resize-observer: "npm:^1.0.0"
+    rc-util: "npm:^5.36.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/4f37f6adef15d5aeb15120d83ef34ecc73aae0ae274552e2062ef1d8f0b76073a3baa2fe4f7354da94e6c51920f5cc44d7a6c00cc54f80b8eff49353356e132a
   languageName: node
   linkType: hard
 
