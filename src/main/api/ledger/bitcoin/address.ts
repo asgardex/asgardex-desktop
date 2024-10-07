@@ -1,5 +1,5 @@
 import type Transport from '@ledgerhq/hw-transport'
-import { BTCChain, ClientLedger } from '@xchainjs/xchain-bitcoin'
+import { AddressFormat, BTCChain, ClientLedger, tapRootDerivationPaths } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import * as E from 'fp-ts/Either'
 
@@ -24,13 +24,18 @@ export const getAddress = async (
   transport: Transport,
   network: Network,
   walletAccount: number,
-  walletIndex: number
+  walletIndex: number,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _: any,
+  addressFormat: AddressFormat = AddressFormat.P2WPKH
 ): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
     const clientLedger = new ClientLedger({
       transport,
       ...btcInitParams,
-      rootDerivationPaths: getDerivationPaths(walletAccount, network),
+      addressFormat,
+      rootDerivationPaths:
+        addressFormat === AddressFormat.P2TR ? tapRootDerivationPaths : getDerivationPaths(walletAccount, network),
       network: network
     })
     const address = await clientLedger.getAddressAsync(walletIndex)

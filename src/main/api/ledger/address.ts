@@ -2,7 +2,7 @@ import Transport from '@ledgerhq/hw-transport'
 import TransportNodeHidSingleton from '@ledgerhq/hw-transport-node-hid-singleton'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
+import { AddressFormat, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
@@ -41,7 +41,8 @@ const chainAddressFunctions: Record<
     network: Network,
     walletAccount: number,
     walletIndex: number,
-    hdMode?: HDMode
+    hdMode?: HDMode,
+    addressFormat?: AddressFormat
   ) => Promise<E.Either<LedgerError, WalletAddress>>
 > = {
   [THORChain]: getTHORAddress,
