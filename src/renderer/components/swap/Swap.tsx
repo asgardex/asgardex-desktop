@@ -37,7 +37,9 @@ import {
   AssetType,
   AnyAsset,
   TokenAsset,
-  SynthAsset
+  SynthAsset,
+  isTokenAsset,
+  isTradeAsset
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import * as A from 'fp-ts/Array'
@@ -1329,42 +1331,80 @@ export const Swap = ({
   const oSwapParams: O.Option<SwapTxParams> = useMemo(
     () => {
       const swapParamsThor = FP.pipe(
-        sequenceTOption(oPoolAddress, oSourceAssetWB, oQuote),
-        O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, txDetails]) => {
-          return {
+        sequenceTOption(oPoolAddress, oSourceAssetWB, oQuote, oPriceSwapInFee),
+        O.map(
+          ([
             poolAddress,
-            asset: sourceAsset,
-            amount: convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal),
-            memo: shortenMemo(txDetails.memo), // short asset
-            walletType,
-            sender: walletAddress,
-            walletAccount,
-            walletIndex,
-            hdMode,
-            dex
+            { walletType, walletAddress, walletAccount, walletIndex, hdMode },
+            txDetails,
+            oPriceSwapInFee
+          ]) => {
+            let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
+            if (!isTokenAsset(sourceAsset) && !isTradeAsset(sourceAsset) && !isSynthAsset(sourceAsset)) {
+              if (sourceChainAssetAmount.lte(amountToSwap.plus(oPriceSwapInFee.baseAmount))) {
+                amountToSwap = sourceChainAssetAmount.minus(oPriceSwapInFee.baseAmount)
+              }
+            }
+
+            return {
+              poolAddress,
+              asset: sourceAsset,
+              amount: amountToSwap,
+              memo: shortenMemo(txDetails.memo), // short asset
+              walletType,
+              sender: walletAddress,
+              walletAccount,
+              walletIndex,
+              hdMode,
+              dex
+            }
           }
-        })
+        )
       )
       const swapParamsMaya = FP.pipe(
-        sequenceTOption(oPoolAddress, oSourceAssetWB, oQuoteMaya),
-        O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, quoteSwap]) => {
-          return {
+        sequenceTOption(oPoolAddress, oSourceAssetWB, oQuoteMaya, oPriceSwapInFee),
+        O.map(
+          ([
             poolAddress,
-            asset: sourceAsset,
-            amount: convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal),
-            memo: quoteSwap.memo, // The memo will be different based on the selected quote
-            walletType,
-            sender: walletAddress,
-            walletAccount,
-            walletIndex,
-            hdMode,
-            dex
+            { walletType, walletAddress, walletAccount, walletIndex, hdMode },
+            quoteSwap,
+            oPriceSwapInFee
+          ]) => {
+            let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
+            if (!isTokenAsset(sourceAsset) && !isTradeAsset(sourceAsset) && !isSynthAsset(sourceAsset)) {
+              if (sourceChainAssetAmount.lte(amountToSwap.plus(oPriceSwapInFee.baseAmount))) {
+                amountToSwap = sourceChainAssetAmount.minus(oPriceSwapInFee.baseAmount)
+              }
+            }
+            return {
+              poolAddress,
+              asset: sourceAsset,
+              amount: amountToSwap,
+              memo: quoteSwap.memo, // The memo will be different based on the selected quote
+              walletType,
+              sender: walletAddress,
+              walletAccount,
+              walletIndex,
+              hdMode,
+              dex
+            }
           }
-        })
+        )
       )
       return dex.chain === THORChain ? swapParamsThor : swapParamsMaya
     },
-    [oPoolAddress, oSourceAssetWB, oQuote, oQuoteMaya, dex, sourceAsset, amountToSwapMax1e8, sourceAssetAmount.decimal] // Include both quote dependencies
+    [
+      oPoolAddress,
+      oSourceAssetWB,
+      oQuote,
+      oPriceSwapInFee,
+      oQuoteMaya,
+      dex,
+      amountToSwapMax1e8,
+      sourceAssetAmount.decimal,
+      sourceAsset,
+      sourceChainAssetAmount
+    ] // Include both quote dependencies
   )
 
   // Check to see slippage greater than tolerance
