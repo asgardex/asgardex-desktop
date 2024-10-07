@@ -4,7 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Balance, Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import {
   AnyAsset,
   assetFromString,
@@ -26,7 +26,7 @@ import { chainToString, EnabledChain } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
 import { CHAIN_WEIGHTS_THOR, DEFAULT_WALLET_TYPE } from '../../../const'
-import { isUSDAsset } from '../../../helpers/assetHelper'
+import { isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
 import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
 import { hiddenString } from '../../../helpers/stringHelper'
 import { useDex } from '../../../hooks/useDex'
@@ -164,15 +164,22 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
         callback
       })
 
+      const targetAsset =
+        deepestPoolAsset && deepestPoolAsset.chain === asset.chain && deepestPoolAsset.symbol === asset.symbol
+          ? AssetRuneNative
+          : deepestPoolAsset
+
       const actions: ActionButtonAction[] = []
 
-      if (deepestPoolAsset && hasActivePool && dex.chain !== MAYAChain) {
+      if (targetAsset && hasActivePool && dex.chain !== MAYAChain) {
         actions.push(
           createAction('common.trade', () =>
             navigate(
               poolsRoutes.swap.path({
                 source: assetToString(asset),
-                target: `${deepestPoolAsset.chain}~${deepestPoolAsset.symbol}`,
+                target: isRuneNativeAsset(targetAsset)
+                  ? assetToString(targetAsset)
+                  : `${targetAsset.chain}~${targetAsset.symbol}`,
                 sourceWalletType: walletType,
                 targetWalletType: DEFAULT_WALLET_TYPE,
                 recipient: walletAddress
