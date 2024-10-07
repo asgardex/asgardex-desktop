@@ -91,7 +91,8 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
       title: '',
       width: 120,
       render: ({ asset }: WalletBalance) => (
-        <Row justify="center" align="middle">
+        <Row className="relative" justify="center" align="middle">
+          <div className="absolute h-12 w-12 rounded-full bg-gradient-to-br from-turquoise to-red" />
           <AssetIcon asset={asset} size="normal" network={network} />
         </Row>
       )
@@ -107,7 +108,7 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
           <Styled.Label nowrap>
             <Styled.TickerLabel>{asset.ticker}</Styled.TickerLabel>
             <Styled.ChainLabelWrapper>
-              <Styled.ChainLabel>{asset.chain}</Styled.ChainLabel>
+              <Styled.ChainLabel className="!text-turquoise">{THORChain}</Styled.ChainLabel>
             </Styled.ChainLabelWrapper>
           </Styled.Label>
         </Styled.AssetTickerWrapper>
@@ -325,7 +326,9 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
       <Panel header={header} key="trade-account">
         {RD.isSuccess(tradeAccountBalances) && (
           <>
-            <Styled.Label>{intl.formatMessage({ id: 'common.tradeAccount' })}</Styled.Label>
+            <Styled.HeaderLabel className="ml-5">
+              {intl.formatMessage({ id: 'common.tradeAccount' })}
+            </Styled.HeaderLabel>
             {renderBalances({ balancesRD: tradeAccountBalances, index: 0 })}
           </>
         )}
@@ -335,7 +338,13 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
 
   return (
     <>
-      <Styled.Collapse defaultActiveKey={['trade-account']}>{renderPanel()}</Styled.Collapse>
+      <Styled.Collapse
+        expandIcon={({ isActive }) => <Styled.ExpandIcon rotate={isActive ? 90 : 0} />}
+        defaultActiveKey={['trade-account']}
+        expandIconPosition="end"
+        ghost>
+        {renderPanel()}
+      </Styled.Collapse>
     </>
   )
 }
