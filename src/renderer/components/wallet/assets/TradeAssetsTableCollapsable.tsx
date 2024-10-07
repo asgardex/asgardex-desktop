@@ -92,7 +92,6 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
       width: 120,
       render: ({ asset }: WalletBalance) => (
         <Row className="relative" justify="center" align="middle">
-          <div className="absolute h-12 w-12 rounded-full bg-gradient-to-br from-turquoise to-red" />
           <AssetIcon asset={asset} size="normal" network={network} />
         </Row>
       )

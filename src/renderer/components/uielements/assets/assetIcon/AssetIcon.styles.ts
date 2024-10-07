@@ -6,7 +6,9 @@ import { Size, Sizes, FontSizes } from './AssetIcon.types'
 
 type IconProps = {
   size: Size
+  isNotNative?: boolean
   isSynth?: boolean
+  isTrade?: boolean
 }
 
 const fontSizes: FontSizes = {
@@ -36,10 +38,28 @@ export const borders: Sizes = {
 export const IconWrapper = styled.div<IconProps>`
   width: ${({ size }) => `${sizes[size]}px`};
   height: ${({ size }) => `${sizes[size]}px`};
-  border: ${({ isSynth, size }) => (isSynth ? `solid ${borders[size]}px` : `none`)};
-  border-color: ${({ isSynth }) => (isSynth ? palette('primary', 0) : 'transparent')};
+  border: ${({ isSynth, isTrade, size }) => (isSynth || isTrade ? `solid ${borders[size]}px` : `none`)};
+  border-color: ${({ isSynth, isTrade }) =>
+    isSynth ? palette('primary', 0) : isTrade ? palette('primary', 2) : 'transparent'};
   border-radius: 50%;
   position: relative;
+  background-size: cover;
+  background-position: center;
+
+  /* Add shadow effect around the border */
+  ${({ isSynth, isTrade }) => {
+    if (isSynth) {
+      return `
+      box-shadow: 0px 0px 15px 5px rgba(80, 227, 194, 0.8); /* A greenish shadow for synth  */
+      `
+    }
+    if (isTrade) {
+      return `
+      box-shadow: 0px 0px 15px 5px rgba(113, 188, 247, 0.8);  /* A blueish shadow */
+    `
+    }
+    return '' /* No shadow for non-synth and non-trade assets */
+  }}
 `
 
 export const LoadingOutlined = styled(ALoadingOutlined)`
@@ -48,8 +68,8 @@ export const LoadingOutlined = styled(ALoadingOutlined)`
 `
 
 export const IconBG = styled.div<IconProps>`
-  width: ${({ size, isSynth }) => `${sizes[size] - (isSynth ? 2 : 0) * borders[size]}px`};
-  height: ${({ size, isSynth }) => `${sizes[size] - (isSynth ? 2 : 0) * borders[size]}px`};
+  width: ${({ size, isNotNative }) => `${sizes[size] - (isNotNative ? 2 : 0) * borders[size]}px`};
+  height: ${({ size, isNotNative }) => `${sizes[size] - (isNotNative ? 2 : 0) * borders[size]}px`};
   position: absolute;
   left: 0;
   top: 0;
@@ -57,8 +77,8 @@ export const IconBG = styled.div<IconProps>`
 `
 
 export const IconFallback = styled.div<IconProps>`
-  width: ${({ size, isSynth }) => `${sizes[size] - (isSynth ? 2 : 0) * borders[size]}px`};
-  height: ${({ size, isSynth }) => `${sizes[size] - (isSynth ? 2 : 0) * borders[size]}px`};
+  width: ${({ size, isNotNative }) => `${sizes[size] - (isNotNative ? 2 : 0) * borders[size]}px`};
+  height: ${({ size, isNotNative }) => `${sizes[size] - (isNotNative ? 2 : 0) * borders[size]}px`};
   left: 0;
   top: 0;
   border-radius: 50%;
@@ -71,10 +91,10 @@ export const IconFallback = styled.div<IconProps>`
 
 export const Icon = styled.img<IconProps>`
   position: absolute;
-  left: ${({ isSynth }) => `${isSynth ? borders : 0}px`}; // adjusted calculation
-  top: ${({ isSynth }) => `${isSynth ? borders : 0}px`}; // adjusted calculation
-  width: ${({ size, isSynth }) => `${sizes[size] - (isSynth ? 2 : 0) * borders[size]}px`};
-  height: ${({ size, isSynth }) => `${sizes[size] - (isSynth ? 2 : 0) * borders[size]}px`};
+  left: ${({ isNotNative }) => `${isNotNative ? borders : 0}px`}; // adjusted calculation
+  top: ${({ isNotNative }) => `${isNotNative ? borders : 0}px`}; // adjusted calculation
+  width: ${({ size, isNotNative }) => `${sizes[size] - (isNotNative ? 2 : 0) * borders[size]}px`};
+  height: ${({ size, isNotNative }) => `${sizes[size] - (isNotNative ? 2 : 0) * borders[size]}px`};
   border-radius: 50%;
   max-width: auto; // overridden to avoid max-w-100% (default)
 `

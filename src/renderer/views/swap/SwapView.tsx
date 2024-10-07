@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
@@ -13,7 +13,6 @@ import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
@@ -55,6 +54,7 @@ import { SwapRouteParams, SwapRouteTargetWalletType } from '../../routes/pools/s
 import * as walletRoutes from '../../routes/wallet'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
 import { DEFAULT_SLIP_TOLERANCE } from '../../services/const'
+import { TradeAccount } from '../../services/thorchain/types'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ledgerAddressToWalletAddress } from '../../services/wallet/util'
 import { isSlipTolerance, SlipTolerance } from '../../types/asgardex'
@@ -171,15 +171,15 @@ const SuccessRouteView: React.FC<Props> = ({
   }, [sourceAsset, setSelectedPoolAsset, setSelectedPoolAssetMaya, dex])
 
   const sourceAssetDecimal$: AssetWithDecimalLD = useMemo(
-    () => assetWithDecimal$(sourceAsset),
-    [assetWithDecimal$, sourceAsset]
+    () => assetWithDecimal$(sourceAsset, dex),
+    [assetWithDecimal$, dex, sourceAsset]
   )
 
   const sourceAssetRD: AssetWithDecimalRD = useObservableState(sourceAssetDecimal$, RD.initial)
 
   const targetAssetDecimal$: AssetWithDecimalLD = useMemo(
-    () => assetWithDecimal$(targetAsset),
-    [assetWithDecimal$, targetAsset]
+    () => assetWithDecimal$(targetAsset, dex),
+    [assetWithDecimal$, dex, targetAsset]
   )
 
   const targetAssetRD: AssetWithDecimalRD = useObservableState(targetAssetDecimal$, RD.initial)
@@ -577,9 +577,11 @@ const SuccessTradeRouteView: React.FC<Props> = ({
   const { isPrivate } = usePrivateData()
   const { thorchainQuery } = useThorchainQueryContext()
   const { slipTolerance$, changeSlipTolerance } = useAppContext()
+  const { dex } = useDex()
 
-  const { chain: sourceChain } = sourceAsset
-  const { chain: targetChain } = targetAsset
+  // all trades will be using THorchain
+  const { chain: sourceChain } = AssetRuneNative
+  const { chain: targetChain } = AssetRuneNative
 
   const selectedPoolAddress = useObservableState(selectedPoolAddress$, O.none)
 
@@ -603,15 +605,15 @@ const SuccessTradeRouteView: React.FC<Props> = ({
   const slipTolerance = useObservableState<SlipTolerance>(slipTolerance$, getStoredSlipTolerance())
 
   const sourceAssetDecimal$: AssetWithDecimalLD = useMemo(
-    () => assetWithDecimal$(sourceAsset),
-    [assetWithDecimal$, sourceAsset]
+    () => assetWithDecimal$(sourceAsset, dex),
+    [assetWithDecimal$, dex, sourceAsset]
   )
 
   const sourceAssetRD: AssetWithDecimalRD = useObservableState(sourceAssetDecimal$, RD.initial)
 
   const targetAssetDecimal$: AssetWithDecimalLD = useMemo(
-    () => assetWithDecimal$(targetAsset),
-    [assetWithDecimal$, targetAsset]
+    () => assetWithDecimal$(targetAsset, dex),
+    [assetWithDecimal$, dex, targetAsset]
   )
 
   const targetAssetRD: AssetWithDecimalRD = useObservableState(targetAssetDecimal$, RD.initial)
@@ -775,22 +777,22 @@ const SuccessTradeRouteView: React.FC<Props> = ({
     [intl, reloadPools]
   )
 
-  const [tradeAccountBalanceRD] = useObservableState(() => {
-    return FP.pipe(
-      oSourceKeystoreAddress, // Use the option type directly
+  const [tradeAccountBalanceRD, setTradeAccountBalanceRD] = useState<RD.RemoteData<Error, TradeAccount[]>>(RD.pending)
+
+  useEffect(() => {
+    FP.pipe(
+      oSourceKeystoreAddress,
       O.fold(
-        () => Rx.of(RD.initial), // Case where `oSourceKeystoreAddress` is `None`
-        (address) =>
-          FP.pipe(
-            O.some(address), // Pass the address directly into the second pipe
-            O.fold(
-              () => Rx.of(RD.initial), // Case where `address` is `None`
-              (address) => getTradeAccount$(address, sourceWalletType) // Case where `address` is `Some`
-            )
-          )
+        () => setTradeAccountBalanceRD(RD.initial),
+        (address) => {
+          setTradeAccountBalanceRD(RD.pending)
+          getTradeAccount$(address, sourceWalletType).subscribe((result) => {
+            setTradeAccountBalanceRD(result)
+          })
+        }
       )
     )
-  }, RD.pending)
+  }, [getTradeAccount$, oSourceKeystoreAddress, sourceWalletType])
 
   const { validateSwapAddress } = useValidateAddress(targetChain)
   return (

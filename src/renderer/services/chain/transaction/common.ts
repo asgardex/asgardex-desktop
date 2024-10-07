@@ -238,7 +238,8 @@ export const sendPoolTx$ = ({
   feeOption = DEFAULT_FEE_OPTION,
   dex
 }: SendPoolTxParams): TxHashLD => {
-  const { chain } = asset.type === AssetType.SYNTH ? dex.asset : asset
+  const { chain } =
+    asset.type === AssetType.SYNTH ? dex.asset : asset.type === AssetType.TRADE ? { chain: THORChain } : asset
 
   if (!isSupportedChain(chain)) return txFailure$(`${chain} is not enabled`)
 

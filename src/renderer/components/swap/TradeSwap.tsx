@@ -351,7 +351,7 @@ export const TradeSwap = ({
   ): O.Option<TradeAccount> => {
     return FP.pipe(
       tradeAccountBalances,
-      RD.toOption, // Convert RemoteData to Option<TradeAccount[]>
+      RD.toOption,
       O.chain((accounts) =>
         FP.pipe(
           accounts,
@@ -393,8 +393,10 @@ export const TradeSwap = ({
     () =>
       FP.pipe(
         oSourceAssetWB,
-        O.map(({ amount }) => amount),
-        O.getOrElse(() => baseAmount(0, sourceAssetDecimal))
+        O.map(({ amount }) => {
+          return amount
+        }),
+        O.getOrElse(() => baseAmount(0, sourceAssetDecimal)) // Fallback if None
       ),
     [oSourceAssetWB, sourceAssetDecimal]
   )
@@ -506,7 +508,7 @@ export const TradeSwap = ({
   const [swapFeesRD] = useObservableState<SwapFeesRD>(() => {
     return FP.pipe(
       fees$({
-        inAsset: sourceAsset,
+        inAsset: sourceAsset.type === AssetType.TRADE ? AssetRuneNative : sourceAsset,
         memo: swapMemo,
         outAsset: targetAsset
       }),
@@ -1226,7 +1228,7 @@ export const TradeSwap = ({
   ])
 
   /**
-   * Selectable source assets to swap from.
+   * Selectable source Trade assets to swap from.
    *
    * Based on users balances.
    * Zero balances are ignored.
@@ -1244,10 +1246,8 @@ export const TradeSwap = ({
             FP.pipe(
               balances,
               A.map(({ asset }) => asset),
-              // Remove target assets from source list
               A.filter((asset) => !eqAsset.equals(asset, targetAsset)),
-              // Merge duplications
-              (assets) => unionAssets(assets)(assets)
+              (assets) => unionAssets(assets)([...assets, AssetRuneNative])
             )
         )
       ),
@@ -1255,7 +1255,7 @@ export const TradeSwap = ({
   )
 
   /**
-   * Selectable target assets to swap to.
+   * Selectable target trade assets to swap to.
    *
    * Based on available pool assets.
    * Duplications of assets are merged.
@@ -1264,23 +1264,21 @@ export const TradeSwap = ({
     (): AnyAsset[] =>
       FP.pipe(
         poolAssets,
-        A.chain((asset) =>
-          isRuneNativeAsset(asset)
-            ? [asset]
-            : [
-                asset,
-                {
+        A.map(
+          (asset) =>
+            eqAsset.equals(asset, AssetRuneNative)
+              ? asset
+              : ({
                   ...asset,
-                  type: AssetType.TRADE,
-                  synth: true
-                } as TradeAsset
-              ]
+                  type: AssetType.TRADE
+                } as TradeAsset) // Convert other assets to TradeAsset
         ),
         A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
         (assets) => unionAssets(assets)(assets)
       ),
     [poolAssets, sourceAsset]
   )
+
   type ModalState = 'swap' | 'approve' | 'none'
   const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
   const [showLedgerModal, setShowLedgerModal] = useState<ModalState>('none')
