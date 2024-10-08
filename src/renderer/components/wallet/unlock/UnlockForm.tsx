@@ -220,6 +220,7 @@ export const UnlockForm: React.FC<Props> = (props): JSX.Element => {
             </BorderButton>
             <div className="flex w-full flex-col items-center border-t border-solid border-gray1 dark:border-gray0d">
               <div className="flex w-full flex-col justify-between space-y-3 pt-4">
+                {/* TODO: update locale */}
                 <h2 className="mb-2 w-full text-11 text-gray2 dark:text-gray2d">Don&apos;t you have a wallet yet?</h2>
                 <BorderButton
                   className="mr-20px w-full min-w-[200px] sm:mb-0"
