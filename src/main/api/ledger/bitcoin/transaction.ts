@@ -1,5 +1,5 @@
 import Transport from '@ledgerhq/hw-transport'
-import { AssetBTC, ClientLedger } from '@xchainjs/xchain-bitcoin'
+import { AddressFormat, AssetBTC, ClientLedger, tapRootDerivationPaths } from '@xchainjs/xchain-bitcoin'
 import { FeeRate, Network, TxHash } from '@xchainjs/xchain-client'
 import { Address, BaseAmount } from '@xchainjs/xchain-util'
 import * as E from 'fp-ts/lib/Either'
@@ -20,7 +20,8 @@ export const send = async ({
   amount,
   memo,
   walletAccount,
-  walletIndex
+  walletIndex,
+  addressFormat = AddressFormat.P2WPKH
 }: {
   transport: Transport
   network: Network
@@ -31,6 +32,7 @@ export const send = async ({
   memo?: string
   walletAccount: number
   walletIndex: number
+  addressFormat?: AddressFormat
 }): Promise<E.Either<LedgerError, TxHash>> => {
   if (!sender) {
     return E.left({
@@ -42,7 +44,9 @@ export const send = async ({
     const clientLedger = new ClientLedger({
       transport,
       ...btcInitParams,
-      rootDerivationPaths: getDerivationPaths(walletAccount, network),
+      addressFormat,
+      rootDerivationPaths:
+        addressFormat === AddressFormat.P2TR ? tapRootDerivationPaths : getDerivationPaths(walletAccount, network),
       network: network
     })
     const txHash = await clientLedger.transfer({ walletIndex, asset: AssetBTC, recipient, amount, memo, feeRate })

@@ -1,5 +1,12 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { AssetBTC, BTCChain, Client as BitcoinClient, defaultBTCParams } from '@xchainjs/xchain-bitcoin'
+import {
+  AddressFormat,
+  AssetBTC,
+  BTCChain,
+  Client as BitcoinClient,
+  defaultBTCParams,
+  tapRootDerivationPaths
+} from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import {
   BitgoProvider,
@@ -95,13 +102,16 @@ const clientState$: ClientState$ = FP.pipe(
       Rx.of(
         FP.pipe(
           getPhrase(keystore),
-          O.map<string, ClientState>((phrase) => {
+          O.map<string, ClientState>((phrase, addressFormat = AddressFormat.P2WPKH) => {
             try {
               const btcInitParams = {
                 ...defaultBTCParams,
                 phrase: phrase,
                 network: network,
                 dataProviders: [BlockcypherDataProviders, HaskoinDataProviders, BitgoProviders],
+                addressFormat,
+                rootDerivationPaths:
+                  addressFormat === AddressFormat.P2TR ? tapRootDerivationPaths : defaultBTCParams.rootDerivationPaths,
                 feeBounds: {
                   lower: LOWER_FEE_BOUND,
                   upper: UPPER_FEE_BOUND
