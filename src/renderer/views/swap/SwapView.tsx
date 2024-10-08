@@ -645,7 +645,6 @@ const SuccessTradeRouteView: React.FC<Props> = ({
         O.getOrElse<SwapRouteTargetWalletType>(() => 'custom')
       )
       const recipient = FP.pipe(oRecipientAddress, O.toUndefined)
-
       const path = swap.path({
         source: assetToString(source),
         sourceWalletType,
@@ -993,7 +992,7 @@ export const SwapView: React.FC = (): JSX.Element => {
         />
       ),
       ([sourceAsset, targetAsset]) =>
-        sourceAsset.type !== AssetType.TRADE ? (
+        sourceAsset.type !== AssetType.TRADE && targetAsset.type !== AssetType.TRADE ? (
           <SuccessRouteView
             sourceAsset={sourceAsset}
             targetAsset={targetAsset}

@@ -352,6 +352,20 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           )
         )
       }
+      if (isRuneNativeAsset(asset) && deepestPoolAsset && dex.chain !== MAYAChain) {
+        actions.push(
+          createAction('common.trade', () =>
+            navigate(
+              poolsRoutes.swap.path({
+                source: assetToString(asset),
+                target: `${deepestPoolAsset.chain}~${deepestPoolAsset.symbol}`,
+                sourceWalletType: walletType,
+                targetWalletType: DEFAULT_WALLET_TYPE
+              })
+            )
+          )
+        )
+      }
 
       if (isCacaoAsset(asset) && deepestPoolAsset && dex.chain !== THORChain) {
         actions.push(

@@ -231,7 +231,7 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
           showHeader={false}
           dataSource={sortedTableData}
           loading={loading}
-          rowKey={({ asset }) => `${asset.chain}.${asset.symbol}`}
+          rowKey={({ asset, walletType }) => `${asset.chain}.${asset.symbol}.${walletType}`}
           columns={columns}
           onRow={onRowHandler}
         />
@@ -240,30 +240,56 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
     [columns, onRowHandler]
   )
 
-  const renderBalances = useCallback(
-    ({ balancesRD, index }: { balancesRD: RD.RemoteData<ApiError, TradeAccount[]>; index: number }) => {
+  const renderGroupedBalances = useCallback(
+    ({ balancesRD }: { balancesRD: RD.RemoteData<ApiError, TradeAccount[]> }) => {
       return FP.pipe(
         balancesRD,
         RD.fold(
           () => renderAssetsTable({ tableData: [], loading: true }),
-          () => {
-            const data = previousAssetsTableData.current[index] ?? []
-            return renderAssetsTable({ tableData: data, loading: true })
-          },
-          ({ msg }: ApiError) => {
-            return <ErrorView title={msg} />
-          },
+          () => renderAssetsTable({ tableData: previousAssetsTableData.current[0] ?? [], loading: true }),
+          (error) => <ErrorView title={error.msg} />,
           (tradeAccounts) => {
-            const tableData = tradeAccounts.map((account) => ({
-              asset: account.asset,
-              amount: account.units,
-              walletAddress: account.owner,
-              walletType: account.walletType,
-              walletIndex: 0,
-              walletAccount: 0,
-              hdMode: DEFAULT_EVM_HD_MODE
-            }))
-            return renderAssetsTable({ tableData, loading: false })
+            // Filter accounts by walletType
+            const keystoreAccounts = tradeAccounts.filter((account) => account.walletType === 'keystore')
+            const ledgerAccounts = tradeAccounts.filter((account) => account.walletType === 'ledger')
+
+            return (
+              <>
+                {keystoreAccounts.length > 0 && (
+                  <div key="keystore">
+                    {renderAssetsTable({
+                      tableData: keystoreAccounts.map((account) => ({
+                        asset: account.asset,
+                        amount: account.units,
+                        walletAddress: account.owner,
+                        walletType: account.walletType,
+                        walletIndex: 0,
+                        walletAccount: 0,
+                        hdMode: DEFAULT_EVM_HD_MODE
+                      })),
+                      loading: false
+                    })}
+                  </div>
+                )}
+
+                {ledgerAccounts.length > 0 && (
+                  <div key="ledger">
+                    {renderAssetsTable({
+                      tableData: ledgerAccounts.map((account) => ({
+                        asset: account.asset,
+                        amount: account.units,
+                        walletAddress: account.owner,
+                        walletType: account.walletType,
+                        walletIndex: 0,
+                        walletAccount: 0,
+                        hdMode: DEFAULT_EVM_HD_MODE
+                      })),
+                      loading: false
+                    })}
+                  </div>
+                )}
+              </>
+            )
           }
         )
       )
@@ -335,12 +361,12 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
             <Styled.HeaderLabel className="ml-5">
               {intl.formatMessage({ id: 'common.tradeAccount' })}
             </Styled.HeaderLabel>
-            {renderBalances({ balancesRD: tradeAccountBalances, index: 0 })}
+            {renderGroupedBalances({ balancesRD: tradeAccountBalances })}
           </>
         )}
       </Panel>
     )
-  }, [tradeAccountBalances, intl, hidePrivateData, disableRefresh, renderBalances, handleRefreshClick])
+  }, [tradeAccountBalances, intl, hidePrivateData, disableRefresh, renderGroupedBalances, handleRefreshClick])
 
   return (
     <>
