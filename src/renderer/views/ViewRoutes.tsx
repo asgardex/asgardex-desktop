@@ -7,6 +7,7 @@ import * as playgroundRoutes from '../routes/playground'
 import * as poolsRoutes from '../routes/pools'
 import * as lendingRoutes from '../routes/pools/lending'
 import * as saversRoutes from '../routes/pools/savers'
+import * as portfolioRoutes from '../routes/portfolio'
 import * as walletRoutes from '../routes/wallet'
 import { AppSettings } from './app/AppSettings'
 import { DepositView } from './deposit/DepositView'
@@ -26,6 +27,7 @@ import { ImportsView } from './wallet/importsView'
 import { InteractView } from './wallet/Interact'
 import { NoWalletView } from './wallet/NoWalletView'
 import { PoolShareView } from './wallet/PoolShareView'
+import { PortfolioView } from './wallet/PortfolioView/PortfolioView'
 import { RunepoolView } from './wallet/RunepoolView'
 import { SaversDetailsView } from './wallet/SaversTableView'
 import { SendView } from './wallet/send'
@@ -78,6 +80,15 @@ export const ViewRoutes: React.FC<{}> = (): JSX.Element => {
         element={
           <WalletAuth>
             <DepositView />
+          </WalletAuth>
+        }
+      />
+      {/* portfolio routes */}
+      <Route
+        path={portfolioRoutes.base.template}
+        element={
+          <WalletAuth>
+            <PortfolioView />
           </WalletAuth>
         }
       />

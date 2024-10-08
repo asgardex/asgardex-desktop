@@ -6,6 +6,7 @@ const wallet: WalletMessages = {
   'wallet.name.error.empty': 'Veuillez entrer un nom pour votre portefeuille',
   'wallet.name.error.duplicated': 'Le nom existe déjà, veuillez utiliser un autre nom.',
   'wallet.name.error.rename': 'Erreur lors du changement de nom du portefeuille',
+  'wallet.nav.portfolio': 'Portfolio',
   'wallet.nav.deposits': 'Dépots',
   'wallet.nav.bonds': 'Cautions',
   'wallet.nav.poolshares': 'Quote-part',
