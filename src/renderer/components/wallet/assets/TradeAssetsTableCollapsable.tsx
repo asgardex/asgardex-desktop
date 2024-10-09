@@ -1,6 +1,5 @@
-import React, { useCallback, useMemo, useRef } from 'react'
+import React, { useCallback, useMemo } from 'react'
 
-import * as RD from '@devexperts/remote-data-ts'
 import { Balance, Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
@@ -32,13 +31,12 @@ import { hiddenString } from '../../../helpers/stringHelper'
 import { useDex } from '../../../hooks/useDex'
 import * as poolsRoutes from '../../../routes/pools'
 import { PoolsDataMap } from '../../../services/midgard/types'
-import { MimirHaltRD, TradeAccount, TradeAccountRD } from '../../../services/thorchain/types'
+import { MimirHaltRD, TradeAccount } from '../../../services/thorchain/types'
 import { reloadBalancesByChain } from '../../../services/wallet'
-import { ApiError, SelectedWalletAsset, WalletBalance, WalletBalances } from '../../../services/wallet/types'
+import { SelectedWalletAsset, WalletBalance, WalletBalances } from '../../../services/wallet/types'
 import { walletTypeToI18n } from '../../../services/wallet/util'
 import { PricePool } from '../../../views/pools/Pools.types'
 import { Collapse } from '../../settings/Common.styles'
-import { ErrorView } from '../../shared/error'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { ReloadButton } from '../../uielements/button'
 import { Action as ActionButtonAction, ActionButton } from '../../uielements/button/ActionButton'
@@ -54,7 +52,7 @@ export type GetPoolPriceValueFnThor = (params: {
 
 type Props = {
   disableRefresh: boolean
-  tradeAccountBalances: TradeAccountRD
+  tradeAccountBalances: TradeAccount[]
   pricePool: PricePool
   poolsData: PoolsDataMap
   poolDetails: PoolDetails
@@ -83,8 +81,6 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
     const lazyReload = reloadBalancesByChain(chain)
     lazyReload()
   }, [])
-  // store previous data of asset data to render these while reloading
-  const previousAssetsTableData = useRef<WalletBalances[]>([])
 
   const iconColumn = useMemo(
     () => ({
@@ -241,70 +237,64 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
   )
 
   const renderGroupedBalances = useCallback(
-    ({ balancesRD }: { balancesRD: RD.RemoteData<ApiError, TradeAccount[]> }) => {
-      return FP.pipe(
-        balancesRD,
-        RD.fold(
-          () => renderAssetsTable({ tableData: [], loading: true }),
-          () => renderAssetsTable({ tableData: previousAssetsTableData.current[0] ?? [], loading: true }),
-          (error) => <ErrorView title={error.msg} />,
-          (tradeAccounts) => {
-            // Filter accounts by walletType
-            const keystoreAccounts = tradeAccounts.filter((account) => account.walletType === 'keystore')
-            const ledgerAccounts = tradeAccounts.filter((account) => account.walletType === 'ledger')
+    ({ balances }: { balances: TradeAccount[] }) => {
+      if (!balances || balances.length === 0) {
+        return renderAssetsTable({ tableData: [], loading: true }) // No balances, render empty table
+      }
 
-            return (
-              <>
-                {keystoreAccounts.length > 0 && (
-                  <div key="keystore">
-                    {renderAssetsTable({
-                      tableData: keystoreAccounts.map((account) => ({
-                        asset: account.asset,
-                        amount: account.units,
-                        walletAddress: account.owner,
-                        walletType: account.walletType,
-                        walletIndex: 0,
-                        walletAccount: 0,
-                        hdMode: DEFAULT_EVM_HD_MODE
-                      })),
-                      loading: false
-                    })}
-                  </div>
-                )}
+      // Filter accounts by walletType
+      const keystoreAccounts = balances.filter((account) => account.walletType === 'keystore')
+      const ledgerAccounts = balances.filter((account) => account.walletType === 'ledger')
 
-                {ledgerAccounts.length > 0 && (
-                  <div key="ledger">
-                    {renderAssetsTable({
-                      tableData: ledgerAccounts.map((account) => ({
-                        asset: account.asset,
-                        amount: account.units,
-                        walletAddress: account.owner,
-                        walletType: account.walletType,
-                        walletIndex: 0,
-                        walletAccount: 0,
-                        hdMode: DEFAULT_EVM_HD_MODE
-                      })),
-                      loading: false
-                    })}
-                  </div>
-                )}
-              </>
-            )
-          }
-        )
+      return (
+        <>
+          {keystoreAccounts.length > 0 && (
+            <div key="keystore">
+              {renderAssetsTable({
+                tableData: keystoreAccounts.map((account) => ({
+                  asset: account.asset,
+                  amount: account.units,
+                  walletAddress: account.owner,
+                  walletType: account.walletType,
+                  walletIndex: 0,
+                  walletAccount: 0,
+                  hdMode: DEFAULT_EVM_HD_MODE
+                })),
+                loading: false
+              })}
+            </div>
+          )}
+
+          {ledgerAccounts.length > 0 && (
+            <div key="ledger">
+              {renderAssetsTable({
+                tableData: ledgerAccounts.map((account) => ({
+                  asset: account.asset,
+                  amount: account.units,
+                  walletAddress: account.owner,
+                  walletType: account.walletType,
+                  walletIndex: 0,
+                  walletAccount: 0,
+                  hdMode: DEFAULT_EVM_HD_MODE
+                })),
+                loading: false
+              })}
+            </div>
+          )}
+        </>
       )
     },
     [renderAssetsTable]
   )
 
   const renderPanel = useCallback(() => {
-    if (RD.isInitial(tradeAccountBalances)) {
+    // If tradeAccountBalances is empty, don't render anything
+    if (!tradeAccountBalances || tradeAccountBalances.length === 0) {
       return null
     }
+
     const ownerWalletType = FP.pipe(
-      tradeAccountBalances,
-      RD.toOption,
-      O.chain((accounts) => O.fromNullable(accounts[0])),
+      O.fromNullable(tradeAccountBalances[0]), // Get the first account
       O.map((account) => account.walletType),
       O.getOrElse(() => 'keystore' as WalletType)
     )
@@ -324,18 +314,14 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
             {hidePrivateData
               ? hiddenString
               : FP.pipe(
-                  tradeAccountBalances,
-                  RD.toOption,
-                  O.chain((accounts) => O.fromNullable(accounts[0])),
+                  O.fromNullable(tradeAccountBalances[0]), // Get the first account's owner
                   O.map((account) => account.owner),
                   O.getOrElse(() => '')
                 )}
           </Styled.HeaderAddress>
         </Col>
         <Col flex="0 1 auto" span={3} style={{ textAlign: 'right' }}>
-          <Styled.HeaderLabel color={RD.isFailure(tradeAccountBalances) ? 'error' : 'gray'}>
-            {RD.isSuccess(tradeAccountBalances) ? `(${tradeAccountBalances.value.length} Assets)` : ''}
-          </Styled.HeaderLabel>
+          <Styled.HeaderLabel color="gray">{`(${tradeAccountBalances.length} Assets)`}</Styled.HeaderLabel>
         </Col>
         <Col flex="0 0 12rem" span={1}>
           <div className="flex justify-end space-x-2 pr-4">
@@ -356,14 +342,8 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
 
     return (
       <Panel header={header} key="trade-account">
-        {RD.isSuccess(tradeAccountBalances) && (
-          <>
-            <Styled.HeaderLabel className="ml-5">
-              {intl.formatMessage({ id: 'common.tradeAccount' })}
-            </Styled.HeaderLabel>
-            {renderGroupedBalances({ balancesRD: tradeAccountBalances })}
-          </>
-        )}
+        <Styled.HeaderLabel className="ml-5">{intl.formatMessage({ id: 'common.tradeAccount' })}</Styled.HeaderLabel>
+        {renderGroupedBalances({ balances: tradeAccountBalances })} {/* Update to pass the balances directly */}
       </Panel>
     )
   }, [tradeAccountBalances, intl, hidePrivateData, disableRefresh, renderGroupedBalances, handleRefreshClick])

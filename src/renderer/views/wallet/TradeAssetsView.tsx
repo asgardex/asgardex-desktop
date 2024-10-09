@@ -4,7 +4,6 @@ import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { BaseAmount } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
-import { sequenceT } from 'fp-ts/lib/Apply'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
@@ -26,6 +25,7 @@ import { getPoolPriceValue, RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePrivateData } from '../../hooks/usePrivateData'
+import { TradeAccount } from '../../services/thorchain/types'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ChainBalance, SelectedWalletAsset } from '../../services/wallet/types'
 
@@ -114,53 +114,65 @@ export const TradeAssetsView: React.FC = (): JSX.Element => {
     reloadTradeAccount()
   }, [reloadTradeAccount])
 
+  const combinedTradeAccountBalances: TradeAccount[] = [
+    ...FP.pipe(
+      tradeAccountBalanceRD,
+      RD.getOrElse<Error, TradeAccount[]>(() => [])
+    ),
+    ...FP.pipe(
+      tradeAccountBalanceLedgerRD,
+      RD.getOrElse<Error, TradeAccount[]>(() => [])
+    )
+  ]
+
   const balances: Record<string, BaseAmount> = FP.pipe(
-    sequenceT(RD.remoteData)(tradeAccountBalanceRD, tradeAccountBalanceLedgerRD),
-    RD.fold(
-      () => ({}), // Initial state
-      () => ({}), // Pending state
-      () => ({}), // Error state
-      ([tradeAccountsKeystore, tradeAccountsLedger]) =>
-        FP.pipe(
-          [...tradeAccountsKeystore, ...tradeAccountsLedger], // Combine both keystore and ledger results
-          A.reduce({} as Record<string, BaseAmount>, (acc, account) => {
-            const chainKey = `${account.asset.chain}:${account.walletType}`
-            const value = getPoolPriceValue({
-              balance: { asset: account.asset, amount: account.units },
-              poolDetails,
-              pricePool: selectedPricePool
-            })
-            const amount = to1e8BaseAmount(O.getOrElse(() => ZERO_BASE_AMOUNT)(value))
+    combinedTradeAccountBalances,
+    A.reduce({} as Record<string, BaseAmount>, (acc, account) => {
+      const chainKey = `${account.asset.chain}:${account.walletType}`
 
-            if (acc[chainKey]) {
-              acc[chainKey] = acc[chainKey].plus(amount)
-            } else {
-              acc[chainKey] = amount
-            }
-            return acc
-          }),
-          (result) => (Object.keys(result).length === 0 ? { 'EMPTY:EMPTY': ZERO_BASE_AMOUNT } : result)
-        )
-    )
-  )
-  const combinedTradeAccountBalancesRD = FP.pipe(
-    sequenceT(RD.remoteData)(tradeAccountBalanceRD, tradeAccountBalanceLedgerRD),
-    RD.map(([keystoreBalances, ledgerBalances]) => [
-      ...keystoreBalances, // Include keystore balances
-      ...ledgerBalances // Include ledger balances
-    ])
+      const value = getPoolPriceValue({
+        balance: { asset: account.asset, amount: account.units },
+        poolDetails,
+        pricePool: selectedPricePool
+      })
+
+      const amount = to1e8BaseAmount(O.getOrElse(() => ZERO_BASE_AMOUNT)(value))
+
+      if (acc[chainKey]) {
+        acc[chainKey] = acc[chainKey].plus(amount)
+      } else {
+        acc[chainKey] = amount
+      }
+
+      return acc
+    }),
+    (result) => (Object.keys(result).length === 0 ? { 'EMPTY:EMPTY': ZERO_BASE_AMOUNT } : result)
   )
 
-  // Step 2: Create the errors record
-  const errors: Record<string, string> = FP.pipe(
-    sequenceT(RD.remoteData)(tradeAccountBalanceRD, tradeAccountBalanceLedgerRD),
+  const keystoreError = FP.pipe(
+    tradeAccountBalanceRD,
     RD.fold(
-      () => ({}), // Initial state
-      () => ({}), // Pending state
-      (error) => ({ general: error.message }), // Error state handling
-      () => ({}) // Success state
+      () => O.none,
+      () => O.none,
+      (error) => O.some(error.message), // If error, return the message
+      () => O.none // Success
     )
   )
+
+  const ledgerError = FP.pipe(
+    tradeAccountBalanceLedgerRD,
+    RD.fold(
+      () => O.none,
+      () => O.none,
+      (error) => O.some(error.message), // If error, return the message
+      () => O.none // Success
+    )
+  )
+
+  const errors: Record<string, string> = {
+    ...(O.isSome(keystoreError) ? { keystore: keystoreError.value } : {}),
+    ...(O.isSome(ledgerError) ? { ledger: ledgerError.value } : {})
+  }
   return (
     <>
       <div className="flex w-full justify-end pb-10px">
@@ -177,7 +189,7 @@ export const TradeAssetsView: React.FC = (): JSX.Element => {
 
       <TradeAssetsTableCollapsable
         disableRefresh={disableRefresh}
-        tradeAccountBalances={combinedTradeAccountBalancesRD}
+        tradeAccountBalances={combinedTradeAccountBalances}
         pricePool={selectedPricePool}
         poolDetails={poolDetails}
         pendingPoolDetails={pendingPoolsDetails}
