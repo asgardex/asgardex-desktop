@@ -20,6 +20,10 @@ import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts'
 
 import { EnabledChain } from '../../../../shared/utils/chain'
 import { RefreshButton } from '../../../components/uielements/button'
+import {
+  ChartColors as Colors,
+  ChartColorClassnames as ColorClassnames
+} from '../../../components/uielements/chart/utils'
 import { RadioGroup } from '../../../components/uielements/radioGroup'
 import { Table } from '../../../components/uielements/table'
 import { AssetUSDC } from '../../../const'
@@ -41,7 +45,7 @@ import { BaseAmountRD } from '../../../types'
 import * as H from '../PoolShareView.helper'
 import { getSaversTotal } from '../SaversTableView.helper'
 import * as Styled from './PortfolioView.style'
-import { Colors, ColorClassnames, PortfolioTabKey } from './utils'
+import { PortfolioTabKey } from './utils'
 
 const options = [
   { label: <ChartPieIcon className="h-6 w-6 text-text2 dark:text-text2d" />, value: PortfolioTabKey.ChartView },
