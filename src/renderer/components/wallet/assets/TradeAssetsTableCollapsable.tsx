@@ -24,7 +24,7 @@ import { DEFAULT_EVM_HD_MODE } from '../../../../shared/evm/types'
 import { chainToString, EnabledChain } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
-import { CHAIN_WEIGHTS_THOR, DEFAULT_WALLET_TYPE } from '../../../const'
+import { CHAIN_WEIGHTS_THOR } from '../../../const'
 import { isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
 import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
 import { hiddenString } from '../../../helpers/stringHelper'
@@ -177,7 +177,7 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
                   ? assetToString(targetAsset)
                   : `${targetAsset.chain}~${targetAsset.symbol}`,
                 sourceWalletType: walletType,
-                targetWalletType: DEFAULT_WALLET_TYPE,
+                targetWalletType: walletType,
                 recipient: walletAddress
               })
             )
@@ -293,19 +293,17 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
       return null
     }
 
-    const ownerWalletType = FP.pipe(
-      O.fromNullable(tradeAccountBalances[0]), // Get the first account
-      O.map((account) => account.walletType),
-      O.getOrElse(() => 'keystore' as WalletType)
-    )
+    // Group the balances by wallet type
+    const keystoreBalances = tradeAccountBalances.filter((account) => account.walletType === 'keystore')
+    const ledgerBalances = tradeAccountBalances.filter((account) => account.walletType === 'ledger')
 
-    const header = (
+    const renderHeader = (walletType: WalletType, firstAccount: O.Option<TradeAccount>) => (
       <Styled.HeaderRow className="flex w-full justify-between space-x-4">
         <Col flex="0 0 10rem" span={4}>
           <Styled.HeaderChainContainer>
             <Styled.HeaderLabel>{chainToString(THORChain)}</Styled.HeaderLabel>
-            {!isKeystoreWallet(ownerWalletType) && (
-              <Styled.WalletTypeLabel>{walletTypeToI18n(ownerWalletType, intl)}</Styled.WalletTypeLabel>
+            {!isKeystoreWallet(walletType) && (
+              <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
             )}
           </Styled.HeaderChainContainer>
         </Col>
@@ -314,14 +312,16 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
             {hidePrivateData
               ? hiddenString
               : FP.pipe(
-                  O.fromNullable(tradeAccountBalances[0]), // Get the first account's owner
+                  firstAccount,
                   O.map((account) => account.owner),
                   O.getOrElse(() => '')
                 )}
           </Styled.HeaderAddress>
         </Col>
         <Col flex="0 1 auto" span={3} style={{ textAlign: 'right' }}>
-          <Styled.HeaderLabel color="gray">{`(${tradeAccountBalances.length} Assets)`}</Styled.HeaderLabel>
+          <Styled.HeaderLabel color="gray">{`(${
+            walletType === 'keystore' ? keystoreBalances.length : ledgerBalances.length
+          } Assets)`}</Styled.HeaderLabel>
         </Col>
         <Col flex="0 0 12rem" span={1}>
           <div className="flex justify-end space-x-2 pr-4">
@@ -341,10 +341,25 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
     )
 
     return (
-      <Panel header={header} key="trade-account">
-        <Styled.HeaderLabel className="ml-5">{intl.formatMessage({ id: 'common.tradeAccount' })}</Styled.HeaderLabel>
-        {renderGroupedBalances({ balances: tradeAccountBalances })} {/* Update to pass the balances directly */}
-      </Panel>
+      <>
+        {keystoreBalances.length > 0 && (
+          <Panel header={renderHeader('keystore', O.fromNullable(keystoreBalances[0]))} key="keystore">
+            <Styled.HeaderLabel className="ml-5">
+              {intl.formatMessage({ id: 'common.tradeAccount' })}
+            </Styled.HeaderLabel>
+            {renderGroupedBalances({ balances: keystoreBalances })}
+          </Panel>
+        )}
+
+        {ledgerBalances.length > 0 && (
+          <Panel header={renderHeader('ledger', O.fromNullable(ledgerBalances[0]))} key="ledger">
+            <Styled.HeaderLabel className="ml-5">
+              {intl.formatMessage({ id: 'common.tradeAccount' })}
+            </Styled.HeaderLabel>
+            {renderGroupedBalances({ balances: ledgerBalances })}
+          </Panel>
+        )}
+      </>
     )
   }, [tradeAccountBalances, intl, hidePrivateData, disableRefresh, renderGroupedBalances, handleRefreshClick])
 
