@@ -3087,6 +3087,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.20.0":
+  version: 7.25.7
+  resolution: "@babel/runtime@npm:7.25.7"
+  dependencies:
+    regenerator-runtime: "npm:^0.14.0"
+  checksum: 10/73411fe0f1bff3a962586cef05b30f49e554b6563767e6d84f7d79d605b2c20e7fc3df291a3aebef69043181a8f893afdab9e6672557a5c2d08b9377d6f678cd
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.18.10, @babel/template@npm:^7.18.6, @babel/template@npm:^7.3.3":
   version: 7.18.10
   resolution: "@babel/template@npm:7.18.10"
@@ -6534,6 +6543,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rc-component/context@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "@rc-component/context@npm:1.4.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    rc-util: "npm:^5.27.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/77b84e6cea11d7adbf68a89a49142d96129abbe485449851702d83d34ba507872404adacee39171dd47e9000556260cc76ab327e09f3320937ecb0c7e6906caa
+  languageName: node
+  linkType: hard
+
 "@remix-run/router@npm:1.2.1":
   version: 1.2.1
   resolution: "@remix-run/router@npm:1.2.1"
@@ -7983,6 +8005,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tsconfig/node20@npm:^20.1.4":
+  version: 20.1.4
+  resolution: "@tsconfig/node20@npm:20.1.4"
+  checksum: 10/345dba8074647f6c11b8d78afa76d9c16e3436cb56a8e78fe2060014d33a09f3f4fd6ed81dc90e955d3509f926cd7fd61c6ddfd3d5a1d80758d7844f7cc3a99e
+  languageName: node
+  linkType: hard
+
 "@types/aria-query@npm:^4.2.0":
   version: 4.2.2
   resolution: "@types/aria-query@npm:4.2.2"
@@ -9389,16 +9418,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-arbitrum@npm:1.0.10":
-  version: 1.0.10
-  resolution: "@xchainjs/xchain-arbitrum@npm:1.0.10"
+"@xchainjs/xchain-arbitrum@npm:1.0.11":
+  version: 1.0.11
+  resolution: "@xchainjs/xchain-arbitrum@npm:1.0.11"
   dependencies:
     "@xchainjs/xchain-client": "npm:1.0.6"
     "@xchainjs/xchain-evm": "npm:1.0.10"
     "@xchainjs/xchain-evm-providers": "npm:1.0.8"
     "@xchainjs/xchain-util": "npm:1.0.5"
     ethers: "npm:5.7.2"
-  checksum: 10/24ecedeee9b9af00500adafc78d6230ffcc18824ed9c06facbdcfd666f171f9a65f573432d3f8b4cad47d9c7da4413bdf0ce22589439d55b7752ef6007a0dc0c
+  checksum: 10/8ea7aeca5754b2e061e787c2900cfc1f3f3d25e2f3f7435cb06973b9861cf20f0bbe68caf687650cf3dada90593db925e4510775aa6d17e4467f5df4c0bc8ce9
   languageName: node
   linkType: hard
 
@@ -9497,9 +9526,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-cosmos@npm:2.0.7":
-  version: 2.0.7
-  resolution: "@xchainjs/xchain-cosmos@npm:2.0.7"
+"@xchainjs/xchain-cosmos@npm:2.0.8":
+  version: 2.0.8
+  resolution: "@xchainjs/xchain-cosmos@npm:2.0.8"
   dependencies:
     "@cosmjs/amino": "npm:0.32.4"
     "@cosmjs/encoding": "npm:0.32.4"
@@ -9518,7 +9547,7 @@ __metadata:
     cosmjs-types: "npm:0.9.0"
     protobufjs: "npm:6.11.4"
     secp256k1: "npm:^5.0.0"
-  checksum: 10/5e971fe58c8c2621f2654cbc07abb6368f42e21c4569ee717f23a420f8b188c84c69e463a6b7408a1eaf74c6e2175a881b834cdbd0743f16f1365d84021f240a
+  checksum: 10/479d93c79af18f9159c2b4d7d5cedf396771506b9f354076fb73e6a6f2a94475f69fd9b391595ac020f24220448ff3a06bafd3c3108696555d45fcf5ea1b45b0
   languageName: node
   linkType: hard
 
@@ -10587,6 +10616,7 @@ __metadata:
     "@testing-library/react": "npm:^13.3.0"
     "@testing-library/react-hooks": "npm:^8.0.0"
     "@testing-library/user-event": "npm:^14.2.0"
+    "@tsconfig/node20": "npm:^20.1.4"
     "@types/bchaddrjs": "npm:^0.4.0"
     "@types/electron-devtools-installer": "npm:^2.2.2"
     "@types/fs-extra": "npm:^9.0.13"
@@ -10599,13 +10629,13 @@ __metadata:
     "@types/secp256k1": "npm:^4.0.6"
     "@types/styled-components": "npm:^5.1.25"
     "@types/text-encoding": "npm:^0"
-    "@xchainjs/xchain-arbitrum": "npm:1.0.10"
+    "@xchainjs/xchain-arbitrum": "npm:1.0.11"
     "@xchainjs/xchain-avax": "npm:1.0.10"
     "@xchainjs/xchain-bitcoin": "npm:1.1.2"
     "@xchainjs/xchain-bitcoincash": "npm:1.0.6"
     "@xchainjs/xchain-bsc": "npm:1.0.10"
     "@xchainjs/xchain-client": "npm:1.0.6"
-    "@xchainjs/xchain-cosmos": "npm:2.0.7"
+    "@xchainjs/xchain-cosmos": "npm:2.0.8"
     "@xchainjs/xchain-crypto": "npm:0.3.5"
     "@xchainjs/xchain-dash": "npm:1.0.6"
     "@xchainjs/xchain-doge": "npm:1.0.6"
@@ -10633,7 +10663,6 @@ __metadata:
     autoprefixer: "npm:^10.4.8"
     axios: "npm:1.7.5"
     babel-loader: "npm:^9.2.1"
-    bignumber.js: "npm:9.0.0"
     browserify-fs: "npm:^1.0.0"
     chart.js: "npm:^3.8.0"
     clsx: "npm:^2.1.1"
@@ -10676,6 +10705,7 @@ __metadata:
     prettier-plugin-tailwindcss: "npm:^0.1.13"
     process: "npm:^0.11.10"
     qrcode: "npm:^1.5.3"
+    rc-table: "npm:^7.48.0"
     react: "npm:^18.2.0"
     react-chartjs-2: "npm:^4.1.0"
     react-circular-progressbar: "npm:^2.0.4"
@@ -11453,7 +11483,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bignumber.js@npm:^9.0.0":
+"bignumber.js@npm:9.0.0":
+  version: 9.0.0
+  resolution: "bignumber.js@npm:9.0.0"
+  checksum: 10/7406d0d11dfdd2183e19be745f0d5913e3773ded5fbca2a310221e719f15fd8ec6b8d7991031a6081a6276a8e12e27d58ead60f73dcbb9d697ebe9e2dd0ad7e0
+  languageName: node
+  linkType: hard
+
+"bignumber.js@npm:^7.2.1":
+  version: 7.2.1
+  resolution: "bignumber.js@npm:7.2.1"
+  checksum: 10/9bfd02d93cba7d61607b9d52ffb3176844af5712f7f6a0530350daf7852894215fbaa8e6090a9fc841b297b39d475abb90451d3533bc939d1e96a4bfe293e226
+  languageName: node
+  linkType: hard
+
+"bignumber.js@npm:^9.1.2":
   version: 9.1.2
   resolution: "bignumber.js@npm:9.1.2"
   checksum: 10/d89b8800a987225d2c00dcbf8a69dc08e92aa0880157c851c287b307d31ceb2fc2acb0c62c3e3a3d42b6c5fcae9b004035f13eb4386e56d529d7edac18d5c9d8
@@ -24370,6 +24414,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rc-table@npm:^7.48.0":
+  version: 7.48.0
+  resolution: "rc-table@npm:7.48.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    "@rc-component/context": "npm:^1.4.0"
+    classnames: "npm:^2.2.5"
+    rc-resize-observer: "npm:^1.1.0"
+    rc-util: "npm:^5.41.0"
+    rc-virtual-list: "npm:^3.14.2"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/5f1c6fc74333f4888f9f9a28c44ee571feec23be739d78c3a00d2fc67d811fbabd802ce39294cac66e4b7f3b8d1eda18c3e9c7eef0c3f5f58cd1a7db3abf6141
+  languageName: node
+  linkType: hard
+
 "rc-table@npm:~7.25.3":
   version: 7.25.3
   resolution: "rc-table@npm:7.25.3"
@@ -24506,6 +24567,34 @@ __metadata:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
   checksum: 10/f9f16119e14ddbe39bb33f1ae7a3024126e16503debd991f08340b3a61d42c0e9bf2e5a78787e86683822320938ca22583a230dee64c9593918f5f59d823b399
+  languageName: node
+  linkType: hard
+
+"rc-util@npm:^5.27.0, rc-util@npm:^5.36.0, rc-util@npm:^5.41.0":
+  version: 5.43.0
+  resolution: "rc-util@npm:5.43.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.18.3"
+    react-is: "npm:^18.2.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/6d5be9d79182c6b4c5a033ad6517b2940d3d2ac42a8e77ef5735591d182f8236f61bc7628d61e82a122d2046ec849462f3fe57c08d3a2a20279646785c34ec4a
+  languageName: node
+  linkType: hard
+
+"rc-virtual-list@npm:^3.14.2":
+  version: 3.14.8
+  resolution: "rc-virtual-list@npm:3.14.8"
+  dependencies:
+    "@babel/runtime": "npm:^7.20.0"
+    classnames: "npm:^2.2.6"
+    rc-resize-observer: "npm:^1.0.0"
+    rc-util: "npm:^5.36.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/4f37f6adef15d5aeb15120d83ef34ecc73aae0ae274552e2062ef1d8f0b76073a3baa2fe4f7354da94e6c51920f5cc44d7a6c00cc54f80b8eff49353356e132a
   languageName: node
   linkType: hard
 
