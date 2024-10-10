@@ -165,29 +165,35 @@ export const UnlockForm: React.FC<Props> = (props): JSX.Element => {
 
   return (
     <>
-      <div className="relative flex justify-center">
+      <div className="relative mb-30px flex justify-center">
         <BackLinkButton className="absolute left-0 top-0" />
-        <h1
-          className="mb-30px
-          inline-block
-          w-full
-          text-center font-mainSemiBold uppercase text-text1 dark:text-text1d">
-          {intl.formatMessage({ id: 'wallet.unlock.label' })}
-        </h1>
       </div>
       <form className="flex flex-1 flex-col" onSubmit={handleSubmit(submitForm)}>
         <div
-          className="
-        flex h-full
+          className="flex h-full
         flex-col items-center justify-between bg-bg1 pb-[35px]
         pl-30px pr-30px pt-[45px] dark:bg-bg1d sm:pb-[70px] sm:pl-[60px] sm:pr-[60px] sm:pt-[90px]">
-          <div className="w-full">
-            <h2 className="mb-30px w-full text-center font-mainSemiBold uppercase text-text1 dark:text-text1d">
-              {intl.formatMessage({ id: 'wallet.unlock.password' })}
-            </h2>
+          <div className="w-full max-w-[320px] space-y-3">
+            <div className="flex flex-col">
+              <h1 className="mb-12px inline-block w-full font-mainSemiBold text-18 uppercase text-text1 dark:text-text1d">
+                {intl.formatMessage({ id: 'wallet.unlock.label' })}
+              </h1>
+              <h2 className="mb-30px w-full text-11 text-gray2 dark:text-gray2d">
+                {intl.formatMessage({ id: 'wallet.unlock.password' })}
+              </h2>
+            </div>
+
+            <WalletSelector
+              wallets={wallets}
+              onChange={changeWalletHandler}
+              disabled={RD.isPending(changeWalletState)}
+              className="mb-2 min-w-[200px] rounded-lg border border-solid border-gray1 dark:border-gray0d"
+              buttonClassName="rounded-lg !shadow-none !dark:shadow-none !hover:shadow-none !hover:dark:shadow-none"
+            />
             <InputPasswordTW
               id="password"
-              className="mx-auto my-0 mb-20px w-full max-w-[300px]"
+              className="mx-auto mb-20px flex h-10 w-full items-center justify-between rounded-lg border border-solid !border-gray1 pl-2 dark:!border-gray0d"
+              inputClassName="!ring-0 w-full"
               {...register('password', { required: true })}
               placeholder={intl.formatMessage({ id: 'common.password' }).toUpperCase()}
               size="normal"
@@ -195,28 +201,29 @@ export const UnlockForm: React.FC<Props> = (props): JSX.Element => {
               error={errors.password ? intl.formatMessage({ id: 'wallet.password.empty' }) : ''}
               disabled={unlocking}
             />
-            <div className="flex w-full flex-col items-center">
-              <h2 className="mt-30px w-full text-center font-mainSemiBold uppercase text-text1 dark:text-text1d">
-                {intl.formatMessage({ id: 'wallet.selected.title' })}
-              </h2>
-              <WalletSelector
-                wallets={wallets}
-                onChange={changeWalletHandler}
-                disabled={RD.isPending(changeWalletState)}
-                className="min-w-[200px]"
-              />
-              <div className="flex flex-col justify-between gap-4 p-20">
-                <FlatButton
-                  type="submit"
-                  className="mr-20px w-full min-w-[200px] sm:mb-0 sm:w-auto sm:max-w-[200px]"
-                  size="normal"
-                  color="primary"
-                  disabled={unlocking}
-                  loading={unlocking}>
-                  {intl.formatMessage({ id: 'wallet.action.unlock' })}
-                </FlatButton>
+            <FlatButton
+              type="submit"
+              className="w-full min-w-[200px] sm:mb-0"
+              size="normal"
+              color="primary"
+              disabled={unlocking}
+              loading={unlocking}>
+              {intl.formatMessage({ id: 'wallet.action.unlock' })}
+            </FlatButton>
+            <BorderButton
+              className="w-full min-w-[200px] sm:mb-0"
+              size="normal"
+              color="error"
+              onClick={showRemoveConfirm}
+              disabled={unlocking}>
+              {intl.formatMessage({ id: 'wallet.remove.label' })}
+            </BorderButton>
+            <div className="flex w-full flex-col items-center border-t border-solid border-gray1 dark:border-gray0d">
+              <div className="flex w-full flex-col justify-between space-y-3 pt-4">
+                {/* TODO: update locale */}
+                <h2 className="mb-2 w-full text-11 text-gray2 dark:text-gray2d">Don&apos;t you have a wallet yet?</h2>
                 <BorderButton
-                  className="mr-20px w-full min-w-[200px] sm:mb-0 sm:w-auto sm:max-w-[200px]"
+                  className="mr-20px w-full min-w-[200px] sm:mb-0"
                   size="normal"
                   color="primary"
                   onClick={createWalletHandler}
@@ -224,20 +231,12 @@ export const UnlockForm: React.FC<Props> = (props): JSX.Element => {
                   {intl.formatMessage({ id: 'wallet.action.create' })}
                 </BorderButton>
                 <BorderButton
-                  className="mr-20px w-full min-w-[200px] sm:mb-0 sm:w-auto sm:max-w-[200px]"
+                  className="mr-20px w-full min-w-[200px] sm:mb-0"
                   size="normal"
                   color="primary"
                   onClick={importWalletHandler}
                   disabled={unlocking}>
                   {intl.formatMessage({ id: 'wallet.action.import' })}
-                </BorderButton>
-                <BorderButton
-                  className="w-full min-w-[200px] sm:mb-0 sm:w-auto sm:max-w-[200px]"
-                  size="normal"
-                  color="error"
-                  onClick={showRemoveConfirm}
-                  disabled={unlocking}>
-                  {intl.formatMessage({ id: 'wallet.remove.label' })}
                 </BorderButton>
               </div>
 
