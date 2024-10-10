@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useEffect } from 'react'
 
-import theme from '@asgardex/asgardex-theme'
+// import theme from '@asgardex/asgardex-theme'
 import { Progress } from 'antd'
 
 import useInterval, { INACTIVE_INTERVAL } from '../../../hooks/useInterval'
@@ -14,10 +14,8 @@ export type Props = {
   maxValue?: number
   maxDuration?: number
   refunded?: boolean
-  /** Start time to count seconds (optional) Without a startTime no counter will start internally  */
   startTime?: number
   status: boolean
-  /** value for progress bar (optional)  */
   value?: number
   onChange?: (_: number) => void
   onEnd?: () => void
@@ -40,10 +38,8 @@ export const TxTimer: React.FC<Props> = (props): JSX.Element => {
 
   const [active, setActive] = useState(true)
   const [totalDuration, setTotalDuration] = useState<number>(0)
-  // internal value if value has not been set
   const [internalValue, setInternalValue] = useState<number>(0)
 
-  // Check if duration has reached the end
   const isEnd = useCallback(() => {
     if (maxSec > 0 && totalDuration >= maxSec) {
       return true
@@ -51,27 +47,20 @@ export const TxTimer: React.FC<Props> = (props): JSX.Element => {
     return (value || internalValue) >= maxValue
   }, [internalValue, maxSec, maxValue, totalDuration, value])
 
-  // Callback for counting
   const countHandler = useCallback(() => {
     if (!value) {
       setInternalValue((current) => {
-        if (current < 80) {
-          return current + 15
-        }
-        if (current < 95) {
-          return current + 1
-        }
+        if (current < 80) return current + 15
+        if (current < 95) return current + 1
         return current
       })
     }
     onChange(value || internalValue)
   }, [internalValue, onChange, value])
 
-  // Interval to inform outside world about counting
   const countInterval = startTime && active && !isEnd() ? interval : INACTIVE_INTERVAL
   useInterval(countHandler, countInterval)
 
-  // Callback for counting time differences
   const countSecHandler = useCallback(() => {
     const diff = (Date.now() - startTime) / 1000
     setTotalDuration(diff)
@@ -103,29 +92,28 @@ export const TxTimer: React.FC<Props> = (props): JSX.Element => {
     }
   }, [active, isEnd])
 
-  const totalDurationString =
-    totalDuration < 10 ? Number(totalDuration).toFixed(1) : Math.round(totalDuration).toString()
-
+  const hide = isEnd() && !active
+  const totalDurationString = totalDuration < 10 ? totalDuration.toFixed(1) : Math.round(totalDuration).toString()
   const progressBarValue = value || internalValue
 
   return (
-    <>
-      <Styled.TxTimerWrapper className={`txTimer-wrapper ${className}`}>
-        <div className="timerchart-icon">
-          {!active && <Styled.IconWrapper>{!refunded ? <Styled.SuccessIcon /> : <RefundIcon />}</Styled.IconWrapper>}
-        </div>
-        {active && (
-          <Progress
-            type="circle"
-            percent={(progressBarValue / maxValue) * 100}
-            format={() => `${totalDurationString}s`}
-            strokeWidth={7}
-            strokeColor={theme.dark.palette.primary[0] || '#23DCC8'}
-            trailColor="rgba(242, 243, 243, 0.5)"
-            width={120}
-          />
-        )}
-      </Styled.TxTimerWrapper>
-    </>
+    <Styled.TxTimerWrapper className={`txTimer-wrapper ${className}`}>
+      <div className="timerchart-icon">
+        {!active && <Styled.IconWrapper>{!refunded ? <Styled.SuccessIcon /> : <RefundIcon />}</Styled.IconWrapper>}
+      </div>
+      {active && (
+        <Progress
+          type="circle"
+          percent={(progressBarValue / maxValue) * 100}
+          format={() => `${totalDurationString}s`}
+          strokeColor="#23DCC8"
+          strokeWidth={7}
+          strokeLinecap="round"
+          trailColor="rgba(242, 243, 243, 0.5)"
+          className={hide ? 'hide' : 'timerchart-circular-progressbar'}
+          width={120}
+        />
+      )}
+    </Styled.TxTimerWrapper>
   )
 }
