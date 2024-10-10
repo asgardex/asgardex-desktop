@@ -1,6 +1,6 @@
 import { FeeOption, Network } from '@xchainjs/xchain-client'
 import { AnyAsset, assetFromString, BaseAmount, Chain, isValidAsset } from '@xchainjs/xchain-util'
-import { BigNumber } from 'ethers'
+import BigNumber from 'bignumber.js'
 import * as IOG from 'io-ts/Guard'
 
 import { EvmHDMode } from '../evm/types'
