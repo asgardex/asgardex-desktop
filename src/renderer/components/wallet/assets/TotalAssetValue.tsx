@@ -52,6 +52,12 @@ export const TotalAssetValue: React.FC<Props> = (props): JSX.Element => {
     return errorMessages // Return the array of React elements directly.
   }, [errorsByChain])
 
+  const isChartVisible = useMemo(() => {
+    const total = chartData.reduce((acc, { value }) => acc + value, 0)
+
+    return total === 0 ? false : true
+  }, [chartData])
+
   const totalBalanceDisplay = useMemo(() => {
     const total = chartData.reduce((acc, { value }) => acc + value, 0)
     const totalCyrpto = new CryptoAmount(assetToBase(assetAmount(total, 6)), AssetUSDC)
@@ -63,7 +69,7 @@ export const TotalAssetValue: React.FC<Props> = (props): JSX.Element => {
           trimZeros: true,
           decimal: 0
         })
-    return <div className="text-[28px] text-text2 hover:text-turquoise dark:text-text2d">{`${formattedTotal}`}</div>
+    return <div className="text-[28px] text-text2 hover:text-turquoise dark:text-text2d">{formattedTotal}</div>
   }, [chartData, hidePrivateData])
   const filteredChartData = chartData.filter((entry) => entry.value !== 0.0)
 
@@ -78,14 +84,15 @@ export const TotalAssetValue: React.FC<Props> = (props): JSX.Element => {
         className="flex justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
         onClick={() => setShowDetails((current) => !current)}>
         <div className="m-4">{totalBalanceDisplay}</div>
-        {showDetails ? (
-          <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
-        ) : (
-          <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
-        )}
+        {isChartVisible &&
+          (showDetails ? (
+            <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+          ) : (
+            <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
+          ))}
       </BaseButton>
       {hasErrors && chainErrors}
-      {showDetails && (
+      {isChartVisible && showDetails && (
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
             <Pie

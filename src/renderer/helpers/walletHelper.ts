@@ -6,11 +6,13 @@ import * as O from 'fp-ts/Option'
 import { IntlShape } from 'react-intl'
 
 import { Dex } from '../../shared/api/types'
+import { DEFAULT_EVM_HD_MODE } from '../../shared/evm/types'
 import { optionFromNullableString } from '../../shared/utils/fp'
 import { isLedgerWallet, isWalletType } from '../../shared/utils/guard'
 import { WalletAddress, WalletType } from '../../shared/wallet/types'
 import { ZERO_ASSET_AMOUNT } from '../const'
 import { WalletBalances } from '../services/clients'
+import { TradeAccount } from '../services/thorchain/types'
 import { NonEmptyWalletBalances, WalletBalance } from '../services/wallet/types'
 import { isLtcAsset, isRuneNativeAsset, isMayaAsset } from './assetHelper'
 import {
@@ -73,6 +75,21 @@ export const getWalletBalanceByAssetAndWalletType = ({
       )
     )
   )
+
+export const transformTradeAccountToWalletBalance = (
+  tradeAccount: TradeAccount,
+  walletType: WalletType,
+  walletAccount: number,
+  walletIndex: number
+): WalletBalance => ({
+  asset: tradeAccount.asset,
+  amount: tradeAccount.units,
+  walletAddress: tradeAccount.owner,
+  walletType,
+  walletAccount,
+  walletIndex,
+  hdMode: DEFAULT_EVM_HD_MODE
+})
 
 export const getWalletBalanceByAddress = (
   balances: NonEmptyWalletBalances,

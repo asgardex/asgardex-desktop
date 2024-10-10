@@ -1,5 +1,5 @@
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { AnyAsset, AssetType, isSynthAsset } from '@xchainjs/xchain-util'
+import { AnyAsset, AssetType, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as RxOp from 'rxjs/operators'
@@ -22,11 +22,15 @@ import { poolOutboundFee$, poolInboundFee$ } from './common'
 export const getZeroSwapFees = ({ inAsset, outAsset }: { inAsset: AnyAsset; outAsset: AnyAsset }): SwapFees => ({
   inFee: {
     amount: ZERO_BASE_AMOUNT,
-    asset: getChainAsset(inAsset.type === AssetType.SYNTH ? THORChain : inAsset.chain)
+    asset: getChainAsset(
+      inAsset.type === AssetType.SYNTH || inAsset.type === AssetType.TRADE ? THORChain : inAsset.chain
+    )
   },
   outFee: {
     amount: ZERO_BASE_AMOUNT,
-    asset: getChainAsset(inAsset.type === AssetType.SYNTH ? THORChain : outAsset.chain)
+    asset: getChainAsset(
+      inAsset.type === AssetType.SYNTH || inAsset.type === AssetType.TRADE ? THORChain : outAsset.chain
+    )
   }
 })
 
@@ -46,7 +50,14 @@ const reloadSwapFees = (params: SwapFeesParams) => {
   }
 
   // (1) Check reload of fees for RUNE
-  if (isRuneNativeAsset(inAsset) || isRuneNativeAsset(outAsset) || isSynthAsset(inAsset) || isSynthAsset(outAsset)) {
+  if (
+    isRuneNativeAsset(inAsset) ||
+    isRuneNativeAsset(outAsset) ||
+    isSynthAsset(inAsset) ||
+    isSynthAsset(outAsset) ||
+    isTradeAsset(inAsset) ||
+    isTradeAsset(outAsset)
+  ) {
     THOR.reloadFees()
   }
 

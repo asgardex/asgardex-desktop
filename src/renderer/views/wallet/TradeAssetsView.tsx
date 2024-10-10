@@ -8,13 +8,12 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
-import { useNavigate } from 'react-router-dom'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { WalletType } from '../../../shared/wallet/types'
 import { RefreshButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
-import type { AssetAction } from '../../components/wallet/assets/AssetsTableCollapsable'
 import { TotalAssetValue } from '../../components/wallet/assets/TotalAssetValue'
 import { TradeAssetsTableCollapsable } from '../../components/wallet/assets/TradeAssetsTableCollapsable'
 import { ZERO_BASE_AMOUNT } from '../../const'
@@ -26,12 +25,12 @@ import { getPoolPriceValue, RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePrivateData } from '../../hooks/usePrivateData'
-import * as walletRoutes from '../../routes/wallet'
+import { TradeAccount } from '../../services/thorchain/types'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ChainBalance, SelectedWalletAsset } from '../../services/wallet/types'
 
 export const TradeAssetsView: React.FC = (): JSX.Element => {
-  const navigate = useNavigate()
+  // const navigate = useNavigate()
   const intl = useIntl()
 
   const { balancesState$, setSelectedAsset } = useWalletContext()
@@ -56,34 +55,38 @@ export const TradeAssetsView: React.FC = (): JSX.Element => {
     )
   }, [chainBalances$])
 
-  const [tradeAccountBalanceRD] = useObservableState(() => {
-    return FP.pipe(
-      thorchainBalance$,
-      RxOp.switchMap(
-        O.fold(
-          () => Rx.of(RD.initial),
-          (balances) =>
-            FP.pipe(
-              balances,
-              A.findFirst((balance) => balance.chain === THORChain),
-              O.fold(
-                () => Rx.of(RD.initial),
-                ({ walletAddress, walletType }) =>
-                  FP.pipe(
-                    walletAddress,
-                    O.fold(
-                      () => Rx.of(RD.initial),
-                      (address) => {
-                        return getTradeAccount$(address, walletType)
-                      }
+  const useTradeAccountBalanceRD = (walletType: WalletType) => {
+    return useObservableState(() => {
+      return FP.pipe(
+        thorchainBalance$,
+        RxOp.switchMap(
+          O.fold(
+            () => Rx.of(RD.initial),
+            (balances) =>
+              FP.pipe(
+                balances,
+                A.findFirst((balance) => balance.walletType === walletType),
+                O.fold(
+                  () => Rx.of(RD.initial),
+                  ({ walletAddress }) =>
+                    FP.pipe(
+                      walletAddress,
+                      O.fold(
+                        () => Rx.of(RD.initial),
+                        (address) => getTradeAccount$(address, walletType) // Fetch trade account based on address and walletType
+                      )
                     )
-                  )
+                )
               )
-            )
+          )
         )
       )
-    )
-  }, RD.pending)
+    }, RD.pending)
+  }
+
+  // Create the observable streams for both 'keystore' and 'ledger'
+  const [tradeAccountBalanceRD] = useTradeAccountBalanceRD('keystore')
+  const [tradeAccountBalanceLedgerRD] = useTradeAccountBalanceRD('ledger')
 
   const [{ loading: loadingBalances }] = useObservableState(
     () => balancesState$(DEFAULT_BALANCES_FILTER),
@@ -97,27 +100,9 @@ export const TradeAssetsView: React.FC = (): JSX.Element => {
   const selectAssetHandler = useCallback(
     (selectedAsset: SelectedWalletAsset) => {
       setSelectedAsset(O.some(selectedAsset))
-      navigate(walletRoutes.assetDetail.path())
     },
-    [navigate, setSelectedAsset]
+    [setSelectedAsset]
   )
-
-  const assetHandler = useCallback(
-    (selectedAsset: SelectedWalletAsset, action: AssetAction) => {
-      setSelectedAsset(O.some(selectedAsset))
-      console.log(selectedAsset)
-      switch (action) {
-        case 'send':
-          navigate(walletRoutes.send.path())
-          break
-        case 'deposit':
-          navigate(walletRoutes.interact.path({ interactType: 'bond' }))
-          break
-      }
-    },
-    [navigate, setSelectedAsset]
-  )
-
   const poolDetails = useMemo(() => RD.toNullable(poolsRD)?.poolDetails ?? [], [poolsRD])
   const poolsData = useMemo(() => RD.toNullable(poolsRD)?.poolsData ?? {}, [poolsRD])
   const pendingPoolsDetails = useMemo(() => RD.toNullable(pendingPoolsThorRD)?.poolDetails ?? [], [pendingPoolsThorRD])
@@ -129,44 +114,65 @@ export const TradeAssetsView: React.FC = (): JSX.Element => {
     reloadTradeAccount()
   }, [reloadTradeAccount])
 
-  const balances: Record<string, BaseAmount> = FP.pipe(
-    tradeAccountBalanceRD,
-    RD.fold(
-      () => ({}),
-      () => ({}),
-      () => ({}),
-      (tradeAccounts) =>
-        FP.pipe(
-          tradeAccounts,
-          A.reduce({} as Record<string, BaseAmount>, (acc, account) => {
-            const chainKey = `${account.asset.chain}:${account.walletType}`
-            const value = getPoolPriceValue({
-              balance: { asset: account.asset, amount: account.units },
-              poolDetails,
-              pricePool: selectedPricePool
-            })
-            const amount = to1e8BaseAmount(O.getOrElse(() => ZERO_BASE_AMOUNT)(value))
+  const combinedTradeAccountBalances: TradeAccount[] = [
+    ...FP.pipe(
+      tradeAccountBalanceRD,
+      RD.getOrElse<Error, TradeAccount[]>(() => [])
+    ),
+    ...FP.pipe(
+      tradeAccountBalanceLedgerRD,
+      RD.getOrElse<Error, TradeAccount[]>(() => [])
+    )
+  ]
 
-            if (acc[chainKey]) {
-              acc[chainKey] = acc[chainKey].plus(amount)
-            } else {
-              acc[chainKey] = amount
-            }
-            return acc
-          }),
-          (result) => (Object.keys(result).length === 0 ? { 'EMPTY:EMPTY': ZERO_BASE_AMOUNT } : result)
-        )
-    )
+  const balances: Record<string, BaseAmount> = FP.pipe(
+    combinedTradeAccountBalances,
+    A.reduce({} as Record<string, BaseAmount>, (acc, account) => {
+      const chainKey = `${account.asset.chain}:${account.walletType}`
+
+      const value = getPoolPriceValue({
+        balance: { asset: account.asset, amount: account.units },
+        poolDetails,
+        pricePool: selectedPricePool
+      })
+
+      const amount = to1e8BaseAmount(O.getOrElse(() => ZERO_BASE_AMOUNT)(value))
+
+      if (acc[chainKey]) {
+        acc[chainKey] = acc[chainKey].plus(amount)
+      } else {
+        acc[chainKey] = amount
+      }
+
+      return acc
+    }),
+    (result) => (Object.keys(result).length === 0 ? { 'EMPTY:EMPTY': ZERO_BASE_AMOUNT } : result)
   )
-  const errors: Record<string, string> = FP.pipe(
+
+  const keystoreError = FP.pipe(
     tradeAccountBalanceRD,
     RD.fold(
-      () => ({}),
-      () => ({}),
-      (error) => ({ error: error.message }),
-      () => ({})
+      () => O.none,
+      () => O.none,
+      (error) => O.some(error.message), // If error, return the message
+      () => O.none // Success
     )
   )
+
+  const ledgerError = FP.pipe(
+    tradeAccountBalanceLedgerRD,
+    RD.fold(
+      () => O.none,
+      () => O.none,
+      (error) => O.some(error.message), // If error, return the message
+      () => O.none // Success
+    )
+  )
+
+  const errors: Record<string, string> = {
+    ...(O.isSome(keystoreError) ? { keystore: keystoreError.value } : {}),
+    ...(O.isSome(ledgerError) ? { ledger: ledgerError.value } : {})
+  }
   return (
     <>
       <div className="flex w-full justify-end pb-10px">
@@ -183,13 +189,12 @@ export const TradeAssetsView: React.FC = (): JSX.Element => {
 
       <TradeAssetsTableCollapsable
         disableRefresh={disableRefresh}
-        tradeAccountBalances={tradeAccountBalanceRD}
+        tradeAccountBalances={combinedTradeAccountBalances}
         pricePool={selectedPricePool}
         poolDetails={poolDetails}
         pendingPoolDetails={pendingPoolsDetails}
         poolsData={poolsData}
         selectAssetHandler={selectAssetHandler}
-        assetHandler={assetHandler}
         mimirHalt={mimirHaltRD}
         network={network}
         hidePrivateData={isPrivate}
