@@ -3087,6 +3087,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.20.0":
+  version: 7.25.7
+  resolution: "@babel/runtime@npm:7.25.7"
+  dependencies:
+    regenerator-runtime: "npm:^0.14.0"
+  checksum: 10/73411fe0f1bff3a962586cef05b30f49e554b6563767e6d84f7d79d605b2c20e7fc3df291a3aebef69043181a8f893afdab9e6672557a5c2d08b9377d6f678cd
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.18.10, @babel/template@npm:^7.18.6, @babel/template@npm:^7.3.3":
   version: 7.18.10
   resolution: "@babel/template@npm:7.18.10"
@@ -6585,6 +6594,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rc-component/context@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "@rc-component/context@npm:1.4.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    rc-util: "npm:^5.27.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/77b84e6cea11d7adbf68a89a49142d96129abbe485449851702d83d34ba507872404adacee39171dd47e9000556260cc76ab327e09f3320937ecb0c7e6906caa
+  languageName: node
+  linkType: hard
+
 "@remix-run/router@npm:1.2.1":
   version: 1.2.1
   resolution: "@remix-run/router@npm:1.2.1"
@@ -9424,16 +9446,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-arbitrum@npm:1.0.10":
-  version: 1.0.10
-  resolution: "@xchainjs/xchain-arbitrum@npm:1.0.10"
+"@xchainjs/xchain-arbitrum@npm:1.0.11":
+  version: 1.0.11
+  resolution: "@xchainjs/xchain-arbitrum@npm:1.0.11"
   dependencies:
     "@xchainjs/xchain-client": "npm:1.0.6"
     "@xchainjs/xchain-evm": "npm:1.0.10"
     "@xchainjs/xchain-evm-providers": "npm:1.0.8"
     "@xchainjs/xchain-util": "npm:1.0.5"
     ethers: "npm:5.7.2"
-  checksum: 10/24ecedeee9b9af00500adafc78d6230ffcc18824ed9c06facbdcfd666f171f9a65f573432d3f8b4cad47d9c7da4413bdf0ce22589439d55b7752ef6007a0dc0c
+  checksum: 10/8ea7aeca5754b2e061e787c2900cfc1f3f3d25e2f3f7435cb06973b9861cf20f0bbe68caf687650cf3dada90593db925e4510775aa6d17e4467f5df4c0bc8ce9
   languageName: node
   linkType: hard
 
@@ -9513,9 +9535,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-cosmos-sdk@npm:1.0.7":
-  version: 1.0.7
-  resolution: "@xchainjs/xchain-cosmos-sdk@npm:1.0.7"
+"@xchainjs/xchain-cosmos-sdk@npm:1.0.8":
+  version: 1.0.8
+  resolution: "@xchainjs/xchain-cosmos-sdk@npm:1.0.8"
   dependencies:
     "@cosmjs/crypto": "npm:0.32.4"
     "@cosmjs/encoding": "npm:0.32.4"
@@ -9528,13 +9550,13 @@ __metadata:
     bech32: "npm:^1.1.3"
     bip32: "npm:^2.0.6"
     secp256k1: "npm:^5.0.0"
-  checksum: 10/b61b63cc89c3069aa21ac020fb4e7a9008a57e0b00d7fe46ab10f77b0555ef041f4badbb86d1ec9384021f6bc452b03926ce30e6072f558fc9ad680da01083ed
+  checksum: 10/96274f9ae32c34cbaf741290b5dea0ab22a0b623898b2db39dc80295e7dc2f99beb42ce6059b82c461a0c6ec819a420d2a229bfd0555fc5343c22c5c240005ff
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-cosmos@npm:2.0.7":
-  version: 2.0.7
-  resolution: "@xchainjs/xchain-cosmos@npm:2.0.7"
+"@xchainjs/xchain-cosmos@npm:2.0.9":
+  version: 2.0.9
+  resolution: "@xchainjs/xchain-cosmos@npm:2.0.9"
   dependencies:
     "@cosmjs/amino": "npm:0.32.4"
     "@cosmjs/encoding": "npm:0.32.4"
@@ -9543,7 +9565,7 @@ __metadata:
     "@ledgerhq/hw-app-cosmos": "npm:6.29.6"
     "@ledgerhq/hw-transport": "npm:6.30.6"
     "@xchainjs/xchain-client": "npm:1.0.6"
-    "@xchainjs/xchain-cosmos-sdk": "npm:1.0.7"
+    "@xchainjs/xchain-cosmos-sdk": "npm:1.0.8"
     "@xchainjs/xchain-crypto": "npm:0.3.5"
     "@xchainjs/xchain-util": "npm:1.0.5"
     axios: "npm:1.7.4"
@@ -9553,7 +9575,7 @@ __metadata:
     cosmjs-types: "npm:0.9.0"
     protobufjs: "npm:6.11.4"
     secp256k1: "npm:^5.0.0"
-  checksum: 10/5e971fe58c8c2621f2654cbc07abb6368f42e21c4569ee717f23a420f8b188c84c69e463a6b7408a1eaf74c6e2175a881b834cdbd0743f16f1365d84021f240a
+  checksum: 10/3c19008f8584d412feeb83629dcb8d87b1bdaf30c2810d828b904dfe89a22e22f3bcc24da3a4f361df523a851ec7b07b9fb3734cddc9bcf592eff6188f2fe965
   languageName: node
   linkType: hard
 
@@ -9646,19 +9668,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-kujira@npm:1.0.7":
-  version: 1.0.7
-  resolution: "@xchainjs/xchain-kujira@npm:1.0.7"
+"@xchainjs/xchain-kujira@npm:1.0.8":
+  version: 1.0.8
+  resolution: "@xchainjs/xchain-kujira@npm:1.0.8"
   dependencies:
     "@cosmjs/amino": "npm:0.32.4"
     "@cosmjs/encoding": "npm:0.32.4"
     "@cosmjs/proto-signing": "npm:0.32.4"
     "@cosmjs/stargate": "npm:0.32.4"
     "@xchainjs/xchain-client": "npm:1.0.6"
-    "@xchainjs/xchain-cosmos-sdk": "npm:1.0.7"
+    "@xchainjs/xchain-cosmos-sdk": "npm:1.0.8"
     "@xchainjs/xchain-util": "npm:1.0.5"
     cosmjs-types: "npm:0.9.0"
-  checksum: 10/b39134567258f51152cc1cb260a28677d375cd76998a45eba224e192af038ef2dd96641b952dd4732d39db94555b3a2a99dc1a7f5947e3b5c07539d28b91b96a
+  checksum: 10/9dc0f8f37fd7e3c92bdb7c93e1dd3285541c6db1146e815f6b8e4b922186b48e0828842c7c9a6868d5e6463f32c13f2dd31376fde0e3b953ffed3968d2327b45
   languageName: node
   linkType: hard
 
@@ -9696,16 +9718,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-mayachain@npm:2.0.7":
-  version: 2.0.7
-  resolution: "@xchainjs/xchain-mayachain@npm:2.0.7"
+"@xchainjs/xchain-mayachain@npm:2.0.8":
+  version: 2.0.8
+  resolution: "@xchainjs/xchain-mayachain@npm:2.0.8"
   dependencies:
     "@cosmjs/amino": "npm:0.32.4"
     "@cosmjs/crypto": "npm:0.32.4"
     "@cosmjs/encoding": "npm:0.32.4"
     "@cosmjs/proto-signing": "npm:0.32.4"
     "@xchainjs/xchain-client": "npm:1.0.6"
-    "@xchainjs/xchain-cosmos-sdk": "npm:1.0.7"
+    "@xchainjs/xchain-cosmos-sdk": "npm:1.0.8"
     "@xchainjs/xchain-util": "npm:1.0.5"
     axios: "npm:1.7.4"
     bech32: "npm:^1.1.3"
@@ -9714,7 +9736,7 @@ __metadata:
     cosmjs-types: "npm:0.9.0"
     protobufjs: "npm:6.11.4"
     secp256k1: "npm:^5.0.0"
-  checksum: 10/c1109150e5ef2160fff8aae759284bace58df156766a535762c4b2ceed0feac830d305b0108fdd6c98afca69fdf3800d2bc92beb64c37a73e78a8cde592c29f9
+  checksum: 10/abdbd244e94ebdc0d1fd02780b69de14197f46c9c0bcd027464bd44515831262e84922971db0282d7e9ebca8f379c1eb30de2da9504dc58ea85b3ce41415b36e
   languageName: node
   linkType: hard
 
@@ -9803,9 +9825,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-thorchain@npm:2.0.8":
-  version: 2.0.8
-  resolution: "@xchainjs/xchain-thorchain@npm:2.0.8"
+"@xchainjs/xchain-thorchain@npm:2.0.9":
+  version: 2.0.9
+  resolution: "@xchainjs/xchain-thorchain@npm:2.0.9"
   dependencies:
     "@cosmjs/amino": "npm:0.32.4"
     "@cosmjs/crypto": "npm:0.32.4"
@@ -9814,7 +9836,7 @@ __metadata:
     "@ledgerhq/hw-transport": "npm:6.30.6"
     "@xchainjs/ledger-thorchain": "npm:0.2.0"
     "@xchainjs/xchain-client": "npm:1.0.6"
-    "@xchainjs/xchain-cosmos-sdk": "npm:1.0.7"
+    "@xchainjs/xchain-cosmos-sdk": "npm:1.0.8"
     "@xchainjs/xchain-util": "npm:1.0.5"
     axios: "npm:1.7.4"
     bech32: "npm:^1.1.3"
@@ -9823,7 +9845,7 @@ __metadata:
     cosmjs-types: "npm:0.9.0"
     protobufjs: "npm:6.11.4"
     secp256k1: "npm:^5.0.0"
-  checksum: 10/932e14481a39c3c304a2f462d5eb9ef391ca22af0c6c051acb94a94e48a71f5e783ffd6d7bbb6c8023b0e6cb5cc554ee2ba87dce02cdd4c2354d49d8196cf37d
+  checksum: 10/b4c9ac372cff673ded5cf7cffac8f893e3a90091645a40bae22b834c51566f28dd60065f3c7dc8bb23f149a940ef9756ac4bc8c41d0574777e8225638c7e54a8
   languageName: node
   linkType: hard
 
@@ -10631,22 +10653,22 @@ __metadata:
     "@types/react-dom": "npm:^18.0.6"
     "@types/styled-components": "npm:^5.1.25"
     "@types/text-encoding": "npm:^0"
-    "@xchainjs/xchain-arbitrum": "npm:1.0.10"
+    "@xchainjs/xchain-arbitrum": "npm:1.0.11"
     "@xchainjs/xchain-avax": "npm:1.0.10"
     "@xchainjs/xchain-bitcoin": "npm:1.1.2"
     "@xchainjs/xchain-bitcoincash": "npm:1.0.6"
     "@xchainjs/xchain-bsc": "npm:1.0.10"
     "@xchainjs/xchain-client": "npm:1.0.6"
-    "@xchainjs/xchain-cosmos": "npm:2.0.7"
+    "@xchainjs/xchain-cosmos": "npm:2.0.9"
     "@xchainjs/xchain-crypto": "npm:0.3.5"
     "@xchainjs/xchain-dash": "npm:1.0.6"
     "@xchainjs/xchain-doge": "npm:1.0.6"
     "@xchainjs/xchain-ethereum": "npm:1.0.10"
     "@xchainjs/xchain-evm": "npm:1.0.10"
     "@xchainjs/xchain-evm-providers": "npm:1.0.8"
-    "@xchainjs/xchain-kujira": "npm:1.0.7"
+    "@xchainjs/xchain-kujira": "npm:1.0.8"
     "@xchainjs/xchain-litecoin": "npm:1.0.6"
-    "@xchainjs/xchain-mayachain": "npm:2.0.7"
+    "@xchainjs/xchain-mayachain": "npm:2.0.8"
     "@xchainjs/xchain-mayachain-query": "npm:1.0.7"
     "@xchainjs/xchain-mayamidgard": "npm:0.1.7"
     "@xchainjs/xchain-mayamidgard-query": "npm:0.1.22"
@@ -10654,7 +10676,7 @@ __metadata:
     "@xchainjs/xchain-midgard": "npm:0.5.10"
     "@xchainjs/xchain-midgard-query": "npm:1.0.6"
     "@xchainjs/xchain-radix": "npm:1.1.4"
-    "@xchainjs/xchain-thorchain": "npm:2.0.8"
+    "@xchainjs/xchain-thorchain": "npm:2.0.9"
     "@xchainjs/xchain-thorchain-query": "npm:1.0.6"
     "@xchainjs/xchain-thornode": "npm:0.3.20"
     "@xchainjs/xchain-util": "npm:1.0.5"
@@ -10705,6 +10727,7 @@ __metadata:
     prettier-plugin-tailwindcss: "npm:^0.1.13"
     process: "npm:^0.11.10"
     qrcode: "npm:^1.5.3"
+    rc-table: "npm:^7.48.0"
     react: "npm:^18.2.0"
     react-chartjs-2: "npm:^4.1.0"
     react-dom: "npm:^18.2.0"
@@ -24395,6 +24418,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rc-table@npm:^7.48.0":
+  version: 7.48.0
+  resolution: "rc-table@npm:7.48.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    "@rc-component/context": "npm:^1.4.0"
+    classnames: "npm:^2.2.5"
+    rc-resize-observer: "npm:^1.1.0"
+    rc-util: "npm:^5.41.0"
+    rc-virtual-list: "npm:^3.14.2"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/5f1c6fc74333f4888f9f9a28c44ee571feec23be739d78c3a00d2fc67d811fbabd802ce39294cac66e4b7f3b8d1eda18c3e9c7eef0c3f5f58cd1a7db3abf6141
+  languageName: node
+  linkType: hard
+
 "rc-table@npm:~7.25.3":
   version: 7.25.3
   resolution: "rc-table@npm:7.25.3"
@@ -24531,6 +24571,34 @@ __metadata:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
   checksum: 10/f9f16119e14ddbe39bb33f1ae7a3024126e16503debd991f08340b3a61d42c0e9bf2e5a78787e86683822320938ca22583a230dee64c9593918f5f59d823b399
+  languageName: node
+  linkType: hard
+
+"rc-util@npm:^5.27.0, rc-util@npm:^5.36.0, rc-util@npm:^5.41.0":
+  version: 5.43.0
+  resolution: "rc-util@npm:5.43.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.18.3"
+    react-is: "npm:^18.2.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/6d5be9d79182c6b4c5a033ad6517b2940d3d2ac42a8e77ef5735591d182f8236f61bc7628d61e82a122d2046ec849462f3fe57c08d3a2a20279646785c34ec4a
+  languageName: node
+  linkType: hard
+
+"rc-virtual-list@npm:^3.14.2":
+  version: 3.14.8
+  resolution: "rc-virtual-list@npm:3.14.8"
+  dependencies:
+    "@babel/runtime": "npm:^7.20.0"
+    classnames: "npm:^2.2.6"
+    rc-resize-observer: "npm:^1.0.0"
+    rc-util: "npm:^5.36.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/4f37f6adef15d5aeb15120d83ef34ecc73aae0ae274552e2062ef1d8f0b76073a3baa2fe4f7354da94e6c51920f5cc44d7a6c00cc54f80b8eff49353356e132a
   languageName: node
   linkType: hard
 

@@ -71,6 +71,8 @@ const common: CommonMessages = {
   'common.asset': 'Activo',
   'common.assets': 'Activos',
   'common.tradeAssets': 'Comerciar activos',
+  'common.tradeAccount': 'Cuenta de trading',
+  'common.trade': 'Comercio',
   'common.rune': 'RUNE',
   'common.pool': 'Fondo',
   'common.pool.inbound': 'Fondo entrada',
@@ -197,7 +199,8 @@ const common: CommonMessages = {
   'common.expandAll': 'Expandir todo',
   'common.completeLp': 'Completar Lp',
   'common.asset.quickSelect': 'Selección Rápida L1',
-  'common.asset.chooseAsset': 'Elige un activo'
+  'common.asset.chooseAsset': 'Elige un activo',
+  'common.comingSoon': 'Próximamente'
 }
 
 export default common

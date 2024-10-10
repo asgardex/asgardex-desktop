@@ -1,8 +1,9 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network, TxHash } from '@xchainjs/xchain-client'
-import { AssetDASH, DASHChain } from '@xchainjs/xchain-dash'
+import { Client, AssetDASH, DASHChain } from '@xchainjs/xchain-dash'
 import * as E from 'fp-ts/lib/Either'
 import * as FP from 'fp-ts/lib/function'
+import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -17,6 +18,26 @@ import { Client$, SendTxParams } from './types'
 
 export const createTransactionService = (client$: Client$, network$: Network$): TransactionService => {
   const common = C.createTransactionService(client$)
+
+  const sendKeystoreTx = (params: SendTxParams): TxHashLD => {
+    const { recipient, amount, memo } = params
+    return FP.pipe(
+      client$,
+      RxOp.switchMap(FP.flow(O.fold<Client, Rx.Observable<Client>>(() => Rx.EMPTY, Rx.of))),
+      RxOp.switchMap((client) => Rx.from(client.transfer({ asset: AssetDASH, recipient, amount, memo, feeRate: 1 }))),
+      RxOp.map(RD.success),
+      RxOp.catchError(
+        (e): TxHashLD =>
+          Rx.of(
+            RD.failure({
+              msg: e?.message ?? e.toString(),
+              errorId: ErrorId.SEND_TX
+            })
+          )
+      ),
+      RxOp.startWith(RD.pending)
+    )
+  }
 
   const sendLedgerTx = ({ network, params }: { network: Network; params: SendTxParams }): TxHashLD => {
     const { amount, sender, recipient, memo, walletIndex, feeRate, walletAccount } = params
@@ -63,7 +84,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       RxOp.switchMap((network) => {
         if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, params })
 
-        return common.sendTx(params)
+        return sendKeystoreTx(params)
       })
     )
 

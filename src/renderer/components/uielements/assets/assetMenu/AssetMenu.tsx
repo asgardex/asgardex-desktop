@@ -225,7 +225,7 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
                 </BaseButton>
               </div>
               <div className="my-4 h-[1px] w-full bg-gray1 dark:bg-gray0d" />
-              {chainFilter}
+              {asset.type !== AssetType.TRADE || (assets.some((a) => a.type !== AssetType.TRADE) && chainFilter)}
               <div className="w-full px-4">
                 <InputSearch
                   ref={inputSearchRef}

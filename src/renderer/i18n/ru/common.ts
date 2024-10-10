@@ -72,6 +72,8 @@ const common: CommonMessages = {
   'common.asset': 'Актив',
   'common.assets': 'Актива(ов)',
   'common.tradeAssets': 'Торговля активами',
+  'common.tradeAccount': 'Торговый счет',
+  'common.trade': 'Торговля',
   'common.rune': '{dex}',
   'common.pool': 'Пул',
   'common.pool.inbound': 'Вход. пула',
@@ -196,7 +198,8 @@ const common: CommonMessages = {
   'common.ledgerlive': 'Ledger Live',
   'common.metamask': 'MetaMask',
   'common.unknown': 'Неизвестен',
-  'common.featureUnderDevelopment': 'Функция в разработке, не использовать'
+  'common.featureUnderDevelopment': 'Функция в разработке, не использовать',
+  'common.comingSoon': 'Скоро будет'
 }
 
 export default common

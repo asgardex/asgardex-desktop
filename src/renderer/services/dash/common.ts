@@ -5,14 +5,13 @@ import {
   BitgoProviders,
   DASH_DECIMAL,
   DASHChain,
-  Client as DashClient,
+  ClientKeystore as DashClient,
   defaultDashParams
 } from '@xchainjs/xchain-dash'
 import { BlockcypherNetwork, BlockcypherProvider, UtxoOnlineDataProviders } from '@xchainjs/xchain-utxo-providers'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
-import { Observable } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { blockcypherApiKey } from '../../../shared/api/blockcypher'
@@ -21,7 +20,7 @@ import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
 import { keystoreService } from '../wallet/keystore'
 import { getPhrase } from '../wallet/util'
-import { ClientState, ClientState$ } from './types'
+import { ClientState, ClientState$, Client$ } from './types'
 
 //======================
 // Block Cypher
@@ -61,7 +60,7 @@ const clientState$: ClientState$ = FP.pipe(
                 ...defaultDashParams,
                 phrase: phrase,
                 network: network,
-                dataProviders: [BlockcypherDataProviders, BitgoProviders]
+                dataProviders: [BitgoProviders, BlockcypherDataProviders]
               }
               const client = new DashClient(dashInitParams)
               return RD.success(client)
@@ -79,7 +78,7 @@ const clientState$: ClientState$ = FP.pipe(
   RxOp.shareReplay(1)
 )
 
-const client$: Observable<O.Option<DashClient>> = clientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
+const client$: Client$ = clientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
 
 /**
  * DASH `Address`

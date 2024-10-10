@@ -72,6 +72,8 @@ const common: CommonMessages = {
   'common.asset': 'एसेट',
   'common.assets': 'एसेट्स',
   'common.tradeAssets': 'संपत्तियों का व्यापार',
+  'common.tradeAccount': 'व्यापार खाता',
+  'common.trade': 'व्यापार',
   'common.rune': '{dex}',
   'common.pool': 'पूल',
   'common.pool.inbound': 'इनबाउंड पूल',
@@ -195,6 +197,7 @@ const common: CommonMessages = {
   'common.ledgerlive': 'लेजर लाइव',
   'common.metamask': 'मेटामास्क',
   'common.unknown': 'अज्ञात',
-  'common.featureUnderDevelopment': 'विकासाधीन सुविधा, उपयोग न करें'
+  'common.featureUnderDevelopment': 'विकासाधीन सुविधा, उपयोग न करें',
+  'common.comingSoon': 'जल्द ही आ रहा है'
 }
 export default common

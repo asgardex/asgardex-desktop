@@ -71,6 +71,8 @@ export type CommonMessageKey =
   | 'common.asset'
   | 'common.assets'
   | 'common.tradeAssets'
+  | 'common.tradeAccount'
+  | 'common.trade'
   | 'common.rune'
   | 'common.price'
   | 'common.price.rune'
@@ -196,6 +198,7 @@ export type CommonMessageKey =
   | 'common.metamask'
   | 'common.unknown'
   | 'common.featureUnderDevelopment'
+  | 'common.comingSoon'
 
 export type CommonMessages = {
   [key in CommonMessageKey]: string

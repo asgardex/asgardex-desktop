@@ -1007,14 +1007,14 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
             {showMemo && (
               <div>
                 <div className="flex w-full">
-                  <SwitchButton disabled={true} onChange={() => setPoolDeposit(!poolDeposit)}></SwitchButton>
+                  <SwitchButton disabled={false} onChange={() => setPoolDeposit(!poolDeposit)}></SwitchButton>
                   {poolDeposit ? (
-                    <div className="pl-4 text-text2 dark:text-text2d">{`Send pool transaction on ${dex}. Admin use only or risk losing your funds`}</div>
+                    <div className="pl-4 text-text2 dark:text-text2d">{`Send pool transaction on ${dex.chain}. Admin use only or risk losing your funds`}</div>
                   ) : (
                     <div className="pl-4 text-text2 dark:text-text2d">{`Transfer token ${asset.ticker}`}</div>
                   )}
                 </div>
-                {isChainAsset && renderMemo()} {/* Call the renderMemo function */}
+                {isChainAsset && renderMemo()}
               </div>
             )}
           </Styled.SubForm>

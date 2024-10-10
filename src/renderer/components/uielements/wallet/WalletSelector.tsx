@@ -2,6 +2,7 @@ import React from 'react'
 
 import { Listbox } from '@headlessui/react'
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
+import clsx from 'clsx'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -13,11 +14,12 @@ export type Props = {
   wallets: KeystoreWalletsUI
   onChange: (id: KeystoreId) => void
   className?: string
+  buttonClassName?: string
   disabled?: boolean
 }
 
 export const WalletSelector: React.FC<Props> = (props): JSX.Element => {
-  const { wallets, onChange, disabled = false, className = '' } = props
+  const { wallets, onChange, disabled = false, className = '', buttonClassName = '' } = props
 
   const oSelectedWallet = FP.pipe(
     wallets,
@@ -41,24 +43,18 @@ export const WalletSelector: React.FC<Props> = (props): JSX.Element => {
           <div className={`relative ${className}`}>
             <Listbox.Button
               as="div"
-              className={({ open }) => `group
-              flex
-              cursor-pointer items-center
-              bg-bg0
-                    py-10px
-                    pl-20px
-                    pr-10px
-                   font-main text-14
-                   text-text0
-                    transition
-                    duration-300
-                    ease-in-out hover:shadow-full
-                    hover:dark:shadow-fulld
-                    ${disabled && 'opacity-70'}
-                    ${open ? 'shadow-full dark:shadow-fulld' : ''}
-                    dark:bg-bg0d
-                    dark:text-text0d
-                    `}>
+              className={({ open }) =>
+                clsx(
+                  'group flex cursor-pointer items-center',
+                  'bg-bg0 py-10px pl-3 pr-10px dark:bg-bg0d',
+                  'font-main text-14 text-text0 dark:text-text0d',
+                  'transition duration-300 ease-in-out',
+                  'hover:shadow-full hover:dark:shadow-fulld',
+                  open ? 'shadow-full dark:shadow-fulld' : '',
+                  { 'opacity-70': disabled },
+                  buttonClassName
+                )
+              }>
               {({ open }) => (
                 <>
                   <span className="w-full">{selectedWallet.name}</span>

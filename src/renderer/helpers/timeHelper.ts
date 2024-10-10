@@ -45,7 +45,7 @@ export const calculateTransactionTime = (
       : DefaultChainAttributes[sourceChain].avgBlockTimeInSecs
   const outboundTime =
     txDetails && targetAsset
-      ? targetAsset.type === AssetType.SYNTH || targetAsset?.chain === THORChain
+      ? targetAsset.type === AssetType.SYNTH || targetAsset.type === AssetType.TRADE || targetAsset?.chain === THORChain
         ? 0
         : txDetails.outboundDelaySeconds
       : 0
