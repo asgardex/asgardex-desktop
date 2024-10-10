@@ -196,7 +196,8 @@ const common: CommonMessages = {
   'common.ledgerlive': 'Ledger Live',
   'common.metamask': 'MetaMask',
   'common.unknown': 'Неизвестен',
-  'common.featureUnderDevelopment': 'Функция в разработке, не использовать'
+  'common.featureUnderDevelopment': 'Функция в разработке, не использовать',
+  'common.comingSoon': 'Скоро будет'
 }
 
 export default common

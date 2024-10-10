@@ -196,6 +196,7 @@ export type CommonMessageKey =
   | 'common.metamask'
   | 'common.unknown'
   | 'common.featureUnderDevelopment'
+  | 'common.comingSoon'
 
 export type CommonMessages = {
   [key in CommonMessageKey]: string

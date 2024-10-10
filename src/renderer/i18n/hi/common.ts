@@ -195,6 +195,7 @@ const common: CommonMessages = {
   'common.ledgerlive': 'लेजर लाइव',
   'common.metamask': 'मेटामास्क',
   'common.unknown': 'अज्ञात',
-  'common.featureUnderDevelopment': 'विकासाधीन सुविधा, उपयोग न करें'
+  'common.featureUnderDevelopment': 'विकासाधीन सुविधा, उपयोग न करें',
+  'common.comingSoon': 'जल्द ही आ रहा है'
 }
 export default common
