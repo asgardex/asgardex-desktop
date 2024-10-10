@@ -252,7 +252,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
       { key: '5', section: 'Lending', amount: intl.formatMessage({ id: 'common.comingSoon' }), action: 'Manage' },
       { key: '6', section: 'Total', amount: intl.formatMessage({ id: 'common.comingSoon' }), action: 'Manage' }
     ],
-    []
+    [intl, totalBalanceDisplay, renderSharesTotal, renderSaversTotal]
   )
 
   const chartData = useMemo(() => {
