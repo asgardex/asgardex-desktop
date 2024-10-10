@@ -33,7 +33,7 @@ import { isUSDAsset } from '../../../helpers/assetHelper'
 import { sequenceTRD } from '../../../helpers/fpHelpers'
 import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
-import { hiddenString } from '../../../helpers/stringHelper'
+import { capitalize, hiddenString } from '../../../helpers/stringHelper'
 import { useAllSaverProviders } from '../../../hooks/useAllSaverProviders'
 import { useDex } from '../../../hooks/useDex'
 import { usePoolShares } from '../../../hooks/usePoolShares'
@@ -68,15 +68,6 @@ const portfolioColumns = [
   { title: 'Section', dataIndex: 'section', key: 'section' },
   { title: 'Amount', dataIndex: 'amount', key: 'amount' },
   { title: 'Action', dataIndex: 'action', key: 'action' }
-]
-
-const portfolioDatasource = [
-  { key: '1', section: 'Wallet', amount: '$5000', action: 'Manage' },
-  { key: '2', section: 'LP Shares', amount: '$5000', action: 'Manage' },
-  { key: '3', section: 'Savers', amount: '$5000', action: 'Manage' },
-  { key: '4', section: 'Bonds', amount: '$5000', action: 'Manage' },
-  { key: '5', section: 'Lending', amount: '$5000', action: 'Manage' },
-  { key: '6', section: 'Total', amount: '$25000', action: 'Manage' }
 ]
 
 export const PortfolioView: React.FC = (): JSX.Element => {
@@ -245,12 +236,24 @@ export const PortfolioView: React.FC = (): JSX.Element => {
   const chainChartData = useMemo(() => {
     // Define your color scheme
     return Object.entries(balancesByChain).map(([chain, balance], index) => ({
-      name: `${chain.split(':')[0]}_${index}_${chain.split(':')[1]}`, // Add an index to make the key unique
+      name: `${chain.split(':')[0]} ${capitalize(chain.split(':')[1])}`, // Add an index to make the key unique
       value: isPrivate ? 0 : baseToAsset(balance).amount().toNumber(),
       fillColor: Colors[index % Colors.length],
       className: ColorClassnames[index % Colors.length]
     }))
   }, [balancesByChain, isPrivate])
+
+  const portfolioDatasource = useMemo(
+    () => [
+      { key: '1', section: 'Wallet', amount: totalBalanceDisplay, action: 'Manage' },
+      { key: '2', section: 'LP Shares', amount: renderSharesTotal, action: 'Manage' },
+      { key: '3', section: 'Savers', amount: renderSaversTotal, action: 'Manage' },
+      { key: '4', section: 'Bonds', amount: intl.formatMessage({ id: 'common.comingSoon' }), action: 'Manage' },
+      { key: '5', section: 'Lending', amount: intl.formatMessage({ id: 'common.comingSoon' }), action: 'Manage' },
+      { key: '6', section: 'Total', amount: intl.formatMessage({ id: 'common.comingSoon' }), action: 'Manage' }
+    ],
+    [intl, totalBalanceDisplay, renderSharesTotal, renderSaversTotal]
+  )
 
   const chartData = useMemo(() => {
     return portfolioDatasource.map(({ section }, index) => ({
@@ -259,7 +262,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
       fillColor: Colors[index % Colors.length],
       className: ColorClassnames[index % Colors.length]
     }))
-  }, [])
+  }, [portfolioDatasource])
 
   const filteredChainData = useMemo(() => chainChartData.filter((entry) => entry.value !== 0.0), [chainChartData])
 
@@ -297,9 +300,18 @@ export const PortfolioView: React.FC = (): JSX.Element => {
               <CardItem title={intl.formatMessage({ id: 'common.wallets' })} value={totalBalanceDisplay} />
               <CardItem title={intl.formatMessage({ id: 'wallet.nav.poolshares' })} value={renderSharesTotal} />
               <CardItem title={intl.formatMessage({ id: 'wallet.nav.savers' })} value={renderSaversTotal} />
-              <CardItem title={intl.formatMessage({ id: 'wallet.nav.bonds' })} value={totalBalanceDisplay} />
-              <CardItem title={intl.formatMessage({ id: 'common.lending' })} value={totalBalanceDisplay} />
-              <CardItem title={intl.formatMessage({ id: 'common.earnings' })} value={totalBalanceDisplay} />
+              <CardItem
+                title={intl.formatMessage({ id: 'wallet.nav.bonds' })}
+                value={intl.formatMessage({ id: 'common.comingSoon' })}
+              />
+              <CardItem
+                title={intl.formatMessage({ id: 'common.lending' })}
+                value={intl.formatMessage({ id: 'common.comingSoon' })}
+              />
+              <CardItem
+                title={intl.formatMessage({ id: 'common.earnings' })}
+                value={intl.formatMessage({ id: 'common.comingSoon' })}
+              />
             </div>
           )}
           {activeIndex === PortfolioTabKey.ChartView && (
@@ -309,33 +321,40 @@ export const PortfolioView: React.FC = (): JSX.Element => {
                   <Styled.Title size="large" className="text-gray2 dark:text-gray2d">
                     {intl.formatMessage({ id: 'common.allocationByType' })}
                   </Styled.Title>
-                  <div className="flex items-center justify-center">
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={chartData}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={100}
-                          innerRadius={70}
-                          fill="#8884d8"
-                          dataKey="value"
-                          nameKey="name"
-                          minAngle={15}
-                          label={({ name }) => name}>
-                          {chartData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.fillColor} />
-                          ))}
-                        </Pie>
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="flex flex-wrap items-center justify-center space-x-4">
-                    {chartData.map((chartCol) => (
-                      <div key={chartCol.name} className={chartCol.className}>
-                        {chartCol.name} - {chartCol.value}
-                      </div>
-                    ))}
+                  <div className="relative w-full">
+                    <div className="flex items-center justify-center">
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={chartData}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={100}
+                            innerRadius={70}
+                            fill="#8884d8"
+                            dataKey="value"
+                            nameKey="name"
+                            minAngle={15}
+                            label={({ name }) => name}>
+                            {chartData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.fillColor} />
+                            ))}
+                          </Pie>
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    {/* <div className="flex flex-wrap items-center justify-center space-x-4">
+                      {chartData.map((chartCol) => (
+                        <div key={chartCol.name} className={chartCol.className}>
+                          {chartCol.name} - {chartCol.value}
+                        </div>
+                      ))}
+                    </div> */}
+                    <div className="absolute top-0 flex h-full w-full items-center justify-center backdrop-blur-md">
+                      <Styled.Title size="large" className="!text-turquoise">
+                        Coming Soon...
+                      </Styled.Title>
+                    </div>
                   </div>
                 </div>
                 <div className="flex flex-1 flex-col rounded-lg border border-solid border-gray0 p-4 dark:border-gray0d">
