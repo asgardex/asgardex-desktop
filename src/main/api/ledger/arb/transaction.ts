@@ -9,7 +9,6 @@ import * as E from 'fp-ts/Either'
 import { isAethAsset } from '../../../../renderer/helpers/assetHelper'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { DEPOSIT_EXPIRATION_OFFSET, ArbZeroAddress, defaultArbParams } from '../../../../shared/arb/const'
-import { ROUTER_ABI } from '../../../../shared/evm/abi'
 import { getDerivationPath } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
@@ -140,7 +139,7 @@ export const deposit = async ({
         : { gasPrice }
     ]
 
-    const routerContract = new ethers.Contract(router, ROUTER_ABI)
+    const routerContract = new ethers.Contract(router, ARB.abi.router)
     const unsignedTx = await routerContract.populateTransaction.depositWithExpiry(...depositParams)
     const nativeAsset = clientledger.getAssetInfo()
 

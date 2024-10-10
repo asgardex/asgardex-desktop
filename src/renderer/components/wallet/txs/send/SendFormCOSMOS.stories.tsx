@@ -1,7 +1,6 @@
 import { Meta } from '@storybook/react'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { AssetMAYA } from '@xchainjs/xchain-thorchain-query'
 import { assetAmount, assetToBase, BaseAmount, baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -10,7 +9,7 @@ import * as Rx from 'rxjs'
 import { thorDetails } from '../../../../../shared/api/types'
 import { getMockRDValueFactory, RDStatus } from '../../../../../shared/mock/rdByStatus'
 import { mockValidatePassword$ } from '../../../../../shared/mock/wallet'
-import { AssetRuneNative } from '../../../../../shared/utils/asset'
+import { AssetMaya, AssetRuneNative } from '../../../../../shared/utils/asset'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { AssetUSDC } from '../../../../const'
 import { mockWalletBalance } from '../../../../helpers/test/testWalletHelper'
@@ -63,7 +62,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
     'success', // Replace with 'pending' or 'error' to mock other states
     getMockRDValueFactory<Error, MayaScanPrice>(
       () => ({
-        mayaPriceInCacao: { asset: AssetMAYA, amount: baseAmount(10, 6) },
+        mayaPriceInCacao: { asset: AssetMaya, amount: baseAmount(10, 6) },
         mayaPriceInUsd: { asset: AssetUSDC, amount: baseAmount(15, 4) },
         cacaoPriceInUsd: { asset: AssetUSDC, amount: baseAmount(1.5, 6) }
       }),

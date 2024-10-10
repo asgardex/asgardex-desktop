@@ -4,18 +4,13 @@ import {
   AssetBTC,
   BTCChain,
   Client as BitcoinClient,
+  BitgoProviders,
+  HaskoinDataProviders,
   defaultBTCParams,
   tapRootDerivationPaths
 } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
-import {
-  BitgoProvider,
-  BlockcypherNetwork,
-  BlockcypherProvider,
-  HaskoinNetwork,
-  HaskoinProvider,
-  UtxoOnlineDataProviders
-} from '@xchainjs/xchain-utxo-providers'
+import { BlockcypherNetwork, BlockcypherProvider, UtxoOnlineDataProviders } from '@xchainjs/xchain-utxo-providers'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -30,37 +25,8 @@ import { keystoreService } from '../wallet/keystore'
 import { getPhrase } from '../wallet/util'
 import { ClientState, ClientState$ } from './types'
 
-const testnetHaskoinProvider = new HaskoinProvider(
-  'https://api.haskoin.com',
-  BTCChain,
-  AssetBTC,
-  8,
-  HaskoinNetwork.BTCTEST
-)
-
 const LOWER_FEE_BOUND = 1
 const UPPER_FEE_BOUND = 2000
-
-const mainnetHaskoinProvider = new HaskoinProvider('https://api.haskoin.com', BTCChain, AssetBTC, 8, HaskoinNetwork.BTC)
-const HaskoinDataProviders: UtxoOnlineDataProviders = {
-  [Network.Testnet]: testnetHaskoinProvider,
-  [Network.Stagenet]: mainnetHaskoinProvider,
-  [Network.Mainnet]: mainnetHaskoinProvider
-}
-
-//======================
-// Bitgo
-//======================
-const mainnetBitgoProvider = new BitgoProvider({
-  baseUrl: 'https://app.bitgo.com',
-  chain: BTCChain
-})
-
-export const BitgoProviders: UtxoOnlineDataProviders = {
-  [Network.Testnet]: undefined,
-  [Network.Stagenet]: mainnetBitgoProvider,
-  [Network.Mainnet]: mainnetBitgoProvider
-}
 
 //======================
 // Blockcypher

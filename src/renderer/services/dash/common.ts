@@ -2,19 +2,13 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import {
   AssetDASH,
+  BitgoProviders,
   DASH_DECIMAL,
   DASHChain,
   Client as DashClient,
-  defaultDashParams,
-  LOWER_FEE_BOUND,
-  UPPER_FEE_BOUND
+  defaultDashParams
 } from '@xchainjs/xchain-dash'
-import {
-  BitgoProvider,
-  BlockcypherNetwork,
-  BlockcypherProvider,
-  UtxoOnlineDataProviders
-} from '@xchainjs/xchain-utxo-providers'
+import { BlockcypherNetwork, BlockcypherProvider, UtxoOnlineDataProviders } from '@xchainjs/xchain-utxo-providers'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -29,19 +23,6 @@ import { keystoreService } from '../wallet/keystore'
 import { getPhrase } from '../wallet/util'
 import { ClientState, ClientState$ } from './types'
 
-//======================
-// Bitgo
-//======================
-const mainnetBitgoProvider = new BitgoProvider({
-  baseUrl: 'https://app.bitgo.com',
-  chain: DASHChain
-})
-
-export const BitgoProviders: UtxoOnlineDataProviders = {
-  [Network.Testnet]: undefined,
-  [Network.Stagenet]: mainnetBitgoProvider,
-  [Network.Mainnet]: mainnetBitgoProvider
-}
 //======================
 // Block Cypher
 //======================
@@ -80,11 +61,7 @@ const clientState$: ClientState$ = FP.pipe(
                 ...defaultDashParams,
                 phrase: phrase,
                 network: network,
-                dataProviders: [BlockcypherDataProviders, BitgoProviders],
-                feeBounds: {
-                  lower: LOWER_FEE_BOUND,
-                  upper: UPPER_FEE_BOUND
-                }
+                dataProviders: [BlockcypherDataProviders, BitgoProviders]
               }
               const client = new DashClient(dashInitParams)
               return RD.success(client)
