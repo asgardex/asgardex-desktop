@@ -23,7 +23,8 @@ import {
   CryptoAmount,
   AssetType,
   AnyAsset,
-  TradeAsset
+  TradeAsset,
+  isTradeAsset
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import * as A from 'fp-ts/Array'
@@ -474,17 +475,19 @@ export const TradeSwap = ({
 
   const zeroSwapFees = useMemo(() => {
     if (inboundDetails) {
-      const gasRate = isRuneNativeAsset(sourceAsset)
-        ? baseAmount(2000000)
-        : baseAmount(inboundDetails?.[sourceAsset.chain]?.gasRate) // Define defaultGasRate
-      const outboundFee = isRuneNativeAsset(targetAsset)
-        ? baseAmount(2000000)
-        : baseAmount(inboundDetails?.[targetAsset.chain]?.outboundFee) // Define defaultOutboundFee
+      const gasRate =
+        isRuneNativeAsset(sourceAsset) || isTradeAsset(sourceAsset)
+          ? baseAmount(2000000)
+          : baseAmount(inboundDetails?.[sourceAsset.chain]?.gasRate) // Define defaultGasRate
+      const outboundFee =
+        isRuneNativeAsset(targetAsset) || isTradeAsset(targetAsset)
+          ? baseAmount(2000000)
+          : baseAmount(inboundDetails?.[targetAsset.chain]?.outboundFee) // Define defaultOutboundFee
 
       // Define defaultSwapFees based on the above fallbacks
       const defaultFees: SwapFees = {
-        inFee: { asset: sourceAsset, amount: gasRate },
-        outFee: { asset: targetAsset, amount: outboundFee }
+        inFee: { asset: AssetRuneNative, amount: gasRate },
+        outFee: { asset: AssetRuneNative, amount: outboundFee }
       }
 
       return defaultFees
@@ -513,6 +516,7 @@ export const TradeSwap = ({
   }, [oRecipientAddress, targetAsset, streamingInterval, streamingQuantity])
 
   const [swapFeesRD] = useObservableState<SwapFeesRD>(() => {
+    console.log(sourceAsset.type === AssetType.TRADE ? AssetRuneNative : sourceAsset)
     return FP.pipe(
       fees$({
         inAsset: sourceAsset.type === AssetType.TRADE ? AssetRuneNative : sourceAsset,
@@ -1074,9 +1078,9 @@ export const TradeSwap = ({
 
   const reloadFeesHandler = useCallback(() => {
     reloadFees({
-      inAsset: sourceAsset,
+      inAsset: sourceAsset.type === AssetType.TRADE ? AssetRuneNative : sourceAsset,
       memo: swapMemo,
-      outAsset: targetAsset
+      outAsset: targetAsset.type === AssetType.TRADE ? AssetRuneNative : targetAsset
     })
   }, [reloadFees, sourceAsset, swapMemo, targetAsset])
 
@@ -2195,16 +2199,7 @@ export const TradeSwap = ({
                         </div>
                         <div className="flex w-full justify-between pl-10px text-[12px]">
                           <div className={`flex items-center`}>
-                            {intl.formatMessage({ id: 'common.outbound.time' })}
-                          </div>
-                          <div>{formatSwapTime(Number(transactionTime.outbound))}</div>
-                        </div>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div className={`flex items-center`}>
-                            {intl.formatMessage(
-                              { id: 'common.confirmation.time' },
-                              { chain: targetAsset.type === AssetType.SYNTH ? THORChain : targetAsset.chain }
-                            )}
+                            {intl.formatMessage({ id: 'common.confirmation.time' }, { chain: THORChain })}
                           </div>
                           <div>{formatSwapTime(Number(transactionTime.confirmation))}</div>
                         </div>
