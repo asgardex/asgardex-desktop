@@ -6,7 +6,6 @@ import * as RxOp from 'rxjs/operators'
 
 import { useMidgardContext } from '../contexts/MidgardContext'
 import { THORCHAIN_DECIMAL } from '../helpers/assetHelper'
-import { liveData } from '../helpers/rx/liveData'
 
 export type Color = 'green' | 'yellow' | 'red' | 'grey'
 
@@ -50,8 +49,10 @@ export const useIncentivePendulum = (): { data: IncentivePendulumRD; reload: FP.
     () =>
       FP.pipe(
         networkInfo$,
-        liveData.map(({ totalPooledRune, bondMetrics: { totalActiveBond } }) =>
-          getIncentivePendulum(totalPooledRune, totalActiveBond)
+        RxOp.map(
+          RD.map(({ totalPooledRune, bondMetrics: { totalActiveBond } }) =>
+            getIncentivePendulum(totalPooledRune, totalActiveBond)
+          )
         ),
         RxOp.shareReplay(1)
       ),

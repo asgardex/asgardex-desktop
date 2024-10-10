@@ -17,6 +17,7 @@ import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
+import * as RxOp from 'rxjs/operators'
 
 import { Dex } from '../../../../shared/api/types'
 import { isLedgerWallet } from '../../../../shared/utils/guard'
@@ -26,7 +27,6 @@ import { getTwoSigfigAssetAmount, to1e8BaseAmount } from '../../../helpers/asset
 import { eqAsset } from '../../../helpers/fp/eq'
 import { getWithdrawMemo } from '../../../helpers/memoHelper'
 import * as PoolHelpers from '../../../helpers/poolHelper'
-import { liveData } from '../../../helpers/rx/liveData'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import { INITIAL_WITHDRAW_STATE } from '../../../services/chain/const'
 import { getZeroWithdrawFees } from '../../../services/chain/fees'
@@ -176,9 +176,11 @@ export const Withdraw: React.FC<Props> = ({
     () =>
       FP.pipe(
         fees$(asset, dex),
-        liveData.map((fees) => {
+        RxOp.map((fees) => {
           // store every successfully loaded fees
-          prevWithdrawFees.current = O.some(fees)
+          if (RD.isSuccess(fees)) {
+            prevWithdrawFees.current = O.some(fees.value)
+          }
           return fees
         })
       ),

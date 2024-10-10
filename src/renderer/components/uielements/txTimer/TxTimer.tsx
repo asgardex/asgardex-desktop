@@ -1,6 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react'
 
-// import theme from '@asgardex/asgardex-theme'
 import { Progress } from 'antd'
 
 import useInterval, { INACTIVE_INTERVAL } from '../../../hooks/useInterval'
