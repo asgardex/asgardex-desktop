@@ -22,6 +22,8 @@ export const Menu = styled(MenuUI)`
   align-items: center;
   border-bottom: 1px solid ${palette('gray', 1)};
 
+  border-radius: 8px 8px 0 0;
+
   &.ant-menu-horizontal .ant-menu-item,
   &.ant-menu-horizontal > .ant-menu-item::after {
     transition: none;

@@ -62,6 +62,7 @@ export type CommonMessageKey =
   | 'common.test'
   | 'common.change'
   | 'common.wallet'
+  | 'common.wallets'
   | 'common.history'
   | 'common.settings'
   | 'common.pool'
@@ -117,6 +118,9 @@ export type CommonMessageKey =
   | 'common.borrow'
   | 'common.repay'
   | 'common.earn'
+  | 'common.earnings'
+  | 'common.allocationByType'
+  | 'common.allocationByChain'
   | 'common.liquidity'
   | 'common.collateral'
   | 'common.debt'
@@ -194,6 +198,7 @@ export type CommonMessageKey =
   | 'common.metamask'
   | 'common.unknown'
   | 'common.featureUnderDevelopment'
+  | 'common.comingSoon'
 
 export type CommonMessages = {
   [key in CommonMessageKey]: string
@@ -239,6 +244,7 @@ type WalletMessageKey =
   | 'wallet.name.error.empty'
   | 'wallet.name.error.duplicated'
   | 'wallet.name.error.rename'
+  | 'wallet.nav.portfolio'
   | 'wallet.nav.deposits'
   | 'wallet.nav.bonds'
   | 'wallet.nav.poolshares'

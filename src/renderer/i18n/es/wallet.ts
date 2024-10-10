@@ -6,6 +6,7 @@ const wallet: WalletMessages = {
   'wallet.name.error.empty': 'Introduzca un nombre para su monedero',
   'wallet.name.error.duplicated': 'El nombre ya existe, por favor utilice otro nombre.',
   'wallet.name.error.rename': 'Error al renombrar el monedero',
+  'wallet.nav.portfolio': 'Portafolio',
   'wallet.nav.deposits': 'Depósitos',
   'wallet.nav.bonds': 'Bonos',
   'wallet.nav.poolshares': 'PL Acciones',

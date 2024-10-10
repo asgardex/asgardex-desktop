@@ -6,15 +6,12 @@ import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, AnyAsset, Chain } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
-import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
-import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { getChainsForDex } from '../../../shared/utils/chain'
 import { PoolShares as PoolSharesTable } from '../../components/PoolShares'
 import { PoolShareTableRowData } from '../../components/PoolShares/PoolShares.types'
 import { ErrorView } from '../../components/shared/error'
@@ -23,19 +20,15 @@ import { AssetsNav, TotalValue } from '../../components/wallet/assets'
 import { useChainContext } from '../../contexts/ChainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
-import { useWalletContext } from '../../contexts/WalletContext'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
-import { addressFromOptionalWalletAddress, addressFromWalletAddress } from '../../helpers/walletHelper'
+import { addressFromOptionalWalletAddress } from '../../helpers/walletHelper'
 import { useDex } from '../../hooks/useDex'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
+import { usePoolShares } from '../../hooks/usePoolShares'
 import { usePrivateData } from '../../hooks/usePrivateData'
-import { WalletAddress$ } from '../../services/clients/types'
-import { PoolShares } from '../../services/midgard/types'
-import { userChains$ } from '../../services/storage/userChains'
-import { ledgerAddressToWalletAddress } from '../../services/wallet/util'
 import { BaseAmountRD } from '../../types'
 import * as H from './PoolShareView.helper'
 
@@ -54,8 +47,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
         reloadAllPools,
         haltedChains$: haltedChainsThor$
       },
-      reloadNetworkInfo,
-      shares: { allSharesByAddresses$: allSharesByAddressesThor$, reloadAllSharesByAddresses }
+      reloadNetworkInfo
     }
   } = useMidgardContext()
 
@@ -69,11 +61,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
         reloadAllPools: reloadAllMayaPools,
         haltedChains$: haltedMayaChains$
       },
-      reloadNetworkInfo: reloadMayaNetworkInfo,
-      shares: {
-        allSharesByAddresses$: allSharesByAddressesMaya$,
-        reloadAllSharesByAddresses: reloadAllSharesByAddressesMaya
-      }
+      reloadNetworkInfo: reloadMayaNetworkInfo
     }
   } = useMidgardMayaContext()
 
@@ -88,8 +76,6 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   const allPoolDetails$ = dex.chain === THORChain ? allPoolDetailsThor$ : allPoolDetailsMaya$
   const poolsRD = useObservableState(dex.chain === THORChain ? poolsState$ : mayaPoolsState$, RD.pending)
   const { addressByChain$ } = useChainContext()
-
-  const { getLedgerAddress$ } = useWalletContext()
 
   const { isPrivate } = usePrivateData()
 
@@ -111,50 +97,6 @@ export const PoolShareView: React.FC = (): JSX.Element => {
 
     return () => subscription.unsubscribe() // Cleanup by unsubscribing when the component unmounts or dex changes
   }, [addressByChain$, dex])
-  const INCLUDED_CHAINS = getChainsForDex(dex.chain)
-  const [allSharesRD, setAllSharesRD] = useState<RD.RemoteData<Error, PoolShares>>(RD.initial)
-
-  useEffect(() => {
-    const subscription = userChains$
-      .pipe(
-        RxOp.switchMap((enabledChains) => {
-          const addresses$: WalletAddress$[] = FP.pipe(
-            enabledChains,
-            A.filter((chain) => INCLUDED_CHAINS.includes(chain)),
-            A.map(addressByChain$)
-          )
-          // ledger addresses
-          const ledgerAddresses$ = (): WalletAddress$[] =>
-            FP.pipe(
-              enabledChains,
-              A.filter((chain) => INCLUDED_CHAINS.includes(chain)),
-              A.map((chain) => getLedgerAddress$(chain)),
-              A.map(RxOp.map(FP.flow(O.map(ledgerAddressToWalletAddress))))
-            )
-          // Combine addresses and ledger addresses observables
-          const combinedAddresses$ = Rx.combineLatest([...addresses$, ...ledgerAddresses$()])
-
-          // Create the final observable pipeline
-          return FP.pipe(
-            combinedAddresses$,
-            RxOp.switchMap(
-              FP.flow(
-                A.filterMap(FP.identity),
-                A.map(addressFromWalletAddress),
-                // Dynamically choose the right function based on `dex`
-                (addresses) =>
-                  dex.chain === THORChain ? allSharesByAddressesThor$(addresses) : allSharesByAddressesMaya$(addresses)
-              )
-            ),
-            RxOp.startWith(RD.pending)
-          )
-        })
-      )
-      .subscribe(setAllSharesRD)
-
-    // Cleanup on unmount or when deps change
-    return () => subscription.unsubscribe()
-  }, [dex, allSharesByAddressesThor$, allSharesByAddressesMaya$, addressByChain$, INCLUDED_CHAINS, getLedgerAddress$])
 
   const haltedChains$ = dex.chain === THORChain ? haltedChainsThor$ : haltedMayaChains$
   const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
@@ -227,6 +169,8 @@ export const PoolShareView: React.FC = (): JSX.Element => {
     [clickRefreshHandler, intl]
   )
 
+  const { allSharesRD } = usePoolShares()
+
   const renderSharesTotal = useMemo(() => {
     const sharesTotalRD: BaseAmountRD = FP.pipe(
       RD.combine(allSharesRD, poolDetailsRD),
@@ -278,12 +222,10 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   const refreshHandler = useCallback(() => {
     if (dex.chain === THORChain) {
       reloadAllPools()
-      reloadAllSharesByAddresses()
     } else {
       reloadAllMayaPools()
-      reloadAllSharesByAddressesMaya()
     }
-  }, [dex, reloadAllMayaPools, reloadAllPools, reloadAllSharesByAddresses, reloadAllSharesByAddressesMaya])
+  }, [dex, reloadAllMayaPools, reloadAllPools])
 
   return (
     <>

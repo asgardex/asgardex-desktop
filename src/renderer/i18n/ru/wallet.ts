@@ -6,6 +6,7 @@ const wallet: WalletMessages = {
   'wallet.name.error.empty': 'Пожалуйста, введите название для вашего кошелька',
   'wallet.name.error.duplicated': 'Такое название уже существует, пожалуйста, используйте другое',
   'wallet.name.error.rename': 'Ошибка при переименовании кошелька',
+  'wallet.nav.portfolio': 'Портфолио',
   'wallet.nav.deposits': 'Вклады',
   'wallet.nav.bonds': 'Бонды',
   'wallet.nav.poolshares': 'Доли',

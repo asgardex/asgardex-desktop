@@ -6,6 +6,7 @@ const wallet: WalletMessages = {
   'wallet.name.error.empty': 'कृपया अपने वॉलेट के लिए एक नाम दर्ज करें',
   'wallet.name.error.duplicated': 'नाम पहले से मौजूद है, कृपया दूसरा नाम उपयोग करें।',
   'wallet.name.error.rename': 'वॉलेट का नाम बदलने में त्रुटि',
+  'wallet.nav.portfolio': 'पोर्टफोलियो',
   'wallet.nav.deposits': 'जमा',
   'wallet.nav.bonds': 'बॉन्ड',
   'wallet.nav.poolshares': 'LP शेयर',

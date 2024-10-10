@@ -65,6 +65,7 @@ const common: CommonMessages = {
   'common.test': 'Test',
   'common.change': 'Modifier',
   'common.wallet': 'Portefeuille',
+  'common.wallets': 'Portefeuilles',
   'common.history': 'Historique',
   'common.settings': 'Réglages',
   'common.asset': 'Actif',
@@ -120,10 +121,13 @@ const common: CommonMessages = {
   'common.debt': 'Dette',
   'common.savers': 'Épargnants',
   'common.earn': 'Gagner',
+  'common.earnings': 'Revenus',
   'common.liquidity': 'Liquidité',
   'common.withdraw': 'Retrait',
   'common.approve': 'Approuver',
   'common.accept': 'Accepter',
+  'common.allocationByType': 'Répartition par type',
+  'common.allocationByChain': 'Répartition par chaîne',
   'common.approve.checking': "Vérification de l'allocation pour {asset}",
   'common.approve.error': "Erreur pendant la vérification de l'allocation pour {asset}: {error}",
   'common.step': 'Étape {current}/{total}',
@@ -193,7 +197,8 @@ const common: CommonMessages = {
   'common.ledgerlive': 'Ledger Live',
   'common.metamask': 'MetaMask',
   'common.unknown': 'Inconnu',
-  'common.featureUnderDevelopment': 'Fonction en cours de développement, ne pas utiliser'
+  'common.featureUnderDevelopment': 'Fonction en cours de développement, ne pas utiliser',
+  'common.comingSoon': 'Bientôt disponible'
 }
 
 export default common
