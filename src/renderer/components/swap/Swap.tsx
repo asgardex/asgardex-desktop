@@ -1331,65 +1331,50 @@ export const Swap = ({
   const oSwapParams: O.Option<SwapTxParams> = useMemo(
     () => {
       const swapParamsThor = FP.pipe(
-        sequenceTOption(oPoolAddress, oSourceAssetWB, oQuote, oPriceSwapInFee),
-        O.map(
-          ([
-            poolAddress,
-            { walletType, walletAddress, walletAccount, walletIndex, hdMode },
-            txDetails,
-            oPriceSwapInFee
-          ]) => {
-            let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
-            if (!isTokenAsset(sourceAsset) && !isTradeAsset(sourceAsset) && !isSynthAsset(sourceAsset)) {
-              if (sourceChainAssetAmount.lte(amountToSwap.plus(oPriceSwapInFee.baseAmount))) {
-                amountToSwap = sourceChainAssetAmount.minus(oPriceSwapInFee.baseAmount)
-              }
-            }
-
-            return {
-              poolAddress,
-              asset: sourceAsset,
-              amount: amountToSwap,
-              memo: shortenMemo(txDetails.memo), // short asset
-              walletType,
-              sender: walletAddress,
-              walletAccount,
-              walletIndex,
-              hdMode,
-              dex
+        sequenceTOption(oPoolAddress, oSourceAssetWB, oQuote),
+        O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, txDetails]) => {
+          let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
+          if (!isTokenAsset(sourceAsset) && !isTradeAsset(sourceAsset) && !isSynthAsset(sourceAsset)) {
+            if (sourceChainAssetAmount.lt(amountToSwap.plus(swapFees.inFee.amount))) {
+              amountToSwap = sourceChainAssetAmount.minus(swapFees.inFee.amount)
             }
           }
-        )
+          return {
+            poolAddress,
+            asset: sourceAsset,
+            amount: amountToSwap,
+            memo: shortenMemo(txDetails.memo), // short asset
+            walletType,
+            sender: walletAddress,
+            walletAccount,
+            walletIndex,
+            hdMode,
+            dex
+          }
+        })
       )
       const swapParamsMaya = FP.pipe(
-        sequenceTOption(oPoolAddress, oSourceAssetWB, oQuoteMaya, oPriceSwapInFee),
-        O.map(
-          ([
-            poolAddress,
-            { walletType, walletAddress, walletAccount, walletIndex, hdMode },
-            quoteSwap,
-            oPriceSwapInFee
-          ]) => {
-            let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
-            if (!isTokenAsset(sourceAsset) && !isTradeAsset(sourceAsset) && !isSynthAsset(sourceAsset)) {
-              if (sourceChainAssetAmount.lte(amountToSwap.plus(oPriceSwapInFee.baseAmount))) {
-                amountToSwap = sourceChainAssetAmount.minus(oPriceSwapInFee.baseAmount)
-              }
-            }
-            return {
-              poolAddress,
-              asset: sourceAsset,
-              amount: amountToSwap,
-              memo: quoteSwap.memo, // The memo will be different based on the selected quote
-              walletType,
-              sender: walletAddress,
-              walletAccount,
-              walletIndex,
-              hdMode,
-              dex
+        sequenceTOption(oPoolAddress, oSourceAssetWB, oQuoteMaya),
+        O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, quoteSwap]) => {
+          let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
+          if (!isTokenAsset(sourceAsset) && !isTradeAsset(sourceAsset) && !isSynthAsset(sourceAsset)) {
+            if (sourceChainAssetAmount.lt(amountToSwap.plus(swapFees.inFee.amount))) {
+              amountToSwap = sourceChainAssetAmount.minus(swapFees.inFee.amount)
             }
           }
-        )
+          return {
+            poolAddress,
+            asset: sourceAsset,
+            amount: amountToSwap,
+            memo: quoteSwap.memo, // The memo will be different based on the selected quote
+            walletType,
+            sender: walletAddress,
+            walletAccount,
+            walletIndex,
+            hdMode,
+            dex
+          }
+        })
       )
       return dex.chain === THORChain ? swapParamsThor : swapParamsMaya
     },
@@ -1397,12 +1382,12 @@ export const Swap = ({
       oPoolAddress,
       oSourceAssetWB,
       oQuote,
-      oPriceSwapInFee,
       oQuoteMaya,
       dex,
       amountToSwapMax1e8,
       sourceAssetAmount.decimal,
       sourceAsset,
+      swapFees.inFee.amount,
       sourceChainAssetAmount
     ] // Include both quote dependencies
   )
