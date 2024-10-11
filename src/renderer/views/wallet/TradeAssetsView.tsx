@@ -175,8 +175,8 @@ export const TradeAssetsView: React.FC = (): JSX.Element => {
   }
   return (
     <>
-      <div className="flex w-full justify-end pb-10px">
-        <RefreshButton onClick={refreshHandler}></RefreshButton>
+      <div className="flex w-full justify-end pb-20px">
+        <RefreshButton onClick={refreshHandler} />
       </div>
       <AssetsNav />
       <TotalAssetValue
