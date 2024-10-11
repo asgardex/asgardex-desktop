@@ -40,7 +40,7 @@ export const ViewRoutes: React.FC<{}> = (): JSX.Element => {
   return (
     <Routes>
       {/* home */}
-      <Route path={appRoutes.base.template} element={<Navigate to={poolsRoutes.base.path()} />} />
+      <Route path={appRoutes.base.template} element={<Navigate to={walletRoutes.assets.template} />} />
       {/* pool routes */}
       <Route path={poolsRoutes.base.template} element={<PoolsOverview />} />
       <Route path={poolsRoutes.active.template} element={<PoolsOverview />} />
