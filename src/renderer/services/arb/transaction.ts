@@ -34,7 +34,8 @@ import {
   IsApprovedLD,
   SendPoolTxParams,
   IsApproveParams,
-  SendTxParams
+  SendTxParams,
+  EvmTxParams
 } from '../evm/types'
 import { ApiError, ErrorId, TxHashLD } from '../wallet/types'
 import { Client$, Client as ArbClient } from './types'
@@ -83,19 +84,28 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
               const nativeAsset = client.getAssetInfo()
 
               return Rx.from(routerContract.populateTransaction.depositWithExpiry(...depositParams)).pipe(
-                RxOp.switchMap((unsignedTx) =>
-                  Rx.from(
-                    client.transfer({
-                      asset: nativeAsset.asset,
-                      amount: isERC20 ? baseAmount(0, nativeAsset.decimal) : params.amount,
-                      memo: unsignedTx.data,
-                      recipient: router,
-                      gasPrice: gasPrices[params.feeOption],
-                      isMemoEncoded: true,
-                      gasLimit: ethers.BigNumber.from(160000)
-                    })
+                RxOp.switchMap((unsignedTx) => {
+                  const tx: EvmTxParams = {
+                    asset: nativeAsset.asset,
+                    amount: isERC20 ? baseAmount(0, nativeAsset.decimal) : params.amount,
+                    memo: unsignedTx.data, // Use the `data` from unsignedTx as the memo
+                    recipient: router, // Assuming the router address is passed in params
+                    gasPrice: gasPrices[params.feeOption], // Use the appropriate gas price option
+                    isMemoEncoded: true // Memo is encoded
+                  }
+
+                  // Estimate gas and return the transfer transaction as an observable
+                  return Rx.from(client.estimateGasLimit(tx)).pipe(
+                    RxOp.switchMap((gasLimit) =>
+                      Rx.from(
+                        client.transfer({
+                          ...tx, // Spread the original tx object
+                          gasLimit // Use the estimated gas limit
+                        })
+                      )
+                    )
                   )
-                )
+                })
               )
             }),
             RxOp.map((txResult) => txResult),
