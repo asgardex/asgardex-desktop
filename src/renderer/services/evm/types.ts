@@ -1,7 +1,8 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { FeeOption, Network } from '@xchainjs/xchain-client'
 import { FeesWithGasPricesAndLimits } from '@xchainjs/xchain-evm'
-import { Address, AnyAsset, Asset, BaseAmount } from '@xchainjs/xchain-util'
+import { TxParams as BaseEvmTxParams } from '@xchainjs/xchain-evm'
+import { Address, AnyAsset, Asset, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
 import { ethers } from 'ethers'
 import * as O from 'fp-ts/lib/Option'
 
@@ -33,6 +34,13 @@ export type SendTxParams = {
 
 export type SendPoolTxParams = SendTxParams & {
   router: O.Option<Address>
+}
+
+/**
+ * EVM transfer params
+ */
+export type EvmTxParams = BaseEvmTxParams & {
+  asset: Asset | TokenAsset
 }
 
 /**
