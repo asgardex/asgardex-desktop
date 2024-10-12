@@ -516,7 +516,6 @@ export const TradeSwap = ({
   }, [oRecipientAddress, targetAsset, streamingInterval, streamingQuantity])
 
   const [swapFeesRD] = useObservableState<SwapFeesRD>(() => {
-    console.log(sourceAsset.type === AssetType.TRADE ? AssetRuneNative : sourceAsset)
     return FP.pipe(
       fees$({
         inAsset: sourceAsset.type === AssetType.TRADE ? AssetRuneNative : sourceAsset,

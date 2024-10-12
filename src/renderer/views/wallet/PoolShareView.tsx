@@ -229,7 +229,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
 
   return (
     <>
-      <Row justify="end" style={{ marginBottom: '20px' }}>
+      <Row justify="end" className="pb-20px">
         <RefreshButton onClick={refreshHandler} disabled={disableRefresh} />
       </Row>
       <AssetsNav />

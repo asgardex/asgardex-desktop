@@ -4,7 +4,9 @@ import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { DASH_DECIMAL } from '@xchainjs/xchain-dash'
+import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
+import { EthChain } from '@xchainjs/xchain-mayachain-query'
 import { MidgardQuery } from '@xchainjs/xchain-midgard-query'
 import { XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -61,6 +63,13 @@ const getDecimal = (asset: AnyAsset, dex: Dex): Promise<number> => {
   }
   if (isBchChain(chain)) {
     return Promise.resolve(BCH_DECIMAL)
+  }
+  // Fix until Decimals for maya midgard is completed.
+  if (
+    asset.chain === EthChain &&
+    asset.symbol.toLowerCase() === String('PEPE-0x6982508145454Ce325dDbE47a25d4ec3d2311933').toLowerCase()
+  ) {
+    return Promise.resolve(ETH_GAS_ASSET_DECIMAL)
   }
 
   const midgardQuery = new MidgardQuery()
