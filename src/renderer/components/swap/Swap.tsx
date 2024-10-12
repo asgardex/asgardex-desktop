@@ -1331,65 +1331,50 @@ export const Swap = ({
   const oSwapParams: O.Option<SwapTxParams> = useMemo(
     () => {
       const swapParamsThor = FP.pipe(
-        sequenceTOption(oPoolAddress, oSourceAssetWB, oQuote, oPriceSwapInFee),
-        O.map(
-          ([
-            poolAddress,
-            { walletType, walletAddress, walletAccount, walletIndex, hdMode },
-            txDetails,
-            oPriceSwapInFee
-          ]) => {
-            let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
-            if (!isTokenAsset(sourceAsset) && !isTradeAsset(sourceAsset) && !isSynthAsset(sourceAsset)) {
-              if (sourceChainAssetAmount.lte(amountToSwap.plus(oPriceSwapInFee.baseAmount))) {
-                amountToSwap = sourceChainAssetAmount.minus(oPriceSwapInFee.baseAmount)
-              }
-            }
-
-            return {
-              poolAddress,
-              asset: sourceAsset,
-              amount: amountToSwap,
-              memo: shortenMemo(txDetails.memo), // short asset
-              walletType,
-              sender: walletAddress,
-              walletAccount,
-              walletIndex,
-              hdMode,
-              dex
+        sequenceTOption(oPoolAddress, oSourceAssetWB, oQuote),
+        O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, txDetails]) => {
+          let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
+          if (!isTokenAsset(sourceAsset) && !isTradeAsset(sourceAsset) && !isSynthAsset(sourceAsset)) {
+            if (sourceChainAssetAmount.lt(amountToSwap.plus(swapFees.inFee.amount))) {
+              amountToSwap = sourceChainAssetAmount.minus(swapFees.inFee.amount)
             }
           }
-        )
+          return {
+            poolAddress,
+            asset: sourceAsset,
+            amount: amountToSwap,
+            memo: shortenMemo(txDetails.memo), // short asset
+            walletType,
+            sender: walletAddress,
+            walletAccount,
+            walletIndex,
+            hdMode,
+            dex
+          }
+        })
       )
       const swapParamsMaya = FP.pipe(
-        sequenceTOption(oPoolAddress, oSourceAssetWB, oQuoteMaya, oPriceSwapInFee),
-        O.map(
-          ([
-            poolAddress,
-            { walletType, walletAddress, walletAccount, walletIndex, hdMode },
-            quoteSwap,
-            oPriceSwapInFee
-          ]) => {
-            let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
-            if (!isTokenAsset(sourceAsset) && !isTradeAsset(sourceAsset) && !isSynthAsset(sourceAsset)) {
-              if (sourceChainAssetAmount.lte(amountToSwap.plus(oPriceSwapInFee.baseAmount))) {
-                amountToSwap = sourceChainAssetAmount.minus(oPriceSwapInFee.baseAmount)
-              }
-            }
-            return {
-              poolAddress,
-              asset: sourceAsset,
-              amount: amountToSwap,
-              memo: quoteSwap.memo, // The memo will be different based on the selected quote
-              walletType,
-              sender: walletAddress,
-              walletAccount,
-              walletIndex,
-              hdMode,
-              dex
+        sequenceTOption(oPoolAddress, oSourceAssetWB, oQuoteMaya),
+        O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, quoteSwap]) => {
+          let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
+          if (!isTokenAsset(sourceAsset) && !isTradeAsset(sourceAsset) && !isSynthAsset(sourceAsset)) {
+            if (sourceChainAssetAmount.lt(amountToSwap.plus(swapFees.inFee.amount))) {
+              amountToSwap = sourceChainAssetAmount.minus(swapFees.inFee.amount)
             }
           }
-        )
+          return {
+            poolAddress,
+            asset: sourceAsset,
+            amount: amountToSwap,
+            memo: quoteSwap.memo, // The memo will be different based on the selected quote
+            walletType,
+            sender: walletAddress,
+            walletAccount,
+            walletIndex,
+            hdMode,
+            dex
+          }
+        })
       )
       return dex.chain === THORChain ? swapParamsThor : swapParamsMaya
     },
@@ -1397,12 +1382,12 @@ export const Swap = ({
       oPoolAddress,
       oSourceAssetWB,
       oQuote,
-      oPriceSwapInFee,
       oQuoteMaya,
       dex,
       amountToSwapMax1e8,
       sourceAssetAmount.decimal,
       sourceAsset,
+      swapFees.inFee.amount,
       sourceChainAssetAmount
     ] // Include both quote dependencies
   )
@@ -1562,6 +1547,75 @@ export const Swap = ({
     [isApprovedERC20Token$, subscribeIsApprovedState]
   )
 
+  const reloadApproveFeesHandler = useCallback(() => {
+    FP.pipe(oApproveParams, O.map(reloadApproveFee))
+  }, [oApproveParams, reloadApproveFee])
+
+  // Swap start time
+  const [swapStartTime, setSwapStartTime] = useState<number>(0)
+
+  const setSourceAsset = useCallback(
+    async (asset: AnyAsset) => {
+      // delay to avoid render issues while switching
+      resetIsApprovedState()
+      await delay(100)
+      setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
+      setQuote(O.none)
+      setQuoteMaya(O.none)
+      onChangeAsset({
+        source: asset,
+        // back to default 'keystore' type
+        sourceWalletType: 'keystore',
+        target: targetAsset,
+        targetWalletType: oTargetWalletType,
+        recipientAddress: oRecipientAddress
+      })
+      await delay(100) // Optional delay to ensure state updates properly
+      // Step 3: Check approval for the new asset
+      FP.pipe(
+        oApproveParams, // Use the new asset's approval parameters
+        O.map((params) => checkApprovedStatus(params))
+      )
+    },
+    [
+      checkApprovedStatus,
+      initialAmountToSwapMax1e8,
+      oApproveParams,
+      oRecipientAddress,
+      oTargetWalletType,
+      onChangeAsset,
+      resetIsApprovedState,
+      setAmountToSwapMax1e8,
+      targetAsset
+    ]
+  )
+
+  const setTargetAsset = useCallback(
+    async (asset: AnyAsset) => {
+      // Step 1: Reset approval state before changing the asset
+      resetIsApprovedState()
+
+      // Step 2: Switch target asset
+      await delay(100) // Optional delay to ensure state updates properly
+
+      onChangeAsset({
+        source: sourceAsset,
+        sourceWalletType,
+        target: asset,
+        // Reset the wallet type for the new target asset
+        targetWalletType: O.some('keystore'),
+        recipientAddress: O.none
+      })
+      await delay(100) // Optional delay to ensure state updates properly
+      // Step 3: Check approval for the new asset
+      FP.pipe(
+        oApproveParams, // Use the new asset's approval parameters
+        O.map((params) => checkApprovedStatus(params))
+      )
+    },
+    [onChangeAsset, resetIsApprovedState, sourceAsset, sourceWalletType, checkApprovedStatus, oApproveParams]
+  )
+
   // whenever `oApproveParams` has been updated,
   // `approveFeeParamsUpdated` needs to be called to update `approveFeesRD`
   // + `checkApprovedStatus` needs to be called
@@ -1584,49 +1638,6 @@ export const Swap = ({
       })
     )
   }, [approveFeeParamsUpdated, checkApprovedStatus, oApproveParams, oPoolAddress])
-
-  const reloadApproveFeesHandler = useCallback(() => {
-    FP.pipe(oApproveParams, O.map(reloadApproveFee))
-  }, [oApproveParams, reloadApproveFee])
-
-  // Swap start time
-  const [swapStartTime, setSwapStartTime] = useState<number>(0)
-
-  const setSourceAsset = useCallback(
-    async (asset: AnyAsset) => {
-      // delay to avoid render issues while switching
-      await delay(100)
-      setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
-      setQuote(O.none)
-      setQuoteMaya(O.none)
-      onChangeAsset({
-        source: asset,
-        // back to default 'keystore' type
-        sourceWalletType: 'keystore',
-        target: targetAsset,
-        targetWalletType: oTargetWalletType,
-        recipientAddress: oRecipientAddress
-      })
-    },
-    [initialAmountToSwapMax1e8, oRecipientAddress, oTargetWalletType, onChangeAsset, setAmountToSwapMax1e8, targetAsset]
-  )
-
-  const setTargetAsset = useCallback(
-    async (asset: AnyAsset) => {
-      // delay to avoid render issues while switching
-      await delay(100)
-      onChangeAsset({
-        source: sourceAsset,
-        sourceWalletType,
-        target: asset,
-        // back to default 'keystore' type
-        targetWalletType: O.some('keystore'),
-        // Set recipient address to 'none' will lead to use keystore address in `WalletView`
-        recipientAddress: O.none
-      })
-    },
-    [onChangeAsset, sourceAsset, sourceWalletType]
-  )
 
   const minAmountError = useMemo(() => {
     if (isZeroAmountToSwap) return false
