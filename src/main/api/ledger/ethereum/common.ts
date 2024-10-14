@@ -4,8 +4,8 @@ import { EVMClientParams } from '@xchainjs/xchain-evm'
 import { EtherscanProvider } from '@xchainjs/xchain-evm-providers'
 import { BigNumber, ethers } from 'ethers'
 
-import { etherscanApiKey } from '../api/etherscan'
-import { envOrDefault } from '../utils/env'
+import { etherscanApiKey } from '../../../../shared/api/etherscan'
+import { envOrDefault } from '../../../../shared/utils/env'
 
 export const DEFAULT_APPROVE_GAS_LIMIT_FALLBACK = '65000'
 

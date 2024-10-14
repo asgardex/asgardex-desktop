@@ -6,8 +6,8 @@ import { IPCLedgerApproveERC20TokenParams } from '../../../../shared/api/io'
 import { defaultArbParams } from '../../../../shared/arb/const'
 import { defaultAvaxParams } from '../../../../shared/avax/const'
 import { defaultBscParams } from '../../../../shared/bsc/const'
-import { defaultEthParams } from '../../../../shared/ethereum/const'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
+import { defaultEthParams } from '../ethereum/common'
 
 export const approveLedgerERC20Token = async ({
   chain,
