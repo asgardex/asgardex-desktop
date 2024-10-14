@@ -99,7 +99,7 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
               case KUJIChain:
                 return KUJI.txs$({ asset: O.none, walletAddress, walletIndex })
               case GAIAChain:
-                return COSMOS.txs$({ asset: O.none, walletAddress, walletIndex })
+                return COSMOS.txs$({ asset: O.some(asset), walletAddress, walletIndex })
               case RadixChain:
                 return XRD.txs$({ asset: O.some(asset), walletAddress, walletIndex })
               default:
