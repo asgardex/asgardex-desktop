@@ -8,12 +8,13 @@ import * as E from 'fp-ts/Either'
 
 import { isEthAsset } from '../../../../renderer/helpers/assetHelper'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
-import { DEPOSIT_EXPIRATION_OFFSET, ETHAddress, defaultEthParams } from '../../../../shared/ethereum/const'
+import { DEPOSIT_EXPIRATION_OFFSET, ETHAddress } from '../../../../shared/ethereum/const'
 import { ROUTER_ABI } from '../../../../shared/evm/abi'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
+import { defaultEthParams } from './common'
 
 /**
  * Sends ETH tx using Ledger
