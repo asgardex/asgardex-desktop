@@ -1,12 +1,12 @@
 import TransportNodeHidSingleton from '@ledgerhq/hw-transport-node-hid-singleton'
 import { FeeOption, Network, TxHash } from '@xchainjs/xchain-client'
+import { defaultEthParams } from '@xchainjs/xchain-ethereum'
 import { ClientLedger, LedgerSigner } from '@xchainjs/xchain-evm'
 
 import { IPCLedgerApproveERC20TokenParams } from '../../../../shared/api/io'
 import { defaultArbParams } from '../../../../shared/arb/const'
 import { defaultAvaxParams } from '../../../../shared/avax/const'
 import { defaultBscParams } from '../../../../shared/bsc/const'
-import { defaultEthParams } from '../../../../shared/ethereum/const'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { ethProviders } from '../ethereum/common'
 

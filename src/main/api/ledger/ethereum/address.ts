@@ -1,11 +1,10 @@
 import type Transport from '@ledgerhq/hw-transport'
 import { Network } from '@xchainjs/xchain-client'
-import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { ETHChain, defaultEthParams } from '@xchainjs/xchain-ethereum'
 import * as ETH from '@xchainjs/xchain-evm'
 import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
-import { defaultEthParams } from '../../../../shared/ethereum/const'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
