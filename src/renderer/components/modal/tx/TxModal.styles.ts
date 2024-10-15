@@ -56,9 +56,18 @@ export const ResultButton = styled(UIButton)`
 export const ErrorView = styled(UIErrorView)`
   padding: 0px;
   max-width: 100%;
-  word-break: break-word;
-  white-space: normal;
+  word-break: break-all;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  overflow: auto;
+  display: block;
+  font-size: 14px;
+  line-height: 1.5;
+  background: #f7f7f7; /* Optional styling for better readability */
+  padding: 10px; /* Padding for spacing */
+  border: 1px solid #ccc; /* Optional border for clarity */
 `
+
 // Style for displaying the status of each stage in the transaction
 export const StageStatus = styled.div`
   margin-bottom: 10px; // Space between each status

@@ -5,11 +5,12 @@ import * as ETH from '@xchainjs/xchain-evm'
 import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
+import { defaultEthParams } from '../../../../shared/ethereum/const'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
-import { defaultEthParams } from './common'
+import { ethProviders } from './common'
 
 export const getAddress = async ({
   transport,
@@ -27,6 +28,7 @@ export const getAddress = async ({
   try {
     const ledgerClient = new ETH.ClientLedger({
       ...defaultEthParams,
+      dataProviders: [ethProviders],
       signer: new ETH.LedgerSigner({
         transport,
         provider: defaultEthParams.providers[Network.Mainnet],

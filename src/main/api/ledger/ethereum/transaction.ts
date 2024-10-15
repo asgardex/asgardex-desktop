@@ -8,13 +8,13 @@ import * as E from 'fp-ts/Either'
 
 import { isEthAsset } from '../../../../renderer/helpers/assetHelper'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
-import { DEPOSIT_EXPIRATION_OFFSET, ETHAddress } from '../../../../shared/ethereum/const'
+import { DEPOSIT_EXPIRATION_OFFSET, ETHAddress, defaultEthParams } from '../../../../shared/ethereum/const'
 import { ROUTER_ABI } from '../../../../shared/evm/abi'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
-import { defaultEthParams } from './common'
+import { ethProviders } from './common'
 
 /**
  * Sends ETH tx using Ledger
@@ -45,6 +45,7 @@ export const send = async ({
   try {
     const ledgerClient = new ETH.ClientLedger({
       ...defaultEthParams,
+      dataProviders: [ethProviders],
       signer: new ETH.LedgerSigner({
         transport,
         provider: defaultEthParams.providers[Network.Mainnet],
@@ -53,8 +54,15 @@ export const send = async ({
       rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
       network
     })
-    const ethAsset = asset as Asset
-    const txHash = await ledgerClient.transfer({ walletIndex, asset: ethAsset, recipient, amount, memo, feeOption })
+
+    const txHash = await ledgerClient.transfer({
+      walletIndex,
+      asset: asset as Asset | TokenAsset,
+      memo,
+      amount,
+      recipient,
+      feeOption
+    })
 
     if (!txHash) {
       return E.left({
@@ -114,6 +122,7 @@ export const deposit = async ({
 
     const ledgerClient = new ETH.ClientLedger({
       ...defaultEthParams,
+      dataProviders: [ethProviders],
       signer: new ETH.LedgerSigner({
         transport,
         provider: defaultEthParams.providers[Network.Mainnet],
