@@ -25,13 +25,13 @@ import { useDex } from '../../hooks/useDex'
 import { useMayaScanPrice } from '../../hooks/useMayascanPrice'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
-import { usePrivateData } from '../../hooks/usePrivateData'
 import { useTotalWalletBalance } from '../../hooks/useWalletBalance'
 import * as walletRoutes from '../../routes/wallet'
 import { userChains$ } from '../../services/storage/userChains'
 import { reloadBalancesByChain } from '../../services/wallet'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ChainBalances, SelectedWalletAsset } from '../../services/wallet/types'
+import { useApp } from '../../store/app/hooks'
 
 export const AssetsView: React.FC = (): JSX.Element => {
   const navigate = useNavigate()
@@ -41,7 +41,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
   const { network } = useNetwork()
   const { dex } = useDex()
   const { mayaScanPriceRD } = useMayaScanPrice()
-  const { isPrivate } = usePrivateData()
+  const { isPrivate } = useApp()
 
   const {
     service: {

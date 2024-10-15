@@ -47,7 +47,6 @@ import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
-import { usePrivateData } from '../../hooks/usePrivateData'
 import { useValidateAddress } from '../../hooks/useValidateAddress'
 import { swap } from '../../routes/pools'
 import { SwapRouteParams, SwapRouteTargetWalletType } from '../../routes/pools/swap'
@@ -57,6 +56,7 @@ import { DEFAULT_SLIP_TOLERANCE } from '../../services/const'
 import { TradeAccount } from '../../services/thorchain/types'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ledgerAddressToWalletAddress } from '../../services/wallet/util'
+import { useApp } from '../../store/app/hooks'
 import { isSlipTolerance, SlipTolerance } from '../../types/asgardex'
 
 type UpdateLedgerAddress = { chain: Chain; network: Network }
@@ -125,7 +125,7 @@ const SuccessRouteView: React.FC<Props> = ({
 
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()
-  const { isPrivate } = usePrivateData()
+  const { isPrivate } = useApp()
 
   const pricePool = dex.chain === THORChain ? pricePoolThor : pricePoolMaya
 
@@ -574,7 +574,7 @@ const SuccessTradeRouteView: React.FC<Props> = ({
   const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
   const { mimirHalt } = useMimirHalt()
   const pricePool = usePricePool()
-  const { isPrivate } = usePrivateData()
+  const { isPrivate } = useApp()
   const { thorchainQuery } = useThorchainQueryContext()
   const { slipTolerance$, changeSlipTolerance } = useAppContext()
   const { dex } = useDex()

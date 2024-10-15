@@ -35,12 +35,12 @@ import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { usePricePool } from '../../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../../hooks/usePricePoolMaya'
-import { usePrivateData } from '../../../hooks/usePrivateData'
 import { useProtocolLimit } from '../../../hooks/useProtocolLimit'
 import * as poolsRoutes from '../../../routes/pools'
 import { PoolAddress, PoolAssetsRD } from '../../../services/midgard/types'
 import { toPoolData } from '../../../services/midgard/utils'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
+import { useApp } from '../../../store/app/hooks'
 import { Props } from './SymDepositView.types'
 
 export const SymDepositView: React.FC<Props> = (props) => {
@@ -57,7 +57,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
   const intl = useIntl()
 
   const { network } = useNetwork()
-  const { isPrivate } = usePrivateData()
+  const { isPrivate } = useApp()
 
   const { dex } = useDex()
 

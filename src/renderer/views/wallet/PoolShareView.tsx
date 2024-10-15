@@ -28,7 +28,7 @@ import { useDex } from '../../hooks/useDex'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePoolShares } from '../../hooks/usePoolShares'
-import { usePrivateData } from '../../hooks/usePrivateData'
+import { useApp } from '../../store/app/hooks'
 import { BaseAmountRD } from '../../types'
 import * as H from './PoolShareView.helper'
 
@@ -77,7 +77,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   const poolsRD = useObservableState(dex.chain === THORChain ? poolsState$ : mayaPoolsState$, RD.pending)
   const { addressByChain$ } = useChainContext()
 
-  const { isPrivate } = usePrivateData()
+  const { isPrivate } = useApp()
 
   useEffect(() => {
     if (dex.chain === THORChain) {
