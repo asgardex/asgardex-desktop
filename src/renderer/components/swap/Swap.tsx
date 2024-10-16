@@ -1766,7 +1766,7 @@ export const Swap = ({
   }
 
   const labelMin = useMemo(
-    () => (slider <= 0 ? `Limit Swap` : `` || slider < 50 ? 'Time Optimised' : `Price Optimised`),
+    () => (slider <= 0 ? `Limit Swap` : slider < 50 ? 'Time Optimised' : `Price Optimised`),
     [slider]
   )
 
@@ -1831,7 +1831,7 @@ export const Swap = ({
       toolTip =
         quantity === 0
           ? `${dex.chain === THORChain ? 'Thornode' : 'Mayanode'} decides the swap count`
-          : `` || quantity === maxStreamingQuantity
+          : quantity === maxStreamingQuantity
           ? `Max sub swaps ${maxStreamingQuantity}`
           : ''
     }
@@ -2746,6 +2746,7 @@ export const Swap = ({
           amount={{ amount: amountToSwapMax1e8, asset: sourceAsset }}
           priceAmount={{ asset: priceAmountToSwapMax1e8.asset, amount: priceAmountToSwapMax1e8.baseAmount }}
           assets={selectableSourceAssets}
+          walletBalance={sourceAssetAmountMax1e8}
           network={network}
           hasAmountShortcut
           onChangeAsset={setSourceAsset}

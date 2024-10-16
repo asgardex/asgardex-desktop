@@ -3,6 +3,7 @@ import React, { useCallback, useState } from 'react'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { AnyAsset } from '@xchainjs/xchain-util'
+import clsx from 'clsx'
 
 import { emptyString } from '../../../../helpers/stringHelper'
 import { BaseButton } from '../../button'
@@ -63,10 +64,11 @@ export const AssetSelect: React.FC<Props> = (props): JSX.Element => {
         network={network}
       />
       <BaseButton
-        className={`group px-10px py-[2px] ${
-          !disableButton && !shadowless ? 'hover:shadow-full hover:dark:shadow-fulld' : ''
-        }
-        focus:outline-none ${className}`}
+        className={clsx(
+          'group py-[2px] px-10px focus:outline-none',
+          { 'hover:shadow-full hover:dark:shadow-fulld': !disableButton && !shadowless },
+          className
+        )}
         disabled={disableButton}
         onClick={buttonClickHandler}>
         <AssetData noTicker={!showAssetName} className="" asset={asset} network={network} />
