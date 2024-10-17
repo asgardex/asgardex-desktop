@@ -103,7 +103,7 @@ import { getSwapMemo, shortenMemo } from '../../helpers/memoHelper'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { isPoolDetails } from '../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../helpers/poolHelperMaya'
-import { liveData, LiveData } from '../../helpers/rx/liveData'
+import { LiveData } from '../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../helpers/stringHelper'
 import { calculateTransactionTime, formatSwapTime, Time } from '../../helpers/timeHelper'
 import {
@@ -547,8 +547,10 @@ export const Swap = ({
         memo: swapMemo,
         outAsset: targetAsset
       }),
-      liveData.map((chainFees) => {
-        prevChainFees.current = O.some(chainFees)
+      RxOp.map((chainFees) => {
+        if (RD.isSuccess(chainFees)) {
+          prevChainFees.current = O.some(chainFees.value)
+        }
         return chainFees
       })
     )
@@ -1504,9 +1506,11 @@ export const Swap = ({
       RxOp.switchMap((params) =>
         FP.pipe(
           approveFee$(params),
-          liveData.map((fee) => {
+          RxOp.map((fee) => {
             // store every successfully loaded fees
-            prevApproveFee.current = O.some(fee)
+            if (RD.isSuccess(fee)) {
+              prevApproveFee.current = O.some(fee.value)
+            }
             return fee
           })
         )

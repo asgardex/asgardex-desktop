@@ -1,12 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { Client as DogeClient, defaultDogeParams, DOGEChain, AssetDOGE } from '@xchainjs/xchain-doge'
-import {
-  BitgoProvider,
-  BlockcypherNetwork,
-  BlockcypherProvider,
-  UtxoOnlineDataProviders
-} from '@xchainjs/xchain-utxo-providers'
+import { Client as DogeClient, defaultDogeParams, DOGEChain, AssetDOGE, BitgoProviders } from '@xchainjs/xchain-doge'
+import { BlockcypherNetwork, BlockcypherProvider, UtxoOnlineDataProviders } from '@xchainjs/xchain-utxo-providers'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -57,19 +52,6 @@ const clientState$: ClientState$ = FP.pipe(
                 [Network.Testnet]: testnetBlockcypherProvider,
                 [Network.Stagenet]: mainnetBlockcypherProvider,
                 [Network.Mainnet]: mainnetBlockcypherProvider
-              }
-              //======================
-              // Bitgo
-              //======================
-              const mainnetBitgoProvider = new BitgoProvider({
-                baseUrl: 'https://app.bitgo.com',
-                chain: DOGEChain
-              })
-
-              const BitgoProviders: UtxoOnlineDataProviders = {
-                [Network.Testnet]: undefined,
-                [Network.Stagenet]: mainnetBitgoProvider,
-                [Network.Mainnet]: mainnetBitgoProvider
               }
               const dogeInitParams = {
                 ...defaultDogeParams,
