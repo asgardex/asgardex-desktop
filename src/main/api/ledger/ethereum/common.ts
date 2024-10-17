@@ -23,12 +23,12 @@ export const DEPOSIT_EXPIRATION_OFFSET = 15 * 60 // 15min in seconds
 
 export const ETHAddress = '0x0000000000000000000000000000000000000000'
 
-const ETH_MAINNET_ETHERS_PROVIDER = new ethers.providers.EtherscanProvider(
+export const ETH_MAINNET_ETHERS_PROVIDER = new ethers.providers.EtherscanProvider(
   'homestead',
   envOrDefault(process.env.REACT_APP_ETHERSCAN_API_KEY, '')
 )
 const network = ethers.providers.getNetwork('sepolia')
-const ETH_TESTNET_ETHERS_PROVIDER = new ethers.providers.EtherscanProvider(network)
+export const ETH_TESTNET_ETHERS_PROVIDER = new ethers.providers.EtherscanProvider(network)
 
 // =====ONLINE providers=====
 const ETH_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
