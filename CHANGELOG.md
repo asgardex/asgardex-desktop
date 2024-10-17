@@ -1,7 +1,7 @@
 # 1.22.7 (2024-tba-tba)
 
 ## Updates/Fixes
-- fixed ledger trade asset bug [#427](https://github.com/asgardex/asgardex-desktop/pull/422)
+- fixed ledger trade asset bug [#427](https://github.com/asgardex/asgardex-desktop/pull/428)
 - fixed cosmos url [#413] (https://github.com/asgardex/asgardex-desktop/pull/418)
 
 # 1.22.6 (2024-10-6)
