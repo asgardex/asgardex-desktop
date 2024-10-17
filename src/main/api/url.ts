@@ -36,7 +36,7 @@ const EXTERNALS_WHITELIST = [
   'testnet.thornode.thorchain.info',
   'stagenet-thornode.ninerealms.com',
   'stagenet-rpc.ninerealms.com',
-  'bigdipper.live',
+  'www.mintscan.io',
   'explorer.theta-testnet.polypore.xyz',
   'snowtrace.dev',
   'routescan.io',

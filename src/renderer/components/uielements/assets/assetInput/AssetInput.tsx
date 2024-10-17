@@ -10,9 +10,11 @@ import {
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
+import clsx from 'clsx'
 import * as FP from 'fp-ts/lib/function'
 import { useIntl } from 'react-intl'
 
+import { ReactComponent as WalletIcon } from '../../../../assets/svg/icon-wallet.svg'
 import { isUSDAsset } from '../../../../helpers/assetHelper'
 import { AssetWithAmount, FixmeType } from '../../../../types/asgardex'
 import { Button } from '../../button'
@@ -25,6 +27,7 @@ export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
 export type Props = {
   title?: string
   amount: AssetWithAmount
+  walletBalance?: BaseAmount
   priceAmount: AssetWithAmount
   assets: AnyAsset[]
   network: Network
@@ -73,6 +76,7 @@ export const AssetInput: React.FC<Props> = (props): JSX.Element => {
   const {
     title,
     amount: { amount, asset },
+    walletBalance,
     extraContent = <></>,
     priceAmount: { amount: priceAmount, asset: priceAsset },
     assets,
@@ -114,15 +118,14 @@ export const AssetInput: React.FC<Props> = (props): JSX.Element => {
   }, [])
 
   return (
-    <div
-      className={`flex  flex-col
-          rounded-lg border border-gray1 py-2 px-4
-          dark:border-gray0d ${className}`}>
+    <div className={clsx('flex flex-col rounded-lg py-2 px-4', 'border border-gray1 dark:border-gray0d', className)}>
       <div className="flex items-center justify-between">
         {title && (
           <p
-            className={`m-0 bg-bg0 font-main text-[14px] dark:bg-bg0d
-              ${showError ? 'text-error0 dark:text-error0d' : 'text-gray2 dark:text-gray2d'}`}>
+            className={clsx(
+              'm-0 bg-bg0 font-main text-[14px] dark:bg-bg0d',
+              showError ? 'text-error0 dark:text-error0d' : 'text-gray2 dark:text-gray2d'
+            )}>
             {title}
           </p>
         )}
@@ -137,13 +140,7 @@ export const AssetInput: React.FC<Props> = (props): JSX.Element => {
         )}
       </div>
       <div
-        className={`
-          flex
-          ${showError ? 'border-error0 dark:border-error0d' : ''}
-          ease
-          uppercase
-          ${classNameInput}
-        `}
+        className={clsx('ease flex uppercase', { 'border-error0 dark:border-error0d': showError }, classNameInput)}
         ref={inputWrapperRef}
         onClick={handleClickWrapper}>
         <div className="flex w-full flex-col py-1">
@@ -156,11 +153,7 @@ export const AssetInput: React.FC<Props> = (props): JSX.Element => {
             disabled={asLabel || disabled}
             decimal={amount.decimal}
             // override text style of input for acting as label only
-            className={`
-              w-full
-              px-0
-              leading-none
-              ${asLabel ? 'text-text0 !opacity-100 dark:text-text0d' : ''}`}
+            className={clsx('w-full px-0 leading-none', { 'text-text0 !opacity-100 dark:text-text0d': asLabel })}
           />
 
           <p className="mb-0 font-main text-[14px] leading-none text-gray1 dark:text-gray1d">
@@ -173,16 +166,28 @@ export const AssetInput: React.FC<Props> = (props): JSX.Element => {
           </p>
         </div>
 
-        <AssetSelect
-          className={`h-full ${ASSET_SELECT_BUTTON_WIDTH}`}
-          onSelect={onChangeAsset}
-          asset={asset}
-          assets={assets}
-          network={network}
-          dialogHeadline={intl.formatMessage({ id: 'common.asset.chooseAsset' })}
-          shadowless
-          disabled={disabled}
-        />
+        <div className="flex flex-col">
+          <AssetSelect
+            className={`h-full ${ASSET_SELECT_BUTTON_WIDTH}`}
+            onSelect={onChangeAsset}
+            asset={asset}
+            assets={assets}
+            network={network}
+            dialogHeadline={intl.formatMessage({ id: 'common.asset.chooseAsset' })}
+            shadowless
+            disabled={disabled}
+          />
+          {walletBalance ? (
+            <div className="flex items-center justify-end space-x-1 pr-4">
+              <WalletIcon className="h-5 w-5 text-gray1 dark:text-gray1d" />
+              <p className="mb-0 text-[14px] text-gray1 dark:text-gray1d">
+                {baseToAsset(walletBalance).amount().toString()}
+              </p>
+            </div>
+          ) : (
+            <></>
+          )}
+        </div>
       </div>
       <div className="flex flex-row">
         <div className="w-full">{extraContent}</div>
@@ -191,9 +196,9 @@ export const AssetInput: React.FC<Props> = (props): JSX.Element => {
           <CheckButton
             size="medium"
             color="neutral"
-            className={`${ASSET_SELECT_BUTTON_WIDTH} rounded-b-lg bg-gray0 py-5px dark:bg-gray0d ${
-              !hasLedger ? 'hidden' : ''
-            }`}
+            className={clsx(ASSET_SELECT_BUTTON_WIDTH, 'rounded-b-lg bg-gray0 py-5px dark:bg-gray0d', {
+              hidden: !hasLedger
+            })}
             checked={useLedger}
             clickHandler={useLedgerHandler}>
             {intl.formatMessage({ id: 'ledger.title' })}

@@ -257,18 +257,20 @@ export const AppView: React.FC = (): JSX.Element => {
 
   return (
     <Styled.AppWrapper>
-      <Styled.AppLayout>
+      <div className="flex h-full flex-col">
         <AppUpdateView />
-        {isDesktopView && <Sidebar commitHash={envOrDefault($COMMIT_HASH, '')} isDev={$IS_DEV} publicIP={publicIP} />}
-        <View>
-          <Header />
-          {renderMidgardError}
-          {renderImportKeystoreWalletsError}
-          {renderImportLedgerAddressesError}
-          {renderHaltedChainsWarning}
-          <ViewRoutes />
-        </View>
-      </Styled.AppLayout>
+        <Styled.AppLayout>
+          {isDesktopView && <Sidebar commitHash={envOrDefault($COMMIT_HASH, '')} isDev={$IS_DEV} publicIP={publicIP} />}
+          <View>
+            <Header />
+            {renderMidgardError}
+            {renderImportKeystoreWalletsError}
+            {renderImportLedgerAddressesError}
+            {renderHaltedChainsWarning}
+            <ViewRoutes />
+          </View>
+        </Styled.AppLayout>
+      </div>
     </Styled.AppWrapper>
   )
 }

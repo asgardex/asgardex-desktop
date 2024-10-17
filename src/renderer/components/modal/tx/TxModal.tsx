@@ -25,12 +25,6 @@ export const TxModal: React.FC<Props> = (props): JSX.Element => {
   const { title, txRD, startTime, onClose, onFinish, extra = <></>, extraResult, timerValue = NaN } = props
 
   const intl = useIntl()
-  const truncateErrorMessage = (message: string, maxLength = 100): string => {
-    if (message.length > maxLength) {
-      return `${message.substring(0, maxLength)}...`
-    }
-    return message
-  }
 
   const renderTimer = useMemo(
     () => (
@@ -41,9 +35,8 @@ export const TxModal: React.FC<Props> = (props): JSX.Element => {
             () => <TxTimer status={true} />,
             () => <TxTimer status={true} maxValue={100} value={timerValue} startTime={startTime} />,
             (error) => (
-              <Styled.ErrorView
-                subTitle={truncateErrorMessage(error?.msg || intl.formatMessage({ id: 'common.error' }))}
-              />
+              // Show full error message without truncation
+              <Styled.ErrorView subTitle={error?.msg || intl.formatMessage({ id: 'common.error' })} />
             ),
             () => <TxTimer status={false} />
           )
