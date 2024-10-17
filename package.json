@@ -128,6 +128,7 @@
     "fp-ts-rxjs": "^0.6.15",
     "fs-extra": "^10.1.0",
     "io-ts": "^2.2.16",
+    "io-ts-types": "^0.5.19",
     "lodash.shuffle": "^4.2.0",
     "observable-hooks": "^4.2.1",
     "qrcode": "^1.5.3",

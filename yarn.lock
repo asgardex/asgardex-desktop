@@ -10712,6 +10712,7 @@ __metadata:
     git-revision-webpack-plugin: "npm:^5.0.0"
     husky: "npm:^8.0.1"
     io-ts: "npm:^2.2.16"
+    io-ts-types: "npm:^0.5.19"
     jest: "npm:^29.7.0"
     jest-environment-jsdom: "npm:^29.7.0"
     jest-watch-typeahead: "npm:^2.2.2"
@@ -17840,6 +17841,18 @@ __metadata:
     monocle-ts: ^2.0.0
     newtype-ts: ^0.3.2
   checksum: 10/fde12f72a05527ca12d9862985effdab2ca049d6049ac6f2db4eb150cf65d90f63fad8e0d768512cb682e5e63b568891f791aed733a0a54fee454bbd8678fa14
+  languageName: node
+  linkType: hard
+
+"io-ts-types@npm:^0.5.19":
+  version: 0.5.19
+  resolution: "io-ts-types@npm:0.5.19"
+  peerDependencies:
+    fp-ts: ^2.0.0
+    io-ts: ^2.0.0
+    monocle-ts: ^2.0.0
+    newtype-ts: ^0.3.2
+  checksum: 10/395cef244149f62c273ab28c86834703468a56279ef91765198b6b4afebb08966f5c4de40ba21add0a15df38aa00bc4fe6c9dd4e8f05f3e6818a60b8b30f0c1c
   languageName: node
   linkType: hard
 
