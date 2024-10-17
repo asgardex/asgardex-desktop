@@ -1,7 +1,6 @@
 import { Theme } from '@asgardex/asgardex-theme'
 import { ChartDataset, TooltipItem } from 'chart.js'
 import type { ChartType } from 'chart.js'
-import dayjs from 'dayjs'
 
 import { abbreviateNumber } from '../../../helpers/numberHelper'
 import {
@@ -46,9 +45,11 @@ export const getDisplayData = ({ labels, values, colors }: DisplayDataParams) =>
 })
 
 export const getChartData = (chartValues: ChartDetails): PoolDetailsChartData => {
+  const formatter = new Intl.DateTimeFormat('en', { month: 'short', day: '2-digit' })
+
   const labels: Array<string> =
     chartValues.map((data) => {
-      return dayjs.unix(data.time).format('MMM DD')
+      return formatter.format(new Date(data.time * 1000)) // Convert Unix time to milliseconds
     }) || []
 
   const values: Array<number> = chartValues.map(({ amount }) => amount.amount().toNumber()) || []
@@ -58,7 +59,6 @@ export const getChartData = (chartValues: ChartDetails): PoolDetailsChartData =>
     values
   }
 }
-
 export const getChartOptions = <T extends ChartType = 'bar' | 'line'>({
   unit,
   colors,

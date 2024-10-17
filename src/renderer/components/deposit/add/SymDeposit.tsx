@@ -62,7 +62,7 @@ import { sequenceSOption, sequenceTOption } from '../../../helpers/fpHelpers'
 import { getDepositMemo } from '../../../helpers/memoHelper'
 import * as PoolHelpers from '../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../helpers/poolHelperMaya'
-import { liveData, LiveData } from '../../../helpers/rx/liveData'
+import { LiveData } from '../../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../../helpers/stringHelper'
 import * as WalletHelper from '../../../helpers/walletHelper'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
@@ -509,9 +509,11 @@ export const SymDeposit: React.FC<Props> = (props) => {
     () =>
       FP.pipe(
         fees$(asset, dex),
-        liveData.map((fees) => {
+        RxOp.map((fees) => {
           // store every successfully loaded fees
-          prevDepositFees.current = O.some(fees)
+          if (RD.isSuccess(fees)) {
+            prevDepositFees.current = O.some(fees.value) // Store only SymDepositFees
+          }
           return fees
         })
       ),
@@ -946,9 +948,11 @@ export const SymDeposit: React.FC<Props> = (props) => {
       RxOp.switchMap((params) =>
         FP.pipe(
           approveFee$(params),
-          liveData.map((fee) => {
-            // store every successfully loaded fees
-            prevApproveFee.current = O.some(fee)
+          RxOp.map((fee) => {
+            // Only store the fee if it's in the success state
+            if (RD.isSuccess(fee)) {
+              prevApproveFee.current = O.some(fee.value)
+            }
             return fee
           })
         )

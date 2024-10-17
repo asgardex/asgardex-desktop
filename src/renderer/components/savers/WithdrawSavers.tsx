@@ -61,7 +61,7 @@ import { isEvmChain, isEvmToken } from '../../helpers/evmHelper'
 import { eqBaseAmount, eqOApproveParams, eqOAsset } from '../../helpers/fp/eq'
 import { sequenceTOption, sequenceTOptionFromArray } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
-import { liveData, LiveData } from '../../helpers/rx/liveData'
+import { LiveData } from '../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../helpers/stringHelper'
 import { calculateTransactionTime, formatSwapTime, Time } from '../../helpers/timeHelper'
 import * as WalletHelper from '../../helpers/walletHelper'
@@ -282,9 +282,11 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     () =>
       FP.pipe(
         fees$(sourceAsset),
-        liveData.map((fees) => {
+        RxOp.map((fees) => {
           // store every successfully loaded fees
-          prevSaverFees.current = O.some(fees)
+          if (RD.isSuccess(fees)) {
+            prevSaverFees.current = O.some(fees.value)
+          }
           return fees
         })
       ),
@@ -612,9 +614,11 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       RxOp.switchMap((params) =>
         FP.pipe(
           approveFee$(params),
-          liveData.map((fee) => {
+          RxOp.map((fee) => {
             // store every successfully loaded fees
-            prevApproveFee.current = O.some(fee)
+            if (RD.isSuccess(fee)) {
+              prevApproveFee.current = O.some(fee.value)
+            }
             return fee
           })
         )

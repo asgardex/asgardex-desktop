@@ -6,7 +6,6 @@ import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
 
 import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
-import { liveData } from '../helpers/rx/liveData'
 
 export type Color = 'green' | 'yellow' | 'red' | 'grey'
 
@@ -50,10 +49,11 @@ export const useIncentivePendulumMaya = (): { data: IncentivePendulumRD; reload:
     () =>
       FP.pipe(
         networkInfo$,
-        liveData.map(({ totalPooledRune, bondMetrics: { totalActiveBond } }) => {
-          const data = getIncentivePendulum(totalPooledRune, totalActiveBond)
-          return data
-        }),
+        RxOp.map(
+          RD.map(({ totalPooledRune, bondMetrics: { totalActiveBond } }) =>
+            getIncentivePendulum(totalPooledRune, totalActiveBond)
+          )
+        ),
         RxOp.shareReplay(1)
       ),
     RD.initial

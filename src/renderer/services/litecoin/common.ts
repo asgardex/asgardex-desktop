@@ -1,12 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetLTC, Client, LTCChain, defaultLtcParams } from '@xchainjs/xchain-litecoin'
-import {
-  BitgoProvider,
-  BlockcypherNetwork,
-  BlockcypherProvider,
-  UtxoOnlineDataProviders
-} from '@xchainjs/xchain-utxo-providers'
+import { AssetLTC, BitgoProviders, Client, LTCChain, defaultLtcParams } from '@xchainjs/xchain-litecoin'
+import { BlockcypherNetwork, BlockcypherProvider, UtxoOnlineDataProviders } from '@xchainjs/xchain-utxo-providers'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
@@ -44,20 +39,6 @@ const BlockcypherDataProviders: UtxoOnlineDataProviders = {
   [Network.Testnet]: testnetBlockcypherProvider,
   [Network.Stagenet]: mainnetBlockcypherProvider,
   [Network.Mainnet]: mainnetBlockcypherProvider
-}
-
-//======================
-// Bitgo
-//======================
-const mainnetBitgoProvider = new BitgoProvider({
-  baseUrl: 'https://app.bitgo.com',
-  chain: LTCChain
-})
-
-export const BitgoProviders: UtxoOnlineDataProviders = {
-  [Network.Testnet]: undefined,
-  [Network.Stagenet]: mainnetBitgoProvider,
-  [Network.Mainnet]: mainnetBitgoProvider
 }
 
 /**
