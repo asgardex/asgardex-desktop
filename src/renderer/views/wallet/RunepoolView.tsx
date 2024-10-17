@@ -42,7 +42,6 @@ import { hiddenString } from '../../helpers/stringHelper'
 import { filterWalletBalancesByAssets, getWalletBalanceByAssetAndWalletType } from '../../helpers/walletHelper'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePricePool } from '../../hooks/usePricePool'
-import { usePrivateData } from '../../hooks/usePrivateData'
 import { WalletBalances } from '../../services/clients'
 import { userChains$ } from '../../services/storage/userChains'
 import { RunePoolProviderRD } from '../../services/thorchain/types'
@@ -50,6 +49,7 @@ import { balancesState$, setSelectedAsset } from '../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/wallet/const'
 import { WalletBalance } from '../../services/wallet/types'
 import { ledgerAddressToWalletAddress } from '../../services/wallet/util'
+import { useApp } from '../../store/app/hooks'
 
 type AssetProps = {
   key: Chain
@@ -70,7 +70,7 @@ export type ParentProps = {
 export const RunepoolView: React.FC = (): JSX.Element => {
   const intl = useIntl()
 
-  const { isPrivate } = usePrivateData()
+  const { isPrivate } = useApp()
 
   const { network } = useNetwork()
   const {

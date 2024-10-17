@@ -24,10 +24,10 @@ import { to1e8BaseAmount } from '../../helpers/assetHelper'
 import { getPoolPriceValue, RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
-import { usePrivateData } from '../../hooks/usePrivateData'
 import { TradeAccount } from '../../services/thorchain/types'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ChainBalance, SelectedWalletAsset } from '../../services/wallet/types'
+import { useApp } from '../../store/app/hooks'
 
 export const TradeAssetsView: React.FC = (): JSX.Element => {
   // const navigate = useNavigate()
@@ -37,7 +37,7 @@ export const TradeAssetsView: React.FC = (): JSX.Element => {
   const { getTradeAccount$, reloadTradeAccount } = useThorchainContext()
   const { chainBalances$ } = useWalletContext()
   const { network } = useNetwork()
-  const { isPrivate } = usePrivateData()
+  const { isPrivate } = useApp()
 
   const {
     service: {

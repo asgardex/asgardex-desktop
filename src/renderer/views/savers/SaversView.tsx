@@ -38,7 +38,6 @@ import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { usePricePool } from '../../hooks/usePricePool'
-import { usePrivateData } from '../../hooks/usePrivateData'
 import * as poolsRoutes from '../../routes/pools'
 import { SaversRouteParams } from '../../routes/pools/savers'
 import * as saversRoutes from '../../routes/pools/savers'
@@ -48,6 +47,7 @@ import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/typ
 import { PoolAddress } from '../../services/midgard/types'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/wallet/const'
 import { ledgerAddressToWalletAddress } from '../../services/wallet/util'
+import { useApp } from '../../store/app/hooks'
 import { SaversDetailsView } from './SaversDetailsView'
 
 enum TabIndex {
@@ -88,7 +88,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   const { dex } = useDex()
 
   const { thorchainQuery } = useThorchainQueryContext()
-  const { isPrivate } = usePrivateData()
+  const { isPrivate } = useApp()
   const { getSaverProvider$, reloadSaverProvider, reloadInboundAddresses } = useThorchainContext()
 
   const { assetWithDecimal$, addressByChain$, reloadSaverDepositFee, saverDeposit$, saverWithdraw$ } = useChainContext()

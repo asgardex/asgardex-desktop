@@ -34,7 +34,7 @@ import * as PoolHelpers from '../../helpers/poolHelper'
 import { hiddenString } from '../../helpers/stringHelper'
 import { useAllSaverProviders } from '../../hooks/useAllSaverProviders'
 import { usePricePool } from '../../hooks/usePricePool'
-import { usePrivateData } from '../../hooks/usePrivateData'
+import { useApp } from '../../store/app/hooks'
 
 type AssetProps = {
   key: Chain
@@ -54,7 +54,7 @@ export type ParentProps = {
 export const SaversDetailsView: React.FC = (): JSX.Element => {
   const intl = useIntl()
 
-  const { isPrivate } = usePrivateData()
+  const { isPrivate } = useApp()
 
   const {
     service: {

@@ -1,5 +1,6 @@
 import React from 'react'
 
+import { Provider } from 'react-redux'
 import { HashRouter as Router } from 'react-router-dom'
 
 import { AppProvider } from './contexts/AppContext'
@@ -26,60 +27,63 @@ import { ThorchainQueryProvider } from './contexts/ThorchainQueryContext'
 import { UserNodesProvider } from './contexts/UserNodesContext'
 import { WalletProvider } from './contexts/WalletContext'
 import { XrdProvider } from './contexts/XrdContext'
+import { store } from './store/store'
 import { AppView } from './views/app/AppView'
 
 export const App: React.FC = (): JSX.Element => {
   return (
-    <AppProvider>
-      <WalletProvider>
-        <ChainProvider>
-          <ThorchainProvider>
-            <BitcoinProvider>
-              <LitecoinProvider>
-                <BitcoinCashProvider>
-                  <EthereumProvider>
-                    <AvaxProvider>
-                      <BscProvider>
-                        <ArbProvider>
-                          <DogeProvider>
-                            <KujiProvider>
-                              <XrdProvider>
-                                <DashProvider>
-                                  <CosmosProvider>
-                                    <MidgardProvider>
-                                      <ThorchainQueryProvider>
-                                        <MayachainProvider>
-                                          <MayachainQueryProvider>
-                                            <MayaMidgardProvider>
-                                              <UserNodesProvider>
-                                                <I18nProvider>
-                                                  <Router>
-                                                    <ThemeProvider>
-                                                      <AppView />
-                                                    </ThemeProvider>
-                                                  </Router>
-                                                </I18nProvider>
-                                              </UserNodesProvider>
-                                            </MayaMidgardProvider>
-                                          </MayachainQueryProvider>
-                                        </MayachainProvider>
-                                      </ThorchainQueryProvider>
-                                    </MidgardProvider>
-                                  </CosmosProvider>
-                                </DashProvider>
-                              </XrdProvider>
-                            </KujiProvider>
-                          </DogeProvider>
-                        </ArbProvider>
-                      </BscProvider>
-                    </AvaxProvider>
-                  </EthereumProvider>
-                </BitcoinCashProvider>
-              </LitecoinProvider>
-            </BitcoinProvider>
-          </ThorchainProvider>
-        </ChainProvider>
-      </WalletProvider>
-    </AppProvider>
+    <Provider store={store}>
+      <AppProvider>
+        <WalletProvider>
+          <ChainProvider>
+            <ThorchainProvider>
+              <BitcoinProvider>
+                <LitecoinProvider>
+                  <BitcoinCashProvider>
+                    <EthereumProvider>
+                      <AvaxProvider>
+                        <BscProvider>
+                          <ArbProvider>
+                            <DogeProvider>
+                              <KujiProvider>
+                                <XrdProvider>
+                                  <DashProvider>
+                                    <CosmosProvider>
+                                      <MidgardProvider>
+                                        <ThorchainQueryProvider>
+                                          <MayachainProvider>
+                                            <MayachainQueryProvider>
+                                              <MayaMidgardProvider>
+                                                <UserNodesProvider>
+                                                  <I18nProvider>
+                                                    <Router>
+                                                      <ThemeProvider>
+                                                        <AppView />
+                                                      </ThemeProvider>
+                                                    </Router>
+                                                  </I18nProvider>
+                                                </UserNodesProvider>
+                                              </MayaMidgardProvider>
+                                            </MayachainQueryProvider>
+                                          </MayachainProvider>
+                                        </ThorchainQueryProvider>
+                                      </MidgardProvider>
+                                    </CosmosProvider>
+                                  </DashProvider>
+                                </XrdProvider>
+                              </KujiProvider>
+                            </DogeProvider>
+                          </ArbProvider>
+                        </BscProvider>
+                      </AvaxProvider>
+                    </EthereumProvider>
+                  </BitcoinCashProvider>
+                </LitecoinProvider>
+              </BitcoinProvider>
+            </ThorchainProvider>
+          </ChainProvider>
+        </WalletProvider>
+      </AppProvider>
+    </Provider>
   )
 }

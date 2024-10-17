@@ -37,10 +37,10 @@ import { capitalize, hiddenString } from '../../../helpers/stringHelper'
 import { useAllSaverProviders } from '../../../hooks/useAllSaverProviders'
 import { useDex } from '../../../hooks/useDex'
 import { usePoolShares } from '../../../hooks/usePoolShares'
-import { usePrivateData } from '../../../hooks/usePrivateData'
 import { useTotalWalletBalance } from '../../../hooks/useWalletBalance'
 import { userChains$ } from '../../../services/storage/userChains'
 import { reloadBalancesByChain } from '../../../services/wallet'
+import { useApp } from '../../../store/app/hooks'
 import { BaseAmountRD } from '../../../types'
 import * as H from '../PoolShareView.helper'
 import { getSaversTotal } from '../SaversTableView.helper'
@@ -72,7 +72,7 @@ const portfolioColumns = [
 
 export const PortfolioView: React.FC = (): JSX.Element => {
   const [activeIndex, setActiveIndex] = useState(PortfolioTabKey.ChartView)
-  const { isPrivate } = usePrivateData()
+  const { isPrivate } = useApp()
   const intl = useIntl()
   const { dex } = useDex()
 
