@@ -1,6 +1,6 @@
 import type Transport from '@ledgerhq/hw-transport'
 import { Network } from '@xchainjs/xchain-client'
-import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { ETHChain, defaultEthParams } from '@xchainjs/xchain-ethereum'
 import * as ETH from '@xchainjs/xchain-evm'
 import * as E from 'fp-ts/Either'
 
@@ -9,7 +9,7 @@ import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/le
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
-import { defaultEthParams } from './common'
+import { ethProviders } from './common'
 
 export const getAddress = async ({
   transport,
@@ -27,6 +27,7 @@ export const getAddress = async ({
   try {
     const ledgerClient = new ETH.ClientLedger({
       ...defaultEthParams,
+      dataProviders: [ethProviders],
       signer: new ETH.LedgerSigner({
         transport,
         provider: defaultEthParams.providers[Network.Mainnet],
