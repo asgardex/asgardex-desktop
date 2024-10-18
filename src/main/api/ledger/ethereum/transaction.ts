@@ -13,7 +13,7 @@ import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/le
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
-import { ethProviders } from './common'
+import { ETH_MAINNET_ETHERS_PROVIDER, ETH_TESTNET_ETHERS_PROVIDER, ethProviders } from './common'
 
 /**
  * Sends ETH tx using Ledger
@@ -44,6 +44,11 @@ export const send = async ({
   try {
     const ledgerClient = new ETH.ClientLedger({
       ...defaultEthParams,
+      providers: {
+        mainnet: ETH_MAINNET_ETHERS_PROVIDER,
+        testnet: ETH_TESTNET_ETHERS_PROVIDER,
+        stagenet: ETH_MAINNET_ETHERS_PROVIDER
+      },
       dataProviders: [ethProviders],
       signer: new ETH.LedgerSigner({
         transport,
