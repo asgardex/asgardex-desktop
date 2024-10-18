@@ -347,19 +347,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
           <Styled.AssetsFilter activeFilter={poolFilter} setFilter={setPoolFilter} poolFilters={DEFAULT_POOL_FILTERS} />
           <ProtocolLimit limit={limitRD} />
           <IncentivePendulum incentivePendulum={incentivePendulumRD} dex={dex} />
-          <Table
-            columns={columns}
-            dataSource={dataSource}
-            loading={loading}
-            rowKey="key"
-            onRow={({ asset }: PoolTableRowData) => {
-              return {
-                onClick: () => {
-                  navigate(poolsRoutes.detail.path({ asset: assetToString(asset) }))
-                }
-              }
-            }}
-          />
+          <Table columns={columns} dataSource={dataSource} loading={loading} rowKey="key" />
         </>
       )
     },
@@ -371,8 +359,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
       setPoolFilter,
       limitRD,
       incentivePendulumRD,
-      dex,
-      navigate
+      dex
     ]
   )
 

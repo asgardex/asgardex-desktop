@@ -5,7 +5,6 @@ import { Network } from '@xchainjs/xchain-client'
 import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { assetToString } from '@xchainjs/xchain-util'
 import { Grid } from 'antd'
 import { ColumnsType, ColumnType } from 'antd/lib/table'
 import * as A from 'fp-ts/Array'
@@ -14,7 +13,6 @@ import * as O from 'fp-ts/lib/Option'
 import * as P from 'fp-ts/lib/Predicate'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
-import { useNavigate } from 'react-router-dom'
 
 import { ProtocolLimit, IncentivePendulum } from '../../components/pool'
 import { ManageButton } from '../../components/uielements/button'
@@ -36,7 +34,6 @@ import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
 import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
 import { useProtocolLimit } from '../../hooks/useProtocolLimit'
-import * as poolsRoutes from '../../routes/pools'
 import { DEFAULT_NETWORK } from '../../services/const'
 import { MayachainLastblockRD } from '../../services/mayachain/types'
 import { PendingPoolsState as PendingPoolsStateMaya } from '../../services/mayaMigard/types'
@@ -54,7 +51,6 @@ import * as Styled from './PoolsOverview.styles'
 import { TableAction, BlockLeftLabel } from './PoolsOverview.styles'
 
 export const PendingPools: React.FC = (): JSX.Element => {
-  const navigate = useNavigate()
   const intl = useIntl()
   const { dex } = useDex()
   const { network$ } = useAppContext()
@@ -213,19 +209,7 @@ export const PendingPools: React.FC = (): JSX.Element => {
           <Styled.AssetsFilter setFilter={setPoolFilter} activeFilter={poolFilter} poolFilters={DEFAULT_POOL_FILTERS} />
           <ProtocolLimit limit={limitRD} />
           <IncentivePendulum incentivePendulum={incentivePendulumRD} dex={dex} />
-          <Table
-            columns={columns}
-            dataSource={dataSource}
-            loading={loading}
-            rowKey="key"
-            onRow={({ asset }: PoolTableRowData) => {
-              return {
-                onClick: () => {
-                  navigate(poolsRoutes.detail.path({ asset: assetToString(asset) }))
-                }
-              }
-            }}
-          />
+          <Table columns={columns} dataSource={dataSource} loading={loading} rowKey="key" />
         </>
       )
     },
@@ -237,8 +221,7 @@ export const PendingPools: React.FC = (): JSX.Element => {
       setPoolFilter,
       limitRD,
       incentivePendulumRD,
-      dex,
-      navigate
+      dex
     ]
   )
 

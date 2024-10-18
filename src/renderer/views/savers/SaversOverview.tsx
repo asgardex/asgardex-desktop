@@ -36,7 +36,6 @@ import { useDex } from '../../hooks/useDex'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
 import { useSynthConstants } from '../../hooks/useSynthConstants'
-import * as poolsRoutes from '../../routes/pools'
 import * as saversRoutes from '../../routes/pools/savers'
 import { PoolsState as PoolStateMaya, PoolDetails as PoolDetailsMaya } from '../../services/mayaMigard/types'
 import { GetPoolsPeriodEnum, PoolDetails, PoolsState } from '../../services/midgard/types'
@@ -272,23 +271,11 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
 
       return (
         <>
-          <Table
-            columns={columns}
-            dataSource={tableData}
-            loading={loading}
-            rowKey="key"
-            onRow={({ asset }: SaversTableRowData) => {
-              return {
-                onClick: () => {
-                  navigate(poolsRoutes.detail.path({ asset: assetToString(asset) }))
-                }
-              }
-            }}
-          />
+          <Table columns={columns} dataSource={tableData} loading={loading} rowKey="key" />
         </>
       )
     },
-    [desktopColumns, isDesktopView, mobileColumns, navigate]
+    [desktopColumns, isDesktopView, mobileColumns]
   )
 
   return (
