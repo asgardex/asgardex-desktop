@@ -16,6 +16,7 @@ import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
+import { useNavigate } from 'react-router-dom'
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts'
 
 import { EnabledChain } from '../../../../shared/utils/chain'
@@ -25,7 +26,6 @@ import {
   ChartColorClassnames as ColorClassnames
 } from '../../../components/uielements/chart/utils'
 import { RadioGroup } from '../../../components/uielements/radioGroup'
-import { Table } from '../../../components/uielements/table'
 import { AssetUSDC } from '../../../const'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
@@ -33,11 +33,12 @@ import { isUSDAsset } from '../../../helpers/assetHelper'
 import { sequenceTRD } from '../../../helpers/fpHelpers'
 import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
-import { capitalize, hiddenString } from '../../../helpers/stringHelper'
+import { hiddenString } from '../../../helpers/stringHelper'
 import { useAllSaverProviders } from '../../../hooks/useAllSaverProviders'
 import { useDex } from '../../../hooks/useDex'
 import { usePoolShares } from '../../../hooks/usePoolShares'
 import { useTotalWalletBalance } from '../../../hooks/useWalletBalance'
+import * as walletRoutes from '../../../routes/wallet'
 import { userChains$ } from '../../../services/storage/userChains'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { useApp } from '../../../store/app/hooks'
@@ -52,23 +53,25 @@ const options = [
   { label: <Squares2X2Icon className="h-6 w-6 text-text2 dark:text-text2d" />, value: PortfolioTabKey.CardView }
 ]
 
-const CardItem = ({ title, value }: { title: string; value: React.ReactNode }) => {
+const CardItem = ({ title, value, route }: { title: string; value: React.ReactNode; route: string }) => {
+  const navigate = useNavigate()
+
+  const handleManage = useCallback(() => {
+    navigate(route)
+  }, [route, navigate])
+
   return (
     <div className="rounded-lg border border-l-4 border-solid border-gray0 !border-l-turquoise py-2 px-4 dark:border-gray0d">
       <div className="flex w-full items-center justify-between">
         <div className="text-[13px] text-gray2 dark:text-gray2d">{title}</div>
-        <div className="text-[13px] text-turquoise">Manage</div>
+        <div className="cursor-pointer text-[13px] text-turquoise" onClick={handleManage}>
+          Manage
+        </div>
       </div>
       <div className="text-[20px] text-text2 dark:text-text2d">{value}</div>
     </div>
   )
 }
-
-const portfolioColumns = [
-  { title: 'Section', dataIndex: 'section', key: 'section' },
-  { title: 'Amount', dataIndex: 'amount', key: 'amount' },
-  { title: 'Action', dataIndex: 'action', key: 'action' }
-]
 
 export const PortfolioView: React.FC = (): JSX.Element => {
   const [activeIndex, setActiveIndex] = useState(PortfolioTabKey.ChartView)
@@ -234,13 +237,26 @@ export const PortfolioView: React.FC = (): JSX.Element => {
   }, [balancesByChain, isPrivate])
 
   const chainChartData = useMemo(() => {
-    // Define your color scheme
-    return Object.entries(balancesByChain).map(([chain, balance], index) => ({
-      name: `${chain.split(':')[0]} ${capitalize(chain.split(':')[1])}`, // Add an index to make the key unique
-      value: isPrivate ? 0 : baseToAsset(balance).amount().toNumber(),
-      fillColor: Colors[index % Colors.length],
-      className: ColorClassnames[index % Colors.length]
-    }))
+    const balSumByChain: Record<string, number> = {}
+
+    Object.entries(balancesByChain).forEach(([chain, balance]) => {
+      const chainName = chain.split(':')[0]
+      const chainBalAmount = baseToAsset(balance).amount().toNumber()
+      if (Object.keys(balSumByChain).includes(chainName)) {
+        balSumByChain[chainName] += chainBalAmount
+      } else {
+        balSumByChain[chainName] = chainBalAmount
+      }
+    })
+
+    return Object.entries(balSumByChain).map(([chainName, balance], index) => {
+      return {
+        name: chainName, // Add an index to make the key unique
+        value: isPrivate ? 0 : balance,
+        fillColor: Colors[index % Colors.length],
+        className: ColorClassnames[index % Colors.length]
+      }
+    })
   }, [balancesByChain, isPrivate])
 
   const portfolioDatasource = useMemo(
@@ -249,8 +265,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
       { key: '2', section: 'LP Shares', amount: renderSharesTotal, action: 'Manage' },
       { key: '3', section: 'Savers', amount: renderSaversTotal, action: 'Manage' },
       { key: '4', section: 'Bonds', amount: intl.formatMessage({ id: 'common.comingSoon' }), action: 'Manage' },
-      { key: '5', section: 'Lending', amount: intl.formatMessage({ id: 'common.comingSoon' }), action: 'Manage' },
-      { key: '6', section: 'Total', amount: intl.formatMessage({ id: 'common.comingSoon' }), action: 'Manage' }
+      { key: '5', section: 'Total', amount: intl.formatMessage({ id: 'common.comingSoon' }), action: 'Manage' }
     ],
     [intl, totalBalanceDisplay, renderSharesTotal, renderSaversTotal]
   )
@@ -297,20 +312,30 @@ export const PortfolioView: React.FC = (): JSX.Element => {
         <div className="mt-4 space-y-2">
           {activeIndex === PortfolioTabKey.CardView && (
             <div className="grid grid-cols-3 gap-4">
-              <CardItem title={intl.formatMessage({ id: 'common.wallets' })} value={totalBalanceDisplay} />
-              <CardItem title={intl.formatMessage({ id: 'wallet.nav.poolshares' })} value={renderSharesTotal} />
-              <CardItem title={intl.formatMessage({ id: 'wallet.nav.savers' })} value={renderSaversTotal} />
+              <CardItem
+                title={intl.formatMessage({ id: 'common.wallets' })}
+                value={totalBalanceDisplay}
+                route={walletRoutes.base.path()}
+              />
+              <CardItem
+                title={intl.formatMessage({ id: 'wallet.nav.poolshares' })}
+                value={renderSharesTotal}
+                route={walletRoutes.poolShares.path()}
+              />
+              <CardItem
+                title={intl.formatMessage({ id: 'wallet.nav.savers' })}
+                value={renderSaversTotal}
+                route={walletRoutes.savers.path()}
+              />
               <CardItem
                 title={intl.formatMessage({ id: 'wallet.nav.bonds' })}
                 value={intl.formatMessage({ id: 'common.comingSoon' })}
+                route={walletRoutes.bonds.path()}
               />
               <CardItem
-                title={intl.formatMessage({ id: 'common.lending' })}
+                title={intl.formatMessage({ id: 'deposit.interact.actions.runePool' })}
                 value={intl.formatMessage({ id: 'common.comingSoon' })}
-              />
-              <CardItem
-                title={intl.formatMessage({ id: 'common.earnings' })}
-                value={intl.formatMessage({ id: 'common.comingSoon' })}
+                route={walletRoutes.runepool.path()}
               />
             </div>
           )}
@@ -393,11 +418,6 @@ export const PortfolioView: React.FC = (): JSX.Element => {
               </div>
             </div>
           )}
-          <Table
-            className="border border-solid border-gray0 dark:border-gray0d"
-            columns={portfolioColumns}
-            dataSource={portfolioDatasource}
-          />
         </div>
       </div>
     </>
