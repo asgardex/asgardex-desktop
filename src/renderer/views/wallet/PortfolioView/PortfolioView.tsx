@@ -270,6 +270,37 @@ export const PortfolioView: React.FC = (): JSX.Element => {
     [intl, totalBalanceDisplay, renderSharesTotal, renderSaversTotal]
   )
 
+  const cardItemInfo = useMemo(
+    () => [
+      {
+        title: intl.formatMessage({ id: 'common.wallets' }),
+        value: totalBalanceDisplay,
+        route: walletRoutes.base.path()
+      },
+      {
+        title: intl.formatMessage({ id: 'wallet.nav.poolshares' }),
+        value: renderSharesTotal,
+        route: walletRoutes.poolShares.path()
+      },
+      {
+        title: intl.formatMessage({ id: 'wallet.nav.savers' }),
+        value: renderSaversTotal,
+        route: walletRoutes.savers.path()
+      },
+      {
+        title: intl.formatMessage({ id: 'wallet.nav.bonds' }),
+        value: intl.formatMessage({ id: 'common.comingSoon' }),
+        route: walletRoutes.bonds.path()
+      },
+      {
+        title: intl.formatMessage({ id: 'deposit.interact.actions.runePool' }),
+        value: intl.formatMessage({ id: 'common.comingSoon' }),
+        route: walletRoutes.runepool.path()
+      }
+    ],
+    [intl, totalBalanceDisplay, renderSharesTotal, renderSaversTotal]
+  )
+
   const chartData = useMemo(() => {
     return portfolioDatasource.map(({ section }, index) => ({
       name: section,
@@ -312,31 +343,9 @@ export const PortfolioView: React.FC = (): JSX.Element => {
         <div className="mt-4 space-y-2">
           {activeIndex === PortfolioTabKey.CardView && (
             <div className="grid grid-cols-3 gap-4">
-              <CardItem
-                title={intl.formatMessage({ id: 'common.wallets' })}
-                value={totalBalanceDisplay}
-                route={walletRoutes.base.path()}
-              />
-              <CardItem
-                title={intl.formatMessage({ id: 'wallet.nav.poolshares' })}
-                value={renderSharesTotal}
-                route={walletRoutes.poolShares.path()}
-              />
-              <CardItem
-                title={intl.formatMessage({ id: 'wallet.nav.savers' })}
-                value={renderSaversTotal}
-                route={walletRoutes.savers.path()}
-              />
-              <CardItem
-                title={intl.formatMessage({ id: 'wallet.nav.bonds' })}
-                value={intl.formatMessage({ id: 'common.comingSoon' })}
-                route={walletRoutes.bonds.path()}
-              />
-              <CardItem
-                title={intl.formatMessage({ id: 'deposit.interact.actions.runePool' })}
-                value={intl.formatMessage({ id: 'common.comingSoon' })}
-                route={walletRoutes.runepool.path()}
-              />
+              {cardItemInfo.map(({ title, value, route }) => (
+                <CardItem key={route} title={title} value={value} route={route} />
+              ))}
             </div>
           )}
           {activeIndex === PortfolioTabKey.ChartView && (
