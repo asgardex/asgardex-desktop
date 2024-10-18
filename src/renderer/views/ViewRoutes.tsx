@@ -14,7 +14,6 @@ import { DepositView } from './deposit/DepositView'
 import { LoansView } from './loans/LoansView'
 import { NoContentView } from './NoContentView'
 import { PlaygroundView } from './playground/PlaygroundView'
-import { PoolDetailsView } from './pool/PoolDetailsView'
 import { PoolsOverview } from './pools/PoolsOverview'
 import { SaversView } from './savers/SaversView'
 import { SwapView } from './swap/SwapView'
@@ -48,7 +47,6 @@ export const ViewRoutes: React.FC<{}> = (): JSX.Element => {
       <Route path={poolsRoutes.savers.template} element={<PoolsOverview />} />
       <Route path={poolsRoutes.lending.template} element={<PoolsOverview />} />
 
-      <Route path={poolsRoutes.detail.template} element={<PoolDetailsView />} />
       <Route path={poolsRoutes.swap.template} element={<SwapView />} />
       <Route
         path={saversRoutes.earn.template}
