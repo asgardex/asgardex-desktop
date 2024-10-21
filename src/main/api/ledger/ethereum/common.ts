@@ -25,26 +25,36 @@ export const ETH_MAINNET_ETHERS_PROVIDER = new ethers.providers.EtherscanProvide
 const network = ethers.providers.getNetwork('sepolia')
 export const ETH_TESTNET_ETHERS_PROVIDER = new ethers.providers.EtherscanProvider(network)
 
-// =====ONLINE providers=====
-const ETH_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
-  ETH_TESTNET_ETHERS_PROVIDER,
-  'https://api-sepolia.etherscan.io/',
-  etherscanApiKey,
-  ETHChain,
-  AssetETH,
-  ETH_GAS_ASSET_DECIMAL
-)
+// Helper function to create ethProviders
+export const createEthProviders = (apiKey) => {
+  const ETHERSCAN_URLS = {
+    mainnet: 'https://api.etherscan.io/',
+    testnet: 'https://api-sepolia.etherscan.io/'
+  }
 
-const ETH_ONLINE_PROVIDER_MAINNET = new EtherscanProvider(
-  ETH_MAINNET_ETHERS_PROVIDER,
-  'https://api.etherscan.io/',
-  etherscanApiKey,
-  ETHChain,
-  AssetETH,
-  ETH_GAS_ASSET_DECIMAL
-)
-export const ethProviders = {
-  [Network.Mainnet]: ETH_ONLINE_PROVIDER_MAINNET,
-  [Network.Testnet]: ETH_ONLINE_PROVIDER_TESTNET,
-  [Network.Stagenet]: ETH_ONLINE_PROVIDER_MAINNET
+  // Create the online providers with the provided API key
+  const ETH_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
+    ETH_TESTNET_ETHERS_PROVIDER,
+    ETHERSCAN_URLS.testnet,
+    apiKey,
+    ETHChain,
+    AssetETH,
+    ETH_GAS_ASSET_DECIMAL
+  )
+
+  const ETH_ONLINE_PROVIDER_MAINNET = new EtherscanProvider(
+    ETH_MAINNET_ETHERS_PROVIDER,
+    ETHERSCAN_URLS.mainnet,
+    apiKey,
+    ETHChain,
+    AssetETH,
+    ETH_GAS_ASSET_DECIMAL
+  )
+
+  // Return the providers object
+  return {
+    [Network.Mainnet]: ETH_ONLINE_PROVIDER_MAINNET,
+    [Network.Testnet]: ETH_ONLINE_PROVIDER_TESTNET,
+    [Network.Stagenet]: ETH_ONLINE_PROVIDER_MAINNET
+  }
 }

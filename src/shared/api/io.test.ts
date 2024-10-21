@@ -159,7 +159,8 @@ describe('shared/io', () => {
         feeOption: undefined,
         feeAmount: undefined,
         nodeUrl: undefined,
-        hdMode: 'default'
+        hdMode: 'default',
+        apiKey: 'apikey'
       })
     })
 
@@ -176,7 +177,8 @@ describe('shared/io', () => {
         walletIndex: 0,
         feeRate: 1,
         feeAmount: { amount: '1', decimal: 6 },
-        hdMode: 'default'
+        hdMode: 'default',
+        apiKey: 'apikey'
       }
       const decoded = ipcLedgerSendTxParamsIO.decode(encoded)
       expect(E.isRight(decoded)).toBeTruthy()

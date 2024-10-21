@@ -14,7 +14,7 @@ import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/le
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
-import { ETH_MAINNET_ETHERS_PROVIDER, ETH_TESTNET_ETHERS_PROVIDER, ethProviders } from './common'
+import { ETH_MAINNET_ETHERS_PROVIDER, ETH_TESTNET_ETHERS_PROVIDER, createEthProviders } from './common'
 
 /**
  * Sends ETH tx using Ledger
@@ -45,6 +45,8 @@ export const send = async ({
   apiKey: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
+    const ethProviders = createEthProviders(apiKey)
+
     const ledgerClient = new ETH.ClientLedger({
       ...defaultEthParams,
       providers: {
@@ -126,6 +128,7 @@ export const deposit = async ({
         msg: `Could not get asset address from ${assetToString(asset)}`
       })
     }
+    const ethProviders = createEthProviders(apiKey)
 
     const isETHAddress = address === ETHAddress
 

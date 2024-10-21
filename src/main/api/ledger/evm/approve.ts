@@ -9,7 +9,7 @@ import { defaultArbParams } from '../../../../shared/arb/const'
 import { defaultAvaxParams } from '../../../../shared/avax/const'
 import { defaultBscParams } from '../../../../shared/bsc/const'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
-import { ETH_MAINNET_ETHERS_PROVIDER, ETH_TESTNET_ETHERS_PROVIDER, ethProviders } from '../ethereum/common'
+import { ETH_MAINNET_ETHERS_PROVIDER, ETH_TESTNET_ETHERS_PROVIDER, createEthProviders } from '../ethereum/common'
 
 export const approveLedgerERC20Token = async ({
   chain,
@@ -32,7 +32,7 @@ export const approveLedgerERC20Token = async ({
           testnet: ETH_TESTNET_ETHERS_PROVIDER,
           stagenet: ETH_MAINNET_ETHERS_PROVIDER
         },
-        dataProviders: [ethProviders],
+        dataProviders: [createEthProviders(apiKey)],
         signer: new LedgerSigner({
           transport,
           provider: new ethers.providers.EtherscanProvider('homestead', apiKey),
