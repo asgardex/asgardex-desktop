@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon } from '@heroicons/react/20/solid'
-import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
+import { PlusIcon } from '@heroicons/react/24/outline'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -15,7 +15,6 @@ import {
   baseAmount,
   BaseAmount,
   baseToAsset,
-  CryptoAmount,
   formatAssetAmountCurrency,
   TokenAsset
 } from '@xchainjs/xchain-util'
@@ -47,7 +46,6 @@ import {
   isAvaxTokenAsset,
   isBscAsset,
   isBscTokenAsset,
-  isChainAsset,
   isEthAsset,
   isEthTokenAsset,
   isUSDAsset,
@@ -121,12 +119,10 @@ import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { AssetInput } from '../../uielements/assets/assetInput'
 import { AssetLabel } from '../../uielements/assets/assetLabel'
 import { BaseButton, FlatButton, ViewTxButton } from '../../uielements/button'
-import { MaxBalanceButton } from '../../uielements/button/MaxBalanceButton'
+import { Collapse } from '../../uielements/collapse'
 import { Tooltip, TooltipAddress } from '../../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../../uielements/fees'
-import { InfoIcon } from '../../uielements/info/InfoIcon'
 import { CopyLabel, Label } from '../../uielements/label'
-import { Slider } from '../../uielements/slider'
 import { AssetMissmatchWarning } from './AssetMissmatchWarning'
 import { AsymAssetsWarning } from './AsymAssetsWarning'
 import * as Helper from './Deposit.helper'
@@ -388,8 +384,6 @@ export const SymDeposit: React.FC<Props> = (props) => {
     [assetAmountToDepositMax1e8, dexAmountToDeposit]
   )
 
-  const [percentValueToDeposit, setPercentValueToDeposit] = useState(0)
-
   const {
     state: depositState,
     reset: resetDepositState,
@@ -534,47 +528,6 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
     return () => subscription.unsubscribe()
   }, [feesObservable]) // Depend on the memoized observable
-
-  const runeFeeLabel: string = useMemo(
-    () =>
-      FP.pipe(
-        depositFeesRD,
-        RD.fold(
-          () => loadingString,
-          () => loadingString,
-          () => noDataString,
-          ({ rune: { inFee, outFee } }) =>
-            formatAssetAmountCurrency({
-              amount: baseToAsset(inFee.plus(outFee)),
-              asset: dexAsset,
-              decimal: 6,
-              trimZeros: true
-            })
-        )
-      ),
-    [depositFeesRD, dexAsset]
-  )
-
-  const assetFeeLabel: string = useMemo(
-    () =>
-      FP.pipe(
-        depositFeesRD,
-        RD.fold(
-          () => loadingString,
-          () => loadingString,
-          () => noDataString,
-          ({ asset: { inFee, outFee, asset: feeAsset } }) =>
-            formatAssetAmountCurrency({
-              amount: baseToAsset(inFee.plus(outFee)),
-              asset: feeAsset,
-              decimal: isUSDAsset(feeAsset) ? 2 : 6,
-              trimZeros: !isUSDAsset(feeAsset)
-            })
-        )
-      ),
-
-    [depositFeesRD]
-  )
 
   // Price of RUNE IN fee
   const oPriceRuneInFee: O.Option<AssetWithAmount> = useMemo(() => {
@@ -1069,32 +1022,6 @@ export const SymDeposit: React.FC<Props> = (props) => {
     return max1e8BaseAmount(maxAmount)
   }, [asset, assetBalance, depositFees, poolData, dexAssetBalance])
 
-  const priceAmountToSwapMax1e8: CryptoAmount = useMemo(() => {
-    const result =
-      dex.chain === THORChain
-        ? FP.pipe(
-            isPoolDetails(poolDetails)
-              ? PoolHelpers.getPoolPriceValue({
-                  balance: { asset: asset, amount: maxAssetAmountToDepositMax1e8 },
-                  poolDetails,
-                  pricePool
-                })
-              : O.none,
-            O.getOrElse(() => baseAmount(0, maxAssetAmountToDepositMax1e8.decimal)),
-            (amount) => ({ asset: pricePool.asset, amount })
-          )
-        : FP.pipe(
-            getPoolPriceValueM({
-              balance: { asset: asset, amount: maxAssetAmountToDepositMax1e8 },
-              poolDetails,
-              pricePool
-            }),
-            O.getOrElse(() => baseAmount(0, maxAssetAmountToDepositMax1e8.decimal)),
-            (amount) => ({ asset: pricePool.asset, amount })
-          )
-    return new CryptoAmount(result.amount, result.asset)
-  }, [dex, asset, maxAssetAmountToDepositMax1e8, poolDetails, pricePool])
-
   const setAssetAmountToDepositMax1e8 = useCallback(
     (amountToDeposit: BaseAmount) => {
       const newAmount = baseAmount(amountToDeposit.amount(), assetBalanceMax1e8.decimal)
@@ -1212,15 +1139,9 @@ export const SymDeposit: React.FC<Props> = (props) => {
         runeAmount = Helper.getDexAmountToDeposit(maxAssetAmountToDepositMax1e8, poolData, dex)
         setDexAmountToDeposit(runeAmount)
         setAssetAmountToDepositMax1e8(maxAssetAmountToDepositMax1e8)
-        setPercentValueToDeposit(100)
       } else {
         setDexAmountToDeposit(runeAmount)
         setAssetAmountToDepositMax1e8(assetAmountMax1e8)
-        // formula: runeQuantity * 100 / maxDexAmountToDeposit
-        const percentToDeposit = maxDexAmountToDeposit.gt(ZERO_BASE_AMOUNT)
-          ? runeAmount.times(100).div(maxDexAmountToDeposit).amount().toNumber()
-          : 0
-        setPercentValueToDeposit(percentToDeposit)
       }
     },
     [
@@ -1261,15 +1182,9 @@ export const SymDeposit: React.FC<Props> = (props) => {
         })
         setDexAmountToDeposit(maxDexAmountToDeposit)
         setAssetAmountToDepositMax1e8(assetAmountMax1e8)
-        setPercentValueToDeposit(100)
       } else {
         setDexAmountToDeposit(dexAmount)
         setAssetAmountToDepositMax1e8(assetAmountMax1e8)
-        // assetQuantity * 100 / maxAssetAmountToDeposit
-        const percentToDeposit = maxAssetAmountToDepositMax1e8.gt(baseAmount(0, maxAssetAmountToDepositMax1e8.decimal))
-          ? assetAmountMax1e8.times(100).div(maxAssetAmountToDepositMax1e8).amount().toNumber()
-          : 0
-        setPercentValueToDeposit(percentToDeposit)
       }
     },
     [
@@ -1305,7 +1220,6 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
       setDexAmountToDeposit(baseAmount(runeAmountBN, maxDexAmountToDeposit.decimal))
       setAssetAmountToDepositMax1e8(baseAmount(assetAmountMax1e8BN, assetBalanceMax1e8.decimal))
-      setPercentValueToDeposit(percent)
     },
     [assetBalanceMax1e8.decimal, maxAssetAmountToDepositMax1e8, maxDexAmountToDeposit, setAssetAmountToDepositMax1e8]
   )
@@ -1316,10 +1230,6 @@ export const SymDeposit: React.FC<Props> = (props) => {
     },
     [assetWalletType, onChangeAsset, runeWalletType]
   )
-
-  const onAfterSliderChangeHandler = useCallback(() => {
-    reloadFeesHandler()
-  }, [reloadFeesHandler])
 
   type ModalState = 'deposit' | 'approve' | 'none' | 'recover'
   const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
@@ -1984,7 +1894,6 @@ export const SymDeposit: React.FC<Props> = (props) => {
   const resetEnteredAmounts = useCallback(() => {
     setDexAmountToDeposit(baseAmount(0, dexAssetDecimal))
     setAssetAmountToDepositMax1e8(initialAssetAmountToDepositMax1e8)
-    setPercentValueToDeposit(0)
   }, [dexAssetDecimal, initialAssetAmountToDepositMax1e8, setAssetAmountToDepositMax1e8])
 
   const useRuneLedgerHandler = useCallback(
@@ -2236,143 +2145,6 @@ export const SymDeposit: React.FC<Props> = (props) => {
     [checkIsApprovedError, isApproveFeeError, walletBalancesLoading]
   )
 
-  const renderMinAmount = useCallback(
-    ({
-      minAmount,
-      minAmountInfo,
-      asset,
-      isError
-    }: {
-      minAmount: BaseAmount
-      minAmountInfo: string
-      asset: AnyAsset
-      isError: boolean
-    }) => (
-      <div className="flex w-full items-center pl-10px pt-5px">
-        <p
-          className={`m-0 pr-5px font-main text-[12px] uppercase ${
-            isError ? 'dark:error-0d text-error0' : 'text-gray2 dark:text-gray2d'
-          }`}>
-          {`${intl.formatMessage({ id: 'common.min' })}: ${formatAssetAmountCurrency({
-            asset,
-            amount: baseToAsset(minAmount),
-            trimZeros: true
-          })}`}
-        </p>
-        <InfoIcon
-          // override color
-          className={`${isError ? '' : 'text-gray2 dark:text-gray2d'}`}
-          color={isError ? 'error' : 'neutral'}
-          tooltip={minAmountInfo}
-        />
-      </div>
-    ),
-    [intl]
-  )
-
-  const extraRuneContent = useMemo(
-    () => (
-      <div className="flex flex-col">
-        <MaxBalanceButton
-          className="mt-5px"
-          classNameButton="!text-gray2 dark:!text-gray2d"
-          classNameIcon={
-            // show warn icon if maxAmountToSwapMax <= 0
-            maxDexAmountToDeposit.gt(ZERO_BASE_AMOUNT)
-              ? `text-gray2 dark:text-gray2d`
-              : 'text-warning0 dark:text-warning0d'
-          }
-          size="medium"
-          balance={{ amount: maxDexAmountToDeposit, asset: dexAsset }}
-          maxDollarValue={new CryptoAmount(priceDexAmountToDepositMax1e8.amount, priceDexAmountToDepositMax1e8.asset)}
-          onClick={() => {
-            updateRuneAmount(maxDexAmountToDeposit)
-          }}
-          maxInfoText={intl.formatMessage(
-            { id: 'deposit.add.max.infoWithFee' },
-            { balance: dexAssetBalanceLabel, fee: runeFeeLabel }
-          )}
-          hidePrivateData={hidePrivateData}
-        />
-        {minRuneAmountError &&
-          renderMinAmount({
-            minAmount: minRuneAmountToDeposit,
-            minAmountInfo: intl.formatMessage({ id: 'deposit.add.min.info' }),
-            asset,
-            isError: minRuneAmountError
-          })}
-      </div>
-    ),
-    [
-      maxDexAmountToDeposit,
-      dexAsset,
-      priceDexAmountToDepositMax1e8,
-      intl,
-      dexAssetBalanceLabel,
-      runeFeeLabel,
-      hidePrivateData,
-      minRuneAmountError,
-      renderMinAmount,
-      minRuneAmountToDeposit,
-      asset,
-      updateRuneAmount
-    ]
-  )
-
-  const extraAssetContent = useMemo(
-    () => (
-      <div className="flex flex-col">
-        <MaxBalanceButton
-          className="mt-5px"
-          classNameButton="!text-gray2 dark:!text-gray2d"
-          classNameIcon={
-            // show warn icon if maxAmountToSwapMax <= 0
-            maxAssetAmountToDepositMax1e8.gt(baseAmount(0, maxAssetAmountToDepositMax1e8.decimal))
-              ? `text-gray2 dark:text-gray2d`
-              : 'text-warning0 dark:text-warning0d'
-          }
-          size="medium"
-          balance={{ amount: maxAssetAmountToDepositMax1e8, asset }}
-          maxDollarValue={priceAmountToSwapMax1e8}
-          onClick={() => {
-            updateAssetAmount(maxAssetAmountToDepositMax1e8)
-          }}
-          maxInfoText={
-            isChainAsset(asset)
-              ? intl.formatMessage(
-                  { id: 'deposit.add.max.infoWithFee' },
-                  { balance: assetBalanceLabel, fee: assetFeeLabel }
-                )
-              : intl.formatMessage({ id: 'deposit.add.max.info' }, { balance: assetBalanceLabel })
-          }
-          hidePrivateData={hidePrivateData}
-        />
-        {minAssetAmountError &&
-          renderMinAmount({
-            minAmount: minAssetAmountToDepositMax1e8,
-            minAmountInfo: intl.formatMessage({ id: 'deposit.add.min.info' }),
-            asset,
-            isError: minAssetAmountError
-          })}
-      </div>
-    ),
-    [
-      maxAssetAmountToDepositMax1e8,
-      asset,
-      priceAmountToSwapMax1e8,
-      intl,
-      assetBalanceLabel,
-      assetFeeLabel,
-      hidePrivateData,
-      minAssetAmountError,
-      renderMinAmount,
-      minAssetAmountToDepositMax1e8,
-      updateAssetAmount
-    ]
-  )
-
-  const [showDetails, setShowDetails] = useState<boolean>(true)
-
   return (
     <div className="flex min-h-full w-full flex-col items-center justify-between">
       {hasPendingAssets && <div className="w-full pb-20px xl:px-20px">{renderPendingAssets}</div>}
@@ -2382,14 +2154,17 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
       <div className="flex max-w-[500px] flex-col">
         {!hasPendingAssets && (
-          <div>
+          <div className="mb-1">
             <AssetInput
               className="w-full"
               title={intl.formatMessage({ id: 'deposit.add.runeSide' }, { dex: dex.chain })}
               amount={{ amount: dexAmountToDeposit, asset: dexAsset }}
               priceAmount={priceDexAmountToDepositMax1e8}
               assets={[]}
+              walletBalance={dexAssetBalance}
               network={network}
+              hasAmountShortcut
+              onChangePercent={changePercentHandler}
               onChangeAsset={FP.constVoid}
               onChange={runeAmountChangeHandler}
               onBlur={inputOnBlur}
@@ -2397,25 +2172,15 @@ export const SymDeposit: React.FC<Props> = (props) => {
               useLedger={isRuneLedger}
               hasLedger={hasRuneLedger}
               useLedgerHandler={useRuneLedgerHandler}
-              extraContent={extraRuneContent}
             />
-            <div className="w-full px-20px pb-40px pt-20px">
-              <Slider
-                onAfterChange={onAfterSliderChangeHandler}
-                disabled={disabledForm}
-                value={percentValueToDeposit}
-                onChange={changePercentHandler}
-                tooltipPlacement="top"
-                withLabel={true}
-              />
-            </div>
-            <>
+            <div className="relative mt-1 flex flex-col">
               <AssetInput
                 className="w-full"
                 title={intl.formatMessage({ id: 'deposit.add.assetSide' })}
                 amount={{ amount: assetAmountToDepositMax1e8, asset }}
                 priceAmount={priceAssetAmountToDepositMax1e8}
                 assets={poolBasedBalancesAssets}
+                walletBalance={assetBalance}
                 network={network}
                 onChangeAsset={onChangeAssetHandler}
                 onChange={assetAmountChangeHandler}
@@ -2424,88 +2189,42 @@ export const SymDeposit: React.FC<Props> = (props) => {
                 useLedger={isAssetLedger}
                 hasLedger={hasAssetLedger}
                 useLedgerHandler={useAssetLedgerHandler}
-                extraContent={extraAssetContent}
               />
-            </>
+              <div className="absolute -top-[32px] left-[calc(50%-30px)] flex flex-col justify-center">
+                <div className="w-60px h-60px">
+                  <BaseButton
+                    size="small"
+                    className="group rounded-full border border-solid border-turquoise bg-bg0 !p-10px hover:shadow-full dark:bg-bg0d dark:hover:shadow-fulld">
+                    <PlusIcon className="ease h-[40px] w-[40px] text-turquoise " />
+                  </BaseButton>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
-        <div className="flex flex-col items-center justify-between py-30px">
-          {renderIsApprovedError}
-          {(walletBalancesLoading || checkIsApproved) && (
-            <LoadingView
-              className="mb-20px"
-              label={
-                // We show only one loading state at time
-                // Order matters: Show states with shortest loading time before others
-                // (approve state takes just a short time to load, but needs to be displayed)
-                checkIsApproved
-                  ? intl.formatMessage({ id: 'common.approve.checking' }, { asset: asset.ticker })
-                  : walletBalancesLoading
-                  ? intl.formatMessage({ id: 'common.balance.loading' })
-                  : undefined
-              }
-            />
-          )}
-          {isApproved ? (
-            <>
-              {renderAssetChainFeeError}
-              {renderThorchainFeeError}
-              {hasPendingAssets ? (
-                <FlatButton className="mb-20px min-w-[200px]" size="large" onClick={onRecoverSubmit}>
-                  {intl.formatMessage({ id: 'common.completeLp' })}
-                </FlatButton>
-              ) : (
-                <FlatButton className="mb-20px min-w-[200px]" size="large" onClick={onSubmit} disabled={disableSubmit}>
-                  {intl.formatMessage({ id: 'common.add' })}
-                </FlatButton>
-              )}
-            </>
-          ) : (
-            <>
-              {renderApproveFeeError}
-              {renderApproveError}
-              <FlatButton
-                className="mb-20px min-w-[200px]"
-                size="large"
-                color="warning"
-                disabled={disableSubmitApprove}
-                onClick={onApprove}
-                loading={RD.isPending(approveState)}>
-                {intl.formatMessage({ id: 'common.approve' })}
-              </FlatButton>
-
-              {!RD.isInitial(uiApproveFeesRD) && <Fees fees={uiApproveFeesRD} reloadFees={reloadApproveFeesHandler} />}
-            </>
-          )}
-        </div>
-
-        <div className={`w-full px-10px font-main text-[12px] uppercase dark:border-gray1d`}>
-          <BaseButton
-            className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
-            onClick={() => setShowDetails((current) => !current)}>
-            {intl.formatMessage({ id: 'common.details' })}
-            {showDetails ? (
-              <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
-            ) : (
-              <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
-            )}
-          </BaseButton>
-
-          <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
-            {/* fees */}
-            <div className="flex w-full items-center justify-between font-mainBold">
-              <BaseButton
-                disabled={RD.isPending(depositFeesRD) || RD.isInitial(depositFeesRD)}
-                className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
-                onClick={reloadFeesHandler}>
-                {intl.formatMessage({ id: 'common.fees.estimated' })}
-                <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
-              </BaseButton>
-              <div>{priceDepositFeesLabel}</div>
+        <Collapse
+          header={
+            <div className="flex flex-row items-center justify-between">
+              <span className="m-0 font-main text-[14px] text-gray2 dark:text-gray2d">
+                {intl.formatMessage({ id: 'common.details' })}
+              </span>
             </div>
+          }>
+          <div className={`w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d`}>
+            <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
+              {/* fees */}
+              <div className="flex w-full items-center justify-between font-mainBold">
+                <BaseButton
+                  disabled={RD.isPending(depositFeesRD) || RD.isInitial(depositFeesRD)}
+                  className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                  onClick={reloadFeesHandler}>
+                  {intl.formatMessage({ id: 'common.fees.estimated' })}
+                  <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                </BaseButton>
+                <div>{priceDepositFeesLabel}</div>
+              </div>
 
-            {showDetails && (
               <>
                 <div className="flex w-full justify-between pl-10px text-[12px]">
                   <div>{intl.formatMessage({ id: 'common.fee.inbound.rune' }, { dex: dex.chain })}</div>
@@ -2534,10 +2253,8 @@ export const SymDeposit: React.FC<Props> = (props) => {
                   </div>
                 </div>
               </>
-            )}
 
-            {/* addresses */}
-            {showDetails && (
+              {/* addresses */}
               <>
                 <div className={`w-full pt-10px font-mainBold text-[14px]`}>
                   {intl.formatMessage({ id: 'common.addresses' })}
@@ -2588,10 +2305,8 @@ export const SymDeposit: React.FC<Props> = (props) => {
                   O.toNullable
                 )}
               </>
-            )}
 
-            {/* balances */}
-            {showDetails && (
+              {/* balances */}
               <>
                 <div className={`w-full pt-10px text-[14px]`}>
                   <BaseButton
@@ -2613,10 +2328,8 @@ export const SymDeposit: React.FC<Props> = (props) => {
                   <div className="truncate pl-20px text-[13px] normal-case leading-normal">{assetBalanceLabel}</div>
                 </div>
               </>
-            )}
 
-            {/* memo */}
-            {showDetails && (
+              {/* memo */}
               <>
                 <div className={`w-full pt-10px font-mainBold text-[14px]`}>
                   {intl.formatMessage({ id: 'common.memos' })}
@@ -2681,8 +2394,58 @@ export const SymDeposit: React.FC<Props> = (props) => {
                   </div>
                 </div>
               </>
-            )}
+            </div>
           </div>
+        </Collapse>
+
+        <div className="flex flex-col items-center justify-between py-30px">
+          {renderIsApprovedError}
+          {(walletBalancesLoading || checkIsApproved) && (
+            <LoadingView
+              className="mb-20px"
+              label={
+                // We show only one loading state at time
+                // Order matters: Show states with shortest loading time before others
+                // (approve state takes just a short time to load, but needs to be displayed)
+                checkIsApproved
+                  ? intl.formatMessage({ id: 'common.approve.checking' }, { asset: asset.ticker })
+                  : walletBalancesLoading
+                  ? intl.formatMessage({ id: 'common.balance.loading' })
+                  : undefined
+              }
+            />
+          )}
+          {isApproved ? (
+            <>
+              {renderAssetChainFeeError}
+              {renderThorchainFeeError}
+              {hasPendingAssets ? (
+                <FlatButton className="mb-20px min-w-[200px]" size="large" onClick={onRecoverSubmit}>
+                  {intl.formatMessage({ id: 'common.completeLp' })}
+                </FlatButton>
+              ) : (
+                <FlatButton className="mb-20px min-w-[200px]" size="large" onClick={onSubmit} disabled={disableSubmit}>
+                  {intl.formatMessage({ id: 'common.add' })}
+                </FlatButton>
+              )}
+            </>
+          ) : (
+            <>
+              {renderApproveFeeError}
+              {renderApproveError}
+              <FlatButton
+                className="mb-20px min-w-[200px]"
+                size="large"
+                color="warning"
+                disabled={disableSubmitApprove}
+                onClick={onApprove}
+                loading={RD.isPending(approveState)}>
+                {intl.formatMessage({ id: 'common.approve' })}
+              </FlatButton>
+
+              {!RD.isInitial(uiApproveFeesRD) && <Fees fees={uiApproveFeesRD} reloadFees={reloadApproveFeesHandler} />}
+            </>
+          )}
         </div>
         {renderPasswordConfirmationModal}
         {renderLedgerConfirmationModal}
