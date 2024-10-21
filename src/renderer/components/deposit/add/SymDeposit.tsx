@@ -180,8 +180,6 @@ export type Props = {
   dex: Dex
 }
 
-type SelectedInput = 'asset' | 'rune' | 'none'
-
 export const SymDeposit: React.FC<Props> = (props) => {
   const {
     asset: { asset, decimal: assetDecimal },
@@ -344,7 +342,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
   const assetBalanceMax1e8: BaseAmount = useMemo(() => max1e8BaseAmount(assetBalance), [assetBalance])
   // can be rune or cacao
-  const [runeAmountToDeposit, setRuneAmountToDeposit] = useState<BaseAmount>(baseAmount(0, dexAssetDecimal))
+  const [dexAmountToDeposit, setDexAmountToDeposit] = useState<BaseAmount>(baseAmount(0, dexAssetDecimal))
 
   const initialAssetAmountToDepositMax1e8 = useMemo(
     () => baseAmount(0, assetBalanceMax1e8.decimal),
@@ -354,13 +352,13 @@ export const SymDeposit: React.FC<Props> = (props) => {
     return (poolDetails as PoolDetails) !== undefined
   }
 
-  const priceRuneAmountToDepositMax1e8: AssetWithAmount = useMemo(() => {
+  const priceDexAmountToDepositMax1e8: AssetWithAmount = useMemo(() => {
     const result =
       dex.chain === THORChain
         ? FP.pipe(
             isPoolDetails(poolDetails)
               ? PoolHelpers.getPoolPriceValue({
-                  balance: { asset: AssetRuneNative, amount: runeAmountToDeposit },
+                  balance: { asset: dex.asset, amount: dexAmountToDeposit },
                   poolDetails,
                   pricePool
                 })
@@ -370,7 +368,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
           )
         : FP.pipe(
             getPoolPriceValueM({
-              balance: { asset: AssetCacao, amount: runeAmountToDeposit },
+              balance: { asset: dex.asset, amount: dexAmountToDeposit },
               poolDetails,
               pricePool
             }),
@@ -378,7 +376,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
             (amount) => ({ asset: pricePool.asset, amount })
           )
     return result
-  }, [dex, poolDetails, pricePool, runeAmountToDeposit])
+  }, [dex, poolDetails, pricePool, dexAmountToDeposit])
   const [
     /* max. 1e8 decimal */
     assetAmountToDepositMax1e8,
@@ -386,13 +384,11 @@ export const SymDeposit: React.FC<Props> = (props) => {
   ] = useState<BaseAmount>(initialAssetAmountToDepositMax1e8)
 
   const isZeroAmountToDeposit = useMemo(
-    () => assetAmountToDepositMax1e8.amount().isZero() || runeAmountToDeposit.amount().isZero(),
-    [assetAmountToDepositMax1e8, runeAmountToDeposit]
+    () => assetAmountToDepositMax1e8.amount().isZero() || dexAmountToDeposit.amount().isZero(),
+    [assetAmountToDepositMax1e8, dexAmountToDeposit]
   )
 
   const [percentValueToDeposit, setPercentValueToDeposit] = useState(0)
-
-  const [selectedInput, setSelectedInput] = useState<SelectedInput>('none')
 
   const {
     state: depositState,
@@ -889,7 +885,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
             asset,
             poolAddress,
             amounts: {
-              rune: runeAmountToDeposit,
+              rune: dexAmountToDeposit,
               // Decimal needs to be converted back for using orginal decimal of this asset (provided by `assetBalance`)
               asset: convertBaseAmountDecimal(assetAmountToDepositMax1e8, assetDecimal)
             },
@@ -911,7 +907,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
           }
         })
       ),
-    [oPoolAddress, oDexAssetWB, oAssetWB, asset, runeAmountToDeposit, assetAmountToDepositMax1e8, assetDecimal, dex]
+    [oPoolAddress, oDexAssetWB, oAssetWB, asset, dexAmountToDeposit, assetAmountToDepositMax1e8, assetDecimal, dex]
   )
   const oAsymDepositParams: O.Option<SaverDepositParams> = useMemo(
     () =>
@@ -1036,10 +1032,10 @@ export const SymDeposit: React.FC<Props> = (props) => {
   const minRuneAmountError = useMemo(() => {
     if (isZeroAmountToDeposit) return false
 
-    return runeAmountToDeposit.lt(minRuneAmountToDeposit)
-  }, [isZeroAmountToDeposit, minRuneAmountToDeposit, runeAmountToDeposit])
+    return dexAmountToDeposit.lt(minRuneAmountToDeposit)
+  }, [isZeroAmountToDeposit, minRuneAmountToDeposit, dexAmountToDeposit])
 
-  const maxRuneAmountToDeposit = useMemo(
+  const maxDexAmountToDeposit = useMemo(
     (): BaseAmount =>
       Helper.maxRuneAmountToDeposit({
         poolData,
@@ -1052,12 +1048,12 @@ export const SymDeposit: React.FC<Props> = (props) => {
     [poolData, dexAssetBalance, asset, assetBalance, depositFees, dex]
   )
 
-  // Update `runeAmountToDeposit` if `maxRuneAmountToDeposit` has been updated
+  // Update `dexAmountToDeposit` if `maxDexAmountToDeposit` has been updated
   useEffect(() => {
-    if (maxRuneAmountToDeposit.lt(runeAmountToDeposit)) {
-      setRuneAmountToDeposit(maxRuneAmountToDeposit)
+    if (maxDexAmountToDeposit.lt(dexAmountToDeposit)) {
+      setDexAmountToDeposit(maxDexAmountToDeposit)
     }
-  }, [maxRuneAmountToDeposit, runeAmountToDeposit])
+  }, [maxDexAmountToDeposit, dexAmountToDeposit])
 
   /**
    * Max asset amount to deposit
@@ -1098,32 +1094,6 @@ export const SymDeposit: React.FC<Props> = (props) => {
           )
     return new CryptoAmount(result.amount, result.asset)
   }, [dex, asset, maxAssetAmountToDepositMax1e8, poolDetails, pricePool])
-
-  const priceRuneAmountToDepsoitMax1e8: CryptoAmount = useMemo(() => {
-    const result =
-      dex.chain === THORChain
-        ? FP.pipe(
-            isPoolDetails(poolDetails)
-              ? PoolHelpers.getPoolPriceValue({
-                  balance: { asset: AssetRuneNative, amount: maxRuneAmountToDeposit },
-                  poolDetails,
-                  pricePool
-                })
-              : O.none,
-            O.getOrElse(() => baseAmount(0, maxRuneAmountToDeposit.decimal)),
-            (amount) => ({ asset: pricePool.asset, amount })
-          )
-        : FP.pipe(
-            getPoolPriceValueM({
-              balance: { asset: AssetCacao, amount: maxRuneAmountToDeposit },
-              poolDetails,
-              pricePool
-            }),
-            O.getOrElse(() => baseAmount(0, maxRuneAmountToDeposit.decimal)),
-            (amount) => ({ asset: pricePool.asset, amount })
-          )
-    return new CryptoAmount(result.amount, pricePool.asset)
-  }, [dex, maxRuneAmountToDeposit, poolDetails, pricePool])
 
   const setAssetAmountToDepositMax1e8 = useCallback(
     (amountToDeposit: BaseAmount) => {
@@ -1228,8 +1198,8 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
   const updateRuneAmount = useCallback(
     (newAmount: BaseAmount) => {
-      let runeAmount = newAmount.gt(maxRuneAmountToDeposit)
-        ? { ...maxRuneAmountToDeposit } // Use copy to avoid missmatch with values in input fields
+      let runeAmount = newAmount.gt(maxDexAmountToDeposit)
+        ? { ...maxDexAmountToDeposit } // Use copy to avoid missmatch with values in input fields
         : baseAmount(newAmount.amount().toNumber(), dexAssetDecimal)
       // assetAmount max. 1e8 decimal
       const assetAmountMax1e8 = Helper.getAssetAmountToDeposit({
@@ -1239,16 +1209,16 @@ export const SymDeposit: React.FC<Props> = (props) => {
       })
 
       if (assetAmountMax1e8.gt(maxAssetAmountToDepositMax1e8)) {
-        runeAmount = Helper.getRuneAmountToDeposit(maxAssetAmountToDepositMax1e8, poolData)
-        setRuneAmountToDeposit(runeAmount)
+        runeAmount = Helper.getDexAmountToDeposit(maxAssetAmountToDepositMax1e8, poolData, dex)
+        setDexAmountToDeposit(runeAmount)
         setAssetAmountToDepositMax1e8(maxAssetAmountToDepositMax1e8)
         setPercentValueToDeposit(100)
       } else {
-        setRuneAmountToDeposit(runeAmount)
+        setDexAmountToDeposit(runeAmount)
         setAssetAmountToDepositMax1e8(assetAmountMax1e8)
-        // formula: runeQuantity * 100 / maxRuneAmountToDeposit
-        const percentToDeposit = maxRuneAmountToDeposit.gt(ZERO_BASE_AMOUNT)
-          ? runeAmount.times(100).div(maxRuneAmountToDeposit).amount().toNumber()
+        // formula: runeQuantity * 100 / maxDexAmountToDeposit
+        const percentToDeposit = maxDexAmountToDeposit.gt(ZERO_BASE_AMOUNT)
+          ? runeAmount.times(100).div(maxDexAmountToDeposit).amount().toNumber()
           : 0
         setPercentValueToDeposit(percentToDeposit)
       }
@@ -1257,18 +1227,18 @@ export const SymDeposit: React.FC<Props> = (props) => {
       assetDecimal,
       dexAssetDecimal,
       maxAssetAmountToDepositMax1e8,
-      maxRuneAmountToDeposit,
+      maxDexAmountToDeposit,
       poolData,
-      setAssetAmountToDepositMax1e8
+      setAssetAmountToDepositMax1e8,
+      dex
     ]
   )
 
   const runeAmountChangeHandler = useCallback(
     (amount: BaseAmount) => {
-      console.log(selectedInput)
       updateRuneAmount(amount)
     },
-    [selectedInput, updateRuneAmount]
+    [updateRuneAmount]
   )
 
   const updateAssetAmount = useCallback(
@@ -1280,19 +1250,20 @@ export const SymDeposit: React.FC<Props> = (props) => {
       let assetAmountMax1e8 = newAmountMax1e8.gt(maxAssetAmountToDepositMax1e8)
         ? { ...maxAssetAmountToDepositMax1e8 } // Use copy to avoid missmatch with values in input fields
         : { ...newAmountMax1e8 }
-      const runeAmount = Helper.getRuneAmountToDeposit(assetAmountMax1e8, poolData)
 
-      if (runeAmount.gt(maxRuneAmountToDeposit)) {
+      const dexAmount = Helper.getDexAmountToDeposit(assetAmountMax1e8, poolData, dex)
+
+      if (dexAmount.gt(maxDexAmountToDeposit)) {
         assetAmountMax1e8 = Helper.getAssetAmountToDeposit({
-          runeAmount,
+          runeAmount: dexAmount,
           poolData,
           assetDecimal
         })
-        setRuneAmountToDeposit(maxRuneAmountToDeposit)
+        setDexAmountToDeposit(maxDexAmountToDeposit)
         setAssetAmountToDepositMax1e8(assetAmountMax1e8)
         setPercentValueToDeposit(100)
       } else {
-        setRuneAmountToDeposit(runeAmount)
+        setDexAmountToDeposit(dexAmount)
         setAssetAmountToDepositMax1e8(assetAmountMax1e8)
         // assetQuantity * 100 / maxAssetAmountToDeposit
         const percentToDeposit = maxAssetAmountToDepositMax1e8.gt(baseAmount(0, maxAssetAmountToDepositMax1e8.decimal))
@@ -1305,23 +1276,23 @@ export const SymDeposit: React.FC<Props> = (props) => {
       assetBalanceMax1e8.decimal,
       assetDecimal,
       maxAssetAmountToDepositMax1e8,
-      maxRuneAmountToDeposit,
+      maxDexAmountToDeposit,
       poolData,
-      setAssetAmountToDepositMax1e8
+      setAssetAmountToDepositMax1e8,
+      dex
     ]
   )
 
   const assetAmountChangeHandler = useCallback(
     (amount: BaseAmount) => {
-      console.log(selectedInput)
       updateAssetAmount(amount)
     },
-    [selectedInput, updateAssetAmount]
+    [updateAssetAmount]
   )
 
   const changePercentHandler = useCallback(
     (percent: number) => {
-      const runeAmountBN = maxRuneAmountToDeposit
+      const runeAmountBN = maxDexAmountToDeposit
         .amount()
         .dividedBy(100)
         .multipliedBy(percent)
@@ -1332,11 +1303,11 @@ export const SymDeposit: React.FC<Props> = (props) => {
         .multipliedBy(percent)
         .decimalPlaces(0, BigNumber.ROUND_DOWN)
 
-      setRuneAmountToDeposit(baseAmount(runeAmountBN, maxRuneAmountToDeposit.decimal))
+      setDexAmountToDeposit(baseAmount(runeAmountBN, maxDexAmountToDeposit.decimal))
       setAssetAmountToDepositMax1e8(baseAmount(assetAmountMax1e8BN, assetBalanceMax1e8.decimal))
       setPercentValueToDeposit(percent)
     },
-    [assetBalanceMax1e8.decimal, maxAssetAmountToDepositMax1e8, maxRuneAmountToDeposit, setAssetAmountToDepositMax1e8]
+    [assetBalanceMax1e8.decimal, maxAssetAmountToDepositMax1e8, maxDexAmountToDeposit, setAssetAmountToDepositMax1e8]
   )
 
   const onChangeAssetHandler = useCallback(
@@ -1347,10 +1318,8 @@ export const SymDeposit: React.FC<Props> = (props) => {
   )
 
   const onAfterSliderChangeHandler = useCallback(() => {
-    if (selectedInput === 'none') {
-      reloadFeesHandler()
-    }
-  }, [reloadFeesHandler, selectedInput])
+    reloadFeesHandler()
+  }, [reloadFeesHandler])
 
   type ModalState = 'deposit' | 'approve' | 'none' | 'recover'
   const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
@@ -1452,7 +1421,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
     return (
       <DepositAssets
-        target={{ asset: dexAsset, amount: runeAmountToDeposit }}
+        target={{ asset: dexAsset, amount: dexAmountToDeposit }}
         source={O.some({ asset, amount: assetAmountToDepositMax1e8 })}
         stepDescription={stepDescription}
         network={network}
@@ -1465,7 +1434,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     depositState.deposit,
     depositState.step,
     depositState.stepsTotal,
-    runeAmountToDeposit,
+    dexAmountToDeposit,
     assetAmountToDepositMax1e8,
     network
   ])
@@ -1728,7 +1697,6 @@ export const SymDeposit: React.FC<Props> = (props) => {
   }, [oAsymDepositParams, subscribeAsymDepositState, asymDeposit$])
 
   const inputOnBlur = useCallback(() => {
-    setSelectedInput('none')
     reloadFeesHandler()
   }, [reloadFeesHandler])
 
@@ -1923,7 +1891,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
           const missingAssets: AssetsWithAmount1e8 = pendingAssets.map((assetWB): AssetWithAmount1e8 => {
             const amount =
               dexAsset !== assetWB.asset
-                ? Helper.getRuneAmountToDeposit(assetWB.amount1e8, poolData)
+                ? Helper.getDexAmountToDeposit(assetWB.amount1e8, poolData, dex)
                 : Helper.getAssetAmountToDeposit({ runeAmount: assetWB.amount1e8, poolData, assetDecimal })
 
             const assetAmount: AssetWithAmount1e8 = {
@@ -1937,7 +1905,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
         }
       )
     )
-  }, [asset, assetDecimal, dexAsset, network, poolData, symPendingAssetsRD])
+  }, [asset, assetDecimal, dex, dexAsset, network, poolData, symPendingAssetsRD])
 
   const prevHasAsymAssets = useRef<LiquidityProviderHasAsymAssets>({ dexAsset: false, asset: false })
 
@@ -2014,7 +1982,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
   }, [asset, dexAsset, network, symAssetMismatchRD])
 
   const resetEnteredAmounts = useCallback(() => {
-    setRuneAmountToDeposit(baseAmount(0, dexAssetDecimal))
+    setDexAmountToDeposit(baseAmount(0, dexAssetDecimal))
     setAssetAmountToDepositMax1e8(initialAssetAmountToDepositMax1e8)
     setPercentValueToDeposit(0)
   }, [dexAssetDecimal, initialAssetAmountToDepositMax1e8, setAssetAmountToDepositMax1e8])
@@ -2310,15 +2278,15 @@ export const SymDeposit: React.FC<Props> = (props) => {
           classNameButton="!text-gray2 dark:!text-gray2d"
           classNameIcon={
             // show warn icon if maxAmountToSwapMax <= 0
-            maxRuneAmountToDeposit.gt(ZERO_BASE_AMOUNT)
+            maxDexAmountToDeposit.gt(ZERO_BASE_AMOUNT)
               ? `text-gray2 dark:text-gray2d`
               : 'text-warning0 dark:text-warning0d'
           }
           size="medium"
-          balance={{ amount: maxRuneAmountToDeposit, asset: dexAsset }}
-          maxDollarValue={priceRuneAmountToDepsoitMax1e8}
+          balance={{ amount: maxDexAmountToDeposit, asset: dexAsset }}
+          maxDollarValue={new CryptoAmount(priceDexAmountToDepositMax1e8.amount, priceDexAmountToDepositMax1e8.asset)}
           onClick={() => {
-            updateRuneAmount(maxRuneAmountToDeposit)
+            updateRuneAmount(maxDexAmountToDeposit)
           }}
           maxInfoText={intl.formatMessage(
             { id: 'deposit.add.max.infoWithFee' },
@@ -2336,17 +2304,17 @@ export const SymDeposit: React.FC<Props> = (props) => {
       </div>
     ),
     [
-      asset,
+      maxDexAmountToDeposit,
       dexAsset,
-      hidePrivateData,
+      priceDexAmountToDepositMax1e8,
       intl,
-      maxRuneAmountToDeposit,
-      minRuneAmountError,
-      minRuneAmountToDeposit,
-      priceRuneAmountToDepsoitMax1e8,
-      renderMinAmount,
       dexAssetBalanceLabel,
       runeFeeLabel,
+      hidePrivateData,
+      minRuneAmountError,
+      renderMinAmount,
+      minRuneAmountToDeposit,
+      asset,
       updateRuneAmount
     ]
   )
@@ -2418,14 +2386,13 @@ export const SymDeposit: React.FC<Props> = (props) => {
             <AssetInput
               className="w-full"
               title={intl.formatMessage({ id: 'deposit.add.runeSide' }, { dex: dex.chain })}
-              amount={{ amount: runeAmountToDeposit, asset: dexAsset }}
-              priceAmount={priceRuneAmountToDepositMax1e8}
+              amount={{ amount: dexAmountToDeposit, asset: dexAsset }}
+              priceAmount={priceDexAmountToDepositMax1e8}
               assets={[]}
               network={network}
               onChangeAsset={FP.constVoid}
               onChange={runeAmountChangeHandler}
               onBlur={inputOnBlur}
-              onFocus={() => setSelectedInput('rune')}
               showError={minRuneAmountError}
               useLedger={isRuneLedger}
               hasLedger={hasRuneLedger}
@@ -2453,7 +2420,6 @@ export const SymDeposit: React.FC<Props> = (props) => {
                 onChangeAsset={onChangeAssetHandler}
                 onChange={assetAmountChangeHandler}
                 onBlur={inputOnBlur}
-                onFocus={() => setSelectedInput('asset')}
                 showError={minAssetAmountError}
                 useLedger={isAssetLedger}
                 hasLedger={hasAssetLedger}

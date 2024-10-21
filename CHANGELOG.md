@@ -3,6 +3,7 @@
 ## Updates/Fixes
 - fixed ledger trade asset bug [#427](https://github.com/asgardex/asgardex-desktop/pull/428)
 - fixed cosmos url [#413] (https://github.com/asgardex/asgardex-desktop/pull/418)
+- fixed deposit page bug [#426] (https://github.com/asgardex/asgardex-desktop/pull/430)
 
 # 1.22.6 (2024-10-6)
 

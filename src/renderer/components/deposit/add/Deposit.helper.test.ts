@@ -14,7 +14,7 @@ import { DepositAssetFees, DepositFees, SymDepositFees, SymDepositFeesRD } from 
 import { PoolData } from '../../../views/pools/Pools.types'
 import {
   getAssetAmountToDeposit,
-  getRuneAmountToDeposit,
+  getDexAmountToDeposit,
   maxAssetAmountToDeposit,
   maxRuneAmountToDeposit,
   getAssetChainFee,
@@ -153,12 +153,12 @@ describe('deposit/Deposit.helper', () => {
   describe('getRuneAmountToDeposit', () => {
     it('is 10000', () => {
       const assetAmount = baseAmount(5000)
-      const result = getRuneAmountToDeposit(assetAmount, poolData)
+      const result = getDexAmountToDeposit(assetAmount, poolData, dex)
       expect(eqBaseAmount.equals(result, baseAmount(10000))).toBeTruthy()
     })
     it('is 5000', () => {
       const assetAmount = baseAmount(2500)
-      const result = getRuneAmountToDeposit(assetAmount, poolData)
+      const result = getDexAmountToDeposit(assetAmount, poolData, dex)
       expect(eqBaseAmount.equals(result, baseAmount(5000))).toBeTruthy()
     })
   })

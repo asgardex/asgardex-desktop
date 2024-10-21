@@ -1,4 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, baseAmount, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
@@ -130,16 +132,17 @@ export const maxAssetAmountToDeposit = ({
   return maxAssetAmount.gt(maxAssetBalance) ? maxAssetBalance : maxAssetAmount
 }
 
-export const getRuneAmountToDeposit = (
+export const getDexAmountToDeposit = (
   assetAmount: BaseAmount,
-  { dexBalance: poolRuneBalance, assetBalance: poolAssetBalance }: PoolData
+  { dexBalance: poolRuneBalance, assetBalance: poolAssetBalance }: PoolData,
+  dex: Dex
 ): BaseAmount => {
   // convert `assetAmount` to `1e8` to be similar with decimal of `PoolData`, which are always 1e8 decimal based
   const assetAmount1e8 = to1e8BaseAmount(assetAmount)
   return baseAmount(
     // formula: assetAmount * poolRuneBalance / poolAssetBalance
     assetAmount1e8.amount().times(poolRuneBalance.amount().dividedBy(poolAssetBalance.amount())),
-    THORCHAIN_DECIMAL
+    dex.chain === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL
   )
 }
 
