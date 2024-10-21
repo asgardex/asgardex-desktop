@@ -26,7 +26,7 @@ const network = ethers.providers.getNetwork('sepolia')
 export const ETH_TESTNET_ETHERS_PROVIDER = new ethers.providers.EtherscanProvider(network)
 
 // Helper function to create ethProviders
-export const createEthProviders = (apiKey) => {
+export const createEthProviders = (apiKey: string | undefined) => {
   const ETHERSCAN_URLS = {
     mainnet: 'https://api.etherscan.io/',
     testnet: 'https://api-sepolia.etherscan.io/'
@@ -36,7 +36,7 @@ export const createEthProviders = (apiKey) => {
   const ETH_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
     ETH_TESTNET_ETHERS_PROVIDER,
     ETHERSCAN_URLS.testnet,
-    apiKey,
+    apiKey || '',
     ETHChain,
     AssetETH,
     ETH_GAS_ASSET_DECIMAL
@@ -45,7 +45,7 @@ export const createEthProviders = (apiKey) => {
   const ETH_ONLINE_PROVIDER_MAINNET = new EtherscanProvider(
     ETH_MAINNET_ETHERS_PROVIDER,
     ETHERSCAN_URLS.mainnet,
-    apiKey,
+    apiKey || '',
     ETHChain,
     AssetETH,
     ETH_GAS_ASSET_DECIMAL
