@@ -120,7 +120,8 @@ describe('shared/io', () => {
         feeOption: 'fast',
         feeAmount: { amount: '1', decimal: 6 },
         nodeUrl: 'node-url',
-        hdMode: 'default'
+        hdMode: 'default',
+        apiKey: 'apikey'
       })
     })
 
