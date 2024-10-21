@@ -1265,9 +1265,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
   const runeAmountChangeHandler = useCallback(
     (amount: BaseAmount) => {
-      // Do nothing if we don't entered input for rune
-      if (selectedInput !== 'rune') return
-
+      console.log(selectedInput)
       updateRuneAmount(amount)
     },
     [selectedInput, updateRuneAmount]
@@ -1315,9 +1313,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
   const assetAmountChangeHandler = useCallback(
     (amount: BaseAmount) => {
-      // Do nothing if we don't entered input for asset
-      if (selectedInput !== 'asset') return
-
+      console.log(selectedInput)
       updateAssetAmount(amount)
     },
     [selectedInput, updateAssetAmount]
