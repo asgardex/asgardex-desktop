@@ -1,12 +1,22 @@
 import Transport from '@ledgerhq/hw-transport'
-import { AddressFormat, AssetBTC, ClientLedger, tapRootDerivationPaths } from '@xchainjs/xchain-bitcoin'
+import {
+  AddressFormat,
+  AssetBTC,
+  BTCChain,
+  BitgoProviders,
+  ClientLedger,
+  HaskoinDataProviders,
+  defaultBTCParams,
+  tapRootDerivationPaths
+} from '@xchainjs/xchain-bitcoin'
 import { FeeRate, Network, TxHash } from '@xchainjs/xchain-client'
 import { Address, BaseAmount } from '@xchainjs/xchain-util'
+import { BlockcypherNetwork, BlockcypherProvider, UtxoOnlineDataProviders } from '@xchainjs/xchain-utxo-providers'
 import * as E from 'fp-ts/lib/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
-import { btcInitParams, getDerivationPaths } from './common'
+import { getDerivationPaths } from './common'
 
 /**
  * Sends BTC tx using Ledger
@@ -21,7 +31,8 @@ export const send = async ({
   memo,
   walletAccount,
   walletIndex,
-  addressFormat = AddressFormat.P2WPKH
+  addressFormat = AddressFormat.P2WPKH,
+  apiKey
 }: {
   transport: Transport
   network: Network
@@ -33,6 +44,7 @@ export const send = async ({
   walletAccount: number
   walletIndex: number
   addressFormat?: AddressFormat
+  apiKey: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   if (!sender) {
     return E.left({
@@ -40,11 +52,35 @@ export const send = async ({
       msg: `Getting sender address using Ledger failed`
     })
   }
+  //======================
+  // Blockcypher
+  //======================
+  const testnetBlockcypherProvider = new BlockcypherProvider(
+    'https://api.blockcypher.com/v1',
+    BTCChain,
+    AssetBTC,
+    8,
+    BlockcypherNetwork.BTCTEST,
+    apiKey
+  )
+  const mainnetBlockcypherProvider = new BlockcypherProvider(
+    'https://api.blockcypher.com/v1',
+    BTCChain,
+    AssetBTC,
+    8,
+    BlockcypherNetwork.BTC,
+    apiKey
+  )
+  const BlockcypherDataProviders: UtxoOnlineDataProviders = {
+    [Network.Testnet]: testnetBlockcypherProvider,
+    [Network.Stagenet]: mainnetBlockcypherProvider,
+    [Network.Mainnet]: mainnetBlockcypherProvider
+  }
   try {
     const clientLedger = new ClientLedger({
       transport,
-      ...btcInitParams,
-      addressFormat,
+      ...defaultBTCParams,
+      dataProviders: [BlockcypherDataProviders, HaskoinDataProviders, BitgoProviders],
       rootDerivationPaths:
         addressFormat === AddressFormat.P2TR ? tapRootDerivationPaths : getDerivationPaths(walletAccount, network),
       network: network

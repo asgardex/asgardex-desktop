@@ -1,5 +1,6 @@
 import type Transport from '@ledgerhq/hw-transport'
 import { FeeOption, Network, Protocol, TxHash } from '@xchainjs/xchain-client'
+import { defaultEthParams } from '@xchainjs/xchain-ethereum'
 import * as ETH from '@xchainjs/xchain-evm'
 import { Address, AnyAsset, Asset, assetToString, baseAmount, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -8,12 +9,12 @@ import * as E from 'fp-ts/Either'
 
 import { isEthAsset } from '../../../../renderer/helpers/assetHelper'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
-import { DEPOSIT_EXPIRATION_OFFSET, ETHAddress, defaultEthParams } from '../../../../shared/ethereum/const'
+import { DEPOSIT_EXPIRATION_OFFSET, ETHAddress } from '../../../../shared/ethereum/const'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
-import { ethProviders } from './common'
+import { ETH_MAINNET_ETHERS_PROVIDER, ETH_TESTNET_ETHERS_PROVIDER, createEthProviders } from './common'
 
 /**
  * Sends ETH tx using Ledger
@@ -28,7 +29,8 @@ export const send = async ({
   feeOption,
   walletAccount,
   walletIndex,
-  evmHDMode
+  evmHDMode,
+  apiKey
 }: {
   asset: AnyAsset
   transport: Transport
@@ -40,14 +42,22 @@ export const send = async ({
   walletAccount: number
   walletIndex: number
   evmHDMode: EvmHDMode
+  apiKey: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
+    const ethProviders = createEthProviders(apiKey)
+
     const ledgerClient = new ETH.ClientLedger({
       ...defaultEthParams,
+      providers: {
+        mainnet: new ethers.providers.EtherscanProvider('homestead', apiKey),
+        testnet: ETH_TESTNET_ETHERS_PROVIDER,
+        stagenet: ETH_MAINNET_ETHERS_PROVIDER
+      },
       dataProviders: [ethProviders],
       signer: new ETH.LedgerSigner({
         transport,
-        provider: defaultEthParams.providers[Network.Mainnet],
+        provider: new ethers.providers.EtherscanProvider('homestead', apiKey),
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
@@ -93,7 +103,8 @@ export const deposit = async ({
   walletAccount,
   walletIndex,
   feeOption,
-  evmHDMode
+  evmHDMode,
+  apiKey
 }: {
   asset: AnyAsset
   router: Address
@@ -106,6 +117,7 @@ export const deposit = async ({
   walletIndex: number
   feeOption: FeeOption
   evmHDMode: EvmHDMode
+  apiKey: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const address = !isEthAsset(asset) ? ETH.getTokenAddress(asset as TokenAsset) : ETHAddress
@@ -116,15 +128,21 @@ export const deposit = async ({
         msg: `Could not get asset address from ${assetToString(asset)}`
       })
     }
+    const ethProviders = createEthProviders(apiKey)
 
     const isETHAddress = address === ETHAddress
 
     const ledgerClient = new ETH.ClientLedger({
       ...defaultEthParams,
+      providers: {
+        mainnet: new ethers.providers.EtherscanProvider('homestead', apiKey),
+        testnet: ETH_TESTNET_ETHERS_PROVIDER,
+        stagenet: ETH_MAINNET_ETHERS_PROVIDER
+      },
       dataProviders: [ethProviders],
       signer: new ETH.LedgerSigner({
         transport,
-        provider: defaultEthParams.providers[Network.Mainnet],
+        provider: new ethers.providers.EtherscanProvider('homestead', apiKey),
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),

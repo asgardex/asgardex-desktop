@@ -10,6 +10,7 @@ import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { etherscanApiKey } from '../../../shared/api/etherscan'
 import {
   IPCLedgerApproveERC20TokenParams,
   ipcLedgerApproveERC20TokenParamsIO,
@@ -122,7 +123,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       walletIndex: params.walletIndex,
       feeOption: params.feeOption,
       nodeUrl: undefined,
-      hdMode: params.hdMode
+      hdMode: params.hdMode,
+      apiKey: etherscanApiKey
     }
     const encoded = ipcLedgerDepositTxParamsIO.encode(ipcParams)
     return FP.pipe(
@@ -219,7 +221,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       spenderAddress,
       walletAccount,
       walletIndex,
-      hdMode
+      hdMode,
+      apiKey: etherscanApiKey
     }
     const encoded = ipcLedgerApproveERC20TokenParamsIO.encode(ipcParams)
     return FP.pipe(
@@ -330,7 +333,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       feeOption: params.feeOption,
       feeAmount: undefined,
       nodeUrl: undefined,
-      hdMode: params.hdMode
+      hdMode: params.hdMode,
+      apiKey: etherscanApiKey
     }
 
     const encoded = ipcLedgerSendTxParamsIO.encode(ipcParams)

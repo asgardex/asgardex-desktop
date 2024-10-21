@@ -102,7 +102,8 @@ describe('shared/io', () => {
         feeOption: FeeOption.Fast,
         feeAmount: baseAmount(1, 6),
         nodeUrl: 'node-url',
-        hdMode: 'default'
+        hdMode: 'default',
+        apiKey: 'apikey'
       })
       expect(encoded).toEqual({
         chain: 'BTC',
@@ -119,7 +120,8 @@ describe('shared/io', () => {
         feeOption: 'fast',
         feeAmount: { amount: '1', decimal: 6 },
         nodeUrl: 'node-url',
-        hdMode: 'default'
+        hdMode: 'default',
+        apiKey: 'apikey'
       })
     })
 
@@ -139,7 +141,8 @@ describe('shared/io', () => {
         feeOption: undefined,
         feeAmount: undefined,
         nodeUrl: undefined,
-        hdMode: 'default'
+        hdMode: 'default',
+        apiKey: 'apikey'
       })
 
       expect(encoded).toEqual({
@@ -157,7 +160,8 @@ describe('shared/io', () => {
         feeOption: undefined,
         feeAmount: undefined,
         nodeUrl: undefined,
-        hdMode: 'default'
+        hdMode: 'default',
+        apiKey: 'apikey'
       })
     })
 
@@ -174,7 +178,8 @@ describe('shared/io', () => {
         walletIndex: 0,
         feeRate: 1,
         feeAmount: { amount: '1', decimal: 6 },
-        hdMode: 'default'
+        hdMode: 'default',
+        apiKey: 'apikey'
       }
       const decoded = ipcLedgerSendTxParamsIO.decode(encoded)
       expect(E.isRight(decoded)).toBeTruthy()

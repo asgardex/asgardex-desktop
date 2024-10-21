@@ -1,5 +1,11 @@
 import type Transport from '@ledgerhq/hw-transport'
-import { AddressFormat, BTCChain, ClientLedger, tapRootDerivationPaths } from '@xchainjs/xchain-bitcoin'
+import {
+  AddressFormat,
+  BTCChain,
+  ClientLedger,
+  defaultBTCParams,
+  tapRootDerivationPaths
+} from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import * as E from 'fp-ts/Either'
 
@@ -7,12 +13,12 @@ import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
 import { VerifyAddressHandler } from '../types'
-import { btcInitParams, getDerivationPaths } from './common'
+import { getDerivationPaths } from './common'
 
 export const verifyAddress: VerifyAddressHandler = async ({ transport, network, walletAccount, walletIndex }) => {
   const clientLedger = new ClientLedger({
     transport,
-    ...btcInitParams,
+    ...defaultBTCParams,
     rootDerivationPaths: getDerivationPaths(walletAccount, network),
     network: network
   })
@@ -32,7 +38,7 @@ export const getAddress = async (
   try {
     const clientLedger = new ClientLedger({
       transport,
-      ...btcInitParams,
+      ...defaultBTCParams,
       addressFormat,
       rootDerivationPaths:
         addressFormat === AddressFormat.P2TR ? tapRootDerivationPaths : getDerivationPaths(walletAccount, network),

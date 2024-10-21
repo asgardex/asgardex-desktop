@@ -21,7 +21,7 @@ export const FEE_BOUNDS: Record<Network, FeeBounds | undefined> = {
 export const DEPOSIT_EXPIRATION_OFFSET = 15 * 60 // 15min in seconds
 
 export const BscZeroAddress = '0x0000000000000000000000000000000000000000'
-
+export const bscScanApiKey = envOrDefault(process.env['REACT_APP_BSCSCAN_API_KEY'], '')
 // =====Ethers providers=====
 const BSC_MAINNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider('https://rpc.ankr.com/bsc')
 const BSC_TESTNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider('https://bsc-testnet.public.blastapi.io')
@@ -37,7 +37,7 @@ const ethersJSProviders = {
 const BSC_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
   BSC_TESTNET_ETHERS_PROVIDER,
   'https://api-testnet.bscscan.com',
-  envOrDefault(process.env['REACT_APP_BSCSCAN_API_KEY'], ''),
+  bscScanApiKey,
   BSCChain,
   AssetBSC,
   BSC_GAS_ASSET_DECIMAL
@@ -45,7 +45,7 @@ const BSC_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
 const BSC_ONLINE_PROVIDER_MAINNET = new EtherscanProvider(
   BSC_MAINNET_ETHERS_PROVIDER,
   'https://api.bscscan.com',
-  envOrDefault(process.env['REACT_APP_BSCSCAN_API_KEY'], ''),
+  bscScanApiKey,
   BSCChain,
   AssetBSC,
   BSC_GAS_ASSET_DECIMAL

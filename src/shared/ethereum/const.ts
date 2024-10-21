@@ -5,7 +5,6 @@ import { EtherscanProvider } from '@xchainjs/xchain-evm-providers'
 import { BigNumber, ethers } from 'ethers'
 
 import { etherscanApiKey } from '../api/etherscan'
-import { envOrDefault } from '../utils/env'
 
 export const DEFAULT_APPROVE_GAS_LIMIT_FALLBACK = '65000'
 
@@ -38,7 +37,7 @@ const ethersJSProviders = {
 const ETH_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
   ETH_TESTNET_ETHERS_PROVIDER,
   'https://api-sepolia.etherscan.io/',
-  envOrDefault(process.env.REACT_APP_ETHERSCAN_API_KEY, ''),
+  etherscanApiKey,
   ETHChain,
   AssetETH,
   ETH_GAS_ASSET_DECIMAL
@@ -47,7 +46,7 @@ const ETH_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
 const ETH_ONLINE_PROVIDER_MAINNET = new EtherscanProvider(
   ETH_MAINNET_ETHERS_PROVIDER,
   'https://api.etherscan.io/',
-  envOrDefault(process.env.REACT_APP_ETHERSCAN_API_KEY, ''),
+  etherscanApiKey,
   ETHChain,
   AssetETH,
   ETH_GAS_ASSET_DECIMAL
