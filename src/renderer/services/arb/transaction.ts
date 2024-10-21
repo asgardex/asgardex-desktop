@@ -130,7 +130,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       walletIndex: params.walletIndex,
       feeOption: params.feeOption,
       nodeUrl: undefined,
-      hdMode: params.hdMode
+      hdMode: params.hdMode,
+      apiKey: undefined
     }
     const encoded = ipcLedgerDepositTxParamsIO.encode(ipcParams)
 
@@ -228,7 +229,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       spenderAddress,
       walletAccount,
       walletIndex,
-      hdMode
+      hdMode,
+      apiKey: undefined
     }
     const encoded = ipcLedgerApproveERC20TokenParamsIO.encode(ipcParams)
 
@@ -340,7 +342,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       feeOption: params.feeOption,
       feeAmount: undefined,
       nodeUrl: undefined,
-      hdMode: params.hdMode
+      hdMode: params.hdMode,
+      apiKey: undefined
     }
     const encoded = ipcLedgerSendTxParamsIO.encode(ipcParams)
 

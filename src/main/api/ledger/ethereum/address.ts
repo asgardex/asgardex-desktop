@@ -9,7 +9,7 @@ import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/le
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
 import { WalletAddress } from '../../../../shared/wallet/types'
-import { ethProviders } from './common'
+import { ETH_MAINNET_ETHERS_PROVIDER, ETH_TESTNET_ETHERS_PROVIDER, ethProviders } from './common'
 
 export const getAddress = async ({
   transport,
@@ -27,10 +27,15 @@ export const getAddress = async ({
   try {
     const ledgerClient = new ETH.ClientLedger({
       ...defaultEthParams,
+      providers: {
+        mainnet: ETH_MAINNET_ETHERS_PROVIDER,
+        testnet: ETH_TESTNET_ETHERS_PROVIDER,
+        stagenet: ETH_MAINNET_ETHERS_PROVIDER
+      },
       dataProviders: [ethProviders],
       signer: new ETH.LedgerSigner({
         transport,
-        provider: defaultEthParams.providers[Network.Mainnet],
+        provider: ETH_MAINNET_ETHERS_PROVIDER,
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
@@ -68,9 +73,15 @@ export const verifyAddress = async ({
 }) => {
   const ledgerClient = new ETH.ClientLedger({
     ...defaultEthParams,
+    providers: {
+      mainnet: ETH_MAINNET_ETHERS_PROVIDER,
+      testnet: ETH_TESTNET_ETHERS_PROVIDER,
+      stagenet: ETH_MAINNET_ETHERS_PROVIDER
+    },
+    dataProviders: [ethProviders],
     signer: new ETH.LedgerSigner({
       transport,
-      provider: defaultEthParams.providers[Network.Mainnet],
+      provider: ETH_MAINNET_ETHERS_PROVIDER,
       derivationPath: getDerivationPath(walletAccount, evmHDMode)
     }),
     rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),

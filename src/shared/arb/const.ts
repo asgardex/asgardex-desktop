@@ -20,6 +20,7 @@ export const FEE_BOUNDS: Record<Network, FeeBounds | undefined> = {
 export const DEPOSIT_EXPIRATION_OFFSET = 15 * 60 // 15min in seconds
 
 export const ArbZeroAddress = '0x0000000000000000000000000000000000000000'
+export const arbscanApiKey = envOrDefault(process.env.REACT_APP_ARBISCAN_API_KEY, '')
 
 // =====Ethers providers=====
 // Define JSON-RPC providers for mainnet and testnet
@@ -37,7 +38,7 @@ const ethersJSProviders = {
 const ARB_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
   ARBITRUM_TESTNET_ETHERS_PROVIDER,
   'https://api-goerli.arbiscan.io',
-  envOrDefault(process.env.REACT_APP_ARBISCAN_API_KEY, ''),
+  arbscanApiKey,
   ARBChain,
   AssetAETH,
   ARB_DECIMAL
@@ -45,7 +46,7 @@ const ARB_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
 const ARB_ONLINE_PROVIDER_MAINNET = new EtherscanProvider(
   ARBITRUM_MAINNET_ETHERS_PROVIDER,
   'https://api.arbiscan.io',
-  envOrDefault(process.env.REACT_APP_ARBISCAN_API_KEY, ''),
+  arbscanApiKey,
   ARBChain,
   AssetAETH,
   ARB_DECIMAL

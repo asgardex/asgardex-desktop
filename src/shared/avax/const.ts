@@ -20,6 +20,7 @@ export const FEE_BOUNDS: Record<Network, FeeBounds | undefined> = {
 export const DEPOSIT_EXPIRATION_OFFSET = 15 * 60 // 15min in seconds
 
 export const AvaxZeroAddress = '0x0000000000000000000000000000000000000000'
+export const avaxscanApiKey = envOrDefault(process.env.REACT_APP_SNOWTRACE_API_KEY, '')
 
 // =====Ethers providers=====
 const AVALANCHE_MAINNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider('https://rpc.ankr.com/avalanche')
@@ -36,7 +37,7 @@ const ethersJSProviders = {
 const AVAX_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
   AVALANCHE_TESTNET_ETHERS_PROVIDER,
   'https://api-testnet.snowtrace.dev',
-  envOrDefault(process.env.REACT_APP_SNOWTRACE_API_KEY, ''),
+  avaxscanApiKey,
   AVAXChain,
   AssetAVAX,
   AVAX_DECIMAL
@@ -44,7 +45,7 @@ const AVAX_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
 const AVAX_ONLINE_PROVIDER_MAINNET = new EtherscanProvider(
   AVALANCHE_MAINNET_ETHERS_PROVIDER,
   'https://api.snowtrace.dev',
-  envOrDefault(process.env.REACT_APP_SNOWTRACE_API_KEY, ''),
+  avaxscanApiKey,
   AVAXChain,
   AssetAVAX,
   AVAX_DECIMAL

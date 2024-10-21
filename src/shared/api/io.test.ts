@@ -102,7 +102,8 @@ describe('shared/io', () => {
         feeOption: FeeOption.Fast,
         feeAmount: baseAmount(1, 6),
         nodeUrl: 'node-url',
-        hdMode: 'default'
+        hdMode: 'default',
+        apiKey: 'apikey'
       })
       expect(encoded).toEqual({
         chain: 'BTC',
@@ -139,7 +140,8 @@ describe('shared/io', () => {
         feeOption: undefined,
         feeAmount: undefined,
         nodeUrl: undefined,
-        hdMode: 'default'
+        hdMode: 'default',
+        apiKey: 'apikey'
       })
 
       expect(encoded).toEqual({

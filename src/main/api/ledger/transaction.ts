@@ -47,7 +47,15 @@ const chainSendFunctions: Record<
     }
     return THOR.send({ transport, network, asset, recipient, amount, memo, walletAccount, walletIndex })
   },
-  [BTCChain]: async (params) => BTC.send(params),
+  [BTCChain]: async (params) => {
+    if (params.apiKey === undefined) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Eth needs an api key ${chainToString(ETHChain)}`
+      })
+    }
+    return BTC.send({ ...params, apiKey: params.apiKey })
+  },
   [LTCChain]: async (params) => LTC.send(params),
   [BCHChain]: async (params) => BCH.send(params),
   [DOGEChain]: async (params) => DOGE.send(params),
@@ -71,7 +79,13 @@ const chainSendFunctions: Record<
         msg: `Invalid EthHDMode set - needed to send Ledger transaction on ${chainToString(ETHChain)}`
       })
     }
-    return ETH.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode })
+    if (params.apiKey === undefined) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Eth needs an api key ${chainToString(ETHChain)}`
+      })
+    }
+    return ETH.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode, apiKey: params.apiKey })
   },
   [AVAXChain]: async (params) => {
     if (!params.asset) {
@@ -169,7 +183,8 @@ export const sendTx = async ({
   walletAccount,
   walletIndex,
   nodeUrl,
-  hdMode
+  hdMode,
+  apiKey
 }: IPCLedgerSendTxParams): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const transport = await TransportNodeHidSingleton.create()
@@ -205,7 +220,8 @@ export const sendTx = async ({
       walletIndex,
       nodeUrl,
       hdMode,
-      feeAsset: undefined
+      feeAsset: undefined,
+      apiKey
     })
     await transport.close()
     return res
@@ -241,7 +257,8 @@ const chainDepositFunctions: Record<
     walletAccount,
     walletIndex,
     feeOption,
-    hdMode
+    hdMode,
+    apiKey
   }) => {
     if (!router) {
       return E.left({
@@ -273,6 +290,12 @@ const chainDepositFunctions: Record<
         msg: `Invalid EthHDMode set - needed to send Ledger transaction on ${chainToString(ETHChain)}`
       })
     }
+    if (apiKey === undefined) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Eth needs an api key ${chainToString(ETHChain)}`
+      })
+    }
     return ETH.deposit({
       asset,
       router,
@@ -284,7 +307,8 @@ const chainDepositFunctions: Record<
       walletIndex,
       recipient,
       feeOption,
-      evmHDMode: hdMode
+      evmHDMode: hdMode,
+      apiKey
     })
   },
   [AVAXChain]: async (params) => {
@@ -393,7 +417,8 @@ export const deposit = async ({
   walletIndex,
   feeOption,
   nodeUrl,
-  hdMode
+  hdMode,
+  apiKey
 }: IPCLedgerDepositTxParams): Promise<E.Either<LedgerError, TxHash>> => {
   try {
     const transport = await TransportNodeHidSingleton.create()
@@ -426,7 +451,8 @@ export const deposit = async ({
       walletIndex,
       feeOption,
       nodeUrl,
-      hdMode
+      hdMode,
+      apiKey
     })
     await transport.close()
     return res
