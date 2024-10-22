@@ -398,6 +398,7 @@ export const Withdraw: React.FC<Props> = ({
       withdraw$({
         network,
         memo,
+        walletAddress: runeAddress,
         walletType: runeWalletType,
         walletAccount: runeWalletAccount,
         walletIndex: runeWalletIndex,
@@ -411,6 +412,7 @@ export const Withdraw: React.FC<Props> = ({
     withdraw$,
     network,
     memo,
+    runeAddress,
     runeWalletType,
     runeWalletAccount,
     runeWalletIndex,

@@ -51,14 +51,36 @@ const chainSendFunctions: Record<
     if (params.apiKey === undefined) {
       return E.left({
         errorId: LedgerErrorId.INVALID_DATA,
-        msg: `Eth needs an api key ${chainToString(ETHChain)}`
+        msg: `${chainToString(params.asset.chain)} needs an api key`
       })
     }
-    return BTC.send({ ...params, apiKey: params.apiKey })
+    if (!params.feeOption) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Fee option needs to be set to send Ledger transaction on ${chainToString(params.asset.chain)}`
+      })
+    }
+    return BTC.send({ ...params, feeOption: params.feeOption, apiKey: params.apiKey })
   },
   [LTCChain]: async (params) => LTC.send(params),
-  [BCHChain]: async (params) => BCH.send(params),
-  [DOGEChain]: async (params) => DOGE.send(params),
+  [BCHChain]: async (params) => {
+    if (!params.feeOption) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Fee option needs to be set to send Ledger transaction on ${chainToString(params.asset.chain)}`
+      })
+    }
+    return BCH.send({ ...params, feeOption: params.feeOption })
+  },
+  [DOGEChain]: async (params) => {
+    if (params.apiKey === undefined) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `${chainToString(params.asset.chain)} needs an api key`
+      })
+    }
+    return DOGE.send({ ...params, apiKey: params.apiKey })
+  },
   [DASHChain]: async (params) => DASH.send(params),
   [ETHChain]: async (params) => {
     if (!params.asset) {

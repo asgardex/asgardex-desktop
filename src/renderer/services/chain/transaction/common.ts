@@ -67,16 +67,18 @@ export const sendTx$ = ({
   switch (chain) {
     case BTCChain:
       return FP.pipe(
-        BTC.feesWithRates$(memo),
+        BTC.feesWithRates$(sender, memo),
         liveData.mapLeft((error) => ({
           errorId: ErrorId.GET_FEES,
           msg: error?.message ?? error.toString()
         })),
-        liveData.chain(({ rates }) =>
-          BTC.sendTx({
+        liveData.chain(({ rates }) => {
+          return BTC.sendTx({
             walletType,
             recipient,
+            asset,
             amount,
+            feeOption,
             feeRate: rates[feeOption],
             memo,
             walletAccount,
@@ -84,7 +86,7 @@ export const sendTx$ = ({
             hdMode,
             sender
           })
-        )
+        })
       )
 
     case ETHChain:
@@ -135,7 +137,7 @@ export const sendTx$ = ({
 
     case DOGEChain:
       return FP.pipe(
-        DOGE.feesWithRates$(memo),
+        DOGE.feesWithRates$(sender, memo),
         // Error -> ApiError
         liveData.mapLeft((error) => ({
           errorId: ErrorId.GET_FEES,
@@ -145,7 +147,9 @@ export const sendTx$ = ({
           DOGE.sendTx({
             walletType,
             recipient,
+            asset,
             amount,
+            feeOption,
             feeRate: rates[feeOption],
             memo,
             walletAccount,
@@ -158,7 +162,7 @@ export const sendTx$ = ({
 
     case BCHChain:
       return FP.pipe(
-        BCH.feesWithRates$(memo),
+        BCH.feesWithRates$(sender, memo),
         liveData.mapLeft((error) => ({
           errorId: ErrorId.GET_FEES,
           msg: error?.message ?? error.toString()
@@ -167,7 +171,9 @@ export const sendTx$ = ({
           BCH.sendTx({
             walletType,
             recipient,
+            asset,
             amount,
+            feeOption,
             feeRate: rates[feeOption],
             memo,
             walletAccount,
@@ -179,7 +185,7 @@ export const sendTx$ = ({
       )
     case LTCChain:
       return FP.pipe(
-        LTC.feesWithRates$(memo),
+        LTC.feesWithRates$(sender, memo),
         liveData.mapLeft((error) => ({
           errorId: ErrorId.GET_FEES,
           msg: error?.message ?? error.toString()
@@ -188,7 +194,9 @@ export const sendTx$ = ({
           return LTC.sendTx({
             walletType,
             recipient,
+            asset,
             amount,
+            feeOption,
             feeRate: rates[feeOption],
             memo,
             walletAccount,
@@ -200,7 +208,7 @@ export const sendTx$ = ({
       )
     case DASHChain:
       return FP.pipe(
-        DASH.feesWithRates$(memo),
+        DASH.feesWithRates$(sender, memo),
         liveData.mapLeft((error) => ({
           errorId: ErrorId.GET_FEES,
           msg: error?.message ?? error.toString()
@@ -211,6 +219,7 @@ export const sendTx$ = ({
             recipient,
             asset,
             amount,
+            feeOption,
             feeRate: rates[feeOption],
             memo,
             walletAccount,

@@ -46,6 +46,7 @@ const { validateNode$: validateNodeMaya$ } = mayaMidgardService
 export const symWithdraw$ = ({
   memo,
   network,
+  walletAddress,
   walletType,
   walletAccount,
   walletIndex,
@@ -80,6 +81,7 @@ export const symWithdraw$ = ({
         walletType,
         walletAccount,
         walletIndex,
+        sender: walletAddress,
         hdMode,
         router: O.none, // no router for RUNE/MAYA
         asset: dexAsset,

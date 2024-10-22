@@ -152,7 +152,7 @@ export type SymDepositParams = {
 export type SendTxParams = {
   walletType: WalletType
   asset: AnyAsset
-  sender?: Address
+  sender: Address
   recipient: Address
   amount: BaseAmount
   memo: Memo
@@ -358,6 +358,7 @@ export type WithdrawState$ = Rx.Observable<WithdrawState>
 export type SymWithdrawParams = {
   readonly memo: Memo
   readonly network: Network
+  readonly walletAddress: Address
   readonly walletType: WalletType
   readonly walletAccount: number
   readonly walletIndex: number

@@ -1,9 +1,11 @@
 import Transport from '@ledgerhq/hw-transport'
 import { FeeRate, Network, TxHash } from '@xchainjs/xchain-client'
-import { AssetDOGE, ClientLedger } from '@xchainjs/xchain-doge'
+import { AssetDOGE, BitgoProviders, ClientLedger, DOGEChain } from '@xchainjs/xchain-doge'
 import { Address, BaseAmount } from '@xchainjs/xchain-util'
+import { BlockcypherNetwork, BlockcypherProvider, UtxoOnlineDataProviders } from '@xchainjs/xchain-utxo-providers'
 import * as E from 'fp-ts/lib/Either'
 
+import { blockcypherUrl } from '../../../../shared/api/blockcypher'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
 import { dogeInitParams, getDerivationPaths, removeAffiliate } from './common'
@@ -20,7 +22,8 @@ export const send = async ({
   feeRate,
   memo,
   walletAccount,
-  walletIndex
+  walletIndex,
+  apiKey
 }: {
   transport: Transport
   network: Network
@@ -31,6 +34,7 @@ export const send = async ({
   memo?: string
   walletAccount: number
   walletIndex: number
+  apiKey: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   if (!sender) {
     return E.left({
@@ -40,9 +44,31 @@ export const send = async ({
   }
 
   try {
+    const testnetBlockcypherProvider = new BlockcypherProvider(
+      blockcypherUrl,
+      DOGEChain,
+      AssetDOGE,
+      8,
+      BlockcypherNetwork.DOGE,
+      apiKey || ''
+    )
+    const mainnetBlockcypherProvider = new BlockcypherProvider(
+      blockcypherUrl,
+      DOGEChain,
+      AssetDOGE,
+      8,
+      BlockcypherNetwork.DOGE,
+      apiKey || ''
+    )
+    const BlockcypherDataProviders: UtxoOnlineDataProviders = {
+      [Network.Testnet]: testnetBlockcypherProvider,
+      [Network.Stagenet]: mainnetBlockcypherProvider,
+      [Network.Mainnet]: mainnetBlockcypherProvider
+    }
     const dogeClient = new ClientLedger({
       transport,
       ...dogeInitParams,
+      dataProviders: [BlockcypherDataProviders, BitgoProviders],
       rootDerivationPaths: getDerivationPaths(walletAccount, network),
       network: network
     })

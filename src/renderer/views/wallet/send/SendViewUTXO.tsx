@@ -60,9 +60,10 @@ export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
   const { transfer$, utxoFeesWithRates$, reloadUtxoFeesWithRates$ } = useChainContext()
 
   const feesWithRatesLD: FeesWithRatesLD = useMemo(
-    () => utxoFeesWithRates$(asset.asset as Asset),
-    [asset.asset, utxoFeesWithRates$]
+    () => utxoFeesWithRates$(asset.asset as Asset, asset.walletAddress),
+    [asset, utxoFeesWithRates$]
   )
+
   const feesWithRatesRD = useObservableState(feesWithRatesLD, RD.initial)
   const { validateAddress } = useValidateAddress(asset.asset.chain)
 
