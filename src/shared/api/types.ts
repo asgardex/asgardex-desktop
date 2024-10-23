@@ -24,7 +24,7 @@ export const thorDetails: Dex = {
   chain: THORChain,
   asset: AssetRuneNative,
   decimals: THORCHAIN_DECIMAL,
-  url: 'runescan.io'
+  url: 'thorchain.net'
 }
 export const mayaDetails: Dex = {
   chain: MAYAChain,
