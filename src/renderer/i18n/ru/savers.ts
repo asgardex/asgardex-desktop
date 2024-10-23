@@ -20,7 +20,8 @@ const savers: SaversMessages = {
   'savers.withdraw.state.pending': 'Снятие сбережений',
   'savers.withdraw.state.success': 'Успешное снятие сбережений',
   'savers.add.state.error': 'Ошибка при добавлении сбережений',
-  'savers.withdraw.state.error': 'Ошибка при снятии сбережений'
+  'savers.withdraw.state.error': 'Ошибка при снятии сбережений',
+  'savers.quote.error': 'Ошибка котировки: {error}'
 }
 
 export default savers

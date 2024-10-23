@@ -20,7 +20,8 @@ const savers: SaversMessages = {
   'savers.withdraw.state.pending': 'Withdrawing Saver',
   'savers.withdraw.state.success': 'Successful saver withdraw',
   'savers.add.state.error': 'Error adding savers',
-  'savers.withdraw.state.error': 'Error withdrawing savers'
+  'savers.withdraw.state.error': 'Error withdrawing savers',
+  'savers.quote.error': 'Quote error: {error}'
 }
 
 export default savers

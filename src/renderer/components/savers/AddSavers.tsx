@@ -182,6 +182,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
   const intl = useIntl()
 
   const [oSaversQuote, setSaversQuote] = useState<O.Option<EstimateAddSaver>>(O.none)
+  const [errorMessages, setErrorMessages] = useState<string[]>([])
 
   const { chain: sourceChain } = asset.asset
 
@@ -541,31 +542,44 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       ),
     [oSaversQuote]
   )
-  // memo check disable submit if no memo
+
   const quoteError: JSX.Element = useMemo(() => {
-    if (
-      !O.isSome(oSaversQuote) ||
-      oSaversQuote.value.canAddSaver ||
-      !oSaversQuote.value.errors ||
-      oSaversQuote.value.errors.length === 0
-    ) {
+    const hasErrorMessages = errorMessages && errorMessages.length > 0
+    const hasQuoteErrors =
+      O.isSome(oSaversQuote) && !oSaversQuote.value.canAddSaver && (oSaversQuote.value.errors?.length ?? 0) > 0
+
+    if (!hasErrorMessages && !hasQuoteErrors) {
       return <></>
     }
-    // Select first error
-    const error = oSaversQuote.value.errors[0].split(':')
 
-    return (
-      <ErrorLabel>
-        {intl.formatMessage({ id: 'swap.errors.amount.thornodeQuoteError' }, { error: `${error}` })}
-      </ErrorLabel>
-    )
-  }, [oSaversQuote, intl])
+    const error = hasErrorMessages
+      ? errorMessages[0].split(':')
+      : hasQuoteErrors
+      ? oSaversQuote.value.errors[0].split(':')
+      : ''
+
+    return <ErrorLabel>{intl.formatMessage({ id: 'savers.quote.error' }, { error })}</ErrorLabel>
+  }, [oSaversQuote, errorMessages, intl])
 
   // Disables the submit button
   const disableSubmit = useMemo(
     () =>
-      sourceChainFeeError || isZeroAmountToSend || lockedWallet || minAmountError || walletBalancesLoading || noMemo,
-    [isZeroAmountToSend, lockedWallet, minAmountError, noMemo, sourceChainFeeError, walletBalancesLoading]
+      sourceChainFeeError ||
+      isZeroAmountToSend ||
+      lockedWallet ||
+      minAmountError ||
+      walletBalancesLoading ||
+      noMemo ||
+      !!errorMessages,
+    [
+      isZeroAmountToSend,
+      lockedWallet,
+      minAmountError,
+      noMemo,
+      sourceChainFeeError,
+      walletBalancesLoading,
+      errorMessages
+    ]
   )
 
   const debouncedEffect = useRef(
@@ -573,10 +587,17 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       thorchainQuery
         .estimateAddSaver(new CryptoAmount(amountToSendMax1e8, asset.asset as Asset | TokenAsset))
         .then((quote) => {
-          setSaversQuote(O.some(quote)) // Wrapping the quote in an Option
+          if (quote.errors && quote.errors.length > 0) {
+            setErrorMessages(quote.errors)
+          } else {
+            setSaversQuote(O.some(quote))
+            setErrorMessages([]) // Clear errors if the request is successful
+          }
         })
         .catch((error) => {
-          console.error('Failed to get quote:', error)
+          const errorMessage =
+            error?.message || error?.response?.data?.message || error?.response?.statusText || 'Failed to get quote'
+          setErrorMessages([errorMessage])
         })
     }, 500)
   )

@@ -5,6 +5,7 @@
 - fixed cosmos url [#413] (https://github.com/asgardex/asgardex-desktop/pull/418)
 - fixed btc/ uxto max send [#434] (https://github.com/asgardex/asgardex-desktop/pull/437)
 - fixed deposit page bug [#426] (https://github.com/asgardex/asgardex-desktop/pull/430)
+- udpate error handling in savers [#424] (https://github.com/asgardex/asgardex-desktop/pull/441)
 
 # 1.22.6 (2024-10-6)
 
