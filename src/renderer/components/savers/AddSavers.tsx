@@ -537,9 +537,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
         oSaversQuote,
         O.fold(
           () => false, // default value if oSaverWithdrawQuote is None
-          (txDetails) => {
-            return txDetails.memo === ''
-          }
+          (txDetails) => txDetails.memo === ''
         )
       ),
     [oSaversQuote]
