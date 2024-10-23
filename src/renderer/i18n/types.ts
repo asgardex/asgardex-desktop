@@ -585,6 +585,7 @@ type SaversMessageKey =
   | 'savers.withdraw.state.pending'
   | 'savers.withdraw.state.success'
   | 'savers.withdraw.state.error'
+  | 'savers.quote.error'
 
 export type SaversMessages = { [key in SaversMessageKey]: string }
 

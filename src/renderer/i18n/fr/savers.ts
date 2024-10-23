@@ -20,7 +20,8 @@ const savers: SaversMessages = {
   'savers.withdraw.state.pending': 'Retrait de l’épargnant en cours',
   'savers.withdraw.state.success': 'Retrait de l’épargnant réussi',
   'savers.add.state.error': 'Erreur lors de l’ajout de l’épargnant',
-  'savers.withdraw.state.error': 'Erreur lors du retrait de l’épargnant'
+  'savers.withdraw.state.error': 'Erreur lors du retrait de l’épargnant',
+  'savers.quote.error': 'Erreur de devis : {error}'
 }
 
 export default savers

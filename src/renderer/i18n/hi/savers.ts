@@ -20,7 +20,8 @@ const savers: SaversMessages = {
   'savers.withdraw.state.pending': 'सेवर निकाला जा रहा है',
   'savers.withdraw.state.success': 'सेवर सफलतापूर्वक निकाला गया',
   'savers.add.state.error': 'सेवर्स जोड़ने में त्रुटि',
-  'savers.withdraw.state.error': 'सेवर्स निकालने में त्रुटि'
+  'savers.withdraw.state.error': 'सेवर्स निकालने में त्रुटि',
+  'savers.quote.error': 'उद्धरण त्रुटि: {error}'
 }
 
 export default savers

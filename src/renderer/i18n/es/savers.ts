@@ -20,7 +20,8 @@ const savers: SaversMessages = {
   'savers.withdraw.state.pending': 'Retirar Ahorro',
   'savers.withdraw.state.success': 'Retirada con éxito del ahorrador',
   'savers.add.state.error': 'Error al añadir protectores',
-  'savers.withdraw.state.error': 'Error al retirar los ahorros'
+  'savers.withdraw.state.error': 'Error al retirar los ahorros',
+  'savers.quote.error': 'Error de cotización: {error}'
 }
 
 export default savers
