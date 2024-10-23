@@ -62,7 +62,15 @@ const chainSendFunctions: Record<
     }
     return BTC.send({ ...params, feeOption: params.feeOption, apiKey: params.apiKey })
   },
-  [LTCChain]: async (params) => LTC.send(params),
+  [LTCChain]: async (params) => {
+    if (!params.feeOption) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Fee option needs to be set to send Ledger transaction on ${chainToString(params.asset.chain)}`
+      })
+    }
+    return LTC.send({ ...params, feeOption: params.feeOption })
+  },
   [BCHChain]: async (params) => {
     if (!params.feeOption) {
       return E.left({

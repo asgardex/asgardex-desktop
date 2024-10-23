@@ -376,16 +376,16 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
   const maxAmount: BaseAmount = useMemo(
     () =>
       FP.pipe(
-        oFeesWithRates,
+        selectedFee,
         O.map((fee) => {
-          const max = balance.amount.minus(fee.fees[FeeOption.Fastest])
+          const max = balance.amount.minus(fee)
           const zero = baseAmount(0, max.decimal)
           return max.gt(zero) ? max : zero
         }),
         // Set maxAmount to zero as long as we dont have a feeRate
         O.getOrElse(() => ZERO_BASE_AMOUNT)
       ),
-    [balance.amount, oFeesWithRates]
+    [balance.amount, selectedFee]
   )
   // store maxAmountValue
   const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
