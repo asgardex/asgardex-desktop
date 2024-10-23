@@ -122,36 +122,36 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
   }
 }
 
-export const utxoFeesWithRates$ = (asset: Asset): FeesWithRatesLD => {
+export const utxoFeesWithRates$ = (asset: Asset, address: string): FeesWithRatesLD => {
   switch (asset.chain) {
     case BTCChain:
       return FP.pipe(
-        BTC.feesWithRates$(),
+        BTC.feesWithRates$(address),
         liveData.map((feesWithRates) => feesWithRates)
       )
     case BCHChain:
       return FP.pipe(
-        BCH.feesWithRates$(),
+        BCH.feesWithRates$(address),
         liveData.map((feesWithRates) => feesWithRates)
       )
     case DOGEChain:
       return FP.pipe(
-        DOGE.feesWithRates$(),
+        DOGE.feesWithRates$(address),
         liveData.map((feesWithRates) => feesWithRates)
       )
     case LTCChain:
       return FP.pipe(
-        LTC.feesWithRates$(),
+        LTC.feesWithRates$(address),
         liveData.map((feesWithRates) => feesWithRates)
       )
     case DASHChain:
       return FP.pipe(
-        DASH.feesWithRates$(),
+        DASH.feesWithRates$(address),
         liveData.map((feesWithRates) => feesWithRates)
       )
     default:
       return FP.pipe(
-        BTC.feesWithRates$(),
+        BTC.feesWithRates$(address),
         liveData.map((feesWithRates) => feesWithRates)
       )
   }

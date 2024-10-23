@@ -175,9 +175,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
 
   const [selectedFeeOptionKey, setSelectedFeeOptionKey] = useState<FeeOption>(DEFAULT_FEE_OPTION)
 
-  const [assetFee, setAssetFee] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [feeRate, setFeeRate] = useState<number>(0)
-  const [feeDeduction, setFeeDeduction] = useState<BaseAmount>(baseAmount(0))
   const [amountPriceValue, setAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
 
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
@@ -209,7 +207,9 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     () =>
       FP.pipe(
         feesWithRatesRD,
-        RD.map(({ fees }) => fees[selectedFeeOptionKey])
+        RD.map(({ fees }) => {
+          return fees[selectedFeeOptionKey]
+        })
       ),
     [feesWithRatesRD, selectedFeeOptionKey]
   )
@@ -252,15 +252,20 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
       FP.pipe(
         oFeesWithRates,
         O.map(({ fees, rates }) => {
-          const fee = fees[selectedFeeOptionKey]
-          prevSelectedFeeRef.current = O.some(fee)
-          setFeeRate(rates[selectedFeeOptionKey])
-          setFeeDeduction(fees[FeeOption.Fastest])
-          setAssetFee(new CryptoAmount(fees[selectedFeeOptionKey], asset))
-          return fee
+          const feeAmount = fees[selectedFeeOptionKey]
+          const feeRate = rates[selectedFeeOptionKey]
+          const transactionSize = feeAmount.amount().toNumber() / feeRate
+          const roundedFeeRate = Math.ceil(feeRate)
+          const adjustedFee = baseAmount(roundedFeeRate * transactionSize)
+          const feeValue = adjustedFee.amount().toNumber()
+          const roundedFeeValue = Math.ceil(feeValue / 1000) * 1000
+          const roundedAdjustedFee = baseAmount(roundedFeeValue)
+          prevSelectedFeeRef.current = O.some(roundedAdjustedFee)
+          setFeeRate(roundedFeeRate)
+          return roundedAdjustedFee
         })
       ),
-    [asset, oFeesWithRates, selectedFeeOptionKey]
+    [oFeesWithRates, selectedFeeOptionKey]
   )
 
   const oFeeBaseAmount: O.Option<BaseAmount> = useMemo(
@@ -372,16 +377,15 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     () =>
       FP.pipe(
         selectedFee,
-        O.alt(() => prevSelectedFeeRef.current),
-        O.map(() => {
-          const max = balance.amount.minus(feeDeduction)
+        O.map((fee) => {
+          const max = balance.amount.minus(fee)
           const zero = baseAmount(0, max.decimal)
           return max.gt(zero) ? max : zero
         }),
         // Set maxAmount to zero as long as we dont have a feeRate
         O.getOrElse(() => ZERO_BASE_AMOUNT)
       ),
-    [balance.amount, feeDeduction, selectedFee]
+    [balance.amount, selectedFee]
   )
   // store maxAmountValue
   const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
@@ -391,7 +395,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
 
   // useEffect to fetch data from query
   useEffect(() => {
-    const maxAmountPrice =
+    const maxAmountPrice = FP.pipe(
       isPoolDetails(poolDetails) && dex.chain === THORChain
         ? getPoolPriceValue({
             balance: { asset, amount: maxAmount },
@@ -403,7 +407,9 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
             poolDetails,
             pricePool
           })
-    const amountPrice =
+    )
+
+    const amountPrice = FP.pipe(
       isPoolDetails(poolDetails) && dex.chain === THORChain
         ? getPoolPriceValue({
             balance: { asset, amount: amountToSend },
@@ -415,43 +421,64 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
             poolDetails,
             pricePool
           })
-    const assetFeePrice =
-      isPoolDetails(poolDetails) && dex.chain === THORChain
-        ? getPoolPriceValue({
-            balance: { asset, amount: assetFee.baseAmount },
-            poolDetails,
-            pricePool
-          })
-        : getPoolPriceValueM({
-            balance: { asset, amount: assetFee.baseAmount },
-            poolDetails,
-            pricePool
-          })
+    )
+
+    const assetFeePrice = FP.pipe(
+      selectedFee,
+      O.fold(
+        () => O.none, // Return `O.none` if `selectedFee` is `None`
+        (fee) =>
+          isPoolDetails(poolDetails) && dex.chain === THORChain
+            ? getPoolPriceValue({
+                balance: { asset, amount: fee },
+                poolDetails,
+                pricePool
+              })
+            : getPoolPriceValueM({
+                balance: { asset, amount: fee },
+                poolDetails,
+                pricePool
+              })
+      )
+    )
+
     if (O.isSome(assetFeePrice)) {
-      const maxCryptoAmount = new CryptoAmount(assetFeePrice.value, pricePool.asset)
-      setFeePriceValue(maxCryptoAmount)
+      const assetAmountFeePrice = new CryptoAmount(assetFeePrice.value, pricePool.asset)
+      setFeePriceValue(assetAmountFeePrice)
     }
+
     if (O.isSome(amountPrice)) {
       const amountPriceAmount = new CryptoAmount(amountPrice.value, pricePool.asset)
       setAmountPriceValue(amountPriceAmount)
     }
+
     if (O.isSome(maxAmountPrice)) {
       const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
       setMaxAmountPriceValue(maxCryptoAmount)
     }
-  }, [amountToSend, asset, assetFee, dex, maxAmount, network, poolDetails, pricePool])
+  }, [amountToSend, asset, dex, maxAmount, network, poolDetails, pricePool, selectedFee])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {
       return loadingString // or noDataString, depending on your needs
     }
 
-    const fee = formatAssetAmountCurrency({
-      amount: assetFee.assetAmount,
-      asset: assetFee.asset,
-      decimal: isUSDAsset(assetFee.asset) ? 2 : 6,
-      trimZeros: !isUSDAsset(assetFee.asset)
-    })
+    const fee = FP.pipe(
+      selectedFee,
+      O.fold(
+        () => O.none, // Return `O.none` if `selectedFee` is `None`
+        (fee) =>
+          O.some(
+            formatAssetAmountCurrency({
+              amount: baseToAsset(fee),
+              asset: asset,
+              decimal: isUSDAsset(asset) ? 2 : 6,
+              trimZeros: !isUSDAsset(asset)
+            })
+          )
+      ),
+      O.getOrElse(() => '')
+    )
 
     const price = FP.pipe(
       O.some(feePriceValue), // Assuming this is Option<CryptoAmount>
@@ -469,7 +496,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     )
 
     return price ? `${price} (${fee}) ` : fee
-  }, [feePriceValue, assetFee, asset])
+  }, [feePriceValue, selectedFee, asset])
 
   const amountLabel = useMemo(() => {
     if (!amountToSend) {
@@ -677,7 +704,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
   // whenever the memo is updated call reload fees
   useEffect(() => {
     reloadFees()
-  }, [feeRate, currentMemo, reloadFees])
+  }, [currentMemo, reloadFees])
 
   const addMaxAmountHandler = useCallback(() => setAmountToSend(maxAmount), [maxAmount])
 

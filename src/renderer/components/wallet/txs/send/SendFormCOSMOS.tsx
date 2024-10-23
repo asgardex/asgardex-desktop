@@ -95,6 +95,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   const intl = useIntl()
 
   const { asset } = balance
+  const { walletAddress: sender } = balance
   const chainAsset = getChainAsset(asset.type === AssetType.SYNTH ? dex.chain : asset.chain)
 
   const pricePoolThor = usePricePool()
@@ -496,6 +497,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
         walletAccount,
         walletIndex,
         recipient,
+        sender,
         asset,
         amount: amountToSend,
         memo: form.getFieldValue('memo'),
@@ -510,6 +512,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     walletType,
     walletAccount,
     walletIndex,
+    sender,
     asset,
     amountToSend,
     form,

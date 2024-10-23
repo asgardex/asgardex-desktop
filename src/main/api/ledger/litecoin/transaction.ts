@@ -1,7 +1,7 @@
 import Transport from '@ledgerhq/hw-transport'
-import { FeeRate, Network, TxHash } from '@xchainjs/xchain-client'
+import { FeeOption, FeeRate, Network, TxHash } from '@xchainjs/xchain-client'
 import { AssetLTC, ClientLedger, defaultLtcParams } from '@xchainjs/xchain-litecoin'
-import { Address, BaseAmount } from '@xchainjs/xchain-util'
+import { Address, BaseAmount, baseAmount } from '@xchainjs/xchain-util'
 import * as E from 'fp-ts/lib/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
@@ -16,7 +16,7 @@ export const send = async ({
   sender,
   recipient,
   amount,
-  feeRate,
+  feeOption,
   memo,
   walletAccount,
   walletIndex
@@ -26,6 +26,7 @@ export const send = async ({
   sender?: Address
   recipient: Address
   amount: BaseAmount
+  feeOption: FeeOption
   feeRate: FeeRate
   memo?: string
   walletAccount: number
@@ -45,7 +46,31 @@ export const send = async ({
       rootDerivationPaths: getDerivationPaths(walletAccount, network),
       network: network
     })
-    const txHash = await clientLedger.transfer({ walletIndex, asset: AssetLTC, recipient, amount, memo, feeRate })
+
+    const fee = await clientLedger.getFeesWithRates({ sender, memo })
+    const feeAmount = fee.fees[feeOption]
+    const feeRate = fee.rates[feeOption]
+    const bal = await clientLedger.getBalance(sender)
+    const ltcBalance = bal[0]
+    const transactionSize = feeAmount.amount().toNumber() / feeRate
+    const roundedFeeRate = Math.ceil(feeRate)
+    const adjustedFee = baseAmount(roundedFeeRate * transactionSize)
+    const feeValue = adjustedFee.amount().toNumber()
+    const roundedFeeValue = Math.ceil(feeValue / 1000) * 1000
+    let amountToSend: BaseAmount
+    if (amount.plus(adjustedFee).gte(ltcBalance.amount)) {
+      amountToSend = ltcBalance.amount.minus(roundedFeeValue)
+    } else {
+      amountToSend = amount
+    }
+    const txHash = await clientLedger.transfer({
+      walletIndex,
+      asset: AssetLTC,
+      recipient,
+      amount: amountToSend,
+      memo,
+      feeRate
+    })
     if (!txHash) {
       return E.left({
         errorId: LedgerErrorId.INVALID_RESPONSE,

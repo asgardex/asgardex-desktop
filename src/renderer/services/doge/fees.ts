@@ -8,8 +8,8 @@ import * as RxOp from 'rxjs/operators'
 import { observableState } from '../../helpers/stateHelper'
 import { Memo } from '../chain/types'
 import * as C from '../clients'
-import { FeesService, FeesWithRatesLD } from './types'
-import { Client$, FeesWithRatesRD } from './types'
+import { FeesService, FeesWithRatesLD, FeesWithRatesRD } from '../utxo/types'
+import { Client$ } from './types'
 
 export const createFeesService = (client$: Client$): FeesService => {
   const baseFeesService = C.createFeesService({ client$, chain: DOGEChain })
@@ -20,10 +20,14 @@ export const createFeesService = (client$: Client$): FeesService => {
   /**
    * Observable to load transaction fees
    */
-  const loadFees$ = (client: DogeClient, memo?: string): FeesWithRatesLD =>
-    Rx.from(client.getAddressAsync()).pipe(
-      RxOp.switchMap((address) =>
-        Rx.from(client.getFeesWithRates({ memo, sender: address })).pipe(
+  const loadFees$ = (client: DogeClient, address: string, memo?: string): FeesWithRatesLD => {
+    const address$ = address
+      ? Rx.of(address) // Use provided address if available
+      : Rx.from(client.getAddressAsync()) // Otherwise, use the async method
+
+    return address$.pipe(
+      RxOp.switchMap((resolvedAddress) =>
+        Rx.from(client.getFeesWithRates({ memo, sender: resolvedAddress })).pipe(
           RxOp.map(RD.success),
           RxOp.catchError((error) => Rx.of(RD.failure(error))),
           RxOp.startWith(RD.pending)
@@ -31,18 +35,19 @@ export const createFeesService = (client$: Client$): FeesService => {
       ),
       RxOp.startWith(RD.pending)
     )
+  }
 
   /**
    * Transaction fees (memo optional)
    */
-  const feesWithRates$ = (memo?: Memo): FeesWithRatesLD =>
+  const feesWithRates$ = (address: string, memo?: Memo): FeesWithRatesLD =>
     Rx.combineLatest([client$, reloadFeesWithRates$]).pipe(
       RxOp.switchMap(([oClient, reloadMemo]) =>
         FP.pipe(
           oClient,
           O.fold(
             () => Rx.of<FeesWithRatesRD>(RD.initial),
-            (client) => FP.pipe(loadFees$(client, reloadMemo || memo), RxOp.shareReplay(1))
+            (client) => FP.pipe(loadFees$(client, address, reloadMemo || memo), RxOp.shareReplay(1))
           )
         )
       )

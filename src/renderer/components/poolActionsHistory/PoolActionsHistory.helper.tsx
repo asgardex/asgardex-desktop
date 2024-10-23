@@ -32,22 +32,20 @@ export const getValues = (txs: Tx[]): AssetWithAmount[] =>
 
 export const CustomFormattedDate = ({ date }: { date: Date }) => (
   <FormattedDateParts day="2-digit" month="2-digit" year="numeric" value={date}>
-    {(
-      parts: {
-        type: string
-        value: string
-      }[]
-    ) => {
-      const day = parts.filter((part) => part.type === 'day')[0].value
-      const month = parts.filter((part) => part.type === 'month')[0].value
-      const year = parts.filter((part) => part.type === 'year')[0].value
+    {(parts: { type: string; value: string }[]) => {
+      // Extract parts safely
+      const day = parts.find((part) => part.type === 'day')?.value || 'DD'
+      const month = parts.find((part) => part.type === 'month')?.value || 'MM'
+      const year = parts.find((part) => part.type === 'year')?.value || 'YYYY'
       const literals = parts.filter((part) => part.type === 'literal')
+
+      // Render date with fallback for literals
       return (
         <>
           {day}
-          {literals[0].value}
+          {literals[0]?.value || '/'}
           {month}
-          {literals[1].value}
+          {literals[1]?.value || '/'}
           {year}
         </>
       )
