@@ -45,8 +45,8 @@ To open a release, create a release branch (name it `release/{version}`) and pus
 Example:
 
 ```
-git checkout -b release/v.0.0.5 develop
-git push
+git checkout -b release/v1.22.7
+git push --set-upstream origin release/v1.22.7
 ```
 
 If needed, open a PR for reviewing changes.

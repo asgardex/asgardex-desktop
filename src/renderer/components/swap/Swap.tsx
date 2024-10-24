@@ -573,13 +573,10 @@ export const Swap = ({
     if (lockedWallet || quoteOnly) {
       return lockedAssetAmount.baseAmount
     }
-    const feeAmount = swapFees.inFee.amount.amount().toNumber()
-    const roundedFee = Math.ceil(feeAmount / 1000) * 1000
-    const roundedFeeBaseAmount = baseAmount(roundedFee)
     return Utils.maxAmountToSwapMax1e8({
       asset: sourceAsset,
       balanceAmountMax1e8: sourceAssetAmountMax1e8,
-      feeAmount: roundedFeeBaseAmount
+      feeAmount: swapFees.inFee.amount
     })
   }, [
     lockedAssetAmount.baseAmount,
@@ -1748,13 +1745,13 @@ export const Swap = ({
   const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
   const [showLedgerModal, setShowLedgerModal] = useState<ModalState>('none')
 
-  const setAmountToSwapFromPercentValue = useCallback(
-    (percents: number) => {
-      const amountFromPercentage = maxAmountToSwapMax1e8.amount().multipliedBy(percents / 100)
-      return setAmountToSwapMax1e8(baseAmount(amountFromPercentage, maxAmountToSwapMax1e8.decimal))
-    },
-    [maxAmountToSwapMax1e8, setAmountToSwapMax1e8]
-  )
+  // const setAmountToSwapFromPercentValue = useCallback(
+  //   (percents: number) => {
+  //     const amountFromPercentage = maxAmountToSwapMax1e8.amount().multipliedBy(percents / 100)
+  //     return setAmountToSwapMax1e8(baseAmount(amountFromPercentage, maxAmountToSwapMax1e8.decimal))
+  //   },
+  //   [maxAmountToSwapMax1e8, setAmountToSwapMax1e8]
+  // )
 
   // Function to reset the slider to default position
   const resetToDefault = () => {
@@ -2757,7 +2754,7 @@ export const Swap = ({
           hasAmountShortcut
           onChangeAsset={setSourceAsset}
           onChange={setAmountToSwapMax1e8}
-          onChangePercent={setAmountToSwapFromPercentValue}
+          // onChangePercent={setAmountToSwapFromPercentValue}
           onBlur={reloadFeesHandler}
           showError={minAmountError}
           hasLedger={hasSourceAssetLedger}
