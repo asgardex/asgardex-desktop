@@ -58,7 +58,7 @@ export const WalletPoolActionsHistoryHeader: React.FC<Props> = (props) => {
       </Styled.FilterContainer>
       <Styled.LinkContainer>
         <Styled.Headline onClick={onClickAddressIcon}>
-          {dex.chain === THORChain ? `RuneScan` : 'MayaScan'}
+          {dex.chain === THORChain ? `THORChain.net` : 'MayaScan'}
           <Styled.ExplorerLinkIcon />
         </Styled.Headline>
       </Styled.LinkContainer>

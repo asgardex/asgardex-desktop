@@ -123,7 +123,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
       sequenceTOption(oDexNativeAddress, oMainnet),
       O.map(([dexAddress, _]) =>
         dex.chain === THORChain
-          ? `https://runescan.io/address/${dexAddress}`
+          ? `https://thorchain.net/address/${dexAddress}`
           : `https://www.mayascan.org/address/${dexAddress}`
       ),
       O.map(window.apiUrl.openExternal)
