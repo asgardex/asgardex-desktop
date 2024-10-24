@@ -1745,14 +1745,6 @@ export const Swap = ({
   const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
   const [showLedgerModal, setShowLedgerModal] = useState<ModalState>('none')
 
-  // const setAmountToSwapFromPercentValue = useCallback(
-  //   (percents: number) => {
-  //     const amountFromPercentage = maxAmountToSwapMax1e8.amount().multipliedBy(percents / 100)
-  //     return setAmountToSwapMax1e8(baseAmount(amountFromPercentage, maxAmountToSwapMax1e8.decimal))
-  //   },
-  //   [maxAmountToSwapMax1e8, setAmountToSwapMax1e8]
-  // )
-
   // Function to reset the slider to default position
   const resetToDefault = () => {
     setStreamingInterval(dex.chain === THORChain ? 1 : 5) // Default position
@@ -2754,7 +2746,6 @@ export const Swap = ({
           hasAmountShortcut
           onChangeAsset={setSourceAsset}
           onChange={setAmountToSwapMax1e8}
-          // onChangePercent={setAmountToSwapFromPercentValue}
           onBlur={reloadFeesHandler}
           showError={minAmountError}
           hasLedger={hasSourceAssetLedger}
