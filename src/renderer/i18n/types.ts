@@ -199,6 +199,7 @@ export type CommonMessageKey =
   | 'common.unknown'
   | 'common.featureUnderDevelopment'
   | 'common.comingSoon'
+  | 'common.watchlist'
 
 export type CommonMessages = {
   [key in CommonMessageKey]: string

@@ -198,6 +198,7 @@ const common: CommonMessages = {
   'common.metamask': 'मेटामास्क',
   'common.unknown': 'अज्ञात',
   'common.featureUnderDevelopment': 'विकासाधीन सुविधा, उपयोग न करें',
-  'common.comingSoon': 'जल्द ही आ रहा है'
+  'common.comingSoon': 'जल्द ही आ रहा है',
+  'common.watchlist': 'वॉचलिस्ट'
 }
 export default common
