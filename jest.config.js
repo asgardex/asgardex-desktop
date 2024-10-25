@@ -15,7 +15,7 @@ jestConfig = {
   testEnvironment: path.resolve(__dirname, 'jest.environment.js'),
   extensionsToTreatAsEsm: ['.ts'],
   transformIgnorePatterns: [
-    'node_modules/(?!(axios|@xchainjs/.*|@ledgerhq/domain-service|@ledgerhq/hw-app-eth|@cosmjs/tendermint-rpc|@bitcoin-js/tiny-secp256k1-asmjs|uint8array-tools)/)'
+    'node_modules/(?!(uuid|axios|@xchainjs/.*|@metaplex-foundation/.*|@ledgerhq/domain-service|@ledgerhq/hw-app-eth|@cosmjs/tendermint-rpc|@bitcoin-js/tiny-secp256k1-asmjs|uint8array-tools)/)'
   ],
   moduleNameMapper: {
     '\\.(css|less)$': '<rootDir>/__mocks__/styleMock.js',

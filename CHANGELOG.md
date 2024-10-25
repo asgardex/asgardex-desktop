@@ -1,8 +1,8 @@
-# 1.22.8 (2024-tbh-tbh)
+# 1.22.8 (2024-tba-tba)
 
 ## add
 
-- solana chain [#439]()
+- solana client [#439](https://github.com/asgardex/asgardex-desktop/pull/447)
 -
 
 ## Updates/Fixes

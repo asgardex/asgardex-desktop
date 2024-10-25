@@ -1,3 +1,4 @@
+import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
@@ -9,8 +10,11 @@ import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { AnyAsset, Asset, AssetType } from '@xchainjs/xchain-util'
+import { AnyAsset, Asset, AssetType, baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
+import * as O from 'fp-ts/Option'
+import * as Rx from 'rxjs'
+import * as RxOp from 'rxjs/operators'
 
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { isChainOfThor } from '../../../../shared/utils/chain'
@@ -102,8 +106,23 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
       )
     case SOLChain:
       return FP.pipe(
-        SOL.fees$(),
-        liveData.map((fees) => ({ asset, amount: fees.fast }))
+        SOL.address$.pipe(
+          RxOp.switchMap(
+            O.fold(
+              () => Rx.of(RD.failure(new Error('No recipient address available'))),
+              (address) =>
+                FP.pipe(
+                  SOL.fees$({
+                    amount: baseAmount(1),
+                    recipient: address.address
+                  }),
+                  liveData.map((fees) => ({ asset, amount: fees.fast }))
+                )
+            )
+          ),
+          RxOp.catchError((error) => Rx.of(RD.failure(error))),
+          RxOp.startWith(RD.pending)
+        )
       )
     case KUJIChain:
       return FP.pipe(

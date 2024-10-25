@@ -1,4 +1,4 @@
-import { Client } from '@xchainjs/xchain-solana'
+import { Client, TxParams } from '@xchainjs/xchain-solana'
 import { Address, AnyAsset, BaseAmount } from '@xchainjs/xchain-util'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
@@ -21,6 +21,9 @@ export type SendTxParams = {
   hdMode: HDMode
 }
 
-export type FeesService = C.FeesService
+export type FeesService = {
+  fees$: (params: TxParams) => C.FeesLD
+  reloadFees: (params: TxParams) => void
+}
 
 export type TransactionService = C.TransactionService<SendTxParams>
