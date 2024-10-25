@@ -14,6 +14,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AssetType, baseAmount } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
@@ -154,6 +155,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
         case KUJIChain:
         case GAIAChain:
         case RadixChain:
+        case SOLChain:
           return (
             <SendViewCOSMOS
               asset={asset}

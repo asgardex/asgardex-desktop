@@ -11,6 +11,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain as RADIXChain } from '@xchainjs/xchain-radix'
+import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 
@@ -28,7 +29,8 @@ export const CHAIN_STRINGS: Record<Chain, string> = {
   [MAYAChain]: 'MAYAChain',
   [DASHChain]: 'DASH',
   [KUJIChain]: 'KUJI',
-  [RADIXChain]: 'RADIX'
+  [RADIXChain]: 'RADIX',
+  [SOLChain]: 'Solana'
 }
 
 export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
@@ -45,7 +47,8 @@ export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
   [MAYAChain]: CHAIN_STRINGS[MAYAChain],
   [DASHChain]: CHAIN_STRINGS[DASHChain],
   [KUJIChain]: CHAIN_STRINGS[KUJIChain],
-  [RADIXChain]: CHAIN_STRINGS[RADIXChain]
+  [RADIXChain]: CHAIN_STRINGS[RADIXChain],
+  [SOLChain]: CHAIN_STRINGS[SOLChain]
 }
 
 export type EnabledChain = keyof typeof DEFAULT_ENABLED_CHAINS
@@ -158,5 +161,13 @@ export const DefaultChainAttributes: Record<Chain, ChainAttributes> = {
   XRD: {
     blockReward: 0,
     avgBlockTimeInSecs: 10
+  },
+  SOL: {
+    blockReward: 0,
+    avgBlockTimeInSecs: 0.4
+  },
+  BASE: {
+    blockReward: 0,
+    avgBlockTimeInSecs: 2
   }
 }

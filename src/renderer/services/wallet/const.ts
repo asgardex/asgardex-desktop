@@ -11,6 +11,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import * as O from 'fp-ts/lib/Option'
 
@@ -44,7 +45,8 @@ export const DEFAULT_BALANCES_FILTER: BalancesStateFilter = {
   [THORChain]: 'all',
   [MAYAChain]: 'all',
   [KUJIChain]: 'all',
-  [RadixChain]: 'all'
+  [RadixChain]: 'all',
+  [SOLChain]: 'all'
 }
 
 export const INITIAL_LOAD_TXS_PROPS: LoadTxsParams = {

@@ -6,6 +6,7 @@ import { AssetUSK } from '@xchainjs/xchain-kujira'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { CompatibleAsset } from '@xchainjs/xchain-mayachain-query'
 import { AssetXRD } from '@xchainjs/xchain-radix'
+import { SOLAsset } from '@xchainjs/xchain-solana'
 import {
   Address,
   AnyAsset,
@@ -168,6 +169,12 @@ export const isKujiAsset = (asset: AnyAsset): boolean =>
  */
 export const isXrdAsset = (asset: AnyAsset): boolean =>
   asset.chain === AssetXRD.chain && asset.symbol.toUpperCase() === AssetXRD.symbol.toUpperCase()
+
+/**
+ * Checks whether an asset is a Solana asset
+ */
+export const isSolAsset = (asset: AnyAsset): boolean =>
+  asset.chain === SOLAsset.chain && asset.symbol.toUpperCase() === SOLAsset.symbol.toUpperCase()
 
 export const isUskAsset = (asset: AnyAsset): boolean =>
   asset.chain === AssetUSK.chain && asset.symbol.toUpperCase() === AssetUSK.symbol.toUpperCase()

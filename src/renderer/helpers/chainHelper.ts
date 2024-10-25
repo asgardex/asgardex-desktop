@@ -11,6 +11,7 @@ import { AssetKUJI, KUJIChain } from '@xchainjs/xchain-kujira'
 import { AssetLTC, LTCChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDLTC } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetXRD, RadixChain } from '@xchainjs/xchain-radix'
+import { SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Chain } from '@xchainjs/xchain-util'
 
@@ -32,7 +33,8 @@ const chainAssets: Record<Chain, Asset> = {
   DASH: AssetDASH,
   KUJI: AssetKUJI,
   ARB: AssetAETH,
-  XRD: AssetXRD
+  XRD: AssetXRD,
+  SOL: SOLAsset
 }
 
 export const getChainAsset = (chain: Chain): Asset => {
@@ -87,6 +89,7 @@ export const isDashChain = (chain: Chain): boolean => eqChain.equals(chain.toUpp
  */
 export const isEthChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), ETHChain)
 
+export const isSolChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), SOLChain)
 /**
  * Check whether chain is ARB chain
  */
@@ -169,6 +172,8 @@ export const getChain = (chain: string): Chain => {
       return KUJIChain
     case 'XRD':
       return RadixChain
+    case 'SOL':
+      return SOLChain
     default:
       throw Error('Unknown chain')
   }

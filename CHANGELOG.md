@@ -1,3 +1,14 @@
+# 1.22.8 (2024-tbh-tbh)
+
+## add
+
+- solana chain [#439]()
+-
+
+## Updates/Fixes
+
+-
+
 # 1.22.7 (2024-10-24)
 
 ## Updates/Fixes

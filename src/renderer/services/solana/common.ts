@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Client as RADIXClient, RadixChain } from '@xchainjs/xchain-radix'
+import { Client as SolClient, SOLChain, defaultSolanaParams } from '@xchainjs/xchain-solana'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -28,14 +28,15 @@ const clientState$: ClientState$ = FP.pipe(
           getPhrase(keystore),
           O.map<string, ClientState>((phrase) => {
             try {
-              const xrdInitParams = {
+              const solInitParams = {
+                ...defaultSolanaParams,
                 network: network,
                 phrase: phrase
               }
-              const client = new RADIXClient(xrdInitParams)
+              const client = new SolClient(solInitParams)
               return RD.success(client)
             } catch (error) {
-              console.error('Failed to create XRD client', error)
+              console.error('Failed to create SOL client', error)
               return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
             }
           }),
@@ -53,12 +54,12 @@ const client$: Client$ = clientState$.pipe(RxOp.map(RD.toOption), RxOp.shareRepl
 /**
  * `Address`
  */
-const address$: C.WalletAddress$ = C.address$(client$, RadixChain)
+const address$: C.WalletAddress$ = C.address$(client$, SOLChain)
 
 /**
  * `Address`
  */
-const addressUI$: C.WalletAddress$ = C.addressUI$(client$, RadixChain)
+const addressUI$: C.WalletAddress$ = C.addressUI$(client$, SOLChain)
 
 /**
  * Explorer url depending on selected network
