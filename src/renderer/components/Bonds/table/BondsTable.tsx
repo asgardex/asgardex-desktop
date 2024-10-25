@@ -20,6 +20,7 @@ import * as H from './helpers'
 type Props = {
   nodes: NodeInfos
   loading?: boolean
+  addWatchlist: (nodeOrBond: Address, network: Network) => void
   removeNode: (node: Address) => void
   goToNode: (node: Address) => void
   goToAction: (action: string, node: string, walletType: string) => void
@@ -36,6 +37,7 @@ type ProvidersWithStatus = Providers & { status: NodeStatusEnum; signMembership:
 
 export const BondsTable: React.FC<Props> = ({
   nodes,
+  addWatchlist,
   removeNode,
   network,
   goToNode,
@@ -49,6 +51,19 @@ export const BondsTable: React.FC<Props> = ({
 
   const columns: ColumnType<NodeInfo>[] = useMemo(
     () => [
+      {
+        key: 'watch',
+        width: 40,
+        title: '',
+        render: (_, { address }) => (
+          <H.Watchlist
+            addWatchlist={() => {
+              addWatchlist(address, network)
+            }}
+          />
+        ),
+        align: 'right'
+      },
       {
         key: 'remove',
         width: 40,
@@ -100,7 +115,7 @@ export const BondsTable: React.FC<Props> = ({
         align: 'center'
       }
     ],
-    [intl, network, goToNode]
+    [intl, network, addWatchlist, goToNode]
   )
   const networkPrefix = network === 'mainnet' ? '' : 's'
   const getNodeChain = (address: string) => {
@@ -115,11 +130,30 @@ export const BondsTable: React.FC<Props> = ({
 
   const expandedTableColumns: ColumnType<ProvidersWithStatus>[] = [
     {
+      key: 'watch',
+      width: 40,
+      title: '',
+      render: (address) => (
+        <H.Watchlist
+          addWatchlist={() => {
+            addWatchlist(address, network)
+          }}
+        />
+      ),
+      align: 'right'
+    },
+    {
+      key: 'remove',
+      width: 40,
+      title: ''
+    },
+    {
       title: intl.formatMessage({ id: 'bonds.bondProvider' }),
       dataIndex: 'bondAddress',
       key: 'bondAddress',
       render: (text) => <H.NodeAddress network={network} address={text} />
     },
+
     {
       title: intl.formatMessage({ id: 'common.action' }),
       dataIndex: 'action',
@@ -148,21 +182,19 @@ export const BondsTable: React.FC<Props> = ({
         const walletType = matchedWalletInfo?.walletType || 'Unknown'
 
         return (
-          <div className="flex">
+          <div className="flex items-center justify-center">
             <TextButton
               disabled={!isWalletAddress}
               size="normal"
               onClick={() => goToAction('bond', matchedAddresses[0], walletType)}>
               {intl.formatMessage({ id: 'deposit.interact.actions.bond' })}
             </TextButton>
-            <div className="flex border-solid border-gray1 dark:border-gray1d">
-              <TextButton
-                disabled={!isWalletAddress || unbondDisabled}
-                size="normal"
-                onClick={() => goToAction('unbond', matchedAddresses[0], walletType)}>
-                {intl.formatMessage({ id: 'deposit.interact.actions.unbond' })}
-              </TextButton>
-            </div>
+            <TextButton
+              disabled={!isWalletAddress || unbondDisabled}
+              size="normal"
+              onClick={() => goToAction('unbond', matchedAddresses[0], walletType)}>
+              {intl.formatMessage({ id: 'deposit.interact.actions.unbond' })}
+            </TextButton>
           </div>
         )
       }
@@ -171,12 +203,15 @@ export const BondsTable: React.FC<Props> = ({
       title: intl.formatMessage({ id: 'bonds.bond' }),
       dataIndex: 'bond',
       key: 'bond',
-      render: (_, data) => <H.BondProviderValue providers={data} />
+      width: 150,
+      render: (_, data) => <H.BondProviderValue providers={data} />,
+      align: 'right'
     },
     {
       key: 'walletType',
       dataIndex: 'walletType',
       title: intl.formatMessage({ id: 'common.owner' }),
+      width: 300,
       render: (_, { bondAddress }) => {
         let walletTypeLabel = 'Not a wallet address'
 
@@ -273,6 +308,7 @@ export const BondsTable: React.FC<Props> = ({
         expandable={{
           expandedRowRender: (record) => (
             <Styled.Table
+              className="pt-4 pb-2"
               columns={expandedTableColumns}
               dataSource={record.bondProviders.providers.map((provider: Providers, index: string) => ({
                 bondAddress: provider.bondAddress,

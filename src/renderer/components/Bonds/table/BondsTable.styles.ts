@@ -14,8 +14,8 @@ export const Table = styled(UITable)`
     & > th {
       font-size: 14px;
       border: none;
-      padding-top: 2px;
-      padding-bottom: 2px;
+      padding-top: 6px;
+      padding-bottom: 6px;
       height: auto;
       background: none !important;
       color: ${palette('gray', 2)};
@@ -28,7 +28,7 @@ export const Table = styled(UITable)`
   }
 
   .ant-table-tbody > tr > td {
-    border: none;
+    border-bottom: 1px solid ${palette('gray', 0)};
     padding: 10px 0 10px 15px;
     height: auto;
 
@@ -55,6 +55,18 @@ export const TextLabel = styled(UILabel).attrs({ textTransform: 'uppercase' })`
   font-size: 16px;
   font-family: 'MainFontRegular';
   padding: 0;
+`
+
+export const WatchlistButton = styled(UIButton).attrs({ typevalue: 'transparent' })`
+  &.ant-btn {
+    min-width: auto;
+    padding: 0;
+    color: ${palette('gray', 1)};
+
+    &:hover {
+      color: #23dcc8;
+    }
+  }
 `
 
 export const DeleteButton = styled(UIButton).attrs({ typevalue: 'transparent' })`
@@ -85,6 +97,7 @@ export const ConfirmationModalAddress = styled.span`
 
 export const WalletTypeLabel = styled(UILabel)`
   color: inherit;
+  text-align: center;
   font-size: 16px;
   font-family: 'MainFontRegular';
   padding: 0;

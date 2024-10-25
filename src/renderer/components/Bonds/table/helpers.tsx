@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { StopOutlined } from '@ant-design/icons'
+import { DesktopOutlined, StopOutlined } from '@ant-design/icons'
 import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -91,6 +91,12 @@ export const Status: React.FC<{ data: NodeInfo }> = ({ data }) => {
     <Styled.TextLabel align="center">{intl.formatMessage({ id: getStatusMessageId(data.status) })}</Styled.TextLabel>
   )
 }
+
+export const Watchlist: React.FC<{ addWatchlist: () => void }> = ({ addWatchlist }) => (
+  <Styled.WatchlistButton onClick={addWatchlist}>
+    <DesktopOutlined />
+  </Styled.WatchlistButton>
+)
 
 export const Delete: React.FC<{ deleteNode: () => void }> = ({ deleteNode }) => (
   <Styled.DeleteButton onClick={deleteNode}>

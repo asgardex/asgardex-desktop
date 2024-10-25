@@ -14,7 +14,6 @@ export const Container = styled('div')`
 export const Form = styled(InnerForm)`
   display: flex;
   align-items: center;
-  padding-left: 16px;
 `
 
 export const InputContainer = styled('div')`
@@ -26,6 +25,8 @@ export const InputContainer = styled('div')`
 export const Input = styled(A.Input)`
   background: inherit !important;
   color: ${palette('text', 0)};
+  border: 1px solid ${palette('gray', 0)};
+  border-radius: 8px;
 `
 
 export const SubmitButton = styled(UIButton).attrs({

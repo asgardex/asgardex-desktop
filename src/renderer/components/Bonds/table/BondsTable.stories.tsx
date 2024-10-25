@@ -53,6 +53,8 @@ export const Default: Story = () => {
   return (
     <BondsTable
       network={Network.Testnet}
+      // TODO: update stories for Watchlist
+      addWatchlist={() => {}}
       removeNode={removeNode}
       goToNode={(node) => console.log('go to ', node)}
       nodes={nodesList.map((address) => mockNodeInfo(address))}

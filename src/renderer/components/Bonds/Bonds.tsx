@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react'
+import React, { useCallback, useMemo, useState, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
@@ -12,7 +12,7 @@ import { AddressValidation } from '../../services/clients'
 import { NodeInfos, NodeInfosRD } from '../../services/thorchain/types'
 import { WalletAddressInfo } from '../../views/wallet/BondsView'
 import { ErrorView } from '../shared/error'
-import { ReloadButton } from '../uielements/button'
+import { FilterButton, ReloadButton } from '../uielements/button'
 import * as Styled from './Bonds.styles'
 import { BondsTable } from './table'
 
@@ -23,11 +23,17 @@ type Props = {
   goToAction: (action: string, node: string, walletType: string) => void
   network: Network
   addNode: (node: Address, network: Network) => void
+  addWatchlist: (nodeOrBond: Address, network: Network) => void
   addressValidationThor: AddressValidation
   addressValidationMaya: AddressValidation
   reloadNodeInfos: FP.Lazy<void>
   className?: string
   walletAddresses: Record<'THOR' | 'MAYA', WalletAddressInfo[]>
+}
+
+enum BondsViewMode {
+  All = 'all',
+  Watchlist = 'watchlist'
 }
 
 export const Bonds: React.FC<Props> = ({
@@ -39,10 +45,12 @@ export const Bonds: React.FC<Props> = ({
   goToAction,
   network,
   addNode,
+  addWatchlist,
   reloadNodeInfos,
   walletAddresses,
   className
 }) => {
+  const [viewMode, setViewMode] = useState(BondsViewMode.All)
   const intl = useIntl()
   const [form] = Form.useForm()
   const prevNodes = useRef<O.Option<NodeInfos>>(O.none)
@@ -89,6 +97,7 @@ export const Bonds: React.FC<Props> = ({
       <BondsTable
         className="border-b-1 mb-[25px] border-solid border-gray1 dark:border-gray1d"
         nodes={nodes}
+        addWatchlist={addWatchlist}
         removeNode={removeNode}
         goToNode={goToNode}
         goToAction={goToAction}
@@ -97,7 +106,7 @@ export const Bonds: React.FC<Props> = ({
         loading={loading}
       />
     ),
-    [goToAction, goToNode, network, removeNode, walletAddresses]
+    [goToAction, goToNode, network, addWatchlist, removeNode, walletAddresses]
   )
 
   const renderNodeInfos = useMemo(() => {
@@ -132,18 +141,35 @@ export const Bonds: React.FC<Props> = ({
 
   return (
     <Styled.Container className={className}>
-      {renderNodeInfos}
       <Styled.Form onFinish={onSubmit} form={form} disabled={disableForm}>
-        <Styled.InputContainer>
-          <Styled.InputLabel>{intl.formatMessage({ id: 'bonds.node.enterMessage' })}</Styled.InputLabel>
-          <Form.Item name={'address'} rules={[{ required: true, validator: addressValidator }]}>
-            <Styled.Input type={'text'} disabled={disableForm} />
-          </Form.Item>
-        </Styled.InputContainer>
-        <Styled.SubmitButton htmlType={'submit'} disabled={disableForm}>
-          <Styled.AddIcon /> {intl.formatMessage({ id: 'bonds.node.add' })}
-        </Styled.SubmitButton>
+        <div className="flex w-full flex-row items-center justify-between p-4">
+          <div className="flex items-center space-x-2">
+            <Form.Item className="!m-0" name="address" rules={[{ required: true, validator: addressValidator }]}>
+              <Styled.Input
+                type="text"
+                placeholder={intl.formatMessage({ id: 'bonds.node.enterMessage' })}
+                disabled={disableForm}
+              />
+            </Form.Item>
+            <Styled.SubmitButton htmlType={'submit'} disabled={disableForm}>
+              <Styled.AddIcon /> {intl.formatMessage({ id: 'bonds.node.add' })}
+            </Styled.SubmitButton>
+          </div>
+          <div className="flex items-center">
+            <FilterButton
+              active={viewMode === BondsViewMode.All ? 'true' : 'false'}
+              onClick={() => setViewMode(BondsViewMode.All)}>
+              {intl.formatMessage({ id: 'common.all' })}
+            </FilterButton>
+            <FilterButton
+              active={viewMode === BondsViewMode.Watchlist ? 'true' : 'false'}
+              onClick={() => setViewMode(BondsViewMode.Watchlist)}>
+              {intl.formatMessage({ id: 'common.watchlist' })}
+            </FilterButton>
+          </div>
+        </div>
       </Styled.Form>
+      {renderNodeInfos}
     </Styled.Container>
   )
 }

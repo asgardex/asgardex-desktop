@@ -49,6 +49,8 @@ export const Default: StoryFn = () => {
       addressValidationMaya={addressValidation}
       network={Network.Testnet}
       addNode={addNode}
+      // TODO: Thorianite
+      addWatchlist={() => {}}
       removeNode={removeNode}
       goToNode={(node) => console.log('go to ', node)}
       goToAction={(action) => console.log('go to ', action)}
