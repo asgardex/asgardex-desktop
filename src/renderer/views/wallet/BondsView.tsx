@@ -229,6 +229,8 @@ export const BondsView: React.FC = (): JSX.Element => {
         addressValidationThor={validateAddressThor}
         addressValidationMaya={validateAddressMaya}
         nodes={nodeInfos}
+        // TODO: Thorianite
+        addWatchlist={() => {}}
         removeNode={removeNodeByAddress}
         goToNode={goToExplorerNodeAddress}
         goToAction={routeToAction}
