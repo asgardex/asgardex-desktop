@@ -34,7 +34,7 @@ export const swap$ = ({
   hdMode,
   dex
 }: SwapTxParams): SwapTxState$ => {
-  const { chain } = asset.type === AssetType.SYNTH ? dex.asset : asset.type === AssetType.TRADE ? dex.asset : asset
+  const { chain } = asset.type === AssetType.SYNTH || asset.type === AssetType.TRADE ? dex.asset : asset
 
   const requests$ = Rx.of(poolAddresses).pipe(
     // 1. Validate pool address or node
