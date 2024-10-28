@@ -1,14 +1,16 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { DesktopOutlined } from '@ant-design/icons'
 import { Network } from '@xchainjs/xchain-client'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Address } from '@xchainjs/xchain-util'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { Address, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { ColumnType } from 'antd/lib/table'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import { FormattedMessage, useIntl } from 'react-intl'
 
+import { truncateAddress } from '../../../helpers/addressHelper'
 import { NodeInfo, NodeInfos, Providers, NodeStatusEnum } from '../../../services/thorchain/types'
 import { WalletAddressInfo } from '../../../views/wallet/BondsView'
 import { ConfirmationModal } from '../../modal/confirmation'
@@ -118,15 +120,19 @@ export const BondsTable: React.FC<Props> = ({
     [intl, network, addWatchlist, goToNode]
   )
   const networkPrefix = network === 'mainnet' ? '' : 's'
-  const getNodeChain = (address: string) => {
-    if (address.startsWith(`${networkPrefix}maya`)) {
-      return MAYAChain
-    } else if (address.startsWith(`${networkPrefix}thor`)) {
-      return THORChain
-    } else {
-      return null // or throw an error if unexpected format
-    }
-  }
+
+  const getNodeChain = useCallback(
+    (address: string) => {
+      if (address.startsWith(`${networkPrefix}maya`)) {
+        return MAYAChain
+      } else if (address.startsWith(`${networkPrefix}thor`)) {
+        return THORChain
+      } else {
+        return null // or throw an error if unexpected format
+      }
+    },
+    [networkPrefix]
+  )
 
   const expandedTableColumns: ColumnType<ProvidersWithStatus>[] = [
     {
@@ -233,6 +239,8 @@ export const BondsTable: React.FC<Props> = ({
     // Add other columns for the expanded table as needed
   ]
 
+  console.log(expandedTableColumns)
+
   const [matchedNodeAddress, setMatchedNodeAddress] = useState<string[]>([])
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([])
 
@@ -298,6 +306,67 @@ export const BondsTable: React.FC<Props> = ({
     <Styled.ExpandIcon onClick={(e) => onExpand(record, e)} rotate={expanded ? 90 : 0}></Styled.ExpandIcon>
   )
 
+  const renderSubWalletType = useCallback(
+    (bondAddress: string) => {
+      let walletTypeLabel = 'Not a wallet address'
+
+      const searchWalletAddresses = (addresses: WalletAddressInfo[], chainLabel: string) => {
+        const match = addresses.find((addr) => addr.address === bondAddress)
+        if (match) {
+          walletTypeLabel = `${match.walletType} (${chainLabel})`
+        }
+      }
+      searchWalletAddresses(walletAddresses.THOR, 'THOR')
+      searchWalletAddresses(walletAddresses.MAYA, 'MAYA')
+      return <div className="!text-11 text-text2 dark:text-text2d">{walletTypeLabel}</div>
+    },
+    [walletAddresses]
+  )
+
+  const renderSubActions = useCallback(
+    (record) => {
+      const { bondAddress, status, signMembership, nodeAddress } = record
+
+      // Check if the bond address matches a wallet address in either THOR or MAYA
+      const matchedWalletInfo =
+        walletAddresses.THOR.find((walletInfo) => walletInfo.address === bondAddress) ||
+        walletAddresses.MAYA.find((walletInfo) => walletInfo.address === bondAddress)
+
+      // Check if the bond address belongs to the current user's wallet
+      const isWalletAddress = !!matchedWalletInfo
+
+      const nodeChain = getNodeChain(bondAddress)
+      const matchedAddresses = matchedNodeAddress.filter((address) => {
+        const addressChain = getNodeChain(address)
+        return addressChain === nodeChain
+      })
+
+      const unbondDisabled =
+        status === 'Active' || (status === 'Standby' && signMembership && signMembership.includes(nodeAddress))
+
+      // Store walletType for the address and pass it to bond/unbond actions
+      const walletType = matchedWalletInfo?.walletType || 'Unknown'
+
+      return (
+        <div className="mt-4 flex items-center justify-center">
+          <TextButton
+            disabled={!isWalletAddress}
+            size="normal"
+            onClick={() => goToAction('bond', matchedAddresses[0], walletType)}>
+            {intl.formatMessage({ id: 'deposit.interact.actions.bond' })}
+          </TextButton>
+          <TextButton
+            disabled={!isWalletAddress || unbondDisabled}
+            size="normal"
+            onClick={() => goToAction('unbond', matchedAddresses[0], walletType)}>
+            {intl.formatMessage({ id: 'deposit.interact.actions.unbond' })}
+          </TextButton>
+        </div>
+      )
+    },
+    [intl, matchedNodeAddress, walletAddresses, getNodeChain, goToAction]
+  )
+
   return (
     <>
       <Styled.Table
@@ -307,19 +376,67 @@ export const BondsTable: React.FC<Props> = ({
         loading={loading}
         expandable={{
           expandedRowRender: (record) => (
-            <Styled.Table
-              className="pt-4 pb-2"
-              columns={expandedTableColumns}
-              dataSource={record.bondProviders.providers.map((provider: Providers, index: string) => ({
-                bondAddress: provider.bondAddress,
-                bond: provider.bond,
-                status: record.status,
-                member: record.signMembership,
-                nodeAddres: record.nodeAddress,
-                key: `${record.address}-${index}`
-              }))}
-              pagination={false}
-            />
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+              {record.bondProviders.providers.map((provider: Providers, index: string) => (
+                <div
+                  key={`${record.address}-${index}`}
+                  className="flex flex-col rounded-lg border border-solid border-gray0 p-4 dark:border-gray0d">
+                  <div className="flex items-center justify-between">
+                    <Styled.TextLabel className="!text-18">
+                      {formatAssetAmountCurrency({
+                        asset: provider.bondAddress.startsWith('thor') ? AssetRuneNative : AssetCacao,
+                        amount: baseToAsset(provider.bond),
+                        trimZeros: true,
+                        decimal: 0
+                      })}
+                    </Styled.TextLabel>
+                    <Styled.WatchlistButton>
+                      <DesktopOutlined />
+                    </Styled.WatchlistButton>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <Styled.TextLabel className="!text-11">
+                      {intl.formatMessage({ id: 'bonds.bondProvider' })}
+                    </Styled.TextLabel>
+                    <span className="!text-14 lowercase text-text2 dark:text-text2d">
+                      {truncateAddress(
+                        provider.bondAddress,
+                        provider.bondAddress.startsWith('thor') ? THORChain : MAYAChain,
+                        network
+                      )}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <Styled.TextLabel className="!text-11">
+                      {intl.formatMessage({ id: 'common.owner' })}
+                    </Styled.TextLabel>
+                    {renderSubWalletType(provider.bondAddress)}
+                  </div>
+                  {renderSubActions({
+                    bondAddress: provider.bondAddress,
+                    bond: record.status,
+                    signMembership: record.signMembership,
+                    nodeAddress: record.nodeAddress
+                  })}
+                  {/* {record.status}
+                  {record.signMembership} */}
+                  {record.nodeAddress}
+                </div>
+              ))}
+            </div>
+            // <Styled.Table
+            //   className="pt-4 pb-2"
+            //   columns={expandedTableColumns}
+            //   dataSource={record.bondProviders.providers.map((provider: Providers, index: string) => ({
+            //     bondAddress: provider.bondAddress,
+            //     bond: provider.bond,
+            //     status: record.status,
+            //     member: record.signMembership,
+            //     nodeAddres: record.nodeAddress,
+            //     key: `${record.address}-${index}`
+            //   }))}
+            //   pagination={false}
+            // />
           ),
           rowExpandable: (record) => record.bondProviders.providers.length > 0,
           expandedRowKeys: expandedRowKeys,
