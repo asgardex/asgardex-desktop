@@ -780,16 +780,14 @@ const SuccessTradeRouteView: React.FC<Props> = ({
 
   useEffect(() => {
     FP.pipe(
-      sequenceTOption(oSourceKeystoreAddress, oSourceLedgerAddress),
+      sourceWalletType === 'keystore' ? oSourceKeystoreAddress : oSourceLedgerAddress,
       O.fold(
         () => setTradeAccountBalanceRD(RD.initial),
-        ([sourceKeystore, sourceLedger]) => {
+        (sourceAddress) => {
           setTradeAccountBalanceRD(RD.pending)
-          getTradeAccount$(sourceWalletType === 'keystore' ? sourceKeystore : sourceLedger, sourceWalletType).subscribe(
-            (result) => {
-              setTradeAccountBalanceRD(result)
-            }
-          )
+          getTradeAccount$(sourceAddress, sourceWalletType).subscribe((result) => {
+            setTradeAccountBalanceRD(result)
+          })
         }
       )
     )
