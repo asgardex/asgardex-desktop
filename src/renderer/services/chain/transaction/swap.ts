@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { AssetType, isSynthAsset } from '@xchainjs/xchain-util'
+import { AssetType, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -34,7 +34,7 @@ export const swap$ = ({
   hdMode,
   dex
 }: SwapTxParams): SwapTxState$ => {
-  const { chain } = asset.type === AssetType.SYNTH ? dex.asset : asset
+  const { chain } = asset.type === AssetType.SYNTH ? dex.asset : asset.type === AssetType.TRADE ? dex.asset : asset
 
   const requests$ = Rx.of(poolAddresses).pipe(
     // 1. Validate pool address or node
@@ -42,7 +42,7 @@ export const swap$ = ({
       Rx.iif(
         () =>
           dex.chain === THORChain
-            ? isRuneNativeAsset(asset) || isSynthAsset(asset)
+            ? isRuneNativeAsset(asset) || isSynthAsset(asset) || isTradeAsset(asset)
             : isCacaoAsset(asset) || isSynthAsset(asset),
         dex.chain === THORChain ? validateNode$() : mayaValidateNode$(),
         dex.chain === THORChain
