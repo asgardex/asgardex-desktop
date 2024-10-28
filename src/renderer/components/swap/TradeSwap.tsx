@@ -729,8 +729,9 @@ export const TradeSwap = ({
           const destinationAsset = targetAsset
           const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
           const address = destinationAddress
-          const affiliate = ASGARDEX_ADDRESS === walletAddress ? undefined : ASGARDEX_THORNAME
-          const affiliateBps = ASGARDEX_ADDRESS === walletAddress ? undefined : applyBps
+          const affiliate =
+            ASGARDEX_ADDRESS === walletAddress || isTradeAsset(sourceAsset) ? undefined : ASGARDEX_THORNAME
+          const affiliateBps = ASGARDEX_ADDRESS === walletAddress || isTradeAsset(sourceAsset) ? undefined : applyBps
           const streamingInt = isStreaming ? streamingInterval : 0
           const streaminQuant = isStreaming ? streamingQuantity : 0
           const toleranceBps = isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100 // convert to basis points
