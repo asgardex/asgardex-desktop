@@ -786,7 +786,6 @@ const SuccessTradeRouteView: React.FC<Props> = ({
         (sourceAddress) => {
           setTradeAccountBalanceRD(RD.pending)
           getTradeAccount$(sourceAddress, sourceWalletType).subscribe((result) => {
-            console.log(sourceWalletType)
             setTradeAccountBalanceRD(result)
           })
         }
