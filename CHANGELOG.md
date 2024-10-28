@@ -1,3 +1,14 @@
+# 1.22.8 (2024-tba-tba)
+
+## add
+
+- solana client [#439](https://github.com/asgardex/asgardex-desktop/pull/447)
+-
+
+## Updates/Fixes
+
+-
+
 # 1.22.7 (2024-10-24)
 
 ## Updates/Fixes

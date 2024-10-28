@@ -38,7 +38,6 @@ export const loadTxs$ = ({
       (address) => Rx.of(address)
     )
   )
-
   return address$.pipe(
     RxOp.switchMap((address) =>
       Rx.from(
@@ -62,7 +61,8 @@ export const loadTxs$ = ({
         }),
         RxOp.startWith(RD.pending)
       )
-    )
+    ),
+    RxOp.shareReplay(1)
   )
 }
 
@@ -77,11 +77,18 @@ export const loadTx$ = ({
   client: XChainClient
   txHash: TxHash
   assetAddress: O.Option<Address>
-}): TxLD =>
-  Rx.from(client.getTransactionData(txHash, O.toUndefined(assetAddress))).pipe(
+}): TxLD => {
+  return Rx.from(client.getTransactionData(txHash, O.toUndefined(assetAddress))).pipe(
     RxOp.map(RD.success),
     RxOp.catchError((error) =>
-      Rx.of(RD.failure<ApiError>({ errorId: ErrorId.GET_TX, msg: error?.message ?? error.toString() }))
+      Rx.of(
+        RD.failure<ApiError>({
+          errorId: ErrorId.GET_TX,
+          msg: error?.message ?? error.toString()
+        })
+      )
     ),
-    RxOp.startWith(RD.pending)
+    RxOp.startWith(RD.pending),
+    RxOp.shareReplay(1) // Cache the latest value and share it with new subscribers
   )
+}

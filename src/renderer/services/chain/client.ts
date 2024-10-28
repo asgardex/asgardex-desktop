@@ -11,6 +11,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, AssetType, Chain } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
@@ -34,6 +35,7 @@ import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
 import { selectedPoolChain$ } from '../midgard/common'
 import * as XRD from '../radix'
+import * as SOL from '../solana'
 import * as THOR from '../thorchain'
 import type { Chain$ } from './types'
 
@@ -69,6 +71,8 @@ export const clientByChain$ = (chain: Chain): XChainClient$ => {
       return KUJI.client$
     case RadixChain:
       return XRD.client$
+    case SOLChain:
+      return SOL.client$
     default:
       return Rx.of(O.none) // Add a default case to handle unsupported chains
   }
@@ -113,6 +117,8 @@ export const clientByAsset$ = (asset: AnyAsset, dex: Dex): XChainClient$ => {
       return KUJI.client$
     case RadixChain:
       return XRD.client$
+    case SOLChain:
+      return SOL.client$
     default:
       return Rx.of(O.none) // Add a default case to handle unsupported chains
   }

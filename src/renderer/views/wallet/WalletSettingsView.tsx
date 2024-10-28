@@ -15,6 +15,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Chain } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
@@ -42,6 +43,7 @@ import { useEthereumContext } from '../../contexts/EthereumContext'
 import { useKujiContext } from '../../contexts/KujiContext'
 import { useLitecoinContext } from '../../contexts/LitecoinContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
+import { useSolContext } from '../../contexts/SolContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { useXrdContext } from '../../contexts/XrdContext'
@@ -60,7 +62,8 @@ import {
   isMayaChain,
   isDashChain,
   isKujiChain,
-  isXrdChain
+  isXrdChain,
+  isSolChain
 } from '../../helpers/chainHelper'
 import { sequenceTOptionFromArray } from '../../helpers/fpHelpers'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
@@ -101,6 +104,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
   const { addressUI$: dashAddressUI$ } = useDashContext()
   const { addressUI$: kujiAddressUI$ } = useKujiContext()
   const { addressUI$: xrdAddressUI$ } = useXrdContext()
+  const { addressUI$: solAddressUI$ } = useSolContext()
 
   const evmHDMode: EvmHDMode = useObservableState(ethHDMode$, DEFAULT_EVM_HD_MODE)
 
@@ -117,6 +121,13 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     address: oBtcLedgerWalletAddress,
     removeAddress: removeLedgerBtcAddress
   } = useLedger(BTCChain, keystoreId)
+
+  const {
+    addAddress: addLedgerSolAddress,
+    verifyAddress: verifyLedgerSolAddress,
+    address: oSolLedgerWalletAddress,
+    removeAddress: removeLedgerSolAddress
+  } = useLedger(SOLChain, keystoreId)
 
   const {
     addAddress: addLedgerDashAddress,
@@ -223,6 +234,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     if (isDashChain(chain)) return addLedgerDashAddress(walletAccount, walletIndex, hdMode)
     if (isKujiChain(chain)) return addLedgerKujiAddress(walletAccount, walletIndex, hdMode)
     if (isXrdChain(chain)) return addLedgerXrdAddress(walletAccount, walletIndex, hdMode)
+    if (isSolChain(chain)) return addLedgerSolAddress(walletAccount, walletIndex, hdMode)
 
     return Rx.of(
       RD.failure({
@@ -257,6 +269,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     if (isDashChain(chain)) return verifyLedgerDashAddress(walletAccount, walletIndex, hdMode)
     if (isKujiChain(chain)) return verifyLedgerKujiAddress(walletAccount, walletIndex, hdMode)
     if (isXrdChain(chain)) return verifyLedgerXrdAddress(walletAccount, walletIndex, hdMode)
+    if (isSolChain(chain)) return verifyLedgerSolAddress(walletAccount, walletIndex, hdMode)
 
     return Rx.of(RD.failure(Error(`Ledger address verification for ${chain} has not been implemented`)))
   }
@@ -276,6 +289,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     if (isDashChain(chain)) return removeLedgerDashAddress()
     if (isKujiChain(chain)) return removeLedgerKujiAddress()
     if (isXrdChain(chain)) return removeLedgerXrdAddress()
+    if (isSolChain(chain)) return removeLedgerSolAddress()
 
     return FP.constVoid
   }
@@ -296,6 +310,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
   const oDashClient = useObservableState(clientByChain$(DASHChain), O.none)
   const oKujiClient = useObservableState(clientByChain$(KUJIChain), O.none)
   const oXrdClient = useObservableState(clientByChain$(RadixChain), O.none)
+  const oSolClient = useObservableState(clientByChain$(SOLChain), O.none)
 
   const clickAddressLinkHandler = (chain: Chain, address: Address) => {
     const openExplorerAddressUrl = (client: XChainClient) => {
@@ -350,6 +365,9 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
       case RadixChain:
         FP.pipe(oXrdClient, O.map(openExplorerAddressUrl))
         break
+      case SOLChain:
+        FP.pipe(oSolClient, O.map(openExplorerAddressUrl))
+        break
     }
   }
 
@@ -363,6 +381,11 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
       addressUI$: btcAddressUI$,
       ledgerAddress: oBtcLedgerWalletAddress,
       chain: BTCChain
+    })
+    const solWalletAccount$ = walletAccount$({
+      addressUI$: solAddressUI$,
+      ledgerAddress: oSolLedgerWalletAddress,
+      chain: SOLChain
     })
     const ethWalletAccount$ = walletAccount$({
       addressUI$: ethAddressUI$,
@@ -442,7 +465,8 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
           MAYA: [mayaWalletAccount$],
           DASH: [dashWalletAccount$],
           KUJI: [kujiWalletAccount$],
-          XRD: [xrdWalletAccount$]
+          XRD: [xrdWalletAccount$],
+          SOL: [solWalletAccount$]
         })
       ),
       RxOp.map(A.filter(O.isSome)),
@@ -453,6 +477,8 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     oThorLedgerWalletAddress,
     btcAddressUI$,
     oBtcLedgerWalletAddress,
+    solAddressUI$,
+    oSolLedgerWalletAddress,
     ethAddressUI$,
     oEthLedgerWalletAddress,
     arbAddressUI$,

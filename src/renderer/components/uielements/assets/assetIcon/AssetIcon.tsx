@@ -32,7 +32,8 @@ import {
   isXrdAsset,
   isUskAsset,
   iconUrlInARBERC20Whitelist,
-  isAethAsset
+  isAethAsset,
+  isSolAsset
 } from '../../../../helpers/assetHelper'
 import { isArbChain, isAvaxChain, isBscChain, isEthChain, isMayaChain } from '../../../../helpers/chainHelper'
 import { getIntFromName, rainbowStop } from '../../../../helpers/colorHelpers'
@@ -53,7 +54,8 @@ import {
   dashIcon,
   kujiIcon,
   uskIcon,
-  xrdIcon
+  xrdIcon,
+  solIcon
 } from '../../../icons'
 import * as Styled from './AssetIcon.styles'
 import { Size } from './AssetIcon.types'
@@ -140,6 +142,10 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     // XRD
     if (isXrdAsset(asset)) {
       return xrdIcon
+    }
+    // Sol
+    if (isSolAsset(asset)) {
+      return solIcon
     }
     // USK
     if (isUskAsset(asset)) {

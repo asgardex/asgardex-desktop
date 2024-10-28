@@ -5,8 +5,10 @@ import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { AssetType } from '@xchainjs/xchain-util'
+import { AssetType, baseAmount } from '@xchainjs/xchain-util'
+import { TxParams } from '@xchainjs/xchain-utxo'
 import { Spin } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
@@ -18,6 +20,7 @@ import { useChainContext } from '../../../contexts/ChainContext'
 import { useCosmosContext } from '../../../contexts/CosmosContext'
 import { useKujiContext } from '../../../contexts/KujiContext'
 import { useMayachainContext } from '../../../contexts/MayachainContext'
+import { useSolContext } from '../../../contexts/SolContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { useXrdContext } from '../../../contexts/XrdContext'
@@ -30,6 +33,7 @@ import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import { FeeRD } from '../../../services/chain/types'
 import { FeesLD, WalletBalances } from '../../../services/clients'
 import { PoolAddress, PoolDetails as PoolDetailsMaya } from '../../../services/mayaMigard/types'
+import { ZERO_ADDRESS } from '../../../services/solana/fees'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAsset, WalletBalance } from '../../../services/wallet/types'
 import * as Styled from '../Interact/InteractView.styles'
@@ -81,8 +85,9 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
   const gaiaContext = useCosmosContext()
   const thorContext = useThorchainContext()
   const xrdContext = useXrdContext()
-  let fees$: () => FeesLD
-  let reloadFees: () => void
+  const solContext = useSolContext()
+  let fees$: (params: TxParams) => FeesLD
+  let reloadFees: (params: TxParams) => void
 
   switch (chain) {
     case KUJIChain:
@@ -105,15 +110,30 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
       fees$ = xrdContext.fees$
       reloadFees = xrdContext.reloadFees
       break
+    case SOLChain:
+      fees$ = solContext.fees$
+      reloadFees = solContext.reloadFees
+      break
     default:
       throw new Error('Unsupported chain')
   }
 
+  const reloadFeesHandler = () =>
+    reloadFees({
+      amount: baseAmount(1),
+      recipient: ZERO_ADDRESS
+    })
+
   const [feeRD] = useObservableState<FeeRD>(
     () =>
       FP.pipe(
-        fees$(),
-        liveData.map((fees) => fees.fast)
+        fees$({
+          amount: baseAmount(1),
+          recipient: ZERO_ADDRESS
+        }),
+        liveData.map((fees) => {
+          return fees.fast
+        })
       ),
     RD.initial
   )
@@ -139,7 +159,7 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
               getExplorerTxUrl={getExplorerTxUrl}
               addressValidation={validateAddress}
               fee={feeRD}
-              reloadFeesHandler={reloadFees}
+              reloadFeesHandler={reloadFeesHandler}
               validatePassword$={validatePassword$}
               network={network}
               poolDetails={poolDetails}
@@ -165,7 +185,7 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
             getExplorerTxUrl={getExplorerTxUrl}
             addressValidation={validateAddress}
             fee={feeRD}
-            reloadFeesHandler={reloadFees}
+            reloadFeesHandler={reloadFeesHandler}
             validatePassword$={validatePassword$}
             network={network}
             poolDetails={poolDetails}

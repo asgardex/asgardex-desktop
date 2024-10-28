@@ -13,6 +13,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, AssetType } from '@xchainjs/xchain-util'
 import { Chain } from '@xchainjs/xchain-util'
@@ -36,6 +37,7 @@ import * as KUJI from '../../kuji'
 import * as LTC from '../../litecoin'
 import * as MAYA from '../../mayachain'
 import * as XRD from '../../radix'
+import * as SOL from '../../solana'
 import * as THOR from '../../thorchain'
 import { ApiError, ErrorId, TxHashLD, TxLD } from '../../wallet/types'
 import { SendPoolTxParams, SendTxParams } from '../types'
@@ -97,6 +99,9 @@ export const sendTx$ = ({
 
     case AVAXChain:
       return AVAX.sendTx({ walletType, asset, recipient, amount, memo, feeOption, walletAccount, walletIndex, hdMode })
+
+    case SOLChain:
+      return SOL.sendTx({ walletType, asset, recipient, amount, memo, walletAccount, walletIndex, hdMode })
 
     case BSCChain:
       return BSC.sendTx({ walletType, asset, recipient, amount, memo, feeOption, walletAccount, walletIndex, hdMode })
@@ -334,6 +339,7 @@ export const sendPoolTx$ = ({
     case DASHChain:
     case GAIAChain:
     case KUJIChain:
+    case SOLChain:
       return sendTx$({
         sender,
         walletType,
@@ -391,6 +397,8 @@ export const txStatusByChain$ = ({ txHash, chain }: { txHash: TxHash; chain: Cha
       return KUJI.txStatus$(txHash, O.none)
     case RadixChain:
       return XRD.txStatus$(txHash, O.none)
+    case SOLChain:
+      return SOL.txStatus$(txHash, O.none)
     default:
       return Rx.of(
         RD.failure({
@@ -438,6 +446,7 @@ export const poolTxStatusByChain$ = ({
     case DASHChain:
     case KUJIChain:
     case RadixChain:
+    case SOLChain:
       return txStatusByChain$({ txHash, chain })
     default:
       return Rx.of(
