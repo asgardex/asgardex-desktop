@@ -7,13 +7,10 @@ import { Client as MayachainClient } from '@xchainjs/xchain-mayachain'
 import { Client as ThorchainClient, THORChain, AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
-import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 import { useNavigate } from 'react-router-dom'
-import * as Rx from 'rxjs'
-import * as RxOp from 'rxjs/operators'
 
 import { Bonds } from '../../components/Bonds'
 import { RefreshButton } from '../../components/uielements/button'
@@ -24,10 +21,10 @@ import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useUserNodesContext } from '../../contexts/UserNodesContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { filterWalletBalancesByAssets } from '../../helpers/walletHelper'
+import { useNodeInfos } from '../../hooks/useNodeInfos'
 import { useValidateAddress } from '../../hooks/useValidateAddress'
 import * as walletRoutes from '../../routes/wallet'
 import { DEFAULT_NETWORK } from '../../services/const'
-import { NodeInfo } from '../../services/thorchain/types'
 import { balancesState$ } from '../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/wallet/const'
 import { WalletBalances } from '../../services/wallet/types'
@@ -121,67 +118,14 @@ export const BondsView: React.FC = (): JSX.Element => {
     }
   }, [allBalances, addNodeAddress, network])
 
-  const [nodeInfos, setNodeInfos] = useState<RD.RemoteData<Error, NodeInfo[]>>(RD.initial)
-
-  const nodeInfos$ = useMemo(() => {
-    if (!addressesFetched) {
-      return Rx.of(RD.initial)
-    }
-
-    const walletAddressSet = new Set([
-      ...walletAddresses.THOR.map((addr) => addr.address.toLowerCase()),
-      ...walletAddresses.MAYA.map((addr) => addr.address.toLowerCase())
-    ])
-
-    return FP.pipe(
-      Rx.combineLatest([
-        userNodes$,
-        Rx.combineLatest([
-          getNodeInfos$.pipe(RxOp.startWith(RD.initial)),
-          getNodeInfosMaya$.pipe(RxOp.startWith(RD.initial))
-        ])
-      ]),
-      RxOp.switchMap(([userNodes, [nodeInfosThor, nodeInfosMaya]]) => {
-        const normalizedUserNodes = userNodes.map((node) => node.toLowerCase())
-
-        return Rx.of(
-          FP.pipe(
-            RD.combine(nodeInfosThor, nodeInfosMaya),
-            RD.map(([thorData, mayaData]) =>
-              FP.pipe(
-                [...thorData, ...mayaData],
-                A.map((nodeInfo) => {
-                  const isUserStoredNodeAddress = normalizedUserNodes.includes(nodeInfo.address)
-
-                  const isUserBondProvider = nodeInfo.bondProviders.providers.some((provider) => {
-                    const normalizedBondAddress = provider.bondAddress.toLowerCase()
-                    const isWalletAddress = walletAddressSet.has(normalizedBondAddress)
-
-                    return isWalletAddress
-                  })
-
-                  return {
-                    ...nodeInfo,
-                    isUserStoredNodeAddress,
-                    isUserBondProvider
-                  }
-                }),
-                A.filter((nodeInfo) => nodeInfo.isUserStoredNodeAddress || nodeInfo.isUserBondProvider)
-              )
-            )
-          )
-        )
-      }),
-      RxOp.startWith(RD.initial),
-      RxOp.shareReplay(1)
-    )
-  }, [addressesFetched, userNodes$, getNodeInfos$, getNodeInfosMaya$, walletAddresses])
-
-  // Effect to subscribe to the observable and update state
-  useEffect(() => {
-    const subscription = nodeInfos$.subscribe(setNodeInfos)
-    return () => subscription.unsubscribe()
-  }, [nodeInfos$, setNodeInfos])
+  // Use `useNodeInfos` to manage `nodeInfos` state and observable
+  const nodeInfos = useNodeInfos({
+    addressesFetched,
+    walletAddresses,
+    userNodes$,
+    getNodeInfos$,
+    getNodeInfosMaya$
+  })
 
   const removeNodeByAddress = useCallback(
     (node: Address) => {

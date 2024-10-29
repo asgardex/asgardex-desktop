@@ -50,8 +50,8 @@ const addAsset = (asset: TokenAsset) => {
 
   FP.pipe(
     savedAssets.assets,
-    A.map((savedAsset) => savedAsset.symbol),
-    A.elem(eqString)(asset.symbol),
+    A.map((savedAsset) => savedAsset.symbol.toUpperCase()),
+    A.elem(eqString)(asset.symbol.toUpperCase()),
     (isAssetExistsInSavedArray) => {
       if (!isAssetExistsInSavedArray) {
         modifyStorage(
