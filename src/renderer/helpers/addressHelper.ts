@@ -20,6 +20,7 @@ import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { getPrefix as getMayachainPrefix } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { SOLChain } from '@xchainjs/xchain-solana'
 import { getPrefix as getThorchainPrefix } from '@xchainjs/xchain-thorchain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Chain } from '@xchainjs/xchain-util'
@@ -51,8 +52,9 @@ const chainPrefixLengthFunctions: Record<Chain, (network: Network) => number> = 
   [LTCChain]: (network: Network) => getLitecoinPrefix(network).length,
   [DASHChain]: (network: Network) => getDashPrefix(network).length,
   [BCHChain]: () => getBCHPrefix().length,
-  [KUJIChain]: () => 'kujira'.length, // tobefixed
-  [RadixChain]: () => 'account_'.length // tobefixed
+  [KUJIChain]: () => 'kujira'.length,
+  [RadixChain]: () => 'account_'.length,
+  [SOLChain]: () => 0
 }
 
 export const getAddressPrefixLength = (chain: Chain, network: Network): number => {

@@ -21,6 +21,7 @@ import { MayachainProvider } from './contexts/MayachainContext'
 import { MayachainQueryProvider } from './contexts/MayachainQueryContext'
 import { MidgardProvider } from './contexts/MidgardContext'
 import { MayaMidgardProvider } from './contexts/MidgardMayaContext'
+import { SolProvider } from './contexts/SolContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { ThorchainProvider } from './contexts/ThorchainContext'
 import { ThorchainQueryProvider } from './contexts/ThorchainQueryContext'
@@ -46,31 +47,33 @@ export const App: React.FC = (): JSX.Element => {
                           <ArbProvider>
                             <DogeProvider>
                               <KujiProvider>
-                                <XrdProvider>
-                                  <DashProvider>
-                                    <CosmosProvider>
-                                      <MidgardProvider>
-                                        <ThorchainQueryProvider>
-                                          <MayachainProvider>
-                                            <MayachainQueryProvider>
-                                              <MayaMidgardProvider>
-                                                <UserNodesProvider>
-                                                  <I18nProvider>
-                                                    <Router>
-                                                      <ThemeProvider>
-                                                        <AppView />
-                                                      </ThemeProvider>
-                                                    </Router>
-                                                  </I18nProvider>
-                                                </UserNodesProvider>
-                                              </MayaMidgardProvider>
-                                            </MayachainQueryProvider>
-                                          </MayachainProvider>
-                                        </ThorchainQueryProvider>
-                                      </MidgardProvider>
-                                    </CosmosProvider>
-                                  </DashProvider>
-                                </XrdProvider>
+                                <SolProvider>
+                                  <XrdProvider>
+                                    <DashProvider>
+                                      <CosmosProvider>
+                                        <MidgardProvider>
+                                          <ThorchainQueryProvider>
+                                            <MayachainProvider>
+                                              <MayachainQueryProvider>
+                                                <MayaMidgardProvider>
+                                                  <UserNodesProvider>
+                                                    <I18nProvider>
+                                                      <Router>
+                                                        <ThemeProvider>
+                                                          <AppView />
+                                                        </ThemeProvider>
+                                                      </Router>
+                                                    </I18nProvider>
+                                                  </UserNodesProvider>
+                                                </MayaMidgardProvider>
+                                              </MayachainQueryProvider>
+                                            </MayachainProvider>
+                                          </ThorchainQueryProvider>
+                                        </MidgardProvider>
+                                      </CosmosProvider>
+                                    </DashProvider>
+                                  </XrdProvider>
+                                </SolProvider>
                               </KujiProvider>
                             </DogeProvider>
                           </ArbProvider>

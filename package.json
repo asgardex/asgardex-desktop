@@ -1,7 +1,7 @@
 {
   "name": "asgardex",
   "productName": "ASGARDEX",
-  "version": "1.22.7",
+  "version": "1.22.8",
   "description": "WALLET AND EXCHANGE CLIENT FOR THORCHAIN",
   "main": "index.js",
   "scripts": {
@@ -106,8 +106,9 @@
     "@xchainjs/xchain-midgard": "0.5.11",
     "@xchainjs/xchain-midgard-query": "1.0.7",
     "@xchainjs/xchain-radix": "1.1.5",
+    "@xchainjs/xchain-solana": "0.0.6",
     "@xchainjs/xchain-thorchain": "2.0.10",
-    "@xchainjs/xchain-thorchain-query": "1.0.7",
+    "@xchainjs/xchain-thorchain-query": "1.0.8",
     "@xchainjs/xchain-thornode": "0.3.21",
     "@xchainjs/xchain-util": "1.0.6",
     "@xchainjs/xchain-utxo": "1.0.7",
@@ -222,7 +223,8 @@
   },
   "resolutions": {
     "@svgr/webpack": "^6.2.1",
-    "secp256k1": "4.0.3"
+    "secp256k1": "4.0.3",
+    "@types/react": "17.0.44"
   },
   "packageManager": "yarn@4.2.2"
 }

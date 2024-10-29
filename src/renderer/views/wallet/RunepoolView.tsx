@@ -15,14 +15,11 @@ import {
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import BigNumber from 'bignumber.js'
-import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
-import * as Rx from 'rxjs'
-import * as RxOp from 'rxjs/operators'
 
 import { WalletType } from '../../../shared/wallet/types'
 import { RunePoolTable } from '../../components/runePool/runePoolTable'
@@ -35,20 +32,18 @@ import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { isUSDAsset } from '../../helpers/assetHelper'
-import { isThorChain } from '../../helpers/chainHelper'
 import { sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { hiddenString } from '../../helpers/stringHelper'
 import { filterWalletBalancesByAssets, getWalletBalanceByAssetAndWalletType } from '../../helpers/walletHelper'
+import { useRunePoolProviders } from '../../hooks/useAllRunePoolProviders'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePricePool } from '../../hooks/usePricePool'
 import { WalletBalances } from '../../services/clients'
 import { userChains$ } from '../../services/storage/userChains'
-import { RunePoolProviderRD } from '../../services/thorchain/types'
 import { balancesState$, setSelectedAsset } from '../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/wallet/const'
 import { WalletBalance } from '../../services/wallet/types'
-import { ledgerAddressToWalletAddress } from '../../services/wallet/util'
 import { useApp } from '../../store/app/hooks'
 
 type AssetProps = {
@@ -101,64 +96,14 @@ export const RunepoolView: React.FC = (): JSX.Element => {
   const pricePool = usePricePool()
   const poolsStateRD = useObservableState(poolsState$, RD.initial)
 
-  const [allRunePoolProviders, setAllRunePoolProviders] = useState<Record<string, RunePoolProviderRD>>({})
   const [assetDetailsArray, setAssetDetailsArray] = useState<AssetProps[]>([])
 
-  useEffect(() => {
-    const userChainsSubscription = userChains$.subscribe((enabledChains) => {
-      // Keystore addresses
-      const keystoreAddresses$ = FP.pipe(
-        enabledChains,
-        A.filter((chain) => isThorChain(chain)),
-        A.map(addressByChain$)
-      )
-
-      // Ledger addresses
-      const ledgerAddresses$ = FP.pipe(
-        enabledChains,
-        A.filter((chain) => isThorChain(chain)),
-        A.map((chain) => getLedgerAddress$(chain)),
-        A.map(RxOp.map(FP.flow(O.map(ledgerAddressToWalletAddress))))
-      )
-
-      const combinedAddresses$ = Rx.combineLatest([...keystoreAddresses$, ...ledgerAddresses$]).pipe(
-        RxOp.map((addressOptionsArray) => FP.pipe(addressOptionsArray, A.filterMap(FP.identity))),
-        RxOp.map((walletAddresses) =>
-          walletAddresses.map((walletAddress) => ({
-            address: walletAddress.address,
-            type: walletAddress.type
-          }))
-        )
-      )
-
-      const subscriptions = combinedAddresses$
-        .pipe(
-          RxOp.switchMap((walletAddresses) => {
-            if (walletAddresses.length > 0) {
-              return Rx.combineLatest(
-                walletAddresses.map((walletAddress) => getRunePoolProvider$(walletAddress.address, walletAddress.type))
-              )
-            }
-            return Rx.of(null)
-          })
-        )
-        .subscribe((runePoolProviders) => {
-          if (runePoolProviders) {
-            runePoolProviders.forEach((provider) => {
-              if (provider && provider._tag === 'RemoteSuccess' && provider.value.depositAmount.amount().gt(0)) {
-                const key = `${provider.value.address}.${provider.value.walletType}`
-                setAllRunePoolProviders((prev) => ({ ...prev, [key]: provider }))
-              }
-            })
-          }
-        })
-
-      return () => {
-        subscriptions.unsubscribe()
-        userChainsSubscription.unsubscribe()
-      }
-    })
-  }, [addressByChain$, getLedgerAddress$, getRunePoolProvider$])
+  const allRunePoolProviders = useRunePoolProviders(
+    userChains$,
+    addressByChain$,
+    getLedgerAddress$,
+    getRunePoolProvider$
+  )
 
   const oSourceAssetWB: O.Option<WalletBalance> = useMemo(() => {
     const oWalletBalances = NEA.fromArray(allBalances)

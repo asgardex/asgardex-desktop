@@ -56,7 +56,7 @@ export const USER_NODES_STORAGE_DEFAULT: UserNodesStorage = {
 }
 
 // increase it by `1` if you want to ignore previous version of `common` storage
-const CHAINS_STORAGE_VERSION = '2'
+const CHAINS_STORAGE_VERSION = '3'
 
 export const CHAINS_STORAGE_DEFAULT: UserChainStorage = {
   version: CHAINS_STORAGE_VERSION,

@@ -139,6 +139,7 @@ import { getPoolDetail as getPoolDetailMaya } from '../../services/mayaMigard/ut
 import { PoolAddress, PoolDetails, PoolsDataMap } from '../../services/midgard/types'
 import { getPoolDetail } from '../../services/midgard/utils'
 import { userChains$ } from '../../services/storage/userChains'
+import { addAsset } from '../../services/storage/userChainTokens'
 import {
   ApiError,
   KeystoreState,
@@ -829,10 +830,10 @@ export const Swap = ({
   //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
   const applyBps = useMemo(() => {
     const aff = ASGARDEX_AFFILIATE_FEE
-    let applyBps: number
+    let applyBps: number | undefined
     const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
-    applyBps = network === Network.Stagenet ? 0 : aff
-    applyBps = txFeeCovered ? aff : 0
+    applyBps = network === Network.Stagenet ? undefined : aff
+    applyBps = txFeeCovered ? aff : undefined
     return applyBps
   }, [network, priceAmountToSwapMax1e8])
 
@@ -863,7 +864,7 @@ export const Swap = ({
       O.getOrElse(() => '')
     )
 
-    return price ? `${price} (${fee}) ${applyBps / 100}%` : fee
+    return price ? `${price} (${fee}) ${applyBps === undefined ? '0' : applyBps / 100}%` : fee
   }, [swapFees, affiliateFee.assetAmount, affiliateFee.asset, affiliatePriceValue, applyBps, sourceAsset])
 
   const oQuoteSwapData: O.Option<QuoteSwapParams> = useMemo(
@@ -875,7 +876,7 @@ export const Swap = ({
           const destinationAsset = targetAsset
           const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
           const address = destinationAddress
-          const affiliate = ASGARDEX_ADDRESS === walletAddress ? undefined : ASGARDEX_THORNAME
+          const affiliate = ASGARDEX_ADDRESS === walletAddress || applyBps === undefined ? undefined : ASGARDEX_THORNAME
           const affiliateBps = ASGARDEX_ADDRESS === walletAddress ? undefined : applyBps
           const streamingInt = isStreaming ? streamingInterval : 0
           const streaminQuant = isStreaming ? streamingQuantity : 0
@@ -2009,7 +2010,11 @@ export const Swap = ({
     setQuoteExpired(true)
     setQuote(O.none)
     setQuoteMaya(O.none)
-  }, [resetSwapState, reloadBalances, setAmountToSwapMax1e8, initialAmountToSwapMax1e8])
+    // Conditionally add asset if both conditions are true
+    if (isEvmChain(targetChain) && isEvmToken(targetAsset)) {
+      addAsset(targetAsset as TokenAsset)
+    }
+  }, [resetSwapState, reloadBalances, setAmountToSwapMax1e8, initialAmountToSwapMax1e8, targetChain, targetAsset])
 
   const renderTxModal = useMemo(() => {
     const { swapTx } = swapState

@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { AssetType, isSynthAsset } from '@xchainjs/xchain-util'
+import { AssetType, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -34,17 +34,22 @@ export const swap$ = ({
   hdMode,
   dex
 }: SwapTxParams): SwapTxState$ => {
-  const { chain } = asset.type === AssetType.SYNTH ? dex.asset : asset
+  const { chain } = asset.type === AssetType.SYNTH || asset.type === AssetType.TRADE ? dex.asset : asset
 
   const requests$ = Rx.of(poolAddresses).pipe(
     // 1. Validate pool address or node
     RxOp.switchMap((poolAddresses) =>
       Rx.iif(
+        // Boolean condition to check if the asset type matches the chain requirements
         () =>
           dex.chain === THORChain
-            ? isRuneNativeAsset(asset) || isSynthAsset(asset)
+            ? isRuneNativeAsset(asset) || isSynthAsset(asset) || isTradeAsset(asset)
             : isCacaoAsset(asset) || isSynthAsset(asset),
+
+        // If the condition is true, validate the node based on the chain type
         dex.chain === THORChain ? validateNode$() : mayaValidateNode$(),
+
+        // Use the appropriate pool validation service based on the chain
         dex.chain === THORChain
           ? midgardPoolsService.validatePool$(poolAddresses, chain)
           : mayaMidgardPoolsService.validatePool$(poolAddresses, chain)

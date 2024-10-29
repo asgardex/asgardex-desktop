@@ -15,6 +15,7 @@ import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-mayamidgard'
 import { AssetXRD, RadixChain, XRD_DECIMAL } from '@xchainjs/xchain-radix'
+import { SOL_DECIMALS, SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import {
   assetFromString,
@@ -272,6 +273,11 @@ export const getOutboundAssetFeeByChain = (
           return O.some({
             amount: baseAmount(value, XRD_DECIMAL),
             asset: AssetXRD
+          })
+        case SOLChain:
+          return O.some({
+            amount: baseAmount(value, SOL_DECIMALS),
+            asset: SOLAsset
           })
         case ARBChain: {
           return O.some({

@@ -12,6 +12,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Chain } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
@@ -42,6 +43,7 @@ import * as KUJI from '../kuji'
 import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
 import * as XRD from '../radix'
+import * as SOL from '../solana'
 import * as THOR from '../thorchain'
 import { INITIAL_BALANCES_STATE } from './const'
 import {
@@ -85,6 +87,7 @@ export const createBalancesService = ({
       if (enabledChains.includes(GAIAChain)) COSMOS.reloadBalances()
       if (enabledChains.includes(KUJIChain)) KUJI.reloadBalances()
       if (enabledChains.includes(RadixChain)) XRD.reloadBalances()
+      if (enabledChains.includes(SOLChain)) SOL.reloadBalances()
     })
   }
 
@@ -270,6 +273,13 @@ export const createBalancesService = ({
             balances$: XRD.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: XRD.reloadBalances$
           }
+        case SOLChain:
+          return {
+            reloadBalances: SOL.reloadBalances,
+            resetReloadBalances: SOL.resetReloadBalances,
+            balances$: SOL.balances$({ walletType, walletAccount, walletIndex, hdMode }),
+            reloadBalances$: SOL.reloadBalances$
+          }
         default:
           return {
             reloadBalances: FP.constVoid,
@@ -385,6 +395,30 @@ export const createBalancesService = ({
     RxOp.map(([oWalletAddress, balances]) => ({
       walletType: 'keystore',
       chain: THORChain,
+      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
+      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
+      balances,
+      balancesType: 'all'
+    }))
+  )
+  /**
+   * Transforms SOL balances into `ChainBalances`
+   */
+  const solChainBalance$: ChainBalance$ = Rx.combineLatest([
+    SOL.addressUI$,
+    getChainBalance$({
+      chain: SOLChain,
+      walletType: 'keystore',
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
+      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
+      hdMode: 'default',
+      walletBalanceType: 'all'
+    })
+  ]).pipe(
+    RxOp.map(([oWalletAddress, balances]) => ({
+      walletType: 'keystore',
+      chain: SOLChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
@@ -897,6 +931,15 @@ export const createBalancesService = ({
   })
 
   /**
+   * SOL Ledger balances
+   */
+  const solLedgerChainBalance$: ChainBalance$ = ledgerChainBalance$({
+    chain: SOLChain,
+    walletBalanceType: 'all',
+    getBalanceByAddress$: SOL.getBalanceByAddress$
+  })
+
+  /**
    * ETH Ledger balances
    */
   const ethLedgerChainBalance$: ChainBalance$ = FP.pipe(
@@ -969,7 +1012,8 @@ export const createBalancesService = ({
     DOGE: [dogeChainBalance$, dogeLedgerChainBalance$],
     GAIA: [cosmosChainBalance$, cosmosLedgerChainBalance$],
     KUJI: [kujiChainBalance$, kujiLedgerChainBalance$],
-    XRD: [xrdChainBalance$, xrdLedgerChainBalance$]
+    XRD: [xrdChainBalance$, xrdLedgerChainBalance$],
+    SOL: [solChainBalance$, solLedgerChainBalance$]
   }
 
   // Combine enabled chains with their corresponding balance observables
