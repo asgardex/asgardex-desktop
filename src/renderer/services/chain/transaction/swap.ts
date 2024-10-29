@@ -40,27 +40,19 @@ export const swap$ = ({
     // 1. Validate pool address or node
     RxOp.switchMap((poolAddresses) =>
       Rx.iif(
-        // First condition: Check for THORChain with specific asset types
+        // Boolean condition to check if the asset type matches the chain requirements
         () =>
           dex.chain === THORChain
             ? isRuneNativeAsset(asset) || isSynthAsset(asset) || isTradeAsset(asset)
             : isCacaoAsset(asset) || isSynthAsset(asset),
 
-        // If the condition is true, validate node based on chain type
+        // If the condition is true, validate the node based on the chain type
         dex.chain === THORChain ? validateNode$() : mayaValidateNode$(),
 
-        // If the first condition is false, validate the pool based on asset type and chain
-        Rx.iif(
-          () => isTradeAsset(asset) || isSynthAsset(asset),
-
-          // Use midgardPoolsService for THORChain, else mayaMidgardPoolsService for other chains
-          dex.chain === THORChain
-            ? midgardPoolsService.validatePool$(poolAddresses, chain)
-            : mayaMidgardPoolsService.validatePool$(poolAddresses, chain),
-
-          // Fallback observable if no validation should occur
-          Rx.EMPTY
-        )
+        // Use the appropriate pool validation service based on the chain
+        dex.chain === THORChain
+          ? midgardPoolsService.validatePool$(poolAddresses, chain)
+          : mayaMidgardPoolsService.validatePool$(poolAddresses, chain)
       )
     ),
     // 2. Send swap transaction
