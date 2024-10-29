@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { Squares2X2Icon, ChartPieIcon } from '@heroicons/react/24/outline'
 import { AssetCacao } from '@xchainjs/xchain-mayachain'
-import { MayaChain, ThorChain } from '@xchainjs/xchain-mayachain-query'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import {
@@ -254,48 +253,45 @@ export const PortfolioView: React.FC = (): JSX.Element => {
       nodeInfos,
       RD.fold(
         // Initial loading state
-        () => <></>,
+        () => '',
 
         // Pending state
-        () => <></>,
+        () => '',
 
         // Error state
-        (error) => <>{intl.formatMessage({ id: 'common.error.api.limit' }, { errorMsg: error.message })}</>,
-
+        (error) => intl.formatMessage({ id: 'common.error.api.limit' }, { errorMsg: error.message }),
+        // Success state
         // Success state
         (nodes) => {
           const totals = calculateTotalBondByChain(nodes)
 
-          return (
-            <>
-              {/* Display THOR Chain bond total if it exists */}
-              {totals.THOR.amount().isGreaterThan(0) && (
-                <div>
-                  <strong>{ThorChain}</strong>{' '}
-                  {isPrivate
-                    ? hiddenString
-                    : formatAssetAmountCurrency({
-                        amount: baseToAsset(getValueOfRuneInAsset(totals.THOR, pricePoolDataThor)),
-                        asset: selectedPricePoolThor.asset,
-                        decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
-                      })}
-                </div>
-              )}
-              {/* Display MAYA Chain bond total if it exists */}
-              {totals.MAYA.amount().isGreaterThan(0) && (
-                <div>
-                  <strong>{MayaChain}</strong>{' '}
-                  {isPrivate
-                    ? hiddenString
-                    : formatAssetAmountCurrency({
-                        amount: baseToAsset(getValueOfRuneInAsset(totals.MAYA, pricePoolDataMaya)),
-                        asset: selectedPricePoolMaya.asset,
-                        decimal: isUSDAsset(selectedPricePoolMaya.asset) ? 2 : 4
-                      })}
-                </div>
-              )}
-            </>
-          )
+          // Format THOR and MAYA amounts as strings
+          const thorTotal = totals.THOR.amount().isGreaterThan(0)
+            ? `${
+                isPrivate
+                  ? hiddenString
+                  : formatAssetAmountCurrency({
+                      amount: baseToAsset(getValueOfRuneInAsset(totals.THOR, pricePoolDataThor)),
+                      asset: selectedPricePoolThor.asset,
+                      decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
+                    })
+              }`
+            : ''
+
+          const mayaTotal = totals.MAYA.amount().isGreaterThan(0)
+            ? `${
+                isPrivate
+                  ? hiddenString
+                  : formatAssetAmountCurrency({
+                      amount: baseToAsset(getValueOfRuneInAsset(totals.MAYA, pricePoolDataMaya)),
+                      asset: selectedPricePoolMaya.asset,
+                      decimal: isUSDAsset(selectedPricePoolMaya.asset) ? 2 : 4
+                    })
+              }`
+            : ''
+
+          // Concatenate the strings for THOR and MAYA, separated by a newline if both are present
+          return [thorTotal, mayaTotal].filter(Boolean).join('\n')
         }
       )
     )
@@ -314,7 +310,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
   const { allSharesRD } = usePoolShares()
   const { allSaverProviders } = useAllSaverProviders(poolAsset)
 
-  const renderSharesTotal = useMemo(() => {
+  const renderSharesTotal = useMemo((): string => {
     const sharesTotalRD: BaseAmountRD = FP.pipe(
       RD.combine(allSharesRD, poolDetailsRD),
       RD.map(([poolShares, poolDetails]) => H.getSharesTotal(poolShares, poolDetails, pricePoolDataThor, dex))
@@ -323,27 +319,20 @@ export const PortfolioView: React.FC = (): JSX.Element => {
     return FP.pipe(
       sharesTotalRD,
       RD.fold(
-        // Initial loading state
-        () => <></>,
-        // Pending state
-        () => <></>,
-        // Error state
-        (error) => <>{intl.formatMessage({ id: 'common.error.api.limit' }, { errorMsg: error.message })}</>,
-        // Success state
-        (total) => (
-          <>
-            {isPrivate
-              ? hiddenString
-              : formatAssetAmountCurrency({
-                  amount: baseToAsset(total),
-                  asset: selectedPricePoolThor.asset,
-                  decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
-                })}
-          </>
-        )
+        () => '',
+        () => 'Loading...',
+        (error) => intl.formatMessage({ id: 'common.error.api.limit' }, { errorMsg: error.message }),
+        (total) =>
+          isPrivate
+            ? hiddenString
+            : formatAssetAmountCurrency({
+                amount: baseToAsset(total),
+                asset: selectedPricePoolThor.asset,
+                decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
+              })
       )
     )
-  }, [allSharesRD, dex, intl, isPrivate, poolDetailsRD, pricePoolDataThor, selectedPricePoolThor])
+  }, [allSharesRD, dex, intl, isPrivate, poolDetailsRD, pricePoolDataThor, selectedPricePoolThor.asset])
 
   const allRunePoolProviders = useRunePoolProviders(
     userChains$,
@@ -377,23 +366,20 @@ export const PortfolioView: React.FC = (): JSX.Element => {
       runePoolTotalRD,
       RD.fold(
         // Initial loading state
-        () => <></>,
+        () => '',
         // Pending state
-        () => <></>,
+        () => '',
         // Error state
-        (error) => <>{intl.formatMessage({ id: 'common.error.api.limit' }, { errorMsg: error.message })}</>,
+        (error) => intl.formatMessage({ id: 'common.error.api.limit' }, { errorMsg: error.message }),
         // Success state
-        (total) => (
-          <>
-            {isPrivate
-              ? hiddenString
-              : formatAssetAmountCurrency({
-                  amount: baseToAsset(total),
-                  asset: selectedPricePoolThor.asset,
-                  decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
-                })}
-          </>
-        )
+        (total) =>
+          isPrivate
+            ? hiddenString
+            : formatAssetAmountCurrency({
+                amount: baseToAsset(total),
+                asset: selectedPricePoolThor.asset,
+                decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
+              })
       )
     )
   }, [allRunePoolProviders, intl, isPrivate, selectedPricePoolThor.asset])
@@ -411,23 +397,20 @@ export const PortfolioView: React.FC = (): JSX.Element => {
       saversTotalRD,
       RD.fold(
         // Initial loading state
-        () => <></>,
+        () => '',
         // Pending state
-        () => <></>,
+        () => '',
         // Error state
-        (error) => <>{intl.formatMessage({ id: 'common.error.api.limit' }, { errorMsg: error.message })}</>,
+        (error) => intl.formatMessage({ id: 'common.error.api.limit' }, { errorMsg: error.message }),
         // Success state
-        (total) => (
-          <>
-            {isPrivate
-              ? hiddenString
-              : formatAssetAmountCurrency({
-                  amount: baseToAsset(total),
-                  asset: selectedPricePoolThor.asset,
-                  decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
-                })}
-          </>
-        )
+        (total) =>
+          isPrivate
+            ? hiddenString
+            : formatAssetAmountCurrency({
+                amount: baseToAsset(total),
+                asset: selectedPricePoolThor.asset,
+                decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
+              })
       )
     )
   }, [allSaverProviders, poolDetailsThorRD, selectedPricePoolThor, intl, isPrivate])
@@ -472,16 +455,25 @@ export const PortfolioView: React.FC = (): JSX.Element => {
     })
   }, [balancesByChain, isPrivate])
 
-  const portfolioDatasource = useMemo(
-    () => [
+  const portfolioDatasource = useMemo(() => {
+    // Calculate the total from specified sections
+    const calculatedTotal = [totalBalanceDisplay, renderSharesTotal, renderSaversTotal, renderBondTotal]
+      .map((amount) => parseFloat(amount.replace(/[^0-9.-]+/g, '')))
+      .reduce((acc, num) => (!isNaN(num) ? acc + num : acc), 0)
+
+    return [
       { key: '1', section: 'Wallet', amount: totalBalanceDisplay, action: 'Manage' },
       { key: '2', section: 'LP Shares', amount: renderSharesTotal, action: 'Manage' },
       { key: '3', section: 'Savers', amount: renderSaversTotal, action: 'Manage' },
       { key: '4', section: 'Bonds', amount: renderBondTotal, action: 'Manage' },
-      { key: '5', section: 'Total', amount: intl.formatMessage({ id: 'common.comingSoon' }), action: 'Manage' }
-    ],
-    [totalBalanceDisplay, renderSharesTotal, renderSaversTotal, renderBondTotal, intl]
-  )
+      {
+        key: '5',
+        section: 'Total',
+        amount: calculatedTotal,
+        action: 'Manage'
+      }
+    ]
+  }, [totalBalanceDisplay, renderSharesTotal, renderSaversTotal, renderBondTotal])
 
   const cardItemInfo = useMemo(
     () => [
