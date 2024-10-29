@@ -29,6 +29,7 @@ type Props = {
   reloadNodeInfos: FP.Lazy<void>
   className?: string
   walletAddresses: Record<'THOR' | 'MAYA', WalletAddressInfo[]>
+  watchList: string[]
 }
 
 enum BondsViewMode {
@@ -48,7 +49,8 @@ export const Bonds: React.FC<Props> = ({
   addWatchlist,
   reloadNodeInfos,
   walletAddresses,
-  className
+  className,
+  watchList
 }) => {
   const [viewMode, setViewMode] = useState(BondsViewMode.All)
   const intl = useIntl()
@@ -106,8 +108,24 @@ export const Bonds: React.FC<Props> = ({
         loading={loading}
       />
     ),
-    [goToAction, goToNode, network, addWatchlist, removeNode, walletAddresses]
+    [addWatchlist, removeNode, goToNode, goToAction, network, walletAddresses]
   )
+  const filteredNodes = useMemo(() => {
+    if (viewMode === BondsViewMode.Watchlist) {
+      return nodes
+        .map((node) => ({
+          ...node,
+          bondProviders: {
+            ...node.bondProviders,
+            providers: node.bondProviders.providers.filter((provider) =>
+              watchList.includes(provider.bondAddress.toLowerCase())
+            )
+          }
+        }))
+        .filter((node) => node.bondProviders.providers.length > 0) // Keep nodes with at least one matching provider
+    }
+    return nodes
+  }, [viewMode, nodes, watchList])
 
   const renderNodeInfos = useMemo(() => {
     const emptyList: NodeInfos = []
@@ -131,11 +149,11 @@ export const Bonds: React.FC<Props> = ({
         ),
         (nodes) => {
           prevNodes.current = O.some(nodes)
-          return renderTable(nodes)
+          return renderTable(filteredNodes)
         }
       )
     )
-  }, [intl, nodesRD, reloadNodeInfos, renderTable])
+  }, [filteredNodes, intl, nodesRD, reloadNodeInfos, renderTable])
 
   const disableForm = useMemo(() => RD.isPending(nodesRD) || RD.isFailure(nodesRD), [nodesRD])
 

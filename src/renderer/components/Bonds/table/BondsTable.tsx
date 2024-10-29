@@ -50,7 +50,6 @@ export const BondsTable: React.FC<Props> = ({
 }) => {
   const intl = useIntl()
   const [nodeToRemove, setNodeToRemove] = useState<O.Option<Address>>(O.none)
-
   const columns: ColumnType<NodeInfo>[] = useMemo(
     () => [
       {
@@ -391,7 +390,7 @@ export const BondsTable: React.FC<Props> = ({
                       })}
                     </Styled.TextLabel>
                     <Styled.WatchlistButton>
-                      <DesktopOutlined />
+                      <DesktopOutlined onClick={() => addWatchlist(provider.bondAddress, network)} />
                     </Styled.WatchlistButton>
                   </div>
                   <div className="mt-2 flex items-center justify-between">

@@ -4,6 +4,7 @@ import { Meta, Story } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { Address, baseAmount } from '@xchainjs/xchain-util'
 
+import { addBondProvidersAddress } from '../../../services/storage/userBondProviders'
 import { NodeStatusEnum } from '../../../services/thorchain/types'
 import { BondsTable } from './BondsTable'
 
@@ -54,7 +55,7 @@ export const Default: Story = () => {
     <BondsTable
       network={Network.Testnet}
       // TODO: update stories for Watchlist
-      addWatchlist={() => {}}
+      addWatchlist={addBondProvidersAddress}
       removeNode={removeNode}
       goToNode={(node) => console.log('go to ', node)}
       nodes={nodesList.map((address) => mockNodeInfo(address))}

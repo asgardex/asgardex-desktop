@@ -5,6 +5,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { Address, baseAmount } from '@xchainjs/xchain-util'
 
 import { AddressValidation } from '../../services/clients'
+import { addBondProvidersAddress } from '../../services/storage/userBondProviders'
 import { NodeStatusEnum } from '../../services/thorchain/types'
 import { Bonds as Component } from './Bonds'
 
@@ -50,13 +51,14 @@ export const Default: StoryFn = () => {
       network={Network.Testnet}
       addNode={addNode}
       // TODO: Thorianite
-      addWatchlist={() => {}}
+      addWatchlist={addBondProvidersAddress}
       removeNode={removeNode}
       goToNode={(node) => console.log('go to ', node)}
       goToAction={(action) => console.log('go to ', action)}
       reloadNodeInfos={() => console.log('reloadNodeInfos')}
       nodes={RD.success(nodesList.map((address) => mockNodeInfo(address)))}
       walletAddresses={mockWalletAddresses}
+      watchList={[]}
     />
   )
 }
