@@ -295,7 +295,7 @@ export const BondsTable: React.FC<Props> = ({
                           <RemoveAddressIcon onClick={() => removeWatchlist(provider.bondAddress, network)} />
                         </Styled.DeleteButton>
                       ) : (
-                        <Styled.WatchlistButton isMonitoring={isMonitoring}>
+                        <Styled.WatchlistButton isMonitoring={isMonitoring ? 'true' : 'false'}>
                           <DesktopOutlined onClick={() => addWatchlist(provider.bondAddress, network)} />
                         </Styled.WatchlistButton>
                       )}

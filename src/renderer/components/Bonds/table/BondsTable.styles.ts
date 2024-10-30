@@ -58,7 +58,7 @@ export const TextLabel = styled(UILabel).attrs({ textTransform: 'uppercase' })`
 `
 
 export const WatchlistButton = styled(UIButton).attrs({ typevalue: 'transparent' })<
-  ButtonProps & { isMonitoring?: boolean }
+  ButtonProps & { isMonitoring?: 'true' | 'false' }
 >`
   &.ant-btn {
     min-width: auto;
