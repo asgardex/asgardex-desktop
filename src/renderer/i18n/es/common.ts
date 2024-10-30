@@ -200,7 +200,8 @@ const common: CommonMessages = {
   'common.completeLp': 'Completar Lp',
   'common.asset.quickSelect': 'Selección Rápida L1',
   'common.asset.chooseAsset': 'Elige un activo',
-  'common.comingSoon': 'Próximamente'
+  'common.comingSoon': 'Próximamente',
+  'common.watchlist': 'Lista de seguimiento'
 }
 
 export default common

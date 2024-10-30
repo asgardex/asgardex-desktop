@@ -3,6 +3,7 @@ import { PoolsStorageEncoded } from './api/io'
 import {
   StoreFilesContent,
   UserAssetStorage,
+  UserBondProvidersStorage,
   UserChainStorage,
   UserNodesStorage,
   UserTrustedAddressStorage
@@ -50,6 +51,15 @@ const USER_NODES_STORAGE_VERSION = '1'
 
 export const USER_NODES_STORAGE_DEFAULT: UserNodesStorage = {
   version: USER_NODES_STORAGE_VERSION,
+  mainnet: [],
+  stagenet: [],
+  testnet: []
+}
+// increase it by `1` if you want to ignore previous version of `UserNodesStorage`
+const USER_BOND_PROVIDERS_STORAGE_VERSION = '1'
+
+export const USER_BOND_PROVIDERS_STORAGE_DEFAULT: UserBondProvidersStorage = {
+  version: USER_BOND_PROVIDERS_STORAGE_VERSION,
   mainnet: [],
   stagenet: [],
   testnet: []
@@ -110,5 +120,6 @@ export const DEFAULT_STORAGES: StoreFilesContent = {
   userAddresses: ADDRESS_STORAGE_DEFAULT,
   userAssets: ASSETS_STORAGE_DEFAULT,
   userNodes: USER_NODES_STORAGE_DEFAULT,
+  userBondProviders: USER_BOND_PROVIDERS_STORAGE_DEFAULT,
   pools: POOLS_STORAGE_DEFAULT
 }

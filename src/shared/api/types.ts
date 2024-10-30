@@ -50,6 +50,7 @@ export type UserChainStorage = EnabledChains & StorageVersion
 export type UserTrustedAddressStorage = TrustedAddresses & StorageVersion
 export type UserAssetStorage = AddedAssets & StorageVersion
 export type UserNodesStorage = Readonly<Record<Network, Address[]> & StorageVersion>
+export type UserBondProvidersStorage = Readonly<Record<Network, Address[]> & StorageVersion>
 export type CommonStorage = Readonly<
   {
     locale: Locale
@@ -75,6 +76,7 @@ export type StoreFilesContent = Readonly<{
   userAddresses: UserTrustedAddressStorage
   userAssets: UserAssetStorage
   userNodes: UserNodesStorage
+  userBondProviders: UserBondProvidersStorage
   pools: PoolsStorageEncoded
 }>
 
@@ -209,6 +211,7 @@ declare global {
     apiHDWallet: ApiHDWallet
     apiCommonStorage: ApiFileStoreService<StoreFileData<'common'>>
     apiUserNodesStorage: ApiFileStoreService<StoreFileData<'userNodes'>>
+    apiUserBondProvidersStorage: ApiFileStoreService<StoreFileData<'userBondProviders'>>
     apiChainStorage: ApiFileStoreService<StoreFileData<'userChains'>>
     apiAddressStorage: ApiFileStoreService<StoreFileData<'userAddresses'>>
     apiAssetStorage: ApiFileStoreService<StoreFileData<'userAssets'>>

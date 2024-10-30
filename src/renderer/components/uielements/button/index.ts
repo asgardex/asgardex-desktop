@@ -1,6 +1,7 @@
 export * from './Button.types'
 export { Button } from './Button'
 export { FlatButton } from './FlatButton'
+export { FilterButton } from './FilterButton'
 export { BorderButton } from './BorderButton'
 export { LinkButton } from './LinkButton'
 export { TextButton } from './TextButton'

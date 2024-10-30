@@ -10,7 +10,8 @@ import {
   IPCExportKeystoreParams,
   UserChainStorage,
   UserAssetStorage,
-  UserTrustedAddressStorage
+  UserTrustedAddressStorage,
+  UserBondProvidersStorage
 } from '../api/types'
 import { ApiFileStoreService, CommonStorage } from '../api/types'
 import { Locale } from '../i18n/types'
@@ -102,6 +103,19 @@ export const apiUserNodesStorage: ApiFileStoreService<UserNodesStorage> = {
   save: (_: Partial<CommonStorage>) => Promise.resolve(userNodeStorageData),
   remove: () => Promise.resolve(console.log('mock remove user node storage data')),
   get: () => Promise.resolve(userNodeStorageData),
+  exists: () => Promise.resolve(true)
+}
+const userBondProvidersStorageData: UserBondProvidersStorage = {
+  mainnet: [],
+  stagenet: [],
+  testnet: [],
+  version: '1'
+}
+
+export const apiUserBondProvidersStorage: ApiFileStoreService<UserBondProvidersStorage> = {
+  save: (_: Partial<CommonStorage>) => Promise.resolve(userBondProvidersStorageData),
+  remove: () => Promise.resolve(console.log('mock remove user bond provider storage data')),
+  get: () => Promise.resolve(userBondProvidersStorageData),
   exists: () => Promise.resolve(true)
 }
 
