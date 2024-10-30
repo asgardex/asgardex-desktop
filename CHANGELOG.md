@@ -7,7 +7,7 @@
 
 ## Updates/Fixes
 
--
+- update bonds view under wallet tab [#445](https://github.com/asgardex/asgardex-desktop/pull/452)
 
 # 1.22.7 (2024-10-24)
 
