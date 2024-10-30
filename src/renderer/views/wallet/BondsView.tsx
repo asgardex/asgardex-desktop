@@ -25,7 +25,11 @@ import { useNodeInfos } from '../../hooks/useNodeInfos'
 import { useValidateAddress } from '../../hooks/useValidateAddress'
 import * as walletRoutes from '../../routes/wallet'
 import { DEFAULT_NETWORK } from '../../services/const'
-import { addBondProvidersAddress, userBondProviders$ } from '../../services/storage/userBondProviders'
+import {
+  addBondProvidersAddress,
+  removeBondProvidersByAddress,
+  userBondProviders$
+} from '../../services/storage/userBondProviders'
 import { balancesState$ } from '../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/wallet/const'
 import { WalletBalances } from '../../services/wallet/types'
@@ -177,6 +181,7 @@ export const BondsView: React.FC = (): JSX.Element => {
         addressValidationMaya={validateAddressMaya}
         nodes={nodeInfos}
         addWatchlist={addBondProvidersAddress}
+        removeWatchlist={removeBondProvidersByAddress}
         removeNode={removeNodeByAddress}
         goToNode={goToExplorerNodeAddress}
         goToAction={routeToAction}

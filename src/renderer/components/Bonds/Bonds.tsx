@@ -24,6 +24,7 @@ type Props = {
   network: Network
   addNode: (node: Address, network: Network) => void
   addWatchlist: (nodeOrBond: Address, network: Network) => void
+  removeWatchlist: (bondProviders: Address, network: Network) => void
   addressValidationThor: AddressValidation
   addressValidationMaya: AddressValidation
   reloadNodeInfos: FP.Lazy<void>
@@ -47,6 +48,7 @@ export const Bonds: React.FC<Props> = ({
   network,
   addNode,
   addWatchlist,
+  removeWatchlist,
   reloadNodeInfos,
   walletAddresses,
   className,
@@ -99,7 +101,9 @@ export const Bonds: React.FC<Props> = ({
       <BondsTable
         className="border-b-1 mb-[25px] border-solid border-gray1 dark:border-gray1d"
         nodes={nodes}
+        watchlist={watchList}
         addWatchlist={addWatchlist}
+        removeWatchlist={removeWatchlist}
         removeNode={removeNode}
         goToNode={goToNode}
         goToAction={goToAction}
@@ -108,7 +112,7 @@ export const Bonds: React.FC<Props> = ({
         loading={loading}
       />
     ),
-    [addWatchlist, removeNode, goToNode, goToAction, network, walletAddresses]
+    [watchList, addWatchlist, removeWatchlist, removeNode, goToNode, goToAction, network, walletAddresses]
   )
   const filteredNodes = useMemo(() => {
     if (viewMode === BondsViewMode.Watchlist) {

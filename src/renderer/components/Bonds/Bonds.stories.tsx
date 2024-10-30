@@ -5,7 +5,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { Address, baseAmount } from '@xchainjs/xchain-util'
 
 import { AddressValidation } from '../../services/clients'
-import { addBondProvidersAddress } from '../../services/storage/userBondProviders'
+import { addBondProvidersAddress, removeBondProvidersByAddress } from '../../services/storage/userBondProviders'
 import { NodeStatusEnum } from '../../services/thorchain/types'
 import { Bonds as Component } from './Bonds'
 
@@ -52,6 +52,7 @@ export const Default: StoryFn = () => {
       addNode={addNode}
       // TODO: Thorianite
       addWatchlist={addBondProvidersAddress}
+      removeWatchlist={removeBondProvidersByAddress}
       removeNode={removeNode}
       goToNode={(node) => console.log('go to ', node)}
       goToAction={(action) => console.log('go to ', action)}
