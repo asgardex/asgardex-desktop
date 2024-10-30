@@ -1,7 +1,8 @@
 import Transport from '@ledgerhq/hw-transport'
 import { FeeOption, FeeRate, Network, TxHash } from '@xchainjs/xchain-client'
-import { AssetLTC, ClientLedger, defaultLtcParams } from '@xchainjs/xchain-litecoin'
+import { AssetLTC, BitgoProviders, ClientLedger, LTCChain, defaultLtcParams } from '@xchainjs/xchain-litecoin'
 import { Address, BaseAmount, baseAmount } from '@xchainjs/xchain-util'
+import { BlockcypherNetwork, BlockcypherProvider, UtxoOnlineDataProviders } from '@xchainjs/xchain-utxo-providers'
 import * as E from 'fp-ts/lib/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
@@ -19,7 +20,8 @@ export const send = async ({
   feeOption,
   memo,
   walletAccount,
-  walletIndex
+  walletIndex,
+  apiKey
 }: {
   transport: Transport
   network: Network
@@ -31,6 +33,7 @@ export const send = async ({
   memo?: string
   walletAccount: number
   walletIndex: number
+  apiKey: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   if (!sender) {
     return E.left({
@@ -38,11 +41,37 @@ export const send = async ({
       msg: `Getting sender address using Ledger failed`
     })
   }
+  //======================
+  // Blockcypher
+  //======================
+  const testnetBlockcypherProvider = new BlockcypherProvider(
+    'https://api.blockcypher.com/v1',
+    LTCChain,
+    AssetLTC,
+    8,
+    BlockcypherNetwork.LTC,
+    apiKey || ''
+  )
+
+  const mainnetBlockcypherProvider = new BlockcypherProvider(
+    'https://api.blockcypher.com/v1',
+    LTCChain,
+    AssetLTC,
+    8,
+    BlockcypherNetwork.LTC,
+    apiKey || ''
+  )
+  const BlockcypherDataProviders: UtxoOnlineDataProviders = {
+    [Network.Testnet]: testnetBlockcypherProvider,
+    [Network.Stagenet]: mainnetBlockcypherProvider,
+    [Network.Mainnet]: mainnetBlockcypherProvider
+  }
 
   try {
     const clientLedger = new ClientLedger({
       transport,
       ...defaultLtcParams,
+      dataProviders: [BlockcypherDataProviders, BitgoProviders],
       rootDerivationPaths: getDerivationPaths(walletAccount, network),
       network: network
     })
