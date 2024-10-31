@@ -6,6 +6,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { blockcypherApiKey } from '../../../shared/api/blockcypher'
 import { IPCLedgerSendTxParams, ipcLedgerSendTxParamsIO } from '../../../shared/api/io'
 import { LedgerError } from '../../../shared/api/types'
 import { AssetLTC } from '../../../shared/utils/asset'
@@ -37,7 +38,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       walletIndex,
       nodeUrl: undefined,
       hdMode: 'default',
-      apiKey: undefined
+      apiKey: blockcypherApiKey
     }
     const encoded = ipcLedgerSendTxParamsIO.encode(sendLedgerTxParams)
 

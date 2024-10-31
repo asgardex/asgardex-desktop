@@ -96,7 +96,15 @@ const chainSendFunctions: Record<
     }
     return DOGE.send({ ...params, apiKey: params.apiKey })
   },
-  [DASHChain]: async (params) => DASH.send(params),
+  [DASHChain]: async (params) => {
+    if (params.apiKey === undefined) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `${chainToString(params.asset.chain)} needs an api key`
+      })
+    }
+    return DASH.send({ ...params, apiKey: params.apiKey })
+  },
   [ETHChain]: async (params) => {
     if (!params.asset) {
       return E.left({

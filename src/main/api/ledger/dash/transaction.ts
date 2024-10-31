@@ -1,51 +1,21 @@
 import Transport from '@ledgerhq/hw-transport'
 import { FeeRate, Network, TxHash } from '@xchainjs/xchain-client'
-import { AssetDASH, ClientLedger, DASHChain, DASH_DECIMAL, defaultDashParams } from '@xchainjs/xchain-dash'
-import { Address, BaseAmount } from '@xchainjs/xchain-util'
 import {
-  BitgoProvider,
-  BlockcypherNetwork,
-  BlockcypherProvider,
-  UtxoOnlineDataProviders
-} from '@xchainjs/xchain-utxo-providers'
+  AssetDASH,
+  BitgoProviders,
+  ClientLedger,
+  DASHChain,
+  DASH_DECIMAL,
+  defaultDashParams
+} from '@xchainjs/xchain-dash'
+import { Address, BaseAmount } from '@xchainjs/xchain-util'
+import { BlockcypherNetwork, BlockcypherProvider, UtxoOnlineDataProviders } from '@xchainjs/xchain-utxo-providers'
 import * as E from 'fp-ts/lib/Either'
 
-import { blockcypherApiKey } from '../../../../shared/api/blockcypher'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
 import { removeAffiliate } from '../doge/common'
 import { getDerivationPaths } from './common'
-
-//======================
-// Bitgo
-//======================
-const mainnetBitgoProvider = new BitgoProvider({
-  baseUrl: 'https://app.bitgo.com',
-  chain: DASHChain
-})
-
-export const BitgoProviders: UtxoOnlineDataProviders = {
-  [Network.Testnet]: undefined,
-  [Network.Stagenet]: mainnetBitgoProvider,
-  [Network.Mainnet]: mainnetBitgoProvider
-}
-//======================
-// Block Cypher
-//======================
-
-const mainnetBlockcypherProvider = new BlockcypherProvider(
-  'https://api.blockcypher.com/v1',
-  DASHChain,
-  AssetDASH,
-  DASH_DECIMAL,
-  BlockcypherNetwork.DASH,
-  blockcypherApiKey || ''
-)
-export const BlockcypherDataProviders: UtxoOnlineDataProviders = {
-  [Network.Testnet]: undefined,
-  [Network.Stagenet]: mainnetBlockcypherProvider,
-  [Network.Mainnet]: mainnetBlockcypherProvider
-}
 
 /**
  * Sends DASH tx using Ledger
@@ -59,7 +29,8 @@ export const send = async ({
   feeRate,
   memo,
   walletAccount,
-  walletIndex
+  walletIndex,
+  apiKey
 }: {
   transport: Transport
   network: Network
@@ -70,12 +41,30 @@ export const send = async ({
   memo?: string
   walletAccount: number
   walletIndex: number
+  apiKey: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   if (!sender) {
     return E.left({
       errorId: LedgerErrorId.GET_ADDRESS_FAILED,
       msg: `Getting sender address using Ledger failed`
     })
+  }
+  //======================
+  // Block Cypher
+  //======================
+
+  const mainnetBlockcypherProvider = new BlockcypherProvider(
+    'https://api.blockcypher.com/v1',
+    DASHChain,
+    AssetDASH,
+    DASH_DECIMAL,
+    BlockcypherNetwork.DASH,
+    apiKey || ''
+  )
+  const BlockcypherDataProviders: UtxoOnlineDataProviders = {
+    [Network.Testnet]: undefined,
+    [Network.Stagenet]: mainnetBlockcypherProvider,
+    [Network.Mainnet]: mainnetBlockcypherProvider
   }
 
   try {

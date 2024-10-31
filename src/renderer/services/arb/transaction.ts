@@ -88,10 +88,10 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
                   const tx: EvmTxParams = {
                     asset: nativeAsset.asset,
                     amount: isERC20 ? baseAmount(0, nativeAsset.decimal) : params.amount,
-                    memo: unsignedTx.data, // Use the `data` from unsignedTx as the memo
-                    recipient: router, // Assuming the router address is passed in params
-                    gasPrice: gasPrices[params.feeOption], // Use the appropriate gas price option
-                    isMemoEncoded: true // Memo is encoded
+                    memo: unsignedTx.data,
+                    recipient: router,
+                    gasPrice: gasPrices[params.feeOption],
+                    isMemoEncoded: true
                   }
 
                   // Estimate gas and return the transfer transaction as an observable
@@ -99,8 +99,8 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
                     RxOp.switchMap((gasLimit) =>
                       Rx.from(
                         client.transfer({
-                          ...tx, // Spread the original tx object
-                          gasLimit // Use the estimated gas limit
+                          ...tx,
+                          gasLimit
                         })
                       )
                     )

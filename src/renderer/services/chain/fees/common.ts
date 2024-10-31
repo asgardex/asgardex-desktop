@@ -71,13 +71,38 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
   switch (asset.chain) {
     case DOGEChain:
       return FP.pipe(
-        DOGE.feesWithRates$(memo),
-        liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
+        DOGE.address$.pipe(
+          RxOp.switchMap(
+            O.fold(
+              () => Rx.of(RD.failure(new Error('No address available'))),
+              (address) =>
+                FP.pipe(
+                  DOGE.feesWithRates$(address.address, memo),
+                  liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
+                )
+            )
+          ),
+          RxOp.catchError((error) => Rx.of(RD.failure(error))),
+          RxOp.startWith(RD.pending)
+        )
       )
+
     case LTCChain:
       return FP.pipe(
-        LTC.feesWithRates$(memo),
-        liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
+        LTC.address$.pipe(
+          RxOp.switchMap(
+            O.fold(
+              () => Rx.of(RD.failure(new Error('No address available'))),
+              (address) =>
+                FP.pipe(
+                  LTC.feesWithRates$(address.address, memo),
+                  liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
+                )
+            )
+          ),
+          RxOp.catchError((error) => Rx.of(RD.failure(error))),
+          RxOp.startWith(RD.pending)
+        )
       )
     case GAIAChain:
       return FP.pipe(
@@ -86,13 +111,37 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
       )
     case BTCChain:
       return FP.pipe(
-        BTC.feesWithRates$(memo),
-        liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
+        BTC.address$.pipe(
+          RxOp.switchMap(
+            O.fold(
+              () => Rx.of(RD.failure(new Error('No address available'))),
+              (address) =>
+                FP.pipe(
+                  BTC.feesWithRates$(address.address, memo),
+                  liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
+                )
+            )
+          ),
+          RxOp.catchError((error) => Rx.of(RD.failure(error))),
+          RxOp.startWith(RD.pending)
+        )
       )
     case BCHChain:
       return FP.pipe(
-        BCH.feesWithRates$(memo),
-        liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
+        BCH.address$.pipe(
+          RxOp.switchMap(
+            O.fold(
+              () => Rx.of(RD.failure(new Error('No address available'))),
+              (address) =>
+                FP.pipe(
+                  BCH.feesWithRates$(address.address, memo),
+                  liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
+                )
+            )
+          ),
+          RxOp.catchError((error) => Rx.of(RD.failure(error))),
+          RxOp.startWith(RD.pending)
+        )
       )
     case THORChain:
       return FP.pipe(
@@ -136,8 +185,20 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
       )
     case DASHChain:
       return FP.pipe(
-        DASH.feesWithRates$(memo),
-        liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
+        DASH.address$.pipe(
+          RxOp.switchMap(
+            O.fold(
+              () => Rx.of(RD.failure(new Error('No address available'))),
+              (address) =>
+                FP.pipe(
+                  DASH.feesWithRates$(address.address, memo),
+                  liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
+                )
+            )
+          ),
+          RxOp.catchError((error) => Rx.of(RD.failure(error))),
+          RxOp.startWith(RD.pending)
+        )
       )
     default:
       return FP.pipe(
