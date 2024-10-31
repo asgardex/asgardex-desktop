@@ -20,15 +20,15 @@ import {
   ipcLedgerSendTxParamsIO
 } from '../../../shared/api/io'
 import { LedgerError } from '../../../shared/api/types'
-import { DEPOSIT_EXPIRATION_OFFSET } from '../../../shared/ethereum/const'
 import { getBlocktime } from '../../../shared/evm/provider'
 import { isError, isEvmHDMode, isLedgerWallet } from '../../../shared/utils/guard'
-import { addressInERC20Whitelist, getEthAssetAddress, isEthTokenAsset } from '../../helpers/assetHelper'
+import { addressInERC20Whitelist, getEVMAssetAddress, isEVMTokenAsset } from '../../helpers/assetHelper'
 import { sequenceSOption } from '../../helpers/fpHelpers'
 import { LiveData } from '../../helpers/rx/liveData'
 import { Network$ } from '../app/types'
 import { ChainTxFeeOption } from '../chain/const'
 import * as C from '../clients'
+import { DEPOSIT_EXPIRATION_OFFSET } from '../evm/const'
 import {
   ApproveParams,
   TransactionService,
@@ -37,8 +37,8 @@ import {
   IsApproveParams,
   SendTxParams
 } from '../evm/types'
+import { Client$, Client as EthClient } from '../evm/types'
 import { ApiError, ErrorId, TxHashLD } from '../wallet/types'
-import { Client$, Client as EthClient } from './types'
 
 export const createTransactionService = (client$: Client$, network$: Network$): TransactionService => {
   const common = C.createTransactionService(client$)
@@ -58,7 +58,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
     const provider = client.getProvider()
 
     return FP.pipe(
-      sequenceSOption({ address: getEthAssetAddress(params.asset), router: params.router }),
+      sequenceSOption({ address: getEVMAssetAddress(params.asset), router: params.router }),
       O.fold(
         () => failure$(`Invalid values: Asset ${params.asset} / router address ${params.router}`),
         ({ router }) =>
@@ -68,7 +68,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
               blockTime: Rx.from(getBlocktime(provider))
             }),
             RxOp.switchMap(({ gasPrices, blockTime }) => {
-              const isERC20 = isEthTokenAsset(params.asset as TokenAsset)
+              const isERC20 = isEVMTokenAsset(params.asset as TokenAsset)
               const checkSummedContractAddress = isERC20
                 ? ethers.utils.getAddress(getContractAddressFromAsset(params.asset as TokenAsset))
                 : ethers.constants.AddressZero

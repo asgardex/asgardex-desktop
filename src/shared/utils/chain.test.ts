@@ -1,5 +1,6 @@
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -47,6 +48,10 @@ describe('chain', () => {
     it('AVAX', () => {
       expect(chainToString(AVAXChain)).toEqual('Avax')
     })
+    it('BASE', () => {
+      expect(chainToString(BASEChain)).toEqual('Base')
+    })
+
     it('BSC', () => {
       expect(chainToString(BSCChain)).toEqual('BNB Chain (BSC)')
     })

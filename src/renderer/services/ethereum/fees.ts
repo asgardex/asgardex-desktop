@@ -9,22 +9,19 @@ import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { ETHAddress } from '../../../shared/ethereum/const'
 import { isEthAsset } from '../../helpers/assetHelper'
 import { observableState } from '../../helpers/stateHelper'
 import { FeeLD } from '../chain/types'
 import * as C from '../clients'
 import { FeesLD } from '../clients'
+import { ERC20_OUT_TX_GAS_LIMIT, ETH_OUT_TX_GAS_LIMIT, zeroAddress } from '../evm/const'
 import { FeesService, PollInTxFeeParams, ApproveFeeHandler, ApproveParams, TxParams } from '../evm/types'
-import { Client$ } from './types'
-
-export const ETH_OUT_TX_GAS_LIMIT = ethers.BigNumber.from('35609')
-export const ERC20_OUT_TX_GAS_LIMIT = ethers.BigNumber.from('49610')
+import { Client$ } from '../evm/types'
 
 export const createFeesService = (client$: Client$): FeesService => {
   const { get$: reloadFees$, set: reloadFees } = observableState<TxParams>({
     amount: baseAmount(1),
-    recipient: ETHAddress
+    recipient: zeroAddress
   })
 
   const fees$ = (params: TxParams): FeesLD =>

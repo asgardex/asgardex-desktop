@@ -4,6 +4,7 @@ import { DeleteOutlined, ExportOutlined, EyeOutlined, LockOutlined, SearchOutlin
 import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -67,6 +68,7 @@ import {
 import { walletTypeToI18n } from '../../services/wallet/util'
 import { ARB_TOKEN_WHITELIST } from '../../types/generated/mayachain/arberc20whitelist'
 import { AVAX_TOKEN_WHITELIST } from '../../types/generated/thorchain/avaxerc20whitelist'
+import { BASE_TOKEN_WHITELIST } from '../../types/generated/thorchain/baseerc20whitelist'
 import { BSC_TOKEN_WHITELIST } from '../../types/generated/thorchain/bscerc20whitelist'
 import { ERC20_WHITELIST } from '../../types/generated/thorchain/erc20whitelist'
 import { AttentionIcon } from '../icons'
@@ -211,6 +213,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     [GAIAChain]: 0,
     [DOGEChain]: 0,
     [AVAXChain]: 0,
+    [BASEChain]: 0,
     [BSCChain]: 0,
     [MAYAChain]: 0,
     [DASHChain]: 0,
@@ -228,6 +231,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     [GAIAChain]: 0,
     [DOGEChain]: 0,
     [AVAXChain]: 0,
+    [BASEChain]: 0,
     [BSCChain]: 0,
     [MAYAChain]: 0,
     [DASHChain]: 0,
@@ -652,7 +656,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     [ETHChain]: true,
     [AVAXChain]: true,
     [BSCChain]: true,
-    [ARBChain]: true
+    [ARBChain]: true,
+    [BASEChain]: true
   })
 
   const toggleStorageMode = useCallback((chain: Chain) => {
@@ -679,6 +684,11 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
         break
       case AVAXChain:
         matchedAssets = AVAX_TOKEN_WHITELIST.filter(({ asset }) =>
+          asset.symbol.toUpperCase().includes(searchValue)
+        ).map(({ asset }) => asset)
+        break
+      case BASEChain:
+        matchedAssets = BASE_TOKEN_WHITELIST.filter(({ asset }) =>
           asset.symbol.toUpperCase().includes(searchValue)
         ).map(({ asset }) => asset)
         break
@@ -883,7 +893,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                 </div>
 
                 {/* Asset Management Section */}
-                {(chain === ETHChain || chain === AVAXChain || chain === BSCChain || chain === ARBChain) && (
+                {isEvmChain(chain) && (
                   <div className="mx-40px mt-10px flex w-full items-center">
                     <SwitchButton
                       active={!!isAddingByChain[chain]}

@@ -5,6 +5,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { useArbContext } from '../contexts/ArbContext'
 import { useAvaxContext } from '../contexts/AvaxContext'
+import { useBaseContext } from '../contexts/BaseContext'
 import { useBitcoinCashContext } from '../contexts/BitcoinCashContext'
 import { useBitcoinContext } from '../contexts/BitcoinContext'
 import { useBscContext } from '../contexts/BscContext'
@@ -32,6 +33,7 @@ export const useKeystoreClientStates = (): { clientStates: KeystoreClientStates 
   const { clientState$: cosmosClientState$ } = useCosmosContext()
   const { clientState$: bscClientState$ } = useBscContext()
   const { clientState$: avaxClientState$ } = useAvaxContext()
+  const { clientState$: baseClientState$ } = useBaseContext()
   const { clientState$: xrdClientState$ } = useXrdContext()
   const { clientState$: kujiClientState$ } = useKujiContext()
   const { clientState$: dashClientState$ } = useDashContext()
@@ -55,7 +57,8 @@ export const useKeystoreClientStates = (): { clientStates: KeystoreClientStates 
           arb: arbClientState$,
           dash: dashClientState$,
           kuji: kujiClientState$,
-          xrd: xrdClientState$
+          xrd: xrdClientState$,
+          base: baseClientState$
         }),
         liveData.map((_) => true),
         RxOp.startWith(RD.pending)

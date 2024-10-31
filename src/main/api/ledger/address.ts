@@ -2,6 +2,7 @@ import Transport from '@ledgerhq/hw-transport'
 import TransportNodeHidSingleton from '@ledgerhq/hw-transport-node-hid-singleton'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BASEChain } from '@xchainjs/xchain-base'
 import { AddressFormat, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -23,17 +24,34 @@ import { IPCLedgerAdddressParams, LedgerError, LedgerErrorId } from '../../../sh
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { isError, isEvmHDMode } from '../../../shared/utils/guard'
 import { HDMode, WalletAddress } from '../../../shared/wallet/types'
-import { getAddress as getARBAddress, verifyAddress as verifyARBAddress } from './arb/address'
-import { getAddress as getAVAXAddress, verifyAddress as verifyAVAXAddress } from './avax/address'
 import { getAddress as getBTCAddress, verifyAddress as verifyBTCAddress } from './bitcoin/address'
 import { getAddress as getBCHAddress, verifyAddress as verifyBCHAddress } from './bitcoincash/address'
-import { getAddress as getBSCAddress, verifyAddress as verifyBSCAddress } from './bsc/address'
 import { getAddress as getCOSMOSAddress, verifyAddress as verifyCOSMOSAddress } from './cosmos/address'
 import { getAddress as getDASHAddress, verifyAddress as verifyDASHAddress } from './dash/address'
 import { getAddress as getDOGEAddress, verifyAddress as verifyDOGEAddress } from './doge/address'
-import { getAddress as getETHAddress, verifyAddress as verifyETHAddress } from './ethereum/address'
+import { getEVMAddress, verifyEVMAddress } from './evm/address'
 import { getAddress as getLTCAddress, verifyAddress as verifyLTCAddress } from './litecoin/address'
 import { getAddress as getTHORAddress, verifyAddress as verifyTHORAddress } from './thorchain/address'
+
+const handleEVMChain = (
+  chain: Chain,
+  transport: Transport,
+  network: Network,
+  walletAccount: number,
+  walletIndex: number,
+  hdMode?: HDMode,
+  errorMsg = 'Invalid HD mode for EVM chain'
+) => {
+  if (!isEvmHDMode(hdMode)) {
+    return Promise.resolve(
+      E.left({
+        errorId: LedgerErrorId.INVALID_ETH_DERIVATION_MODE,
+        msg: errorMsg
+      })
+    )
+  }
+  return getEVMAddress({ chain, transport, walletAccount, walletIndex, evmHDMode: hdMode, network })
+}
 
 const chainAddressFunctions: Record<
   Chain,
@@ -46,56 +64,24 @@ const chainAddressFunctions: Record<
     addressFormat?: AddressFormat
   ) => Promise<E.Either<LedgerError, WalletAddress>>
 > = {
+  [ETHChain]: (transport, network, walletAccount, walletIndex, hdMode) =>
+    handleEVMChain(ETHChain, transport, network, walletAccount, walletIndex, hdMode, 'Invalid ETH HD mode'),
+  [AVAXChain]: (transport, network, walletAccount, walletIndex, hdMode) =>
+    handleEVMChain(AVAXChain, transport, network, walletAccount, walletIndex, hdMode, 'Invalid AVAX HD mode'),
+  [BSCChain]: (transport, network, walletAccount, walletIndex, hdMode) =>
+    handleEVMChain(BSCChain, transport, network, walletAccount, walletIndex, hdMode, 'Invalid BSC HD mode'),
+  [ARBChain]: (transport, network, walletAccount, walletIndex, hdMode) =>
+    handleEVMChain(ARBChain, transport, network, walletAccount, walletIndex, hdMode, 'Invalid ARB HD mode'),
+  [BASEChain]: (transport, network, walletAccount, walletIndex, hdMode) =>
+    handleEVMChain(BASEChain, transport, network, walletAccount, walletIndex, hdMode, 'Invalid BASE HD mode'),
+
+  // Non-EVM chains
   [THORChain]: getTHORAddress,
   [BTCChain]: getBTCAddress,
   [LTCChain]: getLTCAddress,
   [BCHChain]: getBCHAddress,
   [DOGEChain]: getDOGEAddress,
   [DASHChain]: getDASHAddress,
-  [ETHChain]: (transport, network, walletAccount, walletIndex, hdMode) => {
-    if (!isEvmHDMode(hdMode)) {
-      return Promise.resolve(
-        E.left({
-          errorId: LedgerErrorId.INVALID_ETH_DERIVATION_MODE,
-          msg: `Invalid 'EthHDMode' - needed for ETH to get Ledger address`
-        })
-      )
-    }
-    return getETHAddress({ transport, walletAccount, walletIndex, evmHDMode: hdMode, network })
-  },
-  [AVAXChain]: (transport, network, walletAccount, walletIndex, hdMode) => {
-    if (!isEvmHDMode(hdMode)) {
-      return Promise.resolve(
-        E.left({
-          errorId: LedgerErrorId.INVALID_ETH_DERIVATION_MODE,
-          msg: `Invalid 'AvaxHDMode' - needed for AVAX to get Ledger address`
-        })
-      )
-    }
-    return getAVAXAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
-  },
-  [BSCChain]: (transport, network, walletAccount, walletIndex, hdMode) => {
-    if (!isEvmHDMode(hdMode)) {
-      return Promise.resolve(
-        E.left({
-          errorId: LedgerErrorId.INVALID_ETH_DERIVATION_MODE,
-          msg: `Invalid 'BscHDMode' - needed for BSC to get Ledger address`
-        })
-      )
-    }
-    return getBSCAddress({ transport, network, walletAccount, walletIndex, evmHDMode: hdMode })
-  },
-  [ARBChain]: (transport, network, walletAccount, walletIndex, hdMode) => {
-    if (!isEvmHDMode(hdMode)) {
-      return Promise.resolve(
-        E.left({
-          errorId: LedgerErrorId.INVALID_ETH_DERIVATION_MODE,
-          msg: `Invalid 'ArbHDMode' - needed for ARB to get Ledger address`
-        })
-      )
-    }
-    return getARBAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
-  },
   [GAIAChain]: getCOSMOSAddress
 }
 
@@ -168,24 +154,20 @@ export const verifyLedgerAddress = async ({
     case DASHChain:
       result = await verifyDASHAddress({ transport, network, walletAccount, walletIndex })
       break
-    case ETHChain: {
-      if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EthHDMode' - needed for ETH to verify Ledger address`)
-      result = await verifyETHAddress({ transport, walletAccount, walletIndex, evmHDMode: hdMode, network })
-      break
-    }
-    case AVAXChain: {
-      if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for AVAX to verify Ledger address`)
-      result = await verifyAVAXAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
-      break
-    }
-    case BSCChain: {
-      if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for BSC to verify Ledger address`)
-      result = await verifyBSCAddress({ transport, walletAccount, walletIndex, evmHDMode: hdMode })
-      break
-    }
+    case ETHChain:
+    case AVAXChain:
+    case BASEChain:
+    case BSCChain:
     case ARBChain: {
-      if (!isEvmHDMode(hdMode)) throw Error(`Invaid 'EvmHDMode' - needed for ARB to verify Ledger address`)
-      result = await verifyARBAddress({ transport, walletAccount, walletIndex, evmHdMode: hdMode })
+      if (!isEvmHDMode(hdMode)) throw Error(`Invalid 'EvmHDMode' - needed for ${chain} to verify Ledger address`)
+      result = await verifyEVMAddress({
+        chain,
+        transport,
+        walletAccount,
+        walletIndex,
+        evmHDMode: hdMode,
+        network
+      })
       break
     }
     case GAIAChain:

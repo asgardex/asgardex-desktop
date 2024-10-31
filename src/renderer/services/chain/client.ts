@@ -1,5 +1,6 @@
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -22,6 +23,7 @@ import { Dex } from '../../../shared/api/types'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'
+import * as BASE from '../base'
 import * as BTC from '../bitcoin'
 import * as BCH from '../bitcoincash'
 import * as BSC from '../bsc'
@@ -55,6 +57,8 @@ export const clientByChain$ = (chain: Chain): XChainClient$ => {
       return ARB.client$
     case AVAXChain:
       return AVAX.client$
+    case BASEChain:
+      return BASE.client$
     case BSCChain:
       return BSC.client$
     case THORChain:
@@ -101,6 +105,8 @@ export const clientByAsset$ = (asset: AnyAsset, dex: Dex): XChainClient$ => {
       return ARB.client$
     case AVAXChain:
       return AVAX.client$
+    case BASEChain:
+      return BASE.client$
     case BSCChain:
       return BSC.client$
     case THORChain:

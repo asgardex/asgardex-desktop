@@ -1,5 +1,6 @@
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -30,7 +31,8 @@ export const CHAIN_STRINGS: Record<Chain, string> = {
   [DASHChain]: 'DASH',
   [KUJIChain]: 'KUJI',
   [RADIXChain]: 'RADIX',
-  [SOLChain]: 'Solana'
+  [SOLChain]: 'Solana',
+  [BASEChain]: 'Base'
 }
 
 export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
@@ -48,7 +50,8 @@ export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
   [DASHChain]: CHAIN_STRINGS[DASHChain],
   [KUJIChain]: CHAIN_STRINGS[KUJIChain],
   [RADIXChain]: CHAIN_STRINGS[RADIXChain],
-  [SOLChain]: CHAIN_STRINGS[SOLChain]
+  [SOLChain]: CHAIN_STRINGS[SOLChain],
+  [BASEChain]: CHAIN_STRINGS[BASEChain]
 }
 
 export type EnabledChain = keyof typeof DEFAULT_ENABLED_CHAINS

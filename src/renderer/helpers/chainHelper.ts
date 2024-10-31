@@ -1,5 +1,6 @@
 import { ARBChain, AssetAETH } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
+import { BASEChain, AssetBETH } from '@xchainjs/xchain-base'
 import { AssetBTC, BTCChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDBTC } from '@xchainjs/xchain-bitcoin'
 import { AssetBCH, BCHChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDBCH } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC, BSCChain } from '@xchainjs/xchain-bsc'
@@ -34,7 +35,8 @@ const chainAssets: Record<Chain, Asset> = {
   KUJI: AssetKUJI,
   ARB: AssetAETH,
   XRD: AssetXRD,
-  SOL: SOLAsset
+  SOL: SOLAsset,
+  BASE: AssetBETH
 }
 
 export const getChainAsset = (chain: Chain): Asset => {
@@ -99,6 +101,11 @@ export const isArbChain = (chain: Chain): boolean => eqChain.equals(chain.toUppe
  * Check whether chain is AVAX chain
  */
 export const isAvaxChain = (chain: Chain): boolean => eqChain.equals(chain, AVAXChain)
+
+/**
+ * Check whether chain is BASE chain
+ */
+export const isBaseChain = (chain: Chain): boolean => eqChain.equals(chain, BASEChain)
 
 /**
  * Check whether chain is BSC chain
@@ -174,6 +181,8 @@ export const getChain = (chain: string): Chain => {
       return RadixChain
     case 'SOL':
       return SOLChain
+    case 'BASE':
+      return BASEChain
     default:
       throw Error('Unknown chain')
   }

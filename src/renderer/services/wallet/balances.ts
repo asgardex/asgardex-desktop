@@ -1,6 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -31,6 +32,7 @@ import { addressFromOptionalWalletAddress } from '../../helpers/walletHelper'
 import { Network$ } from '../app/types'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'
+import * as BASE from '../base'
 import * as BTC from '../bitcoin'
 import * as BCH from '../bitcoincash'
 import * as BSC from '../bsc'
@@ -79,6 +81,7 @@ export const createBalancesService = ({
       if (enabledChains.includes(ETHChain)) ETH.reloadBalances()
       if (enabledChains.includes(ARBChain)) ARB.reloadBalances()
       if (enabledChains.includes(AVAXChain)) AVAX.reloadBalances()
+      if (enabledChains.includes(BASEChain)) BASE.reloadBalances()
       if (enabledChains.includes(BSCChain)) BSC.reloadBalances()
       if (enabledChains.includes(THORChain)) THOR.reloadBalances()
       if (enabledChains.includes(MAYAChain)) MAYA.reloadBalances()
@@ -213,6 +216,16 @@ export const createBalancesService = ({
               RxOp.switchMap((network) => AVAX.balances$({ walletType, network, walletAccount, walletIndex, hdMode }))
             ),
             reloadBalances$: AVAX.reloadBalances$
+          }
+        case BASEChain:
+          return {
+            reloadBalances: BASE.reloadBalances,
+            resetReloadBalances: BASE.resetReloadBalances,
+            balances$: FP.pipe(
+              network$,
+              RxOp.switchMap((network) => BASE.balances$({ walletType, network, walletAccount, walletIndex, hdMode }))
+            ),
+            reloadBalances$: BASE.reloadBalances$
           }
         case BSCChain:
           return {
@@ -837,6 +850,28 @@ export const createBalancesService = ({
       balancesType: 'all'
     }))
   )
+  const baseBalances$ = getChainBalance$({
+    chain: BASEChain,
+    walletType: 'keystore',
+    walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
+    walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
+    hdMode: 'default',
+    walletBalanceType: 'all'
+  })
+  /**
+   * Transforms BASE data (address + `WalletBalance`) into `ChainBalance`
+   */
+  const baseChainBalance$: ChainBalance$ = Rx.combineLatest([BASE.addressUI$, baseBalances$]).pipe(
+    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
+      walletType: 'keystore',
+      chain: BASEChain,
+      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
+      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
+      balances,
+      balancesType: 'all'
+    }))
+  )
 
   const bscBalances$ = getChainBalance$({
     chain: BSCChain,
@@ -979,6 +1014,19 @@ export const createBalancesService = ({
     )
   )
   /**
+   * BASE Ledger balances
+   */
+  const baseLedgerChainBalance$: ChainBalance$ = FP.pipe(
+    network$,
+    RxOp.switchMap((network) =>
+      ledgerChainBalance$({
+        chain: BASEChain,
+        walletBalanceType: 'all',
+        getBalanceByAddress$: BASE.getBalanceByAddress$(network)
+      })
+    )
+  )
+  /**
    * BSC Ledger balances
    */
   const bscLedgerChainBalance$: ChainBalance$ = FP.pipe(
@@ -1013,7 +1061,8 @@ export const createBalancesService = ({
     GAIA: [cosmosChainBalance$, cosmosLedgerChainBalance$],
     KUJI: [kujiChainBalance$, kujiLedgerChainBalance$],
     XRD: [xrdChainBalance$, xrdLedgerChainBalance$],
-    SOL: [solChainBalance$, solLedgerChainBalance$]
+    SOL: [solChainBalance$, solLedgerChainBalance$],
+    BASE: [baseChainBalance$, baseLedgerChainBalance$]
   }
 
   // Combine enabled chains with their corresponding balance observables

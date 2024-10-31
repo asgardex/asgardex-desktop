@@ -10107,6 +10107,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@xchainjs/xchain-base@npm:^0.0.7":
+  version: 0.0.7
+  resolution: "@xchainjs/xchain-base@npm:0.0.7"
+  dependencies:
+    "@xchainjs/xchain-client": "npm:1.0.7"
+    "@xchainjs/xchain-evm": "npm:1.0.11"
+    "@xchainjs/xchain-evm-providers": "npm:1.0.9"
+    "@xchainjs/xchain-util": "npm:1.0.6"
+    ethers: "npm:5.7.2"
+  checksum: 10/9a1266d588e4fccaf3a8c080190ea9e7dd6240b7c4379365e5057be6609877253c2d3c1fff834ce775063171389d1ac59405444da22f3115488e67b3d6c4dda8
+  languageName: node
+  linkType: hard
+
 "@xchainjs/xchain-bitcoin@npm:1.1.3":
   version: 1.1.3
   resolution: "@xchainjs/xchain-bitcoin@npm:1.1.3"
@@ -11331,6 +11344,7 @@ __metadata:
     "@types/text-encoding": "npm:^0"
     "@xchainjs/xchain-arbitrum": "npm:1.0.12"
     "@xchainjs/xchain-avax": "npm:1.0.11"
+    "@xchainjs/xchain-base": "npm:^0.0.7"
     "@xchainjs/xchain-bitcoin": "npm:1.1.3"
     "@xchainjs/xchain-bitcoincash": "npm:1.0.7"
     "@xchainjs/xchain-bsc": "npm:1.0.11"

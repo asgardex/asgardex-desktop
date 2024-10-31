@@ -1,6 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BASEChain } from '@xchainjs/xchain-base'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -11,12 +12,10 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import {
-  getArbAssetAddress,
-  getAvaxAssetAddress,
-  getBscAssetAddress,
-  getEthAssetAddress,
+  getEVMAssetAddress,
   isAethAsset,
   isAvaxAsset,
+  isBaseAsset,
   isBscAsset,
   isEthAsset,
   isRuneNativeAsset
@@ -235,13 +234,15 @@ export const saverWithdraw$ = ({
       const assetAddress: O.Option<Address> = (() => {
         switch (chain) {
           case ETHChain:
-            return !isEthAsset(asset) ? getEthAssetAddress(asset) : O.none
+            return !isEthAsset(asset) ? getEVMAssetAddress(asset) : O.none
           case ARBChain:
-            return !isAethAsset(asset) ? getArbAssetAddress(asset) : O.none
+            return !isAethAsset(asset) ? getEVMAssetAddress(asset) : O.none
           case AVAXChain:
-            return !isAvaxAsset(asset) ? getAvaxAssetAddress(asset) : O.none
+            return !isAvaxAsset(asset) ? getEVMAssetAddress(asset) : O.none
+          case BASEChain:
+            return !isBaseAsset(asset) ? getEVMAssetAddress(asset) : O.none
           case BSCChain:
-            return !isBscAsset(asset) ? getBscAssetAddress(asset) : O.none
+            return !isBscAsset(asset) ? getEVMAssetAddress(asset) : O.none
           default:
             return O.none
         }

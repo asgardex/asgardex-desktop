@@ -5,7 +5,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { IntlShape } from 'react-intl'
 
-import { isAvaxChain, isBscChain, isEthChain } from '../../../../helpers/chainHelper'
+import { isEvmChain } from '../../../../helpers/evmHelper'
 import { SaverDepositState, SendTxState } from '../../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../services/clients'
 import { TxModal } from '../../../modal/tx'
@@ -114,11 +114,7 @@ export const renderDepositModal = ({
     // Note: As long as we link to `viewblock` to open tx details in a browser,
     // `0x` needs to be removed from tx hash in case of ETH
     // @see https://github.com/thorchain/asgardex-electron/issues/1787#issuecomment-931934508
-    O.map((txHash) =>
-      isEthChain(asset.chain) || isAvaxChain(asset.chain) || isBscChain(asset.chain)
-        ? txHash.replace(/0x/i, '')
-        : txHash
-    )
+    O.map((txHash) => (isEvmChain(asset.chain) ? txHash.replace(/0x/i, '') : txHash))
   )
 
   // Get timer value

@@ -5,7 +5,6 @@ import { assetAmount, AssetType, baseAmount, TokenAsset } from '@xchainjs/xchain
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
-import { ETHAddress } from '../../shared/ethereum/const'
 import { ERC20_TESTNET } from '../../shared/mock/assets'
 import { AssetATOM, AssetBCH, AssetBSC, AssetBTC, AssetETH, AssetLTC, AssetRuneNative } from '../../shared/utils/asset'
 import {
@@ -19,16 +18,15 @@ import {
   AssetXRuneAddress,
   AssetXRuneTestnet
 } from '../const'
+import { zeroAddress } from '../services/evm/const'
 import {
   isBchAsset,
   isBtcAsset,
   isChainAsset,
-  isEthTokenAsset,
   isEthAsset,
   isLtcAsset,
   isPricePoolAsset,
   isRuneNativeAsset,
-  getEthAssetAddress,
   midgardAssetFromString,
   updateEthChecksumAddress,
   convertBaseAmountDecimal,
@@ -43,7 +41,9 @@ import {
   isRuneAsset,
   getAssetFromNullableString,
   assetInList,
-  isBscAsset
+  isBscAsset,
+  isEVMTokenAsset,
+  getEVMAssetAddress
 } from './assetHelper'
 import { eqAsset, eqAssetAmount, eqBaseAmount, eqOAsset } from './fp/eq'
 
@@ -109,19 +109,19 @@ describe('helpers/assetHelper', () => {
 
   describe('isEthTokenAsset', () => {
     it('is true for ETH.USDT ', () => {
-      expect(isEthTokenAsset(ERC20_TESTNET.USDT as TokenAsset)).toBeTruthy()
+      expect(isEVMTokenAsset(ERC20_TESTNET.USDT as TokenAsset)).toBeTruthy()
     })
   })
 
   describe('getEthAssetAddress', () => {
     it('returns ETH address', () => {
-      expect(getEthAssetAddress(AssetETH)).toEqual(O.some(ETHAddress))
+      expect(getEVMAssetAddress(AssetETH)).toEqual(O.some(zeroAddress))
     })
     it('returns ETH.USDT', () => {
-      expect(getEthAssetAddress(ERC20_TESTNET.USDT)).toEqual(O.some('0xDB99328b43B86037f80B43c3DbD203F00F056B75'))
+      expect(getEVMAssetAddress(ERC20_TESTNET.USDT)).toEqual(O.some('0xDB99328b43B86037f80B43c3DbD203F00F056B75'))
     })
     it('is returns None for non ETH assets', () => {
-      expect(getEthAssetAddress(AssetRuneNative)).toBeNone()
+      expect(getEVMAssetAddress(AssetRuneNative)).toBeNone()
     })
   })
 

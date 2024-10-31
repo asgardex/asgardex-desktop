@@ -2,11 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
-import { ARBChain } from '@xchainjs/xchain-arbitrum'
-import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
-import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import {
   Address,
@@ -41,21 +37,12 @@ import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import {
   convertBaseAmountDecimal,
-  getAvaxTokenAddress,
-  getBscTokenAddress,
-  getEthTokenAddress,
-  isAethAsset,
-  isArbTokenAsset,
-  isAvaxAsset,
-  isAvaxTokenAsset,
-  isBscAsset,
-  isBscTokenAsset,
-  isEthAsset,
-  isEthTokenAsset,
+  getEVMTokenAddressForChain,
+  isEVMTokenAsset,
   isUSDAsset,
   max1e8BaseAmount
 } from '../../helpers/assetHelper'
-import { getChainAsset, isAvaxChain, isBscChain, isEthChain } from '../../helpers/chainHelper'
+import { getChainAsset } from '../../helpers/chainHelper'
 import { isEvmChain, isEvmToken } from '../../helpers/evmHelper'
 import { eqBaseAmount, eqOApproveParams, eqOAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
@@ -500,48 +487,17 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     // not needed for users with locked or not imported wallets
     if (!hasImportedKeystore(keystore) || isLocked(keystore)) return O.some(false)
 
-    // ERC20 token does need approval only
-    //tobeFixed
-    switch (sourceChain) {
-      case ETHChain:
-        return isEthAsset(collateralAsset.asset)
-          ? O.some(false)
-          : O.some(isEthTokenAsset(collateralAsset.asset as TokenAsset))
-      case AVAXChain:
-        return isAvaxAsset(collateralAsset.asset)
-          ? O.some(false)
-          : O.some(isAvaxTokenAsset(collateralAsset.asset as TokenAsset))
-      case BSCChain:
-        return isBscAsset(collateralAsset.asset)
-          ? O.some(false)
-          : O.some(isBscTokenAsset(collateralAsset.asset as TokenAsset))
-      case ARBChain:
-        return isAethAsset(collateralAsset.asset)
-          ? O.some(false)
-          : O.some(isArbTokenAsset(collateralAsset.asset as TokenAsset))
-      default:
-        return O.none
-    }
-  }, [keystore, sourceChain, collateralAsset])
+    return isEvmChain(sourceChain) && isEvmToken(collateralAsset.asset)
+      ? O.some(isEVMTokenAsset(collateralAsset.asset as TokenAsset))
+      : O.none
+  }, [keystore, collateralAsset, sourceChain])
 
   const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
     const oRouterAddress: O.Option<Address> = FP.pipe(
       oPoolAddress,
       O.chain(({ router }) => router)
     )
-
-    const oTokenAddress: O.Option<string> = (() => {
-      switch (sourceChain) {
-        case ETHChain:
-          return getEthTokenAddress(collateralAsset.asset as TokenAsset)
-        case AVAXChain:
-          return getAvaxTokenAddress(collateralAsset.asset as TokenAsset)
-        case BSCChain:
-          return getBscTokenAddress(collateralAsset.asset as TokenAsset)
-        default:
-          return O.none
-      }
-    })()
+    const oTokenAddress: O.Option<string> = getEVMTokenAddressForChain(sourceChain, collateralAsset.asset as TokenAsset)
 
     const oNeedApprovement: O.Option<boolean> = FP.pipe(
       needApprovement,
@@ -1037,11 +993,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
       // Note: As long as we link to `viewblock` to open tx details in a browser,
       // `0x` needs to be removed from tx hash in case of ETH
       // @see https://github.com/thorchain/asgardex-electron/issues/1787#issuecomment-931934508
-      O.map((txHash) =>
-        isEthChain(sourceChain) || isAvaxChain(sourceChain) || isBscChain(sourceChain)
-          ? txHash.replace(/0x/i, '')
-          : txHash
-      )
+      O.map((txHash) => (isEvmChain(sourceChain) ? txHash.replace(/0x/i, '') : txHash))
     )
 
     return (

@@ -8,11 +8,7 @@ import {
   MagnifyingGlassMinusIcon,
   MagnifyingGlassPlusIcon
 } from '@heroicons/react/24/outline'
-import { ARBChain } from '@xchainjs/xchain-arbitrum'
-import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
-import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import {
   CompatibleAsset,
@@ -64,37 +60,18 @@ import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import {
-  getEthTokenAddress,
-  isEthAsset,
-  isEthTokenAsset,
   max1e8BaseAmount,
   convertBaseAmountDecimal,
   to1e8BaseAmount,
   THORCHAIN_DECIMAL,
   isUSDAsset,
   isRuneNativeAsset,
-  isAvaxTokenAsset,
-  isBscTokenAsset,
-  getAvaxTokenAddress,
-  getBscTokenAddress,
-  isAvaxAsset,
-  isBscAsset,
   max1e10BaseAmount,
-  getArbTokenAddress,
-  isArbTokenAsset,
-  isAethAsset,
-  isCacaoAsset
+  isCacaoAsset,
+  isEVMTokenAsset,
+  getEVMTokenAddressForChain
 } from '../../helpers/assetHelper'
-import {
-  getChainAsset,
-  isAvaxChain,
-  isBchChain,
-  isBscChain,
-  isBtcChain,
-  isDogeChain,
-  isEthChain,
-  isLtcChain
-} from '../../helpers/chainHelper'
+import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isLtcChain } from '../../helpers/chainHelper'
 import { isEvmChain, isEvmToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqOApproveParams, eqAddress } from '../../helpers/fp/eq'
@@ -1437,20 +1414,9 @@ export const Swap = ({
   }, [rateDirection, sourceAsset, sourceAssetPrice, targetAsset, targetAssetPrice])
 
   const needApprovement: O.Option<boolean> = useMemo(() => {
-    // ERC20 token does need approval only
-
-    switch (sourceChain) {
-      case ETHChain:
-        return isEthAsset(sourceAsset) ? O.some(false) : O.some(isEthTokenAsset(sourceAsset as TokenAsset))
-      case AVAXChain:
-        return isAvaxAsset(sourceAsset) ? O.some(false) : O.some(isAvaxTokenAsset(sourceAsset as TokenAsset))
-      case BSCChain:
-        return isBscAsset(sourceAsset) ? O.some(false) : O.some(isBscTokenAsset(sourceAsset as TokenAsset))
-      case ARBChain:
-        return isAethAsset(sourceAsset) ? O.some(false) : O.some(isArbTokenAsset(sourceAsset as TokenAsset))
-      default:
-        return O.none
-    }
+    return isEvmChain(sourceChain) && isEvmToken(sourceAsset)
+      ? O.some(isEVMTokenAsset(sourceAsset as TokenAsset))
+      : O.none
   }, [sourceAsset, sourceChain])
 
   const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
@@ -1458,20 +1424,8 @@ export const Swap = ({
       oPoolAddress,
       O.chain(({ router }) => router)
     )
-    const oTokenAddress: O.Option<string> = (() => {
-      switch (sourceChain) {
-        case ETHChain:
-          return getEthTokenAddress(sourceAsset as TokenAsset)
-        case AVAXChain:
-          return getAvaxTokenAddress(sourceAsset as TokenAsset)
-        case BSCChain:
-          return getBscTokenAddress(sourceAsset as TokenAsset)
-        case ARBChain:
-          return getArbTokenAddress(sourceAsset as TokenAsset)
-        default:
-          return O.none
-      }
-    })()
+
+    const oTokenAddress: O.Option<string> = getEVMTokenAddressForChain(sourceChain, sourceAsset as TokenAsset)
 
     const oNeedApprovement: O.Option<boolean> = FP.pipe(
       needApprovement,
@@ -2055,11 +2009,7 @@ export const Swap = ({
       // Note: As long as we link to `viewblock` to open tx details in a browser,
       // `0x` needs to be removed from tx hash in case of ETH
       // @see https://github.com/thorchain/asgardex-electron/issues/1787#issuecomment-931934508
-      O.map((txHash) =>
-        isEthChain(sourceChain) || isAvaxChain(sourceChain) || isBscChain(sourceChain)
-          ? txHash.replace(/0x/i, '')
-          : txHash
-      )
+      O.map((txHash) => (isEvmChain(sourceChain) ? txHash.replace(/0x/i, '') : txHash))
     )
 
     const txRDasBoolean = FP.pipe(

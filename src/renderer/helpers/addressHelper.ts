@@ -1,5 +1,6 @@
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BASEChain } from '@xchainjs/xchain-base'
 import { getPrefix as getBitcoinPrefix } from '@xchainjs/xchain-bitcoin'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { getPrefix as getBCHPrefix } from '@xchainjs/xchain-bitcoincash'
@@ -45,6 +46,7 @@ const chainPrefixLengthFunctions: Record<Chain, (network: Network) => number> = 
   [ETHChain]: () => getEvmPrefix().length,
   [ARBChain]: () => getEvmPrefix().length,
   [AVAXChain]: () => getEvmPrefix().length,
+  [BASEChain]: () => getEvmPrefix().length,
   [BSCChain]: () => getEvmPrefix().length,
   [DOGEChain]: (network: Network) => getDogePrefix(network).length,
   [THORChain]: (network: Network) => getThorchainPrefix(network).length,
@@ -76,35 +78,11 @@ export const removeAddressPrefix = (address: Address): Address => {
 }
 
 /**
- * Helper to get ETH address as a checksum address
- * toLowerCase() is needed to handle the ERC20 addresses start with 0X as well, not only 0x
- * ethers getAddress function recognize 0X address as invalid one
+ * Helper to get a EVMchecksummed address
+ * Converts the address to lowercase to handle addresses that start with 0X instead of 0x,
+ * as ethers' getAddress function treats 0X as invalid.
  */
-export const getEthChecksumAddress = (address: Address): O.Option<Address> =>
-  O.tryCatch(() => ethers.utils.getAddress(address.toLowerCase()))
-
-/**
- * Helper to get Arb address as a checksum address
- * toLowerCase() is needed to handle the ERC20 addresses start with 0X as well, not only 0x
- * ethers getAddress function recognize 0X address as invalid one
- */
-export const getArbChecksumAddress = (address: Address): O.Option<Address> =>
-  O.tryCatch(() => ethers.utils.getAddress(address.toLowerCase()))
-
-/**
- * Helper to get Avax address as a checksum address
- * toLowerCase() is needed to handle the ERC20 addresses start with 0X as well, not only 0x
- * ethers getAddress function recognize 0X address as invalid one
- */
-export const getAvaxChecksumAddress = (address: Address): O.Option<Address> =>
-  O.tryCatch(() => ethers.utils.getAddress(address.toLowerCase()))
-
-/**
- * Helper to get Bsc address as a checksum address
- * toLowerCase() is needed to handle the ERC20 addresses start with 0X as well, not only 0x
- * ethers getAddress function recognize 0X address as invalid one
- */
-export const getBscChecksumAddress = (address: Address): O.Option<Address> =>
+export const getEVMChecksumAddress = (address: Address): O.Option<Address> =>
   O.tryCatch(() => ethers.utils.getAddress(address.toLowerCase()))
 
 export const hasLedgerAddress = (addresses: LedgerAddresses, chain: Chain): boolean =>

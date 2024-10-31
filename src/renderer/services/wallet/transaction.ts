@@ -1,6 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -25,6 +26,7 @@ import { isThorChain } from '../../helpers/chainHelper'
 import { observableState } from '../../helpers/stateHelper'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'
+import * as BASE from '../base'
 import * as BTC from '../bitcoin'
 import * as BCH from '../bitcoincash'
 import * as BSC from '../bsc'
@@ -86,6 +88,8 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
                 return ARB.txs$({ asset: O.some(asset), limit, offset, walletAddress, walletIndex })
               case AVAXChain:
                 return AVAX.txs$({ asset: O.some(asset), limit, offset, walletAddress, walletIndex })
+              case BASEChain:
+                return BASE.txs$({ asset: O.some(asset), limit, offset, walletAddress, walletIndex })
               case BSCChain:
                 return BSC.txs$({ asset: O.some(asset), limit, offset, walletAddress, walletIndex })
               case THORChain:

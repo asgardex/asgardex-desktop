@@ -10,9 +10,9 @@ import { isError } from '../../../shared/utils/guard'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
 import { WalletAddress$, ExplorerUrl$ } from '../clients/types'
+import { Client$, ClientState, ClientState$ } from '../evm/types'
 import { keystoreService } from '../wallet/keystore'
 import { getPhrase } from '../wallet/util'
-import { Client$, ClientState, ClientState$ } from './types'
 
 /**
  * Stream to create an observable `ARBClient` depending on existing phrase in keystore

@@ -1,7 +1,9 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { FeeOption, Network } from '@xchainjs/xchain-client'
+import { XChainClient } from '@xchainjs/xchain-client'
 import { FeesWithGasPricesAndLimits } from '@xchainjs/xchain-evm'
 import { TxParams as BaseEvmTxParams } from '@xchainjs/xchain-evm'
+import ClientKeystore from '@xchainjs/xchain-evm'
 import { Address, AnyAsset, Asset, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
 import { ethers } from 'ethers'
 import * as O from 'fp-ts/lib/Option'
@@ -93,3 +95,9 @@ export type FeesService = {
   reloadFees: (params: TxParams) => void
   fees$: (params: TxParams) => FeesLD
 }
+
+export type Client = XChainClient & ClientKeystore
+export type Client$ = C.Client$<Client>
+
+export type ClientState = C.ClientState<Client>
+export type ClientState$ = C.ClientState$<Client>

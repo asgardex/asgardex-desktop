@@ -3,6 +3,7 @@ import React, { useMemo, useCallback } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BASEChain } from '@xchainjs/xchain-base'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
@@ -33,9 +34,17 @@ import {
   isUskAsset,
   iconUrlInARBERC20Whitelist,
   isAethAsset,
-  isSolAsset
+  isSolAsset,
+  isBaseAsset
 } from '../../../../helpers/assetHelper'
-import { isArbChain, isAvaxChain, isBscChain, isEthChain, isMayaChain } from '../../../../helpers/chainHelper'
+import {
+  isArbChain,
+  isAvaxChain,
+  isBaseChain,
+  isBscChain,
+  isEthChain,
+  isMayaChain
+} from '../../../../helpers/chainHelper'
 import { getIntFromName, rainbowStop } from '../../../../helpers/colorHelpers'
 import { useRemoteImage } from '../../../../hooks/useRemoteImage'
 import {
@@ -55,7 +64,8 @@ import {
   kujiIcon,
   uskIcon,
   xrdIcon,
-  solIcon
+  solIcon,
+  baseIcon
 } from '../../../icons'
 import * as Styled from './AssetIcon.styles'
 import { Size } from './AssetIcon.types'
@@ -76,6 +86,8 @@ const chainIconMap = (asset: AnyAsset): string | null => {
       return ethIcon
     case AVAXChain:
       return avaxIcon
+    case BASEChain:
+      return baseIcon
     case BSCChain:
       return bscIcon
     default:
@@ -100,6 +112,10 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     // AVAX
     if (isAvaxAsset(asset)) {
       return avaxIcon
+    }
+    // BASE
+    if (isBaseAsset(asset)) {
+      return baseIcon
     }
     // BSC
     if (isBscAsset(asset)) {
@@ -167,6 +183,13 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
       if (isEthChain(asset.chain)) {
         return FP.pipe(
           // Try to get url from ERC20Whitelist first
+          iconUrlInERC20Whitelist(asset),
+          O.getOrElse(() => '')
+        )
+      }
+      if (isBaseChain(asset.chain)) {
+        return FP.pipe(
+          // Try to get base url from ERC20Whitelist first
           iconUrlInERC20Whitelist(asset),
           O.getOrElse(() => '')
         )

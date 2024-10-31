@@ -3,6 +3,7 @@ import React, { useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -32,6 +33,7 @@ import { HDMode } from '../../../shared/wallet/types'
 import { WalletSettings } from '../../components/settings'
 import { useArbContext } from '../../contexts/ArbContext'
 import { useAvaxContext } from '../../contexts/AvaxContext'
+import { useBaseContext } from '../../contexts/BaseContext'
 import { useBitcoinCashContext } from '../../contexts/BitcoinCashContext'
 import { useBitcoinContext } from '../../contexts/BitcoinContext'
 import { useBscContext } from '../../contexts/BscContext'
@@ -58,6 +60,7 @@ import {
   isCosmosChain,
   isArbChain,
   isAvaxChain,
+  isBaseChain,
   isBscChain,
   isMayaChain,
   isDashChain,
@@ -94,6 +97,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
   const { addressUI$: ethAddressUI$, ethHDMode$, updateEvmHDMode } = useEthereumContext()
   const { addressUI$: arbAddressUI$ } = useArbContext()
   const { addressUI$: avaxAddressUI$ } = useAvaxContext()
+  const { addressUI$: baseAddressUI$ } = useBaseContext()
   const { addressUI$: bscAddressUI$ } = useBscContext()
   const { addressUI$: btcAddressUI$ } = useBitcoinContext()
   const { addressUI$: ltcAddressUI$ } = useLitecoinContext()
@@ -194,6 +198,12 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     address: oBscLedgerWalletAddress,
     removeAddress: removeLedgerBscAddress
   } = useLedger(BSCChain, keystoreId)
+  const {
+    addAddress: addLedgerBaseAddress,
+    verifyAddress: verifyLedgerBaseAddress,
+    address: oBaseLedgerWalletAddress,
+    removeAddress: removeLedgerBaseAddress
+  } = useLedger(BASEChain, keystoreId)
 
   const {
     addAddress: addLedgerCosmosAddress,
@@ -227,6 +237,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     if (isDogeChain(chain)) return addLedgerDOGEAddress(walletAccount, walletIndex, hdMode)
     if (isEthChain(chain)) return addLedgerEthAddress(walletAccount, walletIndex, hdMode)
     if (isArbChain(chain)) return addLedgerArbAddress(walletAccount, walletIndex, hdMode)
+    if (isBaseChain(chain)) return addLedgerBaseAddress(walletAccount, walletIndex, hdMode)
     if (isAvaxChain(chain)) return addLedgerAvaxAddress(walletAccount, walletIndex, hdMode)
     if (isBscChain(chain)) return addLedgerBscAddress(walletAccount, walletIndex, hdMode)
     if (isCosmosChain(chain)) return addLedgerCosmosAddress(walletAccount, walletIndex, hdMode)
@@ -263,6 +274,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     if (isEthChain(chain)) return verifyLedgerEthAddress(walletAccount, walletIndex, hdMode)
     if (isArbChain(chain)) return verifyLedgerArbAddress(walletAccount, walletIndex, hdMode)
     if (isAvaxChain(chain)) return verifyLedgerAvaxAddress(walletAccount, walletIndex, hdMode)
+    if (isBaseChain(chain)) return verifyLedgerBaseAddress(walletAccount, walletIndex, hdMode)
     if (isBscChain(chain)) return verifyLedgerBscAddress(walletAccount, walletIndex, hdMode)
     if (isCosmosChain(chain)) return verifyLedgerCosmosAddress(walletAccount, walletIndex, hdMode)
     if (isMayaChain(chain)) return verifyLedgerMayaAddress(walletAccount, walletIndex, hdMode)
@@ -283,6 +295,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     if (isEthChain(chain)) return removeLedgerEthAddress()
     if (isArbChain(chain)) return removeLedgerArbAddress()
     if (isAvaxChain(chain)) return removeLedgerAvaxAddress()
+    if (isBaseChain(chain)) return removeLedgerBaseAddress()
     if (isBscChain(chain)) return removeLedgerBscAddress()
     if (isCosmosChain(chain)) return removeLedgerCosmosAddress()
     if (isMayaChain(chain)) return removeLedgerMayaAddress()
@@ -299,6 +312,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
   const oETHClient = useObservableState(clientByChain$(ETHChain), O.none)
   const oARBClient = useObservableState(clientByChain$(ARBChain), O.none)
   const oAVAXClient = useObservableState(clientByChain$(AVAXChain), O.none)
+  const oBASEClient = useObservableState(clientByChain$(BASEChain), O.none)
   const oBSCClient = useObservableState(clientByChain$(BSCChain), O.none)
   const oBTCClient = useObservableState(clientByChain$(BTCChain), O.none)
   const oBCHClient = useObservableState(clientByChain$(BCHChain), O.none)
@@ -337,6 +351,9 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
         break
       case AVAXChain:
         FP.pipe(oAVAXClient, O.map(openExplorerAddressUrl))
+        break
+      case BASEChain:
+        FP.pipe(oBASEClient, O.map(openExplorerAddressUrl))
         break
       case BSCChain:
         FP.pipe(oBSCClient, O.map(openExplorerAddressUrl))
@@ -402,6 +419,11 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
       ledgerAddress: oAvaxLedgerWalletAddress,
       chain: AVAXChain
     })
+    const baseWalletAccount$ = walletAccount$({
+      addressUI$: baseAddressUI$,
+      ledgerAddress: oBaseLedgerWalletAddress,
+      chain: BASEChain
+    })
     const bscWalletAccount$ = walletAccount$({
       addressUI$: bscAddressUI$,
       ledgerAddress: oBscLedgerWalletAddress,
@@ -466,7 +488,8 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
           DASH: [dashWalletAccount$],
           KUJI: [kujiWalletAccount$],
           XRD: [xrdWalletAccount$],
-          SOL: [solWalletAccount$]
+          SOL: [solWalletAccount$],
+          BASE: [baseWalletAccount$]
         })
       ),
       RxOp.map(A.filter(O.isSome)),
@@ -485,6 +508,8 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     oArbLedgerWalletAddress,
     avaxAddressUI$,
     oAvaxLedgerWalletAddress,
+    baseAddressUI$,
+    oBaseLedgerWalletAddress,
     bscAddressUI$,
     oBscLedgerWalletAddress,
     bchAddressUI$,
