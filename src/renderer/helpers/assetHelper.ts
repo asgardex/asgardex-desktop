@@ -52,7 +52,7 @@ import { ERC20_WHITELIST } from '../types/generated/thorchain/erc20whitelist'
 import { PricePoolAsset } from '../views/pools/Pools.types'
 import { getEVMChecksumAddress } from './addressHelper'
 import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isEthChain, isLtcChain } from './chainHelper'
-import { isEvmChain } from './evmHelper'
+import { isEvmChain, isEvmChainAsset } from './evmHelper'
 import { eqAsset, eqString } from './fp/eq'
 import { sequenceTOption } from './fpHelpers'
 
@@ -421,7 +421,7 @@ export const getEVMTokenAddressForChain = (sourceChain: Chain, asset: TokenAsset
  * Get address (as check sum address) from an ETH or ETH token asset
  */
 export const getEVMAssetAddress = (asset: AnyAsset): O.Option<Address> =>
-  isChainAsset(asset) ? O.some(zeroAddress) : getEVMTokenAddress(asset as TokenAsset)
+  isEvmChainAsset(asset) ? O.some(zeroAddress) : getEVMTokenAddress(asset as TokenAsset)
 
 /**
  * Check whether an asset is an ERC20 asset

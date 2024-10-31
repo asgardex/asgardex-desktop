@@ -20,3 +20,12 @@ export const isEvmChain = (chain: Chain): Boolean => {
 export const isEvmToken = (asset: AnyAsset): Boolean => {
   return !isEthAsset(asset) || !isAethAsset(asset) || !isAvaxAsset(asset) || !isBscAsset(asset) || !isBASEAsset(asset)
 }
+
+/**
+ * Helper function to determine if the asset is not the chain/gas asset
+ * @param asset - input
+ * @returns - boolean if the asset is a erc/brc etc.
+ */
+export const isEvmChainAsset = (asset: AnyAsset): Boolean => {
+  return isEthAsset(asset) || isAethAsset(asset) || isAvaxAsset(asset) || isBscAsset(asset) || isBASEAsset(asset)
+}
