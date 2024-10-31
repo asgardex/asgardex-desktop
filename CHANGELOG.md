@@ -3,7 +3,7 @@
 ## add
 
 - solana client [#439](https://github.com/asgardex/asgardex-desktop/pull/447)
-- base client [#444] ()
+- base client [#444] (https://github.com/asgardex/asgardex-desktop/pull/458)
 
 ## Updates/Fixes
 
