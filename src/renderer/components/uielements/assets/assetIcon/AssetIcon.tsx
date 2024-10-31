@@ -101,8 +101,8 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     if (isBtcAsset(asset)) {
       return btcIcon
     }
-    // ETH || AETH
-    if (isEthAsset(asset) || isAethAsset(asset)) {
+    // ETH || ARETH || BETH
+    if (isEthAsset(asset) || isAethAsset(asset) || isBaseAsset(asset)) {
       return ethIcon
     }
     // ARB
@@ -113,10 +113,7 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     if (isAvaxAsset(asset)) {
       return avaxIcon
     }
-    // BASE
-    if (isBaseAsset(asset)) {
-      return baseIcon
-    }
+
     // BSC
     if (isBscAsset(asset)) {
       return bscIcon
