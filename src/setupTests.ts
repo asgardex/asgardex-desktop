@@ -56,6 +56,7 @@ global.window.apiUrl = { ...mockApi.apiUrl }
 global.window.apiHDWallet = { ...mockApi.apiHDWallet }
 global.window.apiCommonStorage = { ...mockApi.apiCommonStorage }
 global.window.apiUserNodesStorage = { ...mockApi.apiUserNodesStorage }
+global.window.apiUserBondProvidersStorage = { ...mockApi.apiUserBondProvidersStorage }
 global.window.apiChainStorage = { ...mockApi.apiChainStorage }
 global.window.apiAddressStorage = { ...mockApi.apiAddressStorage }
 global.window.apiAssetStorage = { ...mockApi.apiAssetStorage }

@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
 import { AddressEllipsis as UIAddressEllipsis } from '../../uielements/addressEllipsis'
-import { Button as UIButton } from '../../uielements/button'
+import { ButtonProps, Button as UIButton } from '../../uielements/button'
 import { Label as UILabel } from '../../uielements/label'
 import { Table as UITable } from '../../uielements/table'
 
@@ -14,8 +14,8 @@ export const Table = styled(UITable)`
     & > th {
       font-size: 14px;
       border: none;
-      padding-top: 2px;
-      padding-bottom: 2px;
+      padding-top: 6px;
+      padding-bottom: 6px;
       height: auto;
       background: none !important;
       color: ${palette('gray', 2)};
@@ -28,7 +28,7 @@ export const Table = styled(UITable)`
   }
 
   .ant-table-tbody > tr > td {
-    border: none;
+    border-bottom: 1px solid ${palette('gray', 0)};
     padding: 10px 0 10px 15px;
     height: auto;
 
@@ -55,6 +55,20 @@ export const TextLabel = styled(UILabel).attrs({ textTransform: 'uppercase' })`
   font-size: 16px;
   font-family: 'MainFontRegular';
   padding: 0;
+`
+
+export const WatchlistButton = styled(UIButton).attrs({ typevalue: 'transparent' })<
+  ButtonProps & { isMonitoring?: 'true' | 'false' }
+>`
+  &.ant-btn {
+    min-width: auto;
+    padding: 0;
+    color: ${({ isMonitoring }) => (isMonitoring ? '#23dcc8' : palette('gray', 1))};
+
+    &:hover {
+      color: #23dcc8;
+    }
+  }
 `
 
 export const DeleteButton = styled(UIButton).attrs({ typevalue: 'transparent' })`
@@ -85,6 +99,7 @@ export const ConfirmationModalAddress = styled.span`
 
 export const WalletTypeLabel = styled(UILabel)`
   color: inherit;
+  text-align: center;
   font-size: 16px;
   font-family: 'MainFontRegular';
   padding: 0;

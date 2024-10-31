@@ -200,7 +200,8 @@ const common: CommonMessages = {
   'common.metamask': 'MetaMask',
   'common.unknown': 'Unbekannt',
   'common.featureUnderDevelopment': 'Funktion in Entwicklung, nicht verwenden',
-  'common.comingSoon': 'Kommt bald'
+  'common.comingSoon': 'Kommt bald',
+  'common.watchlist': 'Beobachtungsliste'
 }
 
 export default common

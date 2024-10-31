@@ -25,6 +25,7 @@ import { SolProvider } from './contexts/SolContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { ThorchainProvider } from './contexts/ThorchainContext'
 import { ThorchainQueryProvider } from './contexts/ThorchainQueryContext'
+import { UserBondProvidersProvider } from './contexts/UserBondProvidersContext'
 import { UserNodesProvider } from './contexts/UserNodesContext'
 import { WalletProvider } from './contexts/WalletContext'
 import { XrdProvider } from './contexts/XrdContext'
@@ -57,13 +58,15 @@ export const App: React.FC = (): JSX.Element => {
                                               <MayachainQueryProvider>
                                                 <MayaMidgardProvider>
                                                   <UserNodesProvider>
-                                                    <I18nProvider>
-                                                      <Router>
-                                                        <ThemeProvider>
-                                                          <AppView />
-                                                        </ThemeProvider>
-                                                      </Router>
-                                                    </I18nProvider>
+                                                    <UserBondProvidersProvider>
+                                                      <I18nProvider>
+                                                        <Router>
+                                                          <ThemeProvider>
+                                                            <AppView />
+                                                          </ThemeProvider>
+                                                        </Router>
+                                                      </I18nProvider>
+                                                    </UserBondProvidersProvider>
                                                   </UserNodesProvider>
                                                 </MayaMidgardProvider>
                                               </MayachainQueryProvider>
