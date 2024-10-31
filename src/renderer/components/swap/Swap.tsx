@@ -574,11 +574,13 @@ export const Swap = ({
     if (lockedWallet || quoteOnly) {
       return lockedAssetAmount.baseAmount
     }
-
+    const feeAmount = swapFees.inFee.amount.amount().toNumber()
+    const roundedFee = Math.ceil(feeAmount / 1000) * 1000
+    const roundedFeebaseAmount = baseAmount(roundedFee, swapFees.inFee.amount.decimal)
     return Utils.maxAmountToSwapMax1e8({
       asset: sourceAsset,
       balanceAmountMax1e8: sourceAssetAmountMax1e8,
-      feeAmount: swapFees.inFee.amount
+      feeAmount: roundedFeebaseAmount
     })
   }, [
     lockedAssetAmount.baseAmount,

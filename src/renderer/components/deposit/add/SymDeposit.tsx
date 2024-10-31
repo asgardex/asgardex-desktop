@@ -840,7 +840,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
             amounts: {
               rune: dexAmountToDeposit,
               // Decimal needs to be converted back for using orginal decimal of this asset (provided by `assetBalance`)
-              asset: convertBaseAmountDecimal(assetAmountToDepositMax1e8, assetDecimal)
+              asset: convertBaseAmountDecimal(assetAmountToDepositMax1e8, assetBalance.decimal)
             },
             memos: {
               asset: getDepositMemo({ asset, address: runeAddress }).concat(`:${ASGARDEX_THORNAME}:0`),
@@ -860,7 +860,16 @@ export const SymDeposit: React.FC<Props> = (props) => {
           }
         })
       ),
-    [oPoolAddress, oDexAssetWB, oAssetWB, asset, dexAmountToDeposit, assetAmountToDepositMax1e8, assetDecimal, dex]
+    [
+      oPoolAddress,
+      oDexAssetWB,
+      oAssetWB,
+      asset,
+      dexAmountToDeposit,
+      assetAmountToDepositMax1e8,
+      assetBalance.decimal,
+      dex
+    ]
   )
   const oAsymDepositParams: O.Option<SaverDepositParams> = useMemo(
     () =>

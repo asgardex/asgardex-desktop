@@ -148,7 +148,9 @@ export const maxAmountToSwapMax1e8 = ({
 
   const estimatedFee = max1e8BaseAmount(feeAmount)
   const maxAmountToSwap = balanceAmountMax1e8.minus(estimatedFee)
-  return maxAmountToSwap.gt(baseAmount(0)) ? maxAmountToSwap : baseAmount(0)
+  const maxAmountRounded = Math.floor(maxAmountToSwap.amount().toNumber() / 1000) * 1000
+  const maxAmountRoundedBase = baseAmount(maxAmountRounded, maxAmountToSwap.decimal)
+  return maxAmountRoundedBase.gt(baseAmount(0)) ? maxAmountRoundedBase : baseAmount(0)
 }
 
 export const assetsInWallet: (_: WalletBalances) => AnyAsset[] = FP.flow(A.map(({ asset }) => asset))

@@ -380,13 +380,17 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
         O.map((fee) => {
           const max = balance.amount.minus(fee)
           const zero = baseAmount(0, max.decimal)
-          return max.gt(zero) ? max : zero
+
+          const roundedMax = Math.floor(max.amount().toNumber() / 1000) * 1000
+          const roundedMaxBase = baseAmount(roundedMax, max.decimal)
+          return roundedMaxBase.gt(zero.amount()) ? roundedMaxBase : zero
         }),
-        // Set maxAmount to zero as long as we dont have a feeRate
+        // Set maxAmount to zero as long as we don't have a feeRate
         O.getOrElse(() => ZERO_BASE_AMOUNT)
       ),
     [balance.amount, selectedFee]
   )
+
   // store maxAmountValue
   const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const isPoolDetails = (poolDetails: PoolDetails | PoolDetailsMaya): poolDetails is PoolDetails => {

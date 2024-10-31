@@ -359,22 +359,22 @@ describe('components/swap/utils', () => {
   describe('maxAmountToSwapMax1e8', () => {
     it('balance to swap - with estimated fees', () => {
       const params = {
-        balanceAmountMax1e8: baseAmount(1000),
-        asset: AssetBSC,
+        balanceAmountMax1e8: baseAmount(5000),
+        asset: AssetBTC,
         feeAmount: baseAmount(100)
       }
       const result = maxAmountToSwapMax1e8(params)
-      expect(eqBaseAmount.equals(result, baseAmount(900))).toBeTruthy()
+      expect(eqBaseAmount.equals(result, baseAmount(4000))).toBeTruthy()
     })
 
     it('balance to swap - with 1e18 based estimated fees', () => {
       const params = {
-        balanceAmountMax1e8: baseAmount(100),
+        balanceAmountMax1e8: baseAmount(5000),
         asset: AssetETH,
         feeAmount: baseAmount(100000000000, 18)
       }
       const result = maxAmountToSwapMax1e8(params)
-      expect(eqBaseAmount.equals(result, baseAmount(90))).toBeTruthy()
+      expect(eqBaseAmount.equals(result, baseAmount(4000))).toBeTruthy()
     })
 
     it('balance is less than fee - with 1e18 based estimated fees', () => {
