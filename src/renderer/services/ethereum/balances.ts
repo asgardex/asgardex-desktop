@@ -1,7 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { Asset } from '@xchainjs/xchain-util'
+import { TokenAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import { of } from 'rxjs'
 import { switchMap } from 'rxjs/operators'
@@ -19,13 +19,22 @@ import { client$ } from './common'
  * e.g. @see src/renderer/services/wallet/balances.ts:getChainBalance$
  */
 const { get$: reloadBalances$, set: setReloadBalances } = observableState<boolean>(false)
+const { get$: reloadLedgerBalances$, set: setReloadLedgerBalances } = observableState<boolean>(false)
 
-const resetReloadBalances = () => {
-  setReloadBalances(false)
+const resetReloadBalances = (walletType: WalletType) => {
+  if (walletType === 'keystore') {
+    setReloadBalances(false)
+  } else {
+    setReloadLedgerBalances(false)
+  }
 }
 
-const reloadBalances = () => {
-  setReloadBalances(true)
+const reloadBalances = (walletType: WalletType) => {
+  if (walletType === 'keystore') {
+    setReloadBalances(true)
+  } else {
+    setReloadLedgerBalances(true)
+  }
 }
 
 const balances$: ({
@@ -76,8 +85,8 @@ const balances$: ({
 
 // State of balances loaded by Client and Address
 const getBalanceByAddress$ = (network: Network) => {
-  const assets: Asset[] | undefined = network === Network.Testnet ? ETHAssetsTestnet : undefined
-  return C.balancesByAddress$({ client$, trigger$: reloadBalances$, assets, walletBalanceType: 'all' })
+  const assets: TokenAsset[] | undefined = network === Network.Testnet ? ETHAssetsTestnet : ETHAssetsFallBack
+  return C.balancesByAddress$({ client$, trigger$: reloadLedgerBalances$, assets, walletBalanceType: 'all' })
 }
 
 export { reloadBalances, balances$, reloadBalances$, resetReloadBalances, getBalanceByAddress$ }

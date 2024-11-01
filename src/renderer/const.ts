@@ -67,12 +67,6 @@ export const AssetTGTERC20: TokenAsset = {
   type: AssetType.TOKEN
 }
 
-// This hardcode list is for testnet only
-export const ETHAssetsTestnet = [AssetETH]
-export const AvaxAssetsTestnet = [AssetAVAX]
-export const BscAssetsTestnet = [AssetBSC]
-export const ArbAssetsTestnet = [AssetARB]
-
 // UNIH (exploit contract)
 // https://etherscan.io/address/0x4bf5dc91E2555449293D7824028Eb8Fe5879B689
 export const AssetUniHAddress = '0x4bf5dc91E2555449293D7824028Eb8Fe5879B689'
@@ -148,10 +142,16 @@ export const AssetUSDCARB: TokenAsset = {
   type: AssetType.TOKEN
 }
 
+// This hardcode list is for testnet only
+export const ETHAssetsTestnet = [AssetUSDT62E]
+export const AvaxAssetsTestnet = [AssetAVAX]
+export const BscAssetsTestnet = [AssetBSC]
+export const ArbAssetsTestnet = [AssetARB]
+
 export const ETHAssetsFallBack = [AssetUSDTDAC, AssetUSDC]
 export const BSCAssetsFallBack = [AssetUSDCBSC, AssetUSDTBSC]
 export const AVAXAssetsFallback = [AssetUSDTAVAX, AssetUSDCAVAX]
-export const ARBAssetsFallback = [AssetARB]
+export const ARBAssetsFallback = [AssetUSDCARB]
 export const BASEAssetsFallback = [AssetBETH]
 
 // for evm only

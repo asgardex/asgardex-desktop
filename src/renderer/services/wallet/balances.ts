@@ -25,6 +25,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { HDMode, WalletAddress, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
+import { DEFAULT_WALLET_TYPE } from '../../const'
 import { eqBalancesRD } from '../../helpers/fp/eq'
 import { sequenceTOptionFromArray } from '../../helpers/fpHelpers'
 import { liveData } from '../../helpers/rx/liveData'
@@ -75,19 +76,19 @@ export const createBalancesService = ({
   // reload all balances
   const reloadBalances: FP.Lazy<void> = () => {
     userChains$.pipe(RxOp.take(1)).subscribe((enabledChains) => {
-      if (enabledChains.includes(BTCChain)) BTC.reloadBalances()
-      if (enabledChains.includes(DASHChain)) DASH.reloadBalances()
-      if (enabledChains.includes(BCHChain)) BCH.reloadBalances()
-      if (enabledChains.includes(ETHChain)) ETH.reloadBalances()
-      if (enabledChains.includes(ARBChain)) ARB.reloadBalances()
-      if (enabledChains.includes(AVAXChain)) AVAX.reloadBalances()
-      if (enabledChains.includes(BASEChain)) BASE.reloadBalances()
-      if (enabledChains.includes(BSCChain)) BSC.reloadBalances()
-      if (enabledChains.includes(THORChain)) THOR.reloadBalances()
+      if (enabledChains.includes(BTCChain)) BTC.reloadBalances(DEFAULT_WALLET_TYPE)
+      if (enabledChains.includes(DASHChain)) DASH.reloadBalances(DEFAULT_WALLET_TYPE)
+      if (enabledChains.includes(BCHChain)) BCH.reloadBalances(DEFAULT_WALLET_TYPE)
+      if (enabledChains.includes(ETHChain)) ETH.reloadBalances(DEFAULT_WALLET_TYPE)
+      if (enabledChains.includes(ARBChain)) ARB.reloadBalances(DEFAULT_WALLET_TYPE)
+      if (enabledChains.includes(AVAXChain)) AVAX.reloadBalances(DEFAULT_WALLET_TYPE)
+      if (enabledChains.includes(BASEChain)) BASE.reloadBalances(DEFAULT_WALLET_TYPE)
+      if (enabledChains.includes(BSCChain)) BSC.reloadBalances(DEFAULT_WALLET_TYPE)
+      if (enabledChains.includes(THORChain)) THOR.reloadBalances(DEFAULT_WALLET_TYPE)
       if (enabledChains.includes(MAYAChain)) MAYA.reloadBalances()
-      if (enabledChains.includes(LTCChain)) LTC.reloadBalances()
-      if (enabledChains.includes(DOGEChain)) DOGE.reloadBalances()
-      if (enabledChains.includes(GAIAChain)) COSMOS.reloadBalances()
+      if (enabledChains.includes(LTCChain)) LTC.reloadBalances(DEFAULT_WALLET_TYPE)
+      if (enabledChains.includes(DOGEChain)) DOGE.reloadBalances(DEFAULT_WALLET_TYPE)
+      if (enabledChains.includes(GAIAChain)) COSMOS.reloadBalances(DEFAULT_WALLET_TYPE)
       if (enabledChains.includes(KUJIChain)) KUJI.reloadBalances()
       if (enabledChains.includes(RadixChain)) XRD.reloadBalances()
       if (enabledChains.includes(SOLChain)) SOL.reloadBalances()
@@ -95,11 +96,11 @@ export const createBalancesService = ({
   }
 
   // Returns lazy functions to reload balances by given chain
-  const chainReloadBalances: Record<Chain, () => void> = {
+  const chainReloadBalances: Record<Chain, (walletType: WalletType) => void> = {
     [BTCChain]: BTC.reloadBalances,
     [DASHChain]: DASH.reloadBalances,
     [BCHChain]: BCH.reloadBalances,
-    [ETHChain]: ETH.reloadBalances,
+    [ETHChain]: (walletType) => ETH.reloadBalances(walletType), // Accept walletType
     [ARBChain]: ARB.reloadBalances,
     [AVAXChain]: AVAX.reloadBalances,
     [BSCChain]: BSC.reloadBalances,
@@ -115,7 +116,7 @@ export const createBalancesService = ({
   }
 
   const reloadBalancesByChain =
-    (chain: Chain): FP.Lazy<void> =>
+    (chain: Chain, walletType: WalletType): FP.Lazy<void> =>
     () => {
       userChains$
         .pipe(
@@ -130,7 +131,7 @@ export const createBalancesService = ({
               return FP.constVoid
             }
 
-            return reloadBalances
+            return () => reloadBalances(walletType) // Pass walletType dynamically
           }),
           RxOp.shareReplay(1) // Cache the latest result for multiple subscribers
         )
@@ -171,29 +172,29 @@ export const createBalancesService = ({
       switch (chain) {
         case BTCChain:
           return {
-            reloadBalances: BTC.reloadBalances,
-            resetReloadBalances: BTC.resetReloadBalances,
+            reloadBalances: () => BTC.reloadBalances(walletType),
+            resetReloadBalances: () => BTC.resetReloadBalances(walletType),
             balances$: BTC.balances$({ walletType, walletAccount, walletIndex, walletBalanceType, hdMode }),
             reloadBalances$: BTC.reloadBalances$
           }
         case DASHChain:
           return {
-            reloadBalances: DASH.reloadBalances,
-            resetReloadBalances: DASH.resetReloadBalances,
+            reloadBalances: () => DASH.reloadBalances(walletType),
+            resetReloadBalances: () => DASH.resetReloadBalances(walletType),
             balances$: DASH.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: DASH.reloadBalances$
           }
         case BCHChain:
           return {
-            reloadBalances: BCH.reloadBalances,
-            resetReloadBalances: BCH.resetReloadBalances,
+            reloadBalances: () => BCH.reloadBalances(walletType),
+            resetReloadBalances: () => BCH.resetReloadBalances(walletType),
             balances$: BCH.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: BCH.reloadBalances$
           }
         case ETHChain:
           return {
-            reloadBalances: ETH.reloadBalances,
-            resetReloadBalances: ETH.resetReloadBalances,
+            reloadBalances: () => ETH.reloadBalances(walletType),
+            resetReloadBalances: () => ETH.resetReloadBalances(walletType),
             balances$: FP.pipe(
               network$,
               RxOp.switchMap((network) => ETH.balances$({ walletType, network, walletAccount, walletIndex, hdMode }))
@@ -202,8 +203,8 @@ export const createBalancesService = ({
           }
         case ARBChain:
           return {
-            reloadBalances: ARB.reloadBalances,
-            resetReloadBalances: ARB.resetReloadBalances,
+            reloadBalances: () => ARB.reloadBalances(walletType),
+            resetReloadBalances: () => ARB.resetReloadBalances(walletType),
             balances$: FP.pipe(
               network$,
               RxOp.switchMap((network) => ARB.balances$({ walletType, network, walletAccount, walletIndex, hdMode }))
@@ -212,8 +213,8 @@ export const createBalancesService = ({
           }
         case AVAXChain:
           return {
-            reloadBalances: AVAX.reloadBalances,
-            resetReloadBalances: AVAX.resetReloadBalances,
+            reloadBalances: () => AVAX.reloadBalances(walletType),
+            resetReloadBalances: () => AVAX.resetReloadBalances(walletType),
             balances$: FP.pipe(
               network$,
               RxOp.switchMap((network) => AVAX.balances$({ walletType, network, walletAccount, walletIndex, hdMode }))
@@ -222,8 +223,8 @@ export const createBalancesService = ({
           }
         case BASEChain:
           return {
-            reloadBalances: BASE.reloadBalances,
-            resetReloadBalances: BASE.resetReloadBalances,
+            reloadBalances: () => BASE.reloadBalances(walletType),
+            resetReloadBalances: () => BASE.resetReloadBalances(walletType),
             balances$: FP.pipe(
               network$,
               RxOp.switchMap((network) => BASE.balances$({ walletType, network, walletAccount, walletIndex, hdMode }))
@@ -232,8 +233,8 @@ export const createBalancesService = ({
           }
         case BSCChain:
           return {
-            reloadBalances: BSC.reloadBalances,
-            resetReloadBalances: BSC.resetReloadBalances,
+            reloadBalances: () => BSC.reloadBalances(walletType),
+            resetReloadBalances: () => BSC.resetReloadBalances(walletType),
             balances$: FP.pipe(
               network$,
               RxOp.switchMap((network) => BSC.balances$({ walletType, network, walletAccount, walletIndex, hdMode }))
@@ -242,8 +243,8 @@ export const createBalancesService = ({
           }
         case THORChain:
           return {
-            reloadBalances: THOR.reloadBalances,
-            resetReloadBalances: THOR.resetReloadBalances,
+            reloadBalances: () => THOR.reloadBalances(walletType),
+            resetReloadBalances: () => THOR.resetReloadBalances(walletType),
             balances$: THOR.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: THOR.reloadBalances$
           }
@@ -256,15 +257,15 @@ export const createBalancesService = ({
           }
         case LTCChain:
           return {
-            reloadBalances: LTC.reloadBalances,
-            resetReloadBalances: LTC.resetReloadBalances,
+            reloadBalances: () => LTC.reloadBalances(walletType),
+            resetReloadBalances: () => LTC.resetReloadBalances(walletType),
             balances$: LTC.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: LTC.reloadBalances$
           }
         case DOGEChain:
           return {
-            reloadBalances: DOGE.reloadBalances,
-            resetReloadBalances: DOGE.resetReloadBalances,
+            reloadBalances: () => DOGE.reloadBalances(walletType),
+            resetReloadBalances: () => DOGE.resetReloadBalances(walletType),
             balances$: DOGE.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: DOGE.reloadBalances$
           }
@@ -277,8 +278,8 @@ export const createBalancesService = ({
           }
         case GAIAChain:
           return {
-            reloadBalances: COSMOS.reloadBalances,
-            resetReloadBalances: COSMOS.resetReloadBalances,
+            reloadBalances: () => COSMOS.reloadBalances(walletType),
+            resetReloadBalances: () => COSMOS.resetReloadBalances(walletType),
             balances$: COSMOS.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: COSMOS.reloadBalances$
           }

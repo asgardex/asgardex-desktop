@@ -183,7 +183,8 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
             <BackLinkButton />
             <RefreshButton
               onClick={reloadBalancesByChain(
-                selectedAsset.asset.type === AssetType.SYNTH ? THORChain : selectedAsset.asset.chain
+                selectedAsset.asset.type === AssetType.SYNTH ? THORChain : selectedAsset.asset.chain,
+                selectedAsset.walletType
               )}></RefreshButton>
           </Row>
           <div className="flex flex-col justify-center"> {renderSendView(selectedAsset)}</div>

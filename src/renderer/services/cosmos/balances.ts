@@ -9,13 +9,22 @@ import { client$ } from './common'
  * e.g. @see src/renderer/services/wallet/balances.ts:getChainBalance$
  */
 const { get$: reloadBalances$, set: setReloadBalances } = observableState<boolean>(false)
+const { get$: reloadLedgerBalances$, set: setReloadLedgerBalances } = observableState<boolean>(false)
 
-const resetReloadBalances = () => {
-  setReloadBalances(false)
+const resetReloadBalances = (walletType: WalletType) => {
+  if (walletType === 'keystore') {
+    setReloadBalances(false)
+  } else {
+    setReloadLedgerBalances(false)
+  }
 }
 
-const reloadBalances = () => {
-  setReloadBalances(true)
+const reloadBalances = (walletType: WalletType) => {
+  if (walletType === 'keystore') {
+    setReloadBalances(true)
+  } else {
+    setReloadLedgerBalances(true)
+  }
 }
 
 // State of balances loaded by Client
@@ -43,7 +52,7 @@ const balances$ = ({
 // State of balances loaded by Client and Address
 const getBalanceByAddress$ = C.balancesByAddress$({
   client$,
-  trigger$: reloadBalances$,
+  trigger$: reloadLedgerBalances$,
   walletBalanceType: 'all'
 })
 

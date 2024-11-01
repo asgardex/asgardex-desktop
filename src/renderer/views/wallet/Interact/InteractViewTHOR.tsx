@@ -17,6 +17,7 @@ import { Interact } from '../../../components/wallet/txs/interact'
 import { getInteractTypeFromNullableString } from '../../../components/wallet/txs/interact/Interact.helpers'
 import { InteractType } from '../../../components/wallet/txs/interact/Interact.types'
 import { InteractFormThor } from '../../../components/wallet/txs/interact/InteractFormThor'
+import { DEFAULT_WALLET_TYPE } from '../../../const'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
@@ -58,6 +59,15 @@ export const InteractViewTHOR: React.FC = () => {
         oSelectedAsset,
         O.map((selectedAsset) => selectedAsset.asset.chain),
         O.getOrElse(() => '') // Replace "defaultChain" with an appropriate default value
+      ),
+    [oSelectedAsset]
+  )
+  const assetWalletType = useMemo(
+    () =>
+      FP.pipe(
+        oSelectedAsset,
+        O.map((selectedAsset) => selectedAsset.walletType),
+        O.getOrElse(() => DEFAULT_WALLET_TYPE) // Replace "defaultChain" with an appropriate default value
       ),
     [oSelectedAsset]
   )
@@ -221,10 +231,10 @@ export const InteractViewTHOR: React.FC = () => {
   )
 
   const reloadHandler = useCallback(() => {
-    const lazyReload = reloadBalancesByChain(assetChain)
+    const lazyReload = reloadBalancesByChain(assetChain, assetWalletType)
     reloadRunePoolProvider()
     lazyReload() // Invoke the lazy function
-  }, [assetChain, reloadRunePoolProvider])
+  }, [assetChain, assetWalletType, reloadRunePoolProvider])
 
   return FP.pipe(
     sequenceTRD(interactTypeRD, selectedAssetRD),

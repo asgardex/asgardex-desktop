@@ -147,7 +147,10 @@ export const AssetDetailsView: React.FC = (): JSX.Element => {
           balances={walletBalances}
           asset={asset}
           loadTxsHandler={loadTxs}
-          reloadBalancesHandler={reloadBalancesByChain(asset.type === AssetType.SYNTH ? dex.chain : asset.chain)}
+          reloadBalancesHandler={reloadBalancesByChain(
+            asset.type === AssetType.SYNTH ? dex.chain : asset.chain,
+            walletType
+          )}
           openExplorerTxUrl={openExplorerTxUrl}
           openExplorerAddressUrl={openExplorerAddressUrlHandler}
           walletAddress={walletAddress}
