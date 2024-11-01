@@ -761,8 +761,11 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
           dataSource={chainAssets}
           renderItem={(asset) => (
             <List.Item>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-4">
+                {' '}
+                {/* Add space-x-4 for horizontal spacing */}
                 <AssetIcon asset={asset} size="small" network={network} />
+                <span>{asset.symbol}</span>
                 <DeleteOutlined
                   onClick={() => handleRemoveAsset(asset)} // Handle remove action
                   style={{ cursor: 'pointer', color: 'red' }}
@@ -773,7 +776,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
         />
       )
     },
-    [userAssets, network, handleRemoveAsset] // Dependencies for useCallback
+    [userAssets, network, handleRemoveAsset]
   )
 
   const [trustedAddresses, setTrustedAddresses] = useState<TrustedAddresses>()
@@ -910,7 +913,6 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                 {/* Asset Management Section */}
                 {isEvmChain(chain) && (
                   <div className="mx-40px mt-10px flex w-full items-center">
-                    {renderAssetsForChain(chain)}
                     <SwitchButton
                       active={!!isAddingByChain[chain]}
                       onChange={() => toggleStorageMode(chain)}
@@ -942,6 +944,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                           : intl.formatMessage({ id: 'common.removeAsset' })
                       }
                     />
+                    <div className="flex flex-row items-center space-x-4">{renderAssetsForChain(chain)}</div>
                   </div>
                 )}
               </Styled.ListItem>
