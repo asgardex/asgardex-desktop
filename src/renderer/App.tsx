@@ -46,7 +46,6 @@ export const App: React.FC = (): JSX.Element => {
                     <EthereumProvider>
                       <AvaxProvider>
                         <BaseProvider>
-                          {' '}
                           <BscProvider>
                             <ArbProvider>
                               <DogeProvider>

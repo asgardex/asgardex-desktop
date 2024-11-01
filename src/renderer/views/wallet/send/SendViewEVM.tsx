@@ -17,7 +17,7 @@ import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { FeesRD, WalletBalances } from '../../../services/clients'
-import { zeroAddress } from '../../../services/evm/const'
+import { EVMZeroAddress } from '../../../services/evm/const'
 import { PoolDetails as PoolDetailsMaya, PoolAddress as PoolAddressMaya } from '../../../services/mayaMigard/types'
 import { PoolAddress, PoolDetails } from '../../../services/midgard/types'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
@@ -72,7 +72,7 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
       return fees$({
         asset: getChainAsset(asset.asset.chain),
         amount: baseAmount(1),
-        recipient: zeroAddress,
+        recipient: EVMZeroAddress,
         from: asset.walletAddress
       })
     },

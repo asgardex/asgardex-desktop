@@ -8,7 +8,7 @@ import { ethers } from 'ethers'
 import * as E from 'fp-ts/Either'
 
 import { isEthAsset } from '../../../../renderer/helpers/assetHelper'
-import { zeroAddress } from '../../../../renderer/services/evm/const'
+import { EVMZeroAddress } from '../../../../renderer/services/evm/const'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
@@ -125,7 +125,7 @@ export const deposit = async ({
   apiKey: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const address = !isEthAsset(asset) ? ETH.getTokenAddress(asset as TokenAsset) : zeroAddress
+    const address = !isEthAsset(asset) ? ETH.getTokenAddress(asset as TokenAsset) : EVMZeroAddress
 
     if (!address) {
       return E.left({
@@ -135,7 +135,7 @@ export const deposit = async ({
     }
     const ethProviders = createEthProviders(apiKey)
 
-    const isETHAddress = address === zeroAddress
+    const isETHAddress = address === EVMZeroAddress
 
     const ledgerClient = new ETH.ClientLedger({
       ...defaultEthParams,

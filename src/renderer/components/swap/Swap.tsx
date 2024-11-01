@@ -807,12 +807,14 @@ export const Swap = ({
   }, [affiliateFee, dex, network, poolDetails, pricePool, pricePool.asset])
 
   //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
+  // Apparently thornode bug is fixed.
+  // https://gitlab.com/thorchain/thornode/-/commit/f96350ab3d5adda18c61d134caa98b6d5af2b006
   const applyBps = useMemo(() => {
     const aff = ASGARDEX_AFFILIATE_FEE
-    let applyBps: number | undefined
+    let applyBps: number
     const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
-    applyBps = network === Network.Stagenet ? undefined : aff
-    applyBps = txFeeCovered ? aff : undefined
+    applyBps = network === Network.Stagenet ? 0 : aff
+    applyBps = txFeeCovered ? aff : 0
     return applyBps
   }, [network, priceAmountToSwapMax1e8])
 
@@ -855,7 +857,7 @@ export const Swap = ({
           const destinationAsset = targetAsset
           const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
           const address = destinationAddress
-          const affiliate = ASGARDEX_ADDRESS === walletAddress || applyBps === undefined ? undefined : ASGARDEX_THORNAME
+          const affiliate = ASGARDEX_ADDRESS === walletAddress ? undefined : ASGARDEX_THORNAME
           const affiliateBps = ASGARDEX_ADDRESS === walletAddress ? undefined : applyBps
           const streamingInt = isStreaming ? streamingInterval : 0
           const streaminQuant = isStreaming ? streamingQuantity : 0

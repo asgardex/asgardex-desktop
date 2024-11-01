@@ -43,7 +43,7 @@ import {
 } from '../../shared/utils/asset'
 import { isSupportedChain } from '../../shared/utils/chain'
 import { AssetTGTERC20, DEFAULT_PRICE_ASSETS, USD_PRICE_ASSETS } from '../const'
-import { zeroAddress } from '../services/evm/const'
+import { EVMZeroAddress } from '../services/evm/const'
 import { ARB_TOKEN_WHITELIST } from '../types/generated/mayachain/arberc20whitelist'
 import { AVAX_TOKEN_WHITELIST } from '../types/generated/thorchain/avaxerc20whitelist'
 import { BASE_TOKEN_WHITELIST } from '../types/generated/thorchain/baseerc20whitelist'
@@ -421,7 +421,7 @@ export const getEVMTokenAddressForChain = (sourceChain: Chain, asset: TokenAsset
  * Get address (as check sum address) from an ETH or ETH token asset
  */
 export const getEVMAssetAddress = (asset: AnyAsset): O.Option<Address> =>
-  isEvmChainAsset(asset) ? O.some(zeroAddress) : getEVMTokenAddress(asset as TokenAsset)
+  isEvmChainAsset(asset) ? O.some(EVMZeroAddress) : getEVMTokenAddress(asset as TokenAsset)
 
 /**
  * Check whether an asset is an ERC20 asset

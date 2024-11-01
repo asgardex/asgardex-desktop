@@ -18,7 +18,7 @@ import {
   AssetXRuneAddress,
   AssetXRuneTestnet
 } from '../const'
-import { zeroAddress } from '../services/evm/const'
+import { EVMZeroAddress } from '../services/evm/const'
 import {
   isBchAsset,
   isBtcAsset,
@@ -115,7 +115,7 @@ describe('helpers/assetHelper', () => {
 
   describe('getEthAssetAddress', () => {
     it('returns ETH address', () => {
-      expect(getEVMAssetAddress(AssetETH)).toEqual(O.some(zeroAddress))
+      expect(getEVMAssetAddress(AssetETH)).toEqual(O.some(EVMZeroAddress))
     })
     it('returns ETH.USDT', () => {
       expect(getEVMAssetAddress(ERC20_TESTNET.USDT)).toEqual(O.some('0xDB99328b43B86037f80B43c3DbD203F00F056B75'))

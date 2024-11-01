@@ -15,7 +15,7 @@ import { ethers } from 'ethers'
 import * as E from 'fp-ts/Either'
 
 import { isAvaxAsset, isEVMTokenAsset } from '../../../../renderer/helpers/assetHelper'
-import { DEPOSIT_EXPIRATION_OFFSET, zeroAddress } from '../../../../renderer/services/evm/const'
+import { DEPOSIT_EXPIRATION_OFFSET, EVMZeroAddress } from '../../../../renderer/services/evm/const'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { defaultAvaxParams } from '../../../../shared/avax/const'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
@@ -114,7 +114,7 @@ export const deposit = async ({
   evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const address = !isAvaxAsset(asset) ? getTokenAddress(asset as TokenAsset) : zeroAddress
+    const address = !isAvaxAsset(asset) ? getTokenAddress(asset as TokenAsset) : EVMZeroAddress
 
     if (!address) {
       return E.left({

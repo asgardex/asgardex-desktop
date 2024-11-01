@@ -1,8 +1,10 @@
 import type Transport from '@ledgerhq/hw-transport'
-import { defaultArbParams } from '@xchainjs/xchain-arbitrum'
-import { defaultBscParams } from '@xchainjs/xchain-bsc'
+import { ARBChain, defaultArbParams } from '@xchainjs/xchain-arbitrum'
+import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BASEChain, defaultBaseParams } from '@xchainjs/xchain-base'
+import { BSCChain, defaultBscParams } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
-import { defaultEthParams } from '@xchainjs/xchain-ethereum'
+import { ETHChain, defaultEthParams } from '@xchainjs/xchain-ethereum'
 import { ClientLedger, LedgerSigner } from '@xchainjs/xchain-evm'
 import { Chain } from '@xchainjs/xchain-util'
 import * as E from 'fp-ts/Either'
@@ -32,7 +34,7 @@ export const getEVMAddress = async ({
   let clientParams
 
   switch (chain) {
-    case 'ETH':
+    case ETHChain:
       clientParams = {
         ...defaultEthParams,
         signer: new LedgerSigner({
@@ -44,7 +46,7 @@ export const getEVMAddress = async ({
         network: network
       }
       break
-    case 'ARB':
+    case ARBChain:
       clientParams = {
         ...defaultArbParams,
         signer: new LedgerSigner({
@@ -56,7 +58,7 @@ export const getEVMAddress = async ({
         network: network
       }
       break
-    case 'AVAX':
+    case AVAXChain:
       clientParams = {
         ...defaultAvaxParams,
         signer: new LedgerSigner({
@@ -68,12 +70,24 @@ export const getEVMAddress = async ({
         network: network
       }
       break
-    case 'BSC':
+    case BSCChain:
       clientParams = {
         ...defaultBscParams,
         signer: new LedgerSigner({
           transport,
           provider: defaultBscParams.providers[Network.Mainnet],
+          derivationPath: getDerivationPath(walletAccount, evmHDMode)
+        }),
+        rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
+        network: network
+      }
+      break
+    case BASEChain:
+      clientParams = {
+        ...defaultBaseParams,
+        signer: new LedgerSigner({
+          transport,
+          provider: defaultBaseParams.providers[Network.Mainnet],
           derivationPath: getDerivationPath(walletAccount, evmHDMode)
         }),
         rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
@@ -120,7 +134,7 @@ export const verifyEVMAddress = async ({
 }): Promise<boolean> => {
   let clientParams
   switch (chain) {
-    case 'ETH':
+    case ETHChain:
       clientParams = {
         ...defaultEthParams,
         signer: new LedgerSigner({
@@ -132,7 +146,7 @@ export const verifyEVMAddress = async ({
         network: network
       }
       break
-    case 'ARB':
+    case ARBChain:
       clientParams = {
         ...defaultArbParams,
         signer: new LedgerSigner({
@@ -144,7 +158,7 @@ export const verifyEVMAddress = async ({
         network: network
       }
       break
-    case 'AVAX':
+    case AVAXChain:
       clientParams = {
         ...defaultAvaxParams,
         signer: new LedgerSigner({
@@ -156,12 +170,24 @@ export const verifyEVMAddress = async ({
         network: network
       }
       break
-    case 'BSC':
+    case BSCChain:
       clientParams = {
         ...defaultBscParams,
         signer: new LedgerSigner({
           transport,
           provider: defaultBscParams.providers[Network.Mainnet],
+          derivationPath: getDerivationPath(walletAccount, evmHDMode)
+        }),
+        rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
+        network: network
+      }
+      break
+    case BASEChain:
+      clientParams = {
+        ...defaultBaseParams,
+        signer: new LedgerSigner({
+          transport,
+          provider: defaultBaseParams.providers[Network.Mainnet],
           derivationPath: getDerivationPath(walletAccount, evmHDMode)
         }),
         rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),
