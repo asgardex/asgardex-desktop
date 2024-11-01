@@ -2,6 +2,8 @@ import { CheckOutlined } from '@ant-design/icons'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
+import { Label } from '../label'
+
 export const TxTimerWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -45,4 +47,13 @@ export const IconWrapper = styled.div`
 export const SuccessIcon = styled(CheckOutlined)`
   font-size: 35px;
   color: ${palette('primary', 0)};
+`
+
+export const TimerLabel = styled(Label)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${palette('text', 0)};
+  font-size: 18px;
+  font-family: 'MainFontRegular';
 `

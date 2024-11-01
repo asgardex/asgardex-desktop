@@ -104,7 +104,7 @@ export const TxTimer: React.FC<Props> = (props): JSX.Element => {
         <Progress
           type="circle"
           percent={(progressBarValue / maxValue) * 100}
-          format={() => `${totalDurationString}s`}
+          format={() => <Styled.TimerLabel>{totalDurationString}s</Styled.TimerLabel>}
           strokeColor="#23DCC8"
           strokeWidth={7}
           strokeLinecap="round"
