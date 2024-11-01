@@ -7,8 +7,9 @@ import { ethers } from 'ethers'
 import * as E from 'fp-ts/Either'
 
 import { isBscAsset } from '../../../../renderer/helpers/assetHelper'
+import { DEPOSIT_EXPIRATION_OFFSET, EVMZeroAddress } from '../../../../renderer/services/evm/const'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
-import { DEPOSIT_EXPIRATION_OFFSET, BscZeroAddress, defaultBscParams } from '../../../../shared/bsc/const'
+import { defaultBscParams } from '../../../../shared/bsc/const'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
@@ -106,7 +107,7 @@ export const deposit = async ({
   evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const address = !isBscAsset(asset) ? BSC.getTokenAddress(asset as TokenAsset) : BscZeroAddress
+    const address = !isBscAsset(asset) ? BSC.getTokenAddress(asset as TokenAsset) : EVMZeroAddress
 
     if (!address) {
       return E.left({
@@ -115,7 +116,7 @@ export const deposit = async ({
       })
     }
 
-    const isETHAddress = address === BscZeroAddress
+    const isETHAddress = address === EVMZeroAddress
 
     const clientledger = new BSC.ClientLedger({
       ...defaultBscParams,

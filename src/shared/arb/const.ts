@@ -17,9 +17,7 @@ export const FEE_BOUNDS: Record<Network, FeeBounds | undefined> = {
     upper: UPPER_FEE_BOUND
   }
 }
-export const DEPOSIT_EXPIRATION_OFFSET = 15 * 60 // 15min in seconds
 
-export const ArbZeroAddress = '0x0000000000000000000000000000000000000000'
 export const arbscanApiKey = envOrDefault(process.env.REACT_APP_ARBISCAN_API_KEY, '')
 
 // =====Ethers providers=====

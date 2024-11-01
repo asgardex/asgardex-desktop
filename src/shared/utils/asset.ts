@@ -11,6 +11,8 @@ import { AssetLTC } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, AssetMaya } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 
+import { AssetBETH } from '../base/const'
+
 // Re-export to have asset definition at one place only to handle xchain-* changes easily in the future
 export {
   AssetBTC,
@@ -25,5 +27,6 @@ export {
   AssetAVAX,
   AssetETH,
   AssetRuneNative,
-  AssetKUJI
+  AssetKUJI,
+  AssetBETH
 }

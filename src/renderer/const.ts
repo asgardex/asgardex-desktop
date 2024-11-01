@@ -1,5 +1,6 @@
 import { ARBChain, AssetARB } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
+import { BASEChain, AssetBETH } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC, BSCChain } from '@xchainjs/xchain-bsc'
@@ -140,13 +141,29 @@ export const AssetUSDCBSC: TokenAsset = {
   type: AssetType.TOKEN
 }
 
+export const AssetUSDCARB: TokenAsset = {
+  chain: ARBChain,
+  symbol: 'USDC-0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+  ticker: 'USDC',
+  type: AssetType.TOKEN
+}
+
 export const ETHAssetsFallBack = [AssetUSDTDAC, AssetUSDC]
 export const BSCAssetsFallBack = [AssetUSDCBSC, AssetUSDTBSC]
 export const AVAXAssetsFallback = [AssetUSDTAVAX, AssetUSDCAVAX]
 export const ARBAssetsFallback = [AssetARB]
+export const BASEAssetsFallback = [AssetBETH]
 
 // for evm only
-export const DEFAULT_USER_ASSETS = [AssetUSDTDAC, AssetUSDC, AssetUSDCBSC, AssetUSDTBSC, AssetUSDTAVAX, AssetUSDCAVAX]
+export const DEFAULT_USER_ASSETS = [
+  AssetUSDTDAC,
+  AssetUSDC,
+  AssetUSDCBSC,
+  AssetUSDTBSC,
+  AssetUSDTAVAX,
+  AssetUSDCAVAX,
+  AssetUSDCARB
+]
 
 export const DEFAULT_PRICE_ASSETS: PricePoolAssets = [AssetRuneNative, AssetETH, AssetBTC, AssetCacao]
 
@@ -168,7 +185,8 @@ export const CHAIN_WEIGHTS_THOR: Record<EnabledChain, number> = {
   [ARBChain]: 11,
   [DASHChain]: 12,
   [KUJIChain]: 13,
-  [RadixChain]: 14
+  [RadixChain]: 14,
+  [BASEChain]: 15
 }
 
 // Weight of chains
@@ -189,7 +207,8 @@ export const CHAIN_WEIGHTS_MAYA: Record<EnabledChain, number> = {
   [DOGEChain]: 11,
   [GAIAChain]: 12,
   [RadixChain]: 13,
-  [SOLChain]: 14
+  [SOLChain]: 14,
+  [BASEChain]: 15
 }
 
 // Weight of currencies needed for pricing

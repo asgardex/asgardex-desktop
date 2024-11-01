@@ -6,6 +6,7 @@ import { HashRouter as Router } from 'react-router-dom'
 import { AppProvider } from './contexts/AppContext'
 import { ArbProvider } from './contexts/ArbContext'
 import { AvaxProvider } from './contexts/AvaxContext'
+import { BaseProvider } from './contexts/BaseContext'
 import { BitcoinCashProvider } from './contexts/BitcoinCashContext'
 import { BitcoinProvider } from './contexts/BitcoinContext'
 import { BscProvider } from './contexts/BscContext'
@@ -44,43 +45,45 @@ export const App: React.FC = (): JSX.Element => {
                   <BitcoinCashProvider>
                     <EthereumProvider>
                       <AvaxProvider>
-                        <BscProvider>
-                          <ArbProvider>
-                            <DogeProvider>
-                              <KujiProvider>
-                                <SolProvider>
-                                  <XrdProvider>
-                                    <DashProvider>
-                                      <CosmosProvider>
-                                        <MidgardProvider>
-                                          <ThorchainQueryProvider>
-                                            <MayachainProvider>
-                                              <MayachainQueryProvider>
-                                                <MayaMidgardProvider>
-                                                  <UserNodesProvider>
-                                                    <UserBondProvidersProvider>
-                                                      <I18nProvider>
-                                                        <Router>
-                                                          <ThemeProvider>
-                                                            <AppView />
-                                                          </ThemeProvider>
-                                                        </Router>
-                                                      </I18nProvider>
-                                                    </UserBondProvidersProvider>
-                                                  </UserNodesProvider>
-                                                </MayaMidgardProvider>
-                                              </MayachainQueryProvider>
-                                            </MayachainProvider>
-                                          </ThorchainQueryProvider>
-                                        </MidgardProvider>
-                                      </CosmosProvider>
-                                    </DashProvider>
-                                  </XrdProvider>
-                                </SolProvider>
-                              </KujiProvider>
-                            </DogeProvider>
-                          </ArbProvider>
-                        </BscProvider>
+                        <BaseProvider>
+                          <BscProvider>
+                            <ArbProvider>
+                              <DogeProvider>
+                                <KujiProvider>
+                                  <SolProvider>
+                                    <XrdProvider>
+                                      <DashProvider>
+                                        <CosmosProvider>
+                                          <MidgardProvider>
+                                            <ThorchainQueryProvider>
+                                              <MayachainProvider>
+                                                <MayachainQueryProvider>
+                                                  <MayaMidgardProvider>
+                                                    <UserNodesProvider>
+                                                      <UserBondProvidersProvider>
+                                                        <I18nProvider>
+                                                          <Router>
+                                                            <ThemeProvider>
+                                                              <AppView />
+                                                            </ThemeProvider>
+                                                          </Router>
+                                                        </I18nProvider>
+                                                      </UserBondProvidersProvider>
+                                                    </UserNodesProvider>
+                                                  </MayaMidgardProvider>
+                                                </MayachainQueryProvider>
+                                              </MayachainProvider>
+                                            </ThorchainQueryProvider>
+                                          </MidgardProvider>
+                                        </CosmosProvider>
+                                      </DashProvider>
+                                    </XrdProvider>
+                                  </SolProvider>
+                                </KujiProvider>
+                              </DogeProvider>
+                            </ArbProvider>
+                          </BscProvider>
+                        </BaseProvider>
                       </AvaxProvider>
                     </EthereumProvider>
                   </BitcoinCashProvider>

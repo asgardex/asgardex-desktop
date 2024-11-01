@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -139,6 +140,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
         case ARBChain:
         case AVAXChain:
         case BSCChain:
+        case BASEChain:
           return (
             <SendViewEVM
               asset={asset}

@@ -2,6 +2,7 @@ import Transport from '@ledgerhq/hw-transport'
 import TransportNodeHidSingleton from '@ledgerhq/hw-transport-node-hid-singleton'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -25,6 +26,7 @@ import { chainToString, isSupportedChain } from '../../../shared/utils/chain'
 import { isError, isEvmHDMode } from '../../../shared/utils/guard'
 import * as ARB from './arb/transaction'
 import * as AVAX from './avax/transaction'
+import * as BASE from './base/transaction'
 import * as BTC from './bitcoin/transaction'
 import * as BCH from './bitcoincash/transaction'
 import * as BSC from './bsc/transaction'
@@ -152,6 +154,27 @@ const chainSendFunctions: Record<
       })
     }
     return AVAX.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode })
+  },
+  [BASEChain]: async (params) => {
+    if (!params.asset) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(BASEChain)}`
+      })
+    }
+    if (!params.feeOption) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Fee option needs to be set to send Ledger transaction on ${chainToString(BASEChain)}`
+      })
+    }
+    if (!isEvmHDMode(params.hdMode)) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Invalid EvmHDMode set - needed to send Ledger transaction on ${chainToString(BASEChain)}`
+      })
+    }
+    return BASE.send({ ...params, feeOption: params.feeOption, evmHDMode: params.hdMode })
   },
   [BSCChain]: async (params) => {
     if (!params.asset) {

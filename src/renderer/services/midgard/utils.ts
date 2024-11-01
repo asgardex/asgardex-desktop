@@ -1,6 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AssetAVAX, AVAX_GAS_ASSET_DECIMAL, AVAXChain } from '@xchainjs/xchain-avax'
+import { AssetBETH, BASE_GAS_ASSET_DECIMAL, BASEChain } from '@xchainjs/xchain-base'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
@@ -272,6 +273,13 @@ export const getOutboundAssetFeeByChain = (
             // Convertion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
             amount: convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), AVAX_GAS_ASSET_DECIMAL),
             asset: AssetAVAX
+          })
+        }
+        case BASEChain: {
+          return O.some({
+            // Convertion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
+            amount: convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), BASE_GAS_ASSET_DECIMAL),
+            asset: AssetBETH
           })
         }
         case BSCChain: {

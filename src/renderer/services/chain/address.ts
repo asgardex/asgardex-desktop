@@ -1,5 +1,6 @@
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -20,6 +21,7 @@ import * as Rx from 'rxjs'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'
+import * as BASE from '../base'
 import * as BTC from '../bitcoin'
 import * as BCH from '../bitcoincash'
 import * as BSC from '../bsc'
@@ -53,6 +55,8 @@ const addressByChain$ = (chain: Chain): WalletAddress$ => {
       return ARB.address$
     case AVAXChain:
       return AVAX.address$
+    case BASEChain:
+      return BASE.address$
     case BSCChain:
       return BSC.address$
     case THORChain:

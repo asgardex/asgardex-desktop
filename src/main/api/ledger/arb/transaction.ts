@@ -7,8 +7,9 @@ import { ethers } from 'ethers'
 import * as E from 'fp-ts/Either'
 
 import { isAethAsset } from '../../../../renderer/helpers/assetHelper'
+import { DEPOSIT_EXPIRATION_OFFSET, EVMZeroAddress } from '../../../../renderer/services/evm/const'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
-import { DEPOSIT_EXPIRATION_OFFSET, ArbZeroAddress, defaultArbParams } from '../../../../shared/arb/const'
+import { defaultArbParams } from '../../../../shared/arb/const'
 import { getDerivationPath } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
@@ -97,7 +98,7 @@ export const deposit = async ({
   evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const address = !isAethAsset(asset) ? ARB.getTokenAddress(asset as TokenAsset) : ArbZeroAddress
+    const address = !isAethAsset(asset) ? ARB.getTokenAddress(asset as TokenAsset) : EVMZeroAddress
 
     if (!address) {
       return E.left({
@@ -106,7 +107,7 @@ export const deposit = async ({
       })
     }
 
-    const isETHAddress = address === ArbZeroAddress
+    const isETHAddress = address === EVMZeroAddress
 
     const clientledger = new ARB.ClientLedger({
       ...defaultArbParams,

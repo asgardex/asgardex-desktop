@@ -6,6 +6,7 @@
 import arbIcon from '!file-loader!../../assets/svg/asset-arb.svg'
 import atomIcon from '!file-loader!../../assets/svg/asset-atom.svg'
 import avaxIcon from '!file-loader!../../assets/svg/asset-avax.svg'
+import baseIcon from '!file-loader!../../assets/svg/asset-base.svg'
 import bscIcon from '!file-loader!../../assets/svg/asset-bsc.svg'
 import btcIcon from '!file-loader!../../assets/svg/asset-btc.svg'
 import dashIcon from '!file-loader!../../assets/svg/asset-dash.svg'
@@ -60,5 +61,6 @@ export {
   uskIcon,
   mayaIconT,
   xrdIcon,
-  solIcon
+  solIcon,
+  baseIcon
 }

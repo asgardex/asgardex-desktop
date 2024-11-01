@@ -1,5 +1,6 @@
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
@@ -46,7 +47,8 @@ export const DEFAULT_BALANCES_FILTER: BalancesStateFilter = {
   [MAYAChain]: 'all',
   [KUJIChain]: 'all',
   [RadixChain]: 'all',
-  [SOLChain]: 'all'
+  [SOLChain]: 'all',
+  [BASEChain]: 'all'
 }
 
 export const INITIAL_LOAD_TXS_PROPS: LoadTxsParams = {

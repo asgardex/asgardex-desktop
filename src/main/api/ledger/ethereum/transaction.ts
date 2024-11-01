@@ -8,13 +8,18 @@ import { ethers } from 'ethers'
 import * as E from 'fp-ts/Either'
 
 import { isEthAsset } from '../../../../renderer/helpers/assetHelper'
+import { EVMZeroAddress } from '../../../../renderer/services/evm/const'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
-import { DEPOSIT_EXPIRATION_OFFSET, ETHAddress } from '../../../../shared/ethereum/const'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
-import { ETH_MAINNET_ETHERS_PROVIDER, ETH_TESTNET_ETHERS_PROVIDER, createEthProviders } from './common'
+import {
+  DEPOSIT_EXPIRATION_OFFSET,
+  ETH_MAINNET_ETHERS_PROVIDER,
+  ETH_TESTNET_ETHERS_PROVIDER,
+  createEthProviders
+} from './common'
 
 /**
  * Sends ETH tx using Ledger
@@ -120,7 +125,7 @@ export const deposit = async ({
   apiKey: string
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const address = !isEthAsset(asset) ? ETH.getTokenAddress(asset as TokenAsset) : ETHAddress
+    const address = !isEthAsset(asset) ? ETH.getTokenAddress(asset as TokenAsset) : EVMZeroAddress
 
     if (!address) {
       return E.left({
@@ -130,7 +135,7 @@ export const deposit = async ({
     }
     const ethProviders = createEthProviders(apiKey)
 
-    const isETHAddress = address === ETHAddress
+    const isETHAddress = address === EVMZeroAddress
 
     const ledgerClient = new ETH.ClientLedger({
       ...defaultEthParams,

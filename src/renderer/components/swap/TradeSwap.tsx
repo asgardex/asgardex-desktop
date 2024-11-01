@@ -53,16 +53,7 @@ import {
   isUSDAsset,
   isRuneNativeAsset
 } from '../../helpers/assetHelper'
-import {
-  getChainAsset,
-  isAvaxChain,
-  isBchChain,
-  isBscChain,
-  isBtcChain,
-  isDogeChain,
-  isEthChain,
-  isLtcChain
-} from '../../helpers/chainHelper'
+import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isLtcChain } from '../../helpers/chainHelper'
 import { isEvmChain, isEvmToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqAddress } from '../../helpers/fp/eq'
@@ -1481,11 +1472,7 @@ export const TradeSwap = ({
       // Note: As long as we link to `viewblock` to open tx details in a browser,
       // `0x` needs to be removed from tx hash in case of ETH
       // @see https://github.com/thorchain/asgardex-electron/issues/1787#issuecomment-931934508
-      O.map((txHash) =>
-        isEthChain(sourceChain) || isAvaxChain(sourceChain) || isBscChain(sourceChain)
-          ? txHash.replace(/0x/i, '')
-          : txHash
-      )
+      O.map((txHash) => (isEvmChain(sourceAsset.chain) ? txHash.replace(/0x/i, '') : txHash))
     )
 
     const txRDasBoolean = FP.pipe(
@@ -1523,7 +1510,7 @@ export const TradeSwap = ({
     dex.chain,
     extraTxModalContent,
     intl,
-    sourceChain
+    sourceAsset.chain
   ])
 
   const renderPasswordConfirmationModal = useMemo(() => {

@@ -19,15 +19,15 @@ import {
   ipcLedgerSendTxParamsIO
 } from '../../../shared/api/io'
 import { LedgerError } from '../../../shared/api/types'
-import { DEPOSIT_EXPIRATION_OFFSET } from '../../../shared/arb/const'
 import { getBlocktime } from '../../../shared/evm/provider'
 import { isError, isEvmHDMode, isLedgerWallet } from '../../../shared/utils/guard'
-import { addressInArbWhitelist, getArbAssetAddress, isArbTokenAsset } from '../../helpers/assetHelper'
+import { addressInArbWhitelist, getEVMAssetAddress, isEVMTokenAsset } from '../../helpers/assetHelper'
 import { sequenceSOption } from '../../helpers/fpHelpers'
 import { LiveData } from '../../helpers/rx/liveData'
 import { Network$ } from '../app/types'
 import { ChainTxFeeOption } from '../chain/const'
 import * as C from '../clients'
+import { DEPOSIT_EXPIRATION_OFFSET } from '../evm/const'
 import {
   ApproveParams,
   TransactionService,
@@ -37,8 +37,8 @@ import {
   SendTxParams,
   EvmTxParams
 } from '../evm/types'
+import { Client$, Client as ArbClient } from '../evm/types'
 import { ApiError, ErrorId, TxHashLD } from '../wallet/types'
-import { Client$, Client as ArbClient } from './types'
 
 export const createTransactionService = (client$: Client$, network$: Network$): TransactionService => {
   const common = C.createTransactionService(client$)
@@ -56,7 +56,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       )
 
     return FP.pipe(
-      sequenceSOption({ address: getArbAssetAddress(params.asset), router: params.router }),
+      sequenceSOption({ address: getEVMAssetAddress(params.asset), router: params.router }),
       O.fold(
         () => failure$(`Invalid values: Asset ${params.asset} / router address ${params.router}`),
         ({ router }) =>
@@ -66,7 +66,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
               blockTime: Rx.from(getBlocktime(client.getProvider()))
             }),
             RxOp.switchMap(({ gasPrices, blockTime }) => {
-              const isERC20 = isArbTokenAsset(params.asset as TokenAsset)
+              const isERC20 = isEVMTokenAsset(params.asset as TokenAsset)
               const checkSummedContractAddress = isERC20
                 ? ethers.utils.getAddress(getContractAddressFromAsset(params.asset as TokenAsset))
                 : ethers.constants.AddressZero

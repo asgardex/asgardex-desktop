@@ -14,9 +14,10 @@ import {
 import { ethers } from 'ethers'
 import * as E from 'fp-ts/Either'
 
-import { isAvaxAsset, isAvaxTokenAsset } from '../../../../renderer/helpers/assetHelper'
+import { isAvaxAsset, isEVMTokenAsset } from '../../../../renderer/helpers/assetHelper'
+import { DEPOSIT_EXPIRATION_OFFSET, EVMZeroAddress } from '../../../../renderer/services/evm/const'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
-import { DEPOSIT_EXPIRATION_OFFSET, AvaxZeroAddress, defaultAvaxParams } from '../../../../shared/avax/const'
+import { defaultAvaxParams } from '../../../../shared/avax/const'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
@@ -113,7 +114,7 @@ export const deposit = async ({
   evmHDMode: EvmHDMode
 }): Promise<E.Either<LedgerError, TxHash>> => {
   try {
-    const address = !isAvaxAsset(asset) ? getTokenAddress(asset as TokenAsset) : AvaxZeroAddress
+    const address = !isAvaxAsset(asset) ? getTokenAddress(asset as TokenAsset) : EVMZeroAddress
 
     if (!address) {
       return E.left({
@@ -133,7 +134,7 @@ export const deposit = async ({
       network: network
     })
 
-    const isERC20 = isAvaxTokenAsset(asset as TokenAsset)
+    const isERC20 = isEVMTokenAsset(asset as TokenAsset)
     const checkSummedContractAddress = isERC20
       ? ethers.utils.getAddress(getContractAddressFromAsset(asset as TokenAsset))
       : ethers.constants.AddressZero

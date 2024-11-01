@@ -1,6 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { ARB_GAS_ASSET_DECIMAL, ARBChain, AssetAETH } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BASEChain } from '@xchainjs/xchain-base'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
@@ -240,6 +241,7 @@ export const getOutboundAssetFeeByChain = (
         case DOGEChain:
         case BSCChain:
         case AVAXChain:
+        case BASEChain:
         case LTCChain:
           return O.none
         case BTCChain:

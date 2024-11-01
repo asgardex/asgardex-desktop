@@ -17,6 +17,7 @@ import {
   baseAmount,
   BaseAmount,
   bn,
+  Chain,
   TokenAsset
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -25,10 +26,6 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as S from 'fp-ts/lib/string'
 
-import { ArbZeroAddress } from '../../shared/arb/const'
-import { AvaxZeroAddress } from '../../shared/avax/const'
-import { BscZeroAddress } from '../../shared/bsc/const'
-import { ETHAddress } from '../../shared/ethereum/const'
 import {
   AssetATOM,
   AssetBCH,
@@ -41,22 +38,21 @@ import {
   AssetRuneNative,
   AssetCacao,
   AssetMaya,
-  AssetKUJI
+  AssetKUJI,
+  AssetBETH
 } from '../../shared/utils/asset'
 import { isSupportedChain } from '../../shared/utils/chain'
 import { AssetTGTERC20, DEFAULT_PRICE_ASSETS, USD_PRICE_ASSETS } from '../const'
+import { EVMZeroAddress } from '../services/evm/const'
 import { ARB_TOKEN_WHITELIST } from '../types/generated/mayachain/arberc20whitelist'
 import { AVAX_TOKEN_WHITELIST } from '../types/generated/thorchain/avaxerc20whitelist'
+import { BASE_TOKEN_WHITELIST } from '../types/generated/thorchain/baseerc20whitelist'
 import { BSC_TOKEN_WHITELIST } from '../types/generated/thorchain/bscerc20whitelist'
 import { ERC20_WHITELIST } from '../types/generated/thorchain/erc20whitelist'
 import { PricePoolAsset } from '../views/pools/Pools.types'
-import {
-  getArbChecksumAddress,
-  getAvaxChecksumAddress,
-  getBscChecksumAddress,
-  getEthChecksumAddress
-} from './addressHelper'
+import { getEVMChecksumAddress } from './addressHelper'
 import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isEthChain, isLtcChain } from './chainHelper'
+import { isEvmChain, isEvmChainAsset } from './evmHelper'
 import { eqAsset, eqString } from './fp/eq'
 import { sequenceTOption } from './fpHelpers'
 
@@ -131,6 +127,12 @@ export const isEthAsset = (asset: AnyAsset): boolean =>
   asset.chain === AssetETH.chain && asset.symbol.toUpperCase() === AssetETH.symbol.toUpperCase()
 
 /**
+ * Checks whether an asset is a native | synth | trade BETH asset
+ */
+export const isBASEAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetBETH.chain && asset.symbol.toUpperCase() === AssetBETH.symbol.toUpperCase()
+
+/**
  * Checks whether an asset is an ARB asset
  */
 export const isArbAsset = (asset: AnyAsset): boolean =>
@@ -147,6 +149,12 @@ export const isAethAsset = (asset: AnyAsset): boolean =>
  */
 export const isAvaxAsset = (asset: AnyAsset): boolean =>
   asset.chain === AssetAVAX.chain && asset.symbol.toUpperCase() === AssetAVAX.symbol.toUpperCase()
+
+/**
+ * Checks whether an asset is an AVAX asset
+ */
+export const isBaseAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetBETH.chain && asset.symbol.toUpperCase() === AssetBETH.symbol.toUpperCase()
 
 /**
  * Checks whether an asset is an BSC asset
@@ -326,12 +334,12 @@ export const validAssetForBSC = (asset: AnyAsset /* BSC or ERC20 asset */, netwo
  * Checks whether an ERC20 address is black listed or not
  */
 const addressInList = (address: Address, list: TokenAsset[]): boolean => {
-  const oChecksumAddress = getEthChecksumAddress(address)
+  const oChecksumAddress = getEVMChecksumAddress(address)
   return FP.pipe(
     list,
     A.findFirst(
       FP.flow(
-        getEthTokenAddress,
+        getEVMTokenAddress,
         (oAddressInList) => sequenceTOption(oAddressInList, oChecksumAddress),
         O.map(([itemAddress, checksumAddress]) => eqString.equals(itemAddress, checksumAddress)),
         O.getOrElse<boolean>(() => false)
@@ -356,6 +364,10 @@ const avaxTokenWhiteListAssetOnly = FP.pipe(
   A.map(({ asset }) => asset)
 )
 
+const baseTokenWhiteListAssetOnly = FP.pipe(
+  BASE_TOKEN_WHITELIST,
+  A.map(({ asset }) => asset)
+)
 const bscTokenWhiteListAssetOnly = FP.pipe(
   BSC_TOKEN_WHITELIST,
   A.map(({ asset }) => asset)
@@ -374,6 +386,10 @@ export const addressInArbWhitelist = (address: Address): boolean => addressInLis
  * Checks whether an ERC20 address is white listed or not
  */
 export const addressInAvaxWhitelist = (address: Address): boolean => addressInList(address, avaxTokenWhiteListAssetOnly)
+/**
+ * Checks whether an ERC20 address is white listed or not
+ */
+export const addressInBaseWhitelist = (address: Address): boolean => addressInList(address, baseTokenWhiteListAssetOnly)
 
 /**
  * Checks whether an ERC20 address is white listed or not
@@ -386,84 +402,31 @@ export const addressInBscWhitelist = (address: Address): boolean => addressInLis
 export const isTgtERC20Asset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetTGTERC20)
 
 /**
- * Get ethereum token address (as check sum address) from a given asset
+ * Get a token address as a checksummed address for EVM-compatible chains
  */
-export const getEthTokenAddress: (asset: TokenAsset) => O.Option<Address> = FP.flow(
+export const getEVMTokenAddress: (asset: TokenAsset) => O.Option<Address> = FP.flow(
   getTokenAddress,
   O.fromNullable,
-  O.chain(getEthChecksumAddress)
+  O.chain(getEVMChecksumAddress)
 )
 
 /**
- * Get arb token address (as check sum address) from a given asset
+ * Get token address as a checksum address for any EVM-compatible chain.
+ * Returns `O.none` if the chain is not EVM-compatible.
  */
-export const getArbTokenAddress: (asset: TokenAsset) => O.Option<Address> = FP.flow(
-  getTokenAddress,
-  O.fromNullable,
-  O.chain(getArbChecksumAddress)
-)
-
-/**
- * Get avax token address (as check sum address) from a given asset
- */
-export const getAvaxTokenAddress: (asset: TokenAsset) => O.Option<Address> = FP.flow(
-  getTokenAddress,
-  O.fromNullable,
-  O.chain(getAvaxChecksumAddress)
-)
-
-/**
- * Get Bsc token address (as check sum address) from a given asset
- */
-export const getBscTokenAddress: (asset: TokenAsset) => O.Option<Address> = FP.flow(
-  getTokenAddress,
-  O.fromNullable,
-  O.chain(getBscChecksumAddress)
-)
+export const getEVMTokenAddressForChain = (sourceChain: Chain, asset: TokenAsset): O.Option<Address> =>
+  isEvmChain(sourceChain) ? getEVMTokenAddress(asset) : O.none
 
 /**
  * Get address (as check sum address) from an ETH or ETH token asset
  */
-export const getEthAssetAddress = (asset: AnyAsset): O.Option<Address> =>
-  isEthAsset(asset) ? O.some(ETHAddress) : getEthTokenAddress(asset as TokenAsset)
-
-/**
- * Get address (as check sum address) from an Arb or Arb token asset
- */
-export const getArbAssetAddress = (asset: AnyAsset): O.Option<Address> =>
-  isAethAsset(asset) ? O.some(ArbZeroAddress) : getArbTokenAddress(asset as TokenAsset)
-
-/**
- * Get address (as check sum address) from an Avax or Avax token asset
- */
-export const getAvaxAssetAddress = (asset: AnyAsset): O.Option<Address> =>
-  isAvaxAsset(asset) ? O.some(AvaxZeroAddress) : getAvaxTokenAddress(asset as TokenAsset)
-
-/**
- * Get address (as check sum address) from an Bsc or Bsc token asset
- */
-export const getBscAssetAddress = (asset: AnyAsset): O.Option<Address> =>
-  isBscAsset(asset) ? O.some(BscZeroAddress) : getBscTokenAddress(asset as TokenAsset)
+export const getEVMAssetAddress = (asset: AnyAsset): O.Option<Address> =>
+  isEvmChainAsset(asset) ? O.some(EVMZeroAddress) : getEVMTokenAddress(asset as TokenAsset)
 
 /**
  * Check whether an asset is an ERC20 asset
  */
-export const isEthTokenAsset: (asset: TokenAsset) => boolean = FP.flow(getEthTokenAddress, O.isSome)
-
-/**
- * Check whether an asset is an ERC20 asset
- */
-export const isArbTokenAsset: (asset: TokenAsset) => boolean = FP.flow(getArbTokenAddress, O.isSome)
-
-/**
- * Check whether an asset is an ERC20 asset
- */
-export const isAvaxTokenAsset: (asset: TokenAsset) => boolean = FP.flow(getAvaxTokenAddress, O.isSome)
-
-/**
- * Check whether an asset is an ERC20 asset
- */
-export const isBscTokenAsset: (asset: TokenAsset) => boolean = FP.flow(getBscTokenAddress, O.isSome)
+export const isEVMTokenAsset: (asset: TokenAsset) => boolean = FP.flow(getEVMTokenAddress, O.isSome)
 
 // Type guard for `PricePoolAsset`
 export const isPricePoolAsset = (asset: AnyAsset): asset is PricePoolAsset =>
