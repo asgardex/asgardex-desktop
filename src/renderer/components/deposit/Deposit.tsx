@@ -7,7 +7,7 @@ import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import { useIntl } from 'react-intl'
 
-import { WalletAddress } from '../../../shared/wallet/types'
+import { WalletAddress, WalletType } from '../../../shared/wallet/types'
 import { eqAddress, eqOAddress } from '../../helpers/fp/eq'
 import { PoolDetailRD as PoolDetailMayaRD, PoolShareRD as PoolShareMayaRD } from '../../services/mayaMigard/types'
 import { PoolDetailRD, PoolShareRD, PoolSharesRD } from '../../services/midgard/types'
@@ -47,6 +47,8 @@ export type Props = {
   keystoreState: KeystoreState
   dexWalletAddress: WalletAddress
   assetWalletAddress: WalletAddress
+  assetWalletType: WalletType
+  runeWalletType: WalletType
 }
 
 export const Deposit: React.FC<Props> = (props) => {
@@ -61,7 +63,9 @@ export const Deposit: React.FC<Props> = (props) => {
     shares: poolSharesRD,
     poolDetail: poolDetailRD,
     dexWalletAddress,
-    assetWalletAddress
+    assetWalletAddress,
+    assetWalletType,
+    runeWalletType
   } = props
 
   const { asset } = assetWD
@@ -117,6 +121,8 @@ export const Deposit: React.FC<Props> = (props) => {
             assetWalletAddress={assetWalletAddress}
             haltedChains={haltedChains}
             mimirHalt={mimirHalt}
+            assetWalletType={assetWalletType}
+            dexWalletType={runeWalletType}
           />
         )
       },
@@ -146,6 +152,8 @@ export const Deposit: React.FC<Props> = (props) => {
       assetWalletAddress,
       haltedChains,
       mimirHalt,
+      assetWalletType,
+      runeWalletType,
       hasSymPoolShare,
       WidthdrawContent,
       symPoolShare

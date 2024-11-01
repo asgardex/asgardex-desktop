@@ -25,6 +25,7 @@ import clsx from 'clsx'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
 import * as O from 'fp-ts/lib/Option'
+import { useObservableState } from 'observable-hooks'
 import { FormattedMessage, useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
@@ -49,7 +50,7 @@ import * as appRoutes from '../../routes/app'
 import * as walletRoutes from '../../routes/wallet'
 import { userAddresses$, addAddress, removeAddress } from '../../services/storage/userAddresses'
 import { userChains$, addChain, removeChain } from '../../services/storage/userChains'
-import { addAsset, removeAsset } from '../../services/storage/userChainTokens'
+import { addAsset, removeAsset, userAssets$ } from '../../services/storage/userChainTokens'
 import {
   KeystoreWalletsUI,
   RemoveKeystoreWalletHandler,
@@ -169,6 +170,9 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
   const [showRemoveWalletModal, setShowRemoveWalletModal] = useState(false)
   const [showQRModal, setShowQRModal] = useState<O.Option<{ asset: Asset; address: Address }>>(O.none)
   const closeQrModal = useCallback(() => setShowQRModal(O.none), [setShowQRModal])
+
+  // Subscribe to userAssets$ to get assets for each chain
+  const userAssets = useObservableState(userAssets$, [])
 
   const removeWalletHandler = useCallback(async () => {
     const noWallets = await removeKeystoreWallet()
@@ -726,24 +730,10 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     }))
   }, [])
 
-  const handleRemoveAsset = useCallback(
-    (value: string, chain: Chain) => {
-      const selectedAsset = (filteredAssets[chain] || []).find((asset) => asset.symbol === value)
-      if (selectedAsset) {
-        removeAsset(selectedAsset)
-        setAssetSearch((prevState) => ({
-          ...prevState,
-          [chain]: ''
-        }))
-
-        setFilteredAssets((prevState) => ({
-          ...prevState,
-          [chain]: []
-        }))
-      }
-    },
-    [filteredAssets]
-  )
+  const handleRemoveAsset = useCallback((asset) => {
+    removeAsset(asset) // Assuming `removeAsset` is the function to remove an asset
+    message.success(`${asset.symbol} removed successfully`)
+  }, [])
 
   const onSelectAsset = useCallback(
     (value: string, chain: Chain) => {
@@ -753,12 +743,37 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
           addAssetToStorage(selectedAsset, chain)
           message.success(`${selectedAsset.symbol} added to ${selectedAsset.chain} successfully!`)
         } else {
-          handleRemoveAsset(selectedAsset.symbol, chain)
+          handleRemoveAsset(selectedAsset)
           message.success(`${selectedAsset.symbol} removed from ${selectedAsset.chain} successfully!`)
         }
       }
     },
     [addAssetToStorage, filteredAssets, handleRemoveAsset, isAddingByChain]
+  )
+
+  // Render assets under each EVM chain
+  const renderAssetsForChain = useCallback(
+    (chain: Chain) => {
+      const chainAssets = userAssets.filter((asset) => asset.chain === chain)
+
+      return (
+        <List
+          dataSource={chainAssets}
+          renderItem={(asset) => (
+            <List.Item>
+              <div className="flex items-center space-x-2">
+                <AssetIcon asset={asset} size="small" network={network} />
+                <DeleteOutlined
+                  onClick={() => handleRemoveAsset(asset)} // Handle remove action
+                  style={{ cursor: 'pointer', color: 'red' }}
+                />
+              </div>
+            </List.Item>
+          )}
+        />
+      )
+    },
+    [userAssets, network, handleRemoveAsset] // Dependencies for useCallback
   )
 
   const [trustedAddresses, setTrustedAddresses] = useState<TrustedAddresses>()
@@ -895,6 +910,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                 {/* Asset Management Section */}
                 {isEvmChain(chain) && (
                   <div className="mx-40px mt-10px flex w-full items-center">
+                    {renderAssetsForChain(chain)}
                     <SwitchButton
                       active={!!isAddingByChain[chain]}
                       onChange={() => toggleStorageMode(chain)}
@@ -944,6 +960,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
       intl,
       trustedAddresses?.addresses,
       renderTrustedAddresses,
+      renderAssetsForChain,
       isAddingByChain,
       assetSearch,
       filteredAssets,

@@ -187,7 +187,7 @@ export type ChainBalancesService = {
 
 export type BalancesService = {
   reloadBalances: FP.Lazy<void>
-  reloadBalancesByChain: (chain: Chain) => FP.Lazy<void>
+  reloadBalancesByChain: (chain: Chain, walletType: WalletType) => FP.Lazy<void>
   chainBalances$: ChainBalances$
   balancesState$: BalancesState$
   dispose: FP.Lazy<void>

@@ -193,12 +193,12 @@ export const DepositView: React.FC<Props> = () => {
     FP.pipe(
       oSelectedAssetWithDecimal,
       O.map(({ asset: { chain } }) => {
-        reloadBalancesByChain(chain)()
-        reloadBalancesByChain(dex.chain)()
+        reloadBalancesByChain(chain, assetWalletType)()
+        reloadBalancesByChain(dex.chain, runeWalletType)()
         return true
       })
     )
-  }, [dex, oSelectedAssetWithDecimal, reloadBalancesByChain])
+  }, [assetWalletType, dex.chain, oSelectedAssetWithDecimal, reloadBalancesByChain, runeWalletType])
 
   const reloadHandler = useCallback(() => {
     reloadChainAndRuneBalances()
@@ -295,6 +295,8 @@ export const DepositView: React.FC<Props> = () => {
                     ShareContent={ShareView}
                     SymDepositContent={SymDepositView}
                     WidthdrawContent={WithdrawDepositView}
+                    assetWalletType={assetWalletType}
+                    runeWalletType={runeWalletType}
                   />
                 )
               )

@@ -242,8 +242,8 @@ const SuccessRouteView: React.FC<Props> = ({
   )
 
   const reloadBalances = useCallback(() => {
-    reloadBalancesByChain(sourceChain)()
-  }, [reloadBalancesByChain, sourceChain])
+    reloadBalancesByChain(sourceChain, sourceWalletType)()
+  }, [reloadBalancesByChain, sourceChain, sourceWalletType])
 
   const reloadSwapTxStatus = useCallback(() => {
     reloadTxStatus()
@@ -676,10 +676,10 @@ const SuccessTradeRouteView: React.FC<Props> = ({
   }, [location.pathname, navigate])
 
   const reloadHandler = useCallback(() => {
-    reloadBalancesByChain(THORChain)
+    reloadBalancesByChain(THORChain, sourceWalletType)
     reloadPools()
     reloadSelectedPoolDetail()
-  }, [reloadBalancesByChain, reloadPools, reloadSelectedPoolDetail])
+  }, [reloadBalancesByChain, reloadPools, reloadSelectedPoolDetail, sourceWalletType])
 
   const [oTargetLedgerAddress, updateTargetLedgerAddress$] = useObservableState<O.Option<Address>, UpdateLedgerAddress>(
     (targetLedgerAddressChain$) =>
@@ -762,8 +762,8 @@ const SuccessTradeRouteView: React.FC<Props> = ({
   }, [reloadTxStatus])
 
   const reloadBalances = useCallback(() => {
-    reloadBalancesByChain(sourceChain)()
-  }, [reloadBalancesByChain, sourceChain])
+    reloadBalancesByChain(sourceChain, sourceWalletType)()
+  }, [reloadBalancesByChain, sourceChain, sourceWalletType])
 
   const renderError = useCallback(
     (e: Error) => (

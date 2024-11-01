@@ -1,6 +1,6 @@
 import { Chain } from '@xchainjs/xchain-util'
 
-import { WalletAddress } from '../../../../shared/wallet/types'
+import { WalletAddress, WalletType } from '../../../../shared/wallet/types'
 import { PoolDetailRD as PoolDetailMayaRD } from '../../../services/mayaMigard/types'
 import { PoolDetailRD } from '../../../services/midgard/types'
 import { MimirHalt } from '../../../services/thorchain/types'
@@ -13,4 +13,6 @@ export type Props = {
   mimirHalt: MimirHalt
   dexWalletAddress: WalletAddress
   assetWalletAddress: WalletAddress
+  assetWalletType: WalletType
+  dexWalletType: WalletType
 }

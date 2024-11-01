@@ -50,7 +50,9 @@ export const SymDepositView: React.FC<Props> = (props) => {
     mimirHalt,
     haltedChains,
     dexWalletAddress,
-    assetWalletAddress
+    assetWalletAddress,
+    assetWalletType,
+    dexWalletType
   } = props
   const { asset } = assetWD
   const navigate = useNavigate()
@@ -132,9 +134,9 @@ export const SymDepositView: React.FC<Props> = (props) => {
   )
 
   const reloadBalances = useCallback(() => {
-    reloadBalancesByChain(assetWD.asset.chain)()
-    reloadBalancesByChain(dex.chain)()
-  }, [assetWD.asset.chain, dex, reloadBalancesByChain])
+    reloadBalancesByChain(assetWD.asset.chain, assetWalletType)()
+    reloadBalancesByChain(dex.chain, dexWalletType)()
+  }, [assetWD.asset.chain, assetWalletType, dex.chain, dexWalletType, reloadBalancesByChain])
 
   const onChangeAsset = useCallback(
     ({
@@ -171,9 +173,8 @@ export const SymDepositView: React.FC<Props> = (props) => {
   )
 
   useEffect(() => {
-    // reload balances, whenever sourceAsset and targetAsset have been changed (both are properties of `reloadBalances` )
     reloadBalances()
-  }, [reloadBalances])
+  }, [assetWalletType, dexWalletType, reloadBalances])
 
   useEffect(() => {
     if (dex.chain === THORChain) {
