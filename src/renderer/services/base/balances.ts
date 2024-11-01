@@ -7,7 +7,7 @@ import { of } from 'rxjs'
 import { switchMap } from 'rxjs/operators'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
-import { ARBAssetsFallback, ArbAssetsTestnet } from '../../const'
+import { BASEAssetsFallback } from '../../const'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
 import { userAssets$ } from '../storage/userChainTokens'
@@ -63,7 +63,7 @@ const balances$: ({
         return C.balances$({
           client$,
           trigger$: reloadBalances$,
-          assets: ARBAssetsFallback,
+          assets: BASEAssetsFallback,
           walletType,
           walletAccount,
           walletIndex,
@@ -78,7 +78,7 @@ const balances$: ({
 
 // State of balances loaded by Client and Address
 const getBalanceByAddress$ = (network: Network) => {
-  const assets: AnyAsset[] | undefined = network === Network.Testnet ? ArbAssetsTestnet : undefined
+  const assets: AnyAsset[] | undefined = network === Network.Testnet ? BASEAssetsFallback : undefined
   return C.balancesByAddress$({ client$, trigger$: reloadBalances$, assets, walletBalanceType: 'all' })
 }
 

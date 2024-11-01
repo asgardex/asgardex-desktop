@@ -131,7 +131,8 @@ export const createBalancesService = ({
             }
 
             return reloadBalances
-          })
+          }),
+          RxOp.shareReplay(1) // Cache the latest result for multiple subscribers
         )
         .subscribe((reloadFunction) => {
           if (reloadFunction !== FP.constVoid) {
