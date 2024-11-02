@@ -88,4 +88,4 @@ const removeAsset = (asset: TokenAsset) => {
   )
 }
 
-export { userAssets$, addAsset, removeAsset }
+export { userAssets$, addAsset, removeAsset, getStorageState }
