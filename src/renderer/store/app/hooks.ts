@@ -16,8 +16,16 @@ export const useApp = () => {
     [dispatch]
   )
 
+  const setIsWhitelistModalOpen = useCallback(
+    (isOpen: boolean) => {
+      dispatch(actions.setIsWhitelistModalOpen(isOpen))
+    },
+    [dispatch]
+  )
+
   return {
     ...appState,
-    changePrivateData
+    changePrivateData,
+    setIsWhitelistModalOpen
   }
 }
