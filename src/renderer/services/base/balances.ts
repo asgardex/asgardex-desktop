@@ -10,7 +10,7 @@ import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { BASEAssetsFallback } from '../../const'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
-import { userAssets$ } from '../storage/userChainTokens'
+import { getUserAssetsByChain$ } from '../storage/userChainTokens'
 import { client$ } from './common'
 /**
  * `ObservableState` to reload `Balances`
@@ -51,13 +51,12 @@ const balances$: ({
   hdMode: HDMode
 }) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, hdMode }) => {
   return FP.pipe(
-    userAssets$,
+    getUserAssetsByChain$(BASEChain),
     switchMap((assets) => {
-      const baseAssets = assets.filter((asset) => asset.chain === BASEChain)
       return C.balances$({
         client$,
         trigger$: reloadBalances$,
-        assets: baseAssets,
+        assets: assets,
         walletType,
         walletAccount,
         walletIndex,

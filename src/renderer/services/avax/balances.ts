@@ -10,7 +10,7 @@ import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { AVAXAssetsFallback, AvaxAssetsTestnet } from '../../const'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
-import { userAssets$ } from '../storage/userChainTokens'
+import { getUserAssetsByChain$ } from '../storage/userChainTokens'
 import { client$ } from './common'
 
 /**
@@ -51,13 +51,12 @@ const balances$: ({
   hdMode: HDMode
 }) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, hdMode }) => {
   return FP.pipe(
-    userAssets$,
+    getUserAssetsByChain$(AVAXChain),
     switchMap((assets) => {
-      const avaxAssets = assets.filter((asset) => asset.chain === AVAXChain)
       return C.balances$({
         client$,
         trigger$: reloadBalances$,
-        assets: avaxAssets,
+        assets: assets,
         walletType,
         walletAccount,
         walletIndex,
