@@ -50,7 +50,7 @@ import * as appRoutes from '../../routes/app'
 import * as walletRoutes from '../../routes/wallet'
 import { userAddresses$, addAddress, removeAddress } from '../../services/storage/userAddresses'
 import { userChains$, addChain, removeChain } from '../../services/storage/userChains'
-import { addAsset, removeAsset, userAssets$ } from '../../services/storage/userChainTokens'
+import { addAsset, getUserAssetsByChain$, removeAsset } from '../../services/storage/userChainTokens'
 import {
   KeystoreWalletsUI,
   RemoveKeystoreWalletHandler,
@@ -109,6 +109,11 @@ const ActionButton = ({
       <span>{text}</span>
     </div>
   )
+}
+interface RenderAssetsForChainProps {
+  chain: Chain
+  network: Network
+  handleRemoveAsset: (asset: TokenAsset) => void
 }
 
 type Props = {
@@ -170,9 +175,6 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
   const [showRemoveWalletModal, setShowRemoveWalletModal] = useState(false)
   const [showQRModal, setShowQRModal] = useState<O.Option<{ asset: Asset; address: Address }>>(O.none)
   const closeQrModal = useCallback(() => setShowQRModal(O.none), [setShowQRModal])
-
-  // Subscribe to userAssets$ to get assets for each chain
-  const userAssets = useObservableState(userAssets$, [])
 
   const removeWalletHandler = useCallback(async () => {
     const noWallets = await removeKeystoreWallet()
@@ -752,31 +754,22 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
   )
 
   // Render assets under each EVM chain
-  const renderAssetsForChain = useCallback(
-    (chain: Chain) => {
-      const chainAssets = userAssets.filter((asset) => asset.chain === chain)
+  const RenderAssetsForChain: React.FC<RenderAssetsForChainProps> = React.memo(
+    ({ chain, network, handleRemoveAsset }) => {
+      // Use `useObservableState` to subscribe to assets for the specific chain
+      const chainAssets = useObservableState(getUserAssetsByChain$(chain), [])
 
       return (
-        <List
-          dataSource={chainAssets}
-          renderItem={(asset) => (
-            <List.Item>
-              <div className="flex items-center space-x-4">
-                {' '}
-                {/* Add space-x-4 for horizontal spacing */}
-                <AssetIcon asset={asset} size="small" network={network} />
-                <span>{asset.symbol}</span>
-                <DeleteOutlined
-                  onClick={() => handleRemoveAsset(asset)} // Handle remove action
-                  style={{ cursor: 'pointer', color: 'red' }}
-                />
-              </div>
-            </List.Item>
-          )}
-        />
+        <div className="flex flex-wrap items-center space-x-4">
+          {chainAssets.map((asset) => (
+            <div key={asset.symbol} className="flex items-center space-x-2 pl-2">
+              <AssetIcon asset={asset} size="small" network={network} />
+              <DeleteOutlined onClick={() => handleRemoveAsset(asset)} style={{ cursor: 'pointer', color: 'red' }} />
+            </div>
+          ))}
+        </div>
       )
-    },
-    [userAssets, network, handleRemoveAsset]
+    }
   )
 
   const [trustedAddresses, setTrustedAddresses] = useState<TrustedAddresses>()
@@ -912,39 +905,41 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
 
                 {/* Asset Management Section */}
                 {isEvmChain(chain) && (
-                  <div className="mx-40px mt-10px flex w-full items-center">
-                    <SwitchButton
-                      active={!!isAddingByChain[chain]}
-                      onChange={() => toggleStorageMode(chain)}
-                      className="mr-10px"
-                    />
-                    <span className="mr-2 text-text0 dark:text-text0d">
-                      {isAddingByChain[chain]
-                        ? intl.formatMessage({ id: 'common.add' })
-                        : intl.formatMessage({ id: 'common.remove' })}
-                    </span>
-                    <AutoComplete
-                      value={assetSearch[chain] || ''}
-                      onChange={(value) => handleAssetSearch(value, chain)}
-                      onSelect={(value: string) => onSelectAsset(value, chain)}
-                      style={{ minWidth: 450, width: 'auto' }}
-                      placeholder={intl.formatMessage({ id: 'common.searchAsset' })}
-                      allowClear>
-                      {(filteredAssets[chain] || []).map((asset: TokenAsset) => (
-                        <AutoComplete.Option key={asset.symbol} value={asset.symbol}>
-                          <div>{asset.symbol}</div>
-                        </AutoComplete.Option>
-                      ))}
-                    </AutoComplete>
-                    <InfoIcon
-                      className="ml-10px"
-                      tooltip={
-                        isAddingByChain[chain]
-                          ? intl.formatMessage({ id: 'common.addAsset' })
-                          : intl.formatMessage({ id: 'common.removeAsset' })
-                      }
-                    />
-                    <div className="flex flex-row items-center space-x-4">{renderAssetsForChain(chain)}</div>
+                  <div>
+                    <div className="mx-40px mt-10px flex w-full items-center">
+                      <SwitchButton
+                        active={!!isAddingByChain[chain]}
+                        onChange={() => toggleStorageMode(chain)}
+                        className="mr-10px"
+                      />
+                      <span className="mr-2 text-text0 dark:text-text0d">
+                        {isAddingByChain[chain]
+                          ? intl.formatMessage({ id: 'common.add' })
+                          : intl.formatMessage({ id: 'common.remove' })}
+                      </span>
+                      <AutoComplete
+                        value={assetSearch[chain] || ''}
+                        onChange={(value) => handleAssetSearch(value, chain)}
+                        onSelect={(value: string) => onSelectAsset(value, chain)}
+                        style={{ minWidth: 450, width: 'auto' }}
+                        placeholder={intl.formatMessage({ id: 'common.searchAsset' })}
+                        allowClear>
+                        {(filteredAssets[chain] || []).map((asset: TokenAsset) => (
+                          <AutoComplete.Option key={asset.symbol} value={asset.symbol}>
+                            <div>{asset.symbol}</div>
+                          </AutoComplete.Option>
+                        ))}
+                      </AutoComplete>
+                      <InfoIcon
+                        className="ml-10px"
+                        tooltip={
+                          isAddingByChain[chain]
+                            ? intl.formatMessage({ id: 'common.addAsset' })
+                            : intl.formatMessage({ id: 'common.removeAsset' })
+                        }
+                      />
+                      <RenderAssetsForChain chain={chain} network={network} handleRemoveAsset={handleRemoveAsset} />
+                    </div>
                   </div>
                 )}
               </Styled.ListItem>
@@ -963,10 +958,11 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
       intl,
       trustedAddresses?.addresses,
       renderTrustedAddresses,
-      renderAssetsForChain,
       isAddingByChain,
       assetSearch,
       filteredAssets,
+      RenderAssetsForChain,
+      handleRemoveAsset,
       toggleChain,
       toggleStorageMode,
       handleAssetSearch,

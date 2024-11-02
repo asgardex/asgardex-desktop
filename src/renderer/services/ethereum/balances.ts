@@ -10,7 +10,7 @@ import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { ETHAssetsFallBack, ETHAssetsTestnet } from '../../const'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
-import { userAssets$ } from '../storage/userChainTokens'
+import { getUserAssetsByChain$ } from '../storage/userChainTokens'
 import { client$ } from './common'
 
 /**
@@ -51,14 +51,12 @@ const balances$: ({
   hdMode: HDMode
 }) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, hdMode }) => {
   return FP.pipe(
-    userAssets$,
+    getUserAssetsByChain$(ETHChain),
     switchMap((assets) => {
-      const ethAssets = assets.filter((asset) => asset.chain === ETHChain)
-
       return C.balances$({
         client$,
         trigger$: reloadBalances$,
-        assets: ethAssets,
+        assets: assets,
         walletType,
         walletAccount,
         walletIndex,

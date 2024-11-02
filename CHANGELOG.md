@@ -9,6 +9,7 @@
 
 - update bonds view under wallet tab [#445](https://github.com/asgardex/asgardex-desktop/pull/452)
 - fixed the color of tx timer [#459](https://github.com/asgardex/asgardex-desktop/pull/459)
+- remove assets from icon in settings [#469](https://github.com/asgardex/asgardex-desktop/pull/464)
 
 # 1.22.7 (2024-10-24)
 

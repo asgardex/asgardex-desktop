@@ -12,7 +12,7 @@ import { BSCAssetsFallBack, BscAssetsTestnet } from '../../const'
 import { liveData } from '../../helpers/rx/liveData'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
-import { userAssets$ } from '../storage/userChainTokens'
+import { getUserAssetsByChain$ } from '../storage/userChainTokens'
 import { WalletBalance } from '../wallet/types'
 import { client$ } from './common'
 
@@ -66,13 +66,12 @@ const balances$: ({
   hdMode: HDMode
 }) => C.WalletBalancesLD = ({ walletType, walletAccount, walletIndex, hdMode }) => {
   return FP.pipe(
-    userAssets$,
+    getUserAssetsByChain$(BSCChain),
     switchMap((assets) => {
-      const bscAssets = assets.filter((asset) => asset.chain === BSCChain)
       return C.balances$({
         client$,
         trigger$: reloadBalances$,
-        assets: bscAssets,
+        assets: assets,
         walletType,
         walletAccount,
         walletIndex,
