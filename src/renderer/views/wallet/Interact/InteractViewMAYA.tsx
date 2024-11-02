@@ -17,6 +17,7 @@ import { Interact } from '../../../components/wallet/txs/interact'
 import { getInteractTypeFromNullableString } from '../../../components/wallet/txs/interact/Interact.helpers'
 import { InteractType } from '../../../components/wallet/txs/interact/Interact.types'
 import { InteractFormMaya } from '../../../components/wallet/txs/interact/InteractFormMaya'
+import { DEFAULT_WALLET_TYPE } from '../../../const'
 import { useMayachainContext } from '../../../contexts/MayachainContext'
 import { useMayachainQueryContext } from '../../../contexts/MayachainQueryContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
@@ -157,7 +158,7 @@ export const InteractViewMAYA: React.FC = () => {
     [navigate]
   )
   const reloadHandler = useCallback(() => {
-    const lazyReload = reloadBalancesByChain(assetChain)
+    const lazyReload = reloadBalancesByChain(assetChain, DEFAULT_WALLET_TYPE)
     lazyReload() // Invoke the lazy function
   }, [assetChain])
 

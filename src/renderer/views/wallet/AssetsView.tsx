@@ -15,7 +15,7 @@ import { AssetsNav } from '../../components/wallet/assets'
 import { AssetsTableCollapsable } from '../../components/wallet/assets/AssetsTableCollapsable'
 import type { AssetAction } from '../../components/wallet/assets/AssetsTableCollapsable'
 import { TotalAssetValue } from '../../components/wallet/assets/TotalAssetValue'
-import { CHAIN_WEIGHTS_THOR, CHAIN_WEIGHTS_MAYA } from '../../const'
+import { CHAIN_WEIGHTS_THOR, CHAIN_WEIGHTS_MAYA, DEFAULT_WALLET_TYPE } from '../../const'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
@@ -167,7 +167,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
       if (index > 0) {
         await new Promise((resolve) => setTimeout(resolve, delay))
       }
-      const lazyReload = reloadBalancesByChain(chain)
+      const lazyReload = reloadBalancesByChain(chain, DEFAULT_WALLET_TYPE)
       lazyReload()
     }
   }, [enabledChains])

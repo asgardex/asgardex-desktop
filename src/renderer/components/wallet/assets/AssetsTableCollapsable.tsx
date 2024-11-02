@@ -30,6 +30,7 @@ import { Dex } from '../../../../shared/api/types'
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString, EnabledChain, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
+import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE, ZERO_BASE_AMOUNT } from '../../../const'
 import { isCacaoAsset, isMayaAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
@@ -148,8 +149,8 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
   const [collapseChangedByUser, setCollapseChangedByUser] = useState(false)
   const [collapseAll, setCollapseAll] = useState<boolean>(false)
 
-  const handleRefreshClick = (chain: Chain) => {
-    const lazyReload = reloadBalancesByChain(chain)
+  const handleRefreshClick = (chain: Chain, walletType: WalletType) => {
+    const lazyReload = reloadBalancesByChain(chain, walletType)
     lazyReload()
   }
 
@@ -655,7 +656,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
                 disabled={disableRefresh}
                 onClick={(event) => {
                   event.stopPropagation()
-                  handleRefreshClick(chain)
+                  handleRefreshClick(chain, walletType)
                 }}
               />
               <FlatButton

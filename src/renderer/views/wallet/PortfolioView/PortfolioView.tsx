@@ -30,7 +30,7 @@ import {
   ChartColorClassnames as ColorClassnames
 } from '../../../components/uielements/chart/utils'
 import { RadioGroup } from '../../../components/uielements/radioGroup'
-import { AssetUSDC } from '../../../const'
+import { AssetUSDC, DEFAULT_WALLET_TYPE } from '../../../const'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { isUSDAsset } from '../../../helpers/assetHelper'
@@ -525,7 +525,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
       if (index > 0) {
         await new Promise((resolve) => setTimeout(resolve, delay))
       }
-      const lazyReload = reloadBalancesByChain(chain)
+      const lazyReload = reloadBalancesByChain(chain, DEFAULT_WALLET_TYPE)
       lazyReload()
     }
   }, [enabledChains])

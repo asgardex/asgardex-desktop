@@ -173,10 +173,10 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   const poolsStateRD = useObservableState(poolsState$, RD.initial)
 
   const reloadHandler = useCallback(() => {
-    const lazyReload = reloadBalancesByChain(chain)
+    const lazyReload = reloadBalancesByChain(chain, walletType)
     lazyReload()
     reloadSaverProvider()
-  }, [chain, reloadBalancesByChain, reloadSaverProvider])
+  }, [chain, reloadBalancesByChain, reloadSaverProvider, walletType])
 
   const renderError = useCallback(
     (e: Error) => (

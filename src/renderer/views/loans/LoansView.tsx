@@ -232,10 +232,10 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   const poolsStateRD = useObservableState(poolsState$, RD.initial)
 
   const reloadHandler = useCallback(() => {
-    const lazyReload = reloadBalancesByChain(collateralAssetChain)
+    const lazyReload = reloadBalancesByChain(collateralAssetChain, collateralWalletType)
     lazyReload()
     reloadBorrowerProvider()
-  }, [collateralAssetChain, reloadBalancesByChain, reloadBorrowerProvider])
+  }, [collateralAssetChain, collateralWalletType, reloadBalancesByChain, reloadBorrowerProvider])
 
   const renderError = useCallback(
     (e: Error) => (

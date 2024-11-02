@@ -77,8 +77,8 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
   const intl = useIntl()
   const navigate = useNavigate()
   const { dex } = useDex()
-  const handleRefreshClick = useCallback((chain: Chain) => {
-    const lazyReload = reloadBalancesByChain(chain)
+  const handleRefreshClick = useCallback((chain: Chain, walletType: WalletType) => {
+    const lazyReload = reloadBalancesByChain(chain, walletType)
     lazyReload()
   }, [])
 
@@ -332,7 +332,7 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
               disabled={disableRefresh}
               onClick={(event) => {
                 event.stopPropagation()
-                handleRefreshClick(THORChain)
+                handleRefreshClick(THORChain, walletType)
               }}
             />
           </div>
