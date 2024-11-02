@@ -9,6 +9,7 @@
 
 - update bonds view under wallet tab [#445](https://github.com/asgardex/asgardex-desktop/pull/452)
 - fixed the color of tx timer [#459](https://github.com/asgardex/asgardex-desktop/pull/459)
+- redesign token whitelist modal [#465](https://github.com/asgardex/asgardex-desktop/pull/465)
 
 # 1.22.7 (2024-10-24)
 
