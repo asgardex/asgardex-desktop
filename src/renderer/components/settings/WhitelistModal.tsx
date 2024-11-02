@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { Fragment, useCallback, useMemo, useRef, useState } from 'react'
 
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
@@ -12,14 +12,14 @@ import { TokenAsset } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
+import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
-import { ASSETS_STORAGE_DEFAULT } from '../../../shared/const'
 import { getChainAsset } from '../../helpers/chainHelper'
 import { emptyString } from '../../helpers/stringHelper'
 import { useNetwork } from '../../hooks/useNetwork'
 import { EVMChains } from '../../services/evm/const'
-import { addAsset, getStorageState, removeAsset } from '../../services/storage/userChainTokens'
+import { addAsset, removeAsset, userAssets$ } from '../../services/storage/userChainTokens'
 import { ARB_TOKEN_WHITELIST } from '../../types/generated/mayachain/arberc20whitelist'
 import { AVAX_TOKEN_WHITELIST } from '../../types/generated/thorchain/avaxerc20whitelist'
 import { BASE_TOKEN_WHITELIST } from '../../types/generated/thorchain/baseerc20whitelist'
@@ -40,7 +40,6 @@ export type Props = {
 export const WhitelistModal: React.FC<Props> = (props): JSX.Element => {
   const { open, onClose } = props
 
-  const [savedAssets, setSavedAssets] = useState<TokenAsset[]>([])
   const [page, setPage] = useState(1)
   const [searchValue, setSearchValue] = useState<string>(emptyString)
   const [chain, setChain] = useState<typeof EVMChains[number]>(ETHChain)
@@ -49,25 +48,18 @@ export const WhitelistModal: React.FC<Props> = (props): JSX.Element => {
   const intl = useIntl()
   const { network } = useNetwork()
 
-  const getSavedAssets = useCallback(() => {
-    setSavedAssets(
-      FP.pipe(
-        getStorageState(),
-        O.getOrElse(() => ASSETS_STORAGE_DEFAULT)
-      ).assets
-    )
-  }, [])
+  const userAssets = useObservableState(userAssets$, [])
 
   const checkIsActive = useCallback(
     (asset: TokenAsset) => {
-      const isExist = savedAssets.find(
+      const isExist = userAssets.find(
         (savedAsset) =>
           savedAsset.chain === asset.chain && savedAsset.symbol.toUpperCase() === asset.symbol.toUpperCase()
       )
 
       return isExist ? true : false
     },
-    [savedAssets]
+    [userAssets]
   )
 
   const searchHandler = useCallback(({ target }: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,10 +110,6 @@ export const WhitelistModal: React.FC<Props> = (props): JSX.Element => {
 
     return matchedAssets
   }, [chain, searchValue])
-
-  useEffect(() => {
-    if (open) getSavedAssets()
-  }, [open, getSavedAssets])
 
   const chainFilter = useMemo(() => {
     return (
