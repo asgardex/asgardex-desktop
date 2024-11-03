@@ -19,7 +19,7 @@ import { getChainAsset } from '../../helpers/chainHelper'
 import { emptyString } from '../../helpers/stringHelper'
 import { useNetwork } from '../../hooks/useNetwork'
 import { EVMChains } from '../../services/evm/const'
-import { addAsset, removeAsset, userAssets$ } from '../../services/storage/userChainTokens'
+import { addAsset, removeAsset, getUserAssetsByChain$ } from '../../services/storage/userChainTokens'
 import { ARB_TOKEN_WHITELIST } from '../../types/generated/mayachain/arberc20whitelist'
 import { AVAX_TOKEN_WHITELIST } from '../../types/generated/thorchain/avaxerc20whitelist'
 import { BASE_TOKEN_WHITELIST } from '../../types/generated/thorchain/baseerc20whitelist'
@@ -48,18 +48,18 @@ export const WhitelistModal: React.FC<Props> = (props): JSX.Element => {
   const intl = useIntl()
   const { network } = useNetwork()
 
-  const userAssets = useObservableState(userAssets$, [])
+  const chainAssets = useObservableState(getUserAssetsByChain$(chain), [])
 
   const checkIsActive = useCallback(
     (asset: TokenAsset) => {
-      const isExist = userAssets.find(
+      const isExist = chainAssets.find(
         (savedAsset) =>
           savedAsset.chain === asset.chain && savedAsset.symbol.toUpperCase() === asset.symbol.toUpperCase()
       )
 
       return isExist ? true : false
     },
-    [userAssets]
+    [chainAssets]
   )
 
   const searchHandler = useCallback(({ target }: React.ChangeEvent<HTMLInputElement>) => {

@@ -11,7 +11,7 @@ import { catchError, startWith, map, shareReplay, debounceTime } from 'rxjs/oper
 import { HDMode, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
 import { liveData } from '../../helpers/rx/liveData'
 import { replaceSymbol } from '../bsc/balances'
-import { userAssets$ } from '../storage/userChainTokens'
+import { getUserAssetsByChain$ } from '../storage/userChainTokens'
 import { ApiError, ErrorId, WalletBalance } from '../wallet/types'
 import { WalletBalancesLD, XChainClient$ } from './types'
 
@@ -199,15 +199,13 @@ export const balancesByAddress$: BalancesByAddress$ =
             () => Rx.of(RD.initial),
             (client) =>
               FP.pipe(
-                userAssets$,
+                getUserAssetsByChain$(client.getAssetInfo().asset.chain),
                 RxOp.switchMap((assets) => {
-                  // Filter the assets by the client's chain
-                  const filteredAssets = assets.filter((asset) => asset.chain === client.getAssetInfo().asset.chain)
                   return loadBalances$({
                     client,
                     address,
                     walletType,
-                    assets: filteredAssets, // Use filtered assets
+                    assets: assets, // Use filtered assets
                     walletAccount,
                     walletIndex,
                     walletBalanceType,
