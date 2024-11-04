@@ -966,7 +966,9 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
         </div>
         {renderAccounts}
       </div>
-      <WhitelistModal open={isWhitelistModalOpen} onClose={() => setIsWhitelistModalOpen(false)} />
+      {isWhitelistModalOpen && (
+        <WhitelistModal open={isWhitelistModalOpen} onClose={() => setIsWhitelistModalOpen(false)} />
+      )}
     </div>
   )
 }
