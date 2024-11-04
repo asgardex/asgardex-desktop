@@ -426,12 +426,6 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     [interactType, intl, maxAmount]
   )
 
-  // const expireDate = (value: number) => {
-  //   const yearsToAdd = value
-
-  //   return newDate
-  // }
-
   const debouncedFetch = debounce(
     async (thorname, setThorname, setThornameAvailable, setThornameUpdate, setIsOwner, thorchainQuery, balance) => {
       try {
@@ -814,7 +808,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         return intl.formatMessage({ id: 'wallet.action.send' })
       case 'thorname':
         if (isOwner) {
-          return intl.formatMessage({ id: 'common.isUpdate' })
+          return intl.formatMessage({ id: 'common.isUpdateThorname' })
         } else {
           return intl.formatMessage({ id: 'deposit.interact.actions.buyThorname' })
         }
@@ -1125,7 +1119,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                   checked={thornameUpdate || isOwner}
                   clickHandler={() => setThornameUpdate(true)}
                   disabled={isLoading}>
-                  {intl.formatMessage({ id: 'common.isUpdate' })}
+                  {intl.formatMessage({ id: 'common.isUpdateThorname' })}
                 </CheckButton>
               ) : (
                 <></>

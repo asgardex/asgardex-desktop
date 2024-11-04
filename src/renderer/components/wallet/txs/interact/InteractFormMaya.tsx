@@ -2,12 +2,16 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
+import { AssetAETH } from '@xchainjs/xchain-arbitrum'
+import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
+import { AssetETH } from '@xchainjs/xchain-ethereum'
 import { AssetCacao, CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { MayachainQuery } from '@xchainjs/xchain-mayachain-query'
+import { MayachainQuery, QuoteMAYANameParams, MAYANameDetails } from '@xchainjs/xchain-mayachain-query'
 import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
-import { MAYANameDetails } from '@xchainjs/xchain-mayamidgard-query'
+import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import {
+  AnyAsset,
   BaseAmount,
   CryptoAmount,
   assetAmount,
@@ -17,7 +21,7 @@ import {
   bn,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
-import { Form, Tooltip } from 'antd'
+import { Form, RadioChangeEvent, Tooltip } from 'antd'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
 import * as FP from 'fp-ts/function'
@@ -27,7 +31,7 @@ import { useIntl } from 'react-intl'
 
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../shared/wallet/types'
-import { ZERO_BASE_AMOUNT } from '../../../../const'
+import { AssetUSDTDAC, ZERO_BASE_AMOUNT } from '../../../../const'
 import { isUSDAsset } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
 import { getBondMemo, getLeaveMemo, getUnbondMemo } from '../../../../helpers/memoHelper'
@@ -42,10 +46,11 @@ import { ValidatePasswordHandler, WalletBalance } from '../../../../services/wal
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
 import { TxModal } from '../../../modal/tx'
 import { SendAsset } from '../../../modal/tx/extra/SendAsset'
+import * as StyledR from '../../../shared/form/Radio.styles'
 import { BaseButton, FlatButton, ViewTxButton } from '../../../uielements/button'
 import { CheckButton } from '../../../uielements/button/CheckButton'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
-import { UIFeesRD } from '../../../uielements/fees'
+import { UIFees, UIFeesRD } from '../../../uielements/fees'
 import { InfoIcon } from '../../../uielements/info'
 import { InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
@@ -188,13 +193,13 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
 
   // state variable for mayanames
   const [oMayaname, setMayaname] = useState<O.Option<MAYANameDetails>>(O.none)
-  //const [mayanameAvailable, setMayanameAvailable] = useState<boolean>(false) // if Mayaname is available
-  //const [mayanameUpdate, setMayanameUpdate] = useState<boolean>(false) // allow to update
-  //const [mayanameRegister, setMayanameRegister] = useState<boolean>(false) // allow to update
-  //const [mayanameQuoteValid, setMayanameQuoteValid] = useState<boolean>(false) // if the quote is valid then allow to buy
-  // const [isOwner, setIsOwner] = useState<boolean>(false) // if the mayaname.owner is the wallet address then allow to update
-  // const [preferredAsset, setPreferredAsset] = useState<Asset>()
-  // const [aliasChain, setAliasChain] = useState<string>('')
+  const [mayanameAvailable, setMayanameAvailable] = useState<boolean>(false) // if Mayaname is available
+  const [mayanameUpdate, setMayanameUpdate] = useState<boolean>(false) // allow to update
+  const [mayanameRegister, setMayanameRegister] = useState<boolean>(false) // allow to update
+  const [mayanameQuoteValid, setMayanameQuoteValid] = useState<boolean>(false) // if the quote is valid then allow to buy
+  const [isOwner, setIsOwner] = useState<boolean>(false) // if the mayaname.owner is the wallet address then allow to update
+  const [preferredAsset, setPreferredAsset] = useState<AnyAsset>()
+  const [aliasChain, setAliasChain] = useState<string>('')
   const isFeeError = useMemo(
     () =>
       FP.pipe(
@@ -207,7 +212,6 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
       ),
     [balance, oFee]
   )
-
   const handleMemo = useCallback(() => {
     let memoValue = form.getFieldValue('memo') as string
 
@@ -251,6 +255,14 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
       </Label>
     ),
     [intl, balance.amount]
+  )
+  const renderMayanameError = useMemo(
+    () => (
+      <Label size="big" color="error">
+        {intl.formatMessage({ id: 'common.mayanameError' })}
+      </Label>
+    ),
+    [intl]
   )
 
   // max amount for CacaoNative
@@ -321,86 +333,90 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
     [interactType, intl, maxAmount]
   )
 
-  // const expireDate = (value: number) => {
-  //   const yearsToAdd = value
-
-  //   return newDate
-  // }
-
-  const debouncedFetch = debounce(async (mayaname, setMayaname, setShowDetails, mayachainQuery) => {
-    try {
-      const mayanameDetails = await mayachainQuery.getMAYANameDetails(mayaname)
-      if (mayanameDetails) {
-        setMayaname(O.some(mayanameDetails))
-        setShowDetails(true)
-        //setMayanameAvailable(mayanameDetails.owner === '' || balance.walletAddress === mayanameDetails.owner)
-        //setMayanameUpdate(mayaname === mayanameDetails.name && mayanameDetails.owner === '')
-        //setMayanameRegister(mayanameDetails.name === '')
-        //setIsOwner(balance.walletAddress === mayanameDetails.owner)
+  const debouncedFetch = debounce(
+    async (mayaname, setMayaname, setMayanameAvailable, setMayanameUpdate, setMayanameRegister, mayachainQuery) => {
+      try {
+        const mayanameDetails = await mayachainQuery.getMAYANameDetails(mayaname)
+        if (mayanameDetails) {
+          setMayaname(O.some(mayanameDetails))
+          setMayanameAvailable(mayanameDetails.owner === '' || balance.walletAddress === mayanameDetails.owner)
+          setMayanameUpdate(mayaname === mayanameDetails.name && mayanameDetails.owner === '')
+          setMayanameRegister(mayanameDetails.name === '')
+          setIsOwner(balance.walletAddress === mayanameDetails.owner)
+        }
+        if (mayanameDetails === undefined) {
+          setMayanameAvailable(true)
+          setMayanameRegister(true)
+        }
+      } catch (error) {
+        console.log(error)
       }
-    } catch (error) {
-      console.log(error)
-    }
-  }, 500)
+    },
+    500
+  )
 
   const mayanameHandler = useCallback(() => {
     const mayaname = form.getFieldValue('mayaname')
     setMemo('')
     if (mayaname !== '') {
-      debouncedFetch(mayaname, setMayaname, setShowDetails, mayachainQuery)
+      debouncedFetch(
+        mayaname,
+        setMayaname,
+        setMayanameAvailable,
+        setMayanameUpdate,
+        setMayanameRegister,
+        mayachainQuery
+      )
     }
   }, [debouncedFetch, form, mayachainQuery])
 
-  // const estimateThornameHandler = useCallback(() => {
-  //   const currentDate = new Date()
+  const estimateMayanameHandler = useCallback(() => {
+    const currentDate = new Date()
 
-  //   form.validateFields()
-  //   const thorname = form.getFieldValue('thorname')
-  //   const chain = thornameRegister ? form.getFieldValue('chain') : form.getFieldValue('aliasChain')
-  //   const yearsToAdd = form.getFieldValue('expiry')
-  //   const expirity =
-  //     yearsToAdd === 1
-  //       ? undefined
-  //       : new Date(currentDate.getFullYear() + yearsToAdd, currentDate.getMonth(), currentDate.getDate())
-  //   const chainAddress = thornameRegister ? form.getFieldValue('chainAddress') : form.getFieldValue('aliasAddress')
-  //   const owner = balance.walletAddress
-  //   if (thorname !== undefined && chain !== undefined && chainAddress !== undefined) {
-  //     const fetchThornameQuote = async () => {
-  //       try {
-  //         const params: QuoteThornameParams = {
-  //           thorname,
-  //           chain,
-  //           chainAddress,
-  //           owner,
-  //           preferredAsset,
-  //           expirity: expirity,
-  //           isUpdate: thornameUpdate || isOwner
-  //         }
+    form.validateFields()
+    const mayaname = form.getFieldValue('mayaname')
+    const chain = mayanameRegister ? form.getFieldValue('chain') : form.getFieldValue('aliasChain')
+    const yearsToAdd = form.getFieldValue('expiry')
+    const expirity =
+      yearsToAdd === 1
+        ? undefined
+        : new Date(currentDate.getFullYear() + yearsToAdd, currentDate.getMonth(), currentDate.getDate())
+    const chainAddress = mayanameRegister ? form.getFieldValue('chainAddress') : form.getFieldValue('aliasAddress')
+    const owner = balance.walletAddress
+    if (mayaname !== undefined && chain !== undefined && chainAddress !== undefined) {
+      const fetchMayanameQuote = async () => {
+        try {
+          const params: QuoteMAYANameParams = {
+            name: mayaname,
+            chain,
+            chainAddress,
+            owner,
+            expiry: expirity,
+            isUpdate: mayanameUpdate || isOwner
+          }
+          const mayanameQuote = await mayachainQuery.estimateMAYAName(params)
+          if (mayanameQuote) {
+            setMemo(mayanameQuote.memo)
+            setAmountToSend(mayanameQuote.value.baseAmount)
+            setMayanameQuoteValid(true)
+          }
+        } catch (error) {
+          console.error('Error fetching fetchMAYANameQuote:', error)
+        }
+      }
+      fetchMayanameQuote()
+    }
+  }, [balance.walletAddress, form, isOwner, mayachainQuery, mayanameRegister, mayanameUpdate])
 
-  //         const thornameQuote = await thorchainQuery.estimateThorname(params)
+  const handleRadioAssetChange = useCallback((e: RadioChangeEvent) => {
+    const asset = e.target.value
+    setPreferredAsset(asset)
+  }, [])
 
-  //         if (thornameQuote) {
-  //           setMemo(thornameQuote.memo)
-  //           setAmountToSend(thornameQuote.value.baseAmount)
-  //           setThornameQuoteValid(true)
-  //         }
-  //       } catch (error) {
-  //         console.error('Error fetching fetchThornameQuote:', error)
-  //       }
-  //     }
-  //     fetchThornameQuote()
-  //   }
-  // }, [balance.walletAddress, form, isOwner, preferredAsset, thorchainQuery, thornameRegister, thornameUpdate])
-
-  // const handleRadioAssetChange = useCallback((e: RadioChangeEvent) => {
-  //   const asset = e.target.value
-  //   setPreferredAsset(asset)
-  // }, [])
-
-  // const handleRadioChainChange = useCallback((e: RadioChangeEvent) => {
-  //   const chain = e.target.value
-  //   setAliasChain(chain)
-  // }, [])
+  const handleRadioChainChange = useCallback((e: RadioChangeEvent) => {
+    const chain = e.target.value
+    setAliasChain(chain)
+  }, [])
 
   const addMaxAmountHandler = useCallback(
     (maxAmount: BaseAmount) => {
@@ -455,10 +471,14 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
         createMemo = currentMemo
         break
       }
+      case 'mayaname': {
+        createMemo = memo
+        break
+      }
     }
     setMemo(createMemo)
     return createMemo
-  }, [amountToSend, currentMemo, form, interactType])
+  }, [amountToSend, currentMemo, form, interactType, memo])
 
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
@@ -502,10 +522,10 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
     setMemo('')
     setAmountToSend(ZERO_BASE_AMOUNT)
     setMayaname(O.none)
-    // setIsOwner(false)
-    // setMayanameQuoteValid(false)
-    // setMayanameUpdate(false)
-    // setMayanameAvailable(false)
+    setIsOwner(false)
+    setMayanameQuoteValid(false)
+    setMayanameUpdate(false)
+    setMayanameAvailable(false)
   }, [form, resetInteractState])
 
   const renderConfirmationModal = useMemo(() => {
@@ -601,6 +621,25 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
     ),
     [memo]
   )
+  const renderRadioGroup = useMemo(
+    () => (
+      <StyledR.Radio.Group onChange={() => estimateMayanameHandler()}>
+        <StyledR.Radio className="text-gray2 dark:text-gray2d" value={1}>
+          1 year
+        </StyledR.Radio>
+        <StyledR.Radio className="text-gray2 dark:text-gray2d" value={2}>
+          2 years
+        </StyledR.Radio>
+        <StyledR.Radio className="text-gray2 dark:text-gray2d" value={3}>
+          3 years
+        </StyledR.Radio>
+        <StyledR.Radio className="text-gray2 dark:text-gray2d" value={5}>
+          5 years
+        </StyledR.Radio>
+      </StyledR.Radio.Group>
+    ),
+    [estimateMayanameHandler]
+  )
 
   const submitLabel = useMemo(() => {
     switch (interactType) {
@@ -616,8 +655,14 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
         return intl.formatMessage({ id: 'deposit.interact.actions.leave' })
       case 'custom':
         return intl.formatMessage({ id: 'wallet.action.send' })
+      case 'mayaname':
+        if (isOwner) {
+          return intl.formatMessage({ id: 'common.isUpdateMayaname' })
+        } else {
+          return intl.formatMessage({ id: 'deposit.interact.actions.buyMayaname' })
+        }
     }
-  }, [interactType, hasProviderAddress, intl])
+  }, [interactType, hasProviderAddress, intl, isOwner])
 
   const uiFeesRD: UIFeesRD = useMemo(
     () =>
@@ -644,6 +689,11 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
       amount: baseToAsset(_amountToSend).amount()
     })
   }, [_amountToSend, form])
+
+  const mayaNamefees: UIFeesRD = useMemo(() => {
+    const fees: UIFees = [{ asset: AssetCacao, amount: _amountToSend }]
+    return RD.success(fees)
+  }, [_amountToSend])
 
   // Reset values whenever interactType has been changed (an user clicks on navigation tab)
   useEffect(() => {
@@ -829,7 +879,11 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
           <Styled.InputContainer>
             <div className="flex w-full items-center text-[12px]">
               <Styled.InputLabel>{intl.formatMessage({ id: 'common.mayaname' })}</Styled.InputLabel>
-              <InfoIcon className="ml-[3px] h-[15px] w-[15px] text-inherit" color="primary" tooltip={''} />
+              <InfoIcon
+                className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                color="primary"
+                tooltip={intl.formatMessage({ id: 'common.mayanameRegistrationSpecifics' })}
+              />
             </div>
 
             <Styled.FormItem
@@ -841,21 +895,160 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
               ]}>
               <Styled.Input disabled={isLoading} size="large" onChange={() => mayanameHandler()} />
             </Styled.FormItem>
+            {O.isSome(oMayaname) && !mayanameAvailable && !isOwner && renderMayanameError}
           </Styled.InputContainer>
         )}
-        <div>
-          {interactType !== 'mayaname' && (
-            <FlatButton
-              className="mt-10px min-w-[200px]"
-              loading={isLoading}
-              disabled={isLoading || !!form.getFieldsError().filter(({ errors }) => errors.length).length}
-              type="submit"
-              size="large">
-              {submitLabel}
-            </FlatButton>
-          )}
-        </div>
+        {/** Form item for unregistered mayaname */}
+        {mayanameAvailable && (
+          <Styled.InputContainer>
+            {isOwner ? (
+              <CheckButton
+                checked={mayanameUpdate || isOwner}
+                clickHandler={() => setMayanameUpdate(true)}
+                disabled={isLoading}>
+                {intl.formatMessage({ id: 'common.isUpdateMayaname' })}
+              </CheckButton>
+            ) : (
+              <></>
+            )}
+            {!mayanameRegister ? (
+              <>
+                <div className="flex w-full items-center text-[12px]">
+                  <Styled.InputLabel>{intl.formatMessage({ id: 'common.preferredAsset' })}</Styled.InputLabel>
+                </div>
+                <Styled.FormItem
+                  name="preferredAsset"
+                  rules={[
+                    {
+                      required: false
+                    }
+                  ]}>
+                  <StyledR.Radio.Group onChange={handleRadioAssetChange} value={preferredAsset}>
+                    <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetBTC}>
+                      BTC
+                    </StyledR.Radio>
+                    <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetETH}>
+                      ETH
+                    </StyledR.Radio>
+                    <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetUSDTDAC}>
+                      USDT
+                    </StyledR.Radio>
+                  </StyledR.Radio.Group>
+                </Styled.FormItem>
+                {/* Add input fields for aliasChain, aliasAddress, and expiry */}
+                <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasChain' })}</Styled.InputLabel>
+                <Styled.FormItem
+                  name="aliasChain"
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Please provide an alias chain.'
+                    }
+                  ]}>
+                  <StyledR.Radio.Group onChange={handleRadioChainChange} value={aliasChain}>
+                    <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetAETH.chain}>
+                      ARB
+                    </StyledR.Radio>
+                    <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.chain}>
+                      BTC
+                    </StyledR.Radio>
+                    <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetETH.chain}>
+                      ETH
+                    </StyledR.Radio>
+                    <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetRuneNative.chain}>
+                      RUNE
+                    </StyledR.Radio>
+                  </StyledR.Radio.Group>
+                </Styled.FormItem>
+                <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasAddress' })}</Styled.InputLabel>
+                <Styled.FormItem
+                  name="aliasAddress"
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Please provide an alias address.'
+                    }
+                  ]}>
+                  <Styled.Input disabled={isLoading} size="middle" />
+                </Styled.FormItem>
+                <Styled.InputLabel>{intl.formatMessage({ id: 'common.expiry' })}</Styled.InputLabel>
+                <Styled.FormItem
+                  name="expiry"
+                  rules={[
+                    {
+                      required: false
+                    }
+                  ]}>
+                  {renderRadioGroup}
+                </Styled.FormItem>
+              </>
+            ) : (
+              <>
+                {/* Initial values needed for tns or mns register */}
+                <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasChain' })}</Styled.InputLabel>
+                <Styled.FormItem
+                  name="chain"
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Please provide an alias chain.'
+                    }
+                  ]}>
+                  <StyledR.Radio.Group>
+                    <StyledR.Radio value={AssetCacao.chain}>MAYA</StyledR.Radio>
+                  </StyledR.Radio.Group>
+                </Styled.FormItem>
+                <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasAddress' })}</Styled.InputLabel>
+                <Styled.FormItem
+                  name="chainAddress"
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Please provide an alias address.'
+                    }
+                  ]}>
+                  <Styled.Input disabled={isLoading} size="middle" />
+                </Styled.FormItem>
+                <Styled.InputLabel>{intl.formatMessage({ id: 'common.expiry' })}</Styled.InputLabel>
+                <Styled.FormItem
+                  name="expiry"
+                  rules={[
+                    {
+                      required: true
+                    }
+                  ]}>
+                  {renderRadioGroup}
+                </Styled.FormItem>
+              </>
+            )}
+            <Styled.Fees className="mt-10px" fees={mayaNamefees} disabled={isLoading} />
+          </Styled.InputContainer>
+        )}
       </>
+      {mayanameQuoteValid && (
+        <div>
+          <FlatButton
+            className="mt-10px min-w-[200px]"
+            loading={isLoading}
+            disabled={isLoading || !!form.getFieldsError().filter(({ errors }) => errors.length).length}
+            type="submit"
+            size="large">
+            {submitLabel}
+          </FlatButton>
+        </div>
+      )}
+      <div>
+        {interactType !== 'mayaname' && (
+          <FlatButton
+            className="mt-10px min-w-[200px]"
+            loading={isLoading}
+            disabled={isLoading || !!form.getFieldsError().filter(({ errors }) => errors.length).length}
+            type="submit"
+            size="large">
+            {submitLabel}
+          </FlatButton>
+        )}
+      </div>
       <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
         {/* memo */}
         <div className={`my-20px w-full font-main text-[12px] uppercase dark:border-gray1d`}>
@@ -873,40 +1066,36 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
             <>
               {FP.pipe(
                 oMayaname,
-                O.map(({ owner, expire, entries }) => {
-                  if (owner || expire || entries) {
+                O.map(({ owner, expireBlockHeight, aliases }) => {
+                  if (owner || expireBlockHeight || aliases) {
                     return (
                       <>
-                        {/* <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div>{intl.formatMessage({ id: 'common.thorname' })}</div>
-                          <div>{name}</div>
-                        </div> */}
                         <div className="flex w-full justify-between pl-10px text-[12px]">
                           {intl.formatMessage({ id: 'common.owner' })}
                           <div>{owner}</div>
                         </div>
                         <div className="flex w-full justify-between pl-10px text-[12px]">
                           <div>{intl.formatMessage({ id: 'common.expirationBlock' })}</div>
-                          <div>{expire}</div>
+                          <div>{expireBlockHeight}</div>
                         </div>
 
-                        {entries &&
-                          entries.map((entry, index) => (
+                        {aliases &&
+                          aliases.map((alias, index) => (
                             <div key={index}>
                               <div className="flex w-full justify-between pl-10px text-[12px]">
                                 {intl.formatMessage({ id: 'common.aliasChain' })}
-                                <div>{entry.chain}</div>
+                                <div>{alias.chain}</div>
                               </div>
                               <div className="flex w-full justify-between pl-10px text-[12px]">
                                 {intl.formatMessage({ id: 'common.aliasAddress' })}
-                                <div>{entry.address}</div>
+                                <div>{alias.address}</div>
                               </div>
                             </div>
                           ))}
-                        {/* <div className="flex w-full justify-between pl-10px text-[12px]">
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
                           {intl.formatMessage({ id: 'common.preferredAsset' })}
                           <div>{preferredAsset}</div>
-                        </div> */}
+                        </div>
                       </>
                     )
                   }
@@ -926,10 +1115,10 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
                 </div>
               </div>
 
-              <div className="ml-[-2px] flex w-full items-start pt-10px font-mainBold text-[14px]">
+              <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
                 {intl.formatMessage({ id: 'common.memo' })}
+                <div className="overflow break-normal pl-10px font-main text-[12px]">{memoLabel}</div>
               </div>
-              <div className="truncate pl-10px font-main text-[12px]">{memoLabel}</div>
             </>
           )}
         </div>

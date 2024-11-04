@@ -1,9 +1,10 @@
-# 1.22.8 (2024-tba-tba)
+# 1.22.8 (2024-11-05)
 
 ## add
 
 - solana client [#439](https://github.com/asgardex/asgardex-desktop/pull/447)
 - base client [#444] (https://github.com/asgardex/asgardex-desktop/pull/458)
+- buy & update MayaNames [#322] (https://github.com/asgardex/asgardex-desktop/pull/467)
 
 ## Updates/Fixes
 
