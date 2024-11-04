@@ -432,6 +432,10 @@ export const PortfolioView: React.FC = (): JSX.Element => {
     return formattedTotal
   }, [balancesByChain, isPrivate])
 
+  const calculatedTotal = [totalBalanceDisplay, renderSharesTotal, renderSaversTotal, renderBondTotal]
+    .map((amount) => parseFloat(amount.replace(/[^0-9.-]+/g, '')))
+    .reduce((acc, num) => (!isNaN(num) ? acc + num : acc), 0)
+
   const chainChartData = useMemo(() => {
     const balSumByChain: Record<string, number> = {}
 
@@ -537,7 +541,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
           <Styled.Title size="big" className="text-gray2 dark:text-gray2d">
             {intl.formatMessage({ id: 'wallet.balance.total.poolAssets' })}
           </Styled.Title>
-          <div className="mb-4 !text-[28px] text-text2 dark:text-text2d">{totalBalanceDisplay}</div>
+          <div className="mb-4 !text-[28px] text-text2 dark:text-text2d">{`$ ${calculatedTotal.toFixed(2)}`}</div>
         </div>
         <div className="mt-4 space-y-2">
           {activeIndex === PortfolioTabKey.CardView && (

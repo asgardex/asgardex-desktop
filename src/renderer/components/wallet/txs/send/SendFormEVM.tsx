@@ -243,7 +243,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       FP.pipe(
         oFees,
         O.map((fees) => {
-          setAssetFee(new CryptoAmount(fees[selectedFeeOption], asset))
+          setAssetFee(new CryptoAmount(fees[selectedFeeOption], getChainAsset(asset.chain)))
           return fees[selectedFeeOption]
         })
       ),
