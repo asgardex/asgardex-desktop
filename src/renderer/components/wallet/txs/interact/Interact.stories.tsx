@@ -32,7 +32,7 @@ const meta: Meta<typeof Template> = {
       control: { type: 'select', options: ['keystore', 'ledger'] }
     }
   },
-  args: { interactType: 'bond', walletType: 'keystore' }
+  args: { interactType: InteractType.Bond, walletType: 'keystore' }
 }
 
 export default meta

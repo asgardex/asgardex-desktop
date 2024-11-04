@@ -143,7 +143,7 @@ const meta: Meta<typeof Template> = {
     }
   },
   args: {
-    interactType: 'bond',
+    interactType: InteractType.Bond,
     txRDStatus: 'success',
     walletType: 'keystore',
     balance: '2',

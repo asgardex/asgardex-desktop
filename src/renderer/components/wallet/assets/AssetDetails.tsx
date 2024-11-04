@@ -26,6 +26,7 @@ import { WarningView } from '../../shared/warning'
 import { AssetInfo } from '../../uielements/assets/assetInfo'
 import { BackLinkButton } from '../../uielements/button'
 import { BorderButton, FlatButton, RefreshButton, TextButton } from '../../uielements/button'
+import { InteractType } from '../txs/interact/Interact.types'
 import { TxsTable } from '../txs/table/TxsTable'
 import * as Styled from './AssetDetails.styles'
 
@@ -120,7 +121,7 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
 
   const walletActionDepositClick = useCallback(() => {
     const path = walletRoutes.interact.path({
-      interactType: 'bond'
+      interactType: InteractType.Bond
     })
     navigate(path)
   }, [navigate])

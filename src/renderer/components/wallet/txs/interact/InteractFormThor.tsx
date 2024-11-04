@@ -247,15 +247,15 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   const [memo, setMemo] = useState<string>('')
   const amountToSend = useMemo(() => {
     switch (interactType) {
-      case 'bond':
-      case 'custom':
-      case 'thorname':
-      case 'mayaname':
+      case InteractType.Bond:
+      case InteractType.Custom:
+      case InteractType.THORName:
+      case InteractType.MAYAName:
         return _amountToSend
-      case 'leave':
-      case 'unbond':
+      case InteractType.Leave:
+      case InteractType.Unbond:
         return ZERO_BASE_AMOUNT
-      case 'runePool': {
+      case InteractType.RunePool: {
         const amnt = runePoolAction === Action.add ? _amountToSend : ZERO_BASE_AMOUNT
         return amnt
       }
@@ -348,11 +348,11 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         O.fold(
           () => ZERO_BASE_AMOUNT,
           (fee) => {
-            if (interactType === 'unbond') {
+            if (interactType === InteractType.Unbond) {
               let maxAmountBalOrBond: BaseAmount = ZERO_BASE_AMOUNT
               maxAmountBalOrBond = userNodeInfo?.bondAmount ? userNodeInfo.bondAmount : ZERO_BASE_AMOUNT
               return maxAmountBalOrBond
-            } else if (interactType === 'runePool' && runePoolAction === Action.withdraw) {
+            } else if (interactType === InteractType.RunePool && runePoolAction === Action.withdraw) {
               return runePoolProvider.value.gt(0) ? runePoolProvider.value : ZERO_BASE_AMOUNT
             } else {
               // For other interaction types, use the balance amount
@@ -373,7 +373,11 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       pricePool
     })
 
-    if ((maxAmount && interactType === 'bond') || interactType === 'custom' || interactType === 'runePool') {
+    if (
+      (maxAmount && interactType === InteractType.Bond) ||
+      interactType === InteractType.Custom ||
+      interactType === InteractType.RunePool
+    ) {
       if (O.isSome(maxAmountPrice)) {
         const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
         setMaxAmountPriceValue(maxCryptoAmount)
@@ -384,7 +388,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   const amountValidator = useCallback(
     async (_: unknown, value: BigNumber) => {
       switch (interactType) {
-        case 'bond':
+        case InteractType.Bond:
           // similar to any other form for sending any amount
           return validateTxAmountInput({
             input: value,
@@ -395,7 +399,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
               msg3: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalance' })
             }
           })
-        case 'unbond':
+        case InteractType.Unbond:
           return H.validateUnboundAmountInput({
             input: value,
             errors: {
@@ -403,7 +407,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
               msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterThan' }, { amount: '0' })
             }
           })
-        case 'custom':
+        case InteractType.Custom:
           return H.validateCustomAmountInput({
             input: value,
             errors: {
@@ -411,7 +415,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
               msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterOrEqualThan' }, { amount: '0' })
             }
           })
-        case 'runePool':
+        case InteractType.RunePool:
           return H.validateCustomAmountInput({
             input: value,
             errors: {
@@ -419,7 +423,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
               msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterOrEqualThan' }, { amount: '0' })
             }
           })
-        case 'leave':
+        case InteractType.Leave:
           return Promise.resolve(true)
       }
     },
@@ -525,7 +529,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     async (_: unknown, value: string) => {
       const inputAddres = value.toLowerCase()
       const nodeIndex = H.findNodeIndex(nodes, inputAddres)
-      if (interactType === 'unbond' && nodeIndex > -1) {
+      if (interactType === InteractType.Unbond && nodeIndex > -1) {
         return Promise.reject(intl.formatMessage({ id: 'bonds.validations.bondStatusActive' }))
       }
       return FP.pipe(
@@ -556,30 +560,30 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     let createMemo = ''
 
     switch (interactType) {
-      case 'bond': {
+      case InteractType.Bond: {
         createMemo = getBondMemo(thorAddress, providerAddress, feeInBasisPoints)
         break
       }
-      case 'unbond': {
+      case InteractType.Unbond: {
         createMemo = getUnbondMemo(thorAddress, _amountToSend, providerAddress)
         break
       }
-      case 'leave': {
+      case InteractType.Leave: {
         createMemo = getLeaveMemo(thorAddress)
         break
       }
-      case 'runePool': {
+      case InteractType.RunePool: {
         createMemo = getRunePoolMemo({
           action: runePoolAction,
           bps: H.getRunePoolWithdrawBps(runePoolProvider.value, _amountToSend)
         })
         break
       }
-      case 'custom': {
+      case InteractType.Custom: {
         createMemo = currentMemo
         break
       }
-      case 'thorname': {
+      case InteractType.THORName: {
         createMemo = memo
         break
       }
@@ -756,29 +760,29 @@ export const InteractFormThor: React.FC<Props> = (props) => {
 
   const amountLabel = useMemo(() => {
     switch (interactType) {
-      case 'bond':
+      case InteractType.Bond:
         return `${intl.formatMessage({ id: 'deposit.interact.actions.bond' })} ${intl.formatMessage({
           id: 'common.amount'
         })}`
 
-      case 'unbond':
+      case InteractType.Unbond:
         return `${intl.formatMessage({ id: 'deposit.interact.actions.unbond' })} ${intl.formatMessage({
           id: 'common.amount'
         })}`
-      case 'leave':
+      case InteractType.Leave:
         return intl.formatMessage({ id: 'deposit.interact.actions.leave' })
-      case 'runePool': {
+      case InteractType.RunePool: {
         return intl.formatMessage({
           id: 'common.amount'
         })
       }
-      case 'custom':
+      case InteractType.Custom:
         return `${intl.formatMessage({
           id: 'common.custom'
         })} ${intl.formatMessage({
           id: 'common.amount'
         })}`
-      case 'thorname':
+      case InteractType.THORName:
         return intl.formatMessage({
           id: 'common.amount'
         })
@@ -787,26 +791,26 @@ export const InteractFormThor: React.FC<Props> = (props) => {
 
   const submitLabel = useMemo(() => {
     switch (interactType) {
-      case 'bond':
+      case InteractType.Bond:
         if (hasProviderAddress) {
           return intl.formatMessage({ id: 'deposit.interact.actions.addBondProvider' })
         } else {
           return intl.formatMessage({ id: 'deposit.interact.actions.bond' })
         }
-      case 'unbond':
+      case InteractType.Unbond:
         return intl.formatMessage({ id: 'deposit.interact.actions.unbond' })
-      case 'leave':
+      case InteractType.Leave:
         return intl.formatMessage({ id: 'deposit.interact.actions.leave' })
-      case 'runePool': {
+      case InteractType.RunePool: {
         const label =
           runePoolAction === Action.add
             ? intl.formatMessage({ id: 'wallet.action.deposit' })
             : intl.formatMessage({ id: 'deposit.withdraw.sym' })
         return label
       }
-      case 'custom':
+      case InteractType.Custom:
         return intl.formatMessage({ id: 'wallet.action.send' })
-      case 'thorname':
+      case InteractType.THORName:
         if (isOwner) {
           return intl.formatMessage({ id: 'common.isUpdateThorname' })
         } else {
@@ -822,7 +826,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         RD.map((fee) => [
           {
             asset: AssetRuneNative,
-            amount: interactType === 'bond' ? fee.plus(ONE_RUNE_BASE_AMOUNT) : fee
+            amount: interactType === InteractType.Bond ? fee.plus(ONE_RUNE_BASE_AMOUNT) : fee
           }
         ])
       ),
@@ -889,7 +893,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       }}>
       <>
         {/* Memo input (CUSTOM only) */}
-        {interactType === 'custom' && (
+        {interactType === InteractType.Custom && (
           <Styled.InputContainer>
             <Styled.InputLabel>{intl.formatMessage({ id: 'common.memo' })}</Styled.InputLabel>
             <Form.Item
@@ -905,7 +909,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
           </Styled.InputContainer>
         )}
         {/** Rune Pool Only */}
-        {interactType === 'runePool' && (
+        {interactType === InteractType.RunePool && (
           <div>
             <span style={{ display: 'inline-block' }}>
               <SwitchButton
@@ -926,7 +930,9 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         )}
 
         {/* Node address input (BOND/UNBOND/LEAVE only) */}
-        {(interactType === 'bond' || interactType === 'unbond' || interactType === 'leave') && (
+        {(interactType === InteractType.Bond ||
+          interactType === InteractType.Unbond ||
+          interactType === InteractType.Leave) && (
           <Styled.InputContainer>
             <Styled.InputLabel>{intl.formatMessage({ id: 'common.nodeAddress' })}</Styled.InputLabel>
             <Form.Item
@@ -943,36 +949,37 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         )}
 
         {/* Provider address input (BOND/UNBOND/ only) */}
-        {(interactType === 'bond' || interactType === 'unbond') && !userNodeInfo?.bondProviderAddress && (
-          <Styled.InputContainer style={{ paddingBottom: '20px' }}>
-            <CheckButton checked={hasProviderAddress} clickHandler={onClickHasProviderAddress} disabled={isLoading}>
-              {intl.formatMessage({ id: 'deposit.interact.label.bondprovider' })}
-            </CheckButton>
-            {hasProviderAddress && (
-              <>
-                <Styled.InputLabel>{intl.formatMessage({ id: 'common.providerAddress' })}</Styled.InputLabel>
-                <Form.Item
-                  name="providerAddress"
-                  rules={[
-                    {
-                      required: hasProviderAddress,
-                      validator: addressValidator
-                    }
-                  ]}>
-                  <Styled.Input disabled={isLoading} onChange={() => getMemo()} size="large" />
-                </Form.Item>
-              </>
-            )}
-          </Styled.InputContainer>
-        )}
+        {(interactType === InteractType.Bond || interactType === InteractType.Unbond) &&
+          !userNodeInfo?.bondProviderAddress && (
+            <Styled.InputContainer style={{ paddingBottom: '20px' }}>
+              <CheckButton checked={hasProviderAddress} clickHandler={onClickHasProviderAddress} disabled={isLoading}>
+                {intl.formatMessage({ id: 'deposit.interact.label.bondprovider' })}
+              </CheckButton>
+              {hasProviderAddress && (
+                <>
+                  <Styled.InputLabel>{intl.formatMessage({ id: 'common.providerAddress' })}</Styled.InputLabel>
+                  <Form.Item
+                    name="providerAddress"
+                    rules={[
+                      {
+                        required: hasProviderAddress,
+                        validator: addressValidator
+                      }
+                    ]}>
+                    <Styled.Input disabled={isLoading} onChange={() => getMemo()} size="large" />
+                  </Form.Item>
+                </>
+              )}
+            </Styled.InputContainer>
+          )}
 
         {/* Amount input (BOND/UNBOND/CUSTOM only) */}
         {!hasProviderAddress && (
           <>
-            {(interactType === 'bond' ||
-              interactType === 'unbond' ||
-              interactType === 'custom' ||
-              interactType === 'runePool') && (
+            {(interactType === InteractType.Bond ||
+              interactType === InteractType.Unbond ||
+              interactType === InteractType.Custom ||
+              interactType === InteractType.RunePool) && (
               <Styled.InputContainer>
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.amount' })}</Styled.InputLabel>
                 <Styled.FormItem
@@ -991,10 +998,10 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                   />
                 </Styled.FormItem>
                 {/* max. amount button (BOND/CUSTOM/UNBOND only) */}
-                {(interactType === 'bond' ||
-                  interactType === 'custom' ||
-                  interactType === 'unbond' ||
-                  interactType === 'runePool') && (
+                {(interactType === InteractType.Bond ||
+                  interactType === InteractType.Custom ||
+                  interactType === InteractType.Unbond ||
+                  interactType === InteractType.RunePool) && (
                   <MaxBalanceButton
                     className="mb-10px"
                     color="neutral"
@@ -1005,7 +1012,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                     onChange={() => getMemo()}
                   />
                 )}
-                {userNodeInfo && (interactType === 'bond' || interactType === 'unbond') && (
+                {userNodeInfo && (interactType === InteractType.Bond || interactType === InteractType.Unbond) && (
                   <div className="p-4">
                     <div className="ml-[-2px] flex w-full justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
                       {intl.formatMessage({ id: 'common.nodeAddress' })}
@@ -1037,7 +1044,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
 
         {hasProviderAddress && (
           <>
-            {interactType === 'unbond' && (
+            {interactType === InteractType.Unbond && (
               <Styled.InputContainer>
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.amount' })}</Styled.InputLabel>
                 <Styled.FormItem
@@ -1065,7 +1072,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         {/* Fee input (BOND/UNBOND/CUSTOM only) */}
         {hasProviderAddress && (
           <>
-            {interactType === 'bond' && (
+            {interactType === InteractType.Bond && (
               <Styled.InputContainer>
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.fee.nodeOperator' })}</Styled.InputLabel>
                 <Styled.FormItem
@@ -1088,7 +1095,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         )}
         {/* Thorname Button and Details*/}
         <>
-          {interactType === 'thorname' && (
+          {interactType === InteractType.THORName && (
             <Styled.InputContainer>
               <div className="flex w-full items-center text-[12px]">
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.thorname' })}</Styled.InputLabel>
@@ -1255,7 +1262,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       )}
 
       <div>
-        {interactType !== 'thorname' && (
+        {interactType !== InteractType.THORName && (
           <FlatButton
             className="mt-10px min-w-[200px]"
             loading={isLoading}
@@ -1332,7 +1339,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                 }),
                 O.toNullable
               )}
-              {interactType === 'runePool' && (
+              {interactType === InteractType.RunePool && (
                 <>
                   <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
                     {intl.formatMessage({ id: 'runePool.detail.daysLeft' })}
@@ -1358,7 +1365,8 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                 {amountLabel}
                 <div className="truncate pl-10px font-main text-[12px]">
                   {formatAssetAmountCurrency({
-                    amount: interactType === 'unbond' ? baseToAsset(_amountToSend) : baseToAsset(amountToSend),
+                    amount:
+                      interactType === InteractType.Unbond ? baseToAsset(_amountToSend) : baseToAsset(amountToSend),
                     asset: AssetRuneNative,
                     decimal: isUSDAsset(AssetRuneNative) ? 2 : 6,
                     trimZeros: !isUSDAsset(AssetRuneNative)

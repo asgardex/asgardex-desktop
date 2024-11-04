@@ -1,3 +1,4 @@
+import { InteractType } from '../../components/wallet/txs/interact/Interact.types'
 import { base, imports, locked, assets, bonds, assetDetail, send, poolShares, history, interact } from './wallet'
 
 describe('Wallet routes', () => {
@@ -89,19 +90,19 @@ describe('Wallet routes', () => {
       expect(interact.template).toEqual('/wallet/assets/interact/:interactType')
     })
     it('bond + keystore', () => {
-      expect(interact.path({ interactType: 'bond' })).toEqual('/wallet/assets/interact/bond')
+      expect(interact.path({ interactType: InteractType.Bond })).toEqual('/wallet/assets/interact/bond')
     })
     it('bond + ledger + index 1', () => {
-      expect(interact.path({ interactType: 'bond' })).toEqual('/wallet/assets/interact/bond')
+      expect(interact.path({ interactType: InteractType.Bond })).toEqual('/wallet/assets/interact/bond')
     })
     it('unbond', () => {
-      expect(interact.path({ interactType: 'unbond' })).toEqual('/wallet/assets/interact/unbond')
+      expect(interact.path({ interactType: InteractType.Unbond })).toEqual('/wallet/assets/interact/unbond')
     })
     it('leave', () => {
-      expect(interact.path({ interactType: 'leave' })).toEqual('/wallet/assets/interact/leave')
+      expect(interact.path({ interactType: InteractType.Leave })).toEqual('/wallet/assets/interact/leave')
     })
     it('custom', () => {
-      expect(interact.path({ interactType: 'custom' })).toEqual('/wallet/assets/interact/custom')
+      expect(interact.path({ interactType: InteractType.Custom })).toEqual('/wallet/assets/interact/custom')
     })
   })
 })
