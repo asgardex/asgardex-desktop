@@ -54,7 +54,7 @@ import { UIFees, UIFeesRD } from '../../../uielements/fees'
 import { InfoIcon } from '../../../uielements/info'
 import { InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
-import { checkMemo } from '../TxForm.helpers'
+import { checkMemo, memoCorrection } from '../TxForm.helpers'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
 import * as Styled from './Interact.styles'
@@ -200,6 +200,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
   const [isOwner, setIsOwner] = useState<boolean>(false) // if the mayaname.owner is the wallet address then allow to update
   const [preferredAsset, setPreferredAsset] = useState<AnyAsset>()
   const [aliasChain, setAliasChain] = useState<string>('')
+
   const isFeeError = useMemo(
     () =>
       FP.pipe(
@@ -217,27 +218,17 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
 
     // Check if a swap memo is detected
     if (checkMemo(memoValue)) {
-      const suffixPattern = /:dx:\d+$/ // Regex to match ':dx:' followed by any number
-
-      // Check if memo ends with the suffix pattern
-      if (!suffixPattern.test(memoValue)) {
-        // Remove any partial ':dx:' pattern before appending
-        memoValue = memoValue.replace(/:dx:\d*$/, '')
-
-        // Append ':dx:5'
-        memoValue += ':dx:5'
-      }
-
+      memoValue = memoCorrection(memoValue)
       setSwapMemoDetected(true)
-      setAffiliateTracking(
-        memoValue.endsWith(':dx:10') ? `Swap memo detected` : `Swap memo detected 5bps affiliate fee applied`
-      )
+
+      // Set affiliate tracking message
+      setAffiliateTracking(intl.formatMessage({ id: 'wallet.send.affiliateTracking' }))
     } else {
       setSwapMemoDetected(false)
     }
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
-  }, [form])
+  }, [form, intl])
 
   const renderFeeError = useMemo(
     () => (

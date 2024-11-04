@@ -12,6 +12,7 @@
 - fixed the color of tx timer [#459](https://github.com/asgardex/asgardex-desktop/pull/459)
 - redesign token whitelist modal [#465](https://github.com/asgardex/asgardex-desktop/pull/465)
 - remove assets from icon in settings [#469](https://github.com/asgardex/asgardex-desktop/pull/464)
+- update base affiliate fee & interact form memo check [#468](https://github.com/asgardex/asgardex-desktop/pull/464)
 
 # 1.22.7 (2024-10-24)
 

@@ -77,7 +77,7 @@ const wallet: WalletMessages = {
   'wallet.send.error': 'Erreur de transaction.',
   'wallet.send.fastest': 'Très rapide',
   'wallet.send.fast': 'Rapide',
-  'wallet.send.affiliateTracking': `Mémo de swap détecté, frais d'affiliation de 10 points de base appliqués`,
+  'wallet.send.affiliateTracking': `Mémo de swap détecté, frais d'affiliation appliqués`,
   'wallet.send.notAllowed': 'Non autorisé',
   'wallet.send.average': 'Normal',
   'wallet.send.fundsLoss': 'Les fonds seront perdus en envoyant à cette adresse.',
