@@ -115,24 +115,25 @@ export const WhitelistModal: React.FC<Props> = (props): JSX.Element => {
     return (
       <div className="flex w-full flex-col px-4 py-4">
         <div className="flex flex-row space-x-2 overflow-x-auto pb-2">
-          {EVMChains.map((chain) => (
-            <div key={chain} onClick={() => changeChain(chain)} className="cursor-pointer">
+          {EVMChains.map((evmChain) => (
+            <div key={evmChain} className="cursor-pointer" onClick={() => changeChain(evmChain)}>
               <div
                 className={clsx(
                   'flex flex-col items-center',
                   'space-y-2 px-4 py-2',
                   'rounded-lg border border-solid border-bg2 dark:border-bg2d',
-                  'hover:bg-bg2 dark:hover:bg-bg2d'
+                  'hover:bg-bg2 dark:hover:bg-bg2d',
+                  { 'bg-bg2 dark:bg-bg2d': chain === evmChain }
                 )}>
-                <AssetIcon asset={getChainAsset(chain)} network={network} />
-                <span className="text-text2 dark:text-text2d">{chain}</span>
+                <AssetIcon asset={getChainAsset(evmChain)} network={network} />
+                <span className="text-text2 dark:text-text2d">{evmChain}</span>
               </div>
             </div>
           ))}
         </div>
       </div>
     )
-  }, [network, changeChain])
+  }, [chain, network, changeChain])
 
   const onToggleAsset = useCallback((active: boolean, asset: TokenAsset) => {
     if (active) addAsset(asset)
