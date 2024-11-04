@@ -2,13 +2,13 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
+import { AssetAETH } from '@xchainjs/xchain-arbitrum'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetETH } from '@xchainjs/xchain-ethereum'
 import { AssetCacao, CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { MayachainQuery, QuoteMAYANameParams } from '@xchainjs/xchain-mayachain-query'
+import { MayachainQuery, QuoteMAYANameParams, MAYANameDetails } from '@xchainjs/xchain-mayachain-query'
 import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
-import { MAYANameDetails } from '@xchainjs/xchain-mayamidgard-query'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import {
   AnyAsset,
@@ -212,7 +212,6 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
       ),
     [balance, oFee]
   )
-
   const handleMemo = useCallback(() => {
     let memoValue = form.getFieldValue('memo') as string
 
@@ -395,7 +394,6 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
             expiry: expirity,
             isUpdate: mayanameUpdate || isOwner
           }
-
           const mayanameQuote = await mayachainQuery.estimateMAYAName(params)
           if (mayanameQuote) {
             setMemo(mayanameQuote.memo)
@@ -948,8 +946,8 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
                     }
                   ]}>
                   <StyledR.Radio.Group onChange={handleRadioChainChange} value={aliasChain}>
-                    <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetCacao.chain}>
-                      MAYA
+                    <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetAETH.chain}>
+                      ARB
                     </StyledR.Radio>
                     <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.chain}>
                       BTC
@@ -957,7 +955,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
                     <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetETH.chain}>
                       ETH
                     </StyledR.Radio>
-                    <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetRuneNative}>
+                    <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetRuneNative.chain}>
                       RUNE
                     </StyledR.Radio>
                   </StyledR.Radio.Group>
@@ -1068,8 +1066,8 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
             <>
               {FP.pipe(
                 oMayaname,
-                O.map(({ owner, expire, entries }) => {
-                  if (owner || expire || entries) {
+                O.map(({ owner, expireBlockHeight, aliases }) => {
+                  if (owner || expireBlockHeight || aliases) {
                     return (
                       <>
                         <div className="flex w-full justify-between pl-10px text-[12px]">
@@ -1078,19 +1076,19 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
                         </div>
                         <div className="flex w-full justify-between pl-10px text-[12px]">
                           <div>{intl.formatMessage({ id: 'common.expirationBlock' })}</div>
-                          <div>{expire}</div>
+                          <div>{expireBlockHeight}</div>
                         </div>
 
-                        {entries &&
-                          entries.map((entry, index) => (
+                        {aliases &&
+                          aliases.map((alias, index) => (
                             <div key={index}>
                               <div className="flex w-full justify-between pl-10px text-[12px]">
                                 {intl.formatMessage({ id: 'common.aliasChain' })}
-                                <div>{entry.chain}</div>
+                                <div>{alias.chain}</div>
                               </div>
                               <div className="flex w-full justify-between pl-10px text-[12px]">
                                 {intl.formatMessage({ id: 'common.aliasAddress' })}
-                                <div>{entry.address}</div>
+                                <div>{alias.address}</div>
                               </div>
                             </div>
                           ))}
