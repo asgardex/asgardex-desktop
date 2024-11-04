@@ -11,7 +11,6 @@ import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { TokenAsset } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
@@ -37,6 +36,22 @@ export type Props = {
   onClose: FP.Lazy<void>
 }
 
+const getWhitelistAssets = (chain: typeof EVMChains[number], searchQuery: string) => {
+  const upperSearchValue = searchQuery.toUpperCase()
+
+  const whitelistMap = {
+    [ETHChain]: ERC20_WHITELIST,
+    [AVAXChain]: AVAX_TOKEN_WHITELIST,
+    [BASEChain]: BASE_TOKEN_WHITELIST,
+    [BSCChain]: BSC_TOKEN_WHITELIST,
+    [ARBChain]: ARB_TOKEN_WHITELIST
+  }
+
+  const whitelist = whitelistMap[chain] || []
+
+  return whitelist.filter(({ asset }) => asset.symbol.toUpperCase().includes(upperSearchValue))
+}
+
 export const WhitelistModal: React.FC<Props> = (props): JSX.Element => {
   const { open, onClose } = props
 
@@ -48,7 +63,10 @@ export const WhitelistModal: React.FC<Props> = (props): JSX.Element => {
   const intl = useIntl()
   const { network } = useNetwork()
 
-  const chainAssets = useObservableState(getUserAssetsByChain$(chain), [])
+  const chainAssets = useObservableState(
+    useMemo(() => getUserAssetsByChain$(chain), [chain]),
+    []
+  )
 
   const checkIsActive = useCallback(
     (asset: TokenAsset) => {
@@ -76,43 +94,10 @@ export const WhitelistModal: React.FC<Props> = (props): JSX.Element => {
     setPage(1)
   }, [])
 
-  const whitelistAssets = useMemo(() => {
-    const upperSearchValue = searchValue.toUpperCase()
-    let matchedAssets: {
-      asset: TokenAsset
-      iconUrl: O.Option<string>
-    }[]
+  const whitelistAssets = useMemo(() => getWhitelistAssets(chain, searchValue), [chain, searchValue])
 
-    switch (chain) {
-      case ETHChain:
-        matchedAssets = ERC20_WHITELIST.filter(({ asset }) => asset.symbol.toUpperCase().includes(upperSearchValue))
-        break
-      case AVAXChain:
-        matchedAssets = AVAX_TOKEN_WHITELIST.filter(({ asset }) =>
-          asset.symbol.toUpperCase().includes(upperSearchValue)
-        )
-        break
-      case BASEChain:
-        matchedAssets = BASE_TOKEN_WHITELIST.filter(({ asset }) =>
-          asset.symbol.toUpperCase().includes(upperSearchValue)
-        )
-        break
-      case BSCChain:
-        matchedAssets = BSC_TOKEN_WHITELIST.filter(({ asset }) => asset.symbol.toUpperCase().includes(upperSearchValue))
-        break
-      case ARBChain:
-        matchedAssets = ARB_TOKEN_WHITELIST.filter(({ asset }) => asset.symbol.toUpperCase().includes(upperSearchValue))
-        break
-      default:
-        matchedAssets = []
-        break
-    }
-
-    return matchedAssets
-  }, [chain, searchValue])
-
-  const chainFilter = useMemo(() => {
-    return (
+  const chainFilter = useMemo(
+    () => (
       <div className="flex w-full flex-col px-4 py-4">
         <div className="flex flex-row space-x-2 overflow-x-auto pb-2">
           {EVMChains.map((evmChain) => (
@@ -132,12 +117,17 @@ export const WhitelistModal: React.FC<Props> = (props): JSX.Element => {
           ))}
         </div>
       </div>
-    )
-  }, [chain, network, changeChain])
+    ),
+    [chain, network, changeChain]
+  )
 
   const onToggleAsset = useCallback((active: boolean, asset: TokenAsset) => {
     if (active) addAsset(asset)
     else removeAsset(asset)
+  }, [])
+
+  const handleLoadMore = useCallback(() => {
+    setPage((prev) => prev + 1)
   }, [])
 
   return (
@@ -197,28 +187,27 @@ export const WhitelistModal: React.FC<Props> = (props): JSX.Element => {
               </div>
               {chainFilter}
               <div className="w-[calc(100%-32px)] overflow-y-auto">
-                {whitelistAssets &&
-                  whitelistAssets.slice(0, 20 * page).map(({ asset }) => (
-                    <div
-                      key={asset.symbol}
-                      className={clsx(
-                        'flex items-center justify-between rounded-lg',
-                        'px-4 py-[3px] pr-5',
-                        'w-full cursor-pointer text-[14px]',
-                        'hover:bg-gray0 hover:dark:bg-gray0d'
-                      )}>
-                      <AssetData asset={asset} network={Network.Mainnet} />
-                      <SwitchButton active={checkIsActive(asset)} onChange={(active) => onToggleAsset(active, asset)} />
-                    </div>
-                  ))}
-                {whitelistAssets && whitelistAssets.length > 20 * page && (
+                {whitelistAssets.slice(0, 20 * page).map(({ asset }) => (
+                  <div
+                    key={asset.symbol}
+                    className={clsx(
+                      'flex items-center justify-between rounded-lg',
+                      'px-4 py-[3px] pr-5',
+                      'w-full cursor-pointer text-[14px]',
+                      'hover:bg-gray0 hover:dark:bg-gray0d'
+                    )}>
+                    <AssetData asset={asset} network={Network.Mainnet} />
+                    <SwitchButton active={checkIsActive(asset)} onChange={(active) => onToggleAsset(active, asset)} />
+                  </div>
+                ))}
+                {whitelistAssets.length > 20 * page && (
                   <div
                     className={clsx(
                       'mt-2 flex w-full cursor-pointer items-center justify-center py-2',
                       'rounded-lg border border-solid border-bg2 dark:border-bg2d',
                       'hover:bg-bg2 dark:hover:bg-bg2d'
                     )}
-                    onClick={() => setPage((prev) => prev + 1)}>
+                    onClick={handleLoadMore}>
                     <Label color="primary" align="center">
                       Load More
                     </Label>
