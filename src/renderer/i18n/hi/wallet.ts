@@ -75,7 +75,7 @@ const wallet: WalletMessages = {
   'wallet.send.success': 'लेन-देन सफल रहा।',
   'wallet.send.fastest': 'सबसे तेज़',
   'wallet.send.fast': 'तेज़',
-  'wallet.send.affiliateTracking': 'स्वैप मेमो का पता लगा, 10 बीपीएस एफिलिएट फी लागू',
+  'wallet.send.affiliateTracking': 'स्वैप मेमो का पता लगा, एफिलिएट फी लागू',
   'wallet.send.notAllowed': 'अनुमति नहीं है',
   'wallet.send.average': 'औसत',
   'wallet.send.fundsLoss': 'इस पते पर भेजने से धन खो जाएगा।',

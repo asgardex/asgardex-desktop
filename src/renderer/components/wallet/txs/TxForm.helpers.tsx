@@ -124,12 +124,12 @@ export function memoCorrection(memo: string): string {
     parts.pop()
   }
 
-  // Ensure that there are four parts before 'dx:5'
+  // Ensure that there are four parts before 'dx:fee'
   while (parts.length < 4) {
     parts.push('')
   }
 
-  // Append 'dx:10'
+  // Append 'dx:fee'
   parts.push(`${ASGARDEX_THORNAME}:${ASGARDEX_AFFILIATE_FEE}`)
 
   // Reassemble the memoValue

@@ -77,7 +77,7 @@ const wallet: WalletMessages = {
   'wallet.send.success': 'Transaktion war erfolgreich.',
   'wallet.send.fastest': 'Am schnellsten',
   'wallet.send.fast': 'Schnell',
-  'wallet.send.affiliateTracking': 'Swap-Memo erkannt, 10 Basispunkte Affiliate-Gebühr angewendet',
+  'wallet.send.affiliateTracking': 'Swap-Memo erkannt, Affiliate-Gebühr angewendet',
   'wallet.send.notAllowed': 'Nicht erlaubt',
   'wallet.send.average': 'Mittel',
   'wallet.send.fundsLoss': 'Gelder werden beim Senden an diese Adresse verloren gehen.',

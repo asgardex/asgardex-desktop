@@ -65,6 +65,7 @@ import { UIFees, UIFeesRD } from '../../../uielements/fees'
 import { InfoIcon } from '../../../uielements/info'
 import { InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
+import { checkMemo, memoCorrection } from '../TxForm.helpers'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
 import * as Styled from './Interact.styles'
@@ -283,6 +284,8 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   const [isOwner, setIsOwner] = useState<boolean>(false) // if the thorname.owner is the wallet address then allow to update
   const [preferredAsset, setPreferredAsset] = useState<Asset>()
   const [aliasChain, setAliasChain] = useState<string>('')
+  const [affiliateTracking, setAffiliateTracking] = useState<string>('')
+  const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
 
   const [currentMemo, setCurrentMemo] = useState('')
 
@@ -300,10 +303,20 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   )
 
   const handleMemo = useCallback(() => {
-    const memoValue = form.getFieldValue('memo') as string
-    // Update the state with the adjusted memo value
+    let memoValue = form.getFieldValue('memo') as string
+
+    // Check if a swap memo is detected
+    if (checkMemo(memoValue)) {
+      memoValue = memoCorrection(memoValue)
+      setSwapMemoDetected(true)
+
+      // Set affiliate tracking message
+      setAffiliateTracking(intl.formatMessage({ id: 'wallet.send.affiliateTracking' }))
+    } else {
+      setSwapMemoDetected(false)
+    }
     setCurrentMemo(memoValue)
-  }, [form])
+  }, [form, intl])
 
   const renderFeeError = useMemo(
     () => (
@@ -902,6 +915,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
               ]}>
               <Styled.Input disabled={isLoading} onChange={handleMemo} size="large" />
             </Form.Item>
+            {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
           </Styled.InputContainer>
         )}
         {/** Rune Pool Only */}
