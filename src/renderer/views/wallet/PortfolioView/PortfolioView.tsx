@@ -455,25 +455,15 @@ export const PortfolioView: React.FC = (): JSX.Element => {
     })
   }, [balancesByChain, isPrivate])
 
-  const portfolioDatasource = useMemo(() => {
-    // Calculate the total from specified sections
-    const calculatedTotal = [totalBalanceDisplay, renderSharesTotal, renderSaversTotal, renderBondTotal]
-      .map((amount) => parseFloat(amount.replace(/[^0-9.-]+/g, '')))
-      .reduce((acc, num) => (!isNaN(num) ? acc + num : acc), 0)
-
-    return [
+  const portfolioDatasource = useMemo(
+    () => [
       { key: '1', section: 'Wallet', amount: totalBalanceDisplay, action: 'Manage' },
       { key: '2', section: 'LP Shares', amount: renderSharesTotal, action: 'Manage' },
       { key: '3', section: 'Savers', amount: renderSaversTotal, action: 'Manage' },
-      { key: '4', section: 'Bonds', amount: renderBondTotal, action: 'Manage' },
-      {
-        key: '5',
-        section: 'Total',
-        amount: calculatedTotal,
-        action: 'Manage'
-      }
-    ]
-  }, [totalBalanceDisplay, renderSharesTotal, renderSaversTotal, renderBondTotal])
+      { key: '4', section: 'Bonds', amount: renderBondTotal, action: 'Manage' }
+    ],
+    [totalBalanceDisplay, renderSharesTotal, renderSaversTotal, renderBondTotal]
+  )
 
   const cardItemInfo = useMemo(
     () => [
@@ -507,12 +497,16 @@ export const PortfolioView: React.FC = (): JSX.Element => {
   )
 
   const chartData = useMemo(() => {
-    return portfolioDatasource.map(({ section, amount }, index) => ({
-      name: section,
-      value: amount,
-      fillColor: Colors[index % Colors.length],
-      className: ColorClassnames[index % Colors.length]
-    }))
+    return portfolioDatasource.map(({ section, amount }, index) => {
+      const value = amount.trim() ? parseFloat(amount.replace('$', '').replace(',', '').trim()) : 0
+      return {
+        name: section,
+        value,
+        formattedValue: value ? amount : '$ 0.00',
+        fillColor: Colors[index % Colors.length],
+        className: ColorClassnames[index % Colors.length]
+      }
+    })
   }, [portfolioDatasource])
 
   const filteredChainData = useMemo(() => chainChartData.filter((entry) => entry.value !== 0.0), [chainChartData])
@@ -585,7 +579,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
                     <div className="flex flex-wrap items-center justify-center space-x-4">
                       {chartData.map((chartCol) => (
                         <div key={chartCol.name} className={chartCol.className}>
-                          {chartCol.name} - {chartCol.value}
+                          {chartCol.name} - {chartCol.formattedValue}
                         </div>
                       ))}
                     </div>
