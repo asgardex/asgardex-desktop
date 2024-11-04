@@ -46,7 +46,7 @@ export const ShowDetails: React.FC<Props> = ({
       case DASHChain:
         return 'DASH/kB'
       default:
-        return ''
+        return asset.chain
     }
   })()
   return (
