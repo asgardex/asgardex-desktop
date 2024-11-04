@@ -15,6 +15,7 @@ import { AssetsNav } from '../../components/wallet/assets'
 import { AssetsTableCollapsable } from '../../components/wallet/assets/AssetsTableCollapsable'
 import type { AssetAction } from '../../components/wallet/assets/AssetsTableCollapsable'
 import { TotalAssetValue } from '../../components/wallet/assets/TotalAssetValue'
+import { InteractType } from '../../components/wallet/txs/interact/Interact.types'
 import { CHAIN_WEIGHTS_THOR, CHAIN_WEIGHTS_MAYA, DEFAULT_WALLET_TYPE } from '../../const'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
@@ -139,7 +140,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
           navigate(walletRoutes.send.path())
           break
         case 'deposit':
-          navigate(walletRoutes.interact.path({ interactType: 'bond' }))
+          navigate(walletRoutes.interact.path({ interactType: InteractType.Bond }))
           break
       }
     },

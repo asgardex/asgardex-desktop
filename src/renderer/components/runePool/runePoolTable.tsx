@@ -10,6 +10,7 @@ import { ParentProps } from '../../views/wallet/RunepoolView'
 import * as Styled from '../PoolShares/PoolShares.styles'
 import { AssetIcon } from '../uielements/assets/assetIcon'
 import { ManageButton } from '../uielements/button/ManageButton'
+import { InteractType } from '../wallet/txs/interact/Interact.types'
 
 export const RunePoolTable: React.FC<ParentProps> = ({ assetDetails }): JSX.Element => {
   const intl = useIntl()
@@ -68,7 +69,7 @@ export const RunePoolTable: React.FC<ParentProps> = ({ assetDetails }): JSX.Elem
         return (
           <ManageButton
             variant="runePool"
-            interactType="runePool"
+            interactType={InteractType.RunePool}
             useBorderButton={false}
             isTextView={true}></ManageButton>
         )

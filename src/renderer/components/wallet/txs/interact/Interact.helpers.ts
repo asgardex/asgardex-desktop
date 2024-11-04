@@ -85,13 +85,13 @@ export const validateCustomAmountInput = ({
 }
 
 export const isInteractType = (u: unknown): u is InteractType =>
-  u === 'bond' ||
-  u === 'unbond' ||
-  u === 'leave' ||
-  u === 'custom' ||
-  u === 'thorname' ||
-  u === 'mayaname' ||
-  u === 'runePool'
+  u === InteractType.Bond ||
+  u === InteractType.Unbond ||
+  u === InteractType.Leave ||
+  u === InteractType.Custom ||
+  u === InteractType.THORName ||
+  u === InteractType.MAYAName ||
+  u === InteractType.RunePool
 
 export const getInteractTypeFromNullableString = (s?: string): O.Option<InteractType> =>
   FP.pipe(s, optionFromNullableString, O.chain(O.fromPredicate(isInteractType)))

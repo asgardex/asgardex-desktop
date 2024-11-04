@@ -28,15 +28,15 @@ export const Interact: React.FC<Props> = ({
   children
 }) => {
   const intl = useIntl()
-  const name = isThorChain(chain) ? 'thorname' : 'mayaname'
+  const name = isThorChain(chain) ? InteractType.THORName : InteractType.MAYAName
   const tabs: Array<{ type: InteractType; label: string }> = useMemo(
     () => [
-      { type: 'bond', label: intl.formatMessage({ id: 'deposit.interact.actions.bond' }) },
-      { type: 'unbond', label: intl.formatMessage({ id: 'deposit.interact.actions.unbond' }) },
-      { type: 'leave', label: intl.formatMessage({ id: 'deposit.interact.actions.leave' }) },
-      { type: 'runePool', label: intl.formatMessage({ id: 'deposit.interact.actions.runePool' }) },
-      { type: 'custom', label: intl.formatMessage({ id: 'common.custom' }) },
-      { type: `${name}`, label: intl.formatMessage({ id: `common.${name}` }) }
+      { type: InteractType.Bond, label: intl.formatMessage({ id: 'deposit.interact.actions.bond' }) },
+      { type: InteractType.Unbond, label: intl.formatMessage({ id: 'deposit.interact.actions.unbond' }) },
+      { type: InteractType.Leave, label: intl.formatMessage({ id: 'deposit.interact.actions.leave' }) },
+      { type: InteractType.RunePool, label: intl.formatMessage({ id: 'deposit.interact.actions.runePool' }) },
+      { type: InteractType.Custom, label: intl.formatMessage({ id: 'common.custom' }) },
+      { type: name, label: intl.formatMessage({ id: `common.${name}` }) }
     ],
     [intl, name]
   )

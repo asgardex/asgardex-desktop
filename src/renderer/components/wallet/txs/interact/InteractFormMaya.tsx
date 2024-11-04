@@ -164,14 +164,14 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
   const [memo, setMemo] = useState<string>('')
   const amountToSend = useMemo(() => {
     switch (interactType) {
-      case 'bond':
-      case 'custom':
-      case 'mayaname':
-      case 'thorname':
-      case 'runePool':
+      case InteractType.Bond:
+      case InteractType.Custom:
+      case InteractType.MAYAName:
+      case InteractType.THORName:
+      case InteractType.RunePool:
         return _amountToSend
-      case 'unbond':
-      case 'leave':
+      case InteractType.Unbond:
+      case InteractType.Leave:
         return ZERO_BASE_AMOUNT
     }
   }, [_amountToSend, interactType])
@@ -288,7 +288,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
       pricePool
     })
 
-    if ((maxAmount && interactType === 'bond') || interactType === 'custom') {
+    if ((maxAmount && interactType === InteractType.Bond) || interactType === InteractType.Custom) {
       if (O.isSome(maxAmountPrice)) {
         const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
         setMaxAmountPriceValue(maxCryptoAmount)
@@ -299,7 +299,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
   const amountValidator = useCallback(
     async (_: unknown, value: BigNumber) => {
       switch (interactType) {
-        case 'bond':
+        case InteractType.Bond:
           // similar to any other form for sending any amount
           return validateTxAmountInput({
             input: value,
@@ -310,7 +310,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
               msg3: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeLessThanBalance' })
             }
           })
-        case 'unbond':
+        case InteractType.Unbond:
           return H.validateUnboundAmountInput({
             input: value,
             errors: {
@@ -318,7 +318,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
               msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterThan' }, { amount: '0' })
             }
           })
-        case 'custom':
+        case InteractType.Custom:
           return H.validateCustomAmountInput({
             input: value,
             errors: {
@@ -326,7 +326,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
               msg2: intl.formatMessage({ id: 'wallet.errors.amount.shouldBeGreaterOrEqualThan' }, { amount: '0' })
             }
           })
-        case 'leave':
+        case InteractType.Leave:
           return Promise.resolve(true)
       }
     },
@@ -455,23 +455,23 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
     let createMemo = ''
 
     switch (interactType) {
-      case 'bond': {
+      case InteractType.Bond: {
         createMemo = getBondMemo(mayaAddress, providerAddress, feeInBasisPoints)
         break
       }
-      case 'unbond': {
+      case InteractType.Unbond: {
         createMemo = getUnbondMemo(mayaAddress, amountToSend, providerAddress)
         break
       }
-      case 'leave': {
+      case InteractType.Leave: {
         createMemo = getLeaveMemo(mayaAddress)
         break
       }
-      case 'custom': {
+      case InteractType.Custom: {
         createMemo = currentMemo
         break
       }
-      case 'mayaname': {
+      case InteractType.MAYAName: {
         createMemo = memo
         break
       }
@@ -643,19 +643,19 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
 
   const submitLabel = useMemo(() => {
     switch (interactType) {
-      case 'bond':
+      case InteractType.Bond:
         if (hasProviderAddress) {
           return intl.formatMessage({ id: 'deposit.interact.actions.addBondProvider' })
         } else {
           return intl.formatMessage({ id: 'deposit.interact.actions.bond' })
         }
-      case 'unbond':
+      case InteractType.Unbond:
         return intl.formatMessage({ id: 'deposit.interact.actions.unbond' })
-      case 'leave':
+      case InteractType.Leave:
         return intl.formatMessage({ id: 'deposit.interact.actions.leave' })
-      case 'custom':
+      case InteractType.Custom:
         return intl.formatMessage({ id: 'wallet.action.send' })
-      case 'mayaname':
+      case InteractType.MAYAName:
         if (isOwner) {
           return intl.formatMessage({ id: 'common.isUpdateMayaname' })
         } else {
@@ -718,7 +718,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
       }}>
       <>
         {/* Memo input (CUSTOM only) */}
-        {interactType === 'custom' && (
+        {interactType === InteractType.Custom && (
           <Styled.InputContainer>
             <Styled.InputLabel>{intl.formatMessage({ id: 'common.memo' })}</Styled.InputLabel>
             <Form.Item
@@ -736,7 +736,9 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
         )}
 
         {/* Node address input (BOND/UNBOND/LEAVE only) */}
-        {(interactType === 'bond' || interactType === 'unbond' || interactType === 'leave') && (
+        {(interactType === InteractType.Bond ||
+          interactType === InteractType.Unbond ||
+          interactType === InteractType.Leave) && (
           <Styled.InputContainer>
             <Styled.InputLabel>{intl.formatMessage({ id: 'common.nodeAddress' })}</Styled.InputLabel>
             <Form.Item
@@ -753,7 +755,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
         )}
 
         {/* Provider address input (BOND/UNBOND/ only) */}
-        {(interactType === 'bond' || interactType === 'unbond') && (
+        {(interactType === InteractType.Bond || interactType === InteractType.Unbond) && (
           <Styled.InputContainer style={{ paddingBottom: '20px' }}>
             <CheckButton checked={hasProviderAddress} clickHandler={onClickHasProviderAddress} disabled={isLoading}>
               {intl.formatMessage({ id: 'deposit.interact.label.bondprovider' })}
@@ -779,7 +781,9 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
         {/* Amount input (BOND/UNBOND/CUSTOM only) */}
         {!hasProviderAddress && (
           <>
-            {(interactType === 'bond' || interactType === 'unbond' || interactType === 'custom') && (
+            {(interactType === InteractType.Bond ||
+              interactType === InteractType.Unbond ||
+              interactType === InteractType.Custom) && (
               <Styled.InputContainer>
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.amount' })}</Styled.InputLabel>
                 <Styled.FormItem
@@ -793,7 +797,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
                   <InputBigNumber disabled={isLoading} size="large" decimal={CACAO_DECIMAL} onChange={onChangeInput} />
                 </Styled.FormItem>
                 {/* max. amount button (BOND/CUSTOM only) */}
-                {(interactType === 'bond' || interactType === 'custom') && (
+                {(interactType === InteractType.Bond || interactType === InteractType.Custom) && (
                   <MaxBalanceButton
                     className="mb-10px"
                     color="neutral"
@@ -835,7 +839,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
         )}
         {hasProviderAddress && (
           <>
-            {interactType === 'unbond' && (
+            {interactType === InteractType.Unbond && (
               <Styled.InputContainer>
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.amount' })}</Styled.InputLabel>
                 <Styled.FormItem
@@ -858,7 +862,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
         {/* Fee input (BOND/UNBOND/CUSTOM only) */}
         {hasProviderAddress && (
           <>
-            {interactType === 'bond' && (
+            {interactType === InteractType.Bond && (
               <Styled.InputContainer>
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.fee.nodeOperator' })}</Styled.InputLabel>
                 <Styled.FormItem
@@ -875,7 +879,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
           </>
         )}
         {/* Mayaname Button and Details*/}
-        {interactType === 'mayaname' && (
+        {interactType === InteractType.MAYAName && (
           <Styled.InputContainer>
             <div className="flex w-full items-center text-[12px]">
               <Styled.InputLabel>{intl.formatMessage({ id: 'common.mayaname' })}</Styled.InputLabel>
@@ -1038,7 +1042,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
         </div>
       )}
       <div>
-        {interactType !== 'mayaname' && (
+        {interactType !== InteractType.MAYAName && (
           <FlatButton
             className="mt-10px min-w-[200px]"
             loading={isLoading}
