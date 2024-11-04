@@ -2,10 +2,8 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
-import { AssetAVAX } from '@xchainjs/xchain-avax'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetDOGE } from '@xchainjs/xchain-doge'
 import { AssetETH } from '@xchainjs/xchain-ethereum'
 import { AssetCacao, CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { MayachainQuery, QuoteMAYANameParams } from '@xchainjs/xchain-mayachain-query'
@@ -52,7 +50,7 @@ import * as StyledR from '../../../shared/form/Radio.styles'
 import { BaseButton, FlatButton, ViewTxButton } from '../../../uielements/button'
 import { CheckButton } from '../../../uielements/button/CheckButton'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
-import { UIFeesRD } from '../../../uielements/fees'
+import { UIFees, UIFeesRD } from '../../../uielements/fees'
 import { InfoIcon } from '../../../uielements/info'
 import { InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
@@ -336,27 +334,40 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
     [interactType, intl, maxAmount]
   )
 
-  const debouncedFetch = debounce(async (mayaname, setMayaname, setShowDetails, mayachainQuery) => {
-    try {
-      const mayanameDetails = await mayachainQuery.getMAYANameDetails(mayaname)
-      if (mayanameDetails) {
-        setMayaname(O.some(mayanameDetails))
-        setShowDetails(true)
-        setMayanameAvailable(mayanameDetails.owner === '' || balance.walletAddress === mayanameDetails.owner)
-        setMayanameUpdate(mayaname === mayanameDetails.name && mayanameDetails.owner === '')
-        setMayanameRegister(mayanameDetails.name === '')
-        setIsOwner(balance.walletAddress === mayanameDetails.owner)
+  const debouncedFetch = debounce(
+    async (mayaname, setMayaname, setMayanameAvailable, setMayanameUpdate, setMayanameRegister, mayachainQuery) => {
+      try {
+        const mayanameDetails = await mayachainQuery.getMAYANameDetails(mayaname)
+        if (mayanameDetails) {
+          setMayaname(O.some(mayanameDetails))
+          setMayanameAvailable(mayanameDetails.owner === '' || balance.walletAddress === mayanameDetails.owner)
+          setMayanameUpdate(mayaname === mayanameDetails.name && mayanameDetails.owner === '')
+          setMayanameRegister(mayanameDetails.name === '')
+          setIsOwner(balance.walletAddress === mayanameDetails.owner)
+        }
+        if (mayanameDetails === undefined) {
+          setMayanameAvailable(true)
+          setMayanameRegister(true)
+        }
+      } catch (error) {
+        console.log(error)
       }
-    } catch (error) {
-      console.log(error)
-    }
-  }, 500)
+    },
+    500
+  )
 
   const mayanameHandler = useCallback(() => {
     const mayaname = form.getFieldValue('mayaname')
     setMemo('')
     if (mayaname !== '') {
-      debouncedFetch(mayaname, setMayaname, setShowDetails, mayachainQuery)
+      debouncedFetch(
+        mayaname,
+        setMayaname,
+        setMayanameAvailable,
+        setMayanameUpdate,
+        setMayanameRegister,
+        mayachainQuery
+      )
     }
   }, [debouncedFetch, form, mayachainQuery])
 
@@ -374,7 +385,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
     const chainAddress = mayanameRegister ? form.getFieldValue('chainAddress') : form.getFieldValue('aliasAddress')
     const owner = balance.walletAddress
     if (mayaname !== undefined && chain !== undefined && chainAddress !== undefined) {
-      const fetchThornameQuote = async () => {
+      const fetchMayanameQuote = async () => {
         try {
           const params: QuoteMAYANameParams = {
             name: mayaname,
@@ -386,7 +397,6 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
           }
 
           const mayanameQuote = await mayachainQuery.estimateMAYAName(params)
-
           if (mayanameQuote) {
             setMemo(mayanameQuote.memo)
             setAmountToSend(mayanameQuote.value.baseAmount)
@@ -396,7 +406,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
           console.error('Error fetching fetchMAYANameQuote:', error)
         }
       }
-      fetchThornameQuote()
+      fetchMayanameQuote()
     }
   }, [balance.walletAddress, form, isOwner, mayachainQuery, mayanameRegister, mayanameUpdate])
 
@@ -463,10 +473,14 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
         createMemo = currentMemo
         break
       }
+      case 'mayaname': {
+        createMemo = memo
+        break
+      }
     }
     setMemo(createMemo)
     return createMemo
-  }, [amountToSend, currentMemo, form, interactType])
+  }, [amountToSend, currentMemo, form, interactType, memo])
 
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
@@ -643,8 +657,14 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
         return intl.formatMessage({ id: 'deposit.interact.actions.leave' })
       case 'custom':
         return intl.formatMessage({ id: 'wallet.action.send' })
+      case 'mayaname':
+        if (isOwner) {
+          return intl.formatMessage({ id: 'common.isUpdateMayaname' })
+        } else {
+          return intl.formatMessage({ id: 'deposit.interact.actions.buyMayaname' })
+        }
     }
-  }, [interactType, hasProviderAddress, intl])
+  }, [interactType, hasProviderAddress, intl, isOwner])
 
   const uiFeesRD: UIFeesRD = useMemo(
     () =>
@@ -671,6 +691,11 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
       amount: baseToAsset(_amountToSend).amount()
     })
   }, [_amountToSend, form])
+
+  const mayaNamefees: UIFeesRD = useMemo(() => {
+    const fees: UIFees = [{ asset: AssetCacao, amount: _amountToSend }]
+    return RD.success(fees)
+  }, [_amountToSend])
 
   // Reset values whenever interactType has been changed (an user clicks on navigation tab)
   useEffect(() => {
@@ -923,8 +948,8 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
                     }
                   ]}>
                   <StyledR.Radio.Group onChange={handleRadioChainChange} value={aliasChain}>
-                    <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetAVAX.chain}>
-                      AVAX
+                    <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetCacao.chain}>
+                      MAYA
                     </StyledR.Radio>
                     <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetBTC.chain}>
                       BTC
@@ -932,8 +957,8 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
                     <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetETH.chain}>
                       ETH
                     </StyledR.Radio>
-                    <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetDOGE}>
-                      DOGE
+                    <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetRuneNative}>
+                      RUNE
                     </StyledR.Radio>
                   </StyledR.Radio.Group>
                 </Styled.FormItem>
@@ -961,7 +986,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
               </>
             ) : (
               <>
-                {/* Initial values needed for tns register */}
+                {/* Initial values needed for tns or mns register */}
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasChain' })}</Styled.InputLabel>
                 <Styled.FormItem
                   name="chain"
@@ -972,7 +997,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
                     }
                   ]}>
                   <StyledR.Radio.Group>
-                    <StyledR.Radio value={AssetRuneNative.chain}>THOR</StyledR.Radio>
+                    <StyledR.Radio value={AssetCacao.chain}>MAYA</StyledR.Radio>
                   </StyledR.Radio.Group>
                 </Styled.FormItem>
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasAddress' })}</Styled.InputLabel>
@@ -998,37 +1023,34 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
                 </Styled.FormItem>
               </>
             )}
-            <Styled.Fees className="mt-10px" fees={uiFeesRD} disabled={isLoading} />
+            <Styled.Fees className="mt-10px" fees={mayaNamefees} disabled={isLoading} />
           </Styled.InputContainer>
         )}
-
-        {mayanameQuoteValid && (
-          <>
-            <div>
-              <FlatButton
-                className="mt-10px min-w-[200px]"
-                loading={isLoading}
-                disabled={isLoading || !!form.getFieldsError().filter(({ errors }) => errors.length).length}
-                type="submit"
-                size="large">
-                {submitLabel}
-              </FlatButton>
-            </div>
-          </>
-        )}
-        <div>
-          {interactType !== 'mayaname' && (
-            <FlatButton
-              className="mt-10px min-w-[200px]"
-              loading={isLoading}
-              disabled={isLoading || !!form.getFieldsError().filter(({ errors }) => errors.length).length}
-              type="submit"
-              size="large">
-              {submitLabel}
-            </FlatButton>
-          )}
-        </div>
       </>
+      {mayanameQuoteValid && (
+        <div>
+          <FlatButton
+            className="mt-10px min-w-[200px]"
+            loading={isLoading}
+            disabled={isLoading || !!form.getFieldsError().filter(({ errors }) => errors.length).length}
+            type="submit"
+            size="large">
+            {submitLabel}
+          </FlatButton>
+        </div>
+      )}
+      <div>
+        {interactType !== 'mayaname' && (
+          <FlatButton
+            className="mt-10px min-w-[200px]"
+            loading={isLoading}
+            disabled={isLoading || !!form.getFieldsError().filter(({ errors }) => errors.length).length}
+            type="submit"
+            size="large">
+            {submitLabel}
+          </FlatButton>
+        )}
+      </div>
       <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
         {/* memo */}
         <div className={`my-20px w-full font-main text-[12px] uppercase dark:border-gray1d`}>
@@ -1050,10 +1072,6 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
                   if (owner || expire || entries) {
                     return (
                       <>
-                        {/* <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div>{intl.formatMessage({ id: 'common.mayaname' })}</div>
-                          <div>{name}</div>
-                        </div> */}
                         <div className="flex w-full justify-between pl-10px text-[12px]">
                           {intl.formatMessage({ id: 'common.owner' })}
                           <div>{owner}</div>
@@ -1099,10 +1117,10 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
                 </div>
               </div>
 
-              <div className="ml-[-2px] flex w-full items-start pt-10px font-mainBold text-[14px]">
+              <div className="ml-[-2px] flex w-full justify-between pt-10px font-mainBold text-[14px]">
                 {intl.formatMessage({ id: 'common.memo' })}
+                <div className="overflow break-normal pl-10px font-main text-[12px]">{memoLabel}</div>
               </div>
-              <div className="truncate pl-10px font-main text-[12px]">{memoLabel}</div>
             </>
           )}
         </div>

@@ -499,6 +499,7 @@ type DepositMessageKey =
   | 'deposit.interact.actions.leave'
   | 'deposit.interact.actions.runePool'
   | 'deposit.interact.actions.buyThorname'
+  | 'deposit.interact.actions.buyMayaname'
   | 'deposit.interact.actions.checkThorname'
   | 'deposit.share.title'
   | 'deposit.share.units'

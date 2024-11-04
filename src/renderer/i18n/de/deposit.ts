@@ -9,6 +9,7 @@ const deposit: DepositMessages = {
   'deposit.interact.actions.leave': 'Verlassen',
   'deposit.interact.actions.runePool': 'Rune-Pool',
   'deposit.interact.actions.buyThorname': 'THORName kaufen',
+  'deposit.interact.actions.buyMayaname': 'MAYAName kaufen',
   'deposit.interact.actions.checkThorname': 'Verfügbarkeit prüfen',
   'deposit.interact.actions.addBondProvider': 'Bond Provider hinzufügen',
   'deposit.share.title': 'Dein Poolanteil',

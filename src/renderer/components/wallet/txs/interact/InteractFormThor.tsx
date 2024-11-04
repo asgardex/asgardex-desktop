@@ -1119,7 +1119,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                   checked={thornameUpdate || isOwner}
                   clickHandler={() => setThornameUpdate(true)}
                   disabled={isLoading}>
-                  {intl.formatMessage({ id: 'common.isUpdate' })}
+                  {intl.formatMessage({ id: 'common.isUpdateThorname' })}
                 </CheckButton>
               ) : (
                 <></>
