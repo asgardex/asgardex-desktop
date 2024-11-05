@@ -16,6 +16,33 @@ export const BSC_TOKEN_WHITELIST: {
   {
     asset: {
       chain: BSCChain,
+      symbol: "TRX-0xCE7de646e7208a4Ef112cb6ed5038FA6cC6b12e3",
+      ticker: "TRX",
+      type: 1,
+    },
+    iconUrl: O.some("https://bscscan.com/token/images/tronnetwork_32.png"),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "TONCOIN-0x76A797A59Ba2C17726896976B7B3747BfD1d220f",
+      ticker: "TONCOIN",
+      type: 1,
+    },
+    iconUrl: O.some("https://bscscan.com/token/images/toncoin_32.png"),
+  },
+  {
+    asset: {
+      chain: BSCChain,
+      symbol: "FRAX-0x90C97F71E18723b0Cf0dfa30ee176Ab653E89F40",
+      ticker: "FRAX",
+      type: 1,
+    },
+    iconUrl: O.some("https://bscscan.com/token/images/frax_32.png"),
+  },
+  {
+    asset: {
+      chain: BSCChain,
       symbol: "SOL-0x570A5D26f7765Ecb712C0924E4De545B89fD43dF",
       ticker: "SOL",
       type: 1,

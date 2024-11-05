@@ -24,18 +24,29 @@ const PATH = './src/renderer/types/generated/mayachain/arberc20whitelist.ts'
 
 type AssetList = { asset: AnyAsset; iconUrl: O.Option<string> }[]
 
-const transformList = ({ tokens }: Pick<ERC20Whitelist, 'tokens'>): AssetList =>
-  FP.pipe(
+const transformList = ({ tokens }: Pick<ERC20Whitelist, 'tokens'>): AssetList => {
+  const seenTokens = new Set<string>()
+
+  return FP.pipe(
     tokens,
-    A.filterMap(({ address, symbol, logoURI }) =>
-      FP.pipe(
+    A.filterMap(({ address, symbol, logoURI }) => {
+      // Normalize both symbol and address to lowercase for consistent identifier
+      const identifier = `${symbol.toLowerCase()}-${address.toLowerCase()}`
+
+      if (seenTokens.has(identifier)) {
+        return O.none // Skip duplicate tokens
+      }
+
+      seenTokens.add(identifier) // Mark this token as seen
+
+      return FP.pipe(
         assetFromString(`${ARBChain}.${symbol}-${address}`),
         O.fromNullable,
         O.map((asset) => ({ asset, iconUrl: O.fromNullable(logoURI) }))
       )
-    )
+    })
   )
-
+}
 const loadList = (): TE.TaskEither<Error, ERC20Whitelist> =>
   FP.pipe(
     TE.tryCatch(

@@ -18,23 +18,35 @@ import { writeFile, readFile } from '../src/main/utils/file'
 import { ERC20Whitelist, erc20WhitelistIO } from '../src/renderer/services/thorchain/types'
 
 const WHITELIST_URL =
-  'https://gitlab.com/thorchain/thornode/-/raw/develop/common/tokenlist/ethtokens/eth_mainnet_latest.json'
+  'https://gitlab.com/thorchain/thornode/-/raw/develop/common/tokenlist/ethtokens/eth_mainnet_latest.json?ref_type=heads'
 
 const PATH = './src/renderer/types/generated/thorchain/erc20whitelist.ts'
 
 type AssetList = { asset: AnyAsset; iconUrl: O.Option<string> }[]
 
-const transformList = ({ tokens }: Pick<ERC20Whitelist, 'tokens'>): AssetList =>
-  FP.pipe(
+const transformList = ({ tokens }: Pick<ERC20Whitelist, 'tokens'>): AssetList => {
+  const seenTokens = new Set<string>()
+
+  return FP.pipe(
     tokens,
-    A.filterMap(({ address, symbol, logoURI }) =>
-      FP.pipe(
+    A.filterMap(({ address, symbol, logoURI }) => {
+      // Normalize both symbol and address to lowercase for consistent identifier
+      const identifier = `${symbol.toLowerCase()}-${address.toLowerCase()}`
+
+      if (seenTokens.has(identifier)) {
+        return O.none // Skip duplicate tokens
+      }
+
+      seenTokens.add(identifier) // Mark this token as seen
+
+      return FP.pipe(
         assetFromString(`${ETHChain}.${symbol}-${address}`),
         O.fromNullable,
         O.map((asset) => ({ asset, iconUrl: O.fromNullable(logoURI) }))
       )
-    )
+    })
   )
+}
 
 const loadList = (): TE.TaskEither<Error, ERC20Whitelist> =>
   FP.pipe(
