@@ -36,7 +36,11 @@ export type Props = {
   onClose: FP.Lazy<void>
 }
 
-const getWhitelistAssets = (chain: typeof EVMChains[number], searchQuery: string) => {
+const getWhitelistAssets = (
+  chain: typeof EVMChains[number],
+  searchQuery: string,
+  checkIsActive: (asset: TokenAsset) => boolean
+) => {
   const upperSearchValue = searchQuery.toUpperCase()
 
   const whitelistMap = {
@@ -49,7 +53,14 @@ const getWhitelistAssets = (chain: typeof EVMChains[number], searchQuery: string
 
   const whitelist = whitelistMap[chain] || []
 
-  return whitelist.filter(({ asset }) => asset.symbol.toUpperCase().includes(upperSearchValue))
+  return whitelist
+    .filter(({ asset }) => asset.symbol.toUpperCase().includes(upperSearchValue))
+    .sort((tokenA, tokenB) => {
+      const isFirstTokenActive = checkIsActive(tokenA.asset)
+      const isSecondTokenActive = checkIsActive(tokenB.asset)
+
+      return Number(isSecondTokenActive) - Number(isFirstTokenActive)
+    })
 }
 
 export const WhitelistModal: React.FC<Props> = (props): JSX.Element => {
@@ -94,12 +105,15 @@ export const WhitelistModal: React.FC<Props> = (props): JSX.Element => {
     setPage(1)
   }, [])
 
-  const whitelistAssets = useMemo(() => getWhitelistAssets(chain, searchValue), [chain, searchValue])
+  const whitelistAssets = useMemo(
+    () => getWhitelistAssets(chain, searchValue, checkIsActive),
+    [chain, searchValue, checkIsActive]
+  )
 
   const chainFilter = useMemo(
     () => (
       <div className="flex w-full flex-col px-4 py-4">
-        <div className="flex flex-row space-x-2 overflow-x-auto pb-2">
+        <div className="flex flex-row space-x-2 overflow-x-auto">
           {EVMChains.map((evmChain) => (
             <div key={evmChain} className="cursor-pointer" onClick={() => changeChain(evmChain)}>
               <div
@@ -186,7 +200,7 @@ export const WhitelistModal: React.FC<Props> = (props): JSX.Element => {
                 />
               </div>
               {chainFilter}
-              <div className="w-[calc(100%-32px)] overflow-y-auto">
+              <div className="w-[calc(100%-32px)] overflow-y-auto rounded-lg">
                 {whitelistAssets.slice(0, 20 * page).map(({ asset }) => (
                   <div
                     key={asset.symbol}
