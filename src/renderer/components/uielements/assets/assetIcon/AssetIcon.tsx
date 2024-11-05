@@ -35,7 +35,8 @@ import {
   iconUrlInARBERC20Whitelist,
   isAethAsset,
   isSolAsset,
-  isBaseAsset
+  isBaseAsset,
+  iconUrlInBASEERC20Whitelist
 } from '../../../../helpers/assetHelper'
 import {
   isArbChain,
@@ -187,7 +188,7 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
       if (isBaseChain(asset.chain)) {
         return FP.pipe(
           // Try to get base url from ERC20Whitelist first
-          iconUrlInERC20Whitelist(asset),
+          iconUrlInBASEERC20Whitelist(asset),
           O.getOrElse(() => '')
         )
       }

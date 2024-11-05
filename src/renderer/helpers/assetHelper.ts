@@ -285,6 +285,16 @@ export const iconUrlInBSCERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
     A.findFirst(({ asset: assetInList }) => assetInList.symbol.toUpperCase() === asset.symbol.toUpperCase()),
     O.chain(({ iconUrl }) => iconUrl)
   )
+
+/**
+ * Get's icon url from white list
+ */
+export const iconUrlInBASEERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
+  FP.pipe(
+    BASE_TOKEN_WHITELIST,
+    A.findFirst(({ asset: assetInList }) => assetInList.symbol.toUpperCase() === asset.symbol.toUpperCase()),
+    O.chain(({ iconUrl }) => iconUrl)
+  )
 /**
  * Checks whether ETH/ERC20 asset is whitelisted or not
  * based on following rules:

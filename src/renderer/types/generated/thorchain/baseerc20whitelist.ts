@@ -17,7 +17,9 @@ export const BASE_TOKEN_WHITELIST: {
       ticker: "USDC",
       type: 1,
     },
-    iconUrl: O.none,
+    iconUrl: O.some(
+      "https://tokens.1inch.io/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.png"
+    ),
   },
   {
     asset: {
@@ -26,7 +28,9 @@ export const BASE_TOKEN_WHITELIST: {
       ticker: "DAI",
       type: 1,
     },
-    iconUrl: O.none,
+    iconUrl: O.some(
+      "https://tokens.1inch.io/0x6b175474e89094c44da98b954eedeac495271d0f.png"
+    ),
   },
   {
     asset: {
@@ -35,7 +39,9 @@ export const BASE_TOKEN_WHITELIST: {
       ticker: "WETH",
       type: 1,
     },
-    iconUrl: O.none,
+    iconUrl: O.some(
+      "https://tokens.1inch.io/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2.png"
+    ),
   },
   {
     asset: {
@@ -44,7 +50,7 @@ export const BASE_TOKEN_WHITELIST: {
       ticker: "cbBTC",
       type: 1,
     },
-    iconUrl: O.none,
+    iconUrl: O.some("https://etherscan.io/token/images/cbbtc_32.png"),
   },
   {
     asset: {
@@ -71,7 +77,7 @@ export const BASE_TOKEN_WHITELIST: {
       ticker: "EURC",
       type: 1,
     },
-    iconUrl: O.none,
+    iconUrl: O.some("https://etherscan.io/token/images/circleeurcoin_32.png"),
   },
   {
     asset: {
@@ -89,7 +95,9 @@ export const BASE_TOKEN_WHITELIST: {
       ticker: "COMP",
       type: 1,
     },
-    iconUrl: O.none,
+    iconUrl: O.some(
+      "https://tokens.1inch.io/0xc00e94cb662c3520282e6f5717214004a7f26888.png"
+    ),
   },
   {
     asset: {
@@ -98,6 +106,8 @@ export const BASE_TOKEN_WHITELIST: {
       ticker: "ZRX",
       type: 1,
     },
-    iconUrl: O.none,
+    iconUrl: O.some(
+      "https://tokens.1inch.io/0xe41d2489571d322189246dafa5ebde1f4699f498.png"
+    ),
   },
 ];

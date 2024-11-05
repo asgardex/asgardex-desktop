@@ -16,6 +16,87 @@ export const ERC20_WHITELIST: {
   {
     asset: {
       chain: ETHChain,
+      symbol: "EURC-0x1aBaEA1f7C830bD89Acc67eC4af516284b1bC33c",
+      ticker: "EURC",
+      type: 1,
+    },
+    iconUrl: O.some("https://etherscan.io/token/images/circleeurcoin_32.png"),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "PYUSD-0x6c3ea9036406852006290770BEdFcAbA0e23A0e8",
+      ticker: "PYUSD",
+      type: 1,
+    },
+    iconUrl: O.some("https://etherscan.io/token/images/paypalusd_32.png"),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "swBTC-0x8DB2350D78aBc13f5673A411D4700BCF87864dDE",
+      ticker: "swBTC",
+      type: 1,
+    },
+    iconUrl: O.some("https://etherscan.io/token/images/swellbtc_32.png"),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "cbBTC-0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+      ticker: "cbBTC",
+      type: 1,
+    },
+    iconUrl: O.some("https://etherscan.io/token/images/cbbtc_32.png"),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "kBTC-0x73E0C0d45E048D25Fc26Fa3159b0aA04BfA4Db98",
+      ticker: "kBTC",
+      type: 1,
+    },
+    iconUrl: O.some("https://etherscan.io/token/images/krakeeth_32.png"),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "wTAO-0x77E06c9eCCf2E797fd462A92B6D7642EF85b0A44",
+      ticker: "wTAO",
+      type: 1,
+    },
+    iconUrl: O.some("https://etherscan.io/token/images/wrappedtao_32.png"),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "ZYN-0x58cB30368ceB2d194740b144EAB4c2da8a917Dcb",
+      ticker: "ZYN",
+      type: 1,
+    },
+    iconUrl: O.some("https://etherscan.io/token/images/zyncoin_32.png"),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "JESUS-0xba386A4Ca26B85FD057ab1Ef86e3DC7BdeB5ce70",
+      ticker: "JESUS",
+      type: 1,
+    },
+    iconUrl: O.some("https://etherscan.io/token/images/jesuscoin_32.png"),
+  },
+  {
+    asset: {
+      chain: ETHChain,
+      symbol: "Mog-0xaaeE1A9723aaDB7afA2810263653A34bA2C21C7a",
+      ticker: "Mog",
+      type: 1,
+    },
+    iconUrl: O.some("https://etherscan.io/token/images/mogcoin_32.png"),
+  },
+  {
+    asset: {
+      chain: ETHChain,
       symbol: "AVA-0xa6C0c097741D55ECd9a3A7DeF3A8253fD022ceB9",
       ticker: "AVA",
       type: 1,
@@ -10938,17 +11019,6 @@ export const ERC20_WHITELIST: {
   {
     asset: {
       chain: ETHChain,
-      symbol: "MLT-0x9506d37f70eB4C3d79C398d326C871aBBf10521d",
-      ticker: "MLT",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://tokens.1inch.io/0x9506d37f70eb4c3d79c398d326c871abbf10521d.png"
-    ),
-  },
-  {
-    asset: {
-      chain: ETHChain,
       symbol: "ORE-0x4f640F2529ee0cF119A2881485845FA8e61A782A",
       ticker: "ORE",
       type: 1,
@@ -11044,15 +11114,6 @@ export const ERC20_WHITELIST: {
       chain: ETHChain,
       symbol: "RLB-0x046EeE2cc3188071C02BfC1745A6b17c656e3f3d",
       ticker: "RLB",
-      type: 1,
-    },
-    iconUrl: O.some("https://etherscan.io/token/images/rollbitcoin_32.png"),
-  },
-  {
-    asset: {
-      chain: ETHChain,
-      symbol: "TONCOIN-0x582d872A1B094FC48F5DE31D3B73F2D9bE47def1",
-      ticker: "TONCOIN",
       type: 1,
     },
     iconUrl: O.some("https://etherscan.io/token/images/rollbitcoin_32.png"),
