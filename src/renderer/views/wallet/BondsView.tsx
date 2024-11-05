@@ -5,34 +5,46 @@ import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { Client as MayachainClient } from '@xchainjs/xchain-mayachain'
 import { Client as ThorchainClient, THORChain, AssetRuneNative } from '@xchainjs/xchain-thorchain'
-import { Address } from '@xchainjs/xchain-util'
+import { Address, assetAmount, assetToBase, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
+import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
+import * as Styled from '../../../renderer/components/wallet/assets/TotalValue.styles'
 import { Bonds } from '../../components/Bonds'
 import { RefreshButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
 import { useAppContext } from '../../contexts/AppContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
+import { useMidgardContext } from '../../contexts/MidgardContext'
+import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useUserNodesContext } from '../../contexts/UserNodesContext'
 import { useWalletContext } from '../../contexts/WalletContext'
+import { isUSDAsset } from '../../helpers/assetHelper'
+import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
+import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
+import { hiddenString } from '../../helpers/stringHelper'
 import { filterWalletBalancesByAssets } from '../../helpers/walletHelper'
 import { useNodeInfos } from '../../hooks/useNodeInfos'
 import { useValidateAddress } from '../../hooks/useValidateAddress'
 import * as walletRoutes from '../../routes/wallet'
 import { DEFAULT_NETWORK } from '../../services/const'
+import { NodeInfo as NodeInfoMaya } from '../../services/mayachain/types'
 import {
   addBondProvidersAddress,
   removeBondProvidersByAddress,
   userBondProviders$
 } from '../../services/storage/userBondProviders'
+import { NodeInfo } from '../../services/thorchain/types'
 import { balancesState$ } from '../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/wallet/const'
 import { WalletBalances } from '../../services/wallet/types'
+import { useApp } from '../../store/app/hooks'
+import { getValueOfRuneInAsset } from '../pools/Pools.utils'
 
 export type WalletAddressInfo = {
   address: string
@@ -46,8 +58,22 @@ export const BondsView: React.FC = (): JSX.Element => {
     getNodeInfos$: getNodeInfosMaya$,
     reloadNodeInfos: reloadNodeInfosMaya
   } = useMayachainContext()
+
+  const {
+    service: {
+      pools: { selectedPricePool$: selectedPricePoolThor$ }
+    }
+  } = useMidgardContext()
+
+  const {
+    service: {
+      pools: { selectedPricePool$: selectedPricePoolMaya$ }
+    }
+  } = useMidgardMayaContext()
   const { userNodes$, addNodeAddress, removeNodeByAddress: removeNodeByAddressService } = useUserNodesContext()
   const { network$ } = useAppContext()
+  const intl = useIntl()
+  const { isPrivate } = useApp()
   const navigate = useNavigate()
   const { setSelectedAsset } = useWalletContext()
   const network = useObservableState<Network>(network$, DEFAULT_NETWORK)
@@ -60,6 +86,13 @@ export const BondsView: React.FC = (): JSX.Element => {
       }),
     INITIAL_BALANCES_STATE
   )
+  // State for selected price pools
+  const [selectedPricePoolThor] = useObservableState(() => selectedPricePoolThor$, RUNE_PRICE_POOL)
+  const [selectedPricePoolMaya] = useObservableState(() => selectedPricePoolMaya$, MAYA_PRICE_POOL)
+
+  // Separate price pool data states for each chain
+  const { poolData: pricePoolDataThor } = useObservableState(selectedPricePoolThor$, RUNE_PRICE_POOL)
+  const { poolData: pricePoolDataMaya } = useObservableState(selectedPricePoolMaya$, MAYA_PRICE_POOL)
   const { balances: oWalletBalances } = balancesState
   const allBalances: WalletBalances = useMemo(() => {
     return FP.pipe(
@@ -170,12 +203,109 @@ export const BondsView: React.FC = (): JSX.Element => {
     [allBalances, navigate, network, setSelectedAsset]
   )
 
+  const renderBondTotal = useMemo(() => {
+    const calculateTotalBondByChain = (nodes: NodeInfo[] | NodeInfoMaya[]) => {
+      const walletAddressSet = new Set([
+        ...walletAddresses.THOR.map((info) => info.address.toLowerCase()),
+        ...walletAddresses.MAYA.map((info) => info.address.toLowerCase())
+      ])
+
+      return nodes.reduce(
+        (acc, node) => {
+          const chain = node.address.startsWith('thor') ? 'THOR' : 'MAYA'
+
+          const totalBondProviderAmount = node.bondProviders.providers.reduce((providerSum, provider) => {
+            const normalizedAddress = provider.bondAddress.toLowerCase()
+            if (walletAddressSet.has(normalizedAddress)) {
+              return providerSum.plus(provider.bond) // Sum only bondProvider's bondAmount
+            }
+            return providerSum
+          }, assetToBase(assetAmount(0)))
+
+          acc[chain] = acc[chain] ? acc[chain].plus(totalBondProviderAmount) : totalBondProviderAmount
+          return acc
+        },
+        { THOR: assetToBase(assetAmount(0)), MAYA: assetToBase(assetAmount(0)) }
+      )
+    }
+
+    return FP.pipe(
+      nodeInfos,
+      RD.fold(
+        // Initial loading state
+        () => <Styled.BalanceLabel>--</Styled.BalanceLabel>,
+
+        // Pending state
+        () => <Styled.Spin />,
+
+        // Error state
+        (error) => (
+          <Styled.BalanceLabel>
+            {intl.formatMessage({ id: 'common.error.api.limit' }, { errorMsg: error.message })}
+          </Styled.BalanceLabel>
+        ),
+
+        // Success state
+        (nodes) => {
+          const totals = calculateTotalBondByChain(nodes)
+
+          const thorTotal = totals.THOR.amount().isGreaterThan(0) ? (
+            <Styled.BalanceLabel>
+              {isPrivate
+                ? hiddenString
+                : formatAssetAmountCurrency({
+                    amount: baseToAsset(getValueOfRuneInAsset(totals.THOR, pricePoolDataThor)),
+                    asset: selectedPricePoolThor.asset,
+                    decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
+                  })}
+            </Styled.BalanceLabel>
+          ) : null
+
+          const mayaTotal = totals.MAYA.amount().isGreaterThan(0) ? (
+            <Styled.BalanceLabel>
+              {isPrivate
+                ? hiddenString
+                : formatAssetAmountCurrency({
+                    amount: baseToAsset(getValueOfRuneInAsset(totals.MAYA, pricePoolDataMaya)),
+                    asset: selectedPricePoolMaya.asset,
+                    decimal: isUSDAsset(selectedPricePoolMaya.asset) ? 2 : 4
+                  })}
+            </Styled.BalanceLabel>
+          ) : null
+
+          return (
+            <>
+              {thorTotal}
+              {mayaTotal}
+            </>
+          )
+        }
+      )
+    )
+  }, [
+    intl,
+    isPrivate,
+    nodeInfos,
+    pricePoolDataMaya,
+    pricePoolDataThor,
+    selectedPricePoolMaya.asset,
+    selectedPricePoolThor.asset,
+    walletAddresses.MAYA,
+    walletAddresses.THOR
+  ])
+
   return (
     <>
       <Row justify="end" style={{ marginBottom: '20px' }}>
         <RefreshButton onClick={reloadNodeInfos} disabled={RD.isPending(nodeInfos)} />
       </Row>
       <AssetsNav />
+      <Styled.Container>
+        <Styled.TitleContainer>
+          <Styled.BalanceTitle>{intl.formatMessage({ id: 'wallet.shares.total' })}</Styled.BalanceTitle>
+        </Styled.TitleContainer>
+        {renderBondTotal}
+      </Styled.Container>
       <Bonds
         addressValidationThor={validateAddressThor}
         addressValidationMaya={validateAddressMaya}
