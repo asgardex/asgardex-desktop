@@ -686,13 +686,13 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
           }
         />
         <Styled.Input
-          className="rounded-lg border border-solid border-bg2 bg-bg0 dark:border-bg2d dark:bg-bg0d"
+          className="rounded-lg border border-solid border-bg2 bg-bg0 text-text0d dark:border-bg2d dark:bg-bg0d dark:text-text0d"
           placeholder={intl.formatMessage({ id: 'common.address' })}
           value={newAddress.address}
           onChange={(e) => setNewAddress((prev) => ({ ...prev, address: e.target.value }))}
         />
         <Styled.Input
-          className="rounded-lg border border-solid border-bg2 bg-bg0 dark:border-bg2d dark:bg-bg0d"
+          className="rounded-lg border border-solid border-bg2 bg-bg0 text-text0d dark:border-bg2d dark:bg-bg0d dark:text-text0d"
           placeholder={intl.formatMessage({ id: 'wallet.column.name' })}
           value={newAddress.name}
           onChange={(e) => setNewAddress((prev) => ({ ...prev, name: e.target.value }))}
