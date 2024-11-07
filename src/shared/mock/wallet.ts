@@ -8,7 +8,7 @@ import { THORChain } from '@xchainjs/xchain-thorchain'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { WalletAddresses } from '../wallet/types'
+import { WalletAddresses, WalletType } from '../wallet/types'
 
 export const mockValidatePassword$ = (password: string) =>
   Rx.of(password).pipe(
@@ -29,7 +29,7 @@ export const MOCK_PHRASE = 'rural bright ball negative already grass good grant 
 export const MOCK_WALLET_ADDRESSES: WalletAddresses = [
   {
     address: 'tthor13gym97tmw3axj3hpewdggy2cr288d3qffr8skg',
-    type: 'ledger',
+    type: WalletType.Ledger,
     chain: THORChain,
     walletAccount: 0,
     walletIndex: 0,
@@ -37,7 +37,7 @@ export const MOCK_WALLET_ADDRESSES: WalletAddresses = [
   },
   {
     address: '0x33292c1d02c432d323fb62c57fb327da45e1bdde',
-    type: 'keystore',
+    type: WalletType.Keystore,
     chain: ETHChain,
     walletAccount: 0,
     walletIndex: 0,
@@ -45,7 +45,7 @@ export const MOCK_WALLET_ADDRESSES: WalletAddresses = [
   },
   {
     address: 'tb1qtephp596jhpwrawlp67junuk347zl2cwc56xml',
-    type: 'keystore',
+    type: WalletType.Keystore,
     chain: BTCChain,
     walletAccount: 0,
     walletIndex: 0,
@@ -53,7 +53,7 @@ export const MOCK_WALLET_ADDRESSES: WalletAddresses = [
   },
   {
     address: 'qr20g55jd7x3dalp4qxjfgfvda0nwr8cfccrgxd0dw',
-    type: 'keystore',
+    type: WalletType.Keystore,
     chain: BCHChain,
     walletAccount: 0,
     walletIndex: 0,
@@ -61,7 +61,7 @@ export const MOCK_WALLET_ADDRESSES: WalletAddresses = [
   },
   {
     address: 'tltc1qtephp596jhpwrawlp67junuk347zl2cwpucctk',
-    type: 'keystore',
+    type: WalletType.Keystore,
     chain: LTCChain,
     walletAccount: 0,
     walletIndex: 0,

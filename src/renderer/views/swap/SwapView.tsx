@@ -780,7 +780,7 @@ const SuccessTradeRouteView: React.FC<Props> = ({
 
   useEffect(() => {
     FP.pipe(
-      sourceWalletType === 'keystore' ? oSourceKeystoreAddress : oSourceLedgerAddress,
+      sourceWalletType === WalletType.Keystore ? oSourceKeystoreAddress : oSourceLedgerAddress,
       O.fold(
         () => setTradeAccountBalanceRD(RD.initial),
         (sourceAddress) => {

@@ -15,6 +15,7 @@ import {
 } from '../api/types'
 import { ApiFileStoreService, CommonStorage } from '../api/types'
 import { Locale } from '../i18n/types'
+import { WalletType } from '../wallet/types'
 import { MOCK_KEYSTORE } from './wallet'
 
 // Mock "empty" `apiKeystore`
@@ -39,7 +40,14 @@ export const apiUrl: ApiUrl = {
 export const apiHDWallet: ApiHDWallet = {
   getLedgerAddress: ({ chain }) =>
     Promise.resolve(
-      E.right({ chain, address: 'ledger_address', type: 'ledger', walletAccount: 0, walletIndex: 0, hdMode: 'default' })
+      E.right({
+        chain,
+        address: 'ledger_address',
+        type: WalletType.Ledger,
+        walletAccount: 0,
+        walletIndex: 0,
+        hdMode: 'default'
+      })
     ),
   verifyLedgerAddress: () => Promise.resolve(true),
   sendLedgerTx: () => Promise.resolve(E.right('tx_hash')),

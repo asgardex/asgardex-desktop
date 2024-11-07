@@ -4,6 +4,7 @@ import { Meta, Story } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { Address, baseAmount } from '@xchainjs/xchain-util'
 
+import { WalletType } from '../../../../shared/wallet/types'
 import { addBondProvidersAddress, removeBondProvidersByAddress } from '../../../services/storage/userBondProviders'
 import { NodeStatusEnum } from '../../../services/thorchain/types'
 import { BondsTable } from './BondsTable'
@@ -42,12 +43,12 @@ export const Default: Story = () => {
   )
   const mockWalletAddresses = {
     THOR: [
-      { address: 'thor1abcd1234', walletType: 'keystore' },
-      { address: 'thor1xyz7890', walletType: 'ledger' }
+      { address: 'thor1abcd1234', walletType: WalletType.Keystore },
+      { address: 'thor1xyz7890', walletType: WalletType.Ledger }
     ],
     MAYA: [
-      { address: 'maya1abcd1234', walletType: 'keystore' },
-      { address: 'maya1xyz7890', walletType: 'ledger' }
+      { address: 'maya1abcd1234', walletType: WalletType.Keystore },
+      { address: 'maya1xyz7890', walletType: WalletType.Ledger }
     ]
   }
 

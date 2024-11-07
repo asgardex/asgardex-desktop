@@ -33,7 +33,7 @@ import { getDerivationPath as getEvmDerivationPath } from '../../../shared/evm/l
 import { EvmHDMode } from '../../../shared/evm/types'
 import { chainToString, EnabledChain, isSupportedChain } from '../../../shared/utils/chain'
 import { isError } from '../../../shared/utils/guard'
-import { HDMode, WalletAddress } from '../../../shared/wallet/types'
+import { HDMode, WalletAddress, WalletType } from '../../../shared/wallet/types'
 import { WalletPasswordConfirmationModal } from '../../components/modal/confirmation'
 import { RemoveWalletConfirmationModal } from '../../components/modal/confirmation/RemoveWalletConfirmationModal'
 import { AssetIcon } from '../../components/uielements/assets/assetIcon/AssetIcon'
@@ -260,7 +260,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
   const renderLedgerNotSupported = useMemo(
     () => (
       <div className="mt-10px w-full">
-        <Styled.WalletTypeLabel>{walletTypeToI18n('ledger', intl)}</Styled.WalletTypeLabel>
+        <Styled.WalletTypeLabel>{walletTypeToI18n(WalletType.Ledger, intl)}</Styled.WalletTypeLabel>
         <div className="ml-40px flex items-center pt-5px text-[12px] uppercase text-text2 dark:text-text2d">
           <Styled.Icon component={AttentionIcon} />
           {intl.formatMessage({ id: 'common.notsupported.fornetwork' }, { network })}
@@ -486,7 +486,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
         <>
           <div className="flex-row">
             <WalletTypeLabel className="ml-40px mt-10px inline-block ">
-              {walletTypeToI18n('ledger', intl)}
+              {walletTypeToI18n(WalletType.Ledger, intl)}
             </WalletTypeLabel>
             <div className="ml-40px mt-10px inline-block ">
               {O.isSome(oAddress) ? renderAccount(oAddress.value) : <span></span>}
@@ -519,7 +519,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
       // Render addresses depending on its loading state
       return (
         <>
-          <Styled.WalletTypeLabel>{walletTypeToI18n('keystore', intl)}</Styled.WalletTypeLabel>
+          <Styled.WalletTypeLabel>{walletTypeToI18n(WalletType.Keystore, intl)}</Styled.WalletTypeLabel>
           <div className="mx-40px my-0 w-full overflow-hidden ">
             <div className="flex w-full items-center">
               <Styled.AddressEllipsis address={address} chain={chain} network={network} enableCopy={true} />

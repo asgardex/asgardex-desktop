@@ -33,13 +33,13 @@ const disableRefresh = false
 const balances: Partial<Record<EnabledChain, ChainBalances>> = {
   [MAYAChain]: [
     {
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       walletAddress: O.some('doge keystore'),
 
       chain: MAYAChain,
       balances: RD.success([
         {
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           amount: baseAmount('1000000'),
           asset: AssetMaya,
           walletAddress: 'Maya wallet address',
@@ -48,7 +48,7 @@ const balances: Partial<Record<EnabledChain, ChainBalances>> = {
           hdMode: 'default'
         },
         {
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           amount: baseAmount('300000000'),
           asset: AssetCacao,
           walletAddress: 'Maya wallet address',
@@ -62,12 +62,12 @@ const balances: Partial<Record<EnabledChain, ChainBalances>> = {
   ],
   [BTCChain]: [
     {
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       walletAddress: O.some('btc keystore'),
       chain: BTCChain,
       balances: RD.success([
         {
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           amount: baseAmount('1000000'),
           asset: AssetBTC,
           walletAddress: 'DOGE wallet address',
@@ -81,12 +81,12 @@ const balances: Partial<Record<EnabledChain, ChainBalances>> = {
   ],
   [ETHChain]: [
     {
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       walletAddress: O.some('eth keystore'),
       chain: ETHChain,
       balances: RD.success([
         {
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           amount: baseAmount('300000000'),
           asset: AssetETH,
           walletAddress: 'ETH wallet address',
@@ -100,12 +100,12 @@ const balances: Partial<Record<EnabledChain, ChainBalances>> = {
   ],
   [THORChain]: [
     {
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       walletAddress: O.some('thor keystore'),
       chain: THORChain,
       balances: RD.success([
         {
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           amount: baseAmount('1000000'),
           asset: AssetRuneNative,
           walletAddress: 'DOGE wallet address',
@@ -119,12 +119,12 @@ const balances: Partial<Record<EnabledChain, ChainBalances>> = {
   ],
   [LTCChain]: [
     {
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       walletAddress: O.some('ltc keystore'),
       chain: LTCChain,
       balances: RD.success([
         {
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           amount: baseAmount('1000000'),
           asset: AssetLTC,
           walletAddress: 'LTC wallet address',

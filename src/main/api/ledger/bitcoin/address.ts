@@ -11,7 +11,7 @@ import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
-import { WalletAddress } from '../../../../shared/wallet/types'
+import { WalletAddress, WalletType } from '../../../../shared/wallet/types'
 import { VerifyAddressHandler } from '../types'
 import { getDerivationPaths } from './common'
 
@@ -45,7 +45,14 @@ export const getAddress = async (
       network: network
     })
     const address = await clientLedger.getAddressAsync(walletIndex)
-    return E.right({ address: address, chain: BTCChain, type: 'ledger', walletAccount, walletIndex, hdMode: 'default' })
+    return E.right({
+      address: address,
+      chain: BTCChain,
+      type: WalletType.Ledger,
+      walletAccount,
+      walletIndex,
+      hdMode: 'default'
+    })
   } catch (error) {
     return E.left({
       errorId: LedgerErrorId.GET_ADDRESS_FAILED,

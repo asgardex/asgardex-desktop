@@ -6,6 +6,7 @@ import * as NEA from 'fp-ts/lib/NonEmptyArray'
 
 import { thorDetails } from '../../../../shared/api/types'
 import { AssetBSC, AssetRuneNative } from '../../../../shared/utils/asset'
+import { WalletType } from '../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../const'
 import { mockWalletBalance } from '../../../helpers/test/testWalletHelper'
 import { changeDex } from '../../../services/app/service'
@@ -49,7 +50,7 @@ const openExplorerTxUrl: OpenExplorerTxUrl = (txHash: TxHash) => {
 export const StoryBSC: StoryObj<AssetDetailsProps> = {
   render: () => (
     <AssetDetails
-      walletType="keystore"
+      walletType={WalletType.Keystore}
       walletAddress="bnb-address"
       txsPageRD={RD.initial}
       balances={balances}
@@ -67,7 +68,7 @@ export const StoryBSC: StoryObj<AssetDetailsProps> = {
 export const StoryRuneTxSuccess: StoryObj<AssetDetailsProps> = {
   render: () => (
     <AssetDetails
-      walletType="keystore"
+      walletType={WalletType.Keystore}
       walletAddress="thor-address"
       txsPageRD={RD.initial}
       balances={balances}
@@ -86,7 +87,7 @@ export const StoryRuneTxSuccess: StoryObj<AssetDetailsProps> = {
 export const StoryRuneNoSend: StoryObj<AssetDetailsProps> = {
   render: () => (
     <AssetDetails
-      walletType="keystore"
+      walletType={WalletType.Keystore}
       walletAddress="thor-address"
       txsPageRD={RD.initial}
       balances={balances}
@@ -105,7 +106,7 @@ export const StoryRuneNoSend: StoryObj<AssetDetailsProps> = {
 export const StoryRuneTxError: StoryObj<AssetDetailsProps> = {
   render: () => (
     <AssetDetails
-      walletType="keystore"
+      walletType={WalletType.Keystore}
       walletAddress="thor-address"
       txsPageRD={RD.initial}
       balances={balances}
@@ -124,7 +125,7 @@ export const StoryRuneTxError: StoryObj<AssetDetailsProps> = {
 export const StoryRuneNoBalances: StoryObj<AssetDetailsProps> = {
   render: () => (
     <AssetDetails
-      walletType="keystore"
+      walletType={WalletType.Keystore}
       walletAddress="thor-address"
       txsPageRD={RD.initial}
       balances={getBalances([runeBalanceEmpty, bscBalance])}
@@ -143,7 +144,7 @@ export const StoryRuneNoBalances: StoryObj<AssetDetailsProps> = {
 export const StoryRuneFeeNotCovered: StoryObj<AssetDetailsProps> = {
   render: () => (
     <AssetDetails
-      walletType="keystore"
+      walletType={WalletType.Keystore}
       walletAddress="bnb-address"
       txsPageRD={RD.initial}
       balances={getBalances([runeBalance, bscBalanceEmpty])}

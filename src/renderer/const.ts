@@ -269,4 +269,4 @@ export const SUPPORTED_LEDGER_APPS: Chain[] = [THORChain, BTCChain, LTCChain, DO
 export const DEFAULT_GET_POOLS_PERIOD = GetPoolsPeriodEnum._30d
 export const DEFAULT_GET_POOLS_PERIOD_MAYA = GetPoolsPeriodEnumMaya._30d
 
-export const DEFAULT_WALLET_TYPE: WalletType = 'keystore'
+export const DEFAULT_WALLET_TYPE: WalletType = WalletType.Keystore

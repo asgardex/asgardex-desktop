@@ -2,6 +2,7 @@ import { bn, baseAmount } from '@xchainjs/xchain-util'
 
 import { ASSETS_MAINNET } from '../../../shared/mock/assets'
 import { AssetBTC, AssetBSC, AssetETH, AssetRuneNative } from '../../../shared/utils/asset'
+import { WalletType } from '../../../shared/wallet/types'
 import { AssetUSDC, ZERO_BASE_AMOUNT } from '../../const'
 import { WalletBalance } from '../../services/wallet/types'
 import { PoolData, PricePool } from '../../views/pools/Pools.types'
@@ -40,7 +41,7 @@ describe('helpers/fp/ord', () => {
   })
   describe('ordWalletBalanceByAsset', () => {
     const a: WalletBalance = {
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       amount: baseAmount('1'),
       asset: AssetRuneNative,
       walletAddress: '',

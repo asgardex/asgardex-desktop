@@ -14,6 +14,7 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import * as Styled from '../../../renderer/components/wallet/assets/TotalValue.styles'
+import { WalletType } from '../../../shared/wallet/types'
 import { Bonds } from '../../components/Bonds'
 import { RefreshButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
@@ -48,7 +49,7 @@ import { getValueOfRuneInAsset } from '../pools/Pools.utils'
 
 export type WalletAddressInfo = {
   address: string
-  walletType: string
+  walletType: WalletType
 }
 
 export const BondsView: React.FC = (): JSX.Element => {

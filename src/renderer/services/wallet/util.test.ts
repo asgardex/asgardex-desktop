@@ -3,6 +3,7 @@ import * as O from 'fp-ts/lib/Option'
 
 import { ASSETS_MAINNET } from '../../../shared/mock/assets'
 import { AssetBSC, AssetBTC, AssetDOGE, AssetETH, AssetRuneNative } from '../../../shared/utils/asset'
+import { WalletType } from '../../../shared/wallet/types'
 import { eqOWalletBalance, eqWalletBalances } from '../../helpers/fp/eq'
 import { WalletBalances } from '../clients'
 import { KeystoreState } from './types'
@@ -137,7 +138,7 @@ describe('services/wallet/util/', () => {
           walletAddress: 'ADDRESS_ETH',
           walletAccount: 0,
           walletIndex: 0,
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           hdMode: 'default'
         },
         {
@@ -146,7 +147,7 @@ describe('services/wallet/util/', () => {
           walletAddress: 'ADDRESS_DOGE',
           walletAccount: 0,
           walletIndex: 0,
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           hdMode: 'default'
         },
         {
@@ -155,7 +156,7 @@ describe('services/wallet/util/', () => {
           walletAddress: 'ADDRESS_BTC',
           walletAccount: 0,
           walletIndex: 0,
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           hdMode: 'default'
         },
         {
@@ -164,7 +165,7 @@ describe('services/wallet/util/', () => {
           walletAddress: 'ADDRESS_BSC',
           walletAccount: 0,
           walletIndex: 0,
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           hdMode: 'default'
         },
         {
@@ -173,7 +174,7 @@ describe('services/wallet/util/', () => {
           walletAddress: 'ADDRESS_RUNENATIVE',
           walletAccount: 0,
           walletIndex: 0,
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           hdMode: 'default'
         }
       ]
@@ -191,7 +192,7 @@ describe('services/wallet/util/', () => {
           walletAddress: 'ADDRESS_ETH',
           walletAccount: 0,
           walletIndex: 0,
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           hdMode: 'default'
         },
         {
@@ -200,7 +201,7 @@ describe('services/wallet/util/', () => {
           walletAddress: 'ADDRESS_DOGE',
           walletAccount: 0,
           walletIndex: 0,
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           hdMode: 'default'
         },
         {
@@ -209,7 +210,7 @@ describe('services/wallet/util/', () => {
           walletAddress: 'ADDRESS_BTC',
           walletAccount: 0,
           walletIndex: 0,
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           hdMode: 'default'
         },
         {
@@ -218,7 +219,7 @@ describe('services/wallet/util/', () => {
           walletAddress: 'ADDRESS_BSC',
           walletAccount: 0,
           walletIndex: 0,
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           hdMode: 'default'
         },
         {
@@ -227,7 +228,7 @@ describe('services/wallet/util/', () => {
           walletAddress: 'ADDRESS_RUNENATIVE',
           walletAccount: 0,
           walletIndex: 0,
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           hdMode: 'default'
         }
       ]
@@ -251,7 +252,7 @@ describe('services/wallet/util/', () => {
           walletAddress: 'ADDRESS_ETH',
           walletAccount: 0,
           walletIndex: 0,
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           hdMode: 'default'
         },
         {
@@ -260,7 +261,7 @@ describe('services/wallet/util/', () => {
           walletAddress: 'ADDRESS_DOGE',
           walletAccount: 0,
           walletIndex: 0,
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           hdMode: 'default'
         },
         {
@@ -269,7 +270,7 @@ describe('services/wallet/util/', () => {
           walletAddress: 'ADDRESS_BTC',
           walletAccount: 0,
           walletIndex: 0,
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           hdMode: 'default'
         },
         {
@@ -278,7 +279,7 @@ describe('services/wallet/util/', () => {
           walletAddress: 'ADDRESS_BSC',
           walletAccount: 0,
           walletIndex: 0,
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           hdMode: 'default'
         },
         {
@@ -287,7 +288,7 @@ describe('services/wallet/util/', () => {
           walletAddress: 'ADDRESS_RUNENATIVE',
           walletAccount: 0,
           walletIndex: 0,
-          walletType: 'keystore',
+          walletType: WalletType.Keystore,
           hdMode: 'default'
         }
       ]
@@ -302,7 +303,7 @@ describe('services/wallet/util/', () => {
             walletAddress: 'ADDRESS_BSC',
             walletAccount: 0,
             walletIndex: 0,
-            walletType: 'keystore',
+            walletType: WalletType.Keystore,
             hdMode: 'default'
           })
         )

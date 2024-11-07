@@ -9,7 +9,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { KeystoreId, LedgerErrorId } from '../../../shared/api/types'
 import { isError } from '../../../shared/utils/guard'
-import { WalletAddress } from '../../../shared/wallet/types'
+import { WalletAddress, WalletType } from '../../../shared/wallet/types'
 import { eqChain, eqKeystoreId, eqNetwork, eqOLedgerAddress } from '../../helpers/fp/eq'
 import { liveData } from '../../helpers/rx/liveData'
 import { observableState, triggerStream } from '../../helpers/stateHelper'
@@ -206,7 +206,7 @@ export const createLedgerService = ({
           walletAccount,
           walletIndex,
           address,
-          type: 'ledger'
+          type: WalletType.Ledger
         }
         // store address in memory
         _addLedgerAddress(ledgerAddress)

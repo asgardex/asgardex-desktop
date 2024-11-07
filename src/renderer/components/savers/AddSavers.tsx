@@ -218,7 +218,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
 
   const hasLedger = useMemo(() => hasLedgerInBalancesByAsset(asset.asset, allBalances), [asset, allBalances])
 
-  const sourceWalletType: WalletType = useMemo(() => (useLedger ? 'ledger' : 'keystore'), [useLedger])
+  const sourceWalletType: WalletType = useMemo(() => (useLedger ? WalletType.Ledger : WalletType.Keystore), [useLedger])
 
   // `oSourceAssetWB` of source asset - which might be none (user has no balances for this asset or wallet is locked)
   const oSourceAssetWB: O.Option<WalletBalance> = useMemo(() => {
@@ -580,7 +580,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       onChangeAsset({
         source: asset,
         // back to default 'keystore' type
-        sourceWalletType: 'keystore'
+        sourceWalletType: WalletType.Keystore
       })
     },
     [onChangeAsset]
@@ -790,7 +790,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
 
   const onClickUseLedger = useCallback(
     (useLedger: boolean) => {
-      const walletType: WalletType = useLedger ? 'ledger' : 'keystore'
+      const walletType: WalletType = useLedger ? WalletType.Ledger : WalletType.Keystore
       onChangeAsset({ source: asset.asset, sourceWalletType: walletType })
       resetEnteredAmounts()
     },

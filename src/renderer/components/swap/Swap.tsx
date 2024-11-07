@@ -372,12 +372,12 @@ export const Swap = ({
         O.getOrElse(() => false)
       )
 
-      return isKeystoreAddress ? O.some('keystore') : isLedgerAddress ? O.some('ledger') : O.none
+      return isKeystoreAddress ? O.some(WalletType.Keystore) : isLedgerAddress ? O.some(WalletType.Ledger) : O.none
     },
     [oTargetLedgerAddress, oTargetKeystoreAddress]
   )
   const sourceWalletType: WalletType = useMemo(
-    () => (useSourceAssetLedger ? 'ledger' : 'keystore'),
+    () => (useSourceAssetLedger ? WalletType.Ledger : WalletType.Keystore),
     [useSourceAssetLedger]
   )
 
@@ -1528,7 +1528,7 @@ export const Swap = ({
       onChangeAsset({
         source: asset,
         // back to default 'keystore' type
-        sourceWalletType: 'keystore',
+        sourceWalletType: WalletType.Keystore,
         target: targetAsset,
         targetWalletType: oTargetWalletType,
         recipientAddress: oRecipientAddress
@@ -1566,7 +1566,7 @@ export const Swap = ({
         sourceWalletType,
         target: asset,
         // Reset the wallet type for the new target asset
-        targetWalletType: O.some('keystore'),
+        targetWalletType: O.some(WalletType.Keystore),
         recipientAddress: O.none
       })
       await delay(100) // Optional delay to ensure state updates properly
@@ -2473,7 +2473,7 @@ export const Swap = ({
     setQuoteMaya(O.none)
     const walletType = FP.pipe(
       oTargetWalletType,
-      O.getOrElse<WalletType>(() => 'keystore')
+      O.getOrElse<WalletType>(() => WalletType.Keystore)
     )
 
     onChangeAsset({
@@ -2571,7 +2571,7 @@ export const Swap = ({
       onChangeAsset({
         source: sourceAsset,
         target: targetAsset,
-        sourceWalletType: useLedger ? 'ledger' : 'keystore',
+        sourceWalletType: useLedger ? WalletType.Ledger : WalletType.Keystore,
         targetWalletType: oTargetWalletType,
         recipientAddress: oRecipientAddress
       })
@@ -2593,7 +2593,7 @@ export const Swap = ({
         source: sourceAsset,
         target: targetAsset,
         sourceWalletType,
-        targetWalletType: O.some(useLedger ? 'ledger' : 'keystore'),
+        targetWalletType: O.some(useLedger ? WalletType.Ledger : WalletType.Keystore),
         recipientAddress: useLedger ? oTargetLedgerAddress : oTargetKeystoreAddress
       })
     },

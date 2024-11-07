@@ -5,7 +5,7 @@ import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
-import { WalletAddress } from '../../../../shared/wallet/types'
+import { WalletAddress, WalletType } from '../../../../shared/wallet/types'
 import { getDerivationPaths } from './common'
 
 export const getAddress = async (
@@ -29,7 +29,14 @@ export const getAddress = async (
         msg: `Getting 'address' from Ledger's Cosmos app failed`
       })
     }
-    return E.right({ address, chain: GAIAChain, type: 'ledger', walletAccount, walletIndex, hdMode: 'default' })
+    return E.right({
+      address,
+      chain: GAIAChain,
+      type: WalletType.Ledger,
+      walletAccount,
+      walletIndex,
+      hdMode: 'default'
+    })
   } catch (error) {
     return E.left({
       errorId: LedgerErrorId.GET_ADDRESS_FAILED,

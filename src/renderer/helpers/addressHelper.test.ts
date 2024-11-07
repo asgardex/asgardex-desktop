@@ -9,6 +9,7 @@ import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import * as O from 'fp-ts/lib/Option'
 
+import { WalletType } from '../../shared/wallet/types'
 import { LedgerAddresses } from '../services/wallet/types'
 import { getEVMChecksumAddress, hasLedgerAddress, removeAddressPrefix, truncateAddress } from './addressHelper'
 
@@ -139,7 +140,7 @@ describe('helpers/addressHelper', () => {
     const addresses: LedgerAddresses = [
       {
         address: 'bsc-address',
-        type: 'ledger',
+        type: WalletType.Ledger,
         keystoreId: 1,
         network: Network.Mainnet,
         chain: BSCChain,
@@ -149,7 +150,7 @@ describe('helpers/addressHelper', () => {
       },
       {
         address: 'eth-address',
-        type: 'ledger',
+        type: WalletType.Ledger,
         keystoreId: 1,
         network: Network.Mainnet,
         chain: ETHChain,

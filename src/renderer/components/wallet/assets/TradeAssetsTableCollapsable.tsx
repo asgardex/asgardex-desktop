@@ -243,8 +243,8 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
       }
 
       // Filter accounts by walletType
-      const keystoreAccounts = balances.filter((account) => account.walletType === 'keystore')
-      const ledgerAccounts = balances.filter((account) => account.walletType === 'ledger')
+      const keystoreAccounts = balances.filter((account) => account.walletType === WalletType.Keystore)
+      const ledgerAccounts = balances.filter((account) => account.walletType === WalletType.Ledger)
 
       return (
         <>
@@ -294,8 +294,8 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
     }
 
     // Group the balances by wallet type
-    const keystoreBalances = tradeAccountBalances.filter((account) => account.walletType === 'keystore')
-    const ledgerBalances = tradeAccountBalances.filter((account) => account.walletType === 'ledger')
+    const keystoreBalances = tradeAccountBalances.filter((account) => account.walletType === WalletType.Keystore)
+    const ledgerBalances = tradeAccountBalances.filter((account) => account.walletType === WalletType.Ledger)
 
     const renderHeader = (walletType: WalletType, firstAccount: O.Option<TradeAccount>) => (
       <Styled.HeaderRow className="flex w-full justify-between space-x-4">
@@ -320,7 +320,7 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
         </Col>
         <Col flex="0 1 auto" span={3} style={{ textAlign: 'right' }}>
           <Styled.HeaderLabel color="gray">{`(${
-            walletType === 'keystore' ? keystoreBalances.length : ledgerBalances.length
+            walletType === WalletType.Keystore ? keystoreBalances.length : ledgerBalances.length
           } Assets)`}</Styled.HeaderLabel>
         </Col>
         <Col flex="0 0 12rem" span={1}>
@@ -343,7 +343,7 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
     return (
       <>
         {keystoreBalances.length > 0 && (
-          <Panel header={renderHeader('keystore', O.fromNullable(keystoreBalances[0]))} key="keystore">
+          <Panel header={renderHeader(WalletType.Keystore, O.fromNullable(keystoreBalances[0]))} key="keystore">
             <Styled.HeaderLabel className="ml-5">
               {intl.formatMessage({ id: 'common.tradeAccount' })}
             </Styled.HeaderLabel>
@@ -352,7 +352,7 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
         )}
 
         {ledgerBalances.length > 0 && (
-          <Panel header={renderHeader('ledger', O.fromNullable(ledgerBalances[0]))} key="ledger">
+          <Panel header={renderHeader(WalletType.Ledger, O.fromNullable(ledgerBalances[0]))} key="ledger">
             <Styled.HeaderLabel className="ml-5">
               {intl.formatMessage({ id: 'common.tradeAccount' })}
             </Styled.HeaderLabel>

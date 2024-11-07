@@ -12,6 +12,7 @@ import * as RxOp from 'rxjs/operators'
 import { thorDetails } from '../../../shared/api/types'
 import { mockValidatePassword$ } from '../../../shared/mock/wallet'
 import { AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
+import { WalletType } from '../../../shared/wallet/types'
 import { ONE_BN } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
@@ -66,7 +67,7 @@ const defaultProps: SwapProps = {
       {
         asset: AssetRuneNative,
         amount: assetToBase(assetAmount(100)),
-        walletType: 'keystore',
+        walletType: WalletType.Keystore,
         walletAccount: 0,
         walletIndex: 0,
         walletAddress: 'wallet-address-rune',
@@ -77,7 +78,7 @@ const defaultProps: SwapProps = {
         walletAccount: 0,
         walletIndex: 0,
         amount: assetToBase(assetAmount(1)),
-        walletType: 'keystore',
+        walletType: WalletType.Keystore,
         walletAddress: 'wallet-address-btc',
         hdMode: 'default'
       }
@@ -108,8 +109,8 @@ const defaultProps: SwapProps = {
   targetKeystoreAddress: O.some('target-wallet-address'),
   targetLedgerAddress: O.some('target-ledger-address'),
   recipientAddress: O.some('target-address'),
-  sourceWalletType: 'ledger',
-  targetWalletType: O.some('keystore'),
+  sourceWalletType: WalletType.Ledger,
+  targetWalletType: O.some(WalletType.Keystore),
   onChangeAsset: ({ source, target, sourceWalletType, targetWalletType }) =>
     console.log('change asset', assetToString(source), sourceWalletType, assetToString(target), targetWalletType),
   network: Network.Testnet,

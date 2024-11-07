@@ -14,7 +14,7 @@ import { defaultAvaxParams } from '../../../../shared/avax/const'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { EvmHDMode } from '../../../../shared/evm/types'
 import { isError } from '../../../../shared/utils/guard'
-import { WalletAddress } from '../../../../shared/wallet/types'
+import { WalletAddress, WalletType } from '../../../../shared/wallet/types'
 
 export const getEVMAddress = async ({
   chain,
@@ -102,7 +102,7 @@ export const getEVMAddress = async ({
     const address = await client.getAddressAsync(walletIndex)
 
     if (address) {
-      return E.right({ address, chain: chain, type: 'ledger', walletAccount, walletIndex, hdMode: evmHDMode })
+      return E.right({ address, chain: chain, type: WalletType.Ledger, walletAccount, walletIndex, hdMode: evmHDMode })
     } else {
       return E.left({
         errorId: LedgerErrorId.INVALID_PUBKEY,

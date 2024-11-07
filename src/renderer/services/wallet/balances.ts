@@ -402,7 +402,7 @@ export const createBalancesService = ({
     THOR.addressUI$,
     getChainBalance$({
       chain: THORChain,
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
@@ -410,7 +410,7 @@ export const createBalancesService = ({
     })
   ]).pipe(
     RxOp.map(([oWalletAddress, balances]) => ({
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       chain: THORChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
@@ -426,7 +426,7 @@ export const createBalancesService = ({
     SOL.addressUI$,
     getChainBalance$({
       chain: SOLChain,
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
@@ -434,7 +434,7 @@ export const createBalancesService = ({
     })
   ]).pipe(
     RxOp.map(([oWalletAddress, balances]) => ({
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       chain: SOLChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
@@ -451,7 +451,7 @@ export const createBalancesService = ({
     MAYA.addressUI$,
     getChainBalance$({
       chain: MAYAChain,
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
@@ -459,7 +459,7 @@ export const createBalancesService = ({
     })
   ]).pipe(
     RxOp.map(([oWalletAddress, balances]) => ({
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       chain: MAYAChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
@@ -505,7 +505,7 @@ export const createBalancesService = ({
               // In case we don't get an address,
               // just return `ChainBalance` w/ initial (empty) balances
               Rx.of<ChainBalance>({
-                walletType: 'ledger',
+                walletType: WalletType.Ledger,
                 chain,
                 walletAddress: O.none,
                 balances: RD.initial,
@@ -517,14 +517,14 @@ export const createBalancesService = ({
               FP.pipe(
                 getBalanceByAddress$({
                   address,
-                  walletType: 'ledger',
+                  walletType: WalletType.Ledger,
                   walletAccount,
                   walletIndex,
                   walletBalanceType,
                   hdMode
                 }),
                 RxOp.map<WalletBalancesRD, ChainBalance>((balances) => ({
-                  walletType: 'ledger',
+                  walletType: WalletType.Ledger,
                   chain,
                   walletAddress: O.some(address),
                   balances,
@@ -562,7 +562,7 @@ export const createBalancesService = ({
     LTC.addressUI$,
     getChainBalance$({
       chain: LTCChain,
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
@@ -570,7 +570,7 @@ export const createBalancesService = ({
     })
   ]).pipe(
     RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       chain: LTCChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
       balances,
@@ -585,7 +585,7 @@ export const createBalancesService = ({
     DASH.addressUI$,
     getChainBalance$({
       chain: DASHChain,
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
@@ -593,7 +593,7 @@ export const createBalancesService = ({
     })
   ]).pipe(
     RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       chain: DASHChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
       balances,
@@ -625,7 +625,7 @@ export const createBalancesService = ({
     BCH.addressUI$,
     getChainBalance$({
       chain: BCHChain,
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       walletBalanceType: 'all',
@@ -633,7 +633,7 @@ export const createBalancesService = ({
     })
   ]).pipe(
     RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       chain: BCHChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
@@ -676,7 +676,7 @@ export const createBalancesService = ({
     BTC.addressUI$,
     getChainBalance$({
       chain: BTCChain,
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
@@ -684,7 +684,7 @@ export const createBalancesService = ({
     })
   ]).pipe(
     RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       chain: BTCChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
@@ -700,7 +700,7 @@ export const createBalancesService = ({
     BTC.addressUI$,
     getChainBalance$({
       chain: BTCChain,
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
@@ -708,7 +708,7 @@ export const createBalancesService = ({
     })
   ]).pipe(
     RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       chain: BTCChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
@@ -725,7 +725,7 @@ export const createBalancesService = ({
     DOGE.addressUI$,
     getChainBalance$({
       chain: DOGEChain,
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
@@ -733,7 +733,7 @@ export const createBalancesService = ({
     })
   ]).pipe(
     RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       chain: DOGEChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
@@ -749,7 +749,7 @@ export const createBalancesService = ({
     KUJI.addressUI$,
     getChainBalance$({
       chain: KUJIChain,
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
@@ -757,7 +757,7 @@ export const createBalancesService = ({
     })
   ]).pipe(
     RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       chain: KUJIChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
@@ -786,7 +786,7 @@ export const createBalancesService = ({
 
   const ethBalances$ = getChainBalance$({
     chain: ETHChain,
-    walletType: 'keystore',
+    walletType: WalletType.Keystore,
     walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
     walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
     hdMode: 'default',
@@ -797,7 +797,7 @@ export const createBalancesService = ({
    */
   const ethChainBalance$: ChainBalance$ = Rx.combineLatest([ETH.addressUI$, ethBalances$]).pipe(
     RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       chain: ETHChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
@@ -809,7 +809,7 @@ export const createBalancesService = ({
 
   const arbBalances$ = getChainBalance$({
     chain: ARBChain,
-    walletType: 'keystore',
+    walletType: WalletType.Keystore,
     walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
     walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
     hdMode: 'default',
@@ -821,7 +821,7 @@ export const createBalancesService = ({
    */
   const arbChainBalance$: ChainBalance$ = Rx.combineLatest([ARB.addressUI$, arbBalances$]).pipe(
     RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       chain: ARBChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
@@ -833,7 +833,7 @@ export const createBalancesService = ({
 
   const avaxBalances$ = getChainBalance$({
     chain: AVAXChain,
-    walletType: 'keystore',
+    walletType: WalletType.Keystore,
     walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
     walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
     hdMode: 'default',
@@ -845,7 +845,7 @@ export const createBalancesService = ({
    */
   const avaxChainBalance$: ChainBalance$ = Rx.combineLatest([AVAX.addressUI$, avaxBalances$]).pipe(
     RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       chain: AVAXChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
@@ -856,7 +856,7 @@ export const createBalancesService = ({
   )
   const baseBalances$ = getChainBalance$({
     chain: BASEChain,
-    walletType: 'keystore',
+    walletType: WalletType.Keystore,
     walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
     walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
     hdMode: 'default',
@@ -867,7 +867,7 @@ export const createBalancesService = ({
    */
   const baseChainBalance$: ChainBalance$ = Rx.combineLatest([BASE.addressUI$, baseBalances$]).pipe(
     RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       chain: BASEChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
@@ -879,7 +879,7 @@ export const createBalancesService = ({
 
   const bscBalances$ = getChainBalance$({
     chain: BSCChain,
-    walletType: 'keystore',
+    walletType: WalletType.Keystore,
     walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
     walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
     hdMode: 'default',
@@ -891,7 +891,7 @@ export const createBalancesService = ({
    */
   const bscChainBalance$: ChainBalance$ = Rx.combineLatest([BSC.addressUI$, bscBalances$]).pipe(
     RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       chain: BSCChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
@@ -908,7 +908,7 @@ export const createBalancesService = ({
     COSMOS.addressUI$,
     getChainBalance$({
       chain: GAIAChain,
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
@@ -916,7 +916,7 @@ export const createBalancesService = ({
     })
   ]).pipe(
     RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       chain: GAIAChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
@@ -933,7 +933,7 @@ export const createBalancesService = ({
     XRD.addressUI$,
     getChainBalance$({
       chain: RadixChain,
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
       walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
       hdMode: 'default',
@@ -941,7 +941,7 @@ export const createBalancesService = ({
     })
   ]).pipe(
     RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
-      walletType: 'keystore',
+      walletType: WalletType.Keystore,
       chain: RadixChain,
       walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
       walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)

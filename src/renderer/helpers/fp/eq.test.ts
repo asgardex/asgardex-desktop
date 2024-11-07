@@ -11,7 +11,7 @@ import { ApiUrls } from '../../../shared/api/types'
 import { BSC_ADDRESS_TESTNET, RUNE_ADDRESS_TESTNET } from '../../../shared/mock/address'
 import { ASSETS_MAINNET } from '../../../shared/mock/assets'
 import { AssetBSC, AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
-import { WalletAddress } from '../../../shared/wallet/types'
+import { WalletAddress, WalletType } from '../../../shared/wallet/types'
 import { SymDepositAddresses } from '../../services/chain/types'
 import { PoolAddress, PoolShare } from '../../services/midgard/types'
 import { ApiError, ErrorId } from '../../services/wallet/types'
@@ -459,7 +459,7 @@ describe('helpers/fp/eq', () => {
 
     it('is not equal', () => {
       expect(eqWalletAddress.equals(a, { ...a, address: 'another' })).toBeFalsy()
-      expect(eqWalletAddress.equals(a, { ...a, type: 'ledger' })).toBeFalsy()
+      expect(eqWalletAddress.equals(a, { ...a, type: WalletType.Ledger })).toBeFalsy()
       expect(eqWalletAddress.equals(a, { ...a, chain: BSCChain })).toBeFalsy()
       expect(eqWalletAddress.equals(a, { ...a, walletIndex: 1 })).toBeFalsy()
     })
@@ -467,13 +467,13 @@ describe('helpers/fp/eq', () => {
 
   describe('eqWalletType', () => {
     it('is equal', () => {
-      expect(eqWalletType.equals('keystore', 'keystore')).toBeTruthy()
-      expect(eqWalletType.equals('ledger', 'ledger')).toBeTruthy()
+      expect(eqWalletType.equals(WalletType.Keystore, WalletType.Keystore)).toBeTruthy()
+      expect(eqWalletType.equals(WalletType.Ledger, WalletType.Ledger)).toBeTruthy()
     })
 
     it('is not equal', () => {
-      expect(eqWalletType.equals('keystore', 'ledger')).toBeFalsy()
-      expect(eqWalletType.equals('ledger', 'keystore')).toBeFalsy()
+      expect(eqWalletType.equals(WalletType.Keystore, WalletType.Ledger)).toBeFalsy()
+      expect(eqWalletType.equals(WalletType.Ledger, WalletType.Keystore)).toBeFalsy()
     })
   })
 
@@ -487,7 +487,7 @@ describe('helpers/fp/eq', () => {
 
     it('is not equal', () => {
       expect(eqOWalletAddress.equals(O.some(a), O.some({ ...a, address: 'another' }))).toBeFalsy()
-      expect(eqOWalletAddress.equals(O.some(a), O.some({ ...a, type: 'ledger' }))).toBeFalsy()
+      expect(eqOWalletAddress.equals(O.some(a), O.some({ ...a, type: WalletType.Ledger }))).toBeFalsy()
       expect(eqOWalletAddress.equals(O.some(a), O.some({ ...a, chain: BSCChain }))).toBeFalsy()
       expect(eqOWalletAddress.equals(O.some(a), O.some({ ...a, walletIndex: 1 }))).toBeFalsy()
     })
@@ -509,7 +509,7 @@ describe('helpers/fp/eq', () => {
         eqSymDepositAddresses.equals(addresses, { asset: oAsset, dex: O.some({ ...rune, address: 'another' }) })
       ).toBeFalsy()
       expect(
-        eqSymDepositAddresses.equals(addresses, { asset: oAsset, dex: O.some({ ...rune, type: 'ledger' }) })
+        eqSymDepositAddresses.equals(addresses, { asset: oAsset, dex: O.some({ ...rune, type: WalletType.Ledger }) })
       ).toBeFalsy()
       expect(
         eqSymDepositAddresses.equals(addresses, { asset: oAsset, dex: O.some({ ...rune, chain: BSCChain }) })

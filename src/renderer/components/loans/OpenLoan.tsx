@@ -267,7 +267,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     [collateralAsset, allBalances]
   )
 
-  const sourceWalletType: WalletType = useMemo(() => (useLedger ? 'ledger' : 'keystore'), [useLedger])
+  const sourceWalletType: WalletType = useMemo(() => (useLedger ? WalletType.Ledger : WalletType.Keystore), [useLedger])
 
   // `oSourceAssetWB` of source asset - which might be none (user has no balances for this asset or wallet is locked)
   const oSourceAssetWB: O.Option<WalletBalance> = useMemo(() => {
@@ -652,7 +652,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
 
       onChangeAsset({
         collateral: asset,
-        collateralWalletType: 'keystore',
+        collateralWalletType: WalletType.Keystore,
         borrow: borrowAsset.asset,
         borrowWalletType: oBorrowWalletType,
         recipientAddress: O.some(borrowAddress)
@@ -668,7 +668,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
 
       onChangeAsset({
         collateral: collateralAsset.asset,
-        collateralWalletType: 'keystore',
+        collateralWalletType: WalletType.Keystore,
         borrow: asset,
         borrowWalletType: oBorrowWalletType,
         recipientAddress: O.some(borrowAddress)
@@ -879,7 +879,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
 
   const onClickUseLedger = useCallback(
     (useLedger: boolean) => {
-      const walletType: WalletType = useLedger ? 'ledger' : 'keystore'
+      const walletType: WalletType = useLedger ? WalletType.Ledger : WalletType.Keystore
       console.log(oBorrowWalletType)
       onChangeAsset({
         collateral: collateralAsset.asset,
@@ -895,7 +895,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
 
   const onClickUseBorrowAssetLedger = useCallback(
     (useLedger: boolean) => {
-      const walletType: WalletType = useLedger ? 'ledger' : 'keystore'
+      const walletType: WalletType = useLedger ? WalletType.Ledger : WalletType.Keystore
       onChangeAsset({
         collateral: collateralAsset.asset,
         collateralWalletType: initialSourceWalletType,

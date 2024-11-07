@@ -5,6 +5,7 @@ import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 
 import { AssetRuneNative } from '../../../../../shared/utils/asset'
+import { WalletType } from '../../../../../shared/wallet/types'
 import { mockWalletBalance } from '../../../../helpers/test/testWalletHelper'
 import { AssetInfo } from './AssetInfo'
 
@@ -18,7 +19,7 @@ export const Template = ({ address, balance }: Args) => {
       walletInfo={FP.pipe(
         address,
         O.fromPredicate((s) => !!s),
-        O.map((address) => ({ address, network: Network.Testnet, walletType: 'keystore' }))
+        O.map((address) => ({ address, network: Network.Testnet, walletType: WalletType.Keystore }))
       )}
       asset={O.some(AssetRuneNative)}
       assetsWB={O.some([

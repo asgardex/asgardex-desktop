@@ -21,7 +21,7 @@ const { get$: reloadBalances$, set: setReloadBalances } = observableState<boolea
 const { get$: reloadLedgerBalances$, set: setReloadLedgerBalances } = observableState<boolean>(false)
 
 const resetReloadBalances = (walletType: WalletType) => {
-  if (walletType === 'keystore') {
+  if (walletType === WalletType.Keystore) {
     setReloadBalances(false)
   } else {
     setReloadLedgerBalances(false)
@@ -29,7 +29,7 @@ const resetReloadBalances = (walletType: WalletType) => {
 }
 
 const reloadBalances = (walletType: WalletType) => {
-  if (walletType === 'keystore') {
+  if (walletType === WalletType.Keystore) {
     setReloadBalances(true)
   } else {
     setReloadLedgerBalances(true)

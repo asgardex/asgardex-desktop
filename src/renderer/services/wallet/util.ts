@@ -158,9 +158,9 @@ export const getBalanceByAsset =
 
 export const walletTypeToI18n = (type: WalletType, intl: IntlShape) => {
   switch (type) {
-    case 'ledger':
+    case WalletType.Ledger:
       return intl.formatMessage({ id: 'ledger.title' })
-    case 'keystore':
+    case WalletType.Keystore:
       return intl.formatMessage({ id: 'common.keystore' })
     default:
       return `Unknown ${type}`
@@ -255,6 +255,6 @@ export const fromIPCLedgerAddressesIO = (addresses: IPCLedgerAddressesIO): Ledge
       walletAccount,
       walletIndex,
       hdMode,
-      type: 'ledger'
+      type: WalletType.Ledger
     }))
   )

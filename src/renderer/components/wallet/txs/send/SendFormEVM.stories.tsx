@@ -106,6 +106,6 @@ export const Default: StoryObj<StoryArgs> = {
   args: {
     txRDStatus: 'success',
     feeRDStatus: 'success',
-    walletType: 'keystore'
+    walletType: WalletType.Keystore
   }
 }

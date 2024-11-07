@@ -7,6 +7,7 @@ import * as O from 'fp-ts/lib/Option'
 
 import { ASSETS_MAINNET } from '../../../shared/mock/assets'
 import { AssetBTC, AssetETH, AssetRuneNative, AssetBSC } from '../../../shared/utils/asset'
+import { WalletType } from '../../../shared/wallet/types'
 import { AssetUSDCBSC, AssetUSDT62E, AssetUSDTERC20Testnet } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { eqAsset, eqBaseAmount } from '../../helpers/fp/eq'
@@ -421,7 +422,7 @@ describe('components/swap/utils', () => {
   describe('balancesToSwapFrom', () => {
     const dexBalance = mockWalletBalance()
     const runeBalanceLedger = mockWalletBalance({
-      walletType: 'ledger',
+      walletType: WalletType.Ledger,
       amount: baseAmount(2)
     })
     const bnbBalance = mockWalletBalance({
@@ -436,10 +437,10 @@ describe('components/swap/utils', () => {
       })
       expect(result.length).toEqual(2)
       // Keystore THOR.RUNE
-      expect(result[0].walletType).toEqual('keystore')
+      expect(result[0].walletType).toEqual(WalletType.Keystore)
       expect(eqAsset.equals(result[0].asset, AssetRuneNative)).toBeTruthy()
       // Ledger THOR.RUNE
-      expect(result[1].walletType).toEqual('ledger')
+      expect(result[1].walletType).toEqual(WalletType.Ledger)
       expect(eqAsset.equals(result[1].asset, AssetRuneNative)).toBeTruthy()
     })
 
@@ -458,7 +459,7 @@ describe('components/swap/utils', () => {
   describe('hasLedgerInBalancesByChain', () => {
     const dexBalance = mockWalletBalance()
     const runeBalanceLedger = mockWalletBalance({
-      walletType: 'ledger',
+      walletType: WalletType.Ledger,
       amount: baseAmount(2)
     })
     const bnbBalance = mockWalletBalance({
