@@ -24,6 +24,7 @@ const wallet: WalletMessages = {
   'wallet.action.create': 'Create',
   'wallet.action.deposit': 'Deposit',
   'wallet.balance.total.poolAssets': 'Total balance of wallet assets',
+  'wallet.balance.total.portfolio': 'Total Portfolio Balance',
   'wallet.balance.total.poolAssets.info':
     'Total balance of wallet assets using pool data from Thorchain & Mayachain. Pools are source of truth to determine prices at THORChain & MAYAchain',
   'wallet.balance.total.tradeAssets': 'Total balance of Trade assets',
