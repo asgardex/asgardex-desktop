@@ -543,7 +543,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
                   asset: getChainAsset(chain),
                   amount: ZERO_BASE_AMOUNT,
                   walletAddress: 'mock-address',
-                  walletType: 'keystore',
+                  walletType: WalletType.Keystore,
                   walletAccount: 0,
                   walletIndex: 0,
                   hdMode: 'default'

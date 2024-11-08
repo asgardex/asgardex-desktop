@@ -177,7 +177,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
 
   const useLedger = isLedgerWallet(initialSourceWalletType)
 
-  const sourceWalletType: WalletType = useMemo(() => (useLedger ? 'ledger' : 'keystore'), [useLedger])
+  const sourceWalletType: WalletType = useMemo(() => (useLedger ? WalletType.Ledger : WalletType.Keystore), [useLedger])
 
   const [withdrawStartTime, setWithdrawStartTime] = useState<number>(0)
 
@@ -535,7 +535,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
       onChangeAsset({
         source: asset,
         // back to default 'keystore' type
-        sourceWalletType: 'keystore'
+        sourceWalletType: WalletType.Keystore
       })
     },
     [onChangeAsset]
@@ -879,7 +879,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
 
   const onClickUseLedger = useCallback(
     (useLedger: boolean) => {
-      const walletType: WalletType = useLedger ? 'ledger' : 'keystore'
+      const walletType: WalletType = useLedger ? WalletType.Ledger : WalletType.Keystore
       onChangeAsset({ source: asset.asset, sourceWalletType: walletType })
       resetEnteredAmounts()
     },

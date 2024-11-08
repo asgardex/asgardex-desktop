@@ -2,7 +2,7 @@ import { THORChain } from '@xchainjs/xchain-thorchain'
 import { baseAmount } from '@xchainjs/xchain-util'
 
 import { AssetRuneNative } from '../../../shared/utils/asset'
-import { WalletAddress } from '../../../shared/wallet/types'
+import { WalletAddress, WalletType } from '../../../shared/wallet/types'
 import { WalletBalance } from '../../services/wallet/types'
 
 /**
@@ -21,7 +21,7 @@ import { WalletBalance } from '../../services/wallet/types'
  * Pass any values you want to override
  */
 export const mockWalletBalance = (overrides?: Partial<WalletBalance>): WalletBalance => ({
-  walletType: 'keystore',
+  walletType: WalletType.Keystore,
   amount: baseAmount(1),
   asset: AssetRuneNative,
   walletAddress: 'wallet-address',
@@ -47,7 +47,7 @@ export const mockWalletBalance = (overrides?: Partial<WalletBalance>): WalletBal
  */
 export const mockWalletAddress = (overrides?: Partial<WalletAddress>): WalletAddress => ({
   address: 'wallet-address',
-  type: 'keystore',
+  type: WalletType.Keystore,
   chain: THORChain,
   walletAccount: 0,
   walletIndex: 0,

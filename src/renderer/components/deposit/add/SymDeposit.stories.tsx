@@ -48,8 +48,8 @@ const defaultProps: SymDepositProps = {
   asset: { asset: AssetBSC, decimal: BSC_GAS_ASSET_DECIMAL },
   poolDetails: [],
   pricePool: RUNE_PRICE_POOL,
-  assetWalletType: 'keystore',
-  runeWalletType: 'ledger',
+  assetWalletType: WalletType.Keystore,
+  runeWalletType: WalletType.Ledger,
   onChangeAsset: ({
     asset,
     assetWalletType,

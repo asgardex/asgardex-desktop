@@ -155,8 +155,10 @@ export const SymDepositView: React.FC<Props> = (props) => {
       const hasRuneLedger = hasLedgerAddress(ledgerAddresses, THORChain)
       const hasAssetLedger = hasLedgerAddress(ledgerAddresses, asset.chain)
       // If no Ledger found, use 'keystore'
-      const checkedRuneWalletType = isLedgerWallet(runeWalletType) && hasRuneLedger ? 'ledger' : 'keystore'
-      const checkedAssetWalletType = isLedgerWallet(assetWalletType) && hasAssetLedger ? 'ledger' : 'keystore'
+      const checkedRuneWalletType =
+        isLedgerWallet(runeWalletType) && hasRuneLedger ? WalletType.Ledger : WalletType.Keystore
+      const checkedAssetWalletType =
+        isLedgerWallet(assetWalletType) && hasAssetLedger ? WalletType.Ledger : WalletType.Keystore
 
       navigate(
         poolsRoutes.deposit.path({

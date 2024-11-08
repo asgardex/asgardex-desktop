@@ -55,8 +55,8 @@ const meta: Meta<typeof Template> = {
         type: 'selection',
         options: ['ledger', 'keystore', 'undefined'],
         mapping: {
-          ledger: 'ledger',
-          keystore: 'keystore',
+          ledger: WalletType.Ledger,
+          keystore: WalletType.Keystore,
           undefined: undefined
         }
       }
@@ -64,7 +64,7 @@ const meta: Meta<typeof Template> = {
   },
   args: {
     network: Network.Mainnet,
-    walletType: 'ledger',
+    walletType: WalletType.Ledger,
     size: 'small',
     noPrice: true,
     noTicker: false

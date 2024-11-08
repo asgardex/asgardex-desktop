@@ -1864,7 +1864,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
   const useRuneLedgerHandler = useCallback(
     (useLedger: boolean) => {
-      const walletType: WalletType = useLedger ? 'ledger' : 'keystore'
+      const walletType: WalletType = useLedger ? WalletType.Ledger : WalletType.Keystore
       onChangeAsset({ asset, assetWalletType, runeWalletType: walletType })
       resetEnteredAmounts()
     },
@@ -1874,7 +1874,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
   const useAssetLedgerHandler = useCallback(
     (useLedger: boolean) => {
-      const walletType: WalletType = useLedger ? 'ledger' : 'keystore'
+      const walletType: WalletType = useLedger ? WalletType.Ledger : WalletType.Keystore
       onChangeAsset({ asset, assetWalletType: walletType, runeWalletType })
       resetEnteredAmounts()
     },
@@ -1979,7 +1979,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     }
 
     const onSuccess = () => {
-      if (failedAssetWalletType === 'ledger') {
+      if (failedAssetWalletType === WalletType.Ledger) {
         setShowLedgerModal('recover')
       } else {
         setShowPasswordModal('recover')

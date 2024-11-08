@@ -26,8 +26,8 @@ export const Default: StoryObj<Args> = {
     )
   },
   args: {
-    selectedWalletType: 'keystore',
-    walletTypes: ['keystore', 'ledger', 'custom']
+    selectedWalletType: WalletType.Keystore,
+    walletTypes: [WalletType.Keystore, WalletType.Ledger, 'custom']
   }
 }
 

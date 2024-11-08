@@ -255,9 +255,9 @@ export const getWalletTypeLabel = (oWalletType: O.Option<WalletType>, intl: Intl
     oWalletType,
     O.map((walletType) => {
       switch (walletType) {
-        case 'keystore':
+        case WalletType.Keystore:
           return 'common.keystore'
-        case 'ledger':
+        case WalletType.Ledger:
           return 'common.ledger'
         default:
           return 'common.custom'

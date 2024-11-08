@@ -22,6 +22,7 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
+import { WalletType } from '../../../shared/wallet/types'
 import { ProtocolLimit, IncentivePendulum } from '../../components/pool'
 import { Action as ActionButtonAction, ActionButton } from '../../components/uielements/button/ActionButton'
 import { PoolsPeriodSelector } from '../../components/uielements/pools/PoolsPeriodSelector'
@@ -135,7 +136,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
                     poolsRoutes.swap.path({
                       source: assetToString(asset),
                       target: assetToString(AssetRuneNative),
-                      sourceWalletType: hasKeystore ? DEFAULT_WALLET_TYPE : 'ledger',
+                      sourceWalletType: hasKeystore ? DEFAULT_WALLET_TYPE : WalletType.Ledger,
                       targetWalletType: DEFAULT_WALLET_TYPE
                     })
                   )

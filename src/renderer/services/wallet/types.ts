@@ -269,7 +269,7 @@ export type LedgerTxHashLD = LiveData<LedgerError, TxHash>
 export type LedgerAddress = Omit<WalletAddress, 'type'> & {
   readonly keystoreId: KeystoreId
   readonly network: Network
-  readonly type: 'ledger'
+  readonly type: WalletType.Ledger
 }
 export type LedgerAddressRD = RD.RemoteData<LedgerError, LedgerAddress>
 export type LedgerAddressLD = LiveData<LedgerError, LedgerAddress>

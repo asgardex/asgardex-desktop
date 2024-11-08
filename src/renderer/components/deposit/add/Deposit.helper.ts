@@ -9,6 +9,7 @@ import * as A from 'fp-ts/lib/Array'
 import * as O from 'fp-ts/Option'
 
 import { Dex } from '../../../../shared/api/types'
+import { WalletType } from '../../../../shared/wallet/types'
 import { SUPPORTED_LEDGER_APPS, ZERO_BASE_AMOUNT } from '../../../const'
 import {
   convertBaseAmountDecimal,
@@ -291,5 +292,5 @@ export const getWalletType = (chain: Chain, useLedger: boolean) =>
   FP.pipe(
     SUPPORTED_LEDGER_APPS,
     A.findFirst((chainInList) => eqChain.equals(chainInList, chain)),
-    O.map((_) => (useLedger ? 'ledger' : 'keystore'))
+    O.map((_) => (useLedger ? WalletType.Ledger : WalletType.Keystore))
   )

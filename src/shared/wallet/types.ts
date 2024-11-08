@@ -2,7 +2,10 @@ import { Address, Chain } from '@xchainjs/xchain-util'
 
 import { EvmHDMode } from '../evm/types'
 
-export type WalletType = 'keystore' | 'ledger'
+export enum WalletType {
+  Keystore = 'keystore',
+  Ledger = 'ledger'
+}
 
 export type WalletBalanceType = 'all' | 'confirmed'
 

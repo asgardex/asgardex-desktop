@@ -81,7 +81,7 @@ const Template = ({ interactType, txRDStatus, feeRDStatus, balance, validAddress
     withdrawAmount: baseAmount(500),
     addHeight: O.some(12345),
     withdrawHeight: O.some(12346),
-    walletType: 'keystore'
+    walletType: WalletType.Keystore
   }
   const feeRD: FeeRD = FP.pipe(
     feeRDStatus,
@@ -145,7 +145,7 @@ const meta: Meta<typeof Template> = {
   args: {
     interactType: InteractType.Bond,
     txRDStatus: 'success',
-    walletType: 'keystore',
+    walletType: WalletType.Keystore,
     balance: '2',
     validAddress: true
   }

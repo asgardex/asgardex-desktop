@@ -13,6 +13,7 @@ import * as O from 'fp-ts/lib/Option'
 
 import { ASSETS_MAINNET } from '../../shared/mock/assets'
 import { AssetBSC, AssetLTC, AssetRuneNative } from '../../shared/utils/asset'
+import { WalletType } from '../../shared/wallet/types'
 import { AssetUSDCBSC } from '../const'
 import { NonEmptyWalletBalances, WalletBalance, WalletBalances } from '../services/wallet/types'
 import { isRuneNativeAsset } from './assetHelper'
@@ -41,7 +42,7 @@ describe('walletHelper', () => {
   const RUNE_LEDGER_WB = mockWalletBalance({
     amount: assetToBase(assetAmount(2)),
     walletAddress: 'thor-ledger-address',
-    walletType: 'ledger',
+    walletType: WalletType.Ledger,
     asset: AssetRuneNative
   })
   const DOGE_WB = mockWalletBalance({
@@ -63,7 +64,7 @@ describe('walletHelper', () => {
     amount: assetToBase(assetAmount(4.2)),
     walletAddress: 'usdt-ledger-address',
     asset: AssetUSDCBSC,
-    walletType: 'ledger'
+    walletType: WalletType.Ledger
   })
   const LTC_WB = mockWalletBalance({
     amount: assetToBase(assetAmount(5)),
@@ -281,8 +282,8 @@ describe('walletHelper', () => {
 
   describe('getWalletTypeFromNullableString', () => {
     it('keystore', () => {
-      const result = getWalletTypeFromNullableString('keystore')
-      expect(result).toEqual(O.some('keystore'))
+      const result = getWalletTypeFromNullableString(WalletType.Keystore)
+      expect(result).toEqual(O.some(WalletType.Keystore))
     })
     it('invalid', () => {
       const result = getWalletTypeFromNullableString('invalid')

@@ -122,7 +122,7 @@ const meta: Meta<typeof Template> = {
   args: {
     txRDStatus: 'success',
     feeRDStatus: 'success',
-    walletType: 'keystore',
+    walletType: WalletType.Keystore,
     balance: '2',
     validAddress: true
   }

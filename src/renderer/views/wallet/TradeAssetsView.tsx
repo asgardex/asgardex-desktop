@@ -85,8 +85,8 @@ export const TradeAssetsView: React.FC = (): JSX.Element => {
   }
 
   // Create the observable streams for both 'keystore' and 'ledger'
-  const [tradeAccountBalanceRD] = useTradeAccountBalanceRD('keystore')
-  const [tradeAccountBalanceLedgerRD] = useTradeAccountBalanceRD('ledger')
+  const [tradeAccountBalanceRD] = useTradeAccountBalanceRD(WalletType.Keystore)
+  const [tradeAccountBalanceLedgerRD] = useTradeAccountBalanceRD(WalletType.Ledger)
 
   const [{ loading: loadingBalances }] = useObservableState(
     () => balancesState$(DEFAULT_BALANCES_FILTER),

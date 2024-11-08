@@ -1,6 +1,7 @@
 import { FeeOption, Network } from '@xchainjs/xchain-client'
 import { baseAmount, bn } from '@xchainjs/xchain-util'
 
+import { WalletType } from '../wallet/types'
 import { AssetRuneNative } from './asset'
 import {
   isAsset,
@@ -84,10 +85,10 @@ describe('shared/utils/guard', () => {
 
   describe('isWalletType', () => {
     it('true for "ledger"', () => {
-      expect(isWalletType('ledger')).toBeTruthy()
+      expect(isWalletType(WalletType.Ledger)).toBeTruthy()
     })
     it('true for "keystore"', () => {
-      expect(isWalletType('keystore')).toBeTruthy()
+      expect(isWalletType(WalletType.Keystore)).toBeTruthy()
     })
     it('false for invalid string', () => {
       expect(isWalletType('invalid')).toBeFalsy()
@@ -96,19 +97,19 @@ describe('shared/utils/guard', () => {
 
   describe('isLedgerWallet', () => {
     it('false for "keystore"', () => {
-      expect(isLedgerWallet('keystore')).toBeFalsy()
+      expect(isLedgerWallet(WalletType.Keystore)).toBeFalsy()
     })
     it('true for "ledger"', () => {
-      expect(isLedgerWallet('ledger')).toBeTruthy()
+      expect(isLedgerWallet(WalletType.Ledger)).toBeTruthy()
     })
   })
 
   describe('isKeystoreWallet', () => {
     it('false for "ledger"', () => {
-      expect(isKeystoreWallet('ledger')).toBeFalsy()
+      expect(isKeystoreWallet(WalletType.Ledger)).toBeFalsy()
     })
     it('true for "keystore"', () => {
-      expect(isKeystoreWallet('keystore')).toBeTruthy()
+      expect(isKeystoreWallet(WalletType.Keystore)).toBeTruthy()
     })
   })
 

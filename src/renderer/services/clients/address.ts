@@ -4,7 +4,7 @@ import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { WalletAddress } from '../../../shared/wallet/types'
+import { WalletAddress, WalletType } from '../../../shared/wallet/types'
 import { removeAddressPrefix } from '../../helpers/addressHelper'
 import { eqOString } from '../../helpers/fp/eq'
 import { WalletAddress$, XChainClient$ } from '../clients/types'
@@ -27,7 +27,7 @@ export const addressUI$: (client$: XChainClient$, chain: Chain) => WalletAddress
         O.map<Address, WalletAddress>((address) => ({
           address,
           chain,
-          type: 'keystore',
+          type: WalletType.Keystore,
           walletAccount: 0,
           walletIndex: 0,
           hdMode: 'default'
