@@ -266,6 +266,7 @@ type WalletMessageKey =
   | 'wallet.action.create'
   | 'wallet.action.deposit'
   | 'wallet.balance.total.poolAssets'
+  | 'wallet.balance.total.portfolio'
   | 'wallet.balance.total.poolAssets.info'
   | 'wallet.balance.total.tradeAssets'
   | 'wallet.balance.total.tradeAssets.info'

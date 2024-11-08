@@ -539,7 +539,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
         </div>
         <div className="flex flex-col items-center justify-center">
           <Styled.Title size="big" className="text-gray2 dark:text-gray2d">
-            {intl.formatMessage({ id: 'wallet.balance.total.poolAssets' })}
+            {intl.formatMessage({ id: 'wallet.balance.total.portfolio' })}
           </Styled.Title>
           <div className="mb-4 !text-[28px] text-text2 dark:text-text2d">{`$ ${calculatedTotal.toFixed(2)}`}</div>
         </div>

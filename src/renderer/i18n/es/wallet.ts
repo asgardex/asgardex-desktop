@@ -24,6 +24,7 @@ const wallet: WalletMessages = {
   'wallet.action.create': 'Cree',
   'wallet.action.deposit': 'Depósito',
   'wallet.balance.total.poolAssets': 'Saldo total de los activos de la billetera',
+  'wallet.balance.total.portfolio': 'Saldo Total del Portafolio',
   'wallet.balance.total.poolAssets.info':
     'Saldo total de los activos de la billetera utilizando datos de pool de Thorchain & Mayachain. Los pools son la fuente de la verdad para determinar los precios en THORChain y MAYAchain.',
   'wallet.balance.total.tradeAssets': 'Saldo total de activos comerciales',

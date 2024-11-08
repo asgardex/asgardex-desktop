@@ -24,6 +24,7 @@ const wallet: WalletMessages = {
   'wallet.action.create': 'बनाएं',
   'wallet.action.deposit': 'जमा करें',
   'wallet.balance.total.poolAssets': 'वॉलेट संपत्तियों का कुल बैलेंस',
+  'wallet.balance.total.portfolio': 'कुल पोर्टफोलियो शेष',
   'wallet.balance.total.poolAssets.info':
     'Thorchain और Mayachain के पूल डेटा का उपयोग करके वॉलेट संपत्तियों का कुल बैलेंस। THORChain और MAYAchain पर कीमतें निर्धारित करने के लिए पूल सत्य के स्रोत हैं।',
   'wallet.balance.total.tradeAssets': 'व्यापार परिसंपत्तियों का कुल शेष',

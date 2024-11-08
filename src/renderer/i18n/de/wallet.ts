@@ -24,6 +24,7 @@ const wallet: WalletMessages = {
   'wallet.action.connect': 'Verbinden',
   'wallet.action.deposit': 'Einzahlung',
   'wallet.balance.total.poolAssets': 'Gesamtbilanz der Wallet-Assets',
+  'wallet.balance.total.portfolio': 'Gesamtportfolio-Bilanz',
   'wallet.balance.total.poolAssets.info':
     'Gesamtbilanz der Wallet-Assets unter Verwendung von Pooldaten von Thorchain & Mayachain. Nur über Pools können Preise bei THORChain ermittelt werden.',
   'wallet.balance.total.tradeAssets': 'Gesamtsaldo der Handelswerte',
