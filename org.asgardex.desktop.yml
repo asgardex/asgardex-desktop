@@ -1,0 +1,29 @@
+id: org.asgardex.desktop
+runtime: org.freedesktop.Platform
+runtime-version: '22.08'
+sdk: org.freedesktop.Sdk
+command: asgardex
+finish-args:
+  - --share=network
+  - --socket=x11
+  - --socket=wayland
+  - --filesystem=home
+
+modules:
+  - name: asgardex
+    buildsystem: simple
+    build-commands:
+      - yarn install --immutable
+      - yarn build
+      - mkdir -p /app/bin
+      - install -Dm755 ./dist/main/linux-unpacked/asgardex /app/bin/asgardex
+    sources:
+      - type: git
+        url: https://github.com/asgardex/asgardex-desktop
+        branch: develop
+
+  - name: electron-dependencies
+    buildsystem: simple
+    build-commands:
+      - npm install -g electron
+      - cp -R $(npm root -g)/electron /app/lib
