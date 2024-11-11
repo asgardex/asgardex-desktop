@@ -6,6 +6,7 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, AnyAsset, assetToString, baseAmount, Chain, CryptoAmount } from '@xchainjs/xchain-util'
+import clsx from 'clsx'
 import * as A from 'fp-ts/lib/Array'
 import * as Eq from 'fp-ts/lib/Eq'
 import * as FP from 'fp-ts/lib/function'
@@ -386,27 +387,21 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                               <Tab key={index} as={Fragment}>
                                 {({ selected }) => (
                                   <div
-                                    className="
-                                      group
-                                      flex
-                                      cursor-pointer
-                                      items-center
-                                      justify-center
-                                      last:ml-20px
-                                      focus-visible:outline-none
-                                      ">
+                                    className={clsx(
+                                      'flex items-center justify-center',
+                                      'last:ml-20px',
+                                      'group cursor-pointer focus-visible:outline-none'
+                                    )}>
                                     <span
-                                      className={`
-                                        border-y-[2px] border-solid border-transparent
-                                        group-hover:border-b-turquoise
-                                        ${selected ? 'border-b-turquoise' : 'border-b-transparent'}
-                                        ease px-20px
-                                        py-[16px]
-                                        font-mainSemiBold text-[16px]
-                                        uppercase
-
-                                        ${selected ? 'text-turquoise' : 'text-text2 dark:text-text2d'}
-                                      hover:text-turquoise`}>
+                                      className={clsx(
+                                        'border-y-[2px] border-solid border-transparent',
+                                        'ease px-20px py-[16px]',
+                                        'font-mainSemiBold text-[16px] uppercase',
+                                        'hover:text-turquoise group-hover:border-b-turquoise',
+                                        selected
+                                          ? 'border-b-turquoise text-turquoise'
+                                          : 'border-b-transparent text-text2 dark:text-text2d'
+                                      )}>
                                       {label}
                                     </span>
                                   </div>

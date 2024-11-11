@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
+import clsx from 'clsx'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
@@ -110,7 +111,7 @@ export const AssetsFilter: React.FC<Props> = ({ poolFilters, className, activeFi
     O.map((filters) => (
       <div
         key="container"
-        className={`flex w-full flex-col items-center justify-center md:flex-row md:justify-start ${className}`}>
+        className={clsx('flex w-full flex-col items-center justify-center md:flex-row md:justify-start', className)}>
         {filters}
         <InputSearch
           className="mt-10px md:mt-0"

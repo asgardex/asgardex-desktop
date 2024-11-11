@@ -21,6 +21,7 @@ import {
   TokenAsset
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
+import clsx from 'clsx'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
@@ -1194,9 +1195,10 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     () => (
       <div className="flex w-full items-center pl-10px pt-5px">
         <p
-          className={`m-0 pr-5px font-main text-[12px] uppercase ${
+          className={clsx(
+            'm-0 pr-5px font-main text-[12px] uppercase',
             minAmountError ? 'dark:error-0d text-error0' : 'text-gray2 dark:text-gray2d'
-          }`}>
+          )}>
           {`${intl.formatMessage({ id: 'common.min' })}: ${formatAssetAmountCurrency({
             asset: collateralAsset.asset,
             amount: reccommendedAmountIn.assetAmount,
@@ -1205,7 +1207,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
         </p>
         <InfoIcon
           // override color
-          className={`${minAmountError ? '' : 'text-gray2 dark:text-gray2d'}`}
+          className={minAmountError ? '' : 'text-gray2 dark:text-gray2d'}
           color={minAmountError ? 'error' : 'neutral'}
           tooltip={intl.formatMessage({ id: 'deposit.add.min.info' })}
         />
@@ -1554,7 +1556,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
 
           <div className="w-full px-10px font-main text-[12px] uppercase dark:border-gray1d">
             <BaseButton
-              className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+              className="group flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
               onClick={() => setShowDetails((current) => !current)}>
               {intl.formatMessage({ id: 'common.details' })}
               {showDetails ? (
@@ -1609,14 +1611,16 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
               {/* Add loan transaction time only inbound */}
               <>
                 <div
-                  className={`flex w-full justify-between ${showDetails ? 'pt-10px' : ''} font-mainBold text-[14px]`}>
+                  className={clsx('flex w-full justify-between font-mainBold text-[14px]', {
+                    'pt-10px': showDetails
+                  })}>
                   <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
                   <div>{formatSwapTime(Number(transactionTime.inbound))}</div>
                 </div>
                 {showDetails && (
                   <>
                     <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.inbound.time' })}</div>
+                      <div className="flex items-center">{intl.formatMessage({ id: 'common.inbound.time' })}</div>
                       <div>{formatSwapTime(Number(transactionTime.inbound))}</div>
                     </div>
                   </>
@@ -1626,7 +1630,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
               {/* addresses */}
               {showDetails && (
                 <>
-                  <div className={`w-full pt-10px font-mainBold text-[14px]`}>
+                  <div className="w-full pt-10px font-mainBold text-[14px]">
                     {intl.formatMessage({ id: 'common.addresses' })}
                   </div>
                   {/* sender address */}
@@ -1675,7 +1679,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
               {/* balances */}
               {showDetails && (
                 <>
-                  <div className={`w-full pt-10px text-[14px]`}>
+                  <div className="w-full pt-10px text-[14px]">
                     <BaseButton
                       disabled={walletBalancesLoading}
                       className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
@@ -1703,7 +1707,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
               {/* memo */}
               {showDetails && (
                 <>
-                  <div className={`w-full pt-10px font-mainBold text-[14px]`}>
+                  <div className="w-full pt-10px font-mainBold text-[14px]">
                     {intl.formatMessage({ id: 'common.memo' })}
                   </div>
                   <div className="truncate pl-10px font-main text-[12px]">

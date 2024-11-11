@@ -2,6 +2,7 @@ import React, { useCallback } from 'react'
 
 import { BanknotesIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
+import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
@@ -61,8 +62,10 @@ export const ManageButton: React.FC<Props> = ({
 
   return (
     <ButtonComponent onClick={onClick} {...otherProps}>
-      <IconComponent className={`h-[16px] w-[16px] text-inherit lg:h-20px lg:w-20px ${isTextView ? `mr-[8px]` : ''}`} />
-      <span className={`${isTextView ? 'mr-10px' : 'hidden'}`}>{intl.formatMessage({ id: 'common.manage' })}</span>
+      <IconComponent
+        className={clsx('h-[16px] w-[16px] text-inherit lg:h-20px lg:w-20px', { 'mr-[8px]': isTextView })}
+      />
+      <span className={isTextView ? 'mr-10px' : 'hidden'}>{intl.formatMessage({ id: 'common.manage' })}</span>
     </ButtonComponent>
   )
 }

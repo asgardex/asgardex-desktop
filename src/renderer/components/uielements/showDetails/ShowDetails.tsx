@@ -66,8 +66,8 @@ export const ShowDetails: React.FC<Props> = ({
       <div className="flex w-full justify-between">
         {feeRate && upperFeeBound && (
           <>
-            <div className={`font-mainBold text-[14px]`}>{intl.formatMessage({ id: 'common.feeRate' })}</div>
-            <div className={`${feeRate >= upperFeeBound ? 'text-warning0 dark:text-warning0d' : ''}`}>
+            <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.feeRate' })}</div>
+            <div className={feeRate >= upperFeeBound ? 'text-warning0 dark:text-warning0d' : ''}>
               {`${feeRate} ${denom}`}
             </div>
           </>
@@ -75,7 +75,7 @@ export const ShowDetails: React.FC<Props> = ({
       </div>
       {expectedTxMined && (
         <div className="flex w-full justify-between">
-          <div className={`font-mainBold text-[14px]`}>{intl.formatMessage({ id: 'common.inbound.time' })}</div>
+          <div className="font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.inbound.time' })}</div>
           <div>{expectedTxMined}</div>
         </div>
       )}

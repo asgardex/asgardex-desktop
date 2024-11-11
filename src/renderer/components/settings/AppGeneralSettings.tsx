@@ -89,9 +89,10 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
           A.map<Locale, ItemType>((l: Locale) => ({
             label: (
               <div
-                className={`dark:text-1 flex items-center px-10px py-[8px] font-main text-16 uppercase text-text1 dark:text-text1d ${
+                className={clsx(
+                  'dark:text-1 flex items-center px-10px py-[8px] font-main text-16 uppercase text-text1 dark:text-text1d',
                   l === locale ? 'font-mainSemiBold' : 'font-main'
-                }`}>
+                )}>
                 {l}
               </div>
             ),
@@ -107,7 +108,7 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
     () => (
       <Dropdown overlay={langMenu} trigger={['click']} placement="bottom">
         <div className="flex min-w-[240px] cursor-pointer items-center justify-between rounded-lg border border-solid border-gray0 p-2 dark:border-gray0d">
-          <h3 className={`m-0 font-main text-[16px] uppercase leading-5 text-text1 dark:text-text1d`}>{locale}</h3>
+          <h3 className="m-0 font-main text-[16px] uppercase leading-5 text-text1 dark:text-text1d">{locale}</h3>
           <DownIcon />
         </div>
       </Dropdown>
@@ -163,9 +164,11 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
           A.map<Network, ItemType>((n: Network) => ({
             label: (
               <div
-                className={`flex items-center px-10px py-[8px] ${networkTextColor(n)} text-16 uppercase ${
-                  n === network ? 'font-mainSemiBold' : 'font-main'
-                }`}>
+                className={clsx(
+                  'flex items-center px-10px py-[8px] text-16 uppercase',
+                  n === network ? 'font-mainSemiBold' : 'font-main',
+                  networkTextColor(n)
+                )}>
                 {n}
               </div>
             ),
@@ -185,9 +188,11 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
           A.map<Dex, ItemType>((n: Dex) => ({
             label: (
               <div
-                className={`flex items-center px-10px py-[8px] ${dexTextColor(n)} text-16 uppercase ${
-                  n.chain === dex.chain ? 'font-mainSemiBold' : 'font-main'
-                }`}>
+                className={clsx(
+                  'flex items-center px-10px py-[8px] text-16 uppercase',
+                  n.chain === dex.chain ? 'font-mainSemiBold' : 'font-main',
+                  dexTextColor(n)
+                )}>
                 {n.chain}
               </div>
             ),

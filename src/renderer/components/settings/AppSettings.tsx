@@ -7,6 +7,7 @@ import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Dropdown, Collapse } from 'antd'
 import { MenuProps } from 'antd/lib/menu'
 import { ItemType } from 'antd/lib/menu/hooks/useItems'
+import clsx from 'clsx'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
 import * as O from 'fp-ts/lib/Option'
@@ -73,7 +74,7 @@ type SectionProps = {
 }
 
 const Section: React.FC<SectionProps> = ({ title, className, children }) => (
-  <div className={`mb-20px flex flex-col items-start last:mb-0 ${className}`}>
+  <div className={clsx('mb-20px flex flex-col items-start last:mb-0', className)}>
     <h2 className="mb-5px font-main text-[12px] uppercase text-text2 dark:text-text2d">{title}</h2>
     {children}
   </div>
@@ -133,9 +134,10 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
           A.map<Locale, ItemType>((l: Locale) => ({
             label: (
               <div
-                className={`dark:text-1 flex items-center px-10px py-[8px] font-main text-16 uppercase text-text1 dark:text-text1d ${
+                className={clsx(
+                  'dark:text-1 flex items-center px-10px py-[8px] font-main text-16 uppercase text-text1 dark:text-text1d',
                   l === locale ? 'font-mainSemiBold' : 'font-main'
-                }`}>
+                )}>
                 {l}
               </div>
             ),
@@ -151,7 +153,7 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
     () => (
       <Dropdown overlay={langMenu} trigger={['click']} placement="bottom">
         <div className="flex cursor-pointer justify-center ">
-          <h3 className={`font-main text-16 uppercase text-text1 dark:text-text1d`}>{locale}</h3>
+          <h3 className="font-main text-16 uppercase text-text1 dark:text-text1d">{locale}</h3>
           <DownIcon />
         </div>
       </Dropdown>
@@ -207,9 +209,11 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
           A.map<Network, ItemType>((n: Network) => ({
             label: (
               <div
-                className={`flex items-center px-10px py-[8px] ${networkTextColor(n)} text-16 uppercase ${
-                  n === network ? 'font-mainSemiBold' : 'font-main'
-                }`}>
+                className={clsx(
+                  'flex items-center px-10px py-[8px] text-16 uppercase',
+                  n === network ? 'font-mainSemiBold' : 'font-main',
+                  networkTextColor(n)
+                )}>
                 {n}
               </div>
             ),
@@ -229,9 +233,11 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
           A.map<Dex, ItemType>((n: Dex) => ({
             label: (
               <div
-                className={`flex items-center px-10px py-[8px] ${dexTextColor(n)} text-16 uppercase ${
-                  n.chain === dex.chain ? 'font-mainSemiBold' : 'font-main'
-                }`}>
+                className={clsx(
+                  'flex items-center px-10px py-[8px] text-16 uppercase',
+                  n.chain === dex.chain ? 'font-mainSemiBold' : 'font-main',
+                  dexTextColor(n)
+                )}>
                 {n.chain}
               </div>
             ),
@@ -246,7 +252,7 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
     () => (
       <Dropdown overlay={networkMenu} trigger={['click']} placement="bottom">
         <div className="flex cursor-pointer justify-center ">
-          <h3 className={`font-main text-16 uppercase ${networkTextColor(network)}`}>{network}</h3>
+          <h3 className={clsx('font-main text-16 uppercase', networkTextColor(network))}>{network}</h3>
           <DownIcon />
         </div>
       </Dropdown>
@@ -257,7 +263,7 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
     () => (
       <Dropdown overlay={dexMenu} trigger={['click']} placement="bottom">
         <div className="flex cursor-pointer justify-center ">
-          <h3 className={`font-main text-16 uppercase ${dexTextColor(dex)}`}>{dex.chain}</h3>
+          <h3 className={clsx('font-main text-16 uppercase', dexTextColor(dex))}>{dex.chain}</h3>
           <DownIcon />
         </div>
       </Dropdown>
@@ -374,17 +380,19 @@ export const AppSettings: React.FC<Props> = (props): JSX.Element => {
             <div className="card p-44px my-20px md:w-1/2">
               <div className="flex items-center">
                 <TextButton
-                  className={`mb-0 !py-0 !pl-0 !pr-10px font-main !text-18 uppercase text-text0 dark:text-text0d ${
+                  className={clsx(
+                    'mb-0 !py-0 !pl-0 !pr-10px font-main !text-18 uppercase text-text0 dark:text-text0d',
                     advancedActive ? 'opacity-100' : 'opacity-60'
-                  }`}
+                  )}
                   onClick={() => setAdvancedActive((v: Boolean) => !v)}>
                   {intl.formatMessage({ id: 'common.advanced' })}
                 </TextButton>
                 <SwitchButton active={advancedActive} onChange={(active) => setAdvancedActive(active)}></SwitchButton>
                 <TextButton
-                  className={`mb-0 pr-10px font-main !text-18 uppercase text-text0 dark:text-text0d ${
+                  className={clsx(
+                    'mb-0 pr-10px font-main !text-18 uppercase text-text0 dark:text-text0d',
                     isPrivate ? 'opacity-100' : 'opacity-60'
-                  }`}>
+                  )}>
                   {intl.formatMessage({ id: 'common.privateData' })}
                 </TextButton>
                 <SwitchButton active={isPrivate} onChange={togglePrivate}></SwitchButton>

@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import { Network } from '@xchainjs/xchain-client'
 import { assetToString, baseToAsset, formatAssetAmount } from '@xchainjs/xchain-util'
+import clsx from 'clsx'
 import { index } from 'io-ts/lib/DecodeError'
 import { useIntl } from 'react-intl'
 
@@ -69,7 +70,7 @@ export const PendingAssetsWarning: React.FC<PendingAssetsProps> = (props): JSX.E
         className="mr-10px whitespace-nowrap pl-0 !font-mainBold uppercase"
         onClick={() => setCollapsed((v) => !v)}>
         {intl.formatMessage({ id: 'common.informationMore' })}
-        <ChevronRightIcon className={`text-turquoise ${collapsed ? 'rotate-90' : ''} ease h-[20px] w-[20px] `} />
+        <ChevronRightIcon className={clsx('ease h-[20px] w-[20px] text-turquoise', { 'rotate-90': collapsed })} />
       </TextButton>
 
       {collapsed && (

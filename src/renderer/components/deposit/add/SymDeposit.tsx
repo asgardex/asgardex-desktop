@@ -2177,7 +2177,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
               </span>
             </div>
           }>
-          <div className={`w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d`}>
+          <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
             <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
               {/* fees */}
               <div className="flex w-full items-center justify-between font-mainBold">
@@ -2222,7 +2222,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
               {/* addresses */}
               <>
-                <div className={`w-full pt-10px font-mainBold text-[14px]`}>
+                <div className="w-full pt-10px font-mainBold text-[14px]">
                   {intl.formatMessage({ id: 'common.addresses' })}
                 </div>
                 {/* rune sender address */}
@@ -2274,7 +2274,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
               {/* balances */}
               <>
-                <div className={`w-full pt-10px text-[14px]`}>
+                <div className="w-full pt-10px text-[14px]">
                   <BaseButton
                     disabled={walletBalancesLoading}
                     className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
@@ -2297,7 +2297,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
               {/* memo */}
               <>
-                <div className={`w-full pt-10px font-mainBold text-[14px]`}>
+                <div className="w-full pt-10px font-mainBold text-[14px]">
                   {intl.formatMessage({ id: 'common.memos' })}
                 </div>
                 <div className="flex w-full items-center justify-between pl-10px text-[12px]">

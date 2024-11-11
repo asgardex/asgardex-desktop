@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react'
 
 import { TxHash } from '@xchainjs/xchain-client'
+import clsx from 'clsx'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
@@ -43,7 +44,7 @@ export const ViewTxButton: React.FC<Props> = ({
 
   return (
     <div className="flex flex-col">
-      <Styled.Wrapper className={`${className} flex-col`}>
+      <Styled.Wrapper className={clsx('flex-col', className)}>
         <Styled.ViewTxButton onClick={onClickHandler} disabled={O.isNone(oTxHash)}>
           {label || intl.formatMessage({ id: 'common.viewTransaction' })}
         </Styled.ViewTxButton>

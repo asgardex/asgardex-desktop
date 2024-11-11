@@ -10,6 +10,7 @@ import Icon, {
 } from '@ant-design/icons'
 import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import clsx from 'clsx'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 import { useMatch, useNavigate } from 'react-router-dom'
@@ -133,18 +134,14 @@ export const SidebarComponent: React.FC<Props> = (props): JSX.Element => {
           return (
             <div
               key={key}
-              className={`
-                flex
-                h-full cursor-pointer
-                border-x-[3px] border-solid border-transparent
-                hover:border-l-turquoise
-                hover:text-turquoise
-                focus-visible:outline-none
-                ${selected ? 'border-l-turquoise' : 'border-l-transparent'}
-                font-mainBold text-18
-                uppercase transition duration-300 ease-in-out
-                ${selected ? 'text-turquoise' : 'text-text2 dark:text-text2d'}
-              `}
+              className={clsx(
+                'flex h-full cursor-pointer',
+                'font-mainBold text-18 uppercase',
+                'transition duration-300 ease-in-out',
+                'border-x-[3px] border-solid border-transparent',
+                'hover:border-l-turquoise hover:text-turquoise focus-visible:outline-none',
+                selected ? 'border-l-turquoise text-turquoise' : 'border-l-transparent text-text2 dark:text-text2d'
+              )}
               onClick={() => navigate(path)}>
               <div className="flex flex-row items-center py-3 pl-8">
                 <Icon className="w-8 pr-5px" />

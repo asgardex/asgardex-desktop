@@ -1,5 +1,7 @@
 import React from 'react'
 
+import clsx from 'clsx'
+
 import { BaseButton, BaseButtonProps } from './BaseButton'
 import type { Color } from './Button.types'
 
@@ -21,12 +23,7 @@ export const TextButton: React.FC<Props> = (props): JSX.Element => {
     <BaseButton
       color={color}
       disabled={disabled}
-      className={`
-          ${textColor[color]}
-          ${!disabled && 'hover:opacity-80'}
-          'bg-transparent'
-          ${className}
-        `}
+      className={clsx('bg-transparent', textColor[color], { 'hover:opacity-80': !disabled }, className)}
       {...otherProps}>
       {children}
     </BaseButton>

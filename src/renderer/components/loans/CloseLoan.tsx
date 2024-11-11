@@ -22,6 +22,7 @@ import {
   AnyAsset
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
+import clsx from 'clsx'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
@@ -1358,7 +1359,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
 
           <div className="w-full px-10px font-main text-[12px] uppercase dark:border-gray1d">
             <BaseButton
-              className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+              className="group flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
               onClick={() => setShowDetails((current) => !current)}>
               {intl.formatMessage({ id: 'common.details' })}
               {showDetails ? (
@@ -1406,22 +1407,24 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
               {/* Repay loan transaction time, inbound / outbound / confirmations */}
               <>
                 <div
-                  className={`flex w-full justify-between ${showDetails ? 'pt-10px' : ''} font-mainBold text-[14px]`}>
+                  className={clsx('flex w-full justify-between font-mainBold text-[14px]', {
+                    'pt-10px': showDetails
+                  })}>
                   <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
                   <div>{formatSwapTime(Number(10) + Number(10) + Number(10))}</div>
                 </div>
                 {showDetails && (
                   <>
                     <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.inbound.time' })}</div>
+                      <div className="flex items-center">{intl.formatMessage({ id: 'common.inbound.time' })}</div>
                       <div>{formatSwapTime(Number(10))}</div>
                     </div>
                     <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.outbound.time' })}</div>
+                      <div className="flex items-center">{intl.formatMessage({ id: 'common.outbound.time' })}</div>
                       <div>{formatSwapTime(Number(10))}</div>
                     </div>
                     <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div className={`flex items-center`}>
+                      <div className="flex items-center">
                         {intl.formatMessage({ id: 'common.confirmation.time' }, { chain: sourceAsset.chain })}
                       </div>
                       <div>{formatSwapTime(Number(10))}</div>
@@ -1433,7 +1436,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
               {/* addresses */}
               {showDetails && (
                 <>
-                  <div className={`w-full pt-10px font-mainBold text-[14px]`}>
+                  <div className="w-full pt-10px font-mainBold text-[14px]">
                     {intl.formatMessage({ id: 'common.addresses' })}
                   </div>
                   {/* sender address */}
@@ -1472,7 +1475,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
               {/* balances */}
               {showDetails && (
                 <>
-                  <div className={`w-full pt-10px text-[14px]`}>
+                  <div className="w-full pt-10px text-[14px]">
                     <BaseButton
                       disabled={walletBalancesLoading}
                       className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
@@ -1500,7 +1503,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
               {/* memo */}
               {showDetails && (
                 <>
-                  <div className={`w-full pt-10px font-mainBold text-[14px]`}>
+                  <div className="w-full pt-10px font-mainBold text-[14px]">
                     {intl.formatMessage({ id: 'common.memo' })}
                   </div>
                   <div className="truncate pl-10px font-main text-[12px]">
