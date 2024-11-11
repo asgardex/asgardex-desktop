@@ -1034,7 +1034,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
           {/* memo */}
           <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">
             <BaseButton
-              className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+              className="group flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
               onClick={() => setShowDetails((current) => !current)}>
               {intl.formatMessage({ id: 'common.details' })}
               {showDetails ? (
