@@ -61,5 +61,11 @@ jobs:
           name: Flatpak-Bundle
           path: asgardex.flatpak
 
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.OS }}
+          path: release
+
       - name: List artifacts
         run: ls ./release
