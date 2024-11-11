@@ -22,6 +22,7 @@ import { Form } from 'antd'
 import Tooltip from 'antd/es/tooltip'
 import { RadioChangeEvent } from 'antd/lib/radio'
 import BigNumber from 'bignumber.js'
+import clsx from 'clsx'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -1000,7 +1001,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
             <Styled.SettingsWrapper onClick={() => setShowMemo(!showMemo)}>
               <Tooltip title={intl.formatMessage({ id: 'deposit.advancedMode' })}>
                 <Cog8ToothIcon
-                  className={`ease h-[20px] w-[20px] text-text2 ${showMemo ? 'rotate-180' : ''} dark:text-text2d`}
+                  className={clsx('ease h-[20px] w-[20px] text-text2 dark:text-text2d', { 'rotate-180': showMemo })}
                 />
               </Tooltip>
             </Styled.SettingsWrapper>
@@ -1031,7 +1032,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         </Styled.Form>
         <div className="w-full pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
           {/* memo */}
-          <div className={`my-20px w-full font-main text-[12px] uppercase dark:border-gray1d`}>
+          <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">
             <BaseButton
               className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
               onClick={() => setShowDetails((current) => !current)}>

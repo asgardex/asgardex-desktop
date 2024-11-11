@@ -38,6 +38,7 @@ import {
   isTradeAsset
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
+import clsx from 'clsx'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
@@ -152,7 +153,8 @@ const ErrorLabel: React.FC<{
   children: React.ReactNode
   className?: string
 }> = ({ children, className }): JSX.Element => (
-  <div className={`mb-[14px] text-center font-main uppercase text-error0 dark:text-error0d ${className} text-[12px]`}>
+  <div
+    className={clsx('mb-[14px] text-center font-main text-[12px] uppercase text-error0 dark:text-error0d', className)}>
     {children}
   </div>
 )
@@ -2786,7 +2788,7 @@ export const Swap = ({
               </div>
             }>
             {!isLocked(keystore) ? (
-              <div className={`w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d`}>
+              <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
                 <BaseButton
                   className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
                   onClick={() => setShowDetails((current) => !current)}>
@@ -2800,7 +2802,7 @@ export const Swap = ({
 
                 <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
                   {/* Rate */}
-                  <div className={`flex w-full justify-between font-mainBold text-[14px]`}>
+                  <div className="flex w-full justify-between font-mainBold text-[14px]">
                     <BaseButton
                       className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
                       onClick={() =>

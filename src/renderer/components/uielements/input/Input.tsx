@@ -1,5 +1,6 @@
 import React, { forwardRef, useCallback } from 'react'
 
+import clsx from 'clsx'
 import * as FP from 'fp-ts/lib/function'
 
 import type { Size } from './Input.types'
@@ -56,22 +57,19 @@ export const Input = forwardRef<HTMLInputElement, InputProps>((props, ref): JSX.
       ref={ref}
       id={id}
       autoFocus={autoFocus}
-      className={`
-          w-full
-          appearance-none
-            ${ghost ? 'ring-0' : 'ring-1'}
-            focus:outline-none
-            ${error ? 'ring-error0 dark:ring-error0d' : 'ring-gray1 dark:ring-gray1d'}
-            ${error ? 'text-error0 dark:text-error0d' : 'text-text0 dark:text-text0d'}
-            bg-bg0
-            ${uppercase ? 'placeholder:uppercase' : ''}
-             placeholder:text-gray-300 dark:bg-bg0d
-            dark:placeholder:text-gray-400
-            ${sizeClasses[size]}
-            ${uppercase ? 'uppercase' : 'normal-case'}
-            font-main
-            ${disabled ? 'opacity-50' : 'opacity-100'}
-            ${className}`}
+      className={clsx(
+        'w-full appearance-none focus:outline-none',
+        'bg-bg0 font-main dark:bg-bg0d',
+        'placeholder:text-gray-300 dark:placeholder:text-gray-400',
+        ghost ? 'ring-0' : 'ring-1',
+        error ? 'ring-error0 dark:ring-error0d' : 'ring-gray1 dark:ring-gray1d',
+        error ? 'text-error0 dark:text-error0d' : 'text-text0 dark:text-text0d',
+        uppercase ? 'uppercase' : 'normal-case',
+        disabled ? 'opacity-50' : 'opacity-100',
+        { 'placeholder:uppercase': uppercase },
+        sizeClasses[size],
+        className
+      )}
       type="text"
       onKeyDown={onKeyDownHandler}
       autoComplete="off"

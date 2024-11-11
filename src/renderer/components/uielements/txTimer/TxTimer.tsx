@@ -1,6 +1,7 @@
 import React, { useCallback, useState, useEffect } from 'react'
 
 import { Progress } from 'antd'
+import clsx from 'clsx'
 
 import useInterval, { INACTIVE_INTERVAL } from '../../../hooks/useInterval'
 import { RefundIcon } from '../../icons/timerIcons'
@@ -96,7 +97,7 @@ export const TxTimer: React.FC<Props> = (props): JSX.Element => {
   const progressBarValue = value || internalValue
 
   return (
-    <Styled.TxTimerWrapper className={`txTimer-wrapper ${className}`}>
+    <Styled.TxTimerWrapper className={clsx('txTimer-wrapper', className)}>
       <div className="timerchart-icon">
         {!active && <Styled.IconWrapper>{!refunded ? <Styled.SuccessIcon /> : <RefundIcon />}</Styled.IconWrapper>}
       </div>

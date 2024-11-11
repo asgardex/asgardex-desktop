@@ -22,6 +22,7 @@ import {
   TokenAsset
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
+import clsx from 'clsx'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
@@ -1453,7 +1454,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
               {/* Withdraw saver transaction time, inbound / outbound / confirmations */}
               <>
                 <div
-                  className={`flex w-full justify-between ${showDetails ? 'pt-10px' : ''} font-mainBold text-[14px]`}>
+                  className={clsx('flex w-full justify-between font-mainBold text-[14px]', { 'pt-10px': showDetails })}>
                   <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
                   <div>
                     {formatSwapTime(
@@ -1466,15 +1467,15 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
                 {showDetails && (
                   <>
                     <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.inbound.time' })}</div>
+                      <div className="flex items-center">{intl.formatMessage({ id: 'common.inbound.time' })}</div>
                       <div>{formatSwapTime(Number(transactionTime.inbound))}</div>
                     </div>
                     <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.outbound.time' })}</div>
+                      <div className="flex items-center">{intl.formatMessage({ id: 'common.outbound.time' })}</div>
                       <div>{formatSwapTime(Number(transactionTime.outbound))}</div>
                     </div>
                     <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div className={`flex items-center`}>
+                      <div className="flex items-center">
                         {intl.formatMessage({ id: 'common.confirmation.time' }, { chain: sourceAsset.chain })}
                       </div>
                       <div>{formatSwapTime(Number(transactionTime.confirmation))}</div>
@@ -1486,7 +1487,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
               {/* addresses */}
               {showDetails && (
                 <>
-                  <div className={`w-full pt-10px font-mainBold text-[14px]`}>
+                  <div className="w-full pt-10px font-mainBold text-[14px]">
                     {intl.formatMessage({ id: 'common.addresses' })}
                   </div>
                   {/* sender address */}
@@ -1525,7 +1526,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
               {/* balances */}
               {showDetails && (
                 <>
-                  <div className={`w-full pt-10px text-[14px]`}>
+                  <div className="w-full pt-10px text-[14px]">
                     <BaseButton
                       disabled={walletBalancesLoading}
                       className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
@@ -1553,7 +1554,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
               {/* memo */}
               {showDetails && (
                 <>
-                  <div className={`w-full pt-10px font-mainBold text-[14px]`}>
+                  <div className="w-full pt-10px font-mainBold text-[14px]">
                     {intl.formatMessage({ id: 'common.memo' })}
                   </div>
                   <div className="truncate pl-10px font-main text-[12px]">

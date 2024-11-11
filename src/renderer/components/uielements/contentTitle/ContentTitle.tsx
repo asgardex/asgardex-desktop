@@ -1,5 +1,7 @@
 import React from 'react'
 
+import clsx from 'clsx'
+
 import { ContentTitleWrapper } from './ContentTitle.styles'
 
 export type Props = {
@@ -9,7 +11,7 @@ export type Props = {
 
 export const ContentTitle: React.FC<Props> = ({ className = '', children, ...otherProps }): JSX.Element => {
   return (
-    <ContentTitleWrapper className={`contentTitle-wrapper ${className}`} {...otherProps}>
+    <ContentTitleWrapper className={clsx('contentTitle-wrapper', className)} {...otherProps}>
       {children}
     </ContentTitleWrapper>
   )

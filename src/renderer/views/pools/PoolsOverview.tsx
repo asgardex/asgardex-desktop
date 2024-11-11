@@ -4,6 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Tab } from '@headlessui/react'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
+import clsx from 'clsx'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
 import { useObservableState } from 'observable-hooks'
@@ -132,23 +133,18 @@ export const PoolsOverview: React.FC = (): JSX.Element => {
             <Tab key={index} as={Fragment}>
               {({ selected }) => (
                 // label wrapper
-                <div
-                  className={`
-                  group
-                  flex cursor-pointer
-                  items-center
-                  justify-center focus-visible:outline-none`}>
+                <div className="group flex cursor-pointer items-center justify-center focus-visible:outline-none">
                   {/* label */}
                   <span
-                    className={`
-                    border-y-[2px] border-solid border-transparent
-                    group-hover:border-b-turquoise
-                    ${selected ? 'border-b-turquoise' : 'border-b-transparent'}
-                    ease mr-0 px-5px
-                    font-mainSemiBold text-[16px]
-                    uppercase md:mr-10px
-                    ${selected ? 'text-turquoise' : 'text-text2 dark:text-text2d'}
-                   hover:text-turquoise`}>
+                    className={clsx(
+                      'ease border-y-[2px] border-solid border-transparent px-5px',
+                      'font-mainSemiBold text-[16px] uppercase',
+                      'mr-0 md:mr-10px',
+                      'hover:text-turquoise group-hover:border-b-turquoise',
+                      selected
+                        ? 'border-b-turquoise text-turquoise'
+                        : 'border-b-transparent text-text2 dark:text-text2d'
+                    )}>
                     {label}
                   </span>
                 </div>

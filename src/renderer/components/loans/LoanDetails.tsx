@@ -64,35 +64,35 @@ export const LoanDetails: React.FC<Props> = (props): JSX.Element => {
       </h1>
       <div className="w-full border border-gray0 p-20px dark:border-gray0d">
         <div className="flex w-full justify-between pl-10px text-[12px]">
-          <div className={`flex items-center`}>{intl.formatMessage({ id: 'loan.detail.collateral.current' })}</div>
+          <div className="flex items-center">{intl.formatMessage({ id: 'loan.detail.collateral.current' })}</div>
           <div className="text-[21px] text-text0 dark:text-text0d">{currentCollateralValueLabel}</div>
         </div>
         <div className="flex w-full justify-between pl-10px text-[12px]">
-          <div className={`flex items-center`}>{intl.formatMessage({ id: 'loan.detail.debt.current' })}</div>
+          <div className="flex items-center">{intl.formatMessage({ id: 'loan.detail.debt.current' })}</div>
           <div className="text-[17px] text-gray2 dark:text-gray2d">{priceDebtCurrentLabel}</div>
         </div>
         <div className="flex w-full justify-between pl-10px text-[12px]">
-          <div className={`flex items-center`}>{intl.formatMessage({ id: 'loan.detail.lastRepay' })}</div>
+          <div className="flex items-center">{intl.formatMessage({ id: 'loan.detail.lastRepay' })}</div>
           <div className="text-[17px] text-gray2 dark:text-gray2d">{lastRepayHeightDate.toDateString()}</div>
         </div>
       </div>
       <div className="w-full border border-gray0 p-20px dark:border-gray0d">
         <div className="flex w-full justify-between pl-10px text-[12px]">
-          <div className={`flex items-center`}>{intl.formatMessage({ id: 'loan.detail.collateral.deposited' })}</div>
+          <div className="flex items-center">{intl.formatMessage({ id: 'loan.detail.collateral.deposited' })}</div>
           <div className="text-[21px] text-text0 dark:text-text0d">{collateralDeposited}</div>
         </div>
         <div className="flex w-full justify-between pl-10px text-[12px]">
-          <div className={`flex items-center`}>{intl.formatMessage({ id: 'loan.detail.debt.issued' })}</div>
+          <div className="flex items-center">{intl.formatMessage({ id: 'loan.detail.debt.issued' })}</div>
           <div className="text-[17px] text-gray2 dark:text-gray2d">{priceDebtIssuedLabel}</div>
         </div>
       </div>
       <div className="w-full border border-gray0 p-20px dark:border-gray0d">
         <div className="flex w-full justify-between pl-10px text-[12px]">
-          <div className={`flex items-center`}>{intl.formatMessage({ id: 'loan.detail.repayed' })}</div>
+          <div className="flex items-center">{intl.formatMessage({ id: 'loan.detail.repayed' })}</div>
           <div className="text-[21px] text-text0 dark:text-text0d">{priceDebtRepaidLable}</div>
         </div>
         <div className="flex w-full justify-between pl-10px text-[12px]">
-          <div className={`flex items-center`}>{intl.formatMessage({ id: 'loan.detail.collateral.withdrawn' })}</div>
+          <div className="flex items-center">{intl.formatMessage({ id: 'loan.detail.collateral.withdrawn' })}</div>
           <div className="text-[17px] text-gray2 dark:text-gray2d">{collateralWithdrawnLabel}</div>
         </div>
       </div>

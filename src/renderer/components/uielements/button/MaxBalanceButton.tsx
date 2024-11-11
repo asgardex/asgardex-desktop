@@ -2,6 +2,7 @@ import React, { useCallback } from 'react'
 
 import { Balance } from '@xchainjs/xchain-client'
 import { BaseAmount, CryptoAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
 import { isUSDAsset } from '../../../helpers/assetHelper'
@@ -64,13 +65,13 @@ export const MaxBalanceButton: React.FC<Props> = (props): JSX.Element => {
         })})`
 
   return (
-    <div className={`space-between flex items-center ${className}`}>
+    <div className={clsx('space-between flex items-center', className)}>
       <TextButton
         color={color}
         size={size}
         disabled={disabled}
         onClick={onClickHandler}
-        className={`mr-5px w-auto !p-0 ${classNameButton} whitespace-nowrap`}>
+        className={clsx('mr-5px w-auto whitespace-nowrap !p-0', classNameButton)}>
         <span className="pr-5px underline">{intl.formatMessage({ id: 'common.max' })}:</span>
         &nbsp;
         {hidePrivateData ? hiddenString : `${valueLabel}`}

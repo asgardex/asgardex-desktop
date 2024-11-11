@@ -15,15 +15,15 @@ export const InputPassword = forwardRef<HTMLInputElement, PasswordProps>((props,
   const Icon = showPw ? EyeIcon : EyeHideIcon
 
   return (
-    <div className={`${className}`}>
+    <div className={className}>
       <div className="relative w-full">
         <div className="bg:bg0 dark:bg:bg0d absolute right-0 flex h-full cursor-pointer items-center px-10px">
           <Icon
-            className={`h-20px w-20px
-            ${error ? 'text-error0' : 'text-gray1 dark:text-gray1d'}
-            ${disabled ? 'opacity-50' : ''}
-            ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
-            `}
+            className={clsx(
+              'h-20px w-20px',
+              error ? 'text-error0' : 'text-gray1 dark:text-gray1d',
+              disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+            )}
             onClick={() => {
               setShowPw((current) => !current)
             }}

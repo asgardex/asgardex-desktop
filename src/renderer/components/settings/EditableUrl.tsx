@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { CheckCircleIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import clsx from 'clsx'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useForm } from 'react-hook-form'
@@ -83,11 +84,9 @@ const EditableUrl: React.FC<Props> = (props): JSX.Element => {
           () => <></>,
           () => <></>,
           (error) => (
-            <p className={`mt-10px font-main text-[14px] uppercase text-error0`}>
-              {error?.message ?? error.toString()}
-            </p>
+            <p className="mt-10px font-main text-[14px] uppercase text-error0">{error?.message ?? error.toString()}</p>
           ),
-          (_) => <p className={`mt-10px font-main text-[14px] uppercase text-turquoise`}>{successMsg}</p>
+          (_) => <p className="mt-10px font-main text-[14px] uppercase text-turquoise">{successMsg}</p>
         )
       ),
     [successMsg, testUrlState]
@@ -101,7 +100,7 @@ const EditableUrl: React.FC<Props> = (props): JSX.Element => {
     return (
       <div className="flex items-center">
         <TextButton
-          className={`flex !p-0 ${loading ? 'cursor-not-allowed' : 'cursor-pointer'} items-center text-[16px]`}
+          className={clsx('flex items-center !p-0 text-[16px]', loading ? 'cursor-not-allowed' : 'cursor-pointer')}
           color="neutral"
           uppercase={false}
           disabled={loading || RD.isPending(testUrlState)}
@@ -170,9 +169,10 @@ const EditableUrl: React.FC<Props> = (props): JSX.Element => {
           <div className="flex w-full items-center ">
             <Input
               id="url"
-              className={`flex w-auto min-w-[300px] flex-grow text-[16px]
-              ${RD.isSuccess(testUrlState) ? '!ring-turquoise' : ''}
-              `}
+              className={clsx(
+                'flex w-auto min-w-[300px] flex-grow text-[16px]',
+                RD.isSuccess(testUrlState) ? '!ring-turquoise' : ''
+              )}
               size="normal"
               defaultValue={name}
               autoFocus
@@ -197,7 +197,7 @@ const EditableUrl: React.FC<Props> = (props): JSX.Element => {
               {intl.formatMessage({ id: 'common.test' })}
             </BorderButton>
           </div>
-          {errors.url && <p className={`mt-10px font-main text-[14px] uppercase text-error0`}>{errors.url.message}</p>}
+          {errors.url && <p className="mt-10px font-main text-[14px] uppercase text-error0">{errors.url.message}</p>}
         </form>
       )
     },
