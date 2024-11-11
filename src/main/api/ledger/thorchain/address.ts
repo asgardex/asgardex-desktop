@@ -5,7 +5,7 @@ import * as E from 'fp-ts/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
-import { WalletAddress } from '../../../../shared/wallet/types'
+import { WalletAddress, WalletType } from '../../../../shared/wallet/types'
 import { VerifyAddressHandler } from '../types'
 import { getDefaultClientUrls, getDerivationPaths } from './common'
 
@@ -33,7 +33,7 @@ export const getAddress = async (
     return E.right({
       address: address,
       chain: THORChain,
-      type: 'ledger',
+      type: WalletType.Ledger,
       walletAccount,
       walletIndex,
       hdMode: 'default'
