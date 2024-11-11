@@ -108,7 +108,7 @@ export const send = async ({
       recipient,
       amount: amountToSend,
       memo,
-      feeRate: roundedFeeRate
+      feeRate
     })
     if (!txHash) {
       return E.left({

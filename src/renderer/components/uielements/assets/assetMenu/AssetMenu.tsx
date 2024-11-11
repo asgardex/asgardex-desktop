@@ -140,8 +140,8 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
 
   const chainFilter = useMemo(() => {
     const uniqueChains = assets.reduce((acc, asset) => {
-      // Only add the chain if the asset is not synthetic
-      if (asset.type !== AssetType.SYNTH) {
+      // Only add the chain if the asset is not synthetic || trade
+      if (asset.type !== AssetType.SYNTH && asset.type !== AssetType.TRADE) {
         acc.add(asset.chain)
       }
       return acc
