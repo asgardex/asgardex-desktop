@@ -6,6 +6,7 @@ import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { ColumnType } from 'antd/lib/table'
+import clsx from 'clsx'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import { FormattedMessage, useIntl } from 'react-intl'
@@ -54,6 +55,16 @@ export const BondsTable: React.FC<Props> = ({
 }) => {
   const intl = useIntl()
   const [nodeToRemove, setNodeToRemove] = useState<O.Option<Address>>(O.none)
+
+  const isMyAddress = useCallback(
+    (bondAddress: string) => {
+      const match = [...walletAddresses.THOR, ...walletAddresses.MAYA].find((addr) => addr.address === bondAddress)
+
+      return match !== undefined
+    },
+    [walletAddresses]
+  )
+
   const columns: ColumnType<NodeInfo>[] = useMemo(
     () => [
       {
@@ -277,10 +288,17 @@ export const BondsTable: React.FC<Props> = ({
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
               {record.bondProviders.providers.map((provider: Providers, index: string) => {
                 const isMonitoring = watchlist.includes(provider.bondAddress)
+                const isMyAddy = isMyAddress(provider.bondAddress)
+
                 return (
                   <div
                     key={`${record.address}-${index}`}
-                    className="flex flex-col rounded-lg border border-solid border-gray0 p-4 dark:border-gray0d">
+                    className={clsx(
+                      'flex flex-col rounded-lg border border-solid border-gray0 p-4 dark:border-gray0d',
+                      { ' bg-gray0 dark:bg-gray0d': !isMonitoring && !isMyAddy },
+                      { 'bg-transparent': isMonitoring && !isMyAddy },
+                      { 'bg-turquoise/20': isMyAddy }
+                    )}>
                     <div className="flex items-center justify-between">
                       <Styled.TextLabel className="!text-18">
                         {formatAssetAmountCurrency({
@@ -324,8 +342,6 @@ export const BondsTable: React.FC<Props> = ({
                       signMembership: record.signMembership,
                       nodeAddress: record.nodeAddress
                     })}
-                    {/* {record.status}
-                  {record.signMembership} */}
                     {record.nodeAddress}
                   </div>
                 )
