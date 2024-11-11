@@ -225,11 +225,22 @@ export const BondsTable: React.FC<Props> = ({
           walletTypeLabel = `${match.walletType} (${chainLabel})`
         }
       }
+
+      // Search in both THOR and MAYA wallet addresses
       searchWalletAddresses(walletAddresses.THOR, 'THOR')
       searchWalletAddresses(walletAddresses.MAYA, 'MAYA')
-      return <div className="!text-11 text-text2 dark:text-text2d">{walletTypeLabel}</div>
+
+      // Conditionally render the output based on whether a match was found
+      return (
+        <div className="!text-11 text-text2 dark:text-text2d">
+          {walletTypeLabel !== 'Not a wallet address' && (
+            <Styled.TextLabel className="!text-11">{intl.formatMessage({ id: 'common.owner' })}</Styled.TextLabel>
+          )}
+          {walletTypeLabel}
+        </div>
+      )
     },
-    [walletAddresses]
+    [intl, walletAddresses.MAYA, walletAddresses.THOR]
   )
 
   const renderSubActions = useCallback(
@@ -331,9 +342,6 @@ export const BondsTable: React.FC<Props> = ({
                       </span>
                     </div>
                     <div className="mt-2 flex items-center justify-between">
-                      <Styled.TextLabel className="!text-11">
-                        {intl.formatMessage({ id: 'common.owner' })}
-                      </Styled.TextLabel>
                       {renderSubWalletType(provider.bondAddress)}
                     </div>
                     {renderSubActions({
