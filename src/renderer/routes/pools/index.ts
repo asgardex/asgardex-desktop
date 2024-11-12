@@ -13,5 +13,5 @@ export const savers = baseRoutes.savers
 export const lending = baseRoutes.lending
 export const earn = saversRoutes.earn
 export const borrow = lendingRoutes.borrow
-export const { swap } = swapRoutes
+export const { base: swapBase, swap } = swapRoutes
 export const detail = poolDetailRoutes.poolDetail
