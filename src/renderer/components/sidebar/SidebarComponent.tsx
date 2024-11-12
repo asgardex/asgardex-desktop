@@ -8,8 +8,10 @@ import Icon, {
   GlobalOutlined,
   TwitterOutlined
 } from '@ant-design/icons'
+import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { assetToString } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
@@ -114,8 +116,8 @@ export const SidebarComponent: React.FC<Props> = (props): JSX.Element => {
         key: TabKey.SWAP,
         label: intl.formatMessage({ id: 'common.swap' }),
         path: poolsRoutes.swap.path({
-          source: 'BTC.BTC',
-          target: 'THOR.RUNE',
+          source: assetToString(AssetBTC),
+          target: assetToString(AssetRuneNative),
           sourceWalletType: DEFAULT_WALLET_TYPE,
           targetWalletType: DEFAULT_WALLET_TYPE
         }),
