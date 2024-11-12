@@ -1,9 +1,8 @@
-name: Electron build - Linux
+name: Electron build and Publish to Flathub - Linux
 
 on:
   push:
     branches:
-      # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#onpushpull_requestbranchestags
       - 'release/**'
       - 'hotfix/**'
 
@@ -34,13 +33,14 @@ jobs:
           cache: 'yarn'
 
       - name: Install missing dependencies
-        run: sudo apt-get update && sudo apt-get install libudev-dev libusb-1.0-0-dev
+        run: sudo apt-get update && sudo apt-get install -y libudev-dev libusb-1.0-0-dev flatpak flatpak-builder
 
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Publish Linux binaries
-        run: yarn package:ci
+      - name: Build Flatpak
+        run: |
+          flatpak-builder --user --install-deps-from=flathub build-dir org.asgardex.desktop.yml
         env:
           NODE_OPTIONS: --max-old-space-size=7168
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -51,6 +51,15 @@ jobs:
           REACT_APP_ASGARDEX_THORNAME: ${{ secrets.REACT_APP_ASGARDEX_THORNAME }}
           REACT_APP_BASE_API_KEY: ${{ secrets.REACT_APP_BASE_API_KEY }}
           REACT_APP_SNOWTRACE_API_KEY: ${{ secrets.REACT_APP_SNOWTRACE_API_KEY }}
+
+      - name: Package Flatpak Bundle
+        run: flatpak build-bundle build-dir asgardex.flatpak org.asgardex.desktop stable
+
+      - name: Upload Flatpak Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: Flatpak-Bundle
+          path: asgardex.flatpak
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

@@ -1,3 +1,9 @@
+# 1.22.9 (2024-tba-tba)
+
+## add
+- yml file for flathub builder [#486]
+## Updates/Fixes
+
 # 1.22.8 (2024-11-05)
 
 ## add
