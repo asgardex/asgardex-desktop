@@ -28,6 +28,7 @@ import { Button, RefreshButton } from '../../components/uielements/button'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useAppContext } from '../../contexts/AppContext'
 import { useChainContext } from '../../contexts/ChainContext'
+import { useChainflipContext } from '../../contexts/ChainflipContext'
 import { useEvmContext } from '../../contexts/EvmContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMayachainQueryContext } from '../../contexts/MayachainQueryContext'
@@ -126,6 +127,16 @@ const SuccessRouteView: React.FC<Props> = ({
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()
   const { isPrivate } = useApp()
+
+  const { getAssetsData$ } = useChainflipContext()
+
+  useEffect(() => {
+    const subscription = getAssetsData$().subscribe((assetsData) => {
+      console.log('Assets Data:', assetsData)
+    })
+
+    return () => subscription.unsubscribe() // Clean up the subscription on component unmount
+  }, [getAssetsData$])
 
   const pricePool = dex.chain === THORChain ? pricePoolThor : pricePoolMaya
 

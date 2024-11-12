@@ -11,6 +11,7 @@ import { BitcoinCashProvider } from './contexts/BitcoinCashContext'
 import { BitcoinProvider } from './contexts/BitcoinContext'
 import { BscProvider } from './contexts/BscContext'
 import { ChainProvider } from './contexts/ChainContext'
+import { ChainflipProvider } from './contexts/ChainflipContext'
 import { CosmosProvider } from './contexts/CosmosContext'
 import { DashProvider } from './contexts/DashContext'
 import { DogeProvider } from './contexts/DogeContext'
@@ -61,13 +62,15 @@ export const App: React.FC = (): JSX.Element => {
                                                   <MayaMidgardProvider>
                                                     <UserNodesProvider>
                                                       <UserBondProvidersProvider>
-                                                        <I18nProvider>
-                                                          <Router>
-                                                            <ThemeProvider>
-                                                              <AppView />
-                                                            </ThemeProvider>
-                                                          </Router>
-                                                        </I18nProvider>
+                                                        <ChainflipProvider>
+                                                          <I18nProvider>
+                                                            <Router>
+                                                              <ThemeProvider>
+                                                                <AppView />
+                                                              </ThemeProvider>
+                                                            </Router>
+                                                          </I18nProvider>
+                                                        </ChainflipProvider>
                                                       </UserBondProvidersProvider>
                                                     </UserNodesProvider>
                                                   </MayaMidgardProvider>

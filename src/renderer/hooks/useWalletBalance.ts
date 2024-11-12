@@ -17,6 +17,7 @@ import { userChains$ } from '../services/storage/userChains'
 
 export const useTotalWalletBalance = () => {
   const { chainBalances$ } = useWalletContext()
+
   const {
     service: {
       pools: { poolsState$, selectedPricePool$ }
