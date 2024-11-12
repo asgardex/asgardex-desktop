@@ -8,8 +8,10 @@ import Icon, {
   GlobalOutlined,
   TwitterOutlined
 } from '@ant-design/icons'
+import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { assetToString } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
@@ -19,10 +21,12 @@ import { Dex } from '../../../shared/api/types'
 import { ExternalUrl } from '../../../shared/const'
 import { ReactComponent as DiscordIcon } from '../../assets/svg/discord.svg'
 import { ReactComponent as SettingsIcon } from '../../assets/svg/icon-cog.svg'
+import { ReactComponent as PoolIcon } from '../../assets/svg/icon-pools.svg'
 import { ReactComponent as PortfolioIcon } from '../../assets/svg/icon-portfolio.svg'
 import { ReactComponent as SwapIcon } from '../../assets/svg/icon-swap.svg'
 import { ReactComponent as WalletIcon } from '../../assets/svg/icon-wallet.svg'
 import { ReactComponent as ThorChainIcon } from '../../assets/svg/logo-thorchain.svg'
+import { DEFAULT_WALLET_TYPE } from '../../const'
 import * as appRoutes from '../../routes/app'
 import * as playgroundRoutes from '../../routes/playground'
 import * as poolsRoutes from '../../routes/pools'
@@ -49,6 +53,7 @@ const FooterIcon: React.FC<IconProps> = (props: IconProps): JSX.Element => {
 
 enum TabKey {
   WALLET = 'WALLET',
+  SWAP = 'SWAP',
   PORTFOLIO = 'PORTFOLIO',
   POOLS = 'POOLS',
   SETTINGS = 'SETTINGS',
@@ -81,9 +86,12 @@ export const SidebarComponent: React.FC<Props> = (props): JSX.Element => {
   const matchPortfolioRoute = useMatch({ path: portfolioRoutes.base.path(), end: false })
   const matchWalletRoute = useMatch({ path: walletRoutes.base.path(), end: false })
   const matchSettingsRoute = useMatch({ path: appRoutes.settings.path(), end: false })
+  const matchSwapRoute = useMatch({ path: poolsRoutes.swapBase.template, end: false })
 
   const activeKey: TabKey = useMemo(() => {
-    if (matchPoolsRoute) {
+    if (matchSwapRoute) {
+      return TabKey.SWAP
+    } else if (matchPoolsRoute) {
       return TabKey.POOLS
     } else if (matchPortfolioRoute) {
       return TabKey.PORTFOLIO
@@ -94,7 +102,7 @@ export const SidebarComponent: React.FC<Props> = (props): JSX.Element => {
     } else {
       return TabKey.UNKNOWN
     }
-  }, [matchPoolsRoute, matchPortfolioRoute, matchWalletRoute, matchSettingsRoute])
+  }, [matchPoolsRoute, matchPortfolioRoute, matchWalletRoute, matchSettingsRoute, matchSwapRoute])
 
   const items: Tab[] = useMemo(
     () => [
@@ -103,6 +111,17 @@ export const SidebarComponent: React.FC<Props> = (props): JSX.Element => {
         label: intl.formatMessage({ id: 'common.wallet' }),
         path: walletRoutes.base.path(),
         icon: WalletIcon
+      },
+      {
+        key: TabKey.SWAP,
+        label: intl.formatMessage({ id: 'common.swap' }),
+        path: poolsRoutes.swap.path({
+          source: assetToString(AssetBTC),
+          target: assetToString(AssetRuneNative),
+          sourceWalletType: DEFAULT_WALLET_TYPE,
+          targetWalletType: DEFAULT_WALLET_TYPE
+        }),
+        icon: SwapIcon
       },
       {
         key: TabKey.PORTFOLIO,
@@ -114,7 +133,7 @@ export const SidebarComponent: React.FC<Props> = (props): JSX.Element => {
         key: TabKey.POOLS,
         label: intl.formatMessage({ id: 'common.pools' }),
         path: poolsRoutes.base.path(),
-        icon: SwapIcon
+        icon: PoolIcon
       },
       {
         key: TabKey.SETTINGS,
