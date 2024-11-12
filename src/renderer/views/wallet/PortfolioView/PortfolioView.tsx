@@ -35,6 +35,7 @@ import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { isUSDAsset } from '../../../helpers/assetHelper'
 import { sequenceTRD } from '../../../helpers/fpHelpers'
+import { getCurrencyFormat } from '../../../helpers/numberHelper'
 import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
 import { hiddenString } from '../../../helpers/stringHelper'
@@ -313,7 +314,9 @@ export const PortfolioView: React.FC = (): JSX.Element => {
   const renderSharesTotal = useMemo((): string => {
     const sharesTotalRD: BaseAmountRD = FP.pipe(
       RD.combine(allSharesRD, poolDetailsRD),
-      RD.map(([poolShares, poolDetails]) => H.getSharesTotal(poolShares, poolDetails, pricePoolDataThor, dex))
+      RD.map(([poolShares, poolDetails]) =>
+        H.getSharesTotal(poolShares, poolDetails, dex.chain === THORChain ? pricePoolDataThor : pricePoolDataMaya, dex)
+      )
     )
 
     return FP.pipe(
@@ -332,7 +335,16 @@ export const PortfolioView: React.FC = (): JSX.Element => {
               })
       )
     )
-  }, [allSharesRD, dex, intl, isPrivate, poolDetailsRD, pricePoolDataThor, selectedPricePoolThor.asset])
+  }, [
+    allSharesRD,
+    dex,
+    intl,
+    isPrivate,
+    poolDetailsRD,
+    pricePoolDataThor,
+    pricePoolDataMaya,
+    selectedPricePoolThor.asset
+  ])
 
   const allRunePoolProviders = useRunePoolProviders(
     userChains$,
@@ -541,7 +553,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
           <Styled.Title size="big" className="text-gray2 dark:text-gray2d">
             {intl.formatMessage({ id: 'wallet.balance.total.portfolio' })}
           </Styled.Title>
-          <div className="mb-4 !text-[28px] text-text2 dark:text-text2d">{`$ ${calculatedTotal.toFixed(2)}`}</div>
+          <div className="mb-4 !text-[28px] text-text2 dark:text-text2d">{getCurrencyFormat(calculatedTotal)}</div>
         </div>
         <div className="mt-4 space-y-2">
           {activeIndex === PortfolioTabKey.CardView && (
