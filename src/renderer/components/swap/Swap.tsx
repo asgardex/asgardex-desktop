@@ -572,7 +572,7 @@ export const Swap = ({
 
   const setAmountToSwapMax1e8 = useCallback(
     (amountToSwap: BaseAmount) => {
-      const newAmount = baseAmount(amountToSwap.amount(), sourceAssetAmountMax1e8.decimal)
+      const newAmount = baseAmount(amountToSwap.amount())
 
       // dirty check - do nothing if prev. and next amounts are equal
       if (eqBaseAmount.equals(newAmount, amountToSwapMax1e8)) return {}
@@ -588,7 +588,7 @@ export const Swap = ({
        */
       _setAmountToSwapMax1e8({ ...newAmountToSwap })
     },
-    [amountToSwapMax1e8, maxAmountToSwapMax1e8, sourceAssetAmountMax1e8]
+    [amountToSwapMax1e8, maxAmountToSwapMax1e8]
   )
 
   // Price of swap IN fee
