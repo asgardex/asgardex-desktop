@@ -58,7 +58,7 @@ import { isEvmChain, isEvmToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqAddress } from '../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
-import { getSwapMemo, shortenMemo } from '../../helpers/memoHelper'
+import { getSwapMemo } from '../../helpers/memoHelper'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { isPoolDetails } from '../../helpers/poolHelper'
 import { liveData } from '../../helpers/rx/liveData'
@@ -1012,7 +1012,7 @@ export const TradeSwap = ({
             poolAddress,
             asset: sourceAsset,
             amount: convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal),
-            memo: shortenMemo(txDetails.memo), // short asset
+            memo: txDetails.memo,
             walletType,
             sender: walletAddress,
             walletAccount,

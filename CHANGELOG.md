@@ -1,3 +1,10 @@
+# 1.22.9 (2024-tba-tba)
+
+## add
+
+## Updates/Fixes
+- remove memo (short asset) adjustment from tradeasset swaps []
+
 # 1.22.8 (2024-11-05)
 
 ## add
