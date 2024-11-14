@@ -152,8 +152,7 @@
     "styled-components": "^5.3.5",
     "styled-theme": "^0.3.3",
     "text-encoding": "^0.7.0",
-    "uuid": "^8.3.2",
-    "webpack": "^5.94.0"
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@electron/notarize": "^2.3.0",
