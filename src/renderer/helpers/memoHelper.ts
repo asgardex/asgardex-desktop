@@ -189,3 +189,17 @@ export const shortenMemo = (input: string): string => {
   // Return the input as is if no matching asset code is found
   return input
 }
+
+export const updateMemoWithFullAsset = (memo: string, asset: AnyAsset) => {
+  // Only replace if the memo does not already contain the full identifier
+  const fullIdentifier = `${asset.chain}~${asset.symbol}`
+  if (!memo.includes(fullIdentifier)) {
+    // Build a fuzzy identifier for matching partial symbols without addresses
+    const baseSymbol = asset.symbol.split('-')[0]
+    const fuzzyIdentifier = `${asset.chain}~${baseSymbol}`
+    return memo.replace(fuzzyIdentifier, fullIdentifier)
+  }
+
+  // Return the original memo if no replacement is needed
+  return memo
+}
