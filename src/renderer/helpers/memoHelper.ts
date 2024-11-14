@@ -1,4 +1,4 @@
-import { Address, AnyAsset, BaseAmount } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, AssetType, BaseAmount } from '@xchainjs/xchain-util'
 
 import { ASGARDEX_THORNAME } from '../../shared/const'
 
@@ -15,7 +15,22 @@ const filterMemoPart = (part: unknown) => part !== null && part !== undefined
 const mkMemo = (values: Array<string | null | undefined | number>) => values.filter(filterMemoPart).join(DELIMITER)
 
 // Helper to create asset string from asset used in memo's
-const assetToMemoString = ({ chain, symbol }: AnyAsset) => `${chain}.${symbol}`
+const assetToMemoString = ({ chain, symbol, type }: AnyAsset) => {
+  const joiner = (() => {
+    switch (type) {
+      case AssetType.NATIVE:
+        return '.'
+      case AssetType.SYNTH:
+        return '/'
+      case AssetType.TRADE:
+        return '~'
+      default:
+        return '.' // Default joiner
+    }
+  })()
+
+  return `${chain}${joiner}${symbol}`
+}
 
 /**
  * Memo to switch

@@ -1,3 +1,10 @@
+# 1.22.9 (2024-tba-tba)
+
+## add
+
+## Updates/Fixes
+- remove memo (short asset) adjustment from tradeasset swaps [#496](https://github.com/asgardex/asgardex-desktop/pull/496)
+
 # 1.22.8 (2024-11-05)
 
 ## add
