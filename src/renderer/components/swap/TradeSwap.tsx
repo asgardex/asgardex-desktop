@@ -58,7 +58,7 @@ import { isEvmChain, isEvmToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqAddress } from '../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
-import { getSwapMemo } from '../../helpers/memoHelper'
+import { getSwapMemo, updateMemoWithFullAsset } from '../../helpers/memoHelper'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { isPoolDetails } from '../../helpers/poolHelper'
 import { liveData } from '../../helpers/rx/liveData'
@@ -1012,7 +1012,7 @@ export const TradeSwap = ({
             poolAddress,
             asset: sourceAsset,
             amount: convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal),
-            memo: txDetails.memo,
+            memo: updateMemoWithFullAsset(txDetails.memo, targetAsset),
             walletType,
             sender: walletAddress,
             walletAccount,
@@ -1025,7 +1025,7 @@ export const TradeSwap = ({
 
       return swapParamsThor
     },
-    [oPoolAddress, oSourceAssetWB, oQuote, sourceAsset, amountToSwapMax1e8, sourceAssetAmount.decimal, dex] // Include both quote dependencies
+    [oPoolAddress, oSourceAssetWB, oQuote, sourceAsset, amountToSwapMax1e8, sourceAssetAmount.decimal, targetAsset, dex] // Include both quote dependencies
   )
 
   // Check to see slippage greater than tolerance
