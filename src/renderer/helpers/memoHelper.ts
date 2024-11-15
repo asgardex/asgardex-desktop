@@ -189,7 +189,7 @@ export const shortenMemo = (input: string): string => {
   // Return the input as is if no matching asset code is found
   return input
 }
-
+// only use for trade assets
 export const updateMemoWithFullAsset = (memo: string, asset: AnyAsset) => {
   // Only replace if the memo does not already contain the full identifier
   const fullIdentifier = `${asset.chain}~${asset.symbol}`
