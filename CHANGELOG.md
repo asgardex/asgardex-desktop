@@ -7,7 +7,7 @@
 - remove memo (short asset) adjustment from tradeasset swaps [#496](https://github.com/asgardex/asgardex-desktop/pull/496)
 - trade asset memo thornode error & swap input issue [#498](https://github.com/asgardex/asgardex-desktop/pull/498)
 - remove affiliate and bps for stagenet swaps [#500](https://github.com/asgardex/asgardex-desktop/pull/500)
-- fix earn disabled submit button [#501] (https://github.com/asgardex/asgardex-desktop/pull/501)
+- fix earn disabled submit button [#481] (https://github.com/asgardex/asgardex-desktop/pull/501)
 # 1.22.8 (2024-11-05)
 
 ## add
