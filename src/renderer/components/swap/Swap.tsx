@@ -858,7 +858,7 @@ export const Swap = ({
           const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
           const address = destinationAddress
           const affiliate = ASGARDEX_ADDRESS === walletAddress ? undefined : ASGARDEX_THORNAME
-          const affiliateBps = ASGARDEX_ADDRESS === walletAddress ? undefined : applyBps
+          const affiliateBpsApplied = ASGARDEX_ADDRESS === walletAddress ? undefined : applyBps
           const streamingInt = isStreaming ? streamingInterval : 0
           const streaminQuant = isStreaming ? streamingQuantity : 0
           const toleranceBps = isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100 // convert to basis points
@@ -870,8 +870,8 @@ export const Swap = ({
             streamingInterval: streamingInt,
             streamingQuantity: streaminQuant,
             toleranceBps: toleranceBps,
-            affiliateAddress: affiliate,
-            affiliateBps
+            affiliateAddress: network === Network.Stagenet ? undefined : affiliate,
+            affiliateBps: network === Network.Stagenet ? undefined : affiliateBpsApplied
           }
         })
       ),
@@ -915,8 +915,8 @@ export const Swap = ({
             streamingInterval: streamingInt,
             streamingQuantity: streaminQuant,
             toleranceBps: toleranceBps,
-            affiliateAddress: ASGARDEX_THORNAME,
-            affiliateBps: applyBps
+            affiliateAddress: network === Network.Stagenet ? undefined : ASGARDEX_THORNAME,
+            affiliateBps: network === Network.Stagenet ? undefined : applyBps
           }
         })
       ),
@@ -931,6 +931,7 @@ export const Swap = ({
       streamingInterval,
       streamingQuantity,
       slipTolerance,
+      network,
       applyBps
     ]
   )
@@ -973,8 +974,8 @@ export const Swap = ({
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
             toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100, // convert to basis points
-            affiliateAddress: ASGARDEX_THORNAME,
-            affiliateBps: applyBps
+            affiliateAddress: network === Network.Stagenet ? undefined : ASGARDEX_THORNAME,
+            affiliateBps: network === Network.Stagenet ? undefined : applyBps
           }
           const estimateMayaDexSwap: QuoteSwapParamsMaya = {
             fromAsset: sourceAsset as CompatibleAsset,
@@ -987,8 +988,8 @@ export const Swap = ({
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
             toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100, // convert to basis points,
-            affiliateAddress: ASGARDEX_THORNAME,
-            affiliateBps: applyBps
+            affiliateAddress: network === Network.Stagenet ? undefined : ASGARDEX_THORNAME,
+            affiliateBps: network === Network.Stagenet ? undefined : applyBps
           }
           const estimateSwap = dex.chain === THORChain ? estimateThorDexSwap : estimateMayaDexSwap
           if (!estimateSwap.amount.baseAmount.eq(baseAmount(0)) && lockedWallet) {
