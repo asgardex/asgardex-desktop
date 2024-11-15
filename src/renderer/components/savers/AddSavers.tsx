@@ -171,6 +171,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
 
   const [oSaversQuote, setSaversQuote] = useState<O.Option<EstimateAddSaver>>(O.none)
   const [errorMessages, setErrorMessages] = useState<string[]>([])
+  const hasErrorMessages = errorMessages.length > 0
 
   const { chain: sourceChain } = asset.asset
 
@@ -535,7 +536,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       minAmountError ||
       walletBalancesLoading ||
       noMemo ||
-      !!errorMessages,
+      hasErrorMessages,
     [
       isZeroAmountToSend,
       lockedWallet,
@@ -543,7 +544,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       noMemo,
       sourceChainFeeError,
       walletBalancesLoading,
-      errorMessages
+      hasErrorMessages
     ]
   )
 
