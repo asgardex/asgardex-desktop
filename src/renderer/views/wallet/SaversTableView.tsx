@@ -173,6 +173,7 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
     reloadAllPools()
     reloadSaverProvider()
   }, [reloadAllPools, reloadSaverProvider])
+
   return (
     <div>
       <Row justify="end" style={{ marginBottom: '20px' }}>
