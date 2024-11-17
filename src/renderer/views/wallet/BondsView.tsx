@@ -230,6 +230,26 @@ export const BondsView: React.FC = (): JSX.Element => {
       )
     }
 
+    const calculateTotalMonitoredBondByChain = (nodes: NodeInfo[] | NodeInfoMaya[]) => {
+      return nodes.reduce(
+        (acc, node) => {
+          const chain = node.address.startsWith('thor') ? 'THOR' : 'MAYA'
+
+          const totalBondProviderAmount = node.bondProviders.providers.reduce((providerSum, provider) => {
+            const normalizedAddress = provider.bondAddress.toLowerCase()
+            if (bondProviderWatchList.includes(normalizedAddress)) {
+              return providerSum.plus(provider.bond) // Sum only bondProvider's bondAmount
+            }
+            return providerSum
+          }, assetToBase(assetAmount(0)))
+
+          acc[chain] = acc[chain] ? acc[chain].plus(totalBondProviderAmount) : totalBondProviderAmount
+          return acc
+        },
+        { THOR: assetToBase(assetAmount(0)), MAYA: assetToBase(assetAmount(0)) }
+      )
+    }
+
     return FP.pipe(
       nodeInfos,
       RD.fold(
@@ -249,6 +269,7 @@ export const BondsView: React.FC = (): JSX.Element => {
         // Success state
         (nodes) => {
           const totals = calculateTotalBondByChain(nodes)
+          const totalMonitored = calculateTotalMonitoredBondByChain(nodes)
 
           const thorTotal = totals.THOR.amount().isGreaterThan(0) ? (
             <Styled.BalanceLabel>
@@ -256,6 +277,14 @@ export const BondsView: React.FC = (): JSX.Element => {
                 ? hiddenString
                 : formatAssetAmountCurrency({
                     amount: baseToAsset(getValueOfRuneInAsset(totals.THOR, pricePoolDataThor)),
+                    asset: selectedPricePoolThor.asset,
+                    decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
+                  })}{' '}
+              /{' '}
+              {isPrivate
+                ? hiddenString
+                : formatAssetAmountCurrency({
+                    amount: baseToAsset(getValueOfRuneInAsset(totalMonitored.THOR, pricePoolDataThor)),
                     asset: selectedPricePoolThor.asset,
                     decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
                   })}
@@ -289,6 +318,7 @@ export const BondsView: React.FC = (): JSX.Element => {
     nodeInfos,
     pricePoolDataMaya,
     pricePoolDataThor,
+    bondProviderWatchList,
     selectedPricePoolMaya.asset,
     selectedPricePoolThor.asset,
     walletAddresses.MAYA,
@@ -303,7 +333,7 @@ export const BondsView: React.FC = (): JSX.Element => {
       <AssetsNav />
       <Styled.Container>
         <Styled.TitleContainer>
-          <Styled.BalanceTitle>{intl.formatMessage({ id: 'wallet.shares.total' })}</Styled.BalanceTitle>
+          <Styled.BalanceTitle>Total Connected (Monitored) Value</Styled.BalanceTitle>
         </Styled.TitleContainer>
         {renderBondTotal}
       </Styled.Container>

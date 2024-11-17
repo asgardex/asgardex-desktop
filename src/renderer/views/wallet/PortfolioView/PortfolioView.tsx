@@ -473,12 +473,23 @@ export const PortfolioView: React.FC = (): JSX.Element => {
 
   const portfolioDatasource = useMemo(
     () => [
-      { key: '1', section: 'Wallet', amount: totalBalanceDisplay, action: 'Manage' },
-      { key: '2', section: 'LP Shares', amount: renderSharesTotal, action: 'Manage' },
-      { key: '3', section: 'Savers', amount: renderSaversTotal, action: 'Manage' },
-      { key: '4', section: 'Bonds', amount: renderBondTotal, action: 'Manage' }
+      { key: '1', title: intl.formatMessage({ id: 'common.wallets' }), amount: totalBalanceDisplay, action: 'Manage' },
+      {
+        key: '2',
+        title: intl.formatMessage({ id: 'wallet.nav.poolshares' }),
+        amount: renderSharesTotal,
+        action: 'Manage'
+      },
+      { key: '3', title: intl.formatMessage({ id: 'wallet.nav.savers' }), amount: renderSaversTotal, action: 'Manage' },
+      { key: '4', title: intl.formatMessage({ id: 'wallet.nav.bonds' }), amount: renderBondTotal, action: 'Manage' },
+      {
+        key: '5',
+        title: intl.formatMessage({ id: 'deposit.interact.actions.runePool' }),
+        amount: renderRunePoolTotal,
+        action: 'Manage'
+      }
     ],
-    [totalBalanceDisplay, renderSharesTotal, renderSaversTotal, renderBondTotal]
+    [totalBalanceDisplay, renderSharesTotal, renderSaversTotal, renderBondTotal, renderRunePoolTotal, intl]
   )
 
   const cardItemInfo = useMemo(
@@ -513,10 +524,10 @@ export const PortfolioView: React.FC = (): JSX.Element => {
   )
 
   const chartData = useMemo(() => {
-    return portfolioDatasource.map(({ section, amount }, index) => {
+    return portfolioDatasource.map(({ title, amount }, index) => {
       const value = amount.trim() ? parseFloat(amount.replace('$', '').replace(',', '').trim()) : 0
       return {
-        name: section,
+        name: title,
         value,
         formattedValue: value ? amount : '$ 0.00',
         fillColor: Colors[index % Colors.length],
