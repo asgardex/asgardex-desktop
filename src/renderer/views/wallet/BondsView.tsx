@@ -318,6 +318,7 @@ export const BondsView: React.FC = (): JSX.Element => {
     nodeInfos,
     pricePoolDataMaya,
     pricePoolDataThor,
+    bondProviderWatchList,
     selectedPricePoolMaya.asset,
     selectedPricePoolThor.asset,
     walletAddresses.MAYA,
