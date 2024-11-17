@@ -9,6 +9,7 @@ import { isUSDAsset } from '../../../helpers/assetHelper'
 import { hiddenString } from '../../../helpers/stringHelper'
 import { BaseAmountRD } from '../../../types'
 import { PricePool } from '../../../views/pools/Pools.types'
+import { BaseButton } from '../../uielements/button'
 import { InfoIcon } from '../../uielements/info'
 import * as Styled from './TotalValue.styles'
 
@@ -59,7 +60,7 @@ export const TotalValue: React.FC<Props> = (props): JSX.Element => {
         <Styled.BalanceTitle>{title}</Styled.BalanceTitle>
         {info && <InfoIcon tooltip={info} color="primary" />}
       </Styled.TitleContainer>
-      {renderTotal}
+      <BaseButton className="flex justify-between !p-0 font-mainSemiBold text-[16px]">{renderTotal}</BaseButton>
     </Styled.Container>
   )
 }
