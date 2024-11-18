@@ -129,6 +129,7 @@ import {
   WalletBalances
 } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
+import { useAggregator } from '../../store/aggregator/hooks'
 import { AssetWithAmount, SlipTolerance } from '../../types/asgardex'
 import { PricePool } from '../../views/pools/Pools.types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
@@ -256,6 +257,7 @@ export const Swap = ({
   hidePrivateData,
   dex
 }: SwapProps) => {
+  const { estimateSwap } = useAggregator()
   const intl = useIntl()
 
   const { chain: sourceChain } = sourceAsset.type === AssetType.SYNTH ? dex.asset : sourceAsset
@@ -340,6 +342,18 @@ export const Swap = ({
       )
     )
   }, [oSourceWalletAddress])
+
+  const destinationWalletAddress = useMemo(
+    () =>
+      FP.pipe(
+        oRecipientAddress,
+        O.fold(
+          () => '', // Fallback
+          (destinationAddress) => destinationAddress // Return t
+        )
+      ),
+    [oRecipientAddress]
+  )
 
   /**
    * All balances based on available assets to swap
@@ -1027,6 +1041,32 @@ export const Swap = ({
     sourceWalletAddress,
     applyBps,
     network
+  ])
+
+  useEffect(() => {
+    estimateSwap({
+      fromAsset: sourceAsset,
+      destinationAsset: targetAsset,
+      amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset),
+      fromAddress: sourceWalletAddress,
+      destinationAddress: destinationWalletAddress,
+      streamingInterval: isStreaming ? streamingInterval : 0,
+      streamingQuantity: isStreaming ? streamingQuantity : 0,
+      toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100 // convert to basis points,
+    })
+  }, [
+    amountToSwapMax1e8,
+    destinationWalletAddress,
+    estimateSwap,
+    isStreaming,
+    network,
+    slipTolerance,
+    sourceAsset,
+    sourceAssetDecimal,
+    sourceWalletAddress,
+    streamingInterval,
+    streamingQuantity,
+    targetAsset
   ])
 
   // Swap boolean for use later
