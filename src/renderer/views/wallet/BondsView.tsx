@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { SwapOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
@@ -16,7 +17,7 @@ import { useNavigate } from 'react-router-dom'
 import * as Styled from '../../../renderer/components/wallet/assets/TotalValue.styles'
 import { WalletType } from '../../../shared/wallet/types'
 import { Bonds } from '../../components/Bonds'
-import { RefreshButton } from '../../components/uielements/button'
+import { BaseButton, RefreshButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
 import { useAppContext } from '../../contexts/AppContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
@@ -50,6 +51,11 @@ import { getValueOfRuneInAsset } from '../pools/Pools.utils'
 export type WalletAddressInfo = {
   address: string
   walletType: WalletType
+}
+
+enum LabelView {
+  Connected,
+  Monitored
 }
 
 export const BondsView: React.FC = (): JSX.Element => {
@@ -87,6 +93,7 @@ export const BondsView: React.FC = (): JSX.Element => {
       }),
     INITIAL_BALANCES_STATE
   )
+  const [activeLabel, setActiveLabel] = useState(LabelView.Connected)
   // State for selected price pools
   const [selectedPricePoolThor] = useObservableState(() => selectedPricePoolThor$, RUNE_PRICE_POOL)
   const [selectedPricePoolMaya] = useObservableState(() => selectedPricePoolMaya$, MAYA_PRICE_POOL)
@@ -270,24 +277,18 @@ export const BondsView: React.FC = (): JSX.Element => {
         (nodes) => {
           const totals = calculateTotalBondByChain(nodes)
           const totalMonitored = calculateTotalMonitoredBondByChain(nodes)
+          const activeAmount = activeLabel === LabelView.Connected ? totals.THOR : totalMonitored.THOR
 
           const thorTotal = totals.THOR.amount().isGreaterThan(0) ? (
             <Styled.BalanceLabel>
               {isPrivate
                 ? hiddenString
                 : formatAssetAmountCurrency({
-                    amount: baseToAsset(getValueOfRuneInAsset(totals.THOR, pricePoolDataThor)),
+                    amount: baseToAsset(getValueOfRuneInAsset(activeAmount, pricePoolDataThor)),
                     asset: selectedPricePoolThor.asset,
                     decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
                   })}{' '}
-              /{' '}
-              {isPrivate
-                ? hiddenString
-                : formatAssetAmountCurrency({
-                    amount: baseToAsset(getValueOfRuneInAsset(totalMonitored.THOR, pricePoolDataThor)),
-                    asset: selectedPricePoolThor.asset,
-                    decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
-                  })}
+              / {isPrivate ? hiddenString : `ᚱ ${baseToAsset(activeAmount).amount().toFixed(2)}`}
             </Styled.BalanceLabel>
           ) : null
 
@@ -315,6 +316,7 @@ export const BondsView: React.FC = (): JSX.Element => {
   }, [
     intl,
     isPrivate,
+    activeLabel,
     nodeInfos,
     pricePoolDataMaya,
     pricePoolDataThor,
@@ -333,7 +335,18 @@ export const BondsView: React.FC = (): JSX.Element => {
       <AssetsNav />
       <Styled.Container>
         <Styled.TitleContainer>
-          <Styled.BalanceTitle>Total Connected (Monitored) Value</Styled.BalanceTitle>
+          <Styled.BalanceTitle>
+            {activeLabel === LabelView.Monitored
+              ? 'Total Value Across Monitored Addresses'
+              : 'Total Connected Wallet Value'}
+          </Styled.BalanceTitle>
+          <BaseButton
+            className="ml-2 !p-0 text-turquoise"
+            onClick={() => {
+              setActiveLabel((prev) => 1 - prev)
+            }}>
+            <SwapOutlined className="rounded-full border border-solid border-turquoise p-1" />
+          </BaseButton>
         </Styled.TitleContainer>
         {renderBondTotal}
       </Styled.Container>

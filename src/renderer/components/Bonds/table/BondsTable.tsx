@@ -17,7 +17,7 @@ import { WalletAddressInfo } from '../../../views/wallet/BondsView'
 import { ConfirmationModal } from '../../modal/confirmation'
 import { RemoveAddressIcon } from '../../settings/WalletSettings.styles'
 import { TextButton } from '../../uielements/button'
-import { ExternalLinkIcon } from '../../uielements/common/Common.styles'
+import { ExternalLinkIcon, Tooltip } from '../../uielements/common/Common.styles'
 import * as Styled from './BondsTable.styles'
 import * as H from './helpers'
 
@@ -321,11 +321,15 @@ export const BondsTable: React.FC<Props> = ({
                       </Styled.TextLabel>
                       {isMonitoring ? (
                         <Styled.DeleteButton>
-                          <RemoveAddressIcon onClick={() => removeWatchlist(provider.bondAddress, network)} />
+                          <Tooltip title="Stop monitoring this bond provider address">
+                            <RemoveAddressIcon onClick={() => removeWatchlist(provider.bondAddress, network)} />
+                          </Tooltip>
                         </Styled.DeleteButton>
                       ) : (
-                        <Styled.WatchlistButton isMonitoring={isMonitoring ? 'true' : 'false'}>
-                          <DesktopOutlined onClick={() => addWatchlist(provider.bondAddress, network)} />
+                        <Styled.WatchlistButton>
+                          <Tooltip title="Monitor this bond provider address">
+                            <DesktopOutlined onClick={() => addWatchlist(provider.bondAddress, network)} />
+                          </Tooltip>
                         </Styled.WatchlistButton>
                       )}
                     </div>
