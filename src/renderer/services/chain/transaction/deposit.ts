@@ -281,9 +281,33 @@ export const symDeposit$ = ({
       setState({ ...current, depositTxs: { ...current.depositTxs, asset: RD.success(txHash) } })
       return txHash
     }),
+    RxOp.switchMap((txHash) => {
+      // Determine if Ledger is used for either wallet type
+      const isRuneLedger = runeWalletType === 'ledger'
+      const isAssetLedger = assetWalletType === 'ledger'
+      // if both are ledgers need a delay for user to switch apps.
+      if (isRuneLedger && isAssetLedger) {
+        // Update state to indicate app-switching progress
+        setState({
+          ...getState(),
+          step: 3,
+          deposit: RD.progress({ loaded: 50, total }),
+          ledgerPrompt: `Please switch to the ${isRuneLedger ? 'THORChain' : 'Asset'} Ledger app.`
+        })
+
+        // Return a stream that delays for app switching
+        return Rx.of(null).pipe(
+          RxOp.delay(25000), // Wait for 25 seconds to allow the user to switch apps
+          RxOp.mapTo(txHash) // Pass through the txHash after the delay
+        )
+      }
+
+      // If no Ledger app switch is needed, pass through the txHash immediately
+      return Rx.of(txHash)
+    }),
     // 3. send RUNE deposit txs
     liveData.chain<ApiError, TxHash, TxHash>((_) => {
-      setState({ ...getState(), step: 3, deposit: RD.progress({ loaded: 60, total }) })
+      setState({ ...getState(), step: 4, deposit: RD.progress({ loaded: 60, total }) })
       return sendPoolTx$({
         sender: runeSender,
         walletType: runeWalletType,
@@ -315,7 +339,7 @@ export const symDeposit$ = ({
     liveData.chain<ApiError, TxHash, SymDepositFinalityResult>((_) => {
       const currentState = getState()
       // Update state
-      setState({ ...currentState, step: 4, deposit: RD.progress({ loaded: 80, total }) })
+      setState({ ...currentState, step: 5, deposit: RD.progress({ loaded: 80, total }) })
 
       const { rune: runeTxRD, asset: assetTxRD } = currentState.depositTxs
       return FP.pipe(

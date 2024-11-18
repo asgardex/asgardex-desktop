@@ -142,6 +142,7 @@ const common: CommonMessages = {
   'common.tx.healthCheck': 'Проверка сервера',
   'common.tx.sending': 'Отправка транзакции',
   'common.tx.sendingAsset': 'Отправка транзакции {assetTicker}',
+  'common.tx.loadingSecondTx': 'Загрузка параметров второй транзакции',
   'common.tx.success': 'Транзакция успешно отправлена',
   'common.tx.success-info':
     'Подтверждение транзакции может занять некоторое время (до нескольких минут в зависимости от цепочки)',

@@ -1207,9 +1207,15 @@ export const SymDeposit: React.FC<Props> = (props) => {
   const [showCompleteLpModal, setShowCompleteLpModal] = useState<ModalState>('none')
 
   const onSubmit = () => {
-    if (isAssetLedger || isRuneLedger) {
+    const asset1FromLedger = isAssetLedger
+    const asset2FromLedger = isRuneLedger
+
+    if (asset1FromLedger && asset2FromLedger) {
       setShowLedgerModal('deposit')
+    } else if (!asset1FromLedger && !asset2FromLedger) {
+      setShowPasswordModal('deposit')
     } else {
+      setShowLedgerModal('deposit')
       setShowPasswordModal('deposit')
     }
   }
@@ -1282,9 +1288,11 @@ export const SymDeposit: React.FC<Props> = (props) => {
     const stepDescriptions = [
       intl.formatMessage({ id: 'common.tx.healthCheck' }),
       intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: asset.ticker }),
+      intl.formatMessage({ id: 'common.tx.loadingSecondTx' }),
       intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: dexAsset.ticker }),
       intl.formatMessage({ id: 'common.tx.checkResult' })
     ]
+
     const stepDescription = FP.pipe(
       depositState.deposit,
       RD.fold(
@@ -1299,11 +1307,17 @@ export const SymDeposit: React.FC<Props> = (props) => {
       )
     )
 
+    // Combine ledgerPrompt only for step 3
+    const combinedDescription =
+      depositState.step === 3 && depositState.ledgerPrompt
+        ? `${depositState.ledgerPrompt}\n${stepDescription}`
+        : stepDescription
+
     return (
       <DepositAssets
         target={{ asset: dexAsset, amount: dexAmountToDeposit }}
         source={O.some({ asset, amount: assetAmountToDepositMax1e8 })}
-        stepDescription={stepDescription}
+        stepDescription={combinedDescription} // Use combinedDescription
         network={network}
       />
     )
@@ -1314,6 +1328,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     depositState.deposit,
     depositState.step,
     depositState.stepsTotal,
+    depositState.ledgerPrompt, // Include ledgerPrompt in dependencies
     dexAmountToDeposit,
     assetAmountToDepositMax1e8,
     network
@@ -1906,14 +1921,23 @@ export const SymDeposit: React.FC<Props> = (props) => {
       setShowLedgerModal('none')
     }
 
+    const assetForLedger =
+      showLedgerModal === 'recover'
+        ? FP.pipe(
+            oFailedAssetAmount,
+            O.map((failedAssetAmount) => failedAssetAmount.asset),
+            O.getOrElse(() => asset)
+          )
+        : asset
+
     const onSuccess = () => {
-      if (showLedgerModal === 'deposit') setShowPasswordModal('deposit')
+      if (showLedgerModal === 'deposit') submitDepositTx()
       if (showLedgerModal === 'recover') submitAsymDepositTx()
       if (showLedgerModal === 'approve') submitApproveTx()
       setShowLedgerModal('none')
     }
 
-    const chainAsString = chainToString(isRuneLedger ? THORChain : chain)
+    const chainAsString = chainToString(assetForLedger.chain)
     const txtNeedsConnected = intl.formatMessage(
       {
         id: 'ledger.needsconnected'
@@ -1923,7 +1947,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
     const description1 =
       // extra info for ERC20 assets only
-      isEvmChain(chain) && isEvmToken(asset)
+      isEvmChain(assetForLedger.chain) && isEvmToken(assetForLedger)
         ? `${txtNeedsConnected} ${intl.formatMessage(
             {
               id: 'ledger.blindsign'
@@ -1951,7 +1975,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
         onSuccess={onSuccess}
         onClose={onClose}
         visible
-        chain={isRuneLedger ? THORChain : chain}
+        chain={assetForLedger.chain}
         network={network}
         description1={description1}
         description2={description2}
@@ -1960,15 +1984,16 @@ export const SymDeposit: React.FC<Props> = (props) => {
     )
   }, [
     asset,
-    chain,
     intl,
     isAssetLedger,
     isRuneLedger,
     network,
     oDepositParams,
+    oFailedAssetAmount,
     showLedgerModal,
     submitApproveTx,
-    submitAsymDepositTx
+    submitAsymDepositTx,
+    submitDepositTx
   ])
 
   const renderCompleteLp = useMemo(() => {

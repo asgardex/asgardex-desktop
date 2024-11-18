@@ -142,6 +142,7 @@ const common: CommonMessages = {
   'common.tx.healthCheck': 'सर्वर की जाँच',
   'common.tx.sending': 'लेन-देन भेज रहा है',
   'common.tx.sendingAsset': '{assetTicker} लेन-देन भेज रहा है',
+  'common.tx.loadingSecondTx': 'दूसरे लेनदेन के पैरामीटर लोड हो रहे हैं',
   'common.tx.success': 'लेन-देन सफलतापूर्वक पूरा हुआ',
   'common.tx.success-info': 'लेन-देन की पुष्टि में कुछ समय लग सकता है (श्रृंखला के आधार पर कुछ मिनटों तक)',
   'common.tx.checkResult': 'परिणाम की जाँच करें',

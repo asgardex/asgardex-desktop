@@ -140,6 +140,7 @@ const common: CommonMessages = {
   'common.tx.healthCheck': 'Vérification',
   'common.tx.sending': 'Envoi de la transaction',
   'common.tx.sendingAsset': 'Envoi de la transaction {assetTicker}',
+  'common.tx.loadingSecondTx': 'Chargement des paramètres de la deuxième transaction',
   'common.tx.success': 'La transaction a été envoyée avec succès',
   'common.tx.success-info':
     "La transaction peut prendre un certain temps pour être confirmée (jusqu'à plusieurs minutes selon la chaîne)",
