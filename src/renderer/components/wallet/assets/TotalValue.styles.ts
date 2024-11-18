@@ -37,6 +37,7 @@ export const BalanceTitle = styled(UILabel)`
 
 export const TitleContainer = styled.div`
   display: flex;
+  align-items: center;
   vertical-items: center;
 `
 
