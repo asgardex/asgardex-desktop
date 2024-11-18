@@ -12,6 +12,7 @@ import * as O from 'fp-ts/Option'
 import { FormattedMessage, useIntl } from 'react-intl'
 
 import { truncateAddress } from '../../../helpers/addressHelper'
+import { useMimirConstants } from '../../../hooks/useMimirConstants'
 import { NodeInfo, NodeInfos, Providers } from '../../../services/thorchain/types'
 import { WalletAddressInfo } from '../../../views/wallet/BondsView'
 import { ConfirmationModal } from '../../modal/confirmation'
@@ -54,6 +55,7 @@ export const BondsTable: React.FC<Props> = ({
   className
 }) => {
   const intl = useIntl()
+  const { MINIMUMBONDINRUNE: minBondInRune } = useMimirConstants(['MINIMUMBONDINRUNE'])
   const [nodeToRemove, setNodeToRemove] = useState<O.Option<Address>>(O.none)
 
   const isMyAddress = useCallback(
@@ -232,7 +234,7 @@ export const BondsTable: React.FC<Props> = ({
 
       // Conditionally render the output based on whether a match was found
       return (
-        <div className="!text-11 text-text2 dark:text-text2d">
+        <div className="flex w-full items-center justify-between !text-11 text-text2 dark:text-text2d">
           {walletTypeLabel !== 'Not a wallet address' && (
             <Styled.TextLabel className="!text-11">{intl.formatMessage({ id: 'common.owner' })}</Styled.TextLabel>
           )}
@@ -245,7 +247,7 @@ export const BondsTable: React.FC<Props> = ({
 
   const renderSubActions = useCallback(
     (record) => {
-      const { bondAddress, status, signMembership, nodeAddress } = record
+      const { bondAddress, bondAmount, status, signMembership, nodeAddress } = record
 
       // Check if the bond address matches a wallet address in either THOR or MAYA
       const matchedWalletInfo =
@@ -261,6 +263,8 @@ export const BondsTable: React.FC<Props> = ({
         return addressChain === nodeChain
       })
 
+      const isLeaveEligible = bondAmount.amount().gte(minBondInRune)
+
       const unbondDisabled =
         status === 'Active' || (status === 'Standby' && signMembership && signMembership.includes(nodeAddress))
 
@@ -268,7 +272,7 @@ export const BondsTable: React.FC<Props> = ({
       const walletType = matchedWalletInfo?.walletType || 'Unknown'
 
       return (
-        <div className="mt-4 flex items-center justify-center">
+        <div className="mt-4 flex flex-grow items-end justify-center">
           <TextButton
             disabled={!isWalletAddress}
             size="normal"
@@ -281,10 +285,16 @@ export const BondsTable: React.FC<Props> = ({
             onClick={() => goToAction('unbond', matchedAddresses[0], walletType)}>
             {intl.formatMessage({ id: 'deposit.interact.actions.unbond' })}
           </TextButton>
+          <TextButton
+            disabled={!isWalletAddress || !isLeaveEligible}
+            size="normal"
+            onClick={() => goToAction('leave', matchedAddresses[0], walletType)}>
+            {intl.formatMessage({ id: 'deposit.interact.actions.leave' })}
+          </TextButton>
         </div>
       )
     },
-    [intl, matchedNodeAddress, walletAddresses, getNodeChain, goToAction]
+    [walletAddresses.THOR, walletAddresses.MAYA, getNodeChain, matchedNodeAddress, minBondInRune, intl, goToAction]
   )
 
   return (
@@ -350,6 +360,7 @@ export const BondsTable: React.FC<Props> = ({
                     </div>
                     {renderSubActions({
                       bondAddress: provider.bondAddress,
+                      bondAmount: provider.bond,
                       bond: record.status,
                       signMembership: record.signMembership,
                       nodeAddress: record.nodeAddress

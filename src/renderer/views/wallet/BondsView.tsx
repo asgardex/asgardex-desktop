@@ -336,6 +336,7 @@ export const BondsView: React.FC = (): JSX.Element => {
       <Styled.Container>
         <Styled.TitleContainer>
           <Styled.BalanceTitle>
+            {/* TODO: locale (cinnamoroll) */}
             {activeLabel === LabelView.Monitored
               ? 'Total Value Across Monitored Addresses'
               : 'Total Connected Wallet Value'}
