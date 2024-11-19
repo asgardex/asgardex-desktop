@@ -279,7 +279,7 @@ export const BondsView: React.FC = (): JSX.Element => {
           const totalMonitored = calculateTotalMonitoredBondByChain(nodes)
           const activeAmount = activeLabel === LabelView.Connected ? totals.THOR : totalMonitored.THOR
 
-          const thorTotal = totals.THOR.amount().isGreaterThan(0) ? (
+          const thorTotal = (
             <Styled.BalanceLabel>
               {isPrivate
                 ? hiddenString
@@ -293,7 +293,7 @@ export const BondsView: React.FC = (): JSX.Element => {
                 ? hiddenString
                 : `ᚱ ${new Intl.NumberFormat().format(parseFloat(baseToAsset(activeAmount).amount().toFixed(2)))}`}
             </Styled.BalanceLabel>
-          ) : null
+          )
 
           const mayaTotal = totals.MAYA.amount().isGreaterThan(0) ? (
             <Styled.BalanceLabel>
