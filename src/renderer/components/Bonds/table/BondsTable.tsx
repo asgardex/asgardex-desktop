@@ -329,15 +329,16 @@ export const BondsTable: React.FC<Props> = ({
                           decimal: 0
                         })}
                       </Styled.TextLabel>
+                      {/* TODO: locale (cinnamoroll) */}
                       {isMonitoring ? (
                         <Styled.DeleteButton>
-                          <Tooltip title="Stop monitoring this bond provider address">
+                          <Tooltip title="Remove this bond provider from the watch list">
                             <RemoveAddressIcon onClick={() => removeWatchlist(provider.bondAddress, network)} />
                           </Tooltip>
                         </Styled.DeleteButton>
                       ) : (
                         <Styled.WatchlistButton>
-                          <Tooltip title="Monitor this bond provider address">
+                          <Tooltip title="Add this bond provider to the watch list">
                             <DesktopOutlined onClick={() => addWatchlist(provider.bondAddress, network)} />
                           </Tooltip>
                         </Styled.WatchlistButton>
