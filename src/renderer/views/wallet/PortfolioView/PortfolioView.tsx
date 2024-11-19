@@ -481,13 +481,13 @@ export const PortfolioView: React.FC = (): JSX.Element => {
         action: 'Manage'
       },
       { key: '3', title: intl.formatMessage({ id: 'wallet.nav.savers' }), amount: renderSaversTotal, action: 'Manage' },
-      { key: '4', title: intl.formatMessage({ id: 'wallet.nav.bonds' }), amount: renderBondTotal, action: 'Manage' },
       {
-        key: '5',
+        key: '4',
         title: intl.formatMessage({ id: 'deposit.interact.actions.runePool' }),
         amount: renderRunePoolTotal,
         action: 'Manage'
-      }
+      },
+      { key: '5', title: intl.formatMessage({ id: 'wallet.nav.bonds' }), amount: renderBondTotal, action: 'Manage' }
     ],
     [totalBalanceDisplay, renderSharesTotal, renderSaversTotal, renderBondTotal, renderRunePoolTotal, intl]
   )
@@ -510,14 +510,14 @@ export const PortfolioView: React.FC = (): JSX.Element => {
         route: walletRoutes.savers.path()
       },
       {
-        title: intl.formatMessage({ id: 'wallet.nav.bonds' }),
-        value: renderBondTotal,
-        route: walletRoutes.bonds.path()
-      },
-      {
         title: intl.formatMessage({ id: 'deposit.interact.actions.runePool' }),
         value: renderRunePoolTotal,
         route: walletRoutes.runepool.path()
+      },
+      {
+        title: intl.formatMessage({ id: 'wallet.nav.bonds' }),
+        value: renderBondTotal,
+        route: walletRoutes.bonds.path()
       }
     ],
     [intl, totalBalanceDisplay, renderSharesTotal, renderSaversTotal, renderBondTotal, renderRunePoolTotal]
