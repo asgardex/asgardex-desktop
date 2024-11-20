@@ -3215,7 +3215,7 @@ export const Swap = ({
               )),
               O.toNullable
             )}
-          {!isLocked(keystore) && <div className="w-full">{renderSwapExpiry}</div>}
+          {!isLocked(keystore) && amountToSwapMax1e8.gt(0) && <div className="w-full">{renderSwapExpiry}</div>}
         </div>
       </div>
 

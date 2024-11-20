@@ -38,7 +38,7 @@ export const NINE_REALMS_CLIENT_HEADER = 'x-client-id'
 export enum ExternalUrl {
   DOCSTHOR = 'https://docs.thorchain.org',
   DOCSMAYA = 'https://docs.mayaprotocol.com/',
-  DISCORD = 'https://discord.gg/hkeJxHS7d7',
+  DISCORD = 'https://discord.gg/hWCeTncT',
   GITHUB_REPO = `https://github.com/asgardex/asgardex-desktop`,
   GITHUB_RELEASE = `https://github.com/asgardex/asgardex-desktop/releases/tag/v`,
   TWITTER = 'https://twitter.com/asgardex',
