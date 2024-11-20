@@ -1,4 +1,7 @@
+import { Network } from '@xchainjs/xchain-client'
+
 import { DEFAULT_USER_ASSETS } from '../renderer/const'
+import { DEFAULT_NETWORK } from '../renderer/services/const'
 import { PoolsStorageEncoded } from './api/io'
 import {
   StoreFilesContent,
@@ -19,15 +22,20 @@ import { envOrDefault } from './utils/env'
 
 require('dotenv').config()
 
-export const ASGARDEX_THORNAME = envOrDefault(process.env.REACT_APP_ASGARDEX_THORNAME, 'dx')
-
+// Check if the current network is production-like (mainnet or stagenet)
+const isProductionNetwork = [Network.Stagenet].includes(DEFAULT_NETWORK)
+console.log(isProductionNetwork)
+// Asgardex Thorname (only for production-like networks)
+export const ASGARDEX_THORNAME = isProductionNetwork
+  ? envOrDefault(process.env.REACT_APP_ASGARDEX_THORNAME, 'dx')
+  : undefined
 export const ASGARDEX_IDENTIFIER = 999
 
 // Asgardex full address
 export const ASGARDEX_ADDRESS = 'thor1rr6rahhd4sy76a7rdxkjaen2q4k4pw2g06w7qp'
 
-// Affiliate Fee in basis points
-export const ASGARDEX_AFFILIATE_FEE = 30
+// Affiliate Fee in Basis Points (only for production-like networks)
+export const ASGARDEX_AFFILIATE_FEE = isProductionNetwork ? 30 : undefined
 
 // Affiliate Fee min apply value
 export const ASGARDEX_AFFILIATE_FEE_MIN = 1001

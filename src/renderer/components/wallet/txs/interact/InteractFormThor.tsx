@@ -306,7 +306,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     let memoValue = form.getFieldValue('memo') as string
 
     // Check if a swap memo is detected
-    if (checkMemo(memoValue)) {
+    if (checkMemo(memoValue) && network === Network.Mainnet) {
       memoValue = memoCorrection(memoValue)
       setSwapMemoDetected(true)
 
@@ -316,7 +316,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       setSwapMemoDetected(false)
     }
     setCurrentMemo(memoValue)
-  }, [form, intl])
+  }, [form, intl, network])
 
   const renderFeeError = useMemo(
     () => (

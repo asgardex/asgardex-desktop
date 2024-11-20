@@ -178,7 +178,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     let memoValue = form.getFieldValue('memo') as string
 
     // Check if a swap memo is detected
-    if (checkMemo(memoValue)) {
+    if (checkMemo(memoValue) && network === Network.Mainnet) {
       memoValue = memoCorrection(memoValue)
       setSwapMemoDetected(true)
 
@@ -196,7 +196,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
-  }, [form, intl, isChainAsset])
+  }, [form, intl, isChainAsset, network])
 
   const { inboundAddress, routers } = useMemo(() => {
     const inboundAddress = {

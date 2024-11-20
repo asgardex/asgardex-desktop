@@ -674,12 +674,10 @@ export const TradeSwap = ({
   //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
   const applyBps = useMemo(() => {
     const aff = ASGARDEX_AFFILIATE_FEE
-    let applyBps: number
     const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
-    applyBps = network === Network.Stagenet ? 0 : aff
-    applyBps = txFeeCovered ? aff : 0
+    const applyBps = txFeeCovered ? aff : 0
     return applyBps
-  }, [network, priceAmountToSwapMax1e8])
+  }, [priceAmountToSwapMax1e8])
 
   const priceAffiliateFeeLabel = useMemo(() => {
     if (!swapFees) {
@@ -707,8 +705,9 @@ export const TradeSwap = ({
       ),
       O.getOrElse(() => '')
     )
+    const displayBps = applyBps !== undefined ? `${applyBps / 100}%` : '0%'
 
-    return price ? `${price} (${fee}) ${applyBps / 100}%` : fee
+    return price ? `${price} (${fee}) ${displayBps}` : fee
   }, [swapFees, affiliateFee.assetAmount, affiliateFee.asset, affiliatePriceValue, applyBps, sourceAsset])
 
   const oQuoteSwapData: O.Option<QuoteSwapParams> = useMemo(

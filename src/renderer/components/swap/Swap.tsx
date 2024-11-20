@@ -811,12 +811,11 @@ export const Swap = ({
   // https://gitlab.com/thorchain/thornode/-/commit/f96350ab3d5adda18c61d134caa98b6d5af2b006
   const applyBps = useMemo(() => {
     const aff = ASGARDEX_AFFILIATE_FEE
-    let applyBps: number
+
     const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
-    applyBps = network === Network.Stagenet ? 0 : aff
-    applyBps = txFeeCovered ? aff : 0
+    const applyBps = txFeeCovered ? aff : 0
     return applyBps
-  }, [network, priceAmountToSwapMax1e8])
+  }, [priceAmountToSwapMax1e8])
 
   const priceAffiliateFeeLabel = useMemo(() => {
     if (!swapFees) {
@@ -844,8 +843,9 @@ export const Swap = ({
       ),
       O.getOrElse(() => '')
     )
+    const displayBps = applyBps !== undefined ? `${applyBps / 100}%` : '0%'
 
-    return price ? `${price} (${fee}) ${applyBps === undefined ? '0' : applyBps / 100}%` : fee
+    return price ? `${price} (${fee}) ${displayBps}` : fee
   }, [swapFees, affiliateFee.assetAmount, affiliateFee.asset, affiliatePriceValue, applyBps, sourceAsset])
 
   const oQuoteSwapData: O.Option<QuoteSwapParams> = useMemo(
@@ -870,8 +870,8 @@ export const Swap = ({
             streamingInterval: streamingInt,
             streamingQuantity: streaminQuant,
             toleranceBps: toleranceBps,
-            affiliateAddress: network === Network.Stagenet ? undefined : affiliate,
-            affiliateBps: network === Network.Stagenet ? undefined : affiliateBpsApplied
+            affiliateAddress: affiliate,
+            affiliateBps: affiliateBpsApplied
           }
         })
       ),
@@ -915,8 +915,8 @@ export const Swap = ({
             streamingInterval: streamingInt,
             streamingQuantity: streaminQuant,
             toleranceBps: toleranceBps,
-            affiliateAddress: network === Network.Stagenet ? undefined : ASGARDEX_THORNAME,
-            affiliateBps: network === Network.Stagenet ? undefined : applyBps
+            affiliateAddress: ASGARDEX_THORNAME,
+            affiliateBps: applyBps
           }
         })
       ),
@@ -931,7 +931,6 @@ export const Swap = ({
       streamingInterval,
       streamingQuantity,
       slipTolerance,
-      network,
       applyBps
     ]
   )

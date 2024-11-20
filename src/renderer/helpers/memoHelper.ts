@@ -111,8 +111,8 @@ export const getSwapMemo = ({
   toleranceBps: number | undefined
   streamingInterval: number
   streamingQuantity: number
-  affiliateName: string
-  affiliateBps: number
+  affiliateName: string | undefined
+  affiliateBps: number | undefined
 }) => {
   const target = assetToMemoString(targetAsset)
   const streaming = `0/${streamingInterval}/${streamingQuantity}`
@@ -152,9 +152,10 @@ export const getRunePoolMemo = ({ action, bps }: { action: Action; bps: number }
   const poolAction = action === Action.add ? `+` : '-'
 
   const memoParts = [`POOL${poolAction}`]
+  const affiliate = ASGARDEX_THORNAME === undefined ? '' : `${ASGARDEX_THORNAME}:0`
 
   if (action === Action.withdraw) {
-    memoParts.push(bps.toString(), ASGARDEX_THORNAME, '0')
+    memoParts.push(bps.toString(), affiliate)
   }
 
   return mkMemo(memoParts)

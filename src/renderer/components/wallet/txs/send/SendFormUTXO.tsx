@@ -190,7 +190,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
   const handleMemo = useCallback(() => {
     let memoValue = form.getFieldValue('memo') as string
 
-    if (checkMemo(memoValue)) {
+    if (checkMemo(memoValue) && network === Network.Mainnet) {
       memoValue = memoCorrection(memoValue)
       setSwapMemoDetected(true)
       // Set affiliate tracking message
@@ -200,7 +200,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     }
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
-  }, [form, intl])
+  }, [form, intl, network])
   const prevFeesWithRatesRef = useRef<O.Option<FeesWithRates>>(O.none)
 
   const feeRD: FeeRD = useMemo(

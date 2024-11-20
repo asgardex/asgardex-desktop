@@ -795,6 +795,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
         O.map(({ poolAddress, dexAssetWB, assetWB }) => {
           const assetAddress = assetWB.walletAddress
           const runeAddress = dexAssetWB.walletAddress
+          const applyAffiliate = ASGARDEX_THORNAME === undefined ? '' : `:${ASGARDEX_THORNAME}:0`
           return {
             asset,
             poolAddress,
@@ -804,8 +805,8 @@ export const SymDeposit: React.FC<Props> = (props) => {
               asset: convertBaseAmountDecimal(assetAmountToDepositMax1e8, assetBalance.decimal)
             },
             memos: {
-              asset: getDepositMemo({ asset, address: runeAddress }).concat(`:${ASGARDEX_THORNAME}:0`),
-              rune: getDepositMemo({ asset, address: assetAddress }).concat(`:${ASGARDEX_THORNAME}:0`)
+              asset: getDepositMemo({ asset, address: runeAddress }).concat(`${applyAffiliate}`),
+              rune: getDepositMemo({ asset, address: assetAddress }).concat(`${applyAffiliate}`)
             },
             runeWalletType: dexAssetWB.walletType,
             runeWalletAccount: dexAssetWB.walletAccount,

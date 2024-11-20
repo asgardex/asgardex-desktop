@@ -129,8 +129,10 @@ export function memoCorrection(memo: string): string {
     parts.push('')
   }
 
-  // Append 'dx:fee'
-  parts.push(`${ASGARDEX_THORNAME}:${ASGARDEX_AFFILIATE_FEE}`)
+  // Append `${ASGARDEX_THORNAME}:${ASGARDEX_AFFILIATE_FEE}` if both are defined
+  if (ASGARDEX_THORNAME && ASGARDEX_AFFILIATE_FEE) {
+    parts.push(`${ASGARDEX_THORNAME}:${ASGARDEX_AFFILIATE_FEE}`)
+  }
 
   // Reassemble the memoValue
   const memocorrected = parts.join(':')

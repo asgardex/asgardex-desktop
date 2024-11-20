@@ -881,7 +881,6 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
   const onClickUseLedger = useCallback(
     (useLedger: boolean) => {
       const walletType: WalletType = useLedger ? WalletType.Ledger : WalletType.Keystore
-      console.log(oBorrowWalletType)
       onChangeAsset({
         collateral: collateralAsset.asset,
         collateralWalletType: walletType,
