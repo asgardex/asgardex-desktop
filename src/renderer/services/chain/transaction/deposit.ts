@@ -7,7 +7,6 @@ import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { WalletType } from '../../../../shared/wallet/types'
 import { getEVMTokenAddressForChain, isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { sequenceSOption } from '../../../helpers/fpHelpers'
 import { liveData } from '../../../helpers/rx/liveData'
@@ -167,12 +166,6 @@ export const saverDeposit$ = ({
   )
 }
 
-export const symDeposit$State = observableState<SymDepositState>({
-  ...INITIAL_SYM_DEPOSIT_STATE
-})
-
-export const { get$: getState$, get: getState, set: setState } = symDeposit$State
-
 /**
  * Symetrical deposit stream does 4 steps:
  *
@@ -181,7 +174,7 @@ export const { get$: getState$, get: getState, set: setState } = symDeposit$Stat
  * 3. Send deposit RUNE transaction
  * 4. Check status of both transactions
  *
- * @returns SymDepositState$ - Observable state to reflect loading status. It provides all data we do need to display status in `TxModal`
+ * @returns SymDepositState$ - Observable state to reflect loading status. It provides all data we do need to display status in `TxModul`
  *
  */
 export const symDeposit$ = ({
@@ -201,16 +194,27 @@ export const symDeposit$ = ({
   assetSender,
   dex
 }: SymDepositParams): SymDepositState$ => {
+  // total of progress
   const total = O.some(100)
-  const isMock = true // For debugging
+  const isMock = true
   const sendTx$ = isMock ? sendMockTx$ : sendPoolTx$
 
   const { chain } = asset
   const dexChain = dex.chain
-
-  const { get$: getState$, get: getState, set: setState } = symDeposit$State
+  // Observable state of to reflect status of all needed steps
+  const {
+    get$: getState$,
+    get: getState,
+    set: setState
+  } = observableState<SymDepositState>({
+    ...INITIAL_SYM_DEPOSIT_STATE,
+    depositTxs: { rune: RD.pending, asset: RD.pending },
+    // we start with  a small progress
+    deposit: RD.progress({ loaded: 20, total })
+  })
 
   // All requests will be done in a sequence
+  // to update `SymDepositState` step by step
   const requests$ = Rx.of(poolAddresses).pipe(
     // 1. Validation pool address + node
     RxOp.switchMap((poolAddresses) =>
@@ -223,20 +227,8 @@ export const symDeposit$ = ({
       })
     ),
     // 2. send asset deposit txs
-    liveData.chain<ApiError, SymDepositValidationResult, TxHash>(() => {
-      // Get the current state and construct the updated state
-      console.log('Initial state:', getState())
-      const currentState = getState()
-      const updatedState: SymDepositState = {
-        ...currentState,
-        step: 2,
-        deposit: RD.progress({ loaded: 40, total })
-      }
-
-      // Update state directly
-      setState(updatedState)
-      // Log updated state for debugging
-      console.log('Updated state:', getState())
+    liveData.chain<ApiError, SymDepositValidationResult, TxHash>((_) => {
+      setState({ ...getState(), step: 2, deposit: RD.progress({ loaded: 40, total }) })
       console.log(`sending asset tx`)
       return sendTx$({
         sender: assetSender,
@@ -265,58 +257,18 @@ export const symDeposit$ = ({
       setState({ ...current, depositTxs: { ...current.depositTxs, asset: RD.success(txHash) } })
       return txHash
     }),
-    liveData.chain((txHash) => {
-      const isRuneLedger = runeWalletType === WalletType.Ledger
-      const isAssetLedger = assetWalletType === WalletType.Ledger
-
-      if (isRuneLedger && isAssetLedger) {
-        // Handle `waitingForUser` logic
-        const currentState = getState()
-        if (!currentState.waitingForUser) {
-          setState({
-            ...currentState,
-            step: 3,
-            waitingForUser: true
-          })
-        }
-
-        console.log('waiting state:', getState())
-
-        // Convert waiting logic into LiveData
-        return liveData.fromObservable(
-          Rx.combineLatest([getState$]).pipe(
-            RxOp.distinctUntilChanged(([prevState], [nextState]) => {
-              const isSame = prevState.waitingForUser === nextState.waitingForUser
-              console.log('distinctUntilChanged: isSame:', isSame, 'prev:', prevState, 'next:', nextState)
-              return isSame
-            }),
-            RxOp.tap(([state]) => console.log('Emission from getState$:', state)),
-            RxOp.filter(([state]) => !state.waitingForUser), // Wait until `waitingForUser` is `false`
-            RxOp.take(1), // Proceed after user confirms
-            RxOp.tap(() => console.log('User confirmed, proceeding...')),
-            RxOp.mapTo(txHash) // Pass through the txHash
-          ),
-          (error) => ({ errorId: ErrorId.USER_WAIT_ERROR, msg: String(error) }) // Replace with your error type
-        )
-      }
-      console.log('after waiting state:', getState())
-      // If not both ledgers, simply return the current txHash as success
-      return liveData.right(txHash)
-    }),
-
     // 4. send RUNE deposit txs
     liveData.chain<ApiError, TxHash, TxHash>((_) => {
       setState({ ...getState(), step: 4, deposit: RD.progress({ loaded: 60, total }) })
-      console.log('4 state:', getState())
       return sendTx$({
         sender: runeSender,
         walletType: runeWalletType,
         walletAccount: runeWalletAccount,
         walletIndex: runeWalletIndex,
         hdMode: runeHDMode,
-        router: O.none,
+        router: O.none, // no router for RUNE
         asset: dex.asset,
-        recipient: '',
+        recipient: '', // no recipient for RUNE || Cacao needed
         amount: amounts.rune,
         memo: memos.rune,
         feeOption: ChainTxFeeOption.DEPOSIT,
@@ -383,32 +335,31 @@ export const symDeposit$ = ({
   return Rx.combineLatest([getState$, requests$]).pipe(
     RxOp.switchMap(([state, _]) =>
       FP.pipe(
-        // Check deposit state to update its `pending` state (if needed)
+        // check deposit state to update its `pending` state (if needed)
         state.deposit,
         RD.fold(
-          // Ignore initial state + return same state (no changes)
+          // ignore initial state + return same state (no changes)
           () => Rx.of(state),
-          // For `pending` state, fake progress in the last third
+          // For `pending` state we fake progress state in last third
           (oProgress) =>
             FP.pipe(
-              // Timer to simulate incremental progress updates
-              Rx.interval(1500).pipe(
-                RxOp.map(() =>
-                  FP.pipe(
-                    oProgress,
-                    O.map(({ loaded }): SymDepositState => {
-                      // Increment progress if between 80% and 97%, stop at 98%
-                      const updatedLoaded = loaded >= 80 && loaded < 98 ? loaded + 1 : loaded
-                      return { ...state, deposit: RD.progress({ loaded: updatedLoaded, total: O.some(100) }) }
-                    }),
-                    O.getOrElse(() => state) // Fallback to existing state if no progress
-                  )
+              // Just a timer used to update loaded state (in pending state only)
+              Rx.interval(1500),
+              RxOp.map(() =>
+                FP.pipe(
+                  oProgress,
+                  O.map(({ loaded }): SymDepositState => {
+                    // From 80 to 97 we count progress with small steps, but stop it at 98
+                    const updatedLoaded = loaded >= 80 && loaded <= 97 ? loaded++ : loaded
+                    return { ...state, deposit: RD.progress({ loaded: updatedLoaded, total }) }
+                  }),
+                  O.getOrElse(() => state)
                 )
               )
             ),
-          // Ignore `failure` state + return the same state (no changes)
+          // ignore `failure` state + return same state (no changes)
           () => Rx.of(state),
-          // Ignore `success` state + return the same state (no changes)
+          // ignore `success` state + return same state (no changes)
           () => Rx.of(state)
         )
       )
@@ -419,7 +370,7 @@ export const symDeposit$ = ({
 const sendMockTx$ = (params: SendPoolTxParams): TxHashLD => {
   console.log('Mock transaction initiated:', params)
   const assetHash = '0xed5bbb55813dfd85e3a6400456eebbcd788c04827faa5a376bda0f8e4f9c9b7e'
-  const runeHash = '850E1DCFE44CCB4C92FEDC405ECE23B394C0A2FBD6874E28DE3B9C7259FCBC6A'
+  const runeHash = '6AE7989D676F15611BA835BEC868A007029EB3C85A18EC1D8513FED3962E9857'
   const hash = params.asset === AssetRuneNative ? runeHash : assetHash
   return Rx.of(RD.success(`${hash}`)) // Replace 'mock-tx-hash' with a desired value
 }
