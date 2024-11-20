@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { TxHash } from '@xchainjs/xchain-client'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, TokenAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -13,13 +13,12 @@ import { liveData } from '../../../helpers/rx/liveData'
 import { observableState } from '../../../helpers/stateHelper'
 import { service as mayaMidgardService } from '../../mayaMigard/service'
 import { service as midgardService } from '../../midgard/service'
-import { ApiError, ErrorId, TxHashLD } from '../../wallet/types'
+import { ApiError, ErrorId } from '../../wallet/types'
 import { ChainTxFeeOption, INITIAL_SAVER_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../const'
 import {
   SaverDepositParams,
   SaverDepositState,
   SaverDepositState$,
-  SendPoolTxParams,
   SymDepositFinalityResult,
   SymDepositParams,
   SymDepositState,
