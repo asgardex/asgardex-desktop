@@ -187,7 +187,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         isChainAsset
           ? intl.formatMessage({ id: 'wallet.send.affiliateTracking' })
           : intl.formatMessage({ id: 'wallet.send.notAllowed' })
-      ) //Swap memo detected 10bps affiliate fee applied
+      ) //Swap memo detected 0bps affiliate fee applied
       setNotAllowed(!isChainAsset) // don't allow erc to send memo
     } else {
       setSwapMemoDetected(false)

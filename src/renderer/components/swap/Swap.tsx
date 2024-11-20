@@ -514,7 +514,7 @@ export const Swap = ({
           streamingInterval,
           streamingQuantity,
           affiliateName: ASGARDEX_THORNAME,
-          affiliateBps: ASGARDEX_AFFILIATE_FEE
+          affiliateBps: 0
         })
       }
     )(oRecipientAddress)
@@ -810,7 +810,7 @@ export const Swap = ({
   // Apparently thornode bug is fixed.
   // https://gitlab.com/thorchain/thornode/-/commit/f96350ab3d5adda18c61d134caa98b6d5af2b006
   const applyBps = useMemo(() => {
-    const aff = ASGARDEX_AFFILIATE_FEE
+    const aff = 0
     let applyBps: number
     const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
     applyBps = network === Network.Stagenet ? 0 : aff
