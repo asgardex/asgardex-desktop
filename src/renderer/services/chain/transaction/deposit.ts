@@ -196,8 +196,8 @@ export const symDeposit$ = ({
 }: SymDepositParams): SymDepositState$ => {
   // total of progress
   const total = O.some(100)
-  const isMock = true
-  const sendTx$ = isMock ? sendMockTx$ : sendPoolTx$
+  // const isMock = true
+  // const sendTx$ = isMock ? sendMockTx$ : sendPoolTx$
 
   const { chain } = asset
   const dexChain = dex.chain
@@ -229,8 +229,7 @@ export const symDeposit$ = ({
     // 2. send asset deposit txs
     liveData.chain<ApiError, SymDepositValidationResult, TxHash>((_) => {
       setState({ ...getState(), step: 2, deposit: RD.progress({ loaded: 40, total }) })
-      console.log(`sending asset tx`)
-      return sendTx$({
+      return sendPoolTx$({
         sender: assetSender,
         walletType: assetWalletType,
         walletAccount: assetWalletAccount,
@@ -260,7 +259,7 @@ export const symDeposit$ = ({
     // 4. send RUNE deposit txs
     liveData.chain<ApiError, TxHash, TxHash>((_) => {
       setState({ ...getState(), step: 4, deposit: RD.progress({ loaded: 60, total }) })
-      return sendTx$({
+      return sendPoolTx$({
         sender: runeSender,
         walletType: runeWalletType,
         walletAccount: runeWalletAccount,
@@ -367,10 +366,10 @@ export const symDeposit$ = ({
     RxOp.startWith({ ...getState() })
   )
 }
-const sendMockTx$ = (params: SendPoolTxParams): TxHashLD => {
-  console.log('Mock transaction initiated:', params)
-  const assetHash = '0xed5bbb55813dfd85e3a6400456eebbcd788c04827faa5a376bda0f8e4f9c9b7e'
-  const runeHash = '6AE7989D676F15611BA835BEC868A007029EB3C85A18EC1D8513FED3962E9857'
-  const hash = params.asset === AssetRuneNative ? runeHash : assetHash
-  return Rx.of(RD.success(`${hash}`)) // Replace 'mock-tx-hash' with a desired value
-}
+// const sendMockTx$ = (params: SendPoolTxParams): TxHashLD => {
+//   console.log('Mock transaction initiated:', params)
+//   const assetHash = '0xed5bbb55813dfd85e3a6400456eebbcd788c04827faa5a376bda0f8e4f9c9b7e'
+//   const runeHash = '6AE7989D676F15611BA835BEC868A007029EB3C85A18EC1D8513FED3962E9857'
+//   const hash = params.asset === AssetRuneNative ? runeHash : assetHash
+//   return Rx.of(RD.success(`${hash}`)) // Replace 'mock-tx-hash' with a desired value
+// }
