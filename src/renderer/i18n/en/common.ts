@@ -142,6 +142,7 @@ const common: CommonMessages = {
   'common.tx.healthCheck': 'Health check',
   'common.tx.sending': 'Send transaction',
   'common.tx.sendingAsset': 'Send {assetTicker} transaction',
+  'common.tx.loadingSecondTx': 'Loading second transaction params',
   'common.tx.success': 'Transaction has been sent successfully',
   'common.tx.success-info':
     'The transaction might take some time to be confirmed (up to several minutes depending on the chain)',

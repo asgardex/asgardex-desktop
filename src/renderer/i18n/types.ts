@@ -140,6 +140,7 @@ export type CommonMessageKey =
   | 'common.tx.healthCheck'
   | 'common.tx.sending'
   | 'common.tx.sendingAsset'
+  | 'common.tx.loadingSecondTx'
   | 'common.tx.success'
   | 'common.tx.success-info'
   | 'common.tx.checkResult'

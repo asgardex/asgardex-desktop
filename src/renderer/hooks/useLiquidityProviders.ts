@@ -60,11 +60,24 @@ export const useLiquidityProviders = ({
       FP.pipe(
         providers,
         RD.map(
-          A.findFirst(
-            (provider) =>
-              eqOString.equals(provider.dexAssetAddress, O.some(dexAssetAddress)) &&
-              eqOString.equals(provider.assetAddress, O.some(assetAddress))
-          )
+          A.findFirst((provider) => {
+            const normalizeOption = (o: O.Option<string>) =>
+              FP.pipe(
+                o,
+                O.map((str) => str.toLowerCase())
+              )
+
+            const normalizedDexAssetAddress = normalizeOption(O.some(dexAssetAddress))
+            const normalizedAssetAddress = normalizeOption(O.some(assetAddress))
+
+            const providerDexAssetAddress = normalizeOption(provider.dexAssetAddress)
+            const providerAssetAddress = normalizeOption(provider.assetAddress)
+
+            return (
+              eqOString.equals(providerDexAssetAddress, normalizedDexAssetAddress) &&
+              eqOString.equals(providerAssetAddress, normalizedAssetAddress)
+            )
+          })
         )
       ),
     [assetAddress, providers, dexAssetAddress]
@@ -147,9 +160,13 @@ export const useLiquidityProviders = ({
             FP.pipe(
               sequenceTOption(oDexAssetAddress, oAssetAddress),
               O.chain(([providerDexAssetAddress, providerAssetAddress]) => {
-                const isDexMatch = eqAddress.equals(providerDexAssetAddress, dexAssetAddress)
-                const isAssetMatch = eqAddress.equals(providerAssetAddress, assetAddress)
+                const isDexMatch = eqAddress.equals(
+                  providerDexAssetAddress.toLowerCase(),
+                  dexAssetAddress.toLowerCase()
+                )
+                const isAssetMatch = eqAddress.equals(providerAssetAddress.toLowerCase(), assetAddress.toLowerCase())
                 const isMismatch = (isDexMatch && !isAssetMatch) || (isAssetMatch && !isDexMatch)
+
                 return isMismatch
                   ? O.some({ dexAssetAddress: providerDexAssetAddress, assetAddress: providerAssetAddress })
                   : O.none

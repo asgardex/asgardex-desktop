@@ -14,6 +14,7 @@ import {
   formatAssetAmountCurrency,
   TokenAsset
 } from '@xchainjs/xchain-util'
+import { Spin } from 'antd'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
@@ -99,7 +100,7 @@ import { WalletPasswordConfirmationModal } from '../../modal/confirmation'
 import { TxModal } from '../../modal/tx'
 import { DepositAssets } from '../../modal/tx/extra'
 import { DepositAsset } from '../../modal/tx/extra/DepositAsset'
-import { LoadingView, Spin } from '../../shared/loading'
+import { LoadingView } from '../../shared/loading'
 import { Alert } from '../../uielements/alert'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { AssetInput } from '../../uielements/assets/assetInput'
@@ -1207,9 +1208,15 @@ export const SymDeposit: React.FC<Props> = (props) => {
   const [showCompleteLpModal, setShowCompleteLpModal] = useState<ModalState>('none')
 
   const onSubmit = () => {
-    if (isAssetLedger || isRuneLedger) {
+    const asset1FromLedger = isAssetLedger
+    const asset2FromLedger = isRuneLedger
+
+    if (asset1FromLedger && asset2FromLedger) {
       setShowLedgerModal('deposit')
+    } else if (!asset1FromLedger && !asset2FromLedger) {
+      setShowPasswordModal('deposit')
     } else {
+      setShowLedgerModal('deposit')
       setShowPasswordModal('deposit')
     }
   }
@@ -1282,9 +1289,11 @@ export const SymDeposit: React.FC<Props> = (props) => {
     const stepDescriptions = [
       intl.formatMessage({ id: 'common.tx.healthCheck' }),
       intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: asset.ticker }),
+      intl.formatMessage({ id: 'common.tx.loadingSecondTx' }),
       intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: dexAsset.ticker }),
       intl.formatMessage({ id: 'common.tx.checkResult' })
     ]
+
     const stepDescription = FP.pipe(
       depositState.deposit,
       RD.fold(
@@ -1298,7 +1307,6 @@ export const SymDeposit: React.FC<Props> = (props) => {
         () => `${intl.formatMessage({ id: 'common.done' })}!`
       )
     )
-
     return (
       <DepositAssets
         target={{ asset: dexAsset, amount: dexAmountToDeposit }}
@@ -1383,7 +1391,6 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
     // don't render TxModal in initial state
     if (RD.isInitial(depositRD)) return <></>
-
     // Get timer value
     const timerValue = FP.pipe(
       depositRD,
@@ -1906,14 +1913,23 @@ export const SymDeposit: React.FC<Props> = (props) => {
       setShowLedgerModal('none')
     }
 
+    const assetForLedger =
+      showLedgerModal === 'recover'
+        ? FP.pipe(
+            oFailedAssetAmount,
+            O.map((failedAssetAmount) => failedAssetAmount.asset),
+            O.getOrElse(() => asset)
+          )
+        : asset
+
     const onSuccess = () => {
-      if (showLedgerModal === 'deposit') setShowPasswordModal('deposit')
+      if (showLedgerModal === 'deposit') submitDepositTx()
       if (showLedgerModal === 'recover') submitAsymDepositTx()
       if (showLedgerModal === 'approve') submitApproveTx()
       setShowLedgerModal('none')
     }
 
-    const chainAsString = chainToString(isRuneLedger ? THORChain : chain)
+    const chainAsString = chainToString(assetForLedger.chain)
     const txtNeedsConnected = intl.formatMessage(
       {
         id: 'ledger.needsconnected'
@@ -1923,7 +1939,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
 
     const description1 =
       // extra info for ERC20 assets only
-      isEvmChain(chain) && isEvmToken(asset)
+      isEvmChain(assetForLedger.chain) && isEvmToken(assetForLedger)
         ? `${txtNeedsConnected} ${intl.formatMessage(
             {
               id: 'ledger.blindsign'
@@ -1951,7 +1967,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
         onSuccess={onSuccess}
         onClose={onClose}
         visible
-        chain={isRuneLedger ? THORChain : chain}
+        chain={assetForLedger.chain}
         network={network}
         description1={description1}
         description2={description2}
@@ -1960,15 +1976,16 @@ export const SymDeposit: React.FC<Props> = (props) => {
     )
   }, [
     asset,
-    chain,
     intl,
     isAssetLedger,
     isRuneLedger,
     network,
     oDepositParams,
+    oFailedAssetAmount,
     showLedgerModal,
     submitApproveTx,
-    submitAsymDepositTx
+    submitAsymDepositTx,
+    submitDepositTx
   ])
 
   const renderCompleteLp = useMemo(() => {

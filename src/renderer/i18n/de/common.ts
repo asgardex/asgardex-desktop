@@ -143,6 +143,7 @@ const common: CommonMessages = {
   'common.tx.healthCheck': 'Systemcheck',
   'common.tx.sending': 'Sende Transaktion',
   'common.tx.sendingAsset': 'Sende {assetTicker} Transaktion',
+  'common.tx.loadingSecondTx': 'Zweite Transaktionsparameter werden geladen',
   'common.tx.success': 'Transaktion wurde erfolgreich versendet',
   'common.tx.success-info':
     'Die Transaktion benötigt möglicherweise etwas Zeit, um final bestätigt zu werden (je nach Blockchain bis zu einigen Minuten).',

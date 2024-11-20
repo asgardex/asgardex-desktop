@@ -47,8 +47,9 @@ import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../
 import { TxModal } from '../../modal/tx'
 import { DepositAssets } from '../../modal/tx/extra'
 import { FlatButton } from '../../uielements/button'
-import { TooltipAddress } from '../../uielements/common/Common.styles'
+import { Tooltip, TooltipAddress } from '../../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../../uielements/fees'
+import { CopyLabel } from '../../uielements/label'
 import * as Helper from './Withdraw.helper'
 import * as Styled from './Withdraw.styles'
 
@@ -256,10 +257,10 @@ export const Withdraw: React.FC<Props> = ({
     [asset, assetDecimal, poolsData, withdrawFees.asset]
   )
 
-  const minAssetAmountError = useMemo(
-    () => !zeroWithdrawPercent && minAssetAmountToWithdrawMax1e8.gt(assetAmountToWithdraw),
-    [assetAmountToWithdraw, minAssetAmountToWithdrawMax1e8, zeroWithdrawPercent]
-  )
+  // const minAssetAmountError = useMemo(
+  //   () => !zeroWithdrawPercent && minAssetAmountToWithdrawMax1e8.gt(assetAmountToWithdraw),
+  //   [assetAmountToWithdraw, minAssetAmountToWithdrawMax1e8, zeroWithdrawPercent]
+  // )
 
   // Withdraw start time
   const [withdrawStartTime, setWithdrawStartTime] = useState<number>(0)
@@ -425,10 +426,7 @@ export const Withdraw: React.FC<Props> = ({
     () =>
       FP.pipe(
         withdrawFeesRD,
-        RD.map(({ rune: runeFees, asset: assetFees }) => [
-          { asset: dexAsset, amount: Helper.sumWithdrawFees(runeFees) },
-          { asset: assetFees.asset, amount: assetFees.amount }
-        ])
+        RD.map(({ rune: runeFees }) => [{ asset: dexAsset, amount: Helper.sumWithdrawFees(runeFees) }])
       ),
     [dexAsset, withdrawFeesRD]
   )
@@ -486,21 +484,8 @@ export const Withdraw: React.FC<Props> = ({
   }, [intl, network, showLedgerModal, submitWithdrawTx])
 
   const disabledSubmit = useMemo(
-    () =>
-      disableWithdrawAction ||
-      zeroWithdrawPercent ||
-      disabled ||
-      minAssetAmountError ||
-      minRuneAmountError ||
-      isInboundChainFeeError,
-    [
-      zeroWithdrawPercent,
-      disabled,
-      minAssetAmountError,
-      minRuneAmountError,
-      isInboundChainFeeError,
-      disableWithdrawAction
-    ]
+    () => disableWithdrawAction || zeroWithdrawPercent || disabled || minRuneAmountError || isInboundChainFeeError,
+    [zeroWithdrawPercent, disabled, minRuneAmountError, isInboundChainFeeError, disableWithdrawAction]
   )
 
   return (
@@ -508,7 +493,7 @@ export const Withdraw: React.FC<Props> = ({
       <Styled.Title>{intl.formatMessage({ id: 'deposit.withdraw.sym.title' })}</Styled.Title>
       <Styled.Description>
         {intl.formatMessage({ id: 'deposit.withdraw.choseText' })} (
-        <Styled.MinLabel color={minRuneAmountError || minAssetAmountError ? 'error' : 'normal'}>
+        <Styled.MinLabel color={minRuneAmountError ? 'error' : 'normal'}>
           {intl.formatMessage({ id: 'common.min' })}:
         </Styled.MinLabel>
         <Styled.MinLabel color={minRuneAmountError ? 'error' : 'normal'}>
@@ -519,7 +504,7 @@ export const Withdraw: React.FC<Props> = ({
           })}
         </Styled.MinLabel>{' '}
         /{' '}
-        <Styled.MinLabel color={minAssetAmountError ? 'error' : 'normal'}>
+        <Styled.MinLabel color={'normal'}>
           {formatAssetAmountCurrency({
             amount: baseToAsset(minAssetAmountToWithdrawMax1e8),
             asset,
@@ -534,7 +519,7 @@ export const Withdraw: React.FC<Props> = ({
         onChange={setWithdrawPercent}
         onAfterChange={reloadFeesHandler}
         disabled={disabled || disableWithdrawAction}
-        error={minRuneAmountError || minAssetAmountError}
+        error={minRuneAmountError}
       />
       <Styled.AssetOutputContainer>
         <TooltipAddress title={runeAddress}>
@@ -616,6 +601,25 @@ export const Withdraw: React.FC<Props> = ({
         <FlatButton className="mb-30px min-w-[200px] px-20px" size="large" onClick={onSubmit} disabled={disabledSubmit}>
           {intl.formatMessage({ id: 'common.withdraw' })}
         </FlatButton>
+      </div>
+      <div className="w-full pt-10px font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.memos' })}</div>
+      <div className="flex w-full items-center justify-between pl-10px text-[12px]">
+        <div className="">
+          <CopyLabel
+            className="whitespace-nowrap pl-0 uppercase text-gray2 dark:text-gray2d"
+            label={intl.formatMessage({ id: 'common.transaction.short.rune' }, { dex: dex.chain })}
+            key="memo-copy"
+            textToCopy={memo}
+          />
+        </div>
+
+        <div className="truncate pl-10px font-main text-[12px]">
+          <Tooltip
+            title={`Alternate position withdraw use custom deposit with this memo ${memo}`}
+            key={`tooltip-${dex}-memo`}>
+            {memo}
+          </Tooltip>
+        </div>
       </div>
       {renderPasswordConfirmationModal}
       {renderLedgerConfirmationModal}

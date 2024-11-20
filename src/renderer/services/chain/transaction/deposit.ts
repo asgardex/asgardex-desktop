@@ -1,26 +1,13 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ARBChain } from '@xchainjs/xchain-arbitrum'
-import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BASEChain } from '@xchainjs/xchain-base'
-import { BSCChain } from '@xchainjs/xchain-bsc'
 import { TxHash } from '@xchainjs/xchain-client'
-import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Address } from '@xchainjs/xchain-util'
+import { Address, TokenAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import {
-  getEVMAssetAddress,
-  isAethAsset,
-  isAvaxAsset,
-  isBaseAsset,
-  isBscAsset,
-  isEthAsset,
-  isRuneNativeAsset
-} from '../../../helpers/assetHelper'
+import { getEVMTokenAddressForChain, isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { sequenceSOption } from '../../../helpers/fpHelpers'
 import { liveData } from '../../../helpers/rx/liveData'
 import { observableState } from '../../../helpers/stateHelper'
@@ -123,22 +110,7 @@ export const saverDeposit$ = ({
         deposit: RD.progress({ loaded: 75, total })
       })
       // 3. check tx finality by polling its tx data
-      const assetAddress: O.Option<Address> = (() => {
-        switch (chain) {
-          case ETHChain:
-            return !isEthAsset(asset) ? getEVMAssetAddress(asset) : O.none
-          case ARBChain:
-            return !isAethAsset(asset) ? getEVMAssetAddress(asset) : O.none
-          case AVAXChain:
-            return !isAvaxAsset(asset) ? getEVMAssetAddress(asset) : O.none
-          case BASEChain:
-            return !isBaseAsset(asset) ? getEVMAssetAddress(asset) : O.none
-          case BSCChain:
-            return !isBscAsset(asset) ? getEVMAssetAddress(asset) : O.none
-          default:
-            return O.none
-        }
-      })()
+      const assetAddress: O.Option<Address> = getEVMTokenAddressForChain(chain, asset as TokenAsset)
       return poolTxStatusByChain$({ txHash, chain, assetAddress })
     }),
     // Update state
@@ -223,6 +195,8 @@ export const symDeposit$ = ({
 }: SymDepositParams): SymDepositState$ => {
   // total of progress
   const total = O.some(100)
+  // const isMock = true
+  // const sendTx$ = isMock ? sendMockTx$ : sendPoolTx$
 
   const { chain } = asset
   const dexChain = dex.chain
@@ -281,9 +255,9 @@ export const symDeposit$ = ({
       setState({ ...current, depositTxs: { ...current.depositTxs, asset: RD.success(txHash) } })
       return txHash
     }),
-    // 3. send RUNE deposit txs
+    // 4. send RUNE deposit txs
     liveData.chain<ApiError, TxHash, TxHash>((_) => {
-      setState({ ...getState(), step: 3, deposit: RD.progress({ loaded: 60, total }) })
+      setState({ ...getState(), step: 4, deposit: RD.progress({ loaded: 60, total }) })
       return sendPoolTx$({
         sender: runeSender,
         walletType: runeWalletType,
@@ -315,7 +289,7 @@ export const symDeposit$ = ({
     liveData.chain<ApiError, TxHash, SymDepositFinalityResult>((_) => {
       const currentState = getState()
       // Update state
-      setState({ ...currentState, step: 4, deposit: RD.progress({ loaded: 80, total }) })
+      setState({ ...currentState, step: 5, deposit: RD.progress({ loaded: 80, total }) })
 
       const { rune: runeTxRD, asset: assetTxRD } = currentState.depositTxs
       return FP.pipe(
@@ -328,22 +302,7 @@ export const symDeposit$ = ({
           // 4. check tx finality
           ({ runeTxHash, assetTxHash }) => {
             // 3. check tx finality by polling its tx data
-            const assetAddress: O.Option<Address> = (() => {
-              switch (chain) {
-                case ETHChain:
-                  return !isEthAsset(asset) ? getEVMAssetAddress(asset) : O.none
-                case ARBChain:
-                  return !isAethAsset(asset) ? getEVMAssetAddress(asset) : O.none
-                case AVAXChain:
-                  return !isAvaxAsset(asset) ? getEVMAssetAddress(asset) : O.none
-                case BASEChain:
-                  return !isBaseAsset(asset) ? getEVMAssetAddress(asset) : O.none
-                case BSCChain:
-                  return !isBscAsset(asset) ? getEVMAssetAddress(asset) : O.none
-                default:
-                  return O.none
-              }
-            })()
+            const assetAddress: O.Option<Address> = getEVMTokenAddressForChain(chain, asset as TokenAsset)
 
             return liveData.sequenceS({
               asset: poolTxStatusByChain$({ txHash: assetTxHash, chain, assetAddress }),
@@ -406,3 +365,10 @@ export const symDeposit$ = ({
     RxOp.startWith({ ...getState() })
   )
 }
+// const sendMockTx$ = (params: SendPoolTxParams): TxHashLD => {
+//   console.log('Mock transaction initiated:', params)
+//   const assetHash = '0xed5bbb55813dfd85e3a6400456eebbcd788c04827faa5a376bda0f8e4f9c9b7e'
+//   const runeHash = '6AE7989D676F15611BA835BEC868A007029EB3C85A18EC1D8513FED3962E9857'
+//   const hash = params.asset === AssetRuneNative ? runeHash : assetHash
+//   return Rx.of(RD.success(`${hash}`)) // Replace 'mock-tx-hash' with a desired value
+// }

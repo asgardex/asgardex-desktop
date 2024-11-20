@@ -289,17 +289,19 @@ export type SymDepositTxs = { rune: TxHashRD; asset: TxHashRD }
 export type SymDepositFinalityResult = { rune: Tx; asset: Tx }
 
 /**
- * State to reflect status of a sym. deposit by doing different requests
+ * State to reflect the status of a sym. deposit by doing different requests
  */
 export type SymDepositState = {
   // Number of current step
   readonly step: number
   // Constant total amount of steps
-  readonly stepsTotal: 4
-  // deposit transactions
+  readonly stepsTotal: 5
+  // Deposit transactions
   readonly depositTxs: SymDepositTxs
   // RD for all needed steps
   readonly deposit: RD.RemoteData<ApiError, boolean>
+  // For ledger app switch
+  readonly waitingForUser: boolean
 }
 
 export type SymDepositState$ = Rx.Observable<SymDepositState>
