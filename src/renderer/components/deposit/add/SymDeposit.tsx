@@ -1307,18 +1307,11 @@ export const SymDeposit: React.FC<Props> = (props) => {
         () => `${intl.formatMessage({ id: 'common.done' })}!`
       )
     )
-    const dualLedgerPosition = assetWalletType === WalletType.Ledger && runeWalletType === WalletType.Ledger
-
-    const combinedDescription =
-      depositState.step === 3 && dualLedgerPosition
-        ? `Please switch to the THORCHAIN APP. ${stepDescription}`
-        : stepDescription
-
     return (
       <DepositAssets
         target={{ asset: dexAsset, amount: dexAmountToDeposit }}
         source={O.some({ asset, amount: assetAmountToDepositMax1e8 })}
-        stepDescription={combinedDescription}
+        stepDescription={stepDescription}
         network={network}
       />
     )
@@ -1329,8 +1322,6 @@ export const SymDeposit: React.FC<Props> = (props) => {
     depositState.deposit,
     depositState.step,
     depositState.stepsTotal,
-    assetWalletType,
-    runeWalletType,
     dexAmountToDeposit,
     assetAmountToDepositMax1e8,
     network
