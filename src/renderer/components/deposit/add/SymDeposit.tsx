@@ -1426,50 +1426,27 @@ export const SymDeposit: React.FC<Props> = (props) => {
       (id) => intl.formatMessage({ id })
     )
 
-    const extraResult = FP.pipe(depositState.step, (step) => {
-      if (step < 1) return null // Do not display anything if step is less than 1
-
-      if (step === 4) {
-        // Display `symDepositTxs.asset` when step is 4
-        return FP.pipe(
-          symDepositTxs.asset,
-          RD.toOption,
-          O.fold(
-            () => null, // Do not render if no transaction hash
-            (txHash) => (
-              <ViewTxButton
-                className="pb-20px"
-                txHash={O.some(txHash)}
-                onClick={openAssetExplorerTxUrl}
-                txUrl={FP.pipe(O.some(txHash), O.chain(getAssetExplorerTxUrl))}
-                label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: asset.ticker })}
-              />
-            )
-          )
-        )
-      }
-
-      if (step === 5) {
-        // Display `symDepositTxs.rune` when step is 5
-        return FP.pipe(
-          symDepositTxs.rune,
-          RD.toOption,
-          O.fold(
-            () => null, // Do not render if no transaction hash
-            (txHash) => (
-              <ViewTxButton
-                txHash={O.some(txHash)}
-                onClick={openRuneExplorerTxUrl}
-                txUrl={FP.pipe(O.some(txHash), O.chain(getRuneExplorerTxUrl))}
-                label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: dexAsset.ticker })}
-              />
-            )
-          )
-        )
-      }
-
-      return null // Default case, display nothing
-    })
+    const extraResult = (
+      <div className="flex flex-col items-center justify-between">
+        {FP.pipe(symDepositTxs.asset, RD.toOption, (oTxHash) => (
+          <ViewTxButton
+            className="pb-20px"
+            txHash={oTxHash}
+            onClick={openAssetExplorerTxUrl}
+            txUrl={FP.pipe(oTxHash, O.chain(getAssetExplorerTxUrl))}
+            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: asset.ticker })}
+          />
+        ))}
+        {FP.pipe(symDepositTxs.rune, RD.toOption, (oTxHash) => (
+          <ViewTxButton
+            txHash={oTxHash}
+            onClick={openRuneExplorerTxUrl}
+            txUrl={FP.pipe(oTxHash, O.chain(getRuneExplorerTxUrl))}
+            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: dexAsset.ticker })}
+          />
+        ))}
+      </div>
+    )
 
     return (
       <TxModal
