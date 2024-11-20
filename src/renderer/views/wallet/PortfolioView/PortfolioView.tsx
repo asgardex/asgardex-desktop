@@ -261,7 +261,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
 
         // Error state
         (error) => intl.formatMessage({ id: 'common.error.api.limit' }, { errorMsg: error.message }),
-        // Success state
+
         // Success state
         (nodes) => {
           const totals = calculateTotalBondByChain(nodes)
@@ -277,7 +277,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
                       decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
                     })
               }`
-            : ''
+            : '$ 0.00'
 
           const mayaTotal = totals.MAYA.amount().isGreaterThan(0)
             ? `${
