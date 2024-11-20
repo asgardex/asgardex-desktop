@@ -610,11 +610,6 @@ export const PortfolioView: React.FC = (): JSX.Element => {
                         </div>
                       ))}
                     </div>
-                    {/* <div className="absolute top-0 flex h-full w-full items-center justify-center backdrop-blur-md">
-                      <Styled.Title size="large" className="!text-turquoise">
-                        Coming Soon...
-                      </Styled.Title>
-                    </div> */}
                   </div>
                 </div>
                 <div className="flex flex-1 flex-col rounded-lg border border-solid border-gray0 p-4 dark:border-gray0d">
@@ -645,7 +640,8 @@ export const PortfolioView: React.FC = (): JSX.Element => {
                   <div className="flex flex-wrap items-center justify-center space-x-4">
                     {filteredChainData.map((chartCol) => (
                       <div key={chartCol.name} className={chartCol.className}>
-                        {chartCol.name} - {chartCol.value.toFixed(2)}
+                        {chartCol.name} -{' '}
+                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(chartCol.value)}
                       </div>
                     ))}
                   </div>
