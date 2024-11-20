@@ -24,7 +24,7 @@ require('dotenv').config()
 
 // Check if the current network is production-like (mainnet or stagenet)
 const isProductionNetwork = [Network.Stagenet].includes(DEFAULT_NETWORK)
-console.log(isProductionNetwork)
+
 // Asgardex Thorname (only for production-like networks)
 export const ASGARDEX_THORNAME = isProductionNetwork
   ? envOrDefault(process.env.REACT_APP_ASGARDEX_THORNAME, 'dx')
