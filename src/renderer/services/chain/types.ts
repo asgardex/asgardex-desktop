@@ -295,13 +295,13 @@ export type SymDepositState = {
   // Number of current step
   readonly step: number
   // Constant total amount of steps
-  readonly stepsTotal: 4
+  readonly stepsTotal: 5
   // Deposit transactions
   readonly depositTxs: SymDepositTxs
   // RD for all needed steps
   readonly deposit: RD.RemoteData<ApiError, boolean>
-  // Optional field to display Ledger app switching prompt
-  readonly ledgerPrompt?: string
+  // For ledger app switch
+  readonly waitingForUser: boolean
 }
 
 export type SymDepositState$ = Rx.Observable<SymDepositState>

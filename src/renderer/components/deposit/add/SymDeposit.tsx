@@ -14,6 +14,7 @@ import {
   formatAssetAmountCurrency,
   TokenAsset
 } from '@xchainjs/xchain-util'
+import { Spin } from 'antd'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
@@ -50,9 +51,9 @@ import { LiveData } from '../../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../../helpers/stringHelper'
 import * as WalletHelper from '../../../helpers/walletHelper'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
-import { INITIAL_SAVER_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../../../services/chain/const'
+import { INITIAL_SAVER_DEPOSIT_STATE } from '../../../services/chain/const'
+import { getState, getState$, setState } from '../../../services/chain/transaction/deposit'
 import {
-  SymDepositState,
   SymDepositParams,
   SymDepositStateHandler,
   SymDepositFees,
@@ -99,7 +100,7 @@ import { WalletPasswordConfirmationModal } from '../../modal/confirmation'
 import { TxModal } from '../../modal/tx'
 import { DepositAssets } from '../../modal/tx/extra'
 import { DepositAsset } from '../../modal/tx/extra/DepositAsset'
-import { LoadingView, Spin } from '../../shared/loading'
+import { LoadingView } from '../../shared/loading'
 import { Alert } from '../../uielements/alert'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { AssetInput } from '../../uielements/assets/assetInput'
@@ -160,6 +161,9 @@ export type Props = {
   openAsymDepositTool: FP.Lazy<void>
   hidePrivateData: boolean
   dex: Dex
+}
+type LedgerSwitchModalProps = {
+  onContinue: () => void
 }
 
 export const SymDeposit: React.FC<Props> = (props) => {
@@ -369,13 +373,39 @@ export const SymDeposit: React.FC<Props> = (props) => {
     () => assetAmountToDepositMax1e8.amount().isZero() || dexAmountToDeposit.amount().isZero(),
     [assetAmountToDepositMax1e8, dexAmountToDeposit]
   )
+  const [isDepositActive, setDepositActive] = useState(false)
 
-  const {
-    state: depositState,
-    reset: resetDepositState,
-    subscribe: subscribeDepositState
-  } = useSubscriptionState<SymDepositState>(INITIAL_SYM_DEPOSIT_STATE)
+  const [depositState, setDepositState] = useState(getState())
 
+  // Subscribe to the state observable
+  useEffect(() => {
+    if (!isDepositActive) return
+    const subscription = getState$.subscribe((newState) => {
+      setDepositState(newState) // Update local state
+    })
+
+    // Cleanup subscription on unmount
+    return () => subscription.unsubscribe()
+  }, [isDepositActive])
+
+  // Define continueDeposit function
+  const continueDeposit = useCallback(() => {
+    // Get the current state
+    const currentState = getState()
+
+    if (currentState.step === 3 && currentState.waitingForUser) {
+      // Prepare the updated state
+      const updatedState = {
+        ...currentState,
+        waitingForUser: false
+      }
+
+      console.log('Updated symDepositState:', updatedState)
+
+      // Update the state
+      setState(updatedState)
+    }
+  }, [])
   const {
     state: asymDepositState,
     reset: resetAsymDepositState,
@@ -1292,7 +1322,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
       intl.formatMessage({ id: 'common.tx.sendingAsset' }, { assetTicker: dexAsset.ticker }),
       intl.formatMessage({ id: 'common.tx.checkResult' })
     ]
-
+    console.log(depositState)
     const stepDescription = FP.pipe(
       depositState.deposit,
       RD.fold(
@@ -1306,33 +1336,15 @@ export const SymDeposit: React.FC<Props> = (props) => {
         () => `${intl.formatMessage({ id: 'common.done' })}!`
       )
     )
-
-    // Combine ledgerPrompt only for step 3
-    const combinedDescription =
-      depositState.step === 3 && depositState.ledgerPrompt
-        ? `${depositState.ledgerPrompt}\n${stepDescription}`
-        : stepDescription
-
     return (
       <DepositAssets
         target={{ asset: dexAsset, amount: dexAmountToDeposit }}
         source={O.some({ asset, amount: assetAmountToDepositMax1e8 })}
-        stepDescription={combinedDescription} // Use combinedDescription
+        stepDescription={stepDescription}
         network={network}
       />
     )
-  }, [
-    intl,
-    asset,
-    dexAsset,
-    depositState.deposit,
-    depositState.step,
-    depositState.stepsTotal,
-    depositState.ledgerPrompt, // Include ledgerPrompt in dependencies
-    dexAmountToDeposit,
-    assetAmountToDepositMax1e8,
-    network
-  ])
+  }, [intl, asset, dexAsset, depositState, dexAmountToDeposit, assetAmountToDepositMax1e8, network])
 
   const txModalExtraContentAsym = useMemo(() => {
     const source = FP.pipe(
@@ -1381,10 +1393,9 @@ export const SymDeposit: React.FC<Props> = (props) => {
   ])
 
   const onCloseTxModal = useCallback(() => {
-    resetDepositState()
     resetAsymDepositState()
     changePercentHandler(0)
-  }, [resetDepositState, resetAsymDepositState, changePercentHandler])
+  }, [resetAsymDepositState, changePercentHandler])
 
   const onFinishTxModal = useCallback(() => {
     onCloseTxModal()
@@ -1397,8 +1408,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     const { deposit: depositRD, depositTxs: symDepositTxs } = depositState
 
     // don't render TxModal in initial state
-    if (RD.isInitial(depositRD)) return <></>
-
+    if (!isDepositActive) return <></>
     // Get timer value
     const timerValue = FP.pipe(
       depositRD,
@@ -1413,6 +1423,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
       )
     )
 
+    console.log(depositState)
     // title
     const txModalTitle = FP.pipe(
       depositRD,
@@ -1425,42 +1436,81 @@ export const SymDeposit: React.FC<Props> = (props) => {
       (id) => intl.formatMessage({ id })
     )
 
-    const extraResult = (
-      <div className="flex flex-col items-center justify-between">
-        {FP.pipe(symDepositTxs.asset, RD.toOption, (oTxHash) => (
-          <ViewTxButton
-            className="pb-20px"
-            txHash={oTxHash}
-            onClick={openAssetExplorerTxUrl}
-            txUrl={FP.pipe(oTxHash, O.chain(getAssetExplorerTxUrl))}
-            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: asset.ticker })}
-          />
-        ))}
-        {FP.pipe(symDepositTxs.rune, RD.toOption, (oTxHash) => (
-          <ViewTxButton
-            txHash={oTxHash}
-            onClick={openRuneExplorerTxUrl}
-            txUrl={FP.pipe(oTxHash, O.chain(getRuneExplorerTxUrl))}
-            label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: dexAsset.ticker })}
-          />
-        ))}
-      </div>
-    )
+    const extraResult = FP.pipe(depositState.step, (step) => {
+      if (step < 1) return null // Do not display anything if step is less than 1
+
+      if (step === 4) {
+        // Display `symDepositTxs.asset` when step is 4
+        return FP.pipe(
+          symDepositTxs.asset,
+          RD.toOption,
+          O.fold(
+            () => null, // Do not render if no transaction hash
+            (txHash) => (
+              <ViewTxButton
+                className="pb-20px"
+                txHash={O.some(txHash)}
+                onClick={openAssetExplorerTxUrl}
+                txUrl={FP.pipe(O.some(txHash), O.chain(getAssetExplorerTxUrl))}
+                label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: asset.ticker })}
+              />
+            )
+          )
+        )
+      }
+
+      if (step === 5) {
+        // Display `symDepositTxs.rune` when step is 5
+        return FP.pipe(
+          symDepositTxs.rune,
+          RD.toOption,
+          O.fold(
+            () => null, // Do not render if no transaction hash
+            (txHash) => (
+              <ViewTxButton
+                txHash={O.some(txHash)}
+                onClick={openRuneExplorerTxUrl}
+                txUrl={FP.pipe(O.some(txHash), O.chain(getRuneExplorerTxUrl))}
+                label={intl.formatMessage({ id: 'common.tx.view' }, { assetTicker: dexAsset.ticker })}
+              />
+            )
+          )
+        )
+      }
+
+      return null // Default case, display nothing
+    })
+    const LedgerSwitchModal: React.FC<LedgerSwitchModalProps> = ({ onContinue }) => {
+      return (
+        <div className="modal">
+          <p>Please switch to the THORChain Ledger app and click continue.</p>
+          <button onClick={onContinue}>Continue</button>
+        </div>
+      )
+    }
 
     return (
-      <TxModal
-        title={txModalTitle}
-        onClose={onCloseTxModal}
-        onFinish={onFinishTxModal}
-        startTime={depositStartTime}
-        txRD={depositRD}
-        timerValue={timerValue}
-        extraResult={extraResult}
-        extra={txModalExtraContent}
-      />
+      <>
+        <TxModal
+          title={txModalTitle}
+          onClose={onCloseTxModal}
+          onFinish={onFinishTxModal}
+          startTime={depositStartTime}
+          txRD={depositRD}
+          timerValue={timerValue}
+          extraResult={extraResult}
+          extra={
+            <>
+              {txModalExtraContent}
+              {depositState.waitingForUser && <LedgerSwitchModal onContinue={() => continueDeposit()} />}
+            </>
+          }
+        />
+      </>
     )
   }, [
     depositState,
+    isDepositActive,
     onCloseTxModal,
     onFinishTxModal,
     depositStartTime,
@@ -1471,7 +1521,8 @@ export const SymDeposit: React.FC<Props> = (props) => {
     asset.ticker,
     openRuneExplorerTxUrl,
     getRuneExplorerTxUrl,
-    dexAsset
+    dexAsset.ticker,
+    continueDeposit
   ])
   const renderRecoverTxModal = useMemo(() => {
     const { deposit: depositRD, depositTx } = asymDepositState
@@ -1563,15 +1614,29 @@ export const SymDeposit: React.FC<Props> = (props) => {
     FP.pipe(
       oDepositParams,
       O.map((params) => {
-        // set start time
+        // Set start time
         setDepositStartTime(Date.now())
-        // subscribe to deposit$
-        subscribeDepositState(deposit$(params))
+        // Activate subscription
+        setDepositActive(true)
+
+        // Trigger the deposit$ observable pipeline
+        deposit$(params).subscribe({
+          next: (newState) => {
+            // Update the original state directly
+            setState(newState)
+          },
+          error: (error) => {
+            console.error('Error in submitDepositTx:', error)
+          },
+          complete: () => {
+            setDepositActive(false)
+          }
+        })
 
         return true
       })
     )
-  }, [oDepositParams, subscribeDepositState, deposit$])
+  }, [deposit$, oDepositParams, setDepositStartTime])
 
   const submitAsymDepositTx = useCallback(() => {
     FP.pipe(
@@ -2051,8 +2116,6 @@ export const SymDeposit: React.FC<Props> = (props) => {
   useEffect(() => {
     if (!eqOAsset.equals(prevAsset.current, O.some(asset))) {
       prevAsset.current = O.some(asset)
-      // reset deposit state
-      resetDepositState()
       // set values to zero
       changePercentHandler(0)
       // reset isApproved state
@@ -2071,7 +2134,6 @@ export const SymDeposit: React.FC<Props> = (props) => {
     resetApproveState,
     resetIsApprovedState,
     reloadSelectedPoolDetail,
-    resetDepositState,
     changePercentHandler,
     minRuneAmountToDeposit
   ])

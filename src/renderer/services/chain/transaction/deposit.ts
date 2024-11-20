@@ -1,37 +1,26 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ARBChain } from '@xchainjs/xchain-arbitrum'
-import { AVAXChain } from '@xchainjs/xchain-avax'
-import { BASEChain } from '@xchainjs/xchain-base'
-import { BSCChain } from '@xchainjs/xchain-bsc'
 import { TxHash } from '@xchainjs/xchain-client'
-import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Address } from '@xchainjs/xchain-util'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { Address, TokenAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import {
-  getEVMAssetAddress,
-  isAethAsset,
-  isAvaxAsset,
-  isBaseAsset,
-  isBscAsset,
-  isEthAsset,
-  isRuneNativeAsset
-} from '../../../helpers/assetHelper'
+import { WalletType } from '../../../../shared/wallet/types'
+import { getEVMTokenAddressForChain, isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { sequenceSOption } from '../../../helpers/fpHelpers'
 import { liveData } from '../../../helpers/rx/liveData'
 import { observableState } from '../../../helpers/stateHelper'
 import { service as mayaMidgardService } from '../../mayaMigard/service'
 import { service as midgardService } from '../../midgard/service'
-import { ApiError, ErrorId } from '../../wallet/types'
+import { ApiError, ErrorId, TxHashLD } from '../../wallet/types'
 import { ChainTxFeeOption, INITIAL_SAVER_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../const'
 import {
   SaverDepositParams,
   SaverDepositState,
   SaverDepositState$,
+  SendPoolTxParams,
   SymDepositFinalityResult,
   SymDepositParams,
   SymDepositState,
@@ -123,22 +112,7 @@ export const saverDeposit$ = ({
         deposit: RD.progress({ loaded: 75, total })
       })
       // 3. check tx finality by polling its tx data
-      const assetAddress: O.Option<Address> = (() => {
-        switch (chain) {
-          case ETHChain:
-            return !isEthAsset(asset) ? getEVMAssetAddress(asset) : O.none
-          case ARBChain:
-            return !isAethAsset(asset) ? getEVMAssetAddress(asset) : O.none
-          case AVAXChain:
-            return !isAvaxAsset(asset) ? getEVMAssetAddress(asset) : O.none
-          case BASEChain:
-            return !isBaseAsset(asset) ? getEVMAssetAddress(asset) : O.none
-          case BSCChain:
-            return !isBscAsset(asset) ? getEVMAssetAddress(asset) : O.none
-          default:
-            return O.none
-        }
-      })()
+      const assetAddress: O.Option<Address> = getEVMTokenAddressForChain(chain, asset as TokenAsset)
       return poolTxStatusByChain$({ txHash, chain, assetAddress })
     }),
     // Update state
@@ -193,6 +167,14 @@ export const saverDeposit$ = ({
   )
 }
 
+export const symDeposit$State = observableState<SymDepositState>({
+  ...INITIAL_SYM_DEPOSIT_STATE,
+  depositTxs: { rune: RD.pending, asset: RD.pending },
+  deposit: RD.progress({ loaded: 20, total: O.some(100) })
+})
+
+export const { get$: getState$, get: getState, set: setState } = symDeposit$State
+
 /**
  * Symetrical deposit stream does 4 steps:
  *
@@ -201,7 +183,7 @@ export const saverDeposit$ = ({
  * 3. Send deposit RUNE transaction
  * 4. Check status of both transactions
  *
- * @returns SymDepositState$ - Observable state to reflect loading status. It provides all data we do need to display status in `TxModul`
+ * @returns SymDepositState$ - Observable state to reflect loading status. It provides all data we do need to display status in `TxModal`
  *
  */
 export const symDeposit$ = ({
@@ -223,23 +205,15 @@ export const symDeposit$ = ({
 }: SymDepositParams): SymDepositState$ => {
   // total of progress
   const total = O.some(100)
+  const isMock = true // set to true for ui debug
+  const sendTx$ = isMock ? sendMockTx$ : sendPoolTx$
 
   const { chain } = asset
   const dexChain = dex.chain
   // Observable state of to reflect status of all needed steps
-  const {
-    get$: getState$,
-    get: getState,
-    set: setState
-  } = observableState<SymDepositState>({
-    ...INITIAL_SYM_DEPOSIT_STATE,
-    depositTxs: { rune: RD.pending, asset: RD.pending },
-    // we start with  a small progress
-    deposit: RD.progress({ loaded: 20, total })
-  })
+  const { get$: getState$, get: getState, set: setState } = symDeposit$State
 
   // All requests will be done in a sequence
-  // to update `SymDepositState` step by step
   const requests$ = Rx.of(poolAddresses).pipe(
     // 1. Validation pool address + node
     RxOp.switchMap((poolAddresses) =>
@@ -252,9 +226,22 @@ export const symDeposit$ = ({
       })
     ),
     // 2. send asset deposit txs
-    liveData.chain<ApiError, SymDepositValidationResult, TxHash>((_) => {
-      setState({ ...getState(), step: 2, deposit: RD.progress({ loaded: 40, total }) })
-      return sendPoolTx$({
+    liveData.chain<ApiError, SymDepositValidationResult, TxHash>(() => {
+      // Get the current state and construct the updated state
+      console.log('Initial state:', getState())
+      const currentState = getState()
+      const updatedState: SymDepositState = {
+        ...currentState,
+        step: 2,
+        deposit: RD.progress({ loaded: 40, total })
+      }
+
+      // Update state directly
+      setState(updatedState)
+      // Log updated state for debugging
+      console.log('Updated state:', getState())
+      console.log(`sending asset tx`)
+      return sendTx$({
         sender: assetSender,
         walletType: assetWalletType,
         walletAccount: assetWalletAccount,
@@ -281,34 +268,50 @@ export const symDeposit$ = ({
       setState({ ...current, depositTxs: { ...current.depositTxs, asset: RD.success(txHash) } })
       return txHash
     }),
-    RxOp.switchMap((txHash) => {
-      // Determine if Ledger is used for either wallet type
-      const isRuneLedger = runeWalletType === 'ledger'
-      const isAssetLedger = assetWalletType === 'ledger'
-      // if both are ledgers need a delay for user to switch apps.
-      if (isRuneLedger && isAssetLedger) {
-        // Update state to indicate app-switching progress
-        setState({
-          ...getState(),
-          step: 3,
-          deposit: RD.progress({ loaded: 50, total }),
-          ledgerPrompt: `Please switch to the ${isRuneLedger ? 'THORChain' : 'Asset'} Ledger app.`
-        })
+    liveData.chain((txHash) => {
+      const isRuneLedger = runeWalletType === WalletType.Ledger
+      const isAssetLedger = assetWalletType === WalletType.Ledger
 
-        // Return a stream that delays for app switching
-        return Rx.of(null).pipe(
-          RxOp.delay(25000), // Wait for 25 seconds to allow the user to switch apps
-          RxOp.mapTo(txHash) // Pass through the txHash after the delay
+      if (isRuneLedger && isAssetLedger) {
+        // Update state to show waiting prompt
+        const currentState = getState()
+        if (!currentState.waitingForUser) {
+          setState({
+            ...currentState,
+            step: 3,
+            waitingForUser: true
+          })
+        }
+
+        console.log('waiting state:', getState())
+
+        // Convert waiting logic into LiveData
+        return liveData.fromObservable(
+          Rx.combineLatest([getState$]).pipe(
+            RxOp.distinctUntilChanged(([prevState], [nextState]) => {
+              const isSame = prevState.waitingForUser === nextState.waitingForUser
+              console.log('distinctUntilChanged: isSame:', isSame, 'prev:', prevState, 'next:', nextState)
+              return isSame
+            }),
+            RxOp.tap(([state]) => console.log('Emission from getState$:', state)),
+            RxOp.filter(([state]) => !state.waitingForUser), // Wait until `waitingForUser` is `false`
+            RxOp.take(1), // Proceed after user confirms
+            RxOp.tap(() => console.log('User confirmed, proceeding...')),
+            RxOp.mapTo(txHash) // Pass through the txHash
+          ),
+          (error) => ({ errorId: ErrorId.USER_WAIT_ERROR, msg: String(error) }) // Replace with your error type
         )
       }
-
-      // If no Ledger app switch is needed, pass through the txHash immediately
-      return Rx.of(txHash)
+      console.log('after waiting state:', getState())
+      // If not both ledgers, simply return the current txHash as success
+      return liveData.right(txHash)
     }),
-    // 3. send RUNE deposit txs
+
+    // 4. send RUNE deposit txs
     liveData.chain<ApiError, TxHash, TxHash>((_) => {
       setState({ ...getState(), step: 4, deposit: RD.progress({ loaded: 60, total }) })
-      return sendPoolTx$({
+      console.log('4 state:', getState())
+      return sendTx$({
         sender: runeSender,
         walletType: runeWalletType,
         walletAccount: runeWalletAccount,
@@ -352,22 +355,7 @@ export const symDeposit$ = ({
           // 4. check tx finality
           ({ runeTxHash, assetTxHash }) => {
             // 3. check tx finality by polling its tx data
-            const assetAddress: O.Option<Address> = (() => {
-              switch (chain) {
-                case ETHChain:
-                  return !isEthAsset(asset) ? getEVMAssetAddress(asset) : O.none
-                case ARBChain:
-                  return !isAethAsset(asset) ? getEVMAssetAddress(asset) : O.none
-                case AVAXChain:
-                  return !isAvaxAsset(asset) ? getEVMAssetAddress(asset) : O.none
-                case BASEChain:
-                  return !isBaseAsset(asset) ? getEVMAssetAddress(asset) : O.none
-                case BSCChain:
-                  return !isBscAsset(asset) ? getEVMAssetAddress(asset) : O.none
-                default:
-                  return O.none
-              }
-            })()
+            const assetAddress: O.Option<Address> = getEVMTokenAddressForChain(chain, asset as TokenAsset)
 
             return liveData.sequenceS({
               asset: poolTxStatusByChain$({ txHash: assetTxHash, chain, assetAddress }),
@@ -429,4 +417,11 @@ export const symDeposit$ = ({
     ),
     RxOp.startWith({ ...getState() })
   )
+}
+const sendMockTx$ = (params: SendPoolTxParams): TxHashLD => {
+  console.log('Mock transaction initiated:', params)
+  const assetHash = 'C96C8DB79926F0C4FF1C02129594A546076C6987965957C9A89E85DC6DBEC3A7'
+  const runeHash = '6AE7989D676F15611BA835BEC868A007029EB3C85A18EC1D8513FED3962E9857'
+  const hash = params.asset === AssetRuneNative ? runeHash : assetHash
+  return Rx.of(RD.success(`${hash}`)) // Replace 'mock-tx-hash' with a desired value
 }

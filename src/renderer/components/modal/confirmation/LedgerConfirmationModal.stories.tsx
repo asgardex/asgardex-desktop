@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { Chain } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
@@ -11,7 +11,7 @@ type Args = {
   description: string
 }
 
-const Template = ({ chain, visible, description }: Args) => {
+const Template: StoryFn<Args> = ({ chain, visible, description }: Args) => {
   return (
     <LedgerConfirmationModal
       visible={visible}
@@ -29,6 +29,11 @@ const Template = ({ chain, visible, description }: Args) => {
 }
 
 export const Default = Template.bind({})
+Default.args = {
+  chain: 'BCH',
+  visible: true,
+  description: 'Any description'
+}
 
 const meta: Meta<typeof Template> = {
   component: Template,
@@ -39,13 +44,8 @@ const meta: Meta<typeof Template> = {
       control: {
         type: 'select',
         options: ['DOGE', 'BCH', 'BTC', 'ETH']
-      },
-      defaultValue: 'BCH'
+      }
     }
-  },
-  args: {
-    visible: true,
-    description: 'Any description'
   }
 }
 
