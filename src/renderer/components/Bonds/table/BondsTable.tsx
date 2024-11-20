@@ -17,7 +17,7 @@ import { NodeInfo, NodeInfos, Providers } from '../../../services/thorchain/type
 import { WalletAddressInfo } from '../../../views/wallet/BondsView'
 import { ConfirmationModal } from '../../modal/confirmation'
 import { RemoveAddressIcon } from '../../settings/WalletSettings.styles'
-import { TextButton } from '../../uielements/button'
+import { BaseButton, TextButton } from '../../uielements/button'
 import { ExternalLinkIcon, Tooltip } from '../../uielements/common/Common.styles'
 import * as Styled from './BondsTable.styles'
 import * as H from './helpers'
@@ -73,15 +73,13 @@ export const BondsTable: React.FC<Props> = ({
         key: 'watch',
         width: 40,
         title: '',
-        render: (_, { address }) => {
-          return (
-            <H.Watchlist
-              addWatchlist={() => {
-                addWatchlist(address, network)
-              }}
-            />
-          )
-        },
+        render: (_, { address }) => (
+          <H.Watchlist
+            addWatchlist={() => {
+              addWatchlist(address, network)
+            }}
+          />
+        ),
         align: 'right'
       },
       {
@@ -154,6 +152,17 @@ export const BondsTable: React.FC<Props> = ({
 
   const [matchedNodeAddress, setMatchedNodeAddress] = useState<string[]>([])
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([])
+  const [collapseAll, setCollapseAll] = useState(false)
+
+  const handleCollapseAll = useCallback(() => {
+    if (collapseAll) {
+      setExpandedRowKeys([])
+    } else {
+      const nodeAddy = nodes.map((node) => node.address)
+      setExpandedRowKeys(nodeAddy)
+    }
+    setCollapseAll(!collapseAll)
+  }, [collapseAll, nodes])
 
   useEffect(() => {
     const chains: (keyof typeof walletAddresses)[] = ['THOR', 'MAYA']
@@ -299,6 +308,16 @@ export const BondsTable: React.FC<Props> = ({
 
   return (
     <>
+      <div className="flex justify-end">
+        <BaseButton
+          size="normal"
+          className="mx-4 mb-4 rounded-md border border-solid border-turquoise p-1 text-14 capitalize text-gray2 dark:border-gray1d dark:text-gray2d"
+          onClick={handleCollapseAll}>
+          {collapseAll
+            ? intl.formatMessage({ id: 'common.collapseAll' })
+            : intl.formatMessage({ id: 'common.expandAll' })}
+        </BaseButton>
+      </div>
       <Styled.Table
         className={className}
         columns={columns}

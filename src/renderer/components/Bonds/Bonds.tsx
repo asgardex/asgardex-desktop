@@ -164,7 +164,7 @@ export const Bonds: React.FC<Props> = ({
   return (
     <Styled.Container className={className}>
       <Styled.Form onFinish={onSubmit} form={form} disabled={disableForm}>
-        <div className="flex w-full flex-row items-center justify-between p-4">
+        <div className="flex w-full flex-row items-center justify-between px-4 pb-2">
           <div className="flex items-center space-x-2">
             <Form.Item className="!m-0" name="address" rules={[{ required: true, validator: addressValidator }]}>
               <Styled.Input
