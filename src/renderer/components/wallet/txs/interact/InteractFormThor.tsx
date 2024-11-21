@@ -307,7 +307,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
 
     // Check if a swap memo is detected
     if (checkMemo(memoValue) && network === Network.Mainnet) {
-      memoValue = memoCorrection(memoValue)
+      memoValue = memoCorrection(memoValue, network)
       setSwapMemoDetected(true)
 
       // Set affiliate tracking message
@@ -588,7 +588,8 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       case InteractType.RunePool: {
         createMemo = getRunePoolMemo({
           action: runePoolAction,
-          bps: H.getRunePoolWithdrawBps(runePoolProvider.value, _amountToSend)
+          bps: H.getRunePoolWithdrawBps(runePoolProvider.value, _amountToSend),
+          network
         })
         break
       }
@@ -603,7 +604,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     }
     setMemo(createMemo)
     return createMemo
-  }, [_amountToSend, currentMemo, form, interactType, memo, runePoolAction, runePoolProvider.value])
+  }, [_amountToSend, currentMemo, form, interactType, memo, network, runePoolAction, runePoolProvider.value])
 
   const onChangeInput = useCallback(
     async (value: BigNumber) => {

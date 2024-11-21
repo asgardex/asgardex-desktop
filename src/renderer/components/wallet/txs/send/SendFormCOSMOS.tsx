@@ -140,7 +140,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
 
     // Check if a swap memo is detected
     if (H.checkMemo(memoValue) && network === Network.Mainnet) {
-      memoValue = H.memoCorrection(memoValue)
+      memoValue = H.memoCorrection(memoValue, network)
       setSwapMemoDetected(true)
 
       // Set affiliate tracking message

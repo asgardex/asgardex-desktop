@@ -24,7 +24,7 @@ import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
 import { Dex } from '../../../../shared/api/types'
-import { ASGARDEX_THORNAME } from '../../../../shared/const'
+import { getAsgardexThorname } from '../../../../shared/const'
 import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString } from '../../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../../shared/utils/guard'
@@ -795,7 +795,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
         O.map(({ poolAddress, dexAssetWB, assetWB }) => {
           const assetAddress = assetWB.walletAddress
           const runeAddress = dexAssetWB.walletAddress
-          const applyAffiliate = ASGARDEX_THORNAME === undefined ? '' : `:${ASGARDEX_THORNAME}:0`
+          const applyAffiliate = getAsgardexThorname(network) === undefined ? '' : `:${getAsgardexThorname(network)}:0`
           return {
             asset,
             poolAddress,
@@ -826,6 +826,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
       oPoolAddress,
       oDexAssetWB,
       oAssetWB,
+      network,
       asset,
       dexAmountToDeposit,
       assetAmountToDepositMax1e8,

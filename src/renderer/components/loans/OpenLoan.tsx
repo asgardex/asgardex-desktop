@@ -31,7 +31,7 @@ import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
 import { Dex } from '../../../shared/api/types'
-import { ASGARDEX_ADDRESS, ASGARDEX_THORNAME } from '../../../shared/const'
+import { ASGARDEX_ADDRESS, getAsgardexThorname } from '../../../shared/const'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
@@ -591,7 +591,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
         sequenceTOption(O.some(borrowAddress), oSourceAssetWB),
         O.map(([borrowAddress, { walletAddress }]) => {
           const address = borrowAddress
-          const affiliateAddress = ASGARDEX_ADDRESS === walletAddress ? undefined : ASGARDEX_THORNAME
+          const affiliateAddress = ASGARDEX_ADDRESS === walletAddress ? undefined : getAsgardexThorname(network)
           const affiliateBps = 0
           const minOut = '0'
           return {
@@ -605,7 +605,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
           }
         })
       ),
-    [amountToLoanMax1e8, collateralAsset.asset, borrowAddress, borrowAsset, oSourceAssetWB]
+    [borrowAddress, oSourceAssetWB, network, collateralAsset.asset, amountToLoanMax1e8, borrowAsset.asset]
   )
 
   const hasFetched = useRef<boolean>(false)
@@ -865,7 +865,7 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
           poolAddress,
           asset: collateralAsset.asset,
           amount: convertBaseAmountDecimal(amountToLoanMax1e8, collateralAsset.decimal),
-          memo: loansQuote.memo !== '' ? loansQuote.memo.concat(`::${ASGARDEX_THORNAME}:0`) : '', // add tracking,
+          memo: loansQuote.memo !== '' ? loansQuote.memo.concat(`::${getAsgardexThorname(network)}:0`) : '', // add tracking,
           walletType,
           sender: walletAddress,
           walletAccount,
@@ -876,7 +876,16 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
         return result
       })
     )
-  }, [oPoolAddress, oSourceAssetWB, oLoanQuote, collateralAsset, amountToLoanMax1e8, dex])
+  }, [
+    oPoolAddress,
+    oSourceAssetWB,
+    oLoanQuote,
+    collateralAsset.asset,
+    collateralAsset.decimal,
+    amountToLoanMax1e8,
+    network,
+    dex
+  ])
 
   const onClickUseLedger = useCallback(
     (useLedger: boolean) => {

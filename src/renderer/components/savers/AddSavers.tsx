@@ -33,7 +33,7 @@ import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
 import { Dex } from '../../../shared/api/types'
-import { ASGARDEX_THORNAME } from '../../../shared/const'
+import { getAsgardexThorname } from '../../../shared/const'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
@@ -773,7 +773,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     return FP.pipe(
       sequenceTOption(oPoolAddress, oSourceAssetWB, oSaversQuote),
       O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, saversQuote]) => {
-        const applyAffiliate = ASGARDEX_THORNAME === undefined ? '' : `${ASGARDEX_THORNAME}:0`
+        const applyAffiliate = getAsgardexThorname(network) === undefined ? '' : `${getAsgardexThorname(network)}:0`
         const result = {
           poolAddress,
           asset: asset.asset,
@@ -789,7 +789,16 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
         return result
       })
     )
-  }, [oPoolAddress, oSourceAssetWB, oSaversQuote, asset.asset, asset.baseAmount.decimal, amountToSendMax1e8, dex])
+  }, [
+    oPoolAddress,
+    oSourceAssetWB,
+    oSaversQuote,
+    network,
+    asset.asset,
+    asset.baseAmount.decimal,
+    amountToSendMax1e8,
+    dex
+  ])
 
   const onClickUseLedger = useCallback(
     (useLedger: boolean) => {

@@ -191,7 +191,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     let memoValue = form.getFieldValue('memo') as string
 
     if (checkMemo(memoValue) && network === Network.Mainnet) {
-      memoValue = memoCorrection(memoValue)
+      memoValue = memoCorrection(memoValue, network)
       setSwapMemoDetected(true)
       // Set affiliate tracking message
       setAffiliateTracking(intl.formatMessage({ id: 'wallet.send.affiliateTracking' }))

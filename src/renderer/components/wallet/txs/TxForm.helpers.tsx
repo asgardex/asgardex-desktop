@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { Network } from '@xchainjs/xchain-client'
 import { Address, AnyAsset } from '@xchainjs/xchain-util'
 import { FormInstance } from 'antd'
 import * as FP from 'fp-ts/lib/function'
@@ -6,7 +7,7 @@ import * as O from 'fp-ts/lib/Option'
 import { IntlShape } from 'react-intl'
 
 import { TrustedAddress } from '../../../../shared/api/types'
-import { ASGARDEX_AFFILIATE_FEE, ASGARDEX_THORNAME } from '../../../../shared/const'
+import { getAsgardexAffiliateFee, getAsgardexThorname } from '../../../../shared/const'
 import { WalletType } from '../../../../shared/wallet/types'
 import { emptyString } from '../../../helpers/stringHelper'
 import { getWalletByAddress } from '../../../helpers/walletHelper'
@@ -109,12 +110,12 @@ export function checkMemo(memo: string | undefined): boolean {
   return false
 }
 
-export function memoCorrection(memo: string): string {
+export function memoCorrection(memo: string, network: Network): string {
   // Split the memoValue by ':'
   let parts = memo.split(':')
 
   // Remove any existing 'dx' parts and anything after it
-  const dxIndex = parts.findIndex((part) => part.startsWith(`${ASGARDEX_THORNAME}`))
+  const dxIndex = parts.findIndex((part) => part.startsWith(`${getAsgardexThorname(network)}`))
   if (dxIndex !== -1) {
     parts = parts.slice(0, dxIndex)
   }
@@ -130,8 +131,8 @@ export function memoCorrection(memo: string): string {
   }
 
   // Append `${ASGARDEX_THORNAME}:${ASGARDEX_AFFILIATE_FEE}` if both are defined
-  if (ASGARDEX_THORNAME && ASGARDEX_AFFILIATE_FEE) {
-    parts.push(`${ASGARDEX_THORNAME}:${ASGARDEX_AFFILIATE_FEE}`)
+  if (getAsgardexThorname(network) && getAsgardexAffiliateFee(network)) {
+    parts.push(`${getAsgardexThorname(network)}:${getAsgardexAffiliateFee(network)}`)
   }
 
   // Reassemble the memoValue

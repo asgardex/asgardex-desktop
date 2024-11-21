@@ -218,7 +218,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
 
     // Check if a swap memo is detected
     if (checkMemo(memoValue) && network === Network.Mainnet) {
-      memoValue = memoCorrection(memoValue)
+      memoValue = memoCorrection(memoValue, network)
       setSwapMemoDetected(true)
 
       // Set affiliate tracking message
