@@ -30,7 +30,7 @@ const ASGARDEX_AFFILIATE_FEE = 30
 
 // Dynamically evaluate Asgardex Thorname
 export const getAsgardexThorname = (network: Network): string | undefined =>
-  network === Network.Mainnet ? envOrDefault(process.env.REACT_APP_ASGARDEX_THORNAME, 'dx') : ''
+  network === Network.Mainnet ? envOrDefault(process.env.REACT_APP_ASGARDEX_THORNAME, 'dx') : undefined
 
 // Dynamically evaluate Asgardex Affiliate Fee
 export const getAsgardexAffiliateFee = (network: Network): number | undefined =>
