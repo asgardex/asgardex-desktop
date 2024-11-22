@@ -773,12 +773,15 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     return FP.pipe(
       sequenceTOption(oPoolAddress, oSourceAssetWB, oSaversQuote),
       O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, saversQuote]) => {
-        const applyAffiliate = getAsgardexThorname(network) === undefined ? '' : `${getAsgardexThorname(network)}:0`
+        const affiliateName = getAsgardexThorname(network)
         const result = {
           poolAddress,
           asset: asset.asset,
           amount: convertBaseAmountDecimal(amountToSendMax1e8, asset.baseAmount.decimal),
-          memo: saversQuote.memo !== '' ? saversQuote.memo.concat(`::${applyAffiliate}`) : '', // add tracking,
+          memo:
+            saversQuote.memo !== ''
+              ? saversQuote.memo.concat(affiliateName === undefined ? '' : `::${affiliateName}:0`) // add tracking,
+              : '',
           walletType,
           sender: walletAddress,
           walletAccount,

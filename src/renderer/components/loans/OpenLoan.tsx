@@ -861,11 +861,15 @@ export const Borrow: React.FC<BorrowProps> = (props): JSX.Element => {
     return FP.pipe(
       sequenceTOption(oPoolAddress, oSourceAssetWB, oLoanQuote),
       O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, loansQuote]) => {
+        const affiliateName = getAsgardexThorname(network)
         const result = {
           poolAddress,
           asset: collateralAsset.asset,
           amount: convertBaseAmountDecimal(amountToLoanMax1e8, collateralAsset.decimal),
-          memo: loansQuote.memo !== '' ? loansQuote.memo.concat(`::${getAsgardexThorname(network)}:0`) : '', // add tracking,
+          memo:
+            loansQuote.memo !== ''
+              ? loansQuote.memo.concat(affiliateName === undefined ? '' : `::${affiliateName}:0`) // add tracking,
+              : '',
           walletType,
           sender: walletAddress,
           walletAccount,
