@@ -26,7 +26,7 @@ export const Collapse = ({ className, header, children }: Props): JSX.Element =>
         {header}
         <ChevronDownIcon className={clsx('ease h-20px w-20px text-turquoise', isShowing ? 'rotate-180' : 'rotate-0')} />
       </div>
-      <div className={clsx('content transition-all duration-300 ease-in-out', isShowing ? 'max-h-[480px]' : 'max-h-0')}>
+      <div className={clsx('content transition-all duration-300 ease-in-out', isShowing ? 'max-h-[540px]' : 'max-h-0')}>
         {children}
       </div>
     </div>
