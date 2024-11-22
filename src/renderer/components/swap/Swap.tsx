@@ -507,14 +507,17 @@ export const Swap = ({
       () => '',
       (recipientAddress: string) => {
         const toleranceBps = undefined
+        const affiliateName = getAsgardexThorname(network)
+        const affiliateBps = getAsgardexAffiliateFee(network)
+        const isAffiliateValid = affiliateName !== undefined && affiliateBps !== undefined
         return getSwapMemo({
           targetAsset,
           targetAddress: recipientAddress,
           toleranceBps,
           streamingInterval,
           streamingQuantity,
-          affiliateName: getAsgardexThorname(network),
-          affiliateBps: getAsgardexAffiliateFee(network)
+          affiliateName: isAffiliateValid ? affiliateName : undefined,
+          affiliateBps: isAffiliateValid ? affiliateBps : undefined
         })
       }
     )(oRecipientAddress)
@@ -870,8 +873,9 @@ export const Swap = ({
             streamingInterval: streamingInt,
             streamingQuantity: streaminQuant,
             toleranceBps: toleranceBps,
-            affiliateAddress: affiliate,
-            affiliateBps: affiliateBpsApplied
+            ...(affiliate && affiliateBpsApplied
+              ? { affiliateAddress: affiliate, affiliateBps: affiliateBpsApplied }
+              : {})
           }
         })
       ),
@@ -906,6 +910,7 @@ export const Swap = ({
           const streamingInt = isStreaming ? streamingInterval : 0
           const streaminQuant = isStreaming ? streamingQuantity : 0
           const toleranceBps = isStreaming ? 10000 : slipTolerance * 100 // convert to basis points
+          const affiliate = getAsgardexThorname(network)
           return {
             fromAsset: fromAsset,
             destinationAsset: destinationAsset,
@@ -915,8 +920,7 @@ export const Swap = ({
             streamingInterval: streamingInt,
             streamingQuantity: streaminQuant,
             toleranceBps: toleranceBps,
-            affiliateAddress: getAsgardexThorname(network),
-            affiliateBps: applyBps
+            ...(affiliate && applyBps ? { affiliateAddress: affiliate, affiliateBps: applyBps } : {})
           }
         })
       ),
@@ -967,6 +971,7 @@ export const Swap = ({
       sequenceTOption(oQuoteSwapData, oQuoteSwapDataMaya, oSourceAssetWB),
       O.fold(
         () => {
+          const affiliateName = getAsgardexThorname(network)
           const estimateThorDexSwap: QuoteSwapParams = {
             fromAsset: sourceAsset,
             destinationAsset: targetAsset,
@@ -974,8 +979,7 @@ export const Swap = ({
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
             toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100, // convert to basis points
-            affiliateAddress: getAsgardexThorname(network),
-            affiliateBps: applyBps
+            ...(affiliateName && applyBps ? { affiliateAddress: affiliateName, affiliateBps: applyBps } : {})
           }
           const estimateMayaDexSwap: QuoteSwapParamsMaya = {
             fromAsset: sourceAsset as CompatibleAsset,
@@ -988,8 +992,7 @@ export const Swap = ({
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
             toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100, // convert to basis points,
-            affiliateAddress: getAsgardexThorname(network),
-            affiliateBps: applyBps
+            ...(affiliateName && applyBps ? { affiliateAddress: affiliateName, affiliateBps: applyBps } : {})
           }
           const estimateSwap = dex.chain === THORChain ? estimateThorDexSwap : estimateMayaDexSwap
           if (!estimateSwap.amount.baseAmount.eq(baseAmount(0)) && lockedWallet) {
