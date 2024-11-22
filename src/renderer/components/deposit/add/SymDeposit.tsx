@@ -25,7 +25,7 @@ import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
 import { Dex } from '../../../../shared/api/types'
-import { ASGARDEX_THORNAME } from '../../../../shared/const'
+import { getAsgardexThorname } from '../../../../shared/const'
 import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString } from '../../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../../shared/utils/guard'
@@ -796,6 +796,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
         O.map(({ poolAddress, dexAssetWB, assetWB }) => {
           const assetAddress = assetWB.walletAddress
           const runeAddress = dexAssetWB.walletAddress
+          const applyAffiliate = getAsgardexThorname(network) === undefined ? '' : `:${getAsgardexThorname(network)}:0`
           return {
             asset,
             poolAddress,
@@ -805,8 +806,8 @@ export const SymDeposit: React.FC<Props> = (props) => {
               asset: convertBaseAmountDecimal(assetAmountToDepositMax1e8, assetBalance.decimal)
             },
             memos: {
-              asset: getDepositMemo({ asset, address: runeAddress }).concat(`:${ASGARDEX_THORNAME}:0`),
-              rune: getDepositMemo({ asset, address: assetAddress }).concat(`:${ASGARDEX_THORNAME}:0`)
+              asset: getDepositMemo({ asset, address: runeAddress }).concat(`${applyAffiliate}`),
+              rune: getDepositMemo({ asset, address: assetAddress }).concat(`${applyAffiliate}`)
             },
             runeWalletType: dexAssetWB.walletType,
             runeWalletAccount: dexAssetWB.walletAccount,
@@ -826,6 +827,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
       oPoolAddress,
       oDexAssetWB,
       oAssetWB,
+      network,
       asset,
       dexAmountToDeposit,
       assetAmountToDepositMax1e8,

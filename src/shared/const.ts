@@ -1,3 +1,5 @@
+import { Network } from '@xchainjs/xchain-client'
+
 import { DEFAULT_USER_ASSETS } from '../renderer/const'
 import { PoolsStorageEncoded } from './api/io'
 import {
@@ -19,15 +21,20 @@ import { envOrDefault } from './utils/env'
 
 require('dotenv').config()
 
-export const ASGARDEX_THORNAME = envOrDefault(process.env.REACT_APP_ASGARDEX_THORNAME, 'dx')
-
 export const ASGARDEX_IDENTIFIER = 999
 
 // Asgardex full address
 export const ASGARDEX_ADDRESS = 'thor1rr6rahhd4sy76a7rdxkjaen2q4k4pw2g06w7qp'
 
-// Affiliate Fee in basis points
-export const ASGARDEX_AFFILIATE_FEE = 30
+const ASGARDEX_AFFILIATE_FEE = 30
+
+// Dynamically evaluate Asgardex Thorname
+export const getAsgardexThorname = (network: Network): string | undefined =>
+  network === Network.Mainnet ? envOrDefault(process.env.REACT_APP_ASGARDEX_THORNAME, 'dx') : undefined
+
+// Dynamically evaluate Asgardex Affiliate Fee
+export const getAsgardexAffiliateFee = (network: Network): number | undefined =>
+  network === Network.Mainnet ? ASGARDEX_AFFILIATE_FEE : undefined
 
 // Affiliate Fee min apply value
 export const ASGARDEX_AFFILIATE_FEE_MIN = 1001

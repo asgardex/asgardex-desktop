@@ -1,6 +1,7 @@
+import { Network } from '@xchainjs/xchain-client'
 import { Address, AnyAsset, AssetType, BaseAmount } from '@xchainjs/xchain-util'
 
-import { ASGARDEX_THORNAME } from '../../shared/const'
+import { getAsgardexThorname } from '../../shared/const'
 
 const DELIMITER = ':'
 
@@ -111,8 +112,8 @@ export const getSwapMemo = ({
   toleranceBps: number | undefined
   streamingInterval: number
   streamingQuantity: number
-  affiliateName: string
-  affiliateBps: number
+  affiliateName: string | undefined
+  affiliateBps: number | undefined
 }) => {
   const target = assetToMemoString(targetAsset)
   const streaming = `0/${streamingInterval}/${streamingQuantity}`
@@ -148,13 +149,14 @@ export const getDepositMemo = ({
   short?: boolean
 }) => mkMemo([`${short ? '+' : 'ADD'}`, assetToMemoString(asset), address || null])
 
-export const getRunePoolMemo = ({ action, bps }: { action: Action; bps: number }) => {
+export const getRunePoolMemo = ({ action, bps, network }: { action: Action; bps: number; network: Network }) => {
   const poolAction = action === Action.add ? `+` : '-'
 
   const memoParts = [`POOL${poolAction}`]
+  const affiliate = getAsgardexThorname(network) === undefined ? '' : `${getAsgardexThorname(network)}:0`
 
   if (action === Action.withdraw) {
-    memoParts.push(bps.toString(), ASGARDEX_THORNAME, '0')
+    memoParts.push(bps.toString(), affiliate)
   }
 
   return mkMemo(memoParts)

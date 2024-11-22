@@ -37,9 +37,9 @@ import { useIntl } from 'react-intl'
 
 import {
   ASGARDEX_ADDRESS,
-  ASGARDEX_AFFILIATE_FEE,
   ASGARDEX_AFFILIATE_FEE_MIN,
-  ASGARDEX_THORNAME
+  getAsgardexAffiliateFee,
+  getAsgardexThorname
 } from '../../../shared/const'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { chainToString, DEFAULT_ENABLED_CHAINS, EnabledChain } from '../../../shared/utils/chain'
@@ -493,18 +493,22 @@ export const TradeSwap = ({
       () => '',
       (recipientAddress: string) => {
         const toleranceBps = undefined
+        const affiliateName = getAsgardexThorname(network)
+        const affiliateBps = getAsgardexAffiliateFee(network)
+        const isAffiliateValid = affiliateName !== undefined && affiliateBps !== undefined
+
         return getSwapMemo({
           targetAsset,
           targetAddress: recipientAddress,
           toleranceBps,
           streamingInterval,
           streamingQuantity,
-          affiliateName: ASGARDEX_THORNAME,
-          affiliateBps: ASGARDEX_AFFILIATE_FEE
+          affiliateName: isAffiliateValid ? getAsgardexThorname(network) : undefined,
+          affiliateBps: isAffiliateValid ? getAsgardexAffiliateFee(network) : undefined
         })
       }
     )(oRecipientAddress)
-  }, [oRecipientAddress, targetAsset, streamingInterval, streamingQuantity])
+  }, [oRecipientAddress, targetAsset, streamingInterval, streamingQuantity, network])
 
   const [swapFeesRD] = useObservableState<SwapFeesRD>(() => {
     return FP.pipe(
@@ -673,13 +677,11 @@ export const TradeSwap = ({
 
   //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
   const applyBps = useMemo(() => {
-    const aff = ASGARDEX_AFFILIATE_FEE
-    let applyBps: number
+    const aff = getAsgardexAffiliateFee(network)
     const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
-    applyBps = network === Network.Stagenet ? 0 : aff
-    applyBps = txFeeCovered ? aff : 0
+    const applyBps = txFeeCovered ? aff : 0
     return applyBps
-  }, [network, priceAmountToSwapMax1e8])
+  }, [network, priceAmountToSwapMax1e8.assetAmount])
 
   const priceAffiliateFeeLabel = useMemo(() => {
     if (!swapFees) {
@@ -707,8 +709,9 @@ export const TradeSwap = ({
       ),
       O.getOrElse(() => '')
     )
+    const displayBps = applyBps !== undefined ? `${applyBps / 100}%` : '0%'
 
-    return price ? `${price} (${fee}) ${applyBps / 100}%` : fee
+    return price ? `${price} (${fee}) ${displayBps}` : fee
   }, [swapFees, affiliateFee.assetAmount, affiliateFee.asset, affiliatePriceValue, applyBps, sourceAsset])
 
   const oQuoteSwapData: O.Option<QuoteSwapParams> = useMemo(
@@ -721,8 +724,9 @@ export const TradeSwap = ({
           const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
           const address = destinationAddress
           const affiliate =
-            ASGARDEX_ADDRESS === walletAddress || isTradeAsset(sourceAsset) ? undefined : ASGARDEX_THORNAME
+            ASGARDEX_ADDRESS === walletAddress || isTradeAsset(sourceAsset) ? undefined : getAsgardexThorname(network)
           const affiliateBps = ASGARDEX_ADDRESS === walletAddress || isTradeAsset(sourceAsset) ? undefined : applyBps
+          const isAffiliateValid = affiliate !== undefined && affiliateBps !== undefined
           const streamingInt = isStreaming ? streamingInterval : 0
           const streaminQuant = isStreaming ? streamingQuantity : 0
           const toleranceBps = isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100 // convert to basis points
@@ -734,8 +738,8 @@ export const TradeSwap = ({
             streamingInterval: streamingInt,
             streamingQuantity: streaminQuant,
             toleranceBps: toleranceBps,
-            affiliateAddress: affiliate,
-            affiliateBps
+            affiliateAddress: isAffiliateValid ? affiliate : undefined,
+            affiliateBps: isAffiliateValid ? affiliateBps : undefined
           }
         })
       ),
@@ -782,7 +786,7 @@ export const TradeSwap = ({
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
             toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100, // convert to basis points
-            affiliateAddress: ASGARDEX_THORNAME,
+            affiliateAddress: getAsgardexThorname(network),
             affiliateBps: applyBps
           }
           const estimateSwap = estimateThorDexSwap

@@ -51,9 +51,9 @@ import * as RxOp from 'rxjs/operators'
 import { Dex } from '../../../shared/api/types'
 import {
   ASGARDEX_ADDRESS,
-  ASGARDEX_AFFILIATE_FEE,
   ASGARDEX_AFFILIATE_FEE_MIN,
-  ASGARDEX_THORNAME
+  getAsgardexAffiliateFee,
+  getAsgardexThorname
 } from '../../../shared/const'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { chainToString, DEFAULT_ENABLED_CHAINS, EnabledChain } from '../../../shared/utils/chain'
@@ -507,18 +507,21 @@ export const Swap = ({
       () => '',
       (recipientAddress: string) => {
         const toleranceBps = undefined
+        const affiliateName = getAsgardexThorname(network)
+        const affiliateBps = getAsgardexAffiliateFee(network)
+        const isAffiliateValid = affiliateName !== undefined && affiliateBps !== undefined
         return getSwapMemo({
           targetAsset,
           targetAddress: recipientAddress,
           toleranceBps,
           streamingInterval,
           streamingQuantity,
-          affiliateName: ASGARDEX_THORNAME,
-          affiliateBps: ASGARDEX_AFFILIATE_FEE
+          affiliateName: isAffiliateValid ? affiliateName : undefined,
+          affiliateBps: isAffiliateValid ? affiliateBps : undefined
         })
       }
     )(oRecipientAddress)
-  }, [oRecipientAddress, targetAsset, streamingInterval, streamingQuantity])
+  }, [oRecipientAddress, targetAsset, streamingInterval, streamingQuantity, network])
 
   const [swapFeesRD] = useObservableState<SwapFeesRD>(() => {
     return FP.pipe(
@@ -810,13 +813,12 @@ export const Swap = ({
   // Apparently thornode bug is fixed.
   // https://gitlab.com/thorchain/thornode/-/commit/f96350ab3d5adda18c61d134caa98b6d5af2b006
   const applyBps = useMemo(() => {
-    const aff = ASGARDEX_AFFILIATE_FEE
-    let applyBps: number
+    const aff = getAsgardexAffiliateFee(network)
+
     const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
-    applyBps = network === Network.Stagenet ? 0 : aff
-    applyBps = txFeeCovered ? aff : 0
+    const applyBps = txFeeCovered ? aff : undefined
     return applyBps
-  }, [network, priceAmountToSwapMax1e8])
+  }, [network, priceAmountToSwapMax1e8.assetAmount])
 
   const priceAffiliateFeeLabel = useMemo(() => {
     if (!swapFees) {
@@ -844,8 +846,9 @@ export const Swap = ({
       ),
       O.getOrElse(() => '')
     )
+    const displayBps = applyBps !== undefined ? `${applyBps / 100}%` : '0%'
 
-    return price ? `${price} (${fee}) ${applyBps === undefined ? '0' : applyBps / 100}%` : fee
+    return price ? `${price} (${fee}) ${displayBps}` : fee
   }, [swapFees, affiliateFee.assetAmount, affiliateFee.asset, affiliatePriceValue, applyBps, sourceAsset])
 
   const oQuoteSwapData: O.Option<QuoteSwapParams> = useMemo(
@@ -857,7 +860,7 @@ export const Swap = ({
           const destinationAsset = targetAsset
           const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
           const address = destinationAddress
-          const affiliate = ASGARDEX_ADDRESS === walletAddress ? undefined : ASGARDEX_THORNAME
+          const affiliate = ASGARDEX_ADDRESS === walletAddress ? undefined : getAsgardexThorname(network)
           const affiliateBpsApplied = ASGARDEX_ADDRESS === walletAddress ? undefined : applyBps
           const streamingInt = isStreaming ? streamingInterval : 0
           const streaminQuant = isStreaming ? streamingQuantity : 0
@@ -870,8 +873,9 @@ export const Swap = ({
             streamingInterval: streamingInt,
             streamingQuantity: streaminQuant,
             toleranceBps: toleranceBps,
-            affiliateAddress: network === Network.Stagenet ? undefined : affiliate,
-            affiliateBps: network === Network.Stagenet ? undefined : affiliateBpsApplied
+            ...(affiliate && affiliateBpsApplied
+              ? { affiliateAddress: affiliate, affiliateBps: affiliateBpsApplied }
+              : {})
           }
         })
       ),
@@ -906,6 +910,7 @@ export const Swap = ({
           const streamingInt = isStreaming ? streamingInterval : 0
           const streaminQuant = isStreaming ? streamingQuantity : 0
           const toleranceBps = isStreaming ? 10000 : slipTolerance * 100 // convert to basis points
+          const affiliate = getAsgardexThorname(network)
           return {
             fromAsset: fromAsset,
             destinationAsset: destinationAsset,
@@ -915,8 +920,7 @@ export const Swap = ({
             streamingInterval: streamingInt,
             streamingQuantity: streaminQuant,
             toleranceBps: toleranceBps,
-            affiliateAddress: network === Network.Stagenet ? undefined : ASGARDEX_THORNAME,
-            affiliateBps: network === Network.Stagenet ? undefined : applyBps
+            ...(affiliate && applyBps ? { affiliateAddress: affiliate, affiliateBps: applyBps } : {})
           }
         })
       ),
@@ -967,6 +971,7 @@ export const Swap = ({
       sequenceTOption(oQuoteSwapData, oQuoteSwapDataMaya, oSourceAssetWB),
       O.fold(
         () => {
+          const affiliateName = getAsgardexThorname(network)
           const estimateThorDexSwap: QuoteSwapParams = {
             fromAsset: sourceAsset,
             destinationAsset: targetAsset,
@@ -974,8 +979,7 @@ export const Swap = ({
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
             toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100, // convert to basis points
-            affiliateAddress: network === Network.Stagenet ? undefined : ASGARDEX_THORNAME,
-            affiliateBps: network === Network.Stagenet ? undefined : applyBps
+            ...(affiliateName && applyBps ? { affiliateAddress: affiliateName, affiliateBps: applyBps } : {})
           }
           const estimateMayaDexSwap: QuoteSwapParamsMaya = {
             fromAsset: sourceAsset as CompatibleAsset,
@@ -988,8 +992,7 @@ export const Swap = ({
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
             toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100, // convert to basis points,
-            affiliateAddress: network === Network.Stagenet ? undefined : ASGARDEX_THORNAME,
-            affiliateBps: network === Network.Stagenet ? undefined : applyBps
+            ...(affiliateName && applyBps ? { affiliateAddress: affiliateName, affiliateBps: applyBps } : {})
           }
           const estimateSwap = dex.chain === THORChain ? estimateThorDexSwap : estimateMayaDexSwap
           if (!estimateSwap.amount.baseAmount.eq(baseAmount(0)) && lockedWallet) {
