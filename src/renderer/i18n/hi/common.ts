@@ -162,6 +162,7 @@ const common: CommonMessages = {
   'common.tx.type.donate': 'दान',
   'common.tx.type.send': 'भेजें',
   'common.tx.type.runePoolDeposit': 'रूनपूल जमा',
+  'common.tx.type.runePoolWithdraw': 'रूनपूल निकासी',
   'common.tx.type.refund': 'धनवापसी',
   'common.tx.type.deposit': 'जमा',
   'common.tx.type.withdraw': 'निकासी',

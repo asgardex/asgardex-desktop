@@ -168,6 +168,7 @@ export type CommonMessageKey =
   | 'common.tx.type.withdraw'
   | 'common.tx.type.send'
   | 'common.tx.type.runePoolDeposit'
+  | 'common.tx.type.runePoolWithdraw'
   | 'common.time.days'
   | 'common.time.days.short'
   | 'common.time.month1'
