@@ -164,6 +164,7 @@ const common: CommonMessages = {
   'common.tx.type.donate': 'Spenden',
   'common.tx.type.send': 'Senden',
   'common.tx.type.runePoolDeposit': 'RunePool-Einzahlung',
+  'common.tx.type.runePoolWithdraw': 'RunePool Abhebung',
   'common.tx.type.refund': 'Erstatten',
   'common.tx.type.deposit': 'Einzahlen',
   'common.tx.type.withdraw': 'Auszahlen',

@@ -160,6 +160,7 @@ const common: CommonMessages = {
   'common.tx.type.donate': 'Donar',
   'common.tx.type.send': 'Enviar',
   'common.tx.type.runePoolDeposit': 'Depósito en RunePool',
+  'common.tx.type.runePoolWithdraw': 'Retiro de RunePool',
   'common.tx.type.refund': 'Reembolso',
   'common.tx.type.deposit': 'Depósito',
   'common.tx.type.withdraw': 'Retirar',

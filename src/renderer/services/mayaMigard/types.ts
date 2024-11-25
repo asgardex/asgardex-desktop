@@ -373,6 +373,12 @@ export type TxType =
   | 'REFUND'
   | 'SEND'
   | 'RUNEPOOLDEPOSIT'
+  | 'RUNEPOOLWITHDRAW'
+  | 'BOND'
+  | 'UNBOND'
+  | 'LEAVE'
+  | 'TRADE'
+  | 'FAILED'
   // in case asgardex does not know about any other action type we will display
   // 'unknown' tx type to avoid filtering out any tx
   | 'UNKNOWN'
