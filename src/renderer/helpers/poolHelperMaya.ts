@@ -1,7 +1,7 @@
 import { Balance, Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-mayamidgard'
-import { bnOrZero, assetFromString, BaseAmount, Chain } from '@xchainjs/xchain-util'
+import { bnOrZero, assetFromString, BaseAmount, Chain, baseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
@@ -137,7 +137,7 @@ export const getDeepestPool = (pools: PoolDetails): O.Option<PoolDetail> =>
 export const getAssetPoolPrice = (runePrice: BigNumber) => (poolDetail: Pick<PoolDetail, 'assetPrice'>) =>
   bnOrZero(poolDetail.assetPrice).multipliedBy(runePrice)
 
-/**
+/** Deprecating this soon
  * Helper to get a pool price value for a given `Balance`
  */
 export const getPoolPriceValue = ({
@@ -168,6 +168,37 @@ export const getPoolPriceValue = ({
     }),
     // convert back to original decimal
     O.map((price) => convertBaseAmountDecimal(price, amount.decimal))
+  )
+}
+/**
+ * Helper to get the usd value from an asset in maya pools
+ * @param param0
+ * @returns
+ */
+export const getUSDValue = ({
+  balance: { asset, amount },
+  poolDetails,
+  pricePool: { asset: priceAsset }
+}: {
+  balance: Balance
+  poolDetails: PoolDetails
+  pricePool: PricePool
+}): O.Option<BaseAmount> => {
+  // no pricing if balance asset === price pool asset
+  if (eqAsset.equals(asset, priceAsset)) return O.some(amount)
+
+  return FP.pipe(
+    getPoolDetail(poolDetails, asset), // Get the pool detail for the asset
+    O.chain((poolDetail) =>
+      FP.pipe(
+        O.fromNullable(poolDetail.assetPriceUSD), // Extract `assetPriceUSD` safely
+        O.map((assetPriceUSD) => {
+          const amountDecimal = amount.amount().toNumber() // Convert amount to a decimal number
+          const usdValue = Number(assetPriceUSD) * amountDecimal // Multiply by the price in USD
+          return baseAmount(usdValue, amount.decimal) // Convert back to `BaseAmount` with 1e8 decimals
+        })
+      )
+    )
   )
 }
 

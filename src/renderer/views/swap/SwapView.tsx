@@ -46,7 +46,6 @@ import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { usePricePool } from '../../hooks/usePricePool'
-import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
 import { useValidateAddress } from '../../hooks/useValidateAddress'
 import { swap } from '../../routes/pools'
 import { SwapRouteParams, SwapRouteTargetWalletType } from '../../routes/pools/swap'
@@ -123,11 +122,7 @@ const SuccessRouteView: React.FC<Props> = ({
     setSelectedPoolAsset: setSelectedPoolAssetMaya
   } = midgardMayaService
 
-  const pricePoolThor = usePricePool()
-  const pricePoolMaya = usePricePoolMaya()
   const { isPrivate } = useApp()
-
-  const pricePool = dex.chain === THORChain ? pricePoolThor : pricePoolMaya
 
   const { reloadSwapFees, swapFees$, addressByChain$, swap$, assetWithDecimal$ } = useChainContext()
 
@@ -154,7 +149,8 @@ const SuccessRouteView: React.FC<Props> = ({
 
   const keystore = useObservableState(keystoreState$, O.none)
 
-  const poolsStateRD = useObservableState(dex.chain === THORChain ? poolsState$ : mayaPoolsState$, RD.initial)
+  const poolsStateThorRD = useObservableState(poolsState$, RD.initial)
+  const poolsStateMayaRD = useObservableState(mayaPoolsState$, RD.initial)
   const pendingPoolsStateRD = useObservableState(
     dex.chain === THORChain ? pendingPoolsState$ : pendingPoolsStateMaya$,
     RD.initial
@@ -379,7 +375,7 @@ const SuccessRouteView: React.FC<Props> = ({
 
       <div className="flex justify-center bg-bg0 dark:bg-bg0d">
         {FP.pipe(
-          sequenceTRD(poolsStateRD, sourceAssetRD, targetAssetRD, pendingPoolsStateRD),
+          sequenceTRD(poolsStateThorRD, poolsStateMayaRD, sourceAssetRD, targetAssetRD, pendingPoolsStateRD),
           RD.fold(
             () => <></>,
             () => {
@@ -414,7 +410,6 @@ const SuccessRouteView: React.FC<Props> = ({
                   poolAddress={selectedPoolAddress}
                   poolAssets={[]}
                   poolsData={{}}
-                  pricePool={pricePool}
                   poolDetails={[]}
                   walletBalances={balancesState}
                   reloadFees={reloadSwapFees}
@@ -443,33 +438,43 @@ const SuccessRouteView: React.FC<Props> = ({
               )
             },
             renderError,
-            ([{ assetDetails, poolsData, poolDetails }, sourceAsset, targetAsset, pendingPools]) => {
-              const combinedAssetDetails = [...assetDetails, ...pendingPools.assetDetails]
-
-              const hasRuneAsset = FP.pipe(
-                combinedAssetDetails,
-                A.map(({ asset }) => asset),
-                assetInList(AssetRuneNative)
-              )
-              const hasCacaoAsset = FP.pipe(
-                combinedAssetDetails,
-                A.map(({ asset }) => asset),
-                assetInList(AssetCacao)
-              )
-              if (!hasRuneAsset || !hasCacaoAsset) {
-                assetDetails = [{ asset: dex.asset, assetPrice: bn(1) }, ...combinedAssetDetails]
+            ([
+              { assetDetails: thorAssetDetails, poolsData: thorPoolsData, poolDetails: thorPoolDetails },
+              { assetDetails: mayaAssetDetails, poolsData: mayaPoolsData, poolDetails: mayaPoolDetails },
+              sourceAsset,
+              targetAsset,
+              pendingPools
+            ]) => {
+              //const combinedAssetDetails = [...thorAssetDetails, ...mayaAssetDetails, ...pendingPools.assetDetails]
+              const combinedPoolDetails = [...thorPoolDetails, ...mayaPoolDetails]
+              const combinedPoolsData = {
+                ...thorPoolsData,
+                ...mayaPoolsData
               }
-              const sourceAssetDetail = FP.pipe(Utils.pickPoolAsset(assetDetails, sourceAsset.asset), O.toNullable)
+              const combinedAssetDetails = [
+                { asset: AssetRuneNative, assetPrice: bn(1) },
+                { asset: AssetCacao, assetPrice: bn(1) },
+                ...thorAssetDetails,
+                ...mayaAssetDetails,
+                ...pendingPools.assetDetails
+              ]
+              const sourceAssetDetail = FP.pipe(
+                Utils.pickPoolAsset(combinedAssetDetails, sourceAsset.asset),
+                O.toNullable
+              )
               // Make sure sourceAsset is available in pools
               if (!sourceAssetDetail)
                 return renderError(Error(`Missing pool for source asset ${assetToString(sourceAsset.asset)}`))
-              const targetAssetDetail = FP.pipe(Utils.pickPoolAsset(assetDetails, targetAsset.asset), O.toNullable)
+              const targetAssetDetail = FP.pipe(
+                Utils.pickPoolAsset(combinedAssetDetails, targetAsset.asset),
+                O.toNullable
+              )
               // Make sure targetAsset is available in pools
               if (!targetAssetDetail)
                 return renderError(Error(`Missing pool for target asset ${assetToString(targetAsset.asset)}`))
 
               const poolAssets: AnyAsset[] = FP.pipe(
-                assetDetails,
+                combinedAssetDetails,
                 A.map(({ asset }) => asset)
               )
               const disableAllPoolActions = (chain: Chain) =>
@@ -504,9 +509,8 @@ const SuccessRouteView: React.FC<Props> = ({
                   targetWalletType={oTargetWalletType}
                   poolAddress={selectedPoolAddress}
                   poolAssets={poolAssets}
-                  poolsData={poolsData}
-                  pricePool={pricePool}
-                  poolDetails={poolDetails}
+                  poolsData={combinedPoolsData}
+                  poolDetails={combinedPoolDetails}
                   walletBalances={balancesState}
                   reloadFees={reloadSwapFees}
                   fees$={swapFees$}

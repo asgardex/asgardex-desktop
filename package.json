@@ -84,6 +84,7 @@
     "@reduxjs/toolkit": "^2.3.0",
     "@storybook/addon-viewport": "^8.1.4",
     "@types/electron-devtools-installer": "^2.2.2",
+    "@xchainjs/xchain-aggregator": "^1.0.17",
     "@xchainjs/xchain-arbitrum": "1.0.12",
     "@xchainjs/xchain-avax": "1.0.11",
     "@xchainjs/xchain-base": "^0.0.7",

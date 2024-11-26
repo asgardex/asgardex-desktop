@@ -1,7 +1,7 @@
 import { Network } from '@xchainjs/xchain-client'
 import { Address, AnyAsset, AssetType, BaseAmount } from '@xchainjs/xchain-util'
 
-import { getAsgardexThorname } from '../../shared/const'
+import { getAsgardexAffiliateFee, getAsgardexThorname } from '../../shared/const'
 
 const DELIMITER = ':'
 
@@ -119,6 +119,20 @@ export const getSwapMemo = ({
   const streaming = `0/${streamingInterval}/${streamingQuantity}`
   const memo = '='
   return mkMemo([memo, target, targetAddress, toleranceBps, streaming, affiliateName, affiliateBps])
+}
+// temp fix
+export const updateMemo = (memo: string, applyBps: boolean, network: Network): string => {
+  const fee = applyBps ? getAsgardexAffiliateFee(network) : 0
+  const pattern = /:dx:\d+$/
+  const replacement = network === Network.Stagenet ? `` : `:dx:${fee}`
+
+  // Check if the string ends with ":dx:<number>"
+  if (pattern.test(memo)) {
+    return memo.replace(pattern, replacement)
+  }
+
+  // If it doesn't end with ":dx:<number>", return the original memo
+  return memo
 }
 
 /**

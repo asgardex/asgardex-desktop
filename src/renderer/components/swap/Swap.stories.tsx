@@ -15,7 +15,6 @@ import { AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
 import { WalletType } from '../../../shared/wallet/types'
 import { ONE_BN } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
-import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { INITIAL_SWAP_STATE } from '../../services/chain/const'
 import { SwapState } from '../../services/chain/types'
 import { Swap as Component, SwapProps } from './Swap'
@@ -37,7 +36,6 @@ const defaultProps: SwapProps = {
     halted: false
   }),
   poolDetails: [],
-  pricePool: RUNE_PRICE_POOL,
   // mock successfull result of swap$
   swap$: (params) =>
     Rx.of(params).pipe(
