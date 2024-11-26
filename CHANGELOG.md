@@ -1,4 +1,4 @@
-# 1.22.9 (2024-tba-tba)
+# 1.22.9 (2024-11-26)
 
 ## add
 
@@ -9,6 +9,7 @@
 - remove affiliate and bps for stagenet swaps [#500](https://github.com/asgardex/asgardex-desktop/pull/500)
 - fix earn disabled submit button [#481] (https://github.com/asgardex/asgardex-desktop/pull/501)
 - For stagenet don't apply affiliate or thorname [#512] (https://github.com/asgardex/asgardex-desktop/pull/515)
+- fix BCH client issue [#512] (https://github.com/asgardex/asgardex-desktop/pull/499)
 
 # 1.22.8 (2024-11-05)
 
