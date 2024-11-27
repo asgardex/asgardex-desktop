@@ -816,7 +816,7 @@ export const Swap = ({
     const aff = getAsgardexAffiliateFee(network)
 
     const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
-    const applyBps = txFeeCovered ? aff : undefined
+    const applyBps = txFeeCovered ? aff : 0
     return applyBps
   }, [network, priceAmountToSwapMax1e8.assetAmount])
 
@@ -873,9 +873,8 @@ export const Swap = ({
             streamingInterval: streamingInt,
             streamingQuantity: streaminQuant,
             toleranceBps: toleranceBps,
-            ...(affiliate && affiliateBpsApplied
-              ? { affiliateAddress: affiliate, affiliateBps: affiliateBpsApplied }
-              : {})
+            affiliateAddress: affiliate,
+            affiliateBps: affiliateBpsApplied
           }
         })
       ),
@@ -920,7 +919,8 @@ export const Swap = ({
             streamingInterval: streamingInt,
             streamingQuantity: streaminQuant,
             toleranceBps: toleranceBps,
-            ...(affiliate && applyBps ? { affiliateAddress: affiliate, affiliateBps: applyBps } : {})
+            affiliateAddress: affiliate,
+            affiliateBps: applyBps
           }
         })
       ),
@@ -979,7 +979,8 @@ export const Swap = ({
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
             toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100, // convert to basis points
-            ...(affiliateName && applyBps ? { affiliateAddress: affiliateName, affiliateBps: applyBps } : {})
+            affiliateAddress: affiliateName,
+            affiliateBps: applyBps
           }
           const estimateMayaDexSwap: QuoteSwapParamsMaya = {
             fromAsset: sourceAsset as CompatibleAsset,
@@ -992,7 +993,8 @@ export const Swap = ({
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
             toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100, // convert to basis points,
-            ...(affiliateName && applyBps ? { affiliateAddress: affiliateName, affiliateBps: applyBps } : {})
+            affiliateAddress: affiliateName,
+            affiliateBps: applyBps
           }
           const estimateSwap = dex.chain === THORChain ? estimateThorDexSwap : estimateMayaDexSwap
           if (!estimateSwap.amount.baseAmount.eq(baseAmount(0)) && lockedWallet) {
@@ -1170,18 +1172,6 @@ export const Swap = ({
       ),
     [oQuote]
   )
-  // Memo
-  // const quoteMemo: string = useMemo(
-  //   () =>
-  //     FP.pipe(
-  //       sequenceTOption(oQuote),
-  //       O.fold(
-  //         () => '',
-  //         ([txDetails]) => txDetails.memo
-  //       )
-  //     ),
-  //   [oQuote]
-  // )
 
   // Quote Errors
   const quoteErrors: string[] = useMemo(
