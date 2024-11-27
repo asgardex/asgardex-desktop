@@ -796,7 +796,9 @@ export const SymDeposit: React.FC<Props> = (props) => {
         O.map(({ poolAddress, dexAssetWB, assetWB }) => {
           const assetAddress = assetWB.walletAddress
           const runeAddress = dexAssetWB.walletAddress
-          const applyAffiliate = getAsgardexThorname(network) === undefined ? '' : `:${getAsgardexThorname(network)}:0`
+          const affiliateName = getAsgardexThorname(network)
+          const applyAffiliate = affiliateName === undefined ? '' : `:${affiliateName}:0`
+
           return {
             asset,
             poolAddress,
@@ -819,7 +821,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
             assetWalletIndex: assetWB.walletIndex,
             assetHDMode: assetWB.hdMode,
             assetSender: assetAddress,
-            dex: dex
+            dex
           }
         })
       ),
