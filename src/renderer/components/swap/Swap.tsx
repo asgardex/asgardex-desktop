@@ -509,15 +509,15 @@ export const Swap = ({
         const toleranceBps = undefined
         const affiliateName = getAsgardexThorname(network)
         const affiliateBps = getAsgardexAffiliateFee(network)
-        const isAffiliateValid = affiliateName !== undefined && affiliateBps !== undefined
+
         return getSwapMemo({
           targetAsset,
           targetAddress: recipientAddress,
           toleranceBps,
           streamingInterval,
           streamingQuantity,
-          affiliateName: isAffiliateValid ? affiliateName : undefined,
-          affiliateBps: isAffiliateValid ? affiliateBps : undefined
+          affiliateName: affiliateName,
+          affiliateBps: affiliateName ? affiliateBps ?? 0 : undefined
         })
       }
     )(oRecipientAddress)
@@ -873,9 +873,7 @@ export const Swap = ({
             streamingInterval: streamingInt,
             streamingQuantity: streaminQuant,
             toleranceBps: toleranceBps,
-            ...(affiliate && affiliateBpsApplied
-              ? { affiliateAddress: affiliate, affiliateBps: affiliateBpsApplied }
-              : {})
+            ...(affiliate ? { affiliateAddress: affiliate, affiliateBps: affiliateBpsApplied ?? 0 } : {})
           }
         })
       ),
@@ -920,7 +918,7 @@ export const Swap = ({
             streamingInterval: streamingInt,
             streamingQuantity: streaminQuant,
             toleranceBps: toleranceBps,
-            ...(affiliate && applyBps ? { affiliateAddress: affiliate, affiliateBps: applyBps } : {})
+            ...(affiliate ? { affiliateAddress: affiliate, affiliateBps: applyBps ?? 0 } : {})
           }
         })
       ),
@@ -979,7 +977,7 @@ export const Swap = ({
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
             toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100, // convert to basis points
-            ...(affiliateName && applyBps ? { affiliateAddress: affiliateName, affiliateBps: applyBps } : {})
+            ...(affiliateName ? { affiliateAddress: affiliateName, affiliateBps: applyBps ?? 0 } : {})
           }
           const estimateMayaDexSwap: QuoteSwapParamsMaya = {
             fromAsset: sourceAsset as CompatibleAsset,
@@ -992,7 +990,7 @@ export const Swap = ({
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
             toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100, // convert to basis points,
-            ...(affiliateName && applyBps ? { affiliateAddress: affiliateName, affiliateBps: applyBps } : {})
+            ...(affiliateName ? { affiliateAddress: affiliateName, affiliateBps: applyBps ?? 0 } : {})
           }
           const estimateSwap = dex.chain === THORChain ? estimateThorDexSwap : estimateMayaDexSwap
           if (!estimateSwap.amount.baseAmount.eq(baseAmount(0)) && lockedWallet) {
