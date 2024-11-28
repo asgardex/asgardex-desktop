@@ -121,6 +121,8 @@
     "chart.js": "^3.8.0",
     "clsx": "^2.1.1",
     "dotenv": "16.4.5",
+    "echarts": "^5.5.1",
+    "echarts-for-react": "^3.0.2",
     "electron-debug": "^3.2.0",
     "electron-log": "^4.4.8",
     "electron-updater": "6.3.4",

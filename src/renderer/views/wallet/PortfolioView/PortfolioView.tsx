@@ -15,13 +15,14 @@ import {
   CryptoAmount,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
+import ReactECharts from 'echarts-for-react'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
-import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts'
+// import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts'
 
 import { EnabledChain } from '../../../../shared/utils/chain'
 import { RefreshButton } from '../../../components/uielements/button'
@@ -583,33 +584,50 @@ export const PortfolioView: React.FC = (): JSX.Element => {
                   </Styled.Title>
                   <div className="relative w-full">
                     <div className="flex items-center justify-center">
-                      <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                          <Pie
-                            data={chartData}
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={100}
-                            innerRadius={70}
-                            fill="#8884d8"
-                            dataKey="value"
-                            nameKey="name"
-                            minAngle={15}
-                            label={({ name }) => name}>
-                            {chartData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.fillColor} />
-                            ))}
-                          </Pie>
-                        </PieChart>
-                      </ResponsiveContainer>
+                      <ReactECharts
+                        className="w-full"
+                        option={{
+                          tooltip: {
+                            trigger: 'item'
+                          },
+                          legend: {
+                            bottom: '0%',
+                            left: 'center'
+                          },
+                          series: [
+                            {
+                              top: '0%',
+                              bottom: '20%',
+                              type: 'pie',
+                              radius: ['50%', '80%'],
+                              avoidLabelOverlap: false,
+                              padAngle: 3,
+                              minAngle: 5,
+                              itemStyle: {
+                                borderRadius: 'full'
+                              },
+                              label: {
+                                show: false
+                              },
+                              emphasis: {
+                                label: { show: false }
+                              },
+                              labelLine: {
+                                show: false
+                              },
+                              data: chartData.filter((data) => data.value > 0)
+                            }
+                          ]
+                        }}
+                      />
                     </div>
-                    <div className="flex flex-wrap items-center justify-center space-x-4">
+                    {/* <div className="flex flex-wrap items-center justify-center space-x-4">
                       {chartData.map((chartCol) => (
                         <div key={chartCol.name} className={chartCol.className}>
                           {chartCol.name} - {chartCol.formattedValue}
                         </div>
                       ))}
-                    </div>
+                    </div> */}
                   </div>
                 </div>
                 <div className="flex flex-1 flex-col rounded-lg border border-solid border-gray0 p-4 dark:border-gray0d">
@@ -617,34 +635,51 @@ export const PortfolioView: React.FC = (): JSX.Element => {
                     {intl.formatMessage({ id: 'common.allocationByChain' })}
                   </Styled.Title>
                   <div className="flex items-center justify-center">
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={filteredChainData}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={100}
-                          innerRadius={70}
-                          fill="#8884d8"
-                          dataKey="value"
-                          nameKey="name"
-                          minAngle={15}
-                          label={({ name }) => name}>
-                          {filteredChainData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.fillColor} />
-                          ))}
-                        </Pie>
-                      </PieChart>
-                    </ResponsiveContainer>
+                    <ReactECharts
+                      className="w-full"
+                      option={{
+                        tooltip: {
+                          trigger: 'item'
+                        },
+                        legend: {
+                          bottom: '0%',
+                          left: 'center'
+                        },
+                        series: [
+                          {
+                            top: '0%',
+                            bottom: '20%',
+                            type: 'pie',
+                            radius: ['50%', '80%'],
+                            avoidLabelOverlap: false,
+                            padAngle: 3,
+                            minAngle: 5,
+                            itemStyle: {
+                              borderRadius: 'full'
+                            },
+                            label: {
+                              show: false
+                            },
+                            emphasis: {
+                              label: { show: false }
+                            },
+                            labelLine: {
+                              show: false
+                            },
+                            data: filteredChainData.filter((data) => data.value > 0)
+                          }
+                        ]
+                      }}
+                    />
                   </div>
-                  <div className="flex flex-wrap items-center justify-center space-x-4">
+                  {/* <div className="flex flex-wrap items-center justify-center space-x-4">
                     {filteredChainData.map((chartCol) => (
                       <div key={chartCol.name} className={chartCol.className}>
                         {chartCol.name} -{' '}
                         {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(chartCol.value)}
                       </div>
                     ))}
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
