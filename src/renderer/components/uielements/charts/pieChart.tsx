@@ -10,9 +10,11 @@ export type ChartProps = {
     name: string
     value: number
   }[]
+  isLegendHidden?: boolean
+  showLabelLine?: boolean
 }
 
-export const PieChart = ({ chartData }: ChartProps) => {
+export const PieChart = ({ isLegendHidden = false, showLabelLine = false, chartData }: ChartProps) => {
   const { isLight: isLightTheme } = useTheme()
 
   // text-text2 dark:text-text2d
@@ -30,42 +32,46 @@ export const PieChart = ({ chartData }: ChartProps) => {
             color: textColor
           }
         },
-        legend: {
-          type: 'scroll',
-          bottom: '0%',
-          itemWidth: 20,
-          itemHeight: 12,
-          pageIconColor: textColor,
-          pageTextStyle: {
-            color: textColor
-          },
-          textStyle: {
-            color: textColor,
-            fontWeight: 'lighter'
-          }
-        },
+        legend: isLegendHidden
+          ? { show: false }
+          : {
+              type: 'scroll',
+              bottom: '0%',
+              itemWidth: 20,
+              itemHeight: 12,
+              pageIconColor: textColor,
+              pageTextStyle: {
+                color: textColor
+              },
+              textStyle: {
+                color: textColor,
+                fontWeight: 'lighter'
+              }
+            },
         color: ChartColors,
         series: [
           {
             top: '0%',
-            bottom: '20%',
+            bottom: isLegendHidden ? '0%' : '20%',
             type: 'pie',
-            radius: ['50%', '80%'],
-            avoidLabelOverlap: false,
+            radius: isLegendHidden ? ['40%', '70%'] : ['50%', '80%'],
             padAngle: 3,
             minAngle: 5,
             itemStyle: {
               borderRadius: 'full'
             },
-            label: {
-              show: false
-            },
-            emphasis: {
-              label: { show: false }
-            },
-            labelLine: {
-              show: false
-            },
+            label: showLabelLine ? { color: textColor } : { show: false },
+            emphasis: showLabelLine ? {} : { label: { show: false } },
+            labelLine: showLabelLine
+              ? {
+                  lineStyle: {
+                    color: textColor
+                  },
+                  smooth: 0.2,
+                  length: 20,
+                  length2: 40
+                }
+              : { show: false },
             data: chartData
           }
         ]
