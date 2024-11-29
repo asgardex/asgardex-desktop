@@ -30,25 +30,23 @@ export const TotalAssetValue: React.FC<Props> = (props): JSX.Element => {
   // const intl = useIntl()
 
   const [showDetails, setShowDetails] = useState<boolean>(false)
-  const chartData = useMemo(() => {
-    return Object.entries(balancesByChain).map(([chain, balance]) => {
-      const value = hidePrivateData ? 0 : parseFloat(baseToAsset(balance).amount().toFixed(2))
-
-      return {
+  const chartData = useMemo(
+    () =>
+      Object.entries(balancesByChain).map(([chain, balance]) => ({
         name: `${chain.split(':')[0]} ${chain.split(':')[1]}`, // Add an index to make the key unique
-        value
-      }
-    })
-  }, [balancesByChain, hidePrivateData])
+        value: hidePrivateData ? 0 : parseFloat(baseToAsset(balance).amount().toFixed(2))
+      })),
+    [balancesByChain, hidePrivateData]
+  )
 
   const hasErrors = Object.keys(errorsByChain).length > 0
   // Map over the keys to create error messages.
   const chainErrors = useMemo(() => {
     // Map over the keys to create React elements for each error.
     const errorMessages = Object.keys(errorsByChain).map((chain) => (
-      <div className="text-text2 hover:text-turquoise dark:text-text2d" key={chain}>{`${chain}: ${
-        errorsByChain[chain].split('(')[0]
-      }`}</div>
+      <div className="text-text2 hover:text-turquoise dark:text-text2d" key={chain}>
+        {`${chain}: ${errorsByChain[chain].split('(')[0]}`}
+      </div>
     ))
 
     return errorMessages // Return the array of React elements directly.
