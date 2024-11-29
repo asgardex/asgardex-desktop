@@ -24,10 +24,6 @@ import { useNavigate } from 'react-router-dom'
 
 import { EnabledChain } from '../../../../shared/utils/chain'
 import { RefreshButton } from '../../../components/uielements/button'
-import {
-  ChartColors as Colors,
-  ChartColorClassnames as ColorClassnames
-} from '../../../components/uielements/chart/utils'
 import { PieChart } from '../../../components/uielements/charts'
 import { RadioGroup } from '../../../components/uielements/radioGroup'
 import { AssetUSDC, DEFAULT_WALLET_TYPE } from '../../../const'
@@ -461,12 +457,10 @@ export const PortfolioView: React.FC = (): JSX.Element => {
       }
     })
 
-    return Object.entries(balSumByChain).map(([chainName, balance], index) => {
+    return Object.entries(balSumByChain).map(([chainName, balance]) => {
       return {
         name: chainName, // Add an index to make the key unique
-        value: isPrivate ? 0 : balance,
-        fillColor: Colors[index % Colors.length],
-        className: ColorClassnames[index % Colors.length]
+        value: isPrivate ? 0 : balance
       }
     })
   }, [balancesByChain, isPrivate])
@@ -524,14 +518,11 @@ export const PortfolioView: React.FC = (): JSX.Element => {
   )
 
   const chartData = useMemo(() => {
-    return portfolioDatasource.map(({ title, amount }, index) => {
+    return portfolioDatasource.map(({ title, amount }) => {
       const value = amount.trim() ? parseFloat(amount.replace('$', '').replace(',', '').trim()) : 0
       return {
         name: title,
-        value,
-        formattedValue: value ? amount : '$ 0.00',
-        fillColor: Colors[index % Colors.length],
-        className: ColorClassnames[index % Colors.length]
+        value
       }
     })
   }, [portfolioDatasource])
