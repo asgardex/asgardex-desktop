@@ -35,7 +35,7 @@ export const TotalAssetValue: React.FC<Props> = (props): JSX.Element => {
       const value = hidePrivateData ? 0 : parseFloat(baseToAsset(balance).amount().toFixed(2))
 
       return {
-        name: `${chain.split(':')[0]} ${chain.split(':')[1]} - $${value}`, // Add an index to make the key unique
+        name: `${chain.split(':')[0]} ${chain.split(':')[1]}`, // Add an index to make the key unique
         value
       }
     })

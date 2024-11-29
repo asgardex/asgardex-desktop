@@ -60,7 +60,8 @@ export const PieChart = ({ isLegendHidden = false, showLabelLine = false, chartD
             itemStyle: {
               borderRadius: 'full'
             },
-            label: showLabelLine ? { color: textColor } : { show: false },
+            // eslint-disable-next-line no-template-curly-in-string
+            label: showLabelLine ? { color: textColor, formatter: '{b}: ${c}' } : { show: false },
             emphasis: showLabelLine ? {} : { label: { show: false } },
             labelLine: showLabelLine
               ? {
