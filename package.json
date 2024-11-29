@@ -72,7 +72,7 @@
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
     "@asgardex/asgardex-theme": "^0.1.2",
-    "@craco/craco": "^7.0.0",
+    "@craco/craco": "^7.1.0",
     "@devexperts/remote-data-ts": "^2.1.1",
     "@devexperts/rx-utils": "^1.0.0-alpha.14",
     "@devexperts/utils": "^1.0.0-alpha.14",
@@ -154,7 +154,7 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@electron/notarize": "^2.3.0",
+    "@electron/notarize": "^2.5.0",
     "@storybook/addon-essentials": "7.6.17",
     "@storybook/addons": "7.6.17",
     "@storybook/builder-webpack5": "7.6.17",
@@ -164,7 +164,7 @@
     "@storybook/react-webpack5": "7.6.17",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^13.3.0",
-    "@testing-library/react-hooks": "^8.0.0",
+    "@testing-library/react-hooks": "^7.0.2",
     "@testing-library/user-event": "^14.2.0",
     "@types/fs-extra": "^9.0.13",
     "@types/jest": "^29.5.12",
@@ -204,7 +204,7 @@
     "react-error-overlay": "^6.0.11",
     "rimraf": "5.0.10",
     "source-map-explorer": "^2.5.2",
-    "storybook": "7.6.17",
+    "storybook": "^8.4.5",
     "stream-browserify": "^3.0.0",
     "tailwindcss": "^3.1.7",
     "testcafe": "^1.18.6",
@@ -213,7 +213,7 @@
     "ts-jest": "^29.1.2",
     "ts-loader": "9.5.1",
     "ts-node": "10.9.2",
-    "typescript": "4.9.5",
+    "typescript": "5.2.0",
     "wait-on": "^6.0.1",
     "webpack-cli": "^4.10.0",
     "webpack-node-externals": "^3.0.0"
@@ -224,7 +224,9 @@
   "resolutions": {
     "@svgr/webpack": "^6.2.1",
     "secp256k1": "4.0.3",
-    "@types/react": "17.0.44"
+    "@types/react": "17.0.44",
+    "typescript": "^4.9.5",
+    "bn.js": "4.12.0"
   },
   "packageManager": "yarn@4.2.2"
 }

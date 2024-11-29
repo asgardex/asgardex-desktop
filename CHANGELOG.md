@@ -10,6 +10,7 @@
 - fix earn disabled submit button [#481] (https://github.com/asgardex/asgardex-desktop/pull/501)
 - For stagenet don't apply affiliate or thorname [#512] (https://github.com/asgardex/asgardex-desktop/pull/515)
 - fix BCH client issue [#512] (https://github.com/asgardex/asgardex-desktop/pull/499)
+- fix dash assertion error [#521](https://github.com/asgardex/asgardex-desktop/pull/521)
 
 # 1.22.8 (2024-11-05)
 
