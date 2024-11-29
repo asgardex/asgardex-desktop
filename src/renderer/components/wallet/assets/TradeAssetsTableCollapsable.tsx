@@ -319,9 +319,9 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
           </Styled.HeaderAddress>
         </Col>
         <Col flex="0 1 auto" span={3} style={{ textAlign: 'right' }}>
-          <Styled.HeaderLabel color="gray">{`(${
-            walletType === WalletType.Keystore ? keystoreBalances.length : ledgerBalances.length
-          } Assets)`}</Styled.HeaderLabel>
+          <Styled.HeaderLabel color="gray">
+            {`(${walletType === WalletType.Keystore ? keystoreBalances.length : ledgerBalances.length} Assets)`}
+          </Styled.HeaderLabel>
         </Col>
         <Col flex="0 0 12rem" span={1}>
           <div className="flex justify-end space-x-2 pr-4">
@@ -367,7 +367,7 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
     <>
       <Styled.Collapse
         expandIcon={({ isActive }) => <Styled.ExpandIcon rotate={isActive ? 90 : 0} />}
-        defaultActiveKey={['trade-account']}
+        defaultActiveKey={['keystore']}
         expandIconPosition="end"
         ghost>
         {renderPanel()}
