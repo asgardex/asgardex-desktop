@@ -33,7 +33,7 @@ export const TotalAssetValue: React.FC<Props> = (props): JSX.Element => {
   const chartData = useMemo(
     () =>
       Object.entries(balancesByChain).map(([chain, balance]) => ({
-        name: `${chain.split(':')[0]} ${chain.split(':')[1]}`, // Add an index to make the key unique
+        name: `${chain.split(':')[0]} ${chain.split(':')[1] ?? ''}`, // Add an index to make the key unique
         value: hidePrivateData ? 0 : parseFloat(baseToAsset(balance).amount().toFixed(2))
       })),
     [balancesByChain, hidePrivateData]
