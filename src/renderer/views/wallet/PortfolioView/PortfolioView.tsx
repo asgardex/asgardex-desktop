@@ -460,10 +460,10 @@ export const PortfolioView: React.FC = (): JSX.Element => {
     return Object.entries(balSumByChain).map(([chainName, balance]) => {
       return {
         name: chainName, // Add an index to make the key unique
-        value: isPrivate ? 0 : parseFloat(balance.toFixed(2))
+        value: parseFloat(balance.toFixed(balance < 1 ? 2 : 0))
       }
     })
-  }, [balancesByChain, isPrivate])
+  }, [balancesByChain])
 
   const portfolioDatasource = useMemo(
     () => [
@@ -522,7 +522,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
       const value = amount.trim() ? parseFloat(amount.replace('$', '').replace(',', '').trim()) : 0
       return {
         name: title,
-        value: parseFloat(value.toFixed(2))
+        value: parseFloat(value.toFixed(value < 1 ? 2 : 0))
       }
     })
   }, [portfolioDatasource])

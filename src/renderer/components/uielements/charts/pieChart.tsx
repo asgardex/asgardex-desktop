@@ -27,7 +27,8 @@ export const PieChart = ({ isLegendHidden = false, showLabelLine = false, chartD
         tooltip: {
           trigger: 'item',
           backgroundColor: isLightTheme ? '#fff' : '#101921',
-          valueFormatter: (value: number) => '$' + value.toFixed(2),
+          valueFormatter: (value: number) =>
+            new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value),
           textStyle: {
             color: textColor
           }
