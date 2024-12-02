@@ -69,7 +69,7 @@ export const PieChart = ({ isLegendHidden = false, showLabelLine = false, chartD
                     color: textColor
                   },
                   smooth: 0.2,
-                  length: 20,
+                  length: 10,
                   length2: 40
                 }
               : { show: false },

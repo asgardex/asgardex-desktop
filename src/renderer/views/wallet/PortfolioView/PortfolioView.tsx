@@ -460,7 +460,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
     return Object.entries(balSumByChain).map(([chainName, balance]) => {
       return {
         name: chainName, // Add an index to make the key unique
-        value: isPrivate ? 0 : balance
+        value: isPrivate ? 0 : parseFloat(balance.toFixed(2))
       }
     })
   }, [balancesByChain, isPrivate])
@@ -522,7 +522,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
       const value = amount.trim() ? parseFloat(amount.replace('$', '').replace(',', '').trim()) : 0
       return {
         name: title,
-        value
+        value: parseFloat(value.toFixed(2))
       }
     })
   }, [portfolioDatasource])
@@ -572,16 +572,16 @@ export const PortfolioView: React.FC = (): JSX.Element => {
                   <Styled.Title size="large" className="text-gray2 dark:text-gray2d">
                     {intl.formatMessage({ id: 'common.allocationByType' })}
                   </Styled.Title>
-                  <div className="flex items-center justify-center">
-                    <PieChart chartData={chartData} />
+                  <div className="mt-8 flex items-center justify-center">
+                    <PieChart chartData={chartData} showLabelLine />
                   </div>
                 </div>
                 <div className="flex flex-1 flex-col rounded-lg border border-solid border-gray0 p-4 dark:border-gray0d">
                   <Styled.Title size="large" className="text-gray2 dark:text-gray2d">
                     {intl.formatMessage({ id: 'common.allocationByChain' })}
                   </Styled.Title>
-                  <div className="flex items-center justify-center">
-                    <PieChart chartData={filteredChainData} />
+                  <div className="mt-8 flex items-center justify-center">
+                    <PieChart chartData={filteredChainData} showLabelLine />
                   </div>
                 </div>
               </div>
