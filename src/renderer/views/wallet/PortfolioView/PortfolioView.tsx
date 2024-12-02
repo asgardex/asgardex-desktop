@@ -21,14 +21,10 @@ import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
-import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts'
 
 import { EnabledChain } from '../../../../shared/utils/chain'
 import { RefreshButton } from '../../../components/uielements/button'
-import {
-  ChartColors as Colors,
-  ChartColorClassnames as ColorClassnames
-} from '../../../components/uielements/chart/utils'
+import { PieChart } from '../../../components/uielements/charts'
 import { RadioGroup } from '../../../components/uielements/radioGroup'
 import { AssetUSDC, DEFAULT_WALLET_TYPE } from '../../../const'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
@@ -461,15 +457,13 @@ export const PortfolioView: React.FC = (): JSX.Element => {
       }
     })
 
-    return Object.entries(balSumByChain).map(([chainName, balance], index) => {
+    return Object.entries(balSumByChain).map(([chainName, balance]) => {
       return {
         name: chainName, // Add an index to make the key unique
-        value: isPrivate ? 0 : balance,
-        fillColor: Colors[index % Colors.length],
-        className: ColorClassnames[index % Colors.length]
+        value: parseFloat(balance.toFixed(balance < 1 ? 2 : 0))
       }
     })
-  }, [balancesByChain, isPrivate])
+  }, [balancesByChain])
 
   const portfolioDatasource = useMemo(
     () => [
@@ -524,14 +518,11 @@ export const PortfolioView: React.FC = (): JSX.Element => {
   )
 
   const chartData = useMemo(() => {
-    return portfolioDatasource.map(({ title, amount }, index) => {
+    return portfolioDatasource.map(({ title, amount }) => {
       const value = amount.trim() ? parseFloat(amount.replace('$', '').replace(',', '').trim()) : 0
       return {
         name: title,
-        value,
-        formattedValue: value ? amount : '$ 0.00',
-        fillColor: Colors[index % Colors.length],
-        className: ColorClassnames[index % Colors.length]
+        value: parseFloat(value.toFixed(value < 1 ? 2 : 0))
       }
     })
   }, [portfolioDatasource])
@@ -581,69 +572,16 @@ export const PortfolioView: React.FC = (): JSX.Element => {
                   <Styled.Title size="large" className="text-gray2 dark:text-gray2d">
                     {intl.formatMessage({ id: 'common.allocationByType' })}
                   </Styled.Title>
-                  <div className="relative w-full">
-                    <div className="flex items-center justify-center">
-                      <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                          <Pie
-                            data={chartData}
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={100}
-                            innerRadius={70}
-                            fill="#8884d8"
-                            dataKey="value"
-                            nameKey="name"
-                            minAngle={15}
-                            label={({ name }) => name}>
-                            {chartData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.fillColor} />
-                            ))}
-                          </Pie>
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <div className="flex flex-wrap items-center justify-center space-x-4">
-                      {chartData.map((chartCol) => (
-                        <div key={chartCol.name} className={chartCol.className}>
-                          {chartCol.name} - {chartCol.formattedValue}
-                        </div>
-                      ))}
-                    </div>
+                  <div className="mt-8 flex items-center justify-center">
+                    <PieChart chartData={chartData} showLabelLine />
                   </div>
                 </div>
                 <div className="flex flex-1 flex-col rounded-lg border border-solid border-gray0 p-4 dark:border-gray0d">
                   <Styled.Title size="large" className="text-gray2 dark:text-gray2d">
                     {intl.formatMessage({ id: 'common.allocationByChain' })}
                   </Styled.Title>
-                  <div className="flex items-center justify-center">
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={filteredChainData}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={100}
-                          innerRadius={70}
-                          fill="#8884d8"
-                          dataKey="value"
-                          nameKey="name"
-                          minAngle={15}
-                          label={({ name }) => name}>
-                          {filteredChainData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.fillColor} />
-                          ))}
-                        </Pie>
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="flex flex-wrap items-center justify-center space-x-4">
-                    {filteredChainData.map((chartCol) => (
-                      <div key={chartCol.name} className={chartCol.className}>
-                        {chartCol.name} -{' '}
-                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(chartCol.value)}
-                      </div>
-                    ))}
+                  <div className="mt-8 flex items-center justify-center">
+                    <PieChart chartData={filteredChainData} showLabelLine />
                   </div>
                 </div>
               </div>
