@@ -4,7 +4,7 @@ import { SyncOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Address, AnyAsset, Chain } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, baseAmount, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
@@ -16,7 +16,7 @@ import { PoolShares as PoolSharesTable } from '../../components/PoolShares'
 import { PoolShareTableRowData } from '../../components/PoolShares/PoolShares.types'
 import { ErrorView } from '../../components/shared/error'
 import { Button, RefreshButton } from '../../components/uielements/button'
-import { AssetsNav, TotalValue } from '../../components/wallet/assets'
+import { AssetsNav, TotalAssetValue } from '../../components/wallet/assets'
 import { useChainContext } from '../../contexts/ChainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
@@ -29,7 +29,6 @@ import { useMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePoolShares } from '../../hooks/usePoolShares'
 import { useApp } from '../../store/app/hooks'
-import { BaseAmountRD } from '../../types'
 import * as H from './PoolShareView.helper'
 
 export const PoolShareView: React.FC = (): JSX.Element => {
@@ -68,10 +67,6 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   const selectedPricePool$ = useMemo(
     () => (dex.chain === THORChain ? selectedPricePoolThor$ : selectedPricePoolMaya$),
     [dex, selectedPricePoolMaya$, selectedPricePoolThor$]
-  )
-  const [selectedPricePool] = useObservableState(
-    () => selectedPricePool$,
-    dex.chain === THORChain ? RUNE_PRICE_POOL : MAYA_PRICE_POOL
   )
   const allPoolDetails$ = dex.chain === THORChain ? allPoolDetailsThor$ : allPoolDetailsMaya$
   const poolsRD = useObservableState(dex.chain === THORChain ? poolsState$ : mayaPoolsState$, RD.pending)
@@ -171,20 +166,29 @@ export const PoolShareView: React.FC = (): JSX.Element => {
 
   const { allSharesRD } = usePoolShares()
 
-  const renderSharesTotal = useMemo(() => {
-    const sharesTotalRD: BaseAmountRD = FP.pipe(
+  const sharesByChain: Record<string, BaseAmount> = useMemo(() => {
+    let sharesDetails = {}
+    FP.pipe(
       RD.combine(allSharesRD, poolDetailsRD),
-      RD.map(([poolShares, poolDetails]) => H.getSharesTotal(poolShares, poolDetails, pricePoolData, dex))
+      RD.fold(
+        () => {},
+        () => {},
+        () => {},
+        ([poolShares, poolDetails]) => {
+          const data = H.getPoolShareTableData(poolShares, poolDetails, pricePoolData, dex)
+
+          data.forEach((item) => {
+            sharesDetails = {
+              ...sharesDetails,
+              [item.asset.chain]: baseAmount(item.runeDepositPrice.amount().plus(item.assetDepositPrice.amount()))
+            }
+          })
+        }
+      )
     )
-    return (
-      <TotalValue
-        total={sharesTotalRD}
-        pricePool={selectedPricePool}
-        title={intl.formatMessage({ id: 'wallet.shares.total' })}
-        hidePrivateData={isPrivate}
-      />
-    )
-  }, [allSharesRD, dex, intl, isPrivate, poolDetailsRD, pricePoolData, selectedPricePool])
+
+    return sharesDetails
+  }, [allSharesRD, dex, poolDetailsRD, pricePoolData])
 
   const renderShares = useMemo(
     () =>
@@ -233,7 +237,13 @@ export const PoolShareView: React.FC = (): JSX.Element => {
         <RefreshButton onClick={refreshHandler} disabled={disableRefresh} />
       </Row>
       <AssetsNav />
-      {renderSharesTotal}
+
+      <TotalAssetValue
+        balancesByChain={sharesByChain}
+        errorsByChain={{}}
+        title={intl.formatMessage({ id: 'wallet.shares.total' })}
+        hidePrivateData={isPrivate}
+      />
       {renderShares}
     </>
   )
