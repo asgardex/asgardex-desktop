@@ -2,14 +2,12 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Meta, StoryFn } from '@storybook/react'
 import { BTCChain, BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { Network, TxHash } from '@xchainjs/xchain-client'
-import { MayachainQuery } from '@xchainjs/xchain-mayachain-query'
-import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, assetToBase, assetToString, baseAmount, bn } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { thorDetails } from '../../../shared/api/types'
 import { mockValidatePassword$ } from '../../../shared/mock/wallet'
 import { AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
 import { WalletType } from '../../../shared/wallet/types'
@@ -29,12 +27,22 @@ const defaultProps: SwapProps = {
   keystore: O.none,
   poolAssets: [AssetBTC, AssetRuneNative],
   assets: { source: sourceAsset, target: targetAsset },
-  poolAddress: O.some({
-    chain: BTCChain,
-    address: 'vault-address',
-    router: O.some('router-address'),
-    halted: false
-  }),
+  poolAddress: {
+    thor: O.some({
+      protocol: THORChain,
+      chain: BTCChain,
+      address: 'vault-address',
+      router: O.some('router-address'),
+      halted: false
+    }),
+    maya: O.some({
+      protocol: THORChain,
+      chain: BTCChain,
+      address: 'vault-address',
+      router: O.some('router-address'),
+      halted: false
+    })
+  },
   poolDetails: [],
   // mock successfull result of swap$
   swap$: (params) =>
@@ -119,10 +127,7 @@ const defaultProps: SwapProps = {
   importWalletHandler: () => console.log('import wallet'),
   addressValidator: () => Promise.resolve(true),
   hidePrivateData: false,
-  thorchainQuery: new ThorchainQuery(),
-  mayachainQuery: new MayachainQuery(),
-  reloadTxStatus: () => console.log('reloadBalances'),
-  dex: thorDetails
+  reloadTxStatus: () => console.log('reloadBalances')
 }
 
 export const Default: StoryFn = () => <Component {...defaultProps} />

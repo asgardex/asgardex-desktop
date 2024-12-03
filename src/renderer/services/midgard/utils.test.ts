@@ -254,10 +254,34 @@ describe('services/midgard/utils/', () => {
   })
 
   describe('getPoolAddressesByChain', () => {
-    const bscAddress: PoolAddress = { address: 'bsc pool address', chain: BSCChain, router: O.none, halted: false }
-    const thorAddress: PoolAddress = { address: 'thor pool address', chain: THORChain, router: O.none, halted: false }
-    const btcAddress: PoolAddress = { address: 'btc pool address', chain: BTCChain, router: O.none, halted: false }
-    const ethAddress: PoolAddress = { address: '0xaddress', chain: ETHChain, router: O.some('0xrouter'), halted: false }
+    const bscAddress: PoolAddress = {
+      protocol: THORChain,
+      address: 'bsc pool address',
+      chain: BSCChain,
+      router: O.none,
+      halted: false
+    }
+    const thorAddress: PoolAddress = {
+      protocol: THORChain,
+      address: 'thor pool address',
+      chain: THORChain,
+      router: O.none,
+      halted: false
+    }
+    const btcAddress: PoolAddress = {
+      protocol: THORChain,
+      address: 'btc pool address',
+      chain: BTCChain,
+      router: O.none,
+      halted: false
+    }
+    const ethAddress: PoolAddress = {
+      protocol: THORChain,
+      address: '0xaddress',
+      chain: ETHChain,
+      router: O.some('0xrouter'),
+      halted: false
+    }
     const addresses = [bscAddress, thorAddress, btcAddress, ethAddress]
 
     it('returns BSC pool address ', () => {

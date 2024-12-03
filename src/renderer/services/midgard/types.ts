@@ -220,6 +220,8 @@ export type HaltedChainsLD = LiveData<Error, Chain[]>
  * and in some cases a router address (currently ETH only)
  **/
 export type PoolAddress = {
+  /** protocol */
+  protocol: Chain
   /** chain */
   chain: Chain
   /** vault address */
@@ -227,6 +229,8 @@ export type PoolAddress = {
   /** router address (optional) */
   router: O.Option<Address>
   halted: boolean
+  gasRate?: string
+  outboundFee?: string
 }
 export type PoolAddress$ = Rx.Observable<O.Option<PoolAddress>>
 export type PoolAddressRD = RD.RemoteData<Error, PoolAddress>

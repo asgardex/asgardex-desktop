@@ -51,6 +51,7 @@ export const RUNE_PRICE_POOL: PricePool = {
  * but do need such thing for handling pool txs
  */
 export const RUNE_POOL_ADDRESS: PoolAddress = {
+  protocol: THORChain,
   chain: THORChain,
   // For RuneNative a `MsgNativeTx` is used for pool txs,
   // no need for a pool address, just keep it empty
@@ -156,7 +157,7 @@ export const getPoolPriceValue = ({
 
   // convert to 1e8 decimal (as same decimal as pool data has)
   const amount1e8 = to1e8BaseAmount(amount)
-  console.log(getPoolDetail(poolDetails, asset))
+
   return FP.pipe(
     getPoolDetail(poolDetails, asset),
     O.map(toPoolData),

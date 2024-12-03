@@ -150,13 +150,13 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   }, [collateralAsset, setSelectedPoolAsset])
 
   const collateralAssetDecimal$: AssetWithDecimalLD = useMemo(
-    () => assetWithDecimal$(collateralAsset, dex),
-    [assetWithDecimal$, collateralAsset, dex]
+    () => assetWithDecimal$(collateralAsset),
+    [assetWithDecimal$, collateralAsset]
   )
 
   const borrowAssetDecimal$: AssetWithDecimalLD = useMemo(
-    () => assetWithDecimal$(borrowAsset, dex),
-    [assetWithDecimal$, borrowAsset, dex]
+    () => assetWithDecimal$(borrowAsset),
+    [assetWithDecimal$, borrowAsset]
   )
 
   const [balancesState] = useObservableState(

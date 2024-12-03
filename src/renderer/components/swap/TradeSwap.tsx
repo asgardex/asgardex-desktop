@@ -10,7 +10,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
-import { InboundDetail, QuoteSwapParams, ThorchainQuery, TxDetails } from '@xchainjs/xchain-thorchain-query'
+import { QuoteSwapParams, ThorchainQuery, TxDetails } from '@xchainjs/xchain-thorchain-query'
 import {
   Asset,
   baseToAsset,
@@ -75,7 +75,6 @@ import { useDex } from '../../hooks/useDex'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
 import { ChangeSlipToleranceHandler } from '../../services/app/types'
 import { INITIAL_SWAP_STATE } from '../../services/chain/const'
-import { getZeroSwapFees } from '../../services/chain/fees/swap'
 import {
   SwapTxParams,
   SwapFeesHandler,
@@ -462,31 +461,20 @@ export const TradeSwap = ({
 
   const isZeroAmountToSwap = useMemo(() => amountToSwapMax1e8.amount().isZero(), [amountToSwapMax1e8])
 
-  const [inboundDetails, setInboundDetails] = useState<Record<string, InboundDetail>>()
-
   const zeroSwapFees = useMemo(() => {
-    if (inboundDetails) {
-      const gasRate =
-        isRuneNativeAsset(sourceAsset) || isTradeAsset(sourceAsset)
-          ? baseAmount(2000000)
-          : baseAmount(inboundDetails?.[sourceAsset.chain]?.gasRate) // Define defaultGasRate
-      const outboundFee =
-        isRuneNativeAsset(targetAsset) || isTradeAsset(targetAsset)
-          ? baseAmount(2000000)
-          : baseAmount(inboundDetails?.[targetAsset.chain]?.outboundFee) // Define defaultOutboundFee
+    const gasRate = baseAmount(2000000)
 
-      // Define defaultSwapFees based on the above fallbacks
-      const defaultFees: SwapFees = {
-        inFee: { asset: AssetRuneNative, amount: gasRate },
-        outFee: { asset: AssetRuneNative, amount: outboundFee }
-      }
+    const outboundFee = baseAmount(2000000)
 
-      return defaultFees
-    } else {
-      // Use getZeroSwapFees if the condition is not met
-      return getZeroSwapFees({ inAsset: sourceAsset, outAsset: targetAsset })
+    // Define defaultSwapFees based on the above fallbacks
+    const defaultFees: SwapFees = {
+      inFee: { asset: AssetRuneNative, amount: gasRate },
+      outFee: { asset: AssetRuneNative, amount: outboundFee }
     }
-  }, [inboundDetails, sourceAsset, targetAsset])
+
+    return defaultFees
+  }, [])
+
   // PlaceHolder memo just to calc fees better
   const swapMemo = useMemo(() => {
     return O.fold(
@@ -628,16 +616,6 @@ export const TradeSwap = ({
 
     return price ? `${price} (${fee})` : fee
   }, [oPriceSwapInFee, swapFees])
-  // useEffect to fetch data from query
-  useEffect(() => {
-    const fetchData = async () => {
-      setInboundDetails(await thorchainQuery.thorchainCache.getInboundDetails())
-    }
-
-    if (quoteExpired) {
-      fetchData()
-    }
-  }, [thorchainQuery, pricePool.asset, poolDetails, pricePool, network, quoteExpired])
 
   // Affiliate fee
   const affiliateFee: CryptoAmount = useMemo(() => {
@@ -1497,6 +1475,7 @@ export const TradeSwap = ({
             txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
             network={network}
             trackable={dex.chain === THORChain ? true : false}
+            protocol={O.some('Thorchain')}
           />
         }
         timerValue={timerValue}

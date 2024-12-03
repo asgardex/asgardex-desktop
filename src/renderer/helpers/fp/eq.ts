@@ -146,6 +146,7 @@ export const eqStringCaseInsensitive: Eq.Eq<string> = {
 const eqOptionStringCaseInsensitive = O.getEq(eqStringCaseInsensitive)
 
 export const eqPoolAddresses = Eq.struct<PoolAddress>({
+  protocol: eqStringCaseInsensitive,
   chain: eqStringCaseInsensitive,
   address: eqStringCaseInsensitive,
   router: eqOptionStringCaseInsensitive,

@@ -138,12 +138,12 @@ export const DepositView: React.FC<Props> = () => {
             oSelectedPoolAsset,
             O.fold(
               () => Rx.of(RD.initial),
-              (asset) => assetWithDecimal$(asset, dex)
+              (asset) => assetWithDecimal$(asset)
             )
           )
         )
       ),
-    [selectedPoolAsset$, assetWithDecimal$, dex]
+    [selectedPoolAsset$, assetWithDecimal$]
   )
 
   const assetWithDecimalRD = useObservableState<AssetWithDecimalRD>(assetWithDecimalLD, RD.initial)

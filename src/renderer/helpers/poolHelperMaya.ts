@@ -49,6 +49,7 @@ export const MAYA_PRICE_POOL: PricePool = {
  * but do need such thing for handling pool txs
  */
 export const MAYA_POOL_ADDRESS: PoolAddress = {
+  protocol: MAYAChain,
   chain: MAYAChain,
   // For MAYANative a `MsgNativeTx` is used for pool txs,
   // no need for a pool address, just keep it empty
