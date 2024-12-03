@@ -245,6 +245,7 @@ describe('services/midgard/utils/', () => {
       expect(result[0]).toEqual(RUNE_POOL_ADDRESS)
       // bsc `PoolAddress`
       expect(result[1]).toEqual({
+        protocol: THORChain,
         chain: BSCChain,
         address: 'bsc-address',
         router: O.none,
