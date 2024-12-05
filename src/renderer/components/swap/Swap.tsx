@@ -1486,7 +1486,6 @@ export const Swap = ({
     )
   }, [streamingQuantity, streamingInterval])
 
-  console.log(oSwapParams)
   const submitSwapTx = useCallback(() => {
     FP.pipe(
       oSwapParams,

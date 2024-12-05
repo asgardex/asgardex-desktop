@@ -241,8 +241,6 @@ const SuccessRouteView: React.FC<Props> = ({
     O.none
   )
 
-  console.log(sourceChain)
-
   const [oTargetKeystoreAddress, updateTargetKeystoreAddress$] = useObservableState<O.Option<Address>, Chain>(
     (targetChain$) =>
       FP.pipe(
