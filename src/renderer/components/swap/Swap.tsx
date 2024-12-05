@@ -141,6 +141,7 @@ import { SelectableSlipTolerance } from './SelectableSlipTolerance'
 import { SwapAsset } from './Swap.types'
 import * as Utils from './Swap.utils'
 import SwapExpiryProgressBar from './SwapExpiryProgressBar'
+import { SwapRoute } from './SwapRoute'
 
 const ErrorLabel: React.FC<{
   children: React.ReactNode
@@ -251,6 +252,7 @@ export const Swap = ({
 
   const lockedWallet: boolean = useMemo(() => isLocked(keystore) || !hasImportedKeystore(keystore), [keystore])
   const [quoteOnly, setQuoteOnly] = useState<boolean>(false)
+  const [isFetchingEstimate, setIsFetchingEstimate] = useState(false)
 
   const useSourceAssetLedger = isLedgerWallet(initialSourceWalletType)
   const prevChainFees = useRef<O.Option<SwapFees>>(O.none)
@@ -816,6 +818,7 @@ export const Swap = ({
     setQuoteProtocol(O.none)
 
     const fetchSwap = async () => {
+      setIsFetchingEstimate(true)
       try {
         const result = await estimateSwap({
           fromAsset: sourceAsset,
@@ -832,6 +835,7 @@ export const Swap = ({
         console.error('Failed to fetch estimate:', err)
         setErrorProtocol(O.some(err as Error))
       }
+      setIsFetchingEstimate(false)
     }
 
     fetchSwap()
@@ -2344,6 +2348,7 @@ export const Swap = ({
           </div>
         </div>
         <div className="mt-1 space-y-1">
+          <SwapRoute isLoading={isFetchingEstimate} quote={oQuoteProtocol} />
           <Collapse
             header={
               <div className="flex flex-row items-center justify-between">
