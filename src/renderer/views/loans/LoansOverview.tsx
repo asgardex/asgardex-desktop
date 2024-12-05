@@ -197,7 +197,7 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
         event.preventDefault()
         event.stopPropagation()
         navigate(
-          lendingRoutes.borrow.path({
+          lendingRoutes.repay.path({
             asset: assetToString(asset),
             walletType: DEFAULT_WALLET_TYPE,
             borrowAsset: assetToString(AssetUSDC), //tobefixed
@@ -209,7 +209,7 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
       return (
         <div className="relative flex flex-col items-center justify-center">
           <FlatButton className="min-w-[120px]" disabled={disabled} size="normal" onClick={onClickHandler}>
-            {intl.formatMessage({ id: 'common.borrow' })}
+            {intl.formatMessage({ id: 'common.repay' })}
           </FlatButton>
         </div>
       )
