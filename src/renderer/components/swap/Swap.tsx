@@ -96,11 +96,10 @@ import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
 import { useAggregator } from '../../store/aggregator/hooks'
 import { AssetWithAmount } from '../../types/asgardex'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
-import { TxModal } from '../modal/tx'
 import { SwapAssets } from '../modal/tx/extra'
 import { LoadingView } from '../shared/loading'
 import { AssetInput } from '../uielements/assets/assetInput'
-import { BaseButton, FlatButton, ViewTxButton } from '../uielements/button'
+import { BaseButton, FlatButton } from '../uielements/button'
 import { Collapse } from '../uielements/collapse'
 import { Tooltip, TooltipAddress, WalletTypeLabel } from '../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../uielements/fees'
@@ -113,6 +112,7 @@ import { ModalState, RateDirection, SwapProps } from './Swap.types'
 import * as Utils from './Swap.utils'
 import SwapExpiryProgressBar from './SwapExpiryProgressBar'
 import { SwapRoute } from './SwapRoute'
+import { SwapTxModal } from './SwapTxModal'
 
 const ErrorLabel: React.FC<{
   children: React.ReactNode
@@ -1498,98 +1498,16 @@ export const Swap = ({
     }
   }, [resetSwapState, reloadBalances, setAmountToSwapMax1e8, initialAmountToSwapMax1e8, targetChain, targetAsset])
 
-  const renderTxModal = useMemo(() => {
-    const { swapTx } = swapState
-
-    // don't render TxModal in initial state
-    if (RD.isInitial(swapTx)) return <></>
-
-    // Get timer value
-    const timerValue = FP.pipe(
-      swapTx,
-      RD.fold(
-        () => 0,
-        FP.flow(
-          O.map(({ loaded }) => loaded),
-          O.getOrElse(() => 0)
-        ),
-        () => 0,
-        () => 100
-      )
-    )
-
-    // title
-    const txModalTitle = FP.pipe(
-      swapTx,
-      RD.fold(
-        () => 'swap.state.sending',
-        () => 'swap.state.pending',
-        () => 'swap.state.error',
-        () => 'swap.state.success'
-      ),
-      (id) => intl.formatMessage({ id })
-    )
-
-    const oTxHash = FP.pipe(
-      RD.toOption(swapTx),
-      // Note: As long as we link to `viewblock` to open tx details in a browser,
-      // `0x` needs to be removed from tx hash in case of ETH
-      // @see https://github.com/thorchain/asgardex-electron/issues/1787#issuecomment-931934508
-      O.map((txHash) => (isEvmChain(sourceChain) ? txHash.replace(/0x/i, '') : txHash))
-    )
-
-    const txRDasBoolean = FP.pipe(
-      swapTx,
-      RD.map((txHash) => !!txHash)
-    )
-    return (
-      <TxModal
-        title={txModalTitle}
-        onClose={onCloseTxModal}
-        onFinish={onFinishTxModal}
-        startTime={swapStartTime}
-        txRD={txRDasBoolean}
-        extraResult={
-          <ViewTxButton
-            txHash={oTxHash}
-            onClick={goToTransaction}
-            txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
-            network={network}
-            trackable={true}
-            protocol={FP.pipe(
-              oQuoteProtocol,
-              O.map((quoteProtocol) => quoteProtocol.protocol)
-            )}
-          />
-        }
-        timerValue={timerValue}
-        extra={extraTxModalContent}
-      />
-    )
-  }, [
-    swapState,
-    onCloseTxModal,
-    onFinishTxModal,
-    swapStartTime,
-    goToTransaction,
-    getExplorerTxUrl,
-    network,
-    oQuoteProtocol,
-    extraTxModalContent,
-    intl,
-    sourceChain
-  ])
-
   const renderPasswordConfirmationModal = useMemo(() => {
     const onSuccess = () => {
-      if (showPasswordModal === 'swap') submitSwapTx()
-      if (showPasswordModal === 'approve') submitApproveTx()
+      if (showPasswordModal === ModalState.Swap) submitSwapTx()
+      if (showPasswordModal === ModalState.Approve) submitApproveTx()
       setShowPasswordModal(ModalState.None)
     }
     const onClose = () => {
       setShowPasswordModal(ModalState.None)
     }
-    const render = showPasswordModal === 'swap' || showPasswordModal === 'approve'
+    const render = showPasswordModal === ModalState.Swap || showPasswordModal === ModalState.Approve
     return (
       render && (
         <WalletPasswordConfirmationModal
@@ -1602,15 +1520,15 @@ export const Swap = ({
   }, [showPasswordModal, submitApproveTx, submitSwapTx, validatePassword$])
 
   const renderLedgerConfirmationModal = useMemo(() => {
-    const visible = showLedgerModal === 'swap' || showLedgerModal === 'approve'
+    const visible = showLedgerModal === ModalState.Swap || showLedgerModal === ModalState.Approve
 
     const onClose = () => {
       setShowLedgerModal(ModalState.None)
     }
 
     const onSucceess = () => {
-      if (showLedgerModal === 'swap') submitSwapTx()
-      if (showLedgerModal === 'approve') submitApproveTx()
+      if (showLedgerModal === ModalState.Swap) submitSwapTx()
+      if (showLedgerModal === ModalState.Approve) submitApproveTx()
       setShowLedgerModal(ModalState.None)
     }
 
@@ -2739,7 +2657,17 @@ export const Swap = ({
       </div>
       {renderPasswordConfirmationModal}
       {renderLedgerConfirmationModal}
-      {renderTxModal}
+      <SwapTxModal
+        swapState={swapState}
+        swapStartTime={swapStartTime}
+        sourceChain={sourceChain}
+        extraTxModalContent={extraTxModalContent}
+        oQuoteProtocol={oQuoteProtocol}
+        goToTransaction={goToTransaction}
+        getExplorerTxUrl={getExplorerTxUrl}
+        onCloseTxModal={onCloseTxModal}
+        onFinishTxModal={onFinishTxModal}
+      />
     </div>
   )
 }
