@@ -109,7 +109,7 @@ import { CopyLabel } from '../uielements/label'
 import { Slider } from '../uielements/slider'
 import { EditableAddress } from './EditableAddress'
 import { SelectableSlipTolerance } from './SelectableSlipTolerance'
-import { SwapProps } from './Swap.types'
+import { ModalState, RateDirection, SwapProps } from './Swap.types'
 import * as Utils from './Swap.utils'
 import SwapExpiryProgressBar from './SwapExpiryProgressBar'
 import { SwapRoute } from './SwapRoute'
@@ -981,30 +981,29 @@ export const Swap = ({
     return result
   }, [swapSlippage, slipTolerance, isStreaming])
 
-  type RateDirection = 'fromSource' | 'fromTarget'
-  const [rateDirection, setRateDirection] = useState<RateDirection>('fromSource')
+  const [rateDirection, setRateDirection] = useState(RateDirection.Source)
 
   const rateLabel = useMemo(() => {
     switch (rateDirection) {
-      case 'fromSource':
+      case RateDirection.Source:
         return `${formatAssetAmountCurrency({
           asset: sourceAsset,
           amount: assetAmount(1),
           decimal: isUSDAsset(sourceAsset) ? 2 : 6,
           trimZeros: true
-        })}${' '}=${' '}${formatAssetAmountCurrency({
+        })} = ${formatAssetAmountCurrency({
           asset: targetAsset,
           amount: assetAmount(sourceAssetPrice.dividedBy(targetAssetPrice)),
           decimal: isUSDAsset(targetAsset) ? 2 : 6,
           trimZeros: true
         })}`
-      case 'fromTarget':
+      case RateDirection.Target:
         return `${formatAssetAmountCurrency({
           asset: targetAsset,
           decimal: isUSDAsset(targetAsset) ? 2 : 6,
           amount: assetAmount(1),
           trimZeros: true
-        })}${' '}=${' '}${formatAssetAmountCurrency({
+        })} = ${formatAssetAmountCurrency({
           asset: sourceAsset,
           decimal: isUSDAsset(sourceAsset) ? 2 : 6,
           amount: assetAmount(targetAssetPrice.dividedBy(sourceAssetPrice)),
@@ -1310,9 +1309,8 @@ export const Swap = ({
       ),
     [poolAssets, sourceAsset]
   )
-  type ModalState = 'swap' | 'approve' | 'none'
-  const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
-  const [showLedgerModal, setShowLedgerModal] = useState<ModalState>('none')
+  const [showPasswordModal, setShowPasswordModal] = useState(ModalState.None)
+  const [showLedgerModal, setShowLedgerModal] = useState(ModalState.None)
 
   const setAmountToSwapFromPercentValue = useCallback(
     (percents: number) => {
@@ -1451,9 +1449,9 @@ export const Swap = ({
 
   const onSubmit = useCallback(() => {
     if (useSourceAssetLedger) {
-      setShowLedgerModal('swap')
+      setShowLedgerModal(ModalState.Swap)
     } else {
-      setShowPasswordModal('swap')
+      setShowPasswordModal(ModalState.Swap)
     }
   }, [setShowLedgerModal, useSourceAssetLedger])
 
@@ -1586,10 +1584,10 @@ export const Swap = ({
     const onSuccess = () => {
       if (showPasswordModal === 'swap') submitSwapTx()
       if (showPasswordModal === 'approve') submitApproveTx()
-      setShowPasswordModal('none')
+      setShowPasswordModal(ModalState.None)
     }
     const onClose = () => {
-      setShowPasswordModal('none')
+      setShowPasswordModal(ModalState.None)
     }
     const render = showPasswordModal === 'swap' || showPasswordModal === 'approve'
     return (
@@ -1607,13 +1605,13 @@ export const Swap = ({
     const visible = showLedgerModal === 'swap' || showLedgerModal === 'approve'
 
     const onClose = () => {
-      setShowLedgerModal('none')
+      setShowLedgerModal(ModalState.None)
     }
 
     const onSucceess = () => {
       if (showLedgerModal === 'swap') submitSwapTx()
       if (showLedgerModal === 'approve') submitApproveTx()
-      setShowLedgerModal('none')
+      setShowLedgerModal(ModalState.None)
     }
 
     const chainAsString = chainToString(sourceChain)
@@ -1833,9 +1831,9 @@ export const Swap = ({
 
   const onApprove = useCallback(() => {
     if (useSourceAssetLedger) {
-      setShowLedgerModal('approve')
+      setShowLedgerModal(ModalState.Approve)
     } else {
-      setShowPasswordModal('approve')
+      setShowPasswordModal(ModalState.Approve)
     }
   }, [setShowLedgerModal, useSourceAssetLedger])
 
@@ -2320,7 +2318,9 @@ export const Swap = ({
                       className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
                       onClick={() =>
                         // toggle rate
-                        setRateDirection((current) => (current === 'fromSource' ? 'fromTarget' : 'fromSource'))
+                        setRateDirection((current) =>
+                          current === RateDirection.Source ? RateDirection.Target : RateDirection.Source
+                        )
                       }>
                       {intl.formatMessage({ id: 'common.rate' })}
                       <ArrowsRightLeftIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
@@ -2575,62 +2575,62 @@ export const Swap = ({
                 </div>
               </div>
             ) : (
-              <>
-                <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
-                  <div className="font-main text-[14px] text-gray2 dark:text-gray2d">
-                    {/* Rate */}
-                    <div className={`flex w-full justify-between font-mainBold text-[14px]`}>
-                      <BaseButton
-                        className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
-                        onClick={() =>
-                          // toggle rate
-                          setRateDirection((current) => (current === 'fromSource' ? 'fromTarget' : 'fromSource'))
-                        }>
-                        {intl.formatMessage({ id: 'common.rate' })}
-                        <ArrowsRightLeftIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
-                      </BaseButton>
-                      <div>{rateLabel}</div>
-                    </div>
-                    {/* fees */}
-                    <div className="flex w-full items-center justify-between font-mainBold">
-                      <BaseButton
-                        disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
-                        className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
-                        onClick={reloadFeesHandler}>
-                        {intl.formatMessage({ id: 'common.fees.estimated' })}
-                        <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
-                      </BaseButton>
-                      <div>{priceSwapFeesLabel}</div>
-                    </div>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div>{intl.formatMessage({ id: 'common.fee.inbound' })}</div>
-                      <div>{priceSwapInFeeLabel}</div>
-                    </div>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div>{intl.formatMessage({ id: 'swap.slip.title' })}</div>
-                      <div>
-                        {formatAssetAmountCurrency({
-                          amount: priceAmountToSwapMax1e8.assetAmount.times(swapSlippage / 100), // Find the value of swap slippage
-                          asset: priceAmountToSwapMax1e8.asset,
-                          decimal: isUSDAsset(priceAmountToSwapMax1e8.asset) ? 2 : 6,
-                          trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)
-                        }) + ` (${swapSlippage.toFixed(2)}%)`}
-                      </div>
-                    </div>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div>{intl.formatMessage({ id: 'common.fee.outbound' })}</div>
-                      <div>{priceSwapOutFeeLabel}</div>
-                    </div>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
-                      <div>{priceAffiliateFeeLabel}</div>
-                    </div>
-
-                    {/* Transaction time */}
-                    <TransactionTime />
+              <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
+                <div className="font-main text-[14px] text-gray2 dark:text-gray2d">
+                  {/* Rate */}
+                  <div className={`flex w-full justify-between font-mainBold text-[14px]`}>
+                    <BaseButton
+                      className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                      onClick={() =>
+                        // toggle rate
+                        setRateDirection((current) =>
+                          current === RateDirection.Source ? RateDirection.Target : RateDirection.Source
+                        )
+                      }>
+                      {intl.formatMessage({ id: 'common.rate' })}
+                      <ArrowsRightLeftIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                    </BaseButton>
+                    <div>{rateLabel}</div>
                   </div>
+                  {/* fees */}
+                  <div className="flex w-full items-center justify-between font-mainBold">
+                    <BaseButton
+                      disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
+                      className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                      onClick={reloadFeesHandler}>
+                      {intl.formatMessage({ id: 'common.fees.estimated' })}
+                      <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                    </BaseButton>
+                    <div>{priceSwapFeesLabel}</div>
+                  </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'common.fee.inbound' })}</div>
+                    <div>{priceSwapInFeeLabel}</div>
+                  </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'swap.slip.title' })}</div>
+                    <div>
+                      {formatAssetAmountCurrency({
+                        amount: priceAmountToSwapMax1e8.assetAmount.times(swapSlippage / 100), // Find the value of swap slippage
+                        asset: priceAmountToSwapMax1e8.asset,
+                        decimal: isUSDAsset(priceAmountToSwapMax1e8.asset) ? 2 : 6,
+                        trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)
+                      }) + ` (${swapSlippage.toFixed(2)}%)`}
+                    </div>
+                  </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'common.fee.outbound' })}</div>
+                    <div>{priceSwapOutFeeLabel}</div>
+                  </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
+                    <div>{priceAffiliateFeeLabel}</div>
+                  </div>
+
+                  {/* Transaction time */}
+                  <TransactionTime />
                 </div>
-              </>
+              </div>
             )}
           </Collapse>
           {!lockedWallet &&

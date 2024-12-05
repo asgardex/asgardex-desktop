@@ -24,6 +24,17 @@ export type SwapData = {
 
 export type AssetsToSwap = { source: Asset; target: Asset }
 
+export enum ModalState {
+  Swap = 'swap',
+  Approve = 'approve',
+  None = 'none'
+}
+
+export enum RateDirection {
+  Source = 'fromSource',
+  Target = 'fromTarget'
+}
+
 export type SwapProps = {
   keystore: KeystoreState
   poolAssets: AnyAsset[]

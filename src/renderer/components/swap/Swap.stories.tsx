@@ -15,8 +15,8 @@ import { ONE_BN } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { INITIAL_SWAP_STATE } from '../../services/chain/const'
 import { SwapState } from '../../services/chain/types'
-import { Swap as Component, SwapProps } from './Swap'
-import { SwapAsset } from './Swap.types'
+import { Swap as Component } from './Swap'
+import { SwapAsset, SwapProps } from './Swap.types'
 
 const sourceAsset: SwapAsset = { asset: AssetRuneNative, decimal: THORCHAIN_DECIMAL, price: ONE_BN }
 const targetAsset: SwapAsset = { asset: AssetBTC, decimal: BTC_DECIMAL, price: bn('56851.67420275761') }
