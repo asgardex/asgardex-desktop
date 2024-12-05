@@ -19,7 +19,6 @@ import * as RxOp from 'rxjs/operators'
 import { isLedgerWallet, isWalletType } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { Repay } from '../../components/loans/CloseLoan'
-import { Borrow } from '../../components/loans/OpenLoan'
 import { ErrorView } from '../../components/shared/error'
 import { Spin } from '../../components/shared/loading'
 import { BackLinkButton, FlatButton, RefreshButton } from '../../components/uielements/button'
@@ -39,9 +38,8 @@ import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { usePricePool } from '../../hooks/usePricePool'
 import * as poolsRoutes from '../../routes/pools'
-import { LoanRouteParams, LoanRouteTargetWalletType } from '../../routes/pools/lending'
+import { LoanRouteParams } from '../../routes/pools/lending'
 import * as lendingRoutes from '../../routes/pools/lending'
-import { saverDepositFee$ as loanOpenFee$ } from '../../services/chain'
 import { saverWithdrawFee$ as loanRepayFee$ } from '../../services/chain/fees'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
 import { PoolAddress } from '../../services/midgard/types'
@@ -51,7 +49,6 @@ import { useApp } from '../../store/app/hooks'
 import { LoansDetailsView } from './LoansDetailsView'
 
 enum TabIndex {
-  BORROW = 0,
   REPAY = 1
 }
 
@@ -98,8 +95,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
     getBorrowerProvider$,
     reloadBorrowerProvider,
     reloadInboundAddresses,
-    getLoanQuoteOpen$,
-    reloadLoanQuoteOpen,
     getLoanQuoteClose$,
     reloadLoanQuoteClose
   } = useThorchainContext()
@@ -108,7 +103,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
     assetWithDecimal$,
     addressByChain$,
     reloadSaverDepositFee: reloadLoanDepositFee, // rename for sanity
-    saverDeposit$: loanOpen$, // rename for sanity
     saverWithdraw$: loanRepay$
   } = useChainContext()
 
@@ -154,11 +148,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
     [assetWithDecimal$, collateralAsset]
   )
 
-  const borrowAssetDecimal$: AssetWithDecimalLD = useMemo(
-    () => assetWithDecimal$(borrowAsset),
-    [assetWithDecimal$, borrowAsset]
-  )
-
   const [balancesState] = useObservableState(
     () =>
       balancesState$({
@@ -169,7 +158,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   )
 
   const collateralAssetRD: AssetWithDecimalRD = useObservableState(collateralAssetDecimal$, RD.initial)
-  const borrowAssetRD: AssetWithDecimalRD = useObservableState(borrowAssetDecimal$, RD.initial)
 
   const [collateralAddressRD, updateCollateralAddress$] = useObservableState<
     RD.RemoteData<Error, Address>,
@@ -193,31 +181,10 @@ const Content: React.FC<Props> = (props): JSX.Element => {
     RD.initial
   )
 
-  const [borrowAddressRD, updateBorrowAddress$] = useObservableState<RD.RemoteData<Error, Address>, UpdateAddress>(
-    (updated$) =>
-      FP.pipe(
-        updated$,
-        RxOp.debounceTime(300),
-        RxOp.distinctUntilChanged(eqUpdateAddress.equals),
-        RxOp.switchMap(({ walletType, chain }) =>
-          isLedgerWallet(walletType)
-            ? FP.pipe(getLedgerAddress$(chain), RxOp.map(O.map(ledgerAddressToWalletAddress)))
-            : addressByChain$(chain)
-        ),
-        RxOp.map(addressFromOptionalWalletAddress),
-        RxOp.map((oAddress) =>
-          RD.fromOption(oAddress, () => new Error(`Could not get address for ${borrowWalletType}`))
-        )
-      ),
-    RD.initial
-  )
-
   useEffect(() => {
     updateCollateralAddress$({ chain: collateralAssetChain, network, walletType: collateralWalletType })
-    updateBorrowAddress$({ chain: borrowAssetChain, network, walletType: borrowWalletType })
   }, [
     network,
-    updateBorrowAddress$,
     collateralAssetChain,
     collateralWalletType,
     updateCollateralAddress$,
@@ -254,38 +221,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
     [intl, reloadPools]
   )
 
-  const onChangeAssetHandler = useCallback(
-    ({
-      collateral,
-      collateralWalletType,
-      borrow,
-      borrowWalletType: oTargetWalletType,
-      recipientAddress: oRecipientAddress
-    }: {
-      collateral: AnyAsset
-      borrow: AnyAsset
-      collateralWalletType: WalletType
-      borrowWalletType: O.Option<WalletType>
-      recipientAddress: O.Option<Address>
-    }) => {
-      const borrowWalletType = FP.pipe(
-        oTargetWalletType,
-        O.getOrElse<LoanRouteTargetWalletType>(() => 'custom')
-      )
-      const recipient = FP.pipe(oRecipientAddress, O.toUndefined)
-
-      const path = lendingRoutes.borrow.path({
-        asset: assetToString(collateral),
-        walletType: collateralWalletType,
-        borrowAsset: assetToString(borrow),
-        borrowWalletType: borrowWalletType,
-        recipient
-      })
-      navigate(path, { replace: true })
-    },
-    [navigate]
-  )
-
   const onChangeAssetRepayHandler = useCallback(
     ({ source, sourceWalletType }: { source: AnyAsset; sourceWalletType: WalletType }) => {
       const path = lendingRoutes.borrow.path({
@@ -299,15 +234,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
     [borrowAsset, borrowWalletType, navigate]
   )
 
-  const matchBorrowRoute = useMatch({
-    path: lendingRoutes.borrow.path({
-      asset: assetToString(collateralAsset),
-      walletType: collateralWalletType,
-      borrowAsset: assetToString(borrowAsset),
-      borrowWalletType: borrowWalletType
-    }),
-    end: false
-  })
   const matchRepayRoute = useMatch({
     path: lendingRoutes.repay.path({
       asset: assetToString(borrowAsset),
@@ -319,21 +245,15 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   })
 
   const selectedIndex: number = useMemo(() => {
-    if (matchBorrowRoute) {
-      return TabIndex.BORROW
-    } else if (matchRepayRoute) {
+    if (matchRepayRoute) {
       return TabIndex.REPAY
     } else {
-      return TabIndex.BORROW
+      return TabIndex.REPAY
     }
-  }, [matchBorrowRoute, matchRepayRoute])
+  }, [matchRepayRoute])
 
   const tabs = useMemo(
     (): TabData[] => [
-      {
-        index: TabIndex.BORROW,
-        label: intl.formatMessage({ id: 'common.borrow' })
-      },
       {
         index: TabIndex.REPAY,
         label: intl.formatMessage({ id: 'common.repay' })
@@ -376,12 +296,12 @@ const Content: React.FC<Props> = (props): JSX.Element => {
 
       <div className="flex h-screen flex-col items-center justify-center ">
         {FP.pipe(
-          sequenceTRD(poolsStateRD, collateralAssetRD, collateralAddressRD, borrowAddressRD, borrowAssetRD),
+          sequenceTRD(poolsStateRD, collateralAssetRD, collateralAddressRD),
           RD.fold(
             () => renderLoadingContent,
             () => renderLoadingContent,
             renderError,
-            ([{ poolDetails, assetDetails }, assetWD, collateralAddress, borrowAddress, borrowAssetWD]) => {
+            ([{ poolDetails, assetDetails }, assetWD, collateralAddress]) => {
               const poolAssets: AnyAsset[] = FP.pipe(
                 assetDetails,
                 A.map(({ asset }) => asset)
@@ -394,42 +314,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
               }
               const getTabContentByIndex = (index: number) => {
                 switch (index) {
-                  case TabIndex.BORROW:
-                    return (
-                      <Borrow
-                        keystore={keystore}
-                        validatePassword$={validatePassword$}
-                        getLoanQuoteOpen$={getLoanQuoteOpen$}
-                        reloadLoanQuoteOpen={reloadLoanQuoteOpen}
-                        goToTransaction={openExplorerTxUrl}
-                        getExplorerTxUrl={getExplorerTxUrl}
-                        poolDetails={poolDetails}
-                        poolAssets={poolAssets}
-                        walletBalances={balancesState}
-                        network={network}
-                        collateralAsset={assetWD}
-                        borrowAsset={borrowAssetWD}
-                        pricePool={pricePool}
-                        fees$={loanOpenFee$}
-                        collateralWalletType={collateralWalletType}
-                        borrowWalletType={O.some(borrowWalletType)}
-                        collateralAddress={collateralAddress}
-                        borrowAddress={borrowAddress}
-                        reloadBalances={reloadHandler}
-                        approveFee$={approveFee$}
-                        reloadApproveFee={reloadApproveFee}
-                        reloadFees={reloadLoanDepositFee}
-                        reloadSelectedPoolDetail={reloadSelectedPoolDetail}
-                        isApprovedERC20Token$={isApprovedERC20Token$}
-                        approveERC20Token$={approveERC20Token$}
-                        poolAddress={oPoolAddress}
-                        borrowDeposit$={loanOpen$}
-                        hidePrivateData={isPrivate}
-                        onChangeAsset={onChangeAssetHandler}
-                        disableLoanAction={checkDisableLoanAction()}
-                        dex={dex}
-                      />
-                    )
                   case TabIndex.REPAY:
                     return (
                       <Repay
@@ -477,16 +361,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         selectedIndex={selectedIndex}
                         onChange={(index) => {
                           switch (index) {
-                            case TabIndex.BORROW:
-                              navigate(
-                                lendingRoutes.borrow.path({
-                                  asset: assetToString(collateralAsset),
-                                  walletType: collateralWalletType,
-                                  borrowAsset: assetToString(borrowAsset),
-                                  borrowWalletType: borrowWalletType
-                                })
-                              )
-                              break
                             case TabIndex.REPAY:
                               navigate(
                                 lendingRoutes.repay.path({

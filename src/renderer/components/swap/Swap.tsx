@@ -484,15 +484,15 @@ export const Swap = ({
         const toleranceBps = undefined
         const affiliateName = getAsgardexThorname(network)
         const affiliateBps = getAsgardexAffiliateFee(network)
-        const isAffiliateValid = affiliateName !== undefined && affiliateBps !== undefined
+
         return getSwapMemo({
           targetAsset,
           targetAddress: recipientAddress,
           toleranceBps,
           streamingInterval,
           streamingQuantity,
-          affiliateName: isAffiliateValid ? affiliateName : undefined,
-          affiliateBps: isAffiliateValid ? affiliateBps : undefined
+          affiliateName: affiliateName,
+          affiliateBps: affiliateName ? affiliateBps ?? 0 : undefined
         })
       }
     )(oRecipientAddress)

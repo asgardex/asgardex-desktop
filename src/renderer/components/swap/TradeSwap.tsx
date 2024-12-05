@@ -483,7 +483,6 @@ export const TradeSwap = ({
         const toleranceBps = undefined
         const affiliateName = getAsgardexThorname(network)
         const affiliateBps = getAsgardexAffiliateFee(network)
-        const isAffiliateValid = affiliateName !== undefined && affiliateBps !== undefined
 
         return getSwapMemo({
           targetAsset,
@@ -491,8 +490,8 @@ export const TradeSwap = ({
           toleranceBps,
           streamingInterval,
           streamingQuantity,
-          affiliateName: isAffiliateValid ? getAsgardexThorname(network) : undefined,
-          affiliateBps: isAffiliateValid ? getAsgardexAffiliateFee(network) : undefined
+          affiliateName,
+          affiliateBps: affiliateName ? affiliateBps ?? 0 : undefined
         })
       }
     )(oRecipientAddress)
@@ -704,7 +703,6 @@ export const TradeSwap = ({
           const affiliate =
             ASGARDEX_ADDRESS === walletAddress || isTradeAsset(sourceAsset) ? undefined : getAsgardexThorname(network)
           const affiliateBps = ASGARDEX_ADDRESS === walletAddress || isTradeAsset(sourceAsset) ? undefined : applyBps
-          const isAffiliateValid = affiliate !== undefined && affiliateBps !== undefined
           const streamingInt = isStreaming ? streamingInterval : 0
           const streaminQuant = isStreaming ? streamingQuantity : 0
           const toleranceBps = isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100 // convert to basis points
@@ -716,8 +714,8 @@ export const TradeSwap = ({
             streamingInterval: streamingInt,
             streamingQuantity: streaminQuant,
             toleranceBps: toleranceBps,
-            affiliateAddress: isAffiliateValid ? affiliate : undefined,
-            affiliateBps: isAffiliateValid ? affiliateBps : undefined
+            affiliateAddress: affiliate,
+            affiliateBps: affiliate ? affiliateBps ?? 0 : undefined
           }
         })
       ),
@@ -757,6 +755,7 @@ export const TradeSwap = ({
       sequenceTOption(oQuoteSwapData, oSourceAssetWB),
       O.fold(
         () => {
+          const affiliateName = getAsgardexThorname(network)
           const estimateThorDexSwap: QuoteSwapParams = {
             fromAsset: sourceAsset,
             destinationAsset: targetAsset,
@@ -764,8 +763,8 @@ export const TradeSwap = ({
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
             toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100, // convert to basis points
-            affiliateAddress: getAsgardexThorname(network),
-            affiliateBps: applyBps
+            affiliateAddress: affiliateName,
+            affiliateBps: affiliateName ? applyBps ?? 0 : undefined
           }
           const estimateSwap = estimateThorDexSwap
           if (!estimateSwap.amount.baseAmount.eq(baseAmount(0)) && lockedWallet) {
