@@ -72,7 +72,6 @@ import { getSwapMemo, updateMemo } from '../../helpers/memoHelper'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { isPoolDetails } from '../../helpers/poolHelper'
 import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
-import { LiveData } from '../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../helpers/stringHelper'
 import { formatSwapTime } from '../../helpers/timeHelper'
 import {
@@ -84,46 +83,18 @@ import {
 import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
-import { ChangeSlipToleranceHandler } from '../../services/app/types'
 import { INITIAL_SWAP_STATE } from '../../services/chain/const'
 import { getZeroSwapFees } from '../../services/chain/fees/swap'
-import {
-  SwapTxParams,
-  SwapFeesHandler,
-  ReloadSwapFeesHandler,
-  SwapFeesRD,
-  SwapFees,
-  FeeRD,
-  SwapHandler,
-  SwapTxState
-} from '../../services/chain/types'
-import { AddressValidationAsync, GetExplorerTxUrl, OpenExplorerTxUrl } from '../../services/clients'
-import {
-  ApproveFeeHandler,
-  ApproveParams,
-  IsApprovedRD,
-  IsApproveParams,
-  LoadApproveFeeHandler
-} from '../../services/evm/types'
-import { PoolDetails as PoolDetailsMaya } from '../../services/mayaMigard/types'
+import { SwapTxParams, SwapFeesRD, SwapFees, FeeRD, SwapTxState } from '../../services/chain/types'
+import { ApproveParams, IsApprovedRD } from '../../services/evm/types'
 import { getPoolDetail as getPoolDetailMaya } from '../../services/mayaMigard/utils'
-import { PoolAddress, PoolDetails, PoolsDataMap } from '../../services/midgard/types'
 import { getPoolDetail } from '../../services/midgard/utils'
 import { userChains$ } from '../../services/storage/userChains'
 import { addAsset } from '../../services/storage/userChainTokens'
-import {
-  ApiError,
-  KeystoreState,
-  TxHashLD,
-  TxHashRD,
-  ValidatePasswordHandler,
-  BalancesState,
-  WalletBalance,
-  WalletBalances
-} from '../../services/wallet/types'
+import { TxHashRD, WalletBalance, WalletBalances } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
 import { useAggregator } from '../../store/aggregator/hooks'
-import { AssetWithAmount, SlipTolerance } from '../../types/asgardex'
+import { AssetWithAmount } from '../../types/asgardex'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
 import { TxModal } from '../modal/tx'
 import { SwapAssets } from '../modal/tx/extra'
@@ -138,7 +109,7 @@ import { CopyLabel } from '../uielements/label'
 import { Slider } from '../uielements/slider'
 import { EditableAddress } from './EditableAddress'
 import { SelectableSlipTolerance } from './SelectableSlipTolerance'
-import { SwapAsset } from './Swap.types'
+import { SwapProps } from './Swap.types'
 import * as Utils from './Swap.utils'
 import SwapExpiryProgressBar from './SwapExpiryProgressBar'
 import { SwapRoute } from './SwapRoute'
@@ -152,59 +123,6 @@ const ErrorLabel: React.FC<{
     {children}
   </div>
 )
-
-export type SwapProps = {
-  keystore: KeystoreState
-  poolAssets: AnyAsset[]
-  assets: {
-    source: SwapAsset
-    target: SwapAsset
-  }
-  sourceKeystoreAddress: O.Option<Address>
-  sourceLedgerAddress: O.Option<Address>
-  sourceWalletType: WalletType
-  targetWalletType: O.Option<WalletType>
-  poolAddressMaya: O.Option<PoolAddress>
-  poolAddressThor: O.Option<PoolAddress>
-  swap$: SwapHandler
-  reloadTxStatus: FP.Lazy<void>
-  poolsData: PoolsDataMap
-  poolDetails: PoolDetails | PoolDetailsMaya
-  walletBalances: Pick<BalancesState, 'balances' | 'loading'>
-  goToTransaction: OpenExplorerTxUrl
-  getExplorerTxUrl: GetExplorerTxUrl
-  validatePassword$: ValidatePasswordHandler
-  reloadFees: ReloadSwapFeesHandler
-  reloadBalances: FP.Lazy<void>
-  fees$: SwapFeesHandler
-  reloadApproveFee: LoadApproveFeeHandler
-  approveFee$: ApproveFeeHandler
-  recipientAddress: O.Option<Address>
-  targetKeystoreAddress: O.Option<Address>
-  targetLedgerAddress: O.Option<Address>
-  onChangeAsset: ({
-    source,
-    sourceWalletType,
-    target,
-    targetWalletType,
-    recipientAddress
-  }: {
-    source: AnyAsset
-    target: AnyAsset
-    sourceWalletType: WalletType
-    targetWalletType: O.Option<WalletType>
-    recipientAddress: O.Option<Address>
-  }) => void
-  network: Network
-  slipTolerance: SlipTolerance
-  changeSlipTolerance: ChangeSlipToleranceHandler
-  approveERC20Token$: (params: ApproveParams) => TxHashLD
-  isApprovedERC20Token$: (params: IsApproveParams) => LiveData<ApiError, boolean>
-  importWalletHandler: FP.Lazy<void>
-  disableSwapAction: boolean
-  addressValidator: AddressValidationAsync
-  hidePrivateData: boolean
-}
 
 export const Swap = ({
   keystore,
