@@ -27,22 +27,20 @@ const defaultProps: SwapProps = {
   keystore: O.none,
   poolAssets: [AssetBTC, AssetRuneNative],
   assets: { source: sourceAsset, target: targetAsset },
-  poolAddress: {
-    thor: O.some({
-      protocol: THORChain,
-      chain: BTCChain,
-      address: 'vault-address',
-      router: O.some('router-address'),
-      halted: false
-    }),
-    maya: O.some({
-      protocol: THORChain,
-      chain: BTCChain,
-      address: 'vault-address',
-      router: O.some('router-address'),
-      halted: false
-    })
-  },
+  poolAddressThor: O.some({
+    protocol: THORChain,
+    chain: BTCChain,
+    address: 'vault-address',
+    router: O.some('router-address'),
+    halted: false
+  }),
+  poolAddressMaya: O.some({
+    protocol: THORChain,
+    chain: BTCChain,
+    address: 'vault-address',
+    router: O.some('router-address'),
+    halted: false
+  }),
   poolDetails: [],
   // mock successfull result of swap$
   swap$: (params) =>

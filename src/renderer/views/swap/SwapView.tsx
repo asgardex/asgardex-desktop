@@ -99,22 +99,22 @@ const SuccessRouteView: React.FC<Props> = ({
       poolsState$,
       reloadPools: reloadThorPools,
       reloadSelectedPoolDetail,
-      poolAddressesByChain$,
+      selectedPoolAddress$,
       haltedChains$,
       pendingPoolsState$
-    }
-    // setSelectedPoolAsset
+    },
+    setSelectedPoolAsset
   } = midgardService
   const {
     pools: {
       poolsState$: mayaPoolsState$,
       reloadPools: reloadMayaPools,
       reloadSelectedPoolDetail: reloadSelectedPoolDetailMaya,
-      poolAddressesByChain$: poolAddressesByChainMaya$,
+      selectedPoolAddress$: selectedPoolAddressMaya$,
       haltedChains$: haltedChainsMaya$,
       pendingPoolsState$: pendingPoolsStateMaya$
-    }
-    // setSelectedPoolAsset: setSelectedPoolAssetMaya
+    },
+    setSelectedPoolAsset: setSelectedPoolAssetMaya
   } = midgardMayaService
 
   const { isPrivate } = useApp()
@@ -131,40 +131,35 @@ const SuccessRouteView: React.FC<Props> = ({
   const { chain: sourceChain } = sourceAsset.type === AssetType.SYNTH ? mayaDetails.asset : sourceAsset
   const { chain: targetChain } = targetAsset.type === AssetType.SYNTH ? mayaDetails.asset : targetAsset
 
-  const poolAddressThor$ = poolAddressesByChain$(sourceChain)
-  const poolAddressMaya$ = poolAddressesByChainMaya$(sourceChain)
-  const combinedPoolAddresses = useObservableState(
-    FP.pipe(
-      Rx.combineLatest([poolAddressThor$, poolAddressMaya$]).pipe(
-        RxOp.map(([thorPoolAddressRD, mayaPoolAddressRD]) =>
-          FP.pipe([thorPoolAddressRD, mayaPoolAddressRD], A.map(RD.toOption), ([thorOption, mayaOption]) => ({
-            thor: thorOption, // Include the ThorChain pool address
-            maya: mayaOption // Include the MayaChain pool address
-          }))
-        ),
-        RxOp.distinctUntilChanged(), // Avoid emitting the same values multiple times
-        RxOp.debounceTime(100) // Throttle frequent updates (adjust time as needed)
-      )
-    ),
-    { thor: O.none, maya: O.none } // Provide default initial state for both addresses
-  )
-
-  const [haltedChains] = useObservableState(
-    () =>
-      FP.pipe(
-        Rx.combineLatest([haltedChains$, haltedChainsMaya$]), // Combine the two streams
-        RxOp.map(([thorChainsRD, mayaChainsRD]) => {
-          // Extract values from both RemoteData streams
-          const thorChains = RD.getOrElse((): Chain[] => [])(thorChainsRD)
-          const mayaChains = RD.getOrElse((): Chain[] => [])(mayaChainsRD)
-
-          // Combine the results into a single array
-          return [...thorChains, ...mayaChains]
-        }),
-        RxOp.map((combinedChains: Chain[]) => combinedChains.map(String)) // Convert to `string[]`
-      ),
+  const [haltedChainsThor] = useObservableState(
+    () => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))),
     []
   )
+
+  const [haltedChainsMaya] = useObservableState(
+    () => FP.pipe(haltedChainsMaya$, RxOp.map(RD.getOrElse((): Chain[] => []))),
+    []
+  )
+  const combinedHaltedChains = useMemo(() => {
+    if (haltedChainsThor.length > 0 && haltedChainsMaya.length > 0) {
+      return [...haltedChainsThor, ...haltedChainsMaya]
+    }
+    return []
+  }, [haltedChainsThor, haltedChainsMaya])
+
+  useEffect(() => {
+    // Source asset is the asset of the pool we need to interact with
+    // Store it in global state, all depending streams will be updated then
+    setSelectedPoolAsset(O.some(sourceAsset))
+    setSelectedPoolAssetMaya(O.some(sourceAsset))
+    // Reset selectedPoolAsset on view's unmount to avoid effects with depending streams
+    return () => {
+      setSelectedPoolAsset(O.none)
+      setSelectedPoolAssetMaya(O.none)
+    }
+  }, [sourceAsset, setSelectedPoolAsset, setSelectedPoolAssetMaya])
+  const selectedPoolAddressThor = useObservableState(selectedPoolAddress$, O.none)
+  const selectedPoolAddressMaya = useObservableState(selectedPoolAddressMaya$, O.none)
 
   const { mimirHalt } = useMimirHalt()
 
@@ -246,9 +241,7 @@ const SuccessRouteView: React.FC<Props> = ({
     O.none
   )
 
-  useEffect(() => {
-    updateSourceKeystoreAddress$(sourceChain)
-  }, [sourceChain, updateSourceKeystoreAddress$])
+  console.log(sourceChain)
 
   const [oTargetKeystoreAddress, updateTargetKeystoreAddress$] = useObservableState<O.Option<Address>, Chain>(
     (targetChain$) =>
@@ -261,21 +254,17 @@ const SuccessRouteView: React.FC<Props> = ({
     O.none
   )
 
-  useEffect(() => {
-    updateTargetKeystoreAddress$(targetChain)
-  }, [targetChain, updateTargetKeystoreAddress$])
+  // const protocolOption: O.Option<string> = FP.pipe(selectedPoolAddresses, ({ thor, maya }) => {
+  //   if (O.isSome(thor)) {
+  //     return O.some(thor.value.protocol)
+  //   }
+  //   if (O.isSome(maya)) {
+  //     return O.some(maya.value.protocol)
+  //   }
+  //   return O.none
+  // })
 
-  const protocolOption = FP.pipe(combinedPoolAddresses, ({ thor, maya }) => {
-    if (O.isSome(thor)) {
-      return O.some(thor.value.protocol)
-    }
-    if (O.isSome(maya)) {
-      return O.some(maya.value.protocol)
-    }
-    return O.none
-  })
-
-  const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(protocolOption)
+  const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(THORChain))
 
   const renderError = useCallback(
     (e: Error) => (
@@ -372,11 +361,6 @@ const SuccessRouteView: React.FC<Props> = ({
       ),
     O.none
   )
-
-  useEffect(() => {
-    updateTargetLedgerAddress$({ chain: targetChain, network })
-  }, [network, targetChain, updateTargetLedgerAddress$])
-
   const [oSourceLedgerAddress, updateSourceLedgerAddress$] = useObservableState<O.Option<Address>, UpdateLedgerAddress>(
     (sourceLedgerAddressChain$) =>
       FP.pipe(
@@ -392,8 +376,19 @@ const SuccessRouteView: React.FC<Props> = ({
   )
 
   useEffect(() => {
+    updateTargetKeystoreAddress$(targetChain)
+    updateSourceKeystoreAddress$(sourceChain)
     updateSourceLedgerAddress$({ chain: sourceChain, network })
-  }, [network, sourceChain, updateSourceLedgerAddress$])
+    updateTargetLedgerAddress$({ chain: targetChain, network })
+  }, [
+    network,
+    sourceChain,
+    targetChain,
+    updateSourceKeystoreAddress$,
+    updateSourceLedgerAddress$,
+    updateTargetKeystoreAddress$,
+    updateTargetLedgerAddress$
+  ])
 
   const isTargetLedger = FP.pipe(
     oTargetWalletType,
@@ -461,7 +456,8 @@ const SuccessRouteView: React.FC<Props> = ({
                   sourceLedgerAddress={oSourceLedgerAddress}
                   sourceWalletType={sourceWalletType}
                   targetWalletType={oTargetWalletType}
-                  poolAddress={combinedPoolAddresses}
+                  poolAddressMaya={selectedPoolAddressMaya}
+                  poolAddressThor={selectedPoolAddressThor}
                   poolAssets={[]}
                   poolsData={{}}
                   poolDetails={[]}
@@ -530,10 +526,10 @@ const SuccessRouteView: React.FC<Props> = ({
                 A.map(({ asset }) => asset)
               )
               const disableAllPoolActions = (chain: Chain) =>
-                PoolHelpers.disableAllActions({ chain, haltedChains, mimirHalt })
+                PoolHelpers.disableAllActions({ chain, haltedChains: combinedHaltedChains, mimirHalt })
 
               const disableTradingPoolActions = (chain: Chain) =>
-                PoolHelpers.disableTradingActions({ chain, haltedChains, mimirHalt })
+                PoolHelpers.disableTradingActions({ chain, haltedChains: combinedHaltedChains, mimirHalt })
 
               const checkDisableSwapAction = () => {
                 return (
@@ -559,7 +555,8 @@ const SuccessRouteView: React.FC<Props> = ({
                   sourceLedgerAddress={oSourceLedgerAddress}
                   sourceWalletType={sourceWalletType}
                   targetWalletType={oTargetWalletType}
-                  poolAddress={combinedPoolAddresses}
+                  poolAddressMaya={selectedPoolAddressMaya}
+                  poolAddressThor={selectedPoolAddressThor}
                   poolAssets={poolAssets}
                   poolsData={combinedPoolsData}
                   poolDetails={combinedPoolDetails}

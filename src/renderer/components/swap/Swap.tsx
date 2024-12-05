@@ -135,12 +135,12 @@ import { Tooltip, TooltipAddress, WalletTypeLabel } from '../uielements/common/C
 import { Fees, UIFeesRD } from '../uielements/fees'
 import { InfoIcon } from '../uielements/info'
 import { CopyLabel } from '../uielements/label'
-import { ProgressBar } from '../uielements/progressBar'
 import { Slider } from '../uielements/slider'
 import { EditableAddress } from './EditableAddress'
 import { SelectableSlipTolerance } from './SelectableSlipTolerance'
 import { SwapAsset } from './Swap.types'
 import * as Utils from './Swap.utils'
+import SwapExpiryProgressBar from './SwapExpiryProgressBar'
 
 const ErrorLabel: React.FC<{
   children: React.ReactNode
@@ -163,10 +163,8 @@ export type SwapProps = {
   sourceLedgerAddress: O.Option<Address>
   sourceWalletType: WalletType
   targetWalletType: O.Option<WalletType>
-  poolAddress: {
-    thor: O.Option<PoolAddress>
-    maya: O.Option<PoolAddress>
-  }
+  poolAddressMaya: O.Option<PoolAddress>
+  poolAddressThor: O.Option<PoolAddress>
   swap$: SwapHandler
   reloadTxStatus: FP.Lazy<void>
   poolsData: PoolsDataMap
@@ -214,7 +212,8 @@ export const Swap = ({
     source: { asset: sourceAsset, decimal: sourceAssetDecimal, price: sourceAssetPrice },
     target: { asset: targetAsset, decimal: targetAssetDecimal, price: targetAssetPrice }
   },
-  poolAddress: oPoolAddress,
+  poolAddressThor: oPoolAddressThor,
+  poolAddressMaya: oPoolAddressMaya,
   swap$,
   poolDetails,
   walletBalances,
@@ -318,8 +317,8 @@ export const Swap = ({
   const prevTargetAsset = useRef<O.Option<AnyAsset>>(O.none)
 
   const [customAddressEditActive, setCustomAddressEditActive] = useState(false)
-  const [currentDate, setCurrentDate] = useState(new Date())
-  const [quoteExpired, setQuoteExpired] = useState<boolean>(false)
+
+  // const [quoteExpired, setQuoteExpired] = useState<boolean>(false)
 
   const sourceWalletAddress = useMemo(() => {
     return FP.pipe(
@@ -474,34 +473,8 @@ export const Swap = ({
   const isZeroAmountToSwap = useMemo(() => amountToSwapMax1e8.amount().isZero(), [amountToSwapMax1e8])
 
   const zeroSwapFees = useMemo(() => {
-    return FP.pipe(
-      oPoolAddress.thor,
-      O.fold(
-        () => getZeroSwapFees({ inAsset: sourceAsset, outAsset: targetAsset }),
-        (poolAddress) => {
-          const gasRate = (() => {
-            if (isRuneNativeAsset(sourceAsset) || isTradeAsset(sourceAsset)) {
-              return baseAmount(2000000)
-            }
-            const poolGasRate = poolAddress.gasRate
-            return poolAddress.gasRate ? baseAmount(poolGasRate) : baseAmount(2000000)
-          })()
-
-          const outboundFee = (() => {
-            if (isRuneNativeAsset(targetAsset) || isTradeAsset(targetAsset)) {
-              return baseAmount(2000000)
-            }
-            const poolOutboundFee = poolAddress.outboundFee
-            return poolOutboundFee ? baseAmount(poolOutboundFee) : baseAmount(2000000)
-          })()
-          return {
-            inFee: { asset: AssetRuneNative, amount: gasRate },
-            outFee: { asset: AssetRuneNative, amount: outboundFee }
-          }
-        }
-      )
-    )
-  }, [oPoolAddress, sourceAsset, targetAsset])
+    return getZeroSwapFees({ inAsset: sourceAsset, outAsset: targetAsset })
+  }, [sourceAsset, targetAsset])
 
   // PlaceHolder memo just to calc fees better
   const swapMemo = useMemo(() => {
@@ -1034,7 +1007,7 @@ export const Swap = ({
 
   const oSwapParams: O.Option<SwapTxParams> = useMemo(() => {
     const oSwapParamsProtocol = FP.pipe(
-      sequenceTOption(oPoolAddress.thor, oPoolAddress.maya, oSourceAssetWB, oQuoteProtocol),
+      sequenceTOption(oPoolAddressThor, oPoolAddressMaya, oSourceAssetWB, oQuoteProtocol),
       O.map(
         ([
           poolAddressThor,
@@ -1066,7 +1039,8 @@ export const Swap = ({
     )
     return oSwapParamsProtocol
   }, [
-    oPoolAddress,
+    oPoolAddressThor,
+    oPoolAddressMaya,
     oSourceAssetWB,
     oQuoteProtocol,
     amountToSwapMax1e8,
@@ -1131,12 +1105,12 @@ export const Swap = ({
         switch (protocol.protocol) {
           case 'Thorchain':
             return FP.pipe(
-              oPoolAddress.thor,
+              oPoolAddressThor,
               O.chain(({ router }) => router)
             )
           case 'Mayachain':
             return FP.pipe(
-              oPoolAddress.maya,
+              oPoolAddressMaya,
               O.chain(({ router }) => router)
             )
           default:
@@ -1169,8 +1143,8 @@ export const Swap = ({
   }, [
     needApprovement,
     network,
-    oPoolAddress.maya,
-    oPoolAddress.thor,
+    oPoolAddressMaya,
+    oPoolAddressThor,
     oQuoteProtocol,
     oSourceAssetWB,
     sourceAsset,
@@ -1327,7 +1301,7 @@ export const Swap = ({
         return true
       })
     )
-  }, [approveFeeParamsUpdated, checkApprovedStatus, oApproveParams, oPoolAddress])
+  }, [approveFeeParamsUpdated, checkApprovedStatus, oApproveParams])
 
   // const minAmountError = useMemo(() => {
   //   if (isZeroAmountToSwap) return false
@@ -1512,73 +1486,6 @@ export const Swap = ({
     )
   }, [streamingQuantity, streamingInterval])
 
-  // swap expiry progress bar
-  useEffect(() => {
-    if (O.isNone(oQuoteProtocol)) {
-      return
-    }
-    const timer = setInterval(() => {
-      setCurrentDate(new Date())
-    }, 1000)
-
-    return () => clearInterval(timer)
-  }, [oQuoteProtocol])
-
-  const renderSwapExpiry = useMemo(() => {
-    const quoteValidTime = 15 * 60 * 1000 // 15 minutes in milliseconds
-
-    const remainingTime = swapExpiry.getTime() - currentDate.getTime()
-    const remainingTimeInMinutes = Math.floor(remainingTime / (60 * 1000))
-
-    const progress = Math.max(0, (remainingTime / quoteValidTime) * 100)
-    setQuoteExpired(remainingTimeInMinutes < 1)
-    const expiryLabel =
-      remainingTimeInMinutes < 0 ? `Quote Expired` : `Quote expiring in ${remainingTimeInMinutes} minutes`
-
-    return (
-      <ProgressBar
-        key={'Quote expiry progress bar'}
-        percent={progress}
-        withLabel={true}
-        labels={[`${expiryLabel}`, ``]}
-      />
-    )
-  }, [swapExpiry, currentDate])
-
-  // // Progress bar for swap return comparison
-  // const renderStreamerReturns = useMemo(() => {
-  //   // Initialize percentageDifference
-  //   let percentageDifference = 0
-
-  //   // Check if swapSlippage is not zero to avoid division by zero
-  //   if (swapSlippage !== 0) {
-  //     percentageDifference = ((swapSlippage - swapStreamingSlippage) / swapSlippage) * 100
-  //   }
-
-  //   if (!isStreaming) {
-  //     percentageDifference = 0
-  //   }
-
-  //   // Check if percentageDifference is a number
-  //   const isPercentageValid = !isNaN(percentageDifference) && isFinite(percentageDifference)
-  //   const streamingVal = isStreaming ? 'Streaming' : 'Limit'
-  //   const streamerComparison = isPercentageValid
-  //     ? percentageDifference <= 1
-  //       ? `Instant ${streamingVal} swap `
-  //       : `${percentageDifference.toFixed(2)}% Better swap execution via streaming`
-  //     : 'Invalid or zero slippage' // Default message for invalid or zero slippage
-
-  //   return (
-  //     <ProgressBar
-  //       key={'Streamer Interval progress bar'}
-  //       percent={percentageDifference}
-  //       withLabel={true}
-  //       labels={[`${streamerComparison}`, ``]}
-  //       tooltipPlacement={'top'}
-  //       hasError={!isStreaming}
-  //     />
-  //   )
-  // }, [isStreaming, swapSlippage, swapStreamingSlippage])
   console.log(oSwapParams)
   const submitSwapTx = useCallback(() => {
     FP.pipe(
@@ -1665,9 +1572,7 @@ export const Swap = ({
     resetSwapState()
     reloadBalances()
     setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
-    setQuoteExpired(true)
-    // setQuote(O.none)
-    // setQuoteMaya(O.none)
+    setQuoteProtocol(O.none)
     // Conditionally add asset if both conditions are true
     if (isEvmChain(targetChain) && isEvmToken(targetAsset)) {
       addAsset(targetAsset as TokenAsset)
@@ -2205,7 +2110,6 @@ export const Swap = ({
         O.isNone(oRecipientAddress) ||
         !canSwap ||
         customAddressEditActive ||
-        quoteExpired ||
         isTargetChainDisabled ||
         isSourceChainDisabled),
     [
@@ -2224,7 +2128,6 @@ export const Swap = ({
       oRecipientAddress,
       canSwap,
       customAddressEditActive,
-      quoteExpired,
       isTargetChainDisabled,
       isSourceChainDisabled
     ]
@@ -2836,7 +2739,9 @@ export const Swap = ({
               )),
               O.toNullable
             )}
-          {!isLocked(keystore) && amountToSwapMax1e8.gt(0) && <div className="w-full">{renderSwapExpiry}</div>}
+          {!isLocked(keystore) && amountToSwapMax1e8.gt(0) && (
+            <div>{<SwapExpiryProgressBar oQuoteProtocol={oQuoteProtocol} swapExpiry={swapExpiry} />}</div>
+          )}
         </div>
       </div>
 

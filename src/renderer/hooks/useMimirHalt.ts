@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -19,36 +18,24 @@ import { DEFAULT_MIMIR_HALT } from '../services/thorchain/const'
 import {
   MimirHaltRD,
   MimirHalt,
-  Mimir,
   MimirHaltTradingGlobal,
   MimirHaltLpGlobal,
   LastblockItems
 } from '../services/thorchain/types'
-import { useDex } from './useDex'
 
 /**
  * Helper to check Mimir status by given Mimir value and last height
  */
-export const getMimirStatus = (mimir = 0, lastHeight = 0) => {
-  // no mimir -> no action
+export const getMimirStatus = (mimir = 0, lastHeight = 0): boolean => {
   if (mimir === 0) return false
-  // 1 -> halt | pause
   if (mimir === 1) return true
-  // compare to current block height
-  if (mimir < lastHeight) return true
-  // No action for other cases
-  return false
+  return mimir < lastHeight
 }
-/**
- * Hook to get halt status defined by `Mimir`
- *
- * Note: Same rule as we have for services - Use this hook in top level *views only (but in child components)
- */
+
 export const useMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: MimirHalt } => {
-  const { mimir$, thorchainLastblockState$ } = useThorchainContext()
+  const { mimir$: thorMimir$, thorchainLastblockState$ } = useThorchainContext()
   const { mimir$: mayaMimir$, mayachainLastblockState$ } = useMayachainContext()
 
-  const { dex } = useDex()
   const [enabledChains, setEnabledChains] = useState<EnabledChain[]>([])
 
   useEffect(() => {
@@ -56,46 +43,60 @@ export const useMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: MimirHalt
     return () => subscription.unsubscribe()
   }, [])
 
-  const lastDexBlockState = dex.chain === THORChain ? thorchainLastblockState$ : mayachainLastblockState$
-  const dexMimir = dex.chain === THORChain ? mimir$ : mayaMimir$
-  const createMimirGroup = (keys: string[], mimir: Mimir, lastHeight?: number) => {
-    return keys.reduce((acc, key) => {
+  const createMimirGroup = (keys: string[], mimir: Record<string, number>, lastHeight: number) =>
+    keys.reduce((acc, key) => {
       acc[key] = getMimirStatus(mimir[key], lastHeight)
       return acc
     }, {} as Record<string, boolean>)
-  }
+
+  const combinedMimir$ = Rx.combineLatest([thorMimir$, thorchainLastblockState$, mayaMimir$, mayachainLastblockState$])
 
   const [mimirHaltRD] = useObservableState<MimirHaltRD>(
     () =>
-      FP.pipe(
-        Rx.combineLatest([dexMimir, lastDexBlockState]),
-        RxOp.map(([mimirRD, chainLastblockRD]) =>
+      combinedMimir$.pipe(
+        RxOp.map(([thorMimirRD, thorLastBlockRD, mayaMimirRD, mayaLastBlockRD]) =>
           FP.pipe(
-            sequenceTRD(mimirRD, chainLastblockRD),
-            RD.map(([mimir, lastblockItems]) => {
-              const lastHeight =
-                dex.chain === THORChain
-                  ? getLastHeightThorchain(lastblockItems as LastblockItems)
-                  : getLastHeightMaya(lastblockItems as LastblockItemsMaya)
-              const mapChainToKey = (prefix: string, chain: string) => `${prefix}${chain}Chain`
+            sequenceTRD(thorMimirRD, thorLastBlockRD, mayaMimirRD, mayaLastBlockRD),
+            RD.map(([thorMimir, thorLastBlock, mayaMimir, mayaLastBlock]) => {
+              const thorLastHeight = getLastHeightThorchain(thorLastBlock as LastblockItems)
+              const mayaLastHeight = getLastHeightMaya(mayaLastBlock as LastblockItemsMaya)
 
-              const haltChainKeys = enabledChains.map((chain) => mapChainToKey('halt', chain))
-              const haltTradingKeys = enabledChains.map((chain) => mapChainToKey('halt', chain) + 'Trading')
-              const pauseLPKeys = enabledChains.map((chain) => mapChainToKey('pauseLp', chain))
+              const haltChainKeys = enabledChains.map((chain) => `halt${chain}Chain`)
+              const haltTradingKeys = enabledChains.map((chain) => `halt${chain}ChainTrading`)
+              const pauseLPKeys = enabledChains.map((chain) => `pauseLp${chain}`)
 
-              const haltChain = createMimirGroup(haltChainKeys, mimir, lastHeight)
-              const haltTrading = createMimirGroup(haltTradingKeys, mimir, lastHeight)
-              const pauseLP = createMimirGroup(pauseLPKeys, mimir, lastHeight)
+              const thorHaltChain = createMimirGroup(haltChainKeys, thorMimir, thorLastHeight)
+              const thorHaltTrading = createMimirGroup(haltTradingKeys, thorMimir, thorLastHeight)
+              const thorPauseLP = createMimirGroup(pauseLPKeys, thorMimir, thorLastHeight)
 
-              // Include global values separately
+              const mayaHaltChain = createMimirGroup(haltChainKeys, mayaMimir, mayaLastHeight)
+              const mayaHaltTrading = createMimirGroup(haltTradingKeys, mayaMimir, mayaLastHeight)
+              const mayaPauseLP = createMimirGroup(pauseLPKeys, mayaMimir, mayaLastHeight)
+
               const haltTradingGlobal: MimirHaltTradingGlobal = {
-                haltTrading: getMimirStatus(mimir.HALTTRADING, lastHeight)
+                haltTrading: getMimirStatus(
+                  thorMimir.HALTTRADING || mayaMimir.HALTTRADING,
+                  Math.max(thorLastHeight, mayaLastHeight)
+                )
               }
 
               const pauseLpGlobal: MimirHaltLpGlobal = {
-                pauseLp: getMimirStatus(mimir.PAUSELP, lastHeight)
+                pauseLp: getMimirStatus(
+                  thorMimir.PAUSELP || mayaMimir.PAUSELP,
+                  Math.max(thorLastHeight, mayaLastHeight)
+                )
               }
-              return { ...haltChain, ...haltTrading, ...pauseLP, ...haltTradingGlobal, ...pauseLpGlobal } as MimirHalt
+
+              return {
+                ...thorHaltChain,
+                ...thorHaltTrading,
+                ...thorPauseLP,
+                ...mayaHaltChain,
+                ...mayaHaltTrading,
+                ...mayaPauseLP,
+                ...haltTradingGlobal,
+                ...pauseLpGlobal
+              } as MimirHalt
             })
           )
         ),
@@ -104,23 +105,22 @@ export const useMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: MimirHalt
     RD.initial
   )
 
-  const getLastHeightThorchain = (lastblockItems: LastblockItems) => {
-    const lastHeight = FP.pipe(
+  const getLastHeightThorchain = (lastblockItems: LastblockItems): number => {
+    return FP.pipe(
       lastblockItems,
       A.findFirst(({ thorchain }) => thorchain > 0),
       O.map(({ thorchain }) => thorchain),
-      O.toUndefined
+      O.getOrElse(() => 0)
     )
-    return lastHeight
   }
-  const getLastHeightMaya = (lastblockItems: LastblockItemsMaya) => {
-    const lastHeight = FP.pipe(
+
+  const getLastHeightMaya = (lastblockItems: LastblockItemsMaya): number => {
+    return FP.pipe(
       lastblockItems,
       A.findFirst(({ mayachain }) => mayachain > 0),
       O.map(({ mayachain }) => mayachain),
-      O.toUndefined
+      O.getOrElse(() => 0)
     )
-    return lastHeight
   }
 
   const mimirHalt = useMemo(
@@ -128,7 +128,7 @@ export const useMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: MimirHalt
       FP.pipe(
         mimirHaltRD,
         RD.toOption,
-        O.getOrElse<MimirHalt>(() => DEFAULT_MIMIR_HALT)
+        O.getOrElse(() => DEFAULT_MIMIR_HALT)
       ),
     [mimirHaltRD]
   )
