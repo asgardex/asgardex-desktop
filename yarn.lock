@@ -11612,6 +11612,7 @@ __metadata:
     eslint: "npm:^8.23.0"
     eslint-config-prettier: "npm:^8.5.0"
     eslint-plugin-prettier: "npm:^4.0.0"
+    eslint-plugin-unused-imports: "npm:^4.1.4"
     ethers: "npm:5.7.2"
     file-loader: "npm:^6.2.0"
     fp-ts: "npm:^2.12.1"
@@ -16447,6 +16448,19 @@ __metadata:
   peerDependencies:
     eslint: ^7.5.0 || ^8.0.0
   checksum: 10/460a67f68af042f33e8f8268e4d01e8a045da3872f9ad03a19efbb6396d28f0ed4b1cc7fa19032db5291e8cda5259dc044b9eced3ab848b5b38c4a6ef624563c
+  languageName: node
+  linkType: hard
+
+"eslint-plugin-unused-imports@npm:^4.1.4":
+  version: 4.1.4
+  resolution: "eslint-plugin-unused-imports@npm:4.1.4"
+  peerDependencies:
+    "@typescript-eslint/eslint-plugin": ^8.0.0-0 || ^7.0.0 || ^6.0.0 || ^5.0.0
+    eslint: ^9.0.0 || ^8.0.0
+  peerDependenciesMeta:
+    "@typescript-eslint/eslint-plugin":
+      optional: true
+  checksum: 10/8e987028ad925ce1e04c01dcae70adbf44c2878a8b15c4327b33a2861e471d7fe00f6fe213fbd2b936f3fcefc8ccabb0d778aa1d6e0e0387a3dc7fe150cd4ed4
   languageName: node
   linkType: hard
 
