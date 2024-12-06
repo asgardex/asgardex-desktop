@@ -26,7 +26,7 @@ import MidgardErrorAlert from './AppMidgardError'
 import { AppUpdateView } from './AppUpdateView'
 import * as Styled from './AppView.styles'
 
-export const AppView: React.FC = (): JSX.Element => {
+export const AppView = (): JSX.Element => {
   const intl = useIntl()
 
   const { locale$ } = useI18nContext()

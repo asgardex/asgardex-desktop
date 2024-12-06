@@ -13,7 +13,7 @@ interface ErrorAlertProps {
   reloadHandler: () => void
 }
 
-const MidgardErrorAlert: React.FC<ErrorAlertProps> = ({ apiEndpoint, reloadHandler }) => {
+const MidgardErrorAlert = ({ apiEndpoint, reloadHandler }: ErrorAlertProps) => {
   const intl = useIntl()
   const renderContent = FP.pipe(
     apiEndpoint,

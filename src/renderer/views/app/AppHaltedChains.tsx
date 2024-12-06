@@ -25,7 +25,7 @@ type HaltedChainsState = {
   pausedLP: boolean
 }
 
-const HaltedChainsWarning: React.FC<HaltedChainsWarningProps> = ({ haltedChainsRD, mimirHaltRD }) => {
+const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD }: HaltedChainsWarningProps) => {
   const intl = useIntl()
   const prevHaltedChains = useRef<Chain[]>([])
   const prevMimirHalt = useRef<MimirHalt>({
