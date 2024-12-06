@@ -26,7 +26,7 @@ import { useWalletContext } from '../../contexts/WalletContext'
 import { getAssetFromNullableString } from '../../helpers/assetHelper'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { useDex } from '../../hooks/useDex'
-import { useMimirHalt } from '../../hooks/useMimirHalt'
+import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useSymDepositAddresses } from '../../hooks/useSymDepositAddresses'
 import { DepositRouteParams } from '../../routes/pools/deposit'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
@@ -85,7 +85,7 @@ export const DepositView: React.FC<Props> = () => {
   const shares$ = dex.chain === THORChain ? sharesThor$ : sharesMaya$
 
   const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
-  const { mimirHalt } = useMimirHalt()
+  const { mimirHalt } = useThorchainMimirHalt()
   const { keystoreService, reloadBalancesByChain } = useWalletContext()
 
   const { assetWithDecimal$ } = useChainContext()

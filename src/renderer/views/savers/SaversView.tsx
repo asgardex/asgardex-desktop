@@ -35,7 +35,7 @@ import { sequenceTOption, sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { addressFromOptionalWalletAddress } from '../../helpers/walletHelper'
 import { useDex } from '../../hooks/useDex'
-import { useMimirHalt } from '../../hooks/useMimirHalt'
+import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { usePricePool } from '../../hooks/usePricePool'
@@ -113,7 +113,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   const oPoolAddress: O.Option<PoolAddress> = useObservableState(selectedPoolAddress$, O.none)
 
   const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
-  const { mimirHalt } = useMimirHalt()
+  const { mimirHalt } = useThorchainMimirHalt()
   // reload inbound addresses at `onMount` to get always latest `pool address` + `feeRates`
   useEffect(() => {
     reloadInboundAddresses()

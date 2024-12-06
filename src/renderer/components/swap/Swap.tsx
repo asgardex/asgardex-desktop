@@ -88,6 +88,7 @@ import { getZeroSwapFees } from '../../services/chain/fees/swap'
 import { SwapTxParams, SwapFeesRD, SwapFees, FeeRD, SwapTxState } from '../../services/chain/types'
 import { ApproveParams, IsApprovedRD } from '../../services/evm/types'
 import { getPoolDetail as getPoolDetailMaya } from '../../services/mayaMigard/utils'
+import { PoolAddress } from '../../services/midgard/types'
 import { getPoolDetail } from '../../services/midgard/utils'
 import { userChains$ } from '../../services/storage/userChains'
 import { addAsset } from '../../services/storage/userChainTokens'
@@ -829,9 +830,9 @@ export const Swap = ({
     return expectedAmount
   }, [oQuoteProtocol, targetAsset])
 
-  // Quote Errors
-  const quoteErrors: string[] = useMemo(() => {
-    const protocolErrors = FP.pipe(
+  // Aggregator api Fetch Error
+  const aggregatorErrors: JSX.Element = useMemo(() => {
+    const protocolErrors: string[] = FP.pipe(
       oErrorProtocol,
       O.fold(
         () => [],
@@ -839,7 +840,17 @@ export const Swap = ({
       )
     )
 
-    return [...protocolErrors]
+    if (protocolErrors.length === 0) {
+      return <></>
+    }
+
+    return (
+      <ErrorLabel>
+        {protocolErrors.map((error, index) => (
+          <div key={index}>{error}</div>
+        ))}
+      </ErrorLabel>
+    )
   }, [oErrorProtocol])
 
   /**
@@ -928,38 +939,36 @@ export const Swap = ({
   }, [oQuoteProtocol, disableSlippage, swapResultAmountMax, zeroTargetBaseAmountMax1e8])
 
   const oSwapParams: O.Option<SwapTxParams> = useMemo(() => {
-    const oSwapParamsProtocol = FP.pipe(
-      sequenceTOption(oPoolAddressThor, oPoolAddressMaya, oSourceAssetWB, oQuoteProtocol),
-      O.map(
-        ([
-          poolAddressThor,
-          poolAddressMaya,
-          { walletType, walletAddress, walletAccount, walletIndex, hdMode },
-          quoteSwap
-        ]) => {
-          let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
-          if (!isTokenAsset(sourceAsset) && !isTradeAsset(sourceAsset) && !isSynthAsset(sourceAsset)) {
-            if (sourceChainAssetAmount.lt(amountToSwap.plus(swapFees.inFee.amount))) {
-              amountToSwap = sourceChainAssetAmount.minus(swapFees.inFee.amount)
-            }
-          }
+    const oPoolAddress: O.Option<PoolAddress> = FP.pipe(
+      oQuoteProtocol,
+      O.chain((quoteSwap) => (quoteSwap.protocol === 'Thorchain' ? oPoolAddressThor : oPoolAddressMaya))
+    )
 
-          return {
-            poolAddress: quoteSwap.protocol === 'Thorchain' ? poolAddressThor : poolAddressMaya,
-            asset: sourceAsset,
-            amount: amountToSwap,
-            memo: updateMemo(quoteSwap.memo, applyBps, network),
-            walletType,
-            sender: walletAddress,
-            walletAccount,
-            walletIndex,
-            hdMode,
-            dex: quoteSwap.protocol === 'Thorchain' ? thorDetails : mayaDetails
+    return FP.pipe(
+      sequenceTOption(oPoolAddress, oSourceAssetWB, oQuoteProtocol),
+      O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, quoteSwap]) => {
+        let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
+
+        if (!isTokenAsset(sourceAsset) && !isTradeAsset(sourceAsset) && !isSynthAsset(sourceAsset)) {
+          if (sourceChainAssetAmount.lt(amountToSwap.plus(swapFees.inFee.amount))) {
+            amountToSwap = sourceChainAssetAmount.minus(swapFees.inFee.amount)
           }
         }
-      )
+
+        return {
+          poolAddress,
+          asset: sourceAsset,
+          amount: amountToSwap,
+          memo: updateMemo(quoteSwap.memo, applyBps, network),
+          walletType,
+          sender: walletAddress,
+          walletAccount,
+          walletIndex,
+          hdMode,
+          dex: quoteSwap.protocol === 'Thorchain' ? thorDetails : mayaDetails
+        }
+      })
     )
-    return oSwapParamsProtocol
   }, [
     oPoolAddressThor,
     oPoolAddressMaya,
@@ -1224,11 +1233,22 @@ export const Swap = ({
     )
   }, [approveFeeParamsUpdated, checkApprovedStatus, oApproveParams])
 
-  // const minAmountError = useMemo(() => {
-  //   if (isZeroAmountToSwap) return false
-  //   const minAmountIn = convertBaseAmountDecimal(reccommendedAmountIn.baseAmount, amountToSwapMax1e8.decimal)
-  //   return amountToSwapMax1e8.lt(fe)
-  // }, [amountToSwapMax1e8, isZeroAmountToSwap, reccommendedAmountIn.baseAmount])
+  const minAmountError = useMemo(() => {
+    const errors: string[] = FP.pipe(
+      oQuoteProtocol,
+      O.fold(
+        () => [],
+        (quoteSwap) => quoteSwap.errors
+      )
+    )
+
+    const minAmountErrorMessage = errors.find((error) => error.includes('is less than reccommended Min Amount:'))
+
+    if (!minAmountErrorMessage) {
+      return false
+    }
+    return true
+  }, [oQuoteProtocol])
 
   // // sets the locked asset amount to be the asset pool depth
   useEffect(() => {
@@ -1596,48 +1616,42 @@ export const Swap = ({
   }, [isZeroAmountToSwap, swapFees, sourceChainAssetAmount])
 
   const quoteError: JSX.Element = useMemo(() => {
-    if (quoteErrors.length === 0) {
+    const swapErrors: string[] = FP.pipe(
+      oQuoteProtocol,
+      O.fold(
+        () => [],
+        (quoteSwap) => quoteSwap.errors
+      )
+    )
+
+    if (swapErrors.length === 0) {
       return <></>
     }
-
-    if (lockedWallet || quoteOnly) {
-      return <></>
-    }
-    const error = quoteErrors[0].split(':')
-    const assetPart = error.length === 3 ? error[2].split('(')[1]?.split(')')[0] : undefined
-    if (!lockedWallet && assetPart === `${targetAsset.chain}.${targetAsset.symbol}`) {
-      return <ErrorLabel>{intl.formatMessage({ id: 'swap.errors.pool.notAvailable' }, { pool: assetPart })}</ErrorLabel>
-    }
-    console.log(error)
-    // Extract numerical value from error string
-    const match = error[1].match(/(\d+)/)
-    const numberString = match ? match[1] : null
-    const remainingText = error[1].replace(/\d+/g, '').trim()
-
-    const assetAmount = numberString
-      ? new CryptoAmount(convertBaseAmountDecimal(baseAmount(numberString), sourceAssetDecimal), sourceAsset)
-      : new CryptoAmount(baseAmount(0), sourceAsset)
 
     return (
       <ErrorLabel>
-        {numberString
-          ? intl.formatMessage(
-              { id: 'swap.errors.amount.thornodeQuoteError' },
-              { error: `${assetAmount.formatedAssetString()} ${remainingText}` }
-            )
-          : intl.formatMessage({ id: 'swap.errors.amount.thornodeQuoteError' }, { error: error[1] })}
+        {swapErrors.map((error, index) => {
+          // Check for specific error patterns
+          if (error.includes('is less than reccommended Min Amount')) {
+            const matches = error.match(/amount in: (\d+) is less than reccommended Min Amount: (\d+)/)
+            if (matches) {
+              const [_, amountIn, minAmount] = matches
+              const formattedAmountIn = new CryptoAmount(baseAmount(amountIn), sourceAsset).formatedAssetString()
+              const formattedMinAmount = new CryptoAmount(baseAmount(minAmount), sourceAsset).formatedAssetString()
+              return (
+                <div key={index}>
+                  {`Error: Amount ${formattedAmountIn} is less than the recommended minimum amount: ${formattedMinAmount}`}
+                </div>
+              )
+            }
+          }
+
+          // Default error display
+          return <div key={index}>{error}</div>
+        })}
       </ErrorLabel>
     )
-  }, [
-    quoteErrors,
-    lockedWallet,
-    quoteOnly,
-    targetAsset.chain,
-    targetAsset.symbol,
-    sourceAssetDecimal,
-    sourceAsset,
-    intl
-  ])
+  }, [oQuoteProtocol, sourceAsset])
 
   const sourceChainFeeErrorLabel: JSX.Element = useMemo(() => {
     if (!sourceChainFeeError) {
@@ -2147,7 +2161,7 @@ export const Swap = ({
           onChange={setAmountToSwapMax1e8}
           onChangePercent={setAmountToSwapFromPercentValue}
           onBlur={reloadFeesHandler}
-          // showError={minAmountError}
+          showError={minAmountError}
           hasLedger={hasSourceAssetLedger}
           useLedger={useSourceAssetLedger}
           useLedgerHandler={onClickUseSourceAssetLedger}
@@ -2615,6 +2629,7 @@ export const Swap = ({
                 </FlatButton>
                 {sourceChainFeeErrorLabel}
                 {quoteError}
+                {aggregatorErrors}
               </>
             ) : (
               <>

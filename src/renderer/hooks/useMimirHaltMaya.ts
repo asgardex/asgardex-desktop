@@ -9,18 +9,18 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { EnabledChain } from '../../shared/utils/chain'
-import { useThorchainContext } from '../contexts/ThorchainContext'
+import { useMayachainContext } from '../contexts/MayachainContext'
 import { sequenceTRD } from '../helpers/fpHelpers'
+import {
+  LastblockItems,
+  Mimir,
+  MimirHalt,
+  MimirHaltLpGlobal,
+  MimirHaltRD,
+  MimirHaltTradingGlobal
+} from '../services/mayachain/types'
 import { userChains$ } from '../services/storage/userChains'
 import { DEFAULT_MIMIR_HALT } from '../services/thorchain/const'
-import {
-  MimirHaltRD,
-  MimirHalt,
-  Mimir,
-  MimirHaltTradingGlobal,
-  MimirHaltLpGlobal,
-  LastblockItems
-} from '../services/thorchain/types'
 
 /**
  * Helper to check Mimir status by given Mimir value and last height
@@ -35,13 +35,9 @@ export const getMimirStatus = (mimir = 0, lastHeight = 0) => {
   // No action for other cases
   return false
 }
-/**
- * Hook to get halt status defined by `Mimir`
- *
- * Note: Same rule as we have for services - Use this hook in top level *views only (but in child components)
- */
-export const useThorchainMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: MimirHalt } => {
-  const { mimir$, thorchainLastblockState$ } = useThorchainContext()
+
+export const useMayachainMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: MimirHalt } => {
+  const { mimir$, mayachainLastblockState$ } = useMayachainContext()
 
   const [enabledChains, setEnabledChains] = useState<EnabledChain[]>([])
 
@@ -60,12 +56,12 @@ export const useThorchainMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: 
   const [mimirHaltRD] = useObservableState<MimirHaltRD>(
     () =>
       FP.pipe(
-        Rx.combineLatest([mimir$, thorchainLastblockState$]),
+        Rx.combineLatest([mimir$, mayachainLastblockState$]),
         RxOp.map(([mimirRD, chainLastblockRD]) =>
           FP.pipe(
             sequenceTRD(mimirRD, chainLastblockRD),
             RD.map(([mimir, lastblockItems]) => {
-              const lastHeight = getLastHeightThorchain(lastblockItems as LastblockItems)
+              const lastHeight = getLastHeightMaya(lastblockItems)
 
               const haltChainKeys = enabledChains.map((chain) => `halt${chain}Chain`)
               const haltTradingKeys = enabledChains.map((chain) => `halt${chain}ChainTrading`)
@@ -92,11 +88,11 @@ export const useThorchainMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: 
     RD.initial
   )
 
-  const getLastHeightThorchain = (lastblockItems: LastblockItems) => {
+  const getLastHeightMaya = (lastblockItems: LastblockItems) => {
     return FP.pipe(
       lastblockItems,
-      A.findFirst(({ thorchain }) => thorchain > 0),
-      O.map(({ thorchain }) => thorchain),
+      A.findFirst(({ mayachain }) => mayachain > 0),
+      O.map(({ mayachain }) => mayachain),
       O.getOrElse(() => 0)
     )
   }

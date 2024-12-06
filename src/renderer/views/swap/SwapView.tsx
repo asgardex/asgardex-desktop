@@ -42,7 +42,8 @@ import { eqChain, eqNetwork } from '../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { addressFromOptionalWalletAddress, getWalletAddressFromNullableString } from '../../helpers/walletHelper'
-import { useMimirHalt } from '../../hooks/useMimirHalt'
+import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
+import { useMayachainMimirHalt } from '../../hooks/useMimirHaltMaya'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { usePricePool } from '../../hooks/usePricePool'
@@ -131,22 +132,23 @@ const SuccessRouteView: React.FC<Props> = ({
   const { chain: sourceChain } = sourceAsset.type === AssetType.SYNTH ? mayaDetails.asset : sourceAsset
   const { chain: targetChain } = targetAsset.type === AssetType.SYNTH ? mayaDetails.asset : targetAsset
 
-  const [haltedChainsThor] = useObservableState(
-    () => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))),
-    []
+  const combinedHaltedChains$ = useMemo(
+    () =>
+      FP.pipe(
+        Rx.combineLatest([haltedChains$, haltedChainsMaya$]),
+        RxOp.map(([thorChainsRD, mayaChainsRD]) => {
+          // Extract values from RemoteData
+          const thorChains = RD.getOrElse((): Chain[] => [])(thorChainsRD)
+          const mayaChains = RD.getOrElse((): Chain[] => [])(mayaChainsRD)
+          // Combine results
+          return [...thorChains, ...mayaChains]
+        })
+      ),
+    [haltedChains$, haltedChainsMaya$]
   )
 
-  const [haltedChainsMaya] = useObservableState(
-    () => FP.pipe(haltedChainsMaya$, RxOp.map(RD.getOrElse((): Chain[] => []))),
-    []
-  )
-  const combinedHaltedChains = useMemo(() => {
-    if (haltedChainsThor.length > 0 && haltedChainsMaya.length > 0) {
-      return [...haltedChainsThor, ...haltedChainsMaya]
-    }
-    return []
-  }, [haltedChainsThor, haltedChainsMaya])
-
+  const [combinedHaltedChains] = useObservableState(() => combinedHaltedChains$, [])
+  console.log(combinedHaltedChains)
   useEffect(() => {
     // Source asset is the asset of the pool we need to interact with
     // Store it in global state, all depending streams will be updated then
@@ -161,7 +163,8 @@ const SuccessRouteView: React.FC<Props> = ({
   const selectedPoolAddressThor = useObservableState(selectedPoolAddress$, O.none)
   const selectedPoolAddressMaya = useObservableState(selectedPoolAddressMaya$, O.none)
 
-  const { mimirHalt } = useMimirHalt()
+  const { mimirHalt: mimirHaltThor } = useThorchainMimirHalt()
+  const { mimirHalt: mimirHaltMaya } = useMayachainMimirHalt()
 
   // switches sourcechain context eth | avax | bsc - needed for approve
   const { reloadApproveFee, approveFee$, approveERC20Token$, isApprovedERC20Token$ } = useEvmContext(sourceChain)
@@ -251,16 +254,6 @@ const SuccessRouteView: React.FC<Props> = ({
       ),
     O.none
   )
-
-  // const protocolOption: O.Option<string> = FP.pipe(selectedPoolAddresses, ({ thor, maya }) => {
-  //   if (O.isSome(thor)) {
-  //     return O.some(thor.value.protocol)
-  //   }
-  //   if (O.isSome(maya)) {
-  //     return O.some(maya.value.protocol)
-  //   }
-  //   return O.none
-  // })
 
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(THORChain))
 
@@ -523,18 +516,35 @@ const SuccessRouteView: React.FC<Props> = ({
                 combinedAssetDetails,
                 A.map(({ asset }) => asset)
               )
-              const disableAllPoolActions = (chain: Chain) =>
-                PoolHelpers.disableAllActions({ chain, haltedChains: combinedHaltedChains, mimirHalt })
+              const disableAllPoolActionsThor = (chain: Chain) =>
+                PoolHelpers.disableAllActions({ chain, haltedChains: combinedHaltedChains, mimirHalt: mimirHaltThor })
 
-              const disableTradingPoolActions = (chain: Chain) =>
-                PoolHelpers.disableTradingActions({ chain, haltedChains: combinedHaltedChains, mimirHalt })
+              const disableTradingPoolActionsThor = (chain: Chain) =>
+                PoolHelpers.disableTradingActions({
+                  chain,
+                  haltedChains: combinedHaltedChains,
+                  mimirHalt: mimirHaltThor
+                })
+              const disableAllPoolActionsMaya = (chain: Chain) =>
+                PoolHelpers.disableAllActions({ chain, haltedChains: combinedHaltedChains, mimirHalt: mimirHaltMaya })
+
+              const disableTradingPoolActionsMaya = (chain: Chain) =>
+                PoolHelpers.disableTradingActions({
+                  chain,
+                  haltedChains: combinedHaltedChains,
+                  mimirHalt: mimirHaltMaya
+                })
 
               const checkDisableSwapAction = () => {
                 return (
-                  disableAllPoolActions(sourceAsset.asset.chain) ||
-                  disableTradingPoolActions(sourceAsset.asset.chain) ||
-                  disableAllPoolActions(targetAsset.asset.chain) ||
-                  disableTradingPoolActions(targetAsset.asset.chain)
+                  disableAllPoolActionsThor(sourceAsset.asset.chain) ||
+                  disableAllPoolActionsMaya(sourceAsset.asset.chain) ||
+                  disableTradingPoolActionsThor(sourceAsset.asset.chain) ||
+                  disableTradingPoolActionsMaya(sourceAsset.asset.chain) ||
+                  disableAllPoolActionsThor(targetAsset.asset.chain) ||
+                  disableAllPoolActionsMaya(targetAsset.asset.chain) ||
+                  disableTradingPoolActionsThor(targetAsset.asset.chain) ||
+                  disableTradingPoolActionsMaya(targetAsset.asset.chain)
                 )
               }
 
@@ -620,7 +630,7 @@ const SuccessTradeRouteView: React.FC<Props> = ({
   } = useWalletContext()
   const { reloadTxStatus, getTradeAccount$ } = useThorchainContext()
   const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
-  const { mimirHalt } = useMimirHalt()
+  const { mimirHalt } = useThorchainMimirHalt()
   const pricePool = usePricePool()
   const { isPrivate } = useApp()
   const { thorchainQuery } = useThorchainQueryContext()

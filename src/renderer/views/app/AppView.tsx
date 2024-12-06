@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import { SyncOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
+import { ThorChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import { Grid } from 'antd'
@@ -25,7 +26,8 @@ import { rdAltOnPending } from '../../helpers/fpHelpers'
 import { useDex } from '../../hooks/useDex'
 import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
 import { useLedgerAddresses } from '../../hooks/useLedgerAddresses'
-import { useMimirHalt } from '../../hooks/useMimirHalt'
+import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
+import { useMayachainMimirHalt } from '../../hooks/useMimirHaltMaya'
 import { useTheme } from '../../hooks/useTheme'
 import { DEFAULT_MIMIR_HALT } from '../../services/thorchain/const'
 import { MimirHalt } from '../../services/thorchain/types'
@@ -84,16 +86,20 @@ export const AppView: React.FC = (): JSX.Element => {
   const reloadDexEndpoint = dex.chain === THORChain ? reloadApiEndpoint : reloadApiEndpointMaya
   const apiEndpoint = useObservableState(dex.chain === THORChain ? apiEndpoint$ : apiEndpointMaya$, RD.initial)
 
-  const haltedChainsRD = useObservableState(dex.chain === THORChain ? haltedChains$ : haltedChainsMaya$, RD.initial)
+  const haltedChainsThorRD = useObservableState(haltedChains$, RD.initial)
+  const haltedChainsMayaRD = useObservableState(haltedChainsMaya$, RD.initial)
 
+  const haltedChainsRD = dex.chain === ThorChain ? haltedChainsThorRD : haltedChainsMayaRD
   const prevHaltedChains = useRef<Chain[]>([])
   const prevMimirHalt = useRef<MimirHalt>(DEFAULT_MIMIR_HALT)
 
   const { walletsPersistentRD, reload: reloadPersistentWallets } = useKeystoreWallets()
   const { ledgerAddressesPersistentRD, reloadPersistentLedgerAddresses } = useLedgerAddresses()
 
-  const { mimirHaltRD } = useMimirHalt()
+  const { mimirHaltRD: mimirHaltThorRD } = useThorchainMimirHalt()
+  const { mimirHaltRD: mimirHaltMayaRD } = useMayachainMimirHalt()
 
+  const mimirHaltRD = dex.chain === THORChain ? mimirHaltThorRD : mimirHaltMayaRD
   const renderHaltedChainsWarning = useMemo(
     () =>
       FP.pipe(
