@@ -1,11 +1,10 @@
 import { Network } from '@xchainjs/xchain-client'
-import { Address, AnyAsset, AssetType, Chain, AssetAmount, baseToAsset } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, Chain, AssetAmount, baseToAsset } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import { IntlShape } from 'react-intl'
 
-import { Dex } from '../../shared/api/types'
 import { DEFAULT_EVM_HD_MODE } from '../../shared/evm/types'
 import { optionFromNullableString } from '../../shared/utils/fp'
 import { isLedgerWallet, isWalletType } from '../../shared/utils/guard'
@@ -179,28 +178,28 @@ export const filterWalletBalancesByAssets = (balances: NonEmptyWalletBalances, a
     return assetIndex >= 0
   })
 }
-export const filterWalletBalancesByAssetsForDex = (
-  balances: NonEmptyWalletBalances,
-  assets: AnyAsset[],
-  dex: Dex
-): WalletBalances => {
-  return balances.filter((balance) => {
-    // Check if the balance is a synthetic asset and filter based on dex
+// export const filterWalletBalancesByAssetsForDex = (
+//   balances: NonEmptyWalletBalances,
+//   assets: AnyAsset[],
+//   dex: Dex
+// ): WalletBalances => {
+//   return balances.filter((balance) => {
+//     // Check if the balance is a synthetic asset and filter based on dex
 
-    const walletAddressPrefix = balance.walletAddress.substring(0, 4).toUpperCase()
-    if (dex.chain !== walletAddressPrefix && balance.asset.type === AssetType.SYNTH) {
-      return false
-    }
+//     const walletAddressPrefix = balance.walletAddress.substring(0, 4).toUpperCase()
+//     if (dex.chain !== walletAddressPrefix && balance.asset.type === AssetType.SYNTH) {
+//       return false
+//     }
 
-    const assetIndex = assets.findIndex(
-      (asset) =>
-        asset.chain.toUpperCase() === balance.asset.chain.toUpperCase() &&
-        asset.symbol.toUpperCase() === balance.asset.symbol.toUpperCase() &&
-        asset.ticker.toUpperCase() === balance.asset.ticker.toUpperCase()
-    )
-    return assetIndex >= 0
-  })
-}
+//     const assetIndex = assets.findIndex(
+//       (asset) =>
+//         asset.chain.toUpperCase() === balance.asset.chain.toUpperCase() &&
+//         asset.symbol.toUpperCase() === balance.asset.symbol.toUpperCase() &&
+//         asset.ticker.toUpperCase() === balance.asset.ticker.toUpperCase()
+//     )
+//     return assetIndex >= 0
+//   })
+// }
 
 export const addressFromWalletAddress = ({ address }: Pick<WalletAddress, 'address'>): Address => address
 

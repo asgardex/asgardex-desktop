@@ -6,6 +6,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
+import { sequenceTOption } from '../../../helpers/fpHelpers'
 import * as Styled from './ViewTxButton.styles'
 
 type Props = {
@@ -16,6 +17,7 @@ type Props = {
   className?: string
   network?: string
   trackable?: boolean
+  protocol?: O.Option<string>
 }
 
 export const ViewTxButton: React.FC<Props> = ({
@@ -25,7 +27,8 @@ export const ViewTxButton: React.FC<Props> = ({
   label,
   className,
   network,
-  trackable = false
+  trackable = false,
+  protocol = O.none
 }): JSX.Element => {
   const intl = useIntl()
 
@@ -34,13 +37,21 @@ export const ViewTxButton: React.FC<Props> = ({
   }, [oTxHash, onClick])
 
   const handleTxTracker = useCallback(() => {
-    FP.pipe(
-      oTxHash,
-      O.map((txHash) =>
-        window.apiUrl.openExternal(`https://track.ninerealms.com/${txHash}?logo=asgardex.png&network=${network}`)
+    // Ensure both `protocol` and `oTxHash` are wrapped in Option
+    return FP.pipe(
+      sequenceTOption(protocol, oTxHash),
+      O.fold(
+        () => {},
+        ([protocolValue, txHash]) => {
+          const url =
+            protocolValue === 'Thorchain'
+              ? `https://track.ninerealms.com/${txHash}?logo=asgardex.png&network=${network || 'default'}`
+              : `https://www.xscanner.org/tx/${txHash}`
+          window.apiUrl.openExternal(url)
+        }
       )
     )
-  }, [network, oTxHash])
+  }, [protocol, oTxHash, network])
 
   return (
     <div className="flex flex-col">
