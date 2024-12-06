@@ -24,7 +24,7 @@ import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { useDex } from '../../hooks/useDex'
 import { useMayaScanPrice } from '../../hooks/useMayascanPrice'
-import { useMimirHalt } from '../../hooks/useMimirHalt'
+import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useTotalWalletBalance } from '../../hooks/useWalletBalance'
 import * as walletRoutes from '../../routes/wallet'
@@ -156,7 +156,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
     () => RD.toNullable(pendingPoolsMayaRD)?.poolDetails ?? [],
     [pendingPoolsMayaRD]
   )
-  const { mimirHaltRD } = useMimirHalt()
+  const { mimirHaltRD } = useThorchainMimirHalt()
 
   const disableRefresh = useMemo(() => RD.isPending(poolsRD) || loadingBalances, [loadingBalances, poolsRD])
 

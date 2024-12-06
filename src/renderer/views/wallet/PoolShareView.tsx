@@ -25,7 +25,7 @@ import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { addressFromOptionalWalletAddress } from '../../helpers/walletHelper'
 import { useDex } from '../../hooks/useDex'
-import { useMimirHalt } from '../../hooks/useMimirHalt'
+import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePoolShares } from '../../hooks/usePoolShares'
 import { useApp } from '../../store/app/hooks'
@@ -95,7 +95,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
 
   const haltedChains$ = dex.chain === THORChain ? haltedChainsThor$ : haltedMayaChains$
   const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
-  const { mimirHalt } = useMimirHalt()
+  const { mimirHalt } = useThorchainMimirHalt()
   const poolDetailsRD = useObservableState(allPoolDetails$, RD.pending)
   const { poolData: pricePoolData } = useObservableState(
     selectedPricePool$,

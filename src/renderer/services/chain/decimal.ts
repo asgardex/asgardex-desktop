@@ -9,12 +9,10 @@ import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { EthChain } from '@xchainjs/xchain-mayachain-query'
 import { MidgardQuery } from '@xchainjs/xchain-midgard-query'
 import { XRD_DECIMAL } from '@xchainjs/xchain-radix'
-import { THORChain } from '@xchainjs/xchain-thorchain'
-import { AnyAsset, AssetType } from '@xchainjs/xchain-util'
+import { AnyAsset } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { Dex } from '../../../shared/api/types'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import {
   isArbChain,
@@ -31,9 +29,8 @@ import { KUJI_DECIMAL } from '../kuji/const'
 import { AssetWithDecimalLD } from './types'
 
 // gets asset decimal from midgard-query tobefixed
-const getDecimal = (asset: AnyAsset, dex: Dex): Promise<number> => {
-  const { chain } =
-    asset.type === AssetType.SYNTH ? dex.asset : asset.type === AssetType.TRADE ? { chain: THORChain } : asset
+export const getDecimal = (asset: AnyAsset): Promise<number> => {
+  const { chain } = asset
 
   if (isArbChain(chain)) {
     return Promise.resolve(ARB_GAS_ASSET_DECIMAL)
@@ -77,8 +74,8 @@ const getDecimal = (asset: AnyAsset, dex: Dex): Promise<number> => {
   return Rx.from(midgardQuery.getDecimalForAsset(asset)).toPromise()
 }
 
-export const assetWithDecimal$ = (asset: AnyAsset, dex: Dex): AssetWithDecimalLD =>
-  Rx.from(getDecimal(asset, dex)).pipe(
+export const assetWithDecimal$ = (asset: AnyAsset): AssetWithDecimalLD =>
+  Rx.from(getDecimal(asset)).pipe(
     RxOp.map((decimal) =>
       RD.success({
         asset,

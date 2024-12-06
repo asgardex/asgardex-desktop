@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Balance, Network } from '@xchainjs/xchain-client'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
@@ -27,7 +27,6 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router'
 
 import { Dex } from '../../../../shared/api/types'
-import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString, EnabledChain, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
@@ -339,7 +338,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         createAction('wallet.action.send', () => assetHandler(walletAsset, 'send'))
       ]
 
-      if (isRuneNativeAsset(asset) && deepestPoolAsset && dex.chain !== MAYAChain) {
+      if (isRuneNativeAsset(asset) && deepestPoolAsset) {
         actions.push(
           createAction('common.swap', () =>
             navigate(
@@ -353,7 +352,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           )
         )
       }
-      if (isRuneNativeAsset(asset) && deepestPoolAsset && dex.chain !== MAYAChain) {
+      if (isRuneNativeAsset(asset) && deepestPoolAsset) {
         actions.push(
           createAction('common.trade', () =>
             navigate(
@@ -368,7 +367,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         )
       }
 
-      if (isCacaoAsset(asset) && deepestPoolAsset && dex.chain !== THORChain) {
+      if (isCacaoAsset(asset) && deepestPoolAsset) {
         actions.push(
           createAction('common.swap', () =>
             navigate(
@@ -383,13 +382,13 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         )
       }
 
-      if (isSynthAsset(asset)) {
+      if (isSynthAsset(asset) && deepestPoolAsset) {
         actions.push(
           createAction('common.swap', () =>
             navigate(
               poolsRoutes.swap.path({
                 source: `${asset.chain}/${asset.symbol}`,
-                target: assetToString(dex.asset),
+                target: assetToString(deepestPoolAsset),
                 sourceWalletType: walletType,
                 targetWalletType: DEFAULT_WALLET_TYPE
               })
@@ -398,15 +397,13 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         )
       }
 
-      if (hasActivePool) {
+      if (hasActivePool && deepestPoolAsset && !isCacaoAsset(asset) && !isRuneNativeAsset(asset)) {
         actions.push(
           createAction('common.swap', () =>
             navigate(
               poolsRoutes.swap.path({
                 source: assetToString(asset),
-                target: assetToString(
-                  isRuneNativeAsset(asset) || dex.chain === MAYAChain ? AssetCacao : AssetRuneNative
-                ),
+                target: assetToString(deepestPoolAsset),
                 sourceWalletType: walletType,
                 targetWalletType: DEFAULT_WALLET_TYPE
               })
@@ -414,7 +411,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           )
         )
 
-        if (dex.chain !== MAYAChain && hasSaversAssets) {
+        if (hasSaversAssets) {
           actions.push(
             createAction('common.earn', () =>
               navigate(

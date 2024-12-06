@@ -20,7 +20,7 @@ import { isRuneNativeAsset } from '../../helpers/assetHelper'
 import { eqOSelectedWalletAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { useDex } from '../../hooks/useDex'
-import { useMimirHalt } from '../../hooks/useMimirHalt'
+import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { clientByAsset$ } from '../../services/chain/client'
@@ -29,7 +29,7 @@ import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/
 import { SelectedWalletAsset } from '../../services/wallet/types'
 
 export const AssetDetailsView: React.FC = (): JSX.Element => {
-  const { mimirHalt } = useMimirHalt()
+  const { mimirHalt } = useThorchainMimirHalt()
   const {
     service: {
       pools: { haltedChains$: haltedChainsThor$ }

@@ -473,6 +473,7 @@ type SwapMessageKey =
   | 'swap.streaming.interval.info'
   | 'swap.streaming.quantity'
   | 'swap.streaming.quantity.info'
+  | 'swap.state.sending'
   | 'swap.state.pending'
   | 'swap.state.success'
   | 'swap.state.error'
