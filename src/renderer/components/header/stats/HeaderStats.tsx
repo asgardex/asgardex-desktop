@@ -7,7 +7,6 @@ import { baseToAsset, formatAssetAmountCurrency, currencySymbolByAsset } from '@
 import { Grid, Tooltip } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import { useIntl } from 'react-intl'
-import { useLocation } from 'react-router-dom'
 
 import { Dex } from '../../../../shared/api/types'
 import { isUSDAsset } from '../../../helpers/assetHelper'
@@ -26,7 +25,6 @@ export type Props = {
   reloadVolume24PriceRune: FP.Lazy<void>
   reloadVolume24PriceMaya: FP.Lazy<void>
   dex: Dex
-  changeDexHandler: FP.Lazy<void>
 }
 
 export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
@@ -39,8 +37,7 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
     volume24PriceMaya: volume24PriceMayaRD,
     reloadVolume24PriceRune,
     reloadVolume24PriceMaya,
-    dex,
-    changeDexHandler
+    dex
   } = props
 
   const isSmallMobileView = Grid.useBreakpoint()?.xs ?? false
@@ -179,15 +176,9 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
     }
   }, [reloadMayaPrice, mayaPriceRD])
 
-  const location = useLocation()
-  const isOnDepositPage = location.pathname.startsWith('/pools/deposit/')
-
-  // Combine the conditions to determine if it's clickable
-  const clickable = !isOnDepositPage
-
   return (
     <Styled.Wrapper>
-      <Styled.Container onClick={clickable ? changeDexHandler : undefined} clickable={clickable}>
+      <Styled.Container clickable={false}>
         <Styled.Dex dex={dex.chain}>{dex.chain}</Styled.Dex>
       </Styled.Container>
       <Styled.Container onClick={reloadRunePriceHandler} clickable={!RD.isPending(runePriceRD)}>
@@ -208,7 +199,7 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
           </Tooltip>
         </>
       )}
-      <Styled.Container onClick={clickable ? changeDexHandler : undefined} clickable={false}>
+      <Styled.Container clickable={false}>
         <Styled.Dex dex={AssetCacao.chain}>{AssetCacao.chain}</Styled.Dex>
       </Styled.Container>
       <Styled.Container onClick={reloadMayaPriceHandler} clickable={!RD.isPending(mayaPriceRD)}>

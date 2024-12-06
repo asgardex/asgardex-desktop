@@ -1,7 +1,6 @@
 import React, { useMemo, useState, useCallback, useRef } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Row, Col, Grid } from 'antd'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
@@ -11,7 +10,7 @@ import { useIntl } from 'react-intl'
 import { useMatch, Link, useNavigate, useLocation } from 'react-router-dom'
 import { palette, size } from 'styled-theme'
 
-import { Dex, mayaDetails, thorDetails } from '../../../shared/api/types'
+import { Dex } from '../../../shared/api/types'
 import { ReactComponent as CloseIcon } from '../../assets/svg/icon-close.svg'
 import { ReactComponent as MenuIcon } from '../../assets/svg/icon-menu.svg'
 import { ReactComponent as SwapIcon } from '../../assets/svg/icon-swap.svg'
@@ -83,7 +82,6 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
     keystore,
     wallets,
     dex,
-    changeDex = FP.constVoid,
     pricePools: oPricePools,
     runePrice: runePriceRD,
     mayaPrice: mayaPriceRD,
@@ -289,9 +287,6 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
     [headerHeight]
   )
 
-  const changeDexHandler = useCallback(() => {
-    changeDex(dex.chain === THORChain ? mayaDetails : thorDetails)
-  }, [changeDex, dex])
   return (
     <>
       <Styled.HeaderContainer>
@@ -302,7 +297,6 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
                 <Row align="middle" style={{ height: headerHeight }}>
                   <HeaderStats
                     dex={dex}
-                    changeDexHandler={changeDexHandler}
                     runePrice={runePriceRD}
                     mayaPrice={mayaPriceRD}
                     reloadRunePrice={reloadRunePrice}
@@ -335,7 +329,6 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
               <Row align="middle">
                 <HeaderStats
                   dex={dex}
-                  changeDexHandler={changeDexHandler}
                   runePrice={runePriceRD}
                   mayaPrice={mayaPriceRD}
                   reloadRunePrice={reloadRunePrice}

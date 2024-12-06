@@ -15,7 +15,7 @@ export const Container = styled.div<{ clickable: boolean }>`
   margin-right: 10px;
   min-width: 90px;
 
-  cursor: ${({ clickable }) => (clickable ? 'pointer' : 'not-allowed')};
+  cursor: ${({ clickable }) => (clickable ? 'pointer' : 'default')};
 
   &::last-child {
     margin-right: 0;
