@@ -1,7 +1,6 @@
 import React from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 
@@ -45,8 +44,7 @@ export const Header: React.FC = (): JSX.Element => {
   const { mayaPriceRD, reloadMayaPrice } = useMayaPrice()
   const { volume24PriceRD, reloadVolume24Price } = useVolume24Price()
   const { volume24PriceRD: volume24PriceMayaRD, reloadVolume24Price: reloadVolume24PriceMaya } = useVolume24PriceMaya()
-  const volume24HrRD = dex.chain === THORChain ? volume24PriceRD : volume24PriceMayaRD
-  const reloadVolume24HrRD = dex.chain === THORChain ? reloadVolume24Price : reloadVolume24PriceMaya
+
   const pricePools = usePricePools()
 
   const midgardStatusRD = useObservableState(healthStatus$, RD.initial)
@@ -72,8 +70,10 @@ export const Header: React.FC = (): JSX.Element => {
       reloadRunePrice={reloadRunePrice}
       mayaPrice={mayaPriceRD}
       reloadMayaPrice={reloadMayaPrice}
-      volume24Price={volume24HrRD}
-      reloadVolume24Price={reloadVolume24HrRD}
+      volume24PriceRune={volume24PriceRD}
+      volume24PriceMaya={volume24PriceMayaRD}
+      reloadVolume24PriceRune={reloadVolume24Price}
+      reloadVolume24PriceMaya={reloadVolume24PriceMaya}
       selectedPricePoolAsset={oSelectedPricePoolAsset}
       midgardStatus={midgardStatusRD}
       midgardMayaStatus={midgardMayaStatusRD}

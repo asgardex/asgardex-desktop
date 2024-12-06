@@ -62,8 +62,10 @@ export type Props = {
   reloadRunePrice: FP.Lazy<void>
   mayaPrice: PriceRD
   reloadMayaPrice: FP.Lazy<void>
-  volume24Price: PriceRD
-  reloadVolume24Price: FP.Lazy<void>
+  volume24PriceRune: PriceRD
+  volume24PriceMaya: PriceRD
+  reloadVolume24PriceRune: FP.Lazy<void>
+  reloadVolume24PriceMaya: FP.Lazy<void>
   selectedPricePoolAsset: SelectedPricePoolAsset
   midgardStatus: MidgardStatusRD
   midgardMayaStatus: MidgardStatusMayaRD
@@ -90,8 +92,10 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
     mimir: mimirRD,
     reloadRunePrice,
     reloadMayaPrice,
-    volume24Price: volume24PriceRD,
-    reloadVolume24Price,
+    volume24PriceRune: volume24PriceRD,
+    volume24PriceMaya: volume24PriceMayaRD,
+    reloadVolume24PriceRune,
+    reloadVolume24PriceMaya,
     selectedPricePoolAsset: oSelectedPricePoolAsset,
     lockHandler,
     changeWalletHandler$,
@@ -285,20 +289,6 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
     [headerHeight]
   )
 
-  const dexPrice = useMemo(() => {
-    // Use 'dex' to determine which DEX prices to use
-    if (dex.chain === THORChain) {
-      return {
-        price: runePriceRD,
-        reloadPrice: reloadRunePrice
-      }
-    } else {
-      return {
-        price: mayaPriceRD,
-        reloadPrice: reloadMayaPrice
-      }
-    }
-  }, [dex, runePriceRD, reloadRunePrice, mayaPriceRD, reloadMayaPrice])
   const changeDexHandler = useCallback(() => {
     changeDex(dex.chain === THORChain ? mayaDetails : thorDetails)
   }, [changeDex, dex])
@@ -313,10 +303,14 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
                   <HeaderStats
                     dex={dex}
                     changeDexHandler={changeDexHandler}
-                    runePrice={dexPrice.price}
-                    reloadRunePrice={dexPrice.reloadPrice}
-                    volume24Price={volume24PriceRD}
-                    reloadVolume24Price={reloadVolume24Price}
+                    runePrice={runePriceRD}
+                    mayaPrice={mayaPriceRD}
+                    reloadRunePrice={reloadRunePrice}
+                    reloadMayaPrice={reloadMayaPrice}
+                    volume24PriceRune={volume24PriceRD}
+                    volume24PriceMaya={volume24PriceMayaRD}
+                    reloadVolume24PriceRune={reloadVolume24PriceRune}
+                    reloadVolume24PriceMaya={reloadVolume24PriceMaya}
                   />
                 </Row>
               </Col>
@@ -343,9 +337,13 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
                   dex={dex}
                   changeDexHandler={changeDexHandler}
                   runePrice={runePriceRD}
+                  mayaPrice={mayaPriceRD}
                   reloadRunePrice={reloadRunePrice}
-                  volume24Price={volume24PriceRD}
-                  reloadVolume24Price={reloadVolume24Price}
+                  reloadMayaPrice={reloadMayaPrice}
+                  volume24PriceRune={volume24PriceRD}
+                  volume24PriceMaya={volume24PriceMayaRD}
+                  reloadVolume24PriceRune={reloadVolume24PriceRune}
+                  reloadVolume24PriceMaya={reloadVolume24PriceMaya}
                 />
               </Row>
               <Col>
