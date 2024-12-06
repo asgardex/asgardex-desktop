@@ -148,7 +148,7 @@ const SuccessRouteView: React.FC<Props> = ({
   )
 
   const [combinedHaltedChains] = useObservableState(() => combinedHaltedChains$, [])
-  console.log(combinedHaltedChains)
+
   useEffect(() => {
     // Source asset is the asset of the pool we need to interact with
     // Store it in global state, all depending streams will be updated then

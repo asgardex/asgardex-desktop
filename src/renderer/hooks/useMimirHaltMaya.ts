@@ -11,6 +11,7 @@ import * as RxOp from 'rxjs/operators'
 import { EnabledChain } from '../../shared/utils/chain'
 import { useMayachainContext } from '../contexts/MayachainContext'
 import { sequenceTRD } from '../helpers/fpHelpers'
+import { DEFAULT_MIMIR_HALT } from '../services/mayachain/const'
 import {
   LastblockItems,
   Mimir,
@@ -20,7 +21,6 @@ import {
   MimirHaltTradingGlobal
 } from '../services/mayachain/types'
 import { userChains$ } from '../services/storage/userChains'
-import { DEFAULT_MIMIR_HALT } from '../services/thorchain/const'
 
 /**
  * Helper to check Mimir status by given Mimir value and last height
