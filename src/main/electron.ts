@@ -125,11 +125,35 @@ const initMainWindow = async () => {
     }
   })
 
+  // Set zoom factor for different OS
+  mainWindow.webContents.on('did-finish-load', () => {
+    const scaleFactor = getDeviceScaleFactor()
+    if (mainWindow && IS_DEV) {
+      mainWindow.webContents.setZoomFactor(scaleFactor)
+    }
+  })
+
   mainWindowState.manage(mainWindow)
   mainWindow.on('closed', closeHandler)
   mainWindow.loadURL(BASE_URL)
   // hide menu at start, we need to wait for locale sent by `ipcRenderer`
   mainWindow.setMenuBarVisibility(false)
+}
+
+const getDeviceScaleFactor = () => {
+  // Adjust this function to determine scale factor based on your requirements
+  // Example: Adjust for different operating systems or screen resolutions
+  const os = process.platform
+  switch (os) {
+    case 'win32':
+      return 1.0 // Windows scale factor
+    case 'darwin':
+      return 1.0 // macOS scale factor
+    case 'linux':
+      return 1.5 // linux scale factor
+    default:
+      return 1.0 // Default scale factor for other OS
+  }
 }
 
 const langChangeHandler = (locale: Locale) => {

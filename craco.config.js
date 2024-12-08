@@ -1,5 +1,6 @@
 const path = require('path')
 
+const { overrideDevServer } = require('customize-cra')
 const { GitRevisionPlugin } = require('git-revision-webpack-plugin')
 const TerserPlugin = require('terser-webpack-plugin')
 const webpack = require('webpack')
@@ -81,6 +82,21 @@ module.exports = {
       })
     ]
   },
+  // Remove Warnings created by react-scripts.
+  // [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] & [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE]
+  devServer: overrideDevServer((devServerConfig) => {
+    return {
+      ...devServerConfig,
+      setupMiddlewares: (middlewares, devServer) => {
+        // Custom middleware logic here
+        devServer.app.use((req, res, next) => {
+          // None
+          next()
+        })
+        return middlewares
+      }
+    }
+  }),
   jest: {
     configure: {
       preset: 'ts-jest',
