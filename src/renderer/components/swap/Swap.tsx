@@ -902,7 +902,6 @@ export const Swap = ({
     pricePoolMaya
   ])
 
-  console.log(priceSwapResultAmountMax1e8.amount.amount().toNumber())
   /**
    * Price sum of swap fees (IN + OUT) and affiliate
    */
