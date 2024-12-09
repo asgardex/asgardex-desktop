@@ -33,6 +33,8 @@ import { reloadBalancesByChain } from '../../services/wallet'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ChainBalances, SelectedWalletAsset } from '../../services/wallet/types'
 import { useApp } from '../../store/app/hooks'
+import { useCoingecko } from '../../store/gecko/hooks'
+import { GECKO_MAP } from '../../types/generated/geckoMap'
 
 export const AssetsView: React.FC = (): JSX.Element => {
   const navigate = useNavigate()
@@ -43,6 +45,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
   const { dex } = useDex()
   const { mayaScanPriceRD } = useMayaScanPrice()
   const { isPrivate } = useApp()
+  const { geckoPriceMap, fetchPrice: fetchCoingeckoPrice } = useCoingecko()
 
   const {
     service: {
@@ -111,6 +114,22 @@ export const AssetsView: React.FC = (): JSX.Element => {
     // Then, sort the unique balances
     return uniqueBalances.sort((a, b) => getChainWeight(a.chain, dex) - getChainWeight(b.chain, dex))
   }, [chainBalances, dex, enabledChains])
+
+  const availableAssets = useMemo(() => {
+    let assetArr: string[] = []
+
+    chainBalances.forEach(({ balances }) => {
+      const assetIds =
+        balances._tag === 'RemoteSuccess' ? balances.value.map(({ asset }) => asset.symbol.toUpperCase()) : []
+      assetArr = [...assetArr, ...assetIds]
+    })
+
+    return assetArr.map((item) => GECKO_MAP?.[item] ?? null).filter((item) => item)
+  }, [chainBalances])
+
+  useEffect(() => {
+    fetchCoingeckoPrice(availableAssets.join(','))
+  }, [availableAssets, fetchCoingeckoPrice])
 
   const [{ loading: loadingBalances }] = useObservableState(
     () => balancesState$(DEFAULT_BALANCES_FILTER),
@@ -191,6 +210,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
         disableRefresh={disableRefresh}
         chainBalances={sortedBalances}
         pricePool={selectedPricePool}
+        geckoPrice={geckoPriceMap}
         mayaPricePool={selectedPricePoolMaya}
         poolDetails={poolDetails}
         poolDetailsMaya={poolDetailsMaya}

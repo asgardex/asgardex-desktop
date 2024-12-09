@@ -53,6 +53,7 @@ import {
   WalletBalances
 } from '../../../services/wallet/types'
 import { walletTypeToI18n } from '../../../services/wallet/util'
+import { GECKO_MAP } from '../../../types/generated/geckoMap'
 import { PricePool } from '../../../views/pools/Pools.types'
 import { ErrorView } from '../../shared/error/'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
@@ -82,6 +83,7 @@ export type GetPoolPriceValueFnMaya = (params: {
 type Props = {
   disableRefresh: boolean
   chainBalances: ChainBalances
+  geckoPrice: Record<string, { usd: number }>
   pricePool: PricePool
   mayaPricePool: PricePool
   poolDetails: PoolDetails
@@ -100,10 +102,11 @@ type Props = {
   disabledChains: EnabledChain[]
 }
 
-export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
+export const AssetsTableCollapsable = (props: Props): JSX.Element => {
   const {
     disableRefresh,
     chainBalances = [],
+    geckoPrice: geckoPriceData,
     pricePool,
     mayaPricePool,
     poolDetails,
@@ -254,18 +257,34 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         if (isUSDAsset(asset)) {
           price = balance.toString()
         } else {
+          const geckoPrice = geckoPriceData[GECKO_MAP?.[asset.symbol.toUpperCase()]]?.usd
+          const isThorchainNonEmpty = poolDetails.length !== 0
+          const isMayachainNonEmpty = poolDetailsMaya.length !== 0
+          const assetAmount = baseToAsset(amount).amount().toNumber()
+
+          console.log('GECKO PRICE - ', geckoPriceData)
+
           if (isChainOfMaya(asset.chain) && isChainOfThor(asset.chain)) {
             // Chain is supported by both MAYA and THOR, prioritize THOR
             price =
-              getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool) ||
-              getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool) ||
+              (isThorchainNonEmpty && getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool)) ||
+              (isMayachainNonEmpty &&
+                getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool)) ||
+              (geckoPrice && (assetAmount * geckoPrice).toFixed(3)) ||
               price
           } else if (isChainOfMaya(asset.chain)) {
             // Chain is supported only by MAYA
-            price = getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool) || price
+            console.log('GECKO PRICE - ', geckoPrice, assetAmount, geckoPrice * assetAmount)
+            price =
+              // (isMayachainNonEmpty &&
+              //   getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool)) ||
+              (geckoPrice && (assetAmount * geckoPrice).toFixed(3)) || price
           } else if (isChainOfThor(asset.chain)) {
             // Chain is supported only by THOR
-            price = getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool) || price
+            price =
+              (isThorchainNonEmpty && getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool)) ||
+              (geckoPrice && (assetAmount * geckoPrice).toFixed(3)) ||
+              price
           } else {
             // Handle pending pool details
             const priceOptionFromPendingPoolDetails = getPoolPriceValue({
@@ -273,7 +292,10 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
               poolDetails: pendingPoolDetails,
               pricePool
             })
-            price = formatPrice(priceOptionFromPendingPoolDetails, pricePool.asset) || price
+            price =
+              formatPrice(priceOptionFromPendingPoolDetails, pricePool.asset) ||
+              // (geckoPrice && amount.amount().toNumber() * geckoPrice).toString()
+              price
           }
 
           // Special case for Maya assets
@@ -298,7 +320,16 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         )
       }
     }),
-    [hidePrivateData, poolDetailsMaya, mayaPricePool, poolDetails, pricePool, pendingPoolDetails, mayaScanPrice]
+    [
+      hidePrivateData,
+      geckoPriceData,
+      poolDetails,
+      pricePool,
+      poolDetailsMaya,
+      mayaPricePool,
+      pendingPoolDetails,
+      mayaScanPrice
+    ]
   )
 
   const renderActionColumn = useCallback(

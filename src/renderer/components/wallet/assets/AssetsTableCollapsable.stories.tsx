@@ -166,6 +166,7 @@ const Template = (args: Partial<Record<EnabledChain, RDStatus>>) => {
       disableRefresh={disableRefresh}
       selectAssetHandler={selectAssetHandler}
       assetHandler={assetHandler}
+      geckoPrice={{}}
       chainBalances={FP.pipe(
         Object.entries(balances),
         A.map(([chain, chainBalances]) =>
