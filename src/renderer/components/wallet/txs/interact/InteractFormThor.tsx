@@ -1277,7 +1277,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       )}
 
       <div>
-        {interactType !== InteractType.THORName && (
+        {interactType === InteractType.RunePool && (
           <FlatButton
             className="mt-10px min-w-[200px]"
             loading={isLoading}
@@ -1290,6 +1290,18 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                 runePoolData.value.blocksLeft > 0) ||
               !!form.getFieldsError().filter(({ errors }) => errors.length).length
             }
+            type="submit"
+            size="large">
+            {submitLabel}
+          </FlatButton>
+        )}
+      </div>
+      <div>
+        {interactType !== InteractType.RunePool && interactType !== InteractType.THORName && (
+          <FlatButton
+            className="mt-10px min-w-[200px]"
+            loading={isLoading}
+            disabled={isLoading}
             type="submit"
             size="large">
             {submitLabel}
