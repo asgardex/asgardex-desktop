@@ -818,7 +818,7 @@ export const Swap = ({
     return expiry
   }, [oQuoteProtocol])
 
-  // Swap result from thornode
+  // Swap result from Aggregator
   const swapResultAmountMax: CryptoAmount = useMemo(() => {
     const expectedAmount = FP.pipe(
       oQuoteProtocol,
@@ -857,28 +857,50 @@ export const Swap = ({
    * Price of swap result in max 1e8 // boolean to convert between streaming and regular swaps
    */
   const priceSwapResultAmountMax1e8: AssetWithAmount = useMemo(() => {
-    return FP.pipe(
-      isPoolDetails(poolDetails)
-        ? PoolHelpers.getUSDValue({
-            balance: {
-              asset: swapResultAmountMax.asset,
-              amount: swapResultAmountMax.baseAmount
-            },
-            poolDetails,
-            pricePool: pricePoolThor
-          })
-        : PoolHelpersMaya.getUSDValue({
-            balance: {
-              asset: swapResultAmountMax.asset,
-              amount: swapResultAmountMax.baseAmount
-            },
-            poolDetails,
-            pricePool: pricePoolMaya
-          }),
-      O.getOrElse(() => baseAmount(0, THORCHAIN_DECIMAL)), // default decimal
-      (amount) => ({ asset: pricePoolThor.asset, amount })
+    const amount = FP.pipe(
+      oQuoteProtocol,
+      O.fold(
+        () => baseAmount(0, THORCHAIN_DECIMAL), // Default value if no protocol
+        (quoteProtocol) => {
+          if (quoteProtocol.protocol === 'Thorchain' && isPoolDetails(poolDetails)) {
+            // Use Thorchain pool details and price pool
+            return O.getOrElse(() => baseAmount(0, THORCHAIN_DECIMAL))(
+              PoolHelpers.getUSDValue({
+                balance: {
+                  asset: swapResultAmountMax.asset,
+                  amount: swapResultAmountMax.baseAmount
+                },
+                poolDetails,
+                pricePool: pricePoolThor
+              })
+            )
+          } else if (quoteProtocol.protocol === 'Mayachain') {
+            // Use Mayachain pool details and price pool
+            return O.getOrElse(() => baseAmount(0, THORCHAIN_DECIMAL))(
+              PoolHelpersMaya.getUSDValue({
+                balance: {
+                  asset: swapResultAmountMax.asset,
+                  amount: swapResultAmountMax.baseAmount
+                },
+                poolDetails,
+                pricePool: pricePoolMaya
+              })
+            )
+          }
+          return baseAmount(0, THORCHAIN_DECIMAL)
+        }
+      )
     )
-  }, [poolDetails, swapResultAmountMax.asset, swapResultAmountMax.baseAmount, pricePoolThor, pricePoolMaya])
+
+    return { asset: pricePoolThor.asset, amount }
+  }, [
+    oQuoteProtocol,
+    poolDetails,
+    swapResultAmountMax.asset,
+    swapResultAmountMax.baseAmount,
+    pricePoolThor,
+    pricePoolMaya
+  ])
 
   /**
    * Price sum of swap fees (IN + OUT) and affiliate
