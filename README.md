@@ -200,6 +200,14 @@ sudo apt-get install build-essential
 sudo apt-get install libudev-dev
 ```
 
+### Docker
+
+A docker file has been created. Checkout the Repo and with Docker installed run the following commands
+
+To build the image: `docker build -t asgardex-dev-container .`. This will build a docker image called `asgardex-dev-container`.
+
+To run the image: `docker run -it --memory=4g --name asgardex-dev-container -p 3000:3000 asgardex-dev-container`
+
 ### Generate ERC20/BEP20 & Avax & ARB asset white list
 
 Whenever [THORChain ERC20 asset whitelist](https://gitlab.com/thorchain/thornode/-/blob/develop/bifrost/pkg/chainclients/ethereum/token_list.json) has been updated (usually with a [new release of THORNode](https://gitlab.com/thorchain/thornode/-/tags)), run following script to auto-generate this list for ASGARDEX
