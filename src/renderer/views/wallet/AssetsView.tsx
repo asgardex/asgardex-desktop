@@ -4,6 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
+import { debounce } from 'lodash'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
@@ -118,18 +119,41 @@ export const AssetsView: React.FC = (): JSX.Element => {
   const availableAssets = useMemo(() => {
     let assetArr: string[] = []
 
-    chainBalances.forEach(({ balances }) => {
+    sortedBalances.forEach(({ balances }) => {
       const assetIds =
         balances._tag === 'RemoteSuccess' ? balances.value.map(({ asset }) => asset.symbol.toUpperCase()) : []
       assetArr = [...assetArr, ...assetIds]
     })
 
-    return assetArr.map((item) => GECKO_MAP?.[item] ?? null).filter((item) => item)
+    // Use Set to remove duplicates
+    const uniqueAssets = Array.from(new Set(assetArr))
+
+    // Map to Gecko IDs and filter out null values
+    return uniqueAssets.map((item) => GECKO_MAP?.[item] ?? null).filter((item) => item)
+  }, [sortedBalances])
+
+  const [lastFetchedAssets, setLastFetchedAssets] = useState<string>('')
+
+  const allChainsLoaded = useMemo(() => {
+    return chainBalances.every(({ balances }) => balances._tag === 'RemoteSuccess')
   }, [chainBalances])
 
+  const debouncedFetchCoingeckoPrice = useMemo(
+    () =>
+      debounce((assets: string) => {
+        fetchCoingeckoPrice(assets)
+      }, 300),
+    [fetchCoingeckoPrice]
+  )
   useEffect(() => {
-    fetchCoingeckoPrice(availableAssets.join(','))
-  }, [availableAssets, fetchCoingeckoPrice])
+    if (allChainsLoaded) {
+      const currentAssets = availableAssets.join(',')
+      if (currentAssets !== lastFetchedAssets) {
+        debouncedFetchCoingeckoPrice(currentAssets)
+        setLastFetchedAssets(currentAssets)
+      }
+    }
+  }, [allChainsLoaded, availableAssets, debouncedFetchCoingeckoPrice, lastFetchedAssets])
 
   const [{ loading: loadingBalances }] = useObservableState(
     () => balancesState$(DEFAULT_BALANCES_FILTER),

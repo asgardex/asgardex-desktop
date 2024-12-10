@@ -129,15 +129,6 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
 
   const [showQRModal, setShowQRModal] = useState<O.Option<{ asset: Asset; address: Address }>>(O.none)
 
-  const [filterByValue, setFilterByValue] = useState(() => {
-    const cachedValue = localStorage.getItem('filterByValue')
-    return cachedValue ? JSON.parse(cachedValue) : true
-  })
-
-  useEffect(() => {
-    localStorage.setItem('filterByValue', JSON.stringify(filterByValue))
-  }, [filterByValue])
-
   const [openPanelKeys, setOpenPanelKeys] = useState<string[]>(() => {
     const cachedKeys = localStorage.getItem('openPanelKeys')
     return cachedKeys ? JSON.parse(cachedKeys) : []
@@ -260,9 +251,6 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
           const geckoPrice = geckoPriceData[GECKO_MAP?.[asset.symbol.toUpperCase()]]?.usd
           const isThorchainNonEmpty = poolDetails.length !== 0
           const isMayachainNonEmpty = poolDetailsMaya.length !== 0
-          const assetAmount = baseToAsset(amount).amount().toNumber()
-
-          console.log('GECKO PRICE - ', geckoPriceData)
 
           if (isChainOfMaya(asset.chain) && isChainOfThor(asset.chain)) {
             // Chain is supported by both MAYA and THOR, prioritize THOR
@@ -270,20 +258,20 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
               (isThorchainNonEmpty && getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool)) ||
               (isMayachainNonEmpty &&
                 getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool)) ||
-              (geckoPrice && (assetAmount * geckoPrice).toFixed(3)) ||
+              (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
               price
           } else if (isChainOfMaya(asset.chain)) {
             // Chain is supported only by MAYA
-            console.log('GECKO PRICE - ', geckoPrice, assetAmount, geckoPrice * assetAmount)
             price =
-              // (isMayachainNonEmpty &&
-              //   getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool)) ||
-              (geckoPrice && (assetAmount * geckoPrice).toFixed(3)) || price
+              (isMayachainNonEmpty &&
+                getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool)) ||
+              (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
+              price
           } else if (isChainOfThor(asset.chain)) {
             // Chain is supported only by THOR
             price =
               (isThorchainNonEmpty && getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool)) ||
-              (geckoPrice && (assetAmount * geckoPrice).toFixed(3)) ||
+              (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
               price
           } else {
             // Handle pending pool details
@@ -292,10 +280,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
               poolDetails: pendingPoolDetails,
               pricePool
             })
-            price =
-              formatPrice(priceOptionFromPendingPoolDetails, pricePool.asset) ||
-              // (geckoPrice && amount.amount().toNumber() * geckoPrice).toString()
-              price
+            price = formatPrice(priceOptionFromPendingPoolDetails, pricePool.asset) || price
           }
 
           // Special case for Maya assets
@@ -337,9 +322,8 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
       const walletAsset: SelectedWalletAsset = { asset, walletAddress, walletAccount, walletIndex, walletType, hdMode }
       const normalizedAssetString = assetToString(asset).toUpperCase()
       const hasActivePool: boolean = FP.pipe(
-        O.fromNullable(
-          dex.chain === THORChain ? poolsData[normalizedAssetString] : poolsDataMaya[normalizedAssetString]
-        ),
+        O.fromNullable(poolsData[normalizedAssetString]),
+        O.alt(() => O.fromNullable(poolsDataMaya[normalizedAssetString])),
         O.isSome
       )
 
@@ -428,7 +412,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         )
       }
 
-      if (hasActivePool && deepestPoolAsset && !isCacaoAsset(asset) && !isRuneNativeAsset(asset)) {
+      if (deepestPoolAsset && !isCacaoAsset(asset) && !isRuneNativeAsset(asset)) {
         actions.push(
           createAction('common.swap', () =>
             navigate(
@@ -482,18 +466,19 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
             )
           )
         }
-
-        actions.push(
-          createAction('common.add', () =>
-            navigate(
-              poolsRoutes.deposit.path({
-                asset: assetToString(asset),
-                assetWalletType: walletType,
-                runeWalletType: DEFAULT_WALLET_TYPE
-              })
+        if (hasActivePool) {
+          actions.push(
+            createAction('common.add', () =>
+              navigate(
+                poolsRoutes.deposit.path({
+                  asset: assetToString(asset),
+                  assetWalletType: walletType,
+                  runeWalletType: DEFAULT_WALLET_TYPE
+                })
+              )
             )
           )
-        )
+        }
       }
 
       if (isRuneNativeAsset(asset) || isCacaoAsset(asset)) {
@@ -580,26 +565,6 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
             }
             let sortedBalances = balances.sort((a, b) => b.amount.amount().minus(a.amount.amount()).toNumber())
 
-            if (filterByValue) {
-              sortedBalances = sortedBalances.filter(({ amount, asset }) => {
-                if (
-                  (isUSDAsset(asset) && asset.type !== AssetType.SYNTH && amount.amount().gt(1)) ||
-                  isMayaAsset(asset)
-                ) {
-                  return true
-                }
-                let usdValue: O.Option<BaseAmount>
-                usdValue =
-                  isChainOfMaya(asset.chain) || isCacaoAsset(asset)
-                    ? getPoolPriceValueM({ balance: { asset, amount }, poolDetails: poolDetailsMaya, pricePool })
-                    : getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool })
-                usdValue = O.isNone(usdValue)
-                  ? getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool })
-                  : usdValue
-                const result = O.isSome(usdValue) && usdValue.value.amount().gt(0)
-                return result
-              })
-            }
             if ((dex.chain === MAYAChain && chain === THORChain) || (dex.chain === THORChain && chain === MAYAChain)) {
               sortedBalances = sortedBalances.filter(({ asset }) => asset.type !== AssetType.SYNTH)
             }
@@ -612,7 +577,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         )
       )
     },
-    [dex, filterByValue, poolDetails, poolDetailsMaya, pricePool, renderAssetsTable]
+    [dex.chain, renderAssetsTable]
   )
 
   const renderPanel = useCallback(
@@ -763,11 +728,8 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
   return (
     <>
       <Row className="items-center">
-        <Styled.FilterCheckbox checked={filterByValue} onChange={(e) => setFilterByValue(e.target.checked)}>
-          {intl.formatMessage({ id: 'common.filterValue' })}
-        </Styled.FilterCheckbox>
         <div
-          className="rounded-md border border-solid border-turquoise p-1 text-14 text-gray2 dark:border-gray1d dark:text-gray2d"
+          className="m-2 rounded-md border border-solid border-turquoise p-1 text-14 text-gray2 dark:border-gray1d dark:text-gray2d"
           onClick={handleCollapseAll}>
           {collapseAll
             ? intl.formatMessage({ id: 'common.collapseAll' })
