@@ -9,6 +9,7 @@ import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { EthChain } from '@xchainjs/xchain-mayachain-query'
 import { MidgardQuery } from '@xchainjs/xchain-midgard-query'
 import { XRD_DECIMAL } from '@xchainjs/xchain-radix'
+import { SOL_DECIMALS } from '@xchainjs/xchain-solana'
 import { AnyAsset } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -22,6 +23,7 @@ import {
   isDashChain,
   isKujiChain,
   isMayaChain,
+  isSolChain,
   isThorChain,
   isXrdChain
 } from '../../helpers/chainHelper'
@@ -60,6 +62,9 @@ export const getDecimal = (asset: AnyAsset): Promise<number> => {
   }
   if (isBchChain(chain)) {
     return Promise.resolve(BCH_DECIMAL)
+  }
+  if (isSolChain(chain)) {
+    return Promise.resolve(SOL_DECIMALS)
   }
   // Fix until Decimals for maya midgard is completed.
   if (
