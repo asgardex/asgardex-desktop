@@ -135,7 +135,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
   const [lastFetchedAssets, setLastFetchedAssets] = useState<string>('')
 
   const allChainsLoaded = useMemo(() => {
-    return chainBalances.every(({ balances }) => balances._tag === 'RemoteSuccess')
+    return chainBalances.every(({ balances }) => balances._tag !== 'RemoteInitial' && balances._tag !== 'RemotePending')
   }, [chainBalances])
 
   const debouncedFetchCoingeckoPrice = useMemo(
