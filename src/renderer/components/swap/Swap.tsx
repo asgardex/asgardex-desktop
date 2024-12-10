@@ -47,7 +47,8 @@ import {
   chainToString,
   DEFAULT_ENABLED_CHAINS,
   DefaultChainAttributes,
-  EnabledChain
+  EnabledChain,
+  isChainOfThor
 } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
@@ -70,7 +71,6 @@ import { eqAsset, eqBaseAmount, eqOAsset, eqAddress, eqOApproveParams } from '..
 import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
 import { getSwapMemo, updateMemo } from '../../helpers/memoHelper'
 import * as PoolHelpers from '../../helpers/poolHelper'
-import { isPoolDetails } from '../../helpers/poolHelper'
 import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../helpers/stringHelper'
 import { formatSwapTime } from '../../helpers/timeHelper'
@@ -135,7 +135,8 @@ export const Swap = ({
   poolAddressThor: oPoolAddressThor,
   poolAddressMaya: oPoolAddressMaya,
   swap$,
-  poolDetails,
+  poolDetailsThor,
+  poolDetailsMaya,
   walletBalances,
   goToTransaction,
   getExplorerTxUrl,
@@ -373,23 +374,23 @@ export const Swap = ({
 
   const priceAmountToSwapMax1e8: CryptoAmount = useMemo(() => {
     const result = FP.pipe(
-      isPoolDetails(poolDetails)
+      isChainOfThor(sourceChain)
         ? PoolHelpers.getUSDValue({
             balance: { asset: sourceAsset, amount: amountToSwapMax1e8 },
-            poolDetails,
+            poolDetails: poolDetailsThor,
             pricePool: pricePoolThor
           })
         : FP.pipe(
             PoolHelpersMaya.getUSDValue({
               balance: { asset: sourceAsset, amount: amountToSwapMax1e8 },
-              poolDetails,
+              poolDetails: poolDetailsMaya,
               pricePool: pricePoolMaya
             })
           ),
       O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal))
     )
     return new CryptoAmount(result, pricePoolThor.asset)
-  }, [amountToSwapMax1e8, poolDetails, pricePoolMaya, pricePoolThor, sourceAsset])
+  }, [amountToSwapMax1e8, poolDetailsMaya, poolDetailsThor, pricePoolMaya, pricePoolThor, sourceAsset, sourceChain])
 
   const isZeroAmountToSwap = useMemo(() => amountToSwapMax1e8.amount().isZero(), [amountToSwapMax1e8])
 
@@ -492,25 +493,27 @@ export const Swap = ({
   const oPriceSwapInFee: O.Option<CryptoAmount> = useMemo(() => {
     const assetAmount = new CryptoAmount(swapFees.inFee.amount, swapFees.inFee.asset)
     const result = FP.pipe(
-      isPoolDetails(poolDetails)
+      isChainOfThor(assetAmount.asset.chain)
         ? PoolHelpers.getUSDValue({
             balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
-            poolDetails,
+            poolDetails: poolDetailsThor,
             pricePool: pricePoolThor
           })
         : FP.pipe(
             PoolHelpersMaya.getUSDValue({
               balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
-              poolDetails,
+              poolDetails: poolDetailsMaya,
               pricePool: pricePoolMaya
             })
           ),
       O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal))
     )
+
     return O.some(new CryptoAmount(result, pricePoolThor.asset))
   }, [
     amountToSwapMax1e8.decimal,
-    poolDetails,
+    poolDetailsMaya,
+    poolDetailsThor,
     pricePoolMaya,
     pricePoolThor,
     swapFees.inFee.amount,
@@ -581,15 +584,15 @@ export const Swap = ({
       return
     }
     const calculateSwapOutFeePrice = () => {
-      return isPoolDetails(poolDetails)
+      return isChainOfThor(oSwapOutFee.asset.chain)
         ? PoolHelpers.getUSDValue({
             balance: { asset: oSwapOutFee.asset, amount: oSwapOutFee.baseAmount },
-            poolDetails,
+            poolDetails: poolDetailsThor,
             pricePool: pricePoolThor
           })
         : PoolHelpersMaya.getUSDValue({
             balance: { asset: oSwapOutFee.asset, amount: oSwapOutFee.baseAmount },
-            poolDetails,
+            poolDetails: poolDetailsMaya,
             pricePool: pricePoolMaya
           })
     }
@@ -604,7 +607,15 @@ export const Swap = ({
         prevValue?.baseAmount.eq(newOutFeePriceValue.baseAmount) ? prevValue : newOutFeePriceValue
       )
     }
-  }, [pricePoolThor, pricePoolMaya, oQuoteProtocol, poolDetails, oSwapOutFee.asset, oSwapOutFee.baseAmount])
+  }, [
+    pricePoolThor,
+    pricePoolMaya,
+    oQuoteProtocol,
+    oSwapOutFee.asset,
+    oSwapOutFee.baseAmount,
+    poolDetailsThor,
+    poolDetailsMaya
+  ])
 
   const priceSwapOutFeeLabel = useMemo(() => {
     // Check if swapFees is defined
@@ -668,22 +679,22 @@ export const Swap = ({
     if (O.isNone(oQuoteProtocol)) {
       return
     }
-    const affiliatePriceValue = isPoolDetails(poolDetails)
+    const affiliatePriceValue = isChainOfThor(affiliateFee.asset.chain)
       ? PoolHelpers.getUSDValue({
           balance: { asset: affiliateFee.asset, amount: affiliateFee.baseAmount },
-          poolDetails,
+          poolDetails: poolDetailsThor,
           pricePool: pricePoolThor
         })
       : PoolHelpersMaya.getUSDValue({
           balance: { asset: affiliateFee.asset, amount: affiliateFee.baseAmount },
-          poolDetails,
+          poolDetails: poolDetailsMaya,
           pricePool: pricePoolMaya
         })
     if (O.isSome(affiliatePriceValue)) {
       const maxCryptoAmount = new CryptoAmount(affiliatePriceValue.value, pricePoolThor.asset)
       setAffiliatePriceValue(maxCryptoAmount)
     }
-  }, [affiliateFee, network, oQuoteProtocol, poolDetails, pricePoolMaya, pricePoolThor])
+  }, [affiliateFee, network, oQuoteProtocol, poolDetailsMaya, poolDetailsThor, pricePoolMaya, pricePoolThor])
 
   //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
   // Apparently thornode bug is fixed.
@@ -862,7 +873,7 @@ export const Swap = ({
       O.fold(
         () => baseAmount(0, THORCHAIN_DECIMAL), // Default value if no protocol
         (quoteProtocol) => {
-          if (quoteProtocol.protocol === 'Thorchain' && isPoolDetails(poolDetails)) {
+          if (quoteProtocol.protocol === 'Thorchain') {
             // Use Thorchain pool details and price pool
             return O.getOrElse(() => baseAmount(0, THORCHAIN_DECIMAL))(
               PoolHelpers.getUSDValue({
@@ -870,7 +881,7 @@ export const Swap = ({
                   asset: swapResultAmountMax.asset,
                   amount: swapResultAmountMax.baseAmount
                 },
-                poolDetails,
+                poolDetails: poolDetailsThor,
                 pricePool: pricePoolThor
               })
             )
@@ -882,7 +893,7 @@ export const Swap = ({
                   asset: swapResultAmountMax.asset,
                   amount: swapResultAmountMax.baseAmount
                 },
-                poolDetails,
+                poolDetails: poolDetailsMaya,
                 pricePool: pricePoolMaya
               })
             )
@@ -895,10 +906,11 @@ export const Swap = ({
     return { asset: pricePoolThor.asset, amount }
   }, [
     oQuoteProtocol,
-    poolDetails,
+    pricePoolThor,
     swapResultAmountMax.asset,
     swapResultAmountMax.baseAmount,
-    pricePoolThor,
+    poolDetailsThor,
+    poolDetailsMaya,
     pricePoolMaya
   ])
 
@@ -1281,9 +1293,9 @@ export const Swap = ({
       //   (isCacaoAsset(sourceAsset) && dex.chain === 'MAYA')
       //     ? targetAsset
       //     : sourceAsset
-      const poolDetail = isPoolDetails(poolDetails)
-        ? getPoolDetail(poolDetails, sourceAsset)
-        : getPoolDetailMaya(poolDetails, sourceAsset)
+      const poolDetail = isChainOfThor(sourceAsset.chain)
+        ? getPoolDetail(poolDetailsThor, sourceAsset)
+        : getPoolDetailMaya(poolDetailsMaya, sourceAsset)
 
       if (O.isSome(poolDetail)) {
         const detail = poolDetail.value
@@ -1300,7 +1312,7 @@ export const Swap = ({
         setLockedAssetAmount(new CryptoAmount(ONE_RUNE_BASE_AMOUNT, sourceAsset))
       }
     }
-  }, [lockedWallet, poolDetails, quoteOnly, sourceAsset, sourceAssetDecimal, targetAsset])
+  }, [lockedWallet, poolDetailsMaya, poolDetailsThor, quoteOnly, sourceAsset, sourceAssetDecimal, targetAsset])
 
   /**
    * Selectable source assets to swap from.
@@ -1855,16 +1867,16 @@ export const Swap = ({
       : new CryptoAmount(baseAmount(0), swapFees.inFee.asset)
 
     const result = FP.pipe(
-      isPoolDetails(poolDetails)
+      isChainOfThor(assetAmount.asset.chain)
         ? PoolHelpers.getUSDValue({
             balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
-            poolDetails,
+            poolDetails: poolDetailsThor,
             pricePool: pricePoolThor
           })
         : FP.pipe(
             PoolHelpersMaya.getUSDValue({
               balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
-              poolDetails,
+              poolDetails: poolDetailsMaya,
               pricePool: pricePoolMaya
             })
           ),
@@ -1875,8 +1887,9 @@ export const Swap = ({
     isApproved,
     approveFee,
     swapFees.inFee.asset,
-    poolDetails,
+    poolDetailsThor,
     pricePoolThor,
+    poolDetailsMaya,
     pricePoolMaya,
     amountToSwapMax1e8.decimal
   ])

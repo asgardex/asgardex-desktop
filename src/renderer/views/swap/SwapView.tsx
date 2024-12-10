@@ -451,7 +451,8 @@ const SuccessRouteView: React.FC<Props> = ({
                   poolAddressThor={selectedPoolAddressThor}
                   poolAssets={[]}
                   poolsData={{}}
-                  poolDetails={[]}
+                  poolDetailsThor={[]}
+                  poolDetailsMaya={[]}
                   walletBalances={balancesState}
                   reloadFees={reloadSwapFees}
                   fees$={swapFees$}
@@ -484,7 +485,6 @@ const SuccessRouteView: React.FC<Props> = ({
               pendingPools,
               pendingPoolsMaya
             ]) => {
-              const combinedPoolDetails = [...thorPoolDetails, ...mayaPoolDetails]
               const combinedPoolsData = {
                 ...thorPoolsData,
                 ...mayaPoolsData
@@ -567,7 +567,8 @@ const SuccessRouteView: React.FC<Props> = ({
                   poolAddressThor={selectedPoolAddressThor}
                   poolAssets={poolAssets}
                   poolsData={combinedPoolsData}
-                  poolDetails={combinedPoolDetails}
+                  poolDetailsThor={thorPoolDetails}
+                  poolDetailsMaya={mayaPoolDetails}
                   walletBalances={balancesState}
                   reloadFees={reloadSwapFees}
                   fees$={swapFees$}

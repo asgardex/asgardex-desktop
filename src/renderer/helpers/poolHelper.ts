@@ -1,6 +1,6 @@
 import { Balance, Network } from '@xchainjs/xchain-client'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+import { isAssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { bnOrZero, assetFromString, BaseAmount, Chain, baseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/lib/Array'
@@ -180,7 +180,7 @@ export const getPoolPriceValue = ({
 export const getUSDValue = ({
   balance: { asset, amount },
   poolDetails,
-  pricePool: { asset: priceAsset }
+  pricePool: { asset: priceAsset, poolData: pricePoolData }
 }: {
   balance: Balance
   poolDetails: PoolDetails
@@ -188,6 +188,9 @@ export const getUSDValue = ({
 }): O.Option<BaseAmount> => {
   // no pricing if balance asset === price pool asset
   if (eqAsset.equals(asset, priceAsset)) return O.some(amount)
+  if (isAssetRuneNative(asset)) {
+    return O.some(getValueOfRuneInAsset(amount, pricePoolData))
+  }
 
   return FP.pipe(
     getPoolDetail(poolDetails, asset), // Get the pool detail for the asset

@@ -41,7 +41,8 @@ const defaultProps: SwapProps = {
     router: O.some('router-address'),
     halted: false
   }),
-  poolDetails: [],
+  poolDetailsThor: [],
+  poolDetailsMaya: [],
   // mock successfull result of swap$
   swap$: (params) =>
     Rx.of(params).pipe(
