@@ -1,5 +1,8 @@
 export type State = {
   isLoading: boolean
   geckoPriceMap: Record<string, { usd: number }>
-  lastUpdatedAt: number | null
+  lastUpdateInfo: {
+    lastUpdatedAt: number | null
+    lastCoinIds: string
+  }
 }
