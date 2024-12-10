@@ -544,6 +544,12 @@ export const max1e10BaseAmount = (amount: BaseAmount): BaseAmount =>
 export const to1e8BaseAmount = (amount: BaseAmount): BaseAmount => convertBaseAmountDecimal(amount, THORCHAIN_DECIMAL)
 
 /**
+ * Helper to convert a `BaseAmount`
+ * into `1e10` decimal based `BaseAmount`
+ */
+export const to1e10BaseAmount = (amount: BaseAmount): BaseAmount => convertBaseAmountDecimal(amount, CACAO_DECIMAL)
+
+/**
  * Helper to convert a `AssetAmount`
  * into two sigfig `AssetAmount`
  */

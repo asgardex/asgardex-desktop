@@ -15,7 +15,7 @@ import { getPoolDetail, toPoolData } from '../services/mayaMigard/utils'
 import { MimirHalt } from '../services/thorchain/types'
 import { PoolData, PoolTableRowData, PoolTableRowsData, PricePool } from '../views/pools/Pools.types'
 import { getPoolTableRowDataMaya, getValueOfAsset1InAsset2, getValueOfRuneInAsset } from '../views/pools/Pools.utils'
-import { convertBaseAmountDecimal, isCacaoAsset, to1e8BaseAmount } from './assetHelper'
+import { convertBaseAmountDecimal, isCacaoAsset, to1e10BaseAmount, to1e8BaseAmount } from './assetHelper'
 import { eqAsset, eqChain, eqString } from './fp/eq'
 import { ordBaseAmount } from './fp/ord'
 import { sequenceTOption, sequenceTOptionFromArray } from './fpHelpers'
@@ -179,7 +179,7 @@ export const getPoolPriceValue = ({
 export const getUSDValue = ({
   balance: { asset, amount },
   poolDetails,
-  pricePool: { asset: priceAsset }
+  pricePool: { asset: priceAsset, poolData: pricePoolData }
 }: {
   balance: Balance
   poolDetails: PoolDetails
@@ -187,6 +187,10 @@ export const getUSDValue = ({
 }): O.Option<BaseAmount> => {
   // no pricing if balance asset === price pool asset
   if (eqAsset.equals(asset, priceAsset)) return O.some(amount)
+  if (isCacaoAsset(asset)) {
+    const amount1e10 = to1e10BaseAmount(amount)
+    return O.some(getValueOfRuneInAsset(amount1e10, pricePoolData))
+  }
 
   return FP.pipe(
     getPoolDetail(poolDetails, asset), // Get the pool detail for the asset

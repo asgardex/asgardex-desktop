@@ -51,7 +51,8 @@ export type SwapProps = {
   swap$: SwapHandler
   reloadTxStatus: FP.Lazy<void>
   poolsData: PoolsDataMap
-  poolDetails: PoolDetails | PoolDetailsMaya
+  poolDetailsThor: PoolDetails
+  poolDetailsMaya: PoolDetailsMaya
   walletBalances: Pick<BalancesState, 'balances' | 'loading'>
   goToTransaction: OpenExplorerTxUrl
   getExplorerTxUrl: GetExplorerTxUrl
