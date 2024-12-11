@@ -22,7 +22,7 @@ import { CheckButton } from '../../button/CheckButton'
 import { InputBigNumber } from '../../input'
 import { AssetSelect } from '../assetSelect'
 
-export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
+export const ASSET_SELECT_BUTTON_WIDTH = 'w-[190px]'
 
 export type Props = {
   title?: string
