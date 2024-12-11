@@ -5,8 +5,9 @@ import { BaseAmount, CryptoAmount, baseToAsset, formatAssetAmountCurrency } from
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
-import { isUSDAsset } from '../../../helpers/assetHelper'
+import { formatAssetAmountCurrencyAsg, isUSDAsset } from '../../../helpers/assetHelper'
 import { hiddenString } from '../../../helpers/stringHelper'
+import { useApp } from '../../../store/app/hooks'
 import { InfoIcon } from '../info'
 import { TextButton, Props as ButtonProps } from './TextButton'
 
@@ -40,6 +41,7 @@ export const MaxBalanceButton: React.FC<Props> = (props): JSX.Element => {
   } = props
   const { amount, asset } = balance
 
+  const { btcBaseUnit } = useApp()
   const intl = useIntl()
 
   const onClickHandler = useCallback(() => onClick(amount), [amount, onClick])
@@ -52,11 +54,12 @@ export const MaxBalanceButton: React.FC<Props> = (props): JSX.Element => {
           decimal: 6,
           trimZeros: true
         })
-      : `${formatAssetAmountCurrency({
+      : `${formatAssetAmountCurrencyAsg({
           amount: baseToAsset(amount),
           asset,
           decimal: 6,
-          trimZeros: true
+          trimZeros: true,
+          baseUnit: btcBaseUnit
         })} (${formatAssetAmountCurrency({
           amount: maxDollarValue.assetAmount,
           asset: maxDollarValue.asset,
@@ -74,7 +77,7 @@ export const MaxBalanceButton: React.FC<Props> = (props): JSX.Element => {
         className={clsx('mr-5px w-auto whitespace-nowrap !p-0', classNameButton)}>
         <span className="pr-5px underline">{intl.formatMessage({ id: 'common.max' })}:</span>
         &nbsp;
-        {hidePrivateData ? hiddenString : `${valueLabel}`}
+        {hidePrivateData ? hiddenString : valueLabel}
       </TextButton>
 
       {maxInfoText && <InfoIcon tooltip={maxInfoText} className={classNameIcon} />}

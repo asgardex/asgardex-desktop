@@ -12,12 +12,17 @@ import {
   AnyAsset,
   assetAmount,
   AssetAmount,
+  AssetCurrencySymbol,
   assetFromString,
+  assetToBase,
   AssetType,
   baseAmount,
   BaseAmount,
   bn,
   Chain,
+  formatAssetAmount,
+  formatAssetAmountCurrency,
+  formatBaseAmount,
   TokenAsset
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -43,6 +48,7 @@ import {
 } from '../../shared/utils/asset'
 import { isSupportedChain } from '../../shared/utils/chain'
 import { AssetTGTERC20, DEFAULT_PRICE_ASSETS, USD_PRICE_ASSETS } from '../const'
+import { BaseUnit } from '../services/const'
 import { EVMZeroAddress } from '../services/evm/const'
 import { ARB_TOKEN_WHITELIST } from '../types/generated/mayachain/arberc20whitelist'
 import { AVAX_TOKEN_WHITELIST } from '../types/generated/thorchain/avaxerc20whitelist'
@@ -564,3 +570,42 @@ export const getTwoSigfigAssetAmount = (amount: AssetAmount) => {
  */
 export const getAssetFromNullableString = (assetString?: string): O.Option<AnyAsset> =>
   FP.pipe(O.fromNullable(assetString), O.map(S.toUpperCase), O.map(assetFromString), O.chain(O.fromNullable))
+
+export const formatAssetAmountCurrencyAsg = ({
+  amount,
+  asset,
+  decimal,
+  trimZeros = false,
+  baseUnit
+}: {
+  amount: AssetAmount
+  asset?: AnyAsset
+  decimal?: number
+  trimZeros?: boolean
+  baseUnit?: BaseUnit
+}) => {
+  const amountFormatted = formatAssetAmount({
+    amount,
+    // strict check for `undefined` value as negate of 0 will return true and passed decimal value will be ignored
+    decimal: 18,
+    trimZeros
+  })
+  const ticker = asset?.ticker ?? ''
+
+  if (ticker) {
+    const regex = new RegExp(AssetBTC.ticker, 'i')
+    if (ticker.match(regex)) {
+      const base = assetToBase(amount)
+      const baseUnitDecimal = baseUnit?.decimal ?? 8
+      // format all < ₿ 0.01 in statoshi
+      if (baseUnitDecimal === 1) {
+        return `${AssetCurrencySymbol.SATOSHI} ${formatBaseAmount(base)}`
+      } else if (baseUnitDecimal === 5) {
+        // TODO: @Thorianite review
+        return `${formatBaseAmount(base.div(1e3))} mBTC`
+      } else if (baseUnitDecimal === 8) return `${AssetCurrencySymbol.BTC} ${amountFormatted}`
+    }
+  }
+
+  return formatAssetAmountCurrency({ amount, asset, decimal, trimZeros })
+}
