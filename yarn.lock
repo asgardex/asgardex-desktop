@@ -8919,6 +8919,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/babel__core@npm:*, @types/babel__core@npm:^7.18.0":
+  version: 7.20.5
+  resolution: "@types/babel__core@npm:7.20.5"
+  dependencies:
+    "@babel/parser": "npm:^7.20.7"
+    "@babel/types": "npm:^7.20.7"
+    "@types/babel__generator": "npm:*"
+    "@types/babel__template": "npm:*"
+    "@types/babel__traverse": "npm:*"
+  checksum: 10/c32838d280b5ab59d62557f9e331d3831f8e547ee10b4f85cb78753d97d521270cebfc73ce501e9fb27fe71884d1ba75e18658692c2f4117543f0fc4e3e118b3
+  languageName: node
+  linkType: hard
+
 "@types/babel__core@npm:^7.0.0, @types/babel__core@npm:^7.1.14, @types/babel__core@npm:^7.1.7":
   version: 7.1.19
   resolution: "@types/babel__core@npm:7.1.19"
@@ -8929,19 +8942,6 @@ __metadata:
     "@types/babel__template": "npm:*"
     "@types/babel__traverse": "npm:*"
   checksum: 10/cd6850227184f078ffd412696c13393257e5808232cf993e0f19dc081cbeac6c9058eaf9b36797069c3f68857c16e0262a9ab4eb43fb0eb2edb70c563eaa6eed
-  languageName: node
-  linkType: hard
-
-"@types/babel__core@npm:^7.18.0":
-  version: 7.20.5
-  resolution: "@types/babel__core@npm:7.20.5"
-  dependencies:
-    "@babel/parser": "npm:^7.20.7"
-    "@babel/types": "npm:^7.20.7"
-    "@types/babel__generator": "npm:*"
-    "@types/babel__template": "npm:*"
-    "@types/babel__traverse": "npm:*"
-  checksum: 10/c32838d280b5ab59d62557f9e331d3831f8e547ee10b4f85cb78753d97d521270cebfc73ce501e9fb27fe71884d1ba75e18658692c2f4117543f0fc4e3e118b3
   languageName: node
   linkType: hard
 
@@ -9047,6 +9047,18 @@ __metadata:
   dependencies:
     "@types/node": "npm:*"
   checksum: 10/b4172927cd1387cf037c3ade785ef46c87537b7bc2803d7f6663b4904d0c5d6f726415d1adb2fee4fecb21746738f11336076449265d46be4ce110cc3a8c8436
+  languageName: node
+  linkType: hard
+
+"@types/customize-cra@npm:^1":
+  version: 1.0.8
+  resolution: "@types/customize-cra@npm:1.0.8"
+  dependencies:
+    "@types/babel__core": "npm:*"
+    "@types/webpack": "npm:^4"
+    "@types/webpack-bundle-analyzer": "npm:^3"
+    "@types/workbox-webpack-plugin": "npm:^5.1.8"
+  checksum: 10/16191bb9edbd1d4786ec2ac5ac21b9f4ce656c9b99fc0b696fe3c3a35dc4d0818013ff4978805a173f848d1c1b11bd7ac2b8285f00a10d78926cd63e8ad46d05
   languageName: node
   linkType: hard
 
@@ -9662,6 +9674,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/source-list-map@npm:*":
+  version: 0.1.6
+  resolution: "@types/source-list-map@npm:0.1.6"
+  checksum: 10/9cd294c121f1562062de5d241fe4d10780b1131b01c57434845fe50968e9dcf67ede444591c2b1ad6d3f9b6bc646ac02cc8f51a3577c795f9c64cf4573dcc6b1
+  languageName: node
+  linkType: hard
+
 "@types/stack-utils@npm:^2.0.0":
   version: 2.0.1
   resolution: "@types/stack-utils@npm:2.0.1"
@@ -9677,6 +9696,13 @@ __metadata:
     "@types/react": "npm:*"
     csstype: "npm:^3.0.2"
   checksum: 10/e40c942c97f4467310c658608e7d02d6b9571d390d0fa519bdbd37e48ed2c605a6c9e464812c36d0a1339402bff65cb473b9e785288a29419d7af994595bba33
+  languageName: node
+  linkType: hard
+
+"@types/tapable@npm:^1":
+  version: 1.0.12
+  resolution: "@types/tapable@npm:1.0.12"
+  checksum: 10/adfb978a3097154be92c4a92184bb17f86a84473bd871a9a862f81676532ebec86ea61acdce999186447832e32a4d45d591d64b64131dd977ca41508165011d7
   languageName: node
   linkType: hard
 
@@ -9698,6 +9724,15 @@ __metadata:
   version: 2.0.2
   resolution: "@types/trusted-types@npm:2.0.2"
   checksum: 10/3371eef5f1c50e1c3c07a127c1207b262ba65b83dd167a1c460fc1b135a3fb0c97b9f508efebd383f239cc5dd5b7169093686a692a501fde9c3f7208657d9b0d
+  languageName: node
+  linkType: hard
+
+"@types/uglify-js@npm:*":
+  version: 3.17.5
+  resolution: "@types/uglify-js@npm:3.17.5"
+  dependencies:
+    source-map: "npm:^0.6.1"
+  checksum: 10/87368861a3f2df071905d698c9f7a4b825e2f69dd29530283594ccddd155d4a8ff7795021af28a97d938c9557a6ea23bc3d77e076a6cf3e02f6401849e067f61
   languageName: node
   linkType: hard
 
@@ -9740,6 +9775,47 @@ __metadata:
   version: 1.0.10
   resolution: "@types/w3c-web-usb@npm:1.0.10"
   checksum: 10/6ac6786a0788f0846a48b103ab06ca5fde5eb95674217b522420a2f6157bee3e181a961c1b7011940f497c55f4f5cc46129657d881fdd8112b48764089679ad6
+  languageName: node
+  linkType: hard
+
+"@types/webpack-bundle-analyzer@npm:^3":
+  version: 3.9.9
+  resolution: "@types/webpack-bundle-analyzer@npm:3.9.9"
+  dependencies:
+    "@types/webpack": "npm:^4"
+  checksum: 10/e5e393c4d48d2a4fd4e68a8536efa7957dba27695ce978c7f2214890c26ecc6c5d806c91f83d16ad0c91a095abc8a57006c70f75cdbff7545de1e2da250a29ba
+  languageName: node
+  linkType: hard
+
+"@types/webpack-sources@npm:*":
+  version: 3.2.3
+  resolution: "@types/webpack-sources@npm:3.2.3"
+  dependencies:
+    "@types/node": "npm:*"
+    "@types/source-list-map": "npm:*"
+    source-map: "npm:^0.7.3"
+  checksum: 10/7b557f242efaa10e4e3e18cc4171a0c98e22898570caefdd4f7b076fe8534b5abfac92c953c6604658dcb7218507f970230352511840fe9fdea31a9af3b9a906
+  languageName: node
+  linkType: hard
+
+"@types/webpack@npm:^4":
+  version: 4.41.40
+  resolution: "@types/webpack@npm:4.41.40"
+  dependencies:
+    "@types/node": "npm:*"
+    "@types/tapable": "npm:^1"
+    "@types/uglify-js": "npm:*"
+    "@types/webpack-sources": "npm:*"
+    anymatch: "npm:^3.0.0"
+    source-map: "npm:^0.6.0"
+  checksum: 10/5451ac1e34d679650eaf005739af74416e556b3c7044cdbb7f380f44d65701ae8186a1bd79e52ef305504e04c7b80412a138ec04ebcee1aa69917da5d9aecf11
+  languageName: node
+  linkType: hard
+
+"@types/workbox-webpack-plugin@npm:^5.1.8":
+  version: 5.1.8
+  resolution: "@types/workbox-webpack-plugin@npm:5.1.8"
+  checksum: 10/e2c8b833fa002694dc6d614b58efd472705f90a2b836eab88a4cad26444773e7628ed4f4d1b45ff59f2a7b9336876e28076b36a8a7e33273452b91fb0878e2f1
   languageName: node
   linkType: hard
 
@@ -11181,6 +11257,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"anymatch@npm:^3.0.0":
+  version: 3.1.3
+  resolution: "anymatch@npm:3.1.3"
+  dependencies:
+    normalize-path: "npm:^3.0.0"
+    picomatch: "npm:^2.0.4"
+  checksum: 10/3e044fd6d1d26545f235a9fe4d7a534e2029d8e59fa7fd9f2a6eb21230f6b5380ea1eaf55136e60cbf8e613544b3b766e7a6fa2102e2a3a117505466e3025dc2
+  languageName: node
+  linkType: hard
+
 "anymatch@npm:^3.0.3, anymatch@npm:~3.1.2":
   version: 3.1.2
   resolution: "anymatch@npm:3.1.2"
@@ -11458,6 +11544,7 @@ __metadata:
     "@testing-library/react": "npm:^13.3.0"
     "@testing-library/react-hooks": "npm:^7.0.2"
     "@testing-library/user-event": "npm:^14.2.0"
+    "@types/customize-cra": "npm:^1"
     "@types/electron-devtools-installer": "npm:^2.2.2"
     "@types/fs-extra": "npm:^9.0.13"
     "@types/jest": "npm:^29.5.12"
@@ -11511,6 +11598,7 @@ __metadata:
     concurrently: "npm:^7.2.1"
     cross-env: "npm:^7.0.3"
     crypto-browserify: "npm:^3.12.0"
+    customize-cra: "npm:^1.0.0"
     dotenv: "npm:16.4.5"
     echarts: "npm:^5.5.1"
     echarts-for-react: "npm:^3.0.2"
@@ -14490,6 +14578,15 @@ __metadata:
   version: 0.2.2
   resolution: "cuint@npm:0.2.2"
   checksum: 10/c1b98971f4a1b32ce71ec82eac87df87b54ee85d982e3967a6dd89f19ffd3ebbbdb82e3738e489f475611b6ed126c0deba05ed9ecffea0a721a4d43773ce0670
+  languageName: node
+  linkType: hard
+
+"customize-cra@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "customize-cra@npm:1.0.0"
+  dependencies:
+    lodash.flow: "npm:^3.5.0"
+  checksum: 10/978acd4fa5be592813dc1cba3bad25fd41bc09d12893639c20ac1b24e29ec1bd932223510dca4977cdedc85d84a7ab5762b66f887396ba60f77aa525225e23e0
   languageName: node
   linkType: hard
 
@@ -21353,6 +21450,13 @@ __metadata:
   version: 4.1.2
   resolution: "lodash.escaperegexp@npm:4.1.2"
   checksum: 10/6d99452b1cfd6073175a9b741a9b09ece159eac463f86f02ea3bee2e2092923fce812c8d2bf446309cc52d1d61bf9af51c8118b0d7421388e6cead7bd3798f0f
+  languageName: node
+  linkType: hard
+
+"lodash.flow@npm:^3.5.0":
+  version: 3.5.0
+  resolution: "lodash.flow@npm:3.5.0"
+  checksum: 10/da39497f388971e1949607882e608d5b2306f025f0b5cc3953f2c25fca7db5a8dba23bd3ddeaed4b0dbd2d44c5aaa6f6f12016b5511b08a3d61de1e1c1f59eb7
   languageName: node
   linkType: hard
 
