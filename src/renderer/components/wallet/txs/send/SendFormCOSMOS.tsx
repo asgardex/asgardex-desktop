@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
 import { Address, AssetType, baseAmount, CryptoAmount, eqAsset } from '@xchainjs/xchain-util'
 import { formatAssetAmountCurrency, assetAmount, bn, assetToBase, BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
@@ -13,7 +14,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
-import { Dex, TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
+import { TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
 import { isChainOfMaya } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
@@ -69,7 +70,6 @@ export type Props = {
   mayaScanPrice: MayaScanPriceRD
   poolDetails: PoolDetails
   oPoolAddress: O.Option<PoolAddress>
-  dex: Dex
 }
 
 export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
@@ -88,15 +88,14 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     validatePassword$,
     network,
     mayaScanPrice,
-    oPoolAddress,
-    dex
+    oPoolAddress
   } = props
 
   const intl = useIntl()
 
   const { asset } = balance
   const { walletAddress: sender } = balance
-  const chainAsset = getChainAsset(asset.type === AssetType.SYNTH ? dex.chain : asset.chain)
+  const chainAsset = getChainAsset(asset.type === AssetType.SYNTH ? MAYAChain : asset.chain) // only synths on maya
 
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()

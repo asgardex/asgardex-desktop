@@ -35,7 +35,6 @@ import debounce from 'lodash/debounce'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
-import { thorDetails } from '../../../shared/api/types'
 import {
   ASGARDEX_ADDRESS,
   ASGARDEX_AFFILIATE_FEE_MIN,
@@ -998,7 +997,7 @@ export const TradeSwap = ({
             walletAccount,
             walletIndex,
             hdMode,
-            dex: thorDetails
+            protocol: THORChain
           }
         })
       )

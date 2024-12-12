@@ -113,7 +113,7 @@ export type SaverDepositParams = {
   readonly walletIndex: number
   readonly walletType: WalletType
   readonly hdMode: HDMode
-  readonly dex: Dex
+  readonly protocol: Chain
 }
 
 export type BorrowerDepositParams = {
@@ -146,7 +146,7 @@ export type SymDepositParams = {
   readonly assetWalletType: WalletType
   readonly assetHDMode: HDMode
   readonly assetSender: Address
-  readonly dex: Dex
+  readonly protocol: Chain
 }
 
 export type SendTxParams = {

@@ -30,7 +30,6 @@ import { BackLinkButton, RefreshButton } from '../../../components/uielements/bu
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
-import { useDex } from '../../../hooks/useDex'
 import { PoolAddress } from '../../../services/midgard/types'
 import { userAddresses$ } from '../../../services/storage/userAddresses'
 import { reloadBalancesByChain } from '../../../services/wallet'
@@ -43,8 +42,6 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
   const intl = useIntl()
 
   const { selectedAsset$ } = useWalletContext()
-
-  const { dex } = useDex()
 
   const [trustedAddresses, setTrustedAddresses] = useState<TrustedAddresses>()
 
@@ -83,7 +80,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
       setSelectedPoolAsset(O.none)
       setSelectedPoolAssetMaya(O.none)
     }
-  }, [setSelectedPoolAsset, setSelectedPoolAssetMaya, dex, oSelectedAsset])
+  }, [setSelectedPoolAsset, setSelectedPoolAssetMaya, oSelectedAsset])
 
   const poolsStateThorRD = useObservableState(poolsStateThor$, RD.pending)
   const poolsStateMayaRD = useObservableState(poolsStateMaya$, RD.pending)
@@ -94,7 +91,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
 
   const renderSendView = useCallback(
     (asset: SelectedWalletAsset) => {
-      const chain = asset.asset.type === AssetType.SYNTH ? dex.chain : asset.asset.chain
+      const chain = asset.asset.type === AssetType.SYNTH ? MAYAChain : asset.asset.chain
       if (!isSupportedChain(chain)) {
         return (
           <h1>
@@ -148,7 +145,6 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
               poolDetails={!isChainOfMaya(asset.asset.chain) ? poolDetailsThor : poolDetailsMaya}
               oPoolAddress={oPoolAddress}
               oPoolAddressMaya={oPoolAddressMaya}
-              dex={dex}
             />
           )
         case THORChain:
@@ -164,12 +160,11 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
               emptyBalance={DEFAULT_WALLET_BALANCE}
               poolDetails={!isChainOfMaya(asset.asset.chain) ? poolDetailsThor : poolDetailsMaya}
               oPoolAddress={!isChainOfMaya(asset.asset.chain) ? oPoolAddress : oPoolAddressMaya}
-              dex={dex}
             />
           )
       }
     },
-    [dex, poolsStateThorRD, poolsStateMayaRD, intl, trustedAddresses, oPoolAddress, oPoolAddressMaya]
+    [poolsStateThorRD, poolsStateMayaRD, intl, trustedAddresses, oPoolAddress, oPoolAddressMaya]
   )
 
   return FP.pipe(

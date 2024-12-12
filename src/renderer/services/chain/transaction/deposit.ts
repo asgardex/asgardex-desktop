@@ -1,6 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { TxHash } from '@xchainjs/xchain-client'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetCacao } from '@xchainjs/xchain-mayachain'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, TokenAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -50,7 +51,7 @@ export const saverDeposit$ = ({
   walletAccount,
   walletIndex,
   hdMode,
-  dex
+  protocol
 }: SaverDepositParams): SaverDepositState$ => {
   // total of progress
   const total = O.some(100)
@@ -98,7 +99,7 @@ export const saverDeposit$ = ({
         amount,
         memo,
         feeOption: ChainTxFeeOption.DEPOSIT,
-        dex
+        protocol
       })
     }),
     liveData.chain((txHash) => {
@@ -191,7 +192,7 @@ export const symDeposit$ = ({
   assetWalletIndex,
   assetHDMode,
   assetSender,
-  dex
+  protocol
 }: SymDepositParams): SymDepositState$ => {
   // total of progress
   const total = O.some(100)
@@ -199,7 +200,6 @@ export const symDeposit$ = ({
   // const sendTx$ = isMock ? sendMockTx$ : sendPoolTx$
 
   const { chain } = asset
-  const dexChain = dex.chain
   // Observable state of to reflect status of all needed steps
   const {
     get$: getState$,
@@ -219,10 +219,10 @@ export const symDeposit$ = ({
     RxOp.switchMap((poolAddresses) =>
       liveData.sequenceS({
         pool:
-          dex.chain === THORChain
+          protocol === THORChain
             ? midgardPoolsService.validatePool$(poolAddresses, chain)
             : mayaMidgardPoolsService.validatePool$(poolAddresses, chain),
-        node: dex.chain === THORChain ? validateNode$() : mayaValidateNode$()
+        node: protocol === THORChain ? validateNode$() : mayaValidateNode$()
       })
     ),
     // 2. send asset deposit txs
@@ -240,7 +240,7 @@ export const symDeposit$ = ({
         amount: amounts.asset,
         memo: memos.asset,
         feeOption: ChainTxFeeOption.DEPOSIT,
-        dex
+        protocol
       })
     }),
     // Add failures of asset deposit tx to state
@@ -265,12 +265,12 @@ export const symDeposit$ = ({
         walletIndex: runeWalletIndex,
         hdMode: runeHDMode,
         router: O.none, // no router for RUNE
-        asset: dex.asset,
+        asset: protocol === THORChain ? AssetRuneNative : AssetCacao,
         recipient: '', // no recipient for RUNE || Cacao needed
         amount: amounts.rune,
         memo: memos.rune,
         feeOption: ChainTxFeeOption.DEPOSIT,
-        dex
+        protocol
       })
     }),
     // Add failures of RUNE deposit tx to state
@@ -306,7 +306,7 @@ export const symDeposit$ = ({
 
             return liveData.sequenceS({
               asset: poolTxStatusByChain$({ txHash: assetTxHash, chain, assetAddress }),
-              rune: poolTxStatusByChain$({ txHash: runeTxHash, chain: dexChain, assetAddress: O.none })
+              rune: poolTxStatusByChain$({ txHash: runeTxHash, chain: protocol, assetAddress: O.none })
             })
           }
         )

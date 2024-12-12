@@ -10,7 +10,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { QuoteSwap as QuoteSwapProtocol } from '@xchainjs/xchain-aggregator'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetCacao } from '@xchainjs/xchain-mayachain'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Asset,
@@ -40,7 +40,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { mayaDetails, thorDetails } from '../../../shared/api/types'
 import { ASGARDEX_AFFILIATE_FEE_MIN, getAsgardexAffiliateFee, getAsgardexThorname } from '../../../shared/const'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import {
@@ -999,7 +998,7 @@ export const Swap = ({
           walletAccount,
           walletIndex,
           hdMode,
-          dex: quoteSwap.protocol === 'Thorchain' ? thorDetails : mayaDetails
+          protocol: quoteSwap.protocol === 'Thorchain' ? THORChain : MAYAChain
         }
       })
     )
