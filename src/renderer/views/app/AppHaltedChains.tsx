@@ -16,6 +16,7 @@ import * as Styled from './AppView.styles'
 type HaltedChainsWarningProps = {
   haltedChainsRD: RD.RemoteData<Error, Chain[]>
   mimirHaltRD: RD.RemoteData<Error, MimirHalt>
+  protocol: Chain
 }
 
 type HaltedChainsState = {
@@ -25,7 +26,7 @@ type HaltedChainsState = {
   pausedLP: boolean
 }
 
-const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD }: HaltedChainsWarningProps) => {
+const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol }: HaltedChainsWarningProps) => {
   const intl = useIntl()
   const prevHaltedChains = useRef<Chain[]>([])
   const prevMimirHalt = useRef<MimirHalt>({
@@ -72,7 +73,7 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD }: HaltedChainsWarnin
 
         msg =
           haltedChains.length === 1
-            ? `${msg} ${intl.formatMessage({ id: 'halt.chain' }, { chain: haltedChains[0] })}`
+            ? `${msg} ${intl.formatMessage({ id: 'halt.chain' }, { chain: haltedChains[0], dex: protocol })}`
             : haltedChains.length > 1
             ? `${msg} ${intl.formatMessage({ id: 'halt.chains' }, { chains: haltedChains.join(', ') })}`
             : `${msg}`

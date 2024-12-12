@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { MayaChain } from '@xchainjs/xchain-mayachain-query'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Grid } from 'antd'
 import * as FP from 'fp-ts/function'
 import { useObservableState } from 'observable-hooks'
@@ -152,8 +154,16 @@ export const AppView = (): JSX.Element => {
             <MidgardErrorAlert apiEndpoint={apiEndpointMaya} reloadHandler={reloadApiEndpointMaya} />
             {renderImportKeystoreWalletsError}
             {renderImportLedgerAddressesError}
-            <HaltedChainsWarning haltedChainsRD={haltedChainsThorRD} mimirHaltRD={mimirHaltThorRD} />
-            <HaltedChainsWarning haltedChainsRD={haltedChainsMayaRD} mimirHaltRD={mimirHaltMayaRD} />
+            <HaltedChainsWarning
+              haltedChainsRD={haltedChainsThorRD}
+              mimirHaltRD={mimirHaltThorRD}
+              protocol={THORChain}
+            />
+            <HaltedChainsWarning
+              haltedChainsRD={haltedChainsMayaRD}
+              mimirHaltRD={mimirHaltMayaRD}
+              protocol={MayaChain}
+            />
             <ViewRoutes />
           </View>
         </Styled.AppLayout>
