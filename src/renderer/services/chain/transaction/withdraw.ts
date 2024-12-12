@@ -4,7 +4,8 @@ import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetCacao } from '@xchainjs/xchain-mayachain'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -50,8 +51,7 @@ export const symWithdraw$ = ({
   walletAccount,
   walletIndex,
   hdMode,
-  dexAsset,
-  dex
+  protocol
 }: SymWithdrawParams): WithdrawState$ => {
   // total of progress
   const total = O.some(100)
@@ -67,8 +67,8 @@ export const symWithdraw$ = ({
     // we start with  a small progress
     withdraw: RD.progress({ loaded: 25, total })
   })
-  const validateNode$ = dex.chain === THORChain ? validateNodeThor$ : validateNodeMaya$
-  const chain = dex.chain
+  const validateNode$ = protocol === THORChain ? validateNodeThor$ : validateNodeMaya$
+  const chain = protocol
   // All requests will be done in a sequence
   // to update `SymWithdrawState` step by step
   // 1. validate node
@@ -83,12 +83,12 @@ export const symWithdraw$ = ({
         sender: walletAddress,
         hdMode,
         router: O.none, // no router for RUNE/MAYA
-        asset: dexAsset,
+        asset: protocol === THORChain ? AssetRuneNative : AssetCacao,
         recipient: '', // empty for RUNE/MAYA txs
         amount: smallestAmountToSent(chain, network),
         memo,
         feeOption: ChainTxFeeOption.WITHDRAW,
-        dex
+        protocol
       })
     }),
     liveData.chain((txHash) => {
@@ -173,7 +173,7 @@ export const saverWithdraw$ = ({
   hdMode,
   sender,
   walletType,
-  dex
+  protocol
 }: SaverWithdrawParams): WithdrawState$ => {
   // total of progress
   const total = O.some(100)
@@ -219,7 +219,7 @@ export const saverWithdraw$ = ({
         memo,
         sender,
         feeOption: ChainTxFeeOption.WITHDRAW,
-        dex
+        protocol
       })
     }),
     liveData.chain((txHash) => {

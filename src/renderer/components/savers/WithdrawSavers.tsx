@@ -4,6 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { EstimateWithdrawSaver, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
@@ -32,7 +33,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { Dex } from '../../../shared/api/types'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
@@ -133,7 +133,6 @@ export type WithDrawProps = {
   reloadBalances: FP.Lazy<void>
   disableSaverAction: boolean
   hidePrivateData: boolean
-  dex: Dex
 }
 
 export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
@@ -163,8 +162,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     getExplorerTxUrl,
     saverWithdraw$,
     disableSaverAction,
-    hidePrivateData,
-    dex
+    hidePrivateData
   } = props
 
   const intl = useIntl()
@@ -867,12 +865,12 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
           walletIndex,
           sender: address,
           hdMode,
-          dex
+          protocol: THORChain // update this when dex is removed
         }
         return result
       })
     )
-  }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceChainAsset, dustAmount, network, address, dex])
+  }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceChainAsset, dustAmount, network, address])
 
   const resetEnteredAmounts = useCallback(() => {
     setAmountToWithdrawMax1e8(initialAmountToWithdrawMax1e8)

@@ -4,6 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
   Asset,
@@ -30,7 +31,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { Dex } from '../../../shared/api/types'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
@@ -138,7 +138,6 @@ export type LoanCloseProps = {
   reloadBalances: FP.Lazy<void>
   disableLoanAction: boolean
   hidePrivateData: boolean
-  dex: Dex
 }
 
 export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
@@ -167,8 +166,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     goToTransaction,
     getExplorerTxUrl,
     hidePrivateData,
-    loanRepay$,
-    dex
+    loanRepay$
   } = props
 
   const intl = useIntl()
@@ -816,12 +814,12 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
           walletIndex,
           sender: address,
           hdMode,
-          dex
+          protocol: THORChain
         }
         return result
       })
     )
-  }, [oPoolAddress, oSourceAssetWB, sourceChainAsset, amountToRepayMax1e8, network, address, dex])
+  }, [oPoolAddress, oSourceAssetWB, sourceChainAsset, amountToRepayMax1e8, network, address])
 
   const resetEnteredAmounts = useCallback(() => {
     setAmountToRepayMax1e8(initialAmountToRepayMax1e8)

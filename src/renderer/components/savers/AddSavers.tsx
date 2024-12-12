@@ -4,6 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { EstimateAddSaver, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
@@ -32,7 +33,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { Dex } from '../../../shared/api/types'
 import { getAsgardexThorname } from '../../../shared/const'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
@@ -135,7 +135,6 @@ export type AddProps = {
   reloadBalances: FP.Lazy<void>
   disableSaverAction: boolean
   hidePrivateData: boolean
-  dex: Dex
 }
 
 export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
@@ -163,8 +162,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     goToTransaction,
     getExplorerTxUrl,
     disableSaverAction,
-    hidePrivateData,
-    dex
+    hidePrivateData
   } = props
 
   const intl = useIntl()
@@ -787,21 +785,12 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
           walletAccount,
           walletIndex,
           hdMode,
-          dex
+          protocol: THORChain // update this when doing savers 'dex' removal
         }
         return result
       })
     )
-  }, [
-    oPoolAddress,
-    oSourceAssetWB,
-    oSaversQuote,
-    network,
-    asset.asset,
-    asset.baseAmount.decimal,
-    amountToSendMax1e8,
-    dex
-  ])
+  }, [oPoolAddress, oSourceAssetWB, oSaversQuote, network, asset.asset, asset.baseAmount.decimal, amountToSendMax1e8])
 
   const onClickUseLedger = useCallback(
     (useLedger: boolean) => {

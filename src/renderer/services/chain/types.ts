@@ -365,8 +365,7 @@ export type SymWithdrawParams = {
   readonly walletAccount: number
   readonly walletIndex: number
   readonly hdMode: HDMode
-  readonly dex: Dex
-  readonly dexAsset: Asset
+  readonly protocol: Chain
 }
 
 export type SymWithdrawStateHandler = (p: SymWithdrawParams) => WithdrawState$
@@ -382,7 +381,7 @@ export type SaverWithdrawParams = {
   readonly walletIndex: number
   readonly sender: Address
   readonly hdMode: HDMode
-  readonly dex: Dex
+  readonly protocol: Chain
 }
 
 export type SaverWithdrawStateHandler = (p: SaverWithdrawParams) => WithdrawState$

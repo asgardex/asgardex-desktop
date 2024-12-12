@@ -200,8 +200,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
     hasAsymAssets: hasAsymAssetsRD,
     symAssetMismatch: symAssetMismatchRD,
     openAsymDepositTool,
-    hidePrivateData,
-    dex
+    hidePrivateData
   } = props
 
   const intl = useIntl()
@@ -821,7 +820,7 @@ export const SymDeposit: React.FC<Props> = (props) => {
             assetWalletIndex: assetWB.walletIndex,
             assetHDMode: assetWB.hdMode,
             assetSender: assetAddress,
-            dex
+            protocol:
           }
         })
       ),
