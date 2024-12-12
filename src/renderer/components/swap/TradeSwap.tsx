@@ -35,6 +35,7 @@ import debounce from 'lodash/debounce'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
+import { thorDetails } from '../../../shared/api/types'
 import {
   ASGARDEX_ADDRESS,
   ASGARDEX_AFFILIATE_FEE_MIN,
@@ -71,7 +72,6 @@ import {
   hasLedgerInBalancesByAsset,
   transformTradeAccountToWalletBalance
 } from '../../helpers/walletHelper'
-import { useDex } from '../../hooks/useDex'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
 import { ChangeSlipToleranceHandler } from '../../services/app/types'
 import { INITIAL_SWAP_STATE } from '../../services/chain/const'
@@ -212,7 +212,6 @@ export const TradeSwap = ({
   tradeAccountBalances
 }: SwapProps) => {
   const intl = useIntl()
-  const { dex } = useDex()
 
   const { chain: sourceChain } = sourceAsset.type === AssetType.TRADE ? AssetRuneNative : sourceAsset
   const { chain: targetChain } = targetAsset.type === AssetType.TRADE ? AssetRuneNative : targetAsset
@@ -999,14 +998,14 @@ export const TradeSwap = ({
             walletAccount,
             walletIndex,
             hdMode,
-            dex
+            dex: thorDetails
           }
         })
       )
 
       return swapParamsThor
     },
-    [oPoolAddress, oSourceAssetWB, oQuote, sourceAsset, amountToSwapMax1e8, sourceAssetAmount.decimal, targetAsset, dex] // Include both quote dependencies
+    [oPoolAddress, oSourceAssetWB, oQuote, sourceAsset, amountToSwapMax1e8, sourceAssetAmount.decimal, targetAsset] // Include both quote dependencies
   )
 
   // Check to see slippage greater than tolerance
@@ -1473,7 +1472,7 @@ export const TradeSwap = ({
             onClick={goToTransaction}
             txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
             network={network}
-            trackable={dex.chain === THORChain ? true : false}
+            trackable={false}
             protocol={O.some('Thorchain')}
           />
         }
@@ -1489,7 +1488,6 @@ export const TradeSwap = ({
     goToTransaction,
     getExplorerTxUrl,
     network,
-    dex.chain,
     extraTxModalContent,
     intl,
     sourceAsset.chain

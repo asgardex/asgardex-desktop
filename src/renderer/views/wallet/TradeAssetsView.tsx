@@ -30,7 +30,6 @@ import { ChainBalance, SelectedWalletAsset } from '../../services/wallet/types'
 import { useApp } from '../../store/app/hooks'
 
 export const TradeAssetsView: React.FC = (): JSX.Element => {
-  // const navigate = useNavigate()
   const intl = useIntl()
 
   const { balancesState$, setSelectedAsset } = useWalletContext()
