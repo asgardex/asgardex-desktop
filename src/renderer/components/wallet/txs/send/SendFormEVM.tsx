@@ -698,8 +698,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
               asset,
               amount,
               feeOption: selectedFeeOption,
-              memo: currentMemo,
-              dex
+              memo: currentMemo
             })
           )
           return true
@@ -717,8 +716,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       walletAddress,
       asset,
       selectedFeeOption,
-      currentMemo,
-      dex
+      currentMemo
     ]
   )
   const submitDepositTx = useCallback(

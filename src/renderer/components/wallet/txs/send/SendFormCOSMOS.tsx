@@ -501,8 +501,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
         asset,
         amount: amountToSend,
         memo: form.getFieldValue('memo'),
-        hdMode,
-        dex
+        hdMode
       })
     )
   }, [
@@ -516,8 +515,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     asset,
     amountToSend,
     form,
-    hdMode,
-    dex
+    hdMode
   ])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)

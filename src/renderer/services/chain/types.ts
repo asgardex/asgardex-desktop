@@ -163,11 +163,11 @@ export type SendTxParams = {
   gasLimit?: BigNumber
   feeAmount?: BaseAmount
   hdMode: HDMode
-  dex: Dex
 }
 
 export type SendPoolTxParams = SendTxParams & {
   router: O.Option<Address>
+  protocol: Chain
 }
 
 export type LedgerAddressParams = { chain: Chain; network: Network }
@@ -210,7 +210,7 @@ export type SwapTxParams = {
   readonly walletAccount: number
   readonly walletIndex: number
   readonly hdMode: HDMode
-  readonly dex: Dex
+  readonly protocol: Chain
 }
 
 export type SwapStateHandler = (p: SwapTxParams) => SwapState$

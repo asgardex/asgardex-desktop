@@ -12,7 +12,7 @@ import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -63,10 +63,9 @@ export const sendTx$ = ({
   feeOption = DEFAULT_FEE_OPTION,
   walletAccount,
   walletIndex,
-  hdMode,
-  dex
+  hdMode
 }: SendTxParams): TxHashLD => {
-  const { chain } = asset.type === AssetType.SYNTH ? dex.asset : asset
+  const { chain } = asset.type === AssetType.SYNTH ? AssetCacao : asset // synths deprecated on TC
   if (!isSupportedChain(chain)) return txFailure$(`${chain} is not supported for 'sendTx$'`)
   switch (chain) {
     case BTCChain:
@@ -257,10 +256,10 @@ export const sendPoolTx$ = ({
   amount,
   memo,
   feeOption = DEFAULT_FEE_OPTION,
-  dex
+  protocol
 }: SendPoolTxParams): TxHashLD => {
   const { chain } =
-    asset.type === AssetType.SYNTH ? dex.asset : asset.type === AssetType.TRADE ? { chain: THORChain } : asset
+    asset.type === AssetType.SYNTH ? AssetCacao : asset.type === AssetType.TRADE ? { chain: THORChain } : asset
 
   if (!isSupportedChain(chain)) return txFailure$(`${chain} is not enabled`)
 
@@ -344,7 +343,7 @@ export const sendPoolTx$ = ({
       })
 
     case THORChain:
-      return dex.chain === THORChain
+      return protocol === THORChain
         ? THOR.sendPoolTx$({ walletType, amount, asset, memo, walletAccount, walletIndex, hdMode })
         : THOR.sendTx({ sender, walletType, asset, recipient, amount, memo, walletAccount, walletIndex, hdMode })
 
@@ -369,8 +368,7 @@ export const sendPoolTx$ = ({
         feeOption,
         walletAccount,
         walletIndex,
-        hdMode,
-        dex
+        hdMode
       })
     default:
       return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)

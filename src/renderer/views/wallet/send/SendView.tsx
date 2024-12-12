@@ -133,7 +133,6 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
               poolDetails={!isChainOfMaya(asset.asset.chain) ? poolDetailsThor : poolDetailsMaya}
               oPoolAddress={oPoolAddress}
               oPoolAddressMaya={oPoolAddressMaya}
-              dex={dex}
             />
           )
         case ETHChain:
