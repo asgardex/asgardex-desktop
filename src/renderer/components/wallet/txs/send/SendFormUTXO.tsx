@@ -45,6 +45,7 @@ import { PoolAddress, PoolDetails } from '../../../../services/midgard/types'
 import { FeesWithRatesRD } from '../../../../services/utxo/types'
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
+import { useApp } from '../../../../store/app/hooks'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
 import * as StyledR from '../../../shared/form/Radio.styles'
 import { BaseButton, FlatButton } from '../../../uielements/button'
@@ -106,9 +107,12 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     dex
   } = props
 
+  const { btcBaseUnit } = useApp()
   const intl = useIntl()
 
   const { asset } = balance
+
+  const isBTC = useMemo(() => asset.chain === 'BTC' && asset.ticker === 'BTC', [asset])
 
   const oSavedAddresses: O.Option<TrustedAddress[]> = useMemo(
     () =>
@@ -694,11 +698,11 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
       // we have to validate input before storing into the state
       amountValidator(undefined, value)
         .then(() => {
-          setAmountToSend(assetToBase(assetAmount(value, balance.amount.decimal)))
+          setAmountToSend(assetToBase(assetAmount(value, isBTC ? btcBaseUnit.decimal : balance.amount.decimal)))
         })
         .catch(() => {}) // do nothing, Ant' form does the job for us to show an error message
     },
-    [amountValidator, balance.amount.decimal]
+    [amountValidator, balance.amount.decimal, btcBaseUnit.decimal, isBTC]
   )
 
   const reloadFees = useCallback(() => {
@@ -780,7 +784,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
                 min={0}
                 size="large"
                 disabled={isLoading}
-                decimal={balance.amount.decimal}
+                decimal={isBTC ? btcBaseUnit.decimal : balance.amount.decimal}
                 onChange={onChangeInput}
               />
             </Styled.FormItem>

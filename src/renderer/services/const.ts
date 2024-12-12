@@ -24,6 +24,14 @@ export const AVAILABLE_NETWORKS: Network[] = envOrDefault(process.env.REACT_APP_
  */
 export const AVAILABLE_DEXS: Dex[] = [thorDetails, mayaDetails]
 
+export type BaseUnit = { unit: string; decimal: number }
+
+export const BTC_BASE_UNITS: BaseUnit[] = [
+  { unit: 'BTC', decimal: 8 },
+  { unit: 'mBTC', decimal: 5 },
+  { unit: 'satoshi', decimal: 1 }
+]
+
 const ENV_NETWORK = process.env.REACT_APP_DEFAULT_NETWORK
 
 /**

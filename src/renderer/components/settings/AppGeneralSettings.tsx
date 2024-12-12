@@ -15,8 +15,10 @@ import { useIntl } from 'react-intl'
 
 import { Dex } from '../../../shared/api/types'
 import { Locale } from '../../../shared/i18n/types'
+import { saveInStorage, StorageKey } from '../../helpers/storageHelper'
 import { LOCALES } from '../../i18n'
-import { AVAILABLE_DEXS, AVAILABLE_NETWORKS } from '../../services/const'
+import { AVAILABLE_DEXS, AVAILABLE_NETWORKS, BaseUnit, BTC_BASE_UNITS } from '../../services/const'
+import { useApp } from '../../store/app/hooks'
 import { DownIcon } from '../icons'
 import { Menu } from '../shared/menu'
 import { BorderButton } from '../uielements/button'
@@ -71,6 +73,8 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
     locale
   } = props
 
+  const { btcBaseUnit, setBtcBaseUnit } = useApp()
+
   const intl = useIntl()
 
   const changeLang: MenuProps['onClick'] = useCallback(
@@ -122,6 +126,7 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
     },
     [changeNetwork]
   )
+
   const changeDexHandler: MenuProps['onClick'] = useCallback(
     ({ key }: { key: string }) => {
       const newDex = AVAILABLE_DEXS.find((dex) => dex.chain === key)
@@ -130,6 +135,17 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
       }
     },
     [changeDex]
+  )
+
+  const changeBtcBaseUnit: MenuProps['onClick'] = useCallback(
+    ({ key }: { key: string }) => {
+      const newUnit = BTC_BASE_UNITS.find((btcUnit) => btcUnit.unit === key)
+      if (newUnit) {
+        setBtcBaseUnit(newUnit)
+        saveInStorage(StorageKey.BtcBaseUnit, JSON.stringify(newUnit))
+      }
+    },
+    [setBtcBaseUnit]
   )
 
   const networkTextColor = useCallback((network: Network) => {
@@ -203,6 +219,29 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
     )
   }, [changeDexHandler, dex, dexTextColor])
 
+  const btcBaseUnitMenu = useMemo(() => {
+    return (
+      <Menu
+        onClick={changeBtcBaseUnit}
+        items={FP.pipe(
+          BTC_BASE_UNITS,
+          A.map<BaseUnit, ItemType>((baseUnit: BaseUnit) => ({
+            label: (
+              <div
+                className={clsx(
+                  'flex items-center px-10px py-[8px] text-16 uppercase',
+                  baseUnit.unit === btcBaseUnit.unit ? 'font-mainSemiBold' : 'font-main'
+                )}>
+                {baseUnit.unit}
+              </div>
+            ),
+            key: baseUnit.unit
+          }))
+        )}
+      />
+    )
+  }, [btcBaseUnit.unit, changeBtcBaseUnit])
+
   const renderNetworkMenu = useMemo(
     () => (
       <Dropdown overlay={networkMenu} trigger={['click']} placement="bottom">
@@ -227,6 +266,19 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
     ),
     [dexMenu, dexTextColor, dex]
   )
+  const renderBtcBaseUnitMenu = useMemo(
+    () => (
+      <Dropdown overlay={btcBaseUnitMenu} trigger={['click']} placement="bottom">
+        <div className="flex min-w-[240px] cursor-pointer items-center justify-between rounded-lg border border-solid border-gray0 p-2 dark:border-gray0d">
+          <h3 className={clsx('m-0 font-main text-[16px] uppercase leading-5 text-text1 dark:text-text1d')}>
+            {btcBaseUnit.unit}
+          </h3>
+          <DownIcon />
+        </div>
+      </Dropdown>
+    ),
+    [btcBaseUnitMenu, btcBaseUnit.unit]
+  )
 
   const checkUpdatesProps = useMemo(() => {
     const commonProps = {
@@ -243,9 +295,7 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
           loading: true,
           disabled: true
         }),
-        () => ({
-          ...commonProps
-        }),
+        () => ({ ...commonProps }),
         (oVersion) => ({
           ...commonProps,
           ...FP.pipe(
@@ -300,6 +350,9 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
       </Section>
       <Section title={intl.formatMessage({ id: 'common.dex' })} subtitle="Decentralised  exchange to connect to">
         {renderDexMenu}
+      </Section>
+      <Section title="Bitcoin Base Unit" subtitle="Choose your preferred Bitcoin base unit">
+        {renderBtcBaseUnitMenu}
       </Section>
       <Section title={intl.formatMessage({ id: 'setting.language' })} subtitle="Preferred language">
         {renderLangMenu}
