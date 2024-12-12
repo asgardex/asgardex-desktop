@@ -1,3 +1,14 @@
+# 1.30.0 (2024-12-16)
+
+## add
+
+-
+
+## Updates/Fixes
+
+- Dex switch deprecated no longer available [#544] (https://github.com/asgardex/asgardex-desktop/pull/544)
+- use Aggregator package to fetch quotes [#506] (https://github.com/asgardex/asgardex-desktop/pull/506)
+
 # 1.22.9 (2024-11-26)
 
 ## add
