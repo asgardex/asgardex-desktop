@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 
 import { Balance, Network } from '@xchainjs/xchain-client'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import {
@@ -28,7 +27,6 @@ import { CHAIN_WEIGHTS_THOR } from '../../../const'
 import { isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
 import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
 import { hiddenString } from '../../../helpers/stringHelper'
-import { useDex } from '../../../hooks/useDex'
 import * as poolsRoutes from '../../../routes/pools'
 import { PoolsDataMap } from '../../../services/midgard/types'
 import { MimirHaltRD, TradeAccount } from '../../../services/thorchain/types'
@@ -70,13 +68,11 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
   poolsData,
   poolDetails,
   selectAssetHandler,
-  // mimirHalt,
   network,
   hidePrivateData
 }) => {
   const intl = useIntl()
   const navigate = useNavigate()
-  const { dex } = useDex()
   const handleRefreshClick = useCallback((chain: Chain, walletType: WalletType) => {
     const lazyReload = reloadBalancesByChain(chain, walletType)
     lazyReload()
@@ -145,7 +141,6 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
   )
   const renderActionColumn = useCallback(
     ({ asset, walletType, walletAddress }: WalletBalance) => {
-      // const walletAsset: SelectedWalletAsset = { asset, walletAddress, walletAccount, walletIndex, walletType, hdMode }
       const normalizedAssetString = `${asset.chain}.${asset.symbol}`
       const hasActivePool: boolean = FP.pipe(O.fromNullable(poolsData[normalizedAssetString]), O.isSome)
 
@@ -167,7 +162,7 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
 
       const actions: ActionButtonAction[] = []
 
-      if (targetAsset && hasActivePool && dex.chain !== MAYAChain) {
+      if (targetAsset && hasActivePool) {
         actions.push(
           createAction('common.trade', () =>
             navigate(
@@ -191,7 +186,7 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
         </div>
       )
     },
-    [dex, poolsData, poolDetails, intl, navigate]
+    [poolsData, poolDetails, intl, navigate]
   )
 
   const actionColumn: ColumnType<WalletBalance> = useMemo(

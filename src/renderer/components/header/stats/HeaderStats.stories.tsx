@@ -2,7 +2,6 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Meta, StoryFn } from '@storybook/react'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 
-import { thorDetails } from '../../../../shared/api/types'
 import { AssetUSDCBSC } from '../../../const'
 import { HeaderStats as Component, Props } from './HeaderStats'
 
@@ -24,8 +23,7 @@ const meta: Meta = {
     volume24Price: RD.success({
       asset: AssetUSDCBSC,
       amount: assetToBase(assetAmount('24000000'))
-    }),
-    dex: thorDetails
+    })
   },
   decorators: [
     (Story) => (

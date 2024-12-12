@@ -7,7 +7,6 @@ import { useObservableState } from 'observable-hooks'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
-import { useDex } from '../../hooks/useDex'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
 import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
 import { useMayachainClientUrl } from '../../hooks/useMayachainClientUrl'
@@ -36,7 +35,6 @@ export const Header: React.FC = (): JSX.Element => {
   const { apiEndpoint$: apiEndpointMaya$, healthStatus$: healthStatusMaya$ } = midgardServiceMaya
 
   const { network } = useNetwork()
-  const { dex, changeDex } = useDex()
 
   const oSelectedPricePoolAsset = useObservableState<SelectedPricePoolAsset>(selectedPricePoolAsset$, O.none)
 
@@ -57,8 +55,6 @@ export const Header: React.FC = (): JSX.Element => {
 
   return (
     <HeaderComponent
-      dex={dex}
-      changeDex={changeDex}
       network={network}
       keystore={keystoreState}
       wallets={walletsUI}

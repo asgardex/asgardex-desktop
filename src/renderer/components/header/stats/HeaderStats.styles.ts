@@ -43,12 +43,12 @@ export const Title = styled(Text)`
   width: auto;
   padding: 0;
 `
-export const Dex = styled(Text)<{ dex: string }>`
+export const Protocol = styled(Text)<{ chain: string }>`
   text-transform: uppercase;
   font-family: 'MainFontBold';
   font-size: 12px;
   line-height: 14px;
-  color: ${({ dex }) => (dex === 'THOR' ? palette('primary', 0) : palette('secondary', 0))};
+  color: ${({ chain }) => (chain === 'THOR' ? palette('primary', 0) : palette('secondary', 0))};
   width: auto;
   padding: 0;
   margin: 0;
