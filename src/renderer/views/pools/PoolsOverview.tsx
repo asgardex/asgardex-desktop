@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useMemo } from 'react'
+import { Fragment, useCallback, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Tab } from '@headlessui/react'
@@ -17,7 +17,6 @@ import { Tooltip } from '../../components/uielements/common/Common.styles'
 import { RadioGroup } from '../../components/uielements/radioGroup'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
-import { useDex } from '../../hooks/useDex'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import * as poolsRoutes from '../../routes/pools'
@@ -45,7 +44,7 @@ type TabContent = {
 
 export const PoolsOverview = (): JSX.Element => {
   const intl = useIntl()
-  const { dex, changeDex } = useDex()
+  const [protocol, setProtocol] = useState<Chain>(THORChain)
 
   const navigate = useNavigate()
 
@@ -64,7 +63,7 @@ export const PoolsOverview = (): JSX.Element => {
 
   const [haltedChains] = useObservableState(
     () =>
-      FP.pipe(dex.chain === THORChain ? haltedChains$ : haltedChainsMaya$, RxOp.map(RD.getOrElse((): Chain[] => []))),
+      FP.pipe(protocol === THORChain ? haltedChains$ : haltedChainsMaya$, RxOp.map(RD.getOrElse((): Chain[] => []))),
     []
   )
 
@@ -75,16 +74,13 @@ export const PoolsOverview = (): JSX.Element => {
   const matchPoolsLendingRoute = useMatch({ path: poolsRoutes.lending.path(), end: false })
 
   const activeIndex = useMemo(() => {
-    const currentIndex = AVAILABLE_DEXS.findIndex((availableDex) => availableDex.chain === dex.chain)
+    const currentIndex = AVAILABLE_DEXS.findIndex((availableDex) => availableDex.chain === protocol)
     return currentIndex ?? 0
-  }, [dex])
+  }, [protocol])
 
-  const toggleProtocol = useCallback(
-    (index: number) => {
-      changeDex(AVAILABLE_DEXS[index])
-    },
-    [changeDex]
-  )
+  const toggleProtocol = useCallback((index: number) => {
+    setProtocol(AVAILABLE_DEXS[index].chain)
+  }, [])
 
   const selectedIndex: number = useMemo(() => {
     if (matchPoolsSaversRoute) {
@@ -103,12 +99,12 @@ export const PoolsOverview = (): JSX.Element => {
       {
         index: TAB_INDEX['active'],
         label: intl.formatMessage({ id: 'pools.available' }),
-        content: <ActivePools />
+        content: <ActivePools protocol={protocol} />
       },
       {
         index: TAB_INDEX['pending'],
         label: intl.formatMessage({ id: 'pools.pending' }),
-        content: <PendingPools />
+        content: <PendingPools protocol={protocol} />
       },
       {
         index: TAB_INDEX['savers'],
@@ -121,7 +117,7 @@ export const PoolsOverview = (): JSX.Element => {
         content: <LoansOverview haltedChains={haltedChains} mimirHalt={mimirHalt} walletLocked={walletLocked} />
       }
     ],
-    [intl, haltedChains, mimirHalt, walletLocked]
+    [intl, protocol, haltedChains, mimirHalt, walletLocked]
   )
 
   const protocolOptions = useMemo(() => {
