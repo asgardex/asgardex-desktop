@@ -2,7 +2,6 @@ import { Fragment, useCallback, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Tab } from '@headlessui/react'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
@@ -13,8 +12,7 @@ import { useIntl } from 'react-intl'
 import { useMatch, useNavigate } from 'react-router'
 import * as RxOp from 'rxjs/operators'
 
-import { Tooltip } from '../../components/uielements/common/Common.styles'
-import { RadioGroup } from '../../components/uielements/radioGroup'
+import { ProtocolSwitch } from '../../components/uielements/protocolSwitch'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
@@ -134,31 +132,6 @@ export const PoolsOverview = (): JSX.Element => {
     [intl, protocol, haltedChains, mimirHalt, walletLocked]
   )
 
-  const protocolOptions = useMemo(() => {
-    return [
-      {
-        label: (
-          <Tooltip title="Switch pools to THORChain" placement="bottom">
-            <span className="px-1 text-text2 dark:text-text2d">THORChain</span>
-          </Tooltip>
-        ),
-        value: THORChain
-      },
-      {
-        label: (
-          <Tooltip title="Switch pools to MAYAChain" placement="bottom">
-            <span className="px-1 text-text2 dark:text-text2d">MAYAChain</span>
-          </Tooltip>
-        ),
-        value: MAYAChain
-      }
-    ]
-  }, [])
-
-  const renderProtocolSwitch = useMemo(() => {
-    return <RadioGroup options={protocolOptions} activeIndex={activeIndex} onChange={toggleProtocol} />
-  }, [activeIndex, protocolOptions, toggleProtocol])
-
   return (
     <Tab.Group
       selectedIndex={selectedIndex}
@@ -205,7 +178,7 @@ export const PoolsOverview = (): JSX.Element => {
             ))
           )}
         </Tab.List>
-        {renderProtocolSwitch}
+        <ProtocolSwitch activeIndex={activeIndex} toggleProtocol={toggleProtocol} />
       </div>
       <Tab.Panels className="mt-2 w-full">
         {FP.pipe(
