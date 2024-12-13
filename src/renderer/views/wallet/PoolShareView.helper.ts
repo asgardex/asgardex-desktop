@@ -5,7 +5,6 @@ import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
-import { Dex } from '../../../shared/api/types'
 import { PoolShareTableData } from '../../components/PoolShares/PoolShares.types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
@@ -22,7 +21,7 @@ export const getSharesTotal = (
   shares: PoolShares | PoolSharesMaya,
   poolDetails: PoolDetails | PoolDetailsMaya,
   pricePoolData: PoolData,
-  dex: Dex
+  protocol: Chain
 ): BaseAmount =>
   FP.pipe(
     shares,
@@ -31,13 +30,17 @@ export const getSharesTotal = (
         isPoolDetails(poolDetails) ? getPoolDetail(poolDetails, asset) : getPoolDetailMaya(poolDetails, asset),
         O.map((poolDetail) => {
           // 1. get shares
-          const runeShare = ShareHelpers.getRuneShare(units, poolDetail, dex.decimals)
+          const runeShare = ShareHelpers.getRuneShare(
+            units,
+            poolDetail,
+            protocol === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL
+          )
           const assetShare = ShareHelpers.getAssetShare({
             liquidityUnits: units,
             detail: poolDetail,
             assetDecimal: 8
           })
-          const poolData = dex.chain === THORChain ? toPoolData(poolDetail) : toPoolDataMaya(poolDetail)
+          const poolData = protocol === THORChain ? toPoolData(poolDetail) : toPoolDataMaya(poolDetail)
           // 2. price asset + rune
           const assetDepositPrice = getValueOfAsset1InAsset2(assetShare, poolData, pricePoolData)
           const runeDepositPrice = getValueOfRuneInAsset(runeShare, pricePoolData)

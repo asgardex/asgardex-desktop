@@ -165,7 +165,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
     [clickRefreshHandler, intl]
   )
 
-  const { allSharesRD } = usePoolShares()
+  const { allSharesRD } = usePoolShares(protocol)
 
   const sharesByChain: Record<string, BaseAmount> = useMemo(() => {
     let sharesDetails = {}
@@ -190,6 +190,8 @@ export const PoolShareView: React.FC = (): JSX.Element => {
 
     return sharesDetails
   }, [allSharesRD, protocol, poolDetailsRD, pricePoolData])
+
+  console.log('SHARES BY CHAIN - ', sharesByChain)
 
   const renderShares = useMemo(
     () =>
