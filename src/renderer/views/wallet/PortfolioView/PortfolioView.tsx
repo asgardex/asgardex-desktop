@@ -12,6 +12,7 @@ import {
   baseAmount,
   BaseAmount,
   baseToAsset,
+  Chain,
   CryptoAmount,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
@@ -25,6 +26,7 @@ import { useNavigate } from 'react-router-dom'
 import { EnabledChain } from '../../../../shared/utils/chain'
 import { RefreshButton } from '../../../components/uielements/button'
 import { PieChart } from '../../../components/uielements/charts'
+import { ProtocolSwitch } from '../../../components/uielements/protocolSwitch'
 import { RadioGroup } from '../../../components/uielements/radioGroup'
 import { AssetUSDC, DEFAULT_WALLET_TYPE } from '../../../const'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
@@ -38,7 +40,6 @@ import { hiddenString } from '../../../helpers/stringHelper'
 import { filterWalletBalancesByAssets } from '../../../helpers/walletHelper'
 import { useRunePoolProviders } from '../../../hooks/useAllRunePoolProviders'
 import { useAllSaverProviders } from '../../../hooks/useAllSaverProviders'
-import { useDex } from '../../../hooks/useDex'
 import { useNodeInfos } from '../../../hooks/useNodeInfos'
 import { usePoolShares } from '../../../hooks/usePoolShares'
 import { useTotalWalletBalance } from '../../../hooks/useWalletBalance'
@@ -89,9 +90,10 @@ const CardItem = ({ title, value, route }: { title: string; value: React.ReactNo
 
 export const PortfolioView: React.FC = (): JSX.Element => {
   const [activeIndex, setActiveIndex] = useState(PortfolioTabKey.ChartView)
+  const [protocol, setProtocol] = useState<Chain>(THORChain)
+
   const { isPrivate } = useApp()
   const intl = useIntl()
-  const { dex } = useDex()
   const [balancesState] = useObservableState(
     () =>
       balancesState$({
@@ -125,7 +127,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
   // Separate price pool data states for each chain
   const { poolData: pricePoolDataThor } = useObservableState(selectedPricePoolThor$, RUNE_PRICE_POOL)
   const { poolData: pricePoolDataMaya } = useObservableState(selectedPricePoolMaya$, MAYA_PRICE_POOL)
-  const allPoolDetails$ = dex.chain === THORChain ? allPoolDetailsThor$ : allPoolDetailsMaya$
+  const allPoolDetails$ = protocol === THORChain ? allPoolDetailsThor$ : allPoolDetailsMaya$
   const poolDetailsRD = useObservableState(allPoolDetails$, RD.pending)
   const poolDetailsThorRD = useObservableState(allPoolDetailsThor$, RD.pending)
 
@@ -304,14 +306,19 @@ export const PortfolioView: React.FC = (): JSX.Element => {
     walletAddresses.THOR
   ])
 
-  const { allSharesRD } = usePoolShares()
+  const { allSharesRD } = usePoolShares(protocol)
   const { allSaverProviders } = useAllSaverProviders(poolAsset)
 
   const renderSharesTotal = useMemo((): string => {
     const sharesTotalRD: BaseAmountRD = FP.pipe(
       RD.combine(allSharesRD, poolDetailsRD),
       RD.map(([poolShares, poolDetails]) =>
-        H.getSharesTotal(poolShares, poolDetails, dex.chain === THORChain ? pricePoolDataThor : pricePoolDataMaya, dex)
+        H.getSharesTotal(
+          poolShares,
+          poolDetails,
+          protocol === THORChain ? pricePoolDataThor : pricePoolDataMaya,
+          protocol
+        )
       )
     )
 
@@ -333,7 +340,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
     )
   }, [
     allSharesRD,
-    dex,
+    protocol,
     intl,
     isPrivate,
     poolDetailsRD,
@@ -544,7 +551,8 @@ export const PortfolioView: React.FC = (): JSX.Element => {
 
   return (
     <>
-      <div className="flex w-full justify-end pb-10px">
+      <div className="flex w-full justify-between pb-10px">
+        <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
         <RefreshButton onClick={refreshHandler}></RefreshButton>
       </div>
       <div className="flex flex-col rounded-lg bg-bg1 p-4 dark:bg-bg1d">
