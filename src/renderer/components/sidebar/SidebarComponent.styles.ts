@@ -1,11 +1,9 @@
 import { Network } from '@xchainjs/xchain-client'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Layout } from 'antd'
 import Text from 'antd/lib/typography/Text'
 import styled from 'styled-components'
 import { palette, size } from 'styled-theme'
 
-import { Dex } from '../../../shared/api/types'
 import { ReactComponent as UIAsgardexLogo } from '../../assets/svg/logo-asgardex.svg'
 import { Label as UILabel } from '../uielements/label'
 
@@ -67,7 +65,7 @@ export const AsgardexLogo = styled(UIAsgardexLogo)`
   margin-top: 8px;
 `
 
-export const NetworkLabel = styled(Text)<{ network: Network; dex: Dex }>`
+export const NetworkLabel = styled(Text)<{ network: Network }>`
   position: absolute;
   right: 19px;
   bottom: -20px;
@@ -76,29 +74,16 @@ export const NetworkLabel = styled(Text)<{ network: Network; dex: Dex }>`
   font-family: 'MainFontRegular';
   font-size: 12px;
 
-  color: ${({ network, dex }) => {
-    if (dex.chain === THORChain) {
-      switch (network) {
-        case Network.Mainnet:
-          return palette('primary', 0)
-        case Network.Stagenet:
-          return palette('danger', 1)
-        case Network.Testnet:
-          return palette('warning', 0)
-        default:
-          return palette('text', 2)
-      }
-    } else {
-      switch (network) {
-        case Network.Mainnet:
-          return palette('secondary', 0)
-        case Network.Stagenet:
-          return palette('danger', 1)
-        case Network.Testnet:
-          return palette('warning', 0)
-        default:
-          return palette('text', 2)
-      }
+  color: ${({ network }) => {
+    switch (network) {
+      case Network.Mainnet:
+        return palette('primary', 0)
+      case Network.Stagenet:
+        return palette('danger', 1)
+      case Network.Testnet:
+        return palette('warning', 0)
+      default:
+        return palette('text', 2)
     }
   }};
 `
@@ -137,7 +122,7 @@ export const IconWrapper = styled.div`
 
 export const Icon = styled.img`
   border-radius: 50%;
-  width: 40px;
+  width: 30px;
   height: 30px;
 `
 export const TextLabel = styled(UILabel).attrs({ textTransform: 'uppercase' })`
