@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Tab } from '@headlessui/react'
@@ -18,7 +18,6 @@ import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import * as poolsRoutes from '../../routes/pools'
-import { AVAILABLE_DEXS } from '../../services/const'
 import { PoolType } from '../../services/midgard/types'
 import { LoansOverview } from '../loans/LoansOverview'
 import { SaversOverview } from '../savers/SaversOverview'
@@ -70,15 +69,6 @@ export const PoolsOverview = (): JSX.Element => {
   const matchPoolsPendingRoute = useMatch({ path: poolsRoutes.pending.path(), end: false })
   const matchPoolsSaversRoute = useMatch({ path: poolsRoutes.savers.path(), end: false })
   const matchPoolsLendingRoute = useMatch({ path: poolsRoutes.lending.path(), end: false })
-
-  const activeIndex = useMemo(() => {
-    const currentIndex = AVAILABLE_DEXS.findIndex((availableDex) => availableDex.chain === protocol)
-    return currentIndex ?? 0
-  }, [protocol])
-
-  const toggleProtocol = useCallback((index: number) => {
-    setProtocol(AVAILABLE_DEXS[index].chain)
-  }, [])
 
   const selectedIndex: number = useMemo(() => {
     if (matchPoolsSaversRoute) {
@@ -178,7 +168,7 @@ export const PoolsOverview = (): JSX.Element => {
             ))
           )}
         </Tab.List>
-        <ProtocolSwitch activeIndex={activeIndex} toggleProtocol={toggleProtocol} />
+        <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
       </div>
       <Tab.Panels className="mt-2 w-full">
         {FP.pipe(

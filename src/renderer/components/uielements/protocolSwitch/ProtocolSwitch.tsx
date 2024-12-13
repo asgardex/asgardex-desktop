@@ -1,17 +1,31 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { Chain } from '@xchainjs/xchain-util'
 
+import { AVAILABLE_DEXS } from '../../../services/const'
 import { Tooltip } from '../common/Common.styles'
 import { RadioGroup } from '../radioGroup'
 
 export type Props = {
-  activeIndex: number
-  toggleProtocol: (index: number) => void
+  protocol: Chain
+  setProtocol: (protocol: Chain) => void
 }
 
-export const ProtocolSwitch = ({ activeIndex, toggleProtocol }: Props) => {
+export const ProtocolSwitch = ({ protocol, setProtocol }: Props) => {
+  const activeIndex = useMemo(() => {
+    const currentIndex = AVAILABLE_DEXS.findIndex((availableDex) => availableDex.chain === protocol)
+    return currentIndex ?? 0
+  }, [protocol])
+
+  const onChange = useCallback(
+    (index: number) => {
+      setProtocol(AVAILABLE_DEXS[index].chain)
+    },
+    [setProtocol]
+  )
+
   const protocolOptions = useMemo(() => {
     return [
       {
@@ -33,5 +47,5 @@ export const ProtocolSwitch = ({ activeIndex, toggleProtocol }: Props) => {
     ]
   }, [])
 
-  return <RadioGroup options={protocolOptions} activeIndex={activeIndex} onChange={toggleProtocol} />
+  return <RadioGroup options={protocolOptions} activeIndex={activeIndex} onChange={onChange} />
 }
