@@ -10,14 +10,13 @@ import Icon, {
 } from '@ant-design/icons'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { assetToString } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 import { useMatch, useNavigate } from 'react-router-dom'
 
-import { Dex } from '../../../shared/api/types'
 import { ExternalUrl } from '../../../shared/const'
 import { ReactComponent as DiscordIcon } from '../../assets/svg/discord.svg'
 import { ReactComponent as SettingsIcon } from '../../assets/svg/icon-cog.svg'
@@ -36,19 +35,24 @@ import { mayaIconT } from '../icons'
 import * as Styled from './SidebarComponent.styles'
 
 type IconProps = {
+  className?: string
   url: string
   children: React.ReactNode
   onClick: (url: string) => void
 }
 
-const FooterIcon: React.FC<IconProps> = (props: IconProps): JSX.Element => {
-  const { children, url, onClick } = props
+const FooterIcon = (props: IconProps): JSX.Element => {
+  const { className = '', children, url, onClick } = props
 
   const clickHandler = useCallback(() => {
     onClick(url)
   }, [url, onClick])
 
-  return <Styled.IconWrapper onClick={clickHandler}>{children}</Styled.IconWrapper>
+  return (
+    <Styled.IconWrapper className={className} onClick={clickHandler}>
+      {children}
+    </Styled.IconWrapper>
+  )
 }
 
 enum TabKey {
@@ -69,14 +73,13 @@ type Tab = {
 
 export type Props = {
   network: Network
-  dex: Dex
   commitHash?: string
   isDev: boolean
   publicIP: string
 }
 
-export const SidebarComponent: React.FC<Props> = (props): JSX.Element => {
-  const { network, dex, commitHash, isDev, publicIP } = props
+export const SidebarComponent = (props: Props): JSX.Element => {
+  const { network, commitHash, isDev, publicIP } = props
 
   const intl = useIntl()
 
@@ -183,12 +186,10 @@ export const SidebarComponent: React.FC<Props> = (props): JSX.Element => {
     () => (
       <Styled.LogoWrapper>
         <Styled.AsgardexLogo />
-        <Styled.NetworkLabel network={network} dex={dex}>
-          {network}
-        </Styled.NetworkLabel>
+        <Styled.NetworkLabel network={network}>{network}</Styled.NetworkLabel>
       </Styled.LogoWrapper>
     ),
-    [network, dex]
+    [network]
   )
 
   const clickIconHandler = useCallback((url: string) => {
@@ -206,23 +207,20 @@ export const SidebarComponent: React.FC<Props> = (props): JSX.Element => {
             {renderMainNav}
           </div>
           <div className="flex flex-col items-center justify-center">
-            <FooterIcon
-              url={dex.chain === THORChain ? ExternalUrl.DOCSTHOR : ExternalUrl.DOCSMAYA}
-              onClick={clickIconHandler}>
-              {dex.chain === THORChain ? (
-                <div className="flex h-12 flex-row items-center">
-                  <ThorChainIcon />
+            <FooterIcon url={ExternalUrl.DOCSTHOR} onClick={clickIconHandler}>
+              <div className="flex h-12 flex-row items-center">
+                <ThorChainIcon />
+              </div>
+            </FooterIcon>
+            <FooterIcon className="!ml-0" url={ExternalUrl.DOCSMAYA} onClick={clickIconHandler}>
+              <div className="flex h-12 flex-row items-center">
+                <div className="mr-2">
+                  <Styled.Icon src={mayaIconT} />
                 </div>
-              ) : (
-                <div className="flex h-12 flex-row items-center">
-                  <div className="mr-2">
-                    <Styled.Icon src={mayaIconT} />
-                  </div>
-                  <div>
-                    <Styled.TextLabel>MAYACHAIN</Styled.TextLabel>
-                  </div>
+                <div>
+                  <Styled.TextLabel>MAYACHAIN</Styled.TextLabel>
                 </div>
-              )}
+              </div>
             </FooterIcon>
             {publicIP && (
               <div className="h-8 items-center px-20px text-[14px] text-gray2 dark:text-gray2d">

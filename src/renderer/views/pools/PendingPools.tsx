@@ -5,6 +5,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { Chain } from '@xchainjs/xchain-util'
 import { Grid } from 'antd'
 import { ColumnsType, ColumnType } from 'antd/lib/table'
 import * as A from 'fp-ts/Array'
@@ -24,7 +25,6 @@ import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { getPoolTableRowsData, isPoolDetails } from '../../helpers/poolHelper'
 import { getPoolTableRowsData as getPoolTableRowsDataMaya } from '../../helpers/poolHelperMaya'
-import { useDex } from '../../hooks/useDex'
 import { useIncentivePendulum } from '../../hooks/useIncentivePendulum'
 import { useIncentivePendulumMaya } from '../../hooks/useIncentivePendulumMaya'
 import { usePoolCycle } from '../../hooks/usePoolCycle'
@@ -50,9 +50,8 @@ import * as Shared from './PoolsOverview.shared'
 import * as Styled from './PoolsOverview.styles'
 import { TableAction, BlockLeftLabel } from './PoolsOverview.styles'
 
-export const PendingPools = (): JSX.Element => {
+export const PendingPools = ({ protocol }: { protocol: Chain }): JSX.Element => {
   const intl = useIntl()
-  const { dex } = useDex()
   const { network$ } = useAppContext()
   const network = useObservableState<Network>(network$, DEFAULT_NETWORK)
 
@@ -73,7 +72,7 @@ export const PendingPools = (): JSX.Element => {
   const { setFilter: setPoolFilter, filter: poolFilter } = usePoolFilter('pending')
   const { add: addPoolToWatchlist, remove: removePoolFromWatchlist, list: poolWatchList } = usePoolWatchlist()
 
-  const poolsRD = useObservableState(dex.chain === THORChain ? pendingPoolsState$ : pendingPoolStateMaya$, RD.pending)
+  const poolsRD = useObservableState(protocol === THORChain ? pendingPoolsState$ : pendingPoolStateMaya$, RD.pending)
   const thorchainLastblockRD: ThorchainLastblockRD = useObservableState(thorchainLastblockState$, RD.pending)
   const mayachainLastblockRD: MayachainLastblockRD = useObservableState(mayachainLastblockState$, RD.pending)
 
@@ -81,7 +80,7 @@ export const PendingPools = (): JSX.Element => {
   const { data: incentivePendulumThorRD } = useIncentivePendulum()
   const { data: incentivePendulumMayaRD } = useIncentivePendulumMaya()
 
-  const incentivePendulumRD = dex.chain === THORChain ? incentivePendulumThorRD : incentivePendulumMayaRD
+  const incentivePendulumRD = protocol === THORChain ? incentivePendulumThorRD : incentivePendulumMayaRD
 
   const isDesktopView = Grid.useBreakpoint()?.lg ?? false
 
@@ -91,12 +90,12 @@ export const PendingPools = (): JSX.Element => {
   const { poolCycle: poolCycleThor, reloadPoolCycle } = usePoolCycle()
   const { poolCycle: poolCycleMaya, reloadPoolCycle: reloadPoolCycleMaya } = usePoolCycleMaya()
 
-  const poolCycle = dex.chain === THORChain ? poolCycleThor : poolCycleMaya
+  const poolCycle = protocol === THORChain ? poolCycleThor : poolCycleMaya
 
   const oNewPoolCycle = useMemo(() => FP.pipe(poolCycle, RD.toOption), [poolCycle])
 
   const refreshHandler = useCallback(() => {
-    if (dex.chain === THORChain) {
+    if (protocol === THORChain) {
       reloadPendingPools()
       reloadPoolCycle()
     } else {
@@ -105,11 +104,11 @@ export const PendingPools = (): JSX.Element => {
     }
 
     reloadLimit()
-  }, [dex, reloadLimit, reloadPendingPools, reloadPendingPoolsMaya, reloadPoolCycle, reloadPoolCycleMaya])
+  }, [protocol, reloadLimit, reloadPendingPools, reloadPendingPoolsMaya, reloadPoolCycle, reloadPoolCycleMaya])
 
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()
-  const pricePool = dex.chain === THORChain ? pricePoolThor : pricePoolMaya
+  const pricePool = protocol === THORChain ? pricePoolThor : pricePoolMaya
 
   const renderBtnPoolsColumn = useCallback(
     (_: string, { asset }: PoolTableRowData) => {
@@ -159,11 +158,11 @@ export const PendingPools = (): JSX.Element => {
 
       return (
         <TableAction>
-          <BlockLeftLabel>{deepest ? (dex.chain === THORChain ? blocksLeft : blocksLeftMaya) : '--'}</BlockLeftLabel>
+          <BlockLeftLabel>{deepest ? (protocol === THORChain ? blocksLeft : blocksLeftMaya) : '--'}</BlockLeftLabel>
         </TableAction>
       )
     },
-    [thorchainLastblockRD, mayachainLastblockRD, dex, oNewPoolCycle]
+    [thorchainLastblockRD, mayachainLastblockRD, protocol, oNewPoolCycle]
   )
 
   const blockLeftColumn: ColumnType<PoolTableRowData> = useMemo(
@@ -208,7 +207,7 @@ export const PendingPools = (): JSX.Element => {
         <>
           <Styled.AssetsFilter setFilter={setPoolFilter} activeFilter={poolFilter} poolFilters={DEFAULT_POOL_FILTERS} />
           <ProtocolLimit limit={limitRD} />
-          <IncentivePendulum incentivePendulum={incentivePendulumRD} dex={dex} />
+          <IncentivePendulum incentivePendulum={incentivePendulumRD} protocol={protocol} />
           <Table columns={columns} dataSource={dataSource} loading={loading} rowKey="key" />
         </>
       )
@@ -221,7 +220,7 @@ export const PendingPools = (): JSX.Element => {
       setPoolFilter,
       limitRD,
       incentivePendulumRD,
-      dex
+      protocol
     ]
   )
 
