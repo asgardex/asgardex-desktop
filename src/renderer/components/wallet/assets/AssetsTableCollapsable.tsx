@@ -633,8 +633,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
             <Styled.HeaderLabel color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>
               <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                 {isEvmChain(chain) && (
-                  // @asgardexTeam Add Locale for tooltip
-                  <InfoIcon tooltip={'Token not showing, add contract in wallet settings'} color="primary" />
+                  <InfoIcon tooltip={intl.formatMessage({ id: 'wallet.evmToken.tooltip' })} color="primary" />
                 )}
                 <span style={{ marginLeft: isEvmChain(chain) ? '5px' : '0' }}>{assetsTxt}</span>
               </span>

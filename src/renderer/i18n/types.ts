@@ -351,6 +351,7 @@ type WalletMessageKey =
   | 'wallet.ledger.verifyAddress.modal.description'
   | 'wallet.ledger.removeAddress'
   | 'wallet.ledger.viewAddress'
+  | 'wallet.evmToken.tooltip'
 
 export type WalletMessages = { [key in WalletMessageKey]: string }
 
