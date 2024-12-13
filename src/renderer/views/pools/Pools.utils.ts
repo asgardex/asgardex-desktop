@@ -19,7 +19,7 @@ import * as O from 'fp-ts/lib/Option'
 import { PoolsWatchList } from '../../../shared/api/io'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { isChainAsset, isUSDAsset } from '../../helpers/assetHelper'
-import { isAvaxChain, isEthChain } from '../../helpers/chainHelper'
+import { isArbChain, isAvaxChain, isEthChain } from '../../helpers/chainHelper'
 import { eqString, eqAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { LastblockItem as LastblockItemMaya } from '../../services/mayachain/types'
@@ -278,6 +278,10 @@ export const filterTableData =
             // avax
             if (value === '__avax__') {
               return isAvaxChain(asset.chain) ? O.some(tableRow) : O.none
+            }
+            // arb
+            if (value === '__arb__') {
+              return isArbChain(asset.chain) ? O.some(tableRow) : O.none
             }
             // custom
             if (value.length > 0) {

@@ -1,7 +1,8 @@
-import React, { Fragment, useMemo } from 'react'
+import { Fragment, useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Tab } from '@headlessui/react'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
@@ -12,12 +13,15 @@ import { useIntl } from 'react-intl'
 import { useMatch, useNavigate } from 'react-router'
 import * as RxOp from 'rxjs/operators'
 
+import { Tooltip } from '../../components/uielements/common/Common.styles'
+import { RadioGroup } from '../../components/uielements/radioGroup'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useDex } from '../../hooks/useDex'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import * as poolsRoutes from '../../routes/pools'
+import { AVAILABLE_DEXS } from '../../services/const'
 import { PoolType } from '../../services/midgard/types'
 import { LoansOverview } from '../loans/LoansOverview'
 import { SaversOverview } from '../savers/SaversOverview'
@@ -39,9 +43,9 @@ type TabContent = {
   content: JSX.Element
 }
 
-export const PoolsOverview: React.FC = (): JSX.Element => {
+export const PoolsOverview = (): JSX.Element => {
   const intl = useIntl()
-  const { dex } = useDex()
+  const { dex, changeDex } = useDex()
 
   const navigate = useNavigate()
 
@@ -69,6 +73,18 @@ export const PoolsOverview: React.FC = (): JSX.Element => {
   const matchPoolsPendingRoute = useMatch({ path: poolsRoutes.pending.path(), end: false })
   const matchPoolsSaversRoute = useMatch({ path: poolsRoutes.savers.path(), end: false })
   const matchPoolsLendingRoute = useMatch({ path: poolsRoutes.lending.path(), end: false })
+
+  const activeIndex = useMemo(() => {
+    const currentIndex = AVAILABLE_DEXS.findIndex((availableDex) => availableDex.chain === dex.chain)
+    return currentIndex ?? 0
+  }, [dex])
+
+  const toggleProtocol = useCallback(
+    (index: number) => {
+      changeDex(AVAILABLE_DEXS[index])
+    },
+    [changeDex]
+  )
 
   const selectedIndex: number = useMemo(() => {
     if (matchPoolsSaversRoute) {
@@ -108,6 +124,31 @@ export const PoolsOverview: React.FC = (): JSX.Element => {
     [intl, haltedChains, mimirHalt, walletLocked]
   )
 
+  const protocolOptions = useMemo(() => {
+    return [
+      {
+        label: (
+          <Tooltip title="Switch pools to THORChain" placement="bottom">
+            <span className="px-1 text-text2 dark:text-text2d">THORChain</span>
+          </Tooltip>
+        ),
+        value: THORChain
+      },
+      {
+        label: (
+          <Tooltip title="Switch pools to MAYAChain" placement="bottom">
+            <span className="px-1 text-text2 dark:text-text2d">MAYAChain</span>
+          </Tooltip>
+        ),
+        value: MAYAChain
+      }
+    ]
+  }, [])
+
+  const renderProtocolSwitch = useMemo(() => {
+    return <RadioGroup options={protocolOptions} activeIndex={activeIndex} onChange={toggleProtocol} />
+  }, [activeIndex, protocolOptions, toggleProtocol])
+
   return (
     <Tab.Group
       selectedIndex={selectedIndex}
@@ -126,33 +167,36 @@ export const PoolsOverview: React.FC = (): JSX.Element => {
           // nothing to do
         }
       }}>
-      <Tab.List className="mb-10px flex w-full flex-col md:flex-row">
-        {FP.pipe(
-          tabs,
-          A.map(({ index, label }) => (
-            <Tab key={index} as={Fragment}>
-              {({ selected }) => (
-                // label wrapper
-                <div className="group flex cursor-pointer items-center justify-center focus-visible:outline-none">
-                  {/* label */}
-                  <span
-                    className={clsx(
-                      'ease border-y-[2px] border-solid border-transparent px-5px',
-                      'font-mainSemiBold text-[16px] uppercase',
-                      'mr-0 md:mr-10px',
-                      'hover:text-turquoise group-hover:border-b-turquoise',
-                      selected
-                        ? 'border-b-turquoise text-turquoise'
-                        : 'border-b-transparent text-text2 dark:text-text2d'
-                    )}>
-                    {label}
-                  </span>
-                </div>
-              )}
-            </Tab>
-          ))
-        )}
-      </Tab.List>
+      <div className="flex flex-col items-center justify-between sm:flex-row">
+        <Tab.List className="mb-10px flex w-full flex-col md:flex-row">
+          {FP.pipe(
+            tabs,
+            A.map(({ index, label }) => (
+              <Tab key={index} as={Fragment}>
+                {({ selected }) => (
+                  // label wrapper
+                  <div className="group flex cursor-pointer items-center justify-center focus-visible:outline-none">
+                    {/* label */}
+                    <span
+                      className={clsx(
+                        'ease border-y-[2px] border-solid border-transparent px-5px',
+                        'font-mainSemiBold text-[16px] uppercase',
+                        'mr-0 md:mr-10px',
+                        'hover:text-turquoise group-hover:border-b-turquoise',
+                        selected
+                          ? 'border-b-turquoise text-turquoise'
+                          : 'border-b-transparent text-text2 dark:text-text2d'
+                      )}>
+                      {label}
+                    </span>
+                  </div>
+                )}
+              </Tab>
+            ))
+          )}
+        </Tab.List>
+        {renderProtocolSwitch}
+      </div>
       <Tab.Panels className="mt-2 w-full">
         {FP.pipe(
           tabs,

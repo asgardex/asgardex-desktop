@@ -22,13 +22,14 @@ type Props = {
 export const AssetsFilter: React.FC<Props> = ({ poolFilters, className, activeFilter: oActiveFilter, setFilter }) => {
   const intl = useIntl()
 
-  const filterNames: Record<StaticPoolFilter, string> = useMemo(
+  const filterNames: Partial<Record<StaticPoolFilter, string>> = useMemo(
     () => ({
       __watched__: 'star', // will be replaced by an icon, but don't leave it empty
       __base__: intl.formatMessage({ id: 'common.asset.base' }),
       __usd__: 'usd',
       __erc20__: 'erc20',
       __avax__: 'avax',
+      __arb__: 'arb',
       __synth__: 'synth'
     }),
     [intl]
