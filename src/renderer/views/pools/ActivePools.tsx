@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
@@ -50,14 +50,19 @@ import {
   PoolsState as MayaPoolState,
   GetPoolsPeriodEnum as GetPoolsPeriodEnumMaya
 } from '../../services/mayaMigard/types'
-import { PoolsState, DEFAULT_POOL_FILTERS, GetPoolsPeriodEnum } from '../../services/midgard/types'
+import {
+  GetPoolsPeriodEnum,
+  PoolsState,
+  DEFAULT_POOL_FILTERS,
+  DEFAULT_MAYA_POOL_FILTERS
+} from '../../services/midgard/types'
 import { hasImportedKeystore } from '../../services/wallet/util'
 import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
 import { filterTableData } from './Pools.utils'
 import * as Shared from './PoolsOverview.shared'
 import * as Styled from './PoolsOverview.styles'
 
-export const ActivePools: React.FC = (): JSX.Element => {
+export const ActivePools = (): JSX.Element => {
   const navigate = useNavigate()
   const intl = useIntl()
   const { dex } = useDex()
@@ -345,7 +350,11 @@ export const ActivePools: React.FC = (): JSX.Element => {
 
       return (
         <>
-          <Styled.AssetsFilter activeFilter={poolFilter} setFilter={setPoolFilter} poolFilters={DEFAULT_POOL_FILTERS} />
+          <Styled.AssetsFilter
+            activeFilter={poolFilter}
+            setFilter={setPoolFilter}
+            poolFilters={dex.chain === THORChain ? DEFAULT_POOL_FILTERS : DEFAULT_MAYA_POOL_FILTERS}
+          />
           <ProtocolLimit limit={limitRD} />
           <IncentivePendulum incentivePendulum={incentivePendulumRD} dex={dex} />
           <Table columns={columns} dataSource={dataSource} loading={loading} rowKey="key" />

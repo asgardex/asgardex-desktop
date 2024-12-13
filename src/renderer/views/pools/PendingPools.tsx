@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
@@ -50,7 +50,7 @@ import * as Shared from './PoolsOverview.shared'
 import * as Styled from './PoolsOverview.styles'
 import { TableAction, BlockLeftLabel } from './PoolsOverview.styles'
 
-export const PendingPools: React.FC = (): JSX.Element => {
+export const PendingPools = (): JSX.Element => {
   const intl = useIntl()
   const { dex } = useDex()
   const { network$ } = useAppContext()
