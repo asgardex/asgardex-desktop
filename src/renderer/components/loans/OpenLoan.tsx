@@ -105,8 +105,6 @@ import { InfoIcon } from '../uielements/info'
 import { Slider } from '../uielements/slider'
 import * as Utils from './Loan.utils'
 
-export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
-
 export type BorrowProps = {
   keystore: KeystoreState
   getLoanQuoteOpen$: (

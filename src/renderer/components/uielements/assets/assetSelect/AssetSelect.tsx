@@ -65,6 +65,7 @@ export const AssetSelect: React.FC<Props> = (props): JSX.Element => {
       />
       <BaseButton
         className={clsx(
+          'flex items-center justify-between',
           'group py-[2px] px-10px focus:outline-none',
           { 'hover:shadow-full hover:dark:shadow-fulld': !disableButton && !shadowless },
           className

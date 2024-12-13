@@ -105,8 +105,6 @@ import { InfoIcon } from '../uielements/info'
 import { Slider } from '../uielements/slider'
 import * as Utils from './Saver.utils'
 
-export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
-
 export type AddProps = {
   keystore: KeystoreState
   thorchainQuery: ThorchainQuery

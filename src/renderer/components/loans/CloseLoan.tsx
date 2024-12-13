@@ -99,8 +99,6 @@ import { Tooltip, TooltipAddress } from '../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../uielements/fees'
 import * as Utils from './Loan.utils'
 
-export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
-
 export type LoanCloseProps = {
   keystore: KeystoreState
   poolAssets: AnyAsset[]
