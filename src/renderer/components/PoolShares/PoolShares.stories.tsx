@@ -1,8 +1,8 @@
 import { Meta, StoryFn } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, assetToBase, bn } from '@xchainjs/xchain-util'
 
-import { thorDetails } from '../../../shared/api/types'
 import { AssetBSC, AssetBTC } from '../../../shared/utils/asset'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { DEFAULT_MIMIR_HALT } from '../../services/thorchain/const'
@@ -44,7 +44,7 @@ const defaultProps: ComponentProps = {
   priceAsset: AssetBSC,
   openShareInfo: () => console.log('go to stake info'),
   network: Network.Testnet,
-  dex: thorDetails
+  protocol: THORChain
 }
 export const Default: StoryFn = () => <Component {...defaultProps} />
 
