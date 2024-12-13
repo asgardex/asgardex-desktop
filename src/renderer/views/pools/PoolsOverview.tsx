@@ -109,7 +109,14 @@ export const PoolsOverview = (): JSX.Element => {
       {
         index: TAB_INDEX['savers'],
         label: intl.formatMessage({ id: 'common.savers' }),
-        content: <SaversOverview haltedChains={haltedChains} mimirHalt={mimirHalt} walletLocked={walletLocked} />
+        content: (
+          <SaversOverview
+            haltedChains={haltedChains}
+            mimirHalt={mimirHalt}
+            protocol={protocol}
+            walletLocked={walletLocked}
+          />
+        )
       },
       {
         index: TAB_INDEX['lending'],
