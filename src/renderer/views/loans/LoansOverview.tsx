@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   AnyAsset,
@@ -30,7 +31,6 @@ import { sequenceTRD } from '../../helpers/fpHelpers'
 import { getLoansTableRowsData, ordCollateralByDepth } from '../../helpers/loans'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
-import { useDex } from '../../hooks/useDex'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
 import * as lendingRoutes from '../../routes/pools/lending'
@@ -43,15 +43,15 @@ import type { LoansTableRowData, LoansTableRowsData } from './Loans.types'
 export type Props = {
   haltedChains: Chain[]
   mimirHalt: MimirHalt
+  protocol: Chain
   walletLocked: boolean
 }
 
-export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
-  const { haltedChains, mimirHalt, walletLocked } = props
+export const LoansOverview = (props: Props): JSX.Element => {
+  const { haltedChains, mimirHalt, protocol, walletLocked } = props
   const intl = useIntl()
   const navigate = useNavigate()
   const { network } = useNetwork()
-  const { dex } = useDex()
 
   const {
     service: {
@@ -66,19 +66,19 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
   } = useMidgardMayaContext()
 
   const refreshHandler = useCallback(() => {
-    if (dex.chain === THORChain) {
+    if (protocol === THORChain) {
       reloadPools()
     } else {
       reloadMayaPools()
     }
-  }, [dex, reloadPools, reloadMayaPools])
+  }, [protocol, reloadPools, reloadMayaPools])
 
   const selectedPricePool = useObservableState(
-    dex.chain === THORChain ? selectedPricePool$ : selectedPricePoolMaya$,
-    dex.chain === THORChain ? PoolHelpers.RUNE_PRICE_POOL : MAYA_PRICE_POOL
+    protocol === THORChain ? selectedPricePool$ : selectedPricePoolMaya$,
+    protocol === THORChain ? PoolHelpers.RUNE_PRICE_POOL : MAYA_PRICE_POOL
   )
 
-  const poolsRD = useObservableState(dex.chain === THORChain ? poolsState$ : mayaPoolsState$, RD.pending)
+  const poolsRD = useObservableState(protocol === THORChain ? poolsState$ : mayaPoolsState$, RD.pending)
 
   // store previous data of pools to render these while reloading
   const previousCollateral = useRef<O.Option<LoansTableRowsData>>(O.none)
@@ -191,7 +191,7 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
       })
 
       const disabled =
-        disableAllPoolActions || disableTradingActions || disablePoolActions || walletLocked || dex.chain === 'MAYA'
+        disableAllPoolActions || disableTradingActions || disablePoolActions || walletLocked || protocol === MAYAChain
 
       const onClickHandler = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         event.preventDefault()
@@ -215,7 +215,7 @@ export const LoansOverview: React.FC<Props> = (props): JSX.Element => {
       )
     },
 
-    [dex, haltedChains, intl, mimirHalt, navigate, walletLocked]
+    [protocol, haltedChains, intl, mimirHalt, navigate, walletLocked]
   )
 
   const btnColumn = useCallback(

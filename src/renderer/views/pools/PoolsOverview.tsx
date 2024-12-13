@@ -121,7 +121,14 @@ export const PoolsOverview = (): JSX.Element => {
       {
         index: TAB_INDEX['lending'],
         label: intl.formatMessage({ id: 'common.lending' }),
-        content: <LoansOverview haltedChains={haltedChains} mimirHalt={mimirHalt} walletLocked={walletLocked} />
+        content: (
+          <LoansOverview
+            protocol={protocol}
+            haltedChains={haltedChains}
+            mimirHalt={mimirHalt}
+            walletLocked={walletLocked}
+          />
+        )
       }
     ],
     [intl, protocol, haltedChains, mimirHalt, walletLocked]
