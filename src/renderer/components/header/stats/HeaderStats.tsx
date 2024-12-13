@@ -4,14 +4,14 @@ import * as RD from '@devexperts/remote-data-ts'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { baseToAsset, formatAssetAmountCurrency, currencySymbolByAsset } from '@xchainjs/xchain-util'
-import { Grid, Tooltip } from 'antd'
+import { Grid } from 'antd'
 import * as FP from 'fp-ts/lib/function'
-import { useIntl } from 'react-intl'
 
-import { isUSDAsset } from '../../../helpers/assetHelper'
 import { abbreviateNumber } from '../../../helpers/numberHelper'
 import { loadingString } from '../../../helpers/stringHelper'
+import { useNetwork } from '../../../hooks/useNetwork'
 import { PriceRD } from '../../../services/midgard/types'
+import { AssetIcon } from '../../uielements/assets/assetIcon'
 import * as Styled from './HeaderStats.styles'
 
 export type Props = {
@@ -39,7 +39,7 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
 
   const isSmallMobileView = Grid.useBreakpoint()?.xs ?? false
 
-  const intl = useIntl()
+  const { network } = useNetwork()
 
   const prevRunePriceLabel = useRef<string>(loadingString)
   const prevMayaPriceLabel = useRef<string>(loadingString)
@@ -51,7 +51,7 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
           const price = formatAssetAmountCurrency({
             amount: baseToAsset(amount),
             asset,
-            decimal: isUSDAsset(asset) ? 2 : 6
+            decimal: 2
           })
           return price
         }),
@@ -79,7 +79,7 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
           const price = formatAssetAmountCurrency({
             amount: baseToAsset(amount),
             asset,
-            decimal: isUSDAsset(asset) ? 2 : 6
+            decimal: 2
           })
           return price
         }),
@@ -151,70 +151,59 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
     [volume24PriceMayaRD]
   )
 
-  const reloadVolume24PriceHandler = useCallback(() => {
+  const reloadThorStats = useCallback(() => {
     if (!RD.isPending(volume24PriceRuneRD)) {
       reloadVolume24PriceRune()
     }
-  }, [reloadVolume24PriceRune, volume24PriceRuneRD])
-  const reloadVolume24PriceHandlerMaya = useCallback(() => {
-    if (!RD.isPending(volume24PriceMayaRD)) {
-      reloadVolume24PriceMaya()
-    }
-  }, [reloadVolume24PriceMaya, volume24PriceMayaRD])
-
-  const reloadRunePriceHandler = useCallback(() => {
     if (!RD.isPending(runePriceRD)) {
       reloadRunePrice()
     }
-  }, [reloadRunePrice, runePriceRD])
-  const reloadMayaPriceHandler = useCallback(() => {
+  }, [reloadRunePrice, reloadVolume24PriceRune, runePriceRD, volume24PriceRuneRD])
+
+  const reloadMayaStats = useCallback(() => {
+    if (!RD.isPending(volume24PriceMayaRD)) {
+      reloadVolume24PriceMaya()
+    }
     if (!RD.isPending(mayaPriceRD)) {
       reloadMayaPrice()
     }
-  }, [reloadMayaPrice, mayaPriceRD])
+  }, [mayaPriceRD, reloadMayaPrice, reloadVolume24PriceMaya, volume24PriceMayaRD])
 
   return (
-    <Styled.Wrapper>
-      <Styled.Container clickable={false}>
+    <Styled.Wrapper className="space-x-2">
+      <div
+        className="flex cursor-pointer items-center space-x-2 rounded-xl bg-gray0 py-1 pl-1 pr-2 dark:bg-gray0d"
+        onClick={reloadThorStats}>
+        <AssetIcon size="xsmall" asset={AssetRuneNative} network={network} />
         <Styled.Protocol chain={THORChain}>{THORChain}</Styled.Protocol>
-      </Styled.Container>
-      <Styled.Container onClick={reloadRunePriceHandler} clickable={!RD.isPending(runePriceRD)}>
-        <Styled.Title>
-          {intl.formatMessage({ id: `common.price.${AssetRuneNative.symbol.toLowerCase()}` })}
-        </Styled.Title>
         <Styled.Label loading={RD.isPending(runePriceRD) ? 'true' : 'false'}>{runePriceLabel}</Styled.Label>
-      </Styled.Container>
-      {!isSmallMobileView && (
-        <>
-          <Tooltip title={intl.formatMessage({ id: 'common.volume24.description' })}>
-            <Styled.Container onClick={reloadVolume24PriceHandler} clickable={!RD.isPending(volume24PriceRuneRD)}>
-              <Styled.Title>{intl.formatMessage({ id: 'common.volume24' })}</Styled.Title>
-              <Styled.Label loading={RD.isPending(volume24PriceRuneRD) ? 'true' : 'false'}>
-                {volume24PriceRuneLabel}
-              </Styled.Label>
-            </Styled.Container>
-          </Tooltip>
-        </>
-      )}
-      <Styled.Container clickable={false}>
+
+        {!isSmallMobileView && (
+          <>
+            <div className="h-full w-[1px] bg-gray2 dark:bg-gray2d" />
+            <Styled.Label loading={RD.isPending(volume24PriceRuneRD) ? 'true' : 'false'}>
+              {volume24PriceRuneLabel}
+            </Styled.Label>
+          </>
+        )}
+      </div>
+
+      <div
+        className="flex cursor-pointer items-center space-x-2 rounded-xl bg-gray0 py-1 pl-1 pr-2 dark:bg-gray0d"
+        onClick={reloadMayaStats}>
+        <AssetIcon size="xsmall" asset={AssetCacao} network={network} />
         <Styled.Protocol chain={MAYAChain}>{MAYAChain}</Styled.Protocol>
-      </Styled.Container>
-      <Styled.Container onClick={reloadMayaPriceHandler} clickable={!RD.isPending(mayaPriceRD)}>
-        <Styled.Title>{intl.formatMessage({ id: `common.price.${AssetCacao.symbol.toLowerCase()}` })}</Styled.Title>
         <Styled.Label loading={RD.isPending(mayaPriceRD) ? 'true' : 'false'}>{mayaPriceLabel}</Styled.Label>
-      </Styled.Container>
-      {!isSmallMobileView && (
-        <>
-          <Tooltip title={intl.formatMessage({ id: 'common.volume24.description' })}>
-            <Styled.Container onClick={reloadVolume24PriceHandlerMaya} clickable={!RD.isPending(volume24PriceMayaRD)}>
-              <Styled.Title>{intl.formatMessage({ id: 'common.volume24' })}</Styled.Title>
-              <Styled.Label loading={RD.isPending(volume24PriceMayaRD) ? 'true' : 'false'}>
-                {volume24PriceMayaLabel}
-              </Styled.Label>
-            </Styled.Container>
-          </Tooltip>
-        </>
-      )}
+
+        {!isSmallMobileView && (
+          <>
+            <div className="h-full w-[1px] bg-gray2 dark:bg-gray2d" />
+            <Styled.Label loading={RD.isPending(volume24PriceMayaRD) ? 'true' : 'false'}>
+              {volume24PriceMayaLabel}
+            </Styled.Label>
+          </>
+        )}
+      </div>
     </Styled.Wrapper>
   )
 }
