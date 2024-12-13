@@ -19,7 +19,7 @@ export const RadioGroup = ({
             {index !== 0 && <div className="h-10 w-[1px] bg-gray0 dark:bg-gray0d" />}
             <div
               className={clsx(
-                'cursor-pointer p-2 hover:bg-gray0 hover:dark:bg-gray0d',
+                'cursor-pointer p-2 hover:bg-gray1 hover:dark:bg-gray1d',
                 'first:rounded-l-md last:rounded-r-md',
                 activeIndex === index ? 'bg-gray0 dark:bg-gray0d' : 'bg-transparent'
               )}
