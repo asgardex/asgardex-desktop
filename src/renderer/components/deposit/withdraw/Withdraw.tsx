@@ -175,7 +175,7 @@ export const Withdraw: React.FC<Props> = ({
   const feesObservable = useMemo(
     () =>
       FP.pipe(
-        fees$(asset, protocol),
+        fees$(asset, protocolAsset),
         RxOp.map((fees) => {
           // store every successfully loaded fees
           if (RD.isSuccess(fees)) {
@@ -184,7 +184,7 @@ export const Withdraw: React.FC<Props> = ({
           return fees
         })
       ),
-    [asset, dex, fees$] // Dependencies
+    [asset, protocolAsset, fees$] // Dependencies
   )
 
   const withdrawFees: SymWithdrawFees = useMemo(
@@ -429,12 +429,12 @@ export const Withdraw: React.FC<Props> = ({
   )
 
   const reloadFeesHandler = useCallback(() => {
-    reloadFees(asset, dex)
-  }, [reloadFees, asset, dex])
+    reloadFees(asset, protocolAsset)
+  }, [reloadFees, asset, protocolAsset])
 
   // Load fees by every `onMount`
   useEffect(() => {
-    reloadFees(asset, dex)
+    reloadFees(asset, protocolAsset)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

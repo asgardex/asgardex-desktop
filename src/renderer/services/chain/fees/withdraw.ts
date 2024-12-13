@@ -55,7 +55,7 @@ const reloadWithdrawFees = (asset: AnyAsset) => {
   }
 }
 
-const symWithdrawFee$: SymWithdrawFeesHandler = (initialAsset, dex) =>
+const symWithdrawFee$: SymWithdrawFeesHandler = (initialAsset, protocolAsset) =>
   FP.pipe(
     reloadWithdrawFees$,
     RxOp.debounceTime(300),
@@ -69,8 +69,8 @@ const symWithdrawFee$: SymWithdrawFeesHandler = (initialAsset, dex) =>
       //tobefixed
       return FP.pipe(
         liveData.sequenceS({
-          runeInFee: poolInboundFee$(dex.asset, ''),
-          runeOutFee: poolOutboundFee$(dex.asset),
+          runeInFee: poolInboundFee$(protocolAsset, ''),
+          runeOutFee: poolOutboundFee$(protocolAsset),
           assetOutFee: poolOutboundFee$(asset)
         }),
         liveData.map(({ runeInFee, runeOutFee, assetOutFee }) => ({

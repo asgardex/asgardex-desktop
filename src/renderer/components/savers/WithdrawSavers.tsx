@@ -4,7 +4,6 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { EstimateWithdrawSaver, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
@@ -865,7 +864,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
           walletIndex,
           sender: address,
           hdMode,
-          protocol: THORChain // update this when dex is removed
+          protocol: poolAddress.protocol
         }
         return result
       })

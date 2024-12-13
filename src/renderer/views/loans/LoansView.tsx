@@ -32,7 +32,6 @@ import { eqChain, eqNetwork, eqWalletType } from '../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { addressFromOptionalWalletAddress } from '../../helpers/walletHelper'
-import { useDex } from '../../hooks/useDex'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
@@ -87,8 +86,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   const navigate = useNavigate()
 
   const { network } = useNetwork()
-
-  const { dex } = useDex()
 
   const { isPrivate } = useApp()
   const {
@@ -331,7 +328,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         goToTransaction={openExplorerTxUrl}
                         getExplorerTxUrl={getExplorerTxUrl}
                         sourceWalletType={collateralWalletType}
-                        // borrowWalletType={borrowWalletType}
                         poolAssets={poolAssets}
                         reloadBalances={reloadHandler}
                         approveFee$={approveFee$}
@@ -346,7 +342,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         onChangeAsset={onChangeAssetRepayHandler}
                         borrowerPosition={getBorrowerProvider$}
                         disableLoanAction={checkDisableLoanAction()}
-                        dex={dex}
                       />
                     )
                   default:

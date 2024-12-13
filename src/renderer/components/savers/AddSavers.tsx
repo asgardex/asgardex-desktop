@@ -4,7 +4,6 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { EstimateAddSaver, ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
 import {
   Address,
@@ -785,7 +784,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
           walletAccount,
           walletIndex,
           hdMode,
-          protocol: THORChain // update this when doing savers 'dex' removal
+          protocol: poolAddress.protocol
         }
         return result
       })

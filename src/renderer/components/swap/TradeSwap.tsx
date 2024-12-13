@@ -997,7 +997,7 @@ export const TradeSwap = ({
             walletAccount,
             walletIndex,
             hdMode,
-            protocol: THORChain
+            protocol: poolAddress.protocol
           }
         })
       )

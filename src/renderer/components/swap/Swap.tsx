@@ -10,7 +10,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { QuoteSwap as QuoteSwapProtocol } from '@xchainjs/xchain-aggregator'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetCacao } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Asset,
@@ -998,7 +998,7 @@ export const Swap = ({
           walletAccount,
           walletIndex,
           hdMode,
-          protocol: quoteSwap.protocol === 'Thorchain' ? THORChain : MAYAChain
+          protocol: poolAddress.protocol
         }
       })
     )

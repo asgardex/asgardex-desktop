@@ -4,7 +4,6 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
   Asset,
@@ -814,7 +813,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
           walletIndex,
           sender: address,
           hdMode,
-          protocol: THORChain
+          protocol: poolAddress.protocol
         }
         return result
       })

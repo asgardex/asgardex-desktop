@@ -100,8 +100,8 @@ export type SymDepositFeesParams = {
   readonly asset: AnyAsset
 }
 
-export type SymDepositFeesHandler = (asset: AnyAsset, dex: Dex) => SymDepositFeesLD
-export type ReloadSymDepositFeesHandler = (asset: AnyAsset, dex: Dex) => void
+export type SymDepositFeesHandler = (asset: AnyAsset, protocolAsset: AnyAsset) => SymDepositFeesLD
+export type ReloadSymDepositFeesHandler = (asset: AnyAsset, protocolAsset: AnyAsset) => void
 
 export type SaverDepositParams = {
   readonly poolAddress: PoolAddress
@@ -326,8 +326,8 @@ export type SymWithdrawFees = {
 export type SymWithdrawFeesRD = RD.RemoteData<Error, SymWithdrawFees>
 export type SymWithdrawFeesLD = LiveData<Error, SymWithdrawFees>
 
-export type SymWithdrawFeesHandler = (asset: AnyAsset, dex: Dex) => SymWithdrawFeesLD
-export type ReloadWithdrawFeesHandler = (asset: AnyAsset, dex: Dex) => void
+export type SymWithdrawFeesHandler = (asset: AnyAsset, protocolAsset: AnyAsset) => SymWithdrawFeesLD
+export type ReloadWithdrawFeesHandler = (asset: AnyAsset, protocolAsset: AnyAsset) => void
 
 /**
  * Saver Withdraw Fees
