@@ -3,7 +3,7 @@ import React, { useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -14,7 +14,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 
-import { Dex, TrustedAddresses } from '../../../../shared/api/types'
+import { TrustedAddresses } from '../../../../shared/api/types'
 import { SendFormCOSMOS } from '../../../components/wallet/txs/send'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useCosmosContext } from '../../../contexts/CosmosContext'
@@ -44,13 +44,12 @@ type Props = {
   emptyBalance: WalletBalance
   poolDetails: PoolDetailsMaya
   oPoolAddress: O.Option<PoolAddress>
-  dex: Dex
 }
 
 export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
-  const { asset, trustedAddresses, emptyBalance, poolDetails, dex, oPoolAddress } = props
+  const { asset, trustedAddresses, emptyBalance, poolDetails, oPoolAddress } = props
 
-  const { chain } = asset.asset.type === AssetType.SYNTH ? dex.asset : asset.asset
+  const { chain } = asset.asset.type === AssetType.SYNTH ? AssetCacao : asset.asset
 
   const { network } = useNetwork()
   const {
@@ -165,7 +164,6 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
               poolDetails={poolDetails}
               mayaScanPrice={mayaScanPriceRD}
               oPoolAddress={oPoolAddress}
-              dex={dex}
             />
           </Styled.Container>
         </Spin>
@@ -191,7 +189,6 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
             poolDetails={poolDetails}
             mayaScanPrice={mayaScanPriceRD}
             oPoolAddress={oPoolAddress}
-            dex={dex}
           />
         </Styled.Container>
       )

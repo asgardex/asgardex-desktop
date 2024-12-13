@@ -161,7 +161,6 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
         withdraw$={symWithdraw$}
         network={network}
         poolsData={{}}
-        dex={dex}
       />
     ),
     [
@@ -179,8 +178,7 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
       getRuneExplorerTxUrl,
       reloadBalancesAndShares,
       symWithdraw$,
-      network,
-      dex
+      network
     ]
   )
 
@@ -221,7 +219,6 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
         withdraw$={symWithdraw$}
         network={network}
         poolsData={poolsData}
-        dex={dex}
       />
     ),
     [

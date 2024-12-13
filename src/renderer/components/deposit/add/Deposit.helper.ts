@@ -1,6 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, baseAmount, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as E from 'fp-ts/Either'
@@ -8,7 +6,6 @@ import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
 import * as O from 'fp-ts/Option'
 
-import { Dex } from '../../../../shared/api/types'
 import { WalletType } from '../../../../shared/wallet/types'
 import { SUPPORTED_LEDGER_APPS, ZERO_BASE_AMOUNT } from '../../../const'
 import {
@@ -68,20 +65,19 @@ export const maxRuneAmountToDeposit = ({
   dexBalance,
   assetBalance,
   fees: { asset: assetFees, rune: runeFees },
-  dex
+  protocolDecimals
 }: {
   poolData: PoolData
   dexBalance: BaseAmount
   assetBalance: AssetWithAmount
   fees: SymDepositFees
-  dex: Dex
+  protocolDecimals: number
 }): BaseAmount => {
   const { dexBalance: poolRuneBalance, assetBalance: poolAssetBalance } = poolData
   const maxRuneBalance = maxRuneBalanceToDeposit(dexBalance, runeFees.inFee)
   const maxAssetBalance = maxAssetBalanceToDeposit(assetBalance, assetFees.inFee)
   // asset balance needs to have `1e8` decimal to be in common with pool data (always `1e8`)
   const maxAssetBalance1e8 = to1e8BaseAmount(maxAssetBalance)
-  const decimal = dex.decimals
   const maxRuneAmount = baseAmount(
     poolRuneBalance
       .amount()
@@ -89,7 +85,7 @@ export const maxRuneAmountToDeposit = ({
       .multipliedBy(maxAssetBalance1e8.amount())
       // don't accept decimal as values for `BaseAmount`
       .toFixed(0, BigNumber.ROUND_DOWN),
-    decimal
+    protocolDecimals
   )
   return maxRuneAmount.gte(maxRuneBalance) ? maxRuneBalance : maxRuneAmount
 }
@@ -136,14 +132,14 @@ export const maxAssetAmountToDeposit = ({
 export const getDexAmountToDeposit = (
   assetAmount: BaseAmount,
   { dexBalance: poolRuneBalance, assetBalance: poolAssetBalance }: PoolData,
-  dex: Dex
+  protocolDecimals: number
 ): BaseAmount => {
   // convert `assetAmount` to `1e8` to be similar with decimal of `PoolData`, which are always 1e8 decimal based
   const assetAmount1e8 = to1e8BaseAmount(assetAmount)
   return baseAmount(
     // formula: assetAmount * poolRuneBalance / poolAssetBalance
     assetAmount1e8.amount().times(poolRuneBalance.amount().dividedBy(poolAssetBalance.amount())),
-    dex.chain === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL
+    protocolDecimals
   )
 }
 

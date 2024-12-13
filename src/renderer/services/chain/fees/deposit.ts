@@ -4,7 +4,6 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as RxOp from 'rxjs/operators'
 
-import { Dex } from '../../../../shared/api/types'
 import { eqOAsset } from '../../../helpers/fp/eq'
 import { liveData } from '../../../helpers/rx/liveData'
 import { observableState } from '../../../helpers/stateHelper'
@@ -24,18 +23,18 @@ const {
 } = observableState<O.Option<AnyAsset>>(O.none)
 
 // Triggers reloading of deposit fees
-const reloadSymDepositFees = (asset: AnyAsset, dex: Dex) => {
+const reloadSymDepositFees = (asset: AnyAsset, protocolAsset: AnyAsset) => {
   // (1) update reload state only, if prev. vs. current assets are different
   if (!eqOAsset.equals(O.some(asset), reloadSymDepositFeesState())) {
     _reloadSymDepositFees(O.some(asset))
   }
   // (2) Reload fees for RUNE
-  dex.chain === THORChain ? THOR.reloadFees() : MAYA.reloadFees()
+  protocolAsset.chain === THORChain ? THOR.reloadFees() : MAYA.reloadFees()
   // (3) Reload fees for asset, which are provided via `inbound_addresses` endpoint
   reloadInboundAddresses()
 }
 
-const symDepositFees$: SymDepositFeesHandler = (initialAsset, dex) => {
+const symDepositFees$: SymDepositFeesHandler = (initialAsset, protocolAsset) => {
   return FP.pipe(
     reloadSymDepositFees$,
     RxOp.debounceTime(300),
@@ -48,9 +47,9 @@ const symDepositFees$: SymDepositFeesHandler = (initialAsset, dex) => {
       )
       return FP.pipe(
         liveData.sequenceS({
-          runeInFee: poolInboundFee$(dex.asset, ''),
+          runeInFee: poolInboundFee$(protocolAsset, ''),
           assetInFee: poolInboundFee$(asset, ''),
-          runeOutFee: poolOutboundFee$(dex.asset),
+          runeOutFee: poolOutboundFee$(protocolAsset),
           assetOutFee: poolOutboundFee$(asset)
         }),
         liveData.map(({ runeInFee, assetInFee, runeOutFee, assetOutFee }) => ({

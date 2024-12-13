@@ -100,8 +100,8 @@ export type SymDepositFeesParams = {
   readonly asset: AnyAsset
 }
 
-export type SymDepositFeesHandler = (asset: AnyAsset, dex: Dex) => SymDepositFeesLD
-export type ReloadSymDepositFeesHandler = (asset: AnyAsset, dex: Dex) => void
+export type SymDepositFeesHandler = (asset: AnyAsset, protocolAsset: AnyAsset) => SymDepositFeesLD
+export type ReloadSymDepositFeesHandler = (asset: AnyAsset, protocolAsset: AnyAsset) => void
 
 export type SaverDepositParams = {
   readonly poolAddress: PoolAddress
@@ -113,7 +113,7 @@ export type SaverDepositParams = {
   readonly walletIndex: number
   readonly walletType: WalletType
   readonly hdMode: HDMode
-  readonly dex: Dex
+  readonly protocol: Chain
 }
 
 export type BorrowerDepositParams = {
@@ -146,7 +146,7 @@ export type SymDepositParams = {
   readonly assetWalletType: WalletType
   readonly assetHDMode: HDMode
   readonly assetSender: Address
-  readonly dex: Dex
+  readonly protocol: Chain
 }
 
 export type SendTxParams = {
@@ -163,11 +163,11 @@ export type SendTxParams = {
   gasLimit?: BigNumber
   feeAmount?: BaseAmount
   hdMode: HDMode
-  dex: Dex
 }
 
 export type SendPoolTxParams = SendTxParams & {
   router: O.Option<Address>
+  protocol: Chain
 }
 
 export type LedgerAddressParams = { chain: Chain; network: Network }
@@ -210,7 +210,7 @@ export type SwapTxParams = {
   readonly walletAccount: number
   readonly walletIndex: number
   readonly hdMode: HDMode
-  readonly dex: Dex
+  readonly protocol: Chain
 }
 
 export type SwapStateHandler = (p: SwapTxParams) => SwapState$
@@ -326,8 +326,8 @@ export type SymWithdrawFees = {
 export type SymWithdrawFeesRD = RD.RemoteData<Error, SymWithdrawFees>
 export type SymWithdrawFeesLD = LiveData<Error, SymWithdrawFees>
 
-export type SymWithdrawFeesHandler = (asset: AnyAsset, dex: Dex) => SymWithdrawFeesLD
-export type ReloadWithdrawFeesHandler = (asset: AnyAsset, dex: Dex) => void
+export type SymWithdrawFeesHandler = (asset: AnyAsset, protocolAsset: AnyAsset) => SymWithdrawFeesLD
+export type ReloadWithdrawFeesHandler = (asset: AnyAsset, protocolAsset: AnyAsset) => void
 
 /**
  * Saver Withdraw Fees
@@ -365,8 +365,7 @@ export type SymWithdrawParams = {
   readonly walletAccount: number
   readonly walletIndex: number
   readonly hdMode: HDMode
-  readonly dex: Dex
-  readonly dexAsset: Asset
+  readonly protocol: Chain
 }
 
 export type SymWithdrawStateHandler = (p: SymWithdrawParams) => WithdrawState$
@@ -382,7 +381,7 @@ export type SaverWithdrawParams = {
   readonly walletIndex: number
   readonly sender: Address
   readonly hdMode: HDMode
-  readonly dex: Dex
+  readonly protocol: Chain
 }
 
 export type SaverWithdrawStateHandler = (p: SaverWithdrawParams) => WithdrawState$

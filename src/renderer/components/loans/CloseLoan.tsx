@@ -30,7 +30,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { Dex } from '../../../shared/api/types'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
@@ -138,7 +137,6 @@ export type LoanCloseProps = {
   reloadBalances: FP.Lazy<void>
   disableLoanAction: boolean
   hidePrivateData: boolean
-  dex: Dex
 }
 
 export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
@@ -167,8 +165,7 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     goToTransaction,
     getExplorerTxUrl,
     hidePrivateData,
-    loanRepay$,
-    dex
+    loanRepay$
   } = props
 
   const intl = useIntl()
@@ -816,12 +813,12 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
           walletIndex,
           sender: address,
           hdMode,
-          dex
+          protocol: poolAddress.protocol
         }
         return result
       })
     )
-  }, [oPoolAddress, oSourceAssetWB, sourceChainAsset, amountToRepayMax1e8, network, address, dex])
+  }, [oPoolAddress, oSourceAssetWB, sourceChainAsset, amountToRepayMax1e8, network, address])
 
   const resetEnteredAmounts = useCallback(() => {
     setAmountToRepayMax1e8(initialAmountToRepayMax1e8)
