@@ -1,8 +1,7 @@
-import { Fragment, useCallback, useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Tab } from '@headlessui/react'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
@@ -13,14 +12,12 @@ import { useIntl } from 'react-intl'
 import { useMatch, useNavigate } from 'react-router'
 import * as RxOp from 'rxjs/operators'
 
-import { Tooltip } from '../../components/uielements/common/Common.styles'
-import { RadioGroup } from '../../components/uielements/radioGroup'
+import { ProtocolSwitch } from '../../components/uielements/protocolSwitch'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import * as poolsRoutes from '../../routes/pools'
-import { AVAILABLE_DEXS } from '../../services/const'
 import { PoolType } from '../../services/midgard/types'
 import { LoansOverview } from '../loans/LoansOverview'
 import { SaversOverview } from '../savers/SaversOverview'
@@ -72,15 +69,6 @@ export const PoolsOverview = (): JSX.Element => {
   const matchPoolsPendingRoute = useMatch({ path: poolsRoutes.pending.path(), end: false })
   const matchPoolsSaversRoute = useMatch({ path: poolsRoutes.savers.path(), end: false })
   const matchPoolsLendingRoute = useMatch({ path: poolsRoutes.lending.path(), end: false })
-
-  const activeIndex = useMemo(() => {
-    const currentIndex = AVAILABLE_DEXS.findIndex((availableDex) => availableDex.chain === protocol)
-    return currentIndex ?? 0
-  }, [protocol])
-
-  const toggleProtocol = useCallback((index: number) => {
-    setProtocol(AVAILABLE_DEXS[index].chain)
-  }, [])
 
   const selectedIndex: number = useMemo(() => {
     if (matchPoolsSaversRoute) {
@@ -134,31 +122,6 @@ export const PoolsOverview = (): JSX.Element => {
     [intl, protocol, haltedChains, mimirHalt, walletLocked]
   )
 
-  const protocolOptions = useMemo(() => {
-    return [
-      {
-        label: (
-          <Tooltip title="Switch pools to THORChain" placement="bottom">
-            <span className="px-1 text-text2 dark:text-text2d">THORChain</span>
-          </Tooltip>
-        ),
-        value: THORChain
-      },
-      {
-        label: (
-          <Tooltip title="Switch pools to MAYAChain" placement="bottom">
-            <span className="px-1 text-text2 dark:text-text2d">MAYAChain</span>
-          </Tooltip>
-        ),
-        value: MAYAChain
-      }
-    ]
-  }, [])
-
-  const renderProtocolSwitch = useMemo(() => {
-    return <RadioGroup options={protocolOptions} activeIndex={activeIndex} onChange={toggleProtocol} />
-  }, [activeIndex, protocolOptions, toggleProtocol])
-
   return (
     <Tab.Group
       selectedIndex={selectedIndex}
@@ -205,7 +168,7 @@ export const PoolsOverview = (): JSX.Element => {
             ))
           )}
         </Tab.List>
-        {renderProtocolSwitch}
+        <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
       </div>
       <Tab.Panels className="mt-2 w-full">
         {FP.pipe(

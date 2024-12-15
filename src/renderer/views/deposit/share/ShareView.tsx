@@ -69,7 +69,7 @@ export const ShareView: React.FC<Props> = ({
 
   const renderPoolShareReady = useCallback(
     ({ units, runeAddress, assetAddress }: PoolShare | PoolShareMaya, poolDetail: PoolDetail | PoolDetailMaya) => {
-      const runeShare: BaseAmount = ShareHelpers.getRuneShare(units, poolDetail, dex)
+      const runeShare: BaseAmount = ShareHelpers.getRuneShare(units, poolDetail, dex.decimals)
       const assetShare: BaseAmount = ShareHelpers.getAssetShare({
         liquidityUnits: units,
         detail: poolDetail,

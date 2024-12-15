@@ -16,6 +16,7 @@ import { PoolShares as PoolSharesTable } from '../../components/PoolShares'
 import { PoolShareTableRowData } from '../../components/PoolShares/PoolShares.types'
 import { ErrorView } from '../../components/shared/error'
 import { Button, RefreshButton } from '../../components/uielements/button'
+import { ProtocolSwitch } from '../../components/uielements/protocolSwitch'
 import { AssetsNav, TotalAssetValue } from '../../components/wallet/assets'
 import { useChainContext } from '../../contexts/ChainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
@@ -24,7 +25,6 @@ import { sequenceTOption } from '../../helpers/fpHelpers'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { addressFromOptionalWalletAddress } from '../../helpers/walletHelper'
-import { useDex } from '../../hooks/useDex'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePoolShares } from '../../hooks/usePoolShares'
@@ -33,8 +33,9 @@ import * as H from './PoolShareView.helper'
 
 export const PoolShareView: React.FC = (): JSX.Element => {
   const intl = useIntl()
-  const { dex } = useDex()
   const { network } = useNetwork()
+
+  const [protocol, setProtocol] = useState<Chain>(THORChain)
 
   const {
     service: {
@@ -65,17 +66,17 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   } = useMidgardMayaContext()
 
   const selectedPricePool$ = useMemo(
-    () => (dex.chain === THORChain ? selectedPricePoolThor$ : selectedPricePoolMaya$),
-    [dex, selectedPricePoolMaya$, selectedPricePoolThor$]
+    () => (protocol === THORChain ? selectedPricePoolThor$ : selectedPricePoolMaya$),
+    [protocol, selectedPricePoolMaya$, selectedPricePoolThor$]
   )
-  const allPoolDetails$ = dex.chain === THORChain ? allPoolDetailsThor$ : allPoolDetailsMaya$
-  const poolsRD = useObservableState(dex.chain === THORChain ? poolsState$ : mayaPoolsState$, RD.pending)
+  const allPoolDetails$ = protocol === THORChain ? allPoolDetailsThor$ : allPoolDetailsMaya$
+  const poolsRD = useObservableState(protocol === THORChain ? poolsState$ : mayaPoolsState$, RD.pending)
   const { addressByChain$ } = useChainContext()
 
   const { isPrivate } = useApp()
 
   useEffect(() => {
-    if (dex.chain === THORChain) {
+    if (protocol === THORChain) {
       reloadAllPools()
     } else {
       reloadAllMayaPools()
@@ -86,23 +87,23 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   const [oDexNativeAddress, setODexNativeAddress] = useState<O.Option<Address>>(O.none)
 
   useEffect(() => {
-    const subscription = FP.pipe(addressByChain$(dex.chain), RxOp.map(addressFromOptionalWalletAddress)).subscribe(
+    const subscription = FP.pipe(addressByChain$(protocol), RxOp.map(addressFromOptionalWalletAddress)).subscribe(
       setODexNativeAddress
     ) // Set the state based on the observable's new value
 
     return () => subscription.unsubscribe() // Cleanup by unsubscribing when the component unmounts or dex changes
-  }, [addressByChain$, dex])
+  }, [addressByChain$, protocol])
 
-  const haltedChains$ = dex.chain === THORChain ? haltedChainsThor$ : haltedMayaChains$
+  const haltedChains$ = protocol === THORChain ? haltedChainsThor$ : haltedMayaChains$
   const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
   const { mimirHalt } = useThorchainMimirHalt()
   const poolDetailsRD = useObservableState(allPoolDetails$, RD.pending)
   const { poolData: pricePoolData } = useObservableState(
     selectedPricePool$,
-    dex.chain === THORChain ? RUNE_PRICE_POOL : MAYA_PRICE_POOL
+    protocol === THORChain ? RUNE_PRICE_POOL : MAYA_PRICE_POOL
   )
   const oPriceAsset = useObservableState<O.Option<AnyAsset>>(
-    dex.chain === THORChain ? selectedPricePoolAsset$ : selectedPricePoolMayaAsset$,
+    protocol === THORChain ? selectedPricePoolAsset$ : selectedPricePoolMayaAsset$,
     O.none
   )
   const priceAsset = FP.pipe(oPriceAsset, O.toUndefined)
@@ -117,13 +118,13 @@ export const PoolShareView: React.FC = (): JSX.Element => {
     return FP.pipe(
       sequenceTOption(oDexNativeAddress, oMainnet),
       O.map(([dexAddress, _]) =>
-        dex.chain === THORChain
+        protocol === THORChain
           ? `https://runescan.io/address/${dexAddress}`
           : `https://www.mayascan.org/address/${dexAddress}`
       ),
       O.map(window.apiUrl.openExternal)
     )
-  }, [dex, network, oDexNativeAddress])
+  }, [protocol, network, oDexNativeAddress])
 
   const renderPoolSharesTable = useCallback(
     (data: PoolShareTableRowData[], loading: boolean) => {
@@ -137,22 +138,22 @@ export const PoolShareView: React.FC = (): JSX.Element => {
           priceAsset={priceAsset}
           openShareInfo={openExternalShareInfo}
           network={network}
-          dex={dex}
+          protocol={protocol}
         />
       )
     },
-    [haltedChains, mimirHalt, priceAsset, openExternalShareInfo, network, dex]
+    [haltedChains, mimirHalt, priceAsset, openExternalShareInfo, network, protocol]
   )
 
   const clickRefreshHandler = useCallback(() => {
-    if (dex.chain === THORChain) {
+    if (protocol === THORChain) {
       reloadAllPools()
       reloadNetworkInfo()
     } else {
       reloadAllMayaPools()
       reloadMayaNetworkInfo()
     }
-  }, [dex, reloadAllMayaPools, reloadAllPools, reloadMayaNetworkInfo, reloadNetworkInfo])
+  }, [protocol, reloadAllMayaPools, reloadAllPools, reloadMayaNetworkInfo, reloadNetworkInfo])
 
   const renderRefreshBtn = useMemo(
     () => (
@@ -164,7 +165,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
     [clickRefreshHandler, intl]
   )
 
-  const { allSharesRD } = usePoolShares()
+  const { allSharesRD } = usePoolShares(protocol)
 
   const sharesByChain: Record<string, BaseAmount> = useMemo(() => {
     let sharesDetails = {}
@@ -175,7 +176,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
         () => {},
         () => {},
         ([poolShares, poolDetails]) => {
-          const data = H.getPoolShareTableData(poolShares, poolDetails, pricePoolData, dex)
+          const data = H.getPoolShareTableData(poolShares, poolDetails, pricePoolData, protocol)
 
           data.forEach((item) => {
             sharesDetails = {
@@ -188,7 +189,9 @@ export const PoolShareView: React.FC = (): JSX.Element => {
     )
 
     return sharesDetails
-  }, [allSharesRD, dex, poolDetailsRD, pricePoolData])
+  }, [allSharesRD, protocol, poolDetailsRD, pricePoolData])
+
+  console.log('SHARES BY CHAIN - ', sharesByChain)
 
   const renderShares = useMemo(
     () =>
@@ -212,30 +215,32 @@ export const PoolShareView: React.FC = (): JSX.Element => {
           },
           // success state
           ([poolShares, poolDetails]) => {
-            const data = H.getPoolShareTableData(poolShares, poolDetails, pricePoolData, dex)
+            const data = H.getPoolShareTableData(poolShares, poolDetails, pricePoolData, protocol)
             previousPoolShares.current = O.some(data)
             return renderPoolSharesTable(data, false)
           }
         )
       ),
-    [allSharesRD, poolDetailsRD, renderPoolSharesTable, renderRefreshBtn, pricePoolData, dex]
+    [allSharesRD, poolDetailsRD, renderPoolSharesTable, renderRefreshBtn, pricePoolData, protocol]
   )
 
   const disableRefresh = useMemo(() => RD.isPending(poolsRD) || RD.isPending(allSharesRD), [allSharesRD, poolsRD])
 
   const refreshHandler = useCallback(() => {
-    if (dex.chain === THORChain) {
+    if (protocol === THORChain) {
       reloadAllPools()
     } else {
       reloadAllMayaPools()
     }
-  }, [dex, reloadAllMayaPools, reloadAllPools])
+  }, [protocol, reloadAllMayaPools, reloadAllPools])
 
   return (
     <>
-      <Row justify="end" className="pb-20px">
+      <Row justify="space-between" className="pb-20px">
+        <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
         <RefreshButton onClick={refreshHandler} disabled={disableRefresh} />
       </Row>
+
       <AssetsNav />
 
       <TotalAssetValue

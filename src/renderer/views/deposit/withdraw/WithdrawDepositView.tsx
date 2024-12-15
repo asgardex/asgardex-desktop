@@ -206,7 +206,7 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
         dexBalance={dexBalance}
         selectedPriceAsset={selectedPriceAsset}
         shares={{
-          rune: ShareHelpers.getRuneShare(liquidityUnits, poolDetail, dex),
+          rune: ShareHelpers.getRuneShare(liquidityUnits, poolDetail, dex.decimals),
           asset: ShareHelpers.getAssetShare({ liquidityUnits, detail: poolDetail, assetDecimal })
         }}
         asset={assetWD}

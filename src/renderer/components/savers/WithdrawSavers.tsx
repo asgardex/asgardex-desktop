@@ -102,8 +102,6 @@ import { Fees, UIFeesRD } from '../uielements/fees'
 import { Slider } from '../uielements/slider'
 import * as Utils from './Saver.utils'
 
-export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
-
 export type WithDrawProps = {
   keystore: KeystoreState
   thorchainQuery: ThorchainQuery
