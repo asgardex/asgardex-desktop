@@ -17,6 +17,7 @@ import {
   symDeposit$,
   symWithdraw$,
   saverWithdraw$,
+  tradeWithdraw$,
   transfer$,
   assetWithDecimal$,
   utxoFeesWithRates$,
@@ -40,6 +41,7 @@ type ChainContextValue = {
   symDeposit$: typeof symDeposit$
   symWithdraw$: typeof symWithdraw$
   saverWithdraw$: typeof saverWithdraw$
+  tradeWithdraw$: typeof tradeWithdraw$
   transfer$: typeof transfer$
   assetWithDecimal$: typeof assetWithDecimal$
   utxoFeesWithRates$: typeof utxoFeesWithRates$
@@ -63,6 +65,7 @@ const initialContext: ChainContextValue = {
   symDeposit$,
   symWithdraw$,
   saverWithdraw$,
+  tradeWithdraw$,
   transfer$,
   assetWithDecimal$,
   utxoFeesWithRates$,

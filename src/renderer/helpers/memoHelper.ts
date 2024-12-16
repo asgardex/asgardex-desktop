@@ -219,3 +219,8 @@ export const updateMemoWithFullAsset = (memo: string, asset: AnyAsset) => {
   // Return the original memo if no replacement is needed
   return memo
 }
+
+export const getTradeMemo = (action: Action, address: string) => {
+  const poolAction = action === Action.add ? `TRADE+` : 'TRADE-'
+  return mkMemo([poolAction, address])
+}
