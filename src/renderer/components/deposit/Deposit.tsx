@@ -33,6 +33,7 @@ type Tab = {
 export type Props = {
   haltedChains: Chain[]
   mimirHalt: MimirHalt
+  protocol: Chain
   asset: AssetWithDecimal
   shares: PoolSharesRD
   poolDetail: PoolDetailRD | PoolDetailMayaRD
@@ -53,6 +54,7 @@ export type Props = {
 
 export const Deposit: React.FC<Props> = (props) => {
   const {
+    protocol,
     asset: assetWD,
     ShareContent,
     haltedChains,
@@ -116,6 +118,7 @@ export const Deposit: React.FC<Props> = (props) => {
         content: (
           <SymDepositContent
             poolDetail={poolDetailRD}
+            protocol={protocol}
             asset={assetWD}
             dexWalletAddress={dexWalletAddress}
             assetWalletAddress={assetWalletAddress}
@@ -147,6 +150,7 @@ export const Deposit: React.FC<Props> = (props) => {
       intl,
       SymDepositContent,
       poolDetailRD,
+      protocol,
       assetWD,
       dexWalletAddress,
       assetWalletAddress,

@@ -151,6 +151,7 @@ export const ActivePools = ({ protocol }: { protocol: Chain }): JSX.Element => {
                 callback: () => {
                   navigate(
                     poolsRoutes.deposit.path({
+                      protocol,
                       asset: assetToString(asset),
                       assetWalletType: DEFAULT_WALLET_TYPE,
                       runeWalletType: DEFAULT_WALLET_TYPE
@@ -184,6 +185,7 @@ export const ActivePools = ({ protocol }: { protocol: Chain }): JSX.Element => {
                 callback: () => {
                   navigate(
                     poolsRoutes.deposit.path({
+                      protocol,
                       asset: assetToString(asset),
                       assetWalletType: DEFAULT_WALLET_TYPE,
                       runeWalletType: DEFAULT_WALLET_TYPE

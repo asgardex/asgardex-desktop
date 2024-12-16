@@ -71,7 +71,8 @@ export const RunePoolTable: React.FC<ParentProps> = ({ assetDetails }): JSX.Elem
             variant="runePool"
             interactType={InteractType.RunePool}
             useBorderButton={false}
-            isTextView={true}></ManageButton>
+            isTextView={true}
+          />
         )
       }
     }
