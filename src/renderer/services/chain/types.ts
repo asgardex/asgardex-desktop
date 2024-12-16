@@ -368,16 +368,6 @@ export type SymWithdrawParams = {
   readonly protocol: Chain
 }
 
-export type WithdrawParams = {
-  readonly memo: Memo
-  readonly network: Network
-  readonly walletAddress: Address
-  readonly walletType: WalletType
-  readonly walletAccount: number
-  readonly walletIndex: number
-  readonly hdMode: HDMode
-  readonly protocol: Chain
-}
 export type TradeWithdrawParams = {
   readonly asset: AnyAsset
   readonly amount: BaseAmount
