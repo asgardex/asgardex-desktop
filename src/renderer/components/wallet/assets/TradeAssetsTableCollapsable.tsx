@@ -45,15 +45,14 @@ import { PricePool } from '../../../views/pools/Pools.types'
 import { ConfirmationModal, LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../modal/confirmation'
 import { TxModal } from '../../modal/tx'
 import { DepositAsset } from '../../modal/tx/extra/DepositAsset'
-import { Collapse } from '../../settings/Common.styles'
+import { Collapse as StyledCollapse } from '../../settings/Common.styles'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { AssetLabel } from '../../uielements/assets/assetLabel'
 import { ReloadButton, ViewTxButton } from '../../uielements/button'
 import { Action as ActionButtonAction, ActionButton } from '../../uielements/button/ActionButton'
-import { Label } from './AssetDetails.styles'
 import * as Styled from './AssetsTableCollapsable.styles'
 
-const { Panel } = Collapse
+const { Panel } = StyledCollapse
 
 export type GetPoolPriceValueFnThor = (params: {
   balance: Balance
@@ -198,20 +197,26 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
         O.map((params) => (
           <div key={params.walletAddress}>
             <div className="flex-col">
-              {intl.formatMessage({ id: 'common.withdraw' })}
-              <div className="items-left justify-left m-2 flex">
-                <AssetIcon className="flex-shrink-0" size="small" asset={params.asset} network={network} />
-                <AssetLabel className="mx-2 flex-shrink-0" asset={params.asset} />
-                <Label className="flex-shrink-0">
+              <div className="m-2 flex items-center justify-between">
+                <div className="flex items-center">
+                  <AssetIcon className="flex-shrink-0" size="small" asset={params.asset} network={network} />
+                  <AssetLabel className="mx-2 flex-shrink-0" asset={params.asset} />
+                </div>
+                <span className="flex-shrink-0 text-16 text-text0 dark:text-text0d">
                   {formatAssetAmountCurrency({
                     asset: params.asset,
                     amount: baseToAsset(params.amount),
                     trimZeros: true
                   })}
-                </Label>
+                </span>
               </div>
 
-              <Label>{`With memo: ${params.memo}`}</Label>
+              <div className="mx-3 mt-5 flex flex-col">
+                <span className="m-0 font-main text-[14px] text-gray2 dark:text-gray2d">
+                  {intl.formatMessage({ id: 'common.memo' })}
+                </span>
+                <div className="truncate font-main text-[14px] text-text0 dark:text-text0d">{params.memo}</div>
+              </div>
             </div>
           </div>
         )),
@@ -221,11 +226,11 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
 
     return (
       <ConfirmationModal
-        onClose={onClose}
-        onSuccess={onSuccess}
-        visible={true}
-        content={content()}
+        visible
         title={intl.formatMessage({ id: 'common.withdraw' })}
+        content={content()}
+        onSuccess={onSuccess}
+        onClose={onClose}
       />
     )
   }, [intl, network, oTradeWithdrawParams, showWithdrawConfirm])
