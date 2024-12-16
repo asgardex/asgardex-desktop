@@ -118,13 +118,14 @@ export const PendingPools = ({ protocol }: { protocol: Chain }): JSX.Element => 
             className="min-w-[120px]"
             variant="manage"
             useBorderButton={true}
+            protocol={protocol}
             asset={asset}
             isTextView={isDesktopView}
           />
         </TableAction>
       )
     },
-    [isDesktopView]
+    [isDesktopView, protocol]
   )
 
   const btnPendingPoolsColumn: ColumnType<PoolTableRowData> = useMemo(

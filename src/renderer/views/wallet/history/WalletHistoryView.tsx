@@ -2,6 +2,7 @@ import React, { useMemo, useCallback, useState, useEffect } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { Chain } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/lib/function'
@@ -17,12 +18,12 @@ import { historyFilterToViewblockFilter } from '../../../components/poolActionsH
 import { Filter } from '../../../components/poolActionsHistory/types'
 import { WalletPoolActionsHistoryHeader } from '../../../components/poolActionsHistory/WalletPoolActionsHistoryHeader'
 import { RefreshButton } from '../../../components/uielements/button'
+import { ProtocolSwitch } from '../../../components/uielements/protocolSwitch'
 import { AssetsNav } from '../../../components/wallet/assets'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { eqString } from '../../../helpers/fp/eq'
 import { ordWalletAddressByChain } from '../../../helpers/fp/ord'
-import { useDex } from '../../../hooks/useDex'
 import { useMayaMidgardHistoryActions } from '../../../hooks/useMayaMidgardHistoryActions'
 import { useMidgardHistoryActions } from '../../../hooks/useMidgardHistoryActions'
 import { useNetwork } from '../../../hooks/useNetwork'
@@ -34,8 +35,8 @@ import { ledgerAddressToWalletAddress } from '../../../services/wallet/util'
 const HISTORY_FILTERS: Filter[] = ['ALL', 'SEND', 'DEPOSIT', 'SWAP', 'WITHDRAW', 'DONATE', 'REFUND', 'RUNEPOOLDEPOSIT']
 
 export const WalletHistoryView: React.FC = () => {
+  const [protocol, setProtocol] = useState<Chain>(THORChain)
   const { network } = useNetwork()
-  const { dex } = useDex()
 
   const { addressByChain$ } = useChainContext()
 
@@ -63,9 +64,9 @@ export const WalletHistoryView: React.FC = () => {
     loading: loadingHistoryMaya
   } = useMayaMidgardHistoryActions(10)
 
-  const requestParams = dex.chain === THORChain ? requestParamsThor : requestParamsMaya
+  const requestParams = protocol === THORChain ? requestParamsThor : requestParamsMaya
 
-  const { openExplorerTxUrl } = useOpenExplorerTxUrl(O.some(dex.chain))
+  const { openExplorerTxUrl } = useOpenExplorerTxUrl(O.some(protocol))
 
   const [enabledChains, setEnabledChains] = useState<EnabledChain[]>([])
 
@@ -110,10 +111,10 @@ export const WalletHistoryView: React.FC = () => {
           FP.pipe(
             addresses,
             // Get first address by default
-            A.findFirst((address) => address.chain === dex.chain),
+            A.findFirst((address) => address.chain === protocol),
             O.map(({ address }) => {
               const hist =
-                dex.chain === THORChain
+                protocol === THORChain
                   ? loadHistory({ addresses: [address] })
                   : loadHistoryMaya({ addresses: [address] })
               return hist
@@ -122,7 +123,7 @@ export const WalletHistoryView: React.FC = () => {
           return Rx.of(addresses)
         })
       ),
-    [dex, keystoreAddresses$, ledgerAddresses$, loadHistory, loadHistoryMaya]
+    [protocol, keystoreAddresses$, ledgerAddresses$, loadHistory, loadHistoryMaya]
   )
 
   const addresses = useObservableState(addresses$, [])
@@ -148,7 +149,7 @@ export const WalletHistoryView: React.FC = () => {
     [addresses, requestParams.addresses]
   )
 
-  const openAddressUrl = useOpenAddressUrl(O.some(dex.chain))
+  const openAddressUrl = useOpenAddressUrl(O.some(protocol))
 
   const openAddressUrlHandler = useCallback(() => {
     FP.pipe(
@@ -170,17 +171,17 @@ export const WalletHistoryView: React.FC = () => {
         network={network}
         availableFilters={HISTORY_FILTERS}
         currentFilter={currentFilter}
-        setFilter={dex.chain === THORChain ? setFilter : setFilterMaya}
-        onWalletAddressChanged={dex.chain === THORChain ? setAddress : setAddressMaya}
+        setFilter={protocol === THORChain ? setFilter : setFilterMaya}
+        onWalletAddressChanged={protocol === THORChain ? setAddress : setAddressMaya}
         onClickAddressIcon={openAddressUrlHandler}
         disabled={!RD.isSuccess(historyPage)}
-        dex={dex}
+        protocol={protocol}
       />
     ),
     [
       addresses,
       currentFilter,
-      dex,
+      protocol,
       historyPage,
       network,
       oSelectedWalletAddress,
@@ -194,9 +195,10 @@ export const WalletHistoryView: React.FC = () => {
 
   return (
     <>
-      <Row justify="end" style={{ marginBottom: '20px' }}>
+      <Row justify="space-between" style={{ marginBottom: '20px' }}>
+        <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
         <RefreshButton
-          onClick={dex.chain === THORChain ? reloadHistory : reloadHistoryMaya}
+          onClick={protocol === THORChain ? reloadHistory : reloadHistoryMaya}
           disabled={loadingHistory || loadingHistoryMaya}
         />
       </Row>
@@ -205,11 +207,11 @@ export const WalletHistoryView: React.FC = () => {
         network={network}
         headerContent={headerContent}
         currentPage={requestParams.page + 1}
-        historyPageRD={dex.chain === THORChain ? historyPage : historyPageMaya}
-        prevHistoryPage={dex.chain === THORChain ? prevHistoryPage : prevHistoryPageMaya}
+        historyPageRD={protocol === THORChain ? historyPage : historyPageMaya}
+        prevHistoryPage={protocol === THORChain ? prevHistoryPage : prevHistoryPageMaya}
         openExplorerTxUrl={openExplorerTxUrl}
-        changePaginationHandler={dex.chain === THORChain ? setPage : setPageMaya}
-        reloadHistory={dex.chain === THORChain ? reloadHistory : reloadHistoryMaya}
+        changePaginationHandler={protocol === THORChain ? setPage : setPageMaya}
+        reloadHistory={protocol === THORChain ? reloadHistory : reloadHistoryMaya}
       />
     </>
   )

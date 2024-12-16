@@ -12,6 +12,7 @@ import {
   baseAmount,
   BaseAmount,
   baseToAsset,
+  Chain,
   formatAssetAmountCurrency,
   TokenAsset
 } from '@xchainjs/xchain-util'
@@ -25,7 +26,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { Dex } from '../../../../shared/api/types'
 import { getAsgardexThorname } from '../../../../shared/const'
 import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString } from '../../../../shared/utils/chain'
@@ -162,10 +162,10 @@ export type Props = {
   symAssetMismatch: LiquidityProviderAssetMismatchRD
   openAsymDepositTool: FP.Lazy<void>
   hidePrivateData: boolean
-  dex: Dex
+  protocol: Chain
 }
 
-export const SymDeposit: React.FC<Props> = (props) => {
+export const SymDeposit = (props: Props) => {
   const {
     asset: { asset, decimal: assetDecimal },
     availableAssets,
@@ -202,7 +202,8 @@ export const SymDeposit: React.FC<Props> = (props) => {
     hasAsymAssets: hasAsymAssetsRD,
     symAssetMismatch: symAssetMismatchRD,
     openAsymDepositTool,
-    hidePrivateData
+    hidePrivateData,
+    protocol
   } = props
 
   const intl = useIntl()
@@ -210,27 +211,13 @@ export const SymDeposit: React.FC<Props> = (props) => {
   const { chain } = asset
 
   const protocolAsset = useMemo(
-    () =>
-      FP.pipe(
-        oPoolAddress,
-        O.fold(
-          () => AssetRuneNative,
-          (address) => (address.protocol === THORChain ? AssetRuneNative : AssetCacao) // Extract and check protocol if Some
-        )
-      ),
-    [oPoolAddress] // Dependency
+    () => (protocol === THORChain ? AssetRuneNative : AssetCacao),
+    [protocol] // Dependency
   )
 
   const protocolDecimals = useMemo(
-    () =>
-      FP.pipe(
-        oPoolAddress,
-        O.fold(
-          () => THORCHAIN_DECIMAL,
-          (address) => (address.protocol === THORChain ? THORCHAIN_DECIMAL : MAYA_DECIMAL) // Extract and check protocol if Some
-        )
-      ),
-    [oPoolAddress] // Dependency
+    () => (protocol === THORChain ? THORCHAIN_DECIMAL : MAYA_DECIMAL),
+    [protocol] // Dependency
   )
 
   const prevAsset = useRef<O.Option<AnyAsset>>(O.none)
