@@ -42,6 +42,7 @@ export const INITIAL_SAVER_DEPOSIT_STATE: SaverDepositState = {
   stepsTotal: 3,
   deposit: RD.initial
 }
+
 export const INITIAL_BORROWER_DEPOSIT_STATE: BorrowerDepositState = {
   step: 1,
   depositTx: RD.initial,

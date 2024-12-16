@@ -187,6 +187,7 @@ export const TradeAssetsView: React.FC = (): JSX.Element => {
       />
 
       <TradeAssetsTableCollapsable
+        chainBalances={chainBalances$}
         disableRefresh={disableRefresh}
         tradeAccountBalances={combinedTradeAccountBalances}
         pricePool={selectedPricePool}
