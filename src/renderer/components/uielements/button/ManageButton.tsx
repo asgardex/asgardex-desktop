@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 
 import { BanknotesIcon, PlusIcon } from '@heroicons/react/24/outline'
-import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
+import { AnyAsset, assetToString, Chain } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
@@ -18,6 +18,7 @@ export type ButtonVariant = 'runePool' | 'savers' | 'manage'
 
 export type Props = Omit<ButtonProps, 'onClick'> & {
   variant: ButtonVariant
+  protocol?: Chain
   asset?: AnyAsset
   interactType?: InteractType
   isTextView: boolean
@@ -26,6 +27,7 @@ export type Props = Omit<ButtonProps, 'onClick'> & {
 
 export const ManageButton: React.FC<Props> = ({
   variant,
+  protocol,
   asset,
   interactType,
   isTextView,
@@ -47,6 +49,7 @@ export const ManageButton: React.FC<Props> = ({
       } else if (variant === 'manage' && asset) {
         navigate(
           poolsRoutes.deposit.path({
+            protocol,
             asset: assetToString(asset),
             assetWalletType: DEFAULT_WALLET_TYPE,
             runeWalletType: DEFAULT_WALLET_TYPE
@@ -54,7 +57,7 @@ export const ManageButton: React.FC<Props> = ({
         )
       }
     },
-    [variant, interactType, asset, navigate]
+    [variant, interactType, asset, protocol, navigate]
   )
 
   const ButtonComponent = useBorderButton ? BorderButton : FlatButton
