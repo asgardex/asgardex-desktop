@@ -18,9 +18,9 @@ export const ActionIconButton = ({
       className={clsx(
         'flex min-w-[100px] flex-col items-center',
         'space-y-2 px-4 py-2',
-        'rounded-lg border border-solid border-bg2 dark:border-bg2d',
+        'rounded-lg border border-solid border-gray2 dark:border-bg2d',
         'text-text2 dark:text-text2d',
-        'hover:bg-bg2 dark:hover:bg-bg2d',
+        'hover:bg-gray1 dark:hover:bg-bg2d',
         disabled ? 'cursor-not-allowed' : 'cursor-pointer',
         className
       )}
