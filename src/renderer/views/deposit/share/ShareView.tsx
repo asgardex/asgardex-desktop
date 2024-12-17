@@ -1,10 +1,12 @@
 import React, { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { AnyAsset, BaseAmount } from '@xchainjs/xchain-util'
+import { THORCHAIN_DECIMAL } from '@xchainjs/xchain-thorchain-query'
+import { AnyAsset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import { Spin } from 'antd'
 import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/lib/function'
@@ -20,7 +22,6 @@ import { to1e8BaseAmount } from '../../../helpers/assetHelper'
 import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
 import * as ShareHelpers from '../../../helpers/poolShareHelper'
-import { useDex } from '../../../hooks/useDex'
 import {
   PoolDetailRD as PoolDetailMayaRD,
   PoolShareRD as PoolShareMayaRD,
@@ -31,22 +32,23 @@ import { toPoolData } from '../../../services/midgard/utils'
 import { AssetWithDecimal } from '../../../types/asgardex'
 import { getValueOfAsset1InAsset2, getValueOfRuneInAsset } from '../../pools/Pools.utils'
 
-type Props = {
+export type ShareViewProps = {
+  protocol: Chain
   asset: AssetWithDecimal
   poolShare: PoolShareRD | PoolShareMayaRD
   poolDetail: PoolDetailRD | PoolDetailMayaRD
   smallWidth?: boolean
 }
 
-export const ShareView: React.FC<Props> = ({
+export const ShareView = ({
+  protocol,
   asset: assetWD,
   poolShare: poolShareRD,
   smallWidth,
   poolDetail: poolDetailRD
-}) => {
+}: ShareViewProps) => {
   const { service: midgardService } = useMidgardContext()
   const { service: midgardMayaService } = useMidgardMayaContext()
-  const { dex } = useDex()
   const {
     pools: { selectedPricePoolAsset$: selectedPricePoolAssetThor$, selectedPricePool$: selectedPricePoolThor$ }
   } = midgardService
@@ -55,8 +57,8 @@ export const ShareView: React.FC<Props> = ({
     pools: { selectedPricePoolAsset$: selectedPricePoolAssetMaya$, selectedPricePool$: selectedPricePoolMaya$ }
   } = midgardMayaService
 
-  const selectedPricePoolAsset$ = dex.chain === THORChain ? selectedPricePoolAssetThor$ : selectedPricePoolAssetMaya$
-  const selectedPricePool$ = dex.chain === THORChain ? selectedPricePoolThor$ : selectedPricePoolMaya$
+  const selectedPricePoolAsset$ = protocol === THORChain ? selectedPricePoolAssetThor$ : selectedPricePoolAssetMaya$
+  const selectedPricePool$ = protocol === THORChain ? selectedPricePoolThor$ : selectedPricePoolMaya$
 
   const intl = useIntl()
 
@@ -64,12 +66,16 @@ export const ShareView: React.FC<Props> = ({
 
   const { poolData: pricePoolData } = useObservableState(
     selectedPricePool$,
-    dex.chain === THORChain ? RUNE_PRICE_POOL : MAYA_PRICE_POOL
+    protocol === THORChain ? RUNE_PRICE_POOL : MAYA_PRICE_POOL
   )
 
   const renderPoolShareReady = useCallback(
     ({ units, runeAddress, assetAddress }: PoolShare | PoolShareMaya, poolDetail: PoolDetail | PoolDetailMaya) => {
-      const runeShare: BaseAmount = ShareHelpers.getRuneShare(units, poolDetail, dex.decimals)
+      const runeShare: BaseAmount = ShareHelpers.getRuneShare(
+        units,
+        poolDetail,
+        protocol === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL
+      )
       const assetShare: BaseAmount = ShareHelpers.getAssetShare({
         liquidityUnits: units,
         detail: poolDetail,
@@ -99,11 +105,11 @@ export const ShareView: React.FC<Props> = ({
           runePrice={runePrice}
           smallWidth={smallWidth}
           addresses={{ rune: runeAddress, asset: assetAddress }}
-          dex={dex}
+          protocol={protocol}
         />
       )
     },
-    [assetWD, dex, oPriceAsset, pricePoolData, smallWidth]
+    [assetWD, protocol, oPriceAsset, pricePoolData, smallWidth]
   )
 
   const renderNoShare = useMemo(
