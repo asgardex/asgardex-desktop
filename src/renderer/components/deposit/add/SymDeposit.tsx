@@ -4,7 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon } from '@heroicons/react/20/solid'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { MAYA_DECIMAL } from '@xchainjs/xchain-mayachain'
+import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
@@ -216,7 +216,7 @@ export const SymDeposit = (props: Props) => {
   )
 
   const protocolDecimals = useMemo(
-    () => (protocol === THORChain ? THORCHAIN_DECIMAL : MAYA_DECIMAL),
+    () => (protocol === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL),
     [protocol] // Dependency
   )
 
