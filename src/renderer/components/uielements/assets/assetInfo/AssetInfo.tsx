@@ -1,22 +1,20 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
-import { Address, AnyAsset, AssetType } from '@xchainjs/xchain-util'
+import { AnyAsset, AssetType } from '@xchainjs/xchain-util'
 import { formatAssetAmount, assetToString, AssetAmount } from '@xchainjs/xchain-util'
-import { Grid } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
+import { chainToString } from '../../../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
-import { sequenceSOption, sequenceTOption } from '../../../../helpers/fpHelpers'
+import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import { loadingString, emptyString } from '../../../../helpers/stringHelper'
 import { getAssetAmountByAsset } from '../../../../helpers/walletHelper'
 import { NonEmptyWalletBalances } from '../../../../services/wallet/types'
-import { QRCodeModal } from '../../qrCodeModal/QRCodeModal'
 import { AssetIcon } from '../assetIcon'
-import * as Styled from './AssetInfo.styles'
 
 type Props = {
   asset: O.Option<AnyAsset>
@@ -25,28 +23,22 @@ type Props = {
   // balances == render price
   assetsWB?: O.Option<NonEmptyWalletBalances>
   walletInfo?: O.Option<{
-    address: Address
-    network: Network
     walletType: WalletType
   }>
   network: Network
 }
 
-export const AssetInfo: React.FC<Props> = (props): JSX.Element => {
+export const AssetInfo = (props: Props): JSX.Element => {
   const intl = useIntl()
   const { assetsWB = O.none, asset: oAsset, walletInfo: oWalletInfo = O.none, network } = props
 
-  const isDesktopView = Grid.useBreakpoint()?.lg ?? false
-
   const previousBalance = useRef<O.Option<AssetAmount>>(O.none)
-
-  const [showQRModal, setShowQRModal] = useState<O.Option<Address>>(O.none)
 
   const renderAssetIcon = useMemo(
     () =>
       FP.pipe(
         oAsset,
-        O.map((asset) => <AssetIcon asset={asset} size="large" key={assetToString(asset)} network={network} />),
+        O.map((asset) => <AssetIcon asset={asset} size="big" key={assetToString(asset)} network={network} />),
         O.getOrElse(() => <></>)
       ),
     [oAsset, network]
@@ -57,12 +49,8 @@ export const AssetInfo: React.FC<Props> = (props): JSX.Element => {
       FP.pipe(
         oWalletInfo,
         O.filter(({ walletType }) => isLedgerWallet(walletType)),
-        O.map((walletInfo) => (
-          <Styled.WalletTypeLabel key={walletInfo.address}>
-            {intl.formatMessage({ id: 'ledger.title' })}
-          </Styled.WalletTypeLabel>
-        )),
-        O.getOrElse(() => <></>)
+        O.map(() => intl.formatMessage({ id: 'ledger.title' })),
+        O.getOrElse(() => '')
       ),
     [intl, oWalletInfo]
   )
@@ -97,86 +85,27 @@ export const AssetInfo: React.FC<Props> = (props): JSX.Element => {
     [oAsset, assetsWB]
   )
 
-  const renderAddress = useCallback(
-    (additionalContent: JSX.Element | null = null) =>
-      FP.pipe(
-        sequenceSOption({ walletInfo: oWalletInfo, asset: oAsset }),
-        O.map(({ walletInfo: { address, network }, asset }) => (
-          <Styled.AddressContainer key={'addres info'}>
-            <Styled.AddressEllipsis enableCopy network={network} chain={asset.chain} address={address} />
-            {additionalContent}
-          </Styled.AddressContainer>
-        )),
-        O.getOrElse(() => <></>)
-      ),
-    [oWalletInfo, oAsset]
-  )
-
-  const renderQRIcon = useMemo(() => {
-    const oAddress = () =>
-      FP.pipe(
-        oWalletInfo,
-        O.map(({ address }) => address)
-      )
-
-    return renderAddress(<Styled.QrcodeOutlined onClick={() => setShowQRModal(oAddress)} />)
-  }, [oWalletInfo, renderAddress])
-
-  const closeQrModal = useCallback(() => setShowQRModal(O.none), [setShowQRModal])
-
-  const renderQRCodeModal = useMemo(() => {
-    return FP.pipe(
-      sequenceTOption(oAsset, showQRModal),
-      O.map(([asset, address]) => (
-        <QRCodeModal
-          key="qr-modal"
-          asset={asset}
-          address={address}
-          network={network}
-          visible={true}
-          onCancel={closeQrModal}
-          onOk={closeQrModal}
-        />
-      )),
-      O.getOrElse(() => <></>)
-    )
-  }, [showQRModal, oAsset, network, closeQrModal])
-
   return (
-    <Styled.Card bordered={false} bodyStyle={{ display: 'flex', flexDirection: 'row' }}>
-      {renderQRCodeModal}
+    <div className="flex flex-col items-center">
       {renderAssetIcon}
-      <Styled.AssetInfoWrapper>
-        <Styled.AssetTitleWrapper>
-          <Styled.AssetTitle>
-            {FP.pipe(
-              oAsset,
-              O.map(({ ticker }) => ticker),
-              O.getOrElse(() => loadingString)
-            )}
-          </Styled.AssetTitle>
-          {renderLedgerWalletType}
-        </Styled.AssetTitleWrapper>
-        <Styled.AssetSubtitle>
+      <div className="mt-2 flex items-center">
+        <div className="rounded-md bg-gray0 px-2 py-0.5 font-main text-[12px] uppercase text-text2 dark:bg-gray0d dark:text-text2d">
           {FP.pipe(
             oAsset,
-            O.map(({ chain, type }) => (type === AssetType.SYNTH ? 'synth' : chain)),
+            O.map(({ chain, type }) => (type === AssetType.SYNTH ? 'synth' : chainToString(chain))),
             O.getOrElse(() => loadingString)
-          )}
-        </Styled.AssetSubtitle>
-        {!isDesktopView && (
-          <Styled.InfoContainer>
-            {renderQRIcon}
-            <Styled.AssetPrice>{renderBalance}</Styled.AssetPrice>
-          </Styled.InfoContainer>
+          )}{' '}
+          {renderLedgerWalletType ? `(${renderLedgerWalletType})` : ''}
+        </div>
+      </div>
+      <div className="p-0 font-main text-[20px] uppercase text-text0 dark:text-text0d">
+        {renderBalance}{' '}
+        {FP.pipe(
+          oAsset,
+          O.map(({ ticker }) => ticker),
+          O.getOrElse(() => loadingString)
         )}
-      </Styled.AssetInfoWrapper>
-      {isDesktopView && (
-        <Styled.InfoContainer>
-          {renderQRIcon}
-          <Styled.AssetPrice>{renderBalance}</Styled.AssetPrice>
-        </Styled.InfoContainer>
-      )}
-    </Styled.Card>
+      </div>
+    </div>
   )
 }
