@@ -154,6 +154,7 @@ export const PoolShares: React.FC<Props> = ({
           <Styled.ManageButton
             disabled={disablePool || type === 'asym'}
             asset={asset}
+            protocol={protocol}
             variant="manage"
             useBorderButton={false}
             isTextView={isDesktopView}
@@ -165,7 +166,7 @@ export const PoolShares: React.FC<Props> = ({
         )
       }
     }),
-    [haltedChains, mimirHalt, isDesktopView, intl, protocolAsset.ticker]
+    [protocol, haltedChains, mimirHalt, isDesktopView, intl, protocolAsset.ticker]
   )
 
   const desktopColumns: ColumnsType<PoolShareTableRowData> = useMemo(

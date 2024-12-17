@@ -3,6 +3,7 @@ import React, { useCallback, useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
+import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -14,7 +15,7 @@ import { useObservableState } from 'observable-hooks'
 import { map } from 'rxjs/operators'
 import * as RxOp from 'rxjs/operators'
 
-import { AssetRuneNative } from '../../../../shared/utils/asset'
+import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
 import { Withdraw } from '../../../components/deposit/withdraw'
 import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../const'
 import { useAppContext } from '../../../contexts/AppContext'
@@ -22,10 +23,10 @@ import { useChainContext } from '../../../contexts/ChainContext'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
+import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { getAssetPoolPrice } from '../../../helpers/poolHelper'
 import * as ShareHelpers from '../../../helpers/poolShareHelper'
 import { liveData } from '../../../helpers/rx/liveData'
-import { useDex } from '../../../hooks/useDex'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { DEFAULT_NETWORK } from '../../../services/const'
 import { PoolShare, PoolsDataMap } from '../../../services/midgard/types'
@@ -35,6 +36,7 @@ import { Props } from './WithdrawDepositView.types'
 
 export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
   const {
+    protocol,
     asset: assetWD,
     poolShare: poolShareRD,
     poolDetail: poolDetailRD,
@@ -62,11 +64,10 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
     }
   } = useMidgardMayaContext()
 
-  const { dex } = useDex()
-  const selectedPricePoolAsset$ = dex.chain === THORChain ? selectedPricePoolAssetThor$ : selectedPricePoolAssetMaya$
+  const selectedPricePoolAsset$ = protocol === THORChain ? selectedPricePoolAssetThor$ : selectedPricePoolAssetMaya$
   const { symWithdrawFee$, reloadWithdrawFees, symWithdraw$ } = useChainContext()
-  const poolsState$ = dex.chain === THORChain ? poolsStateThor$ : poolsStateMaya$
-  const dexPrice = useObservableState(dex.chain === THORChain ? priceRatio$ : priceRatioMaya$, bn(1))
+  const poolsState$ = protocol === THORChain ? poolsStateThor$ : poolsStateMaya$
+  const dexPrice = useObservableState(protocol === THORChain ? priceRatio$ : priceRatioMaya$, bn(1))
 
   const [selectedPriceAssetRD]: [RD.RemoteData<Error, AnyAsset>, unknown] = useObservableState(
     () =>
@@ -116,14 +117,14 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
     () =>
       FP.pipe(
         balances,
-        O.chain(getBalanceByAsset(dex.asset)),
+        O.chain(getBalanceByAsset(protocol === THORChain ? AssetRuneNative : AssetCacao)),
         O.map(({ amount }) => amount)
       ),
-    [balances, dex]
+    [balances, protocol]
   )
 
   const { openExplorerTxUrl: openRuneExplorerTxUrl, getExplorerTxUrl: getRuneExplorerTxUrl } = useOpenExplorerTxUrl(
-    O.some(dex.chain)
+    O.some(protocol)
   )
 
   const { network$ } = useAppContext()
@@ -131,12 +132,12 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
 
   const reloadBalancesAndShares = useCallback(() => {
     reloadBalances()
-    if (dex.chain === THORChain) {
+    if (protocol === THORChain) {
       reloadShares(5000)
     } else {
       reloadSharesMaya(5000)
     }
-  }, [dex, reloadBalances, reloadShares, reloadSharesMaya])
+  }, [protocol, reloadBalances, reloadShares, reloadSharesMaya])
 
   const renderEmptyForm = useCallback(
     () => (
@@ -206,7 +207,11 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
         dexBalance={dexBalance}
         selectedPriceAsset={selectedPriceAsset}
         shares={{
-          rune: ShareHelpers.getRuneShare(liquidityUnits, poolDetail, dex.decimals),
+          rune: ShareHelpers.getRuneShare(
+            liquidityUnits,
+            poolDetail,
+            protocol === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL
+          ),
           asset: ShareHelpers.getAssetShare({ liquidityUnits, detail: poolDetail, assetDecimal })
         }}
         asset={assetWD}
@@ -238,7 +243,7 @@ export const WithdrawDepositView: React.FC<Props> = (props): JSX.Element => {
       reloadBalancesAndShares,
       symWithdraw$,
       network,
-      dex
+      protocol
     ]
   )
 

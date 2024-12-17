@@ -191,8 +191,6 @@ export const PoolShareView: React.FC = (): JSX.Element => {
     return sharesDetails
   }, [allSharesRD, protocol, poolDetailsRD, pricePoolData])
 
-  console.log('SHARES BY CHAIN - ', sharesByChain)
-
   const renderShares = useMemo(
     () =>
       FP.pipe(
