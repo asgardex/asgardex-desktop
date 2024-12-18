@@ -8,7 +8,6 @@ import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { thorDetails } from '../../../../shared/api/types'
 import { BSC_ADDRESS_MAINNET } from '../../../../shared/mock/address'
 import { mockValidatePassword$ } from '../../../../shared/mock/wallet'
 import { AssetRuneNative, AssetBSC } from '../../../../shared/utils/asset'
@@ -77,8 +76,7 @@ const defaultProps: WitdrawProps = {
       assetBalance: baseAmount(1),
       dexBalance: baseAmount(20)
     }
-  },
-  dex: thorDetails
+  }
 }
 
 export const Default: Story = () => <Withdraw {...defaultProps} />

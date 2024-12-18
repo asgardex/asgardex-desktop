@@ -220,6 +220,8 @@ export type HaltedChainsLD = LiveData<Error, Chain[]>
  * and in some cases a router address (currently ETH only)
  **/
 export type PoolAddress = {
+  /** protocol */
+  protocol: Chain
   /** chain */
   chain: Chain
   /** vault address */
@@ -227,6 +229,8 @@ export type PoolAddress = {
   /** router address (optional) */
   router: O.Option<Address>
   halted: boolean
+  gasRate?: string
+  outboundFee?: string
 }
 export type PoolAddress$ = Rx.Observable<O.Option<PoolAddress>>
 export type PoolAddressRD = RD.RemoteData<Error, PoolAddress>
@@ -365,6 +369,12 @@ export type TxType =
   | 'REFUND'
   | 'SEND'
   | 'RUNEPOOLDEPOSIT'
+  | 'RUNEPOOLWITHDRAW'
+  | 'BOND'
+  | 'UNBOND'
+  | 'LEAVE'
+  | 'TRADE'
+  | 'FAILED'
   // in case asgardex does not know about any other action type we will display
   // 'unknown' tx type to avoid filtering out any tx
   | 'UNKNOWN'
@@ -409,7 +419,15 @@ export interface GetPoolsRequest {
 export type ActionsPageRD = RD.RemoteData<ApiError, ActionsPage>
 export type ActionsPageLD = LiveData<ApiError, ActionsPage>
 
-const staticPoolFilters = ['__base__', '__usd__', '__avax__', '__erc20__', '__synth__', '__watched__'] as const
+const staticPoolFilters = [
+  '__base__',
+  '__usd__',
+  '__avax__',
+  '__arb__',
+  '__erc20__',
+  '__synth__',
+  '__watched__'
+] as const
 export type StaticPoolFilter = typeof staticPoolFilters[number]
 
 /**
@@ -421,6 +439,7 @@ export const isStaticPoolFilter = (v: unknown): v is StaticPoolFilter =>
 export type PoolFilter = StaticPoolFilter | string
 export type PoolFilters = PoolFilter[]
 export const DEFAULT_POOL_FILTERS: PoolFilters = ['__watched__', '__base__', '__usd__', '__avax__', '__erc20__']
+export const DEFAULT_MAYA_POOL_FILTERS: PoolFilters = ['__watched__', '__base__', '__usd__', '__arb__', '__erc20__']
 
 export type LoadActionsParams = {
   page: number

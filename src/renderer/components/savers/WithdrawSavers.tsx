@@ -32,7 +32,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { Dex } from '../../../shared/api/types'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
@@ -103,8 +102,6 @@ import { Fees, UIFeesRD } from '../uielements/fees'
 import { Slider } from '../uielements/slider'
 import * as Utils from './Saver.utils'
 
-export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
-
 export type WithDrawProps = {
   keystore: KeystoreState
   thorchainQuery: ThorchainQuery
@@ -133,7 +130,6 @@ export type WithDrawProps = {
   reloadBalances: FP.Lazy<void>
   disableSaverAction: boolean
   hidePrivateData: boolean
-  dex: Dex
 }
 
 export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
@@ -163,8 +159,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     getExplorerTxUrl,
     saverWithdraw$,
     disableSaverAction,
-    hidePrivateData,
-    dex
+    hidePrivateData
   } = props
 
   const intl = useIntl()
@@ -867,12 +862,12 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
           walletIndex,
           sender: address,
           hdMode,
-          dex
+          protocol: poolAddress.protocol
         }
         return result
       })
     )
-  }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceChainAsset, dustAmount, network, address, dex])
+  }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceChainAsset, dustAmount, network, address])
 
   const resetEnteredAmounts = useCallback(() => {
     setAmountToWithdrawMax1e8(initialAmountToWithdrawMax1e8)

@@ -3,16 +3,7 @@ import React, { useCallback, useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
-import {
-  Asset,
-  assetFromStringEx,
-  BaseAmount,
-  baseAmount,
-  Chain,
-  formatAssetAmountCurrency,
-  baseToAsset,
-  assetAmount
-} from '@xchainjs/xchain-util'
+import { Asset, assetFromStringEx, BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/lib/Array'
@@ -24,14 +15,11 @@ import { useIntl } from 'react-intl'
 import { WalletType } from '../../../shared/wallet/types'
 import { SaversDetailsTable } from '../../components/savers/SaversDetailsTable'
 import { RefreshButton } from '../../components/uielements/button'
-import { AssetsNav } from '../../components/wallet/assets'
-import * as Styled from '../../components/wallet/assets/TotalValue.styles'
+import { AssetsNav, TotalAssetValue } from '../../components/wallet/assets'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
-import { isUSDAsset } from '../../helpers/assetHelper'
 import { sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
-import { hiddenString } from '../../helpers/stringHelper'
 import { useAllSaverProviders } from '../../hooks/useAllSaverProviders'
 import { usePricePool } from '../../hooks/usePricePool'
 import { useApp } from '../../store/app/hooks'
@@ -145,41 +133,36 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
       .filter((item): item is AssetProps => item !== null)
   }, [allSaverProviders, isPrivate, poolsStateRD, pricePool])
 
-  const totalRedeemPrice = useMemo(() => {
-    const sum = assetDetailsArray.reduce((acc, item) => {
-      return acc + baseToAsset(item.redeem.price).amount().toNumber()
-    }, 0)
-    const formattedTotal = formatAssetAmountCurrency({
-      amount: assetAmount(sum),
-      asset: pricePool.asset,
-      decimal: isUSDAsset(pricePool.asset) ? 2 : 6
+  const saversByChain = useMemo(() => {
+    let saversDetails = {}
+
+    assetDetailsArray.forEach((item) => {
+      saversDetails = {
+        ...saversDetails,
+        [`${item.asset.chain}:${item.walletType}`]: item.redeem.price
+      }
     })
 
-    return formattedTotal
-  }, [assetDetailsArray, pricePool])
-
-  const renderSaversTotal = useMemo(() => {
-    return (
-      <Styled.Container>
-        <Styled.TitleContainer>
-          <Styled.BalanceTitle>{intl.formatMessage({ id: 'wallet.shares.total' })}</Styled.BalanceTitle>
-        </Styled.TitleContainer>
-        <Styled.BalanceLabel>{isPrivate ? hiddenString : totalRedeemPrice}</Styled.BalanceLabel>
-      </Styled.Container>
-    )
-  }, [intl, isPrivate, totalRedeemPrice])
+    return saversDetails
+  }, [assetDetailsArray])
 
   const refreshHandler = useCallback(() => {
     reloadAllPools()
     reloadSaverProvider()
   }, [reloadAllPools, reloadSaverProvider])
+
   return (
     <div>
       <Row justify="end" style={{ marginBottom: '20px' }}>
         <RefreshButton onClick={refreshHandler} disabled={false} />
       </Row>
       <AssetsNav />
-      {renderSaversTotal}
+      <TotalAssetValue
+        balancesByChain={saversByChain}
+        errorsByChain={{}}
+        title={intl.formatMessage({ id: 'wallet.shares.total' })}
+        hidePrivateData={isPrivate}
+      />
       <SaversDetailsTable assetDetails={assetDetailsArray} />
     </div>
   )

@@ -2,13 +2,12 @@ import { useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Address } from '@xchainjs/xchain-util'
+import { Address, Chain } from '@xchainjs/xchain-util'
 import { AnyAsset } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
-import { Dex } from '../../shared/api/types'
 import { useMayachainContext } from '../contexts/MayachainContext'
 import { useThorchainContext } from '../contexts/ThorchainContext'
 import { eqAddress, eqOString } from '../helpers/fp/eq'
@@ -28,12 +27,12 @@ export const useLiquidityProviders = ({
   asset,
   dexAssetAddress,
   assetAddress,
-  dex
+  protocol
 }: {
   asset: AnyAsset
   dexAssetAddress: Address
   assetAddress: Address
-  dex: Dex
+  protocol: Chain
 }) => {
   const { getLiquidityProviders: getLiquidityProvidersThor } = useThorchainContext()
   const { getLiquidityProviders: getLiquidityProvidersMaya } = useMayachainContext()
@@ -42,14 +41,14 @@ export const useLiquidityProviders = ({
 
   useEffect(() => {
     // Determine the correct function based on the current value of `dex`
-    const getLiquidityProviders = dex.chain === THORChain ? getLiquidityProvidersThor : getLiquidityProvidersMaya
+    const getLiquidityProviders = protocol === THORChain ? getLiquidityProvidersThor : getLiquidityProvidersMaya
 
     // Create the observable and subscribe
     const subscription = getLiquidityProviders(asset).subscribe(setProviders)
 
     // Cleanup the subscription when the component unmounts or when `dex` or `asset` changes
     return () => subscription.unsubscribe()
-  }, [dex, asset, getLiquidityProvidersThor, getLiquidityProvidersMaya])
+  }, [protocol, asset, getLiquidityProvidersThor, getLiquidityProvidersMaya])
 
   /**
    * Gets liquidity provider data by given RUNE + asset address
@@ -60,11 +59,24 @@ export const useLiquidityProviders = ({
       FP.pipe(
         providers,
         RD.map(
-          A.findFirst(
-            (provider) =>
-              eqOString.equals(provider.dexAssetAddress, O.some(dexAssetAddress)) &&
-              eqOString.equals(provider.assetAddress, O.some(assetAddress))
-          )
+          A.findFirst((provider) => {
+            const normalizeOption = (o: O.Option<string>) =>
+              FP.pipe(
+                o,
+                O.map((str) => str.toLowerCase())
+              )
+
+            const normalizedDexAssetAddress = normalizeOption(O.some(dexAssetAddress))
+            const normalizedAssetAddress = normalizeOption(O.some(assetAddress))
+
+            const providerDexAssetAddress = normalizeOption(provider.dexAssetAddress)
+            const providerAssetAddress = normalizeOption(provider.assetAddress)
+
+            return (
+              eqOString.equals(providerDexAssetAddress, normalizedDexAssetAddress) &&
+              eqOString.equals(providerAssetAddress, normalizedAssetAddress)
+            )
+          })
         )
       ),
     [assetAddress, providers, dexAssetAddress]
@@ -147,9 +159,13 @@ export const useLiquidityProviders = ({
             FP.pipe(
               sequenceTOption(oDexAssetAddress, oAssetAddress),
               O.chain(([providerDexAssetAddress, providerAssetAddress]) => {
-                const isDexMatch = eqAddress.equals(providerDexAssetAddress, dexAssetAddress)
-                const isAssetMatch = eqAddress.equals(providerAssetAddress, assetAddress)
+                const isDexMatch = eqAddress.equals(
+                  providerDexAssetAddress.toLowerCase(),
+                  dexAssetAddress.toLowerCase()
+                )
+                const isAssetMatch = eqAddress.equals(providerAssetAddress.toLowerCase(), assetAddress.toLowerCase())
                 const isMismatch = (isDexMatch && !isAssetMatch) || (isAssetMatch && !isDexMatch)
+
                 return isMismatch
                   ? O.some({ dexAssetAddress: providerDexAssetAddress, assetAddress: providerAssetAddress })
                   : O.none

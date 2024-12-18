@@ -1,5 +1,12 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 
+import {
+  ArrowDownOnSquareIcon,
+  ArrowRightOnRectangleIcon,
+  ArrowsRightLeftIcon,
+  ArrowUpOnSquareIcon,
+  ChartPieIcon
+} from '@heroicons/react/24/outline'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
@@ -25,7 +32,9 @@ import { LoadTxsHandler, NonEmptyWalletBalances } from '../../../services/wallet
 import { WarningView } from '../../shared/warning'
 import { AssetInfo } from '../../uielements/assets/assetInfo'
 import { BackLinkButton } from '../../uielements/button'
-import { BorderButton, FlatButton, RefreshButton, TextButton } from '../../uielements/button'
+import { FlatButton, RefreshButton, TextButton } from '../../uielements/button'
+import { ActionIconButton } from '../../uielements/button/ActionIconButton'
+import { QRCodeModal } from '../../uielements/qrCodeModal'
 import { InteractType } from '../txs/interact/Interact.types'
 import { TxsTable } from '../txs/table/TxsTable'
 import * as Styled from './AssetDetails.styles'
@@ -65,6 +74,7 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
     changeDex
   } = props
   const [currentPage, setCurrentPage] = useState(1)
+  const [showQRModal, setShowQRModal] = useState(false)
 
   const { chain } = asset.type === AssetType.SYNTH ? dex.asset : asset
 
@@ -143,8 +153,25 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
     [loadTxsHandler]
   )
 
+  const closeQrModal = useCallback(() => setShowQRModal(false), [])
+
+  const renderQRCodeModal = useMemo(() => {
+    return (
+      <QRCodeModal
+        key="qr-modal"
+        asset={asset}
+        address={walletAddress}
+        network={network}
+        visible={showQRModal}
+        onCancel={closeQrModal}
+        onOk={closeQrModal}
+      />
+    )
+  }, [asset, walletAddress, network, showQRModal, closeQrModal])
+
   return (
     <>
+      {renderQRCodeModal}
       <Row justify="space-between">
         <Col>
           <BackLinkButton path={walletRoutes.assets.path()} />
@@ -153,78 +180,47 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
           <RefreshButton onClick={refreshHandler} />
         </Col>
       </Row>
-      <Row>
-        <Col span={24}>
-          <AssetInfo
-            walletInfo={O.some({
-              address: walletAddress,
-              network,
-              walletType
-            })}
-            asset={O.some(asset)}
-            assetsWB={oBalances}
-            network={network}
-          />
-        </Col>
+      <div className="flex flex-col space-y-8 rounded-xl bg-bg1 p-8 dark:bg-bg1d">
+        <AssetInfo walletInfo={O.some({ walletType })} asset={O.some(asset)} assetsWB={oBalances} network={network} />
 
-        <Styled.Divider />
-
-        <Styled.ActionRow>
-          <Styled.ActionWrapper>
-            <Styled.ActionCol>
-              <Row justify="space-between">
-                <FlatButton
-                  className="m-2 ml-2 min-w-[200px]"
-                  size="large"
-                  color="primary"
-                  onClick={disableSend ? undefined : walletActionSendClick}
-                  disabled={disableSend}>
-                  {intl.formatMessage({ id: 'wallet.action.send' })}
-                </FlatButton>
-                <FlatButton
-                  className="m-2 ml-2 min-w-[200px]"
-                  size="large"
-                  color="primary"
-                  onClick={disableSwap ? undefined : walletActionSwapClick}
-                  disabled={disableSwap}>
-                  {intl.formatMessage({ id: 'common.swap' })}
-                </FlatButton>
-                {asset.type !== AssetType.SYNTH && (
-                  <FlatButton
-                    className="m-2 ml-2 min-w-[200px]"
-                    size="large"
-                    color="primary"
-                    onClick={disableAdd ? undefined : walletActionManageClick}
-                    disabled={disableAdd}>
-                    {intl.formatMessage({ id: 'common.manage' })}
-                  </FlatButton>
-                )}
-                {AssetHelper.isRuneNativeAsset(asset) && (
-                  <BorderButton
-                    className="m-2 ml-2 min-w-[200px]"
-                    size="large"
-                    color="primary"
-                    onClick={disableSend ? undefined : walletActionDepositClick}
-                    disabled={disableSend}>
-                    {intl.formatMessage({ id: 'wallet.action.deposit' })}
-                  </BorderButton>
-                )}
-                {AssetHelper.isCacaoAsset(asset) && (
-                  <BorderButton
-                    className="m-2 ml-2 min-w-[200px]"
-                    size="large"
-                    color="primary"
-                    onClick={disableSend ? undefined : walletActionDepositClick}
-                    disabled={disableSend}>
-                    {intl.formatMessage({ id: 'wallet.action.deposit' })}
-                  </BorderButton>
-                )}
-              </Row>
-            </Styled.ActionCol>
-          </Styled.ActionWrapper>
-        </Styled.ActionRow>
-        <Styled.Divider />
-      </Row>
+        <div className="w-full">
+          <div className="flex flex-col items-center justify-center space-x-0 space-y-1 sm:flex-row sm:space-x-2 sm:space-y-0">
+            <ActionIconButton
+              icon={<ArrowUpOnSquareIcon className="h-6 w-6" />}
+              text={intl.formatMessage({ id: 'wallet.action.send' })}
+              onClick={walletActionSendClick}
+              disabled={disableSend}
+            />
+            <ActionIconButton
+              icon={<ArrowDownOnSquareIcon className="h-6 w-6" />}
+              text={intl.formatMessage({ id: 'wallet.action.receive' })}
+              onClick={() => setShowQRModal(true)}
+            />
+            <ActionIconButton
+              icon={<ArrowsRightLeftIcon className="h-6 w-6" />}
+              text={intl.formatMessage({ id: 'common.swap' })}
+              onClick={walletActionSwapClick}
+              disabled={disableSwap}
+            />
+            {asset.type !== AssetType.SYNTH && (
+              <ActionIconButton
+                icon={<ChartPieIcon className="h-6 w-6" />}
+                text={intl.formatMessage({ id: 'common.manage' })}
+                onClick={walletActionManageClick}
+                disabled={disableAdd}
+              />
+            )}
+            {(AssetHelper.isRuneNativeAsset(asset) || AssetHelper.isCacaoAsset(asset)) && (
+              <ActionIconButton
+                icon={<ArrowRightOnRectangleIcon className="h-6 w-6" />}
+                text={intl.formatMessage({ id: 'wallet.action.deposit' })}
+                onClick={walletActionDepositClick}
+                disabled={disableSend}
+              />
+            )}
+          </div>
+        </div>
+      </div>
       <Row>
         <Col span={24}>
           <TextButton

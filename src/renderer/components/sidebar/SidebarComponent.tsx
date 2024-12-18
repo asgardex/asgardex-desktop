@@ -8,21 +8,24 @@ import Icon, {
   GlobalOutlined,
   TwitterOutlined
 } from '@ant-design/icons'
+import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
+import { assetToString } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 import { useMatch, useNavigate } from 'react-router-dom'
 
-import { Dex } from '../../../shared/api/types'
 import { ExternalUrl } from '../../../shared/const'
 import { ReactComponent as DiscordIcon } from '../../assets/svg/discord.svg'
 import { ReactComponent as SettingsIcon } from '../../assets/svg/icon-cog.svg'
+import { ReactComponent as PoolIcon } from '../../assets/svg/icon-pools.svg'
 import { ReactComponent as PortfolioIcon } from '../../assets/svg/icon-portfolio.svg'
 import { ReactComponent as SwapIcon } from '../../assets/svg/icon-swap.svg'
 import { ReactComponent as WalletIcon } from '../../assets/svg/icon-wallet.svg'
 import { ReactComponent as ThorChainIcon } from '../../assets/svg/logo-thorchain.svg'
+import { DEFAULT_WALLET_TYPE } from '../../const'
 import * as appRoutes from '../../routes/app'
 import * as playgroundRoutes from '../../routes/playground'
 import * as poolsRoutes from '../../routes/pools'
@@ -32,23 +35,29 @@ import { mayaIconT } from '../icons'
 import * as Styled from './SidebarComponent.styles'
 
 type IconProps = {
+  className?: string
   url: string
   children: React.ReactNode
   onClick: (url: string) => void
 }
 
-const FooterIcon: React.FC<IconProps> = (props: IconProps): JSX.Element => {
-  const { children, url, onClick } = props
+const FooterIcon = (props: IconProps): JSX.Element => {
+  const { className = '', children, url, onClick } = props
 
   const clickHandler = useCallback(() => {
     onClick(url)
   }, [url, onClick])
 
-  return <Styled.IconWrapper onClick={clickHandler}>{children}</Styled.IconWrapper>
+  return (
+    <Styled.IconWrapper className={className} onClick={clickHandler}>
+      {children}
+    </Styled.IconWrapper>
+  )
 }
 
 enum TabKey {
   WALLET = 'WALLET',
+  SWAP = 'SWAP',
   PORTFOLIO = 'PORTFOLIO',
   POOLS = 'POOLS',
   SETTINGS = 'SETTINGS',
@@ -64,14 +73,13 @@ type Tab = {
 
 export type Props = {
   network: Network
-  dex: Dex
   commitHash?: string
   isDev: boolean
   publicIP: string
 }
 
-export const SidebarComponent: React.FC<Props> = (props): JSX.Element => {
-  const { network, dex, commitHash, isDev, publicIP } = props
+export const SidebarComponent = (props: Props): JSX.Element => {
+  const { network, commitHash, isDev, publicIP } = props
 
   const intl = useIntl()
 
@@ -81,9 +89,12 @@ export const SidebarComponent: React.FC<Props> = (props): JSX.Element => {
   const matchPortfolioRoute = useMatch({ path: portfolioRoutes.base.path(), end: false })
   const matchWalletRoute = useMatch({ path: walletRoutes.base.path(), end: false })
   const matchSettingsRoute = useMatch({ path: appRoutes.settings.path(), end: false })
+  const matchSwapRoute = useMatch({ path: poolsRoutes.swapBase.template, end: false })
 
   const activeKey: TabKey = useMemo(() => {
-    if (matchPoolsRoute) {
+    if (matchSwapRoute) {
+      return TabKey.SWAP
+    } else if (matchPoolsRoute) {
       return TabKey.POOLS
     } else if (matchPortfolioRoute) {
       return TabKey.PORTFOLIO
@@ -94,7 +105,7 @@ export const SidebarComponent: React.FC<Props> = (props): JSX.Element => {
     } else {
       return TabKey.UNKNOWN
     }
-  }, [matchPoolsRoute, matchPortfolioRoute, matchWalletRoute, matchSettingsRoute])
+  }, [matchPoolsRoute, matchPortfolioRoute, matchWalletRoute, matchSettingsRoute, matchSwapRoute])
 
   const items: Tab[] = useMemo(
     () => [
@@ -103,6 +114,17 @@ export const SidebarComponent: React.FC<Props> = (props): JSX.Element => {
         label: intl.formatMessage({ id: 'common.wallet' }),
         path: walletRoutes.base.path(),
         icon: WalletIcon
+      },
+      {
+        key: TabKey.SWAP,
+        label: intl.formatMessage({ id: 'common.swap' }),
+        path: poolsRoutes.swap.path({
+          source: assetToString(AssetBTC),
+          target: assetToString(AssetRuneNative),
+          sourceWalletType: DEFAULT_WALLET_TYPE,
+          targetWalletType: DEFAULT_WALLET_TYPE
+        }),
+        icon: SwapIcon
       },
       {
         key: TabKey.PORTFOLIO,
@@ -114,7 +136,7 @@ export const SidebarComponent: React.FC<Props> = (props): JSX.Element => {
         key: TabKey.POOLS,
         label: intl.formatMessage({ id: 'common.pools' }),
         path: poolsRoutes.base.path(),
-        icon: SwapIcon
+        icon: PoolIcon
       },
       {
         key: TabKey.SETTINGS,
@@ -164,12 +186,10 @@ export const SidebarComponent: React.FC<Props> = (props): JSX.Element => {
     () => (
       <Styled.LogoWrapper>
         <Styled.AsgardexLogo />
-        <Styled.NetworkLabel network={network} dex={dex}>
-          {network}
-        </Styled.NetworkLabel>
+        <Styled.NetworkLabel network={network}>{network}</Styled.NetworkLabel>
       </Styled.LogoWrapper>
     ),
-    [network, dex]
+    [network]
   )
 
   const clickIconHandler = useCallback((url: string) => {
@@ -187,23 +207,20 @@ export const SidebarComponent: React.FC<Props> = (props): JSX.Element => {
             {renderMainNav}
           </div>
           <div className="flex flex-col items-center justify-center">
-            <FooterIcon
-              url={dex.chain === THORChain ? ExternalUrl.DOCSTHOR : ExternalUrl.DOCSMAYA}
-              onClick={clickIconHandler}>
-              {dex.chain === THORChain ? (
-                <div className="flex h-12 flex-row items-center">
-                  <ThorChainIcon />
+            <FooterIcon url={ExternalUrl.DOCSTHOR} onClick={clickIconHandler}>
+              <div className="flex h-12 flex-row items-center">
+                <ThorChainIcon />
+              </div>
+            </FooterIcon>
+            <FooterIcon className="!ml-0" url={ExternalUrl.DOCSMAYA} onClick={clickIconHandler}>
+              <div className="flex h-12 flex-row items-center">
+                <div className="mr-2">
+                  <Styled.Icon src={mayaIconT} />
                 </div>
-              ) : (
-                <div className="flex h-12 flex-row items-center">
-                  <div className="mr-2">
-                    <Styled.Icon src={mayaIconT} />
-                  </div>
-                  <div>
-                    <Styled.TextLabel>MAYACHAIN</Styled.TextLabel>
-                  </div>
+                <div>
+                  <Styled.TextLabel>MAYACHAIN</Styled.TextLabel>
                 </div>
-              )}
+              </div>
             </FooterIcon>
             {publicIP && (
               <div className="h-8 items-center px-20px text-[14px] text-gray2 dark:text-gray2d">

@@ -42,6 +42,7 @@ export const INITIAL_SAVER_DEPOSIT_STATE: SaverDepositState = {
   stepsTotal: 3,
   deposit: RD.initial
 }
+
 export const INITIAL_BORROWER_DEPOSIT_STATE: BorrowerDepositState = {
   step: 1,
   depositTx: RD.initial,
@@ -57,9 +58,10 @@ export const INITIAL_SAVER_WITHDRAW_STATE: WithdrawState = {
 
 export const INITIAL_SYM_DEPOSIT_STATE: SymDepositState = {
   step: 1,
-  stepsTotal: 4,
+  stepsTotal: 5,
   depositTxs: { rune: RD.initial, asset: RD.initial },
-  deposit: RD.initial
+  deposit: RD.initial,
+  waitingForUser: false
 }
 
 export const INITIAL_WITHDRAW_STATE: WithdrawState = {

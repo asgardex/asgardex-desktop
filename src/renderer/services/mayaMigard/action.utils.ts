@@ -17,6 +17,12 @@ export const getTxType = (apiString: string): TxType => {
     case 'REFUND':
     case 'SEND':
     case 'RUNEPOOLDEPOSIT':
+    case 'RUNEPOOLWITHDRAW':
+    case 'BOND':
+    case 'UNBOND':
+    case 'LEAVE':
+    case 'TRADE':
+    case 'FAILED':
       return type
     case 'ADDLIQUIDITY':
       return 'DEPOSIT'

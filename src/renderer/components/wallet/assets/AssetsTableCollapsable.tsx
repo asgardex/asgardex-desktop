@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Balance, Network } from '@xchainjs/xchain-client'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
@@ -27,7 +27,6 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router'
 
 import { Dex } from '../../../../shared/api/types'
-import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { chainToString, EnabledChain, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
@@ -54,6 +53,7 @@ import {
   WalletBalances
 } from '../../../services/wallet/types'
 import { walletTypeToI18n } from '../../../services/wallet/util'
+import { GECKO_MAP } from '../../../types/generated/geckoMap'
 import { PricePool } from '../../../views/pools/Pools.types'
 import { ErrorView } from '../../shared/error/'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
@@ -83,6 +83,7 @@ export type GetPoolPriceValueFnMaya = (params: {
 type Props = {
   disableRefresh: boolean
   chainBalances: ChainBalances
+  geckoPrice: Record<string, { usd: number }>
   pricePool: PricePool
   mayaPricePool: PricePool
   poolDetails: PoolDetails
@@ -101,10 +102,11 @@ type Props = {
   disabledChains: EnabledChain[]
 }
 
-export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
+export const AssetsTableCollapsable = (props: Props): JSX.Element => {
   const {
     disableRefresh,
     chainBalances = [],
+    geckoPrice: geckoPriceData,
     pricePool,
     mayaPricePool,
     poolDetails,
@@ -126,15 +128,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
   const screenMap: ScreenMap = Grid.useBreakpoint()
 
   const [showQRModal, setShowQRModal] = useState<O.Option<{ asset: Asset; address: Address }>>(O.none)
-
-  const [filterByValue, setFilterByValue] = useState(() => {
-    const cachedValue = localStorage.getItem('filterByValue')
-    return cachedValue ? JSON.parse(cachedValue) : true
-  })
-
-  useEffect(() => {
-    localStorage.setItem('filterByValue', JSON.stringify(filterByValue))
-  }, [filterByValue])
 
   const [openPanelKeys, setOpenPanelKeys] = useState<string[]>(() => {
     const cachedKeys = localStorage.getItem('openPanelKeys')
@@ -255,18 +248,31 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         if (isUSDAsset(asset)) {
           price = balance.toString()
         } else {
+          const geckoPrice = geckoPriceData[GECKO_MAP?.[asset.symbol.toUpperCase()]]?.usd
+          const isThorchainNonEmpty = poolDetails.length !== 0
+          const isMayachainNonEmpty = poolDetailsMaya.length !== 0
+
           if (isChainOfMaya(asset.chain) && isChainOfThor(asset.chain)) {
             // Chain is supported by both MAYA and THOR, prioritize THOR
             price =
-              getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool) ||
-              getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool) ||
+              (isThorchainNonEmpty && getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool)) ||
+              (isMayachainNonEmpty &&
+                getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool)) ||
+              (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
               price
           } else if (isChainOfMaya(asset.chain)) {
             // Chain is supported only by MAYA
-            price = getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool) || price
+            price =
+              (isMayachainNonEmpty &&
+                getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool)) ||
+              (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
+              price
           } else if (isChainOfThor(asset.chain)) {
             // Chain is supported only by THOR
-            price = getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool) || price
+            price =
+              (isThorchainNonEmpty && getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool)) ||
+              (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
+              price
           } else {
             // Handle pending pool details
             const priceOptionFromPendingPoolDetails = getPoolPriceValue({
@@ -299,7 +305,16 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         )
       }
     }),
-    [hidePrivateData, poolDetailsMaya, mayaPricePool, poolDetails, pricePool, pendingPoolDetails, mayaScanPrice]
+    [
+      hidePrivateData,
+      geckoPriceData,
+      poolDetails,
+      pricePool,
+      poolDetailsMaya,
+      mayaPricePool,
+      pendingPoolDetails,
+      mayaScanPrice
+    ]
   )
 
   const renderActionColumn = useCallback(
@@ -307,9 +322,8 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
       const walletAsset: SelectedWalletAsset = { asset, walletAddress, walletAccount, walletIndex, walletType, hdMode }
       const normalizedAssetString = assetToString(asset).toUpperCase()
       const hasActivePool: boolean = FP.pipe(
-        O.fromNullable(
-          dex.chain === THORChain ? poolsData[normalizedAssetString] : poolsDataMaya[normalizedAssetString]
-        ),
+        O.fromNullable(poolsData[normalizedAssetString]),
+        O.alt(() => O.fromNullable(poolsDataMaya[normalizedAssetString])),
         O.isSome
       )
 
@@ -339,7 +353,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         createAction('wallet.action.send', () => assetHandler(walletAsset, 'send'))
       ]
 
-      if (isRuneNativeAsset(asset) && deepestPoolAsset && dex.chain !== MAYAChain) {
+      if (isRuneNativeAsset(asset) && deepestPoolAsset) {
         actions.push(
           createAction('common.swap', () =>
             navigate(
@@ -353,7 +367,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           )
         )
       }
-      if (isRuneNativeAsset(asset) && deepestPoolAsset && dex.chain !== MAYAChain) {
+      if (isRuneNativeAsset(asset) && deepestPoolAsset) {
         actions.push(
           createAction('common.trade', () =>
             navigate(
@@ -368,7 +382,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         )
       }
 
-      if (isCacaoAsset(asset) && deepestPoolAsset && dex.chain !== THORChain) {
+      if (isCacaoAsset(asset) && deepestPoolAsset) {
         actions.push(
           createAction('common.swap', () =>
             navigate(
@@ -383,13 +397,13 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         )
       }
 
-      if (isSynthAsset(asset)) {
+      if (isSynthAsset(asset) && deepestPoolAsset) {
         actions.push(
           createAction('common.swap', () =>
             navigate(
               poolsRoutes.swap.path({
                 source: `${asset.chain}/${asset.symbol}`,
-                target: assetToString(dex.asset),
+                target: assetToString(deepestPoolAsset),
                 sourceWalletType: walletType,
                 targetWalletType: DEFAULT_WALLET_TYPE
               })
@@ -398,15 +412,13 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         )
       }
 
-      if (hasActivePool) {
+      if (deepestPoolAsset && !isCacaoAsset(asset) && !isRuneNativeAsset(asset)) {
         actions.push(
           createAction('common.swap', () =>
             navigate(
               poolsRoutes.swap.path({
                 source: assetToString(asset),
-                target: assetToString(
-                  isRuneNativeAsset(asset) || dex.chain === MAYAChain ? AssetCacao : AssetRuneNative
-                ),
+                target: assetToString(deepestPoolAsset),
                 sourceWalletType: walletType,
                 targetWalletType: DEFAULT_WALLET_TYPE
               })
@@ -414,7 +426,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
           )
         )
 
-        if (dex.chain !== MAYAChain && hasSaversAssets) {
+        if (hasSaversAssets) {
           actions.push(
             createAction('common.earn', () =>
               navigate(
@@ -454,18 +466,19 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
             )
           )
         }
-
-        actions.push(
-          createAction('common.add', () =>
-            navigate(
-              poolsRoutes.deposit.path({
-                asset: assetToString(asset),
-                assetWalletType: walletType,
-                runeWalletType: DEFAULT_WALLET_TYPE
-              })
+        if (hasActivePool) {
+          actions.push(
+            createAction('common.add', () =>
+              navigate(
+                poolsRoutes.deposit.path({
+                  asset: assetToString(asset),
+                  assetWalletType: walletType,
+                  runeWalletType: DEFAULT_WALLET_TYPE
+                })
+              )
             )
           )
-        )
+        }
       }
 
       if (isRuneNativeAsset(asset) || isCacaoAsset(asset)) {
@@ -552,26 +565,6 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
             }
             let sortedBalances = balances.sort((a, b) => b.amount.amount().minus(a.amount.amount()).toNumber())
 
-            if (filterByValue) {
-              sortedBalances = sortedBalances.filter(({ amount, asset }) => {
-                if (
-                  (isUSDAsset(asset) && asset.type !== AssetType.SYNTH && amount.amount().gt(1)) ||
-                  isMayaAsset(asset)
-                ) {
-                  return true
-                }
-                let usdValue: O.Option<BaseAmount>
-                usdValue =
-                  isChainOfMaya(asset.chain) || isCacaoAsset(asset)
-                    ? getPoolPriceValueM({ balance: { asset, amount }, poolDetails: poolDetailsMaya, pricePool })
-                    : getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool })
-                usdValue = O.isNone(usdValue)
-                  ? getPoolPriceValue({ balance: { asset, amount }, poolDetails, pricePool })
-                  : usdValue
-                const result = O.isSome(usdValue) && usdValue.value.amount().gt(0)
-                return result
-              })
-            }
             if ((dex.chain === MAYAChain && chain === THORChain) || (dex.chain === THORChain && chain === MAYAChain)) {
               sortedBalances = sortedBalances.filter(({ asset }) => asset.type !== AssetType.SYNTH)
             }
@@ -584,7 +577,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
         )
       )
     },
-    [dex, filterByValue, poolDetails, poolDetailsMaya, pricePool, renderAssetsTable]
+    [dex.chain, renderAssetsTable]
   )
 
   const renderPanel = useCallback(
@@ -640,8 +633,7 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
             <Styled.HeaderLabel color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>
               <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                 {isEvmChain(chain) && (
-                  // @asgardexTeam Add Locale for tooltip
-                  <InfoIcon tooltip={'Token not showing, add contract in wallet settings'} color="primary" />
+                  <InfoIcon tooltip={intl.formatMessage({ id: 'wallet.evmToken.tooltip' })} color="primary" />
                 )}
                 <span style={{ marginLeft: isEvmChain(chain) ? '5px' : '0' }}>{assetsTxt}</span>
               </span>
@@ -735,11 +727,8 @@ export const AssetsTableCollapsable: React.FC<Props> = (props): JSX.Element => {
   return (
     <>
       <Row className="items-center">
-        <Styled.FilterCheckbox checked={filterByValue} onChange={(e) => setFilterByValue(e.target.checked)}>
-          {intl.formatMessage({ id: 'common.filterValue' })}
-        </Styled.FilterCheckbox>
         <div
-          className="rounded-md border border-solid border-turquoise p-1 text-14 text-gray2 dark:border-gray1d dark:text-gray2d"
+          className="m-2 rounded-md border border-solid border-turquoise p-1 text-14 text-gray2 dark:border-gray1d dark:text-gray2d"
           onClick={handleCollapseAll}>
           {collapseAll
             ? intl.formatMessage({ id: 'common.collapseAll' })

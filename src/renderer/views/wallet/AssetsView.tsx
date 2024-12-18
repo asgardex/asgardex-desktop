@@ -4,6 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
+import { debounce } from 'lodash'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
@@ -24,7 +25,7 @@ import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { useDex } from '../../hooks/useDex'
 import { useMayaScanPrice } from '../../hooks/useMayascanPrice'
-import { useMimirHalt } from '../../hooks/useMimirHalt'
+import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useTotalWalletBalance } from '../../hooks/useWalletBalance'
 import * as walletRoutes from '../../routes/wallet'
@@ -33,6 +34,8 @@ import { reloadBalancesByChain } from '../../services/wallet'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ChainBalances, SelectedWalletAsset } from '../../services/wallet/types'
 import { useApp } from '../../store/app/hooks'
+import { useCoingecko } from '../../store/gecko/hooks'
+import { GECKO_MAP } from '../../types/generated/geckoMap'
 
 export const AssetsView: React.FC = (): JSX.Element => {
   const navigate = useNavigate()
@@ -43,6 +46,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
   const { dex } = useDex()
   const { mayaScanPriceRD } = useMayaScanPrice()
   const { isPrivate } = useApp()
+  const { geckoPriceMap, fetchPrice: fetchCoingeckoPrice } = useCoingecko()
 
   const {
     service: {
@@ -112,6 +116,45 @@ export const AssetsView: React.FC = (): JSX.Element => {
     return uniqueBalances.sort((a, b) => getChainWeight(a.chain, dex) - getChainWeight(b.chain, dex))
   }, [chainBalances, dex, enabledChains])
 
+  const availableAssets = useMemo(() => {
+    let assetArr: string[] = []
+
+    sortedBalances.forEach(({ balances }) => {
+      const assetIds =
+        balances._tag === 'RemoteSuccess' ? balances.value.map(({ asset }) => asset.symbol.toUpperCase()) : []
+      assetArr = [...assetArr, ...assetIds]
+    })
+
+    // Use Set to remove duplicates
+    const uniqueAssets = Array.from(new Set(assetArr))
+
+    // Map to Gecko IDs and filter out null values
+    return uniqueAssets.map((item) => GECKO_MAP?.[item] ?? null).filter((item) => item)
+  }, [sortedBalances])
+
+  const [lastFetchedAssets, setLastFetchedAssets] = useState<string>('')
+
+  const allChainsLoaded = useMemo(() => {
+    return chainBalances.every(({ balances }) => balances._tag !== 'RemoteInitial' && balances._tag !== 'RemotePending')
+  }, [chainBalances])
+
+  const debouncedFetchCoingeckoPrice = useMemo(
+    () =>
+      debounce((assets: string) => {
+        fetchCoingeckoPrice(assets)
+      }, 300),
+    [fetchCoingeckoPrice]
+  )
+  useEffect(() => {
+    if (allChainsLoaded) {
+      const currentAssets = availableAssets.join(',')
+      if (currentAssets !== lastFetchedAssets) {
+        debouncedFetchCoingeckoPrice(currentAssets)
+        setLastFetchedAssets(currentAssets)
+      }
+    }
+  }, [allChainsLoaded, availableAssets, debouncedFetchCoingeckoPrice, lastFetchedAssets])
+
   const [{ loading: loadingBalances }] = useObservableState(
     () => balancesState$(DEFAULT_BALANCES_FILTER),
     INITIAL_BALANCES_STATE
@@ -156,7 +199,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
     () => RD.toNullable(pendingPoolsMayaRD)?.poolDetails ?? [],
     [pendingPoolsMayaRD]
   )
-  const { mimirHaltRD } = useMimirHalt()
+  const { mimirHaltRD } = useThorchainMimirHalt()
 
   const disableRefresh = useMemo(() => RD.isPending(poolsRD) || loadingBalances, [loadingBalances, poolsRD])
 
@@ -191,6 +234,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
         disableRefresh={disableRefresh}
         chainBalances={sortedBalances}
         pricePool={selectedPricePool}
+        geckoPrice={geckoPriceMap}
         mayaPricePool={selectedPricePoolMaya}
         poolDetails={poolDetails}
         poolDetailsMaya={poolDetailsMaya}

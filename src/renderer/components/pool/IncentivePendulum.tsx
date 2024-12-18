@@ -1,11 +1,12 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import { AssetCacao } from '@xchainjs/xchain-mayachain'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { baseToAsset, Chain, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import { useIntl } from 'react-intl'
 
-import { Dex } from '../../../shared/api/types'
 import { IncentivePendulumRD } from '../../hooks/useIncentivePendulum'
 import type { AlertIconColor } from '../uielements/alert/'
 import { Tooltip } from '../uielements/common/Common.styles'
@@ -13,11 +14,11 @@ import * as Styled from './IncentivePendulum.styles'
 
 export type Props = {
   incentivePendulum: IncentivePendulumRD
-  dex: Dex
+  protocol: Chain
 }
 
-export const IncentivePendulum: React.FC<Props> = (props): JSX.Element => {
-  const { incentivePendulum: incentivePendulumRD, dex } = props
+export const IncentivePendulum = (props: Props): JSX.Element => {
+  const { incentivePendulum: incentivePendulumRD, protocol } = props
 
   const intl = useIntl()
 
@@ -27,6 +28,9 @@ export const IncentivePendulum: React.FC<Props> = (props): JSX.Element => {
       <Styled.AlertIcon color="grey" />
     </Styled.ContentWrapper>
   )
+
+  const protocolAsset = useMemo(() => (protocol === THORChain ? AssetRuneNative : AssetCacao), [protocol])
+
   return FP.pipe(
     incentivePendulumRD,
     RD.fold(
@@ -53,12 +57,12 @@ export const IncentivePendulum: React.FC<Props> = (props): JSX.Element => {
           {
             pooled: formatAssetAmountCurrency({
               amount: baseToAsset(totalPooledRuneAmount),
-              asset: dex.asset,
+              asset: protocolAsset,
               decimal: 0
             }),
             bonded: formatAssetAmountCurrency({
               amount: baseToAsset(totalActiveBondAmount),
-              asset: dex.asset,
+              asset: protocolAsset,
               decimal: 0
             })
           }

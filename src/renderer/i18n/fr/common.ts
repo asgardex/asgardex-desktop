@@ -140,6 +140,7 @@ const common: CommonMessages = {
   'common.tx.healthCheck': 'Vérification',
   'common.tx.sending': 'Envoi de la transaction',
   'common.tx.sendingAsset': 'Envoi de la transaction {assetTicker}',
+  'common.tx.loadingSecondTx': 'Chargement des paramètres de la deuxième transaction',
   'common.tx.success': 'La transaction a été envoyée avec succès',
   'common.tx.success-info':
     "La transaction peut prendre un certain temps pour être confirmée (jusqu'à plusieurs minutes selon la chaîne)",
@@ -160,6 +161,7 @@ const common: CommonMessages = {
   'common.tx.type.donate': 'Don',
   'common.tx.type.send': 'Envoyer',
   'common.tx.type.runePoolDeposit': 'Dépôt dans RunePool',
+  'common.tx.type.runePoolWithdraw': 'Retrait RunePool',
   'common.tx.type.refund': 'Remboursement',
   'common.tx.type.deposit': 'Dépôt',
   'common.tx.type.withdraw': 'Retrait',

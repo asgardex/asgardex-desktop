@@ -143,6 +143,7 @@ const common: CommonMessages = {
   'common.tx.healthCheck': 'Systemcheck',
   'common.tx.sending': 'Sende Transaktion',
   'common.tx.sendingAsset': 'Sende {assetTicker} Transaktion',
+  'common.tx.loadingSecondTx': 'Zweite Transaktionsparameter werden geladen',
   'common.tx.success': 'Transaktion wurde erfolgreich versendet',
   'common.tx.success-info':
     'Die Transaktion benötigt möglicherweise etwas Zeit, um final bestätigt zu werden (je nach Blockchain bis zu einigen Minuten).',
@@ -163,6 +164,7 @@ const common: CommonMessages = {
   'common.tx.type.donate': 'Spenden',
   'common.tx.type.send': 'Senden',
   'common.tx.type.runePoolDeposit': 'RunePool-Einzahlung',
+  'common.tx.type.runePoolWithdraw': 'RunePool Abhebung',
   'common.tx.type.refund': 'Erstatten',
   'common.tx.type.deposit': 'Einzahlen',
   'common.tx.type.withdraw': 'Auszahlen',

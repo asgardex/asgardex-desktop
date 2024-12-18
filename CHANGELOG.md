@@ -1,3 +1,28 @@
+# 1.30.0 (2024-12-16)
+
+## add
+
+-
+
+## Updates/Fixes
+
+- Dex switch deprecated no longer available [#544] (https://github.com/asgardex/asgardex-desktop/pull/544)
+- use Aggregator package to fetch quotes [#506] (https://github.com/asgardex/asgardex-desktop/pull/506)
+
+# 1.22.9 (2024-11-26)
+
+## add
+
+## Updates/Fixes
+
+- remove memo (short asset) adjustment from tradeasset swaps [#496](https://github.com/asgardex/asgardex-desktop/pull/496)
+- trade asset memo thornode error & swap input issue [#498](https://github.com/asgardex/asgardex-desktop/pull/498)
+- remove affiliate and bps for stagenet swaps [#500](https://github.com/asgardex/asgardex-desktop/pull/500)
+- fix earn disabled submit button [#481] (https://github.com/asgardex/asgardex-desktop/pull/501)
+- For stagenet don't apply affiliate or thorname [#512] (https://github.com/asgardex/asgardex-desktop/pull/515)
+- fix BCH client issue [#512] (https://github.com/asgardex/asgardex-desktop/pull/499)
+- fix dash assertion error [#521](https://github.com/asgardex/asgardex-desktop/pull/521)
+
 # 1.22.8 (2024-11-05)
 
 ## add

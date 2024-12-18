@@ -387,12 +387,14 @@ describe('helpers/fp/eq', () => {
   })
   describe('eqPoolAddresses', () => {
     const a: PoolAddress = {
+      protocol: THORChain,
       chain: BCHChain,
       address: 'addressA',
       router: O.none,
       halted: false
     }
     const b: PoolAddress = {
+      protocol: THORChain,
       chain: BSCChain,
       address: 'addressB',
       router: O.some('routerB'),

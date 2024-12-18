@@ -6,7 +6,10 @@ require('dotenv').config()
 
 const TESTNET_URL = envOrDefault(process.env.REACT_APP_MIDGARD_TESTNET_URL, 'https://testnet.midgard.thorchain.info')
 
-const STAGENET_URL = envOrDefault(process.env.REACT_APP_MIDGARD_STAGENET_URL, 'https://stagenet-midgard.ninerealms.com')
+const STAGENET_URL = envOrDefault(
+  process.env.REACT_APP_MIDGARD_MAYA_STAGENET_URL,
+  'https://stagenet.midgard.mayachain.info'
+)
 
 const MAINNET_URL = envOrDefault(process.env.REACT_APP_MIDGARD_MAYA_MAINNET_URL, 'https://midgard.mayachain.info')
 

@@ -5,6 +5,7 @@ import { Cog8ToothIcon } from '@heroicons/react/20/solid'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { FeeOption, Fees, Network } from '@xchainjs/xchain-client'
 import { validateAddress } from '@xchainjs/xchain-evm'
+import { MayaChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   bn,
@@ -16,7 +17,8 @@ import {
   formatAssetAmountCurrency,
   baseAmount,
   eqAsset,
-  CryptoAmount
+  CryptoAmount,
+  Chain
 } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
 import Tooltip from 'antd/es/tooltip'
@@ -28,8 +30,8 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
-import { Dex, TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
-import { chainToString, isChainOfMaya } from '../../../../../shared/utils/chain'
+import { TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
+import { chainToString, isChainOfMaya, isChainOfThor } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../../const'
@@ -96,7 +98,6 @@ export type Props = {
   poolDetails: PoolDetails | PoolDetailsMaya
   oPoolAddress: O.Option<PoolAddress>
   oPoolAddressMaya: O.Option<PoolAddressMaya>
-  dex: Dex
 }
 
 export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
@@ -115,8 +116,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     validatePassword$,
     network,
     oPoolAddress,
-    oPoolAddressMaya,
-    dex
+    oPoolAddressMaya
   } = props
 
   const intl = useIntl()
@@ -133,6 +133,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   const [amountToSend, setAmountToSend] = useState<O.Option<BaseAmount>>(O.none)
   const [recipientAddress, setRecipientAddress] = useState<O.Option<Address>>(O.none)
   const [poolDeposit, setPoolDeposit] = useState<boolean>(false)
+  const [oProtocol, setProtocol] = useState<O.Option<Chain>>(O.none)
 
   const [warningMessage, setWarningMessage] = useState<string>('')
   const {
@@ -178,8 +179,8 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     let memoValue = form.getFieldValue('memo') as string
 
     // Check if a swap memo is detected
-    if (checkMemo(memoValue)) {
-      memoValue = memoCorrection(memoValue)
+    if (checkMemo(memoValue) && network === Network.Mainnet) {
+      memoValue = memoCorrection(memoValue, network)
       setSwapMemoDetected(true)
 
       // Set affiliate tracking message
@@ -196,7 +197,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
-  }, [form, intl, isChainAsset])
+  }, [form, intl, isChainAsset, network])
 
   const { inboundAddress, routers } = useMemo(() => {
     const inboundAddress = {
@@ -318,6 +319,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       if (inboundAddress[THORChain] === value || inboundAddress['MAYA'] === value) {
         const dexInbound = inboundAddress[THORChain] === value ? 'Thorchain' : 'Mayachain'
         const type = `${dexInbound} ${asset.chain} Inbound`
+        setProtocol(O.some(inboundAddress[THORChain] === value ? THORChain : MayaChain)) // if an inbound address is of TC we assume they want to deposit to TC else its mayachain
         setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
       } else {
         setWarningMessage('')
@@ -401,7 +403,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     const amountValue = O.getOrElse(() => ZERO_BASE_AMOUNT)(amountToSend)
 
     const maxAmountPrice =
-      isPoolDetails(poolDetails) && dex.chain === THORChain
+      isPoolDetails(poolDetails) && isChainOfThor(asset.chain)
         ? getPoolPriceValue({
             balance: { asset, amount: maxAmount },
             poolDetails,
@@ -413,7 +415,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
             pricePool: pricePoolMaya
           })
     const amountPrice =
-      isPoolDetails(poolDetails) && dex.chain === THORChain
+      isPoolDetails(poolDetails) && isChainOfThor(asset.chain)
         ? getPoolPriceValue({
             balance: { asset, amount: amountValue },
             poolDetails,
@@ -425,7 +427,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
             pricePool: pricePoolMaya
           })
     const assetFeePrice =
-      isPoolDetails(poolDetails) && dex.chain === THORChain
+      isPoolDetails(poolDetails) && isChainOfThor(sourceChainAsset.chain)
         ? getPoolPriceValue({
             balance: { asset: sourceChainAsset, amount: assetFee.baseAmount },
             poolDetails,
@@ -458,7 +460,6 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     network,
     poolDetails,
     sourceChainAsset,
-    dex,
     pricePoolMaya
   ])
 
@@ -698,8 +699,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
               asset,
               amount,
               feeOption: selectedFeeOption,
-              memo: currentMemo,
-              dex
+              memo: currentMemo
             })
           )
           return true
@@ -717,15 +717,14 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       walletAddress,
       asset,
       selectedFeeOption,
-      currentMemo,
-      dex
+      currentMemo
     ]
   )
   const submitDepositTx = useCallback(
     () =>
       FP.pipe(
-        sequenceTOption(amountToSend, oPoolAddress),
-        O.map(([amount, poolAddress]) => {
+        sequenceTOption(amountToSend, oPoolAddress, oPoolAddressMaya, oProtocol),
+        O.map(([amount, poolAddressThor, poolAddressMaya, protocol]) => {
           setSendTxStartTime(Date.now())
           subscribeDepositState(
             deposit$({
@@ -734,11 +733,11 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
               walletIndex,
               hdMode,
               sender: walletAddress,
-              poolAddress,
+              poolAddress: protocol === THORChain ? poolAddressThor : poolAddressMaya,
               asset,
               amount,
               memo: currentMemo,
-              dex
+              protocol: protocol
             })
           )
           return true
@@ -747,6 +746,8 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     [
       amountToSend,
       oPoolAddress,
+      oPoolAddressMaya,
+      oProtocol,
       subscribeDepositState,
       deposit$,
       walletType,
@@ -755,8 +756,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       hdMode,
       walletAddress,
       asset,
-      currentMemo,
-      dex
+      currentMemo
     ]
   )
 
@@ -1010,7 +1010,12 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
                 <div className="flex w-full">
                   <SwitchButton disabled={false} onChange={() => setPoolDeposit(!poolDeposit)}></SwitchButton>
                   {poolDeposit ? (
-                    <div className="pl-4 text-text2 dark:text-text2d">{`Send pool transaction on ${dex.chain}. Admin use only or risk losing your funds`}</div>
+                    <div className="pl-4 text-text2 dark:text-text2d">
+                      {`Send pool transaction on ${FP.pipe(
+                        oProtocol,
+                        O.getOrElse(() => 'an unknown protocol') // Fallback value if oProtocol is None
+                      )}. Admin use only or risk losing your funds`}
+                    </div>
                   ) : (
                     <div className="pl-4 text-text2 dark:text-text2d">{`Transfer token ${asset.ticker}`}</div>
                   )}

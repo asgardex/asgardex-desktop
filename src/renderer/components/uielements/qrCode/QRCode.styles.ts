@@ -5,4 +5,8 @@ export const QRWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+
+  canvas {
+    border-radius: 16px;
+  }
 `

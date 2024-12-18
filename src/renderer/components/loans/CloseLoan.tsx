@@ -21,7 +21,6 @@ import {
   TokenAsset,
   AnyAsset
 } from '@xchainjs/xchain-util'
-import BigNumber from 'bignumber.js'
 import clsx from 'clsx'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/lib/function'
@@ -31,7 +30,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { Dex } from '../../../shared/api/types'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
@@ -96,13 +94,10 @@ import { DepositAsset } from '../modal/tx/extra/DepositAsset'
 import { LoadingView } from '../shared/loading'
 import { AssetInput } from '../uielements/assets/assetInput'
 import { BaseButton, FlatButton, ViewTxButton } from '../uielements/button'
-import { MaxBalanceButton } from '../uielements/button/MaxBalanceButton'
+import { Collapse } from '../uielements/collapse'
 import { Tooltip, TooltipAddress } from '../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../uielements/fees'
-import { Slider } from '../uielements/slider'
 import * as Utils from './Loan.utils'
-
-export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
 
 export type LoanCloseProps = {
   keystore: KeystoreState
@@ -140,7 +135,6 @@ export type LoanCloseProps = {
   reloadBalances: FP.Lazy<void>
   disableLoanAction: boolean
   hidePrivateData: boolean
-  dex: Dex
 }
 
 export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
@@ -168,10 +162,8 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     reloadSelectedPoolDetail,
     goToTransaction,
     getExplorerTxUrl,
-    disableLoanAction,
     hidePrivateData,
-    loanRepay$,
-    dex
+    loanRepay$
   } = props
 
   const intl = useIntl()
@@ -351,9 +343,6 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     return loanAssetAmountMax1e8
   }, [lockedWallet, loanAssetAmountMax1e8])
 
-  // store maxAmountValue
-  const [maxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), sourceAsset))
-
   // useEffect to fetch data from query
 
   // Set amount to repay
@@ -514,11 +503,6 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     )
   }, [getLoanQuoteClose$, loanAssetAmount, oLoanQuote, oQuoteLoanCloseData, oSourceAssetWB])
 
-  // Boolean on if amount to send is zero
-  const zeroBaseAmountMax = useMemo(() => baseAmount(0, asset.baseAmount.decimal), [asset])
-
-  const zeroBaseAmountMax1e8 = useMemo(() => max1e8BaseAmount(zeroBaseAmountMax), [zeroBaseAmountMax])
-
   const setAsset = useCallback(
     async (asset: AnyAsset) => {
       // delay to avoid render issues while switching
@@ -532,29 +516,6 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
     },
     [onChangeAsset]
   )
-
-  const maxBalanceInfoTxt = useMemo(() => {
-    const balanceLabel = formatAssetAmountCurrency({
-      amount: baseToAsset(loanAssetAmountMax1e8),
-      asset: sourceAsset,
-      decimal: isUSDAsset(sourceAsset) ? 2 : 8, // use 8 decimal as same we use in maxAmountToSwapMax1e8
-      trimZeros: !isUSDAsset(sourceAsset)
-    })
-    const feeLabel = FP.pipe(
-      loanFeesRD,
-      RD.map(({ asset: feeAsset, inFee }) =>
-        formatAssetAmountCurrency({
-          amount: baseToAsset(inFee),
-          asset: feeAsset,
-          decimal: isUSDAsset(feeAsset) ? 2 : 8, // use 8 decimal as same we use in maxAmountToSwapMax1e8
-          trimZeros: !isUSDAsset(feeAsset)
-        })
-      ),
-      RD.getOrElse(() => noDataString)
-    )
-
-    return intl.formatMessage({ id: 'loan.info.max.loan.value' }, { balance: balanceLabel, fee: feeLabel })
-  }, [loanAssetAmountMax1e8, sourceAsset, loanFeesRD, intl])
 
   // State for values of `isApprovedERC20Token$`
   const {
@@ -850,12 +811,12 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
           walletIndex,
           sender: address,
           hdMode,
-          dex
+          protocol: poolAddress.protocol
         }
         return result
       })
     )
-  }, [oPoolAddress, oSourceAssetWB, sourceChainAsset, amountToRepayMax1e8, network, address, dex])
+  }, [oPoolAddress, oSourceAssetWB, sourceChainAsset, amountToRepayMax1e8, network, address])
 
   const resetEnteredAmounts = useCallback(() => {
     setAmountToRepayMax1e8(initialAmountToRepayMax1e8)
@@ -1220,37 +1181,14 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
 
     [loanFeesRD, oPriceAssetInFee]
   )
-  //calculating transaction time from chain & quote
-
-  const renderSlider = useMemo(() => {
-    const percentage = amountToRepayMax1e8
-      .amount()
-      .dividedBy(loanAssetAmount.baseAmount.amount())
-      .multipliedBy(100)
-      // Remove decimal of `BigNumber`s used within `BaseAmount` and always round down for currencies
-      .decimalPlaces(0, BigNumber.ROUND_DOWN)
-      .toNumber()
-
-    const setAmountToRepayFromPercentValue = (percents: number) => {
-      const amountFromPercentage = loanAssetAmount.baseAmount.amount().multipliedBy(percents / 100)
-      setAmountToRepayMax1e8(baseAmount(amountFromPercentage, loanAssetAmount.baseAmount.decimal))
+  const setAmountToRepayFromPercentValue = useCallback(
+    (percents: number) => {
+      const amountFromPercentage = maxAmountToRepayMax1e8.amount().multipliedBy(percents / 100)
+      setAmountToRepayMax1e8(baseAmount(amountFromPercentage, maxAmountToRepayMax1e8.decimal))
       setRepayBps(percents * 100)
-    }
-
-    return (
-      <Slider
-        key={'swap percentage slider'}
-        value={percentage}
-        onChange={setAmountToRepayFromPercentValue}
-        onAfterChange={reloadFeesHandler}
-        tooltipVisible
-        tipFormatter={(value) => `${value}%`}
-        withLabel
-        tooltipPlacement={'top'}
-        disabled={disableLoanAction}
-      />
-    )
-  }, [amountToRepayMax1e8, loanAssetAmount.baseAmount, reloadFeesHandler, disableLoanAction, setAmountToRepayMax1e8])
+    },
+    [maxAmountToRepayMax1e8, setAmountToRepayMax1e8]
+  )
 
   const oWalletAddress: O.Option<Address> = useMemo(() => {
     return FP.pipe(
@@ -1263,49 +1201,207 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
   const [showDetails, setShowDetails] = useState<boolean>(true)
 
   return (
-    <div className="flex w-full max-w-[500px] flex-col justify-between py-[60px]">
+    <div className="flex w-full max-w-[500px] flex-col justify-between">
       <div>
         <div className="flex flex-col">
           <div className="text-12 text-gray2 dark:border-gray1d dark:text-gray2d">
             <div className="rounded text-warning0 dark:text-warning0d">
               {intl.formatMessage({ id: 'common.featureUnderDevelopment' })}
             </div>
-            <div className="flex pb-4"></div>
+            <div className="flex pb-4" />
           </div>
           <AssetInput
             className="w-full"
+            title={intl.formatMessage({ id: 'common.repay' })}
             amount={{ amount: amountToRepayMax1e8, asset: sourceAsset }}
             priceAmount={{ amount: priceAmountToRepayMax1e8.baseAmount, asset: priceAmountToRepayMax1e8.asset }}
             assets={selectableAssets}
             network={network}
+            hasAmountShortcut
             onChangeAsset={setAsset}
             onChange={setAmountToRepayMax1e8}
+            onChangePercent={setAmountToRepayFromPercentValue}
             onBlur={reloadFeesHandler}
             hasLedger={hasLedger}
             useLedger={useLedger}
             useLedgerHandler={onClickUseLedger}
-            extraContent={
-              <div className="flex flex-col">
-                <MaxBalanceButton
-                  className="ml-10px mt-5px"
-                  classNameButton="!text-gray2 dark:!text-gray2d"
-                  classNameIcon={
-                    // show warn icon if maxAmountToSwapMax <= 0
-                    maxAmountToRepayMax1e8.gt(zeroBaseAmountMax1e8)
-                      ? `text-gray2 dark:text-gray2d`
-                      : 'text-warning0 dark:text-warning0d'
-                  }
-                  size="medium"
-                  balance={{ amount: maxAmountToRepayMax1e8, asset: sourceAsset }}
-                  maxDollarValue={maxAmountPriceValue}
-                  onClick={() => setAmountToRepayMax1e8(maxAmountToRepayMax1e8)}
-                  maxInfoText={maxBalanceInfoTxt}
-                />
-              </div>
-            }
           />
-          <div className="w-full px-20px">{renderSlider}</div>
-          <div className="flex flex-col items-center justify-between py-30px">
+
+          <div className="mt-1 space-y-1">
+            <Collapse
+              header={
+                <div className="flex flex-row items-center justify-between">
+                  <span className="m-0 font-main text-[14px] text-gray2 dark:text-gray2d">
+                    {intl.formatMessage({ id: 'common.repay' })} {intl.formatMessage({ id: 'common.details' })}
+                  </span>
+                </div>
+              }>
+              <div className="w-full px-10px font-main text-[12px] uppercase dark:border-gray1d">
+                <BaseButton
+                  className="group flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+                  onClick={() => setShowDetails((current) => !current)}>
+                  {intl.formatMessage({ id: 'common.details' })}
+                  {showDetails ? (
+                    <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
+                  ) : (
+                    <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
+                  )}
+                </BaseButton>
+
+                <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
+                  {/* fees */}
+                  <div className="flex w-full items-center justify-between font-mainBold">
+                    <BaseButton
+                      // disabled={RD.isPending(feesRD) || RD.isInitial(feesRD)}
+                      className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                      onClick={reloadFeesHandler}>
+                      {intl.formatMessage({ id: 'common.fees.estimated' })}
+                      <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                    </BaseButton>
+                    <div>{priceFeesLabel}</div>
+                  </div>
+
+                  {showDetails && (
+                    <>
+                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                        <div>{intl.formatMessage({ id: 'common.fee.inbound' })}</div>
+                        <div>{priceInFeeLabel}</div>
+                      </div>
+                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                        <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
+                        <div>
+                          {formatAssetAmountCurrency({
+                            amount: assetAmount(0), // affiliate is set to zero
+                            asset: pricePool.asset,
+                            decimal: 0
+                          })}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {/* Repay loan transaction time, inbound / outbound / confirmations */}
+                  <>
+                    <div
+                      className={clsx('flex w-full justify-between font-mainBold text-[14px]', {
+                        'pt-10px': showDetails
+                      })}>
+                      <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
+                      <div>{formatSwapTime(Number(10) + Number(10) + Number(10))}</div>
+                    </div>
+                    {showDetails && (
+                      <>
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          <div className="flex items-center">{intl.formatMessage({ id: 'common.inbound.time' })}</div>
+                          <div>{formatSwapTime(Number(10))}</div>
+                        </div>
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          <div className="flex items-center">{intl.formatMessage({ id: 'common.outbound.time' })}</div>
+                          <div>{formatSwapTime(Number(10))}</div>
+                        </div>
+                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                          <div className="flex items-center">
+                            {intl.formatMessage({ id: 'common.confirmation.time' }, { chain: sourceAsset.chain })}
+                          </div>
+                          <div>{formatSwapTime(Number(10))}</div>
+                        </div>
+                      </>
+                    )}
+                  </>
+
+                  {/* addresses */}
+                  {showDetails && (
+                    <>
+                      <div className="w-full pt-10px font-mainBold text-[14px]">
+                        {intl.formatMessage({ id: 'common.addresses' })}
+                      </div>
+                      {/* sender address */}
+                      <div className="flex w-full items-center justify-between pl-10px text-[12px]">
+                        <div>{intl.formatMessage({ id: 'common.sender' })}</div>
+                        <div className="truncate pl-20px text-[13px] normal-case leading-normal">
+                          {FP.pipe(
+                            oWalletAddress,
+                            O.map((address) => (
+                              <TooltipAddress title={address} key="tooltip-sender-addr">
+                                {address}
+                              </TooltipAddress>
+                            )),
+                            O.getOrElse(() => <>{noDataString}</>)
+                          )}
+                        </div>
+                      </div>
+                      {/* inbound address */}
+                      {FP.pipe(
+                        oRepayLoanParams,
+                        O.map(({ poolAddress: { address } }) =>
+                          address ? (
+                            <div
+                              className="flex w-full items-center justify-between pl-10px text-[12px]"
+                              key="pool-addr">
+                              <div>{intl.formatMessage({ id: 'common.pool.inbound' })}</div>
+                              <TooltipAddress title={address}>
+                                <div className="truncate pl-20px text-[13px] normal-case leading-normal">{address}</div>
+                              </TooltipAddress>
+                            </div>
+                          ) : null
+                        ),
+                        O.toNullable
+                      )}
+                    </>
+                  )}
+
+                  {/* balances */}
+                  {showDetails && (
+                    <>
+                      <div className="w-full pt-10px text-[14px]">
+                        <BaseButton
+                          disabled={walletBalancesLoading}
+                          className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                          onClick={reloadBalances}>
+                          {intl.formatMessage({ id: 'common.balances' })}
+                          <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                        </BaseButton>
+                      </div>
+                      {/* sender balance */}
+                      <div className="flex w-full items-center justify-between pl-10px text-[12px]">
+                        <div>{intl.formatMessage({ id: 'common.sender' })}</div>
+                        <div className="truncate pl-20px text-[13px] normal-case leading-normal">
+                          {walletBalancesLoading
+                            ? loadingString
+                            : formatAssetAmountCurrency({
+                                amount: baseToAsset(sourceAssetAmount),
+                                asset: sourceChainAsset,
+                                decimal: 8,
+                                trimZeros: true
+                              })}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {/* memo */}
+                  {showDetails && (
+                    <>
+                      <div className="w-full pt-10px font-mainBold text-[14px]">
+                        {intl.formatMessage({ id: 'common.memo' })}
+                      </div>
+                      <div className="truncate pl-10px font-main text-[12px]">
+                        {FP.pipe(
+                          oRepayLoanParams,
+                          O.map(({ memo }) => (
+                            <Tooltip title={memo} key="tooltip-asset-memo">
+                              {hidePrivateData ? hiddenString : memo}
+                            </Tooltip>
+                          )),
+                          O.toNullable
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </Collapse>
+          </div>
+
+          <div className="flex flex-col items-center justify-between">
             {renderIsApprovedError}
             {(walletBalancesLoading || checkIsApproved) && (
               <LoadingView
@@ -1355,171 +1451,6 @@ export const Repay: React.FC<LoanCloseProps> = (props): JSX.Element => {
                 )}
               </>
             )}
-          </div>
-
-          <div className="w-full px-10px font-main text-[12px] uppercase dark:border-gray1d">
-            <BaseButton
-              className="group flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
-              onClick={() => setShowDetails((current) => !current)}>
-              {intl.formatMessage({ id: 'common.details' })}
-              {showDetails ? (
-                <MagnifyingGlassMinusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125" />
-              ) : (
-                <MagnifyingGlassPlusIcon className="ease h-[20px] w-[20px] text-inherit group-hover:scale-125 " />
-              )}
-            </BaseButton>
-
-            <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
-              {/* fees */}
-              <div className="flex w-full items-center justify-between font-mainBold">
-                <BaseButton
-                  // disabled={RD.isPending(feesRD) || RD.isInitial(feesRD)}
-                  className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
-                  onClick={reloadFeesHandler}>
-                  {intl.formatMessage({ id: 'common.fees.estimated' })}
-                  <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
-                </BaseButton>
-                <div>{priceFeesLabel}</div>
-              </div>
-
-              {showDetails && (
-                <>
-                  <div className="flex w-full justify-between pl-10px text-[12px]">
-                    <div>{intl.formatMessage({ id: 'common.fee.inbound' })}</div>
-                    <div>{priceInFeeLabel}</div>
-                  </div>
-                  <div className="flex w-full justify-between pl-10px text-[12px]">
-                    <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
-                    <div>
-                      {formatAssetAmountCurrency({
-                        amount: assetAmount(0), // affiliate is set to zero
-                        asset: pricePool.asset,
-                        decimal: 0
-                      })}
-                    </div>
-                  </div>
-                  {/* <div className="flex w-full justify-between pl-10px text-[12px]">
-                    <div>{intl.formatMessage({ id: 'common.fee.outbound' })}</div>
-                    <div>{outboundFee.formatedAssetString()}</div>
-                  </div> */}
-                </>
-              )}
-              {/* Repay loan transaction time, inbound / outbound / confirmations */}
-              <>
-                <div
-                  className={clsx('flex w-full justify-between font-mainBold text-[14px]', {
-                    'pt-10px': showDetails
-                  })}>
-                  <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
-                  <div>{formatSwapTime(Number(10) + Number(10) + Number(10))}</div>
-                </div>
-                {showDetails && (
-                  <>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div className="flex items-center">{intl.formatMessage({ id: 'common.inbound.time' })}</div>
-                      <div>{formatSwapTime(Number(10))}</div>
-                    </div>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div className="flex items-center">{intl.formatMessage({ id: 'common.outbound.time' })}</div>
-                      <div>{formatSwapTime(Number(10))}</div>
-                    </div>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div className="flex items-center">
-                        {intl.formatMessage({ id: 'common.confirmation.time' }, { chain: sourceAsset.chain })}
-                      </div>
-                      <div>{formatSwapTime(Number(10))}</div>
-                    </div>
-                  </>
-                )}
-              </>
-
-              {/* addresses */}
-              {showDetails && (
-                <>
-                  <div className="w-full pt-10px font-mainBold text-[14px]">
-                    {intl.formatMessage({ id: 'common.addresses' })}
-                  </div>
-                  {/* sender address */}
-                  <div className="flex w-full items-center justify-between pl-10px text-[12px]">
-                    <div>{intl.formatMessage({ id: 'common.sender' })}</div>
-                    <div className="truncate pl-20px text-[13px] normal-case leading-normal">
-                      {FP.pipe(
-                        oWalletAddress,
-                        O.map((address) => (
-                          <TooltipAddress title={address} key="tooltip-sender-addr">
-                            {address}
-                          </TooltipAddress>
-                        )),
-                        O.getOrElse(() => <>{noDataString}</>)
-                      )}
-                    </div>
-                  </div>
-                  {/* inbound address */}
-                  {FP.pipe(
-                    oRepayLoanParams,
-                    O.map(({ poolAddress: { address } }) =>
-                      address ? (
-                        <div className="flex w-full items-center justify-between pl-10px text-[12px]" key="pool-addr">
-                          <div>{intl.formatMessage({ id: 'common.pool.inbound' })}</div>
-                          <TooltipAddress title={address}>
-                            <div className="truncate pl-20px text-[13px] normal-case leading-normal">{address}</div>
-                          </TooltipAddress>
-                        </div>
-                      ) : null
-                    ),
-                    O.toNullable
-                  )}
-                </>
-              )}
-
-              {/* balances */}
-              {showDetails && (
-                <>
-                  <div className="w-full pt-10px text-[14px]">
-                    <BaseButton
-                      disabled={walletBalancesLoading}
-                      className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
-                      onClick={reloadBalances}>
-                      {intl.formatMessage({ id: 'common.balances' })}
-                      <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
-                    </BaseButton>
-                  </div>
-                  {/* sender balance */}
-                  <div className="flex w-full items-center justify-between pl-10px text-[12px]">
-                    <div>{intl.formatMessage({ id: 'common.sender' })}</div>
-                    <div className="truncate pl-20px text-[13px] normal-case leading-normal">
-                      {walletBalancesLoading
-                        ? loadingString
-                        : formatAssetAmountCurrency({
-                            amount: baseToAsset(sourceAssetAmount),
-                            asset: sourceChainAsset,
-                            decimal: 8,
-                            trimZeros: true
-                          })}
-                    </div>
-                  </div>
-                </>
-              )}
-              {/* memo */}
-              {showDetails && (
-                <>
-                  <div className="w-full pt-10px font-mainBold text-[14px]">
-                    {intl.formatMessage({ id: 'common.memo' })}
-                  </div>
-                  <div className="truncate pl-10px font-main text-[12px]">
-                    {FP.pipe(
-                      oRepayLoanParams,
-                      O.map(({ memo }) => (
-                        <Tooltip title={memo} key="tooltip-asset-memo">
-                          {hidePrivateData ? hiddenString : memo}
-                        </Tooltip>
-                      )),
-                      O.toNullable
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
           </div>
           {renderPasswordConfirmationModal}
           {renderLedgerConfirmationModal}

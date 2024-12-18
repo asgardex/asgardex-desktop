@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { FeeOption, FeesWithRates, Network } from '@xchainjs/xchain-client'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
   assetAmount,
@@ -24,8 +23,8 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
-import { Dex, TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
-import { isChainOfMaya } from '../../../../../shared/utils/chain'
+import { TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
+import { isChainOfMaya, isChainOfThor } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
@@ -83,7 +82,6 @@ export type Props = {
   poolDetails: PoolDetails | PoolDetailsMaya
   oPoolAddress: O.Option<PoolAddress>
   oPoolAddressMaya: O.Option<PoolAddressMaya>
-  dex: Dex
 }
 
 export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
@@ -102,8 +100,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     validatePassword$,
     oPoolAddress,
     oPoolAddressMaya,
-    network,
-    dex
+    network
   } = props
 
   const intl = useIntl()
@@ -190,8 +187,8 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
   const handleMemo = useCallback(() => {
     let memoValue = form.getFieldValue('memo') as string
 
-    if (checkMemo(memoValue)) {
-      memoValue = memoCorrection(memoValue)
+    if (checkMemo(memoValue) && network === Network.Mainnet) {
+      memoValue = memoCorrection(memoValue, network)
       setSwapMemoDetected(true)
       // Set affiliate tracking message
       setAffiliateTracking(intl.formatMessage({ id: 'wallet.send.affiliateTracking' }))
@@ -200,7 +197,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     }
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
-  }, [form, intl])
+  }, [form, intl, network])
   const prevFeesWithRatesRef = useRef<O.Option<FeesWithRates>>(O.none)
 
   const feeRD: FeeRD = useMemo(
@@ -400,7 +397,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
   // useEffect to fetch data from query
   useEffect(() => {
     const maxAmountPrice = FP.pipe(
-      isPoolDetails(poolDetails) && dex.chain === THORChain
+      isPoolDetails(poolDetails) && isChainOfThor(asset.chain)
         ? getPoolPriceValue({
             balance: { asset, amount: maxAmount },
             poolDetails,
@@ -414,7 +411,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     )
 
     const amountPrice = FP.pipe(
-      isPoolDetails(poolDetails) && dex.chain === THORChain
+      isPoolDetails(poolDetails) && isChainOfThor(asset.chain)
         ? getPoolPriceValue({
             balance: { asset, amount: amountToSend },
             poolDetails,
@@ -432,7 +429,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
       O.fold(
         () => O.none, // Return `O.none` if `selectedFee` is `None`
         (fee) =>
-          isPoolDetails(poolDetails) && dex.chain === THORChain
+          isPoolDetails(poolDetails) && isChainOfThor(asset.chain)
             ? getPoolPriceValue({
                 balance: { asset, amount: fee },
                 poolDetails,
@@ -460,7 +457,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
       const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
       setMaxAmountPriceValue(maxCryptoAmount)
     }
-  }, [amountToSend, asset, dex, maxAmount, network, poolDetails, pricePool, selectedFee])
+  }, [amountToSend, asset, maxAmount, network, poolDetails, pricePool, selectedFee])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {
@@ -597,8 +594,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
         asset,
         amount: amountToSend,
         feeOption: selectedFeeOptionKey,
-        memo: currentMemo,
-        dex
+        memo: currentMemo
       })
     )
   }, [
@@ -613,8 +609,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     asset,
     amountToSend,
     selectedFeeOptionKey,
-    currentMemo,
-    dex
+    currentMemo
   ])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)

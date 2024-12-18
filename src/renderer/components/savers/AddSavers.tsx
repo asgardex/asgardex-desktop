@@ -32,8 +32,7 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { Dex } from '../../../shared/api/types'
-import { ASGARDEX_THORNAME } from '../../../shared/const'
+import { getAsgardexThorname } from '../../../shared/const'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
@@ -106,8 +105,6 @@ import { InfoIcon } from '../uielements/info'
 import { Slider } from '../uielements/slider'
 import * as Utils from './Saver.utils'
 
-export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
-
 export type AddProps = {
   keystore: KeystoreState
   thorchainQuery: ThorchainQuery
@@ -135,7 +132,6 @@ export type AddProps = {
   reloadBalances: FP.Lazy<void>
   disableSaverAction: boolean
   hidePrivateData: boolean
-  dex: Dex
 }
 
 export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
@@ -163,14 +159,14 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     goToTransaction,
     getExplorerTxUrl,
     disableSaverAction,
-    hidePrivateData,
-    dex
+    hidePrivateData
   } = props
 
   const intl = useIntl()
 
   const [oSaversQuote, setSaversQuote] = useState<O.Option<EstimateAddSaver>>(O.none)
   const [errorMessages, setErrorMessages] = useState<string[]>([])
+  const hasErrorMessages = errorMessages.length > 0
 
   const { chain: sourceChain } = asset.asset
 
@@ -535,7 +531,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       minAmountError ||
       walletBalancesLoading ||
       noMemo ||
-      !!errorMessages,
+      hasErrorMessages,
     [
       isZeroAmountToSend,
       lockedWallet,
@@ -543,7 +539,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       noMemo,
       sourceChainFeeError,
       walletBalancesLoading,
-      errorMessages
+      hasErrorMessages
     ]
   )
 
@@ -772,22 +768,26 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     return FP.pipe(
       sequenceTOption(oPoolAddress, oSourceAssetWB, oSaversQuote),
       O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, saversQuote]) => {
+        const affiliateName = getAsgardexThorname(network)
         const result = {
           poolAddress,
           asset: asset.asset,
           amount: convertBaseAmountDecimal(amountToSendMax1e8, asset.baseAmount.decimal),
-          memo: saversQuote.memo !== '' ? saversQuote.memo.concat(`::${ASGARDEX_THORNAME}:0`) : '', // add tracking,
+          memo:
+            saversQuote.memo !== ''
+              ? saversQuote.memo.concat(affiliateName === undefined ? '' : `::${affiliateName}:0`) // add tracking,
+              : '',
           walletType,
           sender: walletAddress,
           walletAccount,
           walletIndex,
           hdMode,
-          dex
+          protocol: poolAddress.protocol
         }
         return result
       })
     )
-  }, [oPoolAddress, oSourceAssetWB, oSaversQuote, asset.asset, asset.baseAmount.decimal, amountToSendMax1e8, dex])
+  }, [oPoolAddress, oSourceAssetWB, oSaversQuote, network, asset.asset, asset.baseAmount.decimal, amountToSendMax1e8])
 
   const onClickUseLedger = useCallback(
     (useLedger: boolean) => {

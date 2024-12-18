@@ -306,8 +306,8 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     let memoValue = form.getFieldValue('memo') as string
 
     // Check if a swap memo is detected
-    if (checkMemo(memoValue)) {
-      memoValue = memoCorrection(memoValue)
+    if (checkMemo(memoValue) && network === Network.Mainnet) {
+      memoValue = memoCorrection(memoValue, network)
       setSwapMemoDetected(true)
 
       // Set affiliate tracking message
@@ -316,7 +316,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       setSwapMemoDetected(false)
     }
     setCurrentMemo(memoValue)
-  }, [form, intl])
+  }, [form, intl, network])
 
   const renderFeeError = useMemo(
     () => (
@@ -588,7 +588,8 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       case InteractType.RunePool: {
         createMemo = getRunePoolMemo({
           action: runePoolAction,
-          bps: H.getRunePoolWithdrawBps(runePoolProvider.value, _amountToSend)
+          bps: H.getRunePoolWithdrawBps(runePoolProvider.value, _amountToSend),
+          network
         })
         break
       }
@@ -603,7 +604,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     }
     setMemo(createMemo)
     return createMemo
-  }, [_amountToSend, currentMemo, form, interactType, memo, runePoolAction, runePoolProvider.value])
+  }, [_amountToSend, currentMemo, form, interactType, memo, network, runePoolAction, runePoolProvider.value])
 
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
@@ -1276,7 +1277,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       )}
 
       <div>
-        {interactType !== InteractType.THORName && (
+        {interactType === InteractType.RunePool && (
           <FlatButton
             className="mt-10px min-w-[200px]"
             loading={isLoading}
@@ -1289,6 +1290,18 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                 runePoolData.value.blocksLeft > 0) ||
               !!form.getFieldsError().filter(({ errors }) => errors.length).length
             }
+            type="submit"
+            size="large">
+            {submitLabel}
+          </FlatButton>
+        )}
+      </div>
+      <div>
+        {interactType !== InteractType.RunePool && interactType !== InteractType.THORName && (
+          <FlatButton
+            className="mt-10px min-w-[200px]"
+            loading={isLoading}
+            disabled={isLoading}
             type="submit"
             size="large">
             {submitLabel}

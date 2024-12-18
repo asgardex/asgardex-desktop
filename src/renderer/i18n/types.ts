@@ -140,6 +140,7 @@ export type CommonMessageKey =
   | 'common.tx.healthCheck'
   | 'common.tx.sending'
   | 'common.tx.sendingAsset'
+  | 'common.tx.loadingSecondTx'
   | 'common.tx.success'
   | 'common.tx.success-info'
   | 'common.tx.checkResult'
@@ -167,6 +168,7 @@ export type CommonMessageKey =
   | 'common.tx.type.withdraw'
   | 'common.tx.type.send'
   | 'common.tx.type.runePoolDeposit'
+  | 'common.tx.type.runePoolWithdraw'
   | 'common.time.days'
   | 'common.time.days.short'
   | 'common.time.month1'
@@ -349,6 +351,7 @@ type WalletMessageKey =
   | 'wallet.ledger.verifyAddress.modal.description'
   | 'wallet.ledger.removeAddress'
   | 'wallet.ledger.viewAddress'
+  | 'wallet.evmToken.tooltip'
 
 export type WalletMessages = { [key in WalletMessageKey]: string }
 
@@ -471,6 +474,7 @@ type SwapMessageKey =
   | 'swap.streaming.interval.info'
   | 'swap.streaming.quantity'
   | 'swap.streaming.quantity.info'
+  | 'swap.state.sending'
   | 'swap.state.pending'
   | 'swap.state.success'
   | 'swap.state.error'

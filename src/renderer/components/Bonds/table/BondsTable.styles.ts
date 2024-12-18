@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
 import { AddressEllipsis as UIAddressEllipsis } from '../../uielements/addressEllipsis'
-import { ButtonProps, Button as UIButton } from '../../uielements/button'
+import { Button as UIButton } from '../../uielements/button'
 import { Label as UILabel } from '../../uielements/label'
 import { Table as UITable } from '../../uielements/table'
 
@@ -57,17 +57,11 @@ export const TextLabel = styled(UILabel).attrs({ textTransform: 'uppercase' })`
   padding: 0;
 `
 
-export const WatchlistButton = styled(UIButton).attrs({ typevalue: 'transparent' })<
-  ButtonProps & { isMonitoring?: 'true' | 'false' }
->`
+export const WatchlistButton = styled(UIButton).attrs({ typevalue: 'transparent' })`
   &.ant-btn {
     min-width: auto;
     padding: 0;
-    color: ${({ isMonitoring }) => (isMonitoring ? '#23dcc8' : palette('gray', 1))};
-
-    &:hover {
-      color: #23dcc8;
-    }
+    color: #23dcc8;
   }
 `
 

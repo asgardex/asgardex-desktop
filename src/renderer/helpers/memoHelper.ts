@@ -1,6 +1,7 @@
-import { Address, AnyAsset, BaseAmount } from '@xchainjs/xchain-util'
+import { Network } from '@xchainjs/xchain-client'
+import { Address, AnyAsset, AssetType, BaseAmount } from '@xchainjs/xchain-util'
 
-import { ASGARDEX_THORNAME } from '../../shared/const'
+import { getAsgardexAffiliateFee, getAsgardexThorname } from '../../shared/const'
 
 const DELIMITER = ':'
 
@@ -15,7 +16,22 @@ const filterMemoPart = (part: unknown) => part !== null && part !== undefined
 const mkMemo = (values: Array<string | null | undefined | number>) => values.filter(filterMemoPart).join(DELIMITER)
 
 // Helper to create asset string from asset used in memo's
-const assetToMemoString = ({ chain, symbol }: AnyAsset) => `${chain}.${symbol}`
+const assetToMemoString = ({ chain, symbol, type }: AnyAsset) => {
+  const joiner = (() => {
+    switch (type) {
+      case AssetType.NATIVE:
+        return '.'
+      case AssetType.SYNTH:
+        return '/'
+      case AssetType.TRADE:
+        return '~'
+      default:
+        return '.' // Default joiner
+    }
+  })()
+
+  return `${chain}${joiner}${symbol}`
+}
 
 /**
  * Memo to switch
@@ -96,13 +112,27 @@ export const getSwapMemo = ({
   toleranceBps: number | undefined
   streamingInterval: number
   streamingQuantity: number
-  affiliateName: string
-  affiliateBps: number
+  affiliateName: string | undefined
+  affiliateBps: number | undefined
 }) => {
   const target = assetToMemoString(targetAsset)
   const streaming = `0/${streamingInterval}/${streamingQuantity}`
   const memo = '='
   return mkMemo([memo, target, targetAddress, toleranceBps, streaming, affiliateName, affiliateBps])
+}
+// temp fix
+export const updateMemo = (memo: string, applyBps: boolean, network: Network): string => {
+  const fee = applyBps ? getAsgardexAffiliateFee(network) : 0
+  const pattern = /:dx:\d+$/
+  const replacement = network === Network.Stagenet ? `` : `:dx:${fee}`
+
+  // Check if the string ends with ":dx:<number>"
+  if (pattern.test(memo)) {
+    return memo.replace(pattern, replacement)
+  }
+
+  // If it doesn't end with ":dx:<number>", return the original memo
+  return memo
 }
 
 /**
@@ -133,13 +163,14 @@ export const getDepositMemo = ({
   short?: boolean
 }) => mkMemo([`${short ? '+' : 'ADD'}`, assetToMemoString(asset), address || null])
 
-export const getRunePoolMemo = ({ action, bps }: { action: Action; bps: number }) => {
+export const getRunePoolMemo = ({ action, bps, network }: { action: Action; bps: number; network: Network }) => {
   const poolAction = action === Action.add ? `+` : '-'
 
   const memoParts = [`POOL${poolAction}`]
+  const affiliate = getAsgardexThorname(network) === undefined ? '' : `${getAsgardexThorname(network)}:0`
 
   if (action === Action.withdraw) {
-    memoParts.push(bps.toString(), ASGARDEX_THORNAME, '0')
+    memoParts.push(bps.toString(), affiliate)
   }
 
   return mkMemo(memoParts)
@@ -173,4 +204,23 @@ export const shortenMemo = (input: string): string => {
 
   // Return the input as is if no matching asset code is found
   return input
+}
+// only use for trade assets
+export const updateMemoWithFullAsset = (memo: string, asset: AnyAsset) => {
+  // Only replace if the memo does not already contain the full identifier
+  const fullIdentifier = `${asset.chain}~${asset.symbol}`
+  if (!memo.includes(fullIdentifier)) {
+    // Build a fuzzy identifier for matching partial symbols without addresses
+    const baseSymbol = asset.symbol.split('-')[0]
+    const fuzzyIdentifier = `${asset.chain}~${baseSymbol}`
+    return memo.replace(fuzzyIdentifier, fullIdentifier)
+  }
+
+  // Return the original memo if no replacement is needed
+  return memo
+}
+
+export const getTradeMemo = (action: Action, address: string) => {
+  const poolAction = action === Action.add ? `TRADE+` : 'TRADE-'
+  return mkMemo([poolAction, address])
 }

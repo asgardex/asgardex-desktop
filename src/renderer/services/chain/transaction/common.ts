@@ -12,7 +12,7 @@ import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -63,10 +63,9 @@ export const sendTx$ = ({
   feeOption = DEFAULT_FEE_OPTION,
   walletAccount,
   walletIndex,
-  hdMode,
-  dex
+  hdMode
 }: SendTxParams): TxHashLD => {
-  const { chain } = asset.type === AssetType.SYNTH ? dex.asset : asset
+  const { chain } = asset.type === AssetType.SYNTH ? AssetCacao : asset // synths deprecated on TC
   if (!isSupportedChain(chain)) return txFailure$(`${chain} is not supported for 'sendTx$'`)
   switch (chain) {
     case BTCChain:
@@ -257,10 +256,10 @@ export const sendPoolTx$ = ({
   amount,
   memo,
   feeOption = DEFAULT_FEE_OPTION,
-  dex
+  protocol
 }: SendPoolTxParams): TxHashLD => {
   const { chain } =
-    asset.type === AssetType.SYNTH ? dex.asset : asset.type === AssetType.TRADE ? { chain: THORChain } : asset
+    asset.type === AssetType.SYNTH ? AssetCacao : asset.type === AssetType.TRADE ? { chain: THORChain } : asset
 
   if (!isSupportedChain(chain)) return txFailure$(`${chain} is not enabled`)
 
@@ -344,7 +343,7 @@ export const sendPoolTx$ = ({
       })
 
     case THORChain:
-      return dex.chain === THORChain
+      return protocol === THORChain
         ? THOR.sendPoolTx$({ walletType, amount, asset, memo, walletAccount, walletIndex, hdMode })
         : THOR.sendTx({ sender, walletType, asset, recipient, amount, memo, walletAccount, walletIndex, hdMode })
 
@@ -369,15 +368,13 @@ export const sendPoolTx$ = ({
         feeOption,
         walletAccount,
         walletIndex,
-        hdMode,
-        dex
+        hdMode
       })
     default:
       return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)
   }
 }
-
-export const txStatusByChain$ = ({ txHash, chain }: { txHash: TxHash; chain: Chain }): TxLD => {
+export const txStatusByChain$: (params: { txHash: TxHash; chain: Chain }) => TxLD = ({ txHash, chain }) => {
   if (!isSupportedChain(chain)) {
     return Rx.of(
       RD.failure({
@@ -430,15 +427,36 @@ export const txStatusByChain$ = ({ txHash, chain }: { txHash: TxHash; chain: Cha
   }
 }
 
-export const poolTxStatusByChain$ = ({
+const getTxStatusByChain = ({
   txHash,
   chain,
-  assetAddress: oAssetAddress
+  assetAddress
 }: {
   txHash: TxHash
   chain: Chain
   assetAddress: O.Option<Address>
 }): TxLD => {
+  switch (chain) {
+    case ETHChain:
+      return ETH.txStatus$(txHash, assetAddress)
+    case ARBChain:
+      return ARB.txStatus$(txHash, assetAddress)
+    case AVAXChain:
+      return AVAX.txStatus$(txHash, assetAddress)
+    case BASEChain:
+      return BASE.txStatus$(txHash, assetAddress)
+    case BSCChain:
+      return BSC.txStatus$(txHash, assetAddress)
+    default:
+      return txStatusByChain$({ txHash, chain })
+  }
+}
+
+export const poolTxStatusByChain$: (params: {
+  txHash: TxHash
+  chain: Chain
+  assetAddress: O.Option<Address>
+}) => TxLD = ({ txHash, chain, assetAddress }) => {
   if (!isSupportedChain(chain)) {
     return Rx.of(
       RD.failure({
@@ -448,35 +466,5 @@ export const poolTxStatusByChain$ = ({
     )
   }
 
-  switch (chain) {
-    case ETHChain:
-      return ETH.txStatus$(txHash, oAssetAddress)
-    case ARBChain:
-      return ARB.txStatus$(txHash, oAssetAddress)
-    case AVAXChain:
-      return AVAX.txStatus$(txHash, oAssetAddress)
-    case BASEChain:
-      return BASE.txStatus$(txHash, oAssetAddress)
-    case BSCChain:
-      return BSC.txStatus$(txHash, oAssetAddress)
-    case BTCChain:
-    case THORChain:
-    case MAYAChain:
-    case GAIAChain:
-    case DOGEChain:
-    case BCHChain:
-    case LTCChain:
-    case DASHChain:
-    case KUJIChain:
-    case RadixChain:
-    case SOLChain:
-      return txStatusByChain$({ txHash, chain })
-    default:
-      return Rx.of(
-        RD.failure({
-          errorId: ErrorId.GET_TX,
-          msg: `${chain} is not supported for 'poolTxStatusByChain$'`
-        })
-      )
-  }
+  return getTxStatusByChain({ txHash, chain, assetAddress })
 }

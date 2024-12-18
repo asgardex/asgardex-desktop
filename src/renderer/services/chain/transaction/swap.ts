@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { AssetCacao } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AssetType, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
@@ -32,9 +33,10 @@ export const swap$ = ({
   walletAccount,
   walletIndex,
   hdMode,
-  dex
+  protocol
 }: SwapTxParams): SwapTxState$ => {
-  const { chain } = asset.type === AssetType.SYNTH || asset.type === AssetType.TRADE ? dex.asset : asset
+  const { chain } =
+    asset.type === AssetType.SYNTH ? AssetCacao : asset.type === AssetType.TRADE ? { chain: THORChain } : asset
 
   const requests$ = Rx.of(poolAddresses).pipe(
     // 1. Validate pool address or node
@@ -42,15 +44,15 @@ export const swap$ = ({
       Rx.iif(
         // Boolean condition to check if the asset type matches the chain requirements
         () =>
-          dex.chain === THORChain
+          protocol === THORChain
             ? isRuneNativeAsset(asset) || isSynthAsset(asset) || isTradeAsset(asset)
             : isCacaoAsset(asset) || isSynthAsset(asset),
 
         // If the condition is true, validate the node based on the chain type
-        dex.chain === THORChain ? validateNode$() : mayaValidateNode$(),
+        protocol === THORChain ? validateNode$() : mayaValidateNode$(),
 
         // Use the appropriate pool validation service based on the chain
-        dex.chain === THORChain
+        protocol === THORChain
           ? midgardPoolsService.validatePool$(poolAddresses, chain)
           : mayaMidgardPoolsService.validatePool$(poolAddresses, chain)
       )
@@ -69,7 +71,7 @@ export const swap$ = ({
         walletAccount,
         walletIndex,
         hdMode,
-        dex
+        protocol
       })
     ),
     // Map the result to the expected SwapTx structure

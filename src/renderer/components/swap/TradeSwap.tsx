@@ -10,7 +10,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
-import { InboundDetail, QuoteSwapParams, ThorchainQuery, TxDetails } from '@xchainjs/xchain-thorchain-query'
+import { QuoteSwapParams, ThorchainQuery, TxDetails } from '@xchainjs/xchain-thorchain-query'
 import {
   Asset,
   baseToAsset,
@@ -37,9 +37,9 @@ import { useIntl } from 'react-intl'
 
 import {
   ASGARDEX_ADDRESS,
-  ASGARDEX_AFFILIATE_FEE,
   ASGARDEX_AFFILIATE_FEE_MIN,
-  ASGARDEX_THORNAME
+  getAsgardexAffiliateFee,
+  getAsgardexThorname
 } from '../../../shared/const'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { chainToString, DEFAULT_ENABLED_CHAINS, EnabledChain } from '../../../shared/utils/chain'
@@ -58,7 +58,7 @@ import { isEvmChain, isEvmToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqAddress } from '../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
-import { getSwapMemo, shortenMemo } from '../../helpers/memoHelper'
+import { getSwapMemo, updateMemoWithFullAsset } from '../../helpers/memoHelper'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { isPoolDetails } from '../../helpers/poolHelper'
 import { liveData } from '../../helpers/rx/liveData'
@@ -71,11 +71,9 @@ import {
   hasLedgerInBalancesByAsset,
   transformTradeAccountToWalletBalance
 } from '../../helpers/walletHelper'
-import { useDex } from '../../hooks/useDex'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
 import { ChangeSlipToleranceHandler } from '../../services/app/types'
 import { INITIAL_SWAP_STATE } from '../../services/chain/const'
-import { getZeroSwapFees } from '../../services/chain/fees/swap'
 import {
   SwapTxParams,
   SwapFeesHandler,
@@ -213,7 +211,6 @@ export const TradeSwap = ({
   tradeAccountBalances
 }: SwapProps) => {
   const intl = useIntl()
-  const { dex } = useDex()
 
   const { chain: sourceChain } = sourceAsset.type === AssetType.TRADE ? AssetRuneNative : sourceAsset
   const { chain: targetChain } = targetAsset.type === AssetType.TRADE ? AssetRuneNative : targetAsset
@@ -462,49 +459,41 @@ export const TradeSwap = ({
 
   const isZeroAmountToSwap = useMemo(() => amountToSwapMax1e8.amount().isZero(), [amountToSwapMax1e8])
 
-  const [inboundDetails, setInboundDetails] = useState<Record<string, InboundDetail>>()
-
   const zeroSwapFees = useMemo(() => {
-    if (inboundDetails) {
-      const gasRate =
-        isRuneNativeAsset(sourceAsset) || isTradeAsset(sourceAsset)
-          ? baseAmount(2000000)
-          : baseAmount(inboundDetails?.[sourceAsset.chain]?.gasRate) // Define defaultGasRate
-      const outboundFee =
-        isRuneNativeAsset(targetAsset) || isTradeAsset(targetAsset)
-          ? baseAmount(2000000)
-          : baseAmount(inboundDetails?.[targetAsset.chain]?.outboundFee) // Define defaultOutboundFee
+    const gasRate = baseAmount(2000000)
 
-      // Define defaultSwapFees based on the above fallbacks
-      const defaultFees: SwapFees = {
-        inFee: { asset: AssetRuneNative, amount: gasRate },
-        outFee: { asset: AssetRuneNative, amount: outboundFee }
-      }
+    const outboundFee = baseAmount(2000000)
 
-      return defaultFees
-    } else {
-      // Use getZeroSwapFees if the condition is not met
-      return getZeroSwapFees({ inAsset: sourceAsset, outAsset: targetAsset })
+    // Define defaultSwapFees based on the above fallbacks
+    const defaultFees: SwapFees = {
+      inFee: { asset: AssetRuneNative, amount: gasRate },
+      outFee: { asset: AssetRuneNative, amount: outboundFee }
     }
-  }, [inboundDetails, sourceAsset, targetAsset])
+
+    return defaultFees
+  }, [])
+
   // PlaceHolder memo just to calc fees better
   const swapMemo = useMemo(() => {
     return O.fold(
       () => '',
       (recipientAddress: string) => {
         const toleranceBps = undefined
+        const affiliateName = getAsgardexThorname(network)
+        const affiliateBps = getAsgardexAffiliateFee(network)
+
         return getSwapMemo({
           targetAsset,
           targetAddress: recipientAddress,
           toleranceBps,
           streamingInterval,
           streamingQuantity,
-          affiliateName: ASGARDEX_THORNAME,
-          affiliateBps: ASGARDEX_AFFILIATE_FEE
+          affiliateName,
+          affiliateBps: affiliateName ? affiliateBps ?? 0 : undefined
         })
       }
     )(oRecipientAddress)
-  }, [oRecipientAddress, targetAsset, streamingInterval, streamingQuantity])
+  }, [oRecipientAddress, targetAsset, streamingInterval, streamingQuantity, network])
 
   const [swapFeesRD] = useObservableState<SwapFeesRD>(() => {
     return FP.pipe(
@@ -624,16 +613,6 @@ export const TradeSwap = ({
 
     return price ? `${price} (${fee})` : fee
   }, [oPriceSwapInFee, swapFees])
-  // useEffect to fetch data from query
-  useEffect(() => {
-    const fetchData = async () => {
-      setInboundDetails(await thorchainQuery.thorchainCache.getInboundDetails())
-    }
-
-    if (quoteExpired) {
-      fetchData()
-    }
-  }, [thorchainQuery, pricePool.asset, poolDetails, pricePool, network, quoteExpired])
 
   // Affiliate fee
   const affiliateFee: CryptoAmount = useMemo(() => {
@@ -673,13 +652,11 @@ export const TradeSwap = ({
 
   //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
   const applyBps = useMemo(() => {
-    const aff = ASGARDEX_AFFILIATE_FEE
-    let applyBps: number
+    const aff = getAsgardexAffiliateFee(network)
     const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
-    applyBps = network === Network.Stagenet ? 0 : aff
-    applyBps = txFeeCovered ? aff : 0
+    const applyBps = txFeeCovered ? aff : 0
     return applyBps
-  }, [network, priceAmountToSwapMax1e8])
+  }, [network, priceAmountToSwapMax1e8.assetAmount])
 
   const priceAffiliateFeeLabel = useMemo(() => {
     if (!swapFees) {
@@ -707,8 +684,9 @@ export const TradeSwap = ({
       ),
       O.getOrElse(() => '')
     )
+    const displayBps = applyBps !== undefined ? `${applyBps / 100}%` : '0%'
 
-    return price ? `${price} (${fee}) ${applyBps / 100}%` : fee
+    return price ? `${price} (${fee}) ${displayBps}` : fee
   }, [swapFees, affiliateFee.assetAmount, affiliateFee.asset, affiliatePriceValue, applyBps, sourceAsset])
 
   const oQuoteSwapData: O.Option<QuoteSwapParams> = useMemo(
@@ -721,7 +699,7 @@ export const TradeSwap = ({
           const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
           const address = destinationAddress
           const affiliate =
-            ASGARDEX_ADDRESS === walletAddress || isTradeAsset(sourceAsset) ? undefined : ASGARDEX_THORNAME
+            ASGARDEX_ADDRESS === walletAddress || isTradeAsset(sourceAsset) ? undefined : getAsgardexThorname(network)
           const affiliateBps = ASGARDEX_ADDRESS === walletAddress || isTradeAsset(sourceAsset) ? undefined : applyBps
           const streamingInt = isStreaming ? streamingInterval : 0
           const streaminQuant = isStreaming ? streamingQuantity : 0
@@ -735,7 +713,7 @@ export const TradeSwap = ({
             streamingQuantity: streaminQuant,
             toleranceBps: toleranceBps,
             affiliateAddress: affiliate,
-            affiliateBps
+            affiliateBps: affiliate ? affiliateBps ?? 0 : undefined
           }
         })
       ),
@@ -775,6 +753,7 @@ export const TradeSwap = ({
       sequenceTOption(oQuoteSwapData, oSourceAssetWB),
       O.fold(
         () => {
+          const affiliateName = getAsgardexThorname(network)
           const estimateThorDexSwap: QuoteSwapParams = {
             fromAsset: sourceAsset,
             destinationAsset: targetAsset,
@@ -782,8 +761,8 @@ export const TradeSwap = ({
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
             toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100, // convert to basis points
-            affiliateAddress: ASGARDEX_THORNAME,
-            affiliateBps: applyBps
+            affiliateAddress: affiliateName,
+            affiliateBps: affiliateName ? applyBps ?? 0 : undefined
           }
           const estimateSwap = estimateThorDexSwap
           if (!estimateSwap.amount.baseAmount.eq(baseAmount(0)) && lockedWallet) {
@@ -1012,20 +991,20 @@ export const TradeSwap = ({
             poolAddress,
             asset: sourceAsset,
             amount: convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal),
-            memo: shortenMemo(txDetails.memo), // short asset
+            memo: updateMemoWithFullAsset(txDetails.memo, targetAsset),
             walletType,
             sender: walletAddress,
             walletAccount,
             walletIndex,
             hdMode,
-            dex
+            protocol: poolAddress.protocol
           }
         })
       )
 
       return swapParamsThor
     },
-    [oPoolAddress, oSourceAssetWB, oQuote, sourceAsset, amountToSwapMax1e8, sourceAssetAmount.decimal, dex] // Include both quote dependencies
+    [oPoolAddress, oSourceAssetWB, oQuote, sourceAsset, amountToSwapMax1e8, sourceAssetAmount.decimal, targetAsset] // Include both quote dependencies
   )
 
   // Check to see slippage greater than tolerance
@@ -1492,7 +1471,8 @@ export const TradeSwap = ({
             onClick={goToTransaction}
             txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
             network={network}
-            trackable={dex.chain === THORChain ? true : false}
+            trackable={false}
+            protocol={O.some('Thorchain')}
           />
         }
         timerValue={timerValue}
@@ -1507,7 +1487,6 @@ export const TradeSwap = ({
     goToTransaction,
     getExplorerTxUrl,
     network,
-    dex.chain,
     extraTxModalContent,
     intl,
     sourceAsset.chain

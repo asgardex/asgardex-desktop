@@ -142,6 +142,7 @@ const common: CommonMessages = {
   'common.tx.healthCheck': 'Проверка сервера',
   'common.tx.sending': 'Отправка транзакции',
   'common.tx.sendingAsset': 'Отправка транзакции {assetTicker}',
+  'common.tx.loadingSecondTx': 'Загрузка параметров второй транзакции',
   'common.tx.success': 'Транзакция успешно отправлена',
   'common.tx.success-info':
     'Подтверждение транзакции может занять некоторое время (до нескольких минут в зависимости от цепочки)',
@@ -162,6 +163,7 @@ const common: CommonMessages = {
   'common.tx.type.donate': 'Донат',
   'common.tx.type.send': 'Отправить',
   'common.tx.type.runePoolDeposit': 'Депозит в RunePool',
+  'common.tx.type.runePoolWithdraw': 'Вывод средств из RunePool',
   'common.tx.type.refund': 'Возврат',
   'common.tx.type.deposit': 'Вклад',
   'common.tx.type.withdraw': 'Изъятие',

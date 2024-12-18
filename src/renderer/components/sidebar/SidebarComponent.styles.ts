@@ -1,12 +1,9 @@
 import { Network } from '@xchainjs/xchain-client'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Layout, Row, Drawer } from 'antd'
+import { Layout } from 'antd'
 import Text from 'antd/lib/typography/Text'
 import styled from 'styled-components'
 import { palette, size } from 'styled-theme'
 
-import { Dex } from '../../../shared/api/types'
 import { ReactComponent as UIAsgardexLogo } from '../../assets/svg/logo-asgardex.svg'
 import { Label as UILabel } from '../uielements/label'
 
@@ -68,28 +65,7 @@ export const AsgardexLogo = styled(UIAsgardexLogo)`
   margin-top: 8px;
 `
 
-export const DexLabel = styled(Text)<{ dex: Dex }>`
-  position: absolute;
-  left: 88px;
-  bottom: -13px;
-  text-transform: uppercase;
-  padding: 0;
-  font-family: 'MainFontRegular';
-  font-size: 12px;
-
-  color: ${({ dex }) => {
-    switch (dex.chain) {
-      case THORChain:
-        return palette('primary', 0)
-      case MAYAChain:
-        return palette('secondary', 0)
-      default:
-        return palette('text', 2)
-    }
-  }};
-`
-
-export const NetworkLabel = styled(Text)<{ network: Network; dex: Dex }>`
+export const NetworkLabel = styled(Text)<{ network: Network }>`
   position: absolute;
   right: 19px;
   bottom: -20px;
@@ -98,29 +74,16 @@ export const NetworkLabel = styled(Text)<{ network: Network; dex: Dex }>`
   font-family: 'MainFontRegular';
   font-size: 12px;
 
-  color: ${({ network, dex }) => {
-    if (dex.chain === THORChain) {
-      switch (network) {
-        case Network.Mainnet:
-          return palette('primary', 0)
-        case Network.Stagenet:
-          return palette('danger', 1)
-        case Network.Testnet:
-          return palette('warning', 0)
-        default:
-          return palette('text', 2)
-      }
-    } else {
-      switch (network) {
-        case Network.Mainnet:
-          return palette('secondary', 0)
-        case Network.Stagenet:
-          return palette('danger', 1)
-        case Network.Testnet:
-          return palette('warning', 0)
-        default:
-          return palette('text', 2)
-      }
+  color: ${({ network }) => {
+    switch (network) {
+      case Network.Mainnet:
+        return palette('primary', 0)
+      case Network.Stagenet:
+        return palette('danger', 1)
+      case Network.Testnet:
+        return palette('warning', 0)
+      default:
+        return palette('text', 2)
     }
   }};
 `
@@ -131,37 +94,6 @@ export const LogoWrapper = styled.div`
   justify-content: center;
   position: relative;
   height: ${size('headerHeight', '70px')};
-`
-
-export const HeaderDrawer = styled(Drawer)`
-  .ant-drawer-body {
-    margin: 4px 4px 0px 4px;
-    padding: 0;
-    border-radius: 5px;
-    background-color: ${palette('background', 0)};
-  }
-
-  .ant-drawer-content {
-    background-color: transparent;
-  }
-`
-
-export const HeaderDrawerItem = styled(Row)<{ selected?: boolean }>`
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  border-color: ${palette('background', 2)};
-
-  align-items: center;
-  transition: none;
-  height: 60px;
-  display: flex;
-  text-transform: uppercase;
-  font-family: 'MainFontSemiBold';
-  font-size: 18px;
-  color: ${({ selected }) => (selected ? palette('primary', 0) : palette('text', 1))};
-  &.last {
-    border: none;
-  }
 `
 
 export const IconWrapper = styled.div`
@@ -190,7 +122,7 @@ export const IconWrapper = styled.div`
 
 export const Icon = styled.img`
   border-radius: 50%;
-  width: 40px;
+  width: 30px;
   height: 30px;
 `
 export const TextLabel = styled(UILabel).attrs({ textTransform: 'uppercase' })`

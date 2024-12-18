@@ -142,6 +142,7 @@ const common: CommonMessages = {
   'common.tx.healthCheck': 'Health check',
   'common.tx.sending': 'Send transaction',
   'common.tx.sendingAsset': 'Send {assetTicker} transaction',
+  'common.tx.loadingSecondTx': 'Loading second transaction params',
   'common.tx.success': 'Transaction has been sent successfully',
   'common.tx.success-info':
     'The transaction might take some time to be confirmed (up to several minutes depending on the chain)',
@@ -161,6 +162,7 @@ const common: CommonMessages = {
   'common.tx.type.swap': 'Swap',
   'common.tx.type.send': 'Send',
   'common.tx.type.runePoolDeposit': 'RunePool Deposit',
+  'common.tx.type.runePoolWithdraw': 'RunePool Withdraw',
   'common.tx.type.donate': 'Donate',
   'common.tx.type.refund': 'Refund',
   'common.tx.type.deposit': 'Deposit',

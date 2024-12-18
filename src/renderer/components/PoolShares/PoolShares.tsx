@@ -1,13 +1,14 @@
 import React, { useMemo } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
+import { AssetCacao } from '@xchainjs/xchain-mayachain'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, baseAmount, baseToAsset, Chain, formatAssetAmountCurrency, formatBN } from '@xchainjs/xchain-util'
 import { Grid, Row } from 'antd'
 import { ColumnsType, ColumnType } from 'antd/lib/table'
 import * as FP from 'fp-ts/lib/function'
 import { useIntl } from 'react-intl'
 
-import { Dex } from '../../../shared/api/types'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { MimirHalt } from '../../services/thorchain/types'
 import { AssetLabel } from '../uielements/assets/assetLabel'
@@ -24,7 +25,7 @@ export type Props = {
   openShareInfo: FP.Lazy<void>
   haltedChains: Chain[]
   mimirHalt: MimirHalt
-  dex: Dex
+  protocol: Chain
 }
 
 export const PoolShares: React.FC<Props> = ({
@@ -35,9 +36,12 @@ export const PoolShares: React.FC<Props> = ({
   network,
   haltedChains,
   mimirHalt,
-  dex
+  protocol
 }) => {
   const intl = useIntl()
+
+  const protocolAsset = useMemo(() => (protocol === THORChain ? AssetRuneNative : AssetCacao), [protocol])
+  const protocolUrl = useMemo(() => (protocol === THORChain ? 'runescan.io' : 'Mayascan.com'), [protocol])
 
   const isDesktopView = Grid.useBreakpoint()?.lg ?? false
 
@@ -50,7 +54,7 @@ export const PoolShares: React.FC<Props> = ({
 
         return (
           <Row justify="center" align="middle">
-            <Tooltip title={intl.formatMessage({ id: titleId }, { asset: asset.ticker, rune: dex.asset.ticker })}>
+            <Tooltip title={intl.formatMessage({ id: titleId }, { asset: asset.ticker, rune: protocolAsset.ticker })}>
               {/* div needed for tooltip */}
               <div>
                 <Styled.AssetIcon asset={asset} size="normal" network={network} />
@@ -61,7 +65,7 @@ export const PoolShares: React.FC<Props> = ({
         )
       }
     }),
-    [dex, intl, network]
+    [intl, protocolAsset.ticker, network]
   )
 
   const poolColumn: ColumnType<PoolShareTableRowData> = useMemo(
@@ -125,19 +129,19 @@ export const PoolShares: React.FC<Props> = ({
 
   const runeColumn: ColumnType<PoolShareTableRowData> = useMemo(
     () => ({
-      title: dex.asset.symbol,
+      title: protocolAsset.symbol,
       align: 'right',
       render: ({ runeShare }: PoolShareTableRowData) => (
         <Label align="right">
           {formatAssetAmountCurrency({
             amount: baseToAsset(runeShare),
-            asset: dex.asset,
+            asset: protocolAsset,
             decimal: 2
           })}
         </Label>
       )
     }),
-    [dex]
+    [protocolAsset]
   )
 
   const manageColumn: ColumnType<PoolShareTableRowData> = useMemo(
@@ -150,18 +154,19 @@ export const PoolShares: React.FC<Props> = ({
           <Styled.ManageButton
             disabled={disablePool || type === 'asym'}
             asset={asset}
+            protocol={protocol}
             variant="manage"
             useBorderButton={false}
             isTextView={isDesktopView}
             title={intl.formatMessage(
               { id: 'poolshares.single.notsupported' },
-              { asset: asset.ticker, rune: dex.asset.ticker }
+              { asset: asset.ticker, rune: protocolAsset.ticker }
             )}
           />
         )
       }
     }),
-    [haltedChains, mimirHalt, isDesktopView, intl, dex]
+    [protocol, haltedChains, mimirHalt, isDesktopView, intl, protocolAsset.ticker]
   )
 
   const desktopColumns: ColumnsType<PoolShareTableRowData> = useMemo(
@@ -173,19 +178,18 @@ export const PoolShares: React.FC<Props> = ({
     () => [iconColumn, valueColumn, manageColumn],
     [iconColumn, valueColumn, manageColumn]
   )
-  const website = dex.url
   const renderAnalyticsInfo = useMemo(() => {
     return network !== Network.Testnet ? (
       <>
         <Styled.InfoButton onClick={openShareInfo}>
           <Styled.TextLabel>{intl.formatMessage({ id: 'common.analytics' })}</Styled.TextLabel> <Styled.InfoArrow />
         </Styled.InfoButton>
-        <Styled.InfoDescription>{website}</Styled.InfoDescription>
+        <Styled.InfoDescription>{protocolUrl}</Styled.InfoDescription>
       </>
     ) : (
       <></>
     )
-  }, [network, openShareInfo, intl, website])
+  }, [network, openShareInfo, intl, protocolUrl])
 
   return (
     <Styled.Container>

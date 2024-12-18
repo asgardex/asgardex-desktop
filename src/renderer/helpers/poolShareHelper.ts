@@ -2,7 +2,6 @@ import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { baseAmount, BaseAmount, bn, bnOrZero } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 
-import { Dex } from '../../shared/api/types'
 import { ZERO_BN } from '../const'
 import { convertBaseAmountDecimal, THORCHAIN_DECIMAL } from './assetHelper'
 
@@ -12,12 +11,11 @@ import { convertBaseAmountDecimal, THORCHAIN_DECIMAL } from './assetHelper'
 export const getRuneShare = (
   liquidityUnits: BigNumber,
   pool: Pick<PoolDetail, 'runeDepth' | 'units'>,
-  dex: Dex
+  decimals: number
 ): BaseAmount => {
   const runeDepth = bnOrZero(pool.runeDepth)
   // Default is 1 as neutral element for division
   const poolUnits = bn(pool.units || 1)
-  const dexAssetDecimal = dex.decimals
   // formula: liquidityUnits * runeDepth / poolUnits
   const runeShare = liquidityUnits
     .multipliedBy(runeDepth)
@@ -25,7 +23,7 @@ export const getRuneShare = (
     // don't use decimal for `BigNumber`s used in `BaseAmount`
     // and always round down for currencies
     .decimalPlaces(0, BigNumber.ROUND_DOWN)
-  return baseAmount(runeShare, dexAssetDecimal)
+  return baseAmount(runeShare, decimals)
 }
 
 /**

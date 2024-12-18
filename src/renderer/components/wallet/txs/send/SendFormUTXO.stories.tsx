@@ -6,7 +6,6 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 
-import { thorDetails } from '../../../../../shared/api/types'
 import { getMockRDValueFactory, RDStatus } from '../../../../../shared/mock/rdByStatus'
 import { mockValidatePassword$ } from '../../../../../shared/mock/wallet'
 import { AssetBTC } from '../../../../../shared/utils/asset'
@@ -103,7 +102,6 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
       poolDetails={[]}
       oPoolAddress={O.none}
       oPoolAddressMaya={O.none}
-      dex={thorDetails}
     />
   )
 }

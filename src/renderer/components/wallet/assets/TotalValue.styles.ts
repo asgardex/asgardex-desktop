@@ -15,11 +15,7 @@ export const Container = styled.div`
 `
 
 export const Spin = styled(UISpin)`
-  padding-top: 10px;
-
-  ${media.sm`
-  padding-top: 20px;
-  `}
+  padding-top: 16px;
 `
 
 export const BalanceTitle = styled(UILabel)`
@@ -41,23 +37,16 @@ export const BalanceTitle = styled(UILabel)`
 
 export const TitleContainer = styled.div`
   display: flex;
+  align-items: center;
   vertical-items: center;
 `
 
 export const BalanceLabel = styled(UILabel)`
-  font-size: 27px;
-  line-height: 100%;
+  margin: 16px 0px;
+  font-size: 28px;
+  color: ${palette('text', 2)};
   padding: 0 10px;
-  /* width: auto; */
   text-align: center;
-
-  ${media.sm`
-  font-size: 41px;
-  `}
-
-  ${media.lg`
-  font-size: 54px;
-  `}
 `
 
 export const BalanceError = styled(UILabel).attrs({
