@@ -109,15 +109,30 @@ export const HideIcon = styled(EyeInvisibleOutlined)`
   cursor: pointer;
 `
 
-const ICON_SIZE = 14
+const ICON_SIZE = 16
 
 export const CopyLabelContainer = styled.span``
 
 export const CopyLabel = styled(A.Typography.Text)`
   text-transform: uppercase;
   color: ${palette('primary', 0)};
+  border: 1px solid ${palette('gray', 1)};
+  border-radius: 8px;
+  margin-left: 8px;
+
+  > div:first-child {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+
+    margin: 0px;
+
+    width: 30px;
+    height: 30px;
+  }
+
   svg {
-    color: ${palette('primary', 0)};
+    color: ${palette('text', 0)};
     height: ${ICON_SIZE}px;
     width: ${ICON_SIZE}px;
   }
