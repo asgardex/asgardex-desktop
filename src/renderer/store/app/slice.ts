@@ -1,10 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { THORChain } from '@xchainjs/xchain-thorchain'
+import { Chain } from '@xchainjs/xchain-util'
 
 import { AppState } from './types'
 
 const initialState: AppState = {
   isPrivate: false,
-  isWhitelistModalOpen: false
+  isWhitelistModalOpen: false,
+  protocol: THORChain
 }
 
 const slice = createSlice({
@@ -16,6 +19,9 @@ const slice = createSlice({
     },
     setIsWhitelistModalOpen(state, action: PayloadAction<boolean>) {
       state.isWhitelistModalOpen = action.payload
+    },
+    setProtocol(state, action: PayloadAction<Chain>) {
+      state.protocol = action.payload
     }
   }
 })
