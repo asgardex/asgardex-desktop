@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
+import { AssetBTC, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -26,6 +26,7 @@ import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { hasLedgerAddress } from '../../../helpers/addressHelper'
+import { isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { sequenceTRD } from '../../../helpers/fpHelpers'
 import * as PoolHelpers from '../../../helpers/poolHelper'
 import { useLedgerAddresses } from '../../../hooks/useLedgerAddresses'
@@ -44,7 +45,6 @@ import { Props } from './SymDepositView.types'
 
 export const SymDepositView: React.FC<Props> = (props) => {
   const {
-    protocol,
     asset: assetWD,
     poolDetail: poolDetailRD,
     mimirHalt,
@@ -59,7 +59,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
   const intl = useIntl()
 
   const { network } = useNetwork()
-  const { isPrivate } = useApp()
+  const { isPrivate, protocol } = useApp()
 
   const { reloadInboundAddresses: reloadInboundAddressesThor } = useThorchainContext()
   const { reloadInboundAddresses: reloadInboundAddressesMaya } = useMayachainContext()
@@ -160,7 +160,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
 
       navigate(
         poolsRoutes.deposit.path({
-          asset: assetToString(asset),
+          asset: isRuneNativeAsset(asset) && protocol === THORChain ? assetToString(AssetBTC) : assetToString(asset),
           assetWalletType: checkedAssetWalletType,
           runeWalletType: checkedRuneWalletType
         }),
@@ -169,7 +169,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
         }
       )
     },
-    [ledgerAddresses, navigate]
+    [protocol, ledgerAddresses, navigate]
   )
 
   useEffect(() => {
@@ -259,7 +259,6 @@ export const SymDepositView: React.FC<Props> = (props) => {
           assetWalletType={assetWalletAddress.type}
           runeWalletType={dexWalletAddress.type}
           hidePrivateData={isPrivate}
-          protocol={protocol}
         />
       </>
     ),
@@ -346,7 +345,6 @@ export const SymDepositView: React.FC<Props> = (props) => {
             assetWalletType={assetWalletAddress.type}
             runeWalletType={dexWalletAddress.type}
             hidePrivateData={isPrivate}
-            protocol={protocol}
           />
         )
       }

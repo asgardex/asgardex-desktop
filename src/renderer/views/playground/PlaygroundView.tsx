@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { AnyAsset, assetToString, Chain } from '@xchainjs/xchain-util'
+import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import { Button } from 'antd'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -12,10 +12,11 @@ import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { PoolsState as PoolStateMaya } from '../../services/mayaMigard/types'
 import { PoolsState } from '../../services/midgard/types'
+import { useApp } from '../../store/app/hooks'
 
 export const PlaygroundView: React.FC = (): JSX.Element => {
   const intl = useIntl()
-  const [protocol, setProtocol] = useState<Chain>(THORChain)
+  const { protocol, setProtocol } = useApp()
 
   const { service: midgardService } = useMidgardContext()
   const { service: midgardMayaService } = useMidgardMayaContext()

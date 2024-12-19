@@ -12,7 +12,6 @@ import {
   baseAmount,
   BaseAmount,
   baseToAsset,
-  Chain,
   CryptoAmount,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
@@ -90,9 +89,8 @@ const CardItem = ({ title, value, route }: { title: string; value: React.ReactNo
 
 export const PortfolioView: React.FC = (): JSX.Element => {
   const [activeIndex, setActiveIndex] = useState(PortfolioTabKey.ChartView)
-  const [protocol, setProtocol] = useState<Chain>(THORChain)
 
-  const { isPrivate } = useApp()
+  const { isPrivate, protocol, setProtocol } = useApp()
   const intl = useIntl()
   const [balancesState] = useObservableState(
     () =>

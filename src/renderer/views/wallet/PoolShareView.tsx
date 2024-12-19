@@ -35,7 +35,7 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   const intl = useIntl()
   const { network } = useNetwork()
 
-  const [protocol, setProtocol] = useState<Chain>(THORChain)
+  const { isPrivate, protocol, setProtocol } = useApp()
 
   const {
     service: {
@@ -72,8 +72,6 @@ export const PoolShareView: React.FC = (): JSX.Element => {
   const allPoolDetails$ = protocol === THORChain ? allPoolDetailsThor$ : allPoolDetailsMaya$
   const poolsRD = useObservableState(protocol === THORChain ? poolsState$ : mayaPoolsState$, RD.pending)
   const { addressByChain$ } = useChainContext()
-
-  const { isPrivate } = useApp()
 
   useEffect(() => {
     if (protocol === THORChain) {
@@ -138,11 +136,10 @@ export const PoolShareView: React.FC = (): JSX.Element => {
           priceAsset={priceAsset}
           openShareInfo={openExternalShareInfo}
           network={network}
-          protocol={protocol}
         />
       )
     },
-    [haltedChains, mimirHalt, priceAsset, openExternalShareInfo, network, protocol]
+    [haltedChains, mimirHalt, priceAsset, openExternalShareInfo, network]
   )
 
   const clickRefreshHandler = useCallback(() => {

@@ -9,7 +9,6 @@ import {
   BaseAmount,
   baseToAsset,
   bn,
-  Chain,
   formatAssetAmountCurrency,
   formatBN
 } from '@xchainjs/xchain-util'
@@ -57,13 +56,15 @@ import {
   DEFAULT_MAYA_POOL_FILTERS
 } from '../../services/midgard/types'
 import { hasImportedKeystore } from '../../services/wallet/util'
+import { useApp } from '../../store/app/hooks'
 import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
 import { filterTableData } from './Pools.utils'
 import * as Shared from './PoolsOverview.shared'
 import * as Styled from './PoolsOverview.styles'
 
-export const ActivePools = ({ protocol }: { protocol: Chain }): JSX.Element => {
+export const ActivePools = (): JSX.Element => {
   const navigate = useNavigate()
+  const { protocol } = useApp()
   const intl = useIntl()
   const { network$ } = useAppContext()
   const network = useObservableState<Network>(network$, DEFAULT_NETWORK)
@@ -151,7 +152,6 @@ export const ActivePools = ({ protocol }: { protocol: Chain }): JSX.Element => {
                 callback: () => {
                   navigate(
                     poolsRoutes.deposit.path({
-                      protocol,
                       asset: assetToString(asset),
                       assetWalletType: DEFAULT_WALLET_TYPE,
                       runeWalletType: DEFAULT_WALLET_TYPE
@@ -185,7 +185,6 @@ export const ActivePools = ({ protocol }: { protocol: Chain }): JSX.Element => {
                 callback: () => {
                   navigate(
                     poolsRoutes.deposit.path({
-                      protocol,
                       asset: assetToString(asset),
                       assetWalletType: DEFAULT_WALLET_TYPE,
                       runeWalletType: DEFAULT_WALLET_TYPE
