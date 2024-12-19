@@ -189,28 +189,6 @@ export const CHAIN_WEIGHTS_THOR: Record<EnabledChain, number> = {
   [BASEChain]: 15
 }
 
-// Weight of chains
-// Needed for ordering chain related things (wallets, balances etc.)
-// The higher the value the higher the weight
-export const CHAIN_WEIGHTS_MAYA: Record<EnabledChain, number> = {
-  [MAYAChain]: 0,
-  [THORChain]: 1,
-  [BTCChain]: 2,
-  [ETHChain]: 3,
-  [DASHChain]: 4,
-  [KUJIChain]: 5,
-  [ARBChain]: 6,
-  [BSCChain]: 7,
-  [BCHChain]: 8,
-  [LTCChain]: 9,
-  [AVAXChain]: 10,
-  [DOGEChain]: 11,
-  [GAIAChain]: 12,
-  [RadixChain]: 13,
-  [SOLChain]: 14,
-  [BASEChain]: 15
-}
-
 // Weight of currencies needed for pricing
 // The higher the value the higher the weight
 export const CURRENCY_WEIGHTS: PricePoolCurrencyWeights = {
