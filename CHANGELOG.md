@@ -8,7 +8,7 @@
 
 - Dex switch deprecated no longer available [#544] (https://github.com/asgardex/asgardex-desktop/pull/544)
 - use Aggregator package to fetch quotes [#506] (https://github.com/asgardex/asgardex-desktop/pull/506)
-- allow testing of stagenet rune for ledger on asgardex [] ()
+- allow testing of stagenet rune for ledger on asgardex [#562] (https://github.com/asgardex/asgardex-desktop/pull/562)
 
 # 1.22.9 (2024-11-26)
 
