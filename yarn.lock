@@ -3284,6 +3284,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@chainflip/rpc@npm:^1.6.7":
+  version: 1.6.10
+  resolution: "@chainflip/rpc@npm:1.6.10"
+  dependencies:
+    "@chainflip/utils": "npm:0.4.0"
+    zod: "npm:^3.23.8"
+  checksum: 10/3ef586d86e52aa328966c7aebfae5cf12dcac9288f7179d8fe066cfd396d3a90290833a91180702b3d1f50edd91b4cdc912d694c75647bf10c7954000594f2fe
+  languageName: node
+  linkType: hard
+
 "@chainflip/sdk@npm:1.6.0":
   version: 1.6.0
   resolution: "@chainflip/sdk@npm:1.6.0"
@@ -3296,6 +3306,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@chainflip/sdk@npm:^1.6.6":
+  version: 1.6.6
+  resolution: "@chainflip/sdk@npm:1.6.6"
+  dependencies:
+    "@chainflip/rpc": "npm:^1.6.7"
+    "@chainflip/utils": "npm:^0.4.0"
+    axios: "npm:^1.7.7"
+    ethers: "npm:^6.13.3"
+  checksum: 10/9b8213fc4479c01e0302c3fcfdda892cbc76e72189f8f076c548285a8e77528cf6a72d14d19bad22d663118437b3bfe12a52c3d1393d0821a51090026a96a8eb
+  languageName: node
+  linkType: hard
+
 "@chainflip/utils@npm:0.4.0":
   version: 0.4.0
   resolution: "@chainflip/utils@npm:0.4.0"
@@ -3304,13 +3326,13 @@ __metadata:
   linkType: hard
 
 "@chainflip/utils@npm:^0.4.0":
-  version: 0.4.8
-  resolution: "@chainflip/utils@npm:0.4.8"
+  version: 0.4.6
+  resolution: "@chainflip/utils@npm:0.4.6"
   dependencies:
     "@date-fns/utc": "npm:^2.1.0"
     bignumber.js: "npm:^9.1.2"
     date-fns: "npm:4.1.0"
-  checksum: 10/784ada98af1d0d70f475788b09e7e4ecf763eff359683cad3846e0ba274e72f5e25074ba32db960af8ab760b35e64c730e4de1dbfe66fed96602fbdb9e5f8aa6
+  checksum: 10/01db9165e5c24eeee09c025b738efee457bd8b26b56a700cb96ded50575b7d733b77977d0e91feb2e263138dec0c77be30cc8a5dc3bc1d11e7b355329c1d1426
   languageName: node
   linkType: hard
 
@@ -3481,9 +3503,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@craco/craco@npm:^7.1.0":
-  version: 7.1.0
-  resolution: "@craco/craco@npm:7.1.0"
+"@craco/craco@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "@craco/craco@npm:7.0.0"
   dependencies:
     autoprefixer: "npm:^10.4.12"
     cosmiconfig: "npm:^7.0.1"
@@ -3496,7 +3518,7 @@ __metadata:
     react-scripts: ^5.0.0
   bin:
     craco: dist/bin/craco.js
-  checksum: 10/433e9d8beffa62711b6fff8e9510820caaefe0e45179ad9a219f238b844a3d422c12279880d3ea37cd2e344a0716fe6a82d72143662e65378c0709927c3f760d
+  checksum: 10/43b6bc42c0ddb7919faed731c03d657f7d93a5ffde9a3ea825000a2f20bd6e18b169f6ce0888e13ef885ca09398b1d2b34e4340b052551ed47410842597c456d
   languageName: node
   linkType: hard
 
@@ -11521,7 +11543,8 @@ __metadata:
   dependencies:
     "@ant-design/icons": "npm:^4.7.0"
     "@asgardex/asgardex-theme": "npm:^0.1.2"
-    "@craco/craco": "npm:^7.1.0"
+    "@chainflip/sdk": "npm:^1.6.6"
+    "@craco/craco": "npm:^7.0.0"
     "@devexperts/remote-data-ts": "npm:^2.1.1"
     "@devexperts/rx-utils": "npm:^1.0.0-alpha.14"
     "@devexperts/utils": "npm:^1.0.0-alpha.14"
@@ -16695,7 +16718,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:^6.13.2":
+"ethers@npm:^6.13.2, ethers@npm:^6.13.3":
   version: 6.13.4
   resolution: "ethers@npm:6.13.4"
   dependencies:

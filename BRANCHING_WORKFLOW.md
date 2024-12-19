@@ -76,7 +76,7 @@ git push origin --delete release/v.0.0.5
 
 ### Create `hotfix` branch
 
-To create a hotfix branch (name it `hotfix/{version}`, checkout from latest `tag`.
+To create a hotfix branch name it `hotfix/{version}`, checkout from latest `tag`.
 
 Example:
 
