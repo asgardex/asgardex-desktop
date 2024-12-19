@@ -3,15 +3,14 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon, QrCodeIcon } from '@heroicons/react/24/outline'
 import { Balance, Network } from '@xchainjs/xchain-client'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
   AnyAsset,
   Asset,
   assetFromString,
   assetToString,
-  AssetType,
   BaseAmount,
   baseToAsset,
   Chain,
@@ -27,7 +26,6 @@ import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router'
 
-import { Dex } from '../../../../shared/api/types'
 import { chainToString, EnabledChain, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
@@ -98,7 +96,6 @@ type Props = {
   network: Network
   mimirHalt: MimirHaltRD
   hidePrivateData: boolean
-  dex: Dex
   mayaScanPrice: MayaScanPriceRD
   disabledChains: EnabledChain[]
 }
@@ -119,7 +116,6 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
     assetHandler,
     network,
     hidePrivateData,
-    dex,
     mayaScanPrice,
     disabledChains
   } = props
@@ -395,7 +391,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
             navigate(
               poolsRoutes.swap.path({
                 source: `${asset.chain}/${asset.symbol}`,
-                target: assetToString(deepestPoolAsset),
+                target: assetToString(isChainOfMaya(asset.chain) ? AssetCacao : AssetRuneNative),
                 sourceWalletType: walletType,
                 targetWalletType: DEFAULT_WALLET_TYPE
               })
@@ -404,7 +400,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         )
       }
 
-      if (deepestPoolAsset && !isCacaoAsset(asset) && !isRuneNativeAsset(asset)) {
+      if (!isSynthAsset(asset) && deepestPoolAsset && !isCacaoAsset(asset) && !isRuneNativeAsset(asset)) {
         actions.push(
           createAction('common.swap', () =>
             navigate(
@@ -417,60 +413,34 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
             )
           )
         )
+      }
 
-        if (hasSaversAssets) {
-          actions.push(
-            createAction('common.earn', () =>
-              navigate(
-                poolsRoutes.earn.path({
-                  asset: assetToString(asset),
-                  walletType: walletType
-                })
-              )
+      if (hasSaversAssets && !isSynthAsset(asset)) {
+        actions.push(
+          createAction('common.earn', () =>
+            navigate(
+              poolsRoutes.earn.path({
+                asset: assetToString(asset),
+                walletType: walletType
+              })
             )
           )
-        }
+        )
+      }
 
-        if (isRuneNativeAsset(asset) && dex.chain === THORChain && deepestPoolAsset) {
-          actions.push(
-            createAction('common.add', () =>
-              navigate(
-                poolsRoutes.deposit.path({
-                  asset: assetToString(deepestPoolAsset),
-                  assetWalletType: DEFAULT_WALLET_TYPE,
-                  runeWalletType: walletType
-                })
-              )
+      if (hasActivePool) {
+        actions.push(
+          createAction('common.add', () =>
+            navigate(
+              poolsRoutes.deposit.path({
+                protocol: isChainOfThor(asset.chain) && !isRuneNativeAsset(asset) ? THORChain : MAYAChain,
+                asset: assetToString(asset),
+                assetWalletType: walletType,
+                runeWalletType: DEFAULT_WALLET_TYPE
+              })
             )
           )
-        }
-
-        if (isCacaoAsset(asset) && dex.chain === MAYAChain && deepestPoolAsset) {
-          actions.push(
-            createAction('common.add', () =>
-              navigate(
-                poolsRoutes.deposit.path({
-                  asset: assetToString(deepestPoolAsset),
-                  assetWalletType: DEFAULT_WALLET_TYPE,
-                  runeWalletType: walletType
-                })
-              )
-            )
-          )
-        }
-        if (hasActivePool) {
-          actions.push(
-            createAction('common.add', () =>
-              navigate(
-                poolsRoutes.deposit.path({
-                  asset: assetToString(asset),
-                  assetWalletType: walletType,
-                  runeWalletType: DEFAULT_WALLET_TYPE
-                })
-              )
-            )
-          )
-        }
+        )
       }
 
       if (isRuneNativeAsset(asset) || isCacaoAsset(asset)) {
@@ -483,7 +453,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         </div>
       )
     },
-    [dex, poolsData, poolsDataMaya, poolDetails, intl, navigate, assetHandler]
+    [poolsData, poolsDataMaya, poolDetails, intl, navigate, assetHandler]
   )
 
   const actionColumn: ColumnType<WalletBalance> = useMemo(
@@ -555,11 +525,8 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
                 }
               ]
             }
-            let sortedBalances = balances.sort((a, b) => b.amount.amount().minus(a.amount.amount()).toNumber())
 
-            if ((dex.chain === MAYAChain && chain === THORChain) || (dex.chain === THORChain && chain === MAYAChain)) {
-              sortedBalances = sortedBalances.filter(({ asset }) => asset.type !== AssetType.SYNTH)
-            }
+            const sortedBalances = balances.sort((a, b) => b.amount.amount().minus(a.amount.amount()).toNumber())
             previousAssetsTableData.current[index] = sortedBalances
             return renderAssetsTable({
               tableData: sortedBalances,
@@ -569,7 +536,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         )
       )
     },
-    [dex.chain, renderAssetsTable]
+    [renderAssetsTable]
   )
 
   const renderPanel = useCallback(
