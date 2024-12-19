@@ -584,6 +584,9 @@ export const Swap = ({
       return
     }
     const calculateSwapOutFeePrice = () => {
+      if (isUSDAsset(oSwapOutFee.asset)) {
+        return O.some(oSwapOutFee.baseAmount)
+      }
       return isChainOfThor(oSwapOutFee.asset.chain)
         ? PoolHelpers.getUSDValue({
             balance: { asset: oSwapOutFee.asset, amount: oSwapOutFee.baseAmount },
@@ -627,13 +630,34 @@ export const Swap = ({
     const {
       outFee: { amount, asset: feeAsset }
     } = swapFees
-
-    const fee = formatAssetAmountCurrency({
-      amount: baseToAsset(amount),
-      asset: feeAsset,
-      decimal: isUSDAsset(feeAsset) ? 2 : 6,
-      trimZeros: !isUSDAsset(feeAsset)
-    })
+    const oValueInAsset = isChainOfThor(oSwapOutFee.asset.chain)
+      ? PoolHelpers.getAssetAmountFromUSDValue({
+          usdValue: outFeePriceValue.baseAmount,
+          poolDetails: poolDetailsThor,
+          asset: feeAsset,
+          amount: amount,
+          pricePool: pricePoolThor
+        })
+      : PoolHelpersMaya.getAssetAmountFromUSDValue({
+          usdValue: outFeePriceValue.baseAmount,
+          poolDetails: poolDetailsMaya,
+          asset: feeAsset,
+          amount: amount,
+          pricePool: pricePoolMaya
+        })
+    const fee = O.isSome(oValueInAsset)
+      ? formatAssetAmountCurrency({
+          amount: baseToAsset(oValueInAsset.value),
+          asset: feeAsset,
+          decimal: isUSDAsset(feeAsset) ? 2 : 6,
+          trimZeros: !isUSDAsset(feeAsset)
+        })
+      : formatAssetAmountCurrency({
+          amount: baseToAsset(amount),
+          asset: feeAsset,
+          decimal: isUSDAsset(feeAsset) ? 2 : 6,
+          trimZeros: !isUSDAsset(feeAsset)
+        })
 
     const price = FP.pipe(
       O.some(outFeePriceValue),
@@ -651,7 +675,15 @@ export const Swap = ({
     )
 
     return price ? `${price} (${fee})` : fee
-  }, [swapFees, outFeePriceValue])
+  }, [
+    swapFees,
+    oSwapOutFee.asset.chain,
+    outFeePriceValue,
+    poolDetailsThor,
+    pricePoolThor,
+    poolDetailsMaya,
+    pricePoolMaya
+  ])
 
   // Affiliate fee
   const affiliateFee: CryptoAmount = useMemo(() => {
@@ -734,7 +766,7 @@ export const Swap = ({
     const bps = getAsgardexAffiliateFee(network)
     const displayBps = applyBps && bps !== undefined ? `${bps / 100}%` : '0%'
 
-    return price ? `${price} (${fee}) ${displayBps}` : fee
+    return !applyBps ? `free` : price ? `${price} (${fee}) ${displayBps}` : fee
   }, [swapFees, affiliateFee.assetAmount, affiliateFee.asset, affiliatePriceValue, applyBps, network, sourceAsset])
 
   useEffect(() => {
