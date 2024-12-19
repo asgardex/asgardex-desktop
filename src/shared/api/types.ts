@@ -14,7 +14,7 @@ import { EnabledChain } from '../utils/chain'
 import { HDMode, WalletAddress } from '../wallet/types'
 import { IPCLedgerAddressesIO, KeystoreWallets, PoolsStorageEncoded } from './io'
 
-type DexDetails = {
+export type Dex = {
   chain: Chain
   asset: Asset
   decimals: number
@@ -32,7 +32,6 @@ export const mayaDetails: Dex = {
   decimals: CACAO_DECIMAL,
   url: 'Mayascan.com'
 }
-export type Dex = DexDetails
 
 export type TrustedAddress = {
   name: string
