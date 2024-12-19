@@ -1,27 +1,27 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
+import { AnyAsset, assetToString, Chain } from '@xchainjs/xchain-util'
 import { Button } from 'antd'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
+import { ProtocolSwitch } from '../../components/uielements/protocolSwitch'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
-import { useDex } from '../../hooks/useDex'
 import { PoolsState as PoolStateMaya } from '../../services/mayaMigard/types'
 import { PoolsState } from '../../services/midgard/types'
 
 export const PlaygroundView: React.FC = (): JSX.Element => {
   const intl = useIntl()
-  const { dex } = useDex()
+  const [protocol, setProtocol] = useState<Chain>(THORChain)
 
   const { service: midgardService } = useMidgardContext()
   const { service: midgardMayaService } = useMidgardMayaContext()
 
   const poolState = useObservableState(
-    dex.chain === THORChain ? midgardService.pools.poolsState$ : midgardMayaService.pools.poolsState$,
+    protocol === THORChain ? midgardService.pools.poolsState$ : midgardMayaService.pools.poolsState$,
     RD.initial
   )
 
@@ -61,6 +61,7 @@ export const PlaygroundView: React.FC = (): JSX.Element => {
       <h2>{intl.formatMessage({ id: 'common.greeting' }, { name: 'ASGARDEX' })}</h2>
       <h1>Pools</h1>
       <h2>Raw data: {JSON.stringify(poolState)}</h2>
+      <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
       {renderPools}
       <Button
         onClick={() => {
