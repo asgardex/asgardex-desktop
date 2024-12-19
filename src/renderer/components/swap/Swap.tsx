@@ -47,6 +47,7 @@ import {
   DEFAULT_ENABLED_CHAINS,
   DefaultChainAttributes,
   EnabledChain,
+  isChainOfMaya,
   isChainOfThor
 } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
@@ -1348,7 +1349,8 @@ export const Swap = ({
         A.chain((asset) =>
           isRuneNativeAsset(asset) || isCacaoAsset(asset)
             ? [asset]
-            : [
+            : isChainOfMaya(asset.chain) // Only synthesize assets from MAYAChain
+            ? [
                 asset,
                 {
                   ...asset,
@@ -1356,6 +1358,7 @@ export const Swap = ({
                   synth: true
                 } as SynthAsset
               ]
+            : [asset]
         ),
         A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
         (assets) => unionAssets(assets)(assets)
