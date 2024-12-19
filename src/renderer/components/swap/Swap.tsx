@@ -2358,7 +2358,9 @@ export const Swap = ({
                       </div>
                       <div className="flex w-full justify-between pl-10px text-[12px]">
                         <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
-                        <div>{priceAffiliateFeeLabel}</div>
+                        <div className={clsx({ '!text-turquoise': priceAffiliateFeeLabel === 'free' })}>
+                          {priceAffiliateFeeLabel}
+                        </div>
                       </div>
                     </>
                   )}
@@ -2625,7 +2627,9 @@ export const Swap = ({
                   </div>
                   <div className="flex w-full justify-between pl-10px text-[12px]">
                     <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
-                    <div>{priceAffiliateFeeLabel}</div>
+                    <div className={clsx({ '!text-turquoise': priceAffiliateFeeLabel === 'free' })}>
+                      {priceAffiliateFeeLabel}
+                    </div>
                   </div>
 
                   {/* Transaction time */}
