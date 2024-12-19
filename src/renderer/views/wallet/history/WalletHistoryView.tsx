@@ -2,7 +2,6 @@ import React, { useMemo, useCallback, useState, useEffect } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Chain } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/lib/function'
@@ -31,11 +30,12 @@ import { useOpenAddressUrl } from '../../../hooks/useOpenAddressUrl'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { userChains$ } from '../../../services/storage/userChains'
 import { ledgerAddressToWalletAddress } from '../../../services/wallet/util'
+import { useApp } from '../../../store/app/hooks'
 
 const HISTORY_FILTERS: Filter[] = ['ALL', 'SEND', 'DEPOSIT', 'SWAP', 'WITHDRAW', 'DONATE', 'REFUND', 'RUNEPOOLDEPOSIT']
 
 export const WalletHistoryView: React.FC = () => {
-  const [protocol, setProtocol] = useState<Chain>(THORChain)
+  const { protocol, setProtocol } = useApp()
   const { network } = useNetwork()
 
   const { addressByChain$ } = useChainContext()

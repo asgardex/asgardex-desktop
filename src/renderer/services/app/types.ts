@@ -1,7 +1,6 @@
 import { Network } from '@xchainjs/xchain-client'
 import * as Rx from 'rxjs'
 
-import { Dex } from '../../../shared/api/types'
 import { SlipTolerance } from '../../types/asgardex'
 
 export enum OnlineStatus {
@@ -10,10 +9,8 @@ export enum OnlineStatus {
 }
 
 export type ChangeNetworkHandler = (network: Network) => void
-export type ChangeDexHandler = (dex: Dex) => void
 export type ChangePrivateDataHandler = (value: boolean) => void
 export type Network$ = Rx.Observable<Network>
-export type Dex$ = Rx.Observable<Dex>
 export type PrivateData$ = Rx.Observable<boolean>
 
 export type ChangeSlipToleranceHandler = (slip: SlipTolerance) => void

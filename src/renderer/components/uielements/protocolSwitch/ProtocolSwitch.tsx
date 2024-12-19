@@ -47,5 +47,9 @@ export const ProtocolSwitch = ({ protocol, setProtocol }: Props) => {
     ]
   }, [])
 
-  return <RadioGroup options={protocolOptions} activeIndex={activeIndex} onChange={onChange} />
+  return (
+    <div>
+      <RadioGroup options={protocolOptions} activeIndex={activeIndex} onChange={onChange} />
+    </div>
+  )
 }

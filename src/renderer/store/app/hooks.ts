@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { Chain } from '@xchainjs/xchain-util'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { RootState } from '../store'
@@ -23,9 +24,17 @@ export const useApp = () => {
     [dispatch]
   )
 
+  const setProtocol = useCallback(
+    (protocol: Chain) => {
+      dispatch(actions.setProtocol(protocol))
+    },
+    [dispatch]
+  )
+
   return {
     ...appState,
     changePrivateData,
-    setIsWhitelistModalOpen
+    setIsWhitelistModalOpen,
+    setProtocol
   }
 }

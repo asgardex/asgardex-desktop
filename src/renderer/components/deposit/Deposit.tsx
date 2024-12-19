@@ -114,7 +114,6 @@ export const Deposit: React.FC<Props> = (props) => {
         content: (
           <SymDepositContent
             poolDetail={poolDetailRD}
-            protocol={protocol}
             asset={assetWD}
             dexWalletAddress={dexWalletAddress}
             assetWalletAddress={assetWalletAddress}

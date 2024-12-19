@@ -7,7 +7,6 @@ import { MimirHalt } from '../../../services/thorchain/types'
 import { AssetWithDecimal } from '../../../types/asgardex'
 
 export type Props = {
-  protocol: Chain
   asset: AssetWithDecimal
   poolDetail: PoolDetailRD | PoolDetailMayaRD
   haltedChains: Chain[]

@@ -53,6 +53,7 @@ import {
   WalletBalances
 } from '../../../services/wallet/types'
 import { walletTypeToI18n } from '../../../services/wallet/util'
+import { useApp } from '../../../store/app/hooks'
 import { GECKO_MAP } from '../../../types/generated/geckoMap'
 import { PricePool } from '../../../views/pools/Pools.types'
 import { ErrorView } from '../../shared/error/'
@@ -120,6 +121,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
     disabledChains
   } = props
 
+  const { setProtocol } = useApp()
   const intl = useIntl()
   const navigate = useNavigate()
   const screenMap: ScreenMap = Grid.useBreakpoint()
@@ -430,16 +432,16 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
 
       if (hasActivePool) {
         actions.push(
-          createAction('common.add', () =>
+          createAction('common.add', () => {
+            setProtocol(isChainOfThor(asset.chain) && !isRuneNativeAsset(asset) ? THORChain : MAYAChain)
             navigate(
               poolsRoutes.deposit.path({
-                protocol: isChainOfThor(asset.chain) && !isRuneNativeAsset(asset) ? THORChain : MAYAChain,
                 asset: assetToString(asset),
                 assetWalletType: walletType,
                 runeWalletType: DEFAULT_WALLET_TYPE
               })
             )
-          )
+          })
         )
       }
 
@@ -453,7 +455,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         </div>
       )
     },
-    [poolsData, poolsDataMaya, poolDetails, intl, navigate, assetHandler]
+    [poolsData, poolDetails, poolsDataMaya, intl, assetHandler, navigate, setProtocol]
   )
 
   const actionColumn: ColumnType<WalletBalance> = useMemo(

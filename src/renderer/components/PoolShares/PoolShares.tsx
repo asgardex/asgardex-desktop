@@ -11,6 +11,7 @@ import { useIntl } from 'react-intl'
 
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { MimirHalt } from '../../services/thorchain/types'
+import { useApp } from '../../store/app/hooks'
 import { AssetLabel } from '../uielements/assets/assetLabel'
 import { Tooltip } from '../uielements/common/Common.styles'
 import { Label } from '../uielements/label'
@@ -25,19 +26,10 @@ export type Props = {
   openShareInfo: FP.Lazy<void>
   haltedChains: Chain[]
   mimirHalt: MimirHalt
-  protocol: Chain
 }
 
-export const PoolShares: React.FC<Props> = ({
-  data,
-  priceAsset,
-  openShareInfo,
-  loading,
-  network,
-  haltedChains,
-  mimirHalt,
-  protocol
-}) => {
+export const PoolShares = ({ data, priceAsset, openShareInfo, loading, network, haltedChains, mimirHalt }: Props) => {
+  const { protocol } = useApp()
   const intl = useIntl()
 
   const protocolAsset = useMemo(() => (protocol === THORChain ? AssetRuneNative : AssetCacao), [protocol])
@@ -154,7 +146,6 @@ export const PoolShares: React.FC<Props> = ({
           <Styled.ManageButton
             disabled={disablePool || type === 'asym'}
             asset={asset}
-            protocol={protocol}
             variant="manage"
             useBorderButton={false}
             isTextView={isDesktopView}
@@ -166,7 +157,7 @@ export const PoolShares: React.FC<Props> = ({
         )
       }
     }),
-    [protocol, haltedChains, mimirHalt, isDesktopView, intl, protocolAsset.ticker]
+    [haltedChains, mimirHalt, isDesktopView, intl, protocolAsset.ticker]
   )
 
   const desktopColumns: ColumnsType<PoolShareTableRowData> = useMemo(
