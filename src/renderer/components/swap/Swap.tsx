@@ -47,6 +47,7 @@ import {
   DEFAULT_ENABLED_CHAINS,
   DefaultChainAttributes,
   EnabledChain,
+  isChainOfMaya,
   isChainOfThor
 } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
