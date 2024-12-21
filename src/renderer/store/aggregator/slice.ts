@@ -1,13 +1,15 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { Aggregator } from '@xchainjs/xchain-aggregator'
+import { Client as EthClient } from '@xchainjs/xchain-ethereum'
+import { Wallet } from '@xchainjs/xchain-wallet'
 
 import { ASGARDEX_AFFILIATE_FEE, ASGARDEX_THORNAME } from '../../../shared/const'
+import { defaultEthParams } from '../../../shared/ethereum/const'
 import { State } from './types'
-
-// need to some how pass in the network here to use getAsgardexAffiliate(network)
 
 const initialState: State = {
   isLoading: false,
+
   aggregator: new Aggregator({
     protocols: ['Thorchain', 'Mayachain', 'Chainflip'],
     affiliate: {
@@ -16,7 +18,12 @@ const initialState: State = {
         Thorchain: ASGARDEX_THORNAME,
         Mayachain: ASGARDEX_THORNAME
       }
-    }
+    },
+    wallet: new Wallet({
+      ETH: new EthClient({
+        ...defaultEthParams
+      })
+    })
   }),
   quoteSwap: null
 }

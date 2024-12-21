@@ -1,7 +1,7 @@
 import Transport from '@ledgerhq/hw-transport'
 import { AssetBCH, ClientLedger, defaultBchParams } from '@xchainjs/xchain-bitcoincash'
 import { FeeOption, FeeRate, Network, TxHash } from '@xchainjs/xchain-client'
-import { Address, BaseAmount, baseAmount } from '@xchainjs/xchain-util'
+import { Address, BaseAmount } from '@xchainjs/xchain-util'
 import * as E from 'fp-ts/lib/Either'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
@@ -48,24 +48,13 @@ export const send = async ({
       network: network
     })
     const fee = await clientLedger.getFeesWithRates({ sender, memo })
-    const feeAmount = fee.fees[feeOption]
     const feeRate = fee.rates[feeOption]
-    const bal = await clientLedger.getBalance(sender)
-    const bchBalance = bal[0]
-    const transactionSize = feeAmount.amount().toNumber() / feeRate
-    const roundedFeeRate = Math.ceil(feeRate)
-    const adjustedFee = baseAmount(roundedFeeRate * transactionSize)
-    let amountToSend: BaseAmount
-    if (amount.plus(adjustedFee).gte(bchBalance.amount)) {
-      amountToSend = bchBalance.amount.minus(adjustedFee)
-    } else {
-      amountToSend = amount
-    }
+
     const txHash = await clientLedger.transfer({
       walletIndex,
       asset: AssetBCH,
       recipient,
-      amount: amountToSend,
+      amount,
       memo,
       feeRate
     })
