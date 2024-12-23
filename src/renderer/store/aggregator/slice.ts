@@ -2,12 +2,14 @@ import { createSlice } from '@reduxjs/toolkit'
 import { Aggregator } from '@xchainjs/xchain-aggregator'
 import { Client as ArbClient } from '@xchainjs/xchain-arbitrum'
 import { Client as AvaxClient } from '@xchainjs/xchain-avax'
+import { Client as BaseClient } from '@xchainjs/xchain-base'
 import { Client as BscClient } from '@xchainjs/xchain-bsc'
 import { Client as EthClient } from '@xchainjs/xchain-ethereum'
 import { Wallet } from '@xchainjs/xchain-wallet'
 
 import { defaultArbParams } from '../../../shared/arb/const'
 import { defaultAvaxParams } from '../../../shared/avax/const'
+import { defaultBaseParams } from '../../../shared/base/const'
 import { defaultBscParams } from '../../../shared/bsc/const'
 import { ASGARDEX_AFFILIATE_FEE, ASGARDEX_THORNAME } from '../../../shared/const'
 import { defaultEthParams } from '../../../shared/ethereum/const'
@@ -37,6 +39,9 @@ const initialState: State = {
       }),
       ARB: new ArbClient({
         ...defaultArbParams
+      }),
+      BASE: new BaseClient({
+        ...defaultBaseParams
       })
     })
   }),
