@@ -243,7 +243,7 @@ export const AppGeneralSettings = (props: Props): JSX.Element => {
       <Section title={intl.formatMessage({ id: 'setting.language' })} subtitle="Preferred language">
         {renderLangMenu}
       </Section>
-      <Section title="Private Mode" subtitle="Stay hidden, stay secure">
+      <Section title={intl.formatMessage({ id: 'common.privateData' })} subtitle="Stay hidden, stay secure">
         <SwitchButton active={isPrivate} onChange={changePrivateData} />
       </Section>
       <Section title={intl.formatMessage({ id: 'setting.version' })} subtitle="Asgardex Software Version">
