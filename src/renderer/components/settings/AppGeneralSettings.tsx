@@ -54,7 +54,7 @@ const Section: React.FC<SectionProps> = ({ title, subtitle, className, children 
   </div>
 )
 
-export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
+export const AppGeneralSettings = (props: Props): JSX.Element => {
   const {
     appUpdateState = RD.initial,
     changeNetwork = FP.constVoid,
