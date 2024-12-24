@@ -2,13 +2,20 @@
 
 ## add
 
--
+- coingecko price feed for assets not it pools [#541] (https://github.com/asgardex/asgardex-desktop/pull/541)
+- Add Linux screen scaling [#534](https://github.com/asgardex/asgardex-desktop/pull/534)
+- Add Trade asset quick withdraw [#544] (https://github.com/asgardex/asgardex-desktop/pull/554)
 
 ## Updates/Fixes
 
 - Dex switch deprecated no longer available [#544] (https://github.com/asgardex/asgardex-desktop/pull/544)
 - use Aggregator package to fetch quotes [#506] (https://github.com/asgardex/asgardex-desktop/pull/506)
 - allow testing of stagenet rune for ledger on asgardex [#562] (https://github.com/asgardex/asgardex-desktop/pull/562)
+- fix utxo send bug & update xchain clients [#568] (https://github.com/asgardex/asgardex-desktop/pull/568)
+- Udpated UI to show correct outbound fee [#565](https://github.com/asgardex/asgardex-desktop/pull/565)
+- updated Stagenet support to THORChain ledger [#562](https://github.com/asgardex/asgardex-desktop/pull/562)
+- Only Mayachain supports Synthetic assets for swapping [#564] (https://github.com/asgardex/asgardex-desktop/pull/564)
+
 
 # 1.22.9 (2024-11-26)
 

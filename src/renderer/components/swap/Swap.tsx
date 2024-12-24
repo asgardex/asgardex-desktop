@@ -160,7 +160,6 @@ export const Swap = ({
   reloadApproveFee,
   approveFee$,
   importWalletHandler,
-  disableSwapAction,
   addressValidator,
   hidePrivateData
 }: SwapProps) => {
@@ -2017,8 +2016,7 @@ export const Swap = ({
   const disableSubmit: boolean = useMemo(
     () =>
       network !== Network.Stagenet &&
-      (disableSwapAction ||
-        lockedWallet ||
+      (lockedWallet ||
         quoteOnly ||
         isZeroAmountToSwap ||
         walletBalancesLoading ||
@@ -2034,7 +2032,6 @@ export const Swap = ({
         isSourceChainDisabled),
     [
       network,
-      disableSwapAction,
       lockedWallet,
       quoteOnly,
       isZeroAmountToSwap,

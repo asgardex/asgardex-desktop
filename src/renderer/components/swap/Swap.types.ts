@@ -84,7 +84,6 @@ export type SwapProps = {
   approveERC20Token$: (params: ApproveParams) => TxHashLD
   isApprovedERC20Token$: (params: IsApproveParams) => LiveData<ApiError, boolean>
   importWalletHandler: FP.Lazy<void>
-  disableSwapAction: boolean
   addressValidator: AddressValidationAsync
   hidePrivateData: boolean
 }

@@ -75,7 +75,10 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol }: HaltedCh
           haltedChains.length === 1
             ? `${msg} ${intl.formatMessage({ id: 'halt.chain' }, { chain: haltedChains[0], dex: protocol })}`
             : haltedChains.length > 1
-            ? `${msg} ${intl.formatMessage({ id: 'halt.chains' }, { chains: haltedChains.join(', ') })}`
+            ? `${msg} ${intl.formatMessage(
+                { id: 'halt.chains' },
+                { chains: haltedChains.join(', '), protocol: protocol }
+              )}`
             : `${msg}`
 
         const haltedTradingChains = haltedChainsState

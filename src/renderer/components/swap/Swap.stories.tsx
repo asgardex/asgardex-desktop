@@ -23,7 +23,6 @@ const targetAsset: SwapAsset = { asset: AssetBTC, decimal: BTC_DECIMAL, price: b
 
 /* Mock all (default) data needed by `Swap` commponent */
 const defaultProps: SwapProps = {
-  disableSwapAction: false,
   keystore: O.none,
   poolAssets: [AssetBTC, AssetRuneNative],
   assets: { source: sourceAsset, target: targetAsset },
