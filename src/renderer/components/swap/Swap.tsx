@@ -778,7 +778,7 @@ export const Swap = ({
 
     // Reset states on dependency change
     setQuoteProtocol(O.none)
-
+    console.log(targetAsset)
     const fetchSwap = async () => {
       setIsFetchingEstimate(true)
       try {
