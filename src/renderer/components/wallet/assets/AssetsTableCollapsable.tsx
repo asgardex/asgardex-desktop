@@ -1,23 +1,23 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { ArrowPathIcon, QrCodeIcon } from '@heroicons/react/24/outline'
 import { Balance, Network } from '@xchainjs/xchain-client'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
   AnyAsset,
   Asset,
   assetFromString,
   assetToString,
-  AssetType,
   BaseAmount,
   baseToAsset,
   Chain,
   formatAssetAmountCurrency,
   isSynthAsset
 } from '@xchainjs/xchain-util'
-import { Col, Collapse, Grid, Row } from 'antd'
+import { Collapse, Grid, Row } from 'antd'
 import { ScreenMap } from 'antd/lib/_util/responsiveObserve'
 import { ColumnType } from 'antd/lib/table'
 import * as A from 'fp-ts/lib/Array'
@@ -26,11 +26,11 @@ import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router'
 
-import { Dex } from '../../../../shared/api/types'
 import { chainToString, EnabledChain, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE, ZERO_BASE_AMOUNT } from '../../../const'
+import { truncateAddress } from '../../../helpers/addressHelper'
 import { isCacaoAsset, isMayaAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { isEvmChain } from '../../../helpers/evmHelper'
@@ -53,13 +53,13 @@ import {
   WalletBalances
 } from '../../../services/wallet/types'
 import { walletTypeToI18n } from '../../../services/wallet/util'
+import { useApp } from '../../../store/app/hooks'
 import { GECKO_MAP } from '../../../types/generated/geckoMap'
 import { PricePool } from '../../../views/pools/Pools.types'
 import { ErrorView } from '../../shared/error/'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
-import { FlatButton } from '../../uielements/button'
 import { Action as ActionButtonAction, ActionButton } from '../../uielements/button/ActionButton'
-import { ReloadButton } from '../../uielements/button/ReloadButton'
+import { IconButton } from '../../uielements/button/IconButton'
 import { InfoIcon } from '../../uielements/info'
 import { QRCodeModal } from '../../uielements/qrCodeModal/QRCodeModal'
 import * as Styled from './AssetsTableCollapsable.styles'
@@ -97,7 +97,6 @@ type Props = {
   network: Network
   mimirHalt: MimirHaltRD
   hidePrivateData: boolean
-  dex: Dex
   mayaScanPrice: MayaScanPriceRD
   disabledChains: EnabledChain[]
 }
@@ -118,11 +117,11 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
     assetHandler,
     network,
     hidePrivateData,
-    dex,
     mayaScanPrice,
     disabledChains
   } = props
 
+  const { setProtocol } = useApp()
   const intl = useIntl()
   const navigate = useNavigate()
   const screenMap: ScreenMap = Grid.useBreakpoint()
@@ -171,32 +170,23 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
   const iconColumn: ColumnType<WalletBalance> = useMemo(
     () => ({
       title: '',
-      width: 120,
+      width: 180,
       render: ({ asset }: WalletBalance) => (
-        <Row justify="center" align="middle">
+        <div className="flex items-center space-x-4 pl-4">
           <AssetIcon asset={asset} size="normal" network={network} />
-        </Row>
+          <div className="flex flex-row items-center">
+            <Styled.Label nowrap>
+              <Styled.TickerLabel>{asset.ticker}</Styled.TickerLabel>
+              <Styled.ChainLabelWrapper>
+                {!isSynthAsset(asset) && <Styled.ChainLabel>{asset.chain}</Styled.ChainLabel>}
+                {isSynthAsset(asset) && <Styled.AssetSynthLabel>synth</Styled.AssetSynthLabel>}
+              </Styled.ChainLabelWrapper>
+            </Styled.Label>
+          </div>
+        </div>
       )
     }),
     [network]
-  )
-
-  const tickerColumn: ColumnType<WalletBalance> = useMemo(
-    () => ({
-      width: 80,
-      render: ({ asset }: WalletBalance) => (
-        <Styled.AssetTickerWrapper>
-          <Styled.Label nowrap>
-            <Styled.TickerLabel>{asset.ticker}</Styled.TickerLabel>
-            <Styled.ChainLabelWrapper>
-              {!isSynthAsset(asset) && <Styled.ChainLabel>{asset.chain}</Styled.ChainLabel>}
-              {isSynthAsset(asset) && <Styled.AssetSynthLabel>synth</Styled.AssetSynthLabel>}
-            </Styled.ChainLabelWrapper>
-          </Styled.Label>
-        </Styled.AssetTickerWrapper>
-      )
-    }),
-    []
   )
 
   const balanceColumn: ColumnType<WalletBalance> = useMemo(
@@ -403,7 +393,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
             navigate(
               poolsRoutes.swap.path({
                 source: `${asset.chain}/${asset.symbol}`,
-                target: assetToString(deepestPoolAsset),
+                target: assetToString(isChainOfMaya(asset.chain) ? AssetCacao : AssetRuneNative),
                 sourceWalletType: walletType,
                 targetWalletType: DEFAULT_WALLET_TYPE
               })
@@ -412,7 +402,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         )
       }
 
-      if (deepestPoolAsset && !isCacaoAsset(asset) && !isRuneNativeAsset(asset)) {
+      if (!isSynthAsset(asset) && deepestPoolAsset && !isCacaoAsset(asset) && !isRuneNativeAsset(asset)) {
         actions.push(
           createAction('common.swap', () =>
             navigate(
@@ -425,60 +415,34 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
             )
           )
         )
+      }
 
-        if (hasSaversAssets) {
-          actions.push(
-            createAction('common.earn', () =>
-              navigate(
-                poolsRoutes.earn.path({
-                  asset: assetToString(asset),
-                  walletType: walletType
-                })
-              )
+      if (hasSaversAssets && !isSynthAsset(asset)) {
+        actions.push(
+          createAction('common.earn', () =>
+            navigate(
+              poolsRoutes.earn.path({
+                asset: assetToString(asset),
+                walletType: walletType
+              })
             )
           )
-        }
+        )
+      }
 
-        if (isRuneNativeAsset(asset) && dex.chain === THORChain && deepestPoolAsset) {
-          actions.push(
-            createAction('common.add', () =>
-              navigate(
-                poolsRoutes.deposit.path({
-                  asset: assetToString(deepestPoolAsset),
-                  assetWalletType: DEFAULT_WALLET_TYPE,
-                  runeWalletType: walletType
-                })
-              )
+      if (hasActivePool) {
+        actions.push(
+          createAction('common.add', () => {
+            setProtocol(isChainOfThor(asset.chain) && !isRuneNativeAsset(asset) ? THORChain : MAYAChain)
+            navigate(
+              poolsRoutes.deposit.path({
+                asset: assetToString(asset),
+                assetWalletType: walletType,
+                runeWalletType: DEFAULT_WALLET_TYPE
+              })
             )
-          )
-        }
-
-        if (isCacaoAsset(asset) && dex.chain === MAYAChain && deepestPoolAsset) {
-          actions.push(
-            createAction('common.add', () =>
-              navigate(
-                poolsRoutes.deposit.path({
-                  asset: assetToString(deepestPoolAsset),
-                  assetWalletType: DEFAULT_WALLET_TYPE,
-                  runeWalletType: walletType
-                })
-              )
-            )
-          )
-        }
-        if (hasActivePool) {
-          actions.push(
-            createAction('common.add', () =>
-              navigate(
-                poolsRoutes.deposit.path({
-                  asset: assetToString(asset),
-                  assetWalletType: walletType,
-                  runeWalletType: DEFAULT_WALLET_TYPE
-                })
-              )
-            )
-          )
-        }
+          })
+        )
       }
 
       if (isRuneNativeAsset(asset) || isCacaoAsset(asset)) {
@@ -491,7 +455,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         </div>
       )
     },
-    [dex, poolsData, poolsDataMaya, poolDetails, intl, navigate, assetHandler]
+    [poolsData, poolDetails, poolsDataMaya, intl, assetHandler, navigate, setProtocol]
   )
 
   const actionColumn: ColumnType<WalletBalance> = useMemo(
@@ -504,16 +468,16 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
 
   const columns = useMemo(() => {
     if (screenMap?.lg ?? false) {
-      return [iconColumn, tickerColumn, balanceColumn, actionColumn]
+      return [iconColumn, balanceColumn, actionColumn]
     }
     if (screenMap?.sm ?? false) {
-      return [iconColumn, tickerColumn, balanceColumn, actionColumn]
+      return [iconColumn, balanceColumn, actionColumn]
     }
     if (screenMap?.xs ?? false) {
       return [iconColumn, balanceColumn, actionColumn]
     }
     return []
-  }, [actionColumn, balanceColumn, iconColumn, screenMap?.lg, screenMap?.sm, screenMap?.xs, tickerColumn])
+  }, [actionColumn, balanceColumn, iconColumn, screenMap?.lg, screenMap?.sm, screenMap?.xs])
 
   const renderAssetsTable = useCallback(
     ({ tableData, loading = false }: { tableData: WalletBalances; loading?: boolean }) => {
@@ -563,11 +527,8 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
                 }
               ]
             }
-            let sortedBalances = balances.sort((a, b) => b.amount.amount().minus(a.amount.amount()).toNumber())
 
-            if ((dex.chain === MAYAChain && chain === THORChain) || (dex.chain === THORChain && chain === MAYAChain)) {
-              sortedBalances = sortedBalances.filter(({ asset }) => asset.type !== AssetType.SYNTH)
-            }
+            const sortedBalances = balances.sort((a, b) => b.amount.amount().minus(a.amount.amount()).toNumber())
             previousAssetsTableData.current[index] = sortedBalances
             return renderAssetsTable({
               tableData: sortedBalances,
@@ -577,7 +538,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         )
       )
     },
-    [dex.chain, renderAssetsTable]
+    [renderAssetsTable]
   )
 
   const renderPanel = useCallback(
@@ -607,62 +568,46 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
       )
 
       const header = (
-        <Styled.HeaderRow className="flex w-full justify-between space-x-4">
-          <Col flex="0 0 10rem" span={4}>
+        <Styled.HeaderRow className="flex w-full justify-between space-x-4 py-1">
+          <div className="flex items-center space-x-2">
             <Styled.HeaderChainContainer>
               <Styled.HeaderLabel>{chainToString(chain)}</Styled.HeaderLabel>
               {!isKeystoreWallet(walletType) && (
                 <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
               )}
-            </Styled.HeaderChainContainer>
-          </Col>
-          <Col flex={1} span={9}>
-            <Styled.HeaderAddress>
-              {hidePrivateData ? hiddenString : walletAddress}
-              <Styled.CopyLabelContainer
-                onClick={(event) => {
-                  event.preventDefault()
-                  event.stopPropagation()
-                }}>
-                <Styled.CopyLabel copyable={{ text: walletAddress }} />
-              </Styled.CopyLabelContainer>
-            </Styled.HeaderAddress>
-          </Col>
-
-          <Col flex="0 1 auto" span={3} style={{ textAlign: 'right' }}>
-            <Styled.HeaderLabel color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>
-              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+              <Styled.HeaderLabel
+                className="flex items-center space-x-2"
+                color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>
+                <span style={{ marginLeft: isEvmChain(chain) ? '5px' : '0' }}>{assetsTxt}</span>
                 {isEvmChain(chain) && (
                   <InfoIcon tooltip={intl.formatMessage({ id: 'wallet.evmToken.tooltip' })} color="primary" />
                 )}
-                <span style={{ marginLeft: isEvmChain(chain) ? '5px' : '0' }}>{assetsTxt}</span>
-              </span>
-            </Styled.HeaderLabel>
-          </Col>
-          <Col flex="0 0 12rem" span={1}>
-            <div className="flex justify-end space-x-2 pr-4">
-              <ReloadButton
-                className="pr-2"
-                size="small"
-                color="neutral"
+              </Styled.HeaderLabel>
+            </Styled.HeaderChainContainer>
+          </div>
+          <div className="flex items-center justify-end space-x-2">
+            <Styled.HeaderAddress className="flex items-center text-text0 dark:text-text0d">
+              {hidePrivateData ? hiddenString : truncateAddress(walletAddress, chain, network)}
+              <Styled.CopyLabel copyable={{ text: walletAddress }} />
+            </Styled.HeaderAddress>
+            <div className="flex items-center justify-end space-x-2 pr-4">
+              <IconButton
                 disabled={disableRefresh}
-                onClick={(event) => {
-                  event.stopPropagation()
+                onClick={(e) => {
+                  e.stopPropagation()
                   handleRefreshClick(chain, walletType)
-                }}
-              />
-              <FlatButton
-                className="ml-2 pl-2"
-                size="small"
-                color="neutral"
-                onClick={(event) => {
-                  event.stopPropagation()
+                }}>
+                <ArrowPathIcon className="ease h-5 w-5 text-text0 group-hover:rotate-180 dark:text-text0d" />
+              </IconButton>
+              <IconButton
+                onClick={(e) => {
+                  e.stopPropagation()
                   setShowQRModal(O.some({ asset: getChainAsset(chain), address: walletAddress }))
                 }}>
-                <span className="hidden sm:inline-block">{intl.formatMessage({ id: 'wallet.action.receive' })}</span>
-              </FlatButton>
+                <QrCodeIcon className="ease h-5 w-5 text-text0 group-hover:rotate-180 dark:text-text0d" />
+              </IconButton>
             </div>
-          </Col>
+          </div>
         </Styled.HeaderRow>
       )
 
@@ -676,7 +621,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         </Panel>
       )
     },
-    [disableRefresh, hidePrivateData, intl, renderBalances]
+    [disableRefresh, hidePrivateData, intl, network, renderBalances]
   )
 
   useEffect(() => {
@@ -728,7 +673,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
     <>
       <Row className="items-center">
         <div
-          className="m-2 rounded-md border border-solid border-turquoise p-1 text-14 text-gray2 dark:border-gray1d dark:text-gray2d"
+          className="m-2 cursor-pointer rounded-md border border-solid border-turquoise p-1 text-14 text-gray2 dark:border-gray1d dark:text-gray2d"
           onClick={handleCollapseAll}>
           {collapseAll
             ? intl.formatMessage({ id: 'common.collapseAll' })
@@ -751,6 +696,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
       </Row>
 
       <Styled.Collapse
+        className="space-y-2"
         expandIcon={({ isActive }) => <Styled.ExpandIcon rotate={isActive ? 90 : 0} />}
         defaultActiveKey={openPanelKeys}
         activeKey={openPanelKeys}

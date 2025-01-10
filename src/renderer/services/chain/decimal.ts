@@ -1,5 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { ARB_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-arbitrum'
+import { BASE_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-base'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
@@ -17,6 +18,7 @@ import * as RxOp from 'rxjs/operators'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import {
   isArbChain,
+  isBaseChain,
   isBchChain,
   isBscChain,
   isBtcChain,
@@ -33,6 +35,10 @@ import { AssetWithDecimalLD } from './types'
 // gets asset decimal from midgard-query tobefixed
 export const getDecimal = (asset: AnyAsset): Promise<number> => {
   const { chain } = asset
+
+  if (isBaseChain(chain)) {
+    return Promise.resolve(BASE_GAS_ASSET_DECIMAL)
+  }
 
   if (isArbChain(chain)) {
     return Promise.resolve(ARB_GAS_ASSET_DECIMAL)

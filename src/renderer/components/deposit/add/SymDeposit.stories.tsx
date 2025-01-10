@@ -2,7 +2,6 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Story, Meta } from '@storybook/react'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { Network, TxHash } from '@xchainjs/xchain-client'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, assetToBase, baseAmount, assetToString, AnyAsset } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -138,8 +137,7 @@ const defaultProps: SymDepositProps = {
   hasAsymAssets: RD.initial,
   symAssetMismatch: RD.initial,
   openAsymDepositTool: () => console.log('openAsymDepositTool'),
-  hidePrivateData: false,
-  protocol: THORChain
+  hidePrivateData: false
 }
 
 export const Default: Story = () => <SymDeposit {...defaultProps} />

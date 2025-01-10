@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 import { debounce } from 'lodash'
@@ -9,7 +8,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { Dex } from '../../../shared/api/types'
 import { DEFAULT_ENABLED_CHAINS, EnabledChain } from '../../../shared/utils/chain'
 import { RefreshButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
@@ -17,13 +15,12 @@ import { AssetsTableCollapsable } from '../../components/wallet/assets/AssetsTab
 import type { AssetAction } from '../../components/wallet/assets/AssetsTableCollapsable'
 import { TotalAssetValue } from '../../components/wallet/assets/TotalAssetValue'
 import { InteractType } from '../../components/wallet/txs/interact/Interact.types'
-import { CHAIN_WEIGHTS_THOR, CHAIN_WEIGHTS_MAYA, DEFAULT_WALLET_TYPE } from '../../const'
+import { CHAIN_WEIGHTS_THOR, DEFAULT_WALLET_TYPE } from '../../const'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
-import { useDex } from '../../hooks/useDex'
 import { useMayaScanPrice } from '../../hooks/useMayascanPrice'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
@@ -43,7 +40,6 @@ export const AssetsView: React.FC = (): JSX.Element => {
 
   const { balancesState$, setSelectedAsset } = useWalletContext()
   const { network } = useNetwork()
-  const { dex } = useDex()
   const { mayaScanPriceRD } = useMayaScanPrice()
   const { isPrivate } = useApp()
   const { geckoPriceMap, fetchPrice: fetchCoingeckoPrice } = useCoingecko()
@@ -104,17 +100,17 @@ export const AssetsView: React.FC = (): JSX.Element => {
         return true
       })
     }
-    const getChainWeight = (chain: Chain, dex: Dex) => {
-      const weights = dex.chain === THORChain ? CHAIN_WEIGHTS_THOR : CHAIN_WEIGHTS_MAYA
-      return enabledChains.has(chain) ? weights[chain] : Infinity
+    const getChainWeight = (chain: Chain) => {
+      // Will apply CHAIN_WEIGHTS_THOR only
+      return enabledChains.has(chain) ? CHAIN_WEIGHTS_THOR[chain] : Infinity
     }
 
     // First, filter out duplicates
     const uniqueBalances = getUniqueChainBalances(chainBalances)
 
     // Then, sort the unique balances
-    return uniqueBalances.sort((a, b) => getChainWeight(a.chain, dex) - getChainWeight(b.chain, dex))
-  }, [chainBalances, dex, enabledChains])
+    return uniqueBalances.sort((a, b) => getChainWeight(a.chain) - getChainWeight(b.chain))
+  }, [chainBalances, enabledChains])
 
   const availableAssets = useMemo(() => {
     let assetArr: string[] = []
@@ -247,7 +243,6 @@ export const AssetsView: React.FC = (): JSX.Element => {
         mimirHalt={mimirHaltRD}
         network={network}
         hidePrivateData={isPrivate}
-        dex={dex}
         mayaScanPrice={mayaScanPriceRD}
         disabledChains={disabledChains}
       />

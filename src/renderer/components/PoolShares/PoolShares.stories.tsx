@@ -1,6 +1,5 @@
 import { Meta, StoryFn } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, assetToBase, bn } from '@xchainjs/xchain-util'
 
 import { AssetBSC, AssetBTC } from '../../../shared/utils/asset'
@@ -43,8 +42,7 @@ const defaultProps: ComponentProps = {
   loading: false,
   priceAsset: AssetBSC,
   openShareInfo: () => console.log('go to stake info'),
-  network: Network.Testnet,
-  protocol: THORChain
+  network: Network.Testnet
 }
 export const Default: StoryFn = () => <Component {...defaultProps} />
 

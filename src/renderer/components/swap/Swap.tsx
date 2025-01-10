@@ -10,7 +10,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { QuoteSwap as QuoteSwapProtocol } from '@xchainjs/xchain-aggregator'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetCacao } from '@xchainjs/xchain-mayachain'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Asset,
@@ -47,6 +47,7 @@ import {
   DEFAULT_ENABLED_CHAINS,
   DefaultChainAttributes,
   EnabledChain,
+  isChainOfMaya,
   isChainOfThor
 } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
@@ -79,6 +80,7 @@ import {
   getWalletTypeLabel,
   hasLedgerInBalancesByAsset
 } from '../../helpers/walletHelper'
+import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
@@ -137,8 +139,6 @@ export const Swap = ({
   poolDetailsThor,
   poolDetailsMaya,
   walletBalances,
-  goToTransaction,
-  getExplorerTxUrl,
   validatePassword$,
   reloadFees,
   reloadBalances = FP.constVoid,
@@ -159,7 +159,6 @@ export const Swap = ({
   reloadApproveFee,
   approveFee$,
   importWalletHandler,
-  disableSwapAction,
   addressValidator,
   hidePrivateData
 }: SwapProps) => {
@@ -200,6 +199,12 @@ export const Swap = ({
   const [oTargetWalletType, setTargetWalletType] = useState<O.Option<WalletType>>(oInitialTargetWalletType)
 
   const [isStreaming, setIsStreaming] = useState<Boolean>(true)
+  const openExplorer = useOpenExplorerTxUrl(
+    FP.pipe(
+      oQuoteProtocol,
+      O.chain((quoteSwap) => (quoteSwap.protocol === 'Thorchain' ? O.some(THORChain) : O.some(MAYAChain)))
+    )
+  )
 
   // Update state needed - initial target walletAddress is loaded async and can be different at first run
   useEffect(() => {
@@ -559,11 +564,7 @@ export const Swap = ({
     const swapOutFee = FP.pipe(
       oQuoteProtocol,
       O.fold(
-        () =>
-          new CryptoAmount(
-            swapFees.outFee.amount,
-            targetAsset.type === AssetType.SYNTH ? AssetRuneNative : targetAsset
-          ),
+        () => new CryptoAmount(swapFees.outFee.amount, targetAsset.type === AssetType.SYNTH ? AssetCacao : targetAsset),
         (txDetails) => {
           const txOutFee = txDetails.fees.outboundFee
           return txOutFee
@@ -583,6 +584,9 @@ export const Swap = ({
       return
     }
     const calculateSwapOutFeePrice = () => {
+      if (isUSDAsset(oSwapOutFee.asset)) {
+        return O.some(oSwapOutFee.baseAmount)
+      }
       return isChainOfThor(oSwapOutFee.asset.chain)
         ? PoolHelpers.getUSDValue({
             balance: { asset: oSwapOutFee.asset, amount: oSwapOutFee.baseAmount },
@@ -626,13 +630,34 @@ export const Swap = ({
     const {
       outFee: { amount, asset: feeAsset }
     } = swapFees
-
-    const fee = formatAssetAmountCurrency({
-      amount: baseToAsset(amount),
-      asset: feeAsset,
-      decimal: isUSDAsset(feeAsset) ? 2 : 6,
-      trimZeros: !isUSDAsset(feeAsset)
-    })
+    const oValueInAsset = isChainOfThor(oSwapOutFee.asset.chain)
+      ? PoolHelpers.getAssetAmountFromUSDValue({
+          usdValue: outFeePriceValue.baseAmount,
+          poolDetails: poolDetailsThor,
+          asset: feeAsset,
+          amount: amount,
+          pricePool: pricePoolThor
+        })
+      : PoolHelpersMaya.getAssetAmountFromUSDValue({
+          usdValue: outFeePriceValue.baseAmount,
+          poolDetails: poolDetailsMaya,
+          asset: feeAsset,
+          amount: amount,
+          pricePool: pricePoolMaya
+        })
+    const fee = O.isSome(oValueInAsset)
+      ? formatAssetAmountCurrency({
+          amount: baseToAsset(oValueInAsset.value),
+          asset: feeAsset,
+          decimal: isUSDAsset(feeAsset) ? 2 : 6,
+          trimZeros: !isUSDAsset(feeAsset)
+        })
+      : formatAssetAmountCurrency({
+          amount: baseToAsset(amount),
+          asset: feeAsset,
+          decimal: isUSDAsset(feeAsset) ? 2 : 6,
+          trimZeros: !isUSDAsset(feeAsset)
+        })
 
     const price = FP.pipe(
       O.some(outFeePriceValue),
@@ -650,7 +675,15 @@ export const Swap = ({
     )
 
     return price ? `${price} (${fee})` : fee
-  }, [swapFees, outFeePriceValue])
+  }, [
+    swapFees,
+    oSwapOutFee.asset.chain,
+    outFeePriceValue,
+    poolDetailsThor,
+    pricePoolThor,
+    poolDetailsMaya,
+    pricePoolMaya
+  ])
 
   // Affiliate fee
   const affiliateFee: CryptoAmount = useMemo(() => {
@@ -733,7 +766,7 @@ export const Swap = ({
     const bps = getAsgardexAffiliateFee(network)
     const displayBps = applyBps && bps !== undefined ? `${bps / 100}%` : '0%'
 
-    return price ? `${price} (${fee}) ${displayBps}` : fee
+    return !applyBps ? `free` : price ? `${price} (${fee}) ${displayBps}` : fee
   }, [swapFees, affiliateFee.assetAmount, affiliateFee.asset, affiliatePriceValue, applyBps, network, sourceAsset])
 
   useEffect(() => {
@@ -1348,7 +1381,8 @@ export const Swap = ({
         A.chain((asset) =>
           isRuneNativeAsset(asset) || isCacaoAsset(asset)
             ? [asset]
-            : [
+            : isChainOfMaya(asset.chain) // Only synthesize assets from MAYAChain
+            ? [
                 asset,
                 {
                   ...asset,
@@ -1356,6 +1390,7 @@ export const Swap = ({
                   synth: true
                 } as SynthAsset
               ]
+            : [asset]
         ),
         A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
         (assets) => unionAssets(assets)(assets)
@@ -1982,8 +2017,7 @@ export const Swap = ({
   const disableSubmit: boolean = useMemo(
     () =>
       network !== Network.Stagenet &&
-      (disableSwapAction ||
-        lockedWallet ||
+      (lockedWallet ||
         quoteOnly ||
         isZeroAmountToSwap ||
         walletBalancesLoading ||
@@ -1999,7 +2033,6 @@ export const Swap = ({
         isSourceChainDisabled),
     [
       network,
-      disableSwapAction,
       lockedWallet,
       quoteOnly,
       isZeroAmountToSwap,
@@ -2138,7 +2171,7 @@ export const Swap = ({
               <div className="flex items-center">
                 {intl.formatMessage(
                   { id: 'common.confirmation.time' },
-                  { chain: targetAsset.type === AssetType.SYNTH ? THORChain : targetAsset.chain }
+                  { chain: targetAsset.type === AssetType.SYNTH ? MAYAChain : targetAsset.chain }
                 )}
               </div>
               <div>{formatSwapTime(Number(DefaultChainAttributes[targetAsset.chain].avgBlockTimeInSecs))}</div>
@@ -2323,7 +2356,9 @@ export const Swap = ({
                       </div>
                       <div className="flex w-full justify-between pl-10px text-[12px]">
                         <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
-                        <div>{priceAffiliateFeeLabel}</div>
+                        <div className={clsx({ '!text-turquoise': priceAffiliateFeeLabel === 'free' })}>
+                          {priceAffiliateFeeLabel}
+                        </div>
                       </div>
                     </>
                   )}
@@ -2590,7 +2625,9 @@ export const Swap = ({
                   </div>
                   <div className="flex w-full justify-between pl-10px text-[12px]">
                     <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
-                    <div>{priceAffiliateFeeLabel}</div>
+                    <div className={clsx({ '!text-turquoise': priceAffiliateFeeLabel === 'free' })}>
+                      {priceAffiliateFeeLabel}
+                    </div>
                   </div>
 
                   {/* Transaction time */}
@@ -2712,8 +2749,8 @@ export const Swap = ({
         sourceChain={sourceChain}
         extraTxModalContent={extraTxModalContent}
         oQuoteProtocol={oQuoteProtocol}
-        goToTransaction={goToTransaction}
-        getExplorerTxUrl={getExplorerTxUrl}
+        goToTransaction={openExplorer.openExplorerTxUrl}
+        getExplorerTxUrl={openExplorer.getExplorerTxUrl}
         onCloseTxModal={onCloseTxModal}
         onFinishTxModal={onFinishTxModal}
       />

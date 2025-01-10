@@ -9,7 +9,8 @@ import {
 } from '@heroicons/react/24/outline'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, assetToString, AssetType, Chain } from '@xchainjs/xchain-util'
 import { AnyAsset } from '@xchainjs/xchain-util'
 import { Row, Col } from 'antd'
@@ -18,7 +19,6 @@ import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { Dex, mayaDetails, thorDetails } from '../../../../shared/api/types'
 import { chainToString, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
 import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
@@ -29,6 +29,7 @@ import { OpenExplorerTxUrl, TxsPageRD } from '../../../services/clients'
 import { MAX_ITEMS_PER_PAGE } from '../../../services/const'
 import { EMPTY_LOAD_TXS_HANDLER } from '../../../services/wallet/const'
 import { LoadTxsHandler, NonEmptyWalletBalances } from '../../../services/wallet/types'
+import { useApp } from '../../../store/app/hooks'
 import { WarningView } from '../../shared/warning'
 import { AssetInfo } from '../../uielements/assets/assetInfo'
 import { BackLinkButton } from '../../uielements/button'
@@ -51,12 +52,11 @@ export type Props = {
   walletAddress: Address
   disableSend: boolean
   network: Network
-  dex: Dex
-  changeDex: (dex: Dex) => void
-  haltedChains: Chain[]
+  haltedChainsThor: Chain[]
+  haltedChainsMaya: Chain[]
 }
 
-export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
+export const AssetDetails = (props: Props): JSX.Element => {
   const {
     walletType,
     txsPageRD,
@@ -69,21 +69,23 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
     walletAddress,
     disableSend,
     network,
-    dex,
-    haltedChains,
-    changeDex
+    haltedChainsThor,
+    haltedChainsMaya
   } = props
   const [currentPage, setCurrentPage] = useState(1)
   const [showQRModal, setShowQRModal] = useState(false)
+  const { protocol, setProtocol } = useApp()
 
-  const { chain } = asset.type === AssetType.SYNTH ? dex.asset : asset
+  const dexAsset = useMemo(() => (protocol === THORChain ? AssetRuneNative : AssetCacao), [protocol])
+  const { chain } = asset.type === AssetType.SYNTH ? dexAsset : asset
 
   const navigate = useNavigate()
   const intl = useIntl()
 
-  const isHaltedChain = haltedChains.includes(chain)
-  const disableSwap = isHaltedChain || AssetHelper.isMayaAsset(asset)
-  const disableAdd = isHaltedChain || AssetHelper.isMayaAsset(asset)
+  const isResumedOnThor = isChainOfThor(chain) && !haltedChainsThor.includes(chain)
+  const isResumedOnMaya = isChainOfMaya(chain) && !haltedChainsMaya.includes(chain)
+  const disableSwap = (!isResumedOnThor && !isResumedOnMaya) || AssetHelper.isMayaAsset(asset)
+  const disableAdd = (!isResumedOnThor && !isResumedOnMaya) || AssetHelper.isMayaAsset(asset)
 
   // If the chain is not halted, perform the action
 
@@ -93,12 +95,12 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
 
   const walletActionSwapClick = useCallback(() => {
     // Determine if the asset's chain is supported by the current DEX
-    const currentChainSupported = dex.chain === 'MAYA' ? isChainOfMaya(chain) : isChainOfThor(chain)
+    const currentChainSupported = protocol === MAYAChain ? isResumedOnMaya : isResumedOnThor
 
     // If the current DEX doesn't support the asset's chain, switch DEXes
     if (!currentChainSupported) {
-      const newDex = dex.chain === 'MAYA' ? thorDetails : mayaDetails
-      changeDex(newDex)
+      const newProtocol = protocol === MAYAChain ? THORChain : MAYAChain
+      setProtocol(newProtocol)
     }
 
     const path = poolsRoutes.swap.path({
@@ -108,16 +110,16 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
       targetWalletType: DEFAULT_WALLET_TYPE
     })
     navigate(path)
-  }, [asset, chain, changeDex, dex, navigate, walletType])
+  }, [protocol, isResumedOnMaya, isResumedOnThor, asset, walletType, navigate, setProtocol])
 
   const walletActionManageClick = useCallback(() => {
     // Determine if the asset's chain is supported by the current DEX
-    const currentChainSupported = dex.chain === 'MAYA' ? isChainOfMaya(chain) : isChainOfThor(chain)
+    const currentChainSupported = protocol === MAYAChain ? isResumedOnMaya : isResumedOnThor
 
     // If the current DEX doesn't support the asset's chain, switch DEXes
     if (!currentChainSupported) {
-      const newDex = dex.chain === 'MAYA' ? thorDetails : mayaDetails
-      changeDex(newDex)
+      const newProtocol = protocol === MAYAChain ? THORChain : MAYAChain
+      setProtocol(newProtocol)
     }
     const routeAsset = AssetHelper.isRuneNativeAsset(asset) || AssetHelper.isCacaoAsset(asset) ? AssetBTC : asset
 
@@ -127,7 +129,7 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
       runeWalletType: DEFAULT_WALLET_TYPE
     })
     navigate(path)
-  }, [asset, chain, changeDex, dex, navigate, walletType])
+  }, [protocol, isResumedOnMaya, isResumedOnThor, asset, walletType, navigate, setProtocol])
 
   const walletActionDepositClick = useCallback(() => {
     const path = walletRoutes.interact.path({

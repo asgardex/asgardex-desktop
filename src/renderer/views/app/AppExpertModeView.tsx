@@ -9,7 +9,6 @@ import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useMayachainClientUrl } from '../../hooks/useMayachainClientUrl'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useThorchainClientUrl } from '../../hooks/useThorchainClientUrl'
-import { useApp } from '../../store/app/hooks'
 
 export const AppExpertModeView: React.FC = (): JSX.Element => {
   const { network } = useNetwork()
@@ -25,8 +24,6 @@ export const AppExpertModeView: React.FC = (): JSX.Element => {
   } = useMidgardMayaContext()
   const midgardUrl = useObservableState(apiEndpoint$, RD.initial)
   const midgardMayaUrl = useObservableState(apiEndpointMaya$, RD.initial)
-
-  const { isPrivate, changePrivateData } = useApp()
 
   const {
     node: thornodeNodeUrl,
@@ -61,8 +58,6 @@ export const AppExpertModeView: React.FC = (): JSX.Element => {
 
   return (
     <AppExpertMode
-      togglePrivate={changePrivateData}
-      isPrivate={isPrivate}
       midgardUrl={midgardUrl}
       midgardMayaUrl={midgardMayaUrl}
       onChangeMidgardUrl={updateMidgardUrlHandler}

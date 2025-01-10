@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Tab } from '@headlessui/react'
@@ -19,6 +19,7 @@ import { useKeystoreState } from '../../hooks/useKeystoreState'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import * as poolsRoutes from '../../routes/pools'
 import { PoolType } from '../../services/midgard/types'
+import { useApp } from '../../store/app/hooks'
 import { LoansOverview } from '../loans/LoansOverview'
 import { SaversOverview } from '../savers/SaversOverview'
 import { ActivePools } from './ActivePools'
@@ -41,7 +42,7 @@ type TabContent = {
 
 export const PoolsOverview = (): JSX.Element => {
   const intl = useIntl()
-  const [protocol, setProtocol] = useState<Chain>(THORChain)
+  const { protocol, setProtocol } = useApp()
 
   const navigate = useNavigate()
 
@@ -87,12 +88,12 @@ export const PoolsOverview = (): JSX.Element => {
       {
         index: TAB_INDEX['active'],
         label: intl.formatMessage({ id: 'pools.available' }),
-        content: <ActivePools protocol={protocol} />
+        content: <ActivePools />
       },
       {
         index: TAB_INDEX['pending'],
         label: intl.formatMessage({ id: 'pools.pending' }),
-        content: <PendingPools protocol={protocol} />
+        content: <PendingPools />
       },
       {
         index: TAB_INDEX['savers'],

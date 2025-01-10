@@ -8,7 +8,7 @@ import { WalletType } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
 import { ChangeSlipToleranceHandler } from '../../services/app/types'
 import { SwapFeesHandler, ReloadSwapFeesHandler, SwapHandler } from '../../services/chain/types'
-import { AddressValidationAsync, GetExplorerTxUrl, OpenExplorerTxUrl } from '../../services/clients'
+import { AddressValidationAsync } from '../../services/clients'
 import { ApproveFeeHandler, ApproveParams, IsApproveParams, LoadApproveFeeHandler } from '../../services/evm/types'
 import { PoolDetails as PoolDetailsMaya } from '../../services/mayaMigard/types'
 import { PoolAddress, PoolDetails, PoolsDataMap } from '../../services/midgard/types'
@@ -54,8 +54,6 @@ export type SwapProps = {
   poolDetailsThor: PoolDetails
   poolDetailsMaya: PoolDetailsMaya
   walletBalances: Pick<BalancesState, 'balances' | 'loading'>
-  goToTransaction: OpenExplorerTxUrl
-  getExplorerTxUrl: GetExplorerTxUrl
   validatePassword$: ValidatePasswordHandler
   reloadFees: ReloadSwapFeesHandler
   reloadBalances: FP.Lazy<void>
@@ -84,7 +82,6 @@ export type SwapProps = {
   approveERC20Token$: (params: ApproveParams) => TxHashLD
   isApprovedERC20Token$: (params: IsApproveParams) => LiveData<ApiError, boolean>
   importWalletHandler: FP.Lazy<void>
-  disableSwapAction: boolean
   addressValidator: AddressValidationAsync
   hidePrivateData: boolean
 }

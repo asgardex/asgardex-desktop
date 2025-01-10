@@ -4,7 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon } from '@heroicons/react/20/solid'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
+import { CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
@@ -12,7 +12,6 @@ import {
   baseAmount,
   BaseAmount,
   baseToAsset,
-  Chain,
   formatAssetAmountCurrency,
   TokenAsset
 } from '@xchainjs/xchain-util'
@@ -27,8 +26,8 @@ import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
 import { getAsgardexThorname } from '../../../../shared/const'
-import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
-import { chainToString } from '../../../../shared/utils/chain'
+import { AssetBTC, AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
+import { chainToString, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
 import { ZERO_ASSET_AMOUNT, ZERO_BASE_AMOUNT } from '../../../const'
@@ -36,6 +35,7 @@ import {
   convertBaseAmountDecimal,
   getEVMTokenAddressForChain,
   isEVMTokenAsset,
+  isRuneNativeAsset,
   isUSDAsset,
   max1e8BaseAmount,
   THORCHAIN_DECIMAL,
@@ -95,6 +95,7 @@ import {
   WalletBalance,
   WalletBalances
 } from '../../../services/wallet/types'
+import { useApp } from '../../../store/app/hooks'
 import { AssetWithAmount, AssetsWithAmount1e8, AssetWithDecimal, AssetWithAmount1e8 } from '../../../types/asgardex'
 import { PoolData, PricePool } from '../../../views/pools/Pools.types'
 import { ConfirmationModal, LedgerConfirmationModal } from '../../modal/confirmation'
@@ -112,6 +113,7 @@ import { Collapse } from '../../uielements/collapse'
 import { Tooltip, TooltipAddress } from '../../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../../uielements/fees'
 import { CopyLabel, Label } from '../../uielements/label'
+import { ProtocolSwitch } from '../../uielements/protocolSwitch'
 import { AssetMissmatchWarning } from './AssetMissmatchWarning'
 import { AsymAssetsWarning } from './AsymAssetsWarning'
 import * as Helper from './Deposit.helper'
@@ -162,7 +164,6 @@ export type Props = {
   symAssetMismatch: LiquidityProviderAssetMismatchRD
   openAsymDepositTool: FP.Lazy<void>
   hidePrivateData: boolean
-  protocol: Chain
 }
 
 export const SymDeposit = (props: Props) => {
@@ -202,13 +203,22 @@ export const SymDeposit = (props: Props) => {
     hasAsymAssets: hasAsymAssetsRD,
     symAssetMismatch: symAssetMismatchRD,
     openAsymDepositTool,
-    hidePrivateData,
-    protocol
+    hidePrivateData
   } = props
 
+  const { protocol, setProtocol } = useApp()
   const intl = useIntl()
 
   const { chain } = asset
+
+  useEffect(() => {
+    if (
+      (!isChainOfMaya(asset.chain) && protocol === MAYAChain) ||
+      (!isChainOfThor(asset.chain) && protocol === THORChain) ||
+      (isRuneNativeAsset(asset) && protocol === THORChain)
+    )
+      onChangeAsset({ asset: AssetBTC, assetWalletType, runeWalletType })
+  }, [asset, assetWalletType, onChangeAsset, protocol, runeWalletType])
 
   const protocolAsset = useMemo(
     () => (protocol === THORChain ? AssetRuneNative : AssetCacao),
@@ -2144,6 +2154,9 @@ export const SymDeposit = (props: Props) => {
 
   return (
     <div className="flex min-h-full w-full flex-col items-center justify-between">
+      <div className="mb-4 flex w-full max-w-[500px] items-center justify-start">
+        <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
+      </div>
       {hasPendingAssets && <div className="w-full pb-20px xl:px-20px">{renderPendingAssets}</div>}
       {hasAsymDeposits && <div className="w-full pb-20px xl:px-20px">{renderAsymDepositWarning}</div>}
       {hasAssetMismatch && <div className="w-full pb-20px xl:px-20px">{renderAssetMismatch}</div>}

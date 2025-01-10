@@ -5,7 +5,6 @@ import { Network } from '@xchainjs/xchain-client'
 import { PoolDetail as PoolDetailMaya } from '@xchainjs/xchain-mayamidgard'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Chain } from '@xchainjs/xchain-util'
 import { Grid } from 'antd'
 import { ColumnsType, ColumnType } from 'antd/lib/table'
 import * as A from 'fp-ts/Array'
@@ -39,6 +38,7 @@ import { MayachainLastblockRD } from '../../services/mayachain/types'
 import { PendingPoolsState as PendingPoolsStateMaya } from '../../services/mayaMigard/types'
 import { PendingPoolsState, DEFAULT_POOL_FILTERS } from '../../services/midgard/types'
 import { ThorchainLastblockRD } from '../../services/thorchain/types'
+import { useApp } from '../../store/app/hooks'
 import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
 import { filterTableData } from './Pools.utils'
 import {
@@ -50,7 +50,8 @@ import * as Shared from './PoolsOverview.shared'
 import * as Styled from './PoolsOverview.styles'
 import { TableAction, BlockLeftLabel } from './PoolsOverview.styles'
 
-export const PendingPools = ({ protocol }: { protocol: Chain }): JSX.Element => {
+export const PendingPools = (): JSX.Element => {
+  const { protocol } = useApp()
   const intl = useIntl()
   const { network$ } = useAppContext()
   const network = useObservableState<Network>(network$, DEFAULT_NETWORK)
@@ -118,14 +119,13 @@ export const PendingPools = ({ protocol }: { protocol: Chain }): JSX.Element => 
             className="min-w-[120px]"
             variant="manage"
             useBorderButton={true}
-            protocol={protocol}
             asset={asset}
             isTextView={isDesktopView}
           />
         </TableAction>
       )
     },
-    [isDesktopView, protocol]
+    [isDesktopView]
   )
 
   const btnPendingPoolsColumn: ColumnType<PoolTableRowData> = useMemo(

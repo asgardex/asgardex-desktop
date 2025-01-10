@@ -31,6 +31,7 @@ import { DepositRouteParams } from '../../routes/pools/deposit'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
 import { PoolDetailRD as PoolDetailMayaRD } from '../../services/mayaMigard/types'
 import { PoolDetailRD, PoolSharesLD, PoolSharesRD } from '../../services/midgard/types'
+import { useApp } from '../../store/app/hooks'
 import { SymDepositView } from './add/SymDepositView'
 import { ShareView } from './share/ShareView'
 import { WithdrawDepositView } from './withdraw/WithdrawDepositView'
@@ -38,10 +39,10 @@ import { WithdrawDepositView } from './withdraw/WithdrawDepositView'
 type Props = {}
 
 export const DepositView: React.FC<Props> = () => {
+  const { protocol } = useApp()
   const intl = useIntl()
 
   const {
-    protocol = THORChain,
     asset: routeAsset,
     assetWalletType: routeAssetWalletType,
     runeWalletType: routeRuneWalletType

@@ -14,9 +14,11 @@ import { useIntl } from 'react-intl'
 import { Locale } from '../../../shared/i18n/types'
 import { LOCALES } from '../../i18n'
 import { AVAILABLE_NETWORKS } from '../../services/const'
+import { useApp } from '../../store/app/hooks'
 import { DownIcon } from '../icons'
 import { Menu } from '../shared/menu'
 import { BorderButton } from '../uielements/button'
+import { SwitchButton } from '../uielements/button/SwitchButton'
 import * as Styled from './AppSettings.styles'
 
 export type Props = {
@@ -52,7 +54,7 @@ const Section: React.FC<SectionProps> = ({ title, subtitle, className, children 
   </div>
 )
 
-export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
+export const AppGeneralSettings = (props: Props): JSX.Element => {
   const {
     appUpdateState = RD.initial,
     changeNetwork = FP.constVoid,
@@ -64,6 +66,7 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
     locale
   } = props
 
+  const { isPrivate, changePrivateData } = useApp()
   const intl = useIntl()
 
   const changeLang: MenuProps['onClick'] = useCallback(
@@ -239,6 +242,9 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
       </Section>
       <Section title={intl.formatMessage({ id: 'setting.language' })} subtitle="Preferred language">
         {renderLangMenu}
+      </Section>
+      <Section title={intl.formatMessage({ id: 'common.privateData' })} subtitle="Stay hidden, stay secure">
+        <SwitchButton active={isPrivate} onChange={changePrivateData} />
       </Section>
       <Section title={intl.formatMessage({ id: 'setting.version' })} subtitle="Asgardex Software Version">
         <div className="flex max-w-[240px] flex-col space-y-1">
