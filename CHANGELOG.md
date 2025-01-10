@@ -1,10 +1,10 @@
 # 1.30.1 (2024-12-16)
 
 ## add
-- support for reading secured asset balances [#573] ()
+- support for reading secured asset balances [#573] (https://github.com/asgardex/asgardex-desktop/pull/576)
 
 ## Updates/Fixes
-- fix small swap interface UI issues [#573] ()
+- fix small swap interface UI issues [#573] (https://github.com/asgardex/asgardex-desktop/pull/576)
 
 # 1.30.0 (2024-12-16)
 
