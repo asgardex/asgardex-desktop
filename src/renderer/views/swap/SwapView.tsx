@@ -18,6 +18,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { mayaDetails } from '../../../shared/api/types'
 import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
+import { isChainOfMaya, isChainOfThor } from '../../../shared/utils/chain'
 import { isLedgerWallet, isWalletType } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ErrorView } from '../../components/shared/error/'
@@ -461,31 +462,44 @@ const SuccessRouteView: React.FC<Props> = ({
                 ...thorPoolsData,
                 ...mayaPoolsData
               }
-              const combinedAssetDetails = [
+              const thorchainPoolAssetDetails = [
                 { asset: AssetRuneNative, assetPrice: bn(1) },
-                { asset: AssetCacao, assetPrice: bn(1) },
                 ...thorAssetDetails,
+                ...pendingPools.assetDetails
+              ]
+              const mayachainPoolAssetDetails = [
+                { asset: AssetCacao, assetPrice: bn(1) },
                 ...mayaAssetDetails,
-                ...pendingPools.assetDetails,
                 ...pendingPoolsMaya.assetDetails
               ]
-              const sourceAssetDetail = FP.pipe(
-                Utils.pickPoolAsset(combinedAssetDetails, sourceAsset.asset),
-                O.toNullable
-              )
+              const poolAssetDetails = (() => {
+                if (isChainOfThor(sourceAsset.asset.chain) && isChainOfThor(targetAsset.asset.chain)) {
+                  return thorchainPoolAssetDetails
+                } else if (isChainOfMaya(sourceAsset.asset.chain) && isChainOfMaya(targetAsset.asset.chain)) {
+                  return mayachainPoolAssetDetails
+                } else if (isChainOfThor(sourceAsset.asset.chain) && isChainOfMaya(targetAsset.asset.chain)) {
+                  return mayachainPoolAssetDetails // Target asset determines the pool set
+                } else if (isChainOfMaya(sourceAsset.asset.chain) && isChainOfThor(targetAsset.asset.chain)) {
+                  return thorchainPoolAssetDetails // Target asset determines the pool set
+                } else {
+                  throw new Error(
+                    `Unable to determine the correct pool set for source (${sourceAsset.asset.chain}) and target (${targetAsset.asset.chain}) assets.`
+                  )
+                }
+              })()
+              const sourceAssetDetail = FP.pipe(Utils.pickPoolAsset(poolAssetDetails, sourceAsset.asset), O.toNullable)
+
               // Make sure sourceAsset is available in pools
               if (!sourceAssetDetail)
                 return renderError(Error(`Missing pool for source asset ${assetToString(sourceAsset.asset)}`))
-              const targetAssetDetail = FP.pipe(
-                Utils.pickPoolAsset(combinedAssetDetails, targetAsset.asset),
-                O.toNullable
-              )
+              const targetAssetDetail = FP.pipe(Utils.pickPoolAsset(poolAssetDetails, targetAsset.asset), O.toNullable)
+
               // Make sure targetAsset is available in pools
               if (!targetAssetDetail)
                 return renderError(Error(`Missing pool for target asset ${assetToString(targetAsset.asset)}`))
 
               const poolAssets: AnyAsset[] = FP.pipe(
-                combinedAssetDetails,
+                [...thorchainPoolAssetDetails, ...mayachainPoolAssetDetails],
                 A.map(({ asset }) => asset)
               )
 

@@ -15,6 +15,7 @@ import {
   baseToAsset,
   Chain,
   formatAssetAmountCurrency,
+  isSecuredAsset,
   isSynthAsset
 } from '@xchainjs/xchain-util'
 import { Collapse, Grid, Row } from 'antd'
@@ -417,7 +418,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         )
       }
 
-      if (hasSaversAssets && !isSynthAsset(asset)) {
+      if (hasSaversAssets && !isSynthAsset(asset) && !isSecuredAsset(asset)) {
         actions.push(
           createAction('common.earn', () =>
             navigate(

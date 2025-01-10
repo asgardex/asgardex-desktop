@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { XChainClient } from '@xchainjs/xchain-client'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AssetType } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/lib/Option'
@@ -150,7 +151,7 @@ export const AssetDetailsView: React.FC = (): JSX.Element => {
           asset={asset}
           loadTxsHandler={loadTxs}
           reloadBalancesHandler={reloadBalancesByChain(
-            asset.type === AssetType.SYNTH ? protocol : asset.chain,
+            asset.type === AssetType.SYNTH ? protocol : asset.type === AssetType.SECURED ? THORChain : asset.chain,
             walletType
           )}
           openExplorerTxUrl={openExplorerTxUrl}

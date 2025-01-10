@@ -1,3 +1,11 @@
+# 1.30.1 (2024-12-16)
+
+## add
+- support for reading secured asset balances [#573] ()
+
+## Updates/Fixes
+- fix small swap interface UI issues [#573] ()
+
 # 1.30.0 (2024-12-16)
 
 ## add
