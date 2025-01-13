@@ -53,6 +53,7 @@ import { SwapRouteParams, SwapRouteTargetWalletType } from '../../routes/pools/s
 import * as walletRoutes from '../../routes/wallet'
 import { getDecimal } from '../../services/chain/decimal'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
+import { cAssetToXAsset } from '../../services/chainflip/utils'
 import { DEFAULT_SLIP_TOLERANCE } from '../../services/const'
 import { TradeAccount } from '../../services/thorchain/types'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
@@ -120,13 +121,7 @@ const SuccessRouteView: React.FC<Props> = ({
 
   const { getAssetsData$ } = useChainflipContext()
 
-  useEffect(() => {
-    const subscription = getAssetsData$().subscribe((assetsData) => {
-      console.log('Assets Data:', assetsData)
-    })
-
-    return () => subscription.unsubscribe() // Clean up the subscription on component unmount
-  }, [getAssetsData$])
+  const [chainFlipAssets] = useObservableState(() => getAssetsData$(), RD.pending)
 
   const { reloadSwapFees, swapFees$, addressByChain$, swap$, assetWithDecimal$ } = useChainContext()
 
@@ -400,7 +395,8 @@ const SuccessRouteView: React.FC<Props> = ({
             sourceAssetRD,
             targetAssetRD,
             pendingPoolsStateRD,
-            pendingPoolsStateMayaRD
+            pendingPoolsStateMayaRD,
+            chainFlipAssets
           ),
           RD.fold(
             () => <></>,
@@ -484,6 +480,12 @@ const SuccessRouteView: React.FC<Props> = ({
                 Utils.pickPoolAsset(combinedAssetDetails, sourceAsset.asset),
                 O.toNullable
               )
+              const assetData = RD.isSuccess(chainFlipAssets) ? chainFlipAssets.value : []
+              // Convert assets and filter out unsupported chains
+              const convertedAssets = assetData
+                .map(cAssetToXAsset) // Apply the conversion function
+                .filter((asset) => asset.chain !== 'POL') // Remove assets with unsupported chain
+
               // Make sure sourceAsset is available in pools
               if (!sourceAssetDetail)
                 return renderError(Error(`Missing pool for source asset ${assetToString(sourceAsset.asset)}`))
@@ -514,7 +516,7 @@ const SuccessRouteView: React.FC<Props> = ({
                   targetWalletType={oTargetWalletType}
                   poolAddressMaya={selectedPoolAddressMaya}
                   poolAddressThor={selectedPoolAddressThor}
-                  poolAssets={poolAssets}
+                  poolAssets={[...poolAssets, ...convertedAssets]}
                   poolsData={combinedPoolsData}
                   poolDetailsThor={thorPoolDetails}
                   poolDetailsMaya={mayaPoolDetails}

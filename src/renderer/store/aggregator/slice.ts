@@ -19,7 +19,7 @@ const initialState: State = {
   isLoading: false,
 
   aggregator: new Aggregator({
-    protocols: ['Thorchain', 'Mayachain'],
+    protocols: ['Thorchain', 'Mayachain', 'Chainflip'],
     affiliate: {
       basisPoints: ASGARDEX_AFFILIATE_FEE,
       affiliates: {

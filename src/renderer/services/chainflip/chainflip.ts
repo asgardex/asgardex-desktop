@@ -1,15 +1,14 @@
 import { SwapSDK, AssetData } from '@chainflip/sdk/swap'
 import * as RD from '@devexperts/remote-data-ts'
-import { QuoteSwapParams } from '@xchainjs/xchain-thorchain-query'
 import {
   AnyAsset,
   Asset,
   CachedValue,
-  CryptoAmount,
+  SecuredAsset,
   SynthAsset,
   TokenAsset,
   TradeAsset,
-  baseAmount,
+  isSecuredAsset,
   isSynthAsset,
   isTradeAsset
 } from '@xchainjs/xchain-util'
@@ -35,7 +34,7 @@ export const createChainflipService$ = () => {
 
   // Check if an asset is supported in Chainflip
   const isAssetSupported$ = (asset: AnyAsset) => {
-    if (isSynthAsset(asset) || isTradeAsset(asset)) return Rx.of(false)
+    if (isSynthAsset(asset) || isTradeAsset(asset) || isSecuredAsset(asset)) return Rx.of(false)
     return Rx.defer(() => getAssetData(asset)).pipe(
       RxOp.map(() => true),
       RxOp.catchError(() => Rx.of(false))
@@ -49,49 +48,11 @@ export const createChainflipService$ = () => {
     RxOp.catchError((e) => Rx.of(RD.failure(e)))
   )
 
-  // Estimate swap
-  const estimateSwap$ = (params: QuoteSwapParams) =>
-    Rx.defer(async () => {
-      const srcAssetData = await getAssetData(params.fromAsset)
-      const destAssetData = await getAssetData(params.destinationAsset)
-
-      const { quote } = await sdk.getQuote({
-        srcChain: srcAssetData.chain,
-        srcAsset: srcAssetData.asset,
-        destChain: destAssetData.chain,
-        destAsset: destAssetData.asset,
-        amount: params.amount.baseAmount.amount().toString()
-      })
-
-      const outboundFee = quote.includedFees.find((fee) => fee.type === 'EGRESS')
-      const brokerFee = quote.includedFees.find((fee) => fee.type === 'BROKER')
-
-      return RD.success({
-        protocol: 'Chainflip',
-        expectedAmount: new CryptoAmount(
-          baseAmount(quote.egressAmount, destAssetData.decimals),
-          params.destinationAsset
-        ),
-        dustThreshold: new CryptoAmount(
-          baseAmount(srcAssetData.minimumSwapAmount, srcAssetData.decimals),
-          params.fromAsset
-        ),
-        fees: {
-          outboundFee: new CryptoAmount(
-            baseAmount(outboundFee?.amount || 0, destAssetData.decimals),
-            params.destinationAsset
-          ),
-          affiliateFee: new CryptoAmount(
-            baseAmount(brokerFee?.amount || 0, destAssetData.decimals),
-            params.destinationAsset
-          )
-        }
-      })
-    }).pipe(RxOp.catchError((e) => Rx.of(RD.failure(e))))
-
   // Helper to fetch specific asset data
-  const getAssetData = async (asset: Asset | TokenAsset | SynthAsset | TradeAsset): Promise<AssetData> => {
-    if (isSynthAsset(asset) || isTradeAsset(asset)) {
+  const getAssetData = async (
+    asset: Asset | TokenAsset | SynthAsset | TradeAsset | SecuredAsset
+  ): Promise<AssetData> => {
+    if (isSynthAsset(asset) || isTradeAsset(asset) || isSecuredAsset(asset)) {
       throw new Error('Synth and Trade assets are not supported in Chainflip protocol')
     }
     const chainAssets = await assetsData.getValue()
@@ -105,7 +66,6 @@ export const createChainflipService$ = () => {
   return {
     getAssetsData$,
     isAssetSupported$,
-    chainflipSupportedChains$,
-    estimateSwap$
+    chainflipSupportedChains$
   }
 }

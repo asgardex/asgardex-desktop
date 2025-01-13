@@ -1,18 +1,16 @@
 import React, { createContext, useContext } from 'react'
 
-import { getAssetsData$, isAssetSupported$, chainflipSupportedChains$, estimateSwap$ } from '../services/chainflip'
+import { getAssetsData$, isAssetSupported$, chainflipSupportedChains$ } from '../services/chainflip'
 
 export type ChainFlipContextValue = {
   getAssetsData$: typeof getAssetsData$
   isAssetSupported$: typeof isAssetSupported$
   chainflipSupportedChains$: typeof chainflipSupportedChains$
-  estimateSwap$: typeof estimateSwap$
 }
 const initialContext: ChainFlipContextValue = {
   getAssetsData$,
   isAssetSupported$,
-  chainflipSupportedChains$,
-  estimateSwap$
+  chainflipSupportedChains$
 }
 
 const ChainflipContext = createContext<ChainFlipContextValue | null>(null)
