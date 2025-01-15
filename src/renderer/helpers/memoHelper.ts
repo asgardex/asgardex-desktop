@@ -189,7 +189,8 @@ const assetCodes: AssetCodes = {
   'LTC.LTC': 'l',
   'BCH.BCH': 'c',
   'AVAX.AVAX': 'a',
-  'BSC.BNB': 's'
+  'BSC.BNB': 's',
+  'BASE.ETH': 'f'
 }
 
 export const shortenMemo = (input: string): string => {

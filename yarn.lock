@@ -3275,12 +3275,12 @@ __metadata:
   linkType: hard
 
 "@chainflip/rpc@npm:^1.6.6":
-  version: 1.6.11
-  resolution: "@chainflip/rpc@npm:1.6.11"
+  version: 1.6.12
+  resolution: "@chainflip/rpc@npm:1.6.12"
   dependencies:
     "@chainflip/utils": "npm:0.4.0"
-    zod: "npm:^3.23.8"
-  checksum: 10/ab9b6df3e7229a288ffec53a75e0399238618b70236d3e429812632a03633c2bea9766e35d050ea35cfd340379c9c0e3f2fb2214a8d47a4a6f886b002e40ce29
+    zod: "npm:^3.24.1"
+  checksum: 10/20883ffee2283aa7c0c17d80e53290b0262c9f10b910f566da4bbd39734b97204eeb428e6a1805323ab7bfee4557c8a952601ee4eccc256b24fcecd887bf8bab
   languageName: node
   linkType: hard
 
@@ -3304,13 +3304,13 @@ __metadata:
   linkType: hard
 
 "@chainflip/utils@npm:^0.4.0":
-  version: 0.4.8
-  resolution: "@chainflip/utils@npm:0.4.8"
+  version: 0.4.14
+  resolution: "@chainflip/utils@npm:0.4.14"
   dependencies:
     "@date-fns/utc": "npm:^2.1.0"
     bignumber.js: "npm:^9.1.2"
     date-fns: "npm:4.1.0"
-  checksum: 10/784ada98af1d0d70f475788b09e7e4ecf763eff359683cad3846e0ba274e72f5e25074ba32db960af8ab760b35e64c730e4de1dbfe66fed96602fbdb9e5f8aa6
+  checksum: 10/ea6ae4c363c7da5023c359ae0aa3cda65e80b136bba09c04a9e33f34067030c3a4e30168dcd1b08ec632b9e2b3446c7e1997b4c7e474e4ec5a5facc0dd0ac8a3
   languageName: node
   linkType: hard
 
@@ -10208,7 +10208,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-aggregator@npm:^1.0.19":
+"@xchainjs/xchain-aggregator@npm:*":
   version: 1.0.19
   resolution: "@xchainjs/xchain-aggregator@npm:1.0.19"
   dependencies:
@@ -11556,7 +11556,7 @@ __metadata:
     "@types/redux-logger": "npm:^3"
     "@types/styled-components": "npm:^5.1.25"
     "@types/text-encoding": "npm:^0"
-    "@xchainjs/xchain-aggregator": "npm:^1.0.19"
+    "@xchainjs/xchain-aggregator": "npm:*"
     "@xchainjs/xchain-arbitrum": "npm:1.0.14"
     "@xchainjs/xchain-avax": "npm:1.0.13"
     "@xchainjs/xchain-base": "npm:^0.0.9"
@@ -11925,13 +11925,13 @@ __metadata:
   linkType: hard
 
 "axios@npm:^1.7.7":
-  version: 1.7.7
-  resolution: "axios@npm:1.7.7"
+  version: 1.7.9
+  resolution: "axios@npm:1.7.9"
   dependencies:
     follow-redirects: "npm:^1.15.6"
     form-data: "npm:^4.0.0"
     proxy-from-env: "npm:^1.1.0"
-  checksum: 10/7f875ea13b9298cd7b40fd09985209f7a38d38321f1118c701520939de2f113c4ba137832fe8e3f811f99a38e12c8225481011023209a77b0c0641270e20cde1
+  checksum: 10/b7a5f660ea53ba9c2a745bf5ad77ad8bf4f1338e13ccc3f9f09f810267d6c638c03dac88b55dae8dc98b79c57d2d6835be651d58d2af97c174f43d289a9fd007
   languageName: node
   linkType: hard
 
@@ -16695,8 +16695,8 @@ __metadata:
   linkType: hard
 
 "ethers@npm:^6.13.2":
-  version: 6.13.4
-  resolution: "ethers@npm:6.13.4"
+  version: 6.13.5
+  resolution: "ethers@npm:6.13.5"
   dependencies:
     "@adraffy/ens-normalize": "npm:1.10.1"
     "@noble/curves": "npm:1.2.0"
@@ -16705,7 +16705,7 @@ __metadata:
     aes-js: "npm:4.0.0-beta.5"
     tslib: "npm:2.7.0"
     ws: "npm:8.17.1"
-  checksum: 10/221192fed93f6b0553f3e5e72bfd667d676220577d34ff854f677e955d6f608e60636a9c08b5d54039c532a9b9b7056384f0d7019eb6e111d53175806f896ac6
+  checksum: 10/ccba21a83679fb6a7c3eb9d187593501565d140064f2db28057a64d6707678bacf2adf4555882c4814688246da73173560df81fd3361fd2f227b5d3c75cb8685
   languageName: node
   linkType: hard
 
@@ -31263,10 +31263,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.23.8":
-  version: 3.23.8
-  resolution: "zod@npm:3.23.8"
-  checksum: 10/846fd73e1af0def79c19d510ea9e4a795544a67d5b34b7e1c4d0425bf6bfd1c719446d94cdfa1721c1987d891321d61f779e8236fde517dc0e524aa851a6eff1
+"zod@npm:^3.24.1":
+  version: 3.24.1
+  resolution: "zod@npm:3.24.1"
+  checksum: 10/54e25956495dec22acb9399c168c6ba657ff279801a7fcd0530c414d867f1dcca279335e160af9b138dd70c332e17d548be4bc4d2f7eaf627dead50d914fec27
   languageName: node
   linkType: hard
 

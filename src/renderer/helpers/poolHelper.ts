@@ -139,6 +139,23 @@ export const getDeepestPool = (pools: PoolDetails): O.Option<PoolDetail> =>
     return runeDepth.isGreaterThanOrEqualTo(bnOrZero(prev?.runeDepth)) ? O.some(pool) : acc
   }, O.none)
 
+export const getSecondDeepestPool = (pools: PoolDetails): O.Option<PoolDetail> => {
+  const deepestPool = getDeepestPool(pools)
+
+  // Filter out the deepest pool and find the next deepest pool
+  return pools.reduce((acc: O.Option<PoolDetail>, pool: PoolDetail) => {
+    const runeDepth = bnOrZero(pool.runeDepth)
+    const prev = O.toNullable(acc)
+
+    // Exclude the deepest pool
+    if (O.toNullable(deepestPool)?.asset === pool.asset) {
+      return acc
+    }
+
+    return runeDepth.isGreaterThanOrEqualTo(bnOrZero(prev?.runeDepth)) ? O.some(pool) : acc
+  }, O.none)
+}
+
 /**
  * Converts Asset's pool price according to runePrice in selectedPriceAsset
  */
