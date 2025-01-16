@@ -92,7 +92,9 @@ export const AssetInfo = (props: Props): JSX.Element => {
         <div className="rounded-md bg-gray0 px-2 py-0.5 font-main text-[12px] uppercase text-text2 dark:bg-gray0d dark:text-text2d">
           {FP.pipe(
             oAsset,
-            O.map(({ chain, type }) => (type === AssetType.SYNTH ? 'synth' : chainToString(chain))),
+            O.map(({ chain, type }) =>
+              type === AssetType.SYNTH ? 'synth' : type === AssetType.SECURED ? 'secured' : chainToString(chain)
+            ),
             O.getOrElse(() => loadingString)
           )}{' '}
           {renderLedgerWalletType ? `(${renderLedgerWalletType})` : ''}

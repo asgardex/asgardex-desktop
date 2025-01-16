@@ -91,7 +91,12 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
 
   const renderSendView = useCallback(
     (asset: SelectedWalletAsset) => {
-      const chain = asset.asset.type === AssetType.SYNTH ? MAYAChain : asset.asset.chain
+      const chain =
+        asset.asset.type === AssetType.SYNTH
+          ? MAYAChain
+          : asset.asset.type === AssetType.SECURED
+          ? THORChain
+          : asset.asset.chain
       if (!isSupportedChain(chain)) {
         return (
           <h1>
@@ -177,7 +182,11 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
             <BackLinkButton />
             <RefreshButton
               onClick={reloadBalancesByChain(
-                selectedAsset.asset.type === AssetType.SYNTH ? THORChain : selectedAsset.asset.chain,
+                selectedAsset.asset.type === AssetType.SYNTH
+                  ? MAYAChain
+                  : selectedAsset.asset.type === AssetType.SECURED
+                  ? THORChain
+                  : selectedAsset.asset.chain,
                 selectedAsset.walletType
               )}></RefreshButton>
           </Row>

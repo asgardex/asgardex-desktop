@@ -5,6 +5,7 @@ import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/re
 import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, AssetType, baseAmount, CryptoAmount, eqAsset } from '@xchainjs/xchain-util'
 import { formatAssetAmountCurrency, assetAmount, bn, assetToBase, BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
@@ -95,7 +96,9 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
 
   const { asset } = balance
   const { walletAddress: sender } = balance
-  const chainAsset = getChainAsset(asset.type === AssetType.SYNTH ? MAYAChain : asset.chain) // only synths on maya
+  const chainAsset = getChainAsset(
+    asset.type === AssetType.SYNTH ? MAYAChain : asset.type === AssetType.SECURED ? THORChain : asset.chain
+  )
 
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()

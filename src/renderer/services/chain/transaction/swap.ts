@@ -1,7 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { AssetCacao } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { AssetType, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
+import { AssetType, isSecuredAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -36,7 +36,13 @@ export const swap$ = ({
   protocol
 }: SwapTxParams): SwapTxState$ => {
   const { chain } =
-    asset.type === AssetType.SYNTH ? AssetCacao : asset.type === AssetType.TRADE ? { chain: THORChain } : asset
+    asset.type === AssetType.SYNTH
+      ? AssetCacao
+      : asset.type === AssetType.TRADE
+      ? { chain: THORChain }
+      : asset.type === AssetType.SECURED
+      ? { chain: THORChain }
+      : asset
 
   const requests$ = Rx.of(poolAddresses).pipe(
     // 1. Validate pool address or node
@@ -45,7 +51,7 @@ export const swap$ = ({
         // Boolean condition to check if the asset type matches the chain requirements
         () =>
           protocol === THORChain
-            ? isRuneNativeAsset(asset) || isSynthAsset(asset) || isTradeAsset(asset)
+            ? isRuneNativeAsset(asset) || isSynthAsset(asset) || isTradeAsset(asset) || isSecuredAsset(asset)
             : isCacaoAsset(asset) || isSynthAsset(asset),
 
         // If the condition is true, validate the node based on the chain type

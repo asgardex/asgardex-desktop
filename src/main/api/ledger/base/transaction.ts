@@ -86,7 +86,7 @@ export const send = async ({
 }
 
 /**
- * Sends Avax deposit txs using Ledger
+ * Sends Base deposit txs using Ledger
  */
 export const deposit = async ({
   asset,

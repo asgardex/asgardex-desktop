@@ -135,7 +135,9 @@ export const AssetDetailsView: React.FC = (): JSX.Element => {
   const { openExplorerTxUrl } = useOpenExplorerTxUrl(
     FP.pipe(
       oSelectedAsset,
-      O.map(({ asset }) => (asset.type === AssetType.SYNTH ? protocol : asset.chain))
+      O.map(({ asset }) =>
+        asset.type === AssetType.SYNTH ? protocol : asset.type === AssetType.SECURED ? protocol : asset.chain
+      )
     )
   )
 

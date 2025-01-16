@@ -6,7 +6,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
-import { THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { AssetType, baseAmount } from '@xchainjs/xchain-util'
 import { TxParams } from '@xchainjs/xchain-utxo'
 import { Spin } from 'antd'
@@ -49,7 +49,12 @@ type Props = {
 export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
   const { asset, trustedAddresses, emptyBalance, poolDetails, oPoolAddress } = props
 
-  const { chain } = asset.asset.type === AssetType.SYNTH ? AssetCacao : asset.asset
+  const { chain } =
+    asset.asset.type === AssetType.SYNTH
+      ? AssetCacao
+      : asset.asset.type === AssetType.SECURED
+      ? AssetRuneNative
+      : asset.asset
 
   const { network } = useNetwork()
   const {

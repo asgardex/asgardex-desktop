@@ -29,7 +29,8 @@ import {
   SynthAsset,
   isTokenAsset,
   isTradeAsset,
-  isSecuredAsset
+  isSecuredAsset,
+  SecuredAsset
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import clsx from 'clsx'
@@ -166,8 +167,18 @@ export const Swap = ({
   const { estimateSwap } = useAggregator()
   const intl = useIntl()
 
-  const { chain: sourceChain } = sourceAsset.type === AssetType.SYNTH ? AssetCacao : sourceAsset
-  const { chain: targetChain } = targetAsset.type === AssetType.SYNTH ? AssetCacao : targetAsset
+  const { chain: sourceChain } =
+    sourceAsset.type === AssetType.SYNTH
+      ? AssetCacao
+      : sourceAsset.type === AssetType.SECURED
+      ? AssetRuneNative
+      : sourceAsset
+  const { chain: targetChain } =
+    targetAsset.type === AssetType.SYNTH
+      ? AssetCacao
+      : sourceAsset.type === AssetType.SECURED
+      ? AssetRuneNative
+      : targetAsset
 
   const lockedWallet: boolean = useMemo(() => isLocked(keystore) || !hasImportedKeystore(keystore), [keystore])
   const [quoteOnly, setQuoteOnly] = useState<boolean>(false)
@@ -563,7 +574,15 @@ export const Swap = ({
     const swapOutFee = FP.pipe(
       oQuoteProtocol,
       O.fold(
-        () => new CryptoAmount(swapFees.outFee.amount, targetAsset.type === AssetType.SYNTH ? AssetCacao : targetAsset),
+        () =>
+          new CryptoAmount(
+            swapFees.outFee.amount,
+            targetAsset.type === AssetType.SYNTH
+              ? AssetCacao
+              : targetAsset.type === AssetType.SECURED
+              ? AssetRuneNative
+              : targetAsset
+          ),
         (txDetails) => {
           const txOutFee = txDetails.fees.outboundFee
           return txOutFee
@@ -1377,25 +1396,40 @@ export const Swap = ({
     (): AnyAsset[] =>
       FP.pipe(
         poolAssets,
-        A.chain((asset) =>
-          isRuneNativeAsset(asset) || isCacaoAsset(asset)
-            ? [asset]
-            : isChainOfMaya(asset.chain) // Only synthesize assets from MAYAChain
-            ? [
-                asset,
-                {
-                  ...asset,
-                  type: AssetType.SYNTH,
-                  synth: true
-                } as SynthAsset
-              ]
-            : [asset]
-        ),
+        A.chain((asset) => {
+          if (isRuneNativeAsset(asset) || isCacaoAsset(asset)) {
+            // Keep native Rune or Cacao assets as is
+            return [asset]
+          }
+          if (isChainOfMaya(asset.chain)) {
+            // Synthesize MAYAChain assets
+            return [
+              asset,
+              {
+                ...asset,
+                type: AssetType.SYNTH,
+                synth: true
+              } as SynthAsset
+            ]
+          }
+          if (isChainOfThor(asset.chain)) {
+            // Create secured assets for ThorChain
+            return [
+              asset,
+              {
+                ...asset,
+                type: AssetType.SECURED
+              } as SecuredAsset
+            ]
+          }
+          return [asset]
+        }),
         A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
         (assets) => unionAssets(assets)(assets)
       ),
     [poolAssets, sourceAsset]
   )
+
   const [showPasswordModal, setShowPasswordModal] = useState(ModalState.None)
   const [showLedgerModal, setShowLedgerModal] = useState(ModalState.None)
 
@@ -2172,7 +2206,14 @@ export const Swap = ({
               <div className="flex items-center">
                 {intl.formatMessage(
                   { id: 'common.confirmation.time' },
-                  { chain: targetAsset.type === AssetType.SYNTH ? MAYAChain : targetAsset.chain }
+                  {
+                    chain:
+                      targetAsset.type === AssetType.SYNTH
+                        ? MAYAChain
+                        : targetAsset.type === AssetType.SECURED
+                        ? THORChain
+                        : targetAsset.chain
+                  }
                 )}
               </div>
               <div>{formatSwapTime(Number(DefaultChainAttributes[targetAsset.chain].avgBlockTimeInSecs))}</div>
