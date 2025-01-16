@@ -152,6 +152,7 @@ const common: CommonMessages = {
   'common.managePosition': 'Gérer la Position',
   'common.analytics': 'Analyse',
   'common.asset.base': 'Base',
+  'common.asset.native': 'Natif',
   'common.asset.change': "Changement d'actif",
   'common.asset.quickSelect': 'Sélection rapide L1',
   'common.asset.chooseAsset': 'Choisissez un actif',

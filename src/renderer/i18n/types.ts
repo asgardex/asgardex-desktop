@@ -155,6 +155,7 @@ export type CommonMessageKey =
   | 'common.all'
   | 'common.analytics'
   | 'common.asset.base'
+  | 'common.asset.native'
   | 'common.asset.change'
   | 'common.asset.quickSelect'
   | 'common.asset.chooseAsset'

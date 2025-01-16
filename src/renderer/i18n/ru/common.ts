@@ -154,6 +154,7 @@ const common: CommonMessages = {
   'common.managePosition': 'Управление Позицией',
   'common.analytics': 'Аналитика',
   'common.asset.base': 'Базовый',
+  'common.asset.native': 'Родной',
   'common.asset.change': 'Сменить актив',
   'common.asset.quickSelect': 'Быстрый выбор L1',
   'common.asset.chooseAsset': 'Выберите актив',

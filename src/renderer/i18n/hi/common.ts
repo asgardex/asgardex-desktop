@@ -153,6 +153,7 @@ const common: CommonMessages = {
   'common.managePosition': 'स्थिति प्रबंधन',
   'common.analytics': 'विश्लेषण',
   'common.asset.base': 'आधार',
+  'common.asset.native': 'देशी',
   'common.asset.change': 'संपत्ति बदलें',
   'common.asset.quickSelect': 'त्वरित चयन L1',
   'common.asset.chooseAsset': 'एक संपत्ति चुनें',
