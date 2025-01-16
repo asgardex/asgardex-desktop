@@ -10273,7 +10273,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-aggregator@npm:^1.0.19":
+"@xchainjs/xchain-aggregator@npm:^1.0.20":
   version: 1.0.20
   resolution: "@xchainjs/xchain-aggregator@npm:1.0.20"
   dependencies:
@@ -10728,21 +10728,6 @@ __metadata:
     "@xchainjs/xchain-wallet": "npm:1.1.4"
     ethers: "npm:5.7.2"
   checksum: 10/0c37f8cd2725d2c5b4e89dad633e5db238eeab141c67ca8b3483a4343eb3457a470a941b9bd3b50cabc2f826ee143cea0e578c7a069b3e58845e6ed8ea69301b
-  languageName: node
-  linkType: hard
-
-"@xchainjs/xchain-thorchain-query@npm:1.0.10":
-  version: 1.0.10
-  resolution: "@xchainjs/xchain-thorchain-query@npm:1.0.10"
-  dependencies:
-    "@xchainjs/xchain-client": "npm:1.0.9"
-    "@xchainjs/xchain-midgard-query": "npm:1.0.9"
-    "@xchainjs/xchain-thornode": "npm:0.3.22"
-    "@xchainjs/xchain-util": "npm:1.0.7"
-    axios: "npm:1.7.4"
-    axios-retry: "npm:3.2.5"
-    bignumber.js: "npm:9.0.0"
-  checksum: 10/0a8798573523dec619f11f163e382f8cb1ca53a7aa2ec7a19220429fd4580a0798fb8cfdc9c0fed5f2ce25da465296d6cafb18c5625b3770c49ea463bd65f340
   languageName: node
   linkType: hard
 
@@ -11637,7 +11622,7 @@ __metadata:
     "@types/redux-logger": "npm:^3"
     "@types/styled-components": "npm:^5.1.25"
     "@types/text-encoding": "npm:^0"
-    "@xchainjs/xchain-aggregator": "npm:^1.0.19"
+    "@xchainjs/xchain-aggregator": "npm:^1.0.20"
     "@xchainjs/xchain-arbitrum": "npm:1.0.14"
     "@xchainjs/xchain-avax": "npm:1.0.13"
     "@xchainjs/xchain-base": "npm:^0.0.9"
@@ -11662,7 +11647,7 @@ __metadata:
     "@xchainjs/xchain-radix": "npm:1.1.7"
     "@xchainjs/xchain-solana": "npm:0.0.8"
     "@xchainjs/xchain-thorchain": "npm:2.0.12"
-    "@xchainjs/xchain-thorchain-query": "npm:1.0.10"
+    "@xchainjs/xchain-thorchain-query": "npm:1.0.11"
     "@xchainjs/xchain-thornode": "npm:0.3.22"
     "@xchainjs/xchain-util": "npm:1.0.7"
     "@xchainjs/xchain-utxo": "npm:1.0.9"

@@ -791,6 +791,7 @@ export const Swap = ({
           toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100 // convert to basis points
         })
         setQuoteProtocol(O.some(result))
+        setErrorProtocol(O.none)
       } catch (err) {
         console.error('Failed to fetch estimate:', err)
         setErrorProtocol(O.some(err as Error))
