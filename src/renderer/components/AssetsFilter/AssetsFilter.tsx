@@ -25,10 +25,11 @@ export const AssetsFilter: React.FC<Props> = ({ poolFilters, className, activeFi
   const filterNames: Partial<Record<StaticPoolFilter, string>> = useMemo(
     () => ({
       __watched__: 'star', // will be replaced by an icon, but don't leave it empty
-      __base__: intl.formatMessage({ id: 'common.asset.base' }),
+      __native__: intl.formatMessage({ id: 'common.asset.native' }),
       __usd__: 'usd',
       __erc20__: 'erc20',
       __avax__: 'avax',
+      __base__: 'base',
       __arb__: 'arb',
       __synth__: 'synth'
     }),
