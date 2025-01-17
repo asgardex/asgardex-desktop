@@ -2,7 +2,11 @@ import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
-import { WalletTypeLabel as WalletTypeLabelUI, AssetSynthLabel as AssetSynthLabelUI } from '../../common/Common.styles'
+import {
+  WalletTypeLabel as WalletTypeLabelUI,
+  AssetSynthLabel as AssetSynthLabelUI,
+  AssetSecuredLabel as AssetSecuredLabelUI
+} from '../../common/Common.styles'
 import { Label as UILabel } from '../../label'
 import { AssetIcon as UIAssetIcon } from '../assetIcon'
 
@@ -70,21 +74,33 @@ export const AssetIconContainer = styled.div`
 
   position: relative;
 `
+
 export const WalletTypeLabel = styled(WalletTypeLabelUI)`
   font-size: 8px;
   line-height: 12px;
   margin-left: 10px;
 `
+
 export const LabelContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 `
+
 export const ChainLabelWrapper = styled.div`
   display: flex;
   align-items: center;
 `
+
 export const AssetSynthLabel = styled(AssetSynthLabelUI)`
+  margin-top: 2px;
+  margin-left: 8px;
+  padding: 0 4px;
+  font-size: 10px;
+  line-height: 12px;
+`
+
+export const AssetSecuredLabel = styled(AssetSecuredLabelUI)`
   margin-top: 2px;
   margin-left: 8px;
   padding: 0 4px;
