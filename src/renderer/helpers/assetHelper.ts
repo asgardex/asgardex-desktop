@@ -558,4 +558,22 @@ export const getTwoSigfigAssetAmount = (amount: AssetAmount) => {
  * Creates an asset from `nullable` string
  */
 export const getAssetFromNullableString = (assetString?: string): O.Option<AnyAsset> =>
-  FP.pipe(O.fromNullable(assetString), O.map(S.toUpperCase), O.map(assetFromString), O.chain(O.fromNullable))
+  FP.pipe(
+    O.fromNullable(assetString),
+    O.map(S.toUpperCase),
+    O.map((s: string) => {
+      if (s.split('-').length === 3) {
+        // for secured assets
+        const [chain, symbol] = s.split(/-(.*)/s)
+        if (!chain || !symbol) return null
+
+        // Extract the ticker from the symbol (first part before `-` if it exists)
+        const ticker = symbol.split('-')[0]
+
+        return { chain: chain.trim(), symbol: symbol.trim(), ticker: ticker.trim(), type: AssetType.SECURED }
+      }
+
+      return assetFromString(s)
+    }),
+    O.chain(O.fromNullable)
+  )
