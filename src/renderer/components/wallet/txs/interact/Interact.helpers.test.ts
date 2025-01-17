@@ -142,7 +142,8 @@ describe('wallet/interact/helpers', () => {
         status: 'Active' as NodeStatusEnum,
         nodeOperatorAddress: '',
         bondProviders: { providers: [], nodeOperatorFee: baseAmount(100000000 * 400000) }, // Mock bondProviders
-        signMembership: []
+        signMembership: [],
+        pubKeySet: {}
       },
       {
         address: 'thor16ery22gma35h2fduxr0swdfvz4s6yvy6yhskf6',
@@ -151,7 +152,8 @@ describe('wallet/interact/helpers', () => {
         status: 'Standby' as NodeStatusEnum,
         nodeOperatorAddress: '',
         bondProviders: { providers: [], nodeOperatorFee: baseAmount(100000000 * 400000) }, // Mock bondProviders
-        signMembership: ['thor16ery22gma35h2fduxr0swdfvz4s6yvy6yhskf6']
+        signMembership: ['thor16ery22gma35h2fduxr0swdfvz4s6yvy6yhskf6'],
+        pubKeySet: {}
       },
       {
         address: 'thor13uy6szawgsj9xjs0gq2xddzmcup3zl63khp6gq',
@@ -160,7 +162,8 @@ describe('wallet/interact/helpers', () => {
         status: 'Standby' as NodeStatusEnum,
         nodeOperatorAddress: '',
         bondProviders: { providers: [], nodeOperatorFee: baseAmount(100000000 * 400000) }, // Mock bondProviders
-        signMembership: []
+        signMembership: [],
+        pubKeySet: {}
       }
     ]
 
@@ -193,7 +196,8 @@ describe('wallet/interact/helpers', () => {
           nodeOperatorAddress: '',
           status: 'Disabled' as NodeStatusEnum,
           bondProviders: { providers: [], nodeOperatorFee: baseAmount(100000000 * 400000) }, // Mock bondProviders
-          signMembership: []
+          signMembership: [],
+          pubKeySet: {}
         }
       ]
       const result = findNodeIndex(modifiedNodes, 'thor1nprw0w6ex8xh4tfl3vtkhqnjvds68kwshq9ax9')

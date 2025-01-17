@@ -262,12 +262,9 @@ export const sendPoolTx$ = ({
   const { chain } =
     asset.type === AssetType.SYNTH
       ? AssetCacao
-      : asset.type === AssetType.TRADE
-      ? { chain: THORChain }
-      : asset.type === AssetType.SECURED
+      : asset.type === AssetType.TRADE || asset.type === AssetType.SECURED
       ? { chain: THORChain }
       : asset
-
   if (!isSupportedChain(chain)) return txFailure$(`${chain} is not enabled`)
 
   switch (chain) {

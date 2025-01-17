@@ -124,8 +124,14 @@ export type BondProviders = {
   providers: Providers[]
 }
 
+export type PubKeySet = {
+  secp256k1?: Address
+  ed25519?: Address
+}
+
 export type NodeInfo = {
   address: Address
+  pubKeySet: PubKeySet
   nodeOperatorAddress: Address
   bond: BaseAmount
   award: BaseAmount

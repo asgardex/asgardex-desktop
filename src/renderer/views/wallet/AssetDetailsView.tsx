@@ -136,7 +136,7 @@ export const AssetDetailsView: React.FC = (): JSX.Element => {
     FP.pipe(
       oSelectedAsset,
       O.map(({ asset }) =>
-        asset.type === AssetType.SYNTH ? protocol : asset.type === AssetType.SECURED ? protocol : asset.chain
+        asset.type === AssetType.SYNTH || asset.type === AssetType.SECURED ? protocol : asset.chain
       )
     )
   )

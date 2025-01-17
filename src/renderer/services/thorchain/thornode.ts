@@ -323,9 +323,11 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
             node_address,
             bond_providers,
             signer_membership,
-            node_operator_address
+            node_operator_address,
+            pub_key_set
           }) => ({
             address: node_address,
+            pubKeySet: pub_key_set,
             bond: baseAmount(total_bond, THORCHAIN_DECIMAL),
             award: baseAmount(current_award, THORCHAIN_DECIMAL),
             nodeOperatorAddress: node_operator_address,

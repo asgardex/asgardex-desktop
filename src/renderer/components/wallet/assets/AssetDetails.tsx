@@ -77,7 +77,7 @@ export const AssetDetails = (props: Props): JSX.Element => {
   const { protocol, setProtocol } = useApp()
 
   const dexAsset = useMemo(() => (protocol === THORChain ? AssetRuneNative : AssetCacao), [protocol])
-  const { chain } = asset.type === AssetType.SYNTH ? dexAsset : asset.type === AssetType.SECURED ? dexAsset : asset
+  const { chain } = asset.type === AssetType.SYNTH || asset.type === AssetType.SECURED ? dexAsset : asset
 
   const navigate = useNavigate()
   const intl = useIntl()
