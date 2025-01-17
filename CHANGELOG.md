@@ -11,6 +11,7 @@
 - add support for Secured Asset view & quotes [#583] (https://github.com/asgardex/asgardex-desktop/pull/583)
 - Update swapping support for basechain [#583](https://github.com/asgardex/asgardex-desktop/pull/583)
 - fix interact view node address check [#583] (https://github.com/asgardex/asgardex-desktop/pull/583) 
+- update fee estimates for inbound pool transactions [#588] (https://github.com/asgardex/asgardex-desktop/pull/588)
 
 # 1.30.0 (2024-12-16)
 

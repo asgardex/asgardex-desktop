@@ -301,7 +301,6 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
         )
       )
     default:
-      console.log(asset)
       return FP.pipe(
         poolOutboundFee$(asset),
         // inbound fees = outbound fees / 3
