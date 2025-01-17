@@ -171,11 +171,11 @@ describe('wallet/interact/helpers', () => {
       const result = findNodeIndex(nodes, 'thor10czf2s89h79fsjmqqck85cdqeq536hw5ngz4lt')
       expect(result).toEqual(0)
     })
-
-    it('should find a standby node with the address in signMembership', () => {
-      const result = findNodeIndex(nodes, 'thor16ery22gma35h2fduxr0swdfvz4s6yvy6yhskf6')
-      expect(result).toEqual(1)
-    })
+    // thornode uses the extended public key in the sign membership
+    // it('should find a standby node with the address in signMembership', () => {
+    //   const result = findNodeIndex(nodes, 'thor16ery22gma35h2fduxr0swdfvz4s6yvy6yhskf6')
+    //   expect(result).toEqual(1)
+    // })
 
     it('should not find a node if the address does not match any active or standby nodes', () => {
       const result = findNodeIndex(nodes, 'thor1invalidaddress1234567890')
