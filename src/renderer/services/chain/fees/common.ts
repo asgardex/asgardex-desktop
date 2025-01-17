@@ -1,9 +1,14 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
+import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
+import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
@@ -20,11 +25,16 @@ import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { isChainOfThor } from '../../../../shared/utils/chain'
 import { isCacaoAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { liveData } from '../../../helpers/rx/liveData'
+import * as ARB from '../../arb'
+import * as AVAX from '../../avax'
+import * as BASE from '../../base'
 import * as BTC from '../../bitcoin'
 import * as BCH from '../../bitcoincash'
+import * as BSC from '../../bsc'
 import * as COSMOS from '../../cosmos'
 import * as DASH from '../../dash'
 import * as DOGE from '../../doge'
+import * as ETH from '../../ethereum'
 import * as KUJI from '../../kuji'
 import * as LTC from '../../litecoin'
 import * as MAYA from '../../mayachain'
@@ -113,6 +123,91 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
       return FP.pipe(
         COSMOS.fees$(),
         liveData.map((fees) => ({ asset, amount: fees.fast }))
+      )
+    case ETHChain:
+      return FP.pipe(
+        ETH.address$.pipe(
+          RxOp.switchMap(
+            O.fold(
+              () => Rx.of(RD.failure(new Error('No address available'))),
+              (address) =>
+                FP.pipe(
+                  ETH.fees$({ amount: baseAmount(1), recipient: address.address }),
+                  liveData.map((fees) => ({ asset, amount: fees.fast }))
+                )
+            )
+          ),
+          RxOp.catchError((error) => Rx.of(RD.failure(error))),
+          RxOp.startWith(RD.pending)
+        )
+      )
+    case ARBChain:
+      return FP.pipe(
+        ARB.address$.pipe(
+          RxOp.switchMap(
+            O.fold(
+              () => Rx.of(RD.failure(new Error('No address available'))),
+              (address) =>
+                FP.pipe(
+                  ARB.fees$({ amount: baseAmount(1), recipient: address.address }),
+                  liveData.map((fees) => ({ asset, amount: fees.fast }))
+                )
+            )
+          ),
+          RxOp.catchError((error) => Rx.of(RD.failure(error))),
+          RxOp.startWith(RD.pending)
+        )
+      )
+    case BASEChain:
+      return FP.pipe(
+        BASE.address$.pipe(
+          RxOp.switchMap(
+            O.fold(
+              () => Rx.of(RD.failure(new Error('No address available'))),
+              (address) =>
+                FP.pipe(
+                  BASE.fees$({ amount: baseAmount(1), recipient: address.address }),
+                  liveData.map((fees) => ({ asset, amount: fees.fast }))
+                )
+            )
+          ),
+          RxOp.catchError((error) => Rx.of(RD.failure(error))),
+          RxOp.startWith(RD.pending)
+        )
+      )
+    case AVAXChain:
+      return FP.pipe(
+        AVAX.address$.pipe(
+          RxOp.switchMap(
+            O.fold(
+              () => Rx.of(RD.failure(new Error('No address available'))),
+              (address) =>
+                FP.pipe(
+                  AVAX.fees$({ amount: baseAmount(1), recipient: address.address }),
+                  liveData.map((fees) => ({ asset, amount: fees.fast }))
+                )
+            )
+          ),
+          RxOp.catchError((error) => Rx.of(RD.failure(error))),
+          RxOp.startWith(RD.pending)
+        )
+      )
+    case BSCChain:
+      return FP.pipe(
+        BSC.address$.pipe(
+          RxOp.switchMap(
+            O.fold(
+              () => Rx.of(RD.failure(new Error('No address available'))),
+              (address) =>
+                FP.pipe(
+                  BSC.fees$({ amount: baseAmount(1), recipient: address.address }),
+                  liveData.map((fees) => ({ asset, amount: fees.fast }))
+                )
+            )
+          ),
+          RxOp.catchError((error) => Rx.of(RD.failure(error))),
+          RxOp.startWith(RD.pending)
+        )
       )
     case BTCChain:
       return FP.pipe(
@@ -206,6 +301,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
         )
       )
     default:
+      console.log(asset)
       return FP.pipe(
         poolOutboundFee$(asset),
         // inbound fees = outbound fees / 3

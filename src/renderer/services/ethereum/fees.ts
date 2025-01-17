@@ -15,7 +15,7 @@ import { FeeLD } from '../chain/types'
 import * as C from '../clients'
 import { FeesLD } from '../clients'
 import { ERC20_OUT_TX_GAS_LIMIT, ETH_OUT_TX_GAS_LIMIT, EVMZeroAddress } from '../evm/const'
-import { FeesService, PollInTxFeeParams, ApproveFeeHandler, ApproveParams, TxParams } from '../evm/types'
+import { FeesService, PoolInTxFeeParams, ApproveFeeHandler, ApproveParams, TxParams } from '../evm/types'
 import { Client$ } from '../evm/types'
 
 export const createFeesService = (client$: Client$): FeesService => {
@@ -67,7 +67,7 @@ export const createFeesService = (client$: Client$): FeesService => {
   /**
    * Fees for sending txs into pool on Ethereum
    **/
-  const poolInTxFees$ = ({ address, abi, func, params }: PollInTxFeeParams): C.FeesLD =>
+  const poolInTxFees$ = ({ address, abi, func, params }: PoolInTxFeeParams): C.FeesLD =>
     client$.pipe(
       RxOp.switchMap((oClient) =>
         FP.pipe(

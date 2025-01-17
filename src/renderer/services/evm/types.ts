@@ -62,7 +62,7 @@ export type ApproveParams = {
 
 export type IsApproveParams = { contractAddress: Address; spenderAddress: Address; fromAddress: Address }
 
-export type PollInTxFeeParams = {
+export type PoolInTxFeeParams = {
   address: Address
   abi: ethers.ContractInterface
   func: string
@@ -88,7 +88,7 @@ export type TxParams = {
 }
 
 export type FeesService = {
-  poolInTxFees$: (params: PollInTxFeeParams) => C.FeesLD
+  poolInTxFees$: (params: PoolInTxFeeParams) => C.FeesLD
   poolOutTxFee$: (asset: Asset) => C.FeesLD
   approveFee$: ApproveFeeHandler
   reloadApproveFee: LoadApproveFeeHandler
