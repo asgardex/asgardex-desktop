@@ -9,7 +9,7 @@
 - fix small swap interface UI issues [#573] (https://github.com/asgardex/asgardex-desktop/pull/576)
 - update quote logic [#579] (https://github.com/asgardex/asgardex-desktop/pull/579)
 - add support for Secrued Asset view & quotes [#583] (https://github.com/asgardex/asgardex-desktop/pull/583)
-- Udpate swapping support for basechain [#583](https://github.com/asgardex/asgardex-desktop/pull/583)
+- Update swapping support for basechain [#583](https://github.com/asgardex/asgardex-desktop/pull/583)
 - fix interact view node address check [#583] (https://github.com/asgardex/asgardex-desktop/pull/583) 
 
 # 1.30.0 (2024-12-16)
