@@ -26,6 +26,24 @@ export const getEstimate = createAsyncThunk(
     useAffiliate: Boolean
   }) => {
     try {
+      const wallet = new Wallet({
+        ETH: new EthClient({
+          ...defaultEthParams
+        }),
+        BSC: new BscClient({
+          ...defaultBscParams
+        }),
+        AVAX: new AvaxClient({
+          ...defaultAvaxParams
+        }),
+        ARB: new ArbClient({
+          ...defaultArbParams
+        }),
+        BASE: new BaseClient({
+          ...defaultBaseParams
+        })
+      })
+
       if (useAffiliate) {
         aggregator.setConfiguration({
           protocols: ['Thorchain', 'Mayachain'],
@@ -33,23 +51,7 @@ export const getEstimate = createAsyncThunk(
             basisPoints: ASGARDEX_AFFILIATE_FEE,
             affiliates: { Thorchain: ASGARDEX_THORNAME, Mayachain: ASGARDEX_THORNAME }
           },
-          wallet: new Wallet({
-            ETH: new EthClient({
-              ...defaultEthParams
-            }),
-            BSC: new BscClient({
-              ...defaultBscParams
-            }),
-            AVAX: new AvaxClient({
-              ...defaultAvaxParams
-            }),
-            ARB: new ArbClient({
-              ...defaultArbParams
-            }),
-            BASE: new BaseClient({
-              ...defaultBaseParams
-            })
-          })
+          wallet
         })
 
         const estimate = await aggregator.estimateSwap(params)
@@ -58,27 +60,10 @@ export const getEstimate = createAsyncThunk(
         aggregator.setConfiguration({
           protocols: ['Thorchain', 'Mayachain'],
           affiliate: { basisPoints: 0, affiliates: { Thorchain: ASGARDEX_THORNAME, Mayachain: ASGARDEX_THORNAME } },
-          wallet: new Wallet({
-            ETH: new EthClient({
-              ...defaultEthParams
-            }),
-            BSC: new BscClient({
-              ...defaultBscParams
-            }),
-            AVAX: new AvaxClient({
-              ...defaultAvaxParams
-            }),
-            ARB: new ArbClient({
-              ...defaultArbParams
-            }),
-            BASE: new BaseClient({
-              ...defaultBaseParams
-            })
-          })
+          wallet
         })
 
         const estimate = await aggregator.estimateSwap(params)
-
         return estimate
       }
     } catch (error) {
