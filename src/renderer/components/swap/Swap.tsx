@@ -42,7 +42,7 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { ASGARDEX_AFFILIATE_FEE_MIN, getAsgardexAffiliateFee, getAsgardexThorname } from '../../../shared/const'
+// import { ASGARDEX_AFFILIATE_FEE_MIN, getAsgardexAffiliateFee, getAsgardexThorname } from '../../../shared/const'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import {
   chainToString,
@@ -418,8 +418,10 @@ export const Swap = ({
       () => '',
       (recipientAddress: string) => {
         const toleranceBps = undefined
-        const affiliateName = getAsgardexThorname(network)
-        const affiliateBps = getAsgardexAffiliateFee(network)
+        // const affiliateName = getAsgardexThorname(network)
+        // const affiliateBps = getAsgardexAffiliateFee(network)
+        const affiliateName = undefined // Remove tracking from placeholder memo
+        const affiliateBps = undefined // Remove fees from placeholder memo
 
         return getSwapMemo({
           targetAsset,
@@ -746,13 +748,16 @@ export const Swap = ({
     }
   }, [affiliateFee, network, oQuoteProtocol, poolDetailsMaya, poolDetailsThor, pricePoolMaya, pricePoolThor])
 
-  //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
-  // Apparently thornode bug is fixed.
-  // https://gitlab.com/thorchain/thornode/-/commit/f96350ab3d5adda18c61d134caa98b6d5af2b006
-  const applyBps = useMemo(() => {
-    const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
-    return txFeeCovered
-  }, [priceAmountToSwapMax1e8.assetAmount])
+  // //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
+  // // Apparently thornode bug is fixed.
+  // // https://gitlab.com/thorchain/thornode/-/commit/f96350ab3d5adda18c61d134caa98b6d5af2b006
+  // const applyBps = useMemo(() => {
+  //   const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
+  //   return txFeeCovered
+  // }, [priceAmountToSwapMax1e8.assetAmount])
+
+  // Don't apply basis points (so apply no fees)
+  const applyBps = false
 
   const priceAffiliateFeeLabel = useMemo(() => {
     if (!swapFees) {
@@ -780,7 +785,7 @@ export const Swap = ({
       ),
       O.getOrElse(() => '')
     )
-    const bps = getAsgardexAffiliateFee(network)
+    const bps: number | undefined = undefined
     const displayBps = applyBps && bps !== undefined ? `${bps / 100}%` : '0%'
 
     return !applyBps ? `free` : price ? `${price} (${fee}) ${displayBps}` : fee

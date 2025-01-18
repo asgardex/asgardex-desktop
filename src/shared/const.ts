@@ -21,13 +21,13 @@ import { envOrDefault } from './utils/env'
 
 require('dotenv').config()
 
-export const ASGARDEX_IDENTIFIER = 999
+export const ASGARDEX_IDENTIFIER = 0
 
 // Asgardex full address
 export const ASGARDEX_ADDRESS = 'thor1rr6rahhd4sy76a7rdxkjaen2q4k4pw2g06w7qp'
 
-export const ASGARDEX_AFFILIATE_FEE = 30
-export const ASGARDEX_THORNAME = envOrDefault(process.env.REACT_APP_ASGARDEX_THORNAME, 'dx')
+export const ASGARDEX_AFFILIATE_FEE = 0
+export const ASGARDEX_THORNAME = envOrDefault(process.env.REACT_APP_ASGARDEX_THORNAME, '')
 
 // Dynamically evaluate Asgardex Thorname
 export const getAsgardexThorname = (network: Network): string | undefined =>
@@ -38,7 +38,7 @@ export const getAsgardexAffiliateFee = (network: Network): number | undefined =>
   network === Network.Mainnet ? ASGARDEX_AFFILIATE_FEE : undefined
 
 // Affiliate Fee min apply value
-export const ASGARDEX_AFFILIATE_FEE_MIN = 1001
+export const ASGARDEX_AFFILIATE_FEE_MIN = Number.MAX_SAFE_INTEGER
 
 // Header key for 9R endpoints
 export const NINE_REALMS_CLIENT_HEADER = 'x-client-id'
@@ -47,8 +47,8 @@ export enum ExternalUrl {
   DOCSTHOR = 'https://docs.thorchain.org',
   DOCSMAYA = 'https://docs.mayaprotocol.com/',
   DISCORD = 'https://discord.gg/bzvbD7tdZv',
-  GITHUB_REPO = `https://github.com/asgardex/asgardex-desktop`,
-  GITHUB_RELEASE = `https://github.com/asgardex/asgardex-desktop/releases/tag/v`,
+  GITHUB_REPO = `https://github.com/HugoKNL/asgardex-desktop-feeless`,
+  GITHUB_RELEASE = `https://github.com/HugoKNL/asgardex-desktop-feeless/releases/tag/v`,
   TWITTER = 'https://twitter.com/asgardex',
   ASGARDEX = 'https://asgardex.com',
   LICENSE = 'https://github.com/asgardex/asgardex-desktop?tab=MIT-1-ov-file'

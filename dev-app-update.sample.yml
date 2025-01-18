@@ -1,6 +1,6 @@
 provider: github
-owner: 'thorchain'
-repo: 'asgardex-desktop'
+owner: 'HugoKNL'
+repo: 'asgardex-desktop-feeless'
 # GitHub personal access token
 # @see https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token
 token: XXX

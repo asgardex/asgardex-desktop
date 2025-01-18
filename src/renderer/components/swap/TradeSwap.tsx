@@ -23,8 +23,8 @@ import {
   CryptoAmount,
   AssetType,
   AnyAsset,
-  TradeAsset,
-  isTradeAsset
+  TradeAsset
+  // isTradeAsset
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import * as A from 'fp-ts/Array'
@@ -35,12 +35,12 @@ import debounce from 'lodash/debounce'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
-import {
-  ASGARDEX_ADDRESS,
-  ASGARDEX_AFFILIATE_FEE_MIN,
-  getAsgardexAffiliateFee,
-  getAsgardexThorname
-} from '../../../shared/const'
+// import {
+//   ASGARDEX_ADDRESS,
+//   ASGARDEX_AFFILIATE_FEE_MIN,
+//   getAsgardexAffiliateFee,
+//   getAsgardexThorname
+// } from '../../../shared/const'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { chainToString, DEFAULT_ENABLED_CHAINS, EnabledChain } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
@@ -479,8 +479,10 @@ export const TradeSwap = ({
       () => '',
       (recipientAddress: string) => {
         const toleranceBps = undefined
-        const affiliateName = getAsgardexThorname(network)
-        const affiliateBps = getAsgardexAffiliateFee(network)
+        // const affiliateName = getAsgardexThorname(network)
+        // const affiliateBps = getAsgardexAffiliateFee(network)
+        const affiliateName = undefined // Remove tracking from placeholder memo
+        const affiliateBps = undefined // Remove fees from placeholder memo
 
         return getSwapMemo({
           targetAsset,
@@ -650,13 +652,15 @@ export const TradeSwap = ({
     }
   }, [affiliateFee, network, poolDetails, pricePool, pricePool.asset])
 
-  //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
-  const applyBps = useMemo(() => {
-    const aff = getAsgardexAffiliateFee(network)
-    const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
-    const applyBps = txFeeCovered ? aff : 0
-    return applyBps
-  }, [network, priceAmountToSwapMax1e8.assetAmount])
+  // //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
+  // const applyBps = useMemo(() => {
+  //   const aff = getAsgardexAffiliateFee(network)
+  //   const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
+  //   const applyBps = txFeeCovered ? aff : 0
+  //   return applyBps
+  // }, [network, priceAmountToSwapMax1e8.assetAmount])
+
+  const applyBps: number | undefined = undefined
 
   const priceAffiliateFeeLabel = useMemo(() => {
     if (!swapFees) {
@@ -693,14 +697,13 @@ export const TradeSwap = ({
     () =>
       FP.pipe(
         sequenceTOption(oRecipientAddress, oSourceAssetWB),
-        O.map(([destinationAddress, { walletAddress }]) => {
+        O.map(([destinationAddress]) => {
           const fromAsset = sourceAsset
           const destinationAsset = targetAsset
           const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
           const address = destinationAddress
-          const affiliate =
-            ASGARDEX_ADDRESS === walletAddress || isTradeAsset(sourceAsset) ? undefined : getAsgardexThorname(network)
-          const affiliateBps = ASGARDEX_ADDRESS === walletAddress || isTradeAsset(sourceAsset) ? undefined : applyBps
+          const affiliate = ''
+          const affiliateBps = 0
           const streamingInt = isStreaming ? streamingInterval : 0
           const streaminQuant = isStreaming ? streamingQuantity : 0
           const toleranceBps = isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100 // convert to basis points
@@ -753,7 +756,7 @@ export const TradeSwap = ({
       sequenceTOption(oQuoteSwapData, oSourceAssetWB),
       O.fold(
         () => {
-          const affiliateName = getAsgardexThorname(network)
+          const affiliateName = ''
           const estimateThorDexSwap: QuoteSwapParams = {
             fromAsset: sourceAsset,
             destinationAsset: targetAsset,

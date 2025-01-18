@@ -1,6 +1,6 @@
 {
   "appId": "org.thorchain.asgardex",
-  "productName": "ASGARDEX",
+  "productName": "(feeless) ASGARDEX",
   "copyright": "Copyright © 2024 ${author}",
   "artifactName": "${productName}-${version}-${os}.${ext}",
   "files": ["resources/icon.png", "src/renderer/assets/svg/coin-*.svg"],
@@ -53,9 +53,9 @@
       }
     ],
     "desktop": {
-      "Comment": "ASGARDEX",
+      "Comment": "(feeless) ASGARDEX",
       "Icon": "asgardex",
-      "Name": "ASGARDEX",
+      "Name": "(feeless) ASGARDEX",
       "StartupNotify": "true",
       "Terminal": "false",
       "Type": "Application",
@@ -64,8 +64,8 @@
   },
   "publish": {
     "provider": "github",
-    "owner": "asgardex",
-    "repo": "asgardex-desktop",
+    "owner": "HugoKNL",
+    "repo": "asgardex-desktop-feeless",
     "private": false
   }
 }
