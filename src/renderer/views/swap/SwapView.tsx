@@ -136,7 +136,7 @@ const SuccessRouteView: React.FC<Props> = ({
   const { chain: targetChain } =
     targetAsset.type === AssetType.SYNTH
       ? mayaDetails.asset
-      : sourceAsset.type === AssetType.SECURED
+      : targetAsset.type === AssetType.SECURED
       ? AssetRuneNative
       : targetAsset
 
