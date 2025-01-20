@@ -1759,9 +1759,10 @@ export const Swap = ({
           // Default error display
           return <div key={index}>{error}</div>
         })}
+        {belowDustThreshold && <>{`Amount to swap is Below DustThreshold`}</>}
       </ErrorLabel>
     )
-  }, [oQuoteProtocol, sourceAsset])
+  }, [belowDustThreshold, oQuoteProtocol, sourceAsset])
 
   const sourceChainFeeErrorLabel: JSX.Element = useMemo(() => {
     if (!sourceChainFeeError) {
