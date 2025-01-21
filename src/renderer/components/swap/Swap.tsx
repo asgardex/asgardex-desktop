@@ -1352,18 +1352,26 @@ export const Swap = ({
 
   // // sets the locked asset amount to be the asset pool depth
   useEffect(() => {
-    if (lockedWallet) {
+    if (lockedWallet || quoteOnly) {
       setQuoteOnly(true)
-      const poolDetail = isChainOfThor(sourceAsset.chain)
-        ? getPoolDetail(poolDetailsThor, sourceAsset)
-        : getPoolDetailMaya(poolDetailsMaya, sourceAsset)
+      const poolDetailMaya = getPoolDetailMaya(poolDetailsMaya, sourceAsset)
+      const poolDetailThor = getPoolDetail(poolDetailsThor, sourceAsset)
 
-      if (O.isSome(poolDetail)) {
-        const detail = poolDetail.value
+      if (O.isSome(poolDetailMaya)) {
+        const detail = poolDetailMaya.value
         let amount: BaseAmount
         if (isRuneNativeAsset(sourceAsset)) {
-          amount = baseAmount(detail.runeDepth)
+          amount = baseAmount(detail.assetDepth)
         } else if (isCacaoAsset(sourceAsset)) {
+          amount = baseAmount(detail.runeDepth)
+        } else {
+          amount = baseAmount(detail.assetDepth)
+        }
+        setLockedAssetAmount(new CryptoAmount(convertBaseAmountDecimal(amount, sourceAssetDecimal), sourceAsset))
+      } else if (O.isSome(poolDetailThor)) {
+        const detail = poolDetailThor.value
+        let amount: BaseAmount
+        if (isRuneNativeAsset(sourceAsset)) {
           amount = baseAmount(detail.runeDepth)
         } else {
           amount = baseAmount(detail.assetDepth)
