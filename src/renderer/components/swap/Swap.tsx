@@ -1360,9 +1360,7 @@ export const Swap = ({
       if (O.isSome(poolDetailMaya)) {
         const detail = poolDetailMaya.value
         let amount: BaseAmount
-        if (isRuneNativeAsset(sourceAsset)) {
-          amount = baseAmount(detail.assetDepth)
-        } else if (isCacaoAsset(sourceAsset)) {
+        if (isCacaoAsset(sourceAsset)) {
           amount = baseAmount(detail.runeDepth)
         } else {
           amount = baseAmount(detail.assetDepth)
