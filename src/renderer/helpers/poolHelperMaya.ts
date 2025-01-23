@@ -13,6 +13,7 @@ import { ONE_CACAO_BASE_AMOUNT } from '../../shared/mock/amount'
 import { PoolAddress, PoolDetails } from '../services/mayaMigard/types'
 import { getPoolDetail, toPoolData } from '../services/mayaMigard/utils'
 import { MimirHalt } from '../services/thorchain/types'
+import { AssetWithAmount } from '../types/asgardex'
 import { PoolData, PoolTableRowData, PoolTableRowsData, PricePool } from '../views/pools/Pools.types'
 import {
   getPoolTableRowDataMaya,
@@ -20,7 +21,7 @@ import {
   getValueOfAssetInRune,
   getValueOfRuneInAsset
 } from '../views/pools/Pools.utils'
-import { convertBaseAmountDecimal, isCacaoAsset, to1e10BaseAmount, to1e8BaseAmount } from './assetHelper'
+import { convertBaseAmountDecimal, isCacaoAsset, isMayaAsset, to1e10BaseAmount, to1e8BaseAmount } from './assetHelper'
 import { eqAsset, eqChain, eqString } from './fp/eq'
 import { ordBaseAmount } from './fp/ord'
 import { sequenceTOption, sequenceTOptionFromArray } from './fpHelpers'
@@ -149,11 +150,13 @@ export const getAssetPoolPrice = (runePrice: BigNumber) => (poolDetail: Pick<Poo
 export const getPoolPriceValue = ({
   balance: { asset, amount },
   poolDetails,
-  pricePool: { asset: priceAsset, poolData: pricePoolData }
+  pricePool: { asset: priceAsset, poolData: pricePoolData },
+  mayaPrice
 }: {
   balance: Balance
   poolDetails: PoolDetails
   pricePool: PricePool
+  mayaPrice?: AssetWithAmount
 }): O.Option<BaseAmount> => {
   // no pricing if balance asset === price pool asset
   if (eqAsset.equals(asset, priceAsset)) return O.some(amount)
@@ -168,6 +171,8 @@ export const getPoolPriceValue = ({
       // Calculate RUNE values based on `pricePoolData`
       if (isCacaoAsset(asset)) {
         return O.some(getValueOfRuneInAsset(amount1e8, pricePoolData))
+      } else if (isMayaAsset(asset) && mayaPrice) {
+        console.log('MAYA PRICE - ', mayaPrice.amount.amount().toFixed(2))
       }
       // In all other cases we don't have any price pool and no price
       return O.none
