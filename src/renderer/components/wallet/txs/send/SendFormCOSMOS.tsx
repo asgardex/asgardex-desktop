@@ -340,18 +340,21 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     const maxAmountPrice = getPoolPriceValue({
       balance: { asset, amount: maxAmount },
       poolDetails,
-      pricePool
+      pricePool,
+      mayaPriceRD: mayaScanPrice
     })
 
     const assetFeePrice = getPoolPriceValue({
       balance: { asset: chainAsset, amount: assetFee.baseAmount },
       poolDetails,
-      pricePool
+      pricePool,
+      mayaPriceRD: mayaScanPrice
     })
     const amountPrice = getPoolPriceValue({
       balance: { asset, amount: amountToSend },
       poolDetails,
-      pricePool
+      pricePool,
+      mayaPriceRD: mayaScanPrice
     })
     if (O.isSome(maxAmountPrice)) {
       const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)

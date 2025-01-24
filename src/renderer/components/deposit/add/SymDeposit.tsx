@@ -48,7 +48,7 @@ import { eqBaseAmount, eqOAsset, eqOApproveParams, eqAsset } from '../../../help
 import { sequenceSOption, sequenceTOption } from '../../../helpers/fpHelpers'
 import { getDepositMemo } from '../../../helpers/memoHelper'
 import * as PoolHelpers from '../../../helpers/poolHelper'
-import { getPoolPriceValue as getPoolPriceValueM } from '../../../helpers/poolHelperMaya'
+import { getUSDValue } from '../../../helpers/poolHelperMaya'
 import { LiveData } from '../../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../../helpers/stringHelper'
 import * as WalletHelper from '../../../helpers/walletHelper'
@@ -369,7 +369,7 @@ export const SymDeposit = (props: Props) => {
             (amount) => ({ asset: pricePool.asset, amount })
           )
         : FP.pipe(
-            getPoolPriceValueM({
+            getUSDValue({
               balance: { asset: protocolAsset, amount: dexAmountToDeposit },
               poolDetails,
               pricePool
@@ -526,7 +526,7 @@ export const SymDeposit = (props: Props) => {
           O.map((amount) => ({ amount, asset: pricePool.asset }))
         )
       : FP.pipe(
-          getPoolPriceValueM({
+          getUSDValue({
             balance: { asset: AssetCacao, amount },
             poolDetails,
             pricePool
@@ -589,7 +589,7 @@ export const SymDeposit = (props: Props) => {
           O.map((amount) => ({ asset: pricePool.asset, amount }))
         )
       : FP.pipe(
-          getPoolPriceValueM({
+          getUSDValue({
             balance: { asset: AssetCacao, amount },
             poolDetails,
             pricePool
@@ -653,7 +653,7 @@ export const SymDeposit = (props: Props) => {
           O.map((amount) => ({ amount, asset: pricePool.asset }))
         )
       : FP.pipe(
-          getPoolPriceValueM({
+          getUSDValue({
             balance: { asset, amount },
             poolDetails,
             pricePool
@@ -717,7 +717,7 @@ export const SymDeposit = (props: Props) => {
           O.map((amount) => ({ asset: pricePool.asset, amount }))
         )
       : FP.pipe(
-          getPoolPriceValueM({
+          getUSDValue({
             balance: { asset, amount },
             poolDetails,
             pricePool
@@ -1053,7 +1053,7 @@ export const SymDeposit = (props: Props) => {
             (amount) => ({ asset: pricePool.asset, amount })
           )
         : FP.pipe(
-            getPoolPriceValueM({
+            getUSDValue({
               balance: { asset, amount: assetAmountToDepositMax1e8 },
               poolDetails,
               pricePool

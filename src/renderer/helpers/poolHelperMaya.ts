@@ -1,3 +1,4 @@
+import * as RD from '@devexperts/remote-data-ts'
 import { Balance, Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-mayamidgard'
@@ -10,10 +11,10 @@ import * as Ord from 'fp-ts/lib/Ord'
 
 import { PoolsWatchList } from '../../shared/api/io'
 import { ONE_CACAO_BASE_AMOUNT } from '../../shared/mock/amount'
+import { MayaScanPrice, MayaScanPriceRD } from '../hooks/useMayascanPrice'
 import { PoolAddress, PoolDetails } from '../services/mayaMigard/types'
 import { getPoolDetail, toPoolData } from '../services/mayaMigard/utils'
 import { MimirHalt } from '../services/thorchain/types'
-import { AssetWithAmount } from '../types/asgardex'
 import { PoolData, PoolTableRowData, PoolTableRowsData, PricePool } from '../views/pools/Pools.types'
 import {
   getPoolTableRowDataMaya,
@@ -151,12 +152,12 @@ export const getPoolPriceValue = ({
   balance: { asset, amount },
   poolDetails,
   pricePool: { asset: priceAsset, poolData: pricePoolData },
-  mayaPrice
+  mayaPriceRD
 }: {
   balance: Balance
   poolDetails: PoolDetails
   pricePool: PricePool
-  mayaPrice?: AssetWithAmount
+  mayaPriceRD: MayaScanPriceRD
 }): O.Option<BaseAmount> => {
   // no pricing if balance asset === price pool asset
   if (eqAsset.equals(asset, priceAsset)) return O.some(amount)
@@ -171,8 +172,19 @@ export const getPoolPriceValue = ({
       // Calculate RUNE values based on `pricePoolData`
       if (isCacaoAsset(asset)) {
         return O.some(getValueOfRuneInAsset(amount1e8, pricePoolData))
-      } else if (isMayaAsset(asset) && mayaPrice) {
-        console.log('MAYA PRICE - ', mayaPrice.amount.amount().toFixed(2))
+      } else if (isMayaAsset(asset)) {
+        return RD.fold(
+          () => O.none, // Initial state
+          () => O.none, // Loading state
+          (error) => {
+            console.error('Failed to fetch Maya price:', error)
+            return O.none
+          },
+          (mayaScanPrice: MayaScanPrice) => {
+            const mayaPrice = mayaScanPrice.mayaPriceInUsd.amount.times(amount)
+            return O.some(mayaPrice)
+          }
+        )(mayaPriceRD)
       }
       // In all other cases we don't have any price pool and no price
       return O.none

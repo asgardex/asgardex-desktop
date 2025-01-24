@@ -14,6 +14,7 @@ import { useEvmContext } from '../../../contexts/EvmContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
+import { useObserveMayaScanPrice } from '../../../hooks/useMayascanPrice'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { FeesRD, WalletBalances } from '../../../services/clients'
@@ -37,6 +38,7 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
   const { asset, trustedAddresses, emptyBalance, poolDetails, oPoolAddress, oPoolAddressMaya } = props
 
   const { network } = useNetwork()
+  const { mayaScanPriceRD } = useObserveMayaScanPrice()
 
   const {
     balancesState$,
@@ -103,6 +105,7 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
               poolDetails={poolDetails}
               oPoolAddress={O.none}
               oPoolAddressMaya={O.none}
+              mayaScanPrice={mayaScanPriceRD}
             />
           </Styled.Container>
         </Spin>
@@ -127,6 +130,7 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
             network={network}
             poolDetails={poolDetails}
             oPoolAddress={oPoolAddress}
+            mayaScanPrice={mayaScanPriceRD}
             oPoolAddressMaya={oPoolAddressMaya}
           />
         </Styled.Container>

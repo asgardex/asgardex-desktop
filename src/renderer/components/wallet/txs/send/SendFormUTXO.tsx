@@ -33,6 +33,7 @@ import { getChainFeeBounds } from '../../../../helpers/chainHelper'
 import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../../helpers/poolHelperMaya'
 import { loadingString } from '../../../../helpers/stringHelper'
+import { MayaScanPriceRD } from '../../../../hooks/useMayascanPrice'
 import { usePricePool } from '../../../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
@@ -82,6 +83,7 @@ export type Props = {
   poolDetails: PoolDetails | PoolDetailsMaya
   oPoolAddress: O.Option<PoolAddress>
   oPoolAddressMaya: O.Option<PoolAddressMaya>
+  mayaScanPrice: MayaScanPriceRD
 }
 
 export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
@@ -100,7 +102,8 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
     validatePassword$,
     oPoolAddress,
     oPoolAddressMaya,
-    network
+    network,
+    mayaScanPrice
   } = props
 
   const intl = useIntl()
@@ -406,7 +409,8 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
         : getPoolPriceValueM({
             balance: { asset, amount: maxAmount },
             poolDetails,
-            pricePool
+            pricePool,
+            mayaPriceRD: mayaScanPrice
           })
     )
 
@@ -420,7 +424,8 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
         : getPoolPriceValueM({
             balance: { asset, amount: amountToSend },
             poolDetails,
-            pricePool
+            pricePool,
+            mayaPriceRD: mayaScanPrice
           })
     )
 
@@ -438,7 +443,8 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
             : getPoolPriceValueM({
                 balance: { asset, amount: fee },
                 poolDetails,
-                pricePool
+                pricePool,
+                mayaPriceRD: mayaScanPrice
               })
       )
     )
@@ -457,7 +463,7 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
       const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
       setMaxAmountPriceValue(maxCryptoAmount)
     }
-  }, [amountToSend, asset, maxAmount, network, poolDetails, pricePool, selectedFee])
+  }, [amountToSend, asset, maxAmount, mayaScanPrice, network, poolDetails, pricePool, selectedFee])
 
   const priceFeeLabel = useMemo(() => {
     if (!feePriceValue) {

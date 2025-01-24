@@ -1,12 +1,12 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { baseAmount, BaseAmount } from '@xchainjs/xchain-util'
+import { BaseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { EnabledChain } from '../../shared/utils/chain'
-import { AssetUSDC, ZERO_BASE_AMOUNT } from '../const'
+import { ZERO_BASE_AMOUNT } from '../const'
 import { useMidgardContext } from '../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
 import { useWalletContext } from '../contexts/WalletContext'
@@ -14,9 +14,9 @@ import { to1e8BaseAmount } from '../helpers/assetHelper'
 import { getPoolPriceValue } from '../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../helpers/poolHelperMaya'
 import { userChains$ } from '../services/storage/userChains'
-import { useMayaScanPrice } from './useMayascanPrice'
+import { MayaScanPriceRD } from './useMayascanPrice'
 
-export const useTotalWalletBalance = () => {
+export const useTotalWalletBalance = (mayaScanPriceRD: MayaScanPriceRD) => {
   const { chainBalances$ } = useWalletContext()
   const {
     service: {
@@ -29,8 +29,6 @@ export const useTotalWalletBalance = () => {
       pools: { poolsState$: mayaPoolsState$, selectedPricePool$: mayaSelectedPricePool$ }
     }
   } = useMidgardMayaContext()
-
-  const { mayaScanPriceRD } = useMayaScanPrice()
 
   // Observable to capture both the calculated balances and errors
   const combinedBalances$ = Rx.combineLatest([
@@ -70,9 +68,7 @@ export const useTotalWalletBalance = () => {
                           balance: { asset, amount },
                           poolDetails: RD.isSuccess(poolsStateMayaRD) ? poolsStateMayaRD.value.poolDetails : [],
                           pricePool: selectedPricePoolMaya,
-                          mayaPrice: RD.isSuccess(mayaScanPriceRD)
-                            ? mayaScanPriceRD.value.mayaPriceInUsd
-                            : { asset: AssetUSDC, amount: baseAmount(1) }
+                          mayaPriceRD: mayaScanPriceRD
                         })
                       }
                       acc = acc.plus(to1e8BaseAmount(O.getOrElse(() => ZERO_BASE_AMOUNT)(value)))

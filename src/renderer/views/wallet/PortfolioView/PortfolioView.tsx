@@ -39,6 +39,7 @@ import { hiddenString } from '../../../helpers/stringHelper'
 import { filterWalletBalancesByAssets } from '../../../helpers/walletHelper'
 import { useRunePoolProviders } from '../../../hooks/useAllRunePoolProviders'
 import { useAllSaverProviders } from '../../../hooks/useAllSaverProviders'
+import { useObserveMayaScanPrice } from '../../../hooks/useMayascanPrice'
 import { useNodeInfos } from '../../../hooks/useNodeInfos'
 import { usePoolShares } from '../../../hooks/usePoolShares'
 import { useTotalWalletBalance } from '../../../hooks/useWalletBalance'
@@ -99,8 +100,8 @@ export const PortfolioView: React.FC = (): JSX.Element => {
       }),
     INITIAL_BALANCES_STATE
   )
-
-  const combinedBalances$ = useTotalWalletBalance()
+  const { mayaScanPriceRD } = useObserveMayaScanPrice()
+  const combinedBalances$ = useTotalWalletBalance(mayaScanPriceRD)
 
   const [enabledChains, setEnabledChains] = useState<Set<EnabledChain>>(new Set())
 

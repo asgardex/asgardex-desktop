@@ -26,7 +26,7 @@ import { useWalletContext } from '../../../contexts/WalletContext'
 import { useXrdContext } from '../../../contexts/XrdContext'
 import { liveData } from '../../../helpers/rx/liveData'
 import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
-import { useMayaScanPrice } from '../../../hooks/useMayascanPrice'
+import { useObserveMayaScanPrice } from '../../../hooks/useMayascanPrice'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
@@ -67,7 +67,7 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
     INITIAL_BALANCES_STATE
   )
 
-  const { mayaScanPriceRD } = useMayaScanPrice()
+  const { mayaScanPriceRD } = useObserveMayaScanPrice()
 
   const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(chain))
 

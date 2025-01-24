@@ -79,6 +79,7 @@ export type GetPoolPriceValueFnMaya = (params: {
   balance: Balance
   poolDetails: PoolDetailsMaya
   pricePool: PricePool
+  mayaPriceRD: MayaScanPriceRD
 }) => O.Option<BaseAmount>
 
 type Props = {
@@ -226,12 +227,14 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         const getPriceMaya = (
           getPoolPriceValueFn: GetPoolPriceValueFnMaya,
           poolDetails: PoolDetailsMaya,
-          pricePool: PricePool
+          pricePool: PricePool,
+          mayaPriceRD: MayaScanPriceRD
         ) => {
           const priceOption = getPoolPriceValueFn({
             balance: { asset, amount },
             poolDetails,
-            pricePool
+            pricePool,
+            mayaPriceRD
           })
           return formatPrice(priceOption, pricePool.asset)
         }
@@ -249,14 +252,14 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
             price =
               (isThorchainNonEmpty && getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool)) ||
               (isMayachainNonEmpty &&
-                getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool)) ||
+                getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool, mayaScanPrice)) ||
               (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
               price
           } else if (isChainOfMaya(asset.chain)) {
             // Chain is supported only by MAYA
             price =
               (isMayachainNonEmpty &&
-                getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool)) ||
+                getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool, mayaScanPrice)) ||
               (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
               price
           } else if (isChainOfThor(asset.chain)) {

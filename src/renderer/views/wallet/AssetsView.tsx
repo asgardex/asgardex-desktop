@@ -21,7 +21,7 @@ import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
-import { useMayaScanPrice } from '../../hooks/useMayascanPrice'
+import { useObserveMayaScanPrice } from '../../hooks/useMayascanPrice'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useTotalWalletBalance } from '../../hooks/useWalletBalance'
@@ -40,7 +40,6 @@ export const AssetsView: React.FC = (): JSX.Element => {
 
   const { balancesState$, setSelectedAsset } = useWalletContext()
   const { network } = useNetwork()
-  const { mayaScanPriceRD } = useMayaScanPrice()
   const { isPrivate } = useApp()
   const { geckoPriceMap, fetchPrice: fetchCoingeckoPrice } = useCoingecko()
 
@@ -59,8 +58,8 @@ export const AssetsView: React.FC = (): JSX.Element => {
       }
     }
   } = useMidgardMayaContext()
-
-  const combinedBalances$ = useTotalWalletBalance()
+  const { mayaScanPriceRD } = useObserveMayaScanPrice()
+  const combinedBalances$ = useTotalWalletBalance(mayaScanPriceRD)
 
   const [enabledChains, setEnabledChains] = useState<Set<EnabledChain>>(new Set())
   const [disabledChains, setDisabledChains] = useState<EnabledChain[]>([])
