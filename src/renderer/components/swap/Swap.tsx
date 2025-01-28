@@ -786,6 +786,12 @@ export const Swap = ({
     return !applyBps ? `free` : price ? `${price} (${fee}) ${displayBps}` : fee
   }, [swapFees, affiliateFee.assetAmount, affiliateFee.asset, affiliatePriceValue, applyBps, network, sourceAsset])
 
+  const {
+    state: approveState,
+    reset: resetApproveState,
+    subscribe: subscribeApproveState
+  } = useSubscriptionState<TxHashRD>(RD.initial)
+
   useEffect(() => {
     // Early exit if `amountToSwapMax1e8` is zero
     if (amountToSwapMax1e8.amount().isZero()) {
@@ -822,6 +828,59 @@ export const Swap = ({
 
     fetchSwap()
   }, [
+    amountToSwapMax1e8,
+    applyBps,
+    destinationWalletAddress,
+    estimateSwap,
+    isStreaming,
+    network,
+    quoteOnly,
+    slipTolerance,
+    sourceAsset,
+    sourceAssetDecimal,
+    sourceWalletAddress,
+    streamingInterval,
+    streamingQuantity,
+    targetAsset
+  ])
+  // Refetch the quote after approval is successful
+  useEffect(() => {
+    if (RD.isSuccess(approveState)) {
+      console.log('Approval succeeded! Refetching quote...')
+
+      // Trigger the quote refetch
+      if (!amountToSwapMax1e8.amount().isZero()) {
+        // Reset states on dependency change
+        setQuoteProtocol(O.none)
+        const fetchSwap = async () => {
+          setIsFetchingEstimate(true)
+          try {
+            const result = await estimateSwap(
+              {
+                fromAsset: sourceAsset,
+                destinationAsset: targetAsset,
+                amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset),
+                fromAddress: sourceWalletAddress,
+                destinationAddress: quoteOnly ? undefined : destinationWalletAddress,
+                streamingInterval: isStreaming ? streamingInterval : 0,
+                streamingQuantity: isStreaming ? streamingQuantity : 0,
+                toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100 // convert to basis points
+              },
+              applyBps
+            )
+            setQuoteProtocol(O.some(result))
+            setErrorProtocol(O.none)
+          } catch (err) {
+            console.error('Failed to refetch estimate after approval:', err)
+            setErrorProtocol(O.some(err as Error))
+          }
+          setIsFetchingEstimate(false)
+        }
+        fetchSwap()
+      }
+    }
+  }, [
+    approveState,
     amountToSwapMax1e8,
     applyBps,
     destinationWalletAddress,
@@ -1574,12 +1633,6 @@ export const Swap = ({
       })
     )
   }, [oSwapParams, subscribeSwapState, swap$])
-
-  const {
-    state: approveState,
-    reset: resetApproveState,
-    subscribe: subscribeApproveState
-  } = useSubscriptionState<TxHashRD>(RD.initial)
 
   const submitApproveTx = useCallback(() => {
     FP.pipe(

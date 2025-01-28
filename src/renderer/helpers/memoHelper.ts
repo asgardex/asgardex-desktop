@@ -127,11 +127,11 @@ export const updateMemo = (memo: string, network: Network): string => {
 
   // Check if the string ends with ":dx:<number>" if its stagenet remove affiliate from memo
   if (network === Network.Stagenet) {
-    return memo.replace(pattern, replacement)
+    return shortenMemo(memo.replace(pattern, replacement))
   }
 
   // If it doesn't end with ":dx:<number>", return the original memo
-  return memo
+  return shortenMemo(memo)
 }
 
 /**
