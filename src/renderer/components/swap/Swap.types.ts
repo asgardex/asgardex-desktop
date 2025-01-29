@@ -1,3 +1,4 @@
+import { Protocol, QuoteSwap } from '@xchainjs/xchain-aggregator/lib/types'
 import { Network } from '@xchainjs/xchain-client'
 import { Address, AnyAsset, Asset, BaseAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -33,6 +34,10 @@ export enum ModalState {
 export enum RateDirection {
   Source = 'fromSource',
   Target = 'fromTarget'
+}
+export type QuoteWithProtocol = {
+  protocol: Protocol
+  estimate: QuoteSwap
 }
 
 export type SwapProps = {

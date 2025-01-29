@@ -467,6 +467,8 @@ type SwapMessageKey =
   | 'swap.input'
   | 'swap.output'
   | 'swap.slip.title'
+  | 'swap.aggregator.bestRoute'
+  | 'swap.aggregator.fastestRoute'
   | 'swap.slip.tolerance'
   | 'swap.slip.tolerance.info'
   | 'swap.slip.tolerance.ledger-disabled.info'
