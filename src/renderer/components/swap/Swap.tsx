@@ -837,7 +837,6 @@ export const Swap = ({
 
           // Update the state with sorted quotes
           setQuoteProtocols(O.some(sortedQuotes))
-          console.log(sortedQuotes[0].estimate)
           // Set the default selected quote to the first item in the sorted array
           setQuoteProtocol(O.some(sortedQuotes[0].estimate))
         }
@@ -944,10 +943,11 @@ export const Swap = ({
     targetAsset
   ])
 
-  // // Function to handle user selection
-  // const handleSelectQuote = (selectedQuote: QuoteSwap) => {
-  //   setQuoteProtocol(O.some(selectedQuote))
-  // }
+  // Function to handle user selection
+  const handleSelectQuote = (selectedQuote: QuoteWithProtocol) => {
+    console.log('clicked')
+    setQuoteProtocol(O.some(selectedQuote.estimate))
+  }
 
   // Swap boolean for use later
   const canSwap: boolean = useMemo(() => {
@@ -2448,7 +2448,7 @@ export const Swap = ({
           </div>
         </div>
         <div className="mt-1 space-y-1">
-          <SwapRoute isLoading={isFetchingEstimate} quotes={oQuoteProcotols} />
+          <SwapRoute isLoading={isFetchingEstimate} quotes={oQuoteProcotols} onSelectQuote={handleSelectQuote} />
           <Collapse
             header={
               <div className="flex flex-row items-center justify-between">
