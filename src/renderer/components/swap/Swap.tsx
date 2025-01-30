@@ -840,7 +840,14 @@ export const Swap = ({
           // Set the default selected quote to the first item in the sorted array
           setQuoteProtocol(O.some(sortedQuotes[0].estimate))
         }
-        sortAndSetDefaultQuote(result.estimates)
+        // Filter out only the successful quotes
+        const successfulQuotes: QuoteWithProtocol[] = result.estimates
+          .filter((result): result is PromiseFulfilledResult<QuoteWithProtocol> => result.status === 'fulfilled')
+          .map((result) => result.value)
+
+        // Call the sorting function with the successful quotes
+        sortAndSetDefaultQuote(successfulQuotes)
+
         setErrorProtocol(O.none)
       } catch (err) {
         console.error('Failed to fetch estimate:', err)
@@ -914,7 +921,13 @@ export const Swap = ({
               // Set the default selected quote to the first item in the sorted array
               setQuoteProtocol(O.some(sortedQuotes[0].estimate))
             }
-            sortAndSetDefaultQuote(result.estimates)
+            // Filter out only the successful quotes
+            const successfulQuotes: QuoteWithProtocol[] = result.estimates
+              .filter((result): result is PromiseFulfilledResult<QuoteWithProtocol> => result.status === 'fulfilled')
+              .map((result) => result.value)
+
+            // Call the sorting function with the successful quotes
+            sortAndSetDefaultQuote(successfulQuotes)
             setErrorProtocol(O.none)
           } catch (err) {
             console.error('Failed to refetch estimate after approval:', err)

@@ -44,12 +44,10 @@ export const getEstimate = createAsyncThunk(
           ...defaultBaseParams
         })
       })
-
-      // Determine the protocols based on the `protocol` argument
       const protocols: Protocol[] = ['Thorchain', 'Mayachain']
 
       // Fetch estimates for all selected protocols
-      const estimates = await Promise.all(
+      const estimates = await Promise.allSettled(
         protocols.map(async (protocol) => {
           aggregator.setConfiguration({
             protocols: [protocol],
