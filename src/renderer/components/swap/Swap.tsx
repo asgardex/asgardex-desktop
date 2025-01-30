@@ -958,7 +958,6 @@ export const Swap = ({
 
   // Function to handle user selection
   const handleSelectQuote = (selectedQuote: QuoteWithProtocol) => {
-    console.log('clicked')
     setQuoteProtocol(O.some(selectedQuote.estimate))
   }
 
