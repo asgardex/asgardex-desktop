@@ -46,7 +46,7 @@ export const getEstimate = createAsyncThunk(
 
       if (useAffiliate) {
         aggregator.setConfiguration({
-          protocols: ['Thorchain', 'Mayachain'],
+          protocols: ['Thorchain', 'Mayachain', 'Chainflip'],
           affiliate: {
             basisPoints: ASGARDEX_AFFILIATE_FEE,
             affiliates: { Thorchain: ASGARDEX_THORNAME, Mayachain: ASGARDEX_THORNAME }
@@ -58,7 +58,7 @@ export const getEstimate = createAsyncThunk(
         return estimate
       } else {
         aggregator.setConfiguration({
-          protocols: ['Thorchain', 'Mayachain'],
+          protocols: ['Thorchain', 'Mayachain', 'Chainflip'],
           affiliate: { basisPoints: 0, affiliates: { Thorchain: ASGARDEX_THORNAME, Mayachain: ASGARDEX_THORNAME } },
           wallet
         })

@@ -55,6 +55,7 @@ import {
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
+import { useChainflipContext } from '../../contexts/ChainflipContext'
 import {
   max1e8BaseAmount,
   convertBaseAmountDecimal,
@@ -183,6 +184,8 @@ export const Swap = ({
   const lockedWallet: boolean = useMemo(() => isLocked(keystore) || !hasImportedKeystore(keystore), [keystore])
   const [quoteOnly, setQuoteOnly] = useState<boolean>(false)
   const [isFetchingEstimate, setIsFetchingEstimate] = useState(false)
+
+  const { isAssetSupported$ } = useChainflipContext()
 
   const useSourceAssetLedger = isLedgerWallet(initialSourceWalletType)
   const prevChainFees = useRef<O.Option<SwapFees>>(O.none)
@@ -817,6 +820,7 @@ export const Swap = ({
           },
           applyBps
         )
+        console.log(result)
         setQuoteProtocol(O.some(result))
         setErrorProtocol(O.none)
       } catch (err) {
@@ -1132,6 +1136,7 @@ export const Swap = ({
     sourceChainAssetAmount,
     swapFees.inFee.amount
   ])
+  // console.log(oSwapParams)
 
   // Check to see slippage greater than tolerance
   // This is handled by thornode
@@ -1461,14 +1466,16 @@ export const Swap = ({
             return true
           if (isMayaSupportedAsset(targetAsset, poolDetailsMaya) && isMayaSupportedAsset(asset, poolDetailsMaya))
             return true
-
+          if (isAssetSupported$(asset)) {
+            return true
+          }
           return false
         }),
         // Merge duplications
         (assets) => unionAssets(assets)(assets)
       ),
 
-    [allBalances, poolDetailsMaya, poolDetailsThor, targetAsset]
+    [allBalances, isAssetSupported$, poolDetailsMaya, poolDetailsThor, targetAsset]
   )
 
   /**
@@ -1487,7 +1494,9 @@ export const Swap = ({
             return true
           if (isMayaSupportedAsset(sourceAsset, poolDetailsMaya) && isMayaSupportedAsset(asset, poolDetailsMaya))
             return true
-
+          if (isAssetSupported$(asset)) {
+            return true
+          }
           return false
         }),
         A.chain((asset) => {
@@ -1516,12 +1525,13 @@ export const Swap = ({
               } as SecuredAsset
             ]
           }
+
           return [asset]
         }),
         A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
         (assets) => unionAssets(assets)(assets)
       ),
-    [poolAssets, poolDetailsMaya, poolDetailsThor, sourceAsset]
+    [isAssetSupported$, poolAssets, poolDetailsMaya, poolDetailsThor, sourceAsset]
   )
 
   const [showPasswordModal, setShowPasswordModal] = useState(ModalState.None)

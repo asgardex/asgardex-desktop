@@ -491,6 +491,7 @@ const SuccessRouteView: React.FC<Props> = ({
               ]
 
               const assetData = RD.isSuccess(chainFlipAssets) ? chainFlipAssets.value : []
+              console.log(chainFlipAssets)
               // Convert assets and filter out unsupported chains
               const convertedAssets = assetData
                 .map(cAssetToXAsset) // Apply the conversion function
@@ -511,7 +512,6 @@ const SuccessRouteView: React.FC<Props> = ({
                 }
               })()
               const sourceAssetDetail = FP.pipe(Utils.pickPoolAsset(poolAssetDetails, sourceAsset.asset), O.toNullable)
-
               // Make sure sourceAsset is available in pools
               if (!sourceAssetDetail)
                 return renderError(Error(`Missing pool for source asset ${assetToString(sourceAsset.asset)}`))
