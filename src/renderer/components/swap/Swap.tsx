@@ -2451,7 +2451,13 @@ export const Swap = ({
           {O.isNone(oQuoteProcotols) ? (
             <></>
           ) : (
-            <SwapRoute isLoading={isFetchingEstimate} quotes={oQuoteProcotols} onSelectQuote={handleSelectQuote} />
+            <SwapRoute
+              isLoading={isFetchingEstimate}
+              targetAsset={targetAsset.ticker}
+              quote={oQuoteProtocol}
+              quotes={oQuoteProcotols}
+              onSelectQuote={handleSelectQuote}
+            />
           )}
           <Collapse
             header={
