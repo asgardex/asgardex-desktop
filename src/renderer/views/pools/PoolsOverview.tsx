@@ -20,18 +20,16 @@ import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import * as poolsRoutes from '../../routes/pools'
 import { PoolType } from '../../services/midgard/types'
 import { useApp } from '../../store/app/hooks'
-import { LoansOverview } from '../loans/LoansOverview'
 import { SaversOverview } from '../savers/SaversOverview'
 import { ActivePools } from './ActivePools'
 import { PendingPools } from './PendingPools'
 
-type TabType = PoolType | 'savers' | 'lending'
+type TabType = PoolType | 'savers'
 
 const TAB_INDEX: Record<TabType, number> = {
   active: 0,
   pending: 1,
-  savers: 2,
-  lending: 3
+  savers: 2
 }
 
 type TabContent = {
@@ -69,19 +67,16 @@ export const PoolsOverview = (): JSX.Element => {
 
   const matchPoolsPendingRoute = useMatch({ path: poolsRoutes.pending.path(), end: false })
   const matchPoolsSaversRoute = useMatch({ path: poolsRoutes.savers.path(), end: false })
-  const matchPoolsLendingRoute = useMatch({ path: poolsRoutes.lending.path(), end: false })
 
   const selectedIndex: number = useMemo(() => {
     if (matchPoolsSaversRoute) {
       return TAB_INDEX['savers']
     } else if (matchPoolsPendingRoute) {
       return TAB_INDEX['pending']
-    } else if (matchPoolsLendingRoute) {
-      return TAB_INDEX['lending']
     } else {
       return TAB_INDEX['active']
     }
-  }, [matchPoolsLendingRoute, matchPoolsPendingRoute, matchPoolsSaversRoute])
+  }, [matchPoolsPendingRoute, matchPoolsSaversRoute])
 
   const tabs = useMemo(
     (): TabContent[] => [
@@ -103,18 +98,6 @@ export const PoolsOverview = (): JSX.Element => {
             haltedChains={haltedChains}
             mimirHalt={mimirHalt}
             protocol={protocol}
-            walletLocked={walletLocked}
-          />
-        )
-      },
-      {
-        index: TAB_INDEX['lending'],
-        label: intl.formatMessage({ id: 'common.lending' }),
-        content: (
-          <LoansOverview
-            protocol={protocol}
-            haltedChains={haltedChains}
-            mimirHalt={mimirHalt}
             walletLocked={walletLocked}
           />
         )

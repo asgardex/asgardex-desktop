@@ -17,9 +17,9 @@ export const useAggregator = () => {
    * Dispatches `getEstimate` thunk and returns the result.
    */
   const estimateSwap = useCallback(
-    async (params: QuoteSwapParams) => {
+    async (params: QuoteSwapParams, useAffiliate: Boolean) => {
       try {
-        const result = await dispatch(xchainActions.getEstimate({ aggregator, params })).unwrap()
+        const result = await dispatch(xchainActions.getEstimate({ aggregator, params, useAffiliate })).unwrap()
         return result
       } catch (error) {
         console.error('Failed to fetch estimate:', error)

@@ -560,6 +560,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     },
     [addressValidation, interactType, intl, nodes]
   )
+
   // Send tx start time
   const [sendTxStartTime, setSendTxStartTime] = useState<number>(0)
 

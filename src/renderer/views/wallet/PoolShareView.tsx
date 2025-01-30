@@ -178,7 +178,9 @@ export const PoolShareView: React.FC = (): JSX.Element => {
           data.forEach((item) => {
             sharesDetails = {
               ...sharesDetails,
-              [item.asset.chain]: baseAmount(item.runeDepositPrice.amount().plus(item.assetDepositPrice.amount()))
+              [`${item.asset.chain}:${item.asset.ticker}`]: baseAmount(
+                item.runeDepositPrice.amount().plus(item.assetDepositPrice.amount())
+              )
             }
           })
         }

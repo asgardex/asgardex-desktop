@@ -229,7 +229,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
           openAssetExplorerTxUrl={openAssetExplorerTxUrl}
           getRuneExplorerTxUrl={getRuneExplorerTxUrl}
           getAssetExplorerTxUrl={getAssetExplorerTxUrl}
-          onChangeAsset={FP.constVoid}
+          onChangeAsset={onChangeAsset}
           asset={assetWD}
           walletBalances={balancesState}
           fees$={symDepositFees$}
@@ -269,6 +269,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
       openAssetExplorerTxUrl,
       getRuneExplorerTxUrl,
       getAssetExplorerTxUrl,
+      onChangeAsset,
       assetWD,
       balancesState,
       symDepositFees$,

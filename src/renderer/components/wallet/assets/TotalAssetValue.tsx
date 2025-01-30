@@ -27,8 +27,6 @@ type Props = {
 
 export const TotalAssetValue: React.FC<Props> = (props): JSX.Element => {
   const { balancesByChain, title, info, hidePrivateData, errorsByChain } = props
-  // const intl = useIntl()
-
   const [showDetails, setShowDetails] = useState<boolean>(false)
   const chartData = useMemo(
     () =>

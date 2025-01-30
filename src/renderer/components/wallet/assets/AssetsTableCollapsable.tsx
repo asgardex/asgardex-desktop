@@ -15,6 +15,7 @@ import {
   baseToAsset,
   Chain,
   formatAssetAmountCurrency,
+  isSecuredAsset,
   isSynthAsset
 } from '@xchainjs/xchain-util'
 import { Collapse, Grid, Row } from 'antd'
@@ -31,10 +32,10 @@ import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE, ZERO_BASE_AMOUNT } from '../../../const'
 import { truncateAddress } from '../../../helpers/addressHelper'
-import { isCacaoAsset, isMayaAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
+import { isBtcAsset, isCacaoAsset, isMayaAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { isEvmChain } from '../../../helpers/evmHelper'
-import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
+import { getDeepestPool, getPoolPriceValue, getSecondDeepestPool } from '../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../helpers/poolHelperMaya'
 import { hiddenString, noDataString } from '../../../helpers/stringHelper'
 import { calculateMayaValueInUSD, MayaScanPriceRD } from '../../../hooks/useMayascanPrice'
@@ -78,6 +79,7 @@ export type GetPoolPriceValueFnMaya = (params: {
   balance: Balance
   poolDetails: PoolDetailsMaya
   pricePool: PricePool
+  mayaPriceRD: MayaScanPriceRD
 }) => O.Option<BaseAmount>
 
 type Props = {
@@ -178,8 +180,9 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
             <Styled.Label nowrap>
               <Styled.TickerLabel>{asset.ticker}</Styled.TickerLabel>
               <Styled.ChainLabelWrapper>
-                {!isSynthAsset(asset) && <Styled.ChainLabel>{asset.chain}</Styled.ChainLabel>}
+                {!isSynthAsset(asset) && !isSecuredAsset(asset) && <Styled.ChainLabel>{asset.chain}</Styled.ChainLabel>}
                 {isSynthAsset(asset) && <Styled.AssetSynthLabel>synth</Styled.AssetSynthLabel>}
+                {isSecuredAsset(asset) && <Styled.AssetSecuredLabel>secured</Styled.AssetSecuredLabel>}
               </Styled.ChainLabelWrapper>
             </Styled.Label>
           </div>
@@ -224,12 +227,14 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         const getPriceMaya = (
           getPoolPriceValueFn: GetPoolPriceValueFnMaya,
           poolDetails: PoolDetailsMaya,
-          pricePool: PricePool
+          pricePool: PricePool,
+          mayaPriceRD: MayaScanPriceRD
         ) => {
           const priceOption = getPoolPriceValueFn({
             balance: { asset, amount },
             poolDetails,
-            pricePool
+            pricePool,
+            mayaPriceRD
           })
           return formatPrice(priceOption, pricePool.asset)
         }
@@ -247,14 +252,14 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
             price =
               (isThorchainNonEmpty && getPriceThor(getPoolPriceValue, poolDetails as PoolDetails, pricePool)) ||
               (isMayachainNonEmpty &&
-                getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool)) ||
+                getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool, mayaScanPrice)) ||
               (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
               price
           } else if (isChainOfMaya(asset.chain)) {
             // Chain is supported only by MAYA
             price =
               (isMayachainNonEmpty &&
-                getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool)) ||
+                getPriceMaya(getPoolPriceValueM, poolDetailsMaya as PoolDetailsMaya, mayaPricePool, mayaScanPrice)) ||
               (geckoPrice && formatPrice(O.some(amount.times(geckoPrice)), pricePool.asset)) ||
               price
           } else if (isChainOfThor(asset.chain)) {
@@ -319,6 +324,11 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
 
       const deepestPoolAsset = FP.pipe(
         getDeepestPool(poolDetails),
+        O.chain(({ asset }) => O.fromNullable(assetFromString(asset))),
+        O.toNullable
+      )
+      const secondDeepestPoolAsset = FP.pipe(
+        getSecondDeepestPool(poolDetails),
         O.chain(({ asset }) => O.fromNullable(assetFromString(asset))),
         O.toNullable
       )
@@ -402,13 +412,19 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         )
       }
 
-      if (!isSynthAsset(asset) && deepestPoolAsset && !isCacaoAsset(asset) && !isRuneNativeAsset(asset)) {
+      if (
+        !isSynthAsset(asset) &&
+        deepestPoolAsset &&
+        secondDeepestPoolAsset &&
+        !isCacaoAsset(asset) &&
+        !isRuneNativeAsset(asset)
+      ) {
         actions.push(
           createAction('common.swap', () =>
             navigate(
               poolsRoutes.swap.path({
                 source: assetToString(asset),
-                target: assetToString(deepestPoolAsset),
+                target: assetToString(isBtcAsset(asset) ? secondDeepestPoolAsset : deepestPoolAsset),
                 sourceWalletType: walletType,
                 targetWalletType: DEFAULT_WALLET_TYPE
               })
@@ -417,7 +433,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         )
       }
 
-      if (hasSaversAssets && !isSynthAsset(asset)) {
+      if (hasSaversAssets && !isSynthAsset(asset) && !isSecuredAsset(asset)) {
         actions.push(
           createAction('common.earn', () =>
             navigate(

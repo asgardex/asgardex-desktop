@@ -1,6 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { ARB_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-arbitrum'
-import { BASE_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-base'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
@@ -8,9 +7,9 @@ import { DASH_DECIMAL } from '@xchainjs/xchain-dash'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { EthChain } from '@xchainjs/xchain-mayachain-query'
-import { MidgardQuery } from '@xchainjs/xchain-midgard-query'
 import { XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { SOL_DECIMALS } from '@xchainjs/xchain-solana'
+import { ThorchainCache } from '@xchainjs/xchain-thorchain-query'
 import { AnyAsset } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -18,7 +17,6 @@ import * as RxOp from 'rxjs/operators'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import {
   isArbChain,
-  isBaseChain,
   isBchChain,
   isBscChain,
   isBtcChain,
@@ -36,14 +34,9 @@ import { AssetWithDecimalLD } from './types'
 export const getDecimal = (asset: AnyAsset): Promise<number> => {
   const { chain } = asset
 
-  if (isBaseChain(chain)) {
-    return Promise.resolve(BASE_GAS_ASSET_DECIMAL)
-  }
-
   if (isArbChain(chain)) {
     return Promise.resolve(ARB_GAS_ASSET_DECIMAL)
   }
-  // @St0rmzy find out why bsc.bnb on midgard -1 instead of being the correct decimals.
   if (isBscChain(chain)) {
     return Promise.resolve(BSC_GAS_ASSET_DECIMAL)
   }
@@ -80,9 +73,9 @@ export const getDecimal = (asset: AnyAsset): Promise<number> => {
     return Promise.resolve(ETH_GAS_ASSET_DECIMAL)
   }
 
-  const midgardQuery = new MidgardQuery()
+  const thorchainCache = new ThorchainCache()
 
-  return Rx.from(midgardQuery.getDecimalForAsset(asset)).toPromise()
+  return Rx.from(thorchainCache.midgardQuery.getDecimalForAsset(asset)).toPromise()
 }
 
 export const assetWithDecimal$ = (asset: AnyAsset): AssetWithDecimalLD =>

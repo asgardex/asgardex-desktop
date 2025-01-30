@@ -28,7 +28,9 @@ import {
   TokenAsset,
   SynthAsset,
   isTokenAsset,
-  isTradeAsset
+  isTradeAsset,
+  isSecuredAsset,
+  SecuredAsset
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import clsx from 'clsx'
@@ -42,12 +44,12 @@ import * as RxOp from 'rxjs/operators'
 
 import { ASGARDEX_AFFILIATE_FEE_MIN, getAsgardexAffiliateFee, getAsgardexThorname } from '../../../shared/const'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
+import { isMayaSupportedAsset, isTCSupportedAsset } from '../../../shared/utils/asset'
 import {
   chainToString,
   DEFAULT_ENABLED_CHAINS,
   DefaultChainAttributes,
   EnabledChain,
-  isChainOfMaya,
   isChainOfThor
 } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
@@ -165,8 +167,18 @@ export const Swap = ({
   const { estimateSwap } = useAggregator()
   const intl = useIntl()
 
-  const { chain: sourceChain } = sourceAsset.type === AssetType.SYNTH ? AssetCacao : sourceAsset
-  const { chain: targetChain } = targetAsset.type === AssetType.SYNTH ? AssetCacao : targetAsset
+  const { chain: sourceChain } =
+    sourceAsset.type === AssetType.SYNTH
+      ? AssetCacao
+      : sourceAsset.type === AssetType.SECURED
+      ? AssetRuneNative
+      : sourceAsset
+  const { chain: targetChain } =
+    targetAsset.type === AssetType.SYNTH
+      ? AssetCacao
+      : sourceAsset.type === AssetType.SECURED
+      ? AssetRuneNative
+      : targetAsset
 
   const lockedWallet: boolean = useMemo(() => isLocked(keystore) || !hasImportedKeystore(keystore), [keystore])
   const [quoteOnly, setQuoteOnly] = useState<boolean>(false)
@@ -243,8 +255,6 @@ export const Swap = ({
   const prevTargetAsset = useRef<O.Option<AnyAsset>>(O.none)
 
   const [customAddressEditActive, setCustomAddressEditActive] = useState(false)
-
-  // const [quoteExpired, setQuoteExpired] = useState<boolean>(false)
 
   const sourceWalletAddress = useMemo(() => {
     return FP.pipe(
@@ -564,7 +574,15 @@ export const Swap = ({
     const swapOutFee = FP.pipe(
       oQuoteProtocol,
       O.fold(
-        () => new CryptoAmount(swapFees.outFee.amount, targetAsset.type === AssetType.SYNTH ? AssetCacao : targetAsset),
+        () =>
+          new CryptoAmount(
+            swapFees.outFee.amount,
+            targetAsset.type === AssetType.SYNTH
+              ? AssetCacao
+              : targetAsset.type === AssetType.SECURED
+              ? AssetRuneNative
+              : targetAsset
+          ),
         (txDetails) => {
           const txOutFee = txDetails.fees.outboundFee
           return txOutFee
@@ -733,8 +751,7 @@ export const Swap = ({
   // https://gitlab.com/thorchain/thornode/-/commit/f96350ab3d5adda18c61d134caa98b6d5af2b006
   const applyBps = useMemo(() => {
     const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
-    const applyBps = txFeeCovered
-    return applyBps
+    return txFeeCovered
   }, [priceAmountToSwapMax1e8.assetAmount])
 
   const priceAffiliateFeeLabel = useMemo(() => {
@@ -769,6 +786,12 @@ export const Swap = ({
     return !applyBps ? `free` : price ? `${price} (${fee}) ${displayBps}` : fee
   }, [swapFees, affiliateFee.assetAmount, affiliateFee.asset, affiliatePriceValue, applyBps, network, sourceAsset])
 
+  const {
+    state: approveState,
+    reset: resetApproveState,
+    subscribe: subscribeApproveState
+  } = useSubscriptionState<TxHashRD>(RD.initial)
+
   useEffect(() => {
     // Early exit if `amountToSwapMax1e8` is zero
     if (amountToSwapMax1e8.amount().isZero()) {
@@ -778,21 +801,24 @@ export const Swap = ({
 
     // Reset states on dependency change
     setQuoteProtocol(O.none)
-
     const fetchSwap = async () => {
       setIsFetchingEstimate(true)
       try {
-        const result = await estimateSwap({
-          fromAsset: sourceAsset,
-          destinationAsset: targetAsset,
-          amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset),
-          fromAddress: sourceWalletAddress,
-          destinationAddress: quoteOnly ? undefined : destinationWalletAddress,
-          streamingInterval: isStreaming ? streamingInterval : 0,
-          streamingQuantity: isStreaming ? streamingQuantity : 0,
-          toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100 // convert to basis points
-        })
+        const result = await estimateSwap(
+          {
+            fromAsset: sourceAsset,
+            destinationAsset: targetAsset,
+            amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset),
+            fromAddress: sourceWalletAddress,
+            destinationAddress: quoteOnly ? undefined : destinationWalletAddress,
+            streamingInterval: isStreaming ? streamingInterval : 0,
+            streamingQuantity: isStreaming ? streamingQuantity : 0,
+            toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100 // convert to basis points
+          },
+          applyBps
+        )
         setQuoteProtocol(O.some(result))
+        setErrorProtocol(O.none)
       } catch (err) {
         console.error('Failed to fetch estimate:', err)
         setErrorProtocol(O.some(err as Error))
@@ -803,6 +829,60 @@ export const Swap = ({
     fetchSwap()
   }, [
     amountToSwapMax1e8,
+    applyBps,
+    destinationWalletAddress,
+    estimateSwap,
+    isStreaming,
+    network,
+    quoteOnly,
+    slipTolerance,
+    sourceAsset,
+    sourceAssetDecimal,
+    sourceWalletAddress,
+    streamingInterval,
+    streamingQuantity,
+    targetAsset
+  ])
+  // Refetch the quote after approval is successful
+  useEffect(() => {
+    if (RD.isSuccess(approveState)) {
+      console.log('Approval succeeded! Refetching quote...')
+
+      // Trigger the quote refetch
+      if (!amountToSwapMax1e8.amount().isZero()) {
+        // Reset states on dependency change
+        setQuoteProtocol(O.none)
+        const fetchSwap = async () => {
+          setIsFetchingEstimate(true)
+          try {
+            const result = await estimateSwap(
+              {
+                fromAsset: sourceAsset,
+                destinationAsset: targetAsset,
+                amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset),
+                fromAddress: sourceWalletAddress,
+                destinationAddress: quoteOnly ? undefined : destinationWalletAddress,
+                streamingInterval: isStreaming ? streamingInterval : 0,
+                streamingQuantity: isStreaming ? streamingQuantity : 0,
+                toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100 // convert to basis points
+              },
+              applyBps
+            )
+            setQuoteProtocol(O.some(result))
+            setErrorProtocol(O.none)
+          } catch (err) {
+            console.error('Failed to refetch estimate after approval:', err)
+            setErrorProtocol(O.some(err as Error))
+          }
+          setIsFetchingEstimate(false)
+        }
+        fetchSwap()
+      }
+    }
+  }, [
+    approveState,
+    amountToSwapMax1e8,
+    applyBps,
     destinationWalletAddress,
     estimateSwap,
     isStreaming,
@@ -1015,7 +1095,12 @@ export const Swap = ({
       O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, quoteSwap]) => {
         let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
 
-        if (!isTokenAsset(sourceAsset) && !isTradeAsset(sourceAsset) && !isSynthAsset(sourceAsset)) {
+        if (
+          !isTokenAsset(sourceAsset) &&
+          !isTradeAsset(sourceAsset) &&
+          !isSynthAsset(sourceAsset) &&
+          !isSecuredAsset(sourceAsset)
+        ) {
           if (sourceChainAssetAmount.lt(amountToSwap.plus(swapFees.inFee.amount))) {
             amountToSwap = sourceChainAssetAmount.minus(swapFees.inFee.amount)
           }
@@ -1025,7 +1110,7 @@ export const Swap = ({
           poolAddress,
           asset: sourceAsset,
           amount: amountToSwap,
-          memo: updateMemo(quoteSwap.memo, applyBps, network),
+          memo: updateMemo(quoteSwap.memo, network),
           walletType,
           sender: walletAddress,
           walletAccount,
@@ -1043,7 +1128,6 @@ export const Swap = ({
     amountToSwapMax1e8,
     sourceAssetAmount.decimal,
     sourceAsset,
-    applyBps,
     network,
     sourceChainAssetAmount,
     swapFees.inFee.amount
@@ -1220,8 +1304,6 @@ export const Swap = ({
       resetIsApprovedState()
       await delay(100)
       setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
-      // setQuote(O.none)
-      // setQuoteMaya(O.none)
       onChangeAsset({
         source: asset,
         // back to default 'keystore' type
@@ -1316,25 +1398,37 @@ export const Swap = ({
     return true
   }, [oQuoteProtocol])
 
+  const belowDustThreshold = useMemo(() => {
+    const isBelowDustThreshold: boolean = FP.pipe(
+      oQuoteProtocol,
+      O.fold(
+        () => false,
+        (quoteSwap) => quoteSwap.dustThreshold.baseAmount.gt(amountToSwapMax1e8)
+      )
+    )
+    return isBelowDustThreshold
+  }, [amountToSwapMax1e8, oQuoteProtocol])
+
   // // sets the locked asset amount to be the asset pool depth
   useEffect(() => {
-    if (lockedWallet) {
+    if (lockedWallet || quoteOnly) {
       setQuoteOnly(true)
-      // const poolAsset =
-      //   (isRuneNativeAsset(sourceAsset) && dex.chain === THORChain) ||
-      //   (isCacaoAsset(sourceAsset) && dex.chain === 'MAYA')
-      //     ? targetAsset
-      //     : sourceAsset
-      const poolDetail = isChainOfThor(sourceAsset.chain)
-        ? getPoolDetail(poolDetailsThor, sourceAsset)
-        : getPoolDetailMaya(poolDetailsMaya, sourceAsset)
+      const poolDetailMaya = getPoolDetailMaya(poolDetailsMaya, sourceAsset)
+      const poolDetailThor = getPoolDetail(poolDetailsThor, sourceAsset)
 
-      if (O.isSome(poolDetail)) {
-        const detail = poolDetail.value
+      if (O.isSome(poolDetailMaya)) {
+        const detail = poolDetailMaya.value
+        let amount: BaseAmount
+        if (isCacaoAsset(sourceAsset)) {
+          amount = baseAmount(detail.runeDepth)
+        } else {
+          amount = baseAmount(detail.assetDepth)
+        }
+        setLockedAssetAmount(new CryptoAmount(convertBaseAmountDecimal(amount, sourceAssetDecimal), sourceAsset))
+      } else if (O.isSome(poolDetailThor)) {
+        const detail = poolDetailThor.value
         let amount: BaseAmount
         if (isRuneNativeAsset(sourceAsset)) {
-          amount = baseAmount(detail.runeDepth)
-        } else if (isCacaoAsset(sourceAsset)) {
           amount = baseAmount(detail.runeDepth)
         } else {
           amount = baseAmount(detail.assetDepth)
@@ -1361,11 +1455,20 @@ export const Swap = ({
         A.map(({ asset }) => asset),
         // Remove target assets from source list
         A.filter((asset) => !eqAsset.equals(asset, targetAsset)),
+        // Remove unsupported tokens
+        A.filter((asset) => {
+          if (isTCSupportedAsset(targetAsset, poolDetailsThor) && isTCSupportedAsset(asset, poolDetailsThor))
+            return true
+          if (isMayaSupportedAsset(targetAsset, poolDetailsMaya) && isMayaSupportedAsset(asset, poolDetailsMaya))
+            return true
+
+          return false
+        }),
         // Merge duplications
         (assets) => unionAssets(assets)(assets)
       ),
 
-    [allBalances, targetAsset]
+    [allBalances, poolDetailsMaya, poolDetailsThor, targetAsset]
   )
 
   /**
@@ -1378,25 +1481,49 @@ export const Swap = ({
     (): AnyAsset[] =>
       FP.pipe(
         poolAssets,
-        A.chain((asset) =>
-          isRuneNativeAsset(asset) || isCacaoAsset(asset)
-            ? [asset]
-            : isChainOfMaya(asset.chain) // Only synthesize assets from MAYAChain
-            ? [
-                asset,
-                {
-                  ...asset,
-                  type: AssetType.SYNTH,
-                  synth: true
-                } as SynthAsset
-              ]
-            : [asset]
-        ),
+        // Remove unsupported tokens
+        A.filter((asset) => {
+          if (isTCSupportedAsset(sourceAsset, poolDetailsThor) && isTCSupportedAsset(asset, poolDetailsThor))
+            return true
+          if (isMayaSupportedAsset(sourceAsset, poolDetailsMaya) && isMayaSupportedAsset(asset, poolDetailsMaya))
+            return true
+
+          return false
+        }),
+        A.chain((asset) => {
+          if (isRuneNativeAsset(asset) || isCacaoAsset(asset)) {
+            // Keep native Rune or Cacao assets as is
+            return [asset]
+          }
+          if (isMayaSupportedAsset(asset, poolDetailsMaya) && isMayaSupportedAsset(sourceAsset, poolDetailsMaya)) {
+            // Synthesize MAYAChain assets
+            return [
+              asset,
+              {
+                ...asset,
+                type: AssetType.SYNTH,
+                synth: true
+              } as SynthAsset
+            ]
+          }
+          if (isTCSupportedAsset(asset, poolDetailsThor) && isTCSupportedAsset(sourceAsset, poolDetailsThor)) {
+            // Create secured assets for ThorChain
+            return [
+              asset,
+              {
+                ...asset,
+                type: AssetType.SECURED
+              } as SecuredAsset
+            ]
+          }
+          return [asset]
+        }),
         A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
         (assets) => unionAssets(assets)(assets)
       ),
-    [poolAssets, sourceAsset]
+    [poolAssets, poolDetailsMaya, poolDetailsThor, sourceAsset]
   )
+
   const [showPasswordModal, setShowPasswordModal] = useState(ModalState.None)
   const [showLedgerModal, setShowLedgerModal] = useState(ModalState.None)
 
@@ -1419,8 +1546,6 @@ export const Swap = ({
   const quoteOnlyButton = () => {
     setQuoteOnly(!quoteOnly)
     setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
-    // setQuote(O.none)
-    // setQuoteMaya(O.none)
   }
 
   const labelMin = useMemo(
@@ -1508,12 +1633,6 @@ export const Swap = ({
       })
     )
   }, [oSwapParams, subscribeSwapState, swap$])
-
-  const {
-    state: approveState,
-    reset: resetApproveState,
-    subscribe: subscribeApproveState
-  } = useSubscriptionState<TxHashRD>(RD.initial)
 
   const submitApproveTx = useCallback(() => {
     FP.pipe(
@@ -1717,9 +1836,10 @@ export const Swap = ({
           // Default error display
           return <div key={index}>{error}</div>
         })}
+        {belowDustThreshold && <>{`Amount to swap is Below DustThreshold`}</>}
       </ErrorLabel>
     )
-  }, [oQuoteProtocol, sourceAsset])
+  }, [belowDustThreshold, oQuoteProtocol, sourceAsset])
 
   const sourceChainFeeErrorLabel: JSX.Element = useMemo(() => {
     if (!sourceChainFeeError) {
@@ -1989,8 +2109,6 @@ export const Swap = ({
     // delay to avoid render issues while switching
     await delay(100)
     setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
-    // setQuote(O.none)
-    // setQuoteMaya(O.none)
     const walletType = FP.pipe(
       oTargetWalletType,
       O.getOrElse<WalletType>(() => WalletType.Keystore)
@@ -2030,7 +2148,8 @@ export const Swap = ({
         !canSwap ||
         customAddressEditActive ||
         isTargetChainDisabled ||
-        isSourceChainDisabled),
+        isSourceChainDisabled ||
+        belowDustThreshold),
     [
       network,
       lockedWallet,
@@ -2047,7 +2166,8 @@ export const Swap = ({
       canSwap,
       customAddressEditActive,
       isTargetChainDisabled,
-      isSourceChainDisabled
+      isSourceChainDisabled,
+      belowDustThreshold
     ]
   )
 
@@ -2150,8 +2270,14 @@ export const Swap = ({
     const transactionTime = FP.pipe(
       oQuoteProtocol,
       O.fold(
-        () => 0,
-        (txDetails) => txDetails.totalSwapSeconds
+        () =>
+          DefaultChainAttributes[targetAsset.chain].avgBlockTimeInSecs +
+          DefaultChainAttributes[sourceChain].avgBlockTimeInSecs,
+        (txDetails) =>
+          txDetails.totalSwapSeconds
+            ? txDetails.totalSwapSeconds
+            : DefaultChainAttributes[targetAsset.chain].avgBlockTimeInSecs +
+              DefaultChainAttributes[sourceChain].avgBlockTimeInSecs
       )
     )
 
@@ -2171,7 +2297,14 @@ export const Swap = ({
               <div className="flex items-center">
                 {intl.formatMessage(
                   { id: 'common.confirmation.time' },
-                  { chain: targetAsset.type === AssetType.SYNTH ? MAYAChain : targetAsset.chain }
+                  {
+                    chain:
+                      targetAsset.type === AssetType.SYNTH
+                        ? MAYAChain
+                        : targetAsset.type === AssetType.SECURED
+                        ? THORChain
+                        : targetAsset.chain
+                  }
                 )}
               </div>
               <div>{formatSwapTime(Number(DefaultChainAttributes[targetAsset.chain].avgBlockTimeInSecs))}</div>
@@ -2228,7 +2361,7 @@ export const Swap = ({
           onChange={setAmountToSwapMax1e8}
           onChangePercent={setAmountToSwapFromPercentValue}
           onBlur={reloadFeesHandler}
-          showError={minAmountError}
+          showError={minAmountError || belowDustThreshold}
           hasLedger={hasSourceAssetLedger}
           useLedger={useSourceAssetLedger}
           useLedgerHandler={onClickUseSourceAssetLedger}
@@ -2717,8 +2850,6 @@ export const Swap = ({
                 {renderApproveFeeError}
                 {renderApproveError}
                 {renderIsApprovedError}
-
-                {/* TODO(@veado) ADD ApproveFees to details */}
 
                 {!RD.isInitial(uiApproveFeesRD) && (
                   <Fees fees={uiApproveFeesRD} reloadFees={reloadApproveFeesHandler} />

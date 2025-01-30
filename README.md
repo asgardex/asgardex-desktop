@@ -100,7 +100,8 @@ This is the developer source repository, general information, and download page 
 
 - 100% open-source (built by the community)
 - Security first
-- 10 bps affiliate fees on swaps - free Under $1000 
+- 30 bps affiliate fees only on swaps over $1001
+- No affiliate fee on: RunePool, LP, Saver actions. 
 
 ## ASGARDEX utilizes the following libraries, frameworks, and more:
 

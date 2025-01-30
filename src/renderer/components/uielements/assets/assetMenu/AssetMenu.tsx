@@ -100,7 +100,7 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
                       key={assetToString(assetInList)}
                       onClick={() => handleChangeAsset(assetInList)}
                       disabled={selected}>
-                      <AssetData asset={assetInList} network={network} className="" />
+                      <AssetData asset={assetInList} network={network} />
                       {selected && <CheckIcon className="h-20px w-20px text-turquoise" />}
                     </BaseButton>
                   )

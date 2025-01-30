@@ -420,9 +420,10 @@ export type ActionsPageRD = RD.RemoteData<ApiError, ActionsPage>
 export type ActionsPageLD = LiveData<ApiError, ActionsPage>
 
 const staticPoolFilters = [
-  '__base__',
+  '__native__',
   '__usd__',
   '__avax__',
+  '__base__',
   '__arb__',
   '__erc20__',
   '__synth__',
@@ -438,8 +439,15 @@ export const isStaticPoolFilter = (v: unknown): v is StaticPoolFilter =>
 
 export type PoolFilter = StaticPoolFilter | string
 export type PoolFilters = PoolFilter[]
-export const DEFAULT_POOL_FILTERS: PoolFilters = ['__watched__', '__base__', '__usd__', '__avax__', '__erc20__']
-export const DEFAULT_MAYA_POOL_FILTERS: PoolFilters = ['__watched__', '__base__', '__usd__', '__arb__', '__erc20__']
+export const DEFAULT_POOL_FILTERS: PoolFilters = [
+  '__watched__',
+  '__native__',
+  '__usd__',
+  '__avax__',
+  '__erc20__',
+  '__base__'
+]
+export const DEFAULT_MAYA_POOL_FILTERS: PoolFilters = ['__watched__', '__native__', '__usd__', '__arb__', '__erc20__']
 
 export type LoadActionsParams = {
   page: number

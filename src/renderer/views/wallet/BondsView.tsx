@@ -7,7 +7,6 @@ import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { Client as MayachainClient } from '@xchainjs/xchain-mayachain'
 import { Client as ThorchainClient, THORChain, AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { Address, assetAmount, assetToBase, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
-import { Row } from 'antd'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
@@ -332,26 +331,28 @@ export const BondsView: React.FC = (): JSX.Element => {
 
   return (
     <>
-      <Row justify="end" style={{ marginBottom: '20px' }}>
-        <RefreshButton onClick={reloadNodeInfos} disabled={RD.isPending(nodeInfos)} />
-      </Row>
+      <div className="flex min-h-[42px] w-full justify-end pb-20px" />
       <AssetsNav />
       <Styled.Container>
-        <Styled.TitleContainer>
-          <Styled.BalanceTitle>
-            {/* TODO: locale (cinnamoroll) */}
-            {activeLabel === LabelView.Monitored
-              ? 'Total Value Across Connected and Monitored Addresses'
-              : 'Total Connected Wallet Value'}
-          </Styled.BalanceTitle>
-          <BaseButton
-            className="ml-2 !p-0 text-turquoise"
-            onClick={() => {
-              setActiveLabel((prev) => 1 - prev)
-            }}>
-            <SwapOutlined className="rounded-full border border-solid border-turquoise p-1" />
-          </BaseButton>
-        </Styled.TitleContainer>
+        <div className="flex w-full items-center justify-between">
+          <div />
+          <Styled.TitleContainer>
+            <Styled.BalanceTitle>
+              {/* TODO: locale (cinnamoroll) */}
+              {activeLabel === LabelView.Monitored
+                ? 'Total Value Across Connected and Monitored Addresses'
+                : 'Total Connected Wallet Value'}
+            </Styled.BalanceTitle>
+            <BaseButton
+              className="ml-2 !p-0 text-turquoise"
+              onClick={() => {
+                setActiveLabel((prev) => 1 - prev)
+              }}>
+              <SwapOutlined className="rounded-full border border-solid border-turquoise p-1" />
+            </BaseButton>
+          </Styled.TitleContainer>
+          <RefreshButton onClick={reloadNodeInfos} disabled={RD.isPending(nodeInfos)} />
+        </div>
         {renderBondTotal}
       </Styled.Container>
       <Bonds

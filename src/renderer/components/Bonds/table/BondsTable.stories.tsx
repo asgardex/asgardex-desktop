@@ -14,6 +14,7 @@ const mockNodeInfo = (address: Address) => ({
   award: baseAmount(100000000 * 400000),
   status: NodeStatusEnum.Active,
   address,
+  pubKeySet: {},
   nodeOperatorAddress: '',
   bondProviders: {
     nodeOperatorFee: baseAmount(100000000 * 400000),

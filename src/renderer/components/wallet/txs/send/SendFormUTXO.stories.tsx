@@ -8,10 +8,12 @@ import * as Rx from 'rxjs'
 
 import { getMockRDValueFactory, RDStatus } from '../../../../../shared/mock/rdByStatus'
 import { mockValidatePassword$ } from '../../../../../shared/mock/wallet'
-import { AssetBTC } from '../../../../../shared/utils/asset'
+import { AssetBTC, AssetMaya } from '../../../../../shared/utils/asset'
 import { WalletType } from '../../../../../shared/wallet/types'
+import { AssetUSDC } from '../../../../const'
 import { THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
 import { mockWalletBalance } from '../../../../helpers/test/testWalletHelper'
+import { MayaScanPrice, MayaScanPriceRD } from '../../../../hooks/useMayascanPrice'
 import { SendTxStateHandler } from '../../../../services/chain/types'
 import { FeesWithRatesRD } from '../../../../services/utxo/types'
 import { ApiError, ErrorId, WalletBalance } from '../../../../services/wallet/types'
@@ -57,6 +59,17 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
     fast: baseAmount(2000),
     average: baseAmount(1000)
   }
+  const mayaScanPriceRD: MayaScanPriceRD = FP.pipe(
+    'success', // Replace with 'pending' or 'error' to mock other states
+    getMockRDValueFactory<Error, MayaScanPrice>(
+      () => ({
+        mayaPriceInCacao: { asset: AssetMaya, amount: baseAmount(10, 6) },
+        mayaPriceInUsd: { asset: AssetUSDC, amount: baseAmount(15, 4) },
+        cacaoPriceInUsd: { asset: AssetUSDC, amount: baseAmount(1.5, 6) }
+      }),
+      () => Error('Error fetching maya price')
+    )
+  )
 
   const rates: FeeRates = {
     fastest: 5,
@@ -102,6 +115,7 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
       poolDetails={[]}
       oPoolAddress={O.none}
       oPoolAddressMaya={O.none}
+      mayaScanPrice={mayaScanPriceRD}
     />
   )
 }

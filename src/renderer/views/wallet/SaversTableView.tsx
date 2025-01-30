@@ -139,7 +139,7 @@ export const SaversDetailsView: React.FC = (): JSX.Element => {
     assetDetailsArray.forEach((item) => {
       saversDetails = {
         ...saversDetails,
-        [`${item.asset.chain}:${item.walletType}`]: item.redeem.price
+        [`${item.asset.chain}:${item.asset.ticker}:${item.walletType}`]: item.redeem.price
       }
     })
 

@@ -169,7 +169,7 @@ describe('views/pools/utils', () => {
     })
 
     it('base', () => {
-      expect(filterTableData(O.some('__base__'))(tableData)).toEqual([
+      expect(filterTableData(O.some('__native__'))(tableData)).toEqual([
         tableData[0],
         tableData[1],
         tableData[2],

@@ -7,7 +7,7 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { AnyAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
+import { AnyAsset, isSecuredAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
@@ -233,21 +233,22 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
 
   const isSynth = isSynthAsset(asset)
   const isTrade = isTradeAsset(asset)
+  const isSecured = isSecuredAsset(asset)
 
   const renderIcon = useCallback(
     (src: string) => {
       const overlayIconSrc = chainIconMap(asset)
 
       return (
-        <Styled.IconWrapper size={size} isSynth={isSynth} isTrade={isTrade} className={className}>
-          <Styled.Icon src={src} isNotNative={isSynth || isTrade} size={size} />
+        <Styled.IconWrapper size={size} isSynth={isSynth} isTrade={isTrade} isSecured={isSecured} className={className}>
+          <Styled.Icon src={src} isNotNative={isSynth || isTrade || isSecured} size={size} />
           {overlayIconSrc && !asset.symbol.includes(asset.chain) && (
             <Styled.OverlayIcon src={overlayIconSrc} size={size} />
           )}
         </Styled.IconWrapper>
       )
     },
-    [asset, size, isSynth, className, isTrade]
+    [asset, size, isSynth, isTrade, className, isSecured]
   )
   const renderPendingIcon = useCallback(() => {
     return (

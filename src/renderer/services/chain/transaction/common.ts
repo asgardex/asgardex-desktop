@@ -65,7 +65,8 @@ export const sendTx$ = ({
   walletIndex,
   hdMode
 }: SendTxParams): TxHashLD => {
-  const { chain } = asset.type === AssetType.SYNTH ? AssetCacao : asset // synths deprecated on TC
+  const { chain } =
+    asset.type === AssetType.SYNTH ? AssetCacao : asset.type === AssetType.SECURED ? { chain: THORChain } : asset
   if (!isSupportedChain(chain)) return txFailure$(`${chain} is not supported for 'sendTx$'`)
   switch (chain) {
     case BTCChain:
@@ -259,8 +260,11 @@ export const sendPoolTx$ = ({
   protocol
 }: SendPoolTxParams): TxHashLD => {
   const { chain } =
-    asset.type === AssetType.SYNTH ? AssetCacao : asset.type === AssetType.TRADE ? { chain: THORChain } : asset
-
+    asset.type === AssetType.SYNTH
+      ? AssetCacao
+      : asset.type === AssetType.TRADE || asset.type === AssetType.SECURED
+      ? { chain: THORChain }
+      : asset
   if (!isSupportedChain(chain)) return txFailure$(`${chain} is not enabled`)
 
   switch (chain) {

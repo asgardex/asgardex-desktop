@@ -43,6 +43,7 @@ import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../../helpers/poolHelperMaya'
 import { loadingString } from '../../../../helpers/stringHelper'
 import { getEVMAmountFromBalances } from '../../../../helpers/walletHelper'
+import { MayaScanPriceRD } from '../../../../hooks/useMayascanPrice'
 import { usePricePool } from '../../../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
@@ -98,6 +99,7 @@ export type Props = {
   poolDetails: PoolDetails | PoolDetailsMaya
   oPoolAddress: O.Option<PoolAddress>
   oPoolAddressMaya: O.Option<PoolAddressMaya>
+  mayaScanPrice: MayaScanPriceRD
 }
 
 export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
@@ -116,7 +118,8 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     validatePassword$,
     network,
     oPoolAddress,
-    oPoolAddressMaya
+    oPoolAddressMaya,
+    mayaScanPrice
   } = props
 
   const intl = useIntl()
@@ -412,7 +415,8 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         : getPoolPriceValueM({
             balance: { asset, amount: maxAmount },
             poolDetails,
-            pricePool: pricePoolMaya
+            pricePool: pricePoolMaya,
+            mayaPriceRD: mayaScanPrice
           })
     const amountPrice =
       isPoolDetails(poolDetails) && isChainOfThor(asset.chain)
@@ -424,7 +428,8 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         : getPoolPriceValueM({
             balance: { asset, amount: amountValue },
             poolDetails,
-            pricePool: pricePoolMaya
+            pricePool: pricePoolMaya,
+            mayaPriceRD: mayaScanPrice
           })
     const assetFeePrice =
       isPoolDetails(poolDetails) && isChainOfThor(sourceChainAsset.chain)
@@ -436,7 +441,8 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         : getPoolPriceValueM({
             balance: { asset: sourceChainAsset, amount: assetFee.baseAmount },
             poolDetails,
-            pricePool: pricePoolMaya
+            pricePool: pricePoolMaya,
+            mayaPriceRD: mayaScanPrice
           })
     if (O.isSome(assetFeePrice)) {
       const maxCryptoAmount = new CryptoAmount(assetFeePrice.value, pricePool.asset)
@@ -460,7 +466,8 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     network,
     poolDetails,
     sourceChainAsset,
-    pricePoolMaya
+    pricePoolMaya,
+    mayaScanPrice
   ])
 
   const priceFeeLabel = useMemo(() => {

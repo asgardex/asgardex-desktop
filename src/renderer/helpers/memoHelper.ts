@@ -1,7 +1,7 @@
 import { Network } from '@xchainjs/xchain-client'
 import { Address, AnyAsset, AssetType, BaseAmount } from '@xchainjs/xchain-util'
 
-import { getAsgardexAffiliateFee, getAsgardexThorname } from '../../shared/const'
+import { getAsgardexThorname } from '../../shared/const'
 
 const DELIMITER = ':'
 
@@ -120,19 +120,18 @@ export const getSwapMemo = ({
   const memo = '='
   return mkMemo([memo, target, targetAddress, toleranceBps, streaming, affiliateName, affiliateBps])
 }
-// temp fix
-export const updateMemo = (memo: string, applyBps: boolean, network: Network): string => {
-  const fee = applyBps ? getAsgardexAffiliateFee(network) : 0
+// With stagenet, remove all affiliate config from memo
+export const updateMemo = (memo: string, network: Network): string => {
   const pattern = /:dx:\d+$/
-  const replacement = network === Network.Stagenet ? `` : `:dx:${fee}`
+  const replacement = ``
 
-  // Check if the string ends with ":dx:<number>"
-  if (pattern.test(memo)) {
-    return memo.replace(pattern, replacement)
+  // Check if the string ends with ":dx:<number>" if its stagenet remove affiliate from memo
+  if (network === Network.Stagenet) {
+    return shortenMemo(memo.replace(pattern, replacement))
   }
 
   // If it doesn't end with ":dx:<number>", return the original memo
-  return memo
+  return shortenMemo(memo)
 }
 
 /**
@@ -189,7 +188,8 @@ const assetCodes: AssetCodes = {
   'LTC.LTC': 'l',
   'BCH.BCH': 'c',
   'AVAX.AVAX': 'a',
-  'BSC.BNB': 's'
+  'BSC.BNB': 's',
+  'BASE.ETH': 'f'
 }
 
 export const shortenMemo = (input: string): string => {

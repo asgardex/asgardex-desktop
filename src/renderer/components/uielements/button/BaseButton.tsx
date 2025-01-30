@@ -1,5 +1,7 @@
 import React from 'react'
 
+import clsx from 'clsx'
+
 import { LoadingIcon } from '../../icons'
 import type { Size, Font } from './Button.types'
 
@@ -16,7 +18,7 @@ export type BaseButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   font?: Font
 }
 
-export const BaseButton: React.FC<BaseButtonProps> = (props): JSX.Element => {
+export const BaseButton = (props: BaseButtonProps): JSX.Element => {
   const {
     size = 'normal',
     loading = false,
@@ -53,20 +55,16 @@ export const BaseButton: React.FC<BaseButtonProps> = (props): JSX.Element => {
     <button
       disabled={disabled}
       type={type}
-      className={`
-      group
-      flex appearance-none items-center
-        ${disabled ? 'opacity-60' : 'opcacity-100'}
-      justify-center
-        ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
-        ${fontFamily[font]}
-        ${uppercase ? 'uppercase' : 'normal-case'}
-        transition
-        duration-300
-        ease-in-out
-        ${sizeClasses[size]}
-        ${className}
-      `}
+      className={clsx(
+        'group flex appearance-none items-center justify-center',
+        'transition duration-300 ease-in-out',
+        disabled ? 'opacity-60' : 'opcacity-100',
+        disabled ? 'cursor-not-allowed' : 'cursor-pointer',
+        uppercase ? 'uppercase' : 'normal-case',
+        fontFamily[font],
+        sizeClasses[size],
+        className
+      )}
       {...restProps}>
       {loading && (
         <LoadingIcon className={`${iconSize[size]} ${iconMargin[size]} animate-spin group-hover:opacity-70`} />

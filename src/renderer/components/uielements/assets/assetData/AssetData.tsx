@@ -7,7 +7,8 @@ import {
   baseToAsset,
   baseAmount,
   AnyAsset,
-  isSynthAsset
+  isSynthAsset,
+  isSecuredAsset
 } from '@xchainjs/xchain-util'
 import { useIntl } from 'react-intl'
 
@@ -66,8 +67,9 @@ export const AssetData: React.FC<Props> = (props): JSX.Element => {
         <Styled.LabelContainer>
           <Styled.TickerLabel>{`${asset.ticker}`}</Styled.TickerLabel>
           <Styled.ChainLabelWrapper>
-            {!isSynthAsset(asset) && <Styled.ChainLabel>{asset.chain}</Styled.ChainLabel>}
+            {!isSynthAsset(asset) && !isSecuredAsset(asset) && <Styled.ChainLabel>{asset.chain}</Styled.ChainLabel>}
             {isSynthAsset(asset) && <Styled.AssetSynthLabel>synth</Styled.AssetSynthLabel>}
+            {isSecuredAsset(asset) && <Styled.AssetSecuredLabel>secured</Styled.AssetSecuredLabel>}
           </Styled.ChainLabelWrapper>
           {walletType && isLedgerWallet(walletType) && (
             <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>

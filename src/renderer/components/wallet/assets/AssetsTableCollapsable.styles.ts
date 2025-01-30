@@ -6,7 +6,8 @@ import { palette } from 'styled-theme'
 import { Label as UILabel } from '../../../components/uielements/label'
 import {
   WalletTypeLabel as WalletTypeLabelUI,
-  AssetSynthLabel as AssetSynthLabelUI
+  AssetSynthLabel as AssetSynthLabelUI,
+  AssetSecuredLabel as AssetSecuredLabelUI
 } from '../../uielements/common/Common.styles'
 import { Table as UITable } from '../../uielements/table'
 
@@ -150,6 +151,13 @@ export const WalletTypeLabel = styled(WalletTypeLabelUI)`
 `
 
 export const AssetSynthLabel = styled(AssetSynthLabelUI)`
+  margin-top: 2px;
+  padding: 0 4px;
+  font-size: 10px;
+  line-height: 12px;
+`
+
+export const AssetSecuredLabel = styled(AssetSecuredLabelUI)`
   margin-top: 2px;
   padding: 0 4px;
   font-size: 10px;

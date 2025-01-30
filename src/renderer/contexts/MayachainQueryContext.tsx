@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 
-import { MayachainCache, MayachainQuery, Mayanode } from '@xchainjs/xchain-mayachain-query'
-import { MidgardQuery } from '@xchainjs/xchain-mayamidgard-query'
+import { MayachainCache, MayachainQuery } from '@xchainjs/xchain-mayachain-query'
 
 import { clientNetwork$ } from '../services/app/service'
 
@@ -19,10 +18,9 @@ export const MayachainQueryProvider: React.FC<{ children: React.ReactNode }> = (
 
   useEffect(() => {
     // Subscribe to network$ observable
-    const subscription = clientNetwork$.subscribe((network) => {
+    const subscription = clientNetwork$.subscribe(() => {
       // Create a new MayachainQuery with the updated network
-      const midgardQuery = new MidgardQuery()
-      const mayachainCache = new MayachainCache(midgardQuery, new Mayanode(network))
+      const mayachainCache = new MayachainCache()
       setMayachainQuery(new MayachainQuery(mayachainCache))
     })
 

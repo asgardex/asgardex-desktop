@@ -77,7 +77,7 @@ export const AssetDetails = (props: Props): JSX.Element => {
   const { protocol, setProtocol } = useApp()
 
   const dexAsset = useMemo(() => (protocol === THORChain ? AssetRuneNative : AssetCacao), [protocol])
-  const { chain } = asset.type === AssetType.SYNTH ? dexAsset : asset
+  const { chain } = asset.type === AssetType.SYNTH || asset.type === AssetType.SECURED ? dexAsset : asset
 
   const navigate = useNavigate()
   const intl = useIntl()
@@ -235,11 +235,15 @@ export const AssetDetails = (props: Props): JSX.Element => {
           </TextButton>
         </Col>
         <Col span={24}>
-          {asset.type === AssetType.SYNTH || asset === AssetRuneNative ? (
+          {asset.type === AssetType.SYNTH || asset.type === AssetType.SECURED || asset === AssetRuneNative ? (
             <WarningView
               subTitle={intl.formatMessage(
                 { id: 'wallet.txs.history.disabled' },
-                { chain: `${chainToString(chain)} ${asset.type === AssetType.SYNTH ? 'synth' : ''}` }
+                {
+                  chain: `${chainToString(chain)} ${
+                    asset.type === AssetType.SYNTH ? 'synth' : asset.type === AssetType.SECURED ? 'secured' : ''
+                  }`
+                }
               )}
               extra={
                 <FlatButton size="normal" color="neutral" onClick={openExplorerAddressUrl}>

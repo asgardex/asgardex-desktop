@@ -4,7 +4,6 @@ import { AssetDASH } from '@xchainjs/xchain-dash'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
 import { AssetUSK } from '@xchainjs/xchain-kujira'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
-import { CompatibleAsset } from '@xchainjs/xchain-mayachain-query'
 import { AssetXRD } from '@xchainjs/xchain-radix'
 import { SOLAsset } from '@xchainjs/xchain-solana'
 import {
@@ -69,10 +68,6 @@ export const THORCHAIN_DECIMAL = 8
 
 export const isAssetInMayachainPools = (asset: AnyAsset): boolean =>
   eqAsset.equals(asset, AssetCacao || AssetDASH || AssetKUJI || AssetXRD)
-
-export const isCompatibleAsset = (asset: AnyAsset): asset is CompatibleAsset => {
-  return asset.type === AssetType.NATIVE || asset.type === AssetType.TOKEN || asset.type === AssetType.SYNTH
-}
 
 /**
  * Checks whether an asset is an RuneNative asset
@@ -563,4 +558,22 @@ export const getTwoSigfigAssetAmount = (amount: AssetAmount) => {
  * Creates an asset from `nullable` string
  */
 export const getAssetFromNullableString = (assetString?: string): O.Option<AnyAsset> =>
-  FP.pipe(O.fromNullable(assetString), O.map(S.toUpperCase), O.map(assetFromString), O.chain(O.fromNullable))
+  FP.pipe(
+    O.fromNullable(assetString),
+    O.map(S.toUpperCase),
+    O.map((s: string) => {
+      if (s.split('-').length === 3) {
+        // for secured assets
+        const [chain, symbol] = s.split(/-(.*)/s)
+        if (!chain || !symbol) return null
+
+        // Extract the ticker from the symbol (first part before `-` if it exists)
+        const ticker = symbol.split('-')[0]
+
+        return { chain: chain.trim(), symbol: symbol.trim(), ticker: ticker.trim(), type: AssetType.SECURED }
+      }
+
+      return assetFromString(s)
+    }),
+    O.chain(O.fromNullable)
+  )

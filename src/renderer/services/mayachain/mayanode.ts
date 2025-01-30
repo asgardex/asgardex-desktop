@@ -213,25 +213,28 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     liveData.map<Node[], NodeInfos>((nodes) =>
       FP.pipe(
         nodes,
-        A.map(({ bond, reward, status, node_address, bond_providers, bond_address, signer_membership }) => {
-          return {
-            address: node_address,
-            bond: baseAmount(bond, CACAO_DECIMAL),
-            award: baseAmount(reward, CACAO_DECIMAL),
-            status: status as NodeStatusEnum,
-            nodeOperatorAddress: bond_address,
-            bondProviders: {
-              nodeOperatorFee: baseAmount(bond_providers.node_operator_fee, CACAO_DECIMAL),
-              providers: Array.isArray(bond_providers.providers)
-                ? bond_providers.providers.map((provider) => ({
-                    bondAddress: provider.bond_address,
-                    bond: baseAmount(provider.reward, CACAO_DECIMAL)
-                  }))
-                : []
-            },
-            signMembership: signer_membership
+        A.map(
+          ({ bond, reward, status, node_address, bond_providers, bond_address, signer_membership, pub_key_set }) => {
+            return {
+              address: node_address,
+              pubKeySet: pub_key_set,
+              bond: baseAmount(bond, CACAO_DECIMAL),
+              award: baseAmount(reward, CACAO_DECIMAL),
+              status: status as NodeStatusEnum,
+              nodeOperatorAddress: bond_address,
+              bondProviders: {
+                nodeOperatorFee: baseAmount(bond_providers.node_operator_fee, CACAO_DECIMAL),
+                providers: Array.isArray(bond_providers.providers)
+                  ? bond_providers.providers.map((provider) => ({
+                      bondAddress: provider.bond_address,
+                      bond: baseAmount(provider.reward, CACAO_DECIMAL)
+                    }))
+                  : []
+              },
+              signMembership: signer_membership
+            }
           }
-        })
+        )
       )
     ),
     RxOp.startWith(RD.initial),

@@ -35,7 +35,7 @@ import { AssetUSDTDAC, ZERO_BASE_AMOUNT } from '../../../../const'
 import { isUSDAsset } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
 import { getBondMemo, getLeaveMemo, getUnbondMemo } from '../../../../helpers/memoHelper'
-import { getPoolPriceValue } from '../../../../helpers/poolHelperMaya'
+import { getUSDValue } from '../../../../helpers/poolHelperMaya'
 import { usePricePoolMaya } from '../../../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { FeeRD } from '../../../../services/chain/types'
@@ -273,7 +273,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
   const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(maxAmount, asset)) // Initial state can be null or a suitable default
 
   useEffect(() => {
-    const maxAmountPrice = getPoolPriceValue({
+    const maxAmountPrice = getUSDValue({
       balance: { asset, amount: maxAmount },
       poolDetails,
       pricePool
