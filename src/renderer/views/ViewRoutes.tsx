@@ -5,13 +5,11 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import * as appRoutes from '../routes/app'
 import * as playgroundRoutes from '../routes/playground'
 import * as poolsRoutes from '../routes/pools'
-import * as lendingRoutes from '../routes/pools/lending'
 import * as saversRoutes from '../routes/pools/savers'
 import * as portfolioRoutes from '../routes/portfolio'
 import * as walletRoutes from '../routes/wallet'
 import { AppSettings } from './app/AppSettings'
 import { DepositView } from './deposit/DepositView'
-import { LoansView } from './loans/LoansView'
 import { NoContentView } from './NoContentView'
 import { PlaygroundView } from './playground/PlaygroundView'
 import { PoolsOverview } from './pools/PoolsOverview'
@@ -45,7 +43,6 @@ export const ViewRoutes: React.FC<{}> = (): JSX.Element => {
       <Route path={poolsRoutes.active.template} element={<PoolsOverview />} />
       <Route path={poolsRoutes.pending.template} element={<PoolsOverview />} />
       <Route path={poolsRoutes.savers.template} element={<PoolsOverview />} />
-      <Route path={poolsRoutes.lending.template} element={<PoolsOverview />} />
 
       <Route path={poolsRoutes.swap.template} element={<SwapView />} />
       <Route
@@ -53,22 +50,6 @@ export const ViewRoutes: React.FC<{}> = (): JSX.Element => {
         element={
           <WalletAuth>
             <SaversView />
-          </WalletAuth>
-        }
-      />
-      <Route
-        path={lendingRoutes.borrow.template}
-        element={
-          <WalletAuth>
-            <LoansView />
-          </WalletAuth>
-        }
-      />
-      <Route
-        path={lendingRoutes.repay.template}
-        element={
-          <WalletAuth>
-            <LoansView />
           </WalletAuth>
         }
       />

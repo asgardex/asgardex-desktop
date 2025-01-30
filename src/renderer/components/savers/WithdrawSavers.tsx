@@ -93,6 +93,7 @@ import { PricePool } from '../../views/pools/Pools.types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
 import { TxModal } from '../modal/tx'
 import { DepositAsset } from '../modal/tx/extra/DepositAsset'
+import { ErrorLabel } from '../settings/AppSettings.styles'
 import { LoadingView } from '../shared/loading'
 import { AssetInput } from '../uielements/assets/assetInput'
 import { BaseButton, FlatButton, ViewTxButton } from '../uielements/button'
@@ -1372,6 +1373,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
                     disabled={disableSubmit}>
                     {intl.formatMessage({ id: 'common.withdraw' })}
                   </FlatButton>
+                  <ErrorLabel>Savers withdraw have been paused by TC</ErrorLabel>
                 </div>
               </>
             ) : (

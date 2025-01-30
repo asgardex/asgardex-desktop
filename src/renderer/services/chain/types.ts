@@ -266,24 +266,6 @@ export type SaverDepositState$ = Rx.Observable<SaverDepositState>
 
 export type SaverDepositStateHandler = (p: SaverDepositParams) => SaverDepositState$
 
-/**
- * State to reflect status of a borrowers deposit by doing different requests
- */
-export type BorrowerDepositState = {
-  // Number of current step
-  readonly step: number
-  // Constant total amount of steps
-  readonly stepsTotal: 3
-  // deposit transaction
-  readonly depositTx: TxHashRD
-  // RD of all requests
-  readonly deposit: RD.RemoteData<ApiError, boolean>
-}
-
-export type BorrowerDepositState$ = Rx.Observable<BorrowerDepositState>
-
-export type BorrowerDepositStateHandler = (p: BorrowerDepositParams) => BorrowerDepositState$
-
 export type SymDepositValidationResult = { pool: boolean; node: boolean }
 export type SymDepositTxs = { rune: TxHashRD; asset: TxHashRD }
 export type SymDepositFinalityResult = { rune: Tx; asset: Tx }

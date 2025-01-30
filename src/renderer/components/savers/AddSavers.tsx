@@ -510,7 +510,11 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       O.isSome(oSaversQuote) && !oSaversQuote.value.canAddSaver && (oSaversQuote.value.errors?.length ?? 0) > 0
 
     if (!hasErrorMessages && !hasQuoteErrors) {
-      return <></>
+      return (
+        <>
+          <ErrorLabel>Earn features have been paused</ErrorLabel>
+        </>
+      )
     }
 
     const error = hasErrorMessages
