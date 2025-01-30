@@ -2448,7 +2448,11 @@ export const Swap = ({
           </div>
         </div>
         <div className="mt-1 space-y-1">
-          <SwapRoute isLoading={isFetchingEstimate} quotes={oQuoteProcotols} onSelectQuote={handleSelectQuote} />
+          {O.isNone(oQuoteProcotols) ? (
+            <></>
+          ) : (
+            <SwapRoute isLoading={isFetchingEstimate} quotes={oQuoteProcotols} onSelectQuote={handleSelectQuote} />
+          )}
           <Collapse
             header={
               <div className="flex flex-row items-center justify-between">

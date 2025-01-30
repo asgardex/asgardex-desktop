@@ -53,15 +53,19 @@ export const SwapRoute = ({ isLoading, quotes, onSelectQuote }: Props) => {
   }, [fastestQuote, isLoading, intl])
 
   return (
-    <div className="flex flex-col space-y-2 rounded-lg border border-solid border-gray1 py-2 px-4 dark:border-gray0d">
+    <div className="flex space-x-2 rounded-lg border border-solid border-gray1 p-2 dark:border-gray0d">
       {bestSwapProtocol && bestQuote && (
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            {intl.formatMessage({ id: 'swap.aggregator.bestRoute' })}
-            <ProviderIcon protocol={bestSwapProtocol} />
-            <span className="m-0 font-main text-[14px] text-gray2 dark:text-gray2d">
-              {protocolMapping?.[bestSwapProtocol as keyof typeof protocolMapping] ?? bestSwapProtocol}
+        <div className="flex flex-1 cursor-pointer items-center justify-between rounded-md border border-solid border-gray1 p-2 hover:bg-gray1 dark:border-gray0d hover:dark:bg-gray0d">
+          <div className="flex flex-col items-center space-y-2">
+            <span className="text-gray text-[14px] dark:text-gray2d">
+              {intl.formatMessage({ id: 'swap.aggregator.bestRoute' })}
             </span>
+            <div className="flex items-center space-x-2">
+              <ProviderIcon protocol={bestSwapProtocol} />
+              <span className="m-0 font-main text-[14px] text-gray2 dark:text-gray2d">
+                {protocolMapping?.[bestSwapProtocol as keyof typeof protocolMapping] ?? bestSwapProtocol}
+              </span>
+            </div>
           </div>
           <button
             onClick={() => onSelectQuote(bestQuote)} // Trigger callback on click
@@ -81,13 +85,17 @@ export const SwapRoute = ({ isLoading, quotes, onSelectQuote }: Props) => {
         </div>
       )}
       {fastestSwapProtocol && fastestQuote && (
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            {intl.formatMessage({ id: 'swap.aggregator.fastestRoute' })}
-            <ProviderIcon protocol={fastestSwapProtocol} />
-            <span className="m-0 font-main text-[14px] text-gray2 dark:text-gray2d">
-              {protocolMapping?.[fastestSwapProtocol as keyof typeof protocolMapping] ?? fastestSwapProtocol}
+        <div className="flex flex-1 cursor-pointer items-center justify-between rounded-md border border-solid border-gray1 p-2 hover:bg-gray1 dark:border-gray0d hover:dark:bg-gray0d">
+          <div className="flex flex-col items-center space-y-2">
+            <span className="text-gray text-[14px] dark:text-gray2d">
+              {intl.formatMessage({ id: 'swap.aggregator.fastestRoute' })}
             </span>
+            <div className="flex items-center space-x-2">
+              <ProviderIcon protocol={fastestSwapProtocol} />
+              <span className="m-0 font-main text-[14px] text-gray2 dark:text-gray2d">
+                {protocolMapping?.[fastestSwapProtocol as keyof typeof protocolMapping] ?? fastestSwapProtocol}
+              </span>
+            </div>
           </div>
           <button
             onClick={() => onSelectQuote(fastestQuote)} // Trigger callback on click
