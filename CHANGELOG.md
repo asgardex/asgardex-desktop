@@ -2,9 +2,12 @@
 
 ## Add 
 - min threshold dust amount check [#590](https://github.com/asgardex/asgardex-desktop/pull/591)
+- add maya price to total wallet balance [#599](https://github.com/asgardex/asgardex-desktop/pull/599)
 
 ## Updates/Fixes
-- removed all loan/lending logic [#603](https://github.com/asgardex/asgardex-desktop/pull/603)
+- removed all loan/lending logic [#603](https://github.com/asgardex/asgardex-desktop/pull/604)
+- update Aggregator route info [#600] (https://github.com/asgardex/asgardex-desktop/pull/602)
+- fix token router approval flow [#601] (https://github.com/asgardex/asgardex-desktop/pull/601)
 
 # 1.30.1 (2025-1-17)
 
