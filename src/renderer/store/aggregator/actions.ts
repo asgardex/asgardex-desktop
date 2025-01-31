@@ -1,5 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { Aggregator, QuoteSwapParams } from '@xchainjs/xchain-aggregator'
+import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { Client as ArbClient } from '@xchainjs/xchain-arbitrum'
 import { Client as AvaxClient } from '@xchainjs/xchain-avax'
 import { Client as BaseClient } from '@xchainjs/xchain-base'
@@ -23,7 +24,7 @@ export const getEstimate = createAsyncThunk(
   }: {
     aggregator: Aggregator
     params: QuoteSwapParams
-    useAffiliate: Boolean
+    useAffiliate: boolean
   }) => {
     try {
       const wallet = new Wallet({
@@ -43,28 +44,28 @@ export const getEstimate = createAsyncThunk(
           ...defaultBaseParams
         })
       })
+      const protocols: Protocol[] = ['Thorchain', 'Mayachain']
 
-      if (useAffiliate) {
-        aggregator.setConfiguration({
-          protocols: ['Thorchain', 'Mayachain', 'Chainflip'],
-          affiliate: {
-            basisPoints: ASGARDEX_AFFILIATE_FEE,
-            affiliates: { Thorchain: ASGARDEX_THORNAME, Mayachain: ASGARDEX_THORNAME }
-          },
-          wallet
+      // Fetch estimates for all selected protocols
+      const estimates = await Promise.allSettled(
+        protocols.map(async (protocol) => {
+          aggregator.setConfiguration({
+            protocols: [protocol],
+            affiliate: {
+              basisPoints: useAffiliate ? ASGARDEX_AFFILIATE_FEE : 0,
+              affiliates: { Thorchain: ASGARDEX_THORNAME, Mayachain: ASGARDEX_THORNAME }
+            },
+            wallet
+          })
+
+          const estimate = await aggregator.estimateSwap(params)
+          return { protocol, estimate }
         })
+      )
 
-        const estimate = await aggregator.estimateSwap(params)
-        return estimate
-      } else {
-        aggregator.setConfiguration({
-          protocols: ['Thorchain', 'Mayachain', 'Chainflip'],
-          affiliate: { basisPoints: 0, affiliates: { Thorchain: ASGARDEX_THORNAME, Mayachain: ASGARDEX_THORNAME } },
-          wallet
-        })
-
-        const estimate = await aggregator.estimateSwap(params)
-        return estimate
+      // Return all estimates
+      return {
+        estimates
       }
     } catch (error) {
       console.error(error)

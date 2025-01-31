@@ -17,7 +17,7 @@ export const useAggregator = () => {
    * Dispatches `getEstimate` thunk and returns the result.
    */
   const estimateSwap = useCallback(
-    async (params: QuoteSwapParams, useAffiliate: Boolean) => {
+    async (params: QuoteSwapParams, useAffiliate: boolean) => {
       try {
         const result = await dispatch(xchainActions.getEstimate({ aggregator, params, useAffiliate })).unwrap()
         return result

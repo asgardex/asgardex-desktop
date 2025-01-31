@@ -10,6 +10,8 @@ const swap: SwapMessages = {
   'swap.info.max.balance': "Solde total de l'actif ({balance})",
   'swap.info.max.balanceMinusFee': "Solde total de l'actif ({balance}) moins les frais d'échange estimés ({fee})",
   'swap.slip.title': 'Slippage',
+  'swap.aggregator.fasterReturn': 'Retour plus rapide ...',
+  'swap.aggregator.betterReturn': 'Meilleur retour ...',
   'swap.slip.tolerance': 'Tolérance de slippage',
   'swap.slip.tolerance.info':
     "Plus le pourcentage est élevé, plus vous acceptez de slippage. Ceci inclus également un écart plus important pour couvrir les frais estimés, afin d'éviter les échanges avortés.",

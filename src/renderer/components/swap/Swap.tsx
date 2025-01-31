@@ -113,7 +113,7 @@ import { CopyLabel } from '../uielements/label'
 import { Slider } from '../uielements/slider'
 import { EditableAddress } from './EditableAddress'
 import { SelectableSlipTolerance } from './SelectableSlipTolerance'
-import { ModalState, RateDirection, SwapProps } from './Swap.types'
+import { ModalState, QuoteWithProtocol, RateDirection, SwapProps } from './Swap.types'
 import * as Utils from './Swap.utils'
 import SwapExpiryProgressBar from './SwapExpiryProgressBar'
 import { SwapRoute } from './SwapRoute'
@@ -201,6 +201,7 @@ export const Swap = ({
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()
 
+  const [oQuoteProcotols, setQuoteProtocols] = useState<O.Option<QuoteWithProtocol[]>>(O.none)
   const [oQuoteProtocol, setQuoteProtocol] = useState<O.Option<QuoteSwapProtocol>>(O.none)
   const [oErrorProtocol, setErrorProtocol] = useState<O.Option<Error>>(O.none)
 
@@ -820,8 +821,36 @@ export const Swap = ({
           },
           applyBps
         )
-        console.log(result)
-        setQuoteProtocol(O.some(result))
+        // Function to sort quotes and set the default selected quote
+        const sortAndSetDefaultQuote = (quotes: QuoteWithProtocol[]) => {
+          // Sort quotes by expected_amount_out (descending) and total_swap_seconds (ascending)
+          const sortedQuotes = quotes.sort((a, b) => {
+            const amountA = parseFloat(a.estimate.expectedAmount.assetAmountFixedString())
+            const amountB = parseFloat(b.estimate.expectedAmount.assetAmountFixedString())
+            const timeA = a.estimate.totalSwapSeconds
+            const timeB = b.estimate.totalSwapSeconds
+
+            // Sort by amount first (higher is better)
+            if (amountA > amountB) return -1
+            if (amountA < amountB) return 1
+
+            // If amounts are equal, sort by time (lower is better)
+            return timeA - timeB
+          })
+
+          // Update the state with sorted quotes
+          setQuoteProtocols(O.some(sortedQuotes))
+          // Set the default selected quote to the first item in the sorted array
+          setQuoteProtocol(O.some(sortedQuotes[0].estimate))
+        }
+        // Filter out only the successful quotes
+        const successfulQuotes: QuoteWithProtocol[] = result.estimates
+          .filter((result): result is PromiseFulfilledResult<QuoteWithProtocol> => result.status === 'fulfilled')
+          .map((result) => result.value)
+
+        // Call the sorting function with the successful quotes
+        sortAndSetDefaultQuote(successfulQuotes)
+
         setErrorProtocol(O.none)
       } catch (err) {
         console.error('Failed to fetch estimate:', err)
@@ -872,7 +901,36 @@ export const Swap = ({
               },
               applyBps
             )
-            setQuoteProtocol(O.some(result))
+            // Function to sort quotes and set the default selected quote
+            const sortAndSetDefaultQuote = (quotes: QuoteWithProtocol[]) => {
+              // Sort quotes by expected_amount_out (descending) and total_swap_seconds (ascending)
+              const sortedQuotes = quotes.sort((a, b) => {
+                const amountA = parseFloat(a.estimate.expectedAmount.assetAmountFixedString())
+                const amountB = parseFloat(b.estimate.expectedAmount.assetAmountFixedString())
+                const timeA = a.estimate.totalSwapSeconds
+                const timeB = b.estimate.totalSwapSeconds
+
+                // Sort by amount first (higher is better)
+                if (amountA > amountB) return -1
+                if (amountA < amountB) return 1
+
+                // If amounts are equal, sort by time (lower is better)
+                return timeA - timeB
+              })
+
+              // Update the state with sorted quotes
+              setQuoteProtocols(O.some(sortedQuotes))
+
+              // Set the default selected quote to the first item in the sorted array
+              setQuoteProtocol(O.some(sortedQuotes[0].estimate))
+            }
+            // Filter out only the successful quotes
+            const successfulQuotes: QuoteWithProtocol[] = result.estimates
+              .filter((result): result is PromiseFulfilledResult<QuoteWithProtocol> => result.status === 'fulfilled')
+              .map((result) => result.value)
+
+            // Call the sorting function with the successful quotes
+            sortAndSetDefaultQuote(successfulQuotes)
             setErrorProtocol(O.none)
           } catch (err) {
             console.error('Failed to refetch estimate after approval:', err)
@@ -900,6 +958,11 @@ export const Swap = ({
     streamingQuantity,
     targetAsset
   ])
+
+  // Function to handle user selection
+  const handleSelectQuote = (selectedQuote: QuoteWithProtocol) => {
+    setQuoteProtocol(O.some(selectedQuote.estimate))
+  }
 
   // Swap boolean for use later
   const canSwap: boolean = useMemo(() => {
@@ -2406,7 +2469,17 @@ export const Swap = ({
           </div>
         </div>
         <div className="mt-1 space-y-1">
-          <SwapRoute isLoading={isFetchingEstimate} quote={oQuoteProtocol} />
+          {O.isNone(oQuoteProcotols) ? (
+            <></>
+          ) : (
+            <SwapRoute
+              isLoading={isFetchingEstimate}
+              targetAsset={targetAsset.ticker}
+              quote={oQuoteProtocol}
+              quotes={oQuoteProcotols}
+              onSelectQuote={handleSelectQuote}
+            />
+          )}
           <Collapse
             header={
               <div className="flex flex-row items-center justify-between">

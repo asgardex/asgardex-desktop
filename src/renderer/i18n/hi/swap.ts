@@ -10,6 +10,8 @@ const swap: SwapMessages = {
   'swap.info.max.balance': 'कुल संपत्ति संतुलन ({balance})',
   'swap.info.max.balanceMinusFee': 'कुल संपत्ति संतुलन ({balance}) अनुमानित स्वैप शुल्कों ({fee}) द्वारा घटाया गया',
   'swap.slip.title': 'स्लिप',
+  'swap.aggregator.fasterReturn': 'तेज वापसी ...',
+  'swap.aggregator.betterReturn': 'बेहतर वापसी ...',
   'swap.slip.tolerance': 'स्लिपेज सहिष्णुता',
   'swap.slip.tolerance.info':
     'प्रतिशत जितना अधिक होगा, उतनी अधिक स्लिपेज स्वीकार करेंगे। अधिक स्लिपेज में रद्द स्वैप्स से बचने के लिए अनुमानित शुल्कों को कवर करने के लिए भी व्यापक रेंज शामिल है।',

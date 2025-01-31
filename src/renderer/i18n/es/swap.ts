@@ -11,6 +11,8 @@ const swap: SwapMessages = {
   'swap.info.max.balanceMinusFee':
     'Saldo total del activo ({balance}) restado por las comisiones estimadas del swap ( {fee})',
   'swap.slip.title': 'Bajada',
+  'swap.aggregator.fasterReturn': 'Retorno más rápido ...',
+  'swap.aggregator.betterReturn': 'Mejor retorno ...',
   'swap.slip.tolerance': 'Bajada tolerancia',
   'swap.slip.tolerance.info':
     'Cuanto mayor sea el porcentaje, más deslizamiento aceptará. Más deslizamiento incluye también un rango más amplio para cubrir las comisiones estimadas para evitar swaps abortados.',
