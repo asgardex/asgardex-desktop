@@ -65,17 +65,34 @@ export const ViewTxButton: React.FC<Props> = ({
           </Styled.ViewTxButton>
         )}
         <div>
-          <Styled.CopyLabel
-            copyable={
-              FP.pipe(
-                oTxUrl,
-                O.map((url) => ({
-                  text: url,
-                  tooltips: intl.formatMessage({ id: 'common.copyTxUrl' })
-                })),
-                O.toUndefined
-              ) || false
-            }></Styled.CopyLabel>
+          <p>
+            URL:{' '}
+            <Styled.CopyLabel
+              copyable={
+                FP.pipe(
+                  oTxUrl,
+                  O.map((url) => ({
+                    text: url,
+                    tooltips: intl.formatMessage({ id: 'common.copyTxUrl' })
+                  })),
+                  O.toUndefined
+                ) || false
+              }></Styled.CopyLabel>
+          </p>
+          <p>
+            HASH:{' '}
+            <Styled.CopyLabel
+              copyable={
+                FP.pipe(
+                  oTxHash,
+                  O.map((url) => ({
+                    text: url,
+                    tooltips: intl.formatMessage({ id: 'common.copyTxHash' })
+                  })),
+                  O.toUndefined
+                ) || false
+              }></Styled.CopyLabel>
+          </p>
         </div>
       </Styled.Wrapper>
     </div>
