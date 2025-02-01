@@ -44,7 +44,7 @@ export const getEstimate = createAsyncThunk(
           ...defaultBaseParams
         })
       })
-      const protocols: Protocol[] = ['Thorchain', 'Mayachain']
+      const protocols: Protocol[] = ['Thorchain', 'Mayachain', 'Chainflip']
 
       // Fetch estimates for all selected protocols
       const estimates = await Promise.allSettled(
