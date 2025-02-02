@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { Chain } from '@xchainjs/xchain-util'
 import { useIntl } from 'react-intl'
 
@@ -30,15 +31,26 @@ export const Interact: React.FC<Props> = ({
   const intl = useIntl()
   const name = isThorChain(chain) ? InteractType.THORName : InteractType.MAYAName
   const tabs: Array<{ type: InteractType; label: string }> = useMemo(
-    () => [
-      { type: InteractType.Bond, label: intl.formatMessage({ id: 'deposit.interact.actions.bond' }) },
-      { type: InteractType.Unbond, label: intl.formatMessage({ id: 'deposit.interact.actions.unbond' }) },
-      { type: InteractType.Leave, label: intl.formatMessage({ id: 'deposit.interact.actions.leave' }) },
-      { type: InteractType.RunePool, label: intl.formatMessage({ id: 'deposit.interact.actions.runePool' }) },
-      { type: InteractType.Custom, label: intl.formatMessage({ id: 'common.custom' }) },
-      { type: name, label: intl.formatMessage({ id: `common.${name}` }) }
-    ],
-    [intl, name]
+    () => {
+      const baseTabs = [
+        { type: InteractType.Bond, label: intl.formatMessage({ id: 'deposit.interact.actions.bond' }) },
+        { type: InteractType.Unbond, label: intl.formatMessage({ id: 'deposit.interact.actions.unbond' }) },
+        { type: InteractType.Leave, label: intl.formatMessage({ id: 'deposit.interact.actions.leave' }) },
+        { type: InteractType.Custom, label: intl.formatMessage({ id: 'common.custom' }) },
+        { type: name, label: intl.formatMessage({ id: `common.${name}` }) }
+      ]
+
+      // Add RunePool tab only if the chain is not mayachain
+      if (chain !== MAYAChain) {
+        baseTabs.push({
+          type: InteractType.RunePool,
+          label: intl.formatMessage({ id: 'deposit.interact.actions.runePool' })
+        })
+      }
+
+      return baseTabs
+    },
+    [intl, name, chain] // Add chain to the dependency array
   )
   const asset = getChainAsset(chain)
 
