@@ -8,10 +8,10 @@ import * as O from 'fp-ts/Option'
 import { useIntl } from 'react-intl'
 
 import { DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
+import { Alert } from '../../components/uielements/alert'
 import { unionChains } from '../../helpers/fp/array'
 import { rdAltOnPending } from '../../helpers/fpHelpers'
 import { MimirHalt } from '../../services/thorchain/types'
-import * as Styled from './AppView.styles'
 
 type HaltedChainsWarningProps = {
   haltedChainsRD: RD.RemoteData<Error, Chain[]>
@@ -97,7 +97,7 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol }: HaltedCh
             ? `${msg} ${intl.formatMessage({ id: 'halt.chain.pauseall' })}`
             : `${msg}`
       }
-      return msg ? <Styled.Alert key={'halted warning'} type="warning" message={msg} /> : <></>
+      return msg ? <Alert key={'halted warning'} type="warning" message={msg} /> : <></>
     }),
     O.getOrElse(() => <></>)
   )

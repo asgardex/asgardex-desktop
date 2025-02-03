@@ -154,16 +154,18 @@ export const AppView = (): JSX.Element => {
             <MidgardErrorAlert apiEndpoint={apiEndpointMaya} reloadHandler={reloadApiEndpointMaya} />
             {renderImportKeystoreWalletsError}
             {renderImportLedgerAddressesError}
-            <HaltedChainsWarning
-              haltedChainsRD={haltedChainsThorRD}
-              mimirHaltRD={mimirHaltThorRD}
-              protocol={THORChain}
-            />
-            <HaltedChainsWarning
-              haltedChainsRD={haltedChainsMayaRD}
-              mimirHaltRD={mimirHaltMayaRD}
-              protocol={MayaChain}
-            />
+            <div className="mb-10 flex flex-col gap-2">
+              <HaltedChainsWarning
+                haltedChainsRD={haltedChainsThorRD}
+                mimirHaltRD={mimirHaltThorRD}
+                protocol={THORChain}
+              />
+              <HaltedChainsWarning
+                haltedChainsRD={haltedChainsMayaRD}
+                mimirHaltRD={mimirHaltMayaRD}
+                protocol={MayaChain}
+              />
+            </div>
             <ViewRoutes />
           </View>
         </Styled.AppLayout>
