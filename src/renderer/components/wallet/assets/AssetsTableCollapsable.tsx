@@ -33,7 +33,7 @@ import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE, ZERO_BASE_AMOUNT } from '../../../const'
 import { truncateAddress } from '../../../helpers/addressHelper'
 import { isBtcAsset, isCacaoAsset, isMayaAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
-import { getChainAsset } from '../../../helpers/chainHelper'
+import { getChainAsset, isSolChain } from '../../../helpers/chainHelper'
 import { isEvmChain } from '../../../helpers/evmHelper'
 import { getDeepestPool, getPoolPriceValue, getSecondDeepestPool } from '../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../helpers/poolHelperMaya'
@@ -417,7 +417,8 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         deepestPoolAsset &&
         secondDeepestPoolAsset &&
         !isCacaoAsset(asset) &&
-        !isRuneNativeAsset(asset)
+        !isRuneNativeAsset(asset) &&
+        !isSolChain(asset.chain)
       ) {
         actions.push(
           createAction('common.swap', () =>

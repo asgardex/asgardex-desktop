@@ -64,18 +64,37 @@ export const ViewTxButton: React.FC<Props> = ({
             {label || intl.formatMessage({ id: 'common.trackTransaction' })}
           </Styled.ViewTxButton>
         )}
-        <div>
-          <Styled.CopyLabel
-            copyable={
-              FP.pipe(
-                oTxUrl,
-                O.map((url) => ({
-                  text: url,
-                  tooltips: intl.formatMessage({ id: 'common.copyTxUrl' })
-                })),
-                O.toUndefined
-              ) || false
-            }></Styled.CopyLabel>
+        <div className="flex space-x-6">
+          <div className="flex items-center justify-center">
+            <span className="mt-1 text-text2 dark:text-text1d">URL : </span>
+            <Styled.CopyLabel
+              copyable={
+                FP.pipe(
+                  oTxUrl,
+                  O.map((url) => ({
+                    text: url,
+                    tooltips: intl.formatMessage({ id: 'common.copyTxUrl' })
+                  })),
+                  O.toUndefined
+                ) || false
+              }
+            />
+          </div>
+          <div className="flex items-center justify-center">
+            <span className="mt-1 text-text2 dark:text-text1d">HASH : </span>
+            <Styled.CopyLabel
+              copyable={
+                FP.pipe(
+                  oTxHash,
+                  O.map((url) => ({
+                    text: url,
+                    tooltips: intl.formatMessage({ id: 'common.copyTxHash' })
+                  })),
+                  O.toUndefined
+                ) || false
+              }
+            />
+          </div>
         </div>
       </Styled.Wrapper>
     </div>

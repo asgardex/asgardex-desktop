@@ -65,12 +65,14 @@ const Route = ({
             </b>
           </span>
         </div>
-        <div className="flex flex-row items-center space-x-1">
-          <StopWatch className="text-text0 dark:text-gray2d" />
-          <span className="text-[12px] text-text0 dark:text-gray2d">
-            Est. Time: <b>{formatTime(quote.totalSwapSeconds)}</b>
-          </span>
-        </div>
+        {quote.totalSwapSeconds > 0 && (
+          <div className="flex flex-row items-center space-x-1">
+            <StopWatch className="text-text0 dark:text-gray2d" />
+            <span className="text-[12px] text-text0 dark:text-gray2d">
+              Est. Streaming Time: <b>{formatTime(quote.totalSwapSeconds)}</b>
+            </span>
+          </div>
+        )}
         {/* {percentageDifference !== null && percentageDifference > 0 && (
           <span className="text-[12px] text-green-500">Recommended</span>
         )} */}

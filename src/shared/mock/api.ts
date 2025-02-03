@@ -169,7 +169,7 @@ export const apiAddressStorage: ApiFileStoreService<UserTrustedAddressStorage> =
 
 const userAssetStorageData: UserAssetStorage = {
   assets: [],
-  version: '1'
+  version: '2'
 }
 
 export const apiAssetStorage: ApiFileStoreService<UserAssetStorage> = {
