@@ -23,7 +23,7 @@ type Props = {
 export const ViewTxButton: React.FC<Props> = ({
   onClick,
   txHash: oTxHash,
-  txUrl: oTxUrl,
+  // txUrl: oTxUrl,
   label,
   className,
   network,
@@ -64,7 +64,8 @@ export const ViewTxButton: React.FC<Props> = ({
             {label || intl.formatMessage({ id: 'common.trackTransaction' })}
           </Styled.ViewTxButton>
         )}
-        <div>
+        {/* TODO: update the styles for URL and HASH buttons */}
+        {/* <div>
           <p>
             URL:{' '}
             <Styled.CopyLabel
@@ -93,7 +94,7 @@ export const ViewTxButton: React.FC<Props> = ({
                 ) || false
               }></Styled.CopyLabel>
           </p>
-        </div>
+        </div> */}
       </Styled.Wrapper>
     </div>
   )
