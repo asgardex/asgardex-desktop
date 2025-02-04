@@ -124,7 +124,7 @@ const SuccessRouteView: React.FC<Props> = ({
 
   const [chainFlipAssets] = useObservableState(() => getAssetsData$(), RD.pending)
 
-  const { reloadSwapFees, swapFees$, addressByChain$, swap$, assetWithDecimal$ } = useChainContext()
+  const { reloadSwapFees, swapFees$, addressByChain$, swap$, assetWithDecimal$, transfer$ } = useChainContext()
 
   const {
     balancesState$,
@@ -452,6 +452,7 @@ const SuccessRouteView: React.FC<Props> = ({
                   targetLedgerAddress={oTargetLedgerAddress}
                   recipientAddress={oRecipient}
                   swap$={swap$}
+                  transfer$={transfer$}
                   reloadBalances={reloadBalances}
                   onChangeAsset={onChangeAssetHandler}
                   network={network}
@@ -491,7 +492,7 @@ const SuccessRouteView: React.FC<Props> = ({
               ]
 
               const assetData = RD.isSuccess(chainFlipAssets) ? chainFlipAssets.value : []
-              console.log(chainFlipAssets)
+
               // Convert assets and filter out unsupported chains
               const convertedAssets = assetData
                 .map(cAssetToXAsset) // Apply the conversion function
@@ -553,6 +554,7 @@ const SuccessRouteView: React.FC<Props> = ({
                   targetLedgerAddress={oTargetLedgerAddress}
                   recipientAddress={oRecipient}
                   swap$={swap$}
+                  transfer$={transfer$}
                   reloadBalances={reloadBalances}
                   onChangeAsset={onChangeAssetHandler}
                   network={network}

@@ -86,9 +86,17 @@ import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
-import { INITIAL_SWAP_STATE } from '../../services/chain/const'
+import { INITIAL_SEND_STATE, INITIAL_SWAP_STATE } from '../../services/chain/const'
 import { getZeroSwapFees } from '../../services/chain/fees/swap'
-import { SwapTxParams, SwapFeesRD, SwapFees, FeeRD, SwapTxState } from '../../services/chain/types'
+import {
+  SwapTxParams,
+  SwapFeesRD,
+  SwapFees,
+  FeeRD,
+  SwapTxState,
+  SendTxState,
+  SendTxParams
+} from '../../services/chain/types'
 import { ApproveParams, IsApprovedRD } from '../../services/evm/types'
 import { getPoolDetail as getPoolDetailMaya } from '../../services/mayaMigard/utils'
 import { PoolAddress } from '../../services/midgard/types'
@@ -138,6 +146,7 @@ export const Swap = ({
   poolAddressThor: oPoolAddressThor,
   poolAddressMaya: oPoolAddressMaya,
   swap$,
+  transfer$,
   poolDetailsThor,
   poolDetailsMaya,
   walletBalances,
@@ -373,6 +382,12 @@ export const Swap = ({
     reset: resetSwapState,
     subscribe: subscribeSwapState
   } = useSubscriptionState<SwapTxState>(INITIAL_SWAP_STATE)
+
+  const {
+    state: sendTxState,
+    reset: resetSendTxState,
+    subscribe: subscribeSendTxState
+  } = useSubscriptionState<SendTxState>(INITIAL_SEND_STATE)
 
   const initialAmountToSwapMax1e8 = useMemo(
     () => baseAmount(0, sourceAssetAmountMax1e8.decimal),
@@ -1153,7 +1168,19 @@ export const Swap = ({
   const oSwapParams: O.Option<SwapTxParams> = useMemo(() => {
     const oPoolAddress: O.Option<PoolAddress> = FP.pipe(
       oQuoteProtocol,
-      O.chain((quoteSwap) => (quoteSwap.protocol === 'Thorchain' ? oPoolAddressThor : oPoolAddressMaya))
+      O.chain((quoteSwap) => {
+        // Handle different protocols
+        switch (quoteSwap.protocol) {
+          case 'Thorchain':
+            return oPoolAddressThor
+          case 'Mayachain':
+            return oPoolAddressMaya
+          case 'Chainflip':
+            return O.none
+          default:
+            return O.none
+        }
+      })
     )
 
     return FP.pipe(
@@ -1198,8 +1225,77 @@ export const Swap = ({
     sourceChainAssetAmount,
     swapFees.inFee.amount
   ])
-  // console.log(oSwapParams)
 
+  const oCFSwapParams: O.Option<SendTxParams> = useMemo(() => {
+    return FP.pipe(
+      sequenceTOption(oSourceAssetWB, oQuoteProtocol),
+      O.map(([{ walletType, walletAddress, walletAccount, walletIndex, hdMode }, quoteSwap]) => {
+        let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
+
+        if (
+          !isTokenAsset(sourceAsset) &&
+          !isTradeAsset(sourceAsset) &&
+          !isSynthAsset(sourceAsset) &&
+          !isSecuredAsset(sourceAsset)
+        ) {
+          if (sourceChainAssetAmount.lt(amountToSwap.plus(swapFees.inFee.amount))) {
+            amountToSwap = sourceChainAssetAmount.minus(swapFees.inFee.amount)
+          }
+        }
+
+        return {
+          asset: sourceAsset,
+          amount: amountToSwap,
+          recipient: quoteSwap.toAddress,
+          memo: quoteSwap.memo,
+          walletType,
+          sender: walletAddress,
+          walletAccount,
+          walletIndex,
+          hdMode,
+          protocol: quoteSwap.protocol
+        }
+      })
+    )
+  }, [
+    oSourceAssetWB,
+    oQuoteProtocol,
+    amountToSwapMax1e8,
+    sourceAssetAmount.decimal,
+    sourceAsset,
+    sourceChainAssetAmount,
+    swapFees.inFee.amount
+  ])
+
+  const submitCFTx = useCallback(() => {
+    setSwapStartTime(Date.now())
+    console.log('sending tx')
+    FP.pipe(
+      oCFSwapParams,
+      O.fold(
+        () => {
+          console.error('No swap parameters available')
+          return
+        },
+        (swapParams) => {
+          subscribeSendTxState(
+            transfer$({
+              walletType: swapParams.walletType,
+              walletAccount: swapParams.walletAccount,
+              walletIndex: swapParams.walletIndex,
+              hdMode: swapParams.hdMode,
+              sender: swapParams.sender,
+              recipient: swapParams.recipient,
+              asset: swapParams.asset,
+              amount: swapParams.amount,
+              feeOption: swapParams.feeOption,
+              memo: swapParams.memo
+            })
+          )
+        }
+      )
+    )
+  }, [oCFSwapParams, subscribeSendTxState, transfer$])
   // Check to see slippage greater than tolerance
   // This is handled by thornode
   const isCausedSlippage = useMemo(() => {
@@ -1470,11 +1566,13 @@ export const Swap = ({
       oQuoteProtocol,
       O.fold(
         () => false,
-        (quoteSwap) => quoteSwap.dustThreshold.baseAmount.gt(amountToSwapMax1e8)
+        (quoteSwap) => {
+          return quoteSwap.dustThreshold.baseAmount.gt(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal))
+        }
       )
     )
     return isBelowDustThreshold
-  }, [amountToSwapMax1e8, oQuoteProtocol])
+  }, [amountToSwapMax1e8, oQuoteProtocol, sourceAssetDecimal])
 
   // // sets the locked asset amount to be the asset pool depth
   useEffect(() => {
@@ -1734,7 +1832,7 @@ export const Swap = ({
   }, [setShowLedgerModal, useSourceAssetLedger])
 
   const extraTxModalContent = useMemo(() => {
-    const { swapTx } = swapState
+    const { swapTx } = swapState || sendTxState
     // don't render TxModal in initial state
     if (RD.isInitial(swapTx)) return <></>
     const stepLabel = FP.pipe(
@@ -1759,11 +1857,21 @@ export const Swap = ({
         network={network}
       />
     )
-  }, [swapState, sourceAsset, amountToSwapMax1e8, targetAsset, swapResultAmountMax.baseAmount, network, intl])
+  }, [
+    swapState,
+    sendTxState,
+    sourceAsset,
+    amountToSwapMax1e8,
+    targetAsset,
+    swapResultAmountMax.baseAmount,
+    network,
+    intl
+  ])
   // assuming on a unsucessful tx that the swap state should remain the same
   const onCloseTxModal = useCallback(() => {
     resetSwapState()
-  }, [resetSwapState])
+    resetSendTxState()
+  }, [resetSendTxState, resetSwapState])
 
   const onFinishTxModal = useCallback(() => {
     resetSwapState()
@@ -1778,7 +1886,8 @@ export const Swap = ({
 
   const renderPasswordConfirmationModal = useMemo(() => {
     const onSuccess = () => {
-      if (showPasswordModal === ModalState.Swap) submitSwapTx()
+      if (showPasswordModal === ModalState.Swap && O.isSome(oSwapParams)) submitSwapTx()
+      if (showPasswordModal === ModalState.Swap && O.isSome(oCFSwapParams)) submitCFTx()
       if (showPasswordModal === ModalState.Approve) submitApproveTx()
       setShowPasswordModal(ModalState.None)
     }
@@ -1795,7 +1904,7 @@ export const Swap = ({
         />
       )
     )
-  }, [showPasswordModal, submitApproveTx, submitSwapTx, validatePassword$])
+  }, [oCFSwapParams, oSwapParams, showPasswordModal, submitApproveTx, submitCFTx, submitSwapTx, validatePassword$])
 
   const renderLedgerConfirmationModal = useMemo(() => {
     const visible = showLedgerModal === ModalState.Swap || showLedgerModal === ModalState.Approve
@@ -2956,7 +3065,7 @@ export const Swap = ({
       {renderPasswordConfirmationModal}
       {renderLedgerConfirmationModal}
       <SwapTxModal
-        swapState={swapState}
+        swapState={swapState || sendTxState}
         swapStartTime={swapStartTime}
         sourceChain={sourceChain}
         extraTxModalContent={extraTxModalContent}
