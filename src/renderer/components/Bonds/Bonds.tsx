@@ -10,7 +10,7 @@ import { useIntl } from 'react-intl'
 
 import { AddressValidation } from '../../services/clients'
 import { NodeInfos, NodeInfosRD } from '../../services/thorchain/types'
-import { WalletAddressInfo } from '../../views/wallet/BondsView'
+import { WalletAddressInfo } from '../../views/bonds/types'
 import { ErrorView } from '../shared/error'
 import { FilterButton, ReloadButton } from '../uielements/button'
 import * as Styled from './Bonds.styles'
