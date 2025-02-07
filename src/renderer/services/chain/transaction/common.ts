@@ -106,6 +106,7 @@ export const sendTx$ = ({
       return BASE.sendTx({ walletType, asset, recipient, amount, memo, feeOption, walletAccount, walletIndex, hdMode })
 
     case SOLChain:
+      console.log('sending to ', walletType, asset, recipient, amount, memo, walletAccount, walletIndex, hdMode)
       return SOL.sendTx({ walletType, asset, recipient, amount, memo, walletAccount, walletIndex, hdMode })
 
     case BSCChain:

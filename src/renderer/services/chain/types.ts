@@ -215,6 +215,7 @@ export type SwapTxParams = {
 
 export type SwapStateHandler = (p: SwapTxParams) => SwapState$
 export type SwapHandler = (p: SwapTxParams) => SwapTxState$
+export type SwapCFHandler = (p: SendTxParams) => SwapTxState$
 
 /**
  * Types of swap txs

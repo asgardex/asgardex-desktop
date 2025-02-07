@@ -2,6 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { AssetCacao } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AssetType, isSecuredAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
+import * as FP from 'fp-ts/lib/function'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -11,8 +12,8 @@ import { service as mayaMidgardService } from '../../mayaMigard/service'
 import { service as midgardService } from '../../midgard/service'
 import { getTxStatus$ } from '../../thorchain'
 import { ChainTxFeeOption } from '../const'
-import { StreamingTxState, StreamingTxState$, SwapTxParams, SwapTxState$ } from '../types'
-import { sendPoolTx$ } from './common'
+import { SendTxParams, StreamingTxState, StreamingTxState$, SwapTxParams, SwapTxState$ } from '../types'
+import { sendPoolTx$, sendTx$ } from './common'
 
 const { pools: midgardPoolsService, validateNode$ } = midgardService
 const { pools: mayaMidgardPoolsService, validateNode$: mayaValidateNode$ } = mayaMidgardService
@@ -80,6 +81,44 @@ export const swap$ = ({
         protocol
       })
     ),
+    // Map the result to the expected SwapTx structure
+    RxOp.map((txHashRD) => ({ swapTx: txHashRD })),
+    // Handle errors and map them to the expected SwapTx structure
+    RxOp.catchError((error) => Rx.of({ swapTx: RD.failure(error) }))
+  )
+
+  return requests$
+}
+
+/**
+ * CF Swaps do 1 step:
+ *
+ * 2. Send swap transaction
+ */
+export const swapCF$ = ({
+  asset,
+  amount,
+  memo,
+  walletType,
+  sender,
+  recipient,
+  walletAccount,
+  walletIndex,
+  hdMode
+}: SendTxParams): SwapTxState$ => {
+  const requests$ = FP.pipe(
+    sendTx$({
+      walletType,
+      asset,
+      recipient,
+      amount,
+      memo,
+      feeOption: ChainTxFeeOption.SWAP,
+      sender,
+      walletAccount,
+      walletIndex,
+      hdMode
+    }),
     // Map the result to the expected SwapTx structure
     RxOp.map((txHashRD) => ({ swapTx: txHashRD })),
     // Handle errors and map them to the expected SwapTx structure

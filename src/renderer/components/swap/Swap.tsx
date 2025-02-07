@@ -86,17 +86,9 @@ import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
-import { INITIAL_SEND_STATE, INITIAL_SWAP_STATE } from '../../services/chain/const'
+import { INITIAL_SWAP_STATE } from '../../services/chain/const'
 import { getZeroSwapFees } from '../../services/chain/fees/swap'
-import {
-  SwapTxParams,
-  SwapFeesRD,
-  SwapFees,
-  FeeRD,
-  SwapTxState,
-  SendTxState,
-  SendTxParams
-} from '../../services/chain/types'
+import { SwapTxParams, SwapFeesRD, SwapFees, FeeRD, SwapTxState, SendTxParams } from '../../services/chain/types'
 import { ApproveParams, IsApprovedRD } from '../../services/evm/types'
 import { getPoolDetail as getPoolDetailMaya } from '../../services/mayaMigard/utils'
 import { PoolAddress } from '../../services/midgard/types'
@@ -109,7 +101,7 @@ import { useAggregator } from '../../store/aggregator/hooks'
 import { AssetWithAmount } from '../../types/asgardex'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
 import { SwapAssets } from '../modal/tx/extra'
-import { LoadingView } from '../shared/loading'
+import { LoadingView, Spin } from '../shared/loading'
 import { AssetInput } from '../uielements/assets/assetInput'
 import { BaseButton, FlatButton } from '../uielements/button'
 import { Collapse } from '../uielements/collapse'
@@ -146,7 +138,7 @@ export const Swap = ({
   poolAddressThor: oPoolAddressThor,
   poolAddressMaya: oPoolAddressMaya,
   swap$,
-  transfer$,
+  swapCF$,
   poolDetailsThor,
   poolDetailsMaya,
   walletBalances,
@@ -382,12 +374,6 @@ export const Swap = ({
     reset: resetSwapState,
     subscribe: subscribeSwapState
   } = useSubscriptionState<SwapTxState>(INITIAL_SWAP_STATE)
-
-  const {
-    state: sendTxState,
-    reset: resetSendTxState,
-    subscribe: subscribeSendTxState
-  } = useSubscriptionState<SendTxState>(INITIAL_SEND_STATE)
 
   const initialAmountToSwapMax1e8 = useMemo(
     () => baseAmount(0, sourceAssetAmountMax1e8.decimal),
@@ -1028,11 +1014,16 @@ export const Swap = ({
       oQuoteProtocol,
       O.fold(
         () => new CryptoAmount(baseAmount(0), targetAsset),
-        (txDetails) => txDetails.expectedAmount
+        (txDetails) => {
+          console.log(txDetails.expectedAmount.baseAmount.decimal)
+          return txDetails.expectedAmount
+        }
       )
     )
     return expectedAmount
   }, [oQuoteProtocol, targetAsset])
+
+  console.log(swapResultAmountMax.formatedAssetString())
 
   // Aggregator api Fetch Error
   const aggregatorErrors: JSX.Element = useMemo(() => {
@@ -1266,36 +1257,7 @@ export const Swap = ({
     sourceChainAssetAmount,
     swapFees.inFee.amount
   ])
-
-  const submitCFTx = useCallback(() => {
-    setSwapStartTime(Date.now())
-    console.log('sending tx')
-    FP.pipe(
-      oCFSwapParams,
-      O.fold(
-        () => {
-          console.error('No swap parameters available')
-          return
-        },
-        (swapParams) => {
-          subscribeSendTxState(
-            transfer$({
-              walletType: swapParams.walletType,
-              walletAccount: swapParams.walletAccount,
-              walletIndex: swapParams.walletIndex,
-              hdMode: swapParams.hdMode,
-              sender: swapParams.sender,
-              recipient: swapParams.recipient,
-              asset: swapParams.asset,
-              amount: swapParams.amount,
-              feeOption: swapParams.feeOption,
-              memo: swapParams.memo
-            })
-          )
-        }
-      )
-    )
-  }, [oCFSwapParams, subscribeSendTxState, transfer$])
+  console.log(oCFSwapParams)
   // Check to see slippage greater than tolerance
   // This is handled by thornode
   const isCausedSlippage = useMemo(() => {
@@ -1792,16 +1754,27 @@ export const Swap = ({
     FP.pipe(
       oSwapParams,
       O.map((swapParams) => {
+        // subscribe to swap$
         // set start time
         setSwapStartTime(Date.now())
-        // subscribe to swap$
-
         subscribeSwapState(swap$(swapParams))
 
         return true
       })
     )
   }, [oSwapParams, subscribeSwapState, swap$])
+
+  const submitCFTx = useCallback(() => {
+    FP.pipe(
+      oCFSwapParams,
+      O.map((swapParams) => {
+        // set start time
+        setSwapStartTime(Date.now())
+        subscribeSwapState(swapCF$(swapParams))
+        return true
+      })
+    )
+  }, [oCFSwapParams, subscribeSwapState, swapCF$])
 
   const submitApproveTx = useCallback(() => {
     FP.pipe(
@@ -1832,14 +1805,15 @@ export const Swap = ({
   }, [setShowLedgerModal, useSourceAssetLedger])
 
   const extraTxModalContent = useMemo(() => {
-    const { swapTx } = swapState || sendTxState
+    const { swapTx } = swapState
     // don't render TxModal in initial state
     if (RD.isInitial(swapTx)) return <></>
+
     const stepLabel = FP.pipe(
-      swapState.swapTx,
+      swapTx,
       RD.fold(
         () => '',
-        () => `${intl.formatMessage({ id: 'common.tx.sending' })}`,
+        () => intl.formatMessage({ id: 'common.tx.sending' }),
         () => '',
         () => 'Sent!'
       )
@@ -1857,21 +1831,11 @@ export const Swap = ({
         network={network}
       />
     )
-  }, [
-    swapState,
-    sendTxState,
-    sourceAsset,
-    amountToSwapMax1e8,
-    targetAsset,
-    swapResultAmountMax.baseAmount,
-    network,
-    intl
-  ])
+  }, [swapState, sourceAsset, amountToSwapMax1e8, targetAsset, swapResultAmountMax.baseAmount, network, intl])
   // assuming on a unsucessful tx that the swap state should remain the same
   const onCloseTxModal = useCallback(() => {
     resetSwapState()
-    resetSendTxState()
-  }, [resetSendTxState, resetSwapState])
+  }, [resetSwapState])
 
   const onFinishTxModal = useCallback(() => {
     resetSwapState()
@@ -2576,7 +2540,11 @@ export const Swap = ({
           </div>
         </div>
         <div className="mt-1 space-y-1">
-          {O.isNone(oQuoteProcotols) ? (
+          {isFetchingEstimate ? (
+            <Spin spinning={isFetchingEstimate} tip="Loading...">
+              <div style={{ minHeight: '100px' }} />
+            </Spin>
+          ) : O.isNone(oQuoteProcotols) ? (
             <></>
           ) : (
             <SwapRoute
@@ -2587,31 +2555,42 @@ export const Swap = ({
               onSelectQuote={handleSelectQuote}
             />
           )}
-          <Collapse
-            header={
-              <div className="flex flex-row items-center justify-between">
-                <span className="m-0 font-main text-[14px] text-gray2 dark:text-gray2d">
-                  {intl.formatMessage({ id: 'common.swap' })} {intl.formatMessage({ id: 'common.settings' })} (
-                  {labelMin})
-                </span>
-              </div>
-            }>
-            <div className="flex flex-col p-4">
-              <div className="flex w-full flex-col space-y-4 px-2">
-                <div>{renderStreamerInterval}</div>
-                <div>{renderStreamerQuantity}</div>
-              </div>
-              <div className="flex justify-end">
-                <TooltipAddress title="Reset to streaming default">
-                  <BaseButton
-                    onClick={resetToDefault}
-                    className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
-                    <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
-                  </BaseButton>
-                </TooltipAddress>
-              </div>
-            </div>
-          </Collapse>
+          {FP.pipe(
+            oQuoteProtocol,
+            O.fold(
+              () => null, // Handle case when `oQuoteProtocol` is `O.none`
+              (quoteSwap) =>
+                quoteSwap.protocol === 'Chainflip' ? (
+                  <></>
+                ) : (
+                  <Collapse
+                    header={
+                      <div className="flex flex-row items-center justify-between">
+                        <span className="m-0 font-main text-[14px] text-gray2 dark:text-gray2d">
+                          {intl.formatMessage({ id: 'common.swap' })} {intl.formatMessage({ id: 'common.settings' })} (
+                          {labelMin})
+                        </span>
+                      </div>
+                    }>
+                    <div className="flex flex-col p-4">
+                      <div className="flex w-full flex-col space-y-4 px-2">
+                        <div>{renderStreamerInterval}</div>
+                        <div>{renderStreamerQuantity}</div>
+                      </div>
+                      <div className="flex justify-end">
+                        <TooltipAddress title="Reset to streaming default">
+                          <BaseButton
+                            onClick={resetToDefault}
+                            className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
+                            <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
+                          </BaseButton>
+                        </TooltipAddress>
+                      </div>
+                    </div>
+                  </Collapse>
+                )
+            )
+          )}
           <Collapse
             header={
               <div className="flex flex-row items-center justify-between">
@@ -3065,7 +3044,7 @@ export const Swap = ({
       {renderPasswordConfirmationModal}
       {renderLedgerConfirmationModal}
       <SwapTxModal
-        swapState={swapState || sendTxState}
+        swapState={swapState}
         swapStartTime={swapStartTime}
         sourceChain={sourceChain}
         extraTxModalContent={extraTxModalContent}

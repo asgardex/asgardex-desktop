@@ -13,8 +13,8 @@ import { AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
 import { WalletType } from '../../../shared/wallet/types'
 import { ONE_BN } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
-import { INITIAL_SEND_STATE, INITIAL_SWAP_STATE } from '../../services/chain/const'
-import { SendTxState, SwapState } from '../../services/chain/types'
+import { INITIAL_SWAP_STATE } from '../../services/chain/const'
+import { SwapState } from '../../services/chain/types'
 import { Swap as Component } from './Swap'
 import { SwapAsset, SwapProps } from './Swap.types'
 
@@ -56,14 +56,16 @@ const defaultProps: SwapProps = {
         })
       )
     ),
-  transfer$: (params) =>
+  swapCF$: (params) =>
     Rx.of(params).pipe(
-      RxOp.tap((params) => console.log('transfer$ ', params)),
+      RxOp.tap((params) => console.log('swap$ ', params)),
       RxOp.switchMap((_) =>
-        Rx.of<SendTxState>({
-          ...INITIAL_SEND_STATE,
-          steps: { current: 0, total: 1 },
-          status: RD.success('tx-hash')
+        Rx.of<SwapState>({
+          ...INITIAL_SWAP_STATE,
+          step: 3,
+          swapTx: RD.success('tx-hash'),
+          swap: RD.success(true),
+          stepsTotal: 3
         })
       )
     ),

@@ -124,7 +124,7 @@ const SuccessRouteView: React.FC<Props> = ({
 
   const [chainFlipAssets] = useObservableState(() => getAssetsData$(), RD.pending)
 
-  const { reloadSwapFees, swapFees$, addressByChain$, swap$, assetWithDecimal$, transfer$ } = useChainContext()
+  const { reloadSwapFees, swapFees$, addressByChain$, swap$, assetWithDecimal$, swapCF$ } = useChainContext()
 
   const {
     balancesState$,
@@ -171,6 +171,20 @@ const SuccessRouteView: React.FC<Props> = ({
   const pendingPoolsStateMayaRD = useObservableState(pendingPoolsStateMaya$, RD.initial)
 
   const sourceAssetDecimal$: AssetWithDecimalLD = useMemo(() => {
+    // Check if chainFlipAssets is available and contains the sourceAsset
+    if (RD.isSuccess(chainFlipAssets)) {
+      const matchingAsset = chainFlipAssets.value.find((asset) => asset.asset === sourceAsset.ticker)
+
+      if (matchingAsset) {
+        // If a matching asset is found, return its decimal value
+        return Rx.of(
+          RD.success({
+            asset: sourceAsset,
+            decimal: matchingAsset.decimals
+          })
+        )
+      }
+    }
     // Check the condition to skip fetching
     if (sourceAsset.type === AssetType.SYNTH) {
       // Resolve `getDecimal` and return the observable
@@ -188,7 +202,7 @@ const SuccessRouteView: React.FC<Props> = ({
 
     // Use the existing `assetWithDecimal$` function for fetching
     return assetWithDecimal$(sourceAsset)
-  }, [assetWithDecimal$, sourceAsset])
+  }, [assetWithDecimal$, chainFlipAssets, sourceAsset])
 
   const sourceAssetRD: AssetWithDecimalRD = useObservableState(sourceAssetDecimal$, RD.initial)
 
@@ -452,7 +466,7 @@ const SuccessRouteView: React.FC<Props> = ({
                   targetLedgerAddress={oTargetLedgerAddress}
                   recipientAddress={oRecipient}
                   swap$={swap$}
-                  transfer$={transfer$}
+                  swapCF$={swapCF$}
                   reloadBalances={reloadBalances}
                   onChangeAsset={onChangeAssetHandler}
                   network={network}
@@ -512,6 +526,7 @@ const SuccessRouteView: React.FC<Props> = ({
                   )
                 }
               })()
+
               const sourceAssetDetail = FP.pipe(Utils.pickPoolAsset(poolAssetDetails, sourceAsset.asset), O.toNullable)
               // Make sure sourceAsset is available in pools
               if (!sourceAssetDetail)
@@ -554,7 +569,7 @@ const SuccessRouteView: React.FC<Props> = ({
                   targetLedgerAddress={oTargetLedgerAddress}
                   recipientAddress={oRecipient}
                   swap$={swap$}
-                  transfer$={transfer$}
+                  swapCF$={swapCF$}
                   reloadBalances={reloadBalances}
                   onChangeAsset={onChangeAssetHandler}
                   network={network}

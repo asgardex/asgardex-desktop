@@ -40,8 +40,8 @@ export const cAssetToXAsset = (asset: AssetData): XAsset | XTokenAsset => {
   if (!chain) throw Error()
   return {
     chain,
-    ticker: asset.contractAddress ? `${asset.symbol}-${asset.contractAddress}` : asset.symbol,
-    symbol: asset.symbol,
+    symbol: asset.contractAddress ? `${asset.symbol}-${asset.contractAddress}` : asset.symbol,
+    ticker: asset.symbol,
     type: asset.contractAddress ? AssetType.TOKEN : AssetType.NATIVE
   }
 }
