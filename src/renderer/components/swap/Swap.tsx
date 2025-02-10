@@ -1845,9 +1845,14 @@ export const Swap = ({
 
   const renderPasswordConfirmationModal = useMemo(() => {
     const onSuccess = () => {
-      if (showPasswordModal === ModalState.Swap && O.isSome(oSwapParams)) submitSwapTx()
-      if (showPasswordModal === ModalState.Swap && O.isSome(oCFSwapParams)) submitCFTx()
-      if (showPasswordModal === ModalState.Approve) submitApproveTx()
+      if (showPasswordModal === ModalState.Swap && O.isSome(oSwapParams)) {
+        submitSwapTx()
+      } else if (showPasswordModal === ModalState.Swap && O.isSome(oCFSwapParams)) {
+        submitCFTx()
+      } else if (showPasswordModal === ModalState.Approve) {
+        submitApproveTx()
+      }
+
       setShowPasswordModal(ModalState.None)
     }
     const onClose = () => {

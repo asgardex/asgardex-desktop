@@ -3294,17 +3294,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@chainflip/rpc@npm:^1.6.7":
-  version: 1.6.10
-  resolution: "@chainflip/rpc@npm:1.6.10"
-  dependencies:
-    "@chainflip/utils": "npm:0.4.0"
-    zod: "npm:^3.23.8"
-  checksum: 10/3ef586d86e52aa328966c7aebfae5cf12dcac9288f7179d8fe066cfd396d3a90290833a91180702b3d1f50edd91b4cdc912d694c75647bf10c7954000594f2fe
-  languageName: node
-  linkType: hard
-
-"@chainflip/sdk@npm:1.7.0":
+"@chainflip/sdk@npm:1.7.0, @chainflip/sdk@npm:^1.7.0":
   version: 1.7.0
   resolution: "@chainflip/sdk@npm:1.7.0"
   dependencies:
@@ -3319,18 +3309,6 @@ __metadata:
     superjson: "npm:^1.13.3"
     zod: "npm:^3.23.8"
   checksum: 10/38a36d6ed0921ea3c76c3ea6795a45af2db53cfc16f69cfb37fa5951ecc29b0b73be587913d8a6a1913829ffeebcb551605c8eaa3513eebbf929fd038ef7442b
-  languageName: node
-  linkType: hard
-
-"@chainflip/sdk@npm:^1.6.6":
-  version: 1.6.6
-  resolution: "@chainflip/sdk@npm:1.6.6"
-  dependencies:
-    "@chainflip/rpc": "npm:^1.6.7"
-    "@chainflip/utils": "npm:^0.4.0"
-    axios: "npm:^1.7.7"
-    ethers: "npm:^6.13.3"
-  checksum: 10/9b8213fc4479c01e0302c3fcfdda892cbc76e72189f8f076c548285a8e77528cf6a72d14d19bad22d663118437b3bfe12a52c3d1393d0821a51090026a96a8eb
   languageName: node
   linkType: hard
 
@@ -11724,7 +11702,7 @@ __metadata:
   dependencies:
     "@ant-design/icons": "npm:^4.7.0"
     "@asgardex/asgardex-theme": "npm:^0.1.2"
-    "@chainflip/sdk": "npm:^1.6.6"
+    "@chainflip/sdk": "npm:^1.7.0"
     "@craco/craco": "npm:^7.0.0"
     "@devexperts/remote-data-ts": "npm:^2.1.1"
     "@devexperts/rx-utils": "npm:^1.0.0-alpha.14"
