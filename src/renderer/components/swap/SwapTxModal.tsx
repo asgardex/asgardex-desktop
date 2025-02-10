@@ -84,7 +84,6 @@ export const SwapTxModal = ({
       ),
     [sourceChain, swapTx]
   )
-  console.log(oTxHash)
 
   const txRDasBoolean = useMemo(
     () =>

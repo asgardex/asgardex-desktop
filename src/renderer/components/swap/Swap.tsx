@@ -1015,15 +1015,12 @@ export const Swap = ({
       O.fold(
         () => new CryptoAmount(baseAmount(0), targetAsset),
         (txDetails) => {
-          console.log(txDetails.expectedAmount.baseAmount.decimal)
           return txDetails.expectedAmount
         }
       )
     )
     return expectedAmount
   }, [oQuoteProtocol, targetAsset])
-
-  console.log(swapResultAmountMax.formatedAssetString())
 
   // Aggregator api Fetch Error
   const aggregatorErrors: JSX.Element = useMemo(() => {
@@ -1257,7 +1254,6 @@ export const Swap = ({
     sourceChainAssetAmount,
     swapFees.inFee.amount
   ])
-  console.log(oCFSwapParams)
   // Check to see slippage greater than tolerance
   // This is handled by thornode
   const isCausedSlippage = useMemo(() => {
@@ -1768,7 +1764,6 @@ export const Swap = ({
     FP.pipe(
       oCFSwapParams,
       O.map((swapParams) => {
-        // set start time
         setSwapStartTime(Date.now())
         subscribeSwapState(swapCF$(swapParams))
         return true

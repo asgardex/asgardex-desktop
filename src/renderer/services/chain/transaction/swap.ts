@@ -2,7 +2,6 @@ import * as RD from '@devexperts/remote-data-ts'
 import { AssetCacao } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AssetType, isSecuredAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
-import * as FP from 'fp-ts/lib/function'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -12,7 +11,7 @@ import { service as mayaMidgardService } from '../../mayaMigard/service'
 import { service as midgardService } from '../../midgard/service'
 import { getTxStatus$ } from '../../thorchain'
 import { ChainTxFeeOption } from '../const'
-import { SendTxParams, StreamingTxState, StreamingTxState$, SwapTxParams, SwapTxState$ } from '../types'
+import { SendTxParams, StreamingTxState, StreamingTxState$, SwapCFTxState$, SwapTxParams, SwapTxState$ } from '../types'
 import { sendPoolTx$, sendTx$ } from './common'
 
 const { pools: midgardPoolsService, validateNode$ } = midgardService
@@ -105,27 +104,29 @@ export const swapCF$ = ({
   walletAccount,
   walletIndex,
   hdMode
-}: SendTxParams): SwapTxState$ => {
-  const requests$ = FP.pipe(
-    sendTx$({
-      walletType,
-      asset,
-      recipient,
-      amount,
-      memo,
-      feeOption: ChainTxFeeOption.SWAP,
-      sender,
-      walletAccount,
-      walletIndex,
-      hdMode
+}: SendTxParams): SwapCFTxState$ => {
+  return Rx.of(RD.pending).pipe(
+    RxOp.switchMap(() => {
+      return sendTx$({
+        walletType,
+        asset,
+        recipient,
+        amount,
+        memo,
+        feeOption: ChainTxFeeOption.SWAP,
+        sender,
+        walletAccount,
+        walletIndex,
+        hdMode
+      })
     }),
-    // Map the result to the expected SwapTx structure
-    RxOp.map((txHashRD) => ({ swapTx: txHashRD })),
-    // Handle errors and map them to the expected SwapTx structure
-    RxOp.catchError((error) => Rx.of({ swapTx: RD.failure(error) }))
+    RxOp.map((txHashRD) => {
+      return { swapTx: txHashRD }
+    }),
+    RxOp.catchError((error) => {
+      return Rx.of({ swapTx: RD.failure(error) })
+    })
   )
-
-  return requests$
 }
 
 export const streamingSwap$ = (txhash: string): StreamingTxState$ => {
