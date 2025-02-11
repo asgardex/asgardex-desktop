@@ -8,7 +8,7 @@ import * as O from 'fp-ts/Option'
 import { WalletType } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
 import { ChangeSlipToleranceHandler } from '../../services/app/types'
-import { SwapFeesHandler, ReloadSwapFeesHandler, SwapHandler } from '../../services/chain/types'
+import { SwapFeesHandler, ReloadSwapFeesHandler, SwapHandler, SwapCFHandler } from '../../services/chain/types'
 import { AddressValidationAsync } from '../../services/clients'
 import { ApproveFeeHandler, ApproveParams, IsApproveParams, LoadApproveFeeHandler } from '../../services/evm/types'
 import { PoolDetails as PoolDetailsMaya } from '../../services/mayaMigard/types'
@@ -54,6 +54,7 @@ export type SwapProps = {
   poolAddressMaya: O.Option<PoolAddress>
   poolAddressThor: O.Option<PoolAddress>
   swap$: SwapHandler
+  swapCF$: SwapCFHandler
   reloadTxStatus: FP.Lazy<void>
   poolsData: PoolsDataMap
   poolDetailsThor: PoolDetails

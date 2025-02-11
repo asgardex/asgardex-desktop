@@ -196,6 +196,7 @@ export type StreamingTxState = {
 }
 export type StreamingTxState$ = Rx.Observable<StreamingTxState>
 export type SwapTxState$ = Rx.Observable<SwapTxState>
+export type SwapCFTxState$ = Rx.Observable<SwapTxState>
 
 /**
  * Parameters to send swap tx into (IN) a pool
@@ -215,6 +216,7 @@ export type SwapTxParams = {
 
 export type SwapStateHandler = (p: SwapTxParams) => SwapState$
 export type SwapHandler = (p: SwapTxParams) => SwapTxState$
+export type SwapCFHandler = (p: SendTxParams) => SwapCFTxState$
 
 /**
  * Types of swap txs

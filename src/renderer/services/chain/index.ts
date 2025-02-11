@@ -15,6 +15,7 @@ import {
 } from './fees'
 import {
   swap$,
+  swapCF$,
   saverDeposit$,
   symDeposit$,
   symWithdraw$,
@@ -39,6 +40,7 @@ export {
   swapFees$,
   assetAddress$,
   swap$,
+  swapCF$,
   saverDeposit$,
   symDeposit$,
   symWithdraw$,

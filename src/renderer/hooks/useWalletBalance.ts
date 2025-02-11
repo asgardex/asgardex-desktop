@@ -18,6 +18,7 @@ import { MayaScanPriceRD } from './useMayascanPrice'
 
 export const useTotalWalletBalance = (mayaScanPriceRD: MayaScanPriceRD) => {
   const { chainBalances$ } = useWalletContext()
+
   const {
     service: {
       pools: { poolsState$, selectedPricePool$ }

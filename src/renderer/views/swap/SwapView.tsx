@@ -31,6 +31,7 @@ import { Button, RefreshButton } from '../../components/uielements/button'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useAppContext } from '../../contexts/AppContext'
 import { useChainContext } from '../../contexts/ChainContext'
+import { useChainflipContext } from '../../contexts/ChainflipContext'
 import { useEvmContext } from '../../contexts/EvmContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
@@ -53,6 +54,7 @@ import { SwapRouteParams, SwapRouteTargetWalletType } from '../../routes/pools/s
 import * as walletRoutes from '../../routes/wallet'
 import { getDecimal } from '../../services/chain/decimal'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
+import { cAssetToXAsset } from '../../services/chainflip/utils'
 import { DEFAULT_SLIP_TOLERANCE } from '../../services/const'
 import { TradeAccount } from '../../services/thorchain/types'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
@@ -118,7 +120,11 @@ const SuccessRouteView: React.FC<Props> = ({
 
   const { isPrivate } = useApp()
 
-  const { reloadSwapFees, swapFees$, addressByChain$, swap$, assetWithDecimal$ } = useChainContext()
+  const { getAssetsData$ } = useChainflipContext()
+
+  const [chainFlipAssets] = useObservableState(() => getAssetsData$(), RD.pending)
+
+  const { reloadSwapFees, swapFees$, addressByChain$, swap$, assetWithDecimal$, swapCF$ } = useChainContext()
 
   const {
     balancesState$,
@@ -165,6 +171,20 @@ const SuccessRouteView: React.FC<Props> = ({
   const pendingPoolsStateMayaRD = useObservableState(pendingPoolsStateMaya$, RD.initial)
 
   const sourceAssetDecimal$: AssetWithDecimalLD = useMemo(() => {
+    // Check if chainFlipAssets is available and contains the sourceAsset
+    if (RD.isSuccess(chainFlipAssets)) {
+      const matchingAsset = chainFlipAssets.value.find((asset) => asset.asset === sourceAsset.ticker)
+
+      if (matchingAsset) {
+        // If a matching asset is found, return its decimal value
+        return Rx.of(
+          RD.success({
+            asset: sourceAsset,
+            decimal: matchingAsset.decimals
+          })
+        )
+      }
+    }
     // Check the condition to skip fetching
     if (sourceAsset.type === AssetType.SYNTH) {
       // Resolve `getDecimal` and return the observable
@@ -182,7 +202,7 @@ const SuccessRouteView: React.FC<Props> = ({
 
     // Use the existing `assetWithDecimal$` function for fetching
     return assetWithDecimal$(sourceAsset)
-  }, [assetWithDecimal$, sourceAsset])
+  }, [assetWithDecimal$, chainFlipAssets, sourceAsset])
 
   const sourceAssetRD: AssetWithDecimalRD = useObservableState(sourceAssetDecimal$, RD.initial)
 
@@ -400,7 +420,8 @@ const SuccessRouteView: React.FC<Props> = ({
             sourceAssetRD,
             targetAssetRD,
             pendingPoolsStateRD,
-            pendingPoolsStateMayaRD
+            pendingPoolsStateMayaRD,
+            chainFlipAssets
           ),
           RD.fold(
             () => <></>,
@@ -445,6 +466,7 @@ const SuccessRouteView: React.FC<Props> = ({
                   targetLedgerAddress={oTargetLedgerAddress}
                   recipientAddress={oRecipient}
                   swap$={swap$}
+                  swapCF$={swapCF$}
                   reloadBalances={reloadBalances}
                   onChangeAsset={onChangeAssetHandler}
                   network={network}
@@ -482,6 +504,13 @@ const SuccessRouteView: React.FC<Props> = ({
                 ...mayaAssetDetails,
                 ...pendingPoolsMaya.assetDetails
               ]
+
+              const assetData = RD.isSuccess(chainFlipAssets) ? chainFlipAssets.value : []
+
+              // Convert assets and filter out unsupported chains
+              const convertedAssets = assetData
+                .map(cAssetToXAsset) // Apply the conversion function
+                .filter((asset) => asset.chain !== 'POL') // Remove assets with unsupported chain
               const poolAssetDetails = (() => {
                 if (isChainOfThor(sourceAsset.asset.chain) && isChainOfThor(targetAsset.asset.chain)) {
                   return thorchainPoolAssetDetails
@@ -497,8 +526,8 @@ const SuccessRouteView: React.FC<Props> = ({
                   )
                 }
               })()
-              const sourceAssetDetail = FP.pipe(Utils.pickPoolAsset(poolAssetDetails, sourceAsset.asset), O.toNullable)
 
+              const sourceAssetDetail = FP.pipe(Utils.pickPoolAsset(poolAssetDetails, sourceAsset.asset), O.toNullable)
               // Make sure sourceAsset is available in pools
               if (!sourceAssetDetail)
                 return renderError(Error(`Missing pool for source asset ${assetToString(sourceAsset.asset)}`))
@@ -527,7 +556,7 @@ const SuccessRouteView: React.FC<Props> = ({
                   targetWalletType={oTargetWalletType}
                   poolAddressMaya={selectedPoolAddressMaya}
                   poolAddressThor={selectedPoolAddressThor}
-                  poolAssets={poolAssets}
+                  poolAssets={[...poolAssets, ...convertedAssets]}
                   poolsData={combinedPoolsData}
                   poolDetailsThor={thorPoolDetails}
                   poolDetailsMaya={mayaPoolDetails}
@@ -540,6 +569,7 @@ const SuccessRouteView: React.FC<Props> = ({
                   targetLedgerAddress={oTargetLedgerAddress}
                   recipientAddress={oRecipient}
                   swap$={swap$}
+                  swapCF$={swapCF$}
                   reloadBalances={reloadBalances}
                   onChangeAsset={onChangeAssetHandler}
                   network={network}

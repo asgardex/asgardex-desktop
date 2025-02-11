@@ -27,7 +27,7 @@ export const swap: Route<SwapRouteParams> = {
   template: `${base.template}/:source/:sourceWalletType/:target/:targetWalletType/:recipient?`,
   path: ({ source, target, sourceWalletType, targetWalletType, recipient }) => {
     if (!!source && !!target) {
-      // Convert source and target to lowercase
+      // // Convert source and target to lowercase
       source = source.toLowerCase()
       target = target.toLowerCase()
 
