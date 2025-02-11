@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network, Tx, TxType } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
@@ -22,7 +22,7 @@ const txsRD = RD.success({
   txs: [tx]
 })
 
-export const Default: Story = () => (
+export const Default: StoryFn = () => (
   <TxsTable
     walletAddress="bsc-address"
     txsPageRD={txsRD}

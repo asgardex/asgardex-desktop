@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react'
 
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { Address, baseAmount } from '@xchainjs/xchain-util'
 
@@ -23,7 +23,7 @@ const mockNodeInfo = (address: Address) => ({
   signMembership: []
 })
 
-export const Default: Story = () => {
+export const Default: StoryFn = () => {
   // const nodesSelect: Record<Address, RDStatus> = {
   //   thor1766mazrxs5asuscepa227r6ekr657234f8p7nf: firstNodeRdKnob,
   //   thor1766mazrxs5asuscepa227r6ekr657234f9asda: secondNodeRdKnob,

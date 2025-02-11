@@ -1,9 +1,9 @@
-import { Meta } from '@storybook/react'
+import { ArgTypes, Meta } from '@storybook/react'
 
 import { TxType as MidgardTxType } from '../../../services/midgard/types'
 import { TxType } from './TxType'
 
-const types = ['Swap', 'Deposit', 'Withdraw', 'Donate', 'Refund'] as const
+const types = ['Swap', 'Deposit', 'Withdraw', 'Donate', 'Refund']
 
 type InputType = typeof types[number]
 
@@ -24,6 +24,9 @@ const mapType = (type: InputType): MidgardTxType => {
     case types[4]: {
       return 'REFUND'
     }
+
+    default:
+      return 'SWAP'
   }
 }
 
@@ -32,7 +35,7 @@ const Template = ({ type, showTypeIcon }: { type: InputType; showTypeIcon: boole
 )
 export const Default = Template.bind({})
 
-const argTypes = {
+const argTypes: ArgTypes<{ type: InputType; showTypeIcon: boolean }> = {
   type: {
     control: {
       type: 'select',
@@ -41,7 +44,7 @@ const argTypes = {
   },
   showTypeIcon: {
     control: {
-      type: 'boolean'
+      boolean: 'boolean'
     },
     defaultValue: true
   }
@@ -50,10 +53,7 @@ const argTypes = {
 const meta: Meta<typeof Template> = {
   component: Template,
   title: 'Components/TxType',
-  argTypes,
-  args: {
-    type: argTypes.type.control.options[0]
-  }
+  argTypes
 }
 
 export default meta

@@ -27,9 +27,7 @@ const meta: Meta<typeof Component> = {
       defaultValue: 'one'
     },
     title: {
-      control: {
-        type: 'string'
-      },
+      type: 'string',
       defaultValue: 'Modal Title'
     }
   }

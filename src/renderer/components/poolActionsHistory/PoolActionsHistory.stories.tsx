@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 
-import { Meta } from '@storybook/react'
+import { ArgTypes, Meta } from '@storybook/react'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
@@ -126,7 +126,7 @@ const actions: Actions = [
   }
 ]
 
-const argTypes = {
+const argTypes: ArgTypes<{ dataStatus: RDStatus }> = {
   dataStatus: {
     control: {
       type: 'select',
@@ -188,7 +188,7 @@ const meta: Meta<typeof Template> = {
   title: 'Components/PoolActionsHistory',
   argTypes,
   args: {
-    dataStatus: argTypes.dataStatus.control.options[0]
+    dataStatus: 'initial'
   }
 }
 export default meta
