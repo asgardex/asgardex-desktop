@@ -57,7 +57,6 @@ export const Bonds: React.FC<Props> = ({
   className,
   watchList
 }) => {
-  console.log('WALLET ADDRESSES - ', walletAddresses, watchList)
   const [viewMode, setViewMode] = useState(BondsViewMode.All)
   const { protocol } = useApp()
   const intl = useIntl()
