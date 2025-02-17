@@ -156,6 +156,13 @@ export const AssetUSDCBASE: TokenAsset = {
   type: AssetType.TOKEN
 }
 
+export const AssetSOLUSDC: TokenAsset = {
+  chain: SOLChain,
+  symbol: 'USDC-EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+  ticker: 'USDC',
+  type: AssetType.TOKEN
+}
+
 // This hardcode list is for testnet only
 export const ETHAssetsTestnet = [AssetUSDT62E]
 export const AvaxAssetsTestnet = [AssetAVAX]

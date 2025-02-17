@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Story, Meta } from '@storybook/react'
+import { StoryFn, Meta } from '@storybook/react'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { Network, TxHash } from '@xchainjs/xchain-client'
@@ -79,10 +79,10 @@ const defaultProps: WitdrawProps = {
   }
 }
 
-export const Default: Story = () => <Withdraw {...defaultProps} />
+export const Default: StoryFn = () => <Withdraw {...defaultProps} />
 Default.storyName = 'default'
 
-export const FeesNotCovered: Story = () => {
+export const FeesNotCovered: StoryFn = () => {
   const props: WitdrawProps = {
     ...defaultProps,
     dexBalance: O.some(assetToBase(assetAmount(0.5)))
@@ -91,7 +91,7 @@ export const FeesNotCovered: Story = () => {
 }
 FeesNotCovered.storyName = 'error - fees not covered'
 
-export const ErrorNoFee: Story = () => {
+export const ErrorNoFee: StoryFn = () => {
   const props: WitdrawProps = {
     ...defaultProps,
     fees$: (_: AnyAsset) => Rx.of(RD.failure(Error('no fees')))

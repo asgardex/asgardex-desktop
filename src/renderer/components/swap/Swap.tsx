@@ -54,6 +54,7 @@ import {
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
+import { useChainflipContext } from '../../contexts/ChainflipContext'
 import {
   max1e8BaseAmount,
   convertBaseAmountDecimal,
@@ -87,7 +88,7 @@ import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
 import { INITIAL_SWAP_STATE } from '../../services/chain/const'
 import { getZeroSwapFees } from '../../services/chain/fees/swap'
-import { SwapTxParams, SwapFeesRD, SwapFees, FeeRD, SwapTxState } from '../../services/chain/types'
+import { SwapTxParams, SwapFeesRD, SwapFees, FeeRD, SwapTxState, SendTxParams } from '../../services/chain/types'
 import { ApproveParams, IsApprovedRD } from '../../services/evm/types'
 import { getPoolDetail as getPoolDetailMaya } from '../../services/mayaMigard/utils'
 import { PoolAddress } from '../../services/midgard/types'
@@ -100,7 +101,7 @@ import { useAggregator } from '../../store/aggregator/hooks'
 import { AssetWithAmount } from '../../types/asgardex'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
 import { SwapAssets } from '../modal/tx/extra'
-import { LoadingView } from '../shared/loading'
+import { LoadingView, Spin } from '../shared/loading'
 import { AssetInput } from '../uielements/assets/assetInput'
 import { BaseButton, FlatButton } from '../uielements/button'
 import { Collapse } from '../uielements/collapse'
@@ -137,6 +138,7 @@ export const Swap = ({
   poolAddressThor: oPoolAddressThor,
   poolAddressMaya: oPoolAddressMaya,
   swap$,
+  swapCF$,
   poolDetailsThor,
   poolDetailsMaya,
   walletBalances,
@@ -182,6 +184,8 @@ export const Swap = ({
   const lockedWallet: boolean = useMemo(() => isLocked(keystore) || !hasImportedKeystore(keystore), [keystore])
   const [quoteOnly, setQuoteOnly] = useState<boolean>(false)
   const [isFetchingEstimate, setIsFetchingEstimate] = useState(false)
+
+  const { isAssetSupported$ } = useChainflipContext()
 
   const useSourceAssetLedger = isLedgerWallet(initialSourceWalletType)
   const prevChainFees = useRef<O.Option<SwapFees>>(O.none)
@@ -1010,7 +1014,9 @@ export const Swap = ({
       oQuoteProtocol,
       O.fold(
         () => new CryptoAmount(baseAmount(0), targetAsset),
-        (txDetails) => txDetails.expectedAmount
+        (txDetails) => {
+          return txDetails.expectedAmount
+        }
       )
     )
     return expectedAmount
@@ -1150,7 +1156,19 @@ export const Swap = ({
   const oSwapParams: O.Option<SwapTxParams> = useMemo(() => {
     const oPoolAddress: O.Option<PoolAddress> = FP.pipe(
       oQuoteProtocol,
-      O.chain((quoteSwap) => (quoteSwap.protocol === 'Thorchain' ? oPoolAddressThor : oPoolAddressMaya))
+      O.chain((quoteSwap) => {
+        // Handle different protocols
+        switch (quoteSwap.protocol) {
+          case 'Thorchain':
+            return oPoolAddressThor
+          case 'Mayachain':
+            return oPoolAddressMaya
+          case 'Chainflip':
+            return O.none
+          default:
+            return O.none
+        }
+      })
     )
 
     return FP.pipe(
@@ -1196,6 +1214,46 @@ export const Swap = ({
     swapFees.inFee.amount
   ])
 
+  const oCFSwapParams: O.Option<SendTxParams> = useMemo(() => {
+    return FP.pipe(
+      sequenceTOption(oSourceAssetWB, oQuoteProtocol),
+      O.map(([{ walletType, walletAddress, walletAccount, walletIndex, hdMode }, quoteSwap]) => {
+        let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
+
+        if (
+          !isTokenAsset(sourceAsset) &&
+          !isTradeAsset(sourceAsset) &&
+          !isSynthAsset(sourceAsset) &&
+          !isSecuredAsset(sourceAsset)
+        ) {
+          if (sourceChainAssetAmount.lt(amountToSwap.plus(swapFees.inFee.amount))) {
+            amountToSwap = sourceChainAssetAmount.minus(swapFees.inFee.amount)
+          }
+        }
+
+        return {
+          asset: sourceAsset,
+          amount: amountToSwap,
+          recipient: quoteSwap.toAddress,
+          memo: quoteSwap.memo,
+          walletType,
+          sender: walletAddress,
+          walletAccount,
+          walletIndex,
+          hdMode,
+          protocol: quoteSwap.protocol
+        }
+      })
+    )
+  }, [
+    oSourceAssetWB,
+    oQuoteProtocol,
+    amountToSwapMax1e8,
+    sourceAssetAmount.decimal,
+    sourceAsset,
+    sourceChainAssetAmount,
+    swapFees.inFee.amount
+  ])
   // Check to see slippage greater than tolerance
   // This is handled by thornode
   const isCausedSlippage = useMemo(() => {
@@ -1466,11 +1524,13 @@ export const Swap = ({
       oQuoteProtocol,
       O.fold(
         () => false,
-        (quoteSwap) => quoteSwap.dustThreshold.baseAmount.gt(amountToSwapMax1e8)
+        (quoteSwap) => {
+          return quoteSwap.dustThreshold.baseAmount.gt(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal))
+        }
       )
     )
     return isBelowDustThreshold
-  }, [amountToSwapMax1e8, oQuoteProtocol])
+  }, [amountToSwapMax1e8, oQuoteProtocol, sourceAssetDecimal])
 
   // // sets the locked asset amount to be the asset pool depth
   useEffect(() => {
@@ -1524,14 +1584,16 @@ export const Swap = ({
             return true
           if (isMayaSupportedAsset(targetAsset, poolDetailsMaya) && isMayaSupportedAsset(asset, poolDetailsMaya))
             return true
-
+          if (isAssetSupported$(asset)) {
+            return true
+          }
           return false
         }),
         // Merge duplications
         (assets) => unionAssets(assets)(assets)
       ),
 
-    [allBalances, poolDetailsMaya, poolDetailsThor, targetAsset]
+    [allBalances, isAssetSupported$, poolDetailsMaya, poolDetailsThor, targetAsset]
   )
 
   /**
@@ -1550,7 +1612,9 @@ export const Swap = ({
             return true
           if (isMayaSupportedAsset(sourceAsset, poolDetailsMaya) && isMayaSupportedAsset(asset, poolDetailsMaya))
             return true
-
+          if (isAssetSupported$(asset)) {
+            return true
+          }
           return false
         }),
         A.chain((asset) => {
@@ -1584,7 +1648,7 @@ export const Swap = ({
         A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
         (assets) => unionAssets(assets)(assets)
       ),
-    [poolAssets, poolDetailsMaya, poolDetailsThor, sourceAsset]
+    [isAssetSupported$, poolAssets, poolDetailsMaya, poolDetailsThor, sourceAsset]
   )
 
   const [showPasswordModal, setShowPasswordModal] = useState(ModalState.None)
@@ -1686,16 +1750,26 @@ export const Swap = ({
     FP.pipe(
       oSwapParams,
       O.map((swapParams) => {
+        // subscribe to swap$
         // set start time
         setSwapStartTime(Date.now())
-        // subscribe to swap$
-
         subscribeSwapState(swap$(swapParams))
 
         return true
       })
     )
   }, [oSwapParams, subscribeSwapState, swap$])
+
+  const submitCFTx = useCallback(() => {
+    FP.pipe(
+      oCFSwapParams,
+      O.map((swapParams) => {
+        setSwapStartTime(Date.now())
+        subscribeSwapState(swapCF$(swapParams))
+        return true
+      })
+    )
+  }, [oCFSwapParams, subscribeSwapState, swapCF$])
 
   const submitApproveTx = useCallback(() => {
     FP.pipe(
@@ -1729,11 +1803,12 @@ export const Swap = ({
     const { swapTx } = swapState
     // don't render TxModal in initial state
     if (RD.isInitial(swapTx)) return <></>
+
     const stepLabel = FP.pipe(
-      swapState.swapTx,
+      swapTx,
       RD.fold(
         () => '',
-        () => `${intl.formatMessage({ id: 'common.tx.sending' })}`,
+        () => intl.formatMessage({ id: 'common.tx.sending' }),
         () => '',
         () => 'Sent!'
       )
@@ -1770,8 +1845,14 @@ export const Swap = ({
 
   const renderPasswordConfirmationModal = useMemo(() => {
     const onSuccess = () => {
-      if (showPasswordModal === ModalState.Swap) submitSwapTx()
-      if (showPasswordModal === ModalState.Approve) submitApproveTx()
+      if (showPasswordModal === ModalState.Swap && O.isSome(oSwapParams)) {
+        submitSwapTx()
+      } else if (showPasswordModal === ModalState.Swap && O.isSome(oCFSwapParams)) {
+        submitCFTx()
+      } else if (showPasswordModal === ModalState.Approve) {
+        submitApproveTx()
+      }
+
       setShowPasswordModal(ModalState.None)
     }
     const onClose = () => {
@@ -1787,7 +1868,7 @@ export const Swap = ({
         />
       )
     )
-  }, [showPasswordModal, submitApproveTx, submitSwapTx, validatePassword$])
+  }, [oCFSwapParams, oSwapParams, showPasswordModal, submitApproveTx, submitCFTx, submitSwapTx, validatePassword$])
 
   const renderLedgerConfirmationModal = useMemo(() => {
     const visible = showLedgerModal === ModalState.Swap || showLedgerModal === ModalState.Approve
@@ -2459,7 +2540,11 @@ export const Swap = ({
           </div>
         </div>
         <div className="mt-1 space-y-1">
-          {O.isNone(oQuoteProcotols) ? (
+          {isFetchingEstimate ? (
+            <Spin spinning={isFetchingEstimate} tip="Loading...">
+              <div style={{ minHeight: '100px' }} />
+            </Spin>
+          ) : O.isNone(oQuoteProcotols) ? (
             <></>
           ) : (
             <SwapRoute
@@ -2470,31 +2555,42 @@ export const Swap = ({
               onSelectQuote={handleSelectQuote}
             />
           )}
-          <Collapse
-            header={
-              <div className="flex flex-row items-center justify-between">
-                <span className="m-0 font-main text-[14px] text-gray2 dark:text-gray2d">
-                  {intl.formatMessage({ id: 'common.swap' })} {intl.formatMessage({ id: 'common.settings' })} (
-                  {labelMin})
-                </span>
-              </div>
-            }>
-            <div className="flex flex-col p-4">
-              <div className="flex w-full flex-col space-y-4 px-2">
-                <div>{renderStreamerInterval}</div>
-                <div>{renderStreamerQuantity}</div>
-              </div>
-              <div className="flex justify-end">
-                <TooltipAddress title="Reset to streaming default">
-                  <BaseButton
-                    onClick={resetToDefault}
-                    className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
-                    <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
-                  </BaseButton>
-                </TooltipAddress>
-              </div>
-            </div>
-          </Collapse>
+          {FP.pipe(
+            oQuoteProtocol,
+            O.fold(
+              () => null, // Handle case when `oQuoteProtocol` is `O.none`
+              (quoteSwap) =>
+                quoteSwap.protocol === 'Chainflip' ? (
+                  <></>
+                ) : (
+                  <Collapse
+                    header={
+                      <div className="flex flex-row items-center justify-between">
+                        <span className="m-0 font-main text-[14px] text-gray2 dark:text-gray2d">
+                          {intl.formatMessage({ id: 'common.swap' })} {intl.formatMessage({ id: 'common.settings' })} (
+                          {labelMin})
+                        </span>
+                      </div>
+                    }>
+                    <div className="flex flex-col p-4">
+                      <div className="flex w-full flex-col space-y-4 px-2">
+                        <div>{renderStreamerInterval}</div>
+                        <div>{renderStreamerQuantity}</div>
+                      </div>
+                      <div className="flex justify-end">
+                        <TooltipAddress title="Reset to streaming default">
+                          <BaseButton
+                            onClick={resetToDefault}
+                            className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
+                            <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
+                          </BaseButton>
+                        </TooltipAddress>
+                      </div>
+                    </div>
+                  </Collapse>
+                )
+            )
+          )}
           <Collapse
             header={
               <div className="flex flex-row items-center justify-between">

@@ -28,6 +28,7 @@ const EXTERNALS_WHITELIST = [
   'app.thorswap.finance',
   'viewblock.io',
   'runescan.io',
+  'scan.chainflip.io',
   'testnet.midgard.thorchain.info',
   'stagenet-midgard.ninerealms.com',
   'testnet-rpc.ninerealms.com',

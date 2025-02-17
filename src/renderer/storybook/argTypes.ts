@@ -1,5 +1,6 @@
 import { Network } from '@xchainjs/xchain-client'
 import * as O from 'fp-ts/lib/Option'
+import { InputType } from 'storybook/internal/types'
 
 import { MOCK_PHRASE } from '../../shared/mock/wallet'
 
@@ -12,7 +13,7 @@ export const keystore = {
   }
 }
 
-export const network = {
+export const network: InputType = {
   name: 'Network',
   control: {
     type: 'radio',

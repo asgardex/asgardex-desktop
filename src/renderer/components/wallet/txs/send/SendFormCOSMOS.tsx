@@ -241,7 +241,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
         setWarningMessage('')
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.empty' }))
       }
-      if (!addressValidation(value.toLowerCase())) {
+      if (!addressValidation(value)) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
       if (inboundAddress.THOR === value) {

@@ -11,8 +11,8 @@ import { service as mayaMidgardService } from '../../mayaMigard/service'
 import { service as midgardService } from '../../midgard/service'
 import { getTxStatus$ } from '../../thorchain'
 import { ChainTxFeeOption } from '../const'
-import { StreamingTxState, StreamingTxState$, SwapTxParams, SwapTxState$ } from '../types'
-import { sendPoolTx$ } from './common'
+import { SendTxParams, StreamingTxState, StreamingTxState$, SwapCFTxState$, SwapTxParams, SwapTxState$ } from '../types'
+import { sendPoolTx$, sendTx$ } from './common'
 
 const { pools: midgardPoolsService, validateNode$ } = midgardService
 const { pools: mayaMidgardPoolsService, validateNode$: mayaValidateNode$ } = mayaMidgardService
@@ -87,6 +87,46 @@ export const swap$ = ({
   )
 
   return requests$
+}
+
+/**
+ * CF Swaps do 1 step:
+ *
+ * 2. Send swap transaction
+ */
+export const swapCF$ = ({
+  asset,
+  amount,
+  memo,
+  walletType,
+  sender,
+  recipient,
+  walletAccount,
+  walletIndex,
+  hdMode
+}: SendTxParams): SwapCFTxState$ => {
+  return Rx.of(RD.pending).pipe(
+    RxOp.switchMap(() => {
+      return sendTx$({
+        walletType,
+        asset,
+        recipient,
+        amount,
+        memo,
+        feeOption: ChainTxFeeOption.SWAP,
+        sender,
+        walletAccount,
+        walletIndex,
+        hdMode
+      })
+    }),
+    RxOp.map((txHashRD) => {
+      return { swapTx: txHashRD }
+    }),
+    RxOp.catchError((error) => {
+      return Rx.of({ swapTx: RD.failure(error) })
+    })
+  )
 }
 
 export const streamingSwap$ = (txhash: string): StreamingTxState$ => {

@@ -6,12 +6,13 @@ import * as O from 'fp-ts/Option'
 
 import { ReactComponent as Amount } from '../../assets/svg/amount.svg'
 import { ReactComponent as StopWatch } from '../../assets/svg/stopwatch.svg'
+import { Spin } from '../shared/loading'
 import { Collapse } from '../uielements/collapse'
 import { ProviderIcon } from './ProviderIcon'
 import { QuoteWithProtocol } from './Swap.types'
 
 type Props = {
-  isLoading: boolean
+  isLoading: boolean // Use this prop to determine if quotes are loading
   targetAsset: string
   quote: O.Option<QuoteSwapProtocol>
   quotes: O.Option<QuoteWithProtocol[]>
@@ -73,15 +74,12 @@ const Route = ({
             </span>
           </div>
         )}
-        {/* {percentageDifference !== null && percentageDifference > 0 && (
-          <span className="text-[12px] text-green-500">Recommended</span>
-        )} */}
       </div>
     </div>
   )
 }
 
-export const SwapRoute = ({ targetAsset, quote, quotes, onSelectQuote }: Props) => {
+export const SwapRoute = ({ isLoading, targetAsset, quote, quotes, onSelectQuote }: Props) => {
   const availableQuotes = useMemo(() => {
     if (O.isNone(quotes)) return []
     return quotes.value
@@ -118,7 +116,11 @@ export const SwapRoute = ({ targetAsset, quote, quotes, onSelectQuote }: Props) 
 
   return (
     <div>
-      {activeQuote ? (
+      {isLoading ? (
+        <Spin spinning={isLoading} tip="Loading...">
+          <div style={{ minHeight: '100px' }} />
+        </Spin>
+      ) : activeQuote ? (
         <Collapse
           header={
             <Route
