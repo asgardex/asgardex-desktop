@@ -72,7 +72,7 @@ describe('Pools routes', () => {
           target: 'THOR.RUNE',
           targetWalletType: WalletType.Keystore
         })
-      ).toEqual('/pools/swap/bsc.bnb/keystore/thor.rune/keystore')
+      ).toEqual('/pools/swap/BSC.BNB/keystore/THOR.RUNE/keystore')
     })
     it('source ledger / target keystore', () => {
       expect(
@@ -82,7 +82,7 @@ describe('Pools routes', () => {
           target: 'THOR.RUNE',
           targetWalletType: WalletType.Keystore
         })
-      ).toEqual('/pools/swap/bsc.bnb/ledger/thor.rune/keystore')
+      ).toEqual('/pools/swap/BSC.BNB/ledger/THOR.RUNE/keystore')
     })
     it('source keystore / target ledger', () => {
       expect(
@@ -92,7 +92,7 @@ describe('Pools routes', () => {
           target: 'THOR.RUNE',
           targetWalletType: WalletType.Ledger
         })
-      ).toEqual('/pools/swap/bsc.bnb/keystore/thor.rune/ledger')
+      ).toEqual('/pools/swap/BSC.BNB/keystore/THOR.RUNE/ledger')
     })
     it('source ledger / target ledger', () => {
       expect(
@@ -102,7 +102,7 @@ describe('Pools routes', () => {
           target: 'ETH.ETH',
           targetWalletType: WalletType.Ledger
         })
-      ).toEqual('/pools/swap/btc.btc/ledger/eth.eth/ledger')
+      ).toEqual('/pools/swap/BTC.BTC/ledger/ETH.ETH/ledger')
     })
     it('redirects if source is empty', () => {
       expect(
