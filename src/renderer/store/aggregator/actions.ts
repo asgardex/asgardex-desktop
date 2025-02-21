@@ -1,6 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { Aggregator, QuoteSwapParams } from '@xchainjs/xchain-aggregator'
-import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { Client as ArbClient } from '@xchainjs/xchain-arbitrum'
 import { Client as AvaxClient } from '@xchainjs/xchain-avax'
 import { Client as BaseClient } from '@xchainjs/xchain-base'
@@ -44,29 +43,20 @@ export const getEstimate = createAsyncThunk(
           ...defaultBaseParams
         })
       })
-      const protocols: Protocol[] = ['Thorchain', 'Mayachain', 'Chainflip']
 
       // Fetch estimates for all selected protocols
-      const estimates = await Promise.allSettled(
-        protocols.map(async (protocol) => {
-          aggregator.setConfiguration({
-            protocols: [protocol],
-            affiliate: {
-              basisPoints: useAffiliate ? ASGARDEX_AFFILIATE_FEE : 0,
-              affiliates: { Thorchain: ASGARDEX_THORNAME, Mayachain: ASGARDEX_THORNAME }
-            },
-            wallet
-          })
+      aggregator.setConfiguration({
+        affiliate: {
+          basisPoints: useAffiliate ? ASGARDEX_AFFILIATE_FEE : 0,
+          affiliates: { Thorchain: ASGARDEX_THORNAME, Mayachain: ASGARDEX_THORNAME }
+        },
+        wallet
+      })
 
-          const estimate = await aggregator.estimateSwap(params)
-          return { protocol, estimate }
-        })
-      )
+      const estimate = await aggregator.estimateSwap(params)
 
       // Return all estimates
-      return {
-        estimates
-      }
+      return estimate
     } catch (error) {
       console.error(error)
       throw error

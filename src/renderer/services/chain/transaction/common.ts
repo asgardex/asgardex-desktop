@@ -14,7 +14,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
-import { SOLChain } from '@xchainjs/xchain-solana'
+import { CompatibleAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, AssetType } from '@xchainjs/xchain-util'
 import { Chain } from '@xchainjs/xchain-util'
@@ -63,7 +63,8 @@ export const sendTx$ = ({
   feeOption = DEFAULT_FEE_OPTION,
   walletAccount,
   walletIndex,
-  hdMode
+  hdMode,
+  allowOwnerOffCurve
 }: SendTxParams): TxHashLD => {
   const { chain } =
     asset.type === AssetType.SYNTH ? AssetCacao : asset.type === AssetType.SECURED ? { chain: THORChain } : asset
@@ -106,8 +107,28 @@ export const sendTx$ = ({
       return BASE.sendTx({ walletType, asset, recipient, amount, memo, feeOption, walletAccount, walletIndex, hdMode })
 
     case SOLChain:
-      return SOL.sendTx({ walletType, asset, recipient, amount, memo, walletAccount, walletIndex, hdMode })
-
+      return FP.pipe(
+        SOL.fees$({ recipient: recipient, amount, asset: asset as CompatibleAsset, memo, allowOwnerOffCurve }),
+        liveData.mapLeft((error) => ({
+          errorId: ErrorId.GET_FEES,
+          msg: error?.message ?? error.toString()
+        })),
+        liveData.chain((fees) => {
+          return SOL.sendTx({
+            walletType,
+            sender,
+            recipient,
+            amount,
+            asset,
+            memo,
+            walletAccount,
+            walletIndex,
+            hdMode,
+            priorityFee: fees[feeOption],
+            allowOwnerOffCurve
+          })
+        })
+      )
     case BSCChain:
       return BSC.sendTx({ walletType, asset, recipient, amount, memo, feeOption, walletAccount, walletIndex, hdMode })
 

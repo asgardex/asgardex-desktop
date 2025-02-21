@@ -75,7 +75,14 @@ export const getDecimal = (asset: AnyAsset): Promise<number> => {
 
   const thorchainCache = new ThorchainCache()
 
-  return Rx.from(thorchainCache.midgardQuery.getDecimalForAsset(asset)).toPromise()
+  return Rx.from(
+    thorchainCache.midgardQuery.getDecimalForAsset({
+      chain: asset.chain,
+      ticker: asset.ticker,
+      symbol: asset.symbol.toUpperCase(),
+      type: asset.type
+    })
+  ).toPromise()
 }
 
 export const assetWithDecimal$ = (asset: AnyAsset): AssetWithDecimalLD =>

@@ -163,6 +163,7 @@ export type SendTxParams = {
   gasLimit?: BigNumber
   feeAmount?: BaseAmount
   hdMode: HDMode
+  allowOwnerOffCurve?: boolean
 }
 
 export type SendPoolTxParams = SendTxParams & {

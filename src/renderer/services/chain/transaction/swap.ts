@@ -117,7 +117,8 @@ export const swapCF$ = ({
         sender,
         walletAccount,
         walletIndex,
-        hdMode
+        hdMode,
+        allowOwnerOffCurve: true
       })
     }),
     RxOp.map((txHashRD) => {

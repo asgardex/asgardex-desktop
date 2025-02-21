@@ -18,6 +18,7 @@ type Props = {
   network?: string
   trackable?: boolean
   protocol?: O.Option<string>
+  channelId?: O.Option<string>
 }
 
 export const ViewTxButton: React.FC<Props> = ({
@@ -28,7 +29,8 @@ export const ViewTxButton: React.FC<Props> = ({
   className,
   network,
   trackable = false,
-  protocol = O.none
+  protocol = O.none,
+  channelId = O.none
 }): JSX.Element => {
   const intl = useIntl()
 
@@ -37,21 +39,35 @@ export const ViewTxButton: React.FC<Props> = ({
   }, [oTxHash, onClick])
 
   const handleTxTracker = useCallback(() => {
-    // Ensure both `protocol` and `oTxHash` are wrapped in Option
     return FP.pipe(
-      sequenceTOption(protocol, oTxHash),
+      sequenceTOption(protocol, oTxHash, channelId),
       O.fold(
-        () => {},
-        ([protocolValue, txHash]) => {
-          const url =
-            protocolValue === 'Thorchain'
-              ? `https://track.ninerealms.com/${txHash}?logo=asgardex.png&network=${network || 'default'}`
-              : `https://www.xscanner.org/tx/${txHash}`
-          window.apiUrl.openExternal(url)
+        () => undefined,
+        ([protocolValue, txHash, channelId]) => {
+          let url: string
+
+          switch (protocolValue) {
+            case 'Thorchain':
+              url = `https://track.ninerealms.com/${txHash}?logo=asgardex.png&network=${network || 'default'}`
+              break
+            case 'Mayachain':
+              url = `https://track.ninerealms.com/${txHash}?logo=asgardex.png&network=${network || 'default'}`
+              break
+            case 'Chainflip':
+              url = `https://scan.chainflip.io/channels/${channelId}`
+              break
+            default:
+              return undefined
+          }
+          if (url) {
+            window.apiUrl.openExternal(url)
+          }
+
+          return url
         }
       )
     )
-  }, [protocol, oTxHash, network])
+  }, [protocol, oTxHash, network, channelId])
 
   return (
     <div className="flex flex-col">

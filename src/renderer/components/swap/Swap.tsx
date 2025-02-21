@@ -8,7 +8,7 @@ import {
   MagnifyingGlassMinusIcon,
   MagnifyingGlassPlusIcon
 } from '@heroicons/react/24/outline'
-import { QuoteSwap as QuoteSwapProtocol } from '@xchainjs/xchain-aggregator'
+import { QuoteSwap } from '@xchainjs/xchain-aggregator'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
@@ -112,7 +112,7 @@ import { CopyLabel } from '../uielements/label'
 import { Slider } from '../uielements/slider'
 import { EditableAddress } from './EditableAddress'
 import { SelectableSlipTolerance } from './SelectableSlipTolerance'
-import { ModalState, QuoteWithProtocol, RateDirection, SwapProps } from './Swap.types'
+import { ModalState, RateDirection, SwapProps } from './Swap.types'
 import * as Utils from './Swap.utils'
 import SwapExpiryProgressBar from './SwapExpiryProgressBar'
 import { SwapRoute } from './SwapRoute'
@@ -201,8 +201,8 @@ export const Swap = ({
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()
 
-  const [oQuoteProcotols, setQuoteProtocols] = useState<O.Option<QuoteWithProtocol[]>>(O.none)
-  const [oQuoteProtocol, setQuoteProtocol] = useState<O.Option<QuoteSwapProtocol>>(O.none)
+  const [oQuoteProcotols, setQuoteProtocols] = useState<O.Option<QuoteSwap[]>>(O.none)
+  const [oQuoteProtocol, setQuoteProtocol] = useState<O.Option<QuoteSwap>>(O.none)
   const [oErrorProtocol, setErrorProtocol] = useState<O.Option<Error>>(O.none)
 
   // Default Streaming interval set to 1 blocks
@@ -218,7 +218,15 @@ export const Swap = ({
   const openExplorer = useOpenExplorerTxUrl(
     FP.pipe(
       oQuoteProtocol,
-      O.chain((quoteSwap) => (quoteSwap.protocol === 'Thorchain' ? O.some(THORChain) : O.some(MAYAChain)))
+      O.chain((quoteSwap) =>
+        quoteSwap.protocol === 'Thorchain'
+          ? O.some(THORChain)
+          : quoteSwap.protocol === 'Mayachain'
+          ? O.some(MAYAChain)
+          : quoteSwap.protocol === 'Chainflip'
+          ? O.some(sourceChain)
+          : O.none
+      )
     )
   )
 
@@ -807,12 +815,16 @@ export const Swap = ({
     setQuoteProtocol(O.none)
     const fetchSwap = async () => {
       setIsFetchingEstimate(true)
+
       try {
         const result = await estimateSwap(
           {
-            fromAsset: sourceAsset,
-            destinationAsset: targetAsset,
-            amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset),
+            fromAsset: { ...sourceAsset, symbol: sourceAsset.symbol.toUpperCase() },
+            destinationAsset: { ...targetAsset, symbol: targetAsset.symbol.toUpperCase() },
+            amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), {
+              ...sourceAsset,
+              symbol: sourceAsset.symbol.toUpperCase()
+            }),
             fromAddress: sourceWalletAddress,
             destinationAddress: quoteOnly ? undefined : destinationWalletAddress,
             streamingInterval: isStreaming ? streamingInterval : 0,
@@ -821,37 +833,30 @@ export const Swap = ({
           },
           applyBps
         )
-        // Function to sort quotes and set the default selected quote
-        const sortAndSetDefaultQuote = (quotes: QuoteWithProtocol[]) => {
-          // Sort quotes by expected_amount_out (descending) and total_swap_seconds (ascending)
-          const sortedQuotes = quotes.sort((a, b) => {
-            const amountA = parseFloat(a.estimate.expectedAmount.assetAmountFixedString())
-            const amountB = parseFloat(b.estimate.expectedAmount.assetAmountFixedString())
-            const timeA = a.estimate.totalSwapSeconds
-            const timeB = b.estimate.totalSwapSeconds
 
-            // Sort by amount first (higher is better)
+        const sortAndSetDefaultQuote = (quotes: QuoteSwap[]) => {
+          const sortedQuotes = quotes.sort((a, b) => {
+            const amountA = parseFloat(a.expectedAmount.assetAmountFixedString())
+            const amountB = parseFloat(b.expectedAmount.assetAmountFixedString())
+            const timeA = a.totalSwapSeconds
+            const timeB = b.totalSwapSeconds
+
             if (amountA > amountB) return -1
             if (amountA < amountB) return 1
 
-            // If amounts are equal, sort by time (lower is better)
             return timeA - timeB
           })
-
-          // Update the state with sorted quotes
           setQuoteProtocols(O.some(sortedQuotes))
-          // Set the default selected quote to the first item in the sorted array
-          setQuoteProtocol(O.some(sortedQuotes[0].estimate))
+          if (sortedQuotes.length > 0) {
+            setQuoteProtocol(O.some(sortedQuotes[0]))
+            setErrorProtocol(O.none)
+          } else {
+            setQuoteProtocol(O.none)
+            setErrorProtocol(O.some(new Error('No swap route found')))
+          }
         }
-        // Filter out only the successful quotes
-        const successfulQuotes: QuoteWithProtocol[] = result.estimates
-          .filter((result): result is PromiseFulfilledResult<QuoteWithProtocol> => result.status === 'fulfilled')
-          .map((result) => result.value)
 
-        // Call the sorting function with the successful quotes
-        sortAndSetDefaultQuote(successfulQuotes)
-
-        setErrorProtocol(O.none)
+        sortAndSetDefaultQuote(result)
       } catch (err) {
         console.error('Failed to fetch estimate:', err)
         setErrorProtocol(O.some(err as Error))
@@ -890,9 +895,12 @@ export const Swap = ({
           try {
             const result = await estimateSwap(
               {
-                fromAsset: sourceAsset,
-                destinationAsset: targetAsset,
-                amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset),
+                fromAsset: { ...sourceAsset, symbol: sourceAsset.symbol.toUpperCase() },
+                destinationAsset: { ...targetAsset, symbol: targetAsset.symbol.toUpperCase() },
+                amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), {
+                  ...sourceAsset,
+                  symbol: sourceAsset.symbol.toUpperCase()
+                }),
                 fromAddress: sourceWalletAddress,
                 destinationAddress: quoteOnly ? undefined : destinationWalletAddress,
                 streamingInterval: isStreaming ? streamingInterval : 0,
@@ -902,13 +910,13 @@ export const Swap = ({
               applyBps
             )
             // Function to sort quotes and set the default selected quote
-            const sortAndSetDefaultQuote = (quotes: QuoteWithProtocol[]) => {
+            const sortAndSetDefaultQuote = (quotes: QuoteSwap[]) => {
               // Sort quotes by expected_amount_out (descending) and total_swap_seconds (ascending)
               const sortedQuotes = quotes.sort((a, b) => {
-                const amountA = parseFloat(a.estimate.expectedAmount.assetAmountFixedString())
-                const amountB = parseFloat(b.estimate.expectedAmount.assetAmountFixedString())
-                const timeA = a.estimate.totalSwapSeconds
-                const timeB = b.estimate.totalSwapSeconds
+                const amountA = parseFloat(a.expectedAmount.assetAmountFixedString())
+                const amountB = parseFloat(b.expectedAmount.assetAmountFixedString())
+                const timeA = a.totalSwapSeconds
+                const timeB = b.totalSwapSeconds
 
                 // Sort by amount first (higher is better)
                 if (amountA > amountB) return -1
@@ -922,15 +930,10 @@ export const Swap = ({
               setQuoteProtocols(O.some(sortedQuotes))
 
               // Set the default selected quote to the first item in the sorted array
-              setQuoteProtocol(O.some(sortedQuotes[0].estimate))
+              setQuoteProtocol(O.some(sortedQuotes[0]))
             }
-            // Filter out only the successful quotes
-            const successfulQuotes: QuoteWithProtocol[] = result.estimates
-              .filter((result): result is PromiseFulfilledResult<QuoteWithProtocol> => result.status === 'fulfilled')
-              .map((result) => result.value)
-
             // Call the sorting function with the successful quotes
-            sortAndSetDefaultQuote(successfulQuotes)
+            sortAndSetDefaultQuote(result)
             setErrorProtocol(O.none)
           } catch (err) {
             console.error('Failed to refetch estimate after approval:', err)
@@ -960,8 +963,8 @@ export const Swap = ({
   ])
 
   // Function to handle user selection
-  const handleSelectQuote = (selectedQuote: QuoteWithProtocol) => {
-    setQuoteProtocol(O.some(selectedQuote.estimate))
+  const handleSelectQuote = (selectedQuote: QuoteSwap) => {
+    setQuoteProtocol(O.some(selectedQuote))
   }
 
   // Swap boolean for use later

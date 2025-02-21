@@ -115,6 +115,12 @@ export const SwapTxModal = ({
             oQuoteProtocol,
             O.map((quoteProtocol) => quoteProtocol.protocol)
           )}
+          channelId={FP.pipe(
+            oQuoteProtocol,
+            O.chain((quoteProtocol) =>
+              quoteProtocol.depositChannelId ? O.some(quoteProtocol.depositChannelId) : O.none
+            )
+          )}
         />
       }
       timerValue={timerValue}

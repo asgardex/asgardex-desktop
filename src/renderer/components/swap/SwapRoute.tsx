@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { QuoteSwap as QuoteSwapProtocol } from '@xchainjs/xchain-aggregator'
+import { QuoteSwap, QuoteSwap as QuoteSwapProtocol } from '@xchainjs/xchain-aggregator'
 import clsx from 'clsx'
 import * as O from 'fp-ts/Option'
 
@@ -9,14 +9,13 @@ import { ReactComponent as StopWatch } from '../../assets/svg/stopwatch.svg'
 import { Spin } from '../shared/loading'
 import { Collapse } from '../uielements/collapse'
 import { ProviderIcon } from './ProviderIcon'
-import { QuoteWithProtocol } from './Swap.types'
 
 type Props = {
   isLoading: boolean // Use this prop to determine if quotes are loading
   targetAsset: string
-  quote: O.Option<QuoteSwapProtocol>
-  quotes: O.Option<QuoteWithProtocol[]>
-  onSelectQuote: (selectedQuote: QuoteWithProtocol) => void // Callback for quote selection
+  quote: O.Option<QuoteSwap>
+  quotes: O.Option<QuoteSwap[]>
+  onSelectQuote: (selectedQuote: QuoteSwap) => void // Callback for quote selection
 }
 
 const protocolMapping = {
@@ -96,14 +95,14 @@ export const SwapRoute = ({ isLoading, targetAsset, quote, quotes, onSelectQuote
     }
 
     const sortedByAmount = [...quotes.value].sort((a, b) => {
-      const amountA = parseFloat(a.estimate.expectedAmount.assetAmount.amount().toString())
-      const amountB = parseFloat(b.estimate.expectedAmount.assetAmount.amount().toString())
+      const amountA = parseFloat(a.expectedAmount.assetAmount.amount().toString())
+      const amountB = parseFloat(b.expectedAmount.assetAmount.amount().toString())
       return amountB - amountA
     })
 
     const sortedByTime = [...quotes.value].sort((a, b) => {
-      const timeA = a.estimate.totalSwapSeconds
-      const timeB = b.estimate.totalSwapSeconds
+      const timeA = a.totalSwapSeconds
+      const timeB = b.totalSwapSeconds
       return timeA - timeB
     })
 
@@ -127,8 +126,8 @@ export const SwapRoute = ({ isLoading, targetAsset, quote, quotes, onSelectQuote
               className="mt-2"
               quote={activeQuote}
               targetAsset={targetAsset}
-              isBestRate={bestQuote ? activeQuote.expectedAmount.eq(bestQuote.estimate.expectedAmount) : false}
-              isFastest={fastestQuote ? activeQuote.totalSwapSeconds === fastestQuote.estimate.totalSwapSeconds : false}
+              isBestRate={bestQuote ? activeQuote.expectedAmount.eq(bestQuote.expectedAmount) : false}
+              isFastest={fastestQuote ? activeQuote.totalSwapSeconds === fastestQuote.totalSwapSeconds : false}
             />
           }>
           {availableQuotes
@@ -139,16 +138,10 @@ export const SwapRoute = ({ isLoading, targetAsset, quote, quotes, onSelectQuote
                 className="mx-2 mb-2 cursor-pointer rounded-lg border border-solid border-gray1 p-2 dark:border-gray0d"
                 onClick={() => onSelectQuote(availableQuote)}>
                 <Route
-                  quote={availableQuote.estimate}
+                  quote={availableQuote}
                   targetAsset={targetAsset}
-                  isBestRate={
-                    bestQuote ? availableQuote.estimate.expectedAmount.eq(bestQuote.estimate.expectedAmount) : false
-                  }
-                  isFastest={
-                    fastestQuote
-                      ? availableQuote.estimate.totalSwapSeconds === fastestQuote.estimate.totalSwapSeconds
-                      : false
-                  }
+                  isBestRate={bestQuote ? availableQuote.expectedAmount.eq(bestQuote.expectedAmount) : false}
+                  isFastest={fastestQuote ? availableQuote.totalSwapSeconds === fastestQuote.totalSwapSeconds : false}
                 />
               </div>
             ))}
