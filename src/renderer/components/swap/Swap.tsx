@@ -1749,6 +1749,33 @@ export const Swap = ({
     )
   }, [streamingQuantity, streamingInterval])
 
+  const renderSwapSettings = () => (
+    <Collapse
+      header={
+        <div className="flex flex-row items-center justify-between">
+          <span className="m-0 font-main text-[14px] text-gray2 dark:text-gray2d">
+            {intl.formatMessage({ id: 'common.swap' })} {intl.formatMessage({ id: 'common.settings' })} ({labelMin})
+          </span>
+        </div>
+      }>
+      <div className="flex flex-col p-4">
+        <div className="flex w-full flex-col space-y-4 px-2">
+          <div>{renderStreamerInterval}</div>
+          <div>{renderStreamerQuantity}</div>
+        </div>
+        <div className="flex justify-end">
+          <TooltipAddress title="Reset to streaming default">
+            <BaseButton
+              onClick={resetToDefault}
+              className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
+              <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
+            </BaseButton>
+          </TooltipAddress>
+        </div>
+      </div>
+    </Collapse>
+  )
+
   const submitSwapTx = useCallback(() => {
     FP.pipe(
       oSwapParams,
@@ -2561,36 +2588,12 @@ export const Swap = ({
           {FP.pipe(
             oQuoteProtocol,
             O.fold(
-              () => null, // Handle case when `oQuoteProtocol` is `O.none`
+              () => renderSwapSettings(), // O.none: show settings
               (quoteSwap) =>
                 quoteSwap.protocol === 'Chainflip' ? (
-                  <></>
+                  <></> // Chainflip: hide settings
                 ) : (
-                  <Collapse
-                    header={
-                      <div className="flex flex-row items-center justify-between">
-                        <span className="m-0 font-main text-[14px] text-gray2 dark:text-gray2d">
-                          {intl.formatMessage({ id: 'common.swap' })} {intl.formatMessage({ id: 'common.settings' })} (
-                          {labelMin})
-                        </span>
-                      </div>
-                    }>
-                    <div className="flex flex-col p-4">
-                      <div className="flex w-full flex-col space-y-4 px-2">
-                        <div>{renderStreamerInterval}</div>
-                        <div>{renderStreamerQuantity}</div>
-                      </div>
-                      <div className="flex justify-end">
-                        <TooltipAddress title="Reset to streaming default">
-                          <BaseButton
-                            onClick={resetToDefault}
-                            className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
-                            <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
-                          </BaseButton>
-                        </TooltipAddress>
-                      </div>
-                    </div>
-                  </Collapse>
+                  renderSwapSettings() // Other protocols: show settings
                 )
             )
           )}
