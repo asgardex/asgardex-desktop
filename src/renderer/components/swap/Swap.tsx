@@ -37,6 +37,7 @@ import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import * as O from 'fp-ts/Option'
+import { debounce } from 'lodash'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
@@ -803,16 +804,15 @@ export const Swap = ({
     subscribe: subscribeApproveState
   } = useSubscriptionState<TxHashRD>(RD.initial)
 
-  useEffect(() => {
-    // Early exit if `amountToSwapMax1e8` is zero
-    if (amountToSwapMax1e8.amount().isZero()) {
-      setQuoteProtocol(O.none)
-      return
-    }
+  const fetchSwap = useCallback(
+    async (amount: BaseAmount) => {
+      if (amount.amount().isZero()) {
+        setQuoteProtocol(O.none)
+        setErrorProtocol(O.none)
+        return
+      }
 
-    // Reset states on dependency change
-    setQuoteProtocol(O.none)
-    const fetchSwap = async () => {
+      setQuoteProtocol(O.none)
       setIsFetchingEstimate(true)
 
       try {
@@ -820,7 +820,7 @@ export const Swap = ({
           {
             fromAsset: { ...sourceAsset, symbol: sourceAsset.symbol.toUpperCase() },
             destinationAsset: { ...targetAsset, symbol: targetAsset.symbol.toUpperCase() },
-            amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), {
+            amount: new CryptoAmount(convertBaseAmountDecimal(amount, sourceAssetDecimal), {
               ...sourceAsset,
               symbol: sourceAsset.symbol.toUpperCase()
             }),
@@ -828,7 +828,7 @@ export const Swap = ({
             destinationAddress: quoteOnly ? undefined : destinationWalletAddress,
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
-            toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100 // convert to basis points
+            toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100
           },
           applyBps
         )
@@ -839,11 +839,7 @@ export const Swap = ({
             const amountB = parseFloat(b.expectedAmount.assetAmountFixedString())
             const timeA = a.totalSwapSeconds
             const timeB = b.totalSwapSeconds
-
-            if (amountA > amountB) return -1
-            if (amountA < amountB) return 1
-
-            return timeA - timeB
+            return amountA > amountB ? -1 : amountA < amountB ? 1 : timeA - timeB
           })
           setQuoteProtocols(O.some(sortedQuotes))
           if (sortedQuotes.length > 0) {
@@ -861,105 +857,47 @@ export const Swap = ({
         setErrorProtocol(O.some(err as Error))
       }
       setIsFetchingEstimate(false)
-    }
+    },
+    [
+      estimateSwap,
+      sourceAsset,
+      targetAsset,
+      sourceAssetDecimal,
+      sourceWalletAddress,
+      destinationWalletAddress,
+      isStreaming,
+      streamingInterval,
+      streamingQuantity,
+      network,
+      slipTolerance,
+      applyBps,
+      quoteOnly
+    ]
+  )
 
-    fetchSwap()
-  }, [
-    amountToSwapMax1e8,
-    applyBps,
-    destinationWalletAddress,
-    estimateSwap,
-    isStreaming,
-    network,
-    quoteOnly,
-    slipTolerance,
-    sourceAsset,
-    sourceAssetDecimal,
-    sourceWalletAddress,
-    streamingInterval,
-    streamingQuantity,
-    targetAsset
-  ])
+  const debouncedFetchSwap = useMemo(
+    () => debounce((amount: BaseAmount) => fetchSwap(amount), 500), // 500ms delay
+    [fetchSwap]
+  )
+
+  useEffect(() => {
+    debouncedFetchSwap(amountToSwapMax1e8)
+    return () => {
+      debouncedFetchSwap.cancel()
+    }
+  }, [amountToSwapMax1e8, debouncedFetchSwap])
+
   // Refetch the quote after approval is successful
   useEffect(() => {
     if (RD.isSuccess(approveState)) {
       console.log('Approval succeeded! Refetching quote...')
 
-      // Trigger the quote refetch
-      if (!amountToSwapMax1e8.amount().isZero()) {
-        // Reset states on dependency change
-        setQuoteProtocol(O.none)
-        const fetchSwap = async () => {
-          setIsFetchingEstimate(true)
-          try {
-            const result = await estimateSwap(
-              {
-                fromAsset: { ...sourceAsset, symbol: sourceAsset.symbol.toUpperCase() },
-                destinationAsset: { ...targetAsset, symbol: targetAsset.symbol.toUpperCase() },
-                amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), {
-                  ...sourceAsset,
-                  symbol: sourceAsset.symbol.toUpperCase()
-                }),
-                fromAddress: sourceWalletAddress,
-                destinationAddress: quoteOnly ? undefined : destinationWalletAddress,
-                streamingInterval: isStreaming ? streamingInterval : 0,
-                streamingQuantity: isStreaming ? streamingQuantity : 0,
-                toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100 // convert to basis points
-              },
-              applyBps
-            )
-            // Function to sort quotes and set the default selected quote
-            const sortAndSetDefaultQuote = (quotes: QuoteSwap[]) => {
-              // Sort quotes by expected_amount_out (descending) and total_swap_seconds (ascending)
-              const sortedQuotes = quotes.sort((a, b) => {
-                const amountA = parseFloat(a.expectedAmount.assetAmountFixedString())
-                const amountB = parseFloat(b.expectedAmount.assetAmountFixedString())
-                const timeA = a.totalSwapSeconds
-                const timeB = b.totalSwapSeconds
-
-                // Sort by amount first (higher is better)
-                if (amountA > amountB) return -1
-                if (amountA < amountB) return 1
-
-                // If amounts are equal, sort by time (lower is better)
-                return timeA - timeB
-              })
-
-              // Update the state with sorted quotes
-              setQuoteProtocols(O.some(sortedQuotes))
-
-              // Set the default selected quote to the first item in the sorted array
-              setQuoteProtocol(O.some(sortedQuotes[0]))
-            }
-            // Call the sorting function with the successful quotes
-            sortAndSetDefaultQuote(result)
-            setErrorProtocol(O.none)
-          } catch (err) {
-            console.error('Failed to refetch estimate after approval:', err)
-            setErrorProtocol(O.some(err as Error))
-          }
-          setIsFetchingEstimate(false)
-        }
-        fetchSwap()
+      debouncedFetchSwap(amountToSwapMax1e8)
+      return () => {
+        debouncedFetchSwap.cancel()
       }
     }
-  }, [
-    approveState,
-    amountToSwapMax1e8,
-    applyBps,
-    destinationWalletAddress,
-    estimateSwap,
-    isStreaming,
-    network,
-    quoteOnly,
-    slipTolerance,
-    sourceAsset,
-    sourceAssetDecimal,
-    sourceWalletAddress,
-    streamingInterval,
-    streamingQuantity,
-    targetAsset
-  ])
+  }, [amountToSwapMax1e8, approveState, debouncedFetchSwap])
 
   // Function to handle user selection
   const handleSelectQuote = (selectedQuote: QuoteSwap) => {
