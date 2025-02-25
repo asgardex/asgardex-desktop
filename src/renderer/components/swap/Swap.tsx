@@ -69,7 +69,7 @@ import {
 import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isLtcChain } from '../../helpers/chainHelper'
 import { isEvmChain, isEvmToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
-import { eqAsset, eqBaseAmount, eqOAsset, eqAddress, eqOApproveParams } from '../../helpers/fp/eq'
+import { eqAsset, eqBaseAmount, eqOAsset, eqAddress } from '../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
 import { getSwapMemo, updateMemo } from '../../helpers/memoHelper'
 import * as PoolHelpers from '../../helpers/poolHelper'
@@ -89,7 +89,7 @@ import { useSubscriptionState } from '../../hooks/useSubscriptionState'
 import { INITIAL_SWAP_STATE } from '../../services/chain/const'
 import { getZeroSwapFees } from '../../services/chain/fees/swap'
 import { SwapTxParams, SwapFeesRD, SwapFees, FeeRD, SwapTxState, SendTxParams } from '../../services/chain/types'
-import { ApproveParams, IsApprovedRD } from '../../services/evm/types'
+import { ApproveParams } from '../../services/evm/types'
 import { getPoolDetail as getPoolDetailMaya } from '../../services/mayaMigard/utils'
 import { PoolAddress } from '../../services/midgard/types'
 import { getPoolDetail } from '../../services/midgard/utils'
@@ -157,7 +157,6 @@ export const Swap = ({
   network,
   slipTolerance,
   changeSlipTolerance,
-  isApprovedERC20Token$,
   approveERC20Token$,
   reloadApproveFee,
   approveFee$,
@@ -1365,7 +1364,7 @@ export const Swap = ({
 
   const prevApproveFee = useRef<O.Option<BaseAmount>>(O.none)
 
-  const [approveFeeRD, approveFeeParamsUpdated] = useObservableState<FeeRD, ApproveParams>((approveFeeParam$) => {
+  const [approveFeeRD] = useObservableState<FeeRD, ApproveParams>((approveFeeParam$) => {
     return approveFeeParam$.pipe(
       RxOp.switchMap((params) =>
         FP.pipe(
@@ -1382,8 +1381,6 @@ export const Swap = ({
     )
   }, RD.initial)
 
-  const prevApproveParams = useRef<O.Option<ApproveParams>>(O.none)
-
   const approveFee: BaseAmount = useMemo(
     () =>
       FP.pipe(
@@ -1395,25 +1392,37 @@ export const Swap = ({
     [approveFeeRD]
   )
 
-  // State for values of `isApprovedERC20Token$`
-  const {
-    state: isApprovedState,
-    reset: resetIsApprovedState,
-    subscribe: subscribeIsApprovedState
-  } = useSubscriptionState<IsApprovedRD>(RD.initial)
+  // // State for values of `isApprovedERC20Token$`
+  // const {
+  //   state: isApprovedState,
+  //   reset: resetIsApprovedState,
+  //   subscribe: subscribeIsApprovedState
+  // } = useSubscriptionState<IsApprovedRD>(RD.initial)
 
-  const checkApprovedStatus = useCallback(
-    ({ contractAddress, spenderAddress, fromAddress }: ApproveParams) => {
-      subscribeIsApprovedState(
-        isApprovedERC20Token$({
-          contractAddress,
-          spenderAddress,
-          fromAddress
-        })
+  // const checkApprovedStatus = useCallback(
+  //   ({ contractAddress, spenderAddress, fromAddress }: ApproveParams) => {
+  //     subscribeIsApprovedState(
+  //       isApprovedERC20Token$({
+  //         contractAddress,
+  //         spenderAddress,
+  //         fromAddress
+  //       })
+  //     )
+  //   },
+  //   [isApprovedERC20Token$, subscribeIsApprovedState]
+  // )
+
+  // Determine if approval is needed based on quote errors
+  const needsApproval = useMemo(() => {
+    const errors = FP.pipe(
+      oQuoteProtocol,
+      O.fold(
+        () => [], // No quote, no errors
+        (quoteSwap) => quoteSwap.errors
       )
-    },
-    [isApprovedERC20Token$, subscribeIsApprovedState]
-  )
+    )
+    return errors.some((error) => error.includes('router has not been approved to spend this amount'))
+  }, [oQuoteProtocol])
 
   const reloadApproveFeesHandler = useCallback(() => {
     FP.pipe(oApproveParams, O.map(reloadApproveFee))
@@ -1424,8 +1433,6 @@ export const Swap = ({
 
   const setSourceAsset = useCallback(
     async (asset: AnyAsset) => {
-      // delay to avoid render issues while switching
-      resetIsApprovedState()
       await delay(100)
       setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
       onChangeAsset({
@@ -1437,30 +1444,12 @@ export const Swap = ({
         recipientAddress: oRecipientAddress
       })
       await delay(100) // Optional delay to ensure state updates properly
-      // Step 3: Check approval for the new asset
-      FP.pipe(
-        oApproveParams, // Use the new asset's approval parameters
-        O.map((params) => checkApprovedStatus(params))
-      )
     },
-    [
-      checkApprovedStatus,
-      initialAmountToSwapMax1e8,
-      oApproveParams,
-      oRecipientAddress,
-      oTargetWalletType,
-      onChangeAsset,
-      resetIsApprovedState,
-      setAmountToSwapMax1e8,
-      targetAsset
-    ]
+    [initialAmountToSwapMax1e8, oRecipientAddress, oTargetWalletType, onChangeAsset, setAmountToSwapMax1e8, targetAsset]
   )
 
   const setTargetAsset = useCallback(
     async (asset: AnyAsset) => {
-      // Step 1: Reset approval state before changing the asset
-      resetIsApprovedState()
-
       // Step 2: Switch target asset
       await delay(100) // Optional delay to ensure state updates properly
 
@@ -1473,37 +1462,9 @@ export const Swap = ({
         recipientAddress: O.none
       })
       await delay(100) // Optional delay to ensure state updates properly
-      // Step 3: Check approval for the new asset
-      FP.pipe(
-        oApproveParams, // Use the new asset's approval parameters
-        O.map((params) => checkApprovedStatus(params))
-      )
     },
-    [onChangeAsset, resetIsApprovedState, sourceAsset, sourceWalletType, checkApprovedStatus, oApproveParams]
+    [onChangeAsset, sourceAsset, sourceWalletType]
   )
-
-  // whenever `oApproveParams` has been updated,
-  // `approveFeeParamsUpdated` needs to be called to update `approveFeesRD`
-  // + `checkApprovedStatus` needs to be called
-  useEffect(() => {
-    FP.pipe(
-      oApproveParams,
-      // Do nothing if prev. and current router are the same
-      O.filter((params) => !eqOApproveParams.equals(O.some(params), prevApproveParams.current)),
-      // update ref
-      O.map((params) => {
-        prevApproveParams.current = O.some(params) // Update reference to current params
-
-        // Using setTimeout to delay the execution of subsequent actions
-        setTimeout(() => {
-          approveFeeParamsUpdated(params)
-          checkApprovedStatus(params)
-        }, 100) // Delay of 100 milliseconds
-
-        return true
-      })
-    )
-  }, [approveFeeParamsUpdated, checkApprovedStatus, oApproveParams])
 
   const minAmountError = useMemo(() => {
     const errors: string[] = FP.pipe(
@@ -2145,49 +2106,12 @@ export const Swap = ({
     [approveState]
   )
 
-  const isApproved = useMemo(
-    () =>
-      O.isNone(needApprovement) ||
-      RD.isSuccess(approveState) ||
-      FP.pipe(
-        isApprovedState,
-        // ignore other RD states and set to `true`
-        // to avoid switch between approve and submit button
-        // Submit button will still be disabled
-        RD.getOrElse(() => true)
-      ),
-    [approveState, isApprovedState, needApprovement]
-  )
-
-  const checkIsApproved = useMemo(() => {
-    if (O.isNone(needApprovement)) return false
-    // ignore initial + loading states for `isApprovedState`
-    return RD.isPending(isApprovedState)
-  }, [isApprovedState, needApprovement])
-
-  const checkIsApprovedError = useMemo(() => {
-    // ignore error check if we don't need to check allowance
-    if (O.isNone(needApprovement)) return false
-    return RD.isFailure(isApprovedState)
-  }, [needApprovement, isApprovedState])
-
-  const renderIsApprovedError = useMemo(() => {
-    if (!checkIsApprovedError) return <></>
-
-    return FP.pipe(
-      isApprovedState,
-      RD.fold(
-        () => <></>,
-        () => <></>,
-        (error) => (
-          <ErrorLabel>
-            {intl.formatMessage({ id: 'common.approve.error' }, { asset: sourceAsset.ticker, error: error.msg })}
-          </ErrorLabel>
-        ),
-        (_) => <></>
-      )
-    )
-  }, [checkIsApprovedError, intl, isApprovedState, sourceAsset.ticker])
+  const isApproved = useMemo(() => {
+    // No approval needed if not an ERC20 token
+    if (O.isNone(needApprovement)) return true
+    // Approved if no approval error in quote AND no pending approval
+    return !needsApproval || RD.isSuccess(approveState)
+  }, [needApprovement, needsApproval, approveState])
 
   const priceApproveFee: CryptoAmount = useMemo(() => {
     const assetAmount = isApproved
@@ -2269,7 +2193,6 @@ export const Swap = ({
     // reset data whenever source asset has been changed
     if (O.some(prevSourceAsset.current) && !eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
       reloadFeesHandler()
-      resetIsApprovedState()
       resetApproveState()
     } else {
       prevSourceAsset.current = O.some(sourceAsset)
@@ -2277,7 +2200,7 @@ export const Swap = ({
     if (!eqOAsset.equals(prevTargetAsset.current, O.some(targetAsset))) {
       prevTargetAsset.current = O.some(targetAsset)
     }
-  }, [reloadFeesHandler, resetApproveState, resetIsApprovedState, resetSwapState, sourceAsset, targetAsset])
+  }, [reloadFeesHandler, resetApproveState, resetSwapState, sourceAsset, targetAsset])
 
   const onSwitchAssets = useCallback(async () => {
     // delay to avoid render issues while switching
@@ -2346,9 +2269,8 @@ export const Swap = ({
   )
 
   const disableSubmitApprove = useMemo(
-    () => checkIsApprovedError || isApproveFeeError || walletBalancesLoading || O.isNone(oApproveParams),
-
-    [checkIsApprovedError, isApproveFeeError, oApproveParams, walletBalancesLoading]
+    () => isApproveFeeError || walletBalancesLoading || O.isNone(oApproveParams) || RD.isPending(approveState),
+    [isApproveFeeError, walletBalancesLoading, oApproveParams, approveState]
   )
 
   const onChangeRecipientAddress = useCallback(
@@ -2978,15 +2900,12 @@ export const Swap = ({
         </div>
       </div>
 
-      {(walletBalancesLoading || checkIsApproved) && (
+      {(walletBalancesLoading || isFetchingEstimate) && (
         <LoadingView
           className="w-full pt-10px"
           label={
-            // We show only one loading state at time
-            // Order matters: Show states with shortest loading time before others
-            // (approve state takes just a short time to load, but needs to be displayed)
-            checkIsApproved
-              ? intl.formatMessage({ id: 'common.approve.checking' }, { asset: sourceAsset.ticker })
+            isFetchingEstimate
+              ? intl.formatMessage({ id: 'common.loading' }) // New message for quote fetching
               : walletBalancesLoading
               ? intl.formatMessage({ id: 'common.balance.loading' })
               : undefined
@@ -3024,7 +2943,6 @@ export const Swap = ({
 
                 {renderApproveFeeError}
                 {renderApproveError}
-                {renderIsApprovedError}
 
                 {!RD.isInitial(uiApproveFeesRD) && (
                   <Fees fees={uiApproveFeesRD} reloadFees={reloadApproveFeesHandler} />
