@@ -7,6 +7,7 @@ import { ethers } from 'ethers'
 import { IPCLedgerApproveERC20TokenParams } from '../../../../shared/api/io'
 import { defaultArbParams } from '../../../../shared/arb/const'
 import { defaultAvaxParams } from '../../../../shared/avax/const'
+import { defaultBaseParams } from '../../../../shared/base/const'
 import { defaultBscParams } from '../../../../shared/bsc/const'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { ETH_MAINNET_ETHERS_PROVIDER, ETH_TESTNET_ETHERS_PROVIDER, createEthProviders } from '../ethereum/common'
@@ -72,6 +73,18 @@ export const approveLedgerERC20Token = async ({
         signer: new LedgerSigner({
           transport,
           provider: defaultBscParams.providers[Network.Mainnet],
+          derivationPath: getDerivationPath(walletAccount, hdMode)
+        }),
+        rootDerivationPaths: getDerivationPaths(walletAccount, hdMode),
+        network: network
+      }
+      break
+    case 'BASE':
+      clientParams = {
+        ...defaultBaseParams,
+        signer: new LedgerSigner({
+          transport,
+          provider: defaultBaseParams.providers[Network.Mainnet],
           derivationPath: getDerivationPath(walletAccount, hdMode)
         }),
         rootDerivationPaths: getDerivationPaths(walletAccount, hdMode),
