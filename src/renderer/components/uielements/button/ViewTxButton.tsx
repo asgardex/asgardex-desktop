@@ -40,22 +40,35 @@ export const ViewTxButton: React.FC<Props> = ({
 
   const handleTxTracker = useCallback(() => {
     return FP.pipe(
-      sequenceTOption(protocol, oTxHash, channelId),
+      sequenceTOption(protocol, oTxHash),
       O.fold(
         () => undefined,
-        ([protocolValue, txHash, channelId]) => {
+        ([protocolValue, txHash]) => {
           let url: string
-
           switch (protocolValue) {
             case 'Thorchain':
               url = `https://track.ninerealms.com/${txHash}?logo=asgardex.png&network=${network || 'default'}`
               break
             case 'Mayachain':
-              url = `https://track.ninerealms.com/${txHash}?logo=asgardex.png&network=${network || 'default'}`
+              url = `https://www.xscanner.org/tx/${txHash}`
               break
             case 'Chainflip':
-              url = `https://scan.chainflip.io/channels/${channelId}`
-              break
+              return FP.pipe(
+                channelId,
+                O.fold(
+                  () => {
+                    console.warn('Channel ID required for Chainflip tracking')
+                    return undefined
+                  },
+                  (channelIdValue) => {
+                    url = `https://scan.chainflip.io/channels/${channelIdValue}`
+                    if (url) {
+                      window.apiUrl.openExternal(url)
+                    }
+                    return url
+                  }
+                )
+              )
             default:
               return undefined
           }

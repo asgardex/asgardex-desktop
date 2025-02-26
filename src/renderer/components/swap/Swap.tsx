@@ -70,7 +70,7 @@ import {
 import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isLtcChain } from '../../helpers/chainHelper'
 import { isEvmChain, isEvmToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
-import { eqAsset, eqBaseAmount, eqOAsset, eqAddress } from '../../helpers/fp/eq'
+import { eqAsset, eqBaseAmount, eqOAsset, eqAddress, eqOApproveParams } from '../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
 import { getSwapMemo, updateMemo } from '../../helpers/memoHelper'
 import * as PoolHelpers from '../../helpers/poolHelper'
@@ -90,7 +90,7 @@ import { useSubscriptionState } from '../../hooks/useSubscriptionState'
 import { INITIAL_SWAP_STATE } from '../../services/chain/const'
 import { getZeroSwapFees } from '../../services/chain/fees/swap'
 import { SwapTxParams, SwapFeesRD, SwapFees, FeeRD, SwapTxState, SendTxParams } from '../../services/chain/types'
-import { ApproveParams } from '../../services/evm/types'
+import { ApproveParams, IsApprovedRD } from '../../services/evm/types'
 import { getPoolDetail as getPoolDetailMaya } from '../../services/mayaMigard/utils'
 import { PoolAddress } from '../../services/midgard/types'
 import { getPoolDetail } from '../../services/midgard/utils'
@@ -147,6 +147,7 @@ export const Swap = ({
   reloadFees,
   reloadBalances = FP.constVoid,
   fees$,
+  isApprovedERC20Token$,
   sourceKeystoreAddress: oInitialSourceKeystoreAddress,
   sourceLedgerAddress: oSourceLedgerAddress,
   targetKeystoreAddress: oTargetKeystoreAddress,
@@ -804,6 +805,26 @@ export const Swap = ({
     subscribe: subscribeApproveState
   } = useSubscriptionState<TxHashRD>(RD.initial)
 
+  // State for values of `isApprovedERC20Token$`
+  const {
+    state: isApprovedState,
+    reset: resetIsApprovedState,
+    subscribe: subscribeIsApprovedState
+  } = useSubscriptionState<IsApprovedRD>(RD.initial)
+
+  const checkApprovedStatus = useCallback(
+    ({ contractAddress, spenderAddress, fromAddress }: ApproveParams) => {
+      subscribeIsApprovedState(
+        isApprovedERC20Token$({
+          contractAddress,
+          spenderAddress,
+          fromAddress
+        })
+      )
+    },
+    [isApprovedERC20Token$, subscribeIsApprovedState]
+  )
+
   const fetchSwap = useCallback(
     async (amount: BaseAmount) => {
       if (amount.amount().isZero()) {
@@ -886,18 +907,6 @@ export const Swap = ({
       debouncedFetchSwap.cancel()
     }
   }, [amountToSwapMax1e8, debouncedFetchSwap])
-
-  // Refetch the quote after approval is successful
-  useEffect(() => {
-    if (RD.isSuccess(approveState)) {
-      console.log('Approval succeeded! Refetching quote...')
-
-      debouncedFetchSwap(amountToSwapMax1e8)
-      return () => {
-        debouncedFetchSwap.cancel()
-      }
-    }
-  }, [amountToSwapMax1e8, approveState, debouncedFetchSwap])
 
   // Function to handle user selection
   const handleSelectQuote = (selectedQuote: QuoteSwap) => {
@@ -1292,6 +1301,31 @@ export const Swap = ({
     sourceChain
   ])
 
+  // Trigger approval check after approval succeeds
+  useEffect(() => {
+    if (RD.isSuccess(approveState)) {
+      FP.pipe(
+        oApproveParams,
+        O.map((params) => {
+          prevApproveParams.current = O.some(params)
+          checkApprovedStatus(params)
+          return true
+        })
+      )
+    }
+  }, [approveState, oApproveParams, checkApprovedStatus])
+
+  // Refetch quote when approval is confirmed
+  useEffect(() => {
+    if (RD.isSuccess(approveState) && RD.isSuccess(isApprovedState)) {
+      debouncedFetchSwap(amountToSwapMax1e8)
+      resetIsApprovedState()
+      return () => {
+        debouncedFetchSwap.cancel()
+      }
+    }
+  }, [approveState, isApprovedState, amountToSwapMax1e8, debouncedFetchSwap, resetIsApprovedState])
+
   const reloadFeesHandler = useCallback(() => {
     reloadFees({
       inAsset: sourceAsset,
@@ -1302,7 +1336,7 @@ export const Swap = ({
 
   const prevApproveFee = useRef<O.Option<BaseAmount>>(O.none)
 
-  const [approveFeeRD] = useObservableState<FeeRD, ApproveParams>((approveFeeParam$) => {
+  const [approveFeeRD, approveFeeParamsUpdated] = useObservableState<FeeRD, ApproveParams>((approveFeeParam$) => {
     return approveFeeParam$.pipe(
       RxOp.switchMap((params) =>
         FP.pipe(
@@ -1330,26 +1364,6 @@ export const Swap = ({
     [approveFeeRD]
   )
 
-  // // State for values of `isApprovedERC20Token$`
-  // const {
-  //   state: isApprovedState,
-  //   reset: resetIsApprovedState,
-  //   subscribe: subscribeIsApprovedState
-  // } = useSubscriptionState<IsApprovedRD>(RD.initial)
-
-  // const checkApprovedStatus = useCallback(
-  //   ({ contractAddress, spenderAddress, fromAddress }: ApproveParams) => {
-  //     subscribeIsApprovedState(
-  //       isApprovedERC20Token$({
-  //         contractAddress,
-  //         spenderAddress,
-  //         fromAddress
-  //       })
-  //     )
-  //   },
-  //   [isApprovedERC20Token$, subscribeIsApprovedState]
-  // )
-
   // Determine if approval is needed based on quote errors
   const needsApproval = useMemo(() => {
     const errors = FP.pipe(
@@ -1371,6 +1385,7 @@ export const Swap = ({
 
   const setSourceAsset = useCallback(
     async (asset: AnyAsset) => {
+      resetIsApprovedState()
       await delay(100)
       setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
       onChangeAsset({
@@ -1381,16 +1396,23 @@ export const Swap = ({
         targetWalletType: oTargetWalletType,
         recipientAddress: oRecipientAddress
       })
-      await delay(100) // Optional delay to ensure state updates properly
     },
-    [initialAmountToSwapMax1e8, oRecipientAddress, oTargetWalletType, onChangeAsset, setAmountToSwapMax1e8, targetAsset]
+    [
+      initialAmountToSwapMax1e8,
+      oRecipientAddress,
+      oTargetWalletType,
+      onChangeAsset,
+      resetIsApprovedState,
+      setAmountToSwapMax1e8,
+      targetAsset
+    ]
   )
 
   const setTargetAsset = useCallback(
     async (asset: AnyAsset) => {
+      resetIsApprovedState()
       // Step 2: Switch target asset
       await delay(100) // Optional delay to ensure state updates properly
-
       onChangeAsset({
         source: sourceAsset,
         sourceWalletType,
@@ -1400,9 +1422,29 @@ export const Swap = ({
         recipientAddress: O.none
       })
       await delay(100) // Optional delay to ensure state updates properly
+      resetIsApprovedState()
     },
-    [onChangeAsset, sourceAsset, sourceWalletType]
+    [onChangeAsset, resetIsApprovedState, sourceAsset, sourceWalletType]
   )
+  const prevApproveParams = useRef<O.Option<ApproveParams>>(O.none)
+
+  // whenever `oApproveParams` has been updated,
+  // `approveFeeParamsUpdated` needs to be called to update `approveFeesRD`
+  useEffect(() => {
+    FP.pipe(
+      oApproveParams,
+      O.filter((params) => !eqOApproveParams.equals(O.some(params), prevApproveParams.current)),
+      O.map((params) => {
+        prevApproveParams.current = O.some(params)
+        // Using setTimeout to delay the execution of subsequent actions
+        setTimeout(() => {
+          approveFeeParamsUpdated(params)
+        }, 100) // Delay of 100 milliseconds
+
+        return true
+      })
+    )
+  }, [approveFeeParamsUpdated, oApproveParams])
 
   const minAmountError = useMemo(() => {
     const errors: string[] = FP.pipe(
@@ -2843,7 +2885,7 @@ export const Swap = ({
           className="w-full pt-10px"
           label={
             isFetchingEstimate
-              ? intl.formatMessage({ id: 'common.loading' }) // New message for quote fetching
+              ? intl.formatMessage({ id: 'common.loading' })
               : walletBalancesLoading
               ? intl.formatMessage({ id: 'common.balance.loading' })
               : undefined
