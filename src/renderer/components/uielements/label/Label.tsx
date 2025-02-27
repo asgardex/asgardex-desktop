@@ -1,5 +1,7 @@
 import React from 'react'
 
+import clsx from 'clsx'
+
 import * as Styled from './Label.styles'
 
 export type ComponentProps = {
@@ -32,7 +34,7 @@ export const Label = React.forwardRef<HTMLDivElement, LabelProps>((props, ref): 
   return (
     <Styled.LabelWrapper
       ref={ref}
-      className={`label-wrapper ${className}`}
+      className={clsx('label-wrapper', className)}
       size={size}
       color={color}
       weight={weight}

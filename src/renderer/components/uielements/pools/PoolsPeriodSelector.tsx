@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 
 import { Listbox } from '@headlessui/react'
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
+import clsx from 'clsx'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -57,7 +58,7 @@ export const PoolsPeriodSelector: React.FC<Props> = (props): JSX.Element => {
         onChange(value)
       }}>
       <div
-        className={`relative ${className}`}
+        className={clsx('relative', className)}
         onClick={(event: React.MouseEvent<HTMLElement, MouseEvent>) => {
           event.preventDefault()
           event.stopPropagation()
@@ -85,15 +86,7 @@ export const PoolsPeriodSelector: React.FC<Props> = (props): JSX.Element => {
           {({ open }) => (
             <>
               <span className="w-full">{selectedItem.label}</span>
-              <ChevronDownIcon
-                className={`
-                  ${open && 'rotate-180'}
-                  ease
-                  h-20px w-20px
-                          group-hover:rotate-180
-
-                  `}
-              />
+              <ChevronDownIcon className={clsx('ease h-20px w-20px group-hover:rotate-180', { 'rotate-180': open })} />
             </>
           )}
         </Listbox.Button>
@@ -131,7 +124,9 @@ export const PoolsPeriodSelector: React.FC<Props> = (props): JSX.Element => {
                   key={item.value}
                   value={item}>
                   {item.label}
-                  <CheckIcon className={`ml-5px h-20px w-20px text-turquoise ${selected ? 'visible' : 'invisible'}`} />
+                  <CheckIcon
+                    className={clsx('ml-5px h-20px w-20px text-turquoise', selected ? 'visible' : 'invisible')}
+                  />
                 </Listbox.Option>
               )
             })

@@ -22,7 +22,7 @@ import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { to1e8BaseAmount } from '../../helpers/assetHelper'
 import { getPoolPriceValue, RUNE_PRICE_POOL } from '../../helpers/poolHelper'
-import { useMimirHalt } from '../../hooks/useMimirHalt'
+import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { TradeAccount } from '../../services/thorchain/types'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
@@ -30,7 +30,6 @@ import { ChainBalance, SelectedWalletAsset } from '../../services/wallet/types'
 import { useApp } from '../../store/app/hooks'
 
 export const TradeAssetsView: React.FC = (): JSX.Element => {
-  // const navigate = useNavigate()
   const intl = useIntl()
 
   const { balancesState$, setSelectedAsset } = useWalletContext()
@@ -106,7 +105,7 @@ export const TradeAssetsView: React.FC = (): JSX.Element => {
   const poolDetails = useMemo(() => RD.toNullable(poolsRD)?.poolDetails ?? [], [poolsRD])
   const poolsData = useMemo(() => RD.toNullable(poolsRD)?.poolsData ?? {}, [poolsRD])
   const pendingPoolsDetails = useMemo(() => RD.toNullable(pendingPoolsThorRD)?.poolDetails ?? [], [pendingPoolsThorRD])
-  const { mimirHaltRD } = useMimirHalt()
+  const { mimirHaltRD } = useThorchainMimirHalt()
 
   const disableRefresh = useMemo(() => RD.isPending(poolsRD) || loadingBalances, [loadingBalances, poolsRD])
 
@@ -188,6 +187,7 @@ export const TradeAssetsView: React.FC = (): JSX.Element => {
       />
 
       <TradeAssetsTableCollapsable
+        chainBalances={chainBalances$}
         disableRefresh={disableRefresh}
         tradeAccountBalances={combinedTradeAccountBalances}
         pricePool={selectedPricePool}

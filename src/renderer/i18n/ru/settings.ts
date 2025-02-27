@@ -15,6 +15,7 @@ const settings: SettingMessages = {
   'setting.connected': 'Подключён',
   'setting.notconnected': 'Нет соединения',
   'setting.add.device': 'Добавить устройство',
+  'setting.wallet.whitelist.modal': 'Добавить / Удалить токены из белого списка',
   'setting.wallet.index': 'Индекс',
   'setting.wallet.account': 'Аккаунт',
   'setting.wallet.index.info': 'Введите индекс Ledger адреса, который вы хотите использовать',

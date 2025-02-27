@@ -3,6 +3,7 @@ import React, { useCallback, useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { Listbox } from '@headlessui/react'
 import { CheckIcon, ChevronDownIcon, PlusCircleIcon } from '@heroicons/react/24/outline'
+import clsx from 'clsx'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -96,31 +97,19 @@ export const HeaderLock: React.FC<Props> = (props): JSX.Element => {
                 <div className="relative">
                   <Listbox.Button
                     as="div"
-                    className={`
-                    group
-                  flex
-                  cursor-pointer
-                  items-center
-                  pl-5px pr-10px
-                  font-main
-                  text-14
-                   text-text1
-                  transition duration-300
-                  ease-in-out
-                  dark:text-text1d
-                  `}>
+                    className={clsx(
+                      'group flex cursor-pointer items-center',
+                      'font-main text-14 text-text1 dark:text-text1d',
+                      'pl-5px pr-10px',
+                      'transition duration-300 ease-in-out'
+                    )}>
                     {({ open }) => (
                       <>
                         <span className="w-full">
                           {truncateMiddle(selectedWallet.name, { start: 3, end: 3, max: 6 })}
                         </span>
                         <ChevronDownIcon
-                          className={`
-                          ${open && 'rotate-180'}
-  ease
-                          h-20px w-20px
-                          group-hover:rotate-180
-                          `}
+                          className={clsx('ease h-20px w-20px group-hover:rotate-180', { 'rotate-180': open })}
                         />
                       </>
                     )}

@@ -22,6 +22,7 @@ import {
   TokenAsset
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
+import clsx from 'clsx'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
@@ -31,7 +32,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { Dex } from '../../../shared/api/types'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
@@ -93,6 +93,7 @@ import { PricePool } from '../../views/pools/Pools.types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
 import { TxModal } from '../modal/tx'
 import { DepositAsset } from '../modal/tx/extra/DepositAsset'
+import { ErrorLabel } from '../settings/AppSettings.styles'
 import { LoadingView } from '../shared/loading'
 import { AssetInput } from '../uielements/assets/assetInput'
 import { BaseButton, FlatButton, ViewTxButton } from '../uielements/button'
@@ -101,8 +102,6 @@ import { Tooltip, TooltipAddress } from '../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../uielements/fees'
 import { Slider } from '../uielements/slider'
 import * as Utils from './Saver.utils'
-
-export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
 
 export type WithDrawProps = {
   keystore: KeystoreState
@@ -132,7 +131,6 @@ export type WithDrawProps = {
   reloadBalances: FP.Lazy<void>
   disableSaverAction: boolean
   hidePrivateData: boolean
-  dex: Dex
 }
 
 export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
@@ -162,8 +160,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     getExplorerTxUrl,
     saverWithdraw$,
     disableSaverAction,
-    hidePrivateData,
-    dex
+    hidePrivateData
   } = props
 
   const intl = useIntl()
@@ -866,12 +863,12 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
           walletIndex,
           sender: address,
           hdMode,
-          dex
+          protocol: poolAddress.protocol
         }
         return result
       })
     )
-  }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceChainAsset, dustAmount, network, address, dex])
+  }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceChainAsset, dustAmount, network, address])
 
   const resetEnteredAmounts = useCallback(() => {
     setAmountToWithdrawMax1e8(initialAmountToWithdrawMax1e8)
@@ -1376,6 +1373,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
                     disabled={disableSubmit}>
                     {intl.formatMessage({ id: 'common.withdraw' })}
                   </FlatButton>
+                  <ErrorLabel>Savers withdraw have been paused by TC</ErrorLabel>
                 </div>
               </>
             ) : (
@@ -1401,7 +1399,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
 
           <div className="w-full px-10px font-main text-[12px] uppercase dark:border-gray1d">
             <BaseButton
-              className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+              className="group flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
               onClick={() => setShowDetails((current) => !current)}>
               {intl.formatMessage({ id: 'common.details' })}
               {showDetails ? (
@@ -1453,7 +1451,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
               {/* Withdraw saver transaction time, inbound / outbound / confirmations */}
               <>
                 <div
-                  className={`flex w-full justify-between ${showDetails ? 'pt-10px' : ''} font-mainBold text-[14px]`}>
+                  className={clsx('flex w-full justify-between font-mainBold text-[14px]', { 'pt-10px': showDetails })}>
                   <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
                   <div>
                     {formatSwapTime(
@@ -1466,15 +1464,15 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
                 {showDetails && (
                   <>
                     <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.inbound.time' })}</div>
+                      <div className="flex items-center">{intl.formatMessage({ id: 'common.inbound.time' })}</div>
                       <div>{formatSwapTime(Number(transactionTime.inbound))}</div>
                     </div>
                     <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.outbound.time' })}</div>
+                      <div className="flex items-center">{intl.formatMessage({ id: 'common.outbound.time' })}</div>
                       <div>{formatSwapTime(Number(transactionTime.outbound))}</div>
                     </div>
                     <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div className={`flex items-center`}>
+                      <div className="flex items-center">
                         {intl.formatMessage({ id: 'common.confirmation.time' }, { chain: sourceAsset.chain })}
                       </div>
                       <div>{formatSwapTime(Number(transactionTime.confirmation))}</div>
@@ -1486,7 +1484,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
               {/* addresses */}
               {showDetails && (
                 <>
-                  <div className={`w-full pt-10px font-mainBold text-[14px]`}>
+                  <div className="w-full pt-10px font-mainBold text-[14px]">
                     {intl.formatMessage({ id: 'common.addresses' })}
                   </div>
                   {/* sender address */}
@@ -1525,7 +1523,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
               {/* balances */}
               {showDetails && (
                 <>
-                  <div className={`w-full pt-10px text-[14px]`}>
+                  <div className="w-full pt-10px text-[14px]">
                     <BaseButton
                       disabled={walletBalancesLoading}
                       className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
@@ -1553,7 +1551,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
               {/* memo */}
               {showDetails && (
                 <>
-                  <div className={`w-full pt-10px font-mainBold text-[14px]`}>
+                  <div className="w-full pt-10px font-mainBold text-[14px]">
                     {intl.formatMessage({ id: 'common.memo' })}
                   </div>
                   <div className="truncate pl-10px font-main text-[12px]">

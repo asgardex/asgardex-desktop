@@ -4,12 +4,10 @@ import { Network, TxHash } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
 
-import { thorDetails } from '../../../../shared/api/types'
 import { AssetBSC, AssetRuneNative } from '../../../../shared/utils/asset'
 import { WalletType } from '../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../const'
 import { mockWalletBalance } from '../../../helpers/test/testWalletHelper'
-import { changeDex } from '../../../services/app/service'
 import { OpenExplorerTxUrl } from '../../../services/clients'
 import { WalletBalance, WalletBalances } from '../../../services/wallet/types'
 import { AssetDetails, Props as AssetDetailsProps } from './AssetDetails'
@@ -58,9 +56,8 @@ export const StoryBSC: StoryObj<AssetDetailsProps> = {
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}
-      dex={thorDetails}
-      haltedChains={[]}
-      changeDex={changeDex}
+      haltedChainsThor={[]}
+      haltedChainsMaya={[]}
     />
   ),
   name: 'BSC'
@@ -76,9 +73,8 @@ export const StoryRuneTxSuccess: StoryObj<AssetDetailsProps> = {
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}
-      dex={thorDetails}
-      haltedChains={[]}
-      changeDex={changeDex}
+      haltedChainsThor={[]}
+      haltedChainsMaya={[]}
     />
   ),
   name: 'RUNE - tx success'
@@ -95,9 +91,8 @@ export const StoryRuneNoSend: StoryObj<AssetDetailsProps> = {
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={true}
-      dex={thorDetails}
-      haltedChains={[]}
-      changeDex={changeDex}
+      haltedChainsThor={[]}
+      haltedChainsMaya={[]}
     />
   ),
   name: 'RUNE - no send'
@@ -114,9 +109,8 @@ export const StoryRuneTxError: StoryObj<AssetDetailsProps> = {
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}
-      dex={thorDetails}
-      haltedChains={[]}
-      changeDex={changeDex}
+      haltedChainsThor={[]}
+      haltedChainsMaya={[]}
     />
   ),
   name: 'RUNE - tx error'
@@ -133,9 +127,8 @@ export const StoryRuneNoBalances: StoryObj<AssetDetailsProps> = {
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}
-      dex={thorDetails}
-      haltedChains={[]}
-      changeDex={changeDex}
+      haltedChainsThor={[]}
+      haltedChainsMaya={[]}
     />
   ),
   name: 'RUNE - disabled - no balance'
@@ -152,9 +145,8 @@ export const StoryRuneFeeNotCovered: StoryObj<AssetDetailsProps> = {
       network={Network.Testnet}
       openExplorerTxUrl={openExplorerTxUrl}
       disableSend={false}
-      dex={thorDetails}
-      haltedChains={[]}
-      changeDex={changeDex}
+      haltedChainsThor={[]}
+      haltedChainsMaya={[]}
     />
   ),
   name: 'RUNE - fee not covered'

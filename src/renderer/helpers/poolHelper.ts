@@ -1,7 +1,7 @@
 import { Balance, Network } from '@xchainjs/xchain-client'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
-import { THORChain } from '@xchainjs/xchain-thorchain'
-import { bnOrZero, assetFromString, BaseAmount, Chain } from '@xchainjs/xchain-util'
+import { isAssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { bnOrZero, assetFromString, BaseAmount, Chain, baseAmount, AnyAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
@@ -16,8 +16,13 @@ import { PoolAddress, PoolDetails } from '../services/midgard/types'
 import { getPoolDetail, toPoolData } from '../services/midgard/utils'
 import { MimirHalt } from '../services/thorchain/types'
 import { PoolData, PoolTableRowData, PoolTableRowsData, PricePool } from '../views/pools/Pools.types'
-import { getPoolTableRowData, getValueOfAsset1InAsset2, getValueOfRuneInAsset } from '../views/pools/Pools.utils'
-import { convertBaseAmountDecimal, to1e8BaseAmount, isRuneAsset } from './assetHelper'
+import {
+  getPoolTableRowData,
+  getValueOfAsset1InAsset2,
+  getValueOfAssetInRune,
+  getValueOfRuneInAsset
+} from '../views/pools/Pools.utils'
+import { to1e8BaseAmount, isRuneAsset } from './assetHelper'
 import { eqAsset, eqChain, eqString } from './fp/eq'
 import { ordBaseAmount } from './fp/ord'
 import { sequenceTOption, sequenceTOptionFromArray } from './fpHelpers'
@@ -51,6 +56,7 @@ export const RUNE_PRICE_POOL: PricePool = {
  * but do need such thing for handling pool txs
  */
 export const RUNE_POOL_ADDRESS: PoolAddress = {
+  protocol: THORChain,
   chain: THORChain,
   // For RuneNative a `MsgNativeTx` is used for pool txs,
   // no need for a pool address, just keep it empty
@@ -133,6 +139,23 @@ export const getDeepestPool = (pools: PoolDetails): O.Option<PoolDetail> =>
     return runeDepth.isGreaterThanOrEqualTo(bnOrZero(prev?.runeDepth)) ? O.some(pool) : acc
   }, O.none)
 
+export const getSecondDeepestPool = (pools: PoolDetails): O.Option<PoolDetail> => {
+  const deepestPool = getDeepestPool(pools)
+
+  // Filter out the deepest pool and find the next deepest pool
+  return pools.reduce((acc: O.Option<PoolDetail>, pool: PoolDetail) => {
+    const runeDepth = bnOrZero(pool.runeDepth)
+    const prev = O.toNullable(acc)
+
+    // Exclude the deepest pool
+    if (O.toNullable(deepestPool)?.asset === pool.asset) {
+      return acc
+    }
+
+    return runeDepth.isGreaterThanOrEqualTo(bnOrZero(prev?.runeDepth)) ? O.some(pool) : acc
+  }, O.none)
+}
+
 /**
  * Converts Asset's pool price according to runePrice in selectedPriceAsset
  */
@@ -156,6 +179,7 @@ export const getPoolPriceValue = ({
 
   // convert to 1e8 decimal (as same decimal as pool data has)
   const amount1e8 = to1e8BaseAmount(amount)
+
   return FP.pipe(
     getPoolDetail(poolDetails, asset),
     O.map(toPoolData),
@@ -169,8 +193,79 @@ export const getPoolPriceValue = ({
       // In all other cases we don't have any price pool and no price
       return O.none
     }),
-    // convert back to original decimal
-    O.map((price) => convertBaseAmountDecimal(price, amount.decimal))
+    O.map((price) => price)
+  )
+}
+/**
+ * Helper to get an asset USD value in THOR pools
+ */
+export const getUSDValue = ({
+  balance: { asset, amount },
+  poolDetails,
+  pricePool: { asset: priceAsset, poolData: pricePoolData }
+}: {
+  balance: Balance
+  poolDetails: PoolDetails
+  pricePool: PricePool
+}): O.Option<BaseAmount> => {
+  // no pricing if balance asset === price pool asset
+  if (eqAsset.equals(asset, priceAsset)) return O.some(amount)
+  if (isAssetRuneNative(asset)) {
+    return O.some(getValueOfRuneInAsset(amount, pricePoolData))
+  }
+
+  return FP.pipe(
+    getPoolDetail(poolDetails, asset), // Get the pool detail for the asset
+    O.chain((poolDetail) =>
+      FP.pipe(
+        O.fromNullable(poolDetail.assetPriceUSD), // Extract `assetPriceUSD` safely
+        O.map((assetPriceUSD) => {
+          const amountDecimal = amount.amount().toNumber() // Convert amount to a decimal number
+          const usdValue = Number(assetPriceUSD) * amountDecimal // Multiply by the price in USD
+          return baseAmount(usdValue, amount.decimal) // Convert back to `BaseAmount` with 1e8 decimals
+        })
+      )
+    )
+  )
+}
+
+/**
+ * Helper to get an asset amount from its USD value in THOR pools
+ */
+export const getAssetAmountFromUSDValue = ({
+  usdValue,
+  poolDetails,
+  asset,
+  amount,
+  pricePool: { asset: priceAsset, poolData: pricePoolData }
+}: {
+  usdValue: BaseAmount
+  poolDetails: PoolDetails
+  asset: AnyAsset
+  amount: BaseAmount
+  pricePool: PricePool
+}): O.Option<BaseAmount> => {
+  // no pricing logic needed if asset === price pool asset
+  if (eqAsset.equals(asset, priceAsset)) return O.some(usdValue)
+
+  // Handle Rune as a special case
+  if (isAssetRuneNative(asset)) {
+    return O.some(getValueOfAssetInRune(usdValue, pricePoolData))
+  }
+
+  // For other assets
+  return FP.pipe(
+    getPoolDetail(poolDetails, asset), // Get the pool detail for the asset
+    O.chain((poolDetail) =>
+      FP.pipe(
+        O.fromNullable(poolDetail.assetPriceUSD), // Extract `assetPriceUSD` safely
+        O.map((assetPriceUSD) => {
+          const usdDecimal = usdValue.amount().toNumber() // Convert USD value to a decimal number
+          const assetAmount = usdDecimal / Number(assetPriceUSD) // Divide USD value by the asset price in USD
+          return baseAmount(assetAmount, amount.decimal) // Convert back to `BaseAmount`
+        })
+      )
+    )
   )
 }
 

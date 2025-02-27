@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react'
 
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { AnyAsset } from '@xchainjs/xchain-util'
+import { AnyAsset, Chain } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { Dex } from '../../shared/api/types'
 import { isLedgerWallet } from '../../shared/utils/guard'
 import { WalletAddress, WalletType } from '../../shared/wallet/types'
 import { useChainContext } from '../contexts/ChainContext'
@@ -22,12 +21,12 @@ import { ledgerAddressToWalletAddress } from '../services/wallet/util'
  */
 export const useSymDepositAddresses = ({
   asset: oAsset,
-  dex,
+  protocol,
   assetWalletType,
   runeWalletType
 }: {
   asset: O.Option<AnyAsset>
-  dex: Dex
+  protocol: Chain
   assetWalletType: WalletType
   runeWalletType: WalletType
 }) => {
@@ -40,7 +39,7 @@ export const useSymDepositAddresses = ({
   const [oAssetLedgerWalletAddress, setOAssetLedgerWalletAddress] = useState<O.Option<WalletAddress>>(O.none)
 
   useEffect(() => {
-    const subscription = FP.pipe(addressByChain$(dex.chain)).subscribe(setODexWalletAddress)
+    const subscription = FP.pipe(addressByChain$(protocol)).subscribe(setODexWalletAddress)
     const oRouteAssetSubscription = FP.pipe(
       oAsset,
       O.fold(
@@ -60,7 +59,7 @@ export const useSymDepositAddresses = ({
       oRouteAssetSubscription.unsubscribe()
       oLedgerAssetAddress.unsubscribe()
     }
-  }, [addressByChain$, dex, getLedgerAddress$, oAsset])
+  }, [addressByChain$, protocol, getLedgerAddress$, oAsset])
 
   const [runeLedgerAddress] = useObservableState(
     () => FP.pipe(getLedgerAddress$(THORChain), RxOp.map(O.map(ledgerAddressToWalletAddress))),

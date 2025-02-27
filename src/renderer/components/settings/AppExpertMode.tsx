@@ -17,14 +17,12 @@ import { SwitchButton } from '../uielements/button/SwitchButton'
 import EditableUrl from './EditableUrl'
 
 export type Props = {
-  isPrivate: boolean
   midgardUrl: MidgardUrlRD
   midgardMayaUrl: MidgardMayaUrlRD
   thornodeRpcUrl: string
   mayanodeRpcUrl: string
   thornodeNodeUrl: string
   mayanodeNodeUrl: string
-  togglePrivate: (isPrivate: boolean) => void
   onChangeMidgardUrl: (url: string) => void
   onChangeMidgardMayaUrl: (url: string) => void
   checkMidgardUrl$: CheckMidgardUrlHandler
@@ -80,10 +78,8 @@ const Section = ({
   </div>
 )
 
-export const AppExpertMode: React.FC<Props> = (props): JSX.Element => {
+export const AppExpertMode = (props: Props): JSX.Element => {
   const {
-    togglePrivate,
-    isPrivate,
     midgardUrl: midgardUrlRD,
     midgardMayaUrl: midgardMayaUrlRD,
     onChangeMidgardUrl,
@@ -110,6 +106,7 @@ export const AppExpertMode: React.FC<Props> = (props): JSX.Element => {
     const empty = () => ''
     return FP.pipe(midgardUrlRD, RD.fold(empty, empty, empty, FP.identity))
   }, [midgardUrlRD])
+
   const midgardMayaUrl = useMemo(() => {
     const empty = () => ''
     return FP.pipe(midgardMayaUrlRD, RD.fold(empty, empty, empty, FP.identity))
@@ -119,6 +116,7 @@ export const AppExpertMode: React.FC<Props> = (props): JSX.Element => {
     const cachedValue = localStorage.getItem('advanceActive')
     return cachedValue ? JSON.parse(cachedValue) : expertModeDefault
   })
+
   useEffect(() => {
     localStorage.setItem('openPanelKeys', JSON.stringify(advancedActive))
   }, [advancedActive])
@@ -130,22 +128,17 @@ export const AppExpertMode: React.FC<Props> = (props): JSX.Element => {
         toggleHandler={
           <div className="flex items-center justify-end px-4 py-6">
             <TextButton
-              className={`mb-0 !py-0 !pl-0 !pr-10px font-main !text-14 uppercase text-text0 dark:text-text0d ${
+              className={clsx(
+                'mb-0 !py-0 !pl-0 !pr-10px font-main !text-14 uppercase text-text0 dark:text-text0d',
                 advancedActive ? 'opacity-100' : 'opacity-60'
-              }`}
+              )}
               onClick={() => setAdvancedActive((prev) => ({ ...prev, thorchain: !prev.thorchain }))}>
               {intl.formatMessage({ id: 'common.advanced' })}
             </TextButton>
             <SwitchButton
               active={advancedActive.thorchain}
-              onChange={(active) => setAdvancedActive({ ...advancedActive, thorchain: active })}></SwitchButton>
-            <TextButton
-              className={`mb-0 pr-10px font-main !text-14 uppercase text-text0 dark:text-text0d ${
-                isPrivate ? 'opacity-100' : 'opacity-60'
-              }`}>
-              {intl.formatMessage({ id: 'common.privateData' })}
-            </TextButton>
-            <SwitchButton active={isPrivate} onChange={togglePrivate}></SwitchButton>
+              onChange={(active) => setAdvancedActive({ ...advancedActive, thorchain: active })}
+            />
           </div>
         }>
         <div
@@ -188,22 +181,17 @@ export const AppExpertMode: React.FC<Props> = (props): JSX.Element => {
         toggleHandler={
           <div className="flex items-center justify-end px-4 py-6">
             <TextButton
-              className={`mb-0 !py-0 !pl-0 !pr-10px font-main !text-14 uppercase text-text0 dark:text-text0d ${
+              className={clsx(
+                'mb-0 !py-0 !pl-0 !pr-10px font-main !text-14 uppercase text-text0 dark:text-text0d',
                 advancedActive ? 'opacity-100' : 'opacity-60'
-              }`}
+              )}
               onClick={() => setAdvancedActive((prev) => ({ ...prev, mayachain: !prev.mayachain }))}>
               {intl.formatMessage({ id: 'common.advanced' })}
             </TextButton>
             <SwitchButton
               active={advancedActive.mayachain}
-              onChange={(active) => setAdvancedActive({ ...advancedActive, mayachain: active })}></SwitchButton>
-            <TextButton
-              className={`mb-0 pr-10px font-main !text-14 uppercase text-text0 dark:text-text0d ${
-                isPrivate ? 'opacity-100' : 'opacity-60'
-              }`}>
-              {intl.formatMessage({ id: 'common.privateData' })}
-            </TextButton>
-            <SwitchButton active={isPrivate} onChange={togglePrivate}></SwitchButton>
+              onChange={(active) => setAdvancedActive({ ...advancedActive, mayachain: active })}
+            />
           </div>
         }>
         <div

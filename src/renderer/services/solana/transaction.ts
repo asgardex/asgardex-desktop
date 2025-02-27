@@ -63,7 +63,6 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       Rx.combineLatest([network$]),
       RxOp.switchMap(([network]) => {
         if (isLedgerWallet(params.walletType)) return sendLedgerTx({ network, params })
-
         return common.sendTx(params)
       })
     )

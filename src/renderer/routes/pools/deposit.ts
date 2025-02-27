@@ -8,7 +8,11 @@ export const base: Route<void> = {
     return this.template
   }
 }
-export type DepositRouteParams = { asset: string; assetWalletType: WalletType; runeWalletType: WalletType }
+export type DepositRouteParams = {
+  asset: string
+  assetWalletType: WalletType
+  runeWalletType: WalletType
+}
 export const deposit: Route<DepositRouteParams> = {
   template: `${base.template}/:asset/:assetWalletType/:runeWalletType`,
   path: ({ asset, assetWalletType, runeWalletType }) => {

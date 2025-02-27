@@ -1,6 +1,9 @@
 import React, { RefObject, useCallback, useMemo, useRef } from 'react'
 
-import { Address, AnyAsset } from '@xchainjs/xchain-util'
+import { AssetCacao, CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { THORCHAIN_DECIMAL } from '@xchainjs/xchain-thorchain-query'
+import { Address, AnyAsset, Chain } from '@xchainjs/xchain-util'
 import {
   formatBN,
   BaseAmount,
@@ -15,7 +18,6 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
-import { Dex } from '../../../../shared/api/types'
 import { AssetWithDecimal } from '../../../types/asgardex'
 import { TooltipAddress } from '../common/Common.styles'
 import * as Styled from './PoolShare.styles'
@@ -36,7 +38,7 @@ export type Props = {
   addresses: { rune: O.Option<Address>; asset: O.Option<Address> }
   smallWidth?: boolean
   loading?: boolean
-  dex: Dex
+  protocol: Chain
 }
 
 export const PoolShare: React.FC<Props> = (props): JSX.Element => {
@@ -51,13 +53,13 @@ export const PoolShare: React.FC<Props> = (props): JSX.Element => {
     poolShare,
     depositUnits,
     smallWidth,
-    dex
+    protocol
   } = props
 
   const intl = useIntl()
 
-  const dexAsset = dex.asset
-  const dexAssetDecimal = dex.decimals
+  const dexAsset = protocol === THORChain ? AssetRuneNative : AssetCacao
+  const dexAssetDecimal = protocol === THORChain ? THORCHAIN_DECIMAL : CACAO_DECIMAL
 
   const { asset } = assetWD
 

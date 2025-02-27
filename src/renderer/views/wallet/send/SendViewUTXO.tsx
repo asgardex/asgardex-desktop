@@ -7,11 +7,12 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
 
-import { Dex, TrustedAddresses } from '../../../../shared/api/types'
+import { TrustedAddresses } from '../../../../shared/api/types'
 import { SendFormUTXO } from '../../../components/wallet/txs/send'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { getWalletBalanceByAddress } from '../../../helpers/walletHelper'
+import { useObserveMayaScanPrice } from '../../../hooks/useMayascanPrice'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
@@ -30,12 +31,12 @@ type Props = {
   poolDetails: PoolDetails | PoolDetailsMaya
   oPoolAddress: O.Option<PoolAddress>
   oPoolAddressMaya: O.Option<PoolAddressMaya>
-  dex: Dex
 }
 export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
-  const { dex, asset, trustedAddresses, emptyBalance, poolDetails, oPoolAddress, oPoolAddressMaya } = props
+  const { asset, trustedAddresses, emptyBalance, poolDetails, oPoolAddress, oPoolAddressMaya } = props
 
   const { network } = useNetwork()
+  const { mayaScanPriceRD } = useObserveMayaScanPrice()
 
   const {
     balancesState$,
@@ -92,7 +93,7 @@ export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
               poolDetails={poolDetails}
               oPoolAddress={oPoolAddress}
               oPoolAddressMaya={oPoolAddressMaya}
-              dex={dex}
+              mayaScanPrice={mayaScanPriceRD}
             />
           </Styled.Container>
         </Spin>
@@ -118,7 +119,7 @@ export const SendViewUTXO: React.FC<Props> = (props): JSX.Element => {
             poolDetails={poolDetails}
             oPoolAddress={oPoolAddress}
             oPoolAddressMaya={oPoolAddressMaya}
-            dex={dex}
+            mayaScanPrice={mayaScanPriceRD}
           />
         </Styled.Container>
       )

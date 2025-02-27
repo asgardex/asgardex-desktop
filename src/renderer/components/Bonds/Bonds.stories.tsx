@@ -1,5 +1,6 @@
+import { useCallback, useState } from 'react'
+
 import * as RD from '@devexperts/remote-data-ts'
-import { useCallback, useState } from '@storybook/addons'
 import { Meta, StoryFn } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { Address, baseAmount } from '@xchainjs/xchain-util'
@@ -15,6 +16,7 @@ const mockNodeInfo = (address: Address) => ({
   award: baseAmount(100000000 * 400000),
   status: NodeStatusEnum.Active,
   address,
+  pubKeySet: {},
   nodeOperatorAddress: '',
   bondProviders: {
     nodeOperatorFee: baseAmount(100000000 * 400000),

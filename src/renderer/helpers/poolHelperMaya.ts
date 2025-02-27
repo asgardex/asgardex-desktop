@@ -1,7 +1,8 @@
+import * as RD from '@devexperts/remote-data-ts'
 import { Balance, Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-mayamidgard'
-import { bnOrZero, assetFromString, BaseAmount, Chain } from '@xchainjs/xchain-util'
+import { bnOrZero, assetFromString, BaseAmount, Chain, baseAmount, AnyAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
@@ -10,12 +11,18 @@ import * as Ord from 'fp-ts/lib/Ord'
 
 import { PoolsWatchList } from '../../shared/api/io'
 import { ONE_CACAO_BASE_AMOUNT } from '../../shared/mock/amount'
+import { MayaScanPrice, MayaScanPriceRD } from '../hooks/useMayascanPrice'
 import { PoolAddress, PoolDetails } from '../services/mayaMigard/types'
 import { getPoolDetail, toPoolData } from '../services/mayaMigard/utils'
 import { MimirHalt } from '../services/thorchain/types'
 import { PoolData, PoolTableRowData, PoolTableRowsData, PricePool } from '../views/pools/Pools.types'
-import { getPoolTableRowDataMaya, getValueOfAsset1InAsset2, getValueOfRuneInAsset } from '../views/pools/Pools.utils'
-import { convertBaseAmountDecimal, isCacaoAsset, to1e8BaseAmount } from './assetHelper'
+import {
+  getPoolTableRowDataMaya,
+  getValueOfAsset1InAsset2,
+  getValueOfAssetInRune,
+  getValueOfRuneInAsset
+} from '../views/pools/Pools.utils'
+import { convertBaseAmountDecimal, isCacaoAsset, isMayaAsset, to1e10BaseAmount, to1e8BaseAmount } from './assetHelper'
 import { eqAsset, eqChain, eqString } from './fp/eq'
 import { ordBaseAmount } from './fp/ord'
 import { sequenceTOption, sequenceTOptionFromArray } from './fpHelpers'
@@ -49,6 +56,7 @@ export const MAYA_PRICE_POOL: PricePool = {
  * but do need such thing for handling pool txs
  */
 export const MAYA_POOL_ADDRESS: PoolAddress = {
+  protocol: MAYAChain,
   chain: MAYAChain,
   // For MAYANative a `MsgNativeTx` is used for pool txs,
   // no need for a pool address, just keep it empty
@@ -137,17 +145,19 @@ export const getDeepestPool = (pools: PoolDetails): O.Option<PoolDetail> =>
 export const getAssetPoolPrice = (runePrice: BigNumber) => (poolDetail: Pick<PoolDetail, 'assetPrice'>) =>
   bnOrZero(poolDetail.assetPrice).multipliedBy(runePrice)
 
-/**
+/** Deprecating this soon
  * Helper to get a pool price value for a given `Balance`
  */
 export const getPoolPriceValue = ({
   balance: { asset, amount },
   poolDetails,
-  pricePool: { asset: priceAsset, poolData: pricePoolData }
+  pricePool: { asset: priceAsset, poolData: pricePoolData },
+  mayaPriceRD
 }: {
   balance: Balance
   poolDetails: PoolDetails
   pricePool: PricePool
+  mayaPriceRD: MayaScanPriceRD
 }): O.Option<BaseAmount> => {
   // no pricing if balance asset === price pool asset
   if (eqAsset.equals(asset, priceAsset)) return O.some(amount)
@@ -162,12 +172,100 @@ export const getPoolPriceValue = ({
       // Calculate RUNE values based on `pricePoolData`
       if (isCacaoAsset(asset)) {
         return O.some(getValueOfRuneInAsset(amount1e8, pricePoolData))
+      } else if (isMayaAsset(asset)) {
+        return RD.fold(
+          () => O.none, // Initial state
+          () => O.none, // Loading state
+          (error) => {
+            console.error('Failed to fetch Maya price:', error)
+            return O.none
+          },
+          (mayaScanPrice: MayaScanPrice) => {
+            const mayaPrice = mayaScanPrice.mayaPriceInUsd.amount.times(amount)
+            return O.some(mayaPrice)
+          }
+        )(mayaPriceRD)
       }
       // In all other cases we don't have any price pool and no price
       return O.none
     }),
     // convert back to original decimal
     O.map((price) => convertBaseAmountDecimal(price, amount.decimal))
+  )
+}
+/**
+ * Helper to get the usd value from an asset in maya pools
+ * @param param0
+ * @returns
+ */
+export const getUSDValue = ({
+  balance: { asset, amount },
+  poolDetails,
+  pricePool: { asset: priceAsset, poolData: pricePoolData }
+}: {
+  balance: Balance
+  poolDetails: PoolDetails
+  pricePool: PricePool
+}): O.Option<BaseAmount> => {
+  // no pricing if balance asset === price pool asset
+  if (eqAsset.equals(asset, priceAsset)) return O.some(amount)
+  if (isCacaoAsset(asset)) {
+    const amount1e10 = to1e10BaseAmount(amount)
+    return O.some(getValueOfRuneInAsset(amount1e10, pricePoolData))
+  }
+
+  return FP.pipe(
+    getPoolDetail(poolDetails, asset), // Get the pool detail for the asset
+    O.chain((poolDetail) =>
+      FP.pipe(
+        O.fromNullable(poolDetail.assetPriceUSD), // Extract `assetPriceUSD` safely
+        O.map((assetPriceUSD) => {
+          const amountDecimal = amount.amount().toNumber() // Convert amount to a decimal number
+          const usdValue = Number(assetPriceUSD) * amountDecimal // Multiply by the price in USD
+          return baseAmount(usdValue, amount.decimal) // Convert back to `BaseAmount` with 1e8 decimals
+        })
+      )
+    )
+  )
+}
+
+/**
+ * Helper to get an asset amount from its USD value in THOR pools
+ */
+export const getAssetAmountFromUSDValue = ({
+  usdValue,
+  poolDetails,
+  asset,
+  amount,
+  pricePool: { asset: priceAsset, poolData: pricePoolData }
+}: {
+  usdValue: BaseAmount
+  poolDetails: PoolDetails
+  asset: AnyAsset
+  amount: BaseAmount
+  pricePool: PricePool
+}): O.Option<BaseAmount> => {
+  // no pricing logic needed if asset === price pool asset
+  if (eqAsset.equals(asset, priceAsset)) return O.some(usdValue)
+
+  // Handle Rune as a special case
+  if (isCacaoAsset(asset)) {
+    return O.some(getValueOfAssetInRune(usdValue, pricePoolData))
+  }
+
+  // For other assets
+  return FP.pipe(
+    getPoolDetail(poolDetails, asset), // Get the pool detail for the asset
+    O.chain((poolDetail) =>
+      FP.pipe(
+        O.fromNullable(poolDetail.assetPriceUSD), // Extract `assetPriceUSD` safely
+        O.map((assetPriceUSD) => {
+          const usdDecimal = usdValue.amount().toNumber() // Convert USD value to a decimal number
+          const assetAmount = usdDecimal / Number(assetPriceUSD) // Divide USD value by the asset price in USD
+          return baseAmount(assetAmount, amount.decimal) // Convert back to `BaseAmount`
+        })
+      )
+    )
   )
 }
 

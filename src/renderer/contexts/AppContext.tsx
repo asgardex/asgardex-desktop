@@ -4,8 +4,6 @@ import {
   onlineStatus$,
   network$,
   changeNetwork,
-  dex$,
-  changeDex,
   privateData$,
   changePrivateData,
   clientNetwork$,
@@ -14,18 +12,11 @@ import {
   toggleCollapsedSetting,
   collapsedSettings$
 } from '../services/app/service'
-import {
-  ChangeDexHandler,
-  ChangeNetworkHandler,
-  ChangeSlipToleranceHandler,
-  ToggleCollapsableSetting
-} from '../services/app/types'
+import { ChangeNetworkHandler, ChangeSlipToleranceHandler, ToggleCollapsableSetting } from '../services/app/types'
 
 type AppContextValue = {
   onlineStatus$: typeof onlineStatus$
   network$: typeof network$
-  dex$: typeof dex$
-  changeDex: ChangeDexHandler
   privateData$: typeof privateData$
   changePrivateData: (value: boolean) => void
   changeNetwork: ChangeNetworkHandler
@@ -38,8 +29,6 @@ type AppContextValue = {
 const initialContext: AppContextValue = {
   onlineStatus$,
   network$,
-  dex$,
-  changeDex,
   privateData$,
   changePrivateData,
   changeNetwork,

@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { ArrowTopRightOnSquareIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { Network } from '@xchainjs/xchain-client'
 import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
+import clsx from 'clsx'
 import * as FP from 'fp-ts/lib/function'
 import { FormattedMessage, useIntl } from 'react-intl'
 
@@ -38,7 +39,7 @@ export const AsymAssetsWarning: React.FC<AsymAssetsWarningProps> = (props): JSX.
         className="mr-10px whitespace-nowrap pl-0 !font-mainBold uppercase"
         onClick={() => setCollapsed((v) => !v)}>
         {intl.formatMessage({ id: 'common.informationMore' })}
-        <ChevronRightIcon className={`text-turquoise ${collapsed ? 'rotate-90' : ''} ease h-[20px] w-[20px] `} />
+        <ChevronRightIcon className={clsx('ease h-[20px] w-[20px] text-turquoise', { 'rotate-90': collapsed })} />
       </TextButton>
       {collapsed && (
         <>

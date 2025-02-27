@@ -114,7 +114,9 @@ const wallet: WalletMessages = {
   'wallet.ledger.verifyAddress.modal.title': 'Ledger Adresse überprüfen',
   'wallet.ledger.verifyAddress.modal.description': 'Überprüfe die Adresse {address} auf Deinem Ledger',
   'wallet.ledger.removeAddress': 'Löschen Sie die Ledger-Adresse für die Kette {chain}',
-  'wallet.ledger.viewAddress': 'Adresse im Explorer anzeigen'
+  'wallet.ledger.viewAddress': 'Adresse im Explorer anzeigen',
+  'wallet.evmToken.tooltip':
+    'Token nicht gefunden? Gehen Sie zu den Einstellungen und fügen Sie es manuell zur Whitelist hinzu.'
 }
 
 export default wallet

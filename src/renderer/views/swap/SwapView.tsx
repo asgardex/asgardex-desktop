@@ -13,9 +13,12 @@ import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { mayaDetails } from '../../../shared/api/types'
 import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
+import { isChainOfMaya, isChainOfThor } from '../../../shared/utils/chain'
 import { isLedgerWallet, isWalletType } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ErrorView } from '../../components/shared/error/'
@@ -28,9 +31,9 @@ import { Button, RefreshButton } from '../../components/uielements/button'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useAppContext } from '../../contexts/AppContext'
 import { useChainContext } from '../../contexts/ChainContext'
+import { useChainflipContext } from '../../contexts/ChainflipContext'
 import { useEvmContext } from '../../contexts/EvmContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
-import { useMayachainQueryContext } from '../../contexts/MayachainQueryContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
@@ -41,17 +44,17 @@ import { eqChain, eqNetwork } from '../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { addressFromOptionalWalletAddress, getWalletAddressFromNullableString } from '../../helpers/walletHelper'
-import { useDex } from '../../hooks/useDex'
-import { useMimirHalt } from '../../hooks/useMimirHalt'
+import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { usePricePool } from '../../hooks/usePricePool'
-import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
 import { useValidateAddress } from '../../hooks/useValidateAddress'
 import { swap } from '../../routes/pools'
 import { SwapRouteParams, SwapRouteTargetWalletType } from '../../routes/pools/swap'
 import * as walletRoutes from '../../routes/wallet'
+import { getDecimal } from '../../services/chain/decimal'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
+import { cAssetToXAsset } from '../../services/chainflip/utils'
 import { DEFAULT_SLIP_TOLERANCE } from '../../services/const'
 import { TradeAccount } from '../../services/thorchain/types'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
@@ -81,10 +84,6 @@ const SuccessRouteView: React.FC<Props> = ({
   targetWalletType: oTargetWalletType,
   recipientAddress: oRecipientAddress
 }): JSX.Element => {
-  const { dex } = useDex()
-  const { chain: sourceChain } = sourceAsset.type === AssetType.SYNTH ? dex.asset : sourceAsset
-  const { chain: targetChain } = targetAsset.type === AssetType.SYNTH ? dex.asset : targetAsset
-
   const intl = useIntl()
   const navigate = useNavigate()
   const location = useLocation()
@@ -95,8 +94,6 @@ const SuccessRouteView: React.FC<Props> = ({
 
   const { reloadInboundAddresses, reloadTxStatus } = useThorchainContext()
   const { reloadInboundAddresses: reloadMayaInboundAddresses } = useMayachainContext()
-  const { thorchainQuery } = useThorchainQueryContext()
-  const { mayachainQuery } = useMayachainQueryContext()
 
   const { service: midgardService } = useMidgardContext()
   const { service: midgardMayaService } = useMidgardMayaContext()
@@ -106,7 +103,6 @@ const SuccessRouteView: React.FC<Props> = ({
       reloadPools: reloadThorPools,
       reloadSelectedPoolDetail,
       selectedPoolAddress$,
-      haltedChains$,
       pendingPoolsState$
     },
     setSelectedPoolAsset
@@ -117,19 +113,18 @@ const SuccessRouteView: React.FC<Props> = ({
       reloadPools: reloadMayaPools,
       reloadSelectedPoolDetail: reloadSelectedPoolDetailMaya,
       selectedPoolAddress$: selectedPoolAddressMaya$,
-      haltedChains$: haltedChainsMaya$,
       pendingPoolsState$: pendingPoolsStateMaya$
     },
     setSelectedPoolAsset: setSelectedPoolAssetMaya
   } = midgardMayaService
 
-  const pricePoolThor = usePricePool()
-  const pricePoolMaya = usePricePoolMaya()
   const { isPrivate } = useApp()
 
-  const pricePool = dex.chain === THORChain ? pricePoolThor : pricePoolMaya
+  const { getAssetsData$ } = useChainflipContext()
 
-  const { reloadSwapFees, swapFees$, addressByChain$, swap$, assetWithDecimal$ } = useChainContext()
+  const [chainFlipAssets] = useObservableState(() => getAssetsData$(), RD.pending)
+
+  const { reloadSwapFees, swapFees$, addressByChain$, swap$, assetWithDecimal$, swapCF$ } = useChainContext()
 
   const {
     balancesState$,
@@ -138,49 +133,97 @@ const SuccessRouteView: React.FC<Props> = ({
     keystoreService: { keystoreState$, validatePassword$ }
   } = useWalletContext()
 
-  const [haltedChains] = useObservableState(
-    () =>
-      FP.pipe(dex.chain === THORChain ? haltedChains$ : haltedChainsMaya$, RxOp.map(RD.getOrElse((): Chain[] => []))),
-    []
-  )
-  const { mimirHalt } = useMimirHalt()
+  const { chain: sourceChain } =
+    sourceAsset.type === AssetType.SYNTH
+      ? mayaDetails.asset
+      : sourceAsset.type === AssetType.SECURED
+      ? AssetRuneNative
+      : sourceAsset
+  const { chain: targetChain } =
+    targetAsset.type === AssetType.SYNTH
+      ? mayaDetails.asset
+      : targetAsset.type === AssetType.SECURED
+      ? AssetRuneNative
+      : targetAsset
 
-  const reloadPools = useCallback(() => {
-    return dex.chain === THORChain ? reloadThorPools() : reloadMayaPools()
-  }, [dex, reloadMayaPools, reloadThorPools])
+  useEffect(() => {
+    // Source asset is the asset of the pool we need to interact with
+    // Store it in global state, all depending streams will be updated then
+    setSelectedPoolAsset(O.some(sourceAsset))
+    setSelectedPoolAssetMaya(O.some(sourceAsset))
+    // Reset selectedPoolAsset on view's unmount to avoid effects with depending streams
+    return () => {
+      setSelectedPoolAsset(O.none)
+      setSelectedPoolAssetMaya(O.none)
+    }
+  }, [sourceAsset, setSelectedPoolAsset, setSelectedPoolAssetMaya])
+  const selectedPoolAddressThor = useObservableState(selectedPoolAddress$, O.none)
+  const selectedPoolAddressMaya = useObservableState(selectedPoolAddressMaya$, O.none)
 
   // switches sourcechain context eth | avax | bsc - needed for approve
   const { reloadApproveFee, approveFee$, approveERC20Token$, isApprovedERC20Token$ } = useEvmContext(sourceChain)
 
   const keystore = useObservableState(keystoreState$, O.none)
 
-  const poolsStateRD = useObservableState(dex.chain === THORChain ? poolsState$ : mayaPoolsState$, RD.initial)
-  const pendingPoolsStateRD = useObservableState(
-    dex.chain === THORChain ? pendingPoolsState$ : pendingPoolsStateMaya$,
-    RD.initial
-  )
+  const poolsStateThorRD = useObservableState(poolsState$, RD.initial)
+  const poolsStateMayaRD = useObservableState(mayaPoolsState$, RD.initial)
+  const pendingPoolsStateRD = useObservableState(pendingPoolsState$, RD.initial)
+  const pendingPoolsStateMayaRD = useObservableState(pendingPoolsStateMaya$, RD.initial)
 
-  useEffect(() => {
-    // Source asset is the asset of the pool we need to interact with
-    // Store it in global state, all depending streams will be updated then
-    dex.chain === THORChain ? setSelectedPoolAsset(O.some(sourceAsset)) : setSelectedPoolAssetMaya(O.some(sourceAsset))
-    // Reset selectedPoolAsset on view's unmount to avoid effects with depending streams
-    return () => {
-      setSelectedPoolAsset(O.none)
+  const sourceAssetDecimal$: AssetWithDecimalLD = useMemo(() => {
+    // Check if chainFlipAssets is available and contains the sourceAsset
+    if (RD.isSuccess(chainFlipAssets)) {
+      const matchingAsset = chainFlipAssets.value.find((asset) => asset.asset === sourceAsset.ticker)
+
+      if (matchingAsset) {
+        // If a matching asset is found, return its decimal value
+        return Rx.of(
+          RD.success({
+            asset: sourceAsset,
+            decimal: matchingAsset.decimals
+          })
+        )
+      }
     }
-  }, [sourceAsset, setSelectedPoolAsset, setSelectedPoolAssetMaya, dex])
+    // Check the condition to skip fetching
+    if (sourceAsset.type === AssetType.SYNTH) {
+      // Resolve `getDecimal` and return the observable
+      return Rx.from(getDecimal(AssetCacao)).pipe(
+        RxOp.map((decimal) =>
+          RD.success({
+            asset: sourceAsset,
+            decimal
+          })
+        ),
+        RxOp.catchError((error) => Rx.of(RD.failure(error?.msg ?? error.toString()))),
+        RxOp.startWith(RD.pending)
+      )
+    }
 
-  const sourceAssetDecimal$: AssetWithDecimalLD = useMemo(
-    () => assetWithDecimal$(sourceAsset, dex),
-    [assetWithDecimal$, dex, sourceAsset]
-  )
+    // Use the existing `assetWithDecimal$` function for fetching
+    return assetWithDecimal$(sourceAsset)
+  }, [assetWithDecimal$, chainFlipAssets, sourceAsset])
 
   const sourceAssetRD: AssetWithDecimalRD = useObservableState(sourceAssetDecimal$, RD.initial)
 
-  const targetAssetDecimal$: AssetWithDecimalLD = useMemo(
-    () => assetWithDecimal$(targetAsset, dex),
-    [assetWithDecimal$, dex, targetAsset]
-  )
+  const targetAssetDecimal$: AssetWithDecimalLD = useMemo(() => {
+    if (targetAsset.type === AssetType.SYNTH) {
+      // Return a default `LiveData` if the condition is met
+      return Rx.from(getDecimal(AssetCacao)).pipe(
+        RxOp.map((decimal) =>
+          RD.success({
+            asset: targetAsset,
+            decimal
+          })
+        ),
+        RxOp.catchError((error) => Rx.of(RD.failure(error?.msg ?? error.toString()))),
+        RxOp.startWith(RD.pending)
+      )
+    }
+
+    // Otherwise, fetch the actual assetWithDecimal
+    return assetWithDecimal$(targetAsset)
+  }, [assetWithDecimal$, targetAsset])
 
   const targetAssetRD: AssetWithDecimalRD = useObservableState(targetAssetDecimal$, RD.initial)
 
@@ -193,10 +236,10 @@ const SuccessRouteView: React.FC<Props> = ({
     INITIAL_BALANCES_STATE
   )
 
-  const selectedPoolAddress = useObservableState(
-    dex.chain === THORChain ? selectedPoolAddress$ : selectedPoolAddressMaya$,
-    O.none
-  )
+  const reloadPools = useCallback(() => {
+    reloadThorPools()
+    reloadMayaPools()
+  }, [reloadMayaPools, reloadThorPools])
 
   const [oSourceKeystoreAddress, updateSourceKeystoreAddress$] = useObservableState<O.Option<Address>, Chain>(
     (sourceChain$) =>
@@ -209,10 +252,6 @@ const SuccessRouteView: React.FC<Props> = ({
     O.none
   )
 
-  useEffect(() => {
-    updateSourceKeystoreAddress$(sourceChain)
-  }, [sourceChain, updateSourceKeystoreAddress$])
-
   const [oTargetKeystoreAddress, updateTargetKeystoreAddress$] = useObservableState<O.Option<Address>, Chain>(
     (targetChain$) =>
       FP.pipe(
@@ -223,12 +262,6 @@ const SuccessRouteView: React.FC<Props> = ({
       ),
     O.none
   )
-
-  useEffect(() => {
-    updateTargetKeystoreAddress$(targetChain)
-  }, [targetChain, updateTargetKeystoreAddress$])
-
-  const { openExplorerTxUrl, getExplorerTxUrl } = useOpenExplorerTxUrl(O.some(dex.chain))
 
   const renderError = useCallback(
     (e: Error) => (
@@ -251,15 +284,11 @@ const SuccessRouteView: React.FC<Props> = ({
 
   const reloadHandler = useCallback(() => {
     reloadBalances()
-    if (dex.chain === THORChain) {
-      reloadInboundAddresses()
-      reloadSelectedPoolDetail()
-    } else {
-      reloadMayaInboundAddresses()
-      reloadSelectedPoolDetailMaya()
-    }
+    reloadInboundAddresses()
+    reloadSelectedPoolDetail()
+    reloadMayaInboundAddresses()
+    reloadSelectedPoolDetailMaya()
   }, [
-    dex,
     reloadBalances,
     reloadInboundAddresses,
     reloadMayaInboundAddresses,
@@ -329,11 +358,6 @@ const SuccessRouteView: React.FC<Props> = ({
       ),
     O.none
   )
-
-  useEffect(() => {
-    updateTargetLedgerAddress$({ chain: targetChain, network })
-  }, [network, targetChain, updateTargetLedgerAddress$])
-
   const [oSourceLedgerAddress, updateSourceLedgerAddress$] = useObservableState<O.Option<Address>, UpdateLedgerAddress>(
     (sourceLedgerAddressChain$) =>
       FP.pipe(
@@ -349,8 +373,19 @@ const SuccessRouteView: React.FC<Props> = ({
   )
 
   useEffect(() => {
+    updateTargetKeystoreAddress$(targetChain)
+    updateSourceKeystoreAddress$(sourceChain)
     updateSourceLedgerAddress$({ chain: sourceChain, network })
-  }, [network, sourceChain, updateSourceLedgerAddress$])
+    updateTargetLedgerAddress$({ chain: targetChain, network })
+  }, [
+    network,
+    sourceChain,
+    targetChain,
+    updateSourceKeystoreAddress$,
+    updateSourceLedgerAddress$,
+    updateTargetKeystoreAddress$,
+    updateTargetLedgerAddress$
+  ])
 
   const isTargetLedger = FP.pipe(
     oTargetWalletType,
@@ -379,7 +414,15 @@ const SuccessRouteView: React.FC<Props> = ({
 
       <div className="flex justify-center bg-bg0 dark:bg-bg0d">
         {FP.pipe(
-          sequenceTRD(poolsStateRD, sourceAssetRD, targetAssetRD, pendingPoolsStateRD),
+          sequenceTRD(
+            poolsStateThorRD,
+            poolsStateMayaRD,
+            sourceAssetRD,
+            targetAssetRD,
+            pendingPoolsStateRD,
+            pendingPoolsStateMayaRD,
+            chainFlipAssets
+          ),
           RD.fold(
             () => <></>,
             () => {
@@ -397,11 +440,8 @@ const SuccessRouteView: React.FC<Props> = ({
 
               return (
                 <Swap
-                  disableSwapAction={true}
                   keystore={keystore}
                   validatePassword$={validatePassword$}
-                  goToTransaction={openExplorerTxUrl}
-                  getExplorerTxUrl={getExplorerTxUrl}
                   assets={{
                     source: mockAssetSource,
 
@@ -411,11 +451,12 @@ const SuccessRouteView: React.FC<Props> = ({
                   sourceLedgerAddress={oSourceLedgerAddress}
                   sourceWalletType={sourceWalletType}
                   targetWalletType={oTargetWalletType}
-                  poolAddress={selectedPoolAddress}
+                  poolAddressMaya={selectedPoolAddressMaya}
+                  poolAddressThor={selectedPoolAddressThor}
                   poolAssets={[]}
                   poolsData={{}}
-                  pricePool={pricePool}
-                  poolDetails={[]}
+                  poolDetailsThor={[]}
+                  poolDetailsMaya={[]}
                   walletBalances={balancesState}
                   reloadFees={reloadSwapFees}
                   fees$={swapFees$}
@@ -425,6 +466,7 @@ const SuccessRouteView: React.FC<Props> = ({
                   targetLedgerAddress={oTargetLedgerAddress}
                   recipientAddress={oRecipient}
                   swap$={swap$}
+                  swapCF$={swapCF$}
                   reloadBalances={reloadBalances}
                   onChangeAsset={onChangeAssetHandler}
                   network={network}
@@ -435,65 +477,75 @@ const SuccessRouteView: React.FC<Props> = ({
                   importWalletHandler={importWalletHandler}
                   addressValidator={validateSwapAddress}
                   hidePrivateData={isPrivate}
-                  thorchainQuery={thorchainQuery}
-                  mayachainQuery={mayachainQuery}
                   reloadTxStatus={reloadSwapTxStatus}
-                  dex={dex}
                 />
               )
             },
             renderError,
-            ([{ assetDetails, poolsData, poolDetails }, sourceAsset, targetAsset, pendingPools]) => {
-              const combinedAssetDetails = [...assetDetails, ...pendingPools.assetDetails]
-
-              const hasRuneAsset = FP.pipe(
-                combinedAssetDetails,
-                A.map(({ asset }) => asset),
-                assetInList(AssetRuneNative)
-              )
-              const hasCacaoAsset = FP.pipe(
-                combinedAssetDetails,
-                A.map(({ asset }) => asset),
-                assetInList(AssetCacao)
-              )
-              if (!hasRuneAsset || !hasCacaoAsset) {
-                assetDetails = [{ asset: dex.asset, assetPrice: bn(1) }, ...combinedAssetDetails]
+            ([
+              { assetDetails: thorAssetDetails, poolsData: thorPoolsData, poolDetails: thorPoolDetails },
+              { assetDetails: mayaAssetDetails, poolsData: mayaPoolsData, poolDetails: mayaPoolDetails },
+              sourceAsset,
+              targetAsset,
+              pendingPools,
+              pendingPoolsMaya
+            ]) => {
+              const combinedPoolsData = {
+                ...thorPoolsData,
+                ...mayaPoolsData
               }
-              const sourceAssetDetail = FP.pipe(Utils.pickPoolAsset(assetDetails, sourceAsset.asset), O.toNullable)
+              const thorchainPoolAssetDetails = [
+                { asset: AssetRuneNative, assetPrice: bn(1) },
+                ...thorAssetDetails,
+                ...pendingPools.assetDetails
+              ]
+              const mayachainPoolAssetDetails = [
+                { asset: AssetCacao, assetPrice: bn(1) },
+                ...mayaAssetDetails,
+                ...pendingPoolsMaya.assetDetails
+              ]
+
+              const assetData = RD.isSuccess(chainFlipAssets) ? chainFlipAssets.value : []
+
+              // Convert assets and filter out unsupported chains
+              const convertedAssets = assetData
+                .map(cAssetToXAsset) // Apply the conversion function
+                .filter((asset) => asset.chain !== 'POL') // Remove assets with unsupported chain
+              const poolAssetDetails = (() => {
+                if (isChainOfThor(sourceAsset.asset.chain) && isChainOfThor(targetAsset.asset.chain)) {
+                  return thorchainPoolAssetDetails
+                } else if (isChainOfMaya(sourceAsset.asset.chain) && isChainOfMaya(targetAsset.asset.chain)) {
+                  return mayachainPoolAssetDetails
+                } else if (isChainOfThor(sourceAsset.asset.chain) && isChainOfMaya(targetAsset.asset.chain)) {
+                  return mayachainPoolAssetDetails // Target asset determines the pool set
+                } else if (isChainOfMaya(sourceAsset.asset.chain) && isChainOfThor(targetAsset.asset.chain)) {
+                  return thorchainPoolAssetDetails // Target asset determines the pool set
+                } else {
+                  throw new Error(
+                    `Unable to determine the correct pool set for source (${sourceAsset.asset.chain}) and target (${targetAsset.asset.chain}) assets.`
+                  )
+                }
+              })()
+
+              const sourceAssetDetail = FP.pipe(Utils.pickPoolAsset(poolAssetDetails, sourceAsset.asset), O.toNullable)
               // Make sure sourceAsset is available in pools
               if (!sourceAssetDetail)
                 return renderError(Error(`Missing pool for source asset ${assetToString(sourceAsset.asset)}`))
-              const targetAssetDetail = FP.pipe(Utils.pickPoolAsset(assetDetails, targetAsset.asset), O.toNullable)
+              const targetAssetDetail = FP.pipe(Utils.pickPoolAsset(poolAssetDetails, targetAsset.asset), O.toNullable)
+
               // Make sure targetAsset is available in pools
               if (!targetAssetDetail)
                 return renderError(Error(`Missing pool for target asset ${assetToString(targetAsset.asset)}`))
 
               const poolAssets: AnyAsset[] = FP.pipe(
-                assetDetails,
+                [...thorchainPoolAssetDetails, ...mayachainPoolAssetDetails],
                 A.map(({ asset }) => asset)
               )
-              const disableAllPoolActions = (chain: Chain) =>
-                PoolHelpers.disableAllActions({ chain, haltedChains, mimirHalt })
-
-              const disableTradingPoolActions = (chain: Chain) =>
-                PoolHelpers.disableTradingActions({ chain, haltedChains, mimirHalt })
-
-              const checkDisableSwapAction = () => {
-                return (
-                  disableAllPoolActions(sourceAsset.asset.chain) ||
-                  disableTradingPoolActions(sourceAsset.asset.chain) ||
-                  disableAllPoolActions(targetAsset.asset.chain) ||
-                  disableTradingPoolActions(targetAsset.asset.chain)
-                )
-              }
 
               return (
                 <Swap
-                  disableSwapAction={checkDisableSwapAction()}
                   keystore={keystore}
                   validatePassword$={validatePassword$}
-                  goToTransaction={openExplorerTxUrl}
-                  getExplorerTxUrl={getExplorerTxUrl}
                   assets={{
                     source: { ...sourceAsset, price: sourceAssetDetail.assetPrice },
                     target: { ...targetAsset, price: targetAssetDetail.assetPrice }
@@ -502,11 +554,12 @@ const SuccessRouteView: React.FC<Props> = ({
                   sourceLedgerAddress={oSourceLedgerAddress}
                   sourceWalletType={sourceWalletType}
                   targetWalletType={oTargetWalletType}
-                  poolAddress={selectedPoolAddress}
-                  poolAssets={poolAssets}
-                  poolsData={poolsData}
-                  pricePool={pricePool}
-                  poolDetails={poolDetails}
+                  poolAddressMaya={selectedPoolAddressMaya}
+                  poolAddressThor={selectedPoolAddressThor}
+                  poolAssets={[...poolAssets, ...convertedAssets]}
+                  poolsData={combinedPoolsData}
+                  poolDetailsThor={thorPoolDetails}
+                  poolDetailsMaya={mayaPoolDetails}
                   walletBalances={balancesState}
                   reloadFees={reloadSwapFees}
                   fees$={swapFees$}
@@ -516,6 +569,7 @@ const SuccessRouteView: React.FC<Props> = ({
                   targetLedgerAddress={oTargetLedgerAddress}
                   recipientAddress={oRecipient}
                   swap$={swap$}
+                  swapCF$={swapCF$}
                   reloadBalances={reloadBalances}
                   onChangeAsset={onChangeAssetHandler}
                   network={network}
@@ -526,10 +580,7 @@ const SuccessRouteView: React.FC<Props> = ({
                   importWalletHandler={importWalletHandler}
                   addressValidator={validateSwapAddress}
                   hidePrivateData={isPrivate}
-                  thorchainQuery={thorchainQuery}
-                  mayachainQuery={mayachainQuery}
                   reloadTxStatus={reloadSwapTxStatus}
-                  dex={dex}
                 />
               )
             }
@@ -572,12 +623,11 @@ const SuccessTradeRouteView: React.FC<Props> = ({
   } = useWalletContext()
   const { reloadTxStatus, getTradeAccount$ } = useThorchainContext()
   const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
-  const { mimirHalt } = useMimirHalt()
+  const { mimirHalt } = useThorchainMimirHalt()
   const pricePool = usePricePool()
   const { isPrivate } = useApp()
   const { thorchainQuery } = useThorchainQueryContext()
   const { slipTolerance$, changeSlipTolerance } = useAppContext()
-  const { dex } = useDex()
 
   // all trades will be using THorchain
   const { chain: sourceChain } = AssetRuneNative
@@ -604,17 +654,46 @@ const SuccessTradeRouteView: React.FC<Props> = ({
 
   const slipTolerance = useObservableState<SlipTolerance>(slipTolerance$, getStoredSlipTolerance())
 
-  const sourceAssetDecimal$: AssetWithDecimalLD = useMemo(
-    () => assetWithDecimal$(sourceAsset, dex),
-    [assetWithDecimal$, dex, sourceAsset]
-  )
+  const sourceAssetDecimal$: AssetWithDecimalLD = useMemo(() => {
+    // Check the condition to skip fetching
+    if (sourceAsset.type === AssetType.SYNTH) {
+      // Resolve `getDecimal` and return the observable
+      return Rx.from(getDecimal(AssetRuneNative)).pipe(
+        RxOp.map((decimal) =>
+          RD.success({
+            asset: sourceAsset,
+            decimal
+          })
+        ),
+        RxOp.catchError((error) => Rx.of(RD.failure(error?.msg ?? error.toString()))),
+        RxOp.startWith(RD.pending)
+      )
+    }
+
+    // Use the existing `assetWithDecimal$` function for fetching
+    return assetWithDecimal$(sourceAsset)
+  }, [assetWithDecimal$, sourceAsset])
 
   const sourceAssetRD: AssetWithDecimalRD = useObservableState(sourceAssetDecimal$, RD.initial)
 
-  const targetAssetDecimal$: AssetWithDecimalLD = useMemo(
-    () => assetWithDecimal$(targetAsset, dex),
-    [assetWithDecimal$, dex, targetAsset]
-  )
+  const targetAssetDecimal$: AssetWithDecimalLD = useMemo(() => {
+    if (targetAsset.type === AssetType.TRADE) {
+      // Return a default `LiveData` if the condition is met
+      return Rx.from(getDecimal(AssetRuneNative)).pipe(
+        RxOp.map((decimal) =>
+          RD.success({
+            asset: targetAsset,
+            decimal
+          })
+        ),
+        RxOp.catchError((error) => Rx.of(RD.failure(error?.msg ?? error.toString()))),
+        RxOp.startWith(RD.pending)
+      )
+    }
+
+    // Otherwise, fetch the actual assetWithDecimal
+    return assetWithDecimal$(targetAsset)
+  }, [assetWithDecimal$, targetAsset])
 
   const targetAssetRD: AssetWithDecimalRD = useObservableState(targetAssetDecimal$, RD.initial)
 

@@ -84,10 +84,22 @@ export const historyFilterToViewblockFilter = (filter: Filter) => {
       return 'send'
     case 'RUNEPOOLDEPOSIT':
       return 'runePoolDeposit'
+    case 'RUNEPOOLWITHDRAW':
+      return 'runePoolWithdraw'
+    case 'BOND':
+      return 'bond'
+    case 'UNBOND':
+      return 'unbond'
+    case 'TRADE':
+      return 'trade'
+    case 'FAILED':
+      return 'failed'
     // 'ALL' and others will be matched to viewblock's 'all'
     case 'ALL':
     case 'REFUND': // does not exist at viewblock
     case 'UNKNOWN':
+      return 'all'
+    default:
       return 'all'
   }
 }

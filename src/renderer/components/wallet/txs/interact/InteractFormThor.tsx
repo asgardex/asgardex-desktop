@@ -306,8 +306,8 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     let memoValue = form.getFieldValue('memo') as string
 
     // Check if a swap memo is detected
-    if (checkMemo(memoValue)) {
-      memoValue = memoCorrection(memoValue)
+    if (checkMemo(memoValue) && network === Network.Mainnet) {
+      memoValue = memoCorrection(memoValue, network)
       setSwapMemoDetected(true)
 
       // Set affiliate tracking message
@@ -316,7 +316,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       setSwapMemoDetected(false)
     }
     setCurrentMemo(memoValue)
-  }, [form, intl])
+  }, [form, intl, network])
 
   const renderFeeError = useMemo(
     () => (
@@ -560,6 +560,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     },
     [addressValidation, interactType, intl, nodes]
   )
+
   // Send tx start time
   const [sendTxStartTime, setSendTxStartTime] = useState<number>(0)
 
@@ -588,7 +589,8 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       case InteractType.RunePool: {
         createMemo = getRunePoolMemo({
           action: runePoolAction,
-          bps: H.getRunePoolWithdrawBps(runePoolProvider.value, _amountToSend)
+          bps: H.getRunePoolWithdrawBps(runePoolProvider.value, _amountToSend),
+          network
         })
         break
       }
@@ -603,7 +605,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     }
     setMemo(createMemo)
     return createMemo
-  }, [_amountToSend, currentMemo, form, interactType, memo, runePoolAction, runePoolProvider.value])
+  }, [_amountToSend, currentMemo, form, interactType, memo, network, runePoolAction, runePoolProvider.value])
 
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
@@ -1276,7 +1278,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       )}
 
       <div>
-        {interactType !== InteractType.THORName && (
+        {interactType === InteractType.RunePool && (
           <FlatButton
             className="mt-10px min-w-[200px]"
             loading={isLoading}
@@ -1295,11 +1297,23 @@ export const InteractFormThor: React.FC<Props> = (props) => {
           </FlatButton>
         )}
       </div>
+      <div>
+        {interactType !== InteractType.RunePool && interactType !== InteractType.THORName && (
+          <FlatButton
+            className="mt-10px min-w-[200px]"
+            loading={isLoading}
+            disabled={isLoading}
+            type="submit"
+            size="large">
+            {submitLabel}
+          </FlatButton>
+        )}
+      </div>
       <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
         {/* memo */}
-        <div className={`my-20px w-full font-main text-[12px] uppercase dark:border-gray1d`}>
+        <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">
           <BaseButton
-            className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+            className="group flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
             onClick={() => setShowDetails((current) => !current)}>
             {intl.formatMessage({ id: 'common.details' })}
             {showDetails ? (

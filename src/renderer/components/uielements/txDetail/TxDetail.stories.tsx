@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/react'
+import { ArgTypes, Meta } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { assetAmount, assetFromString, assetToBase, assetToString } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
@@ -66,9 +66,7 @@ const Template = ({
 const stringAssetsOrNone = [AssetRuneNative, AssetBCH, AssetBTC].map(assetToString)
 stringAssetsOrNone.unshift('none')
 
-const numberControlConfig = { type: 'number', min: 0, step: 0.0001 }
-
-const argTypes = {
+const argTypes: ArgTypes<TemplateArgs> = {
   firstInAsset: {
     control: {
       type: 'select',
@@ -76,7 +74,7 @@ const argTypes = {
     }
   },
   firstInValue: {
-    control: numberControlConfig
+    control: { type: 'number', min: 0, step: 0.0001 }
   },
   secondInAsset: {
     control: {
@@ -85,7 +83,7 @@ const argTypes = {
     }
   },
   secondInValue: {
-    control: numberControlConfig
+    control: { type: 'number', min: 0, step: 0.0001 }
   },
 
   firstOutAsset: {
@@ -95,7 +93,7 @@ const argTypes = {
     }
   },
   firstOutValue: {
-    control: numberControlConfig
+    control: { type: 'number', min: 0, step: 0.0001 }
   },
   secondOutAsset: {
     control: {
@@ -104,7 +102,7 @@ const argTypes = {
     }
   },
   secondOutValue: {
-    control: numberControlConfig
+    control: { type: 'number', min: 0, step: 0.0001 }
   },
   isDesktopView: {
     name: 'isDesktopView',

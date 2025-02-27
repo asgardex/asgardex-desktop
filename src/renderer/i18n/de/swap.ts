@@ -1,6 +1,7 @@
 import { SwapMessages } from '../types'
 
 const swap: SwapMessages = {
+  'swap.state.sending': 'Transaktion wird gesendet',
   'swap.state.pending': 'Swappen',
   'swap.state.error': 'Fehler beim Swap',
   'swap.state.success': 'Erfolgreich getauscht',
@@ -9,6 +10,8 @@ const swap: SwapMessages = {
   'swap.info.max.balance': 'Gesamtguthaben ({balance})',
   'swap.info.max.balanceMinusFee': 'Gesamtguthaben ({balance}) minus voraussichtliche Swapgebühr ({fee})',
   'swap.slip.title': 'Slip',
+  'swap.aggregator.fasterReturn': 'Schnellere Rückkehr ...',
+  'swap.aggregator.betterReturn': 'Bessere Rückkehr ...',
   'swap.slip.tolerance': 'Slippage-Toleranz',
   'swap.slip.tolerance.info':
     'Je höher die Prozentangabe, desto höher akzeptierst Du ein Slippage. Mehr Slippage bedeutet zugleich ein größerer Spielraum zur Abdeckung der geschätzten Gebühren, um fehlgeschlagene Swaps zu vermeiden.',

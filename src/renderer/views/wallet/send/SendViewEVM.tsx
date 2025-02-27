@@ -7,13 +7,14 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 
-import { Dex, TrustedAddresses } from '../../../../shared/api/types'
+import { TrustedAddresses } from '../../../../shared/api/types'
 import { SendFormEVM } from '../../../components/wallet/txs/send'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useEvmContext } from '../../../contexts/EvmContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
+import { useObserveMayaScanPrice } from '../../../hooks/useMayascanPrice'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { FeesRD, WalletBalances } from '../../../services/clients'
@@ -31,13 +32,13 @@ type Props = {
   poolDetails: PoolDetails | PoolDetailsMaya
   oPoolAddress: O.Option<PoolAddress>
   oPoolAddressMaya: O.Option<PoolAddressMaya>
-  dex: Dex
 }
 
 export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
-  const { dex, asset, trustedAddresses, emptyBalance, poolDetails, oPoolAddress, oPoolAddressMaya } = props
+  const { asset, trustedAddresses, emptyBalance, poolDetails, oPoolAddress, oPoolAddressMaya } = props
 
   const { network } = useNetwork()
+  const { mayaScanPriceRD } = useObserveMayaScanPrice()
 
   const {
     balancesState$,
@@ -104,7 +105,7 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
               poolDetails={poolDetails}
               oPoolAddress={O.none}
               oPoolAddressMaya={O.none}
-              dex={dex}
+              mayaScanPrice={mayaScanPriceRD}
             />
           </Styled.Container>
         </Spin>
@@ -129,8 +130,8 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
             network={network}
             poolDetails={poolDetails}
             oPoolAddress={oPoolAddress}
+            mayaScanPrice={mayaScanPriceRD}
             oPoolAddressMaya={oPoolAddressMaya}
-            dex={dex}
           />
         </Styled.Container>
       )

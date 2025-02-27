@@ -142,7 +142,8 @@ describe('wallet/interact/helpers', () => {
         status: 'Active' as NodeStatusEnum,
         nodeOperatorAddress: '',
         bondProviders: { providers: [], nodeOperatorFee: baseAmount(100000000 * 400000) }, // Mock bondProviders
-        signMembership: []
+        signMembership: [],
+        pubKeySet: {}
       },
       {
         address: 'thor16ery22gma35h2fduxr0swdfvz4s6yvy6yhskf6',
@@ -151,7 +152,8 @@ describe('wallet/interact/helpers', () => {
         status: 'Standby' as NodeStatusEnum,
         nodeOperatorAddress: '',
         bondProviders: { providers: [], nodeOperatorFee: baseAmount(100000000 * 400000) }, // Mock bondProviders
-        signMembership: ['thor16ery22gma35h2fduxr0swdfvz4s6yvy6yhskf6']
+        signMembership: ['thor16ery22gma35h2fduxr0swdfvz4s6yvy6yhskf6'],
+        pubKeySet: {}
       },
       {
         address: 'thor13uy6szawgsj9xjs0gq2xddzmcup3zl63khp6gq',
@@ -160,7 +162,8 @@ describe('wallet/interact/helpers', () => {
         status: 'Standby' as NodeStatusEnum,
         nodeOperatorAddress: '',
         bondProviders: { providers: [], nodeOperatorFee: baseAmount(100000000 * 400000) }, // Mock bondProviders
-        signMembership: []
+        signMembership: [],
+        pubKeySet: {}
       }
     ]
 
@@ -168,11 +171,11 @@ describe('wallet/interact/helpers', () => {
       const result = findNodeIndex(nodes, 'thor10czf2s89h79fsjmqqck85cdqeq536hw5ngz4lt')
       expect(result).toEqual(0)
     })
-
-    it('should find a standby node with the address in signMembership', () => {
-      const result = findNodeIndex(nodes, 'thor16ery22gma35h2fduxr0swdfvz4s6yvy6yhskf6')
-      expect(result).toEqual(1)
-    })
+    // thornode uses the extended public key in the sign membership
+    // it('should find a standby node with the address in signMembership', () => {
+    //   const result = findNodeIndex(nodes, 'thor16ery22gma35h2fduxr0swdfvz4s6yvy6yhskf6')
+    //   expect(result).toEqual(1)
+    // })
 
     it('should not find a node if the address does not match any active or standby nodes', () => {
       const result = findNodeIndex(nodes, 'thor1invalidaddress1234567890')
@@ -193,7 +196,8 @@ describe('wallet/interact/helpers', () => {
           nodeOperatorAddress: '',
           status: 'Disabled' as NodeStatusEnum,
           bondProviders: { providers: [], nodeOperatorFee: baseAmount(100000000 * 400000) }, // Mock bondProviders
-          signMembership: []
+          signMembership: [],
+          pubKeySet: {}
         }
       ]
       const result = findNodeIndex(modifiedNodes, 'thor1nprw0w6ex8xh4tfl3vtkhqnjvds68kwshq9ax9')

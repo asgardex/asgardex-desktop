@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { SwapOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { Client as MayachainClient } from '@xchainjs/xchain-mayachain'
 import { Client as ThorchainClient, THORChain, AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { Address, assetAmount, assetToBase, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
-import { Row } from 'antd'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import { useObservableState } from 'observable-hooks'
@@ -16,7 +16,7 @@ import { useNavigate } from 'react-router-dom'
 import * as Styled from '../../../renderer/components/wallet/assets/TotalValue.styles'
 import { WalletType } from '../../../shared/wallet/types'
 import { Bonds } from '../../components/Bonds'
-import { RefreshButton } from '../../components/uielements/button'
+import { BaseButton, RefreshButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
 import { useAppContext } from '../../contexts/AppContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
@@ -50,6 +50,11 @@ import { getValueOfRuneInAsset } from '../pools/Pools.utils'
 export type WalletAddressInfo = {
   address: string
   walletType: WalletType
+}
+
+enum LabelView {
+  Connected,
+  Monitored
 }
 
 export const BondsView: React.FC = (): JSX.Element => {
@@ -87,6 +92,7 @@ export const BondsView: React.FC = (): JSX.Element => {
       }),
     INITIAL_BALANCES_STATE
   )
+  const [activeLabel, setActiveLabel] = useState(LabelView.Connected)
   // State for selected price pools
   const [selectedPricePoolThor] = useObservableState(() => selectedPricePoolThor$, RUNE_PRICE_POOL)
   const [selectedPricePoolMaya] = useObservableState(() => selectedPricePoolMaya$, MAYA_PRICE_POOL)
@@ -230,6 +236,26 @@ export const BondsView: React.FC = (): JSX.Element => {
       )
     }
 
+    const calculateTotalMonitoredBondByChain = (nodes: NodeInfo[] | NodeInfoMaya[]) => {
+      return nodes.reduce(
+        (acc, node) => {
+          const chain = node.address.startsWith('thor') ? 'THOR' : 'MAYA'
+
+          const totalBondProviderAmount = node.bondProviders.providers.reduce((providerSum, provider) => {
+            const normalizedAddress = provider.bondAddress.toLowerCase()
+            if (bondProviderWatchList.includes(normalizedAddress)) {
+              return providerSum.plus(provider.bond) // Sum only bondProvider's bondAmount
+            }
+            return providerSum
+          }, assetToBase(assetAmount(0)))
+
+          acc[chain] = acc[chain] ? acc[chain].plus(totalBondProviderAmount) : totalBondProviderAmount
+          return acc
+        },
+        { THOR: assetToBase(assetAmount(0)), MAYA: assetToBase(assetAmount(0)) }
+      )
+    }
+
     return FP.pipe(
       nodeInfos,
       RD.fold(
@@ -249,18 +275,24 @@ export const BondsView: React.FC = (): JSX.Element => {
         // Success state
         (nodes) => {
           const totals = calculateTotalBondByChain(nodes)
+          const totalMonitored = calculateTotalMonitoredBondByChain(nodes)
+          const activeAmount = activeLabel === LabelView.Connected ? totals.THOR : totalMonitored.THOR
 
-          const thorTotal = totals.THOR.amount().isGreaterThan(0) ? (
+          const thorTotal = (
             <Styled.BalanceLabel>
               {isPrivate
                 ? hiddenString
                 : formatAssetAmountCurrency({
-                    amount: baseToAsset(getValueOfRuneInAsset(totals.THOR, pricePoolDataThor)),
+                    amount: baseToAsset(getValueOfRuneInAsset(activeAmount, pricePoolDataThor)),
                     asset: selectedPricePoolThor.asset,
                     decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
-                  })}
+                  })}{' '}
+              /{' '}
+              {isPrivate
+                ? hiddenString
+                : `ᚱ ${new Intl.NumberFormat().format(parseFloat(baseToAsset(activeAmount).amount().toFixed(2)))}`}
             </Styled.BalanceLabel>
-          ) : null
+          )
 
           const mayaTotal = totals.MAYA.amount().isGreaterThan(0) ? (
             <Styled.BalanceLabel>
@@ -286,9 +318,11 @@ export const BondsView: React.FC = (): JSX.Element => {
   }, [
     intl,
     isPrivate,
+    activeLabel,
     nodeInfos,
     pricePoolDataMaya,
     pricePoolDataThor,
+    bondProviderWatchList,
     selectedPricePoolMaya.asset,
     selectedPricePoolThor.asset,
     walletAddresses.MAYA,
@@ -297,14 +331,28 @@ export const BondsView: React.FC = (): JSX.Element => {
 
   return (
     <>
-      <Row justify="end" style={{ marginBottom: '20px' }}>
-        <RefreshButton onClick={reloadNodeInfos} disabled={RD.isPending(nodeInfos)} />
-      </Row>
+      <div className="flex min-h-[42px] w-full justify-end pb-20px" />
       <AssetsNav />
       <Styled.Container>
-        <Styled.TitleContainer>
-          <Styled.BalanceTitle>{intl.formatMessage({ id: 'wallet.shares.total' })}</Styled.BalanceTitle>
-        </Styled.TitleContainer>
+        <div className="flex w-full items-center justify-between">
+          <div />
+          <Styled.TitleContainer>
+            <Styled.BalanceTitle>
+              {/* TODO: locale (cinnamoroll) */}
+              {activeLabel === LabelView.Monitored
+                ? 'Total Value Across Connected and Monitored Addresses'
+                : 'Total Connected Wallet Value'}
+            </Styled.BalanceTitle>
+            <BaseButton
+              className="ml-2 !p-0 text-turquoise"
+              onClick={() => {
+                setActiveLabel((prev) => 1 - prev)
+              }}>
+              <SwapOutlined className="rounded-full border border-solid border-turquoise p-1" />
+            </BaseButton>
+          </Styled.TitleContainer>
+          <RefreshButton onClick={reloadNodeInfos} disabled={RD.isPending(nodeInfos)} />
+        </div>
         {renderBondTotal}
       </Styled.Container>
       <Bonds

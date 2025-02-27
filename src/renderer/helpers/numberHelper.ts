@@ -11,3 +11,12 @@ export const abbreviateNumber = (value: number, decimal = 0): string => {
 
   return `${newValue.toFixed(decimal)}${suffixNum > 0 ? ` ${suffixes[suffixNum]}` : ''}`
 }
+
+export const getCurrencyFormat = (value: number): string => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(value)
+}

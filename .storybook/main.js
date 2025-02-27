@@ -1,5 +1,4 @@
-// Main entry point for Storybook@7.x
-// Based on `https://github.com/storybookjs/storybook/blob/v7.0.0-alpha.13/examples/cra-ts-essentials/.storybook/main.ts
+import { dirname, join } from "path";
 
 const path = require('path')
 
@@ -14,24 +13,31 @@ const config = {
     buildStoriesJson: true,
     breakingChangesV7: true
   },
+
   core: {
-    builder: '@storybook/builder-webpack5',
     channelOptions: { allowFunction: false, maxDepth: 10 },
     disableTelemetry: true
   },
+
   staticDirs: ['../public'],
   stories: ['../src/renderer/**/*.stories.@(ts|tsx)'],
+
   addons: [
-    '@storybook/preset-create-react-app',
+    getAbsolutePath("@storybook/addon-viewport"),
+    getAbsolutePath("@storybook/addon-docs"),
+    getAbsolutePath("@storybook/preset-create-react-app"),
     {
       name: '@storybook/addon-essentials',
       options: {
         viewport: false,
         docs: false
       }
-    }
+    },
+    '@chromatic-com/storybook'
   ],
-  framework: '@storybook/react-webpack5',
+
+  framework: getAbsolutePath("@storybook/react-webpack5"),
+
   // Extending Storybook’s Webpack config
   // https://storybook.js.org/docs/react/builders/webpack#extending-storybooks-webpack-config
   webpackFinal: async (webpackConfig) => {
@@ -81,3 +87,7 @@ const config = {
 }
 
 module.exports = config
+
+function getAbsolutePath(value) {
+  return dirname(require.resolve(join(value, "package.json")));
+}

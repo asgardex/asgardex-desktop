@@ -1,45 +1,62 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Meta, StoryFn } from '@storybook/react'
 import { BTCChain, BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
-import { Network, TxHash } from '@xchainjs/xchain-client'
-import { MayachainQuery } from '@xchainjs/xchain-mayachain-query'
-import { ThorchainQuery } from '@xchainjs/xchain-thorchain-query'
+import { Network } from '@xchainjs/xchain-client'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, assetToBase, assetToString, baseAmount, bn } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { thorDetails } from '../../../shared/api/types'
 import { mockValidatePassword$ } from '../../../shared/mock/wallet'
 import { AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
 import { WalletType } from '../../../shared/wallet/types'
 import { ONE_BN } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
-import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { INITIAL_SWAP_STATE } from '../../services/chain/const'
 import { SwapState } from '../../services/chain/types'
-import { Swap as Component, SwapProps } from './Swap'
-import { SwapAsset } from './Swap.types'
+import { Swap as Component } from './Swap'
+import { SwapAsset, SwapProps } from './Swap.types'
 
 const sourceAsset: SwapAsset = { asset: AssetRuneNative, decimal: THORCHAIN_DECIMAL, price: ONE_BN }
 const targetAsset: SwapAsset = { asset: AssetBTC, decimal: BTC_DECIMAL, price: bn('56851.67420275761') }
 
 /* Mock all (default) data needed by `Swap` commponent */
 const defaultProps: SwapProps = {
-  disableSwapAction: false,
   keystore: O.none,
   poolAssets: [AssetBTC, AssetRuneNative],
   assets: { source: sourceAsset, target: targetAsset },
-  poolAddress: O.some({
+  poolAddressThor: O.some({
+    protocol: THORChain,
     chain: BTCChain,
     address: 'vault-address',
     router: O.some('router-address'),
     halted: false
   }),
-  poolDetails: [],
-  pricePool: RUNE_PRICE_POOL,
+  poolAddressMaya: O.some({
+    protocol: THORChain,
+    chain: BTCChain,
+    address: 'vault-address',
+    router: O.some('router-address'),
+    halted: false
+  }),
+  poolDetailsThor: [],
+  poolDetailsMaya: [],
   // mock successfull result of swap$
   swap$: (params) =>
+    Rx.of(params).pipe(
+      RxOp.tap((params) => console.log('swap$ ', params)),
+      RxOp.switchMap((_) =>
+        Rx.of<SwapState>({
+          ...INITIAL_SWAP_STATE,
+          step: 3,
+          swapTx: RD.success('tx-hash'),
+          swap: RD.success(true),
+          stepsTotal: 3
+        })
+      )
+    ),
+  swapCF$: (params) =>
     Rx.of(params).pipe(
       RxOp.tap((params) => console.log('swap$ ', params)),
       RxOp.switchMap((_) =>
@@ -85,11 +102,6 @@ const defaultProps: SwapProps = {
     ]),
     loading: false
   },
-  goToTransaction: (txHash) => {
-    console.log(txHash)
-    return Promise.resolve(true)
-  },
-  getExplorerTxUrl: (txHash: TxHash) => O.some(`url/asset-${txHash}`),
   // mock password validation
   // Password: "123"
   validatePassword$: mockValidatePassword$,
@@ -121,10 +133,7 @@ const defaultProps: SwapProps = {
   importWalletHandler: () => console.log('import wallet'),
   addressValidator: () => Promise.resolve(true),
   hidePrivateData: false,
-  thorchainQuery: new ThorchainQuery(),
-  mayachainQuery: new MayachainQuery(),
-  reloadTxStatus: () => console.log('reloadBalances'),
-  dex: thorDetails
+  reloadTxStatus: () => console.log('reloadBalances')
 }
 
 export const Default: StoryFn = () => <Component {...defaultProps} />

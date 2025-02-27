@@ -40,7 +40,7 @@ export const WalletSelector: React.FC<Props> = (props): JSX.Element => {
           onChange={({ id }) => {
             onChange(id)
           }}>
-          <div className={`relative ${className}`}>
+          <div className={clsx('relative', className)}>
             <Listbox.Button
               as="div"
               className={({ open }) =>
@@ -59,13 +59,7 @@ export const WalletSelector: React.FC<Props> = (props): JSX.Element => {
                 <>
                   <span className="w-full">{selectedWallet.name}</span>
                   <ChevronDownIcon
-                    className={`
-                  ${open && 'rotate-180'}
-                  ease
-                  h-20px w-20px
-                          group-hover:rotate-180
-
-                  `}
+                    className={clsx('ease h-20px w-20px group-hover:rotate-180', { 'rotate-180': open })}
                   />
                 </>
               )}

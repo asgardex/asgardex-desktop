@@ -1,5 +1,6 @@
 import React from 'react'
 
+import { PlusCircleOutlined, MinusCircleOutlined, ExperimentOutlined, StopOutlined } from '@ant-design/icons'
 import { useIntl } from 'react-intl'
 
 import { ReactComponent as DonateIcon } from '../../../assets/svg/tx-donate.svg'
@@ -35,6 +36,17 @@ const getIcon = (type: MidgardTxType) => {
       return <SendIcon />
     case 'RUNEPOOLDEPOSIT':
       return <RunePoolIcon />
+    case 'RUNEPOOLWITHDRAW':
+      return <RunePoolIcon className="rotate-180" />
+    case 'BOND':
+      return <PlusCircleOutlined className="text-[18px] !text-turquoise" />
+    case 'UNBOND':
+    case 'LEAVE':
+      return <MinusCircleOutlined className="text-[18px] !text-turquoise" />
+    case 'TRADE':
+      return <ExperimentOutlined className="text-[18px] !text-turquoise" />
+    case 'FAILED':
+      return <StopOutlined className="text-[18px] !text-red" />
     default:
       return <></>
   }

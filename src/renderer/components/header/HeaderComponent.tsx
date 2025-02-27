@@ -1,7 +1,6 @@
 import React, { useMemo, useState, useCallback, useRef } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Row, Col, Grid } from 'antd'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
@@ -11,7 +10,6 @@ import { useIntl } from 'react-intl'
 import { useMatch, Link, useNavigate, useLocation } from 'react-router-dom'
 import { palette, size } from 'styled-theme'
 
-import { Dex, mayaDetails, thorDetails } from '../../../shared/api/types'
 import { ReactComponent as CloseIcon } from '../../assets/svg/icon-close.svg'
 import { ReactComponent as MenuIcon } from '../../assets/svg/icon-menu.svg'
 import { ReactComponent as SwapIcon } from '../../assets/svg/icon-swap.svg'
@@ -52,8 +50,6 @@ export type Props = {
   keystore: KeystoreState
   wallets: KeystoreWalletsUI
   network: Network
-  dex: Dex
-  changeDex: (dex: Dex) => void
   lockHandler: FP.Lazy<void>
   changeWalletHandler$: ChangeKeystoreWalletHandler
   setSelectedPricePool: (asset: PricePoolAsset) => void
@@ -62,8 +58,10 @@ export type Props = {
   reloadRunePrice: FP.Lazy<void>
   mayaPrice: PriceRD
   reloadMayaPrice: FP.Lazy<void>
-  volume24Price: PriceRD
-  reloadVolume24Price: FP.Lazy<void>
+  volume24PriceRune: PriceRD
+  volume24PriceMaya: PriceRD
+  reloadVolume24PriceRune: FP.Lazy<void>
+  reloadVolume24PriceMaya: FP.Lazy<void>
   selectedPricePoolAsset: SelectedPricePoolAsset
   midgardStatus: MidgardStatusRD
   midgardMayaStatus: MidgardStatusMayaRD
@@ -80,8 +78,6 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
   const {
     keystore,
     wallets,
-    dex,
-    changeDex = FP.constVoid,
     pricePools: oPricePools,
     runePrice: runePriceRD,
     mayaPrice: mayaPriceRD,
@@ -90,8 +86,10 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
     mimir: mimirRD,
     reloadRunePrice,
     reloadMayaPrice,
-    volume24Price: volume24PriceRD,
-    reloadVolume24Price,
+    volume24PriceRune: volume24PriceRD,
+    volume24PriceMaya: volume24PriceMayaRD,
+    reloadVolume24PriceRune,
+    reloadVolume24PriceMaya,
     selectedPricePoolAsset: oSelectedPricePoolAsset,
     lockHandler,
     changeWalletHandler$,
@@ -285,23 +283,6 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
     [headerHeight]
   )
 
-  const dexPrice = useMemo(() => {
-    // Use 'dex' to determine which DEX prices to use
-    if (dex.chain === THORChain) {
-      return {
-        price: runePriceRD,
-        reloadPrice: reloadRunePrice
-      }
-    } else {
-      return {
-        price: mayaPriceRD,
-        reloadPrice: reloadMayaPrice
-      }
-    }
-  }, [dex, runePriceRD, reloadRunePrice, mayaPriceRD, reloadMayaPrice])
-  const changeDexHandler = useCallback(() => {
-    changeDex(dex.chain === THORChain ? mayaDetails : thorDetails)
-  }, [changeDex, dex])
   return (
     <>
       <Styled.HeaderContainer>
@@ -311,12 +292,14 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
               <Col>
                 <Row align="middle" style={{ height: headerHeight }}>
                   <HeaderStats
-                    dex={dex}
-                    changeDexHandler={changeDexHandler}
-                    runePrice={dexPrice.price}
-                    reloadRunePrice={dexPrice.reloadPrice}
-                    volume24Price={volume24PriceRD}
-                    reloadVolume24Price={reloadVolume24Price}
+                    runePrice={runePriceRD}
+                    mayaPrice={mayaPriceRD}
+                    reloadRunePrice={reloadRunePrice}
+                    reloadMayaPrice={reloadMayaPrice}
+                    volume24PriceRune={volume24PriceRD}
+                    volume24PriceMaya={volume24PriceMayaRD}
+                    reloadVolume24PriceRune={reloadVolume24PriceRune}
+                    reloadVolume24PriceMaya={reloadVolume24PriceMaya}
                   />
                 </Row>
               </Col>
@@ -340,12 +323,14 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
             <>
               <Row align="middle">
                 <HeaderStats
-                  dex={dex}
-                  changeDexHandler={changeDexHandler}
                   runePrice={runePriceRD}
+                  mayaPrice={mayaPriceRD}
                   reloadRunePrice={reloadRunePrice}
-                  volume24Price={volume24PriceRD}
-                  reloadVolume24Price={reloadVolume24Price}
+                  reloadMayaPrice={reloadMayaPrice}
+                  volume24PriceRune={volume24PriceRD}
+                  volume24PriceMaya={volume24PriceMayaRD}
+                  reloadVolume24PriceRune={reloadVolume24PriceRune}
+                  reloadVolume24PriceMaya={reloadVolume24PriceMaya}
                 />
               </Row>
               <Col>

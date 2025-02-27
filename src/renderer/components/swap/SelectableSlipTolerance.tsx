@@ -43,7 +43,7 @@ export const SelectableSlipTolerance: React.FC<Props> = (props): JSX.Element => 
               A.map((slip) => (
                 <BaseButton
                   font={slip === value ? 'bold' : 'normal'}
-                  className={`w-full hover:bg-bg2 dark:hover:bg-bg2d `}
+                  className="w-full hover:bg-bg2 dark:hover:bg-bg2d"
                   key={slip}
                   onClick={() => {
                     changeSlipToleranceHandler(slip)

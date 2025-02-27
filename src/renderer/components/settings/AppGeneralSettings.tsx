@@ -2,8 +2,6 @@ import React, { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Dropdown } from 'antd'
 import { MenuProps } from 'antd/lib/menu'
 import { ItemType } from 'antd/lib/menu/hooks/useItems'
@@ -13,13 +11,14 @@ import * as A from 'fp-ts/lib/Array'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
-import { Dex } from '../../../shared/api/types'
 import { Locale } from '../../../shared/i18n/types'
 import { LOCALES } from '../../i18n'
-import { AVAILABLE_DEXS, AVAILABLE_NETWORKS } from '../../services/const'
+import { AVAILABLE_NETWORKS } from '../../services/const'
+import { useApp } from '../../store/app/hooks'
 import { DownIcon } from '../icons'
 import { Menu } from '../shared/menu'
 import { BorderButton } from '../uielements/button'
+import { SwitchButton } from '../uielements/button/SwitchButton'
 import * as Styled from './AppSettings.styles'
 
 export type Props = {
@@ -27,9 +26,7 @@ export type Props = {
   locale: Locale
   changeLocale: (locale: Locale) => void
   network: Network
-  dex: Dex
   changeNetwork: (network: Network) => void
-  changeDex: (dex: Dex) => void
   appUpdateState: RD.RemoteData<Error, O.Option<string>>
   checkForUpdates: FP.Lazy<void>
   goToReleasePage: (version: string) => void
@@ -57,13 +54,11 @@ const Section: React.FC<SectionProps> = ({ title, subtitle, className, children 
   </div>
 )
 
-export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
+export const AppGeneralSettings = (props: Props): JSX.Element => {
   const {
     appUpdateState = RD.initial,
     changeNetwork = FP.constVoid,
-    changeDex = FP.constVoid,
     network,
-    dex,
     checkForUpdates,
     goToReleasePage = FP.constVoid,
     version,
@@ -71,6 +66,7 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
     locale
   } = props
 
+  const { isPrivate, changePrivateData } = useApp()
   const intl = useIntl()
 
   const changeLang: MenuProps['onClick'] = useCallback(
@@ -89,9 +85,10 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
           A.map<Locale, ItemType>((l: Locale) => ({
             label: (
               <div
-                className={`dark:text-1 flex items-center px-10px py-[8px] font-main text-16 uppercase text-text1 dark:text-text1d ${
+                className={clsx(
+                  'dark:text-1 flex items-center px-10px py-[8px] font-main text-16 uppercase text-text1 dark:text-text1d',
                   l === locale ? 'font-mainSemiBold' : 'font-main'
-                }`}>
+                )}>
                 {l}
               </div>
             ),
@@ -107,7 +104,7 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
     () => (
       <Dropdown overlay={langMenu} trigger={['click']} placement="bottom">
         <div className="flex min-w-[240px] cursor-pointer items-center justify-between rounded-lg border border-solid border-gray0 p-2 dark:border-gray0d">
-          <h3 className={`m-0 font-main text-[16px] uppercase leading-5 text-text1 dark:text-text1d`}>{locale}</h3>
+          <h3 className="m-0 font-main text-[16px] uppercase leading-5 text-text1 dark:text-text1d">{locale}</h3>
           <DownIcon />
         </div>
       </Dropdown>
@@ -120,15 +117,6 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
       changeNetwork(key as Network)
     },
     [changeNetwork]
-  )
-  const changeDexHandler: MenuProps['onClick'] = useCallback(
-    ({ key }: { key: string }) => {
-      const newDex = AVAILABLE_DEXS.find((dex) => dex.chain === key)
-      if (newDex) {
-        changeDex(newDex)
-      }
-    },
-    [changeDex]
   )
 
   const networkTextColor = useCallback((network: Network) => {
@@ -143,16 +131,6 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
         return 'text-text2 dark:text-text2'
     }
   }, [])
-  const dexTextColor = useCallback((dex: Dex) => {
-    switch (dex.chain) {
-      case THORChain:
-        return 'text-turquoise'
-      case MAYAChain:
-        return 'text-cyanblue'
-      default:
-        return 'text-text2 dark:text-text2'
-    }
-  }, [])
 
   const networkMenu = useMemo(() => {
     return (
@@ -163,9 +141,11 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
           A.map<Network, ItemType>((n: Network) => ({
             label: (
               <div
-                className={`flex items-center px-10px py-[8px] ${networkTextColor(n)} text-16 uppercase ${
-                  n === network ? 'font-mainSemiBold' : 'font-main'
-                }`}>
+                className={clsx(
+                  'flex items-center px-10px py-[8px] text-16 uppercase',
+                  n === network ? 'font-mainSemiBold' : 'font-main',
+                  networkTextColor(n)
+                )}>
                 {n}
               </div>
             ),
@@ -175,28 +155,6 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
       />
     )
   }, [changeNetworkHandler, network, networkTextColor])
-
-  const dexMenu = useMemo(() => {
-    return (
-      <Menu
-        onClick={changeDexHandler}
-        items={FP.pipe(
-          AVAILABLE_DEXS,
-          A.map<Dex, ItemType>((n: Dex) => ({
-            label: (
-              <div
-                className={`flex items-center px-10px py-[8px] ${dexTextColor(n)} text-16 uppercase ${
-                  n.chain === dex.chain ? 'font-mainSemiBold' : 'font-main'
-                }`}>
-                {n.chain}
-              </div>
-            ),
-            key: n.chain
-          }))
-        )}
-      />
-    )
-  }, [changeDexHandler, dex, dexTextColor])
 
   const renderNetworkMenu = useMemo(
     () => (
@@ -210,17 +168,6 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
       </Dropdown>
     ),
     [networkMenu, networkTextColor, network]
-  )
-  const renderDexMenu = useMemo(
-    () => (
-      <Dropdown overlay={dexMenu} trigger={['click']} placement="bottom">
-        <div className="flex min-w-[240px] cursor-pointer items-center justify-between rounded-lg border border-solid border-gray0 p-2 dark:border-gray0d">
-          <h3 className={clsx('m-0 font-main text-[16px] uppercase leading-5', dexTextColor(dex))}>{dex.chain}</h3>
-          <DownIcon />
-        </div>
-      </Dropdown>
-    ),
-    [dexMenu, dexTextColor, dex]
   )
 
   const checkUpdatesProps = useMemo(() => {
@@ -293,11 +240,11 @@ export const AppGeneralSettings: React.FC<Props> = (props): JSX.Element => {
         subtitle="Network to connect to. Mainnet is Recommended">
         {renderNetworkMenu}
       </Section>
-      <Section title={intl.formatMessage({ id: 'common.dex' })} subtitle="Decentralised  exchange to connect to">
-        {renderDexMenu}
-      </Section>
       <Section title={intl.formatMessage({ id: 'setting.language' })} subtitle="Preferred language">
         {renderLangMenu}
+      </Section>
+      <Section title={intl.formatMessage({ id: 'common.privateData' })} subtitle="Stay hidden, stay secure">
+        <SwitchButton active={isPrivate} onChange={changePrivateData} />
       </Section>
       <Section title={intl.formatMessage({ id: 'setting.version' })} subtitle="Asgardex Software Version">
         <div className="flex max-w-[240px] flex-col space-y-1">

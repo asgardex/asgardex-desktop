@@ -65,18 +65,21 @@ export const AssetSelect: React.FC<Props> = (props): JSX.Element => {
       />
       <BaseButton
         className={clsx(
+          'flex items-center justify-between',
           'group py-[2px] px-10px focus:outline-none',
           { 'hover:shadow-full hover:dark:shadow-fulld': !disableButton && !shadowless },
           className
         )}
         disabled={disableButton}
         onClick={buttonClickHandler}>
-        <AssetData noTicker={!showAssetName} className="" asset={asset} network={network} />
+        <AssetData noTicker={!showAssetName} asset={asset} network={network} />
 
         <ChevronDownIcon
-          className={`ease h-20px w-20px text-turquoise ${openMenu ? 'rotate-180' : 'rotate-0'}
-            ${!disableButton ? 'group-hover:rotate-180' : ''}
-            `}
+          className={clsx(
+            'ease h-20px w-20px text-turquoise',
+            openMenu ? 'rotate-180' : 'rotate-0',
+            disableButton ? '' : 'group-hover:rotate-180'
+          )}
         />
       </BaseButton>
     </div>

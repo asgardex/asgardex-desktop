@@ -1,5 +1,7 @@
 import React from 'react'
 
+import clsx from 'clsx'
+
 import { SelectionWrapper, Button } from './Selection.styles'
 
 export type Props = {
@@ -14,7 +16,7 @@ export const Selection: React.FC<Props> = ({ selected = 0, onSelect, className =
   }
 
   return (
-    <SelectionWrapper className={`selection-wrapper ${className}`}>
+    <SelectionWrapper className={clsx('selection-wrapper', className)}>
       <Button onClick={() => handleClick(25)} focused={selected === 25} tabIndex={-1}>
         25%
       </Button>

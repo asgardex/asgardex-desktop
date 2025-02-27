@@ -1,5 +1,7 @@
 import React from 'react'
 
+import clsx from 'clsx'
+
 import type { Color, Size } from './Button.types'
 import { TextButton, Props as TextButtonProps } from './TextButton'
 
@@ -35,16 +37,14 @@ export const LinkButton: React.FC<Props> = (props): JSX.Element => {
       size={size}
       color={color}
       disabled={disabled}
-      className={`
-        underline
-        decoration-solid
-          ${thickness[size]}
-          ${decorationOffset[size]}
-          ${decorationColor[color]}
-          ${!disabled && 'hover:text-opacity-80'}
-          'bg-transparent'
-          ${className}
-        `}
+      className={clsx(
+        'bg-transparent underline decoration-solid',
+        thickness[size],
+        decorationOffset[size],
+        decorationColor[color],
+        { 'hover:text-opacity-80': !disabled },
+        className
+      )}
       {...otherProps}>
       {children}
     </TextButton>

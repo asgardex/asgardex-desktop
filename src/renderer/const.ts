@@ -1,6 +1,6 @@
 import { ARBChain, AssetARB } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
-import { BASEChain, AssetBETH } from '@xchainjs/xchain-base'
+import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC, BSCChain } from '@xchainjs/xchain-bsc'
@@ -142,6 +142,27 @@ export const AssetUSDCARB: TokenAsset = {
   type: AssetType.TOKEN
 }
 
+export const AssetCBBTC: TokenAsset = {
+  chain: BASEChain,
+  symbol: 'CBBTC-0XCBB7C0000AB88B473B1F5AFD9EF808440EED33BF',
+  ticker: 'CBBTC',
+  type: AssetType.TOKEN
+}
+
+export const AssetUSDCBASE: TokenAsset = {
+  chain: BASEChain,
+  symbol: 'USDC-0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913',
+  ticker: 'USDC',
+  type: AssetType.TOKEN
+}
+
+export const AssetSOLUSDC: TokenAsset = {
+  chain: SOLChain,
+  symbol: 'USDC-EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+  ticker: 'USDC',
+  type: AssetType.TOKEN
+}
+
 // This hardcode list is for testnet only
 export const ETHAssetsTestnet = [AssetUSDT62E]
 export const AvaxAssetsTestnet = [AssetAVAX]
@@ -152,7 +173,7 @@ export const ETHAssetsFallBack = [AssetUSDTDAC, AssetUSDC]
 export const BSCAssetsFallBack = [AssetUSDCBSC, AssetUSDTBSC]
 export const AVAXAssetsFallback = [AssetUSDTAVAX, AssetUSDCAVAX]
 export const ARBAssetsFallback = [AssetUSDCARB]
-export const BASEAssetsFallback = [AssetBETH]
+export const BASEAssetsFallback = [AssetCBBTC, AssetUSDCBASE]
 
 // for evm only
 export const DEFAULT_USER_ASSETS = [
@@ -186,28 +207,6 @@ export const CHAIN_WEIGHTS_THOR: Record<EnabledChain, number> = {
   [DASHChain]: 12,
   [KUJIChain]: 13,
   [RadixChain]: 14,
-  [BASEChain]: 15
-}
-
-// Weight of chains
-// Needed for ordering chain related things (wallets, balances etc.)
-// The higher the value the higher the weight
-export const CHAIN_WEIGHTS_MAYA: Record<EnabledChain, number> = {
-  [MAYAChain]: 0,
-  [THORChain]: 1,
-  [BTCChain]: 2,
-  [ETHChain]: 3,
-  [DASHChain]: 4,
-  [KUJIChain]: 5,
-  [ARBChain]: 6,
-  [BSCChain]: 7,
-  [BCHChain]: 8,
-  [LTCChain]: 9,
-  [AVAXChain]: 10,
-  [DOGEChain]: 11,
-  [GAIAChain]: 12,
-  [RadixChain]: 13,
-  [SOLChain]: 14,
   [BASEChain]: 15
 }
 

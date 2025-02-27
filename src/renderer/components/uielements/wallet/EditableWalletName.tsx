@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react'
 
 import { CheckCircleIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import clsx from 'clsx'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useForm } from 'react-hook-form'
@@ -49,7 +50,7 @@ export const EditableWalletName: React.FC<Props> = (props): JSX.Element => {
         disabled={loading}
         size="large"
         loading={loading}
-        className={`flex ${loading ? 'cursor-not-allowed' : 'cursor-pointer'} items-center text-[18px]`}
+        className={clsx('flex items-center text-[18px]', loading ? 'cursor-not-allowed' : 'cursor-pointer')}
         onClick={edit}>
         {name}
         <PencilSquareIcon className="dark:text0d ml-[5px] h-[20px] w-[20px] text-turquoise" />
@@ -100,9 +101,7 @@ export const EditableWalletName: React.FC<Props> = (props): JSX.Element => {
             </BaseButton>
             <XCircleIcon className="ml-[5px] h-[24px] w-[24px] cursor-pointer text-error0" onClick={cancel} />
           </div>
-          {errors.name && (
-            <p className={`mt-10px font-main text-[14px] uppercase text-error0`}>{errors.name.message}</p>
-          )}
+          {errors.name && <p className="mt-10px font-main text-[14px] uppercase text-error0">{errors.name.message}</p>}
         </form>
       )
     },
@@ -110,7 +109,7 @@ export const EditableWalletName: React.FC<Props> = (props): JSX.Element => {
   )
 
   return (
-    <div className={`flex w-full flex-col items-center justify-center ${className}`}>
+    <div className={clsx('flex w-full flex-col items-center justify-center', className)}>
       <h2 className="w-full text-center font-main text-[12px] uppercase text-text2 dark:text-text2d">
         {intl.formatMessage({ id: 'wallet.name' })}
         {/* show info about max. chars in editable mode only  */}
@@ -127,9 +126,9 @@ export const EditableWalletName: React.FC<Props> = (props): JSX.Element => {
         )}
       </h2>
       <div
-        className={`flex items-center ${loading ? 'opacity-65' : 'opacity-100'} ${
-          O.isSome(editableName) ? 'w-full' : ''
-        }`}>
+        className={clsx('flex items-center', loading ? 'opacity-65' : 'opacity-100', {
+          'w-full': O.isSome(editableName)
+        })}>
         {FP.pipe(editableName, O.fold(renderName, renderEditableName))}
       </div>
     </div>

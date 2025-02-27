@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   AnyAsset,
@@ -32,7 +33,6 @@ import { sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { getSaversTableRowsData, ordSaversByDepth } from '../../helpers/savers'
-import { useDex } from '../../hooks/useDex'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
 import { useSynthConstants } from '../../hooks/useSynthConstants'
@@ -46,15 +46,15 @@ import type { SaversTableRowData, SaversTableRowsData } from './Savers.types'
 export type Props = {
   haltedChains: Chain[]
   mimirHalt: MimirHalt
+  protocol: Chain
   walletLocked: boolean
 }
 
-export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
-  const { haltedChains, mimirHalt, walletLocked } = props
+export const SaversOverview = (props: Props): JSX.Element => {
+  const { haltedChains, mimirHalt, protocol, walletLocked } = props
   const intl = useIntl()
   const navigate = useNavigate()
   const { network } = useNetwork()
-  const { dex } = useDex()
 
   const {
     service: {
@@ -74,27 +74,27 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
   } = useMidgardMayaContext()
 
   const poolsPeriod = useObservableState(
-    dex.chain === THORChain ? poolsPeriod$ : poolsPeriodMaya$,
+    protocol === THORChain ? poolsPeriod$ : poolsPeriodMaya$,
     GetPoolsPeriodEnum._30d
   )
 
   const { maxSynthPerPoolDepth: maxSynthPerPoolDepthRD, reloadConstants } = useSynthConstants()
 
   const refreshHandler = useCallback(() => {
-    if (dex.chain === THORChain) {
+    if (protocol === THORChain) {
       reloadPools()
     } else {
       reloadMayaPools()
     }
     reloadConstants()
-  }, [dex, reloadConstants, reloadPools, reloadMayaPools])
+  }, [protocol, reloadConstants, reloadPools, reloadMayaPools])
 
   const selectedPricePool = useObservableState(
-    dex.chain === THORChain ? selectedPricePool$ : selectedPricePoolMaya$,
-    dex.chain === THORChain ? PoolHelpers.RUNE_PRICE_POOL : MAYA_PRICE_POOL
+    protocol === THORChain ? selectedPricePool$ : selectedPricePoolMaya$,
+    protocol === THORChain ? PoolHelpers.RUNE_PRICE_POOL : MAYA_PRICE_POOL
   )
 
-  const poolsRD = useObservableState(dex.chain === THORChain ? poolsState$ : mayaPoolsState$, RD.pending)
+  const poolsRD = useObservableState(protocol === THORChain ? poolsState$ : mayaPoolsState$, RD.pending)
 
   // store previous data of pools to render these while reloading
   const previousSavers = useRef<O.Option<SaversTableRowsData>>(O.none)
@@ -198,7 +198,7 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
       })
 
       const disabled =
-        disableAllPoolActions || disableTradingActions || disablePoolActions || walletLocked || dex.chain === 'MAYA'
+        disableAllPoolActions || disableTradingActions || disablePoolActions || walletLocked || protocol === MAYAChain
 
       const onClickHandler = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         event.preventDefault()
@@ -215,7 +215,7 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
       )
     },
 
-    [dex, haltedChains, intl, mimirHalt, navigate, walletLocked]
+    [protocol, haltedChains, intl, mimirHalt, navigate, walletLocked]
   )
 
   const btnColumn = useCallback(
@@ -239,7 +239,7 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
       Shared.assetColumn(intl.formatMessage({ id: 'common.asset' })),
       depthColumn<SaversTableRowData>(selectedPricePool.asset),
       filledColumn<SaversTableRowData>(),
-      aprColumn<SaversTableRowData>(poolsPeriod, dex.chain),
+      aprColumn<SaversTableRowData>(poolsPeriod, protocol),
       btnColumn()
     ],
     [
@@ -252,7 +252,7 @@ export const SaversOverview: React.FC<Props> = (props): JSX.Element => {
       intl,
       removePoolFromWatchlist,
       selectedPricePool.asset,
-      dex
+      protocol
     ]
   )
 

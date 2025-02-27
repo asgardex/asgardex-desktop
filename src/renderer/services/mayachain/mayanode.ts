@@ -213,25 +213,28 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     liveData.map<Node[], NodeInfos>((nodes) =>
       FP.pipe(
         nodes,
-        A.map(({ bond, reward, status, node_address, bond_providers, bond_address, signer_membership }) => {
-          return {
-            address: node_address,
-            bond: baseAmount(bond, CACAO_DECIMAL),
-            award: baseAmount(reward, CACAO_DECIMAL),
-            status: status as NodeStatusEnum,
-            nodeOperatorAddress: bond_address,
-            bondProviders: {
-              nodeOperatorFee: baseAmount(bond_providers.node_operator_fee, CACAO_DECIMAL),
-              providers: Array.isArray(bond_providers.providers)
-                ? bond_providers.providers.map((provider) => ({
-                    bondAddress: provider.bond_address,
-                    bond: baseAmount(provider.reward, CACAO_DECIMAL)
-                  }))
-                : []
-            },
-            signMembership: signer_membership
+        A.map(
+          ({ bond, reward, status, node_address, bond_providers, bond_address, signer_membership, pub_key_set }) => {
+            return {
+              address: node_address,
+              pubKeySet: pub_key_set,
+              bond: baseAmount(bond, CACAO_DECIMAL),
+              award: baseAmount(reward, CACAO_DECIMAL),
+              status: status as NodeStatusEnum,
+              nodeOperatorAddress: bond_address,
+              bondProviders: {
+                nodeOperatorFee: baseAmount(bond_providers.node_operator_fee, CACAO_DECIMAL),
+                providers: Array.isArray(bond_providers.providers)
+                  ? bond_providers.providers.map((provider) => ({
+                      bondAddress: provider.bond_address,
+                      bond: baseAmount(provider.reward, CACAO_DECIMAL)
+                    }))
+                  : []
+              },
+              signMembership: signer_membership
+            }
           }
-        })
+        )
       )
     ),
     RxOp.startWith(RD.initial),
@@ -309,18 +312,24 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
         ),
         RxOp.catchError((e) => Rx.of(RD.failure(Error(`Failed loading mimir: ${JSON.stringify(e)}`)))),
         RxOp.map((response) => {
-          if (typeof response === 'object' && response !== null) {
-            const result: Mimir = {}
-            for (const [key, value] of Object.entries(response)) {
-              const numberValue = Number(value)
-              if (isNaN(numberValue)) {
-                return RD.failure(new Error(`Invalid value for key "${key}": ${value} cannot be converted to a number`))
+          if ('data' in response) {
+            const responseData = response.data
+            if (responseData && typeof responseData === 'object') {
+              const result: Mimir = {}
+              for (const [key, value] of Object.entries(responseData)) {
+                const numberValue = Number(value)
+                if (!isNaN(numberValue)) {
+                  result[key] = numberValue
+                } else {
+                  return RD.failure(new Error(`Invalid value for key ${key}: ${value}`))
+                }
               }
-              result[key] = numberValue
+              return RD.success(result as Mimir)
+            } else {
+              return RD.failure(new Error('Unexpected response format: responseData is not an object'))
             }
-            return RD.success(result as Mimir)
           } else {
-            return RD.failure(new Error('Unexpected response format: response is not a valid object'))
+            return RD.failure(new Error('Response is not an AxiosResponse'))
           }
         })
       )

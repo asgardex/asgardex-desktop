@@ -470,6 +470,98 @@ const chainDepositFunctions: Record<
       feeOption: params.feeOption,
       evmHDMode: params.hdMode
     })
+  },
+  [BASEChain]: async (params) => {
+    if (!params.router) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Router address needs to be defined to send Ledger transaction on ${chainToString(BASEChain)}`
+      })
+    }
+    if (!params.asset) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(BASEChain)}`
+      })
+    }
+    if (!params.recipient) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Recipient needs to be defined to send Ledger transaction on ${chainToString(BASEChain)}`
+      })
+    }
+    if (!params.feeOption) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Fee option needs to be defined to send Ledger transaction on ${chainToString(BASEChain)}`
+      })
+    }
+    if (!isEvmHDMode(params.hdMode)) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Invalid EthHDMode set - needed to send Ledger transaction on ${chainToString(BASEChain)}`
+      })
+    }
+    return BASE.deposit({
+      ...params,
+      asset: params.asset,
+      router: params.router,
+      transport: params.transport,
+      network: params.network,
+      amount: params.amount,
+      memo: params.memo,
+      walletAccount: params.walletAccount,
+      walletIndex: params.walletIndex,
+      recipient: params.recipient,
+      feeOption: params.feeOption,
+      evmHDMode: params.hdMode
+    })
+  },
+  [ARBChain]: async (params) => {
+    if (!params.router) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Router address needs to be defined to send Ledger transaction on ${chainToString(ARBChain)}`
+      })
+    }
+    if (!params.asset) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Asset needs to be defined to send Ledger transaction on ${chainToString(ARBChain)}`
+      })
+    }
+    if (!params.recipient) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Recipient needs to be defined to send Ledger transaction on ${chainToString(ARBChain)}`
+      })
+    }
+    if (!params.feeOption) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Fee option needs to be defined to send Ledger transaction on ${chainToString(ARBChain)}`
+      })
+    }
+    if (!isEvmHDMode(params.hdMode)) {
+      return E.left({
+        errorId: LedgerErrorId.INVALID_DATA,
+        msg: `Invalid EthHDMode set - needed to send Ledger transaction on ${chainToString(ARBChain)}`
+      })
+    }
+    return ARB.deposit({
+      ...params,
+      asset: params.asset,
+      router: params.router,
+      transport: params.transport,
+      network: params.network,
+      amount: params.amount,
+      memo: params.memo,
+      walletAccount: params.walletAccount,
+      walletIndex: params.walletIndex,
+      recipient: params.recipient,
+      feeOption: params.feeOption,
+      evmHDMode: params.hdMode
+    })
   }
 }
 

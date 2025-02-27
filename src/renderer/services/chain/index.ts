@@ -13,7 +13,16 @@ import {
   utxoFeesWithRates$,
   reloadUtxoFeesWithRates$
 } from './fees'
-import { swap$, saverDeposit$, symDeposit$, symWithdraw$, saverWithdraw$, transfer$ } from './transaction'
+import {
+  swap$,
+  swapCF$,
+  saverDeposit$,
+  symDeposit$,
+  symWithdraw$,
+  saverWithdraw$,
+  transfer$,
+  tradeWithdraw$
+} from './transaction'
 
 /**
  * Exports all functions and observables needed at UI level (provided by `ChainContext`)
@@ -31,10 +40,12 @@ export {
   swapFees$,
   assetAddress$,
   swap$,
+  swapCF$,
   saverDeposit$,
   symDeposit$,
   symWithdraw$,
   saverWithdraw$,
+  tradeWithdraw$,
   transfer$,
   assetWithDecimal$,
   utxoFeesWithRates$,

@@ -190,7 +190,9 @@ export const RunepoolView: React.FC = (): JSX.Element => {
         <Styled.TitleContainer>
           <Styled.BalanceTitle>{intl.formatMessage({ id: 'wallet.shares.total' })}</Styled.BalanceTitle>
         </Styled.TitleContainer>
-        <Styled.BalanceLabel>{isPrivate ? hiddenString : totalRedeemPrice}</Styled.BalanceLabel>
+        <Styled.BalanceLabel className="!font-mainSemiBold">
+          {isPrivate ? hiddenString : totalRedeemPrice}
+        </Styled.BalanceLabel>
       </Styled.Container>
     )
   }, [intl, isPrivate, totalRedeemPrice])

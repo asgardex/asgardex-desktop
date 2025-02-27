@@ -5,7 +5,6 @@ import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/Option'
 
-import { thorDetails } from '../../../../shared/api/types'
 import { AssetBTC, AssetETH, AssetBSC } from '../../../../shared/utils/asset'
 import { AssetUSDCBSC, AssetUSDTBSC, AssetUSDTERC20 } from '../../../const'
 import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
@@ -46,11 +45,16 @@ describe('deposit/Deposit.helper', () => {
       inFee: baseAmount(200)
     }
   }
-  const dex = thorDetails
 
   describe('maxRuneAmountToDeposit', () => {
     it('900', () => {
-      const result = maxRuneAmountToDeposit({ poolData, assetBalance, dexBalance, fees, dex })
+      const result = maxRuneAmountToDeposit({
+        poolData,
+        assetBalance,
+        dexBalance,
+        fees,
+        protocolDecimals: THORCHAIN_DECIMAL
+      })
       // R = 200000 (rune pool)
       // A = 100000 (asset pool)
       // r = 1000 (rune balance)
@@ -70,7 +74,13 @@ describe('deposit/Deposit.helper', () => {
     it('4900', () => {
       const dexBalance = baseAmount(5000)
       const assetBalance = { asset: AssetBTC, amount: baseAmount(10000) }
-      const result = maxRuneAmountToDeposit({ poolData, assetBalance, dexBalance, fees, dex })
+      const result = maxRuneAmountToDeposit({
+        poolData,
+        assetBalance,
+        dexBalance,
+        fees,
+        protocolDecimals: THORCHAIN_DECIMAL
+      })
       // R = 200000 (rune pool)
       // A = 100000 (asset pool)
       // r = 5000 (rune balance)
@@ -153,12 +163,12 @@ describe('deposit/Deposit.helper', () => {
   describe('getRuneAmountToDeposit', () => {
     it('is 10000', () => {
       const assetAmount = baseAmount(5000)
-      const result = getDexAmountToDeposit(assetAmount, poolData, dex)
+      const result = getDexAmountToDeposit(assetAmount, poolData, THORCHAIN_DECIMAL)
       expect(eqBaseAmount.equals(result, baseAmount(10000))).toBeTruthy()
     })
     it('is 5000', () => {
       const assetAmount = baseAmount(2500)
-      const result = getDexAmountToDeposit(assetAmount, poolData, dex)
+      const result = getDexAmountToDeposit(assetAmount, poolData, THORCHAIN_DECIMAL)
       expect(eqBaseAmount.equals(result, baseAmount(5000))).toBeTruthy()
     })
   })

@@ -1,7 +1,7 @@
 import { assetAmount, assetToBase, bn } from '@xchainjs/xchain-util'
 
-import { thorDetails } from '../../shared/api/types'
 import { ZERO_BN } from '../const'
+import { THORCHAIN_DECIMAL } from './assetHelper'
 import { eqBaseAmount } from './fp/eq'
 import { getAssetShare, getPoolShare, getRuneShare } from './poolShareHelper'
 
@@ -10,7 +10,7 @@ describe('poolShareHelpers', () => {
     const liquidityUnits = bn('300000000')
     const pool = { runeDepth: '12', units: '2' }
 
-    const result = getRuneShare(liquidityUnits, pool, thorDetails)
+    const result = getRuneShare(liquidityUnits, pool, THORCHAIN_DECIMAL)
     const expected = assetToBase(assetAmount(18, 8))
 
     expect(eqBaseAmount.equals(result, expected)).toBeTruthy()

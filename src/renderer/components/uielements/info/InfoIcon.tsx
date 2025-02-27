@@ -1,4 +1,5 @@
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
+import clsx from 'clsx'
 
 import { Tooltip } from '../common/Common.styles'
 
@@ -19,6 +20,6 @@ export type Props = {
 
 export const InfoIcon: React.FC<Props> = ({ tooltip, color = 'primary', className = '' }) => (
   <Tooltip title={tooltip}>
-    <InformationCircleIcon className={`${iconColor[color]} h-[20px] w-[20px] ${className}`} />
+    <InformationCircleIcon className={clsx(iconColor[color], 'h-[20px] w-[20px]', className)} />
   </Tooltip>
 )

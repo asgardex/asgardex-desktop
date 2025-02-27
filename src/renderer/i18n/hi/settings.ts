@@ -15,6 +15,7 @@ const settings: SettingMessages = {
   'setting.connected': 'जुड़ा हुआ',
   'setting.notconnected': 'जुड़ा नहीं है',
   'setting.add.device': 'डिवाइस जोड़ें',
+  'setting.wallet.whitelist.modal': 'व्हाइटलिस्ट के लिए टोकन जोड़ें / हटाएं',
   'setting.wallet.index': 'सूचकांक',
   'setting.wallet.account': 'खाता',
   'setting.wallet.index.info': 'Ledger पते का इंडेक्स नंबर दर्ज करें जिसका आप उपयोग करना चाहते हैं',

@@ -110,7 +110,9 @@ const wallet: WalletMessages = {
   'wallet.ledger.verifyAddress.modal.title': 'Ledger पता की पुष्टि करें',
   'wallet.ledger.verifyAddress.modal.description': 'अपने डिवाइस पर पता {address} की पुष्टि करें',
   'wallet.ledger.removeAddress': 'चेन {chain} के लिए लेजर पता हटाएं',
-  'wallet.ledger.viewAddress': 'एक्सप्लोरर में पता देखें'
+  'wallet.ledger.viewAddress': 'एक्सप्लोरर में पता देखें',
+  'wallet.evmToken.tooltip':
+    'क्या आपको अपना टोकन नहीं मिल रहा है? सेटिंग्स में जाएं और इसे मैन्युअल रूप से श्वेतसूची में जोड़ें।'
 }
 
 export default wallet

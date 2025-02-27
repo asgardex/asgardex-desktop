@@ -117,16 +117,11 @@ export type CommonMessageKey =
   | 'common.swap'
   | 'common.chainDisabled'
   | 'common.savers'
-  | 'common.lending'
-  | 'common.borrow'
-  | 'common.repay'
   | 'common.earn'
   | 'common.earnings'
   | 'common.allocationByType'
   | 'common.allocationByChain'
   | 'common.liquidity'
-  | 'common.collateral'
-  | 'common.debt'
   | 'common.withdraw'
   | 'common.approve'
   | 'common.accept'
@@ -140,6 +135,7 @@ export type CommonMessageKey =
   | 'common.tx.healthCheck'
   | 'common.tx.sending'
   | 'common.tx.sendingAsset'
+  | 'common.tx.loadingSecondTx'
   | 'common.tx.success'
   | 'common.tx.success-info'
   | 'common.tx.checkResult'
@@ -154,6 +150,7 @@ export type CommonMessageKey =
   | 'common.all'
   | 'common.analytics'
   | 'common.asset.base'
+  | 'common.asset.native'
   | 'common.asset.change'
   | 'common.asset.quickSelect'
   | 'common.asset.chooseAsset'
@@ -167,6 +164,7 @@ export type CommonMessageKey =
   | 'common.tx.type.withdraw'
   | 'common.tx.type.send'
   | 'common.tx.type.runePoolDeposit'
+  | 'common.tx.type.runePoolWithdraw'
   | 'common.time.days'
   | 'common.time.days.short'
   | 'common.time.month1'
@@ -349,6 +347,7 @@ type WalletMessageKey =
   | 'wallet.ledger.verifyAddress.modal.description'
   | 'wallet.ledger.removeAddress'
   | 'wallet.ledger.viewAddress'
+  | 'wallet.evmToken.tooltip'
 
 export type WalletMessages = { [key in WalletMessageKey]: string }
 
@@ -428,6 +427,7 @@ type SettingMessageKey =
   | 'setting.notconnected'
   | 'setting.connected'
   | 'setting.add.device'
+  | 'setting.wallet.whitelist.modal'
   | 'setting.wallet.index'
   | 'setting.wallet.account'
   | 'setting.wallet.index.info'
@@ -463,6 +463,8 @@ type SwapMessageKey =
   | 'swap.input'
   | 'swap.output'
   | 'swap.slip.title'
+  | 'swap.aggregator.betterReturn'
+  | 'swap.aggregator.fasterReturn'
   | 'swap.slip.tolerance'
   | 'swap.slip.tolerance.info'
   | 'swap.slip.tolerance.ledger-disabled.info'
@@ -471,6 +473,7 @@ type SwapMessageKey =
   | 'swap.streaming.interval.info'
   | 'swap.streaming.quantity'
   | 'swap.streaming.quantity.info'
+  | 'swap.state.sending'
   | 'swap.state.pending'
   | 'swap.state.success'
   | 'swap.state.error'
@@ -625,36 +628,6 @@ type RunePoolMessageKey =
 
 export type RunePoolMessages = { [key in RunePoolMessageKey]: string }
 
-type LoanMessageKey =
-  | 'loan.noLoans'
-  | 'loan.openLoan'
-  | 'loan.closeLoan'
-  | 'loan.detail.title'
-  | 'loan.detail.debt.current'
-  | 'loan.detail.debt.issued'
-  | 'loan.detail.collateral.deposited'
-  | 'loan.detail.collateral.current'
-  | 'loan.detail.collateral.withdrawn'
-  | 'loan.detail.age'
-  | 'loan.detail.lastRepay'
-  | 'loan.detail.repayed'
-  | 'loan.detail.assetAmount'
-  | 'loan.detail.collaterizationRatio'
-  | 'loan.info.max.loan.value'
-  | 'loan.info.max.balance'
-  | 'loan.borrow.state.sending'
-  | 'loan.borrow.state.checkResults'
-  | 'loan.borrow.state.pending'
-  | 'loan.borrow.state.success'
-  | 'loan.borrow.state.error'
-  | 'loan.repay.state.sending'
-  | 'loan.repay.state.checkResults'
-  | 'loan.repay.state.pending'
-  | 'loan.repay.state.success'
-  | 'loan.repay.state.error'
-
-export type LoanMessages = { [key in LoanMessageKey]: string }
-
 export type HaltMessageKey =
   | 'halt.thorchain'
   | 'halt.trading'
@@ -676,7 +649,6 @@ export type Messages = CommonMessages &
   DepositMessages &
   SaversMessages &
   RunePoolMessages &
-  LoanMessages &
   LedgerMessages &
   BondsMessages &
   PoolSharesMessage &

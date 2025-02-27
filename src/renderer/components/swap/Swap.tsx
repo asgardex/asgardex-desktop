@@ -8,17 +8,10 @@ import {
   MagnifyingGlassMinusIcon,
   MagnifyingGlassPlusIcon
 } from '@heroicons/react/24/outline'
+import { QuoteSwap } from '@xchainjs/xchain-aggregator'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
-import {
-  CompatibleAsset,
-  MayaChain,
-  MayachainQuery,
-  QuoteSwap,
-  QuoteSwapParams as QuoteSwapParamsMaya
-} from '@xchainjs/xchain-mayachain-query'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
-import { InboundDetail, QuoteSwapParams, ThorchainQuery, TxDetails } from '@xchainjs/xchain-thorchain-query'
 import {
   Asset,
   baseToAsset,
@@ -35,30 +28,34 @@ import {
   TokenAsset,
   SynthAsset,
   isTokenAsset,
-  isTradeAsset
+  isTradeAsset,
+  isSecuredAsset
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
+import clsx from 'clsx'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import * as O from 'fp-ts/Option'
-import debounce from 'lodash/debounce'
+import { debounce } from 'lodash'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { Dex } from '../../../shared/api/types'
-import {
-  ASGARDEX_ADDRESS,
-  ASGARDEX_AFFILIATE_FEE,
-  ASGARDEX_AFFILIATE_FEE_MIN,
-  ASGARDEX_THORNAME
-} from '../../../shared/const'
+import { ASGARDEX_AFFILIATE_FEE_MIN, getAsgardexAffiliateFee, getAsgardexThorname } from '../../../shared/const'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
-import { chainToString, DEFAULT_ENABLED_CHAINS, EnabledChain } from '../../../shared/utils/chain'
+import { isMayaSupportedAsset, isTCSupportedAsset } from '../../../shared/utils/asset'
+import {
+  chainToString,
+  DEFAULT_ENABLED_CHAINS,
+  DefaultChainAttributes,
+  EnabledChain,
+  isChainOfThor
+} from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
+import { useChainflipContext } from '../../contexts/ChainflipContext'
 import {
   max1e8BaseAmount,
   convertBaseAmountDecimal,
@@ -66,7 +63,6 @@ import {
   THORCHAIN_DECIMAL,
   isUSDAsset,
   isRuneNativeAsset,
-  max1e10BaseAmount,
   isCacaoAsset,
   isEVMTokenAsset,
   getEVMTokenAddressForChain
@@ -74,165 +70,84 @@ import {
 import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isLtcChain } from '../../helpers/chainHelper'
 import { isEvmChain, isEvmToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
-import { eqAsset, eqBaseAmount, eqOAsset, eqOApproveParams, eqAddress } from '../../helpers/fp/eq'
+import { eqAsset, eqBaseAmount, eqOAsset, eqAddress, eqOApproveParams } from '../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
-import { getSwapMemo, shortenMemo } from '../../helpers/memoHelper'
+import { getSwapMemo, updateMemo } from '../../helpers/memoHelper'
 import * as PoolHelpers from '../../helpers/poolHelper'
-import { isPoolDetails } from '../../helpers/poolHelper'
-import { getPoolPriceValue as getPoolPriceValueM } from '../../helpers/poolHelperMaya'
-import { LiveData } from '../../helpers/rx/liveData'
+import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../helpers/stringHelper'
-import { calculateTransactionTime, formatSwapTime, Time } from '../../helpers/timeHelper'
+import { formatSwapTime } from '../../helpers/timeHelper'
 import {
-  filterWalletBalancesByAssetsForDex,
+  filterWalletBalancesByAssets,
   getWalletBalanceByAssetAndWalletType,
   getWalletTypeLabel,
   hasLedgerInBalancesByAsset
 } from '../../helpers/walletHelper'
+import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
+import { usePricePool } from '../../hooks/usePricePool'
+import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../hooks/useSubscriptionState'
-import { ChangeSlipToleranceHandler } from '../../services/app/types'
 import { INITIAL_SWAP_STATE } from '../../services/chain/const'
 import { getZeroSwapFees } from '../../services/chain/fees/swap'
-import {
-  SwapTxParams,
-  SwapFeesHandler,
-  ReloadSwapFeesHandler,
-  SwapFeesRD,
-  SwapFees,
-  FeeRD,
-  SwapHandler,
-  SwapTxState
-} from '../../services/chain/types'
-import { AddressValidationAsync, GetExplorerTxUrl, OpenExplorerTxUrl } from '../../services/clients'
-import {
-  ApproveFeeHandler,
-  ApproveParams,
-  IsApprovedRD,
-  IsApproveParams,
-  LoadApproveFeeHandler
-} from '../../services/evm/types'
-import { PoolDetails as PoolDetailsMaya } from '../../services/mayaMigard/types'
+import { SwapTxParams, SwapFeesRD, SwapFees, FeeRD, SwapTxState, SendTxParams } from '../../services/chain/types'
+import { ApproveParams, IsApprovedRD } from '../../services/evm/types'
 import { getPoolDetail as getPoolDetailMaya } from '../../services/mayaMigard/utils'
-import { PoolAddress, PoolDetails, PoolsDataMap } from '../../services/midgard/types'
+import { PoolAddress } from '../../services/midgard/types'
 import { getPoolDetail } from '../../services/midgard/utils'
 import { userChains$ } from '../../services/storage/userChains'
 import { addAsset } from '../../services/storage/userChainTokens'
-import {
-  ApiError,
-  KeystoreState,
-  TxHashLD,
-  TxHashRD,
-  ValidatePasswordHandler,
-  BalancesState,
-  WalletBalance,
-  WalletBalances
-} from '../../services/wallet/types'
+import { TxHashRD, WalletBalance, WalletBalances } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
-import { AssetWithAmount, SlipTolerance } from '../../types/asgardex'
-import { PricePool } from '../../views/pools/Pools.types'
+import { useAggregator } from '../../store/aggregator/hooks'
+import { AssetWithAmount } from '../../types/asgardex'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
-import { TxModal } from '../modal/tx'
 import { SwapAssets } from '../modal/tx/extra'
-import { LoadingView } from '../shared/loading'
+import { LoadingView, Spin } from '../shared/loading'
 import { AssetInput } from '../uielements/assets/assetInput'
-import { BaseButton, FlatButton, ViewTxButton } from '../uielements/button'
+import { BaseButton, FlatButton } from '../uielements/button'
 import { Collapse } from '../uielements/collapse'
 import { Tooltip, TooltipAddress, WalletTypeLabel } from '../uielements/common/Common.styles'
 import { Fees, UIFeesRD } from '../uielements/fees'
 import { InfoIcon } from '../uielements/info'
 import { CopyLabel } from '../uielements/label'
-import { ProgressBar } from '../uielements/progressBar'
 import { Slider } from '../uielements/slider'
 import { EditableAddress } from './EditableAddress'
 import { SelectableSlipTolerance } from './SelectableSlipTolerance'
-import { SwapAsset } from './Swap.types'
+import { ModalState, RateDirection, SwapProps } from './Swap.types'
 import * as Utils from './Swap.utils'
+import SwapExpiryProgressBar from './SwapExpiryProgressBar'
+import { SwapRoute } from './SwapRoute'
+import { SwapTxModal } from './SwapTxModal'
 
 const ErrorLabel: React.FC<{
   children: React.ReactNode
   className?: string
 }> = ({ children, className }): JSX.Element => (
-  <div className={`mb-[14px] text-center font-main uppercase text-error0 dark:text-error0d ${className} text-[12px]`}>
+  <div
+    className={clsx('mb-[14px] text-center font-main text-[12px] uppercase text-error0 dark:text-error0d', className)}>
     {children}
   </div>
 )
 
-export type SwapProps = {
-  thorchainQuery: ThorchainQuery
-  mayachainQuery: MayachainQuery
-  keystore: KeystoreState
-  poolAssets: AnyAsset[]
-  assets: {
-    source: SwapAsset
-    target: SwapAsset
-  }
-  sourceKeystoreAddress: O.Option<Address>
-  sourceLedgerAddress: O.Option<Address>
-  sourceWalletType: WalletType
-  targetWalletType: O.Option<WalletType>
-  poolAddress: O.Option<PoolAddress>
-  swap$: SwapHandler
-  reloadTxStatus: FP.Lazy<void>
-  poolsData: PoolsDataMap
-  pricePool: PricePool
-  poolDetails: PoolDetails | PoolDetailsMaya
-  walletBalances: Pick<BalancesState, 'balances' | 'loading'>
-  goToTransaction: OpenExplorerTxUrl
-  getExplorerTxUrl: GetExplorerTxUrl
-  validatePassword$: ValidatePasswordHandler
-  reloadFees: ReloadSwapFeesHandler
-  reloadBalances: FP.Lazy<void>
-  fees$: SwapFeesHandler
-  reloadApproveFee: LoadApproveFeeHandler
-  approveFee$: ApproveFeeHandler
-  recipientAddress: O.Option<Address>
-  targetKeystoreAddress: O.Option<Address>
-  targetLedgerAddress: O.Option<Address>
-  onChangeAsset: ({
-    source,
-    sourceWalletType,
-    target,
-    targetWalletType,
-    recipientAddress
-  }: {
-    source: AnyAsset
-    target: AnyAsset
-    sourceWalletType: WalletType
-    targetWalletType: O.Option<WalletType>
-    recipientAddress: O.Option<Address>
-  }) => void
-  network: Network
-  slipTolerance: SlipTolerance
-  changeSlipTolerance: ChangeSlipToleranceHandler
-  approveERC20Token$: (params: ApproveParams) => TxHashLD
-  isApprovedERC20Token$: (params: IsApproveParams) => LiveData<ApiError, boolean>
-  importWalletHandler: FP.Lazy<void>
-  disableSwapAction: boolean
-  addressValidator: AddressValidationAsync
-  hidePrivateData: boolean
-  dex: Dex
-}
-
 export const Swap = ({
-  thorchainQuery,
-  mayachainQuery,
   keystore,
   poolAssets,
   assets: {
     source: { asset: sourceAsset, decimal: sourceAssetDecimal, price: sourceAssetPrice },
     target: { asset: targetAsset, decimal: targetAssetDecimal, price: targetAssetPrice }
   },
-  poolAddress: oPoolAddress,
+  poolAddressThor: oPoolAddressThor,
+  poolAddressMaya: oPoolAddressMaya,
   swap$,
-  poolDetails,
-  pricePool,
+  swapCF$,
+  poolDetailsThor,
+  poolDetailsMaya,
   walletBalances,
-  goToTransaction,
-  getExplorerTxUrl,
   validatePassword$,
   reloadFees,
   reloadBalances = FP.constVoid,
   fees$,
+  isApprovedERC20Token$,
   sourceKeystoreAddress: oInitialSourceKeystoreAddress,
   sourceLedgerAddress: oSourceLedgerAddress,
   targetKeystoreAddress: oTargetKeystoreAddress,
@@ -244,23 +159,34 @@ export const Swap = ({
   network,
   slipTolerance,
   changeSlipTolerance,
-  isApprovedERC20Token$,
   approveERC20Token$,
   reloadApproveFee,
   approveFee$,
   importWalletHandler,
-  disableSwapAction,
   addressValidator,
-  hidePrivateData,
-  dex
+  hidePrivateData
 }: SwapProps) => {
+  const { estimateSwap } = useAggregator()
   const intl = useIntl()
 
-  const { chain: sourceChain } = sourceAsset.type === AssetType.SYNTH ? dex.asset : sourceAsset
-  const { chain: targetChain } = targetAsset.type === AssetType.SYNTH ? dex.asset : targetAsset
+  const { chain: sourceChain } =
+    sourceAsset.type === AssetType.SYNTH
+      ? AssetCacao
+      : sourceAsset.type === AssetType.SECURED
+      ? AssetRuneNative
+      : sourceAsset
+  const { chain: targetChain } =
+    targetAsset.type === AssetType.SYNTH
+      ? AssetCacao
+      : sourceAsset.type === AssetType.SECURED
+      ? AssetRuneNative
+      : targetAsset
 
   const lockedWallet: boolean = useMemo(() => isLocked(keystore) || !hasImportedKeystore(keystore), [keystore])
   const [quoteOnly, setQuoteOnly] = useState<boolean>(false)
+  const [isFetchingEstimate, setIsFetchingEstimate] = useState(false)
+
+  const { isAssetSupported$ } = useChainflipContext()
 
   const useSourceAssetLedger = isLedgerWallet(initialSourceWalletType)
   const prevChainFees = useRef<O.Option<SwapFees>>(O.none)
@@ -272,22 +198,38 @@ export const Swap = ({
     O.map(isLedgerWallet),
     O.getOrElse(() => false)
   )
-  // For normal quotes
-  const [oQuote, setQuote] = useState<O.Option<TxDetails>>(O.none)
 
-  // For maya quotes
-  const [oQuoteMaya, setQuoteMaya] = useState<O.Option<QuoteSwap>>(O.none)
+  const pricePoolThor = usePricePool()
+  const pricePoolMaya = usePricePoolMaya()
+
+  const [oQuoteProcotols, setQuoteProtocols] = useState<O.Option<QuoteSwap[]>>(O.none)
+  const [oQuoteProtocol, setQuoteProtocol] = useState<O.Option<QuoteSwap>>(O.none)
+  const [oErrorProtocol, setErrorProtocol] = useState<O.Option<Error>>(O.none)
 
   // Default Streaming interval set to 1 blocks
-  const [streamingInterval, setStreamingInterval] = useState<number>(dex.chain === THORChain ? 1 : 5)
+  const [streamingInterval, setStreamingInterval] = useState<number>(1)
   // Default Streaming quantity set to 0, network computes the optimum
   const [streamingQuantity, setStreamingQuantity] = useState<number>(0)
   // Slide use state
-  const [slider, setSlider] = useState<number>(dex.chain === THORChain ? 26 : 50)
+  const [slider, setSlider] = useState<number>(26)
 
   const [oTargetWalletType, setTargetWalletType] = useState<O.Option<WalletType>>(oInitialTargetWalletType)
 
   const [isStreaming, setIsStreaming] = useState<Boolean>(true)
+  const openExplorer = useOpenExplorerTxUrl(
+    FP.pipe(
+      oQuoteProtocol,
+      O.chain((quoteSwap) =>
+        quoteSwap.protocol === 'Thorchain'
+          ? O.some(THORChain)
+          : quoteSwap.protocol === 'Mayachain'
+          ? O.some(MAYAChain)
+          : quoteSwap.protocol === 'Chainflip'
+          ? O.some(sourceChain)
+          : O.none
+      )
+    )
+  )
 
   // Update state needed - initial target walletAddress is loaded async and can be different at first run
   useEffect(() => {
@@ -326,8 +268,6 @@ export const Swap = ({
   const prevTargetAsset = useRef<O.Option<AnyAsset>>(O.none)
 
   const [customAddressEditActive, setCustomAddressEditActive] = useState(false)
-  const [currentDate, setCurrentDate] = useState(new Date())
-  const [quoteExpired, setQuoteExpired] = useState<boolean>(false)
 
   const sourceWalletAddress = useMemo(() => {
     return FP.pipe(
@@ -339,6 +279,18 @@ export const Swap = ({
     )
   }, [oSourceWalletAddress])
 
+  const destinationWalletAddress = useMemo(
+    () =>
+      FP.pipe(
+        oRecipientAddress,
+        O.fold(
+          () => '', // Fallback
+          (destinationAddress) => destinationAddress // Return t
+        )
+      ),
+    [oRecipientAddress]
+  )
+
   /**
    * All balances based on available assets to swap
    */
@@ -347,10 +299,10 @@ export const Swap = ({
       FP.pipe(
         oWalletBalances,
         // filter wallet balances to include assets available to swap only including synth balances
-        O.map((balances) => filterWalletBalancesByAssetsForDex(balances, poolAssets, dex)),
+        O.map((balances) => filterWalletBalancesByAssets(balances, poolAssets)),
         O.getOrElse<WalletBalances>(() => [])
       ),
-    [dex, oWalletBalances, poolAssets]
+    [oWalletBalances, poolAssets]
   )
   const hasSourceAssetLedger = useMemo(
     () => hasLedgerInBalancesByAsset(sourceAsset, allBalances),
@@ -404,9 +356,9 @@ export const Swap = ({
 
   /** Balance of source asset converted to <= 1e8 or 1e10 for maya */
   const sourceAssetAmountMax1e8: BaseAmount = useMemo(() => {
-    const amount = dex.chain === THORChain ? max1e8BaseAmount(sourceAssetAmount) : max1e10BaseAmount(sourceAssetAmount)
+    const amount = max1e8BaseAmount(sourceAssetAmount)
     return amount
-  }, [dex, sourceAssetAmount])
+  }, [sourceAssetAmount])
 
   // source chain asset
   const sourceChainAsset: Asset = useMemo(() => getChainAsset(sourceChain), [sourceChain])
@@ -448,75 +400,52 @@ export const Swap = ({
   )
 
   const priceAmountToSwapMax1e8: CryptoAmount = useMemo(() => {
-    const result =
-      dex.chain === THORChain
-        ? FP.pipe(
-            isPoolDetails(poolDetails)
-              ? PoolHelpers.getPoolPriceValue({
-                  balance: { asset: sourceAsset, amount: amountToSwapMax1e8 },
-                  poolDetails,
-                  pricePool
-                })
-              : O.none,
-            O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal))
-          )
+    const result = FP.pipe(
+      isChainOfThor(sourceChain)
+        ? PoolHelpers.getUSDValue({
+            balance: { asset: sourceAsset, amount: amountToSwapMax1e8 },
+            poolDetails: poolDetailsThor,
+            pricePool: pricePoolThor
+          })
         : FP.pipe(
-            getPoolPriceValueM({
+            PoolHelpersMaya.getUSDValue({
               balance: { asset: sourceAsset, amount: amountToSwapMax1e8 },
-              poolDetails,
-              pricePool
-            }),
-            O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal))
-          )
-
-    return new CryptoAmount(result, pricePool.asset)
-  }, [dex, amountToSwapMax1e8, poolDetails, pricePool, sourceAsset])
+              poolDetails: poolDetailsMaya,
+              pricePool: pricePoolMaya
+            })
+          ),
+      O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal))
+    )
+    return new CryptoAmount(result, pricePoolThor.asset)
+  }, [amountToSwapMax1e8, poolDetailsMaya, poolDetailsThor, pricePoolMaya, pricePoolThor, sourceAsset, sourceChain])
 
   const isZeroAmountToSwap = useMemo(() => amountToSwapMax1e8.amount().isZero(), [amountToSwapMax1e8])
 
-  const [inboundDetails, setInboundDetails] = useState<Record<string, InboundDetail>>()
-
   const zeroSwapFees = useMemo(() => {
-    if (inboundDetails) {
-      const gasRate =
-        isRuneNativeAsset(sourceAsset) || isSynthAsset(sourceAsset)
-          ? baseAmount(2000000)
-          : baseAmount(inboundDetails?.[sourceAsset.chain]?.gasRate) // Define defaultGasRate
-      const outboundFee =
-        isRuneNativeAsset(targetAsset) || isSynthAsset(targetAsset)
-          ? baseAmount(2000000)
-          : baseAmount(inboundDetails?.[targetAsset.chain]?.outboundFee) // Define defaultOutboundFee
+    return getZeroSwapFees({ inAsset: sourceAsset, outAsset: targetAsset })
+  }, [sourceAsset, targetAsset])
 
-      // Define defaultSwapFees based on the above fallbacks
-      const defaultFees: SwapFees = {
-        inFee: { asset: sourceAsset, amount: gasRate },
-        outFee: { asset: targetAsset, amount: outboundFee }
-      }
-
-      return defaultFees
-    } else {
-      // Use getZeroSwapFees if the condition is not met
-      return getZeroSwapFees({ inAsset: sourceAsset, outAsset: targetAsset })
-    }
-  }, [inboundDetails, sourceAsset, targetAsset])
   // PlaceHolder memo just to calc fees better
   const swapMemo = useMemo(() => {
     return O.fold(
       () => '',
       (recipientAddress: string) => {
         const toleranceBps = undefined
+        const affiliateName = getAsgardexThorname(network)
+        const affiliateBps = getAsgardexAffiliateFee(network)
+
         return getSwapMemo({
           targetAsset,
           targetAddress: recipientAddress,
           toleranceBps,
           streamingInterval,
           streamingQuantity,
-          affiliateName: ASGARDEX_THORNAME,
-          affiliateBps: ASGARDEX_AFFILIATE_FEE
+          affiliateName: affiliateName,
+          affiliateBps: affiliateName ? affiliateBps ?? 0 : undefined
         })
       }
     )(oRecipientAddress)
-  }, [oRecipientAddress, targetAsset, streamingInterval, streamingQuantity])
+  }, [oRecipientAddress, targetAsset, streamingInterval, streamingQuantity, network])
 
   const [swapFeesRD] = useObservableState<SwapFeesRD>(() => {
     return FP.pipe(
@@ -570,12 +499,10 @@ export const Swap = ({
 
   const setAmountToSwapMax1e8 = useCallback(
     (amountToSwap: BaseAmount) => {
-      const newAmount = baseAmount(amountToSwap.amount(), sourceAssetAmountMax1e8.decimal)
-
       // dirty check - do nothing if prev. and next amounts are equal
-      if (eqBaseAmount.equals(newAmount, amountToSwapMax1e8)) return {}
+      if (eqBaseAmount.equals(amountToSwap, amountToSwapMax1e8)) return {}
 
-      const newAmountToSwap = newAmount.gt(maxAmountToSwapMax1e8) ? maxAmountToSwapMax1e8 : newAmount
+      const newAmountToSwap = amountToSwap.gt(maxAmountToSwapMax1e8) ? maxAmountToSwapMax1e8 : amountToSwap
       /**
        * New object instance of `amountToSwap` is needed to make
        * AssetInput component react to the new value.
@@ -586,36 +513,39 @@ export const Swap = ({
        */
       _setAmountToSwapMax1e8({ ...newAmountToSwap })
     },
-    [amountToSwapMax1e8, maxAmountToSwapMax1e8, sourceAssetAmountMax1e8]
+    [amountToSwapMax1e8, maxAmountToSwapMax1e8]
   )
 
   // Price of swap IN fee
   const oPriceSwapInFee: O.Option<CryptoAmount> = useMemo(() => {
     const assetAmount = new CryptoAmount(swapFees.inFee.amount, swapFees.inFee.asset)
-    return dex.chain === THORChain
-      ? FP.pipe(
-          isPoolDetails(poolDetails)
-            ? PoolHelpers.getPoolPriceValue({
-                balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
-                poolDetails,
-                pricePool
-              })
-            : O.none,
-          O.map((amount) => {
-            return new CryptoAmount(amount, pricePool.asset)
-          })
-        )
-      : FP.pipe(
-          getPoolPriceValueM({
+    const result = FP.pipe(
+      isChainOfThor(assetAmount.asset.chain)
+        ? PoolHelpers.getUSDValue({
             balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
-            poolDetails,
-            pricePool
-          }),
-          O.map((amount) => {
-            return new CryptoAmount(amount, pricePool.asset)
+            poolDetails: poolDetailsThor,
+            pricePool: pricePoolThor
           })
-        )
-  }, [dex, poolDetails, pricePool, swapFees.inFee.amount, swapFees.inFee.asset])
+        : FP.pipe(
+            PoolHelpersMaya.getUSDValue({
+              balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
+              poolDetails: poolDetailsMaya,
+              pricePool: pricePoolMaya
+            })
+          ),
+      O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal))
+    )
+
+    return O.some(new CryptoAmount(result, pricePoolThor.asset))
+  }, [
+    amountToSwapMax1e8.decimal,
+    poolDetailsMaya,
+    poolDetailsThor,
+    pricePoolMaya,
+    pricePoolThor,
+    swapFees.inFee.amount,
+    swapFees.inFee.asset
+  ])
 
   const priceSwapInFeeLabel = useMemo(() => {
     // Ensure swapFees is defined before proceeding
@@ -654,69 +584,72 @@ export const Swap = ({
 
   // get outbound fee from quote response
   const oSwapOutFee: CryptoAmount = useMemo(() => {
-    const swapOutFeeThor = FP.pipe(
-      oQuote,
+    const swapOutFee = FP.pipe(
+      oQuoteProtocol,
       O.fold(
         () =>
           new CryptoAmount(
             swapFees.outFee.amount,
-            targetAsset.type === AssetType.SYNTH ? AssetRuneNative : targetAsset
+            targetAsset.type === AssetType.SYNTH
+              ? AssetCacao
+              : targetAsset.type === AssetType.SECURED
+              ? AssetRuneNative
+              : targetAsset
           ),
         (txDetails) => {
-          const txOutFee = txDetails.txEstimate.totalFees.outboundFee
+          const txOutFee = txDetails.fees.outboundFee
           return txOutFee
         }
       )
     )
-    const swapOutFeeMaya = FP.pipe(
-      oQuoteMaya,
-      O.fold(
-        () => new CryptoAmount(swapFees.outFee.amount, targetAsset.type === AssetType.SYNTH ? AssetCacao : targetAsset),
-        (quoteSwap) => {
-          const txOutFee = quoteSwap.fees.outboundFee
-          return txOutFee
-        }
-      )
-    )
-    return dex.chain === THORChain ? swapOutFeeThor : swapOutFeeMaya
-  }, [dex, oQuote, oQuoteMaya, swapFees.outFee.amount, targetAsset])
-
+    return swapOutFee
+  }, [oQuoteProtocol, swapFees.outFee.amount, targetAsset])
   const [outFeePriceValue, setOutFeePriceValue] = useState<CryptoAmount>(
     new CryptoAmount(swapFees.outFee.amount, targetAsset)
   )
 
   // useEffect to fetch data from query
   useEffect(() => {
-    const swapOutFeePrice =
-      dex.chain === THORChain
-        ? isPoolDetails(poolDetails)
-          ? PoolHelpers.getPoolPriceValue({
-              balance: { asset: oSwapOutFee.asset, amount: oSwapOutFee.baseAmount },
-              poolDetails,
-              pricePool
-            })
-          : O.none
-        : getPoolPriceValueM({
-            balance: { asset: oSwapOutFee.asset, amount: oSwapOutFee.baseAmount },
-            poolDetails,
-            pricePool
-          })
-    if (O.isSome(swapOutFeePrice)) {
-      const swapOutFeeCryptoAmount = new CryptoAmount(swapOutFeePrice.value, pricePool.asset)
-      setOutFeePriceValue(swapOutFeeCryptoAmount)
+    // Ensure `oQuoteProtocol` is not None
+    if (O.isNone(oQuoteProtocol)) {
+      return
     }
-    const fetchData = async () => {
-      setInboundDetails(
-        dex.chain === THORChain
-          ? await thorchainQuery.thorchainCache.getInboundDetails()
-          : await mayachainQuery.getInboundDetails()
-      )
+    const calculateSwapOutFeePrice = () => {
+      if (isUSDAsset(oSwapOutFee.asset)) {
+        return O.some(oSwapOutFee.baseAmount)
+      }
+      return isChainOfThor(oSwapOutFee.asset.chain)
+        ? PoolHelpers.getUSDValue({
+            balance: { asset: oSwapOutFee.asset, amount: oSwapOutFee.baseAmount },
+            poolDetails: poolDetailsThor,
+            pricePool: pricePoolThor
+          })
+        : PoolHelpersMaya.getUSDValue({
+            balance: { asset: oSwapOutFee.asset, amount: oSwapOutFee.baseAmount },
+            poolDetails: poolDetailsMaya,
+            pricePool: pricePoolMaya
+          })
     }
 
-    if (quoteExpired) {
-      fetchData()
+    const swapOutFeePrice = calculateSwapOutFeePrice()
+
+    if (O.isSome(swapOutFeePrice)) {
+      const newOutFeePriceValue = new CryptoAmount(swapOutFeePrice.value, pricePoolThor.asset)
+
+      // Only update state if the value actually changes
+      setOutFeePriceValue((prevValue) =>
+        prevValue?.baseAmount.eq(newOutFeePriceValue.baseAmount) ? prevValue : newOutFeePriceValue
+      )
     }
-  }, [thorchainQuery, oSwapOutFee, pricePool.asset, poolDetails, pricePool, network, dex, mayachainQuery, quoteExpired])
+  }, [
+    pricePoolThor,
+    pricePoolMaya,
+    oQuoteProtocol,
+    oSwapOutFee.asset,
+    oSwapOutFee.baseAmount,
+    poolDetailsThor,
+    poolDetailsMaya
+  ])
 
   const priceSwapOutFeeLabel = useMemo(() => {
     // Check if swapFees is defined
@@ -728,13 +661,34 @@ export const Swap = ({
     const {
       outFee: { amount, asset: feeAsset }
     } = swapFees
-
-    const fee = formatAssetAmountCurrency({
-      amount: baseToAsset(amount),
-      asset: feeAsset,
-      decimal: isUSDAsset(feeAsset) ? 2 : 6,
-      trimZeros: !isUSDAsset(feeAsset)
-    })
+    const oValueInAsset = isChainOfThor(oSwapOutFee.asset.chain)
+      ? PoolHelpers.getAssetAmountFromUSDValue({
+          usdValue: outFeePriceValue.baseAmount,
+          poolDetails: poolDetailsThor,
+          asset: feeAsset,
+          amount: amount,
+          pricePool: pricePoolThor
+        })
+      : PoolHelpersMaya.getAssetAmountFromUSDValue({
+          usdValue: outFeePriceValue.baseAmount,
+          poolDetails: poolDetailsMaya,
+          asset: feeAsset,
+          amount: amount,
+          pricePool: pricePoolMaya
+        })
+    const fee = O.isSome(oValueInAsset)
+      ? formatAssetAmountCurrency({
+          amount: baseToAsset(oValueInAsset.value),
+          asset: feeAsset,
+          decimal: isUSDAsset(feeAsset) ? 2 : 6,
+          trimZeros: !isUSDAsset(feeAsset)
+        })
+      : formatAssetAmountCurrency({
+          amount: baseToAsset(amount),
+          asset: feeAsset,
+          decimal: isUSDAsset(feeAsset) ? 2 : 6,
+          trimZeros: !isUSDAsset(feeAsset)
+        })
 
     const price = FP.pipe(
       O.some(outFeePriceValue),
@@ -752,32 +706,30 @@ export const Swap = ({
     )
 
     return price ? `${price} (${fee})` : fee
-  }, [swapFees, outFeePriceValue])
+  }, [
+    swapFees,
+    oSwapOutFee.asset.chain,
+    outFeePriceValue,
+    poolDetailsThor,
+    pricePoolThor,
+    poolDetailsMaya,
+    pricePoolMaya
+  ])
 
   // Affiliate fee
   const affiliateFee: CryptoAmount = useMemo(() => {
-    const affiliateThor = FP.pipe(
-      oQuote,
+    const affiliate = FP.pipe(
+      oQuoteProtocol,
       O.fold(
         () => new CryptoAmount(baseAmount(0), AssetRuneNative), // default affiliate fee asset amount
         (txDetails) => {
-          const fee = txDetails.txEstimate.totalFees.affiliateFee
+          const fee = txDetails.fees.affiliateFee
           return fee
         }
       )
     )
-    const affiliateMaya = FP.pipe(
-      oQuoteMaya,
-      O.fold(
-        () => new CryptoAmount(baseAmount(0), AssetCacao), // default affiliate fee asset amount
-        (quoteSwap) => {
-          const fee = quoteSwap.fees.affiliateFee
-          return fee
-        }
-      )
-    )
-    return dex.chain === THORChain ? affiliateThor : affiliateMaya
-  }, [dex, oQuote, oQuoteMaya])
+    return affiliate
+  }, [oQuoteProtocol])
 
   // store affiliate fee
   const [affiliatePriceValue, setAffiliatePriceValue] = useState<CryptoAmount>(
@@ -786,37 +738,34 @@ export const Swap = ({
 
   // useEffect to fetch data from query
   useEffect(() => {
-    const affiliatePriceValue =
-      dex.chain === THORChain
-        ? isPoolDetails(poolDetails)
-          ? PoolHelpers.getPoolPriceValue({
-              balance: { asset: affiliateFee.asset, amount: affiliateFee.baseAmount },
-              poolDetails,
-              pricePool
-            })
-          : O.none
-        : getPoolPriceValueM({
-            balance: { asset: affiliateFee.asset, amount: affiliateFee.baseAmount },
-            poolDetails,
-            pricePool
-          })
+    // Ensure `oQuoteProtocol` is not None
+    if (O.isNone(oQuoteProtocol)) {
+      return
+    }
+    const affiliatePriceValue = isChainOfThor(affiliateFee.asset.chain)
+      ? PoolHelpers.getUSDValue({
+          balance: { asset: affiliateFee.asset, amount: affiliateFee.baseAmount },
+          poolDetails: poolDetailsThor,
+          pricePool: pricePoolThor
+        })
+      : PoolHelpersMaya.getUSDValue({
+          balance: { asset: affiliateFee.asset, amount: affiliateFee.baseAmount },
+          poolDetails: poolDetailsMaya,
+          pricePool: pricePoolMaya
+        })
     if (O.isSome(affiliatePriceValue)) {
-      const maxCryptoAmount = new CryptoAmount(affiliatePriceValue.value, pricePool.asset)
+      const maxCryptoAmount = new CryptoAmount(affiliatePriceValue.value, pricePoolThor.asset)
       setAffiliatePriceValue(maxCryptoAmount)
     }
-  }, [affiliateFee, dex, network, poolDetails, pricePool, pricePool.asset])
+  }, [affiliateFee, network, oQuoteProtocol, poolDetailsMaya, poolDetailsThor, pricePoolMaya, pricePoolThor])
 
   //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
   // Apparently thornode bug is fixed.
   // https://gitlab.com/thorchain/thornode/-/commit/f96350ab3d5adda18c61d134caa98b6d5af2b006
   const applyBps = useMemo(() => {
-    const aff = ASGARDEX_AFFILIATE_FEE
-    let applyBps: number
     const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
-    applyBps = network === Network.Stagenet ? 0 : aff
-    applyBps = txFeeCovered ? aff : 0
-    return applyBps
-  }, [network, priceAmountToSwapMax1e8])
+    return txFeeCovered
+  }, [priceAmountToSwapMax1e8.assetAmount])
 
   const priceAffiliateFeeLabel = useMemo(() => {
     if (!swapFees) {
@@ -844,283 +793,158 @@ export const Swap = ({
       ),
       O.getOrElse(() => '')
     )
+    const bps = getAsgardexAffiliateFee(network)
+    const displayBps = applyBps && bps !== undefined ? `${bps / 100}%` : '0%'
 
-    return price ? `${price} (${fee}) ${applyBps === undefined ? '0' : applyBps / 100}%` : fee
-  }, [swapFees, affiliateFee.assetAmount, affiliateFee.asset, affiliatePriceValue, applyBps, sourceAsset])
+    return !applyBps ? `free` : price ? `${price} (${fee}) ${displayBps}` : fee
+  }, [swapFees, affiliateFee.assetAmount, affiliateFee.asset, affiliatePriceValue, applyBps, network, sourceAsset])
 
-  const oQuoteSwapData: O.Option<QuoteSwapParams> = useMemo(
-    () =>
-      FP.pipe(
-        sequenceTOption(oRecipientAddress, oSourceAssetWB),
-        O.map(([destinationAddress, { walletAddress }]) => {
-          const fromAsset = sourceAsset
-          const destinationAsset = targetAsset
-          const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
-          const address = destinationAddress
-          const affiliate = ASGARDEX_ADDRESS === walletAddress ? undefined : ASGARDEX_THORNAME
-          const affiliateBps = ASGARDEX_ADDRESS === walletAddress ? undefined : applyBps
-          const streamingInt = isStreaming ? streamingInterval : 0
-          const streaminQuant = isStreaming ? streamingQuantity : 0
-          const toleranceBps = isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100 // convert to basis points
-          return {
-            fromAsset: fromAsset,
-            destinationAsset: destinationAsset,
-            amount: amount,
-            destinationAddress: address,
-            streamingInterval: streamingInt,
-            streamingQuantity: streaminQuant,
-            toleranceBps: toleranceBps,
-            affiliateAddress: affiliate,
-            affiliateBps
-          }
+  const {
+    state: approveState,
+    reset: resetApproveState,
+    subscribe: subscribeApproveState
+  } = useSubscriptionState<TxHashRD>(RD.initial)
+
+  // State for values of `isApprovedERC20Token$`
+  const {
+    state: isApprovedState,
+    reset: resetIsApprovedState,
+    subscribe: subscribeIsApprovedState
+  } = useSubscriptionState<IsApprovedRD>(RD.initial)
+
+  const checkApprovedStatus = useCallback(
+    ({ contractAddress, spenderAddress, fromAddress }: ApproveParams) => {
+      subscribeIsApprovedState(
+        isApprovedERC20Token$({
+          contractAddress,
+          spenderAddress,
+          fromAddress
         })
-      ),
+      )
+    },
+    [isApprovedERC20Token$, subscribeIsApprovedState]
+  )
+
+  const fetchSwap = useCallback(
+    async (amount: BaseAmount) => {
+      if (amount.amount().isZero()) {
+        setQuoteProtocol(O.none)
+        setErrorProtocol(O.none)
+        return
+      }
+
+      setQuoteProtocol(O.none)
+      setIsFetchingEstimate(true)
+
+      try {
+        const result = await estimateSwap(
+          {
+            fromAsset: { ...sourceAsset, symbol: sourceAsset.symbol.toUpperCase() },
+            destinationAsset: { ...targetAsset, symbol: targetAsset.symbol.toUpperCase() },
+            amount: new CryptoAmount(convertBaseAmountDecimal(amount, sourceAssetDecimal), {
+              ...sourceAsset,
+              symbol: sourceAsset.symbol.toUpperCase()
+            }),
+            fromAddress: sourceWalletAddress,
+            destinationAddress: quoteOnly ? undefined : destinationWalletAddress,
+            streamingInterval: isStreaming ? streamingInterval : 0,
+            streamingQuantity: isStreaming ? streamingQuantity : 0,
+            toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100
+          },
+          applyBps
+        )
+
+        const sortAndSetDefaultQuote = (quotes: QuoteSwap[]) => {
+          const sortedQuotes = quotes.sort((a, b) => {
+            const amountA = parseFloat(a.expectedAmount.assetAmountFixedString())
+            const amountB = parseFloat(b.expectedAmount.assetAmountFixedString())
+            const timeA = a.totalSwapSeconds
+            const timeB = b.totalSwapSeconds
+            return amountA > amountB ? -1 : amountA < amountB ? 1 : timeA - timeB
+          })
+          setQuoteProtocols(O.some(sortedQuotes))
+          if (sortedQuotes.length > 0) {
+            setQuoteProtocol(O.some(sortedQuotes[0]))
+            setErrorProtocol(O.none)
+          } else {
+            setQuoteProtocol(O.none)
+            setErrorProtocol(O.some(new Error('No swap route found')))
+          }
+        }
+
+        sortAndSetDefaultQuote(result)
+      } catch (err) {
+        console.error('Failed to fetch estimate:', err)
+        setErrorProtocol(O.some(err as Error))
+      }
+      setIsFetchingEstimate(false)
+    },
     [
-      oRecipientAddress,
-      oSourceAssetWB,
+      estimateSwap,
       sourceAsset,
       targetAsset,
-      amountToSwapMax1e8,
       sourceAssetDecimal,
-      applyBps,
+      sourceWalletAddress,
+      destinationWalletAddress,
       isStreaming,
       streamingInterval,
       streamingQuantity,
       network,
-      slipTolerance
-    ]
-  )
-  const oQuoteSwapDataMaya: O.Option<QuoteSwapParamsMaya> = useMemo(
-    () =>
-      FP.pipe(
-        sequenceTOption(oRecipientAddress, oSourceWalletAddress),
-        O.map(([destinationAddress, sourceWalletAddress]) => {
-          const fromAsset = sourceAsset as CompatibleAsset
-          const destinationAsset = targetAsset as CompatibleAsset
-          const amount = new CryptoAmount(
-            convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal),
-            sourceAsset as CompatibleAsset
-          )
-          const address = destinationAddress
-          const fromAdd = sourceWalletAddress
-          const streamingInt = isStreaming ? streamingInterval : 0
-          const streaminQuant = isStreaming ? streamingQuantity : 0
-          const toleranceBps = isStreaming ? 10000 : slipTolerance * 100 // convert to basis points
-          return {
-            fromAsset: fromAsset,
-            destinationAsset: destinationAsset,
-            amount: amount,
-            destinationAddress: address,
-            fromAddress: fromAdd,
-            streamingInterval: streamingInt,
-            streamingQuantity: streaminQuant,
-            toleranceBps: toleranceBps,
-            affiliateAddress: ASGARDEX_THORNAME,
-            affiliateBps: applyBps
-          }
-        })
-      ),
-    [
-      oRecipientAddress,
-      oSourceWalletAddress,
-      sourceAsset,
-      targetAsset,
-      amountToSwapMax1e8,
-      sourceAssetDecimal,
-      isStreaming,
-      streamingInterval,
-      streamingQuantity,
       slipTolerance,
-      applyBps
+      applyBps,
+      quoteOnly
     ]
   )
 
-  const debouncedEffect = useRef(
-    debounce((quoteSwapData) => {
-      // Include isStreaming as a parameter
-      if (dex.chain === THORChain) {
-        thorchainQuery
-          .quoteSwap(quoteSwapData)
-          .then((quote) => {
-            setQuote(O.some(quote))
-          })
-          .catch((error) => {
-            console.error('Failed to get quote:', error)
-          })
-      } else {
-        mayachainQuery
-          .quoteSwap(quoteSwapData)
-          .then((quote) => {
-            setQuoteMaya(O.some(quote))
-          })
-          .catch((error) => {
-            console.error('Failed to get quote:', error)
-          })
-      }
-    }, 500)
+  const debouncedFetchSwap = useMemo(
+    () => debounce((amount: BaseAmount) => fetchSwap(amount), 500), // 500ms delay
+    [fetchSwap]
   )
 
   useEffect(() => {
-    const currentDebouncedEffect = debouncedEffect.current
-    FP.pipe(
-      sequenceTOption(oQuoteSwapData, oQuoteSwapDataMaya, oSourceAssetWB),
-      O.fold(
-        () => {
-          const estimateThorDexSwap: QuoteSwapParams = {
-            fromAsset: sourceAsset,
-            destinationAsset: targetAsset,
-            amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset),
-            streamingInterval: isStreaming ? streamingInterval : 0,
-            streamingQuantity: isStreaming ? streamingQuantity : 0,
-            toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100, // convert to basis points
-            affiliateAddress: ASGARDEX_THORNAME,
-            affiliateBps: applyBps
-          }
-          const estimateMayaDexSwap: QuoteSwapParamsMaya = {
-            fromAsset: sourceAsset as CompatibleAsset,
-            destinationAsset: targetAsset as CompatibleAsset,
-            fromAddress: sourceWalletAddress,
-            amount: new CryptoAmount(
-              convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal),
-              sourceAsset as CompatibleAsset
-            ),
-            streamingInterval: isStreaming ? streamingInterval : 0,
-            streamingQuantity: isStreaming ? streamingQuantity : 0,
-            toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100, // convert to basis points,
-            affiliateAddress: ASGARDEX_THORNAME,
-            affiliateBps: applyBps
-          }
-          const estimateSwap = dex.chain === THORChain ? estimateThorDexSwap : estimateMayaDexSwap
-          if (!estimateSwap.amount.baseAmount.eq(baseAmount(0)) && lockedWallet) {
-            currentDebouncedEffect(estimateSwap)
-          }
-        },
-        ([quoteSwapDataThor, quoteSwapDataMaya]) => {
-          const quoteSwapData = dex.chain === THORChain ? quoteSwapDataThor : quoteSwapDataMaya
-          if (!quoteSwapData.amount.baseAmount.eq(baseAmount(0)) && !disableSwapAction) {
-            currentDebouncedEffect(quoteSwapData)
-          }
-        }
-      )
-    )
-    // Clean up the debounced function
+    debouncedFetchSwap(amountToSwapMax1e8)
     return () => {
-      currentDebouncedEffect.cancel()
+      debouncedFetchSwap.cancel()
     }
-  }, [
-    oQuoteSwapData,
-    disableSwapAction,
-    sourceAsset,
-    targetAsset,
-    amountToSwapMax1e8,
-    sourceAssetDecimal,
-    isStreaming,
-    streamingInterval,
-    streamingQuantity,
-    slipTolerance,
-    lockedWallet,
-    oQuoteSwapDataMaya,
-    dex,
-    oSourceAssetWB,
-    oSourceWalletAddress,
-    sourceWalletAddress,
-    applyBps,
-    network
-  ])
+  }, [amountToSwapMax1e8, debouncedFetchSwap])
+
+  // Function to handle user selection
+  const handleSelectQuote = (selectedQuote: QuoteSwap) => {
+    setQuoteProtocol(O.some(selectedQuote))
+  }
 
   // Swap boolean for use later
   const canSwap: boolean = useMemo(() => {
     const canSwapFromTxDetails = FP.pipe(
-      oQuote,
+      oQuoteProtocol,
       O.fold(
         () => false, // default value if oQuote is None
         (txDetails) => {
-          const canSwap = txDetails.txEstimate.canSwap
+          const canSwap = txDetails.canSwap
           return canSwap
         }
       )
     )
-    const canSwapFromQuoteSwapMaya = FP.pipe(
-      oQuoteMaya,
-      O.fold(
-        () => false, // default value if oQuote is None
-        (quoteSwap) => {
-          const canSwap = quoteSwap.canSwap
-          return canSwap
-        }
-      )
-    )
-    return dex.chain === THORChain ? canSwapFromTxDetails : canSwapFromQuoteSwapMaya
-  }, [dex, oQuote, oQuoteMaya])
-
-  // Reccommend amount in for use later
-  const reccommendedAmountIn: CryptoAmount = useMemo(
-    () =>
-      FP.pipe(
-        oQuote,
-        O.fold(
-          () => new CryptoAmount(baseAmount(0), sourceAsset), // default value if oQuote is None
-          (txDetails) => new CryptoAmount(baseAmount(txDetails.txEstimate.recommendedMinAmountIn), sourceAsset)
-        )
-      ),
-    [oQuote, sourceAsset]
-  )
+    return canSwapFromTxDetails
+  }, [oQuoteProtocol])
 
   // Quote slippage returned as a percent
   const swapSlippage: number = useMemo(() => {
-    // Handle each Option individually
     const slipFromTxDetails = FP.pipe(
-      oQuote,
+      oQuoteProtocol,
       O.fold(
         () => 0,
-        (txDetails) => txDetails.txEstimate.slipBasisPoints / 100
+        (txDetails) => txDetails.slipBasisPoints / 100
       )
     )
-    const slipFromQuoteSwap = FP.pipe(
-      oQuoteMaya,
-      O.fold(
-        () => 0,
-        (quoteSwap) => {
-          return quoteSwap.slipBasisPoints / 100
-        }
-      )
-    )
-    return dex.chain === THORChain ? slipFromTxDetails : slipFromQuoteSwap
-  }, [dex, oQuote, oQuoteMaya])
 
-  // Quote slippage returned as a percent
-  const swapStreamingSlippage: number = useMemo(() => {
-    // Handle each Option individually
-    const slipFromTxDetails = FP.pipe(
-      oQuote,
-      O.fold(
-        () => 0,
-        (txDetails) => txDetails.txEstimate.streamingSlipBasisPoints / 100
-      )
-    )
-    const slipFromQuoteSwap = FP.pipe(
-      oQuoteMaya,
-      O.fold(
-        () => 0,
-        (quoteSwap) => {
-          return quoteSwap.slipBasisPoints / 100
-        }
-      )
-    )
-    return dex.chain === THORChain ? slipFromTxDetails : slipFromQuoteSwap
-  }, [dex, oQuote, oQuoteMaya])
+    return slipFromTxDetails
+  }, [oQuoteProtocol])
 
   // Quote expiry returned as a date
   const swapExpiry: Date = useMemo(() => {
-    const swapExpiryThor = FP.pipe(
-      oQuote,
-      O.fold(
-        () => new Date(), // default
-        (txDetails) => txDetails.expiry
-      )
-    )
-    const swapExpiryMaya = FP.pipe(
-      oQuoteMaya,
+    const expiry = FP.pipe(
+      oQuoteProtocol,
       O.fold(
         () => new Date(), // default
         () => {
@@ -1130,109 +954,95 @@ export const Swap = ({
         }
       )
     )
-    return dex.chain === THORChain ? swapExpiryThor : swapExpiryMaya
-  }, [dex, oQuote, oQuoteMaya])
+    return expiry
+  }, [oQuoteProtocol])
 
-  // Swap result from thornode
+  // Swap result from Aggregator
   const swapResultAmountMax: CryptoAmount = useMemo(() => {
-    const swapResultAmountMaxThor = FP.pipe(
-      oQuote,
+    const expectedAmount = FP.pipe(
+      oQuoteProtocol,
       O.fold(
         () => new CryptoAmount(baseAmount(0), targetAsset),
-        (txDetails) => txDetails.txEstimate.netOutput
-      )
-    )
-    const swapResultAmountMaxMaya = FP.pipe(
-      oQuoteMaya,
-      O.fold(
-        () => new CryptoAmount(baseAmount(0), targetAsset),
-        (quoteSwap) => {
-          return quoteSwap.expectedAmount
+        (txDetails) => {
+          return txDetails.expectedAmount
         }
       )
     )
-    return dex.chain === THORChain ? swapResultAmountMaxThor : swapResultAmountMaxMaya
-  }, [dex, oQuote, oQuoteMaya, targetAsset])
+    return expectedAmount
+  }, [oQuoteProtocol, targetAsset])
 
-  // Swap streaming result from thornode
-  const maxStreamingQuantity: number = useMemo(
-    () =>
-      FP.pipe(
-        sequenceTOption(oQuote),
-        O.fold(
-          () => 0,
-          ([txDetails]) => txDetails.txEstimate.maxStreamingQuantity
-        )
-      ),
-    [oQuote]
-  )
-  // Memo
-  // const quoteMemo: string = useMemo(
-  //   () =>
-  //     FP.pipe(
-  //       sequenceTOption(oQuote),
-  //       O.fold(
-  //         () => '',
-  //         ([txDetails]) => txDetails.memo
-  //       )
-  //     ),
-  //   [oQuote]
-  // )
+  // Aggregator api Fetch Error
+  const aggregatorErrors: JSX.Element = useMemo(() => {
+    const protocolErrors: string[] = FP.pipe(
+      oErrorProtocol,
+      O.fold(
+        () => [],
+        (error) => [error.message]
+      )
+    )
 
-  // Quote Errors
-  const quoteErrors: string[] = useMemo(
-    () =>
-      dex.chain === THORChain
-        ? FP.pipe(
-            sequenceTOption(oQuote),
-            O.fold(
-              () => [],
-              ([txDetails]) => txDetails.txEstimate.errors
-            )
-          )
-        : FP.pipe(
-            sequenceTOption(oQuoteMaya),
-            O.fold(
-              () => [],
-              ([txDetails]) => txDetails.errors
-            )
-          ),
-    [dex, oQuote, oQuoteMaya]
-  )
+    if (protocolErrors.length === 0) {
+      return <></>
+    }
+
+    return (
+      <ErrorLabel>
+        {protocolErrors.map((error, index) => (
+          <div key={index}>{error}</div>
+        ))}
+      </ErrorLabel>
+    )
+  }, [oErrorProtocol])
 
   /**
    * Price of swap result in max 1e8 // boolean to convert between streaming and regular swaps
    */
   const priceSwapResultAmountMax1e8: AssetWithAmount = useMemo(() => {
-    return dex.chain === THORChain
-      ? FP.pipe(
-          isPoolDetails(poolDetails)
-            ? PoolHelpers.getPoolPriceValue({
+    const amount = FP.pipe(
+      oQuoteProtocol,
+      O.fold(
+        () => baseAmount(0, THORCHAIN_DECIMAL), // Default value if no protocol
+        (quoteProtocol) => {
+          if (quoteProtocol.protocol === 'Thorchain') {
+            // Use Thorchain pool details and price pool
+            return O.getOrElse(() => baseAmount(0, THORCHAIN_DECIMAL))(
+              PoolHelpers.getUSDValue({
                 balance: {
                   asset: swapResultAmountMax.asset,
                   amount: swapResultAmountMax.baseAmount
                 },
-                poolDetails,
-                pricePool
+                poolDetails: poolDetailsThor,
+                pricePool: pricePoolThor
               })
-            : O.none,
-          O.getOrElse(() => baseAmount(0, THORCHAIN_DECIMAL)), // default decimal
-          (amount) => ({ asset: pricePool.asset, amount })
-        )
-      : FP.pipe(
-          getPoolPriceValueM({
-            balance: {
-              asset: swapResultAmountMax.asset,
-              amount: swapResultAmountMax.baseAmount
-            },
-            poolDetails,
-            pricePool
-            // network is not used here as per your original code
-          }),
-          O.getOrElse(() => baseAmount(0, THORCHAIN_DECIMAL)), // default decimal
-          (amount) => ({ asset: pricePool.asset, amount })
-        )
-  }, [dex, swapResultAmountMax.asset, swapResultAmountMax.baseAmount, poolDetails, pricePool])
+            )
+          } else if (quoteProtocol.protocol === 'Mayachain') {
+            // Use Mayachain pool details and price pool
+            return O.getOrElse(() => baseAmount(0, THORCHAIN_DECIMAL))(
+              PoolHelpersMaya.getUSDValue({
+                balance: {
+                  asset: swapResultAmountMax.asset,
+                  amount: swapResultAmountMax.baseAmount
+                },
+                poolDetails: poolDetailsMaya,
+                pricePool: pricePoolMaya
+              })
+            )
+          }
+          return baseAmount(0, THORCHAIN_DECIMAL)
+        }
+      )
+    )
+
+    return { asset: pricePoolThor.asset, amount }
+  }, [
+    oQuoteProtocol,
+    pricePoolThor,
+    swapResultAmountMax.asset,
+    swapResultAmountMax.baseAmount,
+    poolDetailsThor,
+    poolDetailsMaya,
+    pricePoolMaya
+  ])
 
   /**
    * Price sum of swap fees (IN + OUT) and affiliate
@@ -1249,21 +1059,13 @@ export const Swap = ({
           const in1e8 = to1e8BaseAmount(inFee.baseAmount)
           const out1e8 = to1e8BaseAmount(outFee.baseAmount)
           const affiliate = to1e8BaseAmount(affiliateFee.baseAmount)
-          const slipbps = isStreaming ? swapStreamingSlippage : swapSlippage
+          const slipbps = swapSlippage
           const slip = to1e8BaseAmount(priceAmountToSwapMax1e8.baseAmount.times(slipbps / 100))
           // adding slip costs to total fees
           return { asset: inFee.asset, amount: in1e8.plus(out1e8).plus(affiliate).plus(slip) }
         })
       ),
-    [
-      oPriceSwapInFee,
-      outFeePriceValue,
-      affiliatePriceValue,
-      isStreaming,
-      swapStreamingSlippage,
-      swapSlippage,
-      priceAmountToSwapMax1e8
-    ]
+    [oPriceSwapInFee, outFeePriceValue, affiliatePriceValue, swapSlippage, priceAmountToSwapMax1e8]
   )
 
   const priceSwapFeesLabel = useMemo(() => {
@@ -1290,7 +1092,7 @@ export const Swap = ({
 
   const swapLimit1e8: O.Option<BaseAmount> = useMemo(() => {
     return FP.pipe(
-      oQuote,
+      oQuoteProtocol,
       O.chain((txDetails) => {
         // Disable slippage protection temporary for Ledger/BTC (see https://github.com/thorchain/asgardex-electron/issues/2068)
         return !disableSlippage && swapResultAmountMax.baseAmount.gt(zeroTargetBaseAmountMax1e8)
@@ -1298,84 +1100,109 @@ export const Swap = ({
           : O.none
       })
     )
-  }, [oQuote, disableSlippage, swapResultAmountMax, zeroTargetBaseAmountMax1e8])
+  }, [oQuoteProtocol, disableSlippage, swapResultAmountMax, zeroTargetBaseAmountMax1e8])
 
-  const swapLimitMaya1e8: O.Option<BaseAmount> = useMemo(() => {
+  const oSwapParams: O.Option<SwapTxParams> = useMemo(() => {
+    const oPoolAddress: O.Option<PoolAddress> = FP.pipe(
+      oQuoteProtocol,
+      O.chain((quoteSwap) => {
+        // Handle different protocols
+        switch (quoteSwap.protocol) {
+          case 'Thorchain':
+            return oPoolAddressThor
+          case 'Mayachain':
+            return oPoolAddressMaya
+          case 'Chainflip':
+            return O.none
+          default:
+            return O.none
+        }
+      })
+    )
+
     return FP.pipe(
-      oQuoteMaya,
-      O.chain((txDetails) => {
-        // Disable slippage protection temporary for Ledger/BTC (see https://github.com/thorchain/asgardex-electron/issues/2068)
-        return !disableSlippage && swapResultAmountMax.baseAmount.gt(zeroTargetBaseAmountMax1e8)
-          ? O.some(Utils.getSwapLimit1e8(txDetails.memo))
-          : O.none
+      sequenceTOption(oPoolAddress, oSourceAssetWB, oQuoteProtocol),
+      O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, quoteSwap]) => {
+        let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
+
+        if (
+          !isTokenAsset(sourceAsset) &&
+          !isTradeAsset(sourceAsset) &&
+          !isSynthAsset(sourceAsset) &&
+          !isSecuredAsset(sourceAsset)
+        ) {
+          if (sourceChainAssetAmount.lt(amountToSwap.plus(swapFees.inFee.amount))) {
+            amountToSwap = sourceChainAssetAmount.minus(swapFees.inFee.amount)
+          }
+        }
+
+        return {
+          poolAddress,
+          asset: sourceAsset,
+          amount: amountToSwap,
+          memo: updateMemo(quoteSwap.memo, network),
+          walletType,
+          sender: walletAddress,
+          walletAccount,
+          walletIndex,
+          hdMode,
+          protocol: poolAddress.protocol
+        }
       })
     )
-  }, [oQuoteMaya, disableSlippage, swapResultAmountMax, zeroTargetBaseAmountMax1e8])
+  }, [
+    oPoolAddressThor,
+    oPoolAddressMaya,
+    oSourceAssetWB,
+    oQuoteProtocol,
+    amountToSwapMax1e8,
+    sourceAssetAmount.decimal,
+    sourceAsset,
+    network,
+    sourceChainAssetAmount,
+    swapFees.inFee.amount
+  ])
 
-  const oSwapParams: O.Option<SwapTxParams> = useMemo(
-    () => {
-      const swapParamsThor = FP.pipe(
-        sequenceTOption(oPoolAddress, oSourceAssetWB, oQuote),
-        O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, txDetails]) => {
-          let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
-          if (!isTokenAsset(sourceAsset) && !isTradeAsset(sourceAsset) && !isSynthAsset(sourceAsset)) {
-            if (sourceChainAssetAmount.lt(amountToSwap.plus(swapFees.inFee.amount))) {
-              amountToSwap = sourceChainAssetAmount.minus(swapFees.inFee.amount)
-            }
-          }
-          return {
-            poolAddress,
-            asset: sourceAsset,
-            amount: amountToSwap,
-            memo: shortenMemo(txDetails.memo), // short asset
-            walletType,
-            sender: walletAddress,
-            walletAccount,
-            walletIndex,
-            hdMode,
-            dex
-          }
-        })
-      )
-      const swapParamsMaya = FP.pipe(
-        sequenceTOption(oPoolAddress, oSourceAssetWB, oQuoteMaya),
-        O.map(([poolAddress, { walletType, walletAddress, walletAccount, walletIndex, hdMode }, quoteSwap]) => {
-          let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
-          if (!isTokenAsset(sourceAsset) && !isTradeAsset(sourceAsset) && !isSynthAsset(sourceAsset)) {
-            if (sourceChainAssetAmount.lt(amountToSwap.plus(swapFees.inFee.amount))) {
-              amountToSwap = sourceChainAssetAmount.minus(swapFees.inFee.amount)
-            }
-          }
-          return {
-            poolAddress,
-            asset: sourceAsset,
-            amount: amountToSwap,
-            memo: quoteSwap.memo, // The memo will be different based on the selected quote
-            walletType,
-            sender: walletAddress,
-            walletAccount,
-            walletIndex,
-            hdMode,
-            dex
-          }
-        })
-      )
-      return dex.chain === THORChain ? swapParamsThor : swapParamsMaya
-    },
-    [
-      oPoolAddress,
-      oSourceAssetWB,
-      oQuote,
-      oQuoteMaya,
-      dex,
-      amountToSwapMax1e8,
-      sourceAssetAmount.decimal,
-      sourceAsset,
-      swapFees.inFee.amount,
-      sourceChainAssetAmount
-    ] // Include both quote dependencies
-  )
+  const oCFSwapParams: O.Option<SendTxParams> = useMemo(() => {
+    return FP.pipe(
+      sequenceTOption(oSourceAssetWB, oQuoteProtocol),
+      O.map(([{ walletType, walletAddress, walletAccount, walletIndex, hdMode }, quoteSwap]) => {
+        let amountToSwap = convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetAmount.decimal)
 
+        if (
+          !isTokenAsset(sourceAsset) &&
+          !isTradeAsset(sourceAsset) &&
+          !isSynthAsset(sourceAsset) &&
+          !isSecuredAsset(sourceAsset)
+        ) {
+          if (sourceChainAssetAmount.lt(amountToSwap.plus(swapFees.inFee.amount))) {
+            amountToSwap = sourceChainAssetAmount.minus(swapFees.inFee.amount)
+          }
+        }
+
+        return {
+          asset: sourceAsset,
+          amount: amountToSwap,
+          recipient: quoteSwap.toAddress,
+          memo: quoteSwap.memo,
+          walletType,
+          sender: walletAddress,
+          walletAccount,
+          walletIndex,
+          hdMode,
+          protocol: quoteSwap.protocol
+        }
+      })
+    )
+  }, [
+    oSourceAssetWB,
+    oQuoteProtocol,
+    amountToSwapMax1e8,
+    sourceAssetAmount.decimal,
+    sourceAsset,
+    sourceChainAssetAmount,
+    swapFees.inFee.amount
+  ])
   // Check to see slippage greater than tolerance
   // This is handled by thornode
   const isCausedSlippage = useMemo(() => {
@@ -1383,30 +1210,29 @@ export const Swap = ({
     return result
   }, [swapSlippage, slipTolerance, isStreaming])
 
-  type RateDirection = 'fromSource' | 'fromTarget'
-  const [rateDirection, setRateDirection] = useState<RateDirection>('fromSource')
+  const [rateDirection, setRateDirection] = useState(RateDirection.Source)
 
   const rateLabel = useMemo(() => {
     switch (rateDirection) {
-      case 'fromSource':
+      case RateDirection.Source:
         return `${formatAssetAmountCurrency({
           asset: sourceAsset,
           amount: assetAmount(1),
           decimal: isUSDAsset(sourceAsset) ? 2 : 6,
           trimZeros: true
-        })}${' '}=${' '}${formatAssetAmountCurrency({
+        })} = ${formatAssetAmountCurrency({
           asset: targetAsset,
           amount: assetAmount(sourceAssetPrice.dividedBy(targetAssetPrice)),
           decimal: isUSDAsset(targetAsset) ? 2 : 6,
           trimZeros: true
         })}`
-      case 'fromTarget':
+      case RateDirection.Target:
         return `${formatAssetAmountCurrency({
           asset: targetAsset,
           decimal: isUSDAsset(targetAsset) ? 2 : 6,
           amount: assetAmount(1),
           trimZeros: true
-        })}${' '}=${' '}${formatAssetAmountCurrency({
+        })} = ${formatAssetAmountCurrency({
           asset: sourceAsset,
           decimal: isUSDAsset(sourceAsset) ? 2 : 6,
           amount: assetAmount(targetAssetPrice.dividedBy(sourceAssetPrice)),
@@ -1423,8 +1249,24 @@ export const Swap = ({
 
   const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
     const oRouterAddress: O.Option<Address> = FP.pipe(
-      oPoolAddress,
-      O.chain(({ router }) => router)
+      oQuoteProtocol,
+      O.chain((protocol) => {
+        // Match protocol to the correct router address
+        switch (protocol.protocol) {
+          case 'Thorchain':
+            return FP.pipe(
+              oPoolAddressThor,
+              O.chain(({ router }) => router)
+            )
+          case 'Mayachain':
+            return FP.pipe(
+              oPoolAddressMaya,
+              O.chain(({ router }) => router)
+            )
+          default:
+            return O.none
+        }
+      })
     )
 
     const oTokenAddress: O.Option<string> = getEVMTokenAddressForChain(sourceChain, sourceAsset as TokenAsset)
@@ -1448,7 +1290,41 @@ export const Swap = ({
         walletType
       }))
     )
-  }, [needApprovement, network, oPoolAddress, oSourceAssetWB, sourceAsset, sourceChain])
+  }, [
+    needApprovement,
+    network,
+    oPoolAddressMaya,
+    oPoolAddressThor,
+    oQuoteProtocol,
+    oSourceAssetWB,
+    sourceAsset,
+    sourceChain
+  ])
+
+  // Trigger approval check after approval succeeds
+  useEffect(() => {
+    if (RD.isSuccess(approveState)) {
+      FP.pipe(
+        oApproveParams,
+        O.map((params) => {
+          prevApproveParams.current = O.some(params)
+          checkApprovedStatus(params)
+          return true
+        })
+      )
+    }
+  }, [approveState, oApproveParams, checkApprovedStatus])
+
+  // Refetch quote when approval is confirmed
+  useEffect(() => {
+    if (RD.isSuccess(approveState) && RD.isSuccess(isApprovedState)) {
+      debouncedFetchSwap(amountToSwapMax1e8)
+      resetIsApprovedState()
+      return () => {
+        debouncedFetchSwap.cancel()
+      }
+    }
+  }, [approveState, isApprovedState, amountToSwapMax1e8, debouncedFetchSwap, resetIsApprovedState])
 
   const reloadFeesHandler = useCallback(() => {
     reloadFees({
@@ -1477,8 +1353,6 @@ export const Swap = ({
     )
   }, RD.initial)
 
-  const prevApproveParams = useRef<O.Option<ApproveParams>>(O.none)
-
   const approveFee: BaseAmount = useMemo(
     () =>
       FP.pipe(
@@ -1490,25 +1364,17 @@ export const Swap = ({
     [approveFeeRD]
   )
 
-  // State for values of `isApprovedERC20Token$`
-  const {
-    state: isApprovedState,
-    reset: resetIsApprovedState,
-    subscribe: subscribeIsApprovedState
-  } = useSubscriptionState<IsApprovedRD>(RD.initial)
-
-  const checkApprovedStatus = useCallback(
-    ({ contractAddress, spenderAddress, fromAddress }: ApproveParams) => {
-      subscribeIsApprovedState(
-        isApprovedERC20Token$({
-          contractAddress,
-          spenderAddress,
-          fromAddress
-        })
+  // Determine if approval is needed based on quote errors
+  const needsApproval = useMemo(() => {
+    const errors = FP.pipe(
+      oQuoteProtocol,
+      O.fold(
+        () => [], // No quote, no errors
+        (quoteSwap) => quoteSwap.errors
       )
-    },
-    [isApprovedERC20Token$, subscribeIsApprovedState]
-  )
+    )
+    return errors.some((error) => error.includes('router has not been approved to spend this amount'))
+  }, [oQuoteProtocol])
 
   const reloadApproveFeesHandler = useCallback(() => {
     FP.pipe(oApproveParams, O.map(reloadApproveFee))
@@ -1519,12 +1385,9 @@ export const Swap = ({
 
   const setSourceAsset = useCallback(
     async (asset: AnyAsset) => {
-      // delay to avoid render issues while switching
       resetIsApprovedState()
       await delay(100)
       setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
-      setQuote(O.none)
-      setQuoteMaya(O.none)
       onChangeAsset({
         source: asset,
         // back to default 'keystore' type
@@ -1533,17 +1396,9 @@ export const Swap = ({
         targetWalletType: oTargetWalletType,
         recipientAddress: oRecipientAddress
       })
-      await delay(100) // Optional delay to ensure state updates properly
-      // Step 3: Check approval for the new asset
-      FP.pipe(
-        oApproveParams, // Use the new asset's approval parameters
-        O.map((params) => checkApprovedStatus(params))
-      )
     },
     [
-      checkApprovedStatus,
       initialAmountToSwapMax1e8,
-      oApproveParams,
       oRecipientAddress,
       oTargetWalletType,
       onChangeAsset,
@@ -1555,12 +1410,9 @@ export const Swap = ({
 
   const setTargetAsset = useCallback(
     async (asset: AnyAsset) => {
-      // Step 1: Reset approval state before changing the asset
       resetIsApprovedState()
-
       // Step 2: Switch target asset
       await delay(100) // Optional delay to ensure state updates properly
-
       onChangeAsset({
         source: sourceAsset,
         sourceWalletType,
@@ -1570,85 +1422,90 @@ export const Swap = ({
         recipientAddress: O.none
       })
       await delay(100) // Optional delay to ensure state updates properly
-      // Step 3: Check approval for the new asset
-      FP.pipe(
-        oApproveParams, // Use the new asset's approval parameters
-        O.map((params) => checkApprovedStatus(params))
-      )
+      resetIsApprovedState()
     },
-    [onChangeAsset, resetIsApprovedState, sourceAsset, sourceWalletType, checkApprovedStatus, oApproveParams]
+    [onChangeAsset, resetIsApprovedState, sourceAsset, sourceWalletType]
   )
+  const prevApproveParams = useRef<O.Option<ApproveParams>>(O.none)
 
   // whenever `oApproveParams` has been updated,
   // `approveFeeParamsUpdated` needs to be called to update `approveFeesRD`
-  // + `checkApprovedStatus` needs to be called
   useEffect(() => {
     FP.pipe(
       oApproveParams,
-      // Do nothing if prev. and current router are the same
       O.filter((params) => !eqOApproveParams.equals(O.some(params), prevApproveParams.current)),
-      // update ref
       O.map((params) => {
-        prevApproveParams.current = O.some(params) // Update reference to current params
-
+        prevApproveParams.current = O.some(params)
         // Using setTimeout to delay the execution of subsequent actions
         setTimeout(() => {
           approveFeeParamsUpdated(params)
-          checkApprovedStatus(params)
         }, 100) // Delay of 100 milliseconds
 
         return true
       })
     )
-  }, [approveFeeParamsUpdated, checkApprovedStatus, oApproveParams, oPoolAddress])
+  }, [approveFeeParamsUpdated, oApproveParams])
 
   const minAmountError = useMemo(() => {
-    if (isZeroAmountToSwap) return false
-    const minAmountIn = convertBaseAmountDecimal(reccommendedAmountIn.baseAmount, amountToSwapMax1e8.decimal)
-    return amountToSwapMax1e8.lt(minAmountIn)
-  }, [amountToSwapMax1e8, isZeroAmountToSwap, reccommendedAmountIn.baseAmount])
+    const errors: string[] = FP.pipe(
+      oQuoteProtocol,
+      O.fold(
+        () => [],
+        (quoteSwap) => quoteSwap.errors
+      )
+    )
 
-  // sets the locked asset amount to be the asset pool depth
+    const minAmountErrorMessage = errors.find((error) => error.includes('is less than reccommended Min Amount:'))
+
+    if (!minAmountErrorMessage) {
+      return false
+    }
+    return true
+  }, [oQuoteProtocol])
+
+  const belowDustThreshold = useMemo(() => {
+    const isBelowDustThreshold: boolean = FP.pipe(
+      oQuoteProtocol,
+      O.fold(
+        () => false,
+        (quoteSwap) => {
+          return quoteSwap.dustThreshold.baseAmount.gt(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal))
+        }
+      )
+    )
+    return isBelowDustThreshold
+  }, [amountToSwapMax1e8, oQuoteProtocol, sourceAssetDecimal])
+
+  // // sets the locked asset amount to be the asset pool depth
   useEffect(() => {
     if (lockedWallet || quoteOnly) {
-      const poolAsset =
-        (isRuneNativeAsset(sourceAsset) && dex.chain === THORChain) ||
-        (isCacaoAsset(sourceAsset) && dex.chain === 'MAYA')
-          ? targetAsset
-          : sourceAsset
-      const poolDetail =
-        dex.chain === THORChain
-          ? isPoolDetails(poolDetails)
-            ? getPoolDetail(poolDetails, poolAsset)
-            : O.none
-          : getPoolDetailMaya(poolDetails, poolAsset)
+      setQuoteOnly(true)
+      const poolDetailMaya = getPoolDetailMaya(poolDetailsMaya, sourceAsset)
+      const poolDetailThor = getPoolDetail(poolDetailsThor, sourceAsset)
 
-      if (O.isSome(poolDetail)) {
-        const detail = poolDetail.value
+      if (O.isSome(poolDetailMaya)) {
+        const detail = poolDetailMaya.value
+        let amount: BaseAmount
+        if (isCacaoAsset(sourceAsset)) {
+          amount = baseAmount(detail.runeDepth)
+        } else {
+          amount = baseAmount(detail.assetDepth)
+        }
+        setLockedAssetAmount(new CryptoAmount(convertBaseAmountDecimal(amount, sourceAssetDecimal), sourceAsset))
+      } else if (O.isSome(poolDetailThor)) {
+        const detail = poolDetailThor.value
         let amount: BaseAmount
         if (isRuneNativeAsset(sourceAsset)) {
           amount = baseAmount(detail.runeDepth)
-        } else if (isCacaoAsset(sourceAsset)) {
-          amount = baseAmount(detail.runeDepth)
         } else {
-          amount = dex.chain === THORChain ? baseAmount(detail.assetDepth) : baseAmount(detail.assetDepth)
+          amount = baseAmount(detail.assetDepth)
         }
         setLockedAssetAmount(new CryptoAmount(convertBaseAmountDecimal(amount, sourceAssetDecimal), sourceAsset))
       } else {
         setLockedAssetAmount(new CryptoAmount(ONE_RUNE_BASE_AMOUNT, sourceAsset))
       }
     }
-  }, [
-    dex,
-    lockedWallet,
-    poolDetails,
-    pricePool.poolData,
-    quoteOnly,
-    sourceAsset,
-    sourceAssetDecimal,
-    targetAsset,
-    thorchainQuery
-  ])
+  }, [lockedWallet, poolDetailsMaya, poolDetailsThor, quoteOnly, sourceAsset, sourceAssetDecimal, targetAsset])
 
   /**
    * Selectable source assets to swap from.
@@ -1665,11 +1522,22 @@ export const Swap = ({
         A.map(({ asset }) => asset),
         // Remove target assets from source list
         A.filter((asset) => !eqAsset.equals(asset, targetAsset)),
+        // Remove unsupported tokens
+        A.filter((asset) => {
+          if (isTCSupportedAsset(targetAsset, poolDetailsThor) && isTCSupportedAsset(asset, poolDetailsThor))
+            return true
+          if (isMayaSupportedAsset(targetAsset, poolDetailsMaya) && isMayaSupportedAsset(asset, poolDetailsMaya))
+            return true
+          if (isAssetSupported$(asset)) {
+            return true
+          }
+          return false
+        }),
         // Merge duplications
         (assets) => unionAssets(assets)(assets)
       ),
 
-    [allBalances, targetAsset]
+    [allBalances, isAssetSupported$, poolDetailsMaya, poolDetailsThor, targetAsset]
   )
 
   /**
@@ -1682,28 +1550,53 @@ export const Swap = ({
     (): AnyAsset[] =>
       FP.pipe(
         poolAssets,
-        A.chain((asset) =>
-          isRuneNativeAsset(asset) || isCacaoAsset(asset)
-            ? [asset]
-            : dex.chain === MayaChain
-            ? [
-                asset,
-                {
-                  ...asset,
-                  type: AssetType.SYNTH,
-                  synth: true
-                } as SynthAsset
-              ]
-            : [asset]
-        ),
+        // Remove unsupported tokens
+        A.filter((asset) => {
+          if (isTCSupportedAsset(sourceAsset, poolDetailsThor) && isTCSupportedAsset(asset, poolDetailsThor))
+            return true
+          if (isMayaSupportedAsset(sourceAsset, poolDetailsMaya) && isMayaSupportedAsset(asset, poolDetailsMaya))
+            return true
+          if (isAssetSupported$(asset)) {
+            return true
+          }
+          return false
+        }),
+        A.chain((asset) => {
+          if (isRuneNativeAsset(asset) || isCacaoAsset(asset)) {
+            // Keep native Rune or Cacao assets as is
+            return [asset]
+          }
+          if (isMayaSupportedAsset(asset, poolDetailsMaya) && isMayaSupportedAsset(sourceAsset, poolDetailsMaya)) {
+            // Synthesize MAYAChain assets
+            return [
+              asset,
+              {
+                ...asset,
+                type: AssetType.SYNTH,
+                synth: true
+              } as SynthAsset
+            ]
+          }
+          // if (isTCSupportedAsset(asset, poolDetailsThor) && isTCSupportedAsset(sourceAsset, poolDetailsThor)) {
+          //   // Create secured assets for ThorChain
+          //   return [
+          //     asset,
+          //     {
+          //       ...asset,
+          //       type: AssetType.SECURED
+          //     } as SecuredAsset
+          //   ]
+          // }
+          return [asset]
+        }),
         A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
         (assets) => unionAssets(assets)(assets)
       ),
-    [poolAssets, sourceAsset, dex]
+    [isAssetSupported$, poolAssets, poolDetailsMaya, poolDetailsThor, sourceAsset]
   )
-  type ModalState = 'swap' | 'approve' | 'none'
-  const [showPasswordModal, setShowPasswordModal] = useState<ModalState>('none')
-  const [showLedgerModal, setShowLedgerModal] = useState<ModalState>('none')
+
+  const [showPasswordModal, setShowPasswordModal] = useState(ModalState.None)
+  const [showLedgerModal, setShowLedgerModal] = useState(ModalState.None)
 
   const setAmountToSwapFromPercentValue = useCallback(
     (percents: number) => {
@@ -1715,17 +1608,15 @@ export const Swap = ({
 
   // Function to reset the slider to default position
   const resetToDefault = () => {
-    setStreamingInterval(dex.chain === THORChain ? 1 : 5) // Default position
+    setStreamingInterval(1) // Default position
     setStreamingQuantity(0) // thornode | mayanode decides the swap quantity
-    setSlider(dex.chain === THORChain ? 26 : 50)
+    setSlider(26)
     setIsStreaming(true)
   }
 
   const quoteOnlyButton = () => {
     setQuoteOnly(!quoteOnly)
     setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
-    setQuote(O.none)
-    setQuoteMaya(O.none)
   }
 
   const labelMin = useMemo(
@@ -1736,20 +1627,10 @@ export const Swap = ({
   // Streaming Interval slider
   const renderStreamerInterval = useMemo(() => {
     const calculateStreamingInterval = (slider: number) => {
-      if (dex.chain === THORChain) {
-        if (slider >= 75) return 3
-        if (slider >= 50) return 2
-        if (slider >= 25) return 1
-        return 0
-      } else if (dex.chain === MAYAChain) {
-        if (slider >= 90) return 10
-        if (slider >= 70) return 8
-        if (slider >= 50) return 5
-        if (slider >= 30) return 3
-        if (slider >= 10) return 1
-        return 0
-      }
-      return 3 // Default for other chains
+      if (slider >= 75) return 3
+      if (slider >= 50) return 2
+      if (slider >= 25) return 1
+      return 0
     }
     const streamingIntervalValue = calculateStreamingInterval(slider)
     const setInterval = (slider: number) => {
@@ -1776,7 +1657,7 @@ export const Swap = ({
         />
       </div>
     )
-  }, [dex.chain, labelMin, slider, streamingInterval])
+  }, [labelMin, slider, streamingInterval])
 
   // Streaming Quantity slider
   const renderStreamerQuantity = useMemo(() => {
@@ -1791,12 +1672,7 @@ export const Swap = ({
       toolTip = `No Streaming interval set`
     } else {
       quantityLabel = quantity === 0 ? [`Auto swap count`] : [`Sub swaps`, `${quantity}`]
-      toolTip =
-        quantity === 0
-          ? `${dex.chain === THORChain ? 'Thornode' : 'Mayanode'} decides the swap count`
-          : quantity === maxStreamingQuantity
-          ? `Max sub swaps ${maxStreamingQuantity}`
-          : ''
+      toolTip = `Protocol decides the swap count`
     }
     return (
       <div>
@@ -1804,7 +1680,6 @@ export const Swap = ({
           key={'Streamer Quantity slider'}
           value={quantity}
           onChange={setQuantity}
-          max={maxStreamingQuantity}
           tooltipVisible
           tipFormatter={() => `${toolTip}`}
           included={false}
@@ -1813,81 +1688,42 @@ export const Swap = ({
         />
       </div>
     )
-  }, [streamingQuantity, streamingInterval, maxStreamingQuantity, dex.chain])
+  }, [streamingQuantity, streamingInterval])
 
-  // swap expiry progress bar
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentDate(new Date())
-    }, 1000)
-
-    return () => clearInterval(timer)
-  }, [])
-
-  const renderSwapExpiry = useMemo(() => {
-    const quoteValidTime = 15 * 60 * 1000 // 15 minutes in milliseconds
-
-    const remainingTime = swapExpiry.getTime() - currentDate.getTime()
-    const remainingTimeInMinutes = Math.floor(remainingTime / (60 * 1000))
-
-    const progress = Math.max(0, (remainingTime / quoteValidTime) * 100)
-    setQuoteExpired(remainingTimeInMinutes < 1)
-    const expiryLabel =
-      remainingTimeInMinutes < 0 ? `Quote Expired` : `Quote expiring in ${remainingTimeInMinutes} minutes`
-
-    return (
-      <ProgressBar
-        key={'Quote expiry progress bar'}
-        percent={progress}
-        withLabel={true}
-        labels={[`${expiryLabel}`, ``]}
-      />
-    )
-  }, [swapExpiry, currentDate])
-
-  // Progress bar for swap return comparison
-  const renderStreamerReturns = useMemo(() => {
-    // Initialize percentageDifference
-    let percentageDifference = 0
-
-    // Check if swapSlippage is not zero to avoid division by zero
-    if (swapSlippage !== 0) {
-      percentageDifference = ((swapSlippage - swapStreamingSlippage) / swapSlippage) * 100
-    }
-
-    if (!isStreaming) {
-      percentageDifference = 0
-    }
-
-    // Check if percentageDifference is a number
-    const isPercentageValid = !isNaN(percentageDifference) && isFinite(percentageDifference)
-    const streamingVal = isStreaming ? 'Streaming' : 'Limit'
-    const streamerComparison = isPercentageValid
-      ? percentageDifference <= 1
-        ? `Instant ${streamingVal} swap `
-        : `${percentageDifference.toFixed(2)}% Better swap execution via streaming`
-      : 'Invalid or zero slippage' // Default message for invalid or zero slippage
-
-    return (
-      <ProgressBar
-        key={'Streamer Interval progress bar'}
-        percent={percentageDifference}
-        withLabel={true}
-        labels={[`${streamerComparison}`, ``]}
-        tooltipPlacement={'top'}
-        hasError={!isStreaming}
-      />
-    )
-  }, [isStreaming, swapSlippage, swapStreamingSlippage])
+  const renderSwapSettings = () => (
+    <Collapse
+      header={
+        <div className="flex flex-row items-center justify-between">
+          <span className="m-0 font-main text-[14px] text-gray2 dark:text-gray2d">
+            {intl.formatMessage({ id: 'common.swap' })} {intl.formatMessage({ id: 'common.settings' })} ({labelMin})
+          </span>
+        </div>
+      }>
+      <div className="flex flex-col p-4">
+        <div className="flex w-full flex-col space-y-4 px-2">
+          <div>{renderStreamerInterval}</div>
+          <div>{renderStreamerQuantity}</div>
+        </div>
+        <div className="flex justify-end">
+          <TooltipAddress title="Reset to streaming default">
+            <BaseButton
+              onClick={resetToDefault}
+              className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
+              <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
+            </BaseButton>
+          </TooltipAddress>
+        </div>
+      </div>
+    </Collapse>
+  )
 
   const submitSwapTx = useCallback(() => {
     FP.pipe(
       oSwapParams,
       O.map((swapParams) => {
+        // subscribe to swap$
         // set start time
         setSwapStartTime(Date.now())
-        // subscribe to swap$
-
         subscribeSwapState(swap$(swapParams))
 
         return true
@@ -1895,11 +1731,16 @@ export const Swap = ({
     )
   }, [oSwapParams, subscribeSwapState, swap$])
 
-  const {
-    state: approveState,
-    reset: resetApproveState,
-    subscribe: subscribeApproveState
-  } = useSubscriptionState<TxHashRD>(RD.initial)
+  const submitCFTx = useCallback(() => {
+    FP.pipe(
+      oCFSwapParams,
+      O.map((swapParams) => {
+        setSwapStartTime(Date.now())
+        subscribeSwapState(swapCF$(swapParams))
+        return true
+      })
+    )
+  }, [oCFSwapParams, subscribeSwapState, swapCF$])
 
   const submitApproveTx = useCallback(() => {
     FP.pipe(
@@ -1923,9 +1764,9 @@ export const Swap = ({
 
   const onSubmit = useCallback(() => {
     if (useSourceAssetLedger) {
-      setShowLedgerModal('swap')
+      setShowLedgerModal(ModalState.Swap)
     } else {
-      setShowPasswordModal('swap')
+      setShowPasswordModal(ModalState.Swap)
     }
   }, [setShowLedgerModal, useSourceAssetLedger])
 
@@ -1933,11 +1774,12 @@ export const Swap = ({
     const { swapTx } = swapState
     // don't render TxModal in initial state
     if (RD.isInitial(swapTx)) return <></>
+
     const stepLabel = FP.pipe(
-      swapState.swapTx,
+      swapTx,
       RD.fold(
         () => '',
-        () => `${intl.formatMessage({ id: 'common.tx.sending' })}`,
+        () => intl.formatMessage({ id: 'common.tx.sending' }),
         () => '',
         () => 'Sent!'
       )
@@ -1965,103 +1807,29 @@ export const Swap = ({
     resetSwapState()
     reloadBalances()
     setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
-    setQuoteExpired(true)
-    setQuote(O.none)
-    setQuoteMaya(O.none)
+    setQuoteProtocol(O.none)
     // Conditionally add asset if both conditions are true
     if (isEvmChain(targetChain) && isEvmToken(targetAsset)) {
       addAsset(targetAsset as TokenAsset)
     }
   }, [resetSwapState, reloadBalances, setAmountToSwapMax1e8, initialAmountToSwapMax1e8, targetChain, targetAsset])
 
-  const renderTxModal = useMemo(() => {
-    const { swapTx } = swapState
-
-    // don't render TxModal in initial state
-    if (RD.isInitial(swapTx)) return <></>
-
-    // Get timer value
-    const timerValue = FP.pipe(
-      swapTx,
-      RD.fold(
-        () => 0,
-        FP.flow(
-          O.map(({ loaded }) => loaded),
-          O.getOrElse(() => 0)
-        ),
-        () => 0,
-        () => 100
-      )
-    )
-
-    // title
-    const txModalTitle = FP.pipe(
-      swapTx,
-      RD.fold(
-        () => 'swap.state.sending',
-        () => 'swap.state.pending',
-        () => 'swap.state.error',
-        () => 'swap.state.success'
-      ),
-      (id) => intl.formatMessage({ id })
-    )
-
-    const oTxHash = FP.pipe(
-      RD.toOption(swapTx),
-      // Note: As long as we link to `viewblock` to open tx details in a browser,
-      // `0x` needs to be removed from tx hash in case of ETH
-      // @see https://github.com/thorchain/asgardex-electron/issues/1787#issuecomment-931934508
-      O.map((txHash) => (isEvmChain(sourceChain) ? txHash.replace(/0x/i, '') : txHash))
-    )
-
-    const txRDasBoolean = FP.pipe(
-      swapTx,
-      RD.map((txHash) => !!txHash)
-    )
-    return (
-      <TxModal
-        title={txModalTitle}
-        onClose={onCloseTxModal}
-        onFinish={onFinishTxModal}
-        startTime={swapStartTime}
-        txRD={txRDasBoolean}
-        extraResult={
-          <ViewTxButton
-            txHash={oTxHash}
-            onClick={goToTransaction}
-            txUrl={FP.pipe(oTxHash, O.chain(getExplorerTxUrl))}
-            network={network}
-            trackable={dex.chain === THORChain ? true : false}
-          />
-        }
-        timerValue={timerValue}
-        extra={extraTxModalContent}
-      />
-    )
-  }, [
-    swapState,
-    onCloseTxModal,
-    onFinishTxModal,
-    swapStartTime,
-    goToTransaction,
-    getExplorerTxUrl,
-    dex,
-    extraTxModalContent,
-    intl,
-    sourceChain,
-    network
-  ])
-
   const renderPasswordConfirmationModal = useMemo(() => {
     const onSuccess = () => {
-      if (showPasswordModal === 'swap') submitSwapTx()
-      if (showPasswordModal === 'approve') submitApproveTx()
-      setShowPasswordModal('none')
+      if (showPasswordModal === ModalState.Swap && O.isSome(oSwapParams)) {
+        submitSwapTx()
+      } else if (showPasswordModal === ModalState.Swap && O.isSome(oCFSwapParams)) {
+        submitCFTx()
+      } else if (showPasswordModal === ModalState.Approve) {
+        submitApproveTx()
+      }
+
+      setShowPasswordModal(ModalState.None)
     }
     const onClose = () => {
-      setShowPasswordModal('none')
+      setShowPasswordModal(ModalState.None)
     }
-    const render = showPasswordModal === 'swap' || showPasswordModal === 'approve'
+    const render = showPasswordModal === ModalState.Swap || showPasswordModal === ModalState.Approve
     return (
       render && (
         <WalletPasswordConfirmationModal
@@ -2071,19 +1839,19 @@ export const Swap = ({
         />
       )
     )
-  }, [showPasswordModal, submitApproveTx, submitSwapTx, validatePassword$])
+  }, [oCFSwapParams, oSwapParams, showPasswordModal, submitApproveTx, submitCFTx, submitSwapTx, validatePassword$])
 
   const renderLedgerConfirmationModal = useMemo(() => {
-    const visible = showLedgerModal === 'swap' || showLedgerModal === 'approve'
+    const visible = showLedgerModal === ModalState.Swap || showLedgerModal === ModalState.Approve
 
     const onClose = () => {
-      setShowLedgerModal('none')
+      setShowLedgerModal(ModalState.None)
     }
 
     const onSucceess = () => {
-      if (showLedgerModal === 'swap') submitSwapTx()
-      if (showLedgerModal === 'approve') submitApproveTx()
-      setShowLedgerModal('none')
+      if (showLedgerModal === ModalState.Swap) submitSwapTx()
+      if (showLedgerModal === ModalState.Approve) submitApproveTx()
+      setShowLedgerModal(ModalState.None)
     }
 
     const chainAsString = chainToString(sourceChain)
@@ -2141,57 +1909,52 @@ export const Swap = ({
 
   const sourceChainFeeError: boolean = useMemo(() => {
     // ignore error check by having zero amounts or min amount errors
-    if (isZeroAmountToSwap || minAmountError) return false
+    if (isZeroAmountToSwap) return false
 
     const {
       inFee: { amount: inFeeAmount }
     } = swapFees
     return inFeeAmount.gt(sourceChainAssetAmount)
-  }, [isZeroAmountToSwap, minAmountError, swapFees, sourceChainAssetAmount])
+  }, [isZeroAmountToSwap, swapFees, sourceChainAssetAmount])
 
   const quoteError: JSX.Element = useMemo(() => {
-    if (quoteErrors.length === 0) {
+    const swapErrors: string[] = FP.pipe(
+      oQuoteProtocol,
+      O.fold(
+        () => [],
+        (quoteSwap) => quoteSwap.errors
+      )
+    )
+
+    if (swapErrors.length === 0) {
       return <></>
     }
-
-    if (lockedWallet || quoteOnly) {
-      return <></>
-    }
-    const error = quoteErrors[0].split(':')
-    const assetPart = error.length === 3 ? error[2].split('(')[1]?.split(')')[0] : undefined
-    if (!lockedWallet && assetPart === `${targetAsset.chain}.${targetAsset.symbol}`) {
-      return <ErrorLabel>{intl.formatMessage({ id: 'swap.errors.pool.notAvailable' }, { pool: assetPart })}</ErrorLabel>
-    }
-
-    // Extract numerical value from error string
-    const match = error[1].match(/(\d+)/)
-    const numberString = match ? match[1] : null
-    const remainingText = error[1].replace(/\d+/g, '').trim()
-
-    const assetAmount = numberString
-      ? new CryptoAmount(convertBaseAmountDecimal(baseAmount(numberString), sourceAssetDecimal), sourceAsset)
-      : new CryptoAmount(baseAmount(0), sourceAsset)
 
     return (
       <ErrorLabel>
-        {numberString
-          ? intl.formatMessage(
-              { id: 'swap.errors.amount.thornodeQuoteError' },
-              { error: `${assetAmount.formatedAssetString()} ${remainingText}` }
-            )
-          : intl.formatMessage({ id: 'swap.errors.amount.thornodeQuoteError' }, { error: error[1] })}
+        {swapErrors.map((error, index) => {
+          // Check for specific error patterns
+          if (error.includes('is less than reccommended Min Amount')) {
+            const matches = error.match(/amount in: (\d+) is less than reccommended Min Amount: (\d+)/)
+            if (matches) {
+              const [_, amountIn, minAmount] = matches
+              const formattedAmountIn = new CryptoAmount(baseAmount(amountIn), sourceAsset).formatedAssetString()
+              const formattedMinAmount = new CryptoAmount(baseAmount(minAmount), sourceAsset).formatedAssetString()
+              return (
+                <div key={index}>
+                  {`Error: Amount ${formattedAmountIn} is less than the recommended minimum amount: ${formattedMinAmount}`}
+                </div>
+              )
+            }
+          }
+
+          // Default error display
+          return <div key={index}>{error}</div>
+        })}
+        {belowDustThreshold && <>{`Amount to swap is Below DustThreshold`}</>}
       </ErrorLabel>
     )
-  }, [
-    quoteErrors,
-    lockedWallet,
-    quoteOnly,
-    targetAsset.chain,
-    targetAsset.symbol,
-    sourceAssetDecimal,
-    sourceAsset,
-    intl
-  ])
+  }, [belowDustThreshold, oQuoteProtocol, sourceAsset])
 
   const sourceChainFeeErrorLabel: JSX.Element = useMemo(() => {
     if (!sourceChainFeeError) {
@@ -2226,22 +1989,13 @@ export const Swap = ({
   // Label: Min amount to swap (<= 1e8)
   const swapMinResultLabel = useMemo(() => {
     // for label we do need to convert decimal back to original decimal
-    const amount: BaseAmount =
-      dex.chain === THORChain
-        ? FP.pipe(
-            swapLimit1e8,
-            O.fold(
-              () => baseAmount(0, targetAssetDecimal) /* assetAmount1e8 */,
-              (limit1e8) => convertBaseAmountDecimal(limit1e8, targetAssetDecimal)
-            )
-          )
-        : FP.pipe(
-            swapLimitMaya1e8,
-            O.fold(
-              () => baseAmount(0, targetAssetDecimal) /* assetAmount1e8 */,
-              (limit1e8) => convertBaseAmountDecimal(limit1e8, targetAssetDecimal)
-            )
-          )
+    const amount: BaseAmount = FP.pipe(
+      swapLimit1e8,
+      O.fold(
+        () => baseAmount(0, targetAssetDecimal) /* assetAmount1e8 */,
+        (limit1e8) => convertBaseAmountDecimal(limit1e8, targetAssetDecimal)
+      )
+    )
 
     const amountMax1e8 = max1e8BaseAmount(amount)
 
@@ -2252,7 +2006,7 @@ export const Swap = ({
           amount: baseToAsset(amountMax1e8),
           trimZeros: true
         })}`
-  }, [dex, swapLimit1e8, swapLimitMaya1e8, disableSlippage, targetAsset, targetAssetDecimal])
+  }, [swapLimit1e8, disableSlippage, targetAsset, targetAssetDecimal])
 
   const uiApproveFeesRD: UIFeesRD = useMemo(
     () =>
@@ -2312,9 +2066,9 @@ export const Swap = ({
 
   const onApprove = useCallback(() => {
     if (useSourceAssetLedger) {
-      setShowLedgerModal('approve')
+      setShowLedgerModal(ModalState.Approve)
     } else {
-      setShowPasswordModal('approve')
+      setShowPasswordModal(ModalState.Approve)
     }
   }, [setShowLedgerModal, useSourceAssetLedger])
 
@@ -2332,81 +2086,45 @@ export const Swap = ({
     [approveState]
   )
 
-  const isApproved = useMemo(
-    () =>
-      O.isNone(needApprovement) ||
-      RD.isSuccess(approveState) ||
-      FP.pipe(
-        isApprovedState,
-        // ignore other RD states and set to `true`
-        // to avoid switch between approve and submit button
-        // Submit button will still be disabled
-        RD.getOrElse(() => true)
-      ),
-    [approveState, isApprovedState, needApprovement]
-  )
-
-  const checkIsApproved = useMemo(() => {
-    if (O.isNone(needApprovement)) return false
-    // ignore initial + loading states for `isApprovedState`
-    return RD.isPending(isApprovedState)
-  }, [isApprovedState, needApprovement])
-
-  const checkIsApprovedError = useMemo(() => {
-    // ignore error check if we don't need to check allowance
-    if (O.isNone(needApprovement)) return false
-    return RD.isFailure(isApprovedState)
-  }, [needApprovement, isApprovedState])
-
-  const renderIsApprovedError = useMemo(() => {
-    if (!checkIsApprovedError) return <></>
-
-    return FP.pipe(
-      isApprovedState,
-      RD.fold(
-        () => <></>,
-        () => <></>,
-        (error) => (
-          <ErrorLabel>
-            {intl.formatMessage({ id: 'common.approve.error' }, { asset: sourceAsset.ticker, error: error.msg })}
-          </ErrorLabel>
-        ),
-        (_) => <></>
-      )
-    )
-  }, [checkIsApprovedError, intl, isApprovedState, sourceAsset.ticker])
+  const isApproved = useMemo(() => {
+    // No approval needed if not an ERC20 token
+    if (O.isNone(needApprovement)) return true
+    // Approved if no approval error in quote AND no pending approval
+    return !needsApproval || RD.isSuccess(approveState)
+  }, [needApprovement, needsApproval, approveState])
 
   const priceApproveFee: CryptoAmount = useMemo(() => {
     const assetAmount = isApproved
       ? new CryptoAmount(approveFee, swapFees.inFee.asset)
       : new CryptoAmount(baseAmount(0), swapFees.inFee.asset)
 
-    return dex.chain === THORChain
-      ? FP.pipe(
-          isPoolDetails(poolDetails)
-            ? PoolHelpers.getPoolPriceValue({
-                balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
-                poolDetails,
-                pricePool
-              })
-            : O.none,
-          O.fold(
-            () => new CryptoAmount(baseAmount(0), pricePool.asset), // Default value if None
-            (amount) => new CryptoAmount(amount, pricePool.asset) // Value if Some
-          )
-        )
-      : FP.pipe(
-          getPoolPriceValueM({
+    const result = FP.pipe(
+      isChainOfThor(assetAmount.asset.chain)
+        ? PoolHelpers.getUSDValue({
             balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
-            poolDetails,
-            pricePool
-          }),
-          O.fold(
-            () => new CryptoAmount(baseAmount(0), pricePool.asset), // Default value if None
-            (amount) => new CryptoAmount(amount, pricePool.asset) // Value if Some
-          )
-        )
-  }, [isApproved, approveFee, swapFees.inFee.asset, dex, poolDetails, pricePool])
+            poolDetails: poolDetailsThor,
+            pricePool: pricePoolThor
+          })
+        : FP.pipe(
+            PoolHelpersMaya.getUSDValue({
+              balance: { asset: assetAmount.asset, amount: assetAmount.baseAmount },
+              poolDetails: poolDetailsMaya,
+              pricePool: pricePoolMaya
+            })
+          ),
+      O.getOrElse(() => baseAmount(0, amountToSwapMax1e8.decimal))
+    )
+    return new CryptoAmount(result, pricePoolThor.asset)
+  }, [
+    isApproved,
+    approveFee,
+    swapFees.inFee.asset,
+    poolDetailsThor,
+    pricePoolThor,
+    poolDetailsMaya,
+    pricePoolMaya,
+    amountToSwapMax1e8.decimal
+  ])
 
   const priceApproveFeeLabel = useMemo(
     () =>
@@ -2455,7 +2173,6 @@ export const Swap = ({
     // reset data whenever source asset has been changed
     if (O.some(prevSourceAsset.current) && !eqOAsset.equals(prevSourceAsset.current, O.some(sourceAsset))) {
       reloadFeesHandler()
-      resetIsApprovedState()
       resetApproveState()
     } else {
       prevSourceAsset.current = O.some(sourceAsset)
@@ -2463,14 +2180,12 @@ export const Swap = ({
     if (!eqOAsset.equals(prevTargetAsset.current, O.some(targetAsset))) {
       prevTargetAsset.current = O.some(targetAsset)
     }
-  }, [reloadFeesHandler, resetApproveState, resetIsApprovedState, resetSwapState, sourceAsset, targetAsset])
+  }, [reloadFeesHandler, resetApproveState, resetSwapState, sourceAsset, targetAsset])
 
   const onSwitchAssets = useCallback(async () => {
     // delay to avoid render issues while switching
     await delay(100)
     setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
-    setQuote(O.none)
-    setQuoteMaya(O.none)
     const walletType = FP.pipe(
       oTargetWalletType,
       O.getOrElse<WalletType>(() => WalletType.Keystore)
@@ -2497,26 +2212,23 @@ export const Swap = ({
   const disableSubmit: boolean = useMemo(
     () =>
       network !== Network.Stagenet &&
-      (disableSwapAction ||
-        lockedWallet ||
+      (lockedWallet ||
         quoteOnly ||
         isZeroAmountToSwap ||
         walletBalancesLoading ||
         sourceChainFeeError ||
         RD.isPending(swapFeesRD) ||
         RD.isPending(approveState) ||
-        minAmountError ||
         isCausedSlippage ||
         swapResultAmountMax.baseAmount.lte(zeroTargetBaseAmountMax1e8) ||
         O.isNone(oRecipientAddress) ||
         !canSwap ||
         customAddressEditActive ||
-        quoteExpired ||
         isTargetChainDisabled ||
-        isSourceChainDisabled),
+        isSourceChainDisabled ||
+        belowDustThreshold),
     [
       network,
-      disableSwapAction,
       lockedWallet,
       quoteOnly,
       isZeroAmountToSwap,
@@ -2524,23 +2236,21 @@ export const Swap = ({
       sourceChainFeeError,
       swapFeesRD,
       approveState,
-      minAmountError,
       isCausedSlippage,
       swapResultAmountMax.baseAmount,
       zeroTargetBaseAmountMax1e8,
       oRecipientAddress,
       canSwap,
       customAddressEditActive,
-      quoteExpired,
       isTargetChainDisabled,
-      isSourceChainDisabled
+      isSourceChainDisabled,
+      belowDustThreshold
     ]
   )
 
   const disableSubmitApprove = useMemo(
-    () => checkIsApprovedError || isApproveFeeError || walletBalancesLoading || O.isNone(oApproveParams),
-
-    [checkIsApprovedError, isApproveFeeError, oApproveParams, walletBalancesLoading]
+    () => isApproveFeeError || walletBalancesLoading || O.isNone(oApproveParams) || RD.isPending(approveState),
+    [isApproveFeeError, walletBalancesLoading, oApproveParams, approveState]
   )
 
   const onChangeRecipientAddress = useCallback(
@@ -2632,43 +2342,54 @@ export const Swap = ({
     [oSwapParams]
   )
   // Time of transaction from source chain and quote details
-  const transactionTime: Time = useMemo(() => {
-    const transactionTimeThor = FP.pipe(
-      oQuote,
+  const TransactionTime = () => {
+    const transactionTime = FP.pipe(
+      oQuoteProtocol,
       O.fold(
-        () => ({}),
+        () =>
+          DefaultChainAttributes[targetAsset.chain].avgBlockTimeInSecs +
+          DefaultChainAttributes[sourceChain].avgBlockTimeInSecs,
         (txDetails) =>
-          calculateTransactionTime(
-            sourceChain,
-            {
-              inboundConfSeconds: txDetails.txEstimate.inboundConfirmationSeconds,
-              outboundDelaySeconds: txDetails.txEstimate.outboundDelaySeconds,
-              totalTransactionSeconds: txDetails.txEstimate.totalSwapSeconds,
-              streamingTransactionSeconds: txDetails.txEstimate.streamingSwapSeconds
-            },
-            targetAsset
-          )
+          txDetails.totalSwapSeconds
+            ? txDetails.totalSwapSeconds
+            : DefaultChainAttributes[targetAsset.chain].avgBlockTimeInSecs +
+              DefaultChainAttributes[sourceChain].avgBlockTimeInSecs
       )
     )
-    const transactionTimeMaya = FP.pipe(
-      oQuoteMaya,
-      O.fold(
-        () => ({}),
-        (quoteSwap) =>
-          calculateTransactionTime(
-            sourceChain,
-            {
-              inboundConfSeconds: quoteSwap.inboundConfirmationSeconds,
-              outboundDelaySeconds: quoteSwap.outboundDelaySeconds,
-              totalTransactionSeconds: 0,
-              streamingTransactionSeconds: 0
-            },
-            targetAsset
-          )
-      )
+
+    return (
+      <>
+        <div className={`flex w-full justify-between ${showDetails ? 'pt-10px' : ''} font-mainBold text-[14px]`}>
+          <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
+          <div>{formatSwapTime(transactionTime)}</div>
+        </div>
+        {showDetails && (
+          <>
+            <div className="flex w-full justify-between pl-10px text-[12px]">
+              <div className="flex items-center">{intl.formatMessage({ id: 'common.inbound.time' })}</div>
+              <div>{formatSwapTime(Number(DefaultChainAttributes[sourceChain].avgBlockTimeInSecs))}</div>
+            </div>
+            <div className="flex w-full justify-between pl-10px text-[12px]">
+              <div className="flex items-center">
+                {intl.formatMessage(
+                  { id: 'common.confirmation.time' },
+                  {
+                    chain:
+                      targetAsset.type === AssetType.SYNTH
+                        ? MAYAChain
+                        : targetAsset.type === AssetType.SECURED
+                        ? THORChain
+                        : targetAsset.chain
+                  }
+                )}
+              </div>
+              <div>{formatSwapTime(Number(DefaultChainAttributes[targetAsset.chain].avgBlockTimeInSecs))}</div>
+            </div>
+          </>
+        )}
+      </>
     )
-    return dex.chain === THORChain ? transactionTimeThor : transactionTimeMaya
-  }, [dex, oQuote, oQuoteMaya, sourceChain, targetAsset])
+  }
 
   const [showDetails, setShowDetails] = useState<boolean>(false)
 
@@ -2716,7 +2437,7 @@ export const Swap = ({
           onChange={setAmountToSwapMax1e8}
           onChangePercent={setAmountToSwapFromPercentValue}
           onBlur={reloadFeesHandler}
-          showError={minAmountError}
+          showError={minAmountError || belowDustThreshold}
           hasLedger={hasSourceAssetLedger}
           useLedger={useSourceAssetLedger}
           useLedgerHandler={onClickUseSourceAssetLedger}
@@ -2751,32 +2472,33 @@ export const Swap = ({
           </div>
         </div>
         <div className="mt-1 space-y-1">
-          <Collapse
-            header={
-              <div className="flex flex-row items-center justify-between">
-                <span className="m-0 font-main text-[14px] text-gray2 dark:text-gray2d">
-                  {intl.formatMessage({ id: 'common.swap' })} {intl.formatMessage({ id: 'common.settings' })} (
-                  {labelMin})
-                </span>
-              </div>
-            }>
-            <div className="flex flex-col p-4">
-              <div className="flex w-full flex-col space-y-4 px-2">
-                <div>{renderStreamerInterval}</div>
-                <div>{renderStreamerQuantity}</div>
-                <div>{renderStreamerReturns}</div>
-              </div>
-              <div className="flex justify-end">
-                <TooltipAddress title="Reset to streaming default">
-                  <BaseButton
-                    onClick={resetToDefault}
-                    className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
-                    <ArrowPathIcon className="ease h-[25px] w-[25px] text-turquoise" />
-                  </BaseButton>
-                </TooltipAddress>
-              </div>
-            </div>
-          </Collapse>
+          {isFetchingEstimate ? (
+            <Spin spinning={isFetchingEstimate} tip="Loading...">
+              <div style={{ minHeight: '100px' }} />
+            </Spin>
+          ) : O.isNone(oQuoteProcotols) ? (
+            <></>
+          ) : (
+            <SwapRoute
+              isLoading={isFetchingEstimate}
+              targetAsset={targetAsset.ticker}
+              quote={oQuoteProtocol}
+              quotes={oQuoteProcotols}
+              onSelectQuote={handleSelectQuote}
+            />
+          )}
+          {FP.pipe(
+            oQuoteProtocol,
+            O.fold(
+              () => renderSwapSettings(), // O.none: show settings
+              (quoteSwap) =>
+                quoteSwap.protocol === 'Chainflip' ? (
+                  <></> // Chainflip: hide settings
+                ) : (
+                  renderSwapSettings() // Other protocols: show settings
+                )
+            )
+          )}
           <Collapse
             header={
               <div className="flex flex-row items-center justify-between">
@@ -2786,9 +2508,9 @@ export const Swap = ({
               </div>
             }>
             {!isLocked(keystore) ? (
-              <div className={`w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d`}>
+              <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
                 <BaseButton
-                  className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+                  className="group flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
                   onClick={() => setShowDetails((current) => !current)}>
                   {intl.formatMessage({ id: 'common.details' })}
                   {showDetails ? (
@@ -2800,12 +2522,14 @@ export const Swap = ({
 
                 <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
                   {/* Rate */}
-                  <div className={`flex w-full justify-between font-mainBold text-[14px]`}>
+                  <div className="flex w-full justify-between font-mainBold text-[14px]">
                     <BaseButton
                       className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
                       onClick={() =>
                         // toggle rate
-                        setRateDirection((current) => (current === 'fromSource' ? 'fromTarget' : 'fromSource'))
+                        setRateDirection((current) =>
+                          current === RateDirection.Source ? RateDirection.Target : RateDirection.Source
+                        )
                       }>
                       {intl.formatMessage({ id: 'common.rate' })}
                       <ArrowsRightLeftIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
@@ -2842,7 +2566,9 @@ export const Swap = ({
                       </div>
                       <div className="flex w-full justify-between pl-10px text-[12px]">
                         <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
-                        <div>{priceAffiliateFeeLabel}</div>
+                        <div className={clsx({ '!text-turquoise': priceAffiliateFeeLabel === 'free' })}>
+                          {priceAffiliateFeeLabel}
+                        </div>
                       </div>
                     </>
                   )}
@@ -2925,11 +2651,11 @@ export const Swap = ({
                         <div>{intl.formatMessage({ id: 'swap.slip.title' })}</div>
                         <div>
                           {formatAssetAmountCurrency({
-                            amount: priceAmountToSwapMax1e8.assetAmount.times(swapStreamingSlippage / 100), // Find the value of swap slippage
+                            amount: priceAmountToSwapMax1e8.assetAmount.times(swapSlippage / 100), // Find the value of swap slippage
                             asset: priceAmountToSwapMax1e8.asset,
                             decimal: isUSDAsset(priceAmountToSwapMax1e8.asset) ? 2 : 6,
                             trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)
-                          }) + ` (${swapStreamingSlippage.toFixed(2)}%)`}
+                          }) + ` (${swapSlippage.toFixed(2)}%)`}
                         </div>
                       </div>
                       {showDetails && (
@@ -2959,44 +2685,7 @@ export const Swap = ({
                     </>
                   )}
                   {/* Swap Time Inbound / swap / Outbound */}
-                  <>
-                    <div
-                      className={`flex w-full justify-between ${
-                        showDetails ? 'pt-10px' : ''
-                      } font-mainBold text-[14px]`}>
-                      <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
-                      <div>{formatSwapTime(Number(transactionTime.totalSwap))}</div>
-                    </div>
-                    {showDetails && (
-                      <>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.inbound.time' })}</div>
-                          <div>{formatSwapTime(Number(transactionTime.inbound))}</div>
-                        </div>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div className={`flex items-center`}>
-                            {intl.formatMessage({ id: 'common.streaming.time' })}
-                          </div>
-                          <div>{formatSwapTime(Number(transactionTime.streaming))}</div>
-                        </div>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div className={`flex items-center`}>
-                            {intl.formatMessage({ id: 'common.outbound.time' })}
-                          </div>
-                          <div>{formatSwapTime(Number(transactionTime.outbound))}</div>
-                        </div>
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div className={`flex items-center`}>
-                            {intl.formatMessage(
-                              { id: 'common.confirmation.time' },
-                              { chain: targetAsset.type === AssetType.SYNTH ? THORChain : targetAsset.chain }
-                            )}
-                          </div>
-                          <div>{formatSwapTime(Number(transactionTime.confirmation))}</div>
-                        </div>
-                      </>
-                    )}
-                  </>
+                  <TransactionTime />
                   {/* addresses */}
                   {showDetails && (
                     <>
@@ -3097,93 +2786,64 @@ export const Swap = ({
                 </div>
               </div>
             ) : (
-              <>
-                <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
-                  <div className="font-main text-[14px] text-gray2 dark:text-gray2d">
-                    {/* Rate */}
-                    <div className={`flex w-full justify-between font-mainBold text-[14px]`}>
-                      <BaseButton
-                        className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
-                        onClick={() =>
-                          // toggle rate
-                          setRateDirection((current) => (current === 'fromSource' ? 'fromTarget' : 'fromSource'))
-                        }>
-                        {intl.formatMessage({ id: 'common.rate' })}
-                        <ArrowsRightLeftIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
-                      </BaseButton>
-                      <div>{rateLabel}</div>
-                    </div>
-                    {/* fees */}
-                    <div className="flex w-full items-center justify-between font-mainBold">
-                      <BaseButton
-                        disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
-                        className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
-                        onClick={reloadFeesHandler}>
-                        {intl.formatMessage({ id: 'common.fees.estimated' })}
-                        <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
-                      </BaseButton>
-                      <div>{priceSwapFeesLabel}</div>
-                    </div>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div>{intl.formatMessage({ id: 'common.fee.inbound' })}</div>
-                      <div>{priceSwapInFeeLabel}</div>
-                    </div>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div>{intl.formatMessage({ id: 'swap.slip.title' })}</div>
-                      <div>
-                        {formatAssetAmountCurrency({
-                          amount: priceAmountToSwapMax1e8.assetAmount.times(
-                            isStreaming ? swapStreamingSlippage / 100 : swapSlippage / 100
-                          ), // Find the value of swap slippage
-                          asset: priceAmountToSwapMax1e8.asset,
-                          decimal: isUSDAsset(priceAmountToSwapMax1e8.asset) ? 2 : 6,
-                          trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)
-                        }) + ` (${isStreaming ? swapStreamingSlippage.toFixed(2) : swapSlippage.toFixed(2)}%)`}
-                      </div>
-                    </div>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div>{intl.formatMessage({ id: 'common.fee.outbound' })}</div>
-                      <div>{priceSwapOutFeeLabel}</div>
-                    </div>
-                    <div className="flex w-full justify-between pl-10px text-[12px]">
-                      <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
-                      <div>{priceAffiliateFeeLabel}</div>
-                    </div>
-
-                    {/* Transaction time */}
-                    <>
-                      <div
-                        className={`flex w-full justify-between ${
-                          showDetails ? 'pt-10px' : ''
-                        } font-mainBold text-[14px]`}>
-                        <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
-                        <div>{formatSwapTime(Number(transactionTime.totalSwap))}</div>
-                      </div>
-                      <div className="flex w-full justify-between pl-10px text-[12px]">
-                        <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.inbound.time' })}</div>
-                        <div>{formatSwapTime(Number(transactionTime.inbound))}</div>
-                      </div>
-                      <div className="flex w-full justify-between pl-10px text-[12px]">
-                        <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.streaming.time' })}</div>
-                        <div>{formatSwapTime(Number(transactionTime.streaming))}</div>
-                      </div>
-                      <div className="flex w-full justify-between pl-10px text-[12px]">
-                        <div className={`flex items-center`}>{intl.formatMessage({ id: 'common.outbound.time' })}</div>
-                        <div>{formatSwapTime(Number(transactionTime.outbound))}</div>
-                      </div>
-                      <div className="flex w-full justify-between pl-10px text-[12px]">
-                        <div className={`flex items-center`}>
-                          {intl.formatMessage(
-                            { id: 'common.confirmation.time' },
-                            { chain: targetAsset.type === AssetType.SYNTH ? THORChain : targetAsset.chain }
-                          )}
-                        </div>
-                        <div>{formatSwapTime(Number(transactionTime.confirmation))}</div>
-                      </div>
-                    </>
+              <div className="w-full px-4 pb-4 font-main text-[12px] uppercase dark:border-gray1d">
+                <div className="font-main text-[14px] text-gray2 dark:text-gray2d">
+                  {/* Rate */}
+                  <div className={`flex w-full justify-between font-mainBold text-[14px]`}>
+                    <BaseButton
+                      className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                      onClick={() =>
+                        // toggle rate
+                        setRateDirection((current) =>
+                          current === RateDirection.Source ? RateDirection.Target : RateDirection.Source
+                        )
+                      }>
+                      {intl.formatMessage({ id: 'common.rate' })}
+                      <ArrowsRightLeftIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                    </BaseButton>
+                    <div>{rateLabel}</div>
                   </div>
+                  {/* fees */}
+                  <div className="flex w-full items-center justify-between font-mainBold">
+                    <BaseButton
+                      disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
+                      className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                      onClick={reloadFeesHandler}>
+                      {intl.formatMessage({ id: 'common.fees.estimated' })}
+                      <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
+                    </BaseButton>
+                    <div>{priceSwapFeesLabel}</div>
+                  </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'common.fee.inbound' })}</div>
+                    <div>{priceSwapInFeeLabel}</div>
+                  </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'swap.slip.title' })}</div>
+                    <div>
+                      {formatAssetAmountCurrency({
+                        amount: priceAmountToSwapMax1e8.assetAmount.times(swapSlippage / 100), // Find the value of swap slippage
+                        asset: priceAmountToSwapMax1e8.asset,
+                        decimal: isUSDAsset(priceAmountToSwapMax1e8.asset) ? 2 : 6,
+                        trimZeros: !isUSDAsset(priceAmountToSwapMax1e8.asset)
+                      }) + ` (${swapSlippage.toFixed(2)}%)`}
+                    </div>
+                  </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'common.fee.outbound' })}</div>
+                    <div>{priceSwapOutFeeLabel}</div>
+                  </div>
+                  <div className="flex w-full justify-between pl-10px text-[12px]">
+                    <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
+                    <div className={clsx({ '!text-turquoise': priceAffiliateFeeLabel === 'free' })}>
+                      {priceAffiliateFeeLabel}
+                    </div>
+                  </div>
+
+                  {/* Transaction time */}
+                  <TransactionTime />
                 </div>
-              </>
+              </div>
             )}
           </Collapse>
           {!lockedWallet &&
@@ -3214,19 +2874,18 @@ export const Swap = ({
               )),
               O.toNullable
             )}
-          {!isLocked(keystore) && <div className="w-full">{renderSwapExpiry}</div>}
+          {!isLocked(keystore) && amountToSwapMax1e8.gt(0) && (
+            <div>{<SwapExpiryProgressBar oQuoteProtocol={oQuoteProtocol} swapExpiry={swapExpiry} />}</div>
+          )}
         </div>
       </div>
 
-      {(walletBalancesLoading || checkIsApproved) && (
+      {(walletBalancesLoading || isFetchingEstimate) && (
         <LoadingView
           className="w-full pt-10px"
           label={
-            // We show only one loading state at time
-            // Order matters: Show states with shortest loading time before others
-            // (approve state takes just a short time to load, but needs to be displayed)
-            checkIsApproved
-              ? intl.formatMessage({ id: 'common.approve.checking' }, { asset: sourceAsset.ticker })
+            isFetchingEstimate
+              ? intl.formatMessage({ id: 'common.loading' })
               : walletBalancesLoading
               ? intl.formatMessage({ id: 'common.balance.loading' })
               : undefined
@@ -3248,6 +2907,7 @@ export const Swap = ({
                 </FlatButton>
                 {sourceChainFeeErrorLabel}
                 {quoteError}
+                {aggregatorErrors}
               </>
             ) : (
               <>
@@ -3263,9 +2923,6 @@ export const Swap = ({
 
                 {renderApproveFeeError}
                 {renderApproveError}
-                {renderIsApprovedError}
-
-                {/* TODO(@veado) ADD ApproveFees to details */}
 
                 {!RD.isInitial(uiApproveFeesRD) && (
                   <Fees fees={uiApproveFeesRD} reloadFees={reloadApproveFeesHandler} />
@@ -3290,7 +2947,17 @@ export const Swap = ({
       </div>
       {renderPasswordConfirmationModal}
       {renderLedgerConfirmationModal}
-      {renderTxModal}
+      <SwapTxModal
+        swapState={swapState}
+        swapStartTime={swapStartTime}
+        sourceChain={sourceChain}
+        extraTxModalContent={extraTxModalContent}
+        oQuoteProtocol={oQuoteProtocol}
+        goToTransaction={openExplorer.openExplorerTxUrl}
+        getExplorerTxUrl={openExplorer.getExplorerTxUrl}
+        onCloseTxModal={onCloseTxModal}
+        onFinishTxModal={onFinishTxModal}
+      />
     </div>
   )
 }

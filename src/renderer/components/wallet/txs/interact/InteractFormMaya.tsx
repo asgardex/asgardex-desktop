@@ -11,7 +11,6 @@ import { MayachainQuery, QuoteMAYANameParams, MAYANameDetails } from '@xchainjs/
 import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import {
-  AnyAsset,
   BaseAmount,
   CryptoAmount,
   assetAmount,
@@ -31,11 +30,11 @@ import { useIntl } from 'react-intl'
 
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { HDMode, WalletType } from '../../../../../shared/wallet/types'
-import { AssetUSDTDAC, ZERO_BASE_AMOUNT } from '../../../../const'
+import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { isUSDAsset } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
 import { getBondMemo, getLeaveMemo, getUnbondMemo } from '../../../../helpers/memoHelper'
-import { getPoolPriceValue } from '../../../../helpers/poolHelperMaya'
+import { getUSDValue } from '../../../../helpers/poolHelperMaya'
 import { usePricePoolMaya } from '../../../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { FeeRD } from '../../../../services/chain/types'
@@ -198,7 +197,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
   const [mayanameRegister, setMayanameRegister] = useState<boolean>(false) // allow to update
   const [mayanameQuoteValid, setMayanameQuoteValid] = useState<boolean>(false) // if the quote is valid then allow to buy
   const [isOwner, setIsOwner] = useState<boolean>(false) // if the mayaname.owner is the wallet address then allow to update
-  const [preferredAsset, setPreferredAsset] = useState<AnyAsset>()
+  // const [preferredAsset, setPreferredAsset] = useState<AnyAsset>()
   const [aliasChain, setAliasChain] = useState<string>('')
 
   const isFeeError = useMemo(
@@ -217,8 +216,8 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
     let memoValue = form.getFieldValue('memo') as string
 
     // Check if a swap memo is detected
-    if (checkMemo(memoValue)) {
-      memoValue = memoCorrection(memoValue)
+    if (checkMemo(memoValue) && network === Network.Mainnet) {
+      memoValue = memoCorrection(memoValue, network)
       setSwapMemoDetected(true)
 
       // Set affiliate tracking message
@@ -228,7 +227,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
     }
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
-  }, [form, intl])
+  }, [form, intl, network])
 
   const renderFeeError = useMemo(
     () => (
@@ -273,7 +272,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
   const [maxAmmountPriceValue, setMaxAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(maxAmount, asset)) // Initial state can be null or a suitable default
 
   useEffect(() => {
-    const maxAmountPrice = getPoolPriceValue({
+    const maxAmountPrice = getUSDValue({
       balance: { asset, amount: maxAmount },
       poolDetails,
       pricePool
@@ -399,10 +398,11 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
     }
   }, [balance.walletAddress, form, isOwner, mayachainQuery, mayanameRegister, mayanameUpdate])
 
-  const handleRadioAssetChange = useCallback((e: RadioChangeEvent) => {
-    const asset = e.target.value
-    setPreferredAsset(asset)
-  }, [])
+  // const handleRadioAssetChange = useCallback((e: RadioChangeEvent) => {
+  //   const asset = e.target.value
+  //   console.log(asset)
+  //   setPreferredAsset(asset)
+  // }, [])
 
   const handleRadioChainChange = useCallback((e: RadioChangeEvent) => {
     const chain = e.target.value
@@ -908,7 +908,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
             )}
             {!mayanameRegister ? (
               <>
-                <div className="flex w-full items-center text-[12px]">
+                {/* <div className="flex w-full items-center text-[12px]">
                   <Styled.InputLabel>{intl.formatMessage({ id: 'common.preferredAsset' })}</Styled.InputLabel>
                 </div>
                 <Styled.FormItem
@@ -929,7 +929,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
                       USDT
                     </StyledR.Radio>
                   </StyledR.Radio.Group>
-                </Styled.FormItem>
+                </Styled.FormItem> */}
                 {/* Add input fields for aliasChain, aliasAddress, and expiry */}
                 <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasChain' })}</Styled.InputLabel>
                 <Styled.FormItem
@@ -1046,9 +1046,9 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
       </div>
       <div className="pt-10px font-main text-[14px] text-gray2 dark:text-gray2d">
         {/* memo */}
-        <div className={`my-20px w-full font-main text-[12px] uppercase dark:border-gray1d`}>
+        <div className="my-20px w-full font-main text-[12px] uppercase dark:border-gray1d">
           <BaseButton
-            className="goup flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
+            className="group flex w-full justify-between !p-0 font-mainSemiBold text-[16px] text-text2 hover:text-turquoise dark:text-text2d dark:hover:text-turquoise"
             onClick={() => setShowDetails((current) => !current)}>
             {intl.formatMessage({ id: 'common.details' })}
             {showDetails ? (
@@ -1087,10 +1087,10 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
                               </div>
                             </div>
                           ))}
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                        {/* <div className="flex w-full justify-between pl-10px text-[12px]">
                           {intl.formatMessage({ id: 'common.preferredAsset' })}
                           <div>{preferredAsset}</div>
-                        </div>
+                        </div> */}
                       </>
                     )
                   }

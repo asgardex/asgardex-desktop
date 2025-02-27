@@ -45,8 +45,8 @@ To open a release, create a release branch (name it `release/{version}`) and pus
 Example:
 
 ```
-git checkout -b release/v1.22.8 &&
-git push --set-upstream origin release/v1.22.8
+git checkout -b release/v1.30.1
+git push --set-upstream origin release/v1.30.1
 ```
 
 If needed, open a PR for reviewing changes.
@@ -76,7 +76,7 @@ git push origin --delete release/v.0.0.5
 
 ### Create `hotfix` branch
 
-To create a hotfix branch (name it `hotfix/{version}`, checkout from latest `tag`.
+To create a hotfix branch name it `hotfix/{version}`, checkout from latest `tag`.
 
 Example:
 

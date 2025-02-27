@@ -6,7 +6,6 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 
-import { thorDetails } from '../../../../../shared/api/types'
 import { getMockRDValueFactory, RDStatus } from '../../../../../shared/mock/rdByStatus'
 import { mockValidatePassword$ } from '../../../../../shared/mock/wallet'
 import { AssetMaya, AssetRuneNative } from '../../../../../shared/utils/asset'
@@ -95,7 +94,6 @@ const Template = ({ txRDStatus, feeRDStatus, balance, validAddress, walletType }
       getExplorerTxUrl={(txHash: TxHash) => O.some(`url/asset-${txHash}`)}
       poolDetails={[]}
       oPoolAddress={O.none}
-      dex={thorDetails}
       mayaScanPrice={mayaScanPriceRD}
     />
   )

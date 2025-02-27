@@ -6,7 +6,8 @@ import { palette } from 'styled-theme'
 import { Label as UILabel } from '../../../components/uielements/label'
 import {
   WalletTypeLabel as WalletTypeLabelUI,
-  AssetSynthLabel as AssetSynthLabelUI
+  AssetSynthLabel as AssetSynthLabelUI,
+  AssetSecuredLabel as AssetSecuredLabelUI
 } from '../../uielements/common/Common.styles'
 import { Table as UITable } from '../../uielements/table'
 
@@ -109,15 +110,30 @@ export const HideIcon = styled(EyeInvisibleOutlined)`
   cursor: pointer;
 `
 
-const ICON_SIZE = 14
+const ICON_SIZE = 16
 
 export const CopyLabelContainer = styled.span``
 
 export const CopyLabel = styled(A.Typography.Text)`
   text-transform: uppercase;
   color: ${palette('primary', 0)};
+  border: 1px solid ${palette('gray', 1)};
+  border-radius: 8px;
+  margin-left: 8px;
+
+  > div:first-child {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+
+    margin: 0px;
+
+    width: 30px;
+    height: 30px;
+  }
+
   svg {
-    color: ${palette('primary', 0)};
+    color: ${palette('text', 0)};
     height: ${ICON_SIZE}px;
     width: ${ICON_SIZE}px;
   }
@@ -141,18 +157,9 @@ export const AssetSynthLabel = styled(AssetSynthLabelUI)`
   line-height: 12px;
 `
 
-export const FilterCheckbox = styled(A.Checkbox)`
-  font-family: 'MainFontRegular';
-  font-size: 14px;
-  color: ${palette('gray', 2)};
-  margin: 10px 0;
-
-  .ant-checkbox-inner {
-    border-color: ${palette('primary', 0)};
-  }
-
-  .ant-checkbox-checked .ant-checkbox-inner {
-    background-color: ${palette('primary', 0)};
-    border-color: ${palette('primary', 0)};
-  }
+export const AssetSecuredLabel = styled(AssetSecuredLabelUI)`
+  margin-top: 2px;
+  padding: 0 4px;
+  font-size: 10px;
+  line-height: 12px;
 `

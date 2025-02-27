@@ -1,6 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useState } from 'react'
 
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import clsx from 'clsx'
 import * as FP from 'fp-ts/lib/function'
 
 import { emptyString } from '../../../helpers/stringHelper'
@@ -87,27 +88,27 @@ export const InputSearch = forwardRef<HTMLInputElement, Props>((props, ref): JSX
   }
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={clsx('relative', className)}>
       <MagnifyingGlassIcon
-        className={`absolute top-[50%] ${iconOffsetL[size]} ${
-          iconSize[size]
-        } translate-y-[-50%] text-gray2 dark:text-gray2
-            ${error ? 'text-error0' : ''}
-            ${disabled ? 'opacity-50' : ''}
-            ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
-            `}
+        className={clsx(
+          'absolute top-[50%] translate-y-[-50%] text-gray2 dark:text-gray2',
+          iconOffsetL[size],
+          iconSize[size],
+          error ? 'text-error0' : '',
+          disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+        )}
       />
       <BaseButton
-        className={`absolute top-[50%] !px-0 ${iconOffsetR[size]} translate-y-[-50%] text-gray2 dark:text-gray2
-        ${!searchTxt ? 'hidden' : ''}
-        `}
+        className={clsx('absolute top-[50%] translate-y-[-50%] !px-0 text-gray2 dark:text-gray2', iconOffsetR[size], {
+          hidden: !searchTxt
+        })}
         onClick={() => {
           onCancelHandler()
         }}>
-        <XMarkIcon className={`${iconSize[size]}`} />
+        <XMarkIcon className={iconSize[size]} />
       </BaseButton>
       <Input
-        className={`${inputOffsetX[size]} placeholder:uppercase ${classNameInput}`}
+        className={clsx('placeholder:uppercase', inputOffsetX[size], classNameInput)}
         ref={ref}
         error={!!error}
         id={id}

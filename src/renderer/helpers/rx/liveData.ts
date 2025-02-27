@@ -47,6 +47,12 @@ export const liveData = {
     <L, V, A>(f: (l: L) => V) =>
     (fla: LiveData<L, A>): LiveData<V, A> =>
       fla.pipe(RxOp.map(RD.mapLeft(f))),
+  fromObservable: <E, A>(observable$: Rx.Observable<A>, onError: (error: unknown) => E): LiveData<E, A> =>
+    observable$.pipe(
+      RxOp.map((value) => RD.success(value) as RD.RemoteData<E, A>),
+      RxOp.catchError((error) => Rx.of(RD.failure(onError(error))))
+    ),
+  right: <E, A>(value: A): LiveData<E, A> => Rx.of(RD.success(value)),
   /**
    * LiveData<L,A> => Observable<Option<A>>
    */

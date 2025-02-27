@@ -297,15 +297,18 @@ export const getOutboundAssetFeeByChain = (
     })
   )
 export const inboundToPoolAddresses = (
-  addresses: Pick<InboundAddress, 'chain' | 'address' | 'router' | 'halted'>[]
+  addresses: Pick<InboundAddress, 'chain' | 'address' | 'router' | 'halted' | 'gas_rate' | 'outbound_fee'>[]
 ): PoolAddresses =>
   FP.pipe(
     addresses,
-    A.map(({ address, router, chain, halted }) => ({
+    A.map(({ address, router, chain, halted, gas_rate, outbound_fee }) => ({
+      protocol: MAYAChain,
       chain,
       address,
       router: optionFromNullableString(router),
-      halted
+      halted,
+      gasRate: gas_rate,
+      outBoundFee: outbound_fee
     })),
     // Add "empty" maya "pool address" - we never had such pool, but do need it to calculate tx
     A.prepend(MAYA_POOL_ADDRESS)

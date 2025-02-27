@@ -72,7 +72,7 @@ export const send = async ({
       rootDerivationPaths: getDerivationPaths(walletAccount, network),
       network: network
     })
-    const newMemo = memo !== undefined ? removeAffiliate(memo) : memo // removes affilaite to shorten memo.
+    const newMemo = memo !== undefined ? removeAffiliate(memo) : memo // removes affiliate to shorten memo.
 
     const txHash = await dogeClient.transfer({
       walletIndex,

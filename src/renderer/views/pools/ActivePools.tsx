@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
@@ -35,7 +35,6 @@ import { useWalletContext } from '../../contexts/WalletContext'
 import { ordBaseAmount, ordNumber } from '../../helpers/fp/ord'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
-import { useDex } from '../../hooks/useDex'
 import { useIncentivePendulum } from '../../hooks/useIncentivePendulum'
 import { useIncentivePendulumMaya } from '../../hooks/useIncentivePendulumMaya'
 import { usePoolFilter } from '../../hooks/usePoolFilter'
@@ -50,17 +49,23 @@ import {
   PoolsState as MayaPoolState,
   GetPoolsPeriodEnum as GetPoolsPeriodEnumMaya
 } from '../../services/mayaMigard/types'
-import { PoolsState, DEFAULT_POOL_FILTERS, GetPoolsPeriodEnum } from '../../services/midgard/types'
+import {
+  GetPoolsPeriodEnum,
+  PoolsState,
+  DEFAULT_POOL_FILTERS,
+  DEFAULT_MAYA_POOL_FILTERS
+} from '../../services/midgard/types'
 import { hasImportedKeystore } from '../../services/wallet/util'
+import { useApp } from '../../store/app/hooks'
 import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
 import { filterTableData } from './Pools.utils'
 import * as Shared from './PoolsOverview.shared'
 import * as Styled from './PoolsOverview.styles'
 
-export const ActivePools: React.FC = (): JSX.Element => {
+export const ActivePools = (): JSX.Element => {
   const navigate = useNavigate()
+  const { protocol } = useApp()
   const intl = useIntl()
-  const { dex } = useDex()
   const { network$ } = useAppContext()
   const network = useObservableState<Network>(network$, DEFAULT_NETWORK)
   const {
@@ -85,10 +90,10 @@ export const ActivePools: React.FC = (): JSX.Element => {
   const { data: incentivePendulumThorRD } = useIncentivePendulum()
   const { data: incentivePendulumMayaRD } = useIncentivePendulumMaya()
 
-  const incentivePendulumRD = dex.chain === THORChain ? incentivePendulumThorRD : incentivePendulumMayaRD
+  const incentivePendulumRD = protocol === THORChain ? incentivePendulumThorRD : incentivePendulumMayaRD
 
   const poolsPeriod = useObservableState(
-    dex.chain === THORChain ? poolsPeriod$ : poolsPeriodMaya$,
+    protocol === THORChain ? poolsPeriod$ : poolsPeriodMaya$,
     GetPoolsPeriodEnum._30d
   )
 
@@ -101,7 +106,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
   const poolsThorRD = useObservableState(poolsState$, RD.pending)
   const poolsMayaRD = useObservableState(mayaPoolsState$, RD.pending)
 
-  const poolsRD = dex.chain === THORChain ? poolsThorRD : poolsMayaRD
+  const poolsRD = protocol === THORChain ? poolsThorRD : poolsMayaRD
 
   const isDesktopView = Grid.useBreakpoint()?.lg ?? false
   const isLargeScreen = Grid.useBreakpoint()?.xl ?? false
@@ -111,23 +116,23 @@ export const ActivePools: React.FC = (): JSX.Element => {
   const previousPools = useRef<O.Option<PoolTableRowsData>>(O.none)
 
   const refreshHandler = useCallback(() => {
-    if (dex.chain === THORChain) {
+    if (protocol === THORChain) {
       reloadPools()
     } else {
       reloadMayaPools()
     }
 
     reloadLimit()
-  }, [dex, reloadLimit, reloadPools, reloadMayaPools])
+  }, [protocol, reloadLimit, reloadPools, reloadMayaPools])
 
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()
-  const pricePool = dex.chain === THORChain ? pricePoolThor : pricePoolMaya
+  const pricePool = protocol === THORChain ? pricePoolThor : pricePoolMaya
 
   const renderBtnPoolsColumn = useCallback(
     (_: string, { asset }: { asset: AnyAsset }) => {
       const actions: ActionButtonAction[] =
-        dex.chain === THORChain
+        protocol === THORChain
           ? [
               {
                 label: intl.formatMessage({ id: 'common.swap' }),
@@ -201,8 +206,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
         </Styled.TableAction>
       )
     },
-
-    [dex, hasKeystore, intl, navigate]
+    [protocol, hasKeystore, intl, navigate]
   )
 
   const btnPoolsColumn = useCallback(
@@ -309,7 +313,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
               )
             : O.none,
           isXLargeScreen ? O.some(volumeColumn<PoolTableRowData>()) : O.none,
-          isLargeScreen ? O.some(apyColumn<PoolTableRowData>(poolsPeriod, dex.chain)) : O.none,
+          isLargeScreen ? O.some(apyColumn<PoolTableRowData>(poolsPeriod, protocol)) : O.none,
           O.some(btnPoolsColumn<PoolTableRowData>())
         ],
         A.filterMap(FP.identity)
@@ -324,7 +328,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
       isXLargeScreen,
       apyColumn,
       poolsPeriod,
-      dex,
+      protocol,
       btnPoolsColumn
     ]
   )
@@ -345,9 +349,13 @@ export const ActivePools: React.FC = (): JSX.Element => {
 
       return (
         <>
-          <Styled.AssetsFilter activeFilter={poolFilter} setFilter={setPoolFilter} poolFilters={DEFAULT_POOL_FILTERS} />
+          <Styled.AssetsFilter
+            activeFilter={poolFilter}
+            setFilter={setPoolFilter}
+            poolFilters={protocol === THORChain ? DEFAULT_POOL_FILTERS : DEFAULT_MAYA_POOL_FILTERS}
+          />
           <ProtocolLimit limit={limitRD} />
-          <IncentivePendulum incentivePendulum={incentivePendulumRD} dex={dex} />
+          <IncentivePendulum incentivePendulum={incentivePendulumRD} protocol={protocol} />
           <Table columns={columns} dataSource={dataSource} loading={loading} rowKey="key" />
         </>
       )
@@ -360,7 +368,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
       setPoolFilter,
       limitRD,
       incentivePendulumRD,
-      dex
+      protocol
     ]
   )
 
@@ -378,7 +386,7 @@ export const ActivePools: React.FC = (): JSX.Element => {
         Shared.renderTableError(intl.formatMessage({ id: 'common.refresh' }), refreshHandler),
         // success state
         (poolsState) => {
-          if (dex.chain === THORChain) {
+          if (protocol === THORChain) {
             const { poolDetails } = poolsState as PoolsState // Cast to the correct type
             const poolViewData = PoolHelpers.getPoolTableRowsData({
               poolDetails,

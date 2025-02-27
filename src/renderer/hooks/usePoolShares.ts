@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { Chain } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
@@ -18,11 +19,8 @@ import { WalletAddress$ } from '../services/clients'
 import { PoolShares } from '../services/midgard/types'
 import { userChains$ } from '../services/storage/userChains'
 import { ledgerAddressToWalletAddress } from '../services/wallet/util'
-import { useDex } from './useDex'
 
-export const usePoolShares = () => {
-  const { dex } = useDex()
-
+export const usePoolShares = (protocol: Chain) => {
   const {
     service: {
       pools: { reloadAllPools },
@@ -43,7 +41,7 @@ export const usePoolShares = () => {
   const { addressByChain$ } = useChainContext()
   const { getLedgerAddress$ } = useWalletContext()
 
-  const INCLUDED_CHAINS = useMemo(() => getChainsForDex(dex.chain), [dex.chain])
+  const INCLUDED_CHAINS = useMemo(() => getChainsForDex(protocol), [protocol])
 
   const [allSharesRD, setAllSharesRD] = useState<RD.RemoteData<Error, PoolShares>>(RD.initial)
 
@@ -69,7 +67,7 @@ export const usePoolShares = () => {
             combinedAddresses$,
             RxOp.switchMap(
               FP.flow(A.filterMap(FP.identity), A.map(addressFromWalletAddress), (addresses) =>
-                dex.chain === THORChain ? allSharesByAddresses$(addresses) : allSharesByAddressesMaya$(addresses)
+                protocol === THORChain ? allSharesByAddresses$(addresses) : allSharesByAddressesMaya$(addresses)
               )
             ),
             RxOp.startWith(RD.pending)
@@ -79,17 +77,17 @@ export const usePoolShares = () => {
       .subscribe(setAllSharesRD)
 
     return () => subscription.unsubscribe()
-  }, [dex, allSharesByAddresses$, allSharesByAddressesMaya$, addressByChain$, INCLUDED_CHAINS, getLedgerAddress$])
+  }, [protocol, allSharesByAddresses$, allSharesByAddressesMaya$, addressByChain$, INCLUDED_CHAINS, getLedgerAddress$])
 
   const reload = useCallback(() => {
-    if (dex.chain === THORChain) {
+    if (protocol === THORChain) {
       reloadAllPools()
       reloadAllSharesByAddresses()
     } else {
       reloadAllMayaPools()
       reloadAllSharesByAddressesMaya()
     }
-  }, [dex, reloadAllMayaPools, reloadAllPools, reloadAllSharesByAddresses, reloadAllSharesByAddressesMaya])
+  }, [protocol, reloadAllMayaPools, reloadAllPools, reloadAllSharesByAddresses, reloadAllSharesByAddressesMaya])
 
   return {
     allSharesRD,

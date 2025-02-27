@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Story, Meta } from '@storybook/react'
+import { StoryFn, Meta } from '@storybook/react'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { Network, TxHash } from '@xchainjs/xchain-client'
@@ -8,7 +8,6 @@ import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { thorDetails } from '../../../../shared/api/types'
 import { BSC_ADDRESS_MAINNET } from '../../../../shared/mock/address'
 import { mockValidatePassword$ } from '../../../../shared/mock/wallet'
 import { AssetRuneNative, AssetBSC } from '../../../../shared/utils/asset'
@@ -77,14 +76,13 @@ const defaultProps: WitdrawProps = {
       assetBalance: baseAmount(1),
       dexBalance: baseAmount(20)
     }
-  },
-  dex: thorDetails
+  }
 }
 
-export const Default: Story = () => <Withdraw {...defaultProps} />
+export const Default: StoryFn = () => <Withdraw {...defaultProps} />
 Default.storyName = 'default'
 
-export const FeesNotCovered: Story = () => {
+export const FeesNotCovered: StoryFn = () => {
   const props: WitdrawProps = {
     ...defaultProps,
     dexBalance: O.some(assetToBase(assetAmount(0.5)))
@@ -93,7 +91,7 @@ export const FeesNotCovered: Story = () => {
 }
 FeesNotCovered.storyName = 'error - fees not covered'
 
-export const ErrorNoFee: Story = () => {
+export const ErrorNoFee: StoryFn = () => {
   const props: WitdrawProps = {
     ...defaultProps,
     fees$: (_: AnyAsset) => Rx.of(RD.failure(Error('no fees')))

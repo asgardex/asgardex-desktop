@@ -6,6 +6,7 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, AnyAsset, assetToString, baseAmount, Chain, CryptoAmount } from '@xchainjs/xchain-util'
+import clsx from 'clsx'
 import * as A from 'fp-ts/lib/Array'
 import * as Eq from 'fp-ts/lib/Eq'
 import * as FP from 'fp-ts/lib/function'
@@ -33,8 +34,7 @@ import { eqChain, eqNetwork, eqWalletType } from '../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { addressFromOptionalWalletAddress } from '../../helpers/walletHelper'
-import { useDex } from '../../hooks/useDex'
-import { useMimirHalt } from '../../hooks/useMimirHalt'
+import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
 import { usePricePool } from '../../hooks/usePricePool'
@@ -85,8 +85,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
 
   const { network } = useNetwork()
 
-  const { dex } = useDex()
-
   const { thorchainQuery } = useThorchainQueryContext()
   const { isPrivate } = useApp()
   const { getSaverProvider$, reloadSaverProvider, reloadInboundAddresses } = useThorchainContext()
@@ -112,7 +110,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   const oPoolAddress: O.Option<PoolAddress> = useObservableState(selectedPoolAddress$, O.none)
 
   const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
-  const { mimirHalt } = useMimirHalt()
+  const { mimirHalt } = useThorchainMimirHalt()
   // reload inbound addresses at `onMount` to get always latest `pool address` + `feeRates`
   useEffect(() => {
     reloadInboundAddresses()
@@ -129,10 +127,7 @@ const Content: React.FC<Props> = (props): JSX.Element => {
     }
   }, [asset, setSelectedPoolAsset])
 
-  const assetDecimal$: AssetWithDecimalLD = useMemo(
-    () => assetWithDecimal$(asset, dex),
-    [assetWithDecimal$, asset, dex]
-  )
+  const assetDecimal$: AssetWithDecimalLD = useMemo(() => assetWithDecimal$(asset), [assetWithDecimal$, asset])
 
   const [balancesState] = useObservableState(
     () =>
@@ -321,7 +316,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         hidePrivateData={isPrivate}
                         onChangeAsset={onChangeAssetHandler}
                         disableSaverAction={checkDisableSaverAction()}
-                        dex={dex}
                       />
                     )
                   case TabIndex.WITHDRAW:
@@ -354,7 +348,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         onChangeAsset={onChangeAssetHandler}
                         saverPosition={getSaverProvider$}
                         disableSaverAction={checkDisableSaverAction()}
-                        dex={dex}
                       />
                     )
                   default:
@@ -386,27 +379,21 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                               <Tab key={index} as={Fragment}>
                                 {({ selected }) => (
                                   <div
-                                    className="
-                                      group
-                                      flex
-                                      cursor-pointer
-                                      items-center
-                                      justify-center
-                                      last:ml-20px
-                                      focus-visible:outline-none
-                                      ">
+                                    className={clsx(
+                                      'flex items-center justify-center',
+                                      'last:ml-20px',
+                                      'group cursor-pointer focus-visible:outline-none'
+                                    )}>
                                     <span
-                                      className={`
-                                        border-y-[2px] border-solid border-transparent
-                                        group-hover:border-b-turquoise
-                                        ${selected ? 'border-b-turquoise' : 'border-b-transparent'}
-                                        ease px-20px
-                                        py-[16px]
-                                        font-mainSemiBold text-[16px]
-                                        uppercase
-
-                                        ${selected ? 'text-turquoise' : 'text-text2 dark:text-text2d'}
-                                      hover:text-turquoise`}>
+                                      className={clsx(
+                                        'border-y-[2px] border-solid border-transparent',
+                                        'ease px-20px py-[16px]',
+                                        'font-mainSemiBold text-[16px] uppercase',
+                                        'hover:text-turquoise group-hover:border-b-turquoise',
+                                        selected
+                                          ? 'border-b-turquoise text-turquoise'
+                                          : 'border-b-transparent text-text2 dark:text-text2d'
+                                      )}>
                                       {label}
                                     </span>
                                   </div>

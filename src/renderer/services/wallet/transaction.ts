@@ -74,7 +74,12 @@ export const getTxs$: (walletAddress: O.Option<string>, walletIndex: number) => 
           () => Rx.of(RD.initial),
           ({ asset }) => {
             const { chain } = asset
-            if (!isSupportedChain(chain) || asset.type === AssetType.SYNTH || isThorChain(chain)) {
+            if (
+              !isSupportedChain(chain) ||
+              asset.type === AssetType.SYNTH ||
+              isThorChain(chain) ||
+              asset.type === AssetType.SECURED
+            ) {
               return Rx.of(RD.failure<ApiError>({ errorId: ErrorId.GET_ASSET_TXS, msg: `Unsupported chain ${chain}` }))
             }
             switch (chain) {
