@@ -1,46 +1,40 @@
-name: Electron build - Linux
+name: Flatpak build - Linux
 
 on:
   push:
     branches:
-      # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#onpushpull_requestbranchestags
       - 'release/**'
       - 'hotfix/**'
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-20.04]
-
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout git repo
         uses: actions/checkout@v4
 
-      # Cache Yarn dependencies
       - name: Cache Yarn dependencies
         uses: actions/cache@v4
         with:
           path: ~/.cache/yarn
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          restore-keys: ${{ runner.os }}-yarn-
 
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'yarn'
 
-      - name: Install missing dependencies
-        run: sudo apt-get update && sudo apt-get install libudev-dev libusb-1.0-0-dev
+      - name: Install Flatpak dependencies
+        run: sudo apt-get update && sudo apt-get install -y flatpak flatpak-builder
 
-      - name: Install dependencies
+      - name: Install Yarn dependencies
         run: yarn install --immutable
 
-      - name: Publish Linux binaries
-        run: yarn package:ci
+      - name: Build Flatpak
+        run: |
+          flatpak-builder --user --install-deps-from=flathub build-dir com.asgardex.asgardex-desktop.yml
+          flatpak build-bundle build-dir asgardex.flatpak com.asgardex.asgardex-desktop stable
         env:
           NODE_OPTIONS: --max-old-space-size=7168
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -52,11 +46,11 @@ jobs:
           REACT_APP_BASE_API_KEY: ${{ secrets.REACT_APP_BASE_API_KEY }}
           REACT_APP_SNOWTRACE_API_KEY: ${{ secrets.REACT_APP_SNOWTRACE_API_KEY }}
 
-      - name: Upload artifacts
+      - name: Upload Flatpak artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ runner.OS }}
-          path: release
+          name: ${{ runner.os }}-flatpak
+          path: asgardex.flatpak
 
-      - name: List artifacts
-        run: ls ./release
+      - name: List Flatpak artifacts
+        run: ls *.flatpak || echo "No Flatpak artifacts found"

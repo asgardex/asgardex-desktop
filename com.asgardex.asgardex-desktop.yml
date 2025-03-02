@@ -1,4 +1,4 @@
-id: org.asgardex.desktop
+id: com.asgardex.asgardex-desktop
 runtime: org.freedesktop.Platform
 runtime-version: '22.08'
 sdk: org.freedesktop.Sdk
@@ -25,5 +25,5 @@ modules:
   - name: electron-dependencies
     buildsystem: simple
     build-commands:
-      - npm install -g electron
+      - npm install -g electron@27.3.11
       - cp -R $(npm root -g)/electron /app/lib
