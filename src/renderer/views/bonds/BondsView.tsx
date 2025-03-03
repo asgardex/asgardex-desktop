@@ -13,11 +13,10 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import * as Styled from '../../../renderer/components/wallet/assets/TotalValue.styles'
-import { WalletType } from '../../../shared/wallet/types'
 import { Bonds } from '../../components/Bonds'
 import { BaseButton, RefreshButton } from '../../components/uielements/button'
-import { AssetsNav } from '../../components/wallet/assets'
+import { ProtocolSwitch } from '../../components/uielements/protocolSwitch'
+import * as Styled from '../../components/wallet/assets/TotalValue.styles'
 import { useAppContext } from '../../contexts/AppContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
@@ -46,18 +45,15 @@ import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/
 import { WalletBalances } from '../../services/wallet/types'
 import { useApp } from '../../store/app/hooks'
 import { getValueOfRuneInAsset } from '../pools/Pools.utils'
-
-export type WalletAddressInfo = {
-  address: string
-  walletType: WalletType
-}
+import { WalletAddressInfo } from './types'
 
 enum LabelView {
   Connected,
   Monitored
 }
 
-export const BondsView: React.FC = (): JSX.Element => {
+export const BondsView = (): JSX.Element => {
+  const { protocol, setProtocol } = useApp()
   const { client$, getNodeInfos$, reloadNodeInfos: reloadNodeInfosThor } = useThorchainContext()
   const {
     client$: clientMaya$,
@@ -277,6 +273,7 @@ export const BondsView: React.FC = (): JSX.Element => {
           const totals = calculateTotalBondByChain(nodes)
           const totalMonitored = calculateTotalMonitoredBondByChain(nodes)
           const activeAmount = activeLabel === LabelView.Connected ? totals.THOR : totalMonitored.THOR
+          const activeMayaAmount = activeLabel === LabelView.Connected ? totals.MAYA : totalMonitored.MAYA
 
           const thorTotal = (
             <Styled.BalanceLabel>
@@ -294,7 +291,7 @@ export const BondsView: React.FC = (): JSX.Element => {
             </Styled.BalanceLabel>
           )
 
-          const mayaTotal = totals.MAYA.amount().isGreaterThan(0) ? (
+          const mayaTotal = (
             <Styled.BalanceLabel>
               {isPrivate
                 ? hiddenString
@@ -302,22 +299,24 @@ export const BondsView: React.FC = (): JSX.Element => {
                     amount: baseToAsset(getValueOfRuneInAsset(totals.MAYA, pricePoolDataMaya)),
                     asset: selectedPricePoolMaya.asset,
                     decimal: isUSDAsset(selectedPricePoolMaya.asset) ? 2 : 4
-                  })}
+                  })}{' '}
+              /{' '}
+              {isPrivate
+                ? hiddenString
+                : `${new Intl.NumberFormat().format(
+                    parseFloat(baseToAsset(activeMayaAmount).amount().toFixed(2))
+                  )} CACAO`}
             </Styled.BalanceLabel>
-          ) : null
-
-          return (
-            <>
-              {thorTotal}
-              {mayaTotal}
-            </>
           )
+
+          return protocol === THORChain ? thorTotal : mayaTotal
         }
       )
     )
   }, [
     intl,
     isPrivate,
+    protocol,
     activeLabel,
     nodeInfos,
     pricePoolDataMaya,
@@ -331,11 +330,11 @@ export const BondsView: React.FC = (): JSX.Element => {
 
   return (
     <>
-      <div className="flex min-h-[42px] w-full justify-end pb-20px" />
-      <AssetsNav />
-      <Styled.Container>
-        <div className="flex w-full items-center justify-between">
-          <div />
+      <div className="flex w-full justify-end pb-10px">
+        <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
+      </div>
+      <Styled.Container className="rounded-t-lg">
+        <div className="relative flex w-full items-center justify-center">
           <Styled.TitleContainer>
             <Styled.BalanceTitle>
               {/* TODO: locale (cinnamoroll) */}
@@ -351,7 +350,9 @@ export const BondsView: React.FC = (): JSX.Element => {
               <SwapOutlined className="rounded-full border border-solid border-turquoise p-1" />
             </BaseButton>
           </Styled.TitleContainer>
-          <RefreshButton onClick={reloadNodeInfos} disabled={RD.isPending(nodeInfos)} />
+          <div className="absolute right-0 flex items-center">
+            <RefreshButton onClick={reloadNodeInfos} disabled={RD.isPending(nodeInfos)} />
+          </div>
         </div>
         {renderBondTotal}
       </Styled.Container>

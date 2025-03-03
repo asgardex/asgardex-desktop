@@ -56,10 +56,10 @@ import { balancesState$, getLedgerAddress$, reloadBalancesByChain } from '../../
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { useApp } from '../../../store/app/hooks'
 import { BaseAmountRD } from '../../../types'
+import { WalletAddressInfo } from '../../bonds/types'
 import { getValueOfRuneInAsset } from '../../pools/Pools.utils'
-import { WalletAddressInfo } from '../BondsView'
-import * as H from '../PoolShareView.helper'
-import { getSaversTotal } from '../SaversTableView.helper'
+import * as H from '../../wallet/PoolShareView.helper'
+import { getSaversTotal } from '../../wallet/SaversTableView.helper'
 import * as Styled from './PortfolioView.style'
 import { PortfolioTabKey } from './utils'
 

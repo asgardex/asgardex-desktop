@@ -19,6 +19,7 @@ import { useMatch, useNavigate } from 'react-router-dom'
 
 import { ExternalUrl } from '../../../shared/const'
 import { ReactComponent as DiscordIcon } from '../../assets/svg/discord.svg'
+import { ReactComponent as BondsIcon } from '../../assets/svg/icon-bonds.svg'
 import { ReactComponent as SettingsIcon } from '../../assets/svg/icon-cog.svg'
 import { ReactComponent as PoolIcon } from '../../assets/svg/icon-pools.svg'
 import { ReactComponent as PortfolioIcon } from '../../assets/svg/icon-portfolio.svg'
@@ -27,6 +28,7 @@ import { ReactComponent as WalletIcon } from '../../assets/svg/icon-wallet.svg'
 import { ReactComponent as ThorChainIcon } from '../../assets/svg/logo-thorchain.svg'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import * as appRoutes from '../../routes/app'
+import * as bondsRoutes from '../../routes/bonds'
 import * as playgroundRoutes from '../../routes/playground'
 import * as poolsRoutes from '../../routes/pools'
 import * as portfolioRoutes from '../../routes/portfolio'
@@ -58,6 +60,7 @@ const FooterIcon = (props: IconProps): JSX.Element => {
 enum TabKey {
   WALLET = 'WALLET',
   SWAP = 'SWAP',
+  BONDS = 'BONDS',
   PORTFOLIO = 'PORTFOLIO',
   POOLS = 'POOLS',
   SETTINGS = 'SETTINGS',
@@ -85,6 +88,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
 
   const navigate = useNavigate()
 
+  const matchBondsRoute = useMatch({ path: bondsRoutes.base.path(), end: false })
   const matchPoolsRoute = useMatch({ path: poolsRoutes.base.path(), end: false })
   const matchPortfolioRoute = useMatch({ path: portfolioRoutes.base.path(), end: false })
   const matchWalletRoute = useMatch({ path: walletRoutes.base.path(), end: false })
@@ -92,7 +96,9 @@ export const SidebarComponent = (props: Props): JSX.Element => {
   const matchSwapRoute = useMatch({ path: poolsRoutes.swapBase.template, end: false })
 
   const activeKey: TabKey = useMemo(() => {
-    if (matchSwapRoute) {
+    if (matchBondsRoute) {
+      return TabKey.BONDS
+    } else if (matchSwapRoute) {
       return TabKey.SWAP
     } else if (matchPoolsRoute) {
       return TabKey.POOLS
@@ -105,7 +111,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
     } else {
       return TabKey.UNKNOWN
     }
-  }, [matchPoolsRoute, matchPortfolioRoute, matchWalletRoute, matchSettingsRoute, matchSwapRoute])
+  }, [matchBondsRoute, matchPoolsRoute, matchPortfolioRoute, matchWalletRoute, matchSettingsRoute, matchSwapRoute])
 
   const items: Tab[] = useMemo(
     () => [
@@ -125,6 +131,12 @@ export const SidebarComponent = (props: Props): JSX.Element => {
           targetWalletType: DEFAULT_WALLET_TYPE
         }),
         icon: SwapIcon
+      },
+      {
+        key: TabKey.BONDS,
+        label: intl.formatMessage({ id: 'wallet.nav.bonds' }),
+        path: bondsRoutes.base.path(),
+        icon: BondsIcon
       },
       {
         key: TabKey.PORTFOLIO,
@@ -166,7 +178,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
               )}
               onClick={() => navigate(path)}>
               <div className="flex flex-row items-center py-3 pl-8">
-                <Icon className="w-8 pr-5px" />
+                <Icon className="mt-1 w-8 pr-5px" />
                 <span>{label}</span>
               </div>
             </div>

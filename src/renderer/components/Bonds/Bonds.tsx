@@ -2,6 +2,8 @@ import React, { useCallback, useMemo, useState, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
 import * as FP from 'fp-ts/lib/function'
@@ -10,7 +12,8 @@ import { useIntl } from 'react-intl'
 
 import { AddressValidation } from '../../services/clients'
 import { NodeInfos, NodeInfosRD } from '../../services/thorchain/types'
-import { WalletAddressInfo } from '../../views/wallet/BondsView'
+import { useApp } from '../../store/app/hooks'
+import { WalletAddressInfo } from '../../views/bonds/types'
 import { ErrorView } from '../shared/error'
 import { FilterButton, ReloadButton } from '../uielements/button'
 import * as Styled from './Bonds.styles'
@@ -55,6 +58,7 @@ export const Bonds: React.FC<Props> = ({
   watchList
 }) => {
   const [viewMode, setViewMode] = useState(BondsViewMode.All)
+  const { protocol } = useApp()
   const intl = useIntl()
   const [form] = Form.useForm()
   const prevNodes = useRef<O.Option<NodeInfos>>(O.none)
@@ -74,9 +78,9 @@ export const Bonds: React.FC<Props> = ({
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.empty' }))
       }
       const loweredCaseValue = value.toLowerCase()
-      const validAddress = loweredCaseValue.startsWith('t')
-        ? addressValidationThor(loweredCaseValue)
-        : addressValidationMaya(loweredCaseValue)
+      const validAddress =
+        protocol === THORChain ? addressValidationThor(loweredCaseValue) : addressValidationMaya(loweredCaseValue)
+
       if (!validAddress) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
@@ -85,7 +89,7 @@ export const Bonds: React.FC<Props> = ({
         return Promise.reject(intl.formatMessage({ id: 'bonds.validations.nodeAlreadyAdded' }))
       }
     },
-    [addressValidationMaya, addressValidationThor, intl, nodes]
+    [addressValidationMaya, addressValidationThor, intl, nodes, protocol]
   )
 
   const onSubmit = useCallback(
@@ -97,22 +101,37 @@ export const Bonds: React.FC<Props> = ({
   )
 
   const renderTable = useCallback(
-    (nodes: NodeInfos, loading = false) => (
-      <BondsTable
-        className="border-b-1 mb-[25px] border-solid border-gray1 dark:border-gray1d"
-        nodes={nodes}
-        watchlist={watchList}
-        addWatchlist={addWatchlist}
-        removeWatchlist={removeWatchlist}
-        removeNode={removeNode}
-        goToNode={goToNode}
-        goToAction={goToAction}
-        network={network}
-        walletAddresses={walletAddresses}
-        loading={loading}
-      />
-    ),
-    [watchList, addWatchlist, removeWatchlist, removeNode, goToNode, goToAction, network, walletAddresses]
+    (nodes: NodeInfos, loading = false) => {
+      const filteredNodes = nodes.filter((node) => {
+        if (protocol === THORChain && node.address.startsWith('t')) return true
+        if (protocol === MAYAChain && node.address.startsWith('m')) return true
+
+        return false
+      })
+      const filteredWatchlist = watchList.filter((nodeAddy) => {
+        if (protocol === THORChain && nodeAddy.startsWith('t')) return true
+        if (protocol === MAYAChain && nodeAddy.startsWith('m')) return true
+
+        return false
+      })
+
+      return (
+        <BondsTable
+          className="border-b-1 mb-[25px] border-solid border-gray1 dark:border-gray1d"
+          nodes={filteredNodes}
+          watchlist={filteredWatchlist}
+          addWatchlist={addWatchlist}
+          removeWatchlist={removeWatchlist}
+          removeNode={removeNode}
+          goToNode={goToNode}
+          goToAction={goToAction}
+          network={network}
+          walletAddresses={walletAddresses}
+          loading={loading}
+        />
+      )
+    },
+    [protocol, watchList, addWatchlist, removeWatchlist, removeNode, goToNode, goToAction, network, walletAddresses]
   )
   const filteredNodes = useMemo(() => {
     if (viewMode === BondsViewMode.Watchlist) {
@@ -173,7 +192,7 @@ export const Bonds: React.FC<Props> = ({
                 disabled={disableForm}
               />
             </Form.Item>
-            <Styled.SubmitButton htmlType={'submit'} disabled={disableForm}>
+            <Styled.SubmitButton htmlType="submit" disabled={disableForm}>
               <Styled.AddIcon /> {intl.formatMessage({ id: 'bonds.node.add' })}
             </Styled.SubmitButton>
           </div>

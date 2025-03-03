@@ -7,7 +7,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { NodeInfo, NodeInfo as NodeInfoMaya } from '../services/mayachain/types'
-import { WalletAddressInfo } from '../views/wallet/BondsView'
+import { WalletAddressInfo } from '../views/bonds/types'
 
 type UseNodeInfosParams = {
   addressesFetched: boolean
