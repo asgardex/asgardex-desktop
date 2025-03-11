@@ -11,6 +11,7 @@ import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
 import { AddressValidation } from '../../services/clients'
+import { NodeInfos as NodeInfosMaya, NodeInfosRD as NodeInfosMayaRD } from '../../services/mayachain/types'
 import { NodeInfos, NodeInfosRD } from '../../services/thorchain/types'
 import { useApp } from '../../store/app/hooks'
 import { WalletAddressInfo } from '../../views/bonds/types'
@@ -20,7 +21,8 @@ import * as Styled from './Bonds.styles'
 import { BondsTable } from './table'
 
 type Props = {
-  nodes: NodeInfosRD
+  nodesThor: NodeInfosRD
+  nodesMaya: NodeInfosMayaRD
   removeNode: (node: Address) => void
   goToNode: (node: Address) => void
   goToAction: (action: string, node: string, walletType: string) => void
@@ -44,7 +46,8 @@ enum BondsViewMode {
 export const Bonds: React.FC<Props> = ({
   addressValidationThor,
   addressValidationMaya,
-  nodes: nodesRD,
+  nodesThor: nodesThorRD,
+  nodesMaya: nodesMayaRD,
   removeNode,
   goToNode,
   goToAction,
@@ -61,16 +64,28 @@ export const Bonds: React.FC<Props> = ({
   const { protocol } = useApp()
   const intl = useIntl()
   const [form] = Form.useForm()
-  const prevNodes = useRef<O.Option<NodeInfos>>(O.none)
+  const prevNodesThor = useRef<O.Option<NodeInfos>>(O.none)
+  const prevNodesMaya = useRef<O.Option<NodeInfosMaya>>(O.none)
 
-  const nodes: NodeInfos = useMemo(
+  const nodesThor: NodeInfos = useMemo(
     () =>
       FP.pipe(
-        nodesRD,
+        nodesThorRD,
         RD.getOrElse(() => [] as NodeInfos)
       ),
-    [nodesRD]
+    [nodesThorRD]
   )
+
+  const nodesMaya: NodeInfosMaya = useMemo(
+    () =>
+      FP.pipe(
+        nodesMayaRD,
+        RD.getOrElse(() => [] as NodeInfosMaya)
+      ),
+    [nodesMayaRD]
+  )
+
+  const nodes = protocol === THORChain ? nodesThor : nodesMaya
 
   const addressValidator = useCallback(
     async (_: unknown, value: string) => {
@@ -104,14 +119,10 @@ export const Bonds: React.FC<Props> = ({
     (nodes: NodeInfos, loading = false) => {
       const filteredNodes = nodes.filter((node) => {
         if (protocol === THORChain && node.address.startsWith('t')) return true
-        if (protocol === MAYAChain && node.address.startsWith('m')) return true
-
         return false
       })
       const filteredWatchlist = watchList.filter((nodeAddy) => {
         if (protocol === THORChain && nodeAddy.startsWith('t')) return true
-        if (protocol === MAYAChain && nodeAddy.startsWith('m')) return true
-
         return false
       })
 
@@ -119,6 +130,7 @@ export const Bonds: React.FC<Props> = ({
         <BondsTable
           className="border-b-1 mb-[25px] border-solid border-gray1 dark:border-gray1d"
           nodes={filteredNodes}
+          protocol={protocol}
           watchlist={filteredWatchlist}
           addWatchlist={addWatchlist}
           removeWatchlist={removeWatchlist}
@@ -133,9 +145,41 @@ export const Bonds: React.FC<Props> = ({
     },
     [protocol, watchList, addWatchlist, removeWatchlist, removeNode, goToNode, goToAction, network, walletAddresses]
   )
-  const filteredNodes = useMemo(() => {
+
+  const renderTableMaya = useCallback(
+    (nodes: NodeInfosMaya, loading = false) => {
+      const filteredNodes = nodes.filter((node) => {
+        if (protocol === MAYAChain && node.address.startsWith('m')) return true
+
+        return false
+      })
+      const filteredWatchlist = watchList.filter((nodeAddy) => {
+        if (protocol === MAYAChain && nodeAddy.startsWith('t')) return true
+        return false
+      })
+
+      return (
+        <BondsTable
+          className="border-b-1 mb-[25px] border-solid border-gray1 dark:border-gray1d"
+          nodes={filteredNodes}
+          protocol={protocol}
+          watchlist={filteredWatchlist}
+          addWatchlist={addWatchlist}
+          removeWatchlist={removeWatchlist}
+          removeNode={removeNode}
+          goToNode={goToNode}
+          goToAction={goToAction}
+          network={network}
+          walletAddresses={walletAddresses}
+          loading={loading}
+        />
+      )
+    },
+    [protocol, watchList, addWatchlist, removeWatchlist, removeNode, goToNode, goToAction, network, walletAddresses]
+  )
+  const filteredNodesMaya = useMemo(() => {
     if (viewMode === BondsViewMode.Watchlist) {
-      return nodes
+      return nodesMaya
         .map((node) => ({
           ...node,
           bondProviders: {
@@ -147,18 +191,35 @@ export const Bonds: React.FC<Props> = ({
         }))
         .filter((node) => node.bondProviders.providers.length > 0) // Keep nodes with at least one matching provider
     }
-    return nodes
-  }, [viewMode, nodes, watchList])
+    return nodesMaya
+  }, [viewMode, nodesMaya, watchList])
+
+  const filteredNodesThor = useMemo(() => {
+    if (viewMode === BondsViewMode.Watchlist) {
+      return nodesThor
+        .map((node) => ({
+          ...node,
+          bondProviders: {
+            ...node.bondProviders,
+            providers: node.bondProviders.providers.filter((provider) =>
+              watchList.includes(provider.bondAddress.toLowerCase())
+            )
+          }
+        }))
+        .filter((node) => node.bondProviders.providers.length > 0) // Keep nodes with at least one matching provider
+    }
+    return nodesThor
+  }, [viewMode, nodesThor, watchList])
 
   const renderNodeInfos = useMemo(() => {
     const emptyList: NodeInfos = []
     return FP.pipe(
-      nodesRD,
+      nodesThorRD,
       RD.fold(
         () => renderTable(emptyList),
         () => {
           const data = FP.pipe(
-            prevNodes.current,
+            prevNodesThor.current,
             O.getOrElse(() => emptyList)
           )
           return renderTable(data, true)
@@ -171,14 +232,48 @@ export const Bonds: React.FC<Props> = ({
           />
         ),
         (nodes) => {
-          prevNodes.current = O.some(nodes)
-          return renderTable(filteredNodes)
+          prevNodesThor.current = O.some(nodes)
+          return renderTable(filteredNodesThor)
         }
       )
     )
-  }, [filteredNodes, intl, nodesRD, reloadNodeInfos, renderTable])
+  }, [filteredNodesThor, intl, nodesThorRD, reloadNodeInfos, renderTable])
 
-  const disableForm = useMemo(() => RD.isPending(nodesRD) || RD.isFailure(nodesRD), [nodesRD])
+  const renderNodeInfosMaya = useMemo(() => {
+    const emptyList: NodeInfosMaya = []
+    return FP.pipe(
+      nodesMayaRD,
+      RD.fold(
+        () => renderTableMaya(emptyList),
+        () => {
+          const data = FP.pipe(
+            prevNodesMaya.current,
+            O.getOrElse(() => emptyList)
+          )
+          return renderTableMaya(data, true)
+        },
+        (error) => (
+          <ErrorView
+            title={intl.formatMessage({ id: 'bonds.nodes.error' })}
+            subTitle={(error.message || error.toString()).toUpperCase()}
+            extra={<ReloadButton onClick={reloadNodeInfos} label={intl.formatMessage({ id: 'common.reload' })} />}
+          />
+        ),
+        (nodes) => {
+          prevNodesMaya.current = O.some(nodes)
+          return renderTableMaya(filteredNodesMaya)
+        }
+      )
+    )
+  }, [filteredNodesMaya, intl, nodesMayaRD, reloadNodeInfos, renderTableMaya])
+
+  const disableForm = useMemo(
+    () =>
+      protocol === THORChain
+        ? RD.isPending(nodesThorRD) || RD.isFailure(nodesThorRD)
+        : RD.isPending(nodesMayaRD) || RD.isFailure(nodesMayaRD),
+    [nodesMayaRD, nodesThorRD, protocol]
+  )
 
   return (
     <Styled.Container className={className}>
@@ -210,7 +305,7 @@ export const Bonds: React.FC<Props> = ({
           </div>
         </div>
       </Styled.Form>
-      {renderNodeInfos}
+      {protocol === THORChain ? renderNodeInfos : renderNodeInfosMaya}
     </Styled.Container>
   )
 }

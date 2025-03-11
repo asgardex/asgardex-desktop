@@ -115,7 +115,10 @@ export type InteractStateHandler = (p: InteractParams) => InteractState$
 
 export type Providers = {
   bondAddress: Address
-  bond: BaseAmount
+  bonded: boolean
+  pools: {
+    [key: string]: string
+  }
 }
 
 export type BondProviders = {

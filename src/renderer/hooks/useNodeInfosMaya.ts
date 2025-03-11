@@ -6,48 +6,48 @@ import * as FP from 'fp-ts/function'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { NodeInfo as NodeInfoThor } from '../services/thorchain/types'
+import { NodeInfo as NodeInfoMaya } from '../services/mayachain/types'
 import { WalletAddressInfo } from '../views/bonds/types'
 
-export type ExtendedNodeInfoThor = NodeInfoThor & {
+export type ExtendedNodeInfoMaya = NodeInfoMaya & {
   isUserStoredNodeAddress: boolean
   isUserBondProvider: boolean
 }
 
-type UseThorNodeInfosParams = {
+type UseMayaNodeInfosParams = {
   addressesFetched: boolean
-  thorWalletAddresses: WalletAddressInfo[]
+  mayaWalletAddresses: WalletAddressInfo[]
   userNodes$: Rx.Observable<string[]>
-  getNodeInfosThor$: Rx.Observable<RD.RemoteData<Error, NodeInfoThor[]>>
+  getNodeInfosMaya$: Rx.Observable<RD.RemoteData<Error, NodeInfoMaya[]>>
 }
 
-export const useThorNodeInfos = ({
+export const useMayaNodeInfos = ({
   addressesFetched,
-  thorWalletAddresses,
+  mayaWalletAddresses,
   userNodes$,
-  getNodeInfosThor$
-}: UseThorNodeInfosParams): RD.RemoteData<Error, ExtendedNodeInfoThor[]> => {
-  const [nodeInfos, setNodeInfos] = useState<RD.RemoteData<Error, ExtendedNodeInfoThor[]>>(RD.initial)
+  getNodeInfosMaya$
+}: UseMayaNodeInfosParams): RD.RemoteData<Error, ExtendedNodeInfoMaya[]> => {
+  const [nodeInfos, setNodeInfos] = useState<RD.RemoteData<Error, ExtendedNodeInfoMaya[]>>(RD.initial)
 
   const walletAddressSet = useMemo(
-    () => new Set(thorWalletAddresses.map((addr) => addr.address.toLowerCase())),
-    [thorWalletAddresses]
+    () => new Set(mayaWalletAddresses.map((addr) => addr.address.toLowerCase())),
+    [mayaWalletAddresses]
   )
 
   const nodeInfos$ = useMemo(() => {
     if (!addressesFetched) return Rx.of(RD.initial)
 
     return FP.pipe(
-      Rx.combineLatest([userNodes$, getNodeInfosThor$.pipe(RxOp.startWith(RD.initial))]),
-      RxOp.switchMap(([userNodes, nodeInfosThor]) => {
+      Rx.combineLatest([userNodes$, getNodeInfosMaya$.pipe(RxOp.startWith(RD.initial))]),
+      RxOp.switchMap(([userNodes, nodeInfosMaya]) => {
         const normalizedUserNodes = userNodes.map((node) => node.toLowerCase())
 
         return Rx.of(
           FP.pipe(
-            nodeInfosThor,
-            RD.map((thorData: NodeInfoThor[]) =>
+            nodeInfosMaya, // Work directly with RemoteData<Error, NodeInfoMaya[]>
+            RD.map((mayaData: NodeInfoMaya[]) =>
               FP.pipe(
-                thorData,
+                mayaData,
                 A.map((nodeInfo) => {
                   const isUserStoredNodeAddress = normalizedUserNodes.includes(nodeInfo.address.toLowerCase())
                   const isUserBondProvider = nodeInfo.bondProviders.providers.some((provider) =>
@@ -69,7 +69,7 @@ export const useThorNodeInfos = ({
       RxOp.startWith(RD.initial),
       RxOp.shareReplay(1)
     )
-  }, [addressesFetched, userNodes$, getNodeInfosThor$, walletAddressSet])
+  }, [addressesFetched, userNodes$, getNodeInfosMaya$, walletAddressSet])
 
   useEffect(() => {
     const subscription = nodeInfos$.subscribe(setNodeInfos)
