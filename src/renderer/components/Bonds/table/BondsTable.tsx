@@ -4,14 +4,7 @@ import { DesktopOutlined } from '@ant-design/icons'
 import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
-import {
-  Address,
-  assetFromStringEx,
-  BaseAmount,
-  baseAmount,
-  baseToAsset,
-  formatAssetAmountCurrency
-} from '@xchainjs/xchain-util'
+import { Address, BaseAmount, baseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { ColumnType } from 'antd/lib/table'
 import clsx from 'clsx'
 import * as FP from 'fp-ts/function'
@@ -179,12 +172,12 @@ export const BondsTable: React.FC<Props> = ({
           <div>
             {(bondProviders.providers as MayaProviders[]).map((provider: MayaProviders, index: number) => (
               <div key={index}>
-                {Object.entries(provider.pools).map(([pool, amount]) => (
+                {Object.entries(provider.pools).map(([pool, assetWithLpUnits]) => (
                   <div key={pool}>
                     {pool}:{' '}
                     {formatAssetAmountCurrency({
-                      asset: assetFromStringEx(pool), // Dynamically map pool key to asset
-                      amount: baseToAsset(baseAmount(amount, 10)), // mayapools are 1e10
+                      asset: assetWithLpUnits.asset, // Dynamically map pool key to asset
+                      amount: baseToAsset(baseAmount(assetWithLpUnits.units, 8)),
                       trimZeros: true,
                       decimal: 0
                     })}
@@ -455,8 +448,8 @@ export const BondsTable: React.FC<Props> = ({
                               <Styled.TextLabel className="!text-14">
                                 {pool}:{' '}
                                 {formatAssetAmountCurrency({
-                                  asset: assetFromStringEx(pool), // Dynamically map pool key to asset
-                                  amount: baseToAsset(baseAmount(amount, 8)), // Assuming 8 decimals; adjust as needed
+                                  asset: amount.asset, // Dynamically map pool key to asset
+                                  amount: baseToAsset(baseAmount(amount.units, 8)), // Assuming 8 decimals; adjust as needed
                                   trimZeros: true,
                                   decimal: 0
                                 })}

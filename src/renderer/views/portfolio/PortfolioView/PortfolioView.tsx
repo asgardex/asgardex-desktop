@@ -275,7 +275,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
           const normalizedAddress = provider.bondAddress.toLowerCase()
           if (walletAddressSet.has(normalizedAddress)) {
             const poolSum = Object.values(provider.pools).reduce(
-              (sum, amount) => sum.plus(baseAmount(amount, 8)), // Assuming 8 decimals; adjust as needed
+              (sum, amount) => sum.plus(baseAmount(amount.units, 8)), // Assuming 8 decimals; adjust as needed
               assetToBase(assetAmount(0))
             )
             return providerSum.plus(poolSum)

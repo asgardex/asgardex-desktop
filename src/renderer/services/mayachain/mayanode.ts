@@ -16,7 +16,15 @@ import {
   Saver
 } from '@xchainjs/xchain-mayanode'
 import { SaversApi } from '@xchainjs/xchain-thornode'
-import { Address, AnyAsset, assetFromString, assetToString, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
+import {
+  Address,
+  AnyAsset,
+  assetFromString,
+  assetFromStringEx,
+  assetToString,
+  baseAmount,
+  bnOrZero
+} from '@xchainjs/xchain-util'
 import { AxiosResponse } from 'axios'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
@@ -228,7 +236,13 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
                   ? bond_providers.providers.map((provider) => ({
                       bondAddress: provider.bond_address,
                       bonded: provider.bonded,
-                      pools: provider.pools || {}
+                      pools: Object.entries(provider.pools).map(([pool, amount]) => {
+                        const asset = assetFromStringEx(pool)
+                        return {
+                          asset,
+                          units: Number(amount)
+                        }
+                      })
                     }))
                   : []
               },

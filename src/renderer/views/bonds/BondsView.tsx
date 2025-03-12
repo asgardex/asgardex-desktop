@@ -41,7 +41,7 @@ import { useMayaNodeInfos } from '../../hooks/useNodeInfosMaya'
 import { useValidateAddress } from '../../hooks/useValidateAddress'
 import * as walletRoutes from '../../routes/wallet'
 import { DEFAULT_NETWORK } from '../../services/const'
-import { NodeInfo as NodeInfoMaya } from '../../services/mayachain/types'
+import { NodeInfo as NodeInfoMaya, Providers as MayaProviders } from '../../services/mayachain/types'
 import {
   addBondProvidersAddress,
   removeBondProvidersByAddress,
@@ -56,8 +56,8 @@ import { getValueOfRuneInAsset } from '../pools/Pools.utils'
 import { WalletAddressInfo } from './types'
 
 enum LabelView {
-  Connected,
-  Monitored
+  Connected = 'Connected',
+  Monitored = 'Monitored'
 }
 
 export const BondsView = (): JSX.Element => {
@@ -84,6 +84,7 @@ export const BondsView = (): JSX.Element => {
   const { isPrivate } = useApp()
   const navigate = useNavigate()
   const { setSelectedAsset } = useWalletContext()
+
   const network = useObservableState<Network>(network$, DEFAULT_NETWORK)
   const oClientThor = useObservableState<O.Option<ThorchainClient>>(client$, O.none)
   const oClientMaya = useObservableState<O.Option<MayachainClient>>(clientMaya$, O.none)
@@ -91,20 +92,22 @@ export const BondsView = (): JSX.Element => {
     () => balancesState$({ ...DEFAULT_BALANCES_FILTER }),
     INITIAL_BALANCES_STATE
   )
-  const [activeLabel, setActiveLabel] = useState(LabelView.Connected)
+  const [activeLabel, setActiveLabel] = useState<LabelView>(LabelView.Connected)
   const [selectedPricePoolThor] = useObservableState(() => selectedPricePoolThor$, RUNE_PRICE_POOL)
   const [selectedPricePoolMaya] = useObservableState(() => selectedPricePoolMaya$, MAYA_PRICE_POOL)
   const { poolData: pricePoolDataThor } = useObservableState(selectedPricePoolThor$, RUNE_PRICE_POOL)
   const { poolData: pricePoolDataMaya } = useObservableState(selectedPricePoolMaya$, MAYA_PRICE_POOL)
   const { balances: oWalletBalances } = balancesState
 
-  const allBalances: WalletBalances = useMemo(() => {
-    return FP.pipe(
-      oWalletBalances,
-      O.map((balances) => filterWalletBalancesByAssets(balances, [AssetRuneNative, AssetCacao])),
-      O.getOrElse<WalletBalances>(() => [])
-    )
-  }, [oWalletBalances])
+  const allBalances: WalletBalances = useMemo(
+    () =>
+      FP.pipe(
+        oWalletBalances,
+        O.map((balances) => filterWalletBalancesByAssets(balances, [AssetRuneNative, AssetCacao])),
+        O.getOrElse<WalletBalances>(() => [])
+      ),
+    [oWalletBalances]
+  )
 
   const bondProviderWatchList = useObservableState(userBondProviders$, [])
   const { validateAddress: validateAddressThor } = useValidateAddress(THORChain)
@@ -189,48 +192,75 @@ export const BondsView = (): JSX.Element => {
     [allBalances, navigate, network, setSelectedAsset]
   )
 
-  const renderBondTotal = useMemo(() => {
-    const calculateTotalBondByChain = (nodes: NodeInfoThor[] | NodeInfoMaya[], chain: 'THOR' | 'MAYA') => {
-      const walletAddressSet = new Set([
-        ...walletAddresses.THOR.map((info) => info.address.toLowerCase()),
-        ...walletAddresses.MAYA.map((info) => info.address.toLowerCase())
-      ])
-
-      return nodes.reduce(
-        (acc, node) => {
-          const totalBondProviderAmount = node.bondProviders.providers.reduce((providerSum, provider) => {
-            const normalizedAddress = provider.bondAddress.toLowerCase()
-            if (walletAddressSet.has(normalizedAddress)) {
-              const bondAmount = chain === 'THOR' ? (provider as { bond: BaseAmount }).bond : node.bond // Fallback for MayaChain
-              return providerSum.plus(bondAmount)
-            }
-            return providerSum
-          }, assetToBase(assetAmount(0)))
-
-          acc[chain] = acc[chain] ? acc[chain].plus(totalBondProviderAmount) : totalBondProviderAmount
-          return acc
+  // THORChain-specific bond total calculation (Connected)
+  const calculateTotalBondThor = (nodes: NodeInfoThor[], walletAddresses: WalletAddressInfo[]): BaseAmount => {
+    const walletAddressSet = new Set(walletAddresses.map((info) => info.address.toLowerCase()))
+    return nodes.reduce((acc: BaseAmount, node: NodeInfoThor) => {
+      const totalBondProviderAmount = node.bondProviders.providers.reduce(
+        (providerSum: BaseAmount, provider: { bondAddress: string; bond: BaseAmount }) => {
+          const normalizedAddress = provider.bondAddress.toLowerCase()
+          if (walletAddressSet.has(normalizedAddress)) {
+            return providerSum.plus(provider.bond)
+          }
+          return providerSum
         },
-        { THOR: assetToBase(assetAmount(0)), MAYA: assetToBase(assetAmount(0)) }
+        assetToBase(assetAmount(0))
       )
-    }
+      return acc.plus(totalBondProviderAmount)
+    }, assetToBase(assetAmount(0)))
+  }
 
-    const calculateTotalMonitoredBondByChain = (nodes: NodeInfoThor[] | NodeInfoMaya[], chain: 'THOR' | 'MAYA') => {
-      return nodes.reduce(
-        (acc, node) => {
-          const totalBondProviderAmount = node.bondProviders.providers.reduce((providerSum, provider) => {
+  // MayaChain-specific bond total calculation (Connected)
+  const calculateTotalBondMaya = (nodes: NodeInfoMaya[], walletAddresses: WalletAddressInfo[]): BaseAmount => {
+    const walletAddressSet = new Set(walletAddresses.map((info) => info.address.toLowerCase()))
+    return nodes.reduce((acc: BaseAmount, node: NodeInfoMaya) => {
+      const totalBondProviderAmount = node.bondProviders.providers.reduce(
+        (providerSum: BaseAmount, provider: MayaProviders) => {
+          const normalizedAddress = provider.bondAddress.toLowerCase()
+          if (walletAddressSet.has(normalizedAddress)) {
+            return providerSum.plus(node.bond)
+          }
+          return providerSum
+        },
+        assetToBase(assetAmount(0))
+      )
+      return acc.plus(totalBondProviderAmount)
+    }, assetToBase(assetAmount(0)))
+  }
+
+  const renderBondTotal = useMemo(() => {
+    // THORChain-specific monitored bond total calculation
+    const calculateTotalMonitoredBondThor = (nodes: NodeInfoThor[]): BaseAmount => {
+      return nodes.reduce((acc: BaseAmount, node: NodeInfoThor) => {
+        const totalBondProviderAmount = node.bondProviders.providers.reduce(
+          (providerSum: BaseAmount, provider: { bondAddress: string; bond: BaseAmount }) => {
             const normalizedAddress = provider.bondAddress.toLowerCase()
             if (bondProviderWatchList.includes(normalizedAddress)) {
-              const bondAmount = chain === 'THOR' ? (provider as { bond: BaseAmount }).bond : node.bond // Fallback for MayaChain
-              return providerSum.plus(bondAmount)
+              return providerSum.plus(provider.bond)
             }
             return providerSum
-          }, assetToBase(assetAmount(0)))
+          },
+          assetToBase(assetAmount(0))
+        )
+        return acc.plus(totalBondProviderAmount)
+      }, assetToBase(assetAmount(0)))
+    }
 
-          acc[chain] = acc[chain] ? acc[chain].plus(totalBondProviderAmount) : totalBondProviderAmount
-          return acc
-        },
-        { THOR: assetToBase(assetAmount(0)), MAYA: assetToBase(assetAmount(0)) }
-      )
+    // MayaChain-specific monitored bond total calculation
+    const calculateTotalMonitoredBondMaya = (nodes: NodeInfoMaya[]): BaseAmount => {
+      return nodes.reduce((acc: BaseAmount, node: NodeInfoMaya) => {
+        const totalBondProviderAmount = node.bondProviders.providers.reduce(
+          (providerSum: BaseAmount, provider: MayaProviders) => {
+            const normalizedAddress = provider.bondAddress.toLowerCase()
+            if (bondProviderWatchList.includes(normalizedAddress)) {
+              return providerSum.plus(node.bond)
+            }
+            return providerSum
+          },
+          assetToBase(assetAmount(0))
+        )
+        return acc.plus(totalBondProviderAmount)
+      }, assetToBase(assetAmount(0)))
     }
 
     const renderThorTotal = RD.fold(
@@ -242,9 +272,9 @@ export const BondsView = (): JSX.Element => {
         </Styled.BalanceLabel>
       ),
       (nodes: NodeInfoThor[]) => {
-        const totals = calculateTotalBondByChain(nodes, 'THOR')
-        const totalMonitored = calculateTotalMonitoredBondByChain(nodes, 'THOR')
-        const activeAmount = activeLabel === LabelView.Connected ? totals.THOR : totalMonitored.THOR
+        const totals = calculateTotalBondThor(nodes, walletAddresses.THOR)
+        const totalMonitored = calculateTotalMonitoredBondThor(nodes)
+        const activeAmount = activeLabel === LabelView.Connected ? totals : totalMonitored
 
         return (
           <Styled.BalanceLabel>
@@ -273,9 +303,9 @@ export const BondsView = (): JSX.Element => {
         </Styled.BalanceLabel>
       ),
       (nodes: NodeInfoMaya[]) => {
-        const totals = calculateTotalBondByChain(nodes, 'MAYA')
-        const totalMonitored = calculateTotalMonitoredBondByChain(nodes, 'MAYA')
-        const activeAmount = activeLabel === LabelView.Connected ? totals.MAYA : totalMonitored.MAYA
+        const totals = calculateTotalBondMaya(nodes, walletAddresses.MAYA)
+        const totalMonitored = calculateTotalMonitoredBondMaya(nodes)
+        const activeAmount = activeLabel === LabelView.Connected ? totals : totalMonitored
 
         return (
           <Styled.BalanceLabel>
@@ -295,15 +325,15 @@ export const BondsView = (): JSX.Element => {
       }
     )
 
-    return protocol === THORChain ? renderThorTotal(nodeInfosThor) : renderMayaTotal(nodeInfosMaya)
+    return protocol === 'THOR' ? renderThorTotal(nodeInfosThor) : renderMayaTotal(nodeInfosMaya)
   }, [
+    protocol,
     nodeInfosThor,
     nodeInfosMaya,
-    protocol,
-    walletAddresses.THOR,
-    walletAddresses.MAYA,
     bondProviderWatchList,
     intl,
+    walletAddresses.THOR,
+    walletAddresses.MAYA,
     activeLabel,
     isPrivate,
     pricePoolDataThor,
@@ -327,9 +357,9 @@ export const BondsView = (): JSX.Element => {
             </Styled.BalanceTitle>
             <BaseButton
               className="ml-2 !p-0 text-turquoise"
-              onClick={() => {
-                setActiveLabel((prev) => 1 - prev)
-              }}>
+              onClick={() =>
+                setActiveLabel((prev) => (prev === LabelView.Connected ? LabelView.Monitored : LabelView.Connected))
+              }>
               <SwapOutlined className="rounded-full border border-solid border-turquoise p-1" />
             </BaseButton>
           </Styled.TitleContainer>

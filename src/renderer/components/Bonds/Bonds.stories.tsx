@@ -53,14 +53,14 @@ export const Default: StoryFn = () => {
       addressValidationMaya={addressValidation}
       network={Network.Testnet}
       addNode={addNode}
-      // TODO: Thorianite
       addWatchlist={addBondProvidersAddress}
       removeWatchlist={removeBondProvidersByAddress}
       removeNode={removeNode}
       goToNode={(node) => console.log('go to ', node)}
       goToAction={(action) => console.log('go to ', action)}
       reloadNodeInfos={() => console.log('reloadNodeInfos')}
-      nodes={RD.success(nodesList.map((address) => mockNodeInfo(address)))}
+      nodesThor={RD.success(nodesList.map((address) => mockNodeInfo(address)))}
+      nodesMaya={RD.success(nodesList.map((address) => mockNodeInfo(address)))}
       walletAddresses={mockWalletAddresses}
       watchList={[]}
     />

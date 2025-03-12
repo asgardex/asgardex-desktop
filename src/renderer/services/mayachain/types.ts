@@ -113,12 +113,15 @@ export type InteractState$ = Rx.Observable<InteractState>
 
 export type InteractStateHandler = (p: InteractParams) => InteractState$
 
+export type MayaLpUnits = {
+  asset: AnyAsset
+  units: number
+}
+
 export type Providers = {
   bondAddress: Address
   bonded: boolean
-  pools: {
-    [key: string]: string
-  }
+  pools: MayaLpUnits[]
 }
 
 export type BondProviders = {

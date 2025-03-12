@@ -15,7 +15,6 @@ import {
   CryptoAmount,
   assetAmount,
   assetToBase,
-  baseAmount,
   baseToAsset,
   bn,
   formatAssetAmountCurrency
@@ -40,7 +39,13 @@ import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { FeeRD } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../services/clients'
 import { INITIAL_INTERACT_STATE } from '../../../../services/mayachain/const'
-import { InteractState, InteractStateHandler, NodeInfos, NodeInfosRD } from '../../../../services/mayachain/types'
+import {
+  InteractState,
+  InteractStateHandler,
+  MayaLpUnits,
+  NodeInfos,
+  NodeInfosRD
+} from '../../../../services/mayachain/types'
 import { ValidatePasswordHandler, WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
 import { TxModal } from '../../../modal/tx'
@@ -74,7 +79,7 @@ type FormValues = {
 type UserNodeInfo = {
   nodeAddress: string
   walletAddress: string
-  bondAmount: BaseAmount
+  pools: MayaLpUnits[]
 }
 
 type Props = {
@@ -147,7 +152,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
         foundNodeInfo = {
           nodeAddress: node.address,
           walletAddress: matchingProvider.bondAddress,
-          bondAmount: matchingProvider.bond
+          pools: matchingProvider.pools
         }
         break // Exit the loop after finding the first match
       }
@@ -694,7 +699,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
 
   const [showDetails, setShowDetails] = useState<boolean>(true)
 
-  const bondBaseAmount = userNodeInfo ? userNodeInfo.bondAmount : baseAmount(0)
+  const bond = userNodeInfo ? userNodeInfo.pools : []
 
   return (
     <Styled.Form
@@ -811,14 +816,7 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
                     </div>
                     <div className="ml-[-2px] flex w-full justify-between  py-10px font-mainBold text-[14px] text-gray2 dark:text-gray2d">
                       {intl.formatMessage({ id: 'bonds.currentBond' })}
-                      <div className="truncate pl-10px font-main text-[12px]">
-                        {formatAssetAmountCurrency({
-                          asset: AssetCacao,
-                          amount: baseToAsset(bondBaseAmount),
-                          trimZeros: true,
-                          decimal: 0
-                        })}
-                      </div>
+                      <div className="truncate pl-10px font-main text-[12px]">{bond}</div>
                     </div>
                   </div>
                 )}

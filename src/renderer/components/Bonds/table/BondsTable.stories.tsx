@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react'
 
 import { Meta, StoryFn } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, baseAmount } from '@xchainjs/xchain-util'
 
 import { WalletType } from '../../../../shared/wallet/types'
@@ -57,6 +58,7 @@ export const Default: StoryFn = () => {
     <BondsTable
       network={Network.Testnet}
       // TODO: update stories for Watchlist
+      protocol={THORChain}
       addWatchlist={addBondProvidersAddress}
       removeWatchlist={removeBondProvidersByAddress}
       removeNode={removeNode}
