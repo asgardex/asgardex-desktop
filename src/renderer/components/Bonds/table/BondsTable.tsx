@@ -138,7 +138,7 @@ export const BondsTable: React.FC<Props> = ({
   )
 
   // THORChain-specific columns
-  const thorColumns: ColumnType<ThorNodeInfo>[] = useMemo(
+  const thorColumns: ColumnType<ThorNodeInfo | MayaNodeInfo>[] = useMemo(
     () => [
       ...baseColumns,
       {
@@ -160,7 +160,7 @@ export const BondsTable: React.FC<Props> = ({
   )
 
   // MayaChain-specific columns with nested Pools
-  const mayaColumns: ColumnType<MayaNodeInfo>[] = useMemo(
+  const mayaColumns: ColumnType<ThorNodeInfo | MayaNodeInfo>[] = useMemo(
     () => [
       ...baseColumns,
       // Uncomment if you want total node bond displayed
@@ -168,14 +168,14 @@ export const BondsTable: React.FC<Props> = ({
         key: 'bond',
         width: 150,
         title: intl.formatMessage({ id: 'bonds.bond' }),
-        render: (_, data) => <H.BondValue data={data} />,
+        render: (_, data) => <H.BondValueMaya data={data} />,
         align: 'right'
       },
       {
         key: 'pools',
         width: 200,
         title: 'Pools',
-        render: (_, { bondProviders }: MayaNodeInfo) => (
+        render: (_, { bondProviders }: ThorNodeInfo | MayaNodeInfo) => (
           <div>
             {(bondProviders.providers as MayaProviders[]).map((provider: MayaProviders, index: number) => (
               <div key={index}>
@@ -184,7 +184,7 @@ export const BondsTable: React.FC<Props> = ({
                     {pool}:{' '}
                     {formatAssetAmountCurrency({
                       asset: assetFromStringEx(pool), // Dynamically map pool key to asset
-                      amount: baseToAsset(baseAmount(amount, 8)), // Assuming 8 decimals; adjust as needed
+                      amount: baseToAsset(baseAmount(amount, 10)), // mayapools are 1e10
                       trimZeros: true,
                       decimal: 0
                     })}

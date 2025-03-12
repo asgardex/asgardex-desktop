@@ -9,6 +9,7 @@ import { Col } from 'antd'
 import { useIntl } from 'react-intl'
 
 import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
+import { NodeInfo as NodeInfoMaya } from '../../../services/mayachain/types'
 import { NodeInfo, Providers, NodeStatusEnum } from '../../../services/thorchain/types'
 import * as Styled from './BondsTable.styles'
 
@@ -22,11 +23,23 @@ export const NodeAddress: React.FC<{ address: Address; network: Network }> = ({ 
   </Col>
 )
 
-export const BondValue: React.FC<{ data: NodeInfo }> = ({ data }) => (
+export const BondValue: React.FC<{ data: NodeInfo | NodeInfoMaya }> = ({ data }) => (
   <Col>
     <Styled.TextLabel align="right" nowrap>
       {formatAssetAmountCurrency({
-        asset: data.address.startsWith('thor') ? AssetRuneNative : AssetCacao,
+        asset: AssetRuneNative,
+        amount: baseToAsset(data.bond),
+        trimZeros: true,
+        decimal: 0
+      })}
+    </Styled.TextLabel>
+  </Col>
+)
+export const BondValueMaya: React.FC<{ data: NodeInfo | NodeInfoMaya }> = ({ data }) => (
+  <Col>
+    <Styled.TextLabel align="right" nowrap>
+      {formatAssetAmountCurrency({
+        asset: AssetCacao,
         amount: baseToAsset(data.bond),
         trimZeros: true,
         decimal: 0
@@ -39,7 +52,7 @@ export const BondProviderValue: React.FC<{ providers: Providers }> = ({ provider
   <Col>
     <Styled.TextLabel align="right" nowrap>
       {formatAssetAmountCurrency({
-        asset: providers.bondAddress.startsWith('thor') ? AssetRuneNative : AssetCacao,
+        asset: AssetRuneNative,
         amount: baseToAsset(providers.bond),
         trimZeros: true,
         decimal: 0
@@ -48,7 +61,7 @@ export const BondProviderValue: React.FC<{ providers: Providers }> = ({ provider
   </Col>
 )
 
-export const AwardValue: React.FC<{ data: NodeInfo }> = ({ data }) => (
+export const AwardValue: React.FC<{ data: NodeInfo | NodeInfoMaya }> = ({ data }) => (
   <Col>
     <Styled.TextLabel align="right" nowrap>
       {formatAssetAmountCurrency({
@@ -61,7 +74,7 @@ export const AwardValue: React.FC<{ data: NodeInfo }> = ({ data }) => (
   </Col>
 )
 
-export const Status: React.FC<{ data: NodeInfo }> = ({ data }) => {
+export const Status: React.FC<{ data: NodeInfo | NodeInfoMaya }> = ({ data }) => {
   const intl = useIntl()
 
   const getStatusMessageId = (status: NodeStatusEnum) => {
