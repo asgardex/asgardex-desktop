@@ -35,10 +35,21 @@ module.exports = {
         path: require.resolve('path-browserify'),
         fs: require.resolve('browserify-fs'),
         assert: require.resolve('assert'),
-        process: require.resolve('process/browser')
+        process: require.resolve('process/browser'),
+        dns: require.resolve('dns.js'),
+        zlib: require.resolve('browserify-zlib'),
+        http: require.resolve('stream-http'),
+        https: require.resolve('https-browserify'),
+        net: false, // Stubbed; not needed in browser
+        tls: false, // Stubbed; not needed in browser
+        http2: false, // Stubbed; no full polyfill available
+        dgram: false
       }
 
-      webpackConfig.ignoreWarnings = [/Failed to parse source map/]
+      webpackConfig.ignoreWarnings = [
+        /Failed to parse source map/,
+        /Critical dependency: the request of a dependency is an expression/
+      ]
 
       webpackConfig.module.rules = [
         ...webpackConfig.module.rules,

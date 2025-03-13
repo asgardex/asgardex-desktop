@@ -3,6 +3,7 @@ import { AssetAVAX } from '@xchainjs/xchain-avax'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { AssetBCH } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC } from '@xchainjs/xchain-bsc'
+import { ADAAsset } from '@xchainjs/xchain-cardano'
 import { AssetATOM } from '@xchainjs/xchain-cosmos'
 import { AssetDOGE } from '@xchainjs/xchain-doge'
 import { AssetETH } from '@xchainjs/xchain-ethereum'
@@ -32,7 +33,8 @@ export {
   AssetETH,
   AssetRuneNative,
   AssetKUJI,
-  AssetBETH
+  AssetBETH,
+  ADAAsset
 }
 
 export const isTCSupportedAsset = (asset: AnyAsset, poolDetails: PoolDetails) => {

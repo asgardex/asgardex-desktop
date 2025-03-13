@@ -37,7 +37,8 @@ import {
   AssetCacao,
   AssetMaya,
   AssetKUJI,
-  AssetBETH
+  AssetBETH,
+  ADAAsset
 } from '../../shared/utils/asset'
 import { isSupportedChain } from '../../shared/utils/chain'
 import { AssetTGTERC20, DEFAULT_PRICE_ASSETS, USD_PRICE_ASSETS } from '../const'
@@ -166,6 +167,12 @@ export const isDogeAsset = (asset: AnyAsset): boolean =>
  */
 export const isKujiAsset = (asset: AnyAsset): boolean =>
   asset.chain === AssetKUJI.chain && asset.symbol.toUpperCase() === AssetKUJI.symbol.toUpperCase()
+
+/**
+ * Checks whether an asset is a Ada asset
+ */
+export const isAdaAsset = (asset: AnyAsset): boolean =>
+  asset.chain === ADAAsset.chain && asset.symbol.toUpperCase() === ADAAsset.symbol.toUpperCase()
 /**
  * Checks whether an asset is a Radix asset
  */

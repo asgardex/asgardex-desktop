@@ -98,10 +98,6 @@ export const isSolChain = (chain: Chain): boolean => eqChain.equals(chain.toUppe
  * Check whether chain is ARB chain
  */
 export const isArbChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), ARBChain)
-/**
- * Check whether chain is ARB chain
- */
-export const isADAChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), ADAChain)
 
 /**
  * Check whether chain is AVAX chain
@@ -132,6 +128,10 @@ export const isDogeChain = (chain: Chain): boolean => eqChain.equals(chain, DOGE
  * Check whether chain is KUJI chain
  */
 export const isKujiChain = (chain: Chain): boolean => eqChain.equals(chain, KUJIChain)
+/**
+ * Check whether chain is ADA chain
+ */
+export const isAdaChain = (chain: Chain): boolean => eqChain.equals(chain, ADAChain)
 /**
  * Check whether chain is KUJI chain
  */

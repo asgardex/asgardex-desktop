@@ -3,6 +3,7 @@
 // Workaround: Use `file-loader` explicit for imports
 // See https://github.com/facebook/create-react-app/issues/11770#issuecomment-1022024494
 /* eslint-disable import/no-webpack-loader-syntax */
+import adaIcon from '!file-loader!../../assets/svg/asset-ada.svg'
 import arbIcon from '!file-loader!../../assets/svg/asset-arb.svg'
 import atomIcon from '!file-loader!../../assets/svg/asset-atom.svg'
 import avaxIcon from '!file-loader!../../assets/svg/asset-avax.svg'
@@ -58,6 +59,7 @@ export {
   usdpIcon,
   dashIcon,
   kujiIcon,
+  adaIcon,
   uskIcon,
   mayaIconT,
   xrdIcon,

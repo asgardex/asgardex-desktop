@@ -7,6 +7,7 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
@@ -125,6 +126,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
         case BCHChain:
         case BTCChain:
         case DOGEChain:
+        case ADAChain:
         case DASHChain:
         case LTCChain:
           return (

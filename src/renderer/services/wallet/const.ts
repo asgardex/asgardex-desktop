@@ -4,6 +4,7 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
@@ -48,7 +49,8 @@ export const DEFAULT_BALANCES_FILTER: BalancesStateFilter = {
   [KUJIChain]: 'all',
   [RadixChain]: 'all',
   [SOLChain]: 'all',
-  [BASEChain]: 'all'
+  [BASEChain]: 'all',
+  [ADAChain]: 'all'
 }
 
 export const INITIAL_LOAD_TXS_PROPS: LoadTxsParams = {

@@ -5,6 +5,7 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
@@ -37,6 +38,7 @@ import * as BASE from '../base'
 import * as BTC from '../bitcoin'
 import * as BCH from '../bitcoincash'
 import * as BSC from '../bsc'
+import * as ADA from '../cardano'
 import { WalletBalancesLD, WalletBalancesRD } from '../clients'
 import * as COSMOS from '../cosmos'
 import * as DASH from '../dash'
@@ -90,6 +92,7 @@ export const createBalancesService = ({
       if (enabledChains.includes(DOGEChain)) DOGE.reloadBalances(DEFAULT_WALLET_TYPE)
       if (enabledChains.includes(GAIAChain)) COSMOS.reloadBalances(DEFAULT_WALLET_TYPE)
       if (enabledChains.includes(KUJIChain)) KUJI.reloadBalances()
+      if (enabledChains.includes(ADAChain)) ADA.reloadBalances()
       if (enabledChains.includes(RadixChain)) XRD.reloadBalances()
       if (enabledChains.includes(SOLChain)) SOL.reloadBalances()
     })
@@ -275,6 +278,13 @@ export const createBalancesService = ({
             resetReloadBalances: KUJI.resetReloadBalances,
             balances$: KUJI.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: KUJI.reloadBalances$
+          }
+        case ADAChain:
+          return {
+            reloadBalances: ADA.reloadBalances,
+            resetReloadBalances: ADA.resetReloadBalances,
+            balances$: ADA.balances$({ walletType, walletAccount, walletIndex, hdMode }),
+            reloadBalances$: ADA.reloadBalances$
           }
         case GAIAChain:
           return {
@@ -776,6 +786,40 @@ export const createBalancesService = ({
   })
 
   /**
+   * Transforms ADA balances into `ChainBalance`
+   */
+  const adaChainBalance$: ChainBalance$ = Rx.combineLatest([
+    ADA.addressUI$,
+    getChainBalance$({
+      chain: ADAChain,
+      walletType: WalletType.Keystore,
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
+      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
+      hdMode: 'default',
+      walletBalanceType: 'all'
+    })
+  ]).pipe(
+    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
+      walletType: WalletType.Keystore,
+      chain: ADAChain,
+      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
+      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
+      balances,
+      balancesType: 'all'
+    }))
+  )
+
+  /**
+   * ADA Ledger balances
+   */
+  const adaLedgerChainBalance$: ChainBalance$ = ledgerChainBalance$({
+    chain: ADAChain,
+    walletBalanceType: 'all',
+    getBalanceByAddress$: ADA.getBalanceByAddress$
+  })
+
+  /**
    * DOGE Ledger balances
    */
   const dogeLedgerChainBalance$: ChainBalance$ = ledgerChainBalance$({
@@ -1064,6 +1108,7 @@ export const createBalancesService = ({
     DOGE: [dogeChainBalance$, dogeLedgerChainBalance$],
     GAIA: [cosmosChainBalance$, cosmosLedgerChainBalance$],
     KUJI: [kujiChainBalance$, kujiLedgerChainBalance$],
+    ADA: [adaChainBalance$, adaLedgerChainBalance$],
     XRD: [xrdChainBalance$, xrdLedgerChainBalance$],
     SOL: [solChainBalance$, solLedgerChainBalance$],
     BASE: [baseChainBalance$, baseLedgerChainBalance$]
