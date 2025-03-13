@@ -5,6 +5,7 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { TxHash } from '@xchainjs/xchain-client'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
@@ -31,6 +32,7 @@ import * as BASE from '../../base'
 import * as BTC from '../../bitcoin'
 import * as BCH from '../../bitcoincash'
 import * as BSC from '../../bsc'
+import * as ADA from '../../cardano'
 import * as COSMOS from '../../cosmos'
 import * as DASH from '../../dash'
 import * as DOGE from '../../doge'
@@ -138,6 +140,8 @@ export const sendTx$ = ({
       return MAYA.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode })
     case KUJIChain:
       return KUJI.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode })
+    case ADAChain:
+      return ADA.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode })
     case RadixChain:
       return XRD.sendTx({ walletType, amount, asset, memo, recipient, walletAccount, walletIndex, hdMode })
 
@@ -382,6 +386,7 @@ export const sendPoolTx$ = ({
     case DASHChain:
     case GAIAChain:
     case KUJIChain:
+    case ADAChain:
     case SOLChain:
       return sendTx$({
         sender,
@@ -438,6 +443,8 @@ export const txStatusByChain$: (params: { txHash: TxHash; chain: Chain }) => TxL
       return DASH.txStatus$(txHash, O.none)
     case KUJIChain:
       return KUJI.txStatus$(txHash, O.none)
+    case ADAChain:
+      return ADA.txStatus$(txHash, O.none)
     case RadixChain:
       return XRD.txStatus$(txHash, O.none)
     case SOLChain:

@@ -6,6 +6,7 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { getPrefix as getBCHPrefix } from '@xchainjs/xchain-bitcoincash'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { Network } from '@xchainjs/xchain-client'
 import { getPrefix as getCosmosPrefix } from '@xchainjs/xchain-cosmos'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
@@ -56,7 +57,8 @@ const chainPrefixLengthFunctions: Record<Chain, (network: Network) => number> = 
   [BCHChain]: () => getBCHPrefix().length,
   [KUJIChain]: () => 'kujira'.length,
   [RadixChain]: () => 'account_'.length,
-  [SOLChain]: () => 0
+  [SOLChain]: () => 0,
+  [ADAChain]: () => 'addr'.length
 }
 
 export const getAddressPrefixLength = (chain: Chain, network: Network): number => {

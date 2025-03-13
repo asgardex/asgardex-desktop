@@ -4,6 +4,7 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
@@ -26,6 +27,7 @@ import * as BASE from '../base'
 import * as BTC from '../bitcoin'
 import * as BCH from '../bitcoincash'
 import * as BSC from '../bsc'
+import * as ADA from '../cardano'
 import { XChainClient$ } from '../clients'
 import * as COSMOS from '../cosmos'
 import * as DASH from '../dash'
@@ -76,6 +78,8 @@ export const clientByChain$ = (chain: Chain): XChainClient$ => {
       return XRD.client$
     case SOLChain:
       return SOL.client$
+    case ADAChain:
+      return ADA.client$
     default:
       return Rx.of(O.none) // Add a default case to handle unsupported chains
   }
@@ -124,6 +128,8 @@ export const clientByAsset$ = (asset: AnyAsset, protocol: Chain): XChainClient$ 
       return XRD.client$
     case SOLChain:
       return SOL.client$
+    case ADAChain:
+      return ADA.client$
     default:
       return Rx.of(O.none) // Add a default case to handle unsupported chains
   }

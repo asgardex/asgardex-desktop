@@ -8,6 +8,7 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { Network } from '@xchainjs/xchain-client'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
@@ -217,7 +218,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     [KUJIChain]: 0,
     [ARBChain]: 0,
     [RadixChain]: 0,
-    [SOLChain]: 0
+    [SOLChain]: 0,
+    [ADAChain]: 0
   })
   const [walletAccountMap, setWalletAccountMap] = useState<Record<EnabledChain, number>>({
     [BTCChain]: 0,
@@ -235,7 +237,8 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
     [KUJIChain]: 0,
     [ARBChain]: 0,
     [RadixChain]: 0,
-    [SOLChain]: 0
+    [SOLChain]: 0,
+    [ADAChain]: 0
   })
 
   const {
