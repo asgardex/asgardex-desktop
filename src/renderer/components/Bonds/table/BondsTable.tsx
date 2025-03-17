@@ -173,11 +173,7 @@ export const BondsTable: React.FC<Props> = ({
           <div>
             {(bondProviders.providers as MayaProviders[]).map((provider: MayaProviders, index: number) => (
               <div key={index}>
-                {(bondProviders.providers as MayaProviders[]).map((provider: MayaProviders, index: number) => (
-                  <div key={index}>
-                    <BondProviderPoolInfo provider={provider} nodeAddress={address} />
-                  </div>
-                ))}
+                <BondProviderPoolInfo provider={provider} nodeAddress={address} network={network} />
               </div>
             ))}
           </div>
@@ -185,7 +181,7 @@ export const BondsTable: React.FC<Props> = ({
         align: 'right'
       }
     ],
-    [baseColumns, intl] // Add intl if formatMessage is used elsewhere
+    [baseColumns, intl, network] // Add intl if formatMessage is used elsewhere
   )
   const columns = protocol === THORChain ? thorColumns : mayaColumns
 
