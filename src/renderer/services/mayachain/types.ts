@@ -1,6 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Client, DepositParam } from '@xchainjs/xchain-mayachain'
 import type * as TN from '@xchainjs/xchain-mayanode'
+import { LPBondedNode } from '@xchainjs/xchain-mayanode'
 import { Address, AnyAsset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as O from 'fp-ts/Option'
@@ -14,7 +15,7 @@ import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
 import { AssetsWithAmount1e8, AssetWithAmount1e8 } from '../../types/asgardex'
 import * as C from '../clients'
-import { ClientUrl, NodeStatusEnum } from '../thorchain/types'
+import { ClientUrl } from '../thorchain/types'
 import { TxHashLD, TxHashRD } from '../wallet/types'
 
 /**
@@ -185,18 +186,43 @@ export type PendingAsset = AssetWithAmount1e8
 export type PendingAssets = AssetsWithAmount1e8
 export type PendingAssetsRD = RD.RemoteData<Error, PendingAssets>
 
-export type LiquidityProvider = {
-  cacaoAddress: O.Option<Address>
-  assetAddress: O.Option<Address>
+export type BondedNodes = {
+  nodeAddress: string
+  units: BigNumber
+}
 
-  pendingCacao: O.Option<PendingAsset>
+export type LiquidityProviderForPool = {
+  asset: AnyAsset
+  cacaoAddress: O.Option<Address>
+  lastAddHeight: O.Option<number>
+  assetAddress: O.Option<Address>
+  lastWithdrawHeight: O.Option<number>
+  units: string
+  pendingCacao: BaseAmount
+  pendingAsset: BaseAmount
+  cacaoDepositValue: BaseAmount
+  assetDepositValue: BaseAmount
+  withdrawCounter: string
+  bondedNodes: LPBondedNode[]
+  cacaoRedeemValue: BaseAmount
+  assetRedeemValue: BaseAmount
+}
+
+export type LiquidityProviderForPoolLD = LiveData<Error, LiquidityProviderForPool>
+export type LiquidityProviderForPoolRD = RD.RemoteData<Error, LiquidityProviderForPool>
+
+export type LiquidityProvider = {
+  dexAssetAddress: O.Option<Address>
+  assetAddress: O.Option<Address>
+  pendingDexAsset: O.Option<PendingAsset>
   pendingAsset: O.Option<PendingAsset>
 }
 
 export type LiquidityProvidersLD = LiveData<Error, LiquidityProvider[]>
-export type LiquidityProviderLD = LiveData<Error, O.Option<LiquidityProvider>>
-export type LiquidityProviderRD = RD.RemoteData<Error, O.Option<LiquidityProvider>>
 export type LiquidityProvidersRD = RD.RemoteData<Error, LiquidityProvider[]>
+
+export type LiquidityProviderLD = LiveData<Error, LiquidityProvider>
+export type LiquidityProviderRD = RD.RemoteData<Error, LiquidityProvider>
 
 export type LiquidityProviderHasAsymAssets = { cacao: boolean; asset: boolean }
 export type LiquidityProviderHasAsymAssetsRD = RD.RemoteData<Error, LiquidityProviderHasAsymAssets>
@@ -237,3 +263,11 @@ export const erc20WhitelistIO = t.type({
 })
 
 export type ERC20Whitelist = t.TypeOf<typeof erc20WhitelistIO>
+
+export enum NodeStatusEnum {
+  Active = 'Active',
+  Whitelisted = 'Whitelisted',
+  Standby = 'Standby',
+  Ready = 'Ready',
+  Disabled = 'Disabled'
+}

@@ -24,6 +24,7 @@ import { ConfirmationModal } from '../../modal/confirmation'
 import { RemoveAddressIcon } from '../../settings/WalletSettings.styles'
 import { BaseButton, TextButton } from '../../uielements/button'
 import { ExternalLinkIcon, Tooltip } from '../../uielements/common/Common.styles'
+import { BondProviderPoolInfo } from './BondProviderPoolInfo'
 import * as Styled from './BondsTable.styles'
 import * as H from './helpers'
 
@@ -168,19 +169,13 @@ export const BondsTable: React.FC<Props> = ({
         key: 'pools',
         width: 200,
         title: 'Pools',
-        render: (_, { bondProviders }: ThorNodeInfo | MayaNodeInfo) => (
+        render: (_, { bondProviders, address }: ThorNodeInfo | MayaNodeInfo) => (
           <div>
             {(bondProviders.providers as MayaProviders[]).map((provider: MayaProviders, index: number) => (
               <div key={index}>
-                {Object.entries(provider.pools).map(([pool, assetWithLpUnits]) => (
-                  <div key={pool}>
-                    {pool}:{' '}
-                    {formatAssetAmountCurrency({
-                      asset: assetWithLpUnits.asset, // Dynamically map pool key to asset
-                      amount: baseToAsset(baseAmount(assetWithLpUnits.units, 8)),
-                      trimZeros: true,
-                      decimal: 0
-                    })}
+                {(bondProviders.providers as MayaProviders[]).map((provider: MayaProviders, index: number) => (
+                  <div key={index}>
+                    <BondProviderPoolInfo provider={provider} nodeAddress={address} />
                   </div>
                 ))}
               </div>

@@ -13,7 +13,8 @@ import {
   LiquidityProvidersApi,
   LiquidityProviderSummary,
   LiquidityProvidersResponse,
-  Saver
+  Saver,
+  LiquidityProvider
 } from '@xchainjs/xchain-mayanode'
 import { SaversApi } from '@xchainjs/xchain-thornode'
 import {
@@ -40,7 +41,13 @@ import { sequenceTOption } from '../../helpers/fpHelpers'
 import { LiveData, liveData } from '../../helpers/rx/liveData'
 import { triggerStream } from '../../helpers/stateHelper'
 import { Network$ } from '../app/types'
-import { LiquidityProvidersLD, LiquidityProvider as LiquidityProviderMaya, NodeStatusEnum } from '../thorchain/types'
+import {
+  LiquidityProvidersLD,
+  LiquidityProvider as LiquidityProvidersMaya,
+  NodeStatusEnum,
+  LiquidityProviderForPool,
+  LiquidityProviderForPoolLD
+} from '../mayachain/types'
 import {
   Mimir,
   MimirLD,
@@ -260,6 +267,54 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     })
   )
 
+  const apiGetLiquidityProvider$ = (asset: AnyAsset, address: Address): LiveData<Error, LiquidityProvider> =>
+    FP.pipe(
+      mayanodeUrl$,
+      liveData.chain((basePath) =>
+        FP.pipe(
+          Rx.from(
+            new LiquidityProvidersApi(getMayanodeAPIConfiguration(basePath)).liquidityProvider(
+              assetToString(asset),
+              address
+            )
+          ),
+          RxOp.map((response: AxiosResponse<LiquidityProvider>) => RD.success(response.data)), // Extract data from AxiosResponse
+          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+        )
+      )
+    )
+  const { stream$: reloadLiquidityProvider$, trigger: reloadLiquidityProvider } = triggerStream()
+
+  const getLiquidityProvider = (asset: AnyAsset, address: Address): LiquidityProviderForPoolLD =>
+    FP.pipe(
+      reloadLiquidityProvider$,
+      RxOp.debounceTime(300),
+      RxOp.switchMap((_) => apiGetLiquidityProvider$(asset, address)),
+      liveData.map((provider): LiquidityProviderForPool => {
+        return {
+          asset: assetFromStringEx(provider.asset),
+          cacaoAddress: O.fromNullable(provider.cacao_address),
+          lastAddHeight: O.fromNullable(provider.last_add_height),
+          assetAddress: O.fromNullable(provider.asset_address),
+          lastWithdrawHeight: O.fromNullable(provider.last_withdraw_height),
+          units: provider.units || '0',
+          pendingCacao: baseAmount(bnOrZero(provider.pending_cacao), CACAO_DECIMAL),
+          pendingAsset: baseAmount(bnOrZero(provider.pending_asset), CACAO_DECIMAL),
+          cacaoDepositValue: baseAmount(bnOrZero(provider.cacao_deposit_value), CACAO_DECIMAL),
+          assetDepositValue: baseAmount(bnOrZero(provider.asset_deposit_value), CACAO_DECIMAL),
+          withdrawCounter: provider.withdraw_counter || '0',
+          bondedNodes: provider.bonded_nodes,
+          cacaoRedeemValue: baseAmount(bnOrZero(provider.cacao_redeem_value), CACAO_DECIMAL),
+          assetRedeemValue: baseAmount(bnOrZero(provider.asset_redeem_value), CACAO_DECIMAL)
+        }
+      }),
+      RxOp.catchError(
+        (): LiquidityProviderForPoolLD =>
+          Rx.of(RD.failure(Error(`Failed to load info for ${assetToString(asset)} pool`)))
+      ),
+      RxOp.startWith(RD.pending)
+    )
+
   const apiGetLiquidityProviders$ = (asset: AnyAsset): LiveData<Error, LiquidityProviderSummary[]> =>
     FP.pipe(
       mayanodeUrl$,
@@ -281,7 +336,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
       RxOp.debounceTime(300),
       RxOp.switchMap((_) => apiGetLiquidityProviders$(asset)),
       liveData.map(
-        A.map((provider): LiquidityProviderMaya => {
+        A.map((provider): LiquidityProvidersMaya => {
           const oAsset = O.fromNullable(assetFromString(provider.asset))
           const pendingDexAsset = FP.pipe(
             /* 1e10 decimal by default at MAYAChain */
@@ -425,6 +480,8 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
     loadInboundAddresses$,
     mimir$,
     reloadMimir,
+    getLiquidityProvider,
+    reloadLiquidityProvider,
     getLiquidityProviders,
     reloadLiquidityProviders,
     getSaverProvider$,

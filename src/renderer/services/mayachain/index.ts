@@ -34,6 +34,8 @@ const {
   reloadMimir,
   getLiquidityProviders,
   reloadLiquidityProviders,
+  getLiquidityProvider,
+  reloadLiquidityProvider,
   getSaverProvider$,
   reloadSaverProvider
 } = createMayanodeService$(network$, clientUrl$)
@@ -87,6 +89,8 @@ export {
   reloadMimir,
   getLiquidityProviders,
   reloadLiquidityProviders,
+  getLiquidityProvider,
+  reloadLiquidityProvider,
   getSaverProvider$,
   reloadSaverProvider
 }
