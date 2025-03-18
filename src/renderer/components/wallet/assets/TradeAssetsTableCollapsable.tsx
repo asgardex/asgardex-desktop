@@ -653,16 +653,14 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
 
       return (
         <Styled.HeaderRow className="flex w-full justify-between space-x-4">
-          <div className="flex items-center space-x-2">
-            <Styled.HeaderChainContainer>
-              <Styled.HeaderLabel>{chainToString(THORChain)}</Styled.HeaderLabel>
-              {!isKeystoreWallet(walletType) && (
-                <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
-              )}
-              <Styled.HeaderLabel color="gray">
-                {`(${walletType === WalletType.Keystore ? keystoreBalances.length : ledgerBalances.length} Assets)`}
-              </Styled.HeaderLabel>
-            </Styled.HeaderChainContainer>
+          <div className="flex flex-row items-center space-x-2">
+            <Styled.HeaderLabel>{chainToString(THORChain)}</Styled.HeaderLabel>
+            {!isKeystoreWallet(walletType) && (
+              <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
+            )}
+            <Styled.HeaderLabel color="gray">
+              {`(${walletType === WalletType.Keystore ? keystoreBalances.length : ledgerBalances.length} Assets)`}
+            </Styled.HeaderLabel>
           </div>
           <div className="flex items-center justify-end space-x-2">
             <Styled.HeaderAddress className="flex items-center text-text0 dark:text-text0d">

@@ -113,12 +113,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@asgardex/asgardex-theme@npm:^0.1.2":
-  version: 0.1.2
-  resolution: "@asgardex/asgardex-theme@npm:0.1.2"
+"@asgardex/asgardex-theme@npm:^0.1.3":
+  version: 0.1.3
+  resolution: "@asgardex/asgardex-theme@npm:0.1.3"
   dependencies:
     polished: "npm:^3.6.3"
-  checksum: 10/7d795cc65ec98a9299cf22281a239d3b8362313d1f6d049caf4025aeebd3a5f351612643e541fdf85cf428006b832655e1f5c2bbe66d18453e1fd6a30d06eba3
+  checksum: 10/1a2246de239039e813a5c070309dc9eaca6222c7aa48b7abf1b1a925b51dbf2fc7ac70fe2524a937606e4a83a73ca6ae8eaa2c2a07f26b9b7f438948aee0f8ac
   languageName: node
   linkType: hard
 
@@ -10636,7 +10636,7 @@ __metadata:
   resolution: "asgardex@workspace:."
   dependencies:
     "@ant-design/icons": "npm:^4.7.0"
-    "@asgardex/asgardex-theme": "npm:^0.1.2"
+    "@asgardex/asgardex-theme": "npm:^0.1.3"
     "@chainflip/sdk": "npm:^1.7.0"
     "@chromatic-com/storybook": "npm:3"
     "@craco/craco": "npm:^7.0.0"

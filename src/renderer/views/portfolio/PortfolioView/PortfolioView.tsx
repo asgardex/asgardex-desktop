@@ -572,9 +572,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
           <ChartPieIcon
             className={clsx(
               'h-6 w-6',
-              activeIndex === 0
-                ? 'text-white'
-                : 'text-text2 hover:text-turquoise dark:text-text2d hover:dark:text-turquoise-dark'
+              activeIndex === 0 ? 'text-white' : 'text-text2 hover:text-turquoise dark:text-text2d'
             )}
           />
         ),
@@ -585,9 +583,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
           <Squares2X2Icon
             className={clsx(
               'h-6 w-6',
-              activeIndex === 1
-                ? 'text-white'
-                : 'text-text2 hover:text-turquoise dark:text-text2d hover:dark:text-turquoise-dark'
+              activeIndex === 1 ? 'text-white' : 'text-text2 hover:text-turquoise dark:text-text2d'
             )}
           />
         ),

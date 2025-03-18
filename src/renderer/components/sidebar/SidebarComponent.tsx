@@ -174,8 +174,8 @@ export const SidebarComponent = (props: Props): JSX.Element => {
                 'transition duration-100 ease-in-out',
                 'focus-visible:outline-none',
                 selected
-                  ? 'bg-turquoise text-white hover:text-white dark:bg-turquoise-dark'
-                  : 'text-text2 hover:bg-turquoise/20 hover:text-turquoise dark:text-text2d hover:dark:bg-turquoise-dark/20'
+                  ? 'bg-turquoise text-white hover:text-white'
+                  : 'text-text2 hover:bg-turquoise/20 hover:text-turquoise dark:text-text2d'
               )}
               onClick={() => navigate(path)}>
               <div className="flex flex-row items-center py-3 pl-4">

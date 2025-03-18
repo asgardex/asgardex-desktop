@@ -58,18 +58,11 @@ export const HeaderRow = styled(A.Row)`
   color: ${palette('gray', 2)};
 `
 
-export const HeaderChainContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-`
-
 export const HeaderLabel = styled(UILabel).attrs({
   textTransform: 'uppercase',
   size: 'normal'
 })`
   width: auto;
-  margin-right: 10px;
   padding: 0;
 `
 
@@ -184,8 +177,8 @@ export const AssetTickerWrapper = styled('div')`
 `
 
 export const WalletTypeLabel = styled(WalletTypeLabelUI)`
-  background: ${palette('gray', 1)};
-  padding: 0 5px;
+  background: ${palette('background', 2)};
+  border: 1px solid ${palette('gray', 0)};
 `
 
 export const AssetSynthLabel = styled(AssetSynthLabelUI)`

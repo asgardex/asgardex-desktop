@@ -34,8 +34,6 @@ module.exports = {
       // Dark theme https://github.com/asgardex/asgardex-theme/-/blob/master/src/dark.ts
       colors: {
         turquoise: '#0068F7',
-        // 'turquoise-dark': '#23DCC8', //'#50E3C2'
-        'turquoise-dark': '#0068F7', //'#50E3C2'
         cyanblue: '#1fb6ff',
         red: '#FF4954',
         // text
@@ -43,21 +41,18 @@ module.exports = {
         text0d: t.dark.palette.text[0],
         text1: t.light.palette.text[1],
         text1d: t.dark.palette.text[1],
-        // text2: t.light.palette.text[2],
-        text2: '#525456',
+        text2: t.light.palette.text[2],
         text2d: t.dark.palette.text[2],
         text3: t.light.palette.text[3],
         text3d: t.dark.palette.text[3],
         // bg
         bg0: t.light.palette.background[0],
-        // bg0d: t.dark.palette.background[0],
-        bg0d: '#111315',
+        bg0d: t.dark.palette.background[0],
         bg1: t.light.palette.background[1],
         bg1d: t.dark.palette.background[1],
         bg2: t.light.palette.background[2],
         bg2d: t.dark.palette.background[2],
-        // bg3: t.light.palette.background[3],
-        bg3: '#e9edf0',
+        bg3: t.light.palette.background[3],
         bg3d: t.dark.palette.background[3],
         // error
         error0: t.light.palette.error[0],
@@ -72,11 +67,9 @@ module.exports = {
         warning0: t.light.palette.warning[0],
         warning0d: t.dark.palette.warning[0],
         // gray
-        // gray0: t.light.palette.gray[0],
-        gray0: '#daddee',
+        gray0: t.light.palette.gray[0],
         gray0d: t.dark.palette.gray[0],
-        // gray1: t.light.palette.gray[1],
-        gray1: '#89939d',
+        gray1: t.light.palette.gray[1],
         gray1d: t.dark.palette.gray[1],
         gray2: t.light.palette.gray[2],
         gray2d: t.dark.palette.gray[2]

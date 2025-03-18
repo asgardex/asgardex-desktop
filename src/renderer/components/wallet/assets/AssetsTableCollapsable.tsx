@@ -585,21 +585,19 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
 
       const header = (
         <Styled.HeaderRow className="flex w-full justify-between space-x-4 bg-bg0 py-1 dark:bg-bg0d">
-          <div className="flex items-center space-x-2">
-            <Styled.HeaderChainContainer>
-              <Styled.HeaderLabel>{chainToString(chain)}</Styled.HeaderLabel>
-              {!isKeystoreWallet(walletType) && (
-                <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
+          <div className="flex flex-row items-center space-x-2">
+            <Styled.HeaderLabel>{chainToString(chain)}</Styled.HeaderLabel>
+            {!isKeystoreWallet(walletType) && (
+              <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
+            )}
+            <Styled.HeaderLabel
+              className="flex items-center space-x-2"
+              color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>
+              <span style={{ marginLeft: isEvmChain(chain) ? '5px' : '0' }}>{assetsTxt}</span>
+              {isEvmChain(chain) && (
+                <InfoIcon tooltip={intl.formatMessage({ id: 'wallet.evmToken.tooltip' })} color="primary" />
               )}
-              <Styled.HeaderLabel
-                className="flex items-center space-x-2"
-                color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>
-                <span style={{ marginLeft: isEvmChain(chain) ? '5px' : '0' }}>{assetsTxt}</span>
-                {isEvmChain(chain) && (
-                  <InfoIcon tooltip={intl.formatMessage({ id: 'wallet.evmToken.tooltip' })} color="primary" />
-                )}
-              </Styled.HeaderLabel>
-            </Styled.HeaderChainContainer>
+            </Styled.HeaderLabel>
           </div>
           <div className="flex items-center justify-end space-x-2">
             <Styled.HeaderAddress className="flex items-center text-text0 dark:text-text0d">
