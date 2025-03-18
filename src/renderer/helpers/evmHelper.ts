@@ -18,7 +18,7 @@ export const isEvmChain = (chain: Chain): Boolean => {
  * @returns - boolean if the asset is a erc/brc etc.
  */
 export const isEvmToken = (asset: AnyAsset): Boolean => {
-  return !isEthAsset(asset) || !isAethAsset(asset) || !isAvaxAsset(asset) || !isBscAsset(asset) || !isBASEAsset(asset)
+  return !isEthAsset(asset) && !isAethAsset(asset) && !isAvaxAsset(asset) && !isBscAsset(asset) && !isBASEAsset(asset)
 }
 
 /**
