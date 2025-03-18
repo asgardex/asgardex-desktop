@@ -38,7 +38,7 @@ export const WatchContainer = styled.div`
 
 const starStyle = css`
   svg {
-    fill: ${palette('primary', 0)};
+    fill: ${palette('primary', 2)};
     width: 20px;
     height: 20px;
   }

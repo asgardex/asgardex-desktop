@@ -20,7 +20,7 @@ export const Menu = styled(MenuUI)`
   display: flex;
   justify-content: center;
   align-items: center;
-  border-bottom: 1px solid ${palette('gray', 1)};
+  border-bottom: 1px solid ${palette('gray', 0)};
 
   border-radius: 8px 8px 0 0;
 
@@ -30,7 +30,7 @@ export const Menu = styled(MenuUI)`
   }
 
   &.ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-item-selected {
-    border-bottom: 2px solid ${palette('primary', 0)};
+    border-bottom: 2px solid ${palette('primary', 2)};
   }
 
   &.ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-item:hover::after,
@@ -51,22 +51,22 @@ export const Menu = styled(MenuUI)`
   }
 
   .ant-menu-item a:hover {
-    color: ${palette('primary', 0)};
+    color: ${palette('primary', 2)};
   }
 
   .ant-menu-item-active a,
   .ant-menu-item-selected a {
-    color: ${palette('primary', 0)};
+    color: ${palette('primary', 2)};
   }
 
   .ant-menu-submenu {
-    border-color: ${palette('primary', 0)} !important;
+    border-color: ${palette('primary', 2)} !important;
 
     .ant-menu-submenu-title {
       color: ${palette('text', 0)};
 
       &:hover {
-        color: ${palette('primary', 0)};
+        color: ${palette('primary', 2)};
       }
     }
   }
@@ -92,12 +92,12 @@ export const MenuDropdownGlobalStyles = createGlobalStyle`
          }
 
          .ant-menu-item a:hover {
-           color: ${palette('primary', 0)};
+           color: ${palette('primary', 2)};
          }
 
          .ant-menu-item-active a,
          .ant-menu-item-selected a {
-           color: ${palette('primary', 0)};
+           color: ${palette('primary', 2)};
          }
     }
 }

@@ -1,3 +1,12 @@
+# 1.30.3 (2025-na-na)
+
+## Add 
+
+## Update/Fixes
+
+- fix synth fee issue [#622] (https://github.com/asgardex/asgardex-desktop/pull/622)
+
+
 # 1.30.2 (2025-1-17)
 
 ## Add 

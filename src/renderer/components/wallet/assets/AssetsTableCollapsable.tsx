@@ -584,7 +584,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
       )
 
       const header = (
-        <Styled.HeaderRow className="flex w-full justify-between space-x-4 py-1">
+        <Styled.HeaderRow className="flex w-full justify-between space-x-4 bg-bg0 py-1 dark:bg-bg0d">
           <div className="flex items-center space-x-2">
             <Styled.HeaderChainContainer>
               <Styled.HeaderLabel>{chainToString(chain)}</Styled.HeaderLabel>
@@ -628,7 +628,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
       )
 
       return (
-        <Panel header={header} key={key}>
+        <Panel key={key} header={header}>
           {renderBalances({
             balancesRD,
             index: key,
@@ -687,17 +687,17 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
 
   return (
     <>
-      <Row className="items-center">
+      <Row className="items-center space-x-2">
         <div
-          className="m-2 cursor-pointer rounded-md border border-solid border-turquoise p-1 text-14 text-gray2 dark:border-gray1d dark:text-gray2d"
+          className="my-2 cursor-pointer rounded-md border border-solid border-turquoise bg-bg0 py-1 px-2 text-14 text-text2 dark:border-gray1d dark:bg-bg0d dark:text-text2d"
           onClick={handleCollapseAll}>
           {collapseAll
             ? intl.formatMessage({ id: 'common.collapseAll' })
             : intl.formatMessage({ id: 'common.expandAll' })}
         </div>
         {disabledChains.length > 0 ? (
-          <div className="flex items-center text-14 text-gray2 dark:border-gray1d dark:text-gray2d">
-            <p className="m-2 ">{intl.formatMessage({ id: 'common.disabledChains' })}</p>
+          <div className="flex items-center text-14 text-text2 dark:border-gray1d dark:text-text2d">
+            <p className="m-2">{intl.formatMessage({ id: 'common.disabledChains' })}</p>
             <div className="flex space-x-2">
               {disabledChains.map((chain) => (
                 <span key={chain} className="rounded bg-gray-200 px-2 py-1">

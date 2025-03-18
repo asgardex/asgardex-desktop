@@ -94,7 +94,7 @@ const ActionButton = ({
       className={clsx(
         'flex min-w-[128px] cursor-pointer flex-col items-center',
         'space-y-2 px-4 py-2',
-        'rounded-lg border border-solid border-bg2 dark:border-bg2d',
+        'rounded-lg border border-solid border-gray1 dark:border-gray1d',
         'text-text2 dark:text-text2d',
         'hover:bg-bg2 dark:hover:bg-bg2d',
         className
@@ -492,7 +492,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
               {O.isSome(oAddress) ? renderAccount(oAddress.value) : <span></span>}
             </div>
           </div>
-          <div className="mx-40px my-0 w-full overflow-hidden ">
+          <div className="my-0 w-full overflow-hidden px-40px ">
             {FP.pipe(oAddress, O.fold(renderAddAddress, renderAddress))}
           </div>
         </>
@@ -520,7 +520,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
       return (
         <>
           <Styled.WalletTypeLabel>{walletTypeToI18n(WalletType.Keystore, intl)}</Styled.WalletTypeLabel>
-          <div className="mx-40px my-0 w-full overflow-hidden ">
+          <div className="my-0 w-full overflow-hidden px-40px ">
             <div className="flex w-full items-center">
               <Styled.AddressEllipsis address={address} chain={chain} network={network} enableCopy={true} />
               <Styled.QRCodeIcon onClick={() => setShowQRModal(O.some({ asset: getChainAsset(chain), address }))} />
@@ -754,17 +754,17 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                     ? renderLedgerAddress(chain, oLedger)
                     : renderLedgerNotSupported}
                 </div>
-                <div className="mx-40px mt-10px flex w-full items-center">
+                <div className="mt-10px flex w-full items-center px-40px">
                   <SwitchButton active={enabledChains.includes(chain)} onChange={() => toggleChain(chain)} />
                   <span className="ml-2 text-text0 dark:text-text0d">
                     {enabledChains.includes(chain)
-                      ? intl.formatMessage({ id: 'common.enable' }, { chain: chain })
-                      : intl.formatMessage({ id: 'common.disable' }, { chain: chain })}
+                      ? intl.formatMessage({ id: 'common.enable' }, { chain })
+                      : intl.formatMessage({ id: 'common.disable' }, { chain })}
                   </span>
                 </div>
 
                 {/* Render Trusted Addresses */}
-                <div className="mx-40px mt-10px w-full">
+                <div className="mt-10px w-full px-40px">
                   {/* {renderAddAddressForm(chain)} */}
                   {trustedAddresses?.addresses.some((addr) => addr.chain === chain) && (
                     <div className="text-text0 dark:text-text0d">
@@ -898,7 +898,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
       {renderVerifyAddressModal(ledgerAddressToVerify)}
       <div className="w-full px-4">
         <div className="flex flex-row items-center justify-between">
-          <h1 className="font-main text-18 uppercase text-text0 dark:text-text0d">
+          <h1 className="font-main text-16 uppercase text-text0 dark:text-text0d">
             {intl.formatMessage({ id: 'setting.wallet.management' })}
           </h1>
           <div className="flex flex-row items-center space-x-2">

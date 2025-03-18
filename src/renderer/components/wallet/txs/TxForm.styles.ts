@@ -49,7 +49,7 @@ export const Label = styled(UILabel)`
   margin-bottom: 14px;
   font-family: 'MainFontRegular';
   text-transform: uppercase;
-  color: ${({ color }) => (color === 'error' ? palette('error', 0) : palette('primary', 0))};
+  color: ${({ color }) => (color === 'error' ? palette('error', 0) : palette('primary', 2))};
 `
 
 export const Fees = styled(UIFees)`
@@ -163,6 +163,6 @@ export const CustomSelect = styled(A.Select)`
     color: ${palette('text', 0)};
   }
   &:hover {
-    border-color: ${palette('primary', 0)};
+    border-color: ${palette('primary', 2)};
   }
 `

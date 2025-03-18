@@ -1,7 +1,9 @@
+/* eslint-disable no-template-curly-in-string */
 import { useMemo } from 'react'
 
 import ReactECharts from 'echarts-for-react'
 
+import { hiddenString } from '../../../helpers/stringHelper'
 import { useTheme } from '../../../hooks/useTheme'
 import { ChartColors } from './utils'
 
@@ -10,11 +12,17 @@ export type ChartProps = {
     name: string
     value: number
   }[]
+  isPrivate?: boolean
   isLegendHidden?: boolean
   showLabelLine?: boolean
 }
 
-export const PieChart = ({ isLegendHidden = false, showLabelLine = false, chartData }: ChartProps) => {
+export const PieChart = ({
+  isLegendHidden = false,
+  showLabelLine = false,
+  isPrivate = false,
+  chartData
+}: ChartProps) => {
   const { isLight: isLightTheme } = useTheme()
 
   // text-text2 dark:text-text2d
@@ -28,7 +36,9 @@ export const PieChart = ({ isLegendHidden = false, showLabelLine = false, chartD
           trigger: 'item',
           backgroundColor: isLightTheme ? '#fff' : '#101921',
           valueFormatter: (value: number) =>
-            new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value),
+            isPrivate
+              ? hiddenString
+              : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value),
           textStyle: {
             color: textColor
           }
@@ -61,8 +71,9 @@ export const PieChart = ({ isLegendHidden = false, showLabelLine = false, chartD
             itemStyle: {
               borderRadius: 'full'
             },
-            // eslint-disable-next-line no-template-curly-in-string
-            label: showLabelLine ? { color: textColor, formatter: '{b}: ${c}' } : { show: false },
+            label: showLabelLine
+              ? { color: textColor, formatter: isPrivate ? `{b}: ${hiddenString}` : '{b}: ${c}' }
+              : { show: false },
             emphasis: showLabelLine ? {} : { label: { show: false } },
             labelLine: showLabelLine
               ? {

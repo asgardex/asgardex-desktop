@@ -285,7 +285,7 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
 
   return (
     <>
-      <Styled.HeaderContainer>
+      <Styled.HeaderContainer className="!bg-bg3 dark:!bg-bg3d">
         <Row justify="space-between" align="middle" style={{ height: headerHeight }} ref={setHeaderRef}>
           {isDesktopView && (
             <>

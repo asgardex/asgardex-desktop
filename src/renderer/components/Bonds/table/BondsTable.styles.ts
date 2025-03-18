@@ -1,4 +1,3 @@
-import * as AIcons from '@ant-design/icons/lib'
 import { CaretRightOutlined } from '@ant-design/icons/lib'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
@@ -45,11 +44,6 @@ export const AddressEllipsis = styled(UIAddressEllipsis)`
   text-transform: none;
 `
 
-export const InfoArrow = styled(AIcons.ArrowUpOutlined)`
-  transform: rotateZ(45deg);
-  color: ${palette('primary', 0)};
-`
-
 export const TextLabel = styled(UILabel).attrs({ textTransform: 'uppercase' })`
   color: inherit;
   font-size: 16px;
@@ -61,7 +55,7 @@ export const WatchlistButton = styled(UIButton).attrs({ typevalue: 'transparent'
   &.ant-btn {
     min-width: auto;
     padding: 0;
-    color: #23dcc8;
+    color: ${palette('primary', 2)};
   }
 `
 
@@ -104,6 +98,6 @@ export const ExpandIcon = styled(CaretRightOutlined)`
   svg {
     width: 20px;
     height: 20px;
-    color: ${palette('primary', 0)};
+    color: ${palette('primary', 2)};
   }
 `

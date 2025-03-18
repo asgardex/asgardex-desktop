@@ -83,13 +83,9 @@ export const HeaderLock: React.FC<Props> = (props): JSX.Element => {
         O.fold(
           () => <>no selected wallet</>,
           (selectedWallet) => (
-            <div className="ease flex h-[25px] items-center rounded-full bg-gray0 dark:bg-gray0d ">
+            <div className="ease flex h-[25px] items-center rounded-full bg-bg0 drop-shadow dark:bg-gray0d">
               <div
-                className="ease
-                rounded-full border-4 border-gray0
-                bg-gray0
-                 dark:border-gray0d dark:bg-gray0d
-                 "
+                className="ease rounded-full border-4 border-bg0 bg-bg0 dark:border-gray0d dark:bg-gray0d"
                 onClick={() => onPress()}>
                 {isLocked ? <LockIcon className="h-[28px] w-[28px]" /> : <UnlockIcon className="h-[28px] w-[28px]" />}
               </div>
@@ -115,18 +111,16 @@ export const HeaderLock: React.FC<Props> = (props): JSX.Element => {
                     )}
                   </Listbox.Button>
                   <Listbox.Options
-                    className="
-                    absolute
-                    left-[-100px]
-                    top-[35px]
-                    z-[2000] mt-1 max-h-60
-                    w-[200px]
-                    overflow-auto
-                    bg-bg0
-                    drop-shadow-lg
-                    focus:outline-none
-                    dark:bg-bg0d
-                    ">
+                    className={clsx(
+                      'absolute',
+                      'left-[-100px] top-[35px]',
+                      'z-[2000] mt-1 max-h-60',
+                      'w-[200px]',
+                      'overflow-auto',
+                      'bg-bg0 dark:bg-bg0d',
+                      'drop-shadow-lg',
+                      'focus:outline-none'
+                    )}>
                     {FP.pipe(
                       walletData,
                       A.map((wallet) => {
@@ -176,5 +170,5 @@ export const HeaderLock: React.FC<Props> = (props): JSX.Element => {
     [intl, navigate]
   )
 
-  return <div className="flex justify-center ">{hasWallets ? renderWallets : renderAddWallet}</div>
+  return <div className="flex justify-center">{hasWallets ? renderWallets : renderAddWallet}</div>
 }

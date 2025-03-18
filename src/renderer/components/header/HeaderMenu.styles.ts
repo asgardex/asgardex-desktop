@@ -18,7 +18,7 @@ export const HeaderDropdownWrapper = styled.div`
   #down_icon {
     cursor: pointer;
     & > * {
-      fill: ${palette('primary', 0)};
+      fill: ${palette('primary', 2)};
     }
   }
 `
@@ -28,6 +28,7 @@ export const HeaderDropdownMenuItem = styled(Menu.Item)`
   align-items: center;
   padding: 8px 10px;
 `
+
 export const HeaderDropdownContentWrapper = styled(Row)`
   justify-content: space-between;
   padding-right: 15px;

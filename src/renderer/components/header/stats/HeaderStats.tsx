@@ -4,7 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { baseToAsset, formatAssetAmountCurrency, currencySymbolByAsset } from '@xchainjs/xchain-util'
-import { Grid } from 'antd'
+import { Grid, Row } from 'antd'
 import * as FP from 'fp-ts/lib/function'
 
 import { abbreviateNumber } from '../../../helpers/numberHelper'
@@ -170,12 +170,12 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
   }, [mayaPriceRD, reloadMayaPrice, reloadVolume24PriceMaya, volume24PriceMayaRD])
 
   return (
-    <Styled.Wrapper className="space-x-2">
+    <Row className="space-x-2">
       <div
-        className="flex cursor-pointer items-center space-x-2 rounded-xl bg-bg0 py-1 pl-1 pr-2 dark:bg-gray0d"
+        className="flex cursor-pointer items-center space-x-2 rounded-xl bg-bg0 py-1 pl-1 pr-2 drop-shadow dark:bg-gray0d"
         onClick={reloadThorStats}>
         <AssetIcon size="xsmall" asset={AssetRuneNative} network={network} />
-        <Styled.Protocol chain={THORChain}>{THORChain}</Styled.Protocol>
+        <Styled.Protocol>{THORChain}</Styled.Protocol>
         <Styled.Label loading={RD.isPending(runePriceRD) ? 'true' : 'false'}>{runePriceLabel}</Styled.Label>
 
         {!isSmallMobileView && (
@@ -189,10 +189,10 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
       </div>
 
       <div
-        className="flex cursor-pointer items-center space-x-2 rounded-xl bg-bg0 py-1 pl-1 pr-2 dark:bg-gray0d"
+        className="flex cursor-pointer items-center space-x-2 rounded-xl bg-bg0 py-1 pl-1 pr-2 drop-shadow dark:bg-gray0d"
         onClick={reloadMayaStats}>
         <AssetIcon size="xsmall" asset={AssetCacao} network={network} />
-        <Styled.Protocol chain={MAYAChain}>{MAYAChain}</Styled.Protocol>
+        <Styled.Protocol>{MAYAChain}</Styled.Protocol>
         <Styled.Label loading={RD.isPending(mayaPriceRD) ? 'true' : 'false'}>{mayaPriceLabel}</Styled.Label>
 
         {!isSmallMobileView && (
@@ -204,6 +204,6 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
           </>
         )}
       </div>
-    </Styled.Wrapper>
+    </Row>
   )
 }

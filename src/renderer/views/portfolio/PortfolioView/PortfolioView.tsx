@@ -15,6 +15,7 @@ import {
   CryptoAmount,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
+import clsx from 'clsx'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
 import * as O from 'fp-ts/Option'
@@ -26,6 +27,7 @@ import { EnabledChain } from '../../../../shared/utils/chain'
 import { RefreshButton } from '../../../components/uielements/button'
 import { PieChart } from '../../../components/uielements/charts'
 import { ProtocolSwitch } from '../../../components/uielements/protocolSwitch'
+import { Protocol } from '../../../components/uielements/protocolSwitch/types'
 import { RadioGroup } from '../../../components/uielements/radioGroup'
 import { AssetUSDC, DEFAULT_WALLET_TYPE } from '../../../const'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
@@ -64,12 +66,17 @@ import { getSaversTotal } from '../../wallet/SaversTableView.helper'
 import * as Styled from './PortfolioView.style'
 import { PortfolioTabKey } from './utils'
 
-const options = [
-  { label: <ChartPieIcon className="h-6 w-6 text-text2 dark:text-text2d" />, value: PortfolioTabKey.ChartView },
-  { label: <Squares2X2Icon className="h-6 w-6 text-text2 dark:text-text2d" />, value: PortfolioTabKey.CardView }
-]
-
-const CardItem = ({ title, value, route }: { title: string; value: React.ReactNode; route: string }) => {
+const CardItem = ({
+  title,
+  value,
+  route,
+  isPrivate
+}: {
+  title: string
+  value: React.ReactNode
+  route: string
+  isPrivate: boolean
+}) => {
   const navigate = useNavigate()
 
   const handleManage = useCallback(() => {
@@ -79,20 +86,21 @@ const CardItem = ({ title, value, route }: { title: string; value: React.ReactNo
   return (
     <div className="rounded-lg border border-l-4 border-solid border-gray0 !border-l-turquoise py-2 px-4 dark:border-gray0d">
       <div className="flex w-full items-center justify-between">
-        <div className="text-[13px] text-gray2 dark:text-gray2d">{title}</div>
+        <div className="text-[13px] text-text2 dark:text-text2d">{title}</div>
         <div className="cursor-pointer text-[13px] text-turquoise" onClick={handleManage}>
           Manage
         </div>
       </div>
-      <div className="text-[20px] text-text2 dark:text-text2d">{value}</div>
+      <div className="text-[20px] text-text2 dark:text-text2d">{isPrivate ? hiddenString : value}</div>
     </div>
   )
 }
 
 export const PortfolioView: React.FC = (): JSX.Element => {
   const [activeIndex, setActiveIndex] = useState(PortfolioTabKey.ChartView)
+  const [protocol, setProtocol] = useState<string>(Protocol.All)
 
-  const { isPrivate, protocol, setProtocol } = useApp()
+  const { isPrivate } = useApp()
   const intl = useIntl()
   const [balancesState] = useObservableState(
     () =>
@@ -127,9 +135,8 @@ export const PortfolioView: React.FC = (): JSX.Element => {
   // Separate price pool data states for each chain
   const { poolData: pricePoolDataThor } = useObservableState(selectedPricePoolThor$, RUNE_PRICE_POOL)
   const { poolData: pricePoolDataMaya } = useObservableState(selectedPricePoolMaya$, MAYA_PRICE_POOL)
-  const allPoolDetails$ = protocol === THORChain ? allPoolDetailsThor$ : allPoolDetailsMaya$
-  const poolDetailsRD = useObservableState(allPoolDetails$, RD.pending)
   const poolDetailsThorRD = useObservableState(allPoolDetailsThor$, RD.pending)
+  const poolDetailsMayaRD = useObservableState(allPoolDetailsMaya$, RD.pending)
 
   useEffect(() => {
     const subscription = userChains$.subscribe((chains: EnabledChain[]) => {
@@ -320,46 +327,61 @@ export const PortfolioView: React.FC = (): JSX.Element => {
     return [thorTotal, mayaTotal].filter(Boolean).join('\n')
   }, [protocol, renderBondTotalThor, renderBondTotalMaya])
 
-  const { allSharesRD } = usePoolShares(protocol)
+  const { allSharesRD: allThorSharesRD } = usePoolShares(THORChain)
+  const { allSharesRD: allMayaSharesRD } = usePoolShares(MAYAChain)
   const { allSaverProviders } = useAllSaverProviders(poolAsset)
 
   const renderSharesTotal = useMemo((): string => {
-    const sharesTotalRD: BaseAmountRD = FP.pipe(
-      RD.combine(allSharesRD, poolDetailsRD),
-      RD.map(([poolShares, poolDetails]) =>
-        H.getSharesTotal(
-          poolShares,
-          poolDetails,
-          protocol === THORChain ? pricePoolDataThor : pricePoolDataMaya,
-          protocol
-        )
-      )
+    const sharesThorTotalRD: BaseAmountRD = FP.pipe(
+      RD.combine(allThorSharesRD, poolDetailsThorRD),
+      RD.map(([poolShares, poolDetails]) => H.getSharesTotal(poolShares, poolDetails, pricePoolDataThor, THORChain))
+    )
+    const sharesMayaTotalRD: BaseAmountRD = FP.pipe(
+      RD.combine(allMayaSharesRD, poolDetailsMayaRD),
+      RD.map(([poolShares, poolDetails]) => H.getSharesTotal(poolShares, poolDetails, pricePoolDataMaya, MAYAChain))
     )
 
+    if (protocol === Protocol.All) {
+      return FP.pipe(
+        RD.combine(sharesThorTotalRD, sharesMayaTotalRD),
+        RD.fold(
+          () => '',
+          () => 'Loading...',
+          (error) => intl.formatMessage({ id: 'common.error.api.limit' }, { errorMsg: error.message }),
+          ([sharesThorTotal, sharesMayaTotal]) => {
+            return formatAssetAmountCurrency({
+              amount: baseToAsset(sharesThorTotal.plus(sharesMayaTotal)),
+              asset: selectedPricePoolThor.asset,
+              decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
+            })
+          }
+        )
+      )
+    }
+
     return FP.pipe(
-      sharesTotalRD,
+      protocol === THORChain ? sharesThorTotalRD : sharesMayaTotalRD,
       RD.fold(
         () => '',
         () => 'Loading...',
         (error) => intl.formatMessage({ id: 'common.error.api.limit' }, { errorMsg: error.message }),
         (total) =>
-          isPrivate
-            ? hiddenString
-            : formatAssetAmountCurrency({
-                amount: baseToAsset(total),
-                asset: selectedPricePoolThor.asset,
-                decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
-              })
+          formatAssetAmountCurrency({
+            amount: baseToAsset(total),
+            asset: selectedPricePoolThor.asset,
+            decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
+          })
       )
     )
   }, [
-    allSharesRD,
+    allThorSharesRD,
+    poolDetailsThorRD,
+    allMayaSharesRD,
+    poolDetailsMayaRD,
     protocol,
-    intl,
-    isPrivate,
-    poolDetailsRD,
     pricePoolDataThor,
     pricePoolDataMaya,
+    intl,
     selectedPricePoolThor.asset
   ])
 
@@ -402,16 +424,14 @@ export const PortfolioView: React.FC = (): JSX.Element => {
         (error) => intl.formatMessage({ id: 'common.error.api.limit' }, { errorMsg: error.message }),
         // Success state
         (total) =>
-          isPrivate
-            ? hiddenString
-            : formatAssetAmountCurrency({
-                amount: baseToAsset(total),
-                asset: selectedPricePoolThor.asset,
-                decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
-              })
+          formatAssetAmountCurrency({
+            amount: baseToAsset(total),
+            asset: selectedPricePoolThor.asset,
+            decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
+          })
       )
     )
-  }, [allRunePoolProviders, intl, isPrivate, selectedPricePoolThor.asset])
+  }, [allRunePoolProviders, intl, selectedPricePoolThor.asset])
 
   const renderSaversTotal = useMemo(() => {
     const allSaverProvidersRD = RD.success(allSaverProviders)
@@ -433,33 +453,28 @@ export const PortfolioView: React.FC = (): JSX.Element => {
         (error) => intl.formatMessage({ id: 'common.error.api.limit' }, { errorMsg: error.message }),
         // Success state
         (total) =>
-          isPrivate
-            ? hiddenString
-            : formatAssetAmountCurrency({
-                amount: baseToAsset(total),
-                asset: selectedPricePoolThor.asset,
-                decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
-              })
+          formatAssetAmountCurrency({
+            amount: baseToAsset(total),
+            asset: selectedPricePoolThor.asset,
+            decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
+          })
       )
     )
-  }, [allSaverProviders, poolDetailsThorRD, selectedPricePoolThor, intl, isPrivate])
+  }, [allSaverProviders, poolDetailsThorRD, selectedPricePoolThor, intl])
+
   const totalBalanceDisplay = useMemo(() => {
-    const chainValues = Object.entries(balancesByChain).map(([_, balance]) =>
-      isPrivate ? 0 : baseToAsset(balance).amount().toNumber()
-    )
+    const chainValues = Object.entries(balancesByChain).map(([_, balance]) => baseToAsset(balance).amount().toNumber())
     const total = chainValues.reduce((acc, value) => acc + value, 0)
     const totalCyrpto = new CryptoAmount(assetToBase(assetAmount(total, 6)), AssetUSDC)
-    const formattedTotal = isPrivate
-      ? hiddenString
-      : formatAssetAmountCurrency({
-          asset: totalCyrpto.asset,
-          amount: totalCyrpto.assetAmount,
-          trimZeros: true,
-          decimal: 0
-        })
+    const formattedTotal = formatAssetAmountCurrency({
+      asset: totalCyrpto.asset,
+      amount: totalCyrpto.assetAmount,
+      trimZeros: true,
+      decimal: 0
+    })
 
     return formattedTotal
-  }, [balancesByChain, isPrivate])
+  }, [balancesByChain])
 
   const calculatedTotal = [totalBalanceDisplay, renderSharesTotal, renderSaversTotal, renderBondTotal]
     .map((amount) => parseFloat(amount.replace(/[^0-9.-]+/g, '')))
@@ -550,6 +565,38 @@ export const PortfolioView: React.FC = (): JSX.Element => {
 
   const filteredChainData = useMemo(() => chainChartData.filter((entry) => entry.value !== 0.0), [chainChartData])
 
+  const options = useMemo(
+    () => [
+      {
+        label: (
+          <ChartPieIcon
+            className={clsx(
+              'h-6 w-6',
+              activeIndex === 0
+                ? 'text-white'
+                : 'text-text2 hover:text-turquoise dark:text-text2d hover:dark:text-turquoise-dark'
+            )}
+          />
+        ),
+        value: PortfolioTabKey.ChartView
+      },
+      {
+        label: (
+          <Squares2X2Icon
+            className={clsx(
+              'h-6 w-6',
+              activeIndex === 1
+                ? 'text-white'
+                : 'text-text2 hover:text-turquoise dark:text-text2d hover:dark:text-turquoise-dark'
+            )}
+          />
+        ),
+        value: PortfolioTabKey.CardView
+      }
+    ],
+    [activeIndex]
+  )
+
   const refreshHandler = useCallback(async () => {
     const delay = 1000
     const chains = Array.from(enabledChains || []) // Safeguard
@@ -566,10 +613,10 @@ export const PortfolioView: React.FC = (): JSX.Element => {
   return (
     <>
       <div className="flex w-full justify-between pb-10px">
-        <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} />
-        <RefreshButton onClick={refreshHandler}></RefreshButton>
+        <ProtocolSwitch protocol={protocol} setProtocol={setProtocol} withAll />
+        <RefreshButton onClick={refreshHandler} />
       </div>
-      <div className="flex flex-col rounded-lg bg-bg1 p-4 dark:bg-bg1d">
+      <div className="flex flex-col rounded-lg bg-bg0 p-4 dark:bg-bg0d">
         <div className="flex justify-end">
           <RadioGroup options={options} activeIndex={activeIndex} onChange={setActiveIndex} />
         </div>
@@ -577,13 +624,15 @@ export const PortfolioView: React.FC = (): JSX.Element => {
           <Styled.Title size="big" className="text-gray2 dark:text-gray2d">
             {intl.formatMessage({ id: 'wallet.balance.total.portfolio' })}
           </Styled.Title>
-          <div className="mb-4 !text-[28px] text-text2 dark:text-text2d">{getCurrencyFormat(calculatedTotal)}</div>
+          <div className="mb-4 !text-[28px] text-text2 dark:text-text2d">
+            {isPrivate ? hiddenString : getCurrencyFormat(calculatedTotal)}
+          </div>
         </div>
         <div className="mt-4 space-y-2">
           {activeIndex === PortfolioTabKey.CardView && (
             <div className="grid grid-cols-3 gap-4">
               {cardItemInfo.map(({ title, value, route }) => (
-                <CardItem key={route} title={title} value={value} route={route} />
+                <CardItem key={route} title={title} value={value} route={route} isPrivate={isPrivate} />
               ))}
             </div>
           )}
@@ -595,7 +644,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
                     {intl.formatMessage({ id: 'common.allocationByType' })}
                   </Styled.Title>
                   <div className="mt-8 flex items-center justify-center">
-                    <PieChart chartData={chartData} showLabelLine />
+                    <PieChart chartData={chartData} showLabelLine isPrivate={isPrivate} />
                   </div>
                 </div>
                 <div className="flex flex-1 flex-col rounded-lg border border-solid border-gray0 p-4 dark:border-gray0d">
@@ -603,7 +652,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
                     {intl.formatMessage({ id: 'common.allocationByChain' })}
                   </Styled.Title>
                   <div className="mt-8 flex items-center justify-center">
-                    <PieChart chartData={filteredChainData} showLabelLine />
+                    <PieChart chartData={filteredChainData} showLabelLine isPrivate={isPrivate} />
                   </div>
                 </div>
               </div>

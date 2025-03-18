@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import { Balance, Network } from '@xchainjs/xchain-client'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
@@ -13,7 +14,7 @@ import {
   Chain,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
-import { Col, Row } from 'antd'
+import { Row } from 'antd'
 import { ColumnType } from 'antd/lib/table'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -28,6 +29,7 @@ import { WalletType } from '../../../../shared/wallet/types'
 import { CHAIN_WEIGHTS_THOR, ZERO_BASE_AMOUNT } from '../../../const'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
+import { truncateAddress } from '../../../helpers/addressHelper'
 import { isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
 import { Action, getTradeMemo } from '../../../helpers/memoHelper'
 import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
@@ -48,8 +50,9 @@ import { DepositAsset } from '../../modal/tx/extra/DepositAsset'
 import { Collapse as StyledCollapse } from '../../settings/Common.styles'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { AssetLabel } from '../../uielements/assets/assetLabel'
-import { ReloadButton, ViewTxButton } from '../../uielements/button'
+import { ViewTxButton } from '../../uielements/button'
 import { Action as ActionButtonAction, ActionButton } from '../../uielements/button/ActionButton'
+import { IconButton } from '../../uielements/button/IconButton'
 import * as Styled from './AssetsTableCollapsable.styles'
 
 const { Panel } = StyledCollapse
@@ -641,74 +644,65 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
     const keystoreBalances = tradeAccountBalances.filter((account) => account.walletType === WalletType.Keystore)
     const ledgerBalances = tradeAccountBalances.filter((account) => account.walletType === WalletType.Ledger)
 
-    const renderHeader = (walletType: WalletType, firstAccount: O.Option<TradeAccount>) => (
-      <Styled.HeaderRow className="flex w-full justify-between space-x-4">
-        <Col flex="0 0 10rem" span={4}>
-          <Styled.HeaderChainContainer>
-            <Styled.HeaderLabel>{chainToString(THORChain)}</Styled.HeaderLabel>
-            {!isKeystoreWallet(walletType) && (
-              <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
-            )}
-          </Styled.HeaderChainContainer>
-        </Col>
-        <Col flex={1} span={9}>
-          <Styled.HeaderAddress>
-            {hidePrivateData
-              ? hiddenString
-              : FP.pipe(
-                  firstAccount,
-                  O.map((account) => account.owner),
-                  O.getOrElse(() => '')
-                )}
-          </Styled.HeaderAddress>
-        </Col>
-        <Col flex="0 1 auto" span={3} style={{ textAlign: 'right' }}>
-          <Styled.HeaderLabel color="gray">
-            {`(${walletType === WalletType.Keystore ? keystoreBalances.length : ledgerBalances.length} Assets)`}
-          </Styled.HeaderLabel>
-        </Col>
-        <Col flex="0 0 12rem" span={1}>
-          <div className="flex justify-end space-x-2 pr-4">
-            <ReloadButton
-              className="pr-2"
-              size="small"
-              color="neutral"
-              disabled={disableRefresh}
-              onClick={(event) => {
-                event.stopPropagation()
-                handleRefreshClick(THORChain, walletType)
-              }}
-            />
+    const renderHeader = (walletType: WalletType, firstAccount: O.Option<TradeAccount>) => {
+      const walletAddress = FP.pipe(
+        firstAccount,
+        O.map((account) => truncateAddress(account.owner, THORChain, network)),
+        O.getOrElse(() => '')
+      )
+
+      return (
+        <Styled.HeaderRow className="flex w-full justify-between space-x-4">
+          <div className="flex items-center space-x-2">
+            <Styled.HeaderChainContainer>
+              <Styled.HeaderLabel>{chainToString(THORChain)}</Styled.HeaderLabel>
+              {!isKeystoreWallet(walletType) && (
+                <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
+              )}
+              <Styled.HeaderLabel color="gray">
+                {`(${walletType === WalletType.Keystore ? keystoreBalances.length : ledgerBalances.length} Assets)`}
+              </Styled.HeaderLabel>
+            </Styled.HeaderChainContainer>
           </div>
-        </Col>
-      </Styled.HeaderRow>
-    )
+          <div className="flex items-center justify-end space-x-2">
+            <Styled.HeaderAddress className="flex items-center text-text0 dark:text-text0d">
+              {hidePrivateData ? hiddenString : truncateAddress(walletAddress, THORChain, network)}
+              <Styled.CopyLabel copyable={{ text: walletAddress }} />
+            </Styled.HeaderAddress>
+            <div className="flex items-center justify-end space-x-2 pr-4">
+              <IconButton
+                disabled={disableRefresh}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleRefreshClick(THORChain, walletType)
+                }}>
+                <ArrowPathIcon className="ease h-5 w-5 text-text0 group-hover:rotate-180 dark:text-text0d" />
+              </IconButton>
+            </div>
+          </div>
+        </Styled.HeaderRow>
+      )
+    }
 
     return (
       <>
         {keystoreBalances.length > 0 && (
           <Panel header={renderHeader(WalletType.Keystore, O.fromNullable(keystoreBalances[0]))} key="keystore">
-            <Styled.HeaderLabel className="ml-5">
-              {intl.formatMessage({ id: 'common.tradeAccount' })}
-            </Styled.HeaderLabel>
             {renderGroupedBalances({ balances: keystoreBalances })}
           </Panel>
         )}
 
         {ledgerBalances.length > 0 && (
           <Panel header={renderHeader(WalletType.Ledger, O.fromNullable(ledgerBalances[0]))} key="ledger">
-            <Styled.HeaderLabel className="ml-5">
-              {intl.formatMessage({ id: 'common.tradeAccount' })}
-            </Styled.HeaderLabel>
             {renderGroupedBalances({ balances: ledgerBalances })}
           </Panel>
         )}
       </>
     )
-  }, [tradeAccountBalances, intl, hidePrivateData, disableRefresh, renderGroupedBalances, handleRefreshClick])
+  }, [tradeAccountBalances, renderGroupedBalances, intl, hidePrivateData, disableRefresh, network, handleRefreshClick])
 
   return (
-    <>
+    <div className="mt-2">
       <Styled.Collapse
         expandIcon={({ isActive }) => <Styled.ExpandIcon rotate={isActive ? 90 : 0} />}
         defaultActiveKey={['keystore']}
@@ -720,6 +714,6 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
         {renderWithdrawTxModal}
         {renderLedgerConfirmationModal}
       </Styled.Collapse>
-    </>
+    </div>
   )
 }

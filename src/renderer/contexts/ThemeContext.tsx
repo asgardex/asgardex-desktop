@@ -17,12 +17,39 @@ export const themes: typeof t = {
   dark: {
     ...t.dark,
     // extend background colors - needed for bg of table rows
-    palette: { ...t.dark.palette, background: [...t.dark.palette.background, '#252c33'] }
+    palette: {
+      ...t.dark.palette,
+      primary: [...t.dark.palette.primary, '#0068F7'],
+      background: [
+        '#111315', // 0: header, footer bg
+        '#111315', // 1: main bg
+        '#303942', // 2: hover
+        '#000', // 3: content bg
+        '#303942', // 4: popover bg
+        '#252c33'
+      ]
+    }
   },
   light: {
     ...t.light,
     // extend background colors - needed for bg of table rows
-    palette: { ...t.light.palette, background: [...t.light.palette.background, '#ededed'] }
+    palette: {
+      ...t.light.palette,
+      primary: [...t.dark.palette.primary, '#0068F7'],
+      gray: [
+        '#daddee', // 50 off-white
+        '#89939d', // 100 light grey
+        '#616b75' // 200
+      ],
+      background: [
+        '#fff', // 0: header, footer bg
+        '#fff', // 1: main bg
+        '#F3F4F4', // 2: hover
+        '#F3F4F4', // 3: content bg
+        '#fff', // 4: popover bg
+        '#ededed'
+      ]
+    }
   }
 }
 

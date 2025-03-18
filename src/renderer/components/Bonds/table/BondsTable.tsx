@@ -339,7 +339,7 @@ export const BondsTable: React.FC<Props> = ({
       <div className="flex justify-end">
         <BaseButton
           size="normal"
-          className="mx-4 mb-4 rounded-md border border-solid border-turquoise p-1 text-14 capitalize text-gray2 dark:border-gray1d dark:text-gray2d"
+          className="mx-4 mb-4 rounded-md border border-solid border-gray1 p-1 text-14 capitalize text-text2 dark:border-gray1d dark:text-text2d"
           onClick={handleCollapseAll}>
           {collapseAll
             ? intl.formatMessage({ id: 'common.collapseAll' })

@@ -27,7 +27,7 @@ export const AppWrapper = styled.div`
       transition: none;
     }
     &-spin-dot-item {
-      background-color: ${palette('primary', 0)};
+      background-color: ${palette('primary', 2)};
     }
     &-form-item-explain {
       text-transform: uppercase;
@@ -42,7 +42,6 @@ export const AppLayout = styled(A.Layout)`
   display: flex;
   flex-direction: row;
   height: 100%;
-  background: ${palette('background', 3)};
 `
 
 export const Alert = styled(UIAlert)`

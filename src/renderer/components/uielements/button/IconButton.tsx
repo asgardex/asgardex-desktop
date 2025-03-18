@@ -17,7 +17,7 @@ export const IconButton = ({
         'flex flex-col items-center p-1',
         'rounded-lg border border-solid border-gray1 dark:border-gray1d',
         'text-text2 dark:text-text2d',
-        'hover:bg-gray1 dark:hover:bg-bg2d',
+        'hover:bg-bg2 dark:hover:bg-bg2d',
         disabled ? 'cursor-not-allowed' : 'cursor-pointer',
         className
       )}

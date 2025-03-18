@@ -10,7 +10,7 @@ export const TableWrapper = styled(Table)`
   .ant-table-thead > tr > th {
     height: 70px;
     border-top: none;
-    border-radius: none;
+    border-radius: 0px;
     border-color: ${palette('gray', 0)};
     font-size: ${key('sizes.font.normal', '12px')};
     color: ${palette('text', 2)};

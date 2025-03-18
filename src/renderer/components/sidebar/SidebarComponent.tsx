@@ -162,23 +162,24 @@ export const SidebarComponent = (props: Props): JSX.Element => {
 
   const renderMainNav = useMemo(
     () => (
-      <div className="mt-8">
+      <div className="mx-4 mt-8 space-y-1">
         {items.map(({ label, key, path, icon: Icon }) => {
           const selected = activeKey === key
           return (
             <div
               key={key}
               className={clsx(
-                'flex h-full cursor-pointer',
+                'flex h-full cursor-pointer rounded-lg',
                 'font-mainBold text-18 uppercase',
-                'transition duration-300 ease-in-out',
-                'border-x-[3px] border-solid border-transparent',
-                'hover:border-l-turquoise hover:text-turquoise focus-visible:outline-none',
-                selected ? 'border-l-turquoise text-turquoise' : 'border-l-transparent text-text2 dark:text-text2d'
+                'transition duration-100 ease-in-out',
+                'focus-visible:outline-none',
+                selected
+                  ? 'bg-turquoise text-white hover:text-white dark:bg-turquoise-dark'
+                  : 'text-text2 hover:bg-turquoise/20 hover:text-turquoise dark:text-text2d hover:dark:bg-turquoise-dark/20'
               )}
               onClick={() => navigate(path)}>
-              <div className="flex flex-row items-center py-3 pl-8">
-                <Icon className="mt-1 w-8 pr-5px" />
+              <div className="flex flex-row items-center py-3 pl-4">
+                <Icon className="w-8 pr-5px" />
                 <span>{label}</span>
               </div>
             </div>
@@ -211,66 +212,64 @@ export const SidebarComponent = (props: Props): JSX.Element => {
   const gotoPlayground = useCallback(() => navigate(playgroundRoutes.base.path()), [navigate])
 
   return (
-    <>
-      <Styled.HeaderContainer>
-        <div className="flex h-full flex-col justify-between" ref={setHeaderRef}>
-          <div>
-            <Styled.LogoWrapper>{renderLogo}</Styled.LogoWrapper>
-            {renderMainNav}
-          </div>
-          <div className="flex flex-col items-center justify-center">
-            <FooterIcon url={ExternalUrl.DOCSTHOR} onClick={clickIconHandler}>
-              <div className="flex h-12 flex-row items-center">
-                <ThorChainIcon />
-              </div>
-            </FooterIcon>
-            <FooterIcon className="!ml-0" url={ExternalUrl.DOCSMAYA} onClick={clickIconHandler}>
-              <div className="flex h-12 flex-row items-center">
-                <div className="mr-2">
-                  <Styled.Icon src={mayaIconT} />
-                </div>
-                <div>
-                  <Styled.TextLabel>MAYACHAIN</Styled.TextLabel>
-                </div>
-              </div>
-            </FooterIcon>
-            {publicIP && (
-              <div className="h-8 items-center px-20px text-[14px] text-gray2 dark:text-gray2d">
-                Public IP: {publicIP}
-              </div>
-            )}
-            <div>
-              <FooterIcon url={ExternalUrl.ASGARDEX} onClick={clickIconHandler}>
-                <GlobalOutlined />
-              </FooterIcon>
-              <FooterIcon url={ExternalUrl.GITHUB_REPO} onClick={clickIconHandler}>
-                <GithubOutlined />
-              </FooterIcon>
-              <FooterIcon url={ExternalUrl.DISCORD} onClick={clickIconHandler}>
-                <Icon component={DiscordIcon} />
-              </FooterIcon>
-              <FooterIcon url={ExternalUrl.TWITTER} onClick={clickIconHandler}>
-                <TwitterOutlined />
-              </FooterIcon>
-              <FooterIcon url={ExternalUrl.LICENSE} onClick={clickIconHandler}>
-                <FileTextOutlined />
-              </FooterIcon>
-              {/* hidden in production build */}
-              {isDev && commitHash && (
-                <FooterIcon url={`${ExternalUrl.GITHUB_REPO}/commit/${commitHash}`} onClick={clickIconHandler}>
-                  <BranchesOutlined />
-                </FooterIcon>
-              )}
-              {/* hidden in production build */}
-              {isDev && (
-                <Styled.IconWrapper onClick={gotoPlayground}>
-                  <BugOutlined />
-                </Styled.IconWrapper>
-              )}
+    <Styled.HeaderContainer className="border-r border-none border-gray0 !bg-bg0 dark:border-gray0d dark:!bg-bg0d">
+      <div className="flex h-full flex-col justify-between" ref={setHeaderRef}>
+        <div>
+          <Styled.LogoWrapper>{renderLogo}</Styled.LogoWrapper>
+          {renderMainNav}
+        </div>
+        <div className="flex flex-col items-center justify-center">
+          <FooterIcon url={ExternalUrl.DOCSTHOR} onClick={clickIconHandler}>
+            <div className="flex h-12 flex-row items-center">
+              <ThorChainIcon />
             </div>
+          </FooterIcon>
+          <FooterIcon className="!ml-0" url={ExternalUrl.DOCSMAYA} onClick={clickIconHandler}>
+            <div className="flex h-12 flex-row items-center">
+              <div className="mr-2">
+                <Styled.Icon src={mayaIconT} />
+              </div>
+              <div>
+                <Styled.TextLabel>MAYACHAIN</Styled.TextLabel>
+              </div>
+            </div>
+          </FooterIcon>
+          {publicIP && (
+            <div className="h-8 items-center px-20px text-[14px] text-text2 dark:text-text2d">
+              Public IP: {publicIP}
+            </div>
+          )}
+          <div>
+            <FooterIcon url={ExternalUrl.ASGARDEX} onClick={clickIconHandler}>
+              <GlobalOutlined />
+            </FooterIcon>
+            <FooterIcon url={ExternalUrl.GITHUB_REPO} onClick={clickIconHandler}>
+              <GithubOutlined />
+            </FooterIcon>
+            <FooterIcon url={ExternalUrl.DISCORD} onClick={clickIconHandler}>
+              <Icon component={DiscordIcon} />
+            </FooterIcon>
+            <FooterIcon url={ExternalUrl.TWITTER} onClick={clickIconHandler}>
+              <TwitterOutlined />
+            </FooterIcon>
+            <FooterIcon url={ExternalUrl.LICENSE} onClick={clickIconHandler}>
+              <FileTextOutlined />
+            </FooterIcon>
+            {/* hidden in production build */}
+            {isDev && commitHash && (
+              <FooterIcon url={`${ExternalUrl.GITHUB_REPO}/commit/${commitHash}`} onClick={clickIconHandler}>
+                <BranchesOutlined />
+              </FooterIcon>
+            )}
+            {/* hidden in production build */}
+            {isDev && (
+              <Styled.IconWrapper onClick={gotoPlayground}>
+                <BugOutlined />
+              </Styled.IconWrapper>
+            )}
           </div>
         </div>
-      </Styled.HeaderContainer>
-    </>
+      </div>
+    </Styled.HeaderContainer>
   )
 }

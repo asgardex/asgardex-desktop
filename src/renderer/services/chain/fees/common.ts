@@ -15,7 +15,7 @@ import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { AnyAsset, Asset, AssetType, baseAmount } from '@xchainjs/xchain-util'
+import { AnyAsset, Asset, AssetType, baseAmount, isSynthAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
@@ -58,17 +58,12 @@ const {
  */
 export const poolOutboundFee$ = (asset: AnyAsset): PoolFeeLD => {
   // special case for RUNE - not provided in `inbound_addresses` endpoint
-  if (
-    isRuneNativeAsset(asset) ||
-    asset.type === AssetType.SYNTH ||
-    asset.type === AssetType.TRADE ||
-    asset.type === AssetType.SECURED
-  ) {
+  if (isRuneNativeAsset(asset) || asset.type === AssetType.TRADE || asset.type === AssetType.SECURED) {
     return FP.pipe(
       THOR.fees$(),
       liveData.map((fees) => ({ amount: fees.fast.times(3), asset: AssetRuneNative }))
     )
-  } else if (isCacaoAsset(asset)) {
+  } else if (isCacaoAsset(asset) || asset.type === AssetType.SYNTH) {
     return FP.pipe(
       MAYA.fees$(),
       liveData.map((fees) => ({ amount: fees.fast.times(3), asset: AssetCacao }))
@@ -83,6 +78,12 @@ export const poolOutboundFee$ = (asset: AnyAsset): PoolFeeLD => {
  * Fees for pool inbound txs (swap/deposit/withdraw/earn)
  */
 export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
+  if (isSynthAsset(asset)) {
+    return FP.pipe(
+      MAYA.fees$(),
+      liveData.map((fees) => ({ amount: fees.fast, asset: AssetCacao }))
+    )
+  }
   switch (asset.chain) {
     case DOGEChain:
       return FP.pipe(
@@ -303,7 +304,6 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
     default:
       return FP.pipe(
         poolOutboundFee$(asset),
-        // inbound fees = outbound fees / 3
         liveData.map(({ asset, amount }) => ({ asset, amount: amount.div(3) }))
       )
   }
