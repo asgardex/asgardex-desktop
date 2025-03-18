@@ -26,13 +26,22 @@ export const Table = styled(UITable)`
     }
   }
 
-  .ant-table-tbody > tr > td {
-    border-bottom: 1px solid ${palette('gray', 0)};
-    padding: 10px 0 10px 15px;
-    height: auto;
+  .ant-table-tbody > tr {
+    &:hover {
+      &:has(td + td) > td {
+        // TODO: table hover styles
+        background: ${palette('background', 1)} !important;
+      }
+    }
 
-    &:last-child {
-      padding-right: 15px;
+    & > td {
+      border-bottom: 1px solid ${palette('gray', 0)};
+      padding: 10px 0 10px 15px;
+      height: auto;
+
+      &:last-child {
+        padding-right: 15px;
+      }
     }
   }
 `

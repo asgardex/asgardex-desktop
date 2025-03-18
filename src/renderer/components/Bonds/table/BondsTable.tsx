@@ -277,11 +277,15 @@ export const BondsTable: React.FC<Props> = ({
       searchWalletAddresses(walletAddresses.MAYA, 'MAYA')
 
       return (
-        <div className="flex w-full items-center justify-between !text-11 text-text2 dark:text-text2d">
-          {walletTypeLabel !== 'Not a wallet address' && (
-            <Styled.TextLabel className="!text-11">{intl.formatMessage({ id: 'common.owner' })}</Styled.TextLabel>
+        <div className="flex w-full justify-between !text-11 text-text2 dark:text-text2d">
+          {walletTypeLabel !== 'Not a wallet address' ? (
+            <>
+              <Styled.TextLabel className="!text-11">{intl.formatMessage({ id: 'common.owner' })}</Styled.TextLabel>
+              <Styled.TextLabel className="!text-end !text-11">{walletTypeLabel}</Styled.TextLabel>
+            </>
+          ) : (
+            <Styled.TextLabel className="!text-11">{walletTypeLabel}</Styled.TextLabel>
           )}
-          {walletTypeLabel}
         </div>
       )
     },
@@ -309,29 +313,52 @@ export const BondsTable: React.FC<Props> = ({
       const walletType = matchedWalletInfo?.walletType || 'Unknown'
 
       return (
-        <div className="mt-4 flex flex-grow items-end justify-center">
-          <TextButton
-            disabled={!isWalletAddress}
-            size="normal"
-            onClick={() => goToAction('bond', matchedAddresses[0] || nodeAddress, walletType)}>
-            {intl.formatMessage({ id: 'deposit.interact.actions.bond' })}
-          </TextButton>
-          <TextButton
-            disabled={!isWalletAddress || unbondDisabled}
-            size="normal"
-            onClick={() => goToAction('unbond', matchedAddresses[0] || nodeAddress, walletType)}>
-            {intl.formatMessage({ id: 'deposit.interact.actions.unbond' })}
-          </TextButton>
-          <TextButton
-            disabled={!isWalletAddress || !isLeaveEligible}
-            size="normal"
-            onClick={() => goToAction('leave', matchedAddresses[0] || nodeAddress, walletType)}>
-            {intl.formatMessage({ id: 'deposit.interact.actions.leave' })}
-          </TextButton>
+        <div className="flex flex-grow flex-col">
+          <div className="mt-4 w-full">
+            <div className="flex items-center justify-between">
+              <Styled.TextLabel className="!text-11">
+                {intl.formatMessage({ id: 'bonds.bondProvider' })}
+              </Styled.TextLabel>
+              <span className="!text-14 lowercase text-text2 dark:text-text2d">
+                {truncateAddress(bondAddress, MAYAChain, network)}
+              </span>
+            </div>
+            <div className="mt-2 flex items-center justify-between">{renderSubWalletType(bondAddress)}</div>
+          </div>
+          <div className="mt-4 flex items-center justify-center">
+            <TextButton
+              disabled={!isWalletAddress}
+              size="normal"
+              onClick={() => goToAction('bond', matchedAddresses[0] || nodeAddress, walletType)}>
+              {intl.formatMessage({ id: 'deposit.interact.actions.bond' })}
+            </TextButton>
+            <TextButton
+              disabled={!isWalletAddress || unbondDisabled}
+              size="normal"
+              onClick={() => goToAction('unbond', matchedAddresses[0] || nodeAddress, walletType)}>
+              {intl.formatMessage({ id: 'deposit.interact.actions.unbond' })}
+            </TextButton>
+            <TextButton
+              disabled={!isWalletAddress || !isLeaveEligible}
+              size="normal"
+              onClick={() => goToAction('leave', matchedAddresses[0] || nodeAddress, walletType)}>
+              {intl.formatMessage({ id: 'deposit.interact.actions.leave' })}
+            </TextButton>
+          </div>
         </div>
       )
     },
-    [walletAddresses.THOR, walletAddresses.MAYA, getNodeChain, matchedNodeAddress, minBondInRune, intl, goToAction]
+    [
+      walletAddresses.THOR,
+      walletAddresses.MAYA,
+      getNodeChain,
+      matchedNodeAddress,
+      minBondInRune,
+      intl,
+      network,
+      renderSubWalletType,
+      goToAction
+    ]
   )
 
   return (
@@ -431,13 +458,12 @@ export const BondsTable: React.FC<Props> = ({
                           'flex flex-col rounded-lg border border-solid border-gray0 p-4 dark:border-gray0d',
                           { 'bg-gray0 dark:bg-gray0d': !isMonitoring && !isMyAddy },
                           { 'bg-transparent': isMonitoring && !isMyAddy },
-                          { 'bg-turquoise/20': isMyAddy }
+                          { 'bg-turquoise/10': isMyAddy }
                         )}>
-                        <div className="flex flex-col">
-                          {Object.entries(provider.pools).map(([pool, amount]) => (
-                            <div key={pool} className="flex items-center justify-between">
-                              <Styled.TextLabel className="!text-14">
-                                {pool}:{' '}
+                        <div className="flex justify-between">
+                          <div className="flex flex-col">
+                            {Object.entries(provider.pools).map(([pool, amount]) => (
+                              <Styled.TextLabel key={pool} className="!text-14">
                                 {formatAssetAmountCurrency({
                                   asset: amount.asset, // Dynamically map pool key to asset
                                   amount: baseToAsset(baseAmount(amount.units, 8)), // Assuming 8 decimals; adjust as needed
@@ -445,8 +471,11 @@ export const BondsTable: React.FC<Props> = ({
                                   decimal: 0
                                 })}
                               </Styled.TextLabel>
-                            </div>
-                          ))}
+                            ))}
+                            {Object.entries(provider.pools).length === 0 && (
+                              <Styled.TextLabel className="!text-14">No Pools</Styled.TextLabel>
+                            )}
+                          </div>
                           {isMonitoring ? (
                             <Styled.DeleteButton>
                               <Tooltip title="Remove this bond provider from the watch list">
@@ -460,17 +489,6 @@ export const BondsTable: React.FC<Props> = ({
                               </Tooltip>
                             </Styled.WatchlistButton>
                           )}
-                        </div>
-                        <div className="mt-2 flex items-center justify-between">
-                          <Styled.TextLabel className="!text-11">
-                            {intl.formatMessage({ id: 'bonds.bondProvider' })}
-                          </Styled.TextLabel>
-                          <span className="!text-14 lowercase text-text2 dark:text-text2d">
-                            {truncateAddress(provider.bondAddress, MAYAChain, network)}
-                          </span>
-                        </div>
-                        <div className="mt-2 flex items-center justify-between">
-                          {renderSubWalletType(provider.bondAddress)}
                         </div>
                         {renderSubActions({
                           bondAddress: provider.bondAddress,
