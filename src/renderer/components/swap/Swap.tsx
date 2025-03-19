@@ -68,7 +68,7 @@ import {
   getEVMTokenAddressForChain
 } from '../../helpers/assetHelper'
 import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isLtcChain } from '../../helpers/chainHelper'
-import { isEvmChain, isEvmToken } from '../../helpers/evmHelper'
+import { isEvmChainToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqAddress, eqOApproveParams } from '../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
@@ -1242,10 +1242,8 @@ export const Swap = ({
   }, [rateDirection, sourceAsset, sourceAssetPrice, targetAsset, targetAssetPrice])
 
   const needApprovement: O.Option<boolean> = useMemo(() => {
-    return isEvmChain(sourceChain) && isEvmToken(sourceAsset)
-      ? O.some(isEVMTokenAsset(sourceAsset as TokenAsset))
-      : O.none
-  }, [sourceAsset, sourceChain])
+    return isEvmChainToken(sourceAsset) ? O.some(isEVMTokenAsset(sourceAsset as TokenAsset)) : O.none
+  }, [sourceAsset])
 
   const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
     const oRouterAddress: O.Option<Address> = FP.pipe(
@@ -1808,11 +1806,11 @@ export const Swap = ({
     reloadBalances()
     setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
     setQuoteProtocol(O.none)
-    // Conditionally add asset if both conditions are true
-    if (isEvmChain(targetChain) && isEvmToken(targetAsset)) {
+    //Add asset to userAssets if true
+    if (isEvmChainToken(targetAsset)) {
       addAsset(targetAsset as TokenAsset)
     }
-  }, [resetSwapState, reloadBalances, setAmountToSwapMax1e8, initialAmountToSwapMax1e8, targetChain, targetAsset])
+  }, [resetSwapState, reloadBalances, setAmountToSwapMax1e8, initialAmountToSwapMax1e8, targetAsset])
 
   const renderPasswordConfirmationModal = useMemo(() => {
     const onSuccess = () => {
@@ -1864,7 +1862,7 @@ export const Swap = ({
 
     const description1 =
       // extra info for ERC20 assets only
-      isEvmChain(sourceAsset.chain) && isEvmToken(sourceAsset)
+      isEvmChainToken(sourceAsset)
         ? `${txtNeedsConnected} ${intl.formatMessage(
             {
               id: 'ledger.blindsign'

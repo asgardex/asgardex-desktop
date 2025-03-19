@@ -37,7 +37,7 @@ import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../../const'
 import { isUSDAsset } from '../../../../helpers/assetHelper'
 import { getChainAsset } from '../../../../helpers/chainHelper'
-import { isEvmChain, isEvmToken } from '../../../../helpers/evmHelper'
+import { isEvmChainToken } from '../../../../helpers/evmHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../../helpers/poolHelperMaya'
@@ -794,15 +794,14 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       )
 
       // extended description for ERC20 tokens only
-      const description1 =
-        isEvmChain(asset.chain) && isEvmToken(asset)
-          ? `${txtNeedsConnected} ${intl.formatMessage(
-              {
-                id: 'ledger.blindsign'
-              },
-              { chain: evmChainString }
-            )}`
-          : txtNeedsConnected
+      const description1 = isEvmChainToken(asset)
+        ? `${txtNeedsConnected} ${intl.formatMessage(
+            {
+              id: 'ledger.blindsign'
+            },
+            { chain: evmChainString }
+          )}`
+        : txtNeedsConnected
 
       const description2 = intl.formatMessage({ id: 'ledger.sign' })
 

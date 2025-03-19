@@ -45,7 +45,7 @@ import {
   max1e8BaseAmount
 } from '../../helpers/assetHelper'
 import { getChainAsset } from '../../helpers/chainHelper'
-import { isEvmChain, isEvmToken } from '../../helpers/evmHelper'
+import { isEvmChain, isEvmChainToken } from '../../helpers/evmHelper'
 import { eqBaseAmount, eqOApproveParams, eqOAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
@@ -442,10 +442,8 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     // not needed for users with locked or not imported wallets
     if (!hasImportedKeystore(keystore) || isLocked(keystore)) return O.some(false)
 
-    return isEvmChain(sourceChain) && isEvmToken(asset.asset)
-      ? O.some(isEVMTokenAsset(asset.asset as TokenAsset))
-      : O.none
-  }, [keystore, asset.asset, sourceChain])
+    return isEvmChainToken(asset.asset) ? O.some(isEVMTokenAsset(asset.asset as TokenAsset)) : O.none
+  }, [keystore, asset.asset])
 
   const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
     const oRouterAddress: O.Option<Address> = FP.pipe(
@@ -1139,7 +1137,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
 
     const description1 =
       // extra info for ERC20 assets only
-      isEvmChain(asset.asset.chain) && isEvmToken(asset.asset)
+      isEvmChainToken(asset.asset)
         ? `${txtNeedsConnected} ${intl.formatMessage(
             {
               id: 'ledger.blindsign'
