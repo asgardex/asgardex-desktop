@@ -8,7 +8,7 @@ import { isArbChain, isAvaxChain, isBaseChain, isBscChain, isEthChain } from './
  * @param chain - input
  * @returns boolean on if the chain is evm
  */
-export const isEvmChain = (chain: Chain): Boolean => {
+export const isEvmChain = (chain: Chain): boolean => {
   return isEthChain(chain) || isAvaxChain(chain) || isBscChain(chain) || isArbChain(chain) || isBaseChain(chain)
 }
 
@@ -17,7 +17,7 @@ export const isEvmChain = (chain: Chain): Boolean => {
  * @param asset - input
  * @returns - boolean if the asset is a erc/brc etc.
  */
-export const isEvmToken = (asset: AnyAsset): Boolean => {
+export const isEvmToken = (asset: AnyAsset): boolean => {
   return !isEthAsset(asset) && !isAethAsset(asset) && !isAvaxAsset(asset) && !isBscAsset(asset) && !isBASEAsset(asset)
 }
 
@@ -26,6 +26,6 @@ export const isEvmToken = (asset: AnyAsset): Boolean => {
  * @param asset - input
  * @returns - boolean if the asset is a erc/brc etc.
  */
-export const isEvmChainAsset = (asset: AnyAsset): Boolean => {
+export const isEvmChainAsset = (asset: AnyAsset): boolean => {
   return isEthAsset(asset) || isAethAsset(asset) || isAvaxAsset(asset) || isBscAsset(asset) || isBASEAsset(asset)
 }
