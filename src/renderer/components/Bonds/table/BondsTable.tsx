@@ -262,7 +262,7 @@ export const BondsTable: React.FC<Props> = ({
   }, [nodeToRemove, removeNode])
 
   const CustomExpandIcon: React.FC<CustomExpandIconProps> = ({ expanded, onExpand, record }) => (
-    <Styled.ExpandIcon onClick={(e) => onExpand(record, e)} rotate={expanded ? 90 : 0}></Styled.ExpandIcon>
+    <Styled.ExpandIcon onClick={(e) => onExpand(record, e)} rotate={expanded ? 90 : 0} />
   )
 
   const renderSubWalletType = useCallback(
@@ -508,11 +508,11 @@ export const BondsTable: React.FC<Props> = ({
           expandedRowKeys: expandedRowKeys,
           expandIcon: ({ expanded, onExpand, record }) =>
             CustomExpandIcon({ expanded, onExpand, record: record.address }),
-          onExpand: (expanded, record) => {
-            if (expanded) {
-              setExpandedRowKeys((prevKeys) => [...prevKeys, record.address])
+          onExpand: (_, record) => {
+            if (expandedRowKeys.includes(record)) {
+              setExpandedRowKeys((prevKeys) => prevKeys.filter((key) => key !== record))
             } else {
-              setExpandedRowKeys((prevKeys) => prevKeys.filter((key) => key !== record.address))
+              setExpandedRowKeys((prevKeys) => [...prevKeys, record])
             }
           }
         }}
