@@ -4,7 +4,14 @@ import { DesktopOutlined } from '@ant-design/icons'
 import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
-import { Address, BaseAmount, baseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import {
+  Address,
+  assetToString,
+  BaseAmount,
+  baseAmount,
+  baseToAsset,
+  formatAssetAmountCurrency
+} from '@xchainjs/xchain-util'
 import { ColumnType } from 'antd/lib/table'
 import clsx from 'clsx'
 import * as FP from 'fp-ts/function'
@@ -12,6 +19,7 @@ import * as O from 'fp-ts/Option'
 import { FormattedMessage, useIntl } from 'react-intl'
 
 import { truncateAddress } from '../../../helpers/addressHelper'
+import { getChainAsset } from '../../../helpers/chainHelper'
 import { useMimirConstants } from '../../../hooks/useMimirConstants'
 import {
   NodeInfo as MayaNodeInfo,
@@ -22,9 +30,9 @@ import { NodeInfo as ThorNodeInfo, NodeInfos as ThorNodeInfos, Providers } from 
 import { WalletAddressInfo } from '../../../views/bonds/types'
 import { ConfirmationModal } from '../../modal/confirmation'
 import { RemoveAddressIcon } from '../../settings/WalletSettings.styles'
+import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { BaseButton, TextButton } from '../../uielements/button'
 import { ExternalLinkIcon, Tooltip } from '../../uielements/common/Common.styles'
-import { BondProviderPoolInfo } from './BondProviderPoolInfo'
 import * as Styled from './BondsTable.styles'
 import * as H from './helpers'
 
@@ -157,7 +165,6 @@ export const BondsTable: React.FC<Props> = ({
   const mayaColumns: ColumnType<ThorNodeInfo | MayaNodeInfo>[] = useMemo(
     () => [
       ...baseColumns,
-      // Uncomment if you want total node bond displayed
       {
         key: 'bond',
         width: 150,
@@ -169,19 +176,27 @@ export const BondsTable: React.FC<Props> = ({
         key: 'pools',
         width: 200,
         title: 'Pools',
-        render: (_, { bondProviders, address }: ThorNodeInfo | MayaNodeInfo) => (
-          <div>
-            {(bondProviders.providers as MayaProviders[]).map((provider: MayaProviders, index: number) => (
-              <div key={index}>
-                <BondProviderPoolInfo provider={provider} nodeAddress={address} network={network} />
-              </div>
-            ))}
-          </div>
-        ),
+        render: (_, { bondProviders }: ThorNodeInfo | MayaNodeInfo) => {
+          // Collect all pools from all providers and deduplicate them
+          const allPools = (bondProviders.providers as MayaProviders[]).flatMap((provider) =>
+            provider.pools.map((pool) => assetToString(pool.asset))
+          )
+          const uniquePools = [...new Set(allPools)]
+
+          return (
+            <div className="flex flex-row items-center">
+              {uniquePools.map((assetPool) => (
+                <div key={assetPool} className="mr-2">
+                  <AssetIcon asset={getChainAsset(assetPool.split('.')[0])} size="small" network={network} />
+                </div>
+              ))}
+            </div>
+          )
+        },
         align: 'right'
       }
     ],
-    [baseColumns, intl, network] // Add intl if formatMessage is used elsewhere
+    [baseColumns, intl, network]
   )
   const columns = protocol === THORChain ? thorColumns : mayaColumns
 
