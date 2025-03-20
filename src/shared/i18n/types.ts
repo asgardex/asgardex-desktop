@@ -4,5 +4,6 @@ export enum Locale {
   DE = 'de',
   FR = 'fr',
   RU = 'ru',
-  HI = 'hi'
+  HI = 'hi',
+  KO = 'ko'
 }

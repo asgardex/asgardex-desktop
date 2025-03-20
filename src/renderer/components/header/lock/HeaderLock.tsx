@@ -83,7 +83,7 @@ export const HeaderLock: React.FC<Props> = (props): JSX.Element => {
         O.fold(
           () => <>no selected wallet</>,
           (selectedWallet) => (
-            <div className="ease flex h-[25px] items-center rounded-full bg-bg0 drop-shadow dark:bg-gray0d">
+            <div className="ease z-10 flex h-[25px] items-center rounded-full bg-bg0 drop-shadow dark:bg-gray0d">
               <div
                 className="ease rounded-full border-4 border-bg0 bg-bg0 dark:border-gray0d dark:bg-gray0d"
                 onClick={() => onPress()}>
@@ -112,14 +112,11 @@ export const HeaderLock: React.FC<Props> = (props): JSX.Element => {
                   </Listbox.Button>
                   <Listbox.Options
                     className={clsx(
-                      'absolute',
-                      'left-[-100px] top-[35px]',
-                      'z-[2000] mt-1 max-h-60',
-                      'w-[200px]',
-                      'overflow-auto',
-                      'bg-bg0 dark:bg-bg0d',
-                      'drop-shadow-lg',
-                      'focus:outline-none'
+                      'absolute left-[-100px] top-[35px]',
+                      'z-[2000] mt-1 max-h-60 w-[200px]',
+                      'overflow-auto bg-bg0 dark:bg-bg0d',
+                      'drop-shadow-lg focus:outline-none',
+                      'rounded-md border border-solid border-gray0 dark:border-gray0d'
                     )}>
                     {FP.pipe(
                       walletData,
@@ -128,18 +125,16 @@ export const HeaderLock: React.FC<Props> = (props): JSX.Element => {
                         return (
                           <Listbox.Option
                             disabled={selected}
-                            className={({ selected }) => `
-                            flex select-none items-center
-                            justify-between
-                    px-20px py-10px
-                    ${selected && 'text-gray2 dark:text-gray2d'}
-                    ${selected ? 'cursor-disabled' : 'cursor-pointer'}
-                    font-main text-14
-                    text-text1
-                    ${!selected && 'hover:bg-gray0 hover:text-gray2'}
-                    dark:text-text1d
-                    ${!selected && 'hover:dark:bg-gray0d hover:dark:text-gray2d'}
-                    `}
+                            className={({ selected }) =>
+                              clsx(
+                                'flex select-none items-center justify-between',
+                                'px-20px py-10px',
+                                'font-main text-14 text-text1 dark:text-text1d',
+                                selected
+                                  ? 'cursor-disabled text-gray2 dark:text-gray2d'
+                                  : 'cursor-pointer hover:bg-gray0 hover:text-gray2 hover:dark:bg-gray0d hover:dark:text-gray2d'
+                              )
+                            }
                             key={wallet.id}
                             value={wallet}>
                             {truncateMiddle(wallet.name, { start: 9, end: 9, max: 20 })}

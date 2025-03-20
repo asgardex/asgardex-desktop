@@ -1,5 +1,6 @@
 import { AssetARB } from '@xchainjs/xchain-arbitrum'
 import { AssetAVAX } from '@xchainjs/xchain-avax'
+import { AssetBETH } from '@xchainjs/xchain-base'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { AssetBCH } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC } from '@xchainjs/xchain-bsc'
@@ -15,7 +16,6 @@ import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import { eqAsset } from '../../renderer/helpers/fp/eq'
 import { PoolDetails as PoolDetailsMaya } from '../../renderer/services/mayaMigard/types'
 import { PoolDetails } from '../../renderer/services/midgard/types'
-import { AssetBETH } from '../base/const'
 
 // Re-export to have asset definition at one place only to handle xchain-* changes easily in the future
 export {

@@ -433,19 +433,6 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         )
       }
 
-      if (hasSaversAssets && !isSynthAsset(asset) && !isSecuredAsset(asset)) {
-        actions.push(
-          createAction('common.earn', () =>
-            navigate(
-              poolsRoutes.earn.path({
-                asset: assetToString(asset),
-                walletType: walletType
-              })
-            )
-          )
-        )
-      }
-
       if (hasActivePool) {
         actions.push(
           createAction('common.add', () => {
@@ -458,6 +445,19 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
               })
             )
           })
+        )
+      }
+
+      if (hasSaversAssets && !isSynthAsset(asset) && !isSecuredAsset(asset)) {
+        actions.push(
+          createAction('common.earn', () =>
+            navigate(
+              poolsRoutes.earn.path({
+                asset: assetToString(asset),
+                walletType: walletType
+              })
+            )
+          )
         )
       }
 

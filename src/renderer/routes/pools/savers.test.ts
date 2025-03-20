@@ -17,12 +17,12 @@ describe('Savers routes', () => {
     })
     it('asset / keystore', () => {
       expect(earn.path({ asset: 'BSC.BNB', walletType: WalletType.Keystore })).toEqual(
-        '/pools/savers/bsc.bnb/earn/keystore'
+        '/pools/savers/BSC.BNB/earn/keystore'
       )
     })
     it('asset / ledger', () => {
       expect(earn.path({ asset: 'BSC.BNB', walletType: WalletType.Ledger })).toEqual(
-        '/pools/savers/bsc.bnb/earn/ledger'
+        '/pools/savers/BSC.BNB/earn/ledger'
       )
     })
   })
@@ -33,12 +33,12 @@ describe('Savers routes', () => {
     })
     it('asset / keystore', () => {
       expect(withdraw.path({ asset: 'BSC.BNB', walletType: WalletType.Keystore })).toEqual(
-        '/pools/savers/bsc.bnb/withdraw/keystore'
+        '/pools/savers/BSC.BNB/withdraw/keystore'
       )
     })
     it('asset / ledger', () => {
       expect(withdraw.path({ asset: 'BSC.BNB', walletType: WalletType.Ledger })).toEqual(
-        '/pools/savers/bsc.bnb/withdraw/ledger'
+        '/pools/savers/BSC.BNB/withdraw/ledger'
       )
     })
   })

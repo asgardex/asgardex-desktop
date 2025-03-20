@@ -42,7 +42,7 @@ import {
   to1e8BaseAmount
 } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
-import { isEvmChain, isEvmToken } from '../../../helpers/evmHelper'
+import { isEvmChain, isEvmChainToken } from '../../../helpers/evmHelper'
 import { unionAssets } from '../../../helpers/fp/array'
 import { eqBaseAmount, eqOAsset, eqOApproveParams, eqAsset } from '../../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../../helpers/fpHelpers'
@@ -439,8 +439,8 @@ export const SymDeposit = (props: Props) => {
   const needApprovement = useMemo(() => {
     // not needed for users with locked or not imported wallets
 
-    return isEvmChain(chain) && isEvmToken(asset) ? O.some(isEVMTokenAsset(asset as TokenAsset)) : O.none
-  }, [asset, chain])
+    return isEvmChainToken(asset) ? O.some(isEVMTokenAsset(asset as TokenAsset)) : O.none
+  }, [asset])
 
   const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
     const oRouterAddress: O.Option<Address> = FP.pipe(
@@ -1963,7 +1963,7 @@ export const SymDeposit = (props: Props) => {
 
     const description1 =
       // extra info for ERC20 assets only
-      isEvmChain(assetForLedger.chain) && isEvmToken(assetForLedger)
+      isEvmChainToken(assetForLedger)
         ? `${txtNeedsConnected} ${intl.formatMessage(
             {
               id: 'ledger.blindsign'
