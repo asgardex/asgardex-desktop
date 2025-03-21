@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { DesktopOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { BaseAmount, assetToString, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import { Address, BaseAmount, assetToString, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 
 import { getLiquidityProvider } from '../../../services/mayachain'
@@ -21,8 +21,8 @@ type Props = {
   network: Network
   isMonitoring: boolean
   isMyAddress: boolean
-  addWatchlist: (address: string, network: Network) => void
-  removeWatchlist: (address: string, network: Network) => void
+  addWatchlist: (nodeOrBond: Address, network: Network) => void
+  removeWatchlist: (bondProviders: Address, network: Network) => void
   renderSubActions: (record: {
     bondAddress: string
     bondAmount?: BaseAmount

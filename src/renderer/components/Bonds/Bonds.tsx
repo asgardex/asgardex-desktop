@@ -154,7 +154,7 @@ export const Bonds: React.FC<Props> = ({
         return false
       })
       const filteredWatchlist = watchList.filter((nodeAddy) => {
-        if (protocol === MAYAChain && nodeAddy.startsWith('t')) return true
+        if (protocol === MAYAChain && nodeAddy.startsWith('m')) return true
         return false
       })
 
