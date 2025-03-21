@@ -298,14 +298,14 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
           assetAddress: O.fromNullable(provider.asset_address),
           lastWithdrawHeight: O.fromNullable(provider.last_withdraw_height),
           units: provider.units || '0',
-          pendingCacao: baseAmount(bnOrZero(provider.pending_cacao), CACAO_DECIMAL),
-          pendingAsset: baseAmount(bnOrZero(provider.pending_asset), CACAO_DECIMAL),
-          cacaoDepositValue: baseAmount(bnOrZero(provider.cacao_deposit_value), CACAO_DECIMAL),
-          assetDepositValue: baseAmount(bnOrZero(provider.asset_deposit_value), CACAO_DECIMAL),
+          pendingCacao: baseAmount(bnOrZero(provider.pending_cacao)),
+          pendingAsset: baseAmount(bnOrZero(provider.pending_asset)),
+          cacaoDepositValue: baseAmount(bnOrZero(provider.cacao_deposit_value)),
+          assetDepositValue: baseAmount(bnOrZero(provider.asset_deposit_value)),
           withdrawCounter: provider.withdraw_counter || '0',
           bondedNodes: provider.bonded_nodes,
-          cacaoRedeemValue: baseAmount(bnOrZero(provider.cacao_redeem_value), CACAO_DECIMAL),
-          assetRedeemValue: baseAmount(bnOrZero(provider.asset_redeem_value), CACAO_DECIMAL)
+          cacaoRedeemValue: baseAmount(bnOrZero(provider.cacao_redeem_value)),
+          assetRedeemValue: baseAmount(bnOrZero(provider.asset_redeem_value))
         }
       }),
       RxOp.catchError(

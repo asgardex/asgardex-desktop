@@ -1,26 +1,23 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { DesktopOutlined } from '@ant-design/icons'
+import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
-import {
-  Address,
-  assetToString,
-  BaseAmount,
-  baseAmount,
-  baseToAsset,
-  formatAssetAmountCurrency
-} from '@xchainjs/xchain-util'
+import { Address, assetToString, BaseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { ColumnType } from 'antd/lib/table'
 import clsx from 'clsx'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
+import { useObservableState } from 'observable-hooks'
 import { FormattedMessage, useIntl } from 'react-intl'
 
+import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { truncateAddress } from '../../../helpers/addressHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { useMimirConstants } from '../../../hooks/useMimirConstants'
+import { usePricePoolMaya } from '../../../hooks/usePricePoolMaya'
 import {
   NodeInfo as MayaNodeInfo,
   NodeInfos as MayaNodeInfos,
@@ -33,6 +30,7 @@ import { RemoveAddressIcon } from '../../settings/WalletSettings.styles'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { BaseButton, TextButton } from '../../uielements/button'
 import { ExternalLinkIcon, Tooltip } from '../../uielements/common/Common.styles'
+import { BondProviderInfo } from './BondProviderInfo'
 import * as Styled from './BondsTable.styles'
 import * as H from './helpers'
 
@@ -74,6 +72,14 @@ export const BondsTable: React.FC<Props> = ({
   const intl = useIntl()
   const { MINIMUMBONDINRUNE: minBondInRune } = useMimirConstants(['MINIMUMBONDINRUNE'])
   const [nodeToRemove, setNodeToRemove] = useState<O.Option<Address>>(O.none)
+  const pricePoolMaya = usePricePoolMaya()
+  const {
+    service: {
+      pools: { allPoolDetails$: allPoolDetailsMaya$ }
+    }
+  } = useMidgardMayaContext()
+
+  const poolDetailsRD = useObservableState(allPoolDetailsMaya$, RD.pending)
 
   const isMyAddress = useCallback(
     (bondAddress: string) => {
@@ -175,7 +181,7 @@ export const BondsTable: React.FC<Props> = ({
       {
         key: 'pools',
         width: 200,
-        title: 'Pools',
+        title: 'Bonded Pools',
         render: (_, { bondProviders }: ThorNodeInfo | MayaNodeInfo) => {
           // Collect all pools from all providers and deduplicate them
           const allPools = (bondProviders.providers as MayaProviders[]).flatMap((provider) =>
@@ -330,12 +336,12 @@ export const BondsTable: React.FC<Props> = ({
       return (
         <div className="flex flex-grow flex-col">
           <div className="mt-4 w-full">
-            <div className="flex items-center justify-between">
+            <div className="mt-2 flex items-center justify-between">
               <Styled.TextLabel className="!text-11">
                 {intl.formatMessage({ id: 'bonds.bondProvider' })}
               </Styled.TextLabel>
               <span className="!text-14 lowercase text-text2 dark:text-text2d">
-                {truncateAddress(bondAddress, MAYAChain, network)}
+                {truncateAddress(bondAddress, protocol, network)}
               </span>
             </div>
             <div className="mt-2 flex items-center justify-between">{renderSubWalletType(bondAddress)}</div>
@@ -370,6 +376,7 @@ export const BondsTable: React.FC<Props> = ({
       matchedNodeAddress,
       minBondInRune,
       intl,
+      protocol,
       network,
       renderSubWalletType,
       goToAction
@@ -435,17 +442,6 @@ export const BondsTable: React.FC<Props> = ({
                             </Styled.WatchlistButton>
                           )}
                         </div>
-                        <div className="mt-2 flex items-center justify-between">
-                          <Styled.TextLabel className="!text-11">
-                            {intl.formatMessage({ id: 'bonds.bondProvider' })}
-                          </Styled.TextLabel>
-                          <span className="!text-14 lowercase text-text2 dark:text-text2d">
-                            {truncateAddress(provider.bondAddress, THORChain, network)}
-                          </span>
-                        </div>
-                        <div className="mt-2 flex items-center justify-between">
-                          {renderSubWalletType(provider.bondAddress)}
-                        </div>
                         {renderSubActions({
                           bondAddress: provider.bondAddress,
                           bondAmount: provider.bond,
@@ -462,59 +458,24 @@ export const BondsTable: React.FC<Props> = ({
               const mayaRecord = record as MayaNodeInfo
               return (
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-                  {mayaRecord.bondProviders.providers.map((provider: MayaProviders, index: number) => {
-                    const isMonitoring = watchlist.includes(provider.bondAddress)
-                    const isMyAddy = isMyAddress(provider.bondAddress)
-
-                    return (
-                      <div
-                        key={`${record.address}-${index}`}
-                        className={clsx(
-                          'flex flex-col rounded-lg border border-solid border-gray0 p-4 dark:border-gray0d',
-                          { 'bg-gray0 dark:bg-gray0d': !isMonitoring && !isMyAddy },
-                          { 'bg-transparent': isMonitoring && !isMyAddy },
-                          { 'bg-turquoise/10': isMyAddy }
-                        )}>
-                        <div className="flex justify-between">
-                          <div className="flex flex-col">
-                            {Object.entries(provider.pools).map(([pool, amount]) => (
-                              <Styled.TextLabel key={pool} className="!text-14">
-                                {formatAssetAmountCurrency({
-                                  asset: amount.asset, // Dynamically map pool key to asset
-                                  amount: baseToAsset(baseAmount(amount.units, 8)), // Assuming 8 decimals; adjust as needed
-                                  trimZeros: true,
-                                  decimal: 0
-                                })}
-                              </Styled.TextLabel>
-                            ))}
-                            {Object.entries(provider.pools).length === 0 && (
-                              <Styled.TextLabel className="!text-14">No Pools</Styled.TextLabel>
-                            )}
-                          </div>
-                          {isMonitoring ? (
-                            <Styled.DeleteButton>
-                              <Tooltip title="Remove this bond provider from the watch list">
-                                <RemoveAddressIcon onClick={() => removeWatchlist(provider.bondAddress, network)} />
-                              </Tooltip>
-                            </Styled.DeleteButton>
-                          ) : (
-                            <Styled.WatchlistButton>
-                              <Tooltip title="Add this bond provider to the watch list">
-                                <DesktopOutlined onClick={() => addWatchlist(provider.bondAddress, network)} />
-                              </Tooltip>
-                            </Styled.WatchlistButton>
-                          )}
-                        </div>
-                        {renderSubActions({
-                          bondAddress: provider.bondAddress,
-                          bondAmount: record.bond, // Use node bond for MayaChain actions
-                          status: record.status,
-                          signMembership: record.signMembership,
-                          nodeAddress: record.address
-                        })}
-                      </div>
-                    )
-                  })}
+                  {mayaRecord.bondProviders.providers.map((provider: MayaProviders, index: number) => (
+                    <BondProviderInfo
+                      key={`${record.address}-${index}`}
+                      provider={provider}
+                      nodeAddress={mayaRecord.address}
+                      network={network}
+                      pricePoolData={pricePoolMaya}
+                      poolDetails={poolDetailsRD}
+                      isMonitoring={watchlist.includes(provider.bondAddress)}
+                      isMyAddress={isMyAddress(provider.bondAddress)}
+                      addWatchlist={addWatchlist}
+                      removeWatchlist={removeWatchlist}
+                      renderSubActions={renderSubActions}
+                      recordStatus={record.status}
+                      recordSignMembership={record.signMembership}
+                      recordBond={record.bond}
+                    />
+                  ))}
                 </div>
               )
             }
