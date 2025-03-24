@@ -76,7 +76,6 @@ const wallet: WalletMessages = {
   'wallet.send.success': '거래가 성공적으로 완료되었습니다.',
   'wallet.send.fastest': '가장 빠름',
   'wallet.send.fast': '빠름',
-  'wallet.send.affiliateTracking': '스왑 메모에서 제휴 수수료가 적용되었습니다.',
   'wallet.send.notAllowed': '허용되지 않음',
   'wallet.send.average': '보통',
   'wallet.send.fundsLoss': '이 주소로 자금을 보내면 손실이 발생합니다.',

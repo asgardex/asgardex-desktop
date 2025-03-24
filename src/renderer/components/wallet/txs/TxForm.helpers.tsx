@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Network } from '@xchainjs/xchain-client'
 import { Address, AnyAsset } from '@xchainjs/xchain-util'
 import { FormInstance } from 'antd'
 import * as FP from 'fp-ts/lib/function'
@@ -7,7 +6,6 @@ import * as O from 'fp-ts/lib/Option'
 import { IntlShape } from 'react-intl'
 
 import { TrustedAddress } from '../../../../shared/api/types'
-import { getAsgardexAffiliateFee, getAsgardexThorname } from '../../../../shared/const'
 import { WalletType } from '../../../../shared/wallet/types'
 import { emptyString } from '../../../helpers/stringHelper'
 import { getWalletByAddress } from '../../../helpers/walletHelper'
@@ -88,54 +86,3 @@ export const getSendTxDescription = ({
 
 export const hasFormErrors = (form: FormInstance) =>
   !!form.getFieldsError().filter(({ errors }) => errors.length).length
-
-// detecting a swap memo
-export function checkMemo(memo: string | undefined): boolean {
-  // Ensure memo is a valid string and not undefined or empty
-  if (!memo || typeof memo !== 'string') {
-    return false
-  }
-
-  // Check if the memo starts with '=', 'SWAP', 'swap', 's', or 'S'
-  if (
-    memo.startsWith('=') ||
-    memo.startsWith('SWAP') ||
-    memo.startsWith('swap') ||
-    memo.startsWith('s') ||
-    memo.startsWith('S')
-  ) {
-    return true
-  }
-
-  return false
-}
-
-export function memoCorrection(memo: string, network: Network): string {
-  // Split the memoValue by ':'
-  let parts = memo.split(':')
-
-  // Remove any existing 'dx' parts and anything after it
-  const dxIndex = parts.findIndex((part) => part.startsWith(`${getAsgardexThorname(network)}`))
-  if (dxIndex !== -1) {
-    parts = parts.slice(0, dxIndex)
-  }
-
-  // Remove empty trailing parts to handle cases like '::::'
-  while (parts[parts.length - 1] === '') {
-    parts.pop()
-  }
-
-  // Ensure that there are four parts before 'dx:fee'
-  while (parts.length < 4) {
-    parts.push('')
-  }
-
-  // Append `${ASGARDEX_THORNAME}:${ASGARDEX_AFFILIATE_FEE}` if both are defined
-  if (getAsgardexThorname(network) && getAsgardexAffiliateFee(network)) {
-    parts.push(`${getAsgardexThorname(network)}:${getAsgardexAffiliateFee(network)}`)
-  }
-
-  // Reassemble the memoValue
-  const memocorrected = parts.join(':')
-  return memocorrected
-}

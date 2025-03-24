@@ -313,7 +313,6 @@ type WalletMessageKey =
   | 'wallet.send.success'
   | 'wallet.send.fastest'
   | 'wallet.send.fast'
-  | 'wallet.send.affiliateTracking'
   | 'wallet.send.notAllowed'
   | 'wallet.send.average'
   | 'wallet.send.max.doge'

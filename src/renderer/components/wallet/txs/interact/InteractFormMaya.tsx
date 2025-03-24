@@ -58,7 +58,6 @@ import { UIFees, UIFeesRD } from '../../../uielements/fees'
 import { InfoIcon } from '../../../uielements/info'
 import { InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
-import { checkMemo, memoCorrection } from '../TxForm.helpers'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
 import * as Styled from './Interact.styles'
@@ -190,8 +189,6 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
 
   const [form] = Form.useForm<FormValues>()
   const [currentMemo, setCurrentMemo] = useState('')
-  const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
-  const [affiliateTracking, setAffiliateTracking] = useState<string>('')
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
 
@@ -218,21 +215,10 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
     [balance, oFee]
   )
   const handleMemo = useCallback(() => {
-    let memoValue = form.getFieldValue('memo') as string
-
-    // Check if a swap memo is detected
-    if (checkMemo(memoValue) && network === Network.Mainnet) {
-      memoValue = memoCorrection(memoValue, network)
-      setSwapMemoDetected(true)
-
-      // Set affiliate tracking message
-      setAffiliateTracking(intl.formatMessage({ id: 'wallet.send.affiliateTracking' }))
-    } else {
-      setSwapMemoDetected(false)
-    }
+    const memoValue = form.getFieldValue('memo') as string
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
-  }, [form, intl, network])
+  }, [form])
 
   const renderFeeError = useMemo(
     () => (
@@ -727,7 +713,6 @@ export const InteractFormMaya: React.FC<Props> = (props) => {
               ]}>
               <Styled.Input disabled={isLoading} onChange={handleMemo} size="large" />
             </Form.Item>
-            {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
           </Styled.InputContainer>
         )}
 

@@ -125,8 +125,6 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   const [form] = Form.useForm<FormValues>()
   const [showDetails, setShowDetails] = useState<boolean>(true)
   const [currentMemo, setCurrentMemo] = useState<string>('')
-  const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
-  const [affiliateTracking, setAffiliateTracking] = useState<string>('')
 
   const oSavedAddresses: O.Option<TrustedAddress[]> = useMemo(
     () =>
@@ -138,22 +136,10 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   )
 
   const handleMemo = useCallback(() => {
-    let memoValue = form.getFieldValue('memo') as string
-
-    // Check if a swap memo is detected
-    if (H.checkMemo(memoValue) && network === Network.Mainnet) {
-      memoValue = H.memoCorrection(memoValue, network)
-      setSwapMemoDetected(true)
-
-      // Set affiliate tracking message
-      setAffiliateTracking(intl.formatMessage({ id: 'wallet.send.affiliateTracking' }))
-    } else {
-      setSwapMemoDetected(false)
-    }
-
+    const memoValue = form.getFieldValue('memo') as string
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
-  }, [form, intl, network])
+  }, [form])
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
 
@@ -672,7 +658,6 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
             <Form.Item name="memo">
               <Styled.Input size="large" disabled={isLoading} onChange={handleMemo} />
             </Form.Item>
-            {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
           </Styled.SubForm>
           <FlatButton
             className="mt-40px min-w-[200px]"
