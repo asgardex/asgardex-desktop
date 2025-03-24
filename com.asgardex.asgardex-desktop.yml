@@ -2,28 +2,41 @@ id: com.asgardex.asgardex-desktop
 runtime: org.freedesktop.Platform
 runtime-version: '24.08'
 sdk: org.freedesktop.Sdk
+base: org.electronjs.Electron2.BaseApp
+base-version: '23.08'
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.node18
 command: asgardex
 finish-args:
-  - --share=network
-  - --socket=x11
+  # Graphics and display
   - --socket=wayland
+  - --socket=x11
+  - --share=ipc
+  - --device=dri # OpenGL support
+  # Audio
+  - --socket=pulseaudio
+  # Network
+  - --share=network
+  # Filesystem
   - --filesystem=home
+  # Notifications (libnotify >= 0.8.0 included in base app since 23.08)
+  - --talk-name=org.freedesktop.Notifications
+  # HiDPI cursor scaling under Wayland
+  - --env=XCURSOR_PATH=/run/host/user-share/icons:/run/host/share/icons
 
 modules:
   - name: asgardex
     buildsystem: simple
     build-commands:
+      # Ensure Yarn and Node.js are available via sdk-extensions
       - yarn install --immutable
       - yarn build
+      # Install the built Electron app
       - mkdir -p /app/bin
       - install -Dm755 ./dist/main/linux-unpacked/asgardex /app/bin/asgardex
+      # Patch desktop file name if not set in package.json
+      - /app/electron/patch-desktop-filename /app/bin/asgardex/resources/app.asar
     sources:
       - type: git
         url: https://github.com/asgardex/asgardex-desktop
         branch: develop
-
-  - name: electron-dependencies
-    buildsystem: simple
-    build-commands:
-      - npm install -g electron@27.3.11
-      - cp -R $(npm root -g)/electron /app/lib
