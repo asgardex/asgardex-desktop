@@ -994,7 +994,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
                       <span className="text-red-600 dark:text-red-400 font-semibold">
                         <FormattedMessage
                           id="deposit.poolTransactionWarning"
-                          defaultMessage="Send pool transaction on {protocol}. Admin use only or risk losing your funds"
+                          defaultMessage="Send pool transaction on {protocol}. Dev use only or risk losing your funds"
                           values={{
                             protocol: FP.pipe(
                               oProtocol,

@@ -19,9 +19,12 @@ export const FEE_BOUNDS: Record<Network, FeeBounds | undefined> = {
 }
 
 export const avaxscanApiKey = envOrDefault(process.env.REACT_APP_SNOWTRACE_API_KEY, '')
+export const ankrApiKey = envOrDefault(process.env.REACT_APP_ANKR_API_KEY, '')
 
 // =====Ethers providers=====
-const AVALANCHE_MAINNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider('https://rpc.ankr.com/avalanche')
+const AVALANCHE_MAINNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider(
+  `https://rpc.ankr.com/avalanche/${ankrApiKey}`
+)
 const AVALANCHE_TESTNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider('https://rpc.ankr.com/avalanche_fuji')
 
 const ethersJSProviders = {
