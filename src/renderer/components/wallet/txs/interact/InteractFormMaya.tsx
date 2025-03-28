@@ -144,7 +144,7 @@ export const InteractFormMaya = (props: Props) => {
   const pricePool = usePricePoolMaya()
 
   const [userNodeInfo, setUserNodeInfo] = useState<UserNodeInfo | undefined>(undefined)
-  const [_amountToSend, setAmountToSend] = useState<BaseAmount>(ONE_CACAO_BASE_AMOUNT)
+  const [_amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
 
   const nodes: NodeInfos = useMemo(
     () =>
@@ -183,6 +183,7 @@ export const InteractFormMaya = (props: Props) => {
     switch (interactType) {
       case InteractType.Bond:
       case InteractType.Whitelist:
+        return ONE_CACAO_BASE_AMOUNT
       case InteractType.Custom:
       case InteractType.MAYAName:
       case InteractType.THORName:
