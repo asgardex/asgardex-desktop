@@ -770,7 +770,7 @@ export const InteractFormMaya = (props: Props) => {
     { type: 'Leave', memo: 'LEAVE:NODEADDRESS' },
     { type: 'Whitelist Bond Provider', memo: 'BOND:::NODE_ADDRESS:BOND_PROVIDER_ADDRESS:FEE' },
     { type: 'Unwhitelist Bond Provider', memo: 'UNBOND:::NODE_ADDRESS:BOND_PROVIDER_ADDRESS' },
-    { type: 'Add LP symmetrical', memo: '+:POOL:PAIREDADDR' },
+    { type: 'Add LP Symmetrical', memo: '+:POOL:PAIREDADDR' },
     { type: 'Withdraw Lp', memo: 'WITHDRAW:POOL:10000' }
   ]
 
