@@ -10,9 +10,11 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
+import { ExtendedNodeInfoThor } from '../../hooks/useNodeInfos'
+import { ExtendedNodeInfoMaya } from '../../hooks/useNodeInfosMaya'
 import { AddressValidation } from '../../services/clients'
-import { NodeInfos as NodeInfosMaya, NodeInfosRD as NodeInfosMayaRD } from '../../services/mayachain/types'
-import { NodeInfos, NodeInfosRD } from '../../services/thorchain/types'
+import { NodeInfos as NodeInfosMaya } from '../../services/mayachain/types'
+import { NodeInfos } from '../../services/thorchain/types'
 import { useApp } from '../../store/app/hooks'
 import { WalletAddressInfo } from '../../views/bonds/types'
 import { ErrorView } from '../shared/error'
@@ -21,8 +23,8 @@ import * as Styled from './Bonds.styles'
 import { BondsTable } from './table'
 
 type Props = {
-  nodesThor: NodeInfosRD
-  nodesMaya: NodeInfosMayaRD
+  nodesThor: RD.RemoteData<Error, ExtendedNodeInfoThor[]>
+  nodesMaya: RD.RemoteData<Error, ExtendedNodeInfoMaya[]>
   removeNode: (node: Address) => void
   goToNode: (node: Address) => void
   goToAction: (action: string, node: string, walletType: string) => void
@@ -64,23 +66,23 @@ export const Bonds: React.FC<Props> = ({
   const { protocol } = useApp()
   const intl = useIntl()
   const [form] = Form.useForm()
-  const prevNodesThor = useRef<O.Option<NodeInfos>>(O.none)
-  const prevNodesMaya = useRef<O.Option<NodeInfosMaya>>(O.none)
+  const prevNodesThor = useRef<O.Option<ExtendedNodeInfoThor[]>>(O.none)
+  const prevNodesMaya = useRef<O.Option<ExtendedNodeInfoMaya[]>>(O.none)
 
-  const nodesThor: NodeInfos = useMemo(
+  const nodesThor: ExtendedNodeInfoThor[] = useMemo(
     () =>
       FP.pipe(
         nodesThorRD,
-        RD.getOrElse(() => [] as NodeInfos)
+        RD.getOrElse(() => [] as ExtendedNodeInfoThor[])
       ),
     [nodesThorRD]
   )
 
-  const nodesMaya: NodeInfosMaya = useMemo(
+  const nodesMaya: ExtendedNodeInfoMaya[] = useMemo(
     () =>
       FP.pipe(
         nodesMayaRD,
-        RD.getOrElse(() => [] as NodeInfosMaya)
+        RD.getOrElse(() => [] as ExtendedNodeInfoMaya[])
       ),
     [nodesMayaRD]
   )
@@ -100,7 +102,12 @@ export const Bonds: React.FC<Props> = ({
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
 
-      if (nodes.findIndex(({ address }) => address.toLowerCase() === loweredCaseValue) > -1) {
+      if (
+        nodes.findIndex(
+          ({ address, isUserStoredNodeAddress }) =>
+            address.toLowerCase() === loweredCaseValue && isUserStoredNodeAddress
+        ) > -1
+      ) {
         return Promise.reject(intl.formatMessage({ id: 'bonds.validations.nodeAlreadyAdded' }))
       }
     },
@@ -212,7 +219,7 @@ export const Bonds: React.FC<Props> = ({
   }, [viewMode, nodesThor, watchList])
 
   const renderNodeInfos = useMemo(() => {
-    const emptyList: NodeInfos = []
+    const emptyList: ExtendedNodeInfoThor[] = []
     return FP.pipe(
       nodesThorRD,
       RD.fold(
@@ -240,7 +247,7 @@ export const Bonds: React.FC<Props> = ({
   }, [filteredNodesThor, intl, nodesThorRD, reloadNodeInfos, renderTable])
 
   const renderNodeInfosMaya = useMemo(() => {
-    const emptyList: NodeInfosMaya = []
+    const emptyList: ExtendedNodeInfoMaya[] = []
     return FP.pipe(
       nodesMayaRD,
       RD.fold(

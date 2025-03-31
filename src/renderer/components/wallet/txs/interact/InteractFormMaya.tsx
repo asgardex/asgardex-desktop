@@ -834,6 +834,7 @@ export const InteractFormMaya = (props: Props) => {
 
         {/* Node address input (BOND/UNBOND/LEAVE only) */}
         {(interactType === InteractType.Bond ||
+          interactType === InteractType.Unbond ||
           interactType === InteractType.Whitelist ||
           interactType === InteractType.Leave) && (
           <Styled.InputContainer>
@@ -921,7 +922,7 @@ export const InteractFormMaya = (props: Props) => {
         )}
         {(interactType === InteractType.Bond || interactType === InteractType.Unbond) && (
           <>
-            {userNodeInfo && (
+            {userNodeInfo ? (
               <div className="p-4">
                 <div className="ml-[-2px] flex w-full justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
                   {intl.formatMessage({ id: 'common.nodeAddress' })}
@@ -964,12 +965,22 @@ export const InteractFormMaya = (props: Props) => {
                       </table>
                     ) : (
                       <div className="text-[12px] text-gray1 dark:text-gray1d">
-                        {intl.formatMessage({ id: 'common.noData' })}
+                        {intl.formatMessage({ id: 'common.noResult' })}
                       </div>
                     )}
                   </div>
                 </div>
               </div>
+            ) : (
+              <>
+                {' '}
+                <div className="ml-[-2px] mb-2 flex w-full justify-between font-mainBold text-[14px] text-gray2 dark:text-gray2d">
+                  {intl.formatMessage({ id: 'deposit.share.units' })}
+                  <div className="truncate pl-10px font-main text-[12px]">
+                    {intl.formatMessage({ id: 'common.noResult' })}
+                  </div>
+                </div>
+              </>
             )}
           </>
         )}

@@ -151,9 +151,9 @@ export const BondsView = (): JSX.Element => {
       setWalletAddresses(addressesByChain)
       setAddressesFetched(true)
     } else {
-      setAddressesFetched(true)
+      setAddressesFetched(false)
     }
-  }, [allBalances, addNodeAddress, network])
+  }, [allBalances, network])
 
   const nodeInfosThor = useThorNodeInfos({
     addressesFetched,
@@ -173,6 +173,13 @@ export const BondsView = (): JSX.Element => {
       removeNodeByAddressService(node, network)
     },
     [removeNodeByAddressService, network]
+  )
+
+  const addNodeByAddress = useCallback(
+    (node: Address) => {
+      addNodeAddress(node, network)
+    },
+    [addNodeAddress, network]
   )
 
   const routeToAction = useCallback(
@@ -380,7 +387,7 @@ export const BondsView = (): JSX.Element => {
         goToNode={goToExplorerNodeAddress}
         goToAction={routeToAction}
         network={network}
-        addNode={addNodeAddress}
+        addNode={addNodeByAddress}
         reloadNodeInfos={reloadNodeInfos}
         walletAddresses={walletAddresses}
         watchList={bondProviderWatchList}

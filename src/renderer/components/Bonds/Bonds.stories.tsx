@@ -22,7 +22,9 @@ const mockNodeInfo = (address: Address) => ({
     nodeOperatorFee: baseAmount(100000000 * 400000),
     providers: []
   },
-  signMembership: []
+  signMembership: [],
+  isUserBondProvider: true,
+  isUserStoredNodeAddress: true
 })
 const addressValidation: AddressValidation = (_) => true
 
