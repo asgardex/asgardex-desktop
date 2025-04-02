@@ -1,6 +1,7 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import clsx from 'clsx'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/lib/Option'
 import { useForm } from 'react-hook-form'
@@ -40,7 +41,7 @@ export type Props = {
   wallets: KeystoreWalletsUI
 }
 
-export const UnlockForm: React.FC<Props> = (props): JSX.Element => {
+export const UnlockForm = (props: Props): JSX.Element => {
   const { keystore, unlock, removeKeystore, changeKeystore$, wallets } = props
 
   const [showRemoveModal, setShowRemoveModal] = useState(false)
@@ -170,15 +171,17 @@ export const UnlockForm: React.FC<Props> = (props): JSX.Element => {
       </div>
       <form className="flex flex-1 flex-col" onSubmit={handleSubmit(submitForm)}>
         <div
-          className="flex h-full
-        flex-col items-center justify-between bg-bg1 pb-[35px]
-        pl-30px pr-30px pt-[45px] dark:bg-bg1d sm:pb-[70px] sm:pl-[60px] sm:pr-[60px] sm:pt-[90px]">
+          className={clsx(
+            'flex h-full flex-col items-center justify-between',
+            'bg-bg0 dark:bg-bg0d',
+            'pl-30px pr-30px pt-[45px] pb-[35px] sm:pb-[70px] sm:pl-[60px] sm:pr-[60px] sm:pt-[90px]'
+          )}>
           <div className="w-full max-w-[320px] space-y-3">
             <div className="flex flex-col">
               <h1 className="mb-12px inline-block w-full font-mainSemiBold text-18 uppercase text-text1 dark:text-text1d">
                 {intl.formatMessage({ id: 'wallet.unlock.label' })}
               </h1>
-              <h2 className="mb-30px w-full text-11 text-gray2 dark:text-gray2d">
+              <h2 className="mb-30px w-full text-11 text-text2 dark:text-text2d">
                 {intl.formatMessage({ id: 'wallet.unlock.password' })}
               </h2>
             </div>
@@ -221,7 +224,7 @@ export const UnlockForm: React.FC<Props> = (props): JSX.Element => {
             <div className="flex w-full flex-col items-center border-t border-solid border-gray1 dark:border-gray0d">
               <div className="flex w-full flex-col justify-between space-y-3 pt-4">
                 {/* TODO: update locale */}
-                <h2 className="mb-2 w-full text-11 text-gray2 dark:text-gray2d">Don&apos;t you have a wallet yet?</h2>
+                <h2 className="mb-2 w-full text-11 text-text2 dark:text-text2d">Don&apos;t you have a wallet yet?</h2>
                 <BorderButton
                   className="mr-20px w-full min-w-[200px] sm:mb-0"
                   size="normal"

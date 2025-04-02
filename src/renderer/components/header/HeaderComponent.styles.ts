@@ -5,14 +5,7 @@ import { palette, size } from 'styled-theme'
 export const HeaderContainer = styled(Layout.Header)`
   height: ${size('headerHeight', '70px')};
   width: 100%;
-  background-color: ${palette('background', 3)};
 
-  /* id's defined in svg */
-  #asgardex_logo {
-    > * {
-      fill: ${palette('text', 1)};
-    }
-  }
   /* Make sure following id's are defined in svg */
   #menu_icon,
   #close_icon,
@@ -81,7 +74,7 @@ export const HeaderDrawerItem = styled(Row)<{ selected?: boolean }>`
   text-transform: uppercase;
   font-family: 'MainFontSemiBold';
   font-size: 18px;
-  color: ${({ selected }) => (selected ? palette('primary', 0) : palette('text', 1))};
+  color: ${({ selected }) => (selected ? palette('primary', 2) : palette('text', 1))};
   &.last {
     border: none;
   }

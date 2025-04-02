@@ -54,7 +54,6 @@ import {
   MimirLD,
   ThornodeApiUrlLD,
   LiquidityProvidersLD,
-  LiquidityProvider,
   NodeInfosLD,
   NodeInfos,
   ClientUrl$,
@@ -73,7 +72,8 @@ import {
   RunePoolProviderLD,
   RunePoolProvider,
   TradeAccount,
-  TradeAccountLD
+  TradeAccountLD,
+  LiquidityProvider
 } from './types'
 
 const height: number | undefined = undefined

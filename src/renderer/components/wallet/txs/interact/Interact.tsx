@@ -3,6 +3,9 @@ import React, { useMemo } from 'react'
 import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { Chain } from '@xchainjs/xchain-util'
+import { ItemType } from 'antd/lib/menu/hooks/useItems'
+import * as A from 'fp-ts/lib/Array'
+import * as FP from 'fp-ts/lib/function'
 import { useIntl } from 'react-intl'
 
 import { isLedgerWallet } from '../../../../../shared/utils/guard'
@@ -20,19 +23,13 @@ type Props = {
   chain: Chain
 }
 
-export const Interact: React.FC<Props> = ({
-  interactType,
-  interactTypeChanged,
-  network,
-  walletType,
-  chain,
-  children
-}) => {
+export const Interact = ({ interactType, interactTypeChanged, network, walletType, chain, children }: Props) => {
   const intl = useIntl()
   const name = isThorChain(chain) ? InteractType.THORName : InteractType.MAYAName
   const tabs: Array<{ type: InteractType; label: string }> = useMemo(
     () => {
       const baseTabs = [
+        { type: InteractType.Whitelist, label: intl.formatMessage({ id: 'deposit.interact.actions.whitelist' }) },
         { type: InteractType.Bond, label: intl.formatMessage({ id: 'deposit.interact.actions.bond' }) },
         { type: InteractType.Unbond, label: intl.formatMessage({ id: 'deposit.interact.actions.unbond' }) },
         { type: InteractType.Leave, label: intl.formatMessage({ id: 'deposit.interact.actions.leave' }) },
@@ -70,23 +67,25 @@ export const Interact: React.FC<Props> = ({
           </Styled.HeaderSubtitle>
         </div>
       </Styled.Header>
-      <Styled.FormWrapper>
-        <Styled.Tabs
-          activeKey={interactType}
-          renderTabBar={() => (
-            <Styled.TabButtonsContainer>
-              {tabs.map(({ type, label }) => (
-                <Styled.TabButton key={type} onClick={() => interactTypeChanged(type)} selected={type === interactType}>
-                  {label}
-                </Styled.TabButton>
-              ))}
-            </Styled.TabButtonsContainer>
-          )}>
-          {tabs.map(({ type }) => (
-            <Styled.TabPane key={type}>{children}</Styled.TabPane>
-          ))}
-        </Styled.Tabs>
-      </Styled.FormWrapper>
+
+      <Styled.MenuDropdownGlobalStyles />
+      <Styled.Menu
+        mode="horizontal"
+        selectedKeys={[interactType]}
+        triggerSubMenuAction={'click'}
+        items={FP.pipe(
+          tabs,
+          A.map<{ type: InteractType; label: string }, ItemType>(({ type, label }) => ({
+            label: (
+              <div className="interact-menu" key={type} onClick={() => interactTypeChanged(type)}>
+                {label}
+              </div>
+            ),
+            key: type
+          }))
+        )}
+      />
+      <div className="mt-4">{children}</div>
     </Styled.Container>
   )
 }

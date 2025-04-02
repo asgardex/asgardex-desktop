@@ -13,10 +13,10 @@ export type SaversRouteParams = { asset: string; walletType: WalletType }
 
 export const earn: Route<SaversRouteParams> = {
   template: `${base.template}/:asset/earn/:walletType`,
-  path: ({ asset, walletType }) => `${base.template}/${asset.toLowerCase()}/earn/${walletType}`
+  path: ({ asset, walletType }) => `${base.template}/${asset}/earn/${walletType}`
 }
 
 export const withdraw: Route<SaversRouteParams> = {
   template: `${base.template}/:asset/withdraw/:walletType`,
-  path: ({ asset, walletType }) => `${base.template}/${asset.toLowerCase()}/withdraw/${walletType}`
+  path: ({ asset, walletType }) => `${base.template}/${asset}/withdraw/${walletType}`
 }

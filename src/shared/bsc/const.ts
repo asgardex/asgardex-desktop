@@ -18,9 +18,10 @@ export const FEE_BOUNDS: Record<Network, FeeBounds | undefined> = {
   }
 }
 
-export const bscScanApiKey = envOrDefault(process.env['REACT_APP_BSCSCAN_API_KEY'], '')
+export const bscScanApiKey = envOrDefault(process.env.REACT_APP_BSCSCAN_API_KEY, '')
+export const ankrApiKey = envOrDefault(process.env.REACT_APP_ANKR_API_KEY, '')
 // =====Ethers providers=====
-const BSC_MAINNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider('https://rpc.ankr.com/bsc')
+const BSC_MAINNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider(`https://rpc.ankr.com/bsc/${ankrApiKey}`)
 const BSC_TESTNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider('https://bsc-testnet.public.blastapi.io')
 
 const ethersJSProviders = {

@@ -17,7 +17,8 @@ const pools: PoolsMessages = {
   'pools.limit.info': 'Limite de protocole atteinte ! {pooled} regroupés en pools, {bonded} en caution dans les nœuds',
   'pools.incentivependulum.info': 'Balancier incitatif : {percentage}%',
   'pools.incentivependulum.tooltip': '{pooled} regroupés en pools, {bonded} en caution dans les nœuds',
-  'pools.incentivependulum.error': 'Erreur lors du chargement des données du balancier incitatif'
+  'pools.incentivependulum.error': 'Erreur lors du chargement des données du balancier incitatif',
+  'pools.bondable': 'Liaisonnable'
 }
 
 export default pools

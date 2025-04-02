@@ -54,7 +54,7 @@ export const TxModal: React.FC<Props> = (props): JSX.Element => {
 
   const renderResult = useMemo(() => {
     const defaultButtonProps: UIButtonProps = {
-      color: 'success',
+      color: 'primary',
       disabled: false,
       onClick: onClose,
       sizevalue: 'xnormal',

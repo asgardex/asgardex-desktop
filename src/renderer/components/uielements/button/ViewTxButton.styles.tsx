@@ -14,7 +14,7 @@ export const Wrapper = styled.div`
 
 const ExternalLinkIcon = styled(UIExternalLinkIcon)`
   svg {
-    color: ${palette('primary', 0)};
+    color: ${palette('primary', 2)};
   }
 `
 
@@ -28,16 +28,17 @@ export const ViewTxButton = styled(UIButton).attrs({
 const ICON_SIZE = 19
 
 export const CopyLabel = styled(A.Typography.Text)`
-  color: ${palette('primary', 0)};
+  color: ${palette('primary', 2)};
+
   svg {
-    color: ${palette('primary', 0)};
+    color: ${palette('primary', 2)};
     height: ${ICON_SIZE}px;
     width: ${ICON_SIZE}px;
   }
 `
 
 export const Text = styled(A.Typography.Text)`
-  color: ${palette('primary', 0)};
+  color: ${palette('primary', 2)};
   padding-right: 5px;
   margin-left: 10px;
 `

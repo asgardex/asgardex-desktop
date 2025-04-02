@@ -87,7 +87,7 @@ export const ManageButton = styled(ManageButtonUI)`
 
 export const InfoArrow = styled(AIcons.ArrowUpOutlined)`
   transform: rotateZ(45deg);
-  color: ${palette('primary', 0)};
+  color: ${palette('primary', 2)};
 `
 
 export const TextLabel = styled(UILabel).attrs({ textTransform: 'uppercase' })`

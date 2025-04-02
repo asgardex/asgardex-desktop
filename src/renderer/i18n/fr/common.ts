@@ -6,6 +6,7 @@ const common: CommonMessages = {
   'common.dex': 'Dex',
   'common.faqs': 'FAQ',
   'common.greeting': 'Bonjour {name}',
+  'common.examples': 'Exemple {name}',
   'common.copyright': '©',
   'common.type': 'Taper',
   'common.chain': 'Cadena',

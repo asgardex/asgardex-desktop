@@ -77,7 +77,7 @@ export const NetworkLabel = styled(Text)<{ network: Network }>`
   color: ${({ network }) => {
     switch (network) {
       case Network.Mainnet:
-        return palette('primary', 0)
+        return palette('primary', 2)
       case Network.Stagenet:
         return palette('danger', 1)
       case Network.Testnet:

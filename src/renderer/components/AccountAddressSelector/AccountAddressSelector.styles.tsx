@@ -10,7 +10,7 @@ export const DropdownSelectorWrapper = styled.div<{ disabled: boolean }>`
   display: flex;
   flex-direction: row;
   align-items: center;
-  border: 1px solid ${palette('primary', 0)};
+  border: 1px solid ${palette('primary', 2)};
   border-radius: 5px;
   padding-left: 7px;
   cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
@@ -41,13 +41,13 @@ export const WalletAddress = styled.div`
 export const TruncatedAddress = styled.div`
   margin: 3px 15px 3px 10px;
   font-size: 14px;
-  color: ${palette('primary', 0)};
+  color: ${palette('primary', 2)};
 `
 
 export const CaretDownOutlined = styled(CaretDownOutlinedUI)`
   margin-left: 5px;
   padding: 5px;
-  color: ${palette('primary', 0)};
+  color: ${palette('primary', 2)};
 `
 
 export const Menu = styled(A.Menu)`

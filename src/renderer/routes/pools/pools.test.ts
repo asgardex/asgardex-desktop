@@ -36,22 +36,22 @@ describe('Pools routes', () => {
     it('asset - keystore | rune - keystore', () => {
       expect(
         deposit.path({ asset: 'BSC.BNB', assetWalletType: WalletType.Keystore, runeWalletType: WalletType.Keystore })
-      ).toEqual('/pools/deposit/bsc.bnb/keystore/keystore')
+      ).toEqual('/pools/deposit/BSC.BNB/keystore/keystore')
     })
     it('asset - ledger | rune - keystore', () => {
       expect(
         deposit.path({ asset: 'BSC.BNB', assetWalletType: WalletType.Ledger, runeWalletType: WalletType.Keystore })
-      ).toEqual('/pools/deposit/bsc.bnb/ledger/keystore')
+      ).toEqual('/pools/deposit/BSC.BNB/ledger/keystore')
     })
     it('asset - keystore | rune - ledger', () => {
       expect(
         deposit.path({ asset: 'BSC.BNB', assetWalletType: WalletType.Keystore, runeWalletType: WalletType.Ledger })
-      ).toEqual('/pools/deposit/bsc.bnb/keystore/ledger')
+      ).toEqual('/pools/deposit/BSC.BNB/keystore/ledger')
     })
     it('asset - ledger | rune - ledger', () => {
       expect(
         deposit.path({ asset: 'BSC.BNB', assetWalletType: WalletType.Ledger, runeWalletType: WalletType.Ledger })
-      ).toEqual('/pools/deposit/bsc.bnb/ledger/ledger')
+      ).toEqual('/pools/deposit/BSC.BNB/ledger/ledger')
     })
     it('redirects for empty assets', () => {
       expect(

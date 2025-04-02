@@ -2,36 +2,52 @@ import { useCallback, useMemo } from 'react'
 
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Chain } from '@xchainjs/xchain-util'
+import { useIntl } from 'react-intl'
 
-import { AVAILABLE_DEXS } from '../../../services/const'
 import { Tooltip } from '../common/Common.styles'
 import { RadioGroup } from '../radioGroup'
+import { Props, Protocol, Protocols, ProtocolsWithAll } from './types'
 
-export type Props = {
-  protocol: Chain
-  setProtocol: (protocol: Chain) => void
-}
+export const ProtocolSwitch = ({ protocol, setProtocol, withAll = false }: Props) => {
+  const intl = useIntl()
+  const protocols = useMemo(() => (withAll ? ProtocolsWithAll : Protocols), [withAll])
 
-export const ProtocolSwitch = ({ protocol, setProtocol }: Props) => {
   const activeIndex = useMemo(() => {
-    const currentIndex = AVAILABLE_DEXS.findIndex((availableDex) => availableDex.chain === protocol)
-    return currentIndex ?? 0
-  }, [protocol])
+    const currentIndex = protocols.findIndex((availableProtocol) => availableProtocol === protocol)
+
+    if (currentIndex === -1) {
+      setProtocol(protocols[0])
+      return 0
+    }
+
+    return currentIndex
+  }, [protocol, protocols, setProtocol])
 
   const onChange = useCallback(
     (index: number) => {
-      setProtocol(AVAILABLE_DEXS[index].chain)
+      setProtocol(protocols[index])
     },
-    [setProtocol]
+    [protocols, setProtocol]
   )
 
   const protocolOptions = useMemo(() => {
     return [
+      ...(withAll
+        ? [
+            {
+              label: (
+                <Tooltip title="All" placement="bottom">
+                  <span>{intl.formatMessage({ id: 'common.all' })}</span>
+                </Tooltip>
+              ),
+              value: Protocol.All
+            }
+          ]
+        : []),
       {
         label: (
           <Tooltip title="Switch pools to THORChain" placement="bottom">
-            <span className="px-1 text-text2 dark:text-text2d">THORChain</span>
+            <span>THORChain</span>
           </Tooltip>
         ),
         value: THORChain
@@ -39,13 +55,13 @@ export const ProtocolSwitch = ({ protocol, setProtocol }: Props) => {
       {
         label: (
           <Tooltip title="Switch pools to MAYAChain" placement="bottom">
-            <span className="px-1 text-text2 dark:text-text2d">MAYAChain</span>
+            <span>MAYAChain</span>
           </Tooltip>
         ),
         value: MAYAChain
       }
     ]
-  }, [])
+  }, [withAll, intl])
 
   return (
     <div>

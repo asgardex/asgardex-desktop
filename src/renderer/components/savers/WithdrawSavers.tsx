@@ -44,7 +44,7 @@ import {
   max1e8BaseAmount
 } from '../../helpers/assetHelper'
 import { getChainAsset } from '../../helpers/chainHelper'
-import { isEvmChain, isEvmToken } from '../../helpers/evmHelper'
+import { isEvmChain, isEvmChainToken } from '../../helpers/evmHelper'
 import { eqBaseAmount, eqOApproveParams, eqOAsset } from '../../helpers/fp/eq'
 import { sequenceTOption, sequenceTOptionFromArray } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
@@ -215,10 +215,8 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     // not needed for users with locked or not imported wallets
     if (!hasImportedKeystore(keystore) || isLocked(keystore)) return O.some(false)
 
-    return isEvmChain(sourceChain) && isEvmToken(sourceAsset)
-      ? O.some(isEVMTokenAsset(sourceAsset as TokenAsset))
-      : O.none
-  }, [keystore, sourceAsset, sourceChain])
+    return isEvmChainToken(sourceAsset) ? O.some(isEVMTokenAsset(sourceAsset as TokenAsset)) : O.none
+  }, [keystore, sourceAsset])
   /**
    * Selectable source assets to add to savers.
    * Based on savers the address has
@@ -1078,7 +1076,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
 
     const description1 =
       // extra info for ERC20 assets only
-      isEvmChain(sourceChain) && isEvmToken(sourceAsset)
+      isEvmChainToken(sourceAsset)
         ? `${txtNeedsConnected} ${intl.formatMessage(
             {
               id: 'ledger.blindsign'

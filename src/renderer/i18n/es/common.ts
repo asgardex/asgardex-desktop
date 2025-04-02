@@ -6,6 +6,7 @@ const common: CommonMessages = {
   'common.dex': 'IDE',
   'common.faqs': 'PF',
   'common.greeting': 'Hola {name}',
+  'common.examples': 'Ejemplo {name}',
   'common.copyright': '©',
   'common.type': 'Tipo',
   'common.store': 'Almacenar',

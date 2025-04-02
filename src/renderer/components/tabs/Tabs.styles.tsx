@@ -17,7 +17,7 @@ export const Tabs = styled(A.Tabs).attrs({
 
   .ant-tabs-ink-bar {
     height: 5px;
-    background: ${palette('gradient', 0)};
+    background: ${palette('primary', 2)};
   }
 
   .ant-tabs-content {
@@ -26,7 +26,7 @@ export const Tabs = styled(A.Tabs).attrs({
 `
 
 export const TabLabel = styled(Label)<LabelProps & { active: boolean }>`
-  color: ${({ active }) => (active ? palette('primary', 0) : palette('text', 1))};
+  color: ${({ active }) => (active ? palette('primary', 2) : palette('text', 1))};
   padding: 0;
   padding-left: 20px;
   padding-right: 20px;
@@ -37,7 +37,7 @@ export const TabLabel = styled(Label)<LabelProps & { active: boolean }>`
   white-space: nowrap;
   cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
   &:hover {
-    color: ${({ disabled }) => !disabled && palette('primary', 0)};
+    color: ${({ disabled }) => !disabled && palette('primary', 2)};
   }
 `
 

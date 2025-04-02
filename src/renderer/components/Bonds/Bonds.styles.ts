@@ -35,7 +35,7 @@ export const SubmitButton = styled(UIButton).attrs({
 
 export const AddIcon = styled(AIcons.PlusOutlined)`
   color: ${palette('text', 3)};
-  background: ${palette('primary', 0)};
+  background: ${palette('primary', 2)};
   border-radius: 50%;
   height: 18px;
   width: 18px;

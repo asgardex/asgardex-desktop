@@ -21,7 +21,7 @@ export const NoWalletView = () => {
 
   return (
     <div className="flex h-full w-full items-center justify-center bg-bg1 dark:bg-bg1d">
-      <div className="hover:gray1 mx-4 flex flex-col justify-center rounded-lg border border-transparent p-4 text-center transition duration-500 ease-in-out hover:shadow-lg dark:hover:shadow-turquoise">
+      <div className="hover:gray1 mx-4 flex flex-col justify-center rounded-lg border border-transparent p-4 text-center transition duration-500 ease-in-out hover:border-gray0 dark:hover:border-gray0d">
         <FileOutlined className="mb-4 text-4xl dark:text-turquoise" />
         <BorderButton
           className="w-full min-w-[200px] p-20px"
@@ -33,7 +33,7 @@ export const NoWalletView = () => {
         <p className="p-4 text-gray-500">{intl.formatMessage({ id: 'wallet.create.error.phrase.empty' })}</p>
       </div>
 
-      <div className="hover:gray1 mx-4 flex flex-col items-center justify-center rounded-lg border border-transparent p-4 text-center transition duration-500 ease-in-out hover:shadow-lg dark:hover:shadow-turquoise">
+      <div className="hover:gray1 mx-4 flex flex-col items-center justify-center rounded-lg border border-transparent p-4 text-center transition duration-500 ease-in-out hover:border-gray0 dark:hover:border-gray0d">
         <FileProtectOutlined className="mb-4 text-4xl dark:text-turquoise" />
         <BorderButton
           className="w-full min-w-[200px] p-20px"

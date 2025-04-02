@@ -17,7 +17,7 @@ import { Label as UILabel } from '../uielements/label'
 
 export const AutoComplete = styled(A.AutoComplete)`
   .ant-select-selector {
-    border-color: ${palette('background', 2)} !important;
+    border-color: ${palette('gray', 1)} !important;
     background-color: ${palette('background', 0)} !important;
     color: ${palette('text', 0)};
   }
@@ -44,7 +44,7 @@ export const Subtitle = styled(UILabel)`
   color: ${palette('text', 0)};
   text-transform: uppercase;
   font-family: 'MainFontRegular';
-  font-size: 18px;
+  font-size: 16px;
 
   ${media.md`
     text-align: left;
@@ -64,19 +64,6 @@ export const OptionLabel = styled(UILabel)`
   font-size: 14px;
   font-family: 'MainFontRegular';
   min-height: 38px;
-`
-
-export const Button = styled(UIButton)`
-  font-family: 'MainFontRegular';
-  text-transform: uppercase;
-
-  span {
-    font-size: 14px;
-  }
-
-  :disabled:hover {
-    color: ${palette('primary', 0)} !important;
-  }
 `
 
 export const AccountCard = styled(A.Card)`
@@ -102,7 +89,7 @@ export const List = styled(A.List)`
 `
 
 export const ListItem = styled(A.List.Item)`
-  padding: 40px 20px;
+  padding: 20px;
   flex-direction: column;
   align-items: start;
 
@@ -144,7 +131,7 @@ export const AddressLinkIcon = styled(ExternalLinkIconUI)`
   margin-left: 10px;
   height: ${ICON_SIZE}px;
   width: ${ICON_SIZE}px;
-  color: ${palette('primary', 0)};
+  color: ${palette('primary', 2)};
   svg {
     color: inherit;
     height: ${ICON_SIZE}px;
@@ -155,7 +142,7 @@ export const AddressLinkIcon = styled(ExternalLinkIconUI)`
 export const QRCodeIcon = styled(QrcodeOutlined)`
   margin-left: 5px;
   cursor: pointer;
-  color: ${palette('primary', 0)};
+  color: ${palette('primary', 2)};
   height: ${ICON_SIZE}px;
   width: ${ICON_SIZE}px;
 
@@ -167,7 +154,7 @@ export const QRCodeIcon = styled(QrcodeOutlined)`
 
 export const EyeOutlined = styled(EyeOutlinedUI)`
   cursor: pointer;
-  color: ${palette('primary', 0)};
+  color: ${palette('primary', 2)};
   height: ${ICON_SIZE}px;
   width: ${ICON_SIZE}px;
 
@@ -186,7 +173,7 @@ export const AddLedgerButton = styled(UIButton).attrs({
 `
 
 export const AddLedgerIcon = styled(PlusCircleOutlined)`
-  color: ${palette('primary', 0)};
+  color: ${palette('primary', 2)};
 `
 
 export const RemoveAddressIcon = styled(RemoveIcon)`

@@ -80,7 +80,7 @@ export const CloseButton = styled(Button)`
   margin-top: 20px; // Space above the button
   width: 100%; // Full width button
   height: 40px; // Height of the button
-  background-color: ${palette('primary', 0)}; // Primary color for the button
+  background-color: ${palette('primary', 2)}; // Primary color for the button
   color: ${palette('contrast', 0)}; // Text color for the button
 
   &:hover,

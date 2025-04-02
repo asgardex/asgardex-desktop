@@ -30,7 +30,11 @@ import {
   mayachainLastblockState$,
   reloadMayachainLastblock,
   getLiquidityProviders,
-  reloadLiquidityProviders
+  reloadLiquidityProviders,
+  getLiquidityProvider,
+  reloadLiquidityProvider,
+  getMayanodePools,
+  reloadMayanodePools
 } from '../services/mayachain'
 
 export type MayachainContextValue = {
@@ -64,8 +68,10 @@ export type MayachainContextValue = {
   reloadMayachainLastblock: typeof reloadMayachainLastblock
   getLiquidityProviders: typeof getLiquidityProviders
   reloadLiquidityProviders: typeof reloadLiquidityProviders
-  //   getSaverProvider$: typeof getSaverProvider$
-  //   reloadSaverProvider: typeof reloadSaverProvider
+  getLiquidityProvider: typeof getLiquidityProvider
+  reloadLiquidityProvider: typeof reloadLiquidityProvider
+  getMayanodePools: typeof getMayanodePools
+  reloadMayanodePools: typeof reloadMayanodePools
 }
 
 const initialContext: MayachainContextValue = {
@@ -98,9 +104,11 @@ const initialContext: MayachainContextValue = {
   mayachainLastblockState$,
   reloadMayachainLastblock,
   getLiquidityProviders,
-  reloadLiquidityProviders
-  // getSaverProvider$,
-  // reloadSaverProvider
+  reloadLiquidityProviders,
+  getMayanodePools,
+  reloadMayanodePools,
+  getLiquidityProvider,
+  reloadLiquidityProvider
 }
 
 const MayachainContext = createContext<MayachainContextValue | null>(null)

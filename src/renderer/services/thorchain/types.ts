@@ -182,10 +182,32 @@ export type PendingAssets = AssetsWithAmount1e8
 export type FailedAssets = AssetsWithAmount1e8
 export type PendingAssetsRD = RD.RemoteData<Error, PendingAssets>
 
+export type BondedNodes = {
+  nodeAddress: string
+  units: BigNumber
+}
+
+export type LiquidityProviderForPool = {
+  asset: AnyAsset
+  cacaoAddress: O.Option<Address>
+  lastAddHeight: O.Option<number>
+  assetAddress: O.Option<Address>
+  lastWithdrawHeight: string
+  units: string
+  pendingCacao: BaseAmount
+  pendingAsset: BaseAmount
+  cacaoDepositValue: BaseAmount
+  assetDepositValue: BaseAmount
+  nodeBondAddress: string
+  withdrawCounter: string
+  bondedNodes: BondedNodes[]
+  cacaoRedeemValue: BaseAmount
+  assetRedeemValue: BaseAmount
+}
+
 export type LiquidityProvider = {
   dexAssetAddress: O.Option<Address>
   assetAddress: O.Option<Address>
-
   pendingDexAsset: O.Option<PendingAsset>
   pendingAsset: O.Option<PendingAsset>
 }

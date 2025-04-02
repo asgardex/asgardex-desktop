@@ -118,13 +118,13 @@ export const AssetInput: React.FC<Props> = (props): JSX.Element => {
   }, [])
 
   return (
-    <div className={clsx('flex flex-col rounded-lg py-2 px-4', 'border border-gray1 dark:border-gray0d', className)}>
+    <div className={clsx('flex flex-col rounded-lg py-2 px-4', 'border border-gray0 dark:border-gray0d', className)}>
       <div className="flex items-center justify-between">
         {title && (
           <p
             className={clsx(
               'm-0 bg-bg0 font-main text-[14px] dark:bg-bg0d',
-              showError ? 'text-error0 dark:text-error0d' : 'text-gray2 dark:text-gray2d'
+              showError ? 'text-error0 dark:text-error0d' : 'text-text2 dark:text-text2d'
             )}>
             {title}
           </p>

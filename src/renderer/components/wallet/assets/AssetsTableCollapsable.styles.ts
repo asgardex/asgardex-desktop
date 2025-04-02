@@ -12,6 +12,35 @@ import {
 import { Table as UITable } from '../../uielements/table'
 
 export const Table = styled(UITable)`
+  .ant-table {
+    background: ${palette('background', 0)};
+    border-radius: 8px;
+  }
+
+  .ant-table-tbody > tr {
+    & > td {
+      border-bottom: 1px solid ${palette('gray', 0)};
+    }
+
+    &:last-child {
+      & > td {
+        border: none;
+      }
+
+      &:last-child {
+        & > td {
+          &:first-child {
+            border-radius: 0 0 0 8px;
+          }
+
+          &:last-child {
+            border-radius: 0 0 8px 0;
+          }
+        }
+      }
+    }
+  }
+
   .ant-table-tbody > tr > td {
     padding: 0px 16px;
   }
@@ -29,18 +58,11 @@ export const HeaderRow = styled(A.Row)`
   color: ${palette('gray', 2)};
 `
 
-export const HeaderChainContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-`
-
 export const HeaderLabel = styled(UILabel).attrs({
   textTransform: 'uppercase',
   size: 'normal'
 })`
   width: auto;
-  margin-right: 10px;
   padding: 0;
 `
 
@@ -77,10 +99,21 @@ export const ChainLabel = styled(TickerLabel)`
 `
 
 export const Collapse = styled(A.Collapse)`
+  &.ant-collapse > .ant-collapse-item {
+    border: 1px solid ${palette('gray', 0)};
+    border-radius: 8px;
+  }
+
   &.ant-collapse > .ant-collapse-item > .ant-collapse-header {
-    background-color: ${palette('background', 2)};
-    border-bottom: 1px solid ${palette('gray', 1)};
+    background-color: ${palette('background', 0)};
     padding: 5px 20px;
+    transition: none;
+    border-radius: 8px;
+  }
+
+  &.ant-collapse > .ant-collapse-item-active > .ant-collapse-header {
+    border-bottom: 1px solid ${palette('gray', 0)};
+    border-radius: 8px 8px 0px 0px;
   }
 
   &.ant-collapse > .ant-collapse-item > .ant-collapse-header .ant-collapse-header-text {
@@ -95,7 +128,7 @@ export const Collapse = styled(A.Collapse)`
 export const ExpandIcon = styled(CaretRightOutlined)`
   margin-top: -13px;
   svg {
-    color: ${palette('primary', 0)};
+    color: ${palette('primary', 2)};
   }
 `
 
@@ -112,11 +145,9 @@ export const HideIcon = styled(EyeInvisibleOutlined)`
 
 const ICON_SIZE = 16
 
-export const CopyLabelContainer = styled.span``
-
 export const CopyLabel = styled(A.Typography.Text)`
   text-transform: uppercase;
-  color: ${palette('primary', 0)};
+  color: ${palette('primary', 2)};
   border: 1px solid ${palette('gray', 1)};
   border-radius: 8px;
   margin-left: 8px;
@@ -146,8 +177,8 @@ export const AssetTickerWrapper = styled('div')`
 `
 
 export const WalletTypeLabel = styled(WalletTypeLabelUI)`
-  background: ${palette('gray', 1)};
-  padding: 0 5px;
+  background: ${palette('background', 2)};
+  border: 1px solid ${palette('gray', 0)};
 `
 
 export const AssetSynthLabel = styled(AssetSynthLabelUI)`

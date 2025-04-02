@@ -20,7 +20,7 @@ export type Props = {
   linkIcon?: React.ReactElement
 }
 
-export const AddressEllipsis: React.FC<Props> = (props): JSX.Element => {
+export const AddressEllipsis = (props: Props): JSX.Element => {
   const { address, chain, network, className, enableCopy = false, linkIcon } = props
   const prepEllipse = useCallback(
     (node: HTMLElement, txtToEllipse: HTMLElement, copyIcon: HTMLElement) => {

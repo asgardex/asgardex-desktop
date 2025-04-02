@@ -9,11 +9,11 @@ export const FilterCheckbox = styled(Checkbox)`
   margin: 4px 0;
 
   .ant-checkbox-inner {
-    border-color: ${palette('primary', 0)};
+    border-color: ${palette('primary', 2)};
   }
 
   .ant-checkbox-checked .ant-checkbox-inner {
-    background-color: ${palette('primary', 0)};
-    border-color: ${palette('primary', 0)};
+    background-color: ${palette('primary', 2)};
+    border-color: ${palette('primary', 2)};
   }
 `

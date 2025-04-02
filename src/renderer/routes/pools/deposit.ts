@@ -18,7 +18,7 @@ export const deposit: Route<DepositRouteParams> = {
   path: ({ asset, assetWalletType, runeWalletType }) => {
     // Don't accept empty string for asset
     if (asset) {
-      return `${base.template}/${asset.toLowerCase()}/${assetWalletType}/${runeWalletType}`
+      return `${base.template}/${asset}/${assetWalletType}/${runeWalletType}`
     }
     // Redirect to base route if asset param is empty
     return base.path()

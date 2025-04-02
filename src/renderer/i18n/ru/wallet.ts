@@ -76,7 +76,6 @@ const wallet: WalletMessages = {
   'wallet.send.success': 'Транзакция завершена.',
   'wallet.send.fastest': 'Наибыстро',
   'wallet.send.fast': 'Быстро',
-  'wallet.send.affiliateTracking': 'Обнаружено мемо обмена, применена партнерская комиссия',
   'wallet.send.notAllowed': 'Не разрешено',
   'wallet.send.average': 'Среднее',
   'wallet.send.fundsLoss': 'Средства будут потеряны при отправке на этот адрес.',

@@ -1,9 +1,10 @@
 import * as A from 'antd'
-import styled from 'styled-components'
+import styled, { createGlobalStyle } from 'styled-components'
 import { palette } from 'styled-theme'
 
 import { media } from '../../../../helpers/styleHelper'
 import { InnerForm } from '../../../shared/form'
+import { Menu as MenuUI } from '../../../shared/menu'
 import { AssetIcon as UIAssetIcon } from '../../../uielements/assets/assetIcon'
 import { Button as UIButton, ButtonProps as UIButtonProps } from '../../../uielements/button'
 import { WalletTypeLabel as WalletTypeLabelUI } from '../../../uielements/common/Common.styles'
@@ -19,7 +20,7 @@ export const Container = styled('div')`
   padding: 10px;
 
   ${media.sm`
-    padding: 35px 50px 150px 50px;
+    padding: 35px 50px 150px;
   `}
 `
 
@@ -33,14 +34,14 @@ export const Header = styled('div')`
   ${media.sm`
     justify-content: flex-start;
     flex-direction: row;
-    margin-bottom: 50px;
   `}
 `
 
-export const AssetIcon = styled(UIAssetIcon).attrs({ size: 'large' })`
+export const AssetIcon = styled(UIAssetIcon).attrs({ size: 'big' })`
   margin-bottom: 10px;
+
   ${media.sm`
-    margin: 0 25px 0 0;
+    margin: 0 16px 0 0;
   `}
 `
 
@@ -71,13 +72,12 @@ export const HeaderTitle = styled(UILabel)`
   width: auto;
 
   ${media.sm`
-    font-size: 36px;
     text-align: left;
   `}
 `
 
 export const HeaderSubtitle = styled(UILabel)`
-  font-size: 16px;
+  font-size: 14px;
   text-transform: uppercase;
   color: ${palette('text', 2)};
   padding: 0;
@@ -85,7 +85,6 @@ export const HeaderSubtitle = styled(UILabel)`
   text-align: center;
 
   ${media.sm`
-    font-size: 19px;
     text-align: left;
   `}
 `
@@ -139,8 +138,8 @@ export const TabButton = styled(UIButton).attrs<TabButtonProps>(({ selected }) =
 
   &.ant-btn {
     span {
-      border-bottom: 1px solid transparent;
-      border-bottom-color: ${({ selected }) => selected && palette('primary', 0)};
+      border-bottom: 2px solid transparent;
+      border-bottom-color: ${({ selected }) => selected && palette('primary', 2)};
     }
   }
 `
@@ -201,11 +200,133 @@ export const InputContainer = styled('div')`
 
 export const InputLabel = styled(UILabel)`
   padding: 0;
-  font-size: 16px;
+  font-size: 14px;
   text-transform: uppercase;
   color: ${palette('gray', 2)};
 `
 
 export const Fees = styled(UIFees)`
   padding-bottom: 20px;
+`
+
+const commonItemStyles = `
+  .ant-menu-item {
+    font-family: 'MainFontSemiBold';
+    font-size: 16px;
+    color: ${palette('text', 0)};
+  }
+
+  .ant-menu-item a {
+    color: ${palette('text', 0)};
+    text-transform: uppercase;
+  }
+`
+
+/**
+ * Used as global styles as Ant renders extra-content as dropdown in a React.Portal
+ * and we can not style it with Menu
+ */
+export const MenuDropdownGlobalStyles = createGlobalStyle`
+  .ant-menu-submenu.ant-menu-submenu-popup {
+    .ant-menu.ant-menu-sub  {
+      background: ${palette('background', 0)};
+      padding: 4px;
+
+      ${commonItemStyles}
+
+      .ant-menu-item {
+        color: ${palette('text', 0)};
+        border-radius: 8px;
+      }
+
+      .ant-menu-item div.interact-menu {
+        color: ${palette('text', 0)};
+      }
+
+      .ant-menu-item:hover {
+        background-color: ${palette('primary', 2)}33;
+        border-radius: 8px;
+
+        div {
+          color: ${palette('primary', 2)};
+        }
+      }
+
+      .ant-menu-item-active,
+      .ant-menu-item-selected {
+        background-color: ${palette('primary', 2)};
+        border-radius: 8px;
+      }
+
+      .ant-menu-item-selected div.interact-menu {
+        color: #fff;
+      }
+    }
+}
+`
+
+export const Menu = styled(MenuUI)`
+  display: flex;
+  align-items: center;
+  border: none;
+
+  &.ant-menu-horizontal .ant-menu-item:not(:first-child) {
+    margin-left: 4px;
+  }
+
+  &.ant-menu-horizontal .ant-menu-item,
+  &.ant-menu-horizontal > .ant-menu-item::after {
+    transition: none;
+  }
+
+  &.ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-item-selected {
+    background: ${palette('primary', 2)};
+    border-radius: 8px;
+  }
+
+  &.ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-item:hover {
+    background: ${palette('primary', 2)}33;
+    border-radius: 8px;
+
+    div {
+      color: ${palette('primary', 2)};
+    }
+  }
+
+  &.ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-item:hover::after,
+  &.ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-item-active::after,
+  &.ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-item-open::after,
+  &.ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-item-selected::after {
+    border-bottom: none;
+  }
+
+  ${commonItemStyles}
+
+  .ant-menu-item {
+    color: ${palette('text', 0)};
+  }
+
+  .ant-menu-item div.interact-menu {
+    color: ${palette('text', 0)};
+  }
+
+  .ant-menu-item div.interact-menu:hover {
+    color: ${palette('primary', 2)};
+  }
+
+  .ant-menu-item-selected div.interact-menu {
+    color: #fff;
+  }
+
+  .ant-menu-submenu {
+    border-color: ${palette('primary', 2)} !important;
+
+    .ant-menu-submenu-title {
+      color: ${palette('text', 0)};
+
+      &:hover {
+        color: ${palette('primary', 2)};
+      }
+    }
+  }
 `

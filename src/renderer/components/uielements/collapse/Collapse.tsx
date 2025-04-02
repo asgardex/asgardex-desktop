@@ -15,7 +15,7 @@ export const Collapse = ({ className, header, children }: Props): JSX.Element =>
   return (
     <div
       className={clsx(
-        'flex flex-col overflow-hidden rounded-lg border border-solid border-gray1 dark:border-gray0d',
+        'flex flex-col overflow-hidden rounded-lg border border-solid border-gray0 dark:border-gray0d',
         className
       )}>
       <div

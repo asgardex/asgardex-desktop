@@ -1,15 +1,26 @@
 import React from 'react'
 
 import { DesktopOutlined, StopOutlined } from '@ant-design/icons'
+import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Address, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import { Address, BaseAmount, baseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { Col } from 'antd'
+import * as O from 'fp-ts/Option'
 import { useIntl } from 'react-intl'
 
 import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
+import { getUSDValue } from '../../../helpers/poolHelperMaya'
+import {
+  LiquidityProviderForPool,
+  LiquidityProviderForPoolRD,
+  MayaLpUnits,
+  NodeInfo as NodeInfoMaya
+} from '../../../services/mayachain/types'
+import { PoolDetails, PoolDetailsRD } from '../../../services/mayaMigard/types'
 import { NodeInfo, Providers, NodeStatusEnum } from '../../../services/thorchain/types'
+import { PricePool } from '../../../views/pools/Pools.types'
 import * as Styled from './BondsTable.styles'
 
 export const NodeAddress: React.FC<{ address: Address; network: Network }> = ({ address, network }) => (
@@ -22,11 +33,23 @@ export const NodeAddress: React.FC<{ address: Address; network: Network }> = ({ 
   </Col>
 )
 
-export const BondValue: React.FC<{ data: NodeInfo }> = ({ data }) => (
+export const BondValue: React.FC<{ data: NodeInfo | NodeInfoMaya }> = ({ data }) => (
   <Col>
     <Styled.TextLabel align="right" nowrap>
       {formatAssetAmountCurrency({
-        asset: data.address.startsWith('thor') ? AssetRuneNative : AssetCacao,
+        asset: AssetRuneNative,
+        amount: baseToAsset(data.bond),
+        trimZeros: true,
+        decimal: 0
+      })}
+    </Styled.TextLabel>
+  </Col>
+)
+export const BondValueMaya: React.FC<{ data: NodeInfo | NodeInfoMaya }> = ({ data }) => (
+  <Col>
+    <Styled.TextLabel align="right" nowrap>
+      {formatAssetAmountCurrency({
+        asset: AssetCacao,
         amount: baseToAsset(data.bond),
         trimZeros: true,
         decimal: 0
@@ -39,7 +62,7 @@ export const BondProviderValue: React.FC<{ providers: Providers }> = ({ provider
   <Col>
     <Styled.TextLabel align="right" nowrap>
       {formatAssetAmountCurrency({
-        asset: providers.bondAddress.startsWith('thor') ? AssetRuneNative : AssetCacao,
+        asset: AssetRuneNative,
         amount: baseToAsset(providers.bond),
         trimZeros: true,
         decimal: 0
@@ -48,7 +71,7 @@ export const BondProviderValue: React.FC<{ providers: Providers }> = ({ provider
   </Col>
 )
 
-export const AwardValue: React.FC<{ data: NodeInfo }> = ({ data }) => (
+export const AwardValue: React.FC<{ data: NodeInfo | NodeInfoMaya }> = ({ data }) => (
   <Col>
     <Styled.TextLabel align="right" nowrap>
       {formatAssetAmountCurrency({
@@ -61,7 +84,7 @@ export const AwardValue: React.FC<{ data: NodeInfo }> = ({ data }) => (
   </Col>
 )
 
-export const Status: React.FC<{ data: NodeInfo }> = ({ data }) => {
+export const Status: React.FC<{ data: NodeInfo | NodeInfoMaya }> = ({ data }) => {
   const intl = useIntl()
 
   const getStatusMessageId = (status: NodeStatusEnum) => {
@@ -103,3 +126,67 @@ export const Delete: React.FC<{ deleteNode: () => void }> = ({ deleteNode }) => 
     <StopOutlined />
   </Styled.DeleteButton>
 )
+
+type CalculateBondedAmountParams = {
+  lpData: LiquidityProviderForPoolRD
+  assetWithLpUnits: MayaLpUnits
+  nodeAddress: string
+  poolDetails: PoolDetailsRD
+  pricePool: PricePool
+}
+
+type BondedPosition = {
+  bondedAmount: BaseAmount
+  bondedAmountValue: BaseAmount
+}
+
+export const calculateBondedAmount = ({
+  lpData,
+  assetWithLpUnits,
+  nodeAddress,
+  poolDetails,
+  pricePool
+}: CalculateBondedAmountParams): BondedPosition => {
+  const calculatePercentage = (totalUnits: number, bondedUnits: number): number => {
+    return totalUnits > 0 ? (bondedUnits / totalUnits) * 100 : 0
+  }
+
+  const defaultBondedPosition: BondedPosition = {
+    bondedAmount: baseAmount(0),
+    bondedAmountValue: baseAmount(0)
+  }
+
+  return RD.fold(
+    () => defaultBondedPosition, // Initial: return default
+    () => defaultBondedPosition, // Pending: return default
+    () => defaultBondedPosition, // Failure: return default
+    (lp: LiquidityProviderForPool) => {
+      const matchingNode = lp.bondedNodes.find((node) => node.node_address === nodeAddress)
+      const bondedUnits = matchingNode ? Number(matchingNode.units) : 0
+      const percentage = calculatePercentage(assetWithLpUnits.units, bondedUnits)
+
+      const assetDepositPriceOption = RD.fold(
+        () => O.none, // Initial: no value
+        () => O.none, // Pending: no value
+        () => O.none, // Failure: no value
+        (details: PoolDetails) =>
+          getUSDValue({
+            balance: { asset: assetWithLpUnits.asset, amount: lp.assetRedeemValue }, // Convert string to BaseAmount
+            poolDetails: details,
+            pricePool
+          })
+      )(poolDetails)
+
+      const assetDepositPrice = O.getOrElse(() => baseAmount(0))(assetDepositPriceOption)
+
+      const bondedAmount = lp.assetRedeemValue.times(percentage / 100) // Convert to BaseAmount first
+      const bondedAmountValueBigNumber = assetDepositPrice.amount().multipliedBy(percentage / 100) // BigNumber
+      const bondedAmountValue = baseAmount(bondedAmountValueBigNumber, assetDepositPrice.decimal) // Wrap as BaseAmount
+
+      return {
+        bondedAmount,
+        bondedAmountValue
+      }
+    }
+  )(lpData)
+}

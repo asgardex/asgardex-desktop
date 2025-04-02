@@ -146,7 +146,7 @@ export const AppView = (): JSX.Element => {
     <Styled.AppWrapper>
       <div className="flex h-full flex-col">
         <AppUpdateView />
-        <Styled.AppLayout>
+        <Styled.AppLayout className="!bg-bg3 dark:!bg-bg3d">
           {isDesktopView && <Sidebar commitHash={envOrDefault($COMMIT_HASH, '')} isDev={$IS_DEV} publicIP={publicIP} />}
           <View>
             <Header />

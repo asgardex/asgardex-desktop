@@ -19,7 +19,7 @@ export const ErrorLabel = styled(Label)`
 
 export const ExternalLinkIcon = styled(ExternalLinkIconUI)`
   margin-left: 10px;
-  color: ${palette('primary', 0)};
+  color: ${palette('primary', 2)};
   svg {
     color: inherit;
   }

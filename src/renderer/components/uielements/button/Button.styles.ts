@@ -61,10 +61,10 @@ type ColorGroups = {
 
 const colorGroups: ColorGroups = {
   primary: {
-    main: palette('gradient', 0),
+    main: palette('primary', 2),
     darken: palette('gradient', 1),
     lighten: palette('gradient', 2),
-    text: palette('primary', 0),
+    text: palette('primary', 2),
     borderBottom: palette('gradient', 0)
   },
   success: {
@@ -177,7 +177,7 @@ const getThemes = () => {
     }
 
     value.transparent = {
-      text: palette('success', 0),
+      text: palette('primary', 2),
       action: {
         text: palette('success', 1),
         background: 'transparent'

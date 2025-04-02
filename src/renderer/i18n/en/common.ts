@@ -9,6 +9,7 @@ const common: CommonMessages = {
   'common.copyright': '©',
   'common.type': 'Type',
   'common.chain': 'Chain',
+  'common.examples': 'Example {name}',
   'common.store': 'Store',
   'common.address': 'Address',
   'common.addresses': 'Addresses',
