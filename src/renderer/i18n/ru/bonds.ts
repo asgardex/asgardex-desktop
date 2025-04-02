@@ -3,8 +3,8 @@ import { BondsMessages } from '../types'
 const bonds: BondsMessages = {
   'bonds.node': 'Узел',
   'bonds.bond': 'Вклад',
-  'bonds.currentBond': 'Текущий Облигаций',
-  'bonds.bondProvider': 'Поставщик облигаций',
+  'bonds.currentBond': 'Текущий вклад',
+  'bonds.bondProvider': 'Поставщик вкладов',
   'bonds.award': 'Награда',
   'bonds.status': 'Статус',
   'bonds.status.ready': 'Готов',
@@ -16,8 +16,8 @@ const bonds: BondsMessages = {
   'bonds.node.add': 'Добавить узел',
   'bonds.node.enterMessage': 'Введите узел для отслеживания',
   'bonds.validations.nodeAlreadyAdded': 'Узел уже добавлен',
-  'bonds.node.removeMessage': 'Вы уверены, что хотите удалить узел {node} ?',
-  'bonds.validations.bondStatusActive': 'Развязывание с активным узлом не допускается'
+  'bonds.node.removeMessage': 'Вы уверены, что хотите удалить узел с адресом {node}?',
+  'bonds.validations.bondStatusActive': 'Расставание с активным узлом не допускается'
 }
 
 export default bonds
