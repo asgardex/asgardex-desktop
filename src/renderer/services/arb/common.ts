@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ARBChain, Client } from '@xchainjs/xchain-arbitrum'
+import { Client } from '@xchainjs/xchain-arbitrum'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -9,7 +9,7 @@ import { defaultArbParams, FEE_BOUNDS } from '../../../shared/arb/const'
 import { isError } from '../../../shared/utils/guard'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
-import { WalletAddress$, ExplorerUrl$ } from '../clients/types'
+import { ExplorerUrl$ } from '../clients/types'
 import { Client$, ClientState, ClientState$ } from '../evm/types'
 import { keystoreService } from '../wallet/keystore'
 import { getPhrase } from '../wallet/util'
@@ -52,19 +52,19 @@ const clientState$: ClientState$ = FP.pipe(
 
 const client$: Client$ = clientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
 
-/**
- * Current `Address` depending on selected network
- */
-const address$: WalletAddress$ = C.address$(client$, ARBChain)
+// /**
+//  * Current `Address` depending on selected network
+//  */
+// const address$: WalletAddress$ = C.address$(client$, ARBChain)
 
-/**
- * Current `Address` depending on selected network
- */
-const addressUI$: WalletAddress$ = C.addressUI$(client$, ARBChain)
+// /**
+//  * Current `Address` depending on selected network
+//  */
+// const addressUI$: WalletAddress$ = C.addressUI$(client$, ARBChain)
 
 /**
  * Explorer url depending on selected network
  */
 const explorerUrl$: ExplorerUrl$ = C.explorerUrl$(client$)
 
-export { client$, clientState$, address$, addressUI$, explorerUrl$ }
+export { client$, clientState$, explorerUrl$ }

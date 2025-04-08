@@ -14,8 +14,6 @@ import {
   subscribeTx,
   sendTx,
   txRD$,
-  address$,
-  addressUI$,
   explorerUrl$,
   fees$,
   reloadFees,
@@ -35,8 +33,6 @@ export type ArbContextValue = {
   subscribeTx: typeof subscribeTx
   sendTx: typeof sendTx
   txRD$: typeof txRD$
-  address$: typeof address$
-  addressUI$: typeof addressUI$
   explorerUrl$: typeof explorerUrl$
   fees$: typeof fees$
   reloadFees: typeof reloadFees
@@ -72,8 +68,6 @@ const initialContext: ArbContextValue = {
   subscribeTx,
   sendTx,
   txRD$,
-  address$,
-  addressUI$,
   explorerUrl$,
   fees$,
   reloadFees,

@@ -44,6 +44,7 @@ import * as XRD from '../../radix'
 import * as SOL from '../../solana'
 import * as THOR from '../../thorchain'
 import { FeesWithRatesLD } from '../../utxo/types'
+import { getAddress$ } from '../../xchainjs-wallet/wallet'
 import { PoolFeeLD } from '../types'
 
 const {
@@ -144,7 +145,7 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
       )
     case ARBChain:
       return FP.pipe(
-        ARB.address$.pipe(
+        getAddress$(ARBChain).pipe(
           RxOp.switchMap(
             O.fold(
               () => Rx.of(RD.failure(new Error('No address available'))),

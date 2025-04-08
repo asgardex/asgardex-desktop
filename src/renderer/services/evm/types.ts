@@ -5,8 +5,10 @@ import { FeesWithGasPricesAndLimits } from '@xchainjs/xchain-evm'
 import { TxParams as BaseEvmTxParams } from '@xchainjs/xchain-evm'
 import ClientKeystore from '@xchainjs/xchain-evm'
 import { Address, AnyAsset, Asset, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
+import { Wallet } from '@xchainjs/xchain-wallet'
 import { ethers } from 'ethers'
 import * as O from 'fp-ts/lib/Option'
+import * as Rx from 'rxjs'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
@@ -101,3 +103,7 @@ export type Client$ = C.Client$<Client>
 
 export type ClientState = C.ClientState<Client>
 export type ClientState$ = C.ClientState$<Client>
+
+export type WalletState = RD.RemoteData<Error, Wallet>
+export type WalletState$ = Rx.Observable<WalletState>
+export type Wallet$ = Rx.Observable<O.Option<Wallet>>

@@ -31,12 +31,8 @@ import { DEFAULT_EVM_HD_MODE, EvmHDMode } from '../../../shared/evm/types'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { HDMode } from '../../../shared/wallet/types'
 import { WalletSettings } from '../../components/settings'
-import { useArbContext } from '../../contexts/ArbContext'
-import { useAvaxContext } from '../../contexts/AvaxContext'
-import { useBaseContext } from '../../contexts/BaseContext'
 import { useBitcoinCashContext } from '../../contexts/BitcoinCashContext'
 import { useBitcoinContext } from '../../contexts/BitcoinContext'
-import { useBscContext } from '../../contexts/BscContext'
 import { useChainContext } from '../../contexts/ChainContext'
 import { useCosmosContext } from '../../contexts/CosmosContext'
 import { useDashContext } from '../../contexts/DashContext'
@@ -74,6 +70,7 @@ import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
 import { useLedger } from '../../hooks/useLedger'
 import { useNetwork } from '../../hooks/useNetwork'
 import { LedgerAddressLD, KeystoreUnlocked, VerifiedLedgerAddressLD } from '../../services/wallet/types'
+import { getAddress$ } from '../../services/xchainjs-wallet/wallet'
 import { walletAccount$ } from './WalletSettingsView.helper'
 
 type Props = {
@@ -95,10 +92,10 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
 
   const { address$: thorAddressUI$ } = useThorchainContext()
   const { addressUI$: ethAddressUI$, ethHDMode$, updateEvmHDMode } = useEthereumContext()
-  const { addressUI$: arbAddressUI$ } = useArbContext()
-  const { addressUI$: avaxAddressUI$ } = useAvaxContext()
-  const { addressUI$: baseAddressUI$ } = useBaseContext()
-  const { addressUI$: bscAddressUI$ } = useBscContext()
+  const arbAddressUI$ = getAddress$(ARBChain)
+  const avaxAddressUI$ = getAddress$(AVAXChain)
+  const baseAddressUI$ = getAddress$(BASEChain)
+  const bscAddressUI$ = getAddress$(BSCChain)
   const { addressUI$: btcAddressUI$ } = useBitcoinContext()
   const { addressUI$: ltcAddressUI$ } = useLitecoinContext()
   const { addressUI$: bchAddressUI$ } = useBitcoinCashContext()

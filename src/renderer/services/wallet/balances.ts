@@ -48,6 +48,7 @@ import * as MAYA from '../mayachain'
 import * as XRD from '../radix'
 import * as SOL from '../solana'
 import * as THOR from '../thorchain'
+import { getAddress$ } from '../xchainjs-wallet/wallet'
 import { INITIAL_BALANCES_STATE } from './const'
 import {
   ChainBalances$,
@@ -819,7 +820,7 @@ export const createBalancesService = ({
   /**
    * Transforms ARB data (address + `WalletBalance`) into `ChainBalance`
    */
-  const arbChainBalance$: ChainBalance$ = Rx.combineLatest([ARB.addressUI$, arbBalances$]).pipe(
+  const arbChainBalance$: ChainBalance$ = Rx.combineLatest([getAddress$(ARBChain), arbBalances$]).pipe(
     RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
       walletType: WalletType.Keystore,
       chain: ARBChain,

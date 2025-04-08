@@ -1,6 +1,6 @@
 import { network$ } from '../app/service'
 import { reloadBalances, balances$, reloadBalances$, resetReloadBalances, getBalanceByAddress$ } from './balances'
-import { client$, clientState$, address$, addressUI$, explorerUrl$ } from './common'
+import { client$, clientState$, explorerUrl$ } from './common'
 import { createFeesService } from './fees'
 import { createTransactionService } from './transaction'
 
@@ -21,8 +21,6 @@ const { reloadFees, fees$, poolInTxFees$, poolOutTxFee$, approveFee$, reloadAppr
 export {
   client$,
   clientState$,
-  address$,
-  addressUI$,
   reloadBalances,
   explorerUrl$,
   balances$,
