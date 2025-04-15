@@ -698,7 +698,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
             <p className="m-2">{intl.formatMessage({ id: 'common.disabledChains' })}</p>
             <div className="flex space-x-2">
               {disabledChains.map((chain) => (
-                <span key={chain} className="rounded bg-gray-200 px-2 py-1">
+                <span key={chain} className="rounded bg-gray-200 px-2 py-1 dark:bg-gray0d">
                   {chain}
                 </span>
               ))}
