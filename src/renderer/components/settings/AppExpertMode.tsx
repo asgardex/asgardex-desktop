@@ -201,7 +201,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
           )}>
           <SubSection title="Midgard Mayachain">
             <EditableUrl
-              className="w-full xl:w-3/4"
+              className="w-full"
               url={midgardMayaUrl}
               onChange={onChangeMidgardMayaUrl}
               loading={RD.isPending(midgardMayaUrlRD)}

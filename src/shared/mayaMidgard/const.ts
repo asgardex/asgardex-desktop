@@ -11,7 +11,7 @@ const STAGENET_URL = envOrDefault(
   'https://stagenet.midgard.mayachain.info'
 )
 
-const MAINNET_URL = envOrDefault(process.env.REACT_APP_MIDGARD_MAYA_MAINNET_URL, 'https://midgard.mayachain.info')
+const MAINNET_URL = envOrDefault(process.env.REACT_APP_MIDGARD_MAYA_MAINNET_URL, 'https://midgard-maya.liquify.com')
 
 export const DEFAULT_MIDGARD_MAYA_URLS: ApiUrls = {
   mainnet: MAINNET_URL,
