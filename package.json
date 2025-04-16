@@ -1,7 +1,7 @@
 {
   "name": "asgardex",
   "productName": "ASGARDEX",
-  "version": "1.30.3",
+  "version": "1.30.4",
   "description": "WALLET AND EXCHANGE CLIENT FOR THORCHAIN, MAYACHAIN, CHAINFLIP",
   "main": "index.js",
   "scripts": {
