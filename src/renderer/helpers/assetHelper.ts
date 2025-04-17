@@ -1,11 +1,6 @@
-import { AssetAETH, AssetARB } from '@xchainjs/xchain-arbitrum'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetDASH } from '@xchainjs/xchain-dash'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
-import { AssetUSK } from '@xchainjs/xchain-kujira'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
-import { AssetXRD } from '@xchainjs/xchain-radix'
-import { SOLAsset } from '@xchainjs/xchain-solana'
 import {
   Address,
   AnyAsset,
@@ -37,7 +32,13 @@ import {
   AssetCacao,
   AssetMaya,
   AssetKUJI,
-  AssetBETH
+  AssetBETH,
+  AssetARB,
+  AssetAETH,
+  AssetDASH,
+  SOLAsset,
+  AssetUSK,
+  AssetXRD
 } from '../../shared/utils/asset'
 import { isSupportedChain } from '../../shared/utils/chain'
 import { AssetTGTERC20, DEFAULT_PRICE_ASSETS, USD_PRICE_ASSETS } from '../const'

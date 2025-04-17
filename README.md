@@ -117,7 +117,6 @@ _(in alphabetical order)_
 - [Prettier](https://github.com/prettier/prettier)
 - [ReactJS](https://github.com/facebook/react/)
 - [Styled Components](https://styled-components.com/)
-- [Testcafe](https://github.com/DevExpress/testcafe)
 - [RxJS](https://rxjs.dev/)
 - [Typescript](https://github.com/microsoft/TypeScript)
 - [xchainjs-lib](https://github.com/xchainjs/xchainjs-lib/)

@@ -51,37 +51,6 @@ export const Subtitle = styled(UILabel)`
   `}
 `
 
-export const WalletCol = styled(A.Col)`
-  width: 100%;
-`
-
-export const OptionLabel = styled(UILabel)`
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-transform: uppercase;
-  font-size: 14px;
-  font-family: 'MainFontRegular';
-  min-height: 38px;
-`
-
-export const AccountCard = styled(A.Card)`
-  border: 1px solid ${palette('gray', 0)};
-
-  .ant-card-body {
-    background-color: ${palette('background', 1)};
-
-    div > div > div > ul > li {
-      border-bottom: 1px solid ${palette('gray', 0)};
-    }
-  }
-
-  &:last-child {
-    margin-bottom: 20px;
-  }
-`
-
 export const List = styled(A.List)`
   li {
     border-bottom: 1px solid ${palette('gray', 0)};

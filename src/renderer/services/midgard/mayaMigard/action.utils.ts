@@ -8,7 +8,7 @@ import { AssetWithAmount } from '../../../types/asgardex'
 import { Tx, TxType } from '../midgardTypes'
 import { Action } from './types'
 
-export const getTxType = (apiString: string): TxType => {
+const getTxType = (apiString: string): TxType => {
   const type = apiString.toUpperCase()
   switch (type) {
     case 'DEPOSIT':
@@ -49,12 +49,12 @@ export const getRequestType = (type?: TxType | 'ALL'): string | undefined => {
   return
 }
 
-export const mapCoin = (coin: Coin): O.Option<AssetWithAmount> => {
+const mapCoin = (coin: Coin): O.Option<AssetWithAmount> => {
   const asset = assetFromString(coin.asset)
   return asset ? O.some({ asset, amount: baseAmount(coin.amount) }) : O.none
 }
 
-export const mapTransaction = (tx: Transaction): Tx => ({
+const mapTransaction = (tx: Transaction): Tx => ({
   ...tx,
   values: FP.pipe(tx.coins, A.filterMap(mapCoin))
 })

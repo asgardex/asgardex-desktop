@@ -96,16 +96,6 @@ export const Input = styled(A.Input)<InputProps>`
   ${inputStyle}
 `
 
-export const InputNumber = styled(A.InputNumber)<InputProps>`
-  ${inputStyle}
-  width: 100%;
-
-  & .ant-input-number-input,
-  & .ant-input-number-input-wrap {
-    height: 100%;
-  }
-`
-
 /**
  * InputPassword (Legacy)
  * @deprecated Use InputPassword.txs instead
