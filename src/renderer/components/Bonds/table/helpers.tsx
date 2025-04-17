@@ -18,9 +18,9 @@ import {
   MayaLpUnits,
   NodeInfo as NodeInfoMaya
 } from '../../../services/mayachain/types'
-import { PoolDetails, PoolDetailsRD } from '../../../services/mayaMigard/types'
-import { NodeInfo, Providers, NodeStatusEnum } from '../../../services/thorchain/types'
-import { PricePool } from '../../../views/pools/Pools.types'
+import { PoolDetails, PoolDetailsRD } from '../../../services/midgard/mayaMigard/types'
+import { PricePool } from '../../../services/midgard/midgardTypes'
+import { NodeInfo, NodeStatusEnum } from '../../../services/thorchain/types'
 import * as Styled from './BondsTable.styles'
 
 export const NodeAddress: React.FC<{ address: Address; network: Network }> = ({ address, network }) => (
@@ -51,19 +51,6 @@ export const BondValueMaya: React.FC<{ data: NodeInfo | NodeInfoMaya }> = ({ dat
       {formatAssetAmountCurrency({
         asset: AssetCacao,
         amount: baseToAsset(data.bond),
-        trimZeros: true,
-        decimal: 0
-      })}
-    </Styled.TextLabel>
-  </Col>
-)
-
-export const BondProviderValue: React.FC<{ providers: Providers }> = ({ providers }) => (
-  <Col>
-    <Styled.TextLabel align="right" nowrap>
-      {formatAssetAmountCurrency({
-        asset: AssetRuneNative,
-        amount: baseToAsset(providers.bond),
         trimZeros: true,
         decimal: 0
       })}

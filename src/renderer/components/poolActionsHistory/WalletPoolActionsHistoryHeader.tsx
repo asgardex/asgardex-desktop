@@ -12,7 +12,7 @@ import { PoolActionsHistoryFilter } from './PoolActionsHistoryFilter'
 import { Filter } from './types'
 import * as Styled from './WalletPoolActionsHistoryHeader.styles'
 
-export type Props = {
+type Props = {
   network: Network
   addresses: WalletAddresses
   selectedAddress: O.Option<WalletAddress>

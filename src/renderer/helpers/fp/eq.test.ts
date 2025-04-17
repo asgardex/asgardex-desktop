@@ -13,10 +13,9 @@ import { ASSETS_MAINNET } from '../../../shared/mock/assets'
 import { AssetBSC, AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
 import { WalletAddress, WalletType } from '../../../shared/wallet/types'
 import { SymDepositAddresses } from '../../services/chain/types'
-import { PoolAddress, PoolShare } from '../../services/midgard/types'
+import { PoolAddress, PoolShare, PricePool } from '../../services/midgard/midgardTypes'
 import { ApiError, ErrorId } from '../../services/wallet/types'
 import { AssetWithAmount } from '../../types/asgardex'
-import { PricePool } from '../../views/pools/Pools.types'
 import { mockWalletAddress } from '../test/testWalletHelper'
 import {
   eqAsset,

@@ -20,9 +20,8 @@ import { getChainAsset } from '../../../helpers/chainHelper'
 import { eqChain } from '../../../helpers/fp/eq'
 import { priceFeeAmountForAsset } from '../../../services/chain/fees/utils'
 import { DepositAssetFees, DepositFees, SymDepositFees, SymDepositFeesRD } from '../../../services/chain/types'
-import { PoolsDataMap } from '../../../services/midgard/types'
+import { PoolData, PoolsDataMap } from '../../../services/midgard/midgardTypes'
 import { AssetWithAmount } from '../../../types/asgardex'
-import { PoolData } from '../../../views/pools/Pools.types'
 
 /**
  * Returns zero sym deposit fees

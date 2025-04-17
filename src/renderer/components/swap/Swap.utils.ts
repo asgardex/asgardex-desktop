@@ -9,7 +9,7 @@ import { isChainAsset, isUtxoAssetChain, max1e8BaseAmount } from '../../helpers/
 import { eqAsset, eqChain } from '../../helpers/fp/eq'
 import { priceFeeAmountForAsset } from '../../services/chain/fees/utils'
 import { SwapFees } from '../../services/chain/types'
-import { PoolAssetDetail, PoolAssetDetails, PoolsDataMap } from '../../services/midgard/types'
+import { PoolAssetDetail, PoolAssetDetails, PoolsDataMap } from '../../services/midgard/midgardTypes'
 import { WalletBalances } from '../../services/wallet/types'
 import { AssetsToSwap } from './Swap.types'
 

@@ -49,7 +49,7 @@ export const ManageButton = ({
           poolsRoutes.deposit.path({
             asset: assetToString(asset),
             assetWalletType: DEFAULT_WALLET_TYPE,
-            runeWalletType: DEFAULT_WALLET_TYPE
+            dexWalletType: DEFAULT_WALLET_TYPE
           })
         )
       }

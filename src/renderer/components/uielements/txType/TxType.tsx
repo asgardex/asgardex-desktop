@@ -11,7 +11,7 @@ import { ReactComponent as DepositIcon } from '../../../assets/svg/tx-stake.svg'
 import { ReactComponent as SwapIcon } from '../../../assets/svg/tx-swap.svg'
 import { ReactComponent as WithdrawIcon } from '../../../assets/svg/tx-withdraw.svg'
 import { getTxTypeI18n } from '../../../helpers/actionsHelper'
-import { TxType as MidgardTxType } from '../../../services/midgard/types'
+import { TxType as MidgardTxType } from '../../../services/midgard/midgardTypes'
 import * as Styled from './TxType.styles'
 
 type Props = {

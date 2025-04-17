@@ -16,7 +16,7 @@ import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
 import { useWalletContext } from '../contexts/WalletContext'
 import { addressFromWalletAddress } from '../helpers/walletHelper'
 import { WalletAddress$ } from '../services/clients'
-import { PoolShares } from '../services/midgard/types'
+import { PoolShares } from '../services/midgard/midgardTypes'
 import { userChains$ } from '../services/storage/userChains'
 import { ledgerAddressToWalletAddress } from '../services/wallet/util'
 

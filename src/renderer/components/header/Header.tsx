@@ -17,7 +17,7 @@ import { useRunePrice } from '../../hooks/useRunePrice'
 import { useThorchainClientUrl } from '../../hooks/useThorchainClientUrl'
 import { useVolume24PriceMaya } from '../../hooks/useVolume24HrPriceMaya'
 import { useVolume24Price } from '../../hooks/useVolume24Price'
-import { SelectedPricePoolAsset } from '../../services/midgard/types'
+import { SelectedPricePoolAsset } from '../../services/midgard/midgardTypes'
 import { HeaderComponent } from './HeaderComponent'
 
 export const Header: React.FC = (): JSX.Element => {

@@ -103,7 +103,7 @@ export const chainToString = (chain: Chain): string => {
 /**
  * Represents chain attributes.
  */
-export type ChainAttributes = {
+type ChainAttributes = {
   blockReward: number
   avgBlockTimeInSecs: number
 }

@@ -65,9 +65,6 @@ import { sequenceTOption } from './fpHelpers'
  * */
 export const THORCHAIN_DECIMAL = 8
 
-export const isAssetInMayachainPools = (asset: AnyAsset): boolean =>
-  eqAsset.equals(asset, AssetCacao || AssetDASH || AssetKUJI || AssetXRD)
-
 /**
  * Checks whether an asset is an RuneNative asset
  */
@@ -223,7 +220,7 @@ export const iconUrlInERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
 /**
  * Checks whether an ERC20 asset is white listed or not
  */
-export const assetInARBERC20Whitelist = (asset: AnyAsset): boolean =>
+const assetInARBERC20Whitelist = (asset: AnyAsset): boolean =>
   FP.pipe(
     ARB_TOKEN_WHITELIST,
     A.map(({ asset }) => asset),
@@ -243,7 +240,7 @@ export const iconUrlInARBERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
 /**
  * Checks whether an ERC20 asset is white listed or not
  */
-export const assetInAVAXERC20Whitelist = (asset: AnyAsset): boolean =>
+const assetInAVAXERC20Whitelist = (asset: AnyAsset): boolean =>
   FP.pipe(
     AVAX_TOKEN_WHITELIST,
     A.map(({ asset }) => asset),
@@ -263,7 +260,7 @@ export const iconUrlInAVAXERC20Whitelist = (asset: AnyAsset): O.Option<string> =
 /**
  * Checks whether an ERC20 asset is white listed or not
  */
-export const assetInBSCERC20Whitelist = (asset: AnyAsset): boolean =>
+const assetInBSCERC20Whitelist = (asset: AnyAsset): boolean =>
   FP.pipe(
     BSC_TOKEN_WHITELIST,
     A.map(({ asset }) => asset),

@@ -41,8 +41,8 @@ import { hiddenString, noDataString } from '../../../helpers/stringHelper'
 import { calculateMayaValueInUSD, MayaScanPriceRD } from '../../../hooks/useMayascanPrice'
 import * as poolsRoutes from '../../../routes/pools'
 import { WalletBalancesRD } from '../../../services/clients'
-import { PoolDetails as PoolDetailsMaya } from '../../../services/mayaMigard/types'
-import { PoolDetails, PoolsDataMap } from '../../../services/midgard/types'
+import { PoolDetails as PoolDetailsMaya } from '../../../services/midgard/mayaMigard/types'
+import { PoolDetails, PoolsDataMap, PricePool } from '../../../services/midgard/midgardTypes'
 import { MimirHaltRD } from '../../../services/thorchain/types'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import {
@@ -56,7 +56,6 @@ import {
 import { walletTypeToI18n } from '../../../services/wallet/util'
 import { useApp } from '../../../store/app/hooks'
 import { GECKO_MAP } from '../../../types/generated/geckoMap'
-import { PricePool } from '../../../views/pools/Pools.types'
 import { ErrorView } from '../../shared/error/'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { Action as ActionButtonAction, ActionButton } from '../../uielements/button/ActionButton'
@@ -441,7 +440,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
               poolsRoutes.deposit.path({
                 asset: assetToString(asset),
                 assetWalletType: walletType,
-                runeWalletType: DEFAULT_WALLET_TYPE
+                dexWalletType: DEFAULT_WALLET_TYPE
               })
             )
           })

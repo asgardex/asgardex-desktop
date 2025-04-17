@@ -23,10 +23,10 @@ import { isArbChain, isAvaxChain, isBaseChain, isEthChain } from '../../helpers/
 import { eqString, eqAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { LastblockItem as LastblockItemMaya } from '../../services/mayachain/types'
-import { GetPoolsStatusEnum, PoolFilter } from '../../services/midgard/types'
-import { toPoolData } from '../../services/midgard/utils'
+import { GetPoolsStatusEnum, PoolData, PoolFilter } from '../../services/midgard/midgardTypes'
+import { toPoolData } from '../../services/midgard/thorMidgard/utils'
 import { LastblockItem } from '../../services/thorchain/types'
-import { PoolData, PoolTableRowData } from './Pools.types'
+import { PoolTableRowData } from './Pools.types'
 
 export const stringToGetPoolsStatus = (status: string): GetPoolsStatusEnum => {
   switch (status) {

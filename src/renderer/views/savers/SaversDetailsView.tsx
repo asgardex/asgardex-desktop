@@ -17,7 +17,7 @@ import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { eqAsset, eqString } from '../../helpers/fp/eq'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { usePricePool } from '../../hooks/usePricePool'
-import { PoolDetails } from '../../services/midgard/types'
+import { PoolDetails } from '../../services/midgard/midgardTypes'
 import { SaverProviderRD } from '../../services/thorchain/types'
 import { UpdateSaverProvider } from './Savers.types'
 

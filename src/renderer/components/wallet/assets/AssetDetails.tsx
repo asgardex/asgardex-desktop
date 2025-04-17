@@ -37,7 +37,7 @@ import { FlatButton, RefreshButton, TextButton } from '../../uielements/button'
 import { ActionIconButton } from '../../uielements/button/ActionIconButton'
 import { QRCodeModal } from '../../uielements/qrCodeModal'
 import { InteractType } from '../txs/interact/Interact.types'
-import { TxsTable } from '../txs/table/TxsTable'
+import { TxsTable } from '../txs/table'
 import * as Styled from './AssetDetails.styles'
 
 export type Props = {
@@ -126,7 +126,7 @@ export const AssetDetails = (props: Props): JSX.Element => {
     const path = poolsRoutes.deposit.path({
       asset: assetToString(routeAsset),
       assetWalletType: walletType,
-      runeWalletType: DEFAULT_WALLET_TYPE
+      dexWalletType: DEFAULT_WALLET_TYPE
     })
     navigate(path)
   }, [protocol, isResumedOnMaya, isResumedOnThor, asset, walletType, navigate, setProtocol])

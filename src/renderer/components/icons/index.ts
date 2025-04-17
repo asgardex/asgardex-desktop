@@ -14,7 +14,6 @@ import ethIcon from '!file-loader!../../assets/svg/asset-eth.svg'
 import xrdIcon from '!file-loader!../../assets/svg/asset-radix.svg'
 import runeIcon from '!file-loader!../../assets/svg/asset-rune.svg'
 import solIcon from '!file-loader!../../assets/svg/asset-sol.svg'
-import xRuneIcon from '!file-loader!../../assets/svg/asset-xrune.svg'
 import cacaoIcon from '../../assets/png/asset-cacao.png'
 import dogeIcon from '../../assets/png/asset-doge.png'
 import kujiIcon from '../../assets/png/asset-kuji.png'
@@ -43,7 +42,6 @@ export {
   dogeIcon,
   ethIcon,
   runeIcon,
-  xRuneIcon,
   tgtIcon,
   CurrencyIcon,
   DownIcon,

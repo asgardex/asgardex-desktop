@@ -20,9 +20,8 @@ import { assetAmount, bn, assetToString, baseAmount, Chain, AssetType, TokenAsse
 import { AssetBTC, AssetETH, AssetRuneNative } from '../shared/utils/asset'
 import { EnabledChain } from '../shared/utils/chain'
 import { WalletType } from '../shared/wallet/types'
-import { GetPoolsPeriodEnum as GetPoolsPeriodEnumMaya } from './services/mayaMigard/types'
-import { GetPoolsPeriodEnum } from './services/midgard/types'
-import { PricePoolCurrencyWeights, PricePoolAssets, PoolData } from './views/pools/Pools.types'
+import { GetPoolsPeriodEnum, PoolData } from './services/midgard/midgardTypes'
+import { PricePoolCurrencyWeights, PricePoolAssets } from './views/pools/Pools.types'
 
 //
 // ERC-20 assets
@@ -113,7 +112,7 @@ export const AssetUSDCAVAX: TokenAsset = {
 }
 
 // AVAX.USDT mainnet
-export const AssetUSDTAVAX: TokenAsset = {
+const AssetUSDTAVAX: TokenAsset = {
   chain: AVAXChain,
   symbol: 'USDT-0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7',
   ticker: 'USDC',
@@ -135,21 +134,21 @@ export const AssetUSDCBSC: TokenAsset = {
   type: AssetType.TOKEN
 }
 
-export const AssetUSDCARB: TokenAsset = {
+const AssetUSDCARB: TokenAsset = {
   chain: ARBChain,
   symbol: 'USDC-0xaf88d065e77c8cc2239327c5edb3a432268e5831',
   ticker: 'USDC',
   type: AssetType.TOKEN
 }
 
-export const AssetCBBTC: TokenAsset = {
+const AssetCBBTC: TokenAsset = {
   chain: BASEChain,
   symbol: 'CBBTC-0XCBB7C0000AB88B473B1F5AFD9EF808440EED33BF',
   ticker: 'CBBTC',
   type: AssetType.TOKEN
 }
 
-export const AssetUSDCBASE: TokenAsset = {
+const AssetUSDCBASE: TokenAsset = {
   chain: BASEChain,
   symbol: 'USDC-0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913',
   ticker: 'USDC',
@@ -250,12 +249,6 @@ export const ZERO_BASE_AMOUNT = baseAmount(ZERO_BN)
 
 export const ZERO_POOL_DATA: PoolData = { dexBalance: ZERO_BASE_AMOUNT, assetBalance: ZERO_BASE_AMOUNT }
 
-export const RECOVERY_TOOL_URL: Record<Network, string> = {
-  testnet: 'https://testnet.thorswap.finance/pending',
-  stagenet: 'https://stagenet.thorswap.finance/pending',
-  mainnet: 'https://app.thorswap.finance/pending'
-}
-
 export const ASYM_DEPOSIT_TOOL_URL: Record<Network, string> = {
   testnet: 'https://testnet.thorswap.finance/',
   stagenet: 'https://stagenet.thorswap.finance/',
@@ -266,6 +259,6 @@ export const ASYM_DEPOSIT_TOOL_URL: Record<Network, string> = {
 export const SUPPORTED_LEDGER_APPS: Chain[] = [THORChain, BTCChain, LTCChain, DOGEChain, BCHChain, ETHChain, GAIAChain]
 
 export const DEFAULT_GET_POOLS_PERIOD = GetPoolsPeriodEnum._30d
-export const DEFAULT_GET_POOLS_PERIOD_MAYA = GetPoolsPeriodEnumMaya._30d
+export const DEFAULT_GET_POOLS_PERIOD_MAYA = GetPoolsPeriodEnum._30d
 
 export const DEFAULT_WALLET_TYPE: WalletType = WalletType.Keystore

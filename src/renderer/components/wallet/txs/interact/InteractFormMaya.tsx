@@ -56,7 +56,7 @@ import {
   NodeInfos,
   NodeInfosRD
 } from '../../../../services/mayachain/types'
-import { PoolShare, PoolSharesRD } from '../../../../services/mayaMigard/types'
+import { PoolShare, PoolSharesRD } from '../../../../services/midgard/midgardTypes'
 import { ValidatePasswordHandler, WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
 import { TxModal } from '../../../modal/tx'

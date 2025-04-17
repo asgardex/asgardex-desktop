@@ -11,11 +11,11 @@ import * as Ord from 'fp-ts/lib/Ord'
 import { PoolsWatchList } from '../../shared/api/io'
 import { ONE_RUNE_BASE_AMOUNT } from '../../shared/mock/amount'
 import { AssetRuneNative } from '../../shared/utils/asset'
-import { PoolDetails as PoolDetailsMaya } from '../services/mayaMigard/types'
-import { PoolAddress, PoolDetails } from '../services/midgard/types'
-import { getPoolDetail, toPoolData } from '../services/midgard/utils'
+import { PoolDetails as PoolDetailsMaya } from '../services/midgard/mayaMigard/types'
+import { PoolAddress, PoolData, PoolDetails, PricePool } from '../services/midgard/midgardTypes'
+import { getPoolDetail, toPoolData } from '../services/midgard/thorMidgard/utils'
 import { MimirHalt } from '../services/thorchain/types'
-import { PoolData, PoolTableRowData, PoolTableRowsData, PricePool } from '../views/pools/Pools.types'
+import { PoolTableRowData, PoolTableRowsData } from '../views/pools/Pools.types'
 import {
   getPoolTableRowData,
   getValueOfAsset1InAsset2,

@@ -4,8 +4,8 @@ import { ASSETS_MAINNET } from '../../../shared/mock/assets'
 import { AssetBTC, AssetBSC, AssetETH, AssetRuneNative } from '../../../shared/utils/asset'
 import { WalletType } from '../../../shared/wallet/types'
 import { AssetUSDC, ZERO_BASE_AMOUNT } from '../../const'
+import { PoolData, PricePool } from '../../services/midgard/midgardTypes'
 import { WalletBalance } from '../../services/wallet/types'
-import { PoolData, PricePool } from '../../views/pools/Pools.types'
 import { ordBigNumber, ordBaseAmount, ordAsset, ordWalletBalanceByAsset, ordPricePool } from './ord'
 
 describe('helpers/fp/ord', () => {

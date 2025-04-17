@@ -14,8 +14,8 @@ import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 
 import { eqAsset } from '../../renderer/helpers/fp/eq'
-import { PoolDetails as PoolDetailsMaya } from '../../renderer/services/mayaMigard/types'
-import { PoolDetails } from '../../renderer/services/midgard/types'
+import { PoolDetails as PoolDetailsMaya } from '../../renderer/services/midgard/mayaMigard/types'
+import { PoolDetails } from '../../renderer/services/midgard/midgardTypes'
 
 // Re-export to have asset definition at one place only to handle xchain-* changes easily in the future
 export {

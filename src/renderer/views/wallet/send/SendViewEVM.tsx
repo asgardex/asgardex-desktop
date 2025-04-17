@@ -19,8 +19,8 @@ import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { FeesRD, WalletBalances } from '../../../services/clients'
 import { EVMZeroAddress } from '../../../services/evm/const'
-import { PoolDetails as PoolDetailsMaya, PoolAddress as PoolAddressMaya } from '../../../services/mayaMigard/types'
-import { PoolAddress, PoolDetails } from '../../../services/midgard/types'
+import { PoolDetails as PoolDetailsMaya } from '../../../services/midgard/mayaMigard/types'
+import { PoolAddress, PoolDetails } from '../../../services/midgard/midgardTypes'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAsset, WalletBalance } from '../../../services/wallet/types'
 import * as Styled from '../Interact/InteractView.styles'
@@ -31,7 +31,7 @@ type Props = {
   emptyBalance: WalletBalance
   poolDetails: PoolDetails | PoolDetailsMaya
   oPoolAddress: O.Option<PoolAddress>
-  oPoolAddressMaya: O.Option<PoolAddressMaya>
+  oPoolAddressMaya: O.Option<PoolAddress>
 }
 
 export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {

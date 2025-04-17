@@ -78,7 +78,7 @@ import {
   IsApproveParams,
   LoadApproveFeeHandler
 } from '../../services/evm/types'
-import { PoolAddress } from '../../services/midgard/types'
+import { PoolAddress, PricePool } from '../../services/midgard/midgardTypes'
 import {
   ApiError,
   BalancesState,
@@ -90,7 +90,6 @@ import {
 } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
 import { AssetWithAmount } from '../../types/asgardex'
-import { PricePool } from '../../views/pools/Pools.types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
 import { TxModal } from '../modal/tx'
 import { DepositAsset } from '../modal/tx/extra/DepositAsset'

@@ -4,7 +4,7 @@ import { ListProps } from 'antd/lib/list'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
-import { Action } from '../../services/midgard/types'
+import { Action } from '../../services/midgard/thorMidgard/types'
 import { Button as UIButton } from '../uielements/button'
 import { TxType as TxTypeUI } from '../uielements/txType'
 

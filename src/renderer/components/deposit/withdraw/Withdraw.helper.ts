@@ -6,7 +6,7 @@ import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../const'
 import { isChainAsset, max1e8BaseAmount } from '../../../helpers/assetHelper'
 import { priceFeeAmountForAsset } from '../../../services/chain/fees/utils'
 import { WithdrawFees } from '../../../services/chain/types'
-import { PoolsDataMap } from '../../../services/midgard/types'
+import { PoolsDataMap } from '../../../services/midgard/midgardTypes'
 import { AssetWithAmount } from '../../../types/asgardex'
 
 export const getWithdrawAmounts = (

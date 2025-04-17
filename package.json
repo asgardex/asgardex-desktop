@@ -202,6 +202,7 @@
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "jest-watch-typeahead": "^2.2.2",
+    "knip": "^5.50.4",
     "lint-staged": "^13.0.0",
     "nodemon": "^2.0.16",
     "os-browserify": "^0.3.0",

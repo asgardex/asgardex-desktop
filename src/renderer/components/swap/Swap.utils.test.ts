@@ -12,7 +12,7 @@ import { AssetUSDCBSC, AssetUSDT62E, AssetUSDTERC20Testnet } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { eqAsset, eqBaseAmount } from '../../helpers/fp/eq'
 import { mockWalletBalance } from '../../helpers/test/testWalletHelper'
-import { PoolsDataMap } from '../../services/midgard/types'
+import { PoolsDataMap } from '../../services/midgard/midgardTypes'
 import {
   pickPoolAsset,
   calcRefundFee,

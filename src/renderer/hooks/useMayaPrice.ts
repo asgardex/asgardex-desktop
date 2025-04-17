@@ -8,8 +8,8 @@ import * as RxOp from 'rxjs/operators'
 import { ONE_CACAO_BASE_AMOUNT } from '../../shared/mock/amount'
 import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
 import { sequenceTOption } from '../helpers/fpHelpers'
-import { PriceRD } from '../services/mayaMigard/types'
-import { pricePoolSelector } from '../services/mayaMigard/utils'
+import { pricePoolSelector } from '../services/midgard/mayaMigard/utils'
+import { PriceRD } from '../services/midgard/midgardTypes'
 import { getValueOfRuneInAsset } from '../views/pools/Pools.utils'
 
 export const useMayaPrice = () => {

@@ -89,5 +89,3 @@ export const ShowDetails: React.FC<Props> = ({
     </>
   )
 }
-
-export default ShowDetails

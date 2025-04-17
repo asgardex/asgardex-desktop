@@ -37,8 +37,8 @@ import { usePricePool } from '../../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../../hooks/usePricePoolMaya'
 import { useProtocolLimit } from '../../../hooks/useProtocolLimit'
 import * as poolsRoutes from '../../../routes/pools'
-import { PoolAddress, PoolAssetsRD } from '../../../services/midgard/types'
-import { toPoolData } from '../../../services/midgard/utils'
+import { PoolAddress, PoolAssetsRD } from '../../../services/midgard/midgardTypes'
+import { toPoolData } from '../../../services/midgard/thorMidgard/utils'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { useApp } from '../../../store/app/hooks'
 import { Props } from './SymDepositView.types'
@@ -162,7 +162,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
         poolsRoutes.deposit.path({
           asset: isRuneNativeAsset(asset) && protocol === THORChain ? assetToString(AssetBTC) : assetToString(asset),
           assetWalletType: checkedAssetWalletType,
-          runeWalletType: checkedRuneWalletType
+          dexWalletType: checkedRuneWalletType
         }),
         {
           replace: true

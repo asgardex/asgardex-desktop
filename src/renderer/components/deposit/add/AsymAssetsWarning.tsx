@@ -12,7 +12,7 @@ import { Alert } from '../../uielements/alert'
 import { AssetData } from '../../uielements/assets/assetData'
 import { BorderButton, TextButton } from '../../uielements/button'
 
-export type AsymAssetsWarningProps = {
+type AsymAssetsWarningProps = {
   network: Network
   assets: AnyAsset[]
   loading: boolean

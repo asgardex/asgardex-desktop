@@ -40,7 +40,7 @@ import {
   SymWithdrawFees
 } from '../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../services/clients'
-import { PoolsDataMap } from '../../../services/midgard/types'
+import { PoolsDataMap } from '../../../services/midgard/midgardTypes'
 import { MimirHalt } from '../../../services/thorchain/types'
 import { ValidatePasswordHandler } from '../../../services/wallet/types'
 import { AssetWithDecimal } from '../../../types/asgardex'

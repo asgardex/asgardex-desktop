@@ -10,7 +10,7 @@ import { WalletType, WalletAddress, HDMode } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
 import { AssetWithDecimal } from '../../types/asgardex'
 import { AssetWithAmount } from '../../types/asgardex'
-import { PoolAddress } from '../midgard/types'
+import { PoolAddress } from '../midgard/midgardTypes'
 import { TxStagesRD } from '../thorchain/types'
 import { ApiError, TxHashRD } from '../wallet/types'
 

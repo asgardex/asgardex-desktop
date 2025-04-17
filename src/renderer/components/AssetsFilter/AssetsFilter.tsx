@@ -8,7 +8,7 @@ import * as P from 'fp-ts/Predicate'
 import { useIntl } from 'react-intl'
 
 import { emptyString } from '../../helpers/stringHelper'
-import { isStaticPoolFilter, PoolFilter, PoolFilters, StaticPoolFilter } from '../../services/midgard/types'
+import { isStaticPoolFilter, PoolFilter, PoolFilters, StaticPoolFilter } from '../../services/midgard/midgardTypes'
 import { InputSearch } from '../uielements/input'
 import * as Styled from './AssetsFilter.styles'
 

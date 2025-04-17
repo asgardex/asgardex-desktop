@@ -13,7 +13,7 @@ import { useParams } from 'react-router-dom'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { Deposit } from '../../components/deposit/Deposit'
+import { Deposit } from '../../components/deposit'
 import { ErrorView } from '../../components/shared/error'
 import { BackLinkButton, RefreshButton } from '../../components/uielements/button'
 import { DEFAULT_WALLET_TYPE } from '../../const'
@@ -29,8 +29,8 @@ import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useSymDepositAddresses } from '../../hooks/useSymDepositAddresses'
 import { DepositRouteParams } from '../../routes/pools/deposit'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
-import { PoolDetailRD as PoolDetailMayaRD } from '../../services/mayaMigard/types'
-import { PoolDetailRD, PoolSharesLD, PoolSharesRD } from '../../services/midgard/types'
+import { PoolDetailRD as PoolDetailMayaRD } from '../../services/midgard/mayaMigard/types'
+import { PoolDetailRD, PoolSharesLD, PoolSharesRD } from '../../services/midgard/midgardTypes'
 import { useApp } from '../../store/app/hooks'
 import { SymDepositView } from './add/SymDepositView'
 import { ShareView } from './share/ShareView'
@@ -45,7 +45,7 @@ export const DepositView: React.FC<Props> = () => {
   const {
     asset: routeAsset,
     assetWalletType: routeAssetWalletType,
-    runeWalletType: routeRuneWalletType
+    dexWalletType: routeRuneWalletType
   } = useParams<DepositRouteParams>()
 
   const { reloadLiquidityProviders: reloadLiquidityProvidersThor } = useThorchainContext()
@@ -92,7 +92,7 @@ export const DepositView: React.FC<Props> = () => {
 
   const oRouteAsset = useMemo(() => getAssetFromNullableString(routeAsset), [routeAsset])
   const assetWalletType = routeAssetWalletType || DEFAULT_WALLET_TYPE
-  const runeWalletType = routeRuneWalletType || DEFAULT_WALLET_TYPE
+  const dexWalletType = routeRuneWalletType || DEFAULT_WALLET_TYPE
 
   // if the user switches dex to thorchain we don't want THOR on the asset side
   const getAlternativeAsset = (): O.Option<Asset> => {
@@ -151,12 +151,12 @@ export const DepositView: React.FC<Props> = () => {
   const oSelectedAssetWithDecimal = useMemo(() => RD.toOption(assetWithDecimalRD), [assetWithDecimalRD])
 
   const {
-    addresses: { rune: oDexWalletAddress, asset: oAssetWalletAddress }
+    addresses: { dex: oDexWalletAddress, asset: oAssetWalletAddress }
   } = useSymDepositAddresses({
     asset: oRouteAsset,
     protocol,
     assetWalletType,
-    runeWalletType
+    dexWalletType
   })
 
   /**
@@ -166,7 +166,7 @@ export const DepositView: React.FC<Props> = () => {
   const poolShares$: PoolSharesLD = useMemo(
     () =>
       FP.pipe(
-        // re-load shares whenever selected asset or rune address has been changed
+        // re-load shares whenever selected asset or dex address has been changed
         sequenceTOption(oAssetWalletAddress, oDexWalletAddress),
         O.fold(
           () => Rx.EMPTY,
@@ -194,11 +194,11 @@ export const DepositView: React.FC<Props> = () => {
       oSelectedAssetWithDecimal,
       O.map(({ asset: { chain } }) => {
         reloadBalancesByChain(chain, assetWalletType)()
-        reloadBalancesByChain(protocol, runeWalletType)()
+        reloadBalancesByChain(protocol, dexWalletType)()
         return true
       })
     )
-  }, [assetWalletType, protocol, oSelectedAssetWithDecimal, reloadBalancesByChain, runeWalletType])
+  }, [assetWalletType, protocol, oSelectedAssetWithDecimal, reloadBalancesByChain, dexWalletType])
 
   const reloadHandler = useCallback(() => {
     reloadChainAndRuneBalances()
@@ -297,7 +297,7 @@ export const DepositView: React.FC<Props> = () => {
                     SymDepositContent={SymDepositView}
                     WidthdrawContent={WithdrawDepositView}
                     assetWalletType={assetWalletType}
-                    runeWalletType={runeWalletType}
+                    dexWalletType={dexWalletType}
                   />
                 )
               )

@@ -9,7 +9,7 @@ import { ButtonProps as UIButtonProps } from '../../uielements/button'
 import { TxTimer } from '../../uielements/txTimer'
 import * as Styled from './TxModal.styles'
 
-export type Props = {
+type Props = {
   txRD: RD.RemoteData<ApiError, boolean>
   timerValue?: number
   title: string

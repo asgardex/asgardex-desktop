@@ -10,8 +10,8 @@ import { useIntl } from 'react-intl'
 import { ProtocolSwitch } from '../../components/uielements/protocolSwitch'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
-import { PoolsState as PoolStateMaya } from '../../services/mayaMigard/types'
-import { PoolsState } from '../../services/midgard/types'
+import { PoolsState as PoolStateMaya } from '../../services/midgard/mayaMigard/types'
+import { PoolsState } from '../../services/midgard/midgardTypes'
 import { useApp } from '../../store/app/hooks'
 
 export const PlaygroundView: React.FC = (): JSX.Element => {

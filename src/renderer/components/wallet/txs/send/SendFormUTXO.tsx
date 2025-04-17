@@ -40,8 +40,8 @@ import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import { FeeRD, Memo, SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../../../services/clients'
-import { PoolDetails as PoolDetailsMaya, PoolAddress as PoolAddressMaya } from '../../../../services/mayaMigard/types'
-import { PoolAddress, PoolDetails } from '../../../../services/midgard/types'
+import { PoolDetails as PoolDetailsMaya } from '../../../../services/midgard/mayaMigard/types'
+import { PoolAddress, PoolDetails } from '../../../../services/midgard/midgardTypes'
 import { FeesWithRatesRD } from '../../../../services/utxo/types'
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
@@ -82,7 +82,7 @@ export type Props = {
   network: Network
   poolDetails: PoolDetails | PoolDetailsMaya
   oPoolAddress: O.Option<PoolAddress>
-  oPoolAddressMaya: O.Option<PoolAddressMaya>
+  oPoolAddressMaya: O.Option<PoolAddress>
   mayaScanPrice: MayaScanPriceRD
 }
 
