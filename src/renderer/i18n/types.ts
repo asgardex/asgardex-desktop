@@ -630,7 +630,7 @@ type RunePoolMessageKey =
 
 export type RunePoolMessages = { [key in RunePoolMessageKey]: string }
 
-export type HaltMessageKey =
+type HaltMessageKey =
   | 'halt.thorchain'
   | 'halt.trading'
   | 'halt.chain'

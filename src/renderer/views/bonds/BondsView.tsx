@@ -29,6 +29,7 @@ import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
+import { useUserBondProvidersContext } from '../../contexts/UserBondProvidersContext'
 import { useUserNodesContext } from '../../contexts/UserNodesContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { isUSDAsset } from '../../helpers/assetHelper'
@@ -42,11 +43,6 @@ import { useValidateAddress } from '../../hooks/useValidateAddress'
 import * as walletRoutes from '../../routes/wallet'
 import { DEFAULT_NETWORK } from '../../services/const'
 import { NodeInfo as NodeInfoMaya, Providers as MayaProviders } from '../../services/mayachain/types'
-import {
-  addBondProvidersAddress,
-  removeBondProvidersByAddress,
-  userBondProviders$
-} from '../../services/storage/userBondProviders'
 import { NodeInfo as NodeInfoThor } from '../../services/thorchain/types'
 import { balancesState$ } from '../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/wallet/const'
@@ -79,6 +75,7 @@ export const BondsView = (): JSX.Element => {
     }
   } = useMidgardMayaContext()
   const { userNodes$, addNodeAddress, removeNodeByAddress: removeNodeByAddressService } = useUserNodesContext()
+  const { userBondProviders$, addBondProvidersAddress, removeBondProvidersByAddress } = useUserBondProvidersContext()
   const { network$ } = useAppContext()
   const intl = useIntl()
   const { isPrivate } = useApp()

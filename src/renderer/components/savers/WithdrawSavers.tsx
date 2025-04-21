@@ -102,7 +102,7 @@ import { Fees, UIFeesRD } from '../uielements/fees'
 import { Slider } from '../uielements/slider'
 import * as Utils from './Saver.utils'
 
-export type WithDrawProps = {
+type WithDrawProps = {
   keystore: KeystoreState
   thorchainQuery: ThorchainQuery
   poolAssets: AnyAsset[]

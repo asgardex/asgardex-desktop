@@ -21,7 +21,7 @@ import { BorderButton } from '../uielements/button'
 import { SwitchButton } from '../uielements/button/SwitchButton'
 import * as Styled from './AppSettings.styles'
 
-export type Props = {
+type Props = {
   version: string
   locale: Locale
   changeLocale: (locale: Locale) => void

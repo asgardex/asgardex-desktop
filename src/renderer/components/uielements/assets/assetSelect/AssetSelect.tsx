@@ -10,7 +10,7 @@ import { BaseButton } from '../../button'
 import { AssetData } from '../assetData'
 import { AssetMenu } from '../assetMenu'
 
-export type Props = {
+type Props = {
   asset: AnyAsset
   assets: AnyAsset[]
   onSelect: (_: AnyAsset) => void

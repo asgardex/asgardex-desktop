@@ -1,5 +1,5 @@
 import { Network } from '@xchainjs/xchain-client'
-import { Address, AnyAsset, Asset, BaseAmount } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, Asset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
@@ -16,11 +16,6 @@ import { ApiError, KeystoreState, TxHashLD, ValidatePasswordHandler, BalancesSta
 import { AssetWithDecimal, SlipTolerance } from '../../types/asgardex'
 
 export type SwapAsset = AssetWithDecimal & { price: BigNumber }
-
-export type SwapData = {
-  readonly slip: BigNumber
-  readonly swapResult: BaseAmount
-}
 
 export type AssetsToSwap = { source: Asset; target: Asset }
 

@@ -60,14 +60,14 @@ import { validateTxAmountInput } from '../TxForm.util'
 import { DEFAULT_FEE_OPTION } from './Send.const'
 import * as Shared from './Send.shared'
 
-export type FormValues = {
+type FormValues = {
   recipient: string
   amount: BigNumber
   memo?: string
   feeRate?: number
 }
 
-export type Props = {
+type Props = {
   asset: SelectedWalletAsset
   trustedAddresses: TrustedAddresses | undefined
   balances: WalletBalances

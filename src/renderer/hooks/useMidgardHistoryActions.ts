@@ -15,8 +15,6 @@ import { observableState, triggerStream } from '../helpers/stateHelper'
 import { LoadActionsParams } from '../services/midgard/midgardTypes'
 import { ActionsPage, ActionsPageRD } from '../services/midgard/thorMidgard/types'
 
-export type UseMidgardHistoryActions = ReturnType<typeof useMidgardHistoryActions>
-
 export const useMidgardHistoryActions = (itemsPerPage = 10) => {
   const {
     service: {

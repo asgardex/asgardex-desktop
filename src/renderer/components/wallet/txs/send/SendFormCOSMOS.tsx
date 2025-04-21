@@ -49,13 +49,13 @@ import * as Styled from '../TxForm.styles'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as Shared from './Send.shared'
 
-export type FormValues = {
+type FormValues = {
   recipient: string
   amount: BigNumber
   memo?: string
 }
 
-export type Props = {
+type Props = {
   asset: SelectedWalletAsset
   trustedAddresses: TrustedAddresses | undefined
   balances: WalletBalances

@@ -2,7 +2,7 @@ import React, { createContext, useContext } from 'react'
 
 import { getAssetsData$, isAssetSupported$, chainflipSupportedChains$ } from '../services/chainflip'
 
-export type ChainFlipContextValue = {
+type ChainFlipContextValue = {
   getAssetsData$: typeof getAssetsData$
   isAssetSupported$: typeof isAssetSupported$
   chainflipSupportedChains$: typeof chainflipSupportedChains$

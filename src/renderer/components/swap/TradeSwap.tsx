@@ -122,7 +122,7 @@ const ErrorLabel: React.FC<{
   </div>
 )
 
-export type SwapProps = {
+type SwapProps = {
   thorchainQuery: ThorchainQuery
   keystore: KeystoreState
   poolAssets: AnyAsset[]

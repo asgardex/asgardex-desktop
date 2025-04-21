@@ -199,7 +199,7 @@ export const getBlocksLeftForPendingPool = (
     O.map(([newPoolCycle, lastHeight]) => newPoolCycle - (lastHeight % newPoolCycle))
   )
 }
-export const getBlocksLeftForPendingMayaPool = (
+const getBlocksLeftForPendingMayaPool = (
   lastblocks: Array<Pick<LastblockItemMaya, 'chain' | 'mayachain'>>,
   asset: AnyAsset,
   oNewPoolCycle: O.Option<number>

@@ -104,7 +104,7 @@ import { InfoIcon } from '../uielements/info'
 import { Slider } from '../uielements/slider'
 import * as Utils from './Saver.utils'
 
-export type AddProps = {
+type AddProps = {
   keystore: KeystoreState
   thorchainQuery: ThorchainQuery
   poolAssets: AnyAsset[]

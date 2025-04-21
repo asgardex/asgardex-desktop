@@ -377,11 +377,6 @@ export type TxType =
   | 'FAILED'
   | 'UNKNOWN'
 
-export interface GetPoolRequest {
-  asset: string
-  period?: GetPoolPeriodEnum
-}
-
 export interface GetPoolStatsRequest {
   asset: string
   period?: GetPoolStatsPeriodEnum
@@ -446,7 +441,7 @@ export interface GetLiquidityHistoryRequest {
   from?: number
 }
 
-export interface GetDepthHistoryRequest {
+interface GetDepthHistoryRequest {
   pool: string
   interval?: GetDepthHistoryIntervalEnum
   count?: number

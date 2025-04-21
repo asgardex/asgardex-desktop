@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
-import { Balance, Network } from '@xchainjs/xchain-client'
+import { Network } from '@xchainjs/xchain-client'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import {
@@ -55,12 +55,6 @@ import { IconButton } from '../../uielements/button/IconButton'
 import * as Styled from './AssetsTableCollapsable.styles'
 
 const { Panel } = StyledCollapse
-
-export type GetPoolPriceValueFnThor = (params: {
-  balance: Balance
-  poolDetails: PoolDetails
-  pricePool: PricePool
-}) => O.Option<BaseAmount>
 
 type Props = {
   chainBalances: Rx.Observable<ChainBalances>

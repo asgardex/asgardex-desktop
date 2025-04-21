@@ -15,8 +15,6 @@ import { observableState, triggerStream } from '../helpers/stateHelper'
 import { ActionsPage, ActionsPageRD } from '../services/midgard/mayaMigard/types'
 import { LoadActionsParams } from '../services/midgard/midgardTypes'
 
-export type UseMayaMidgardHistoryActions = ReturnType<typeof useMayaMidgardHistoryActions>
-
 export const useMayaMidgardHistoryActions = (itemsPerPage = 10) => {
   const {
     service: {

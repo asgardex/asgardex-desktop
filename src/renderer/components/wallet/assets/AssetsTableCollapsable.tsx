@@ -68,13 +68,13 @@ const { Panel } = Collapse
 
 export type AssetAction = 'send' | 'deposit'
 
-export type GetPoolPriceValueFnThor = (params: {
+type GetPoolPriceValueFnThor = (params: {
   balance: Balance
   poolDetails: PoolDetails
   pricePool: PricePool
 }) => O.Option<BaseAmount>
 
-export type GetPoolPriceValueFnMaya = (params: {
+type GetPoolPriceValueFnMaya = (params: {
   balance: Balance
   poolDetails: PoolDetailsMaya
   pricePool: PricePool

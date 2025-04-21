@@ -76,7 +76,7 @@ import * as H from './Interact.helpers'
 import * as Styled from './Interact.styles'
 import { InteractType } from './Interact.types'
 
-export type FormValues = {
+type FormValues = {
   memo: string
   mayaAddress: string
   providerAddress: string

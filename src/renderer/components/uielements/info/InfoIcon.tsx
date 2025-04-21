@@ -3,7 +3,7 @@ import clsx from 'clsx'
 
 import { Tooltip } from '../common/Common.styles'
 
-export type Color = 'primary' | 'warning' | 'error' | 'neutral'
+type Color = 'primary' | 'warning' | 'error' | 'neutral'
 
 export const iconColor: Record<Color, string> = {
   primary: 'text-turquoise',

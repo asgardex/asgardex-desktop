@@ -1,7 +1,7 @@
 import * as FP from 'fp-ts/lib/function'
 import { Observable, BehaviorSubject } from 'rxjs'
 
-export type ObservableState<T> = {
+type ObservableState<T> = {
   get$: Observable<T>
   get: () => T
   set: (value: T) => void
@@ -40,7 +40,7 @@ export const observableState = <T>(initial: T): ObservableState<T> => {
 
 export type TriggerStream$ = Observable<string>
 
-export type TriggerStream = {
+type TriggerStream = {
   stream$: TriggerStream$
   trigger: FP.Lazy<void>
 }

@@ -44,13 +44,8 @@ export type AssetWithDecimal = {
   asset: AnyAsset
   decimal: number
 }
-
-export type AssetsWithDecimal = AssetWithDecimal[]
-
 export type DepositType = 'sym' | 'asym'
 export type WithdrawType = 'sym' | 'asym'
-
-export const MAX_VALUE = 100
 
 export type TxStatus = {
   /**

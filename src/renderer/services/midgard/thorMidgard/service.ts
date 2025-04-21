@@ -168,7 +168,7 @@ const healthStatus$: MidgardStatusLD = FP.pipe(
   liveData.map((_) => true)
 )
 
-export type MidgardService = {
+type MidgardService = {
   networkInfo$: NetworkInfoLD
   reloadNetworkInfo: FP.Lazy<void>
   setSelectedPoolAsset: (p: SelectedPoolAsset) => void

@@ -39,7 +39,7 @@ type CustomInputProps = {
   typevalue?: InputType
 }
 
-export type InputProps = CustomInputProps & AI.InputProps
+type InputProps = CustomInputProps & AI.InputProps
 
 const inputStyle = css<InputProps>`
   height: ${({ size = 'middle' }) => sizes[size]};

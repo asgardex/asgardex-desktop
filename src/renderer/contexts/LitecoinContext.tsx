@@ -19,7 +19,7 @@ import {
   explorerUrl$
 } from '../services/litecoin'
 
-export type LitecoinContextValue = {
+type LitecoinContextValue = {
   client$: typeof client$
   clientState$: typeof clientState$
   address$: typeof address$

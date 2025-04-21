@@ -41,7 +41,7 @@ import {
   reloadTradeAccount
 } from '../services/thorchain'
 
-export type ThorchainContextValue = {
+type ThorchainContextValue = {
   client$: typeof client$
   clientState$: typeof clientState$
   clientUrl$: typeof clientUrl$

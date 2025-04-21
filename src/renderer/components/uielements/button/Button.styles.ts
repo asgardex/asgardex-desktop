@@ -206,7 +206,7 @@ const getThemeValue = (color: ButtonColor, typeValue: ButtonType) => {
   return themValue
 }
 
-export type ButtonWrapperProps = {
+type ButtonWrapperProps = {
   round: ButtonRound
   color: ButtonColor
   sizevalue: ButtonSize

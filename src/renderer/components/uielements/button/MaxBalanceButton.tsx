@@ -22,7 +22,7 @@ export type ComponentProps = {
   hidePrivateData?: boolean
 }
 
-export type Props = ComponentProps & Omit<ButtonProps, 'onClick'>
+type Props = ComponentProps & Omit<ButtonProps, 'onClick'>
 
 export const MaxBalanceButton: React.FC<Props> = (props): JSX.Element => {
   const {

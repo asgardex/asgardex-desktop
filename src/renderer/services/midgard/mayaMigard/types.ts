@@ -145,7 +145,7 @@ export type Action = {
   slip?: number
 }
 
-export type Actions = Action[]
+type Actions = Action[]
 
 export type ActionsPage = {
   total: number

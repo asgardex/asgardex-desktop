@@ -27,7 +27,7 @@ import {
 } from '../services/arb'
 import { getStorageState$, modifyStorage } from '../services/storage/common'
 
-export type ArbContextValue = {
+type ArbContextValue = {
   client$: typeof client$
   clientState$: typeof clientState$
   txs$: typeof txs$

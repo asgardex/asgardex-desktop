@@ -4,7 +4,7 @@ import { Switch } from '@headlessui/react'
 import clsx from 'clsx'
 import * as FP from 'fp-ts/lib/function'
 
-export type Props = {
+type Props = {
   disabled?: boolean
   active?: boolean
   onChange?: (active: boolean) => void

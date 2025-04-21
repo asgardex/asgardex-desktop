@@ -73,7 +73,7 @@ import { validateTxAmountInput } from '../TxForm.util'
 import { DEFAULT_FEE_OPTION } from './Send.const'
 import * as Shared from './Send.shared'
 
-export type FormValues = {
+type FormValues = {
   recipient: Address
   amount: BigNumber
   memo?: string

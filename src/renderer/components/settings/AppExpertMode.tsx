@@ -16,7 +16,7 @@ import { TextButton } from '../uielements/button'
 import { SwitchButton } from '../uielements/button/SwitchButton'
 import EditableUrl from './EditableUrl'
 
-export type Props = {
+type Props = {
   midgardUrl: MidgardUrlRD
   midgardMayaUrl: MidgardMayaUrlRD
   thornodeRpcUrl: string

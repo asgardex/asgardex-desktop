@@ -43,7 +43,7 @@ import type { MimirHalt } from '../../services/thorchain/types'
 import * as Shared from '../pools/PoolsOverview.shared'
 import type { SaversTableRowData, SaversTableRowsData } from './Savers.types'
 
-export type Props = {
+type Props = {
   haltedChains: Chain[]
   mimirHalt: MimirHalt
   protocol: Chain

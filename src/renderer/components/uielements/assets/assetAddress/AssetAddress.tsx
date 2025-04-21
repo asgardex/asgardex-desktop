@@ -6,7 +6,7 @@ import { Address, AnyAsset } from '@xchainjs/xchain-util'
 import { AssetIcon, Size } from '../assetIcon'
 import * as Styled from './AssetAddress.styles'
 
-export type Props = {
+type Props = {
   asset: AnyAsset
   address: Address
   network: Network

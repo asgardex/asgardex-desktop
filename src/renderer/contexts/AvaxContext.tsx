@@ -27,7 +27,7 @@ import {
 } from '../services/avax'
 import { getStorageState$, modifyStorage } from '../services/storage/common'
 
-export type AvaxContextValue = {
+type AvaxContextValue = {
   client$: typeof client$
   clientState$: typeof clientState$
   txs$: typeof txs$

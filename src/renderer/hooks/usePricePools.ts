@@ -8,8 +8,6 @@ import { useMidgardContext } from '../contexts/MidgardContext'
 import { liveData } from '../helpers/rx/liveData'
 import { PricePools } from '../services/midgard/midgardTypes'
 
-export type UsePricePoolsResult = ReturnType<typeof usePricePools>
-
 export const usePricePools = () => {
   const {
     service: {
