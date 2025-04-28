@@ -9,9 +9,9 @@ import { useIntl } from 'react-intl'
 
 import { WalletAddress, WalletType } from '../../../shared/wallet/types'
 import { eqAddress, eqOAddress } from '../../helpers/fp/eq'
-import { PoolDetailRD as PoolDetailMayaRD } from '../../services/mayaMigard/types'
-import { PoolDetailRD, PoolShareRD, PoolSharesRD } from '../../services/midgard/types'
-import { getSharesByAssetAndType } from '../../services/midgard/utils'
+import { PoolDetailRD as PoolDetailMayaRD } from '../../services/midgard/mayaMigard/types'
+import { PoolDetailRD, PoolShareRD, PoolSharesRD } from '../../services/midgard/midgardTypes'
+import { getSharesByAssetAndType } from '../../services/midgard/thorMidgard/utils'
 import { MimirHalt } from '../../services/thorchain/types'
 import { KeystoreState } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
@@ -45,7 +45,7 @@ export type Props = {
   dexWalletAddress: WalletAddress
   assetWalletAddress: WalletAddress
   assetWalletType: WalletType
-  runeWalletType: WalletType
+  dexWalletType: WalletType
 }
 
 export const Deposit: React.FC<Props> = (props) => {
@@ -63,7 +63,7 @@ export const Deposit: React.FC<Props> = (props) => {
     dexWalletAddress,
     assetWalletAddress,
     assetWalletType,
-    runeWalletType
+    dexWalletType
   } = props
 
   const { asset } = assetWD
@@ -120,7 +120,7 @@ export const Deposit: React.FC<Props> = (props) => {
             haltedChains={haltedChains}
             mimirHalt={mimirHalt}
             assetWalletType={assetWalletType}
-            dexWalletType={runeWalletType}
+            dexWalletType={dexWalletType}
           />
         )
       },
@@ -153,7 +153,7 @@ export const Deposit: React.FC<Props> = (props) => {
       haltedChains,
       mimirHalt,
       assetWalletType,
-      runeWalletType,
+      dexWalletType,
       hasSymPoolShare,
       WidthdrawContent,
       symPoolShare

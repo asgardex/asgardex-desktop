@@ -29,7 +29,7 @@ import { InputSearch } from '../uielements/input'
 import { Label } from '../uielements/label'
 import { HeadlessModal } from '../uielements/modal/Modal'
 
-export type Props = {
+type Props = {
   open: boolean
   onClose: FP.Lazy<void>
 }

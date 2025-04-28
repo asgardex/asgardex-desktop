@@ -23,12 +23,12 @@ export const useSymDepositAddresses = ({
   asset: oAsset,
   protocol,
   assetWalletType,
-  runeWalletType
+  dexWalletType
 }: {
   asset: O.Option<AnyAsset>
   protocol: Chain
   assetWalletType: WalletType
-  runeWalletType: WalletType
+  dexWalletType: WalletType
 }) => {
   const { addressByChain$ } = useChainContext()
 
@@ -68,7 +68,7 @@ export const useSymDepositAddresses = ({
 
   const symDepositAddresses = {
     asset: isLedgerWallet(assetWalletType) ? oAssetLedgerWalletAddress : oAssetWalletAddress,
-    rune: isLedgerWallet(runeWalletType) ? runeLedgerAddress : oDexWalletAddress
+    dex: isLedgerWallet(dexWalletType) ? runeLedgerAddress : oDexWalletAddress
   }
 
   return {

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
-import { Balance, Network } from '@xchainjs/xchain-client'
+import { Network } from '@xchainjs/xchain-client'
 import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import {
@@ -39,11 +39,10 @@ import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import * as poolsRoutes from '../../../routes/pools'
 import { INITIAL_WITHDRAW_STATE } from '../../../services/chain/const'
 import { TradeWithdrawParams, WithdrawState } from '../../../services/chain/types'
-import { PoolsDataMap } from '../../../services/midgard/types'
+import { PoolsDataMap, PricePool } from '../../../services/midgard/midgardTypes'
 import { MimirHaltRD, TradeAccount } from '../../../services/thorchain/types'
 import { ChainBalances, SelectedWalletAsset, WalletBalance, WalletBalances } from '../../../services/wallet/types'
 import { walletTypeToI18n } from '../../../services/wallet/util'
-import { PricePool } from '../../../views/pools/Pools.types'
 import { ConfirmationModal, LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../modal/confirmation'
 import { TxModal } from '../../modal/tx'
 import { DepositAsset } from '../../modal/tx/extra/DepositAsset'
@@ -56,12 +55,6 @@ import { IconButton } from '../../uielements/button/IconButton'
 import * as Styled from './AssetsTableCollapsable.styles'
 
 const { Panel } = StyledCollapse
-
-export type GetPoolPriceValueFnThor = (params: {
-  balance: Balance
-  poolDetails: PoolDetails
-  pricePool: PricePool
-}) => O.Option<BaseAmount>
 
 type Props = {
   chainBalances: Rx.Observable<ChainBalances>

@@ -37,13 +37,13 @@ import { useNetwork } from '../../hooks/useNetwork'
 import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
 import { useSynthConstants } from '../../hooks/useSynthConstants'
 import * as saversRoutes from '../../routes/pools/savers'
-import { PoolsState as PoolStateMaya, PoolDetails as PoolDetailsMaya } from '../../services/mayaMigard/types'
-import { GetPoolsPeriodEnum, PoolDetails, PoolsState } from '../../services/midgard/types'
+import { PoolsState as PoolStateMaya, PoolDetails as PoolDetailsMaya } from '../../services/midgard/mayaMigard/types'
+import { GetPoolsPeriodEnum, PoolDetails, PoolsState } from '../../services/midgard/midgardTypes'
 import type { MimirHalt } from '../../services/thorchain/types'
 import * as Shared from '../pools/PoolsOverview.shared'
 import type { SaversTableRowData, SaversTableRowsData } from './Savers.types'
 
-export type Props = {
+type Props = {
   haltedChains: Chain[]
   mimirHalt: MimirHalt
   protocol: Chain

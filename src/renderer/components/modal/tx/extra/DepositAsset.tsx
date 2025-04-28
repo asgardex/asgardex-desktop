@@ -7,7 +7,7 @@ import * as O from 'fp-ts/lib/Option'
 import * as Styled from './Common.styles'
 import * as C from './Common.types'
 
-export type Props = {
+type Props = {
   source: O.Option<C.AssetData>
   stepDescription: string
   network: Network

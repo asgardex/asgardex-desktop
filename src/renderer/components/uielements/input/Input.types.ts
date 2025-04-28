@@ -4,8 +4,6 @@ export type Color = 'primary' | 'success' | 'warning' | 'error'
 
 export type InputType = 'normal' | 'ghost'
 
-export type InputSecurity = 'normal' | 'password'
-
 type FontSetting = {
   size: string
   spacing: string

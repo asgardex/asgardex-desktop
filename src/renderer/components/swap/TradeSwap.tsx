@@ -84,8 +84,8 @@ import {
   SwapTxState
 } from '../../services/chain/types'
 import { AddressValidationAsync, GetExplorerTxUrl, OpenExplorerTxUrl } from '../../services/clients'
-import { PoolAddress, PoolDetails, PoolsDataMap } from '../../services/midgard/types'
-import { getPoolDetail } from '../../services/midgard/utils'
+import { PoolAddress, PoolDetails, PoolsDataMap, PricePool } from '../../services/midgard/midgardTypes'
+import { getPoolDetail } from '../../services/midgard/thorMidgard/utils'
 import { userChains$ } from '../../services/storage/userChains'
 import { TradeAccount, TradeAccountRD } from '../../services/thorchain/types'
 import {
@@ -97,7 +97,6 @@ import {
 } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
 import { AssetWithAmount, SlipTolerance } from '../../types/asgardex'
-import { PricePool } from '../../views/pools/Pools.types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
 import { TxModal } from '../modal/tx'
 import { SwapAssets } from '../modal/tx/extra'
@@ -123,7 +122,7 @@ const ErrorLabel: React.FC<{
   </div>
 )
 
-export type SwapProps = {
+type SwapProps = {
   thorchainQuery: ThorchainQuery
   keystore: KeystoreState
   poolAssets: AnyAsset[]

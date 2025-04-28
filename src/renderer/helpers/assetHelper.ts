@@ -1,11 +1,6 @@
-import { AssetAETH, AssetARB } from '@xchainjs/xchain-arbitrum'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetDASH } from '@xchainjs/xchain-dash'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
-import { AssetUSK } from '@xchainjs/xchain-kujira'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
-import { AssetXRD } from '@xchainjs/xchain-radix'
-import { SOLAsset } from '@xchainjs/xchain-solana'
 import {
   Address,
   AnyAsset,
@@ -38,7 +33,13 @@ import {
   AssetMaya,
   AssetKUJI,
   AssetBETH,
-  ADAAsset
+  ADAAsset,
+  AssetARB,
+  AssetAETH,
+  AssetDASH,
+  SOLAsset,
+  AssetUSK,
+  AssetXRD
 } from '../../shared/utils/asset'
 import { isSupportedChain } from '../../shared/utils/chain'
 import { AssetTGTERC20, DEFAULT_PRICE_ASSETS, USD_PRICE_ASSETS } from '../const'
@@ -65,9 +66,6 @@ import { sequenceTOption } from './fpHelpers'
  *
  * */
 export const THORCHAIN_DECIMAL = 8
-
-export const isAssetInMayachainPools = (asset: AnyAsset): boolean =>
-  eqAsset.equals(asset, AssetCacao || AssetDASH || AssetKUJI || AssetXRD)
 
 /**
  * Checks whether an asset is an RuneNative asset
@@ -230,7 +228,7 @@ export const iconUrlInERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
 /**
  * Checks whether an ERC20 asset is white listed or not
  */
-export const assetInARBERC20Whitelist = (asset: AnyAsset): boolean =>
+const assetInARBERC20Whitelist = (asset: AnyAsset): boolean =>
   FP.pipe(
     ARB_TOKEN_WHITELIST,
     A.map(({ asset }) => asset),
@@ -250,7 +248,7 @@ export const iconUrlInARBERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
 /**
  * Checks whether an ERC20 asset is white listed or not
  */
-export const assetInAVAXERC20Whitelist = (asset: AnyAsset): boolean =>
+const assetInAVAXERC20Whitelist = (asset: AnyAsset): boolean =>
   FP.pipe(
     AVAX_TOKEN_WHITELIST,
     A.map(({ asset }) => asset),
@@ -270,7 +268,7 @@ export const iconUrlInAVAXERC20Whitelist = (asset: AnyAsset): O.Option<string> =
 /**
  * Checks whether an ERC20 asset is white listed or not
  */
-export const assetInBSCERC20Whitelist = (asset: AnyAsset): boolean =>
+const assetInBSCERC20Whitelist = (asset: AnyAsset): boolean =>
   FP.pipe(
     BSC_TOKEN_WHITELIST,
     A.map(({ asset }) => asset),

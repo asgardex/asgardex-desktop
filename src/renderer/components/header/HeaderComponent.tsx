@@ -18,12 +18,21 @@ import { useThemeContext } from '../../contexts/ThemeContext'
 import * as appRoutes from '../../routes/app'
 import * as poolsRoutes from '../../routes/pools'
 import * as walletRoutes from '../../routes/wallet'
-import { MidgardStatusRD, MidgardUrlRD, PriceRD, SelectedPricePoolAsset } from '../../services/midgard/types'
-import { MidgardStatusRD as MidgardStatusMayaRD, MidgardUrlRD as MidgardMayaUrlRD } from '../../services/midgard/types'
+import {
+  MidgardStatusRD,
+  MidgardUrlRD,
+  PricePools,
+  PriceRD,
+  SelectedPricePoolAsset
+} from '../../services/midgard/midgardTypes'
+import {
+  MidgardStatusRD as MidgardStatusMayaRD,
+  MidgardUrlRD as MidgardMayaUrlRD
+} from '../../services/midgard/midgardTypes'
 import { MimirRD } from '../../services/thorchain/types'
 import { ChangeKeystoreWalletHandler, KeystoreState, KeystoreWalletsUI } from '../../services/wallet/types'
 import { isLocked } from '../../services/wallet/util'
-import { PricePoolAsset, PricePoolAssets, PricePools } from '../../views/pools/Pools.types'
+import { PricePoolAsset, PricePoolAssets } from '../../views/pools/Pools.types'
 import * as Styled from './HeaderComponent.styles'
 import { HeaderLock } from './lock/'
 import { HeaderLockMobile } from './lock/HeaderLockMobile'

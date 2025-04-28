@@ -1,4 +1,4 @@
-import { CaretRightOutlined, EyeInvisibleOutlined } from '@ant-design/icons'
+import { CaretRightOutlined } from '@ant-design/icons'
 import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
@@ -130,17 +130,6 @@ export const ExpandIcon = styled(CaretRightOutlined)`
   svg {
     color: ${palette('primary', 2)};
   }
-`
-
-export const HideIcon = styled(EyeInvisibleOutlined)`
-  svg {
-    color: ${palette('gray', 2)};
-  }
-  /* TODO (@Veado)
-    Change to pointer if hide asset feature is implemented
-    see https://github.com/thorchain/asgardex-electron/issues/476
-  */
-  cursor: pointer;
 `
 
 const ICON_SIZE = 16

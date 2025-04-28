@@ -8,7 +8,7 @@ import * as O from 'fp-ts/Option'
 import { useIntl } from 'react-intl'
 
 import { OpenExplorerTxUrl } from '../../services/clients'
-import { Action, ActionsPage, ActionsPageRD } from '../../services/midgard/types'
+import { Action, ActionsPage, ActionsPageRD } from '../../services/midgard/thorMidgard/types'
 import { ErrorView } from '../shared/error'
 import { Button } from '../uielements/button'
 import { Pagination } from '../uielements/pagination'

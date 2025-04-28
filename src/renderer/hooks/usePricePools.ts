@@ -6,9 +6,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { useMidgardContext } from '../contexts/MidgardContext'
 import { liveData } from '../helpers/rx/liveData'
-import { PricePools } from '../views/pools/Pools.types'
-
-export type UsePricePoolsResult = ReturnType<typeof usePricePools>
+import { PricePools } from '../services/midgard/midgardTypes'
 
 export const usePricePools = () => {
   const {

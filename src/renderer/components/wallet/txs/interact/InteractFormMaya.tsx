@@ -56,7 +56,7 @@ import {
   NodeInfos,
   NodeInfosRD
 } from '../../../../services/mayachain/types'
-import { PoolShare, PoolSharesRD } from '../../../../services/mayaMigard/types'
+import { PoolShare, PoolSharesRD } from '../../../../services/midgard/midgardTypes'
 import { ValidatePasswordHandler, WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
 import { TxModal } from '../../../modal/tx'
@@ -76,7 +76,7 @@ import * as H from './Interact.helpers'
 import * as Styled from './Interact.styles'
 import { InteractType } from './Interact.types'
 
-export type FormValues = {
+type FormValues = {
   memo: string
   mayaAddress: string
   providerAddress: string

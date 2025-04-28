@@ -75,8 +75,8 @@ import {
   IsApproveParams,
   LoadApproveFeeHandler
 } from '../../../services/evm/types'
-import { PoolDetails as PoolDetailsMaya } from '../../../services/mayaMigard/types'
-import { PoolAddress, PoolDetails, PoolsDataMap } from '../../../services/midgard/types'
+import { PoolDetails as PoolDetailsMaya } from '../../../services/midgard/mayaMigard/types'
+import { PoolAddress, PoolData, PoolDetails, PoolsDataMap, PricePool } from '../../../services/midgard/midgardTypes'
 import {
   FailedAssets,
   LiquidityProviderAssetMismatch,
@@ -97,7 +97,6 @@ import {
 } from '../../../services/wallet/types'
 import { useApp } from '../../../store/app/hooks'
 import { AssetWithAmount, AssetsWithAmount1e8, AssetWithDecimal, AssetWithAmount1e8 } from '../../../types/asgardex'
-import { PoolData, PricePool } from '../../../views/pools/Pools.types'
 import { ConfirmationModal, LedgerConfirmationModal } from '../../modal/confirmation'
 import { WalletPasswordConfirmationModal } from '../../modal/confirmation'
 import { TxModal } from '../../modal/tx'

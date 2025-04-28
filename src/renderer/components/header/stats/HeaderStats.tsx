@@ -10,7 +10,7 @@ import * as FP from 'fp-ts/lib/function'
 import { abbreviateNumber } from '../../../helpers/numberHelper'
 import { loadingString } from '../../../helpers/stringHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
-import { PriceRD } from '../../../services/midgard/types'
+import { PriceRD } from '../../../services/midgard/midgardTypes'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import * as Styled from './HeaderStats.styles'
 

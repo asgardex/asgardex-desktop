@@ -20,7 +20,7 @@ const fontSizes: FontSizes = {
   xsmall: 5
 }
 
-export const sizes: Sizes = {
+const sizes: Sizes = {
   large: 72,
   big: 55,
   normal: 40,
@@ -28,7 +28,7 @@ export const sizes: Sizes = {
   xsmall: 20
 }
 
-export const borders: Sizes = {
+const borders: Sizes = {
   large: 6,
   big: 5,
   normal: 4,
@@ -72,15 +72,6 @@ export const IconWrapper = styled.div<IconProps>`
 export const LoadingOutlined = styled(ALoadingOutlined)`
   width: 100%;
   height: 100%;
-`
-
-export const IconBG = styled.div<IconProps>`
-  width: ${({ size, isNotNative }) => `${sizes[size] - (isNotNative ? 2 : 0) * borders[size]}px`};
-  height: ${({ size, isNotNative }) => `${sizes[size] - (isNotNative ? 2 : 0) * borders[size]}px`};
-  position: absolute;
-  left: 0;
-  top: 0;
-  background-color: ${palette('gray', 1)};
 `
 
 export const IconFallback = styled.div<IconProps>`

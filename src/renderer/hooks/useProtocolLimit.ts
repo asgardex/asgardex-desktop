@@ -8,7 +8,7 @@ import { useMidgardContext } from '../contexts/MidgardContext'
 import { THORCHAIN_DECIMAL } from '../helpers/assetHelper'
 import { liveData } from '../helpers/rx/liveData'
 
-export type Limit = {
+type Limit = {
   reached: boolean
   totalActiveBondAmount: BaseAmount
   totalPooledRuneAmount: BaseAmount

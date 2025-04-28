@@ -232,7 +232,7 @@ export const getRunePoolMemo = ({ action, bps, network }: { action: Action; bps:
   return mkMemo(memoParts)
 }
 
-export type AssetCodes = {
+type AssetCodes = {
   [key: string]: string
 }
 
@@ -249,7 +249,7 @@ const assetCodes: AssetCodes = {
   'BASE.ETH': 'f'
 }
 
-export const shortenMemo = (input: string): string => {
+const shortenMemo = (input: string): string => {
   // Extract the asset identifier from the input string
   const assetPattern = /:([^:]+):/
   const match = assetPattern.exec(input)

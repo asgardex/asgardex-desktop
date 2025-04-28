@@ -37,7 +37,7 @@ import {
   reloadMayanodePools
 } from '../services/mayachain'
 
-export type MayachainContextValue = {
+type MayachainContextValue = {
   client$: typeof client$
   clientState$: typeof clientState$
   clientUrl$: typeof clientUrl$

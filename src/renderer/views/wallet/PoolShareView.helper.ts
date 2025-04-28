@@ -10,15 +10,17 @@ import { ZERO_BASE_AMOUNT } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { isPoolDetails } from '../../helpers/poolHelper'
 import * as ShareHelpers from '../../helpers/poolShareHelper'
-import { PoolDetails as PoolDetailsMaya, PoolShares as PoolSharesMaya } from '../../services/mayaMigard/types'
-import { getPoolDetail as getPoolDetailMaya, toPoolData as toPoolDataMaya } from '../../services/mayaMigard/utils'
-import { PoolDetails, PoolShares } from '../../services/midgard/types'
-import { getPoolDetail, toPoolData } from '../../services/midgard/utils'
-import { PoolData } from '../pools/Pools.types'
+import { PoolDetails as PoolDetailsMaya } from '../../services/midgard/mayaMigard/types'
+import {
+  getPoolDetail as getPoolDetailMaya,
+  toPoolData as toPoolDataMaya
+} from '../../services/midgard/mayaMigard/utils'
+import { PoolData, PoolDetails, PoolShares } from '../../services/midgard/midgardTypes'
+import { getPoolDetail, toPoolData } from '../../services/midgard/thorMidgard/utils'
 import { getValueOfAsset1InAsset2, getValueOfRuneInAsset } from '../pools/Pools.utils'
 
 export const getSharesTotal = (
-  shares: PoolShares | PoolSharesMaya,
+  shares: PoolShares,
   poolDetails: PoolDetails | PoolDetailsMaya,
   pricePoolData: PoolData,
   protocol: Chain
@@ -55,7 +57,7 @@ export const getSharesTotal = (
   )
 
 export const getPoolShareTableData = (
-  shares: PoolShares | PoolSharesMaya,
+  shares: PoolShares,
   poolDetails: PoolDetails | PoolDetailsMaya,
   pricePoolData: PoolData,
   protocol: Chain

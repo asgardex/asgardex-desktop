@@ -43,7 +43,7 @@ const AssetIconAmount: React.FC<AssetIconAmountProps> = (props): JSX.Element => 
   )
 }
 
-export type PendingAssetsProps = {
+type PendingAssetsProps = {
   network: Network
   pendingAssets: AssetsWithAmount1e8
   failedAssets: AssetsWithAmount1e8

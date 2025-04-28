@@ -6,7 +6,7 @@ import * as FP from 'fp-ts/function'
 import { Color, Size } from './Button.types'
 import { TextButton } from './TextButton'
 
-export type Props = {
+type Props = {
   color?: Color
   size?: Size
   clickHandler?: (checked: boolean) => void

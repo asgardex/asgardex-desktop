@@ -1,3 +1,9 @@
+# 1.30.4 (2025-3-28)
+
+## Update/Fixes
+
+- Update midgard mayachain endpoint URL [#657](https://github.com/asgardex/asgardex-desktop/pull/658)
+
 # 1.30.3 (2025-3-28)
 
 ## Add

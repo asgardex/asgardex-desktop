@@ -39,7 +39,7 @@ type CustomInputProps = {
   typevalue?: InputType
 }
 
-export type InputProps = CustomInputProps & AI.InputProps
+type InputProps = CustomInputProps & AI.InputProps
 
 const inputStyle = css<InputProps>`
   height: ${({ size = 'middle' }) => sizes[size]};
@@ -94,16 +94,6 @@ const inputStyle = css<InputProps>`
  */
 export const Input = styled(A.Input)<InputProps>`
   ${inputStyle}
-`
-
-export const InputNumber = styled(A.InputNumber)<InputProps>`
-  ${inputStyle}
-  width: 100%;
-
-  & .ant-input-number-input,
-  & .ant-input-number-input-wrap {
-    height: 100%;
-  }
 `
 
 /**

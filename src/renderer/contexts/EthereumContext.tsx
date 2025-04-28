@@ -27,7 +27,7 @@ import {
 } from '../services/ethereum'
 import { getStorageState$, modifyStorage } from '../services/storage/common'
 
-export type EthereumContextValue = {
+type EthereumContextValue = {
   client$: typeof client$
   clientState$: typeof clientState$
   txs$: typeof txs$

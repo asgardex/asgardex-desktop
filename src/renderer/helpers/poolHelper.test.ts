@@ -16,10 +16,9 @@ import { PoolsWatchList } from '../../shared/api/io'
 import { ASSETS_MAINNET } from '../../shared/mock/assets'
 import { AssetRuneNative, AssetBSC } from '../../shared/utils/asset'
 import { AssetUSDTBSC } from '../const'
-import { GetPoolsStatusEnum, PoolDetails } from '../services/midgard/types'
-import { toPoolData } from '../services/midgard/utils'
+import { GetPoolsStatusEnum, PoolData, PoolDetails, PricePool } from '../services/midgard/midgardTypes'
+import { toPoolData } from '../services/midgard/thorMidgard/utils'
 import { DEFAULT_MIMIR_HALT } from '../services/thorchain/const'
-import { PoolData, PricePool } from '../views/pools/Pools.types'
 import {
   disableAllActions,
   disablePoolActions,

@@ -6,17 +6,17 @@ import * as FP from 'fp-ts/function'
 import { useIntl } from 'react-intl'
 
 import { CheckMayanodeNodeUrlHandler, CheckMayanodeRpcUrlHandler } from '../../services/mayachain/types'
-import { CheckMidgardUrlHandler, MidgardUrlRD } from '../../services/midgard/types'
+import { CheckMidgardUrlHandler, MidgardUrlRD } from '../../services/midgard/midgardTypes'
 import {
   CheckMidgardUrlHandler as CheckMidgardMayaUrlHandler,
   MidgardUrlRD as MidgardMayaUrlRD
-} from '../../services/midgard/types'
+} from '../../services/midgard/midgardTypes'
 import { CheckThornodeNodeUrlHandler, CheckThornodeRpcUrlHandler } from '../../services/thorchain/types'
 import { TextButton } from '../uielements/button'
 import { SwitchButton } from '../uielements/button/SwitchButton'
 import EditableUrl from './EditableUrl'
 
-export type Props = {
+type Props = {
   midgardUrl: MidgardUrlRD
   midgardMayaUrl: MidgardMayaUrlRD
   thornodeRpcUrl: string
@@ -201,7 +201,7 @@ export const AppExpertMode = (props: Props): JSX.Element => {
           )}>
           <SubSection title="Midgard Mayachain">
             <EditableUrl
-              className="w-full xl:w-3/4"
+              className="w-full"
               url={midgardMayaUrl}
               onChange={onChangeMidgardMayaUrl}
               loading={RD.isPending(midgardMayaUrlRD)}

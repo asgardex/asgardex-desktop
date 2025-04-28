@@ -77,7 +77,7 @@ import {
   IsApproveParams,
   LoadApproveFeeHandler
 } from '../../services/evm/types'
-import { PoolAddress } from '../../services/midgard/types'
+import { PoolAddress, PricePool } from '../../services/midgard/midgardTypes'
 import { SaverProviderLD } from '../../services/thorchain/types'
 import {
   KeystoreState,
@@ -89,7 +89,6 @@ import {
   TxHashRD
 } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
-import { PricePool } from '../../views/pools/Pools.types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
 import { TxModal } from '../modal/tx'
 import { DepositAsset } from '../modal/tx/extra/DepositAsset'
@@ -103,7 +102,7 @@ import { Fees, UIFeesRD } from '../uielements/fees'
 import { Slider } from '../uielements/slider'
 import * as Utils from './Saver.utils'
 
-export type WithDrawProps = {
+type WithDrawProps = {
   keystore: KeystoreState
   thorchainQuery: ThorchainQuery
   poolAssets: AnyAsset[]

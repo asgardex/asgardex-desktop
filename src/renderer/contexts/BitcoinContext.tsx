@@ -15,13 +15,10 @@ import {
   reloadFeesWithRates,
   subscribeTx,
   resetTx,
-  ledgerTxRD$,
-  pushLedgerTx,
-  resetLedgerTx,
   explorerUrl$
 } from '../services/bitcoin'
 
-export type BitcoinContextValue = {
+type BitcoinContextValue = {
   client$: typeof client$
   clientState$: typeof clientState$
   address$: typeof address$
@@ -36,9 +33,6 @@ export type BitcoinContextValue = {
   txRD$: typeof txRD$
   subscribeTx: typeof subscribeTx
   resetTx: typeof resetTx
-  ledgerTxRD$: typeof ledgerTxRD$
-  pushLedgerTx: typeof pushLedgerTx
-  resetLedgerTx: typeof resetLedgerTx
   explorerUrl$: typeof explorerUrl$
 }
 
@@ -57,9 +51,6 @@ const initialContext: BitcoinContextValue = {
   txRD$,
   subscribeTx,
   resetTx,
-  ledgerTxRD$,
-  pushLedgerTx,
-  resetLedgerTx,
   explorerUrl$
 }
 

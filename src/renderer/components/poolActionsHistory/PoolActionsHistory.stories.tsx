@@ -10,7 +10,7 @@ import { getMockRDValueFactory, RDStatus, rdStatusOptions } from '../../../share
 import { MOCK_WALLET_ADDRESSES } from '../../../shared/mock/wallet'
 import { AssetLTC, AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
 import { WalletAddress } from '../../../shared/wallet/types'
-import { Actions } from '../../services/midgard/types'
+import { Actions } from '../../services/midgard/thorMidgard/types'
 import { ErrorId } from '../../services/wallet/types'
 import { PoolActionsHistory } from './PoolActionsHistory'
 import { Filter } from './types'

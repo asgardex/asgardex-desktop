@@ -7,8 +7,8 @@ import * as S from 'fp-ts/lib/string'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { WalletAddress } from '../../../shared/wallet/types'
 import { CURRENCY_WEIGHTS, CHAIN_WEIGHTS_THOR } from '../../const'
+import { PricePool } from '../../services/midgard/midgardTypes'
 import { WalletBalance } from '../../services/wallet/types'
-import { PricePool } from '../../views/pools/Pools.types'
 import { eqBaseAmount, eqBigNumber, eqAsset, eqPricePool, eqChain } from './eq'
 
 export const ordString = S.Ord

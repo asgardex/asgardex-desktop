@@ -14,7 +14,7 @@ import * as walletRoutes from '../../../routes/wallet'
 import { InteractType } from '../../wallet/txs/interact/Interact.types'
 import type { Props as ButtonProps } from './FlatButton'
 
-export type ButtonVariant = 'runePool' | 'savers' | 'manage'
+type ButtonVariant = 'runePool' | 'savers' | 'manage'
 
 export type Props = Omit<ButtonProps, 'onClick'> & {
   variant: ButtonVariant
@@ -49,7 +49,7 @@ export const ManageButton = ({
           poolsRoutes.deposit.path({
             asset: assetToString(asset),
             assetWalletType: DEFAULT_WALLET_TYPE,
-            runeWalletType: DEFAULT_WALLET_TYPE
+            dexWalletType: DEFAULT_WALLET_TYPE
           })
         )
       }

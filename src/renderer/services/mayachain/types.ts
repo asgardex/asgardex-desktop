@@ -5,7 +5,6 @@ import { LPBondedNode } from '@xchainjs/xchain-mayanode'
 import { Address, AnyAsset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as O from 'fp-ts/Option'
-import * as t from 'io-ts'
 import { IntlShape } from 'react-intl'
 import * as Rx from 'rxjs'
 
@@ -262,27 +261,6 @@ export type MayanodePool = {
 export type MayanodePools = MayanodePool[]
 export type MayanodePoolsRD = RD.RemoteData<Error, MayanodePools>
 export type MayanodePoolsLD = LiveData<Error, MayanodePools>
-
-export const erc20WhitelistTokenIO = t.type({
-  chainId: t.number,
-  address: t.string,
-  symbol: t.string,
-  name: t.string,
-  logoURI: t.union([t.string, t.undefined])
-})
-
-export type ERC20WhitelistToken = t.TypeOf<typeof erc20WhitelistTokenIO>
-
-export const erc20WhitelistIO = t.type({
-  tokens: t.array(erc20WhitelistTokenIO),
-  version: t.type({
-    major: t.number,
-    minor: t.number,
-    patch: t.number
-  })
-})
-
-export type ERC20Whitelist = t.TypeOf<typeof erc20WhitelistIO>
 
 export enum NodeStatusEnum {
   Active = 'Active',

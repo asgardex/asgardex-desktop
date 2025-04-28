@@ -12,7 +12,7 @@ export const INITIAL_INTERACT_STATE: InteractState = {
   txRD: RD.initial
 }
 
-export const createDefaultMimirHalt = (): MimirHalt => {
+const createDefaultMimirHalt = (): MimirHalt => {
   return Object.keys(DEFAULT_ENABLED_CHAINS).reduce(
     (acc, chain) => {
       acc[`halt${chain}Chain`] = false

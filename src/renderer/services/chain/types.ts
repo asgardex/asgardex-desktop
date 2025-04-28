@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { FeeOption, Fees, Network, Tx } from '@xchainjs/xchain-client'
-import { Address, AnyAsset, Asset, BaseAmount, Chain } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
@@ -10,7 +10,7 @@ import { WalletType, WalletAddress, HDMode } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
 import { AssetWithDecimal } from '../../types/asgardex'
 import { AssetWithAmount } from '../../types/asgardex'
-import { PoolAddress } from '../midgard/types'
+import { PoolAddress } from '../midgard/midgardTypes'
 import { TxStagesRD } from '../thorchain/types'
 import { ApiError, TxHashRD } from '../wallet/types'
 
@@ -21,8 +21,6 @@ export type Chain$ = Rx.Observable<O.Option<Chain>>
 export type AssetWithDecimalLD = LiveData<Error, AssetWithDecimal>
 export type AssetWithDecimalRD = RD.RemoteData<Error, AssetWithDecimal>
 
-export type LoadFeesHandler = () => void
-
 export type FeeRD = RD.RemoteData<Error, BaseAmount>
 export type FeeLD = LiveData<Error, BaseAmount>
 
@@ -30,7 +28,6 @@ export type FeesRD = RD.RemoteData<Error, Fees>
 export type FeesLD = LiveData<Error, Fees>
 
 export type Memo = string
-export type MemoRx = Rx.Observable<O.Option<Memo>>
 
 export type SymDepositMemo = { rune: Memo; asset: Memo }
 
@@ -61,26 +58,6 @@ export type SaverDepositFeesParams = {
 export type SaverDepositFeesHandler = (asset: AnyAsset) => SaverDepositFeesLD
 
 export type ReloadSaverDepositFeesHandler = (asset: AnyAsset) => void
-
-/**
- * Borrower deposit fees
- *
- */
-export type BorrowerDepositFees = {
-  /** fee for asset txs */
-  readonly asset: DepositAssetFees
-}
-
-export type BorrowerDepositFeesRD = RD.RemoteData<Error, BorrowerDepositFees>
-export type BorrowerDepositFeesLD = LiveData<Error, BorrowerDepositFees>
-
-export type BorrowerDepositFeesParams = {
-  readonly asset: Asset
-}
-
-export type BorrowerDepositFeesHandler = (asset: Asset) => BorrowerDepositFeesLD
-
-export type ReloadBorrowerDepositFeesHandler = (asset: Asset) => void
 
 /**
  * Sym. deposit fees
@@ -386,10 +363,6 @@ export type SaverWithdrawStateHandler = (p: SaverWithdrawParams) => WithdrawStat
 
 export type TradeWithdrawStateHandler = (p: TradeWithdrawParams) => WithdrawState$
 
-export type RepayLoanParams = {}
-
-export type RepayLoanStateHandler = (p: SaverWithdrawParams) => WithdrawState$
-
 /**
  * State to reflect status for sending
  *
@@ -405,6 +378,6 @@ export type SendTxState = {
   readonly status: TxHashRD
 }
 
-export type SendTxState$ = Rx.Observable<SendTxState>
+type SendTxState$ = Rx.Observable<SendTxState>
 
 export type SendTxStateHandler = (p: SendTxParams) => SendTxState$

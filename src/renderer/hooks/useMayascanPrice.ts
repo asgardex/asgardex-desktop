@@ -10,7 +10,7 @@ import { startWith } from 'rxjs/operators'
 import { AssetUSDC } from '../const'
 import { AssetWithAmount } from '../types/asgardex'
 
-export type MayaPriceResponse = {
+type MayaPriceResponse = {
   mayaPriceInCacao: number
   mayaPriceInUsd: number
   cacaoPriceInUsd: number

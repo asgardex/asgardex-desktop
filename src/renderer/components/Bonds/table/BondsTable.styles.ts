@@ -94,14 +94,6 @@ export const ConfirmationModalAddress = styled.span`
   font-family: 'MainFontBold';
 `
 
-export const WalletTypeLabel = styled(UILabel)`
-  color: inherit;
-  text-align: center;
-  font-size: 16px;
-  font-family: 'MainFontRegular';
-  padding: 0;
-`
-
 export const ExpandIcon = styled(CaretRightOutlined)`
   margin-top: 0px;
   svg {

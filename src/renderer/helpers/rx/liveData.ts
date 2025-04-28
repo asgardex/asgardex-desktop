@@ -18,7 +18,7 @@ import * as RxOp from 'rxjs/operators'
 export type LiveData<E, A> = Rx.Observable<RD.RemoteData<E, A>>
 
 export const URI = '//LiveData'
-export type URIType = typeof URI
+type URIType = typeof URI
 declare module 'fp-ts/lib/HKT' {
   interface URItoKind2<E, A> {
     [URI]: LiveData<E, A>
@@ -93,5 +93,3 @@ export const liveData = {
         )
       )
 }
-
-export type LiveDataInnerType<T> = T extends LiveData<unknown, infer K> ? K : never

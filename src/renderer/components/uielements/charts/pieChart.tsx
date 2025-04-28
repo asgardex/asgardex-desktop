@@ -7,7 +7,7 @@ import { hiddenString } from '../../../helpers/stringHelper'
 import { useTheme } from '../../../hooks/useTheme'
 import { ChartColors } from './utils'
 
-export type ChartProps = {
+type ChartProps = {
   chartData: {
     name: string
     value: number

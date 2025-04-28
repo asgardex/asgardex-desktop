@@ -18,7 +18,7 @@ import {
   explorerUrl$
 } from '../services/dash'
 
-export type DashContextValue = {
+type DashContextValue = {
   client$: typeof client$
   clientState$: typeof clientState$
   address$: typeof address$

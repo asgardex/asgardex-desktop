@@ -33,7 +33,7 @@ import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import { FeeRD, SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../../../services/clients'
-import { PoolAddress } from '../../../../services/midgard/types'
+import { PoolAddress } from '../../../../services/midgard/midgardTypes'
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
@@ -49,13 +49,13 @@ import * as Styled from '../TxForm.styles'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as Shared from './Send.shared'
 
-export type FormValues = {
+type FormValues = {
   recipient: string
   amount: BigNumber
   memo?: string
 }
 
-export type Props = {
+type Props = {
   asset: SelectedWalletAsset
   trustedAddresses: TrustedAddresses | undefined
   balances: WalletBalances

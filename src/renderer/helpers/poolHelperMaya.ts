@@ -12,10 +12,11 @@ import * as Ord from 'fp-ts/lib/Ord'
 import { PoolsWatchList } from '../../shared/api/io'
 import { ONE_CACAO_BASE_AMOUNT } from '../../shared/mock/amount'
 import { MayaScanPrice, MayaScanPriceRD } from '../hooks/useMayascanPrice'
-import { PoolAddress, PoolDetails } from '../services/mayaMigard/types'
-import { getPoolDetail, toPoolData } from '../services/mayaMigard/utils'
+import { PoolDetails } from '../services/midgard/mayaMigard/types'
+import { getPoolDetail, toPoolData } from '../services/midgard/mayaMigard/utils'
+import { PoolAddress, PoolData, PricePool } from '../services/midgard/midgardTypes'
 import { MimirHalt } from '../services/thorchain/types'
-import { PoolData, PoolTableRowData, PoolTableRowsData, PricePool } from '../views/pools/Pools.types'
+import { PoolTableRowData, PoolTableRowsData } from '../views/pools/Pools.types'
 import {
   getPoolTableRowDataMaya,
   getValueOfAsset1InAsset2,

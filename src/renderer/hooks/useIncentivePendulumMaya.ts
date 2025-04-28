@@ -1,22 +1,12 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
-import { BaseAmount, baseAmount } from '@xchainjs/xchain-util'
+import { baseAmount } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
 
 import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
-
-export type Color = 'green' | 'yellow' | 'red' | 'grey'
-
-export type IncentivePendulum = {
-  totalActiveBondAmount: BaseAmount
-  totalPooledRuneAmount: BaseAmount
-  incentivePendulum: number // percent
-  incentivePendulumLight: Color
-}
-
-export type IncentivePendulumRD = RD.RemoteData<Error, IncentivePendulum>
+import { Color, IncentivePendulum, IncentivePendulumRD } from './useIncentivePendulum'
 
 export const getIncentivePendulum = (totalPooledRune: string, totalActiveBond: string): IncentivePendulum => {
   const totalActiveBondAmount = baseAmount(totalActiveBond, CACAO_DECIMAL)

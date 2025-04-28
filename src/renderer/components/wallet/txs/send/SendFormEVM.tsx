@@ -53,8 +53,8 @@ import {
 } from '../../../../services/chain/types'
 import { FeesRD, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../../../services/clients'
 import { TxParams } from '../../../../services/evm/types'
-import { PoolDetails as PoolDetailsMaya, PoolAddress as PoolAddressMaya } from '../../../../services/mayaMigard/types'
-import { PoolAddress, PoolDetails } from '../../../../services/midgard/types'
+import { PoolDetails as PoolDetailsMaya } from '../../../../services/midgard/mayaMigard/types'
+import { PoolAddress, PoolDetails } from '../../../../services/midgard/midgardTypes'
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
@@ -73,7 +73,7 @@ import { validateTxAmountInput } from '../TxForm.util'
 import { DEFAULT_FEE_OPTION } from './Send.const'
 import * as Shared from './Send.shared'
 
-export type FormValues = {
+type FormValues = {
   recipient: Address
   amount: BigNumber
   memo?: string
@@ -94,7 +94,7 @@ export type Props = {
   network: Network
   poolDetails: PoolDetails | PoolDetailsMaya
   oPoolAddress: O.Option<PoolAddress>
-  oPoolAddressMaya: O.Option<PoolAddressMaya>
+  oPoolAddressMaya: O.Option<PoolAddress>
   mayaScanPrice: MayaScanPriceRD
 }
 

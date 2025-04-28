@@ -1,6 +1,6 @@
 import { ArgTypes, Meta } from '@storybook/react'
 
-import { TxType as MidgardTxType } from '../../../services/midgard/types'
+import { TxType as MidgardTxType } from '../../../services/midgard/midgardTypes'
 import { TxType } from './TxType'
 
 const types = ['Swap', 'Deposit', 'Withdraw', 'Donate', 'Refund']
