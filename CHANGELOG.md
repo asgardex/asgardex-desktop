@@ -1,3 +1,13 @@
+# 1.30.5 (2025-4-28)
+
+## Update/Fixes
+
+- update xchain-packages [#671](https://github.com/asgardex/asgardex-desktop/pull/671)
+
+## Add
+
+- adding secured asset support [#670](https://github.com/asgardex/asgardex-desktop/pull/670)
+
 # 1.30.4 (2025-3-28)
 
 ## Update/Fixes
