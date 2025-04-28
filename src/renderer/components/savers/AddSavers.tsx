@@ -32,7 +32,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { Dex } from '../../../shared/api/types'
 import { getAsgardexThorname } from '../../../shared/const'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
@@ -46,7 +45,7 @@ import {
   max1e8BaseAmount
 } from '../../helpers/assetHelper'
 import { getChainAsset } from '../../helpers/chainHelper'
-import { isEvmChain, isEvmToken } from '../../helpers/evmHelper'
+import { isEvmChain, isEvmChainToken } from '../../helpers/evmHelper'
 import { eqBaseAmount, eqOApproveParams, eqOAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
@@ -79,7 +78,7 @@ import {
   IsApproveParams,
   LoadApproveFeeHandler
 } from '../../services/evm/types'
-import { PoolAddress } from '../../services/midgard/types'
+import { PoolAddress, PricePool } from '../../services/midgard/midgardTypes'
 import {
   ApiError,
   BalancesState,
@@ -91,7 +90,6 @@ import {
 } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
 import { AssetWithAmount } from '../../types/asgardex'
-import { PricePool } from '../../views/pools/Pools.types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
 import { TxModal } from '../modal/tx'
 import { DepositAsset } from '../modal/tx/extra/DepositAsset'
@@ -106,9 +104,7 @@ import { InfoIcon } from '../uielements/info'
 import { Slider } from '../uielements/slider'
 import * as Utils from './Saver.utils'
 
-export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
-
-export type AddProps = {
+type AddProps = {
   keystore: KeystoreState
   thorchainQuery: ThorchainQuery
   poolAssets: AnyAsset[]
@@ -135,7 +131,6 @@ export type AddProps = {
   reloadBalances: FP.Lazy<void>
   disableSaverAction: boolean
   hidePrivateData: boolean
-  dex: Dex
 }
 
 export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
@@ -163,8 +158,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     goToTransaction,
     getExplorerTxUrl,
     disableSaverAction,
-    hidePrivateData,
-    dex
+    hidePrivateData
   } = props
 
   const intl = useIntl()
@@ -447,10 +441,8 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
     // not needed for users with locked or not imported wallets
     if (!hasImportedKeystore(keystore) || isLocked(keystore)) return O.some(false)
 
-    return isEvmChain(sourceChain) && isEvmToken(asset.asset)
-      ? O.some(isEVMTokenAsset(asset.asset as TokenAsset))
-      : O.none
-  }, [keystore, asset.asset, sourceChain])
+    return isEvmChainToken(asset.asset) ? O.some(isEVMTokenAsset(asset.asset as TokenAsset)) : O.none
+  }, [keystore, asset.asset])
 
   const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
     const oRouterAddress: O.Option<Address> = FP.pipe(
@@ -515,7 +507,11 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
       O.isSome(oSaversQuote) && !oSaversQuote.value.canAddSaver && (oSaversQuote.value.errors?.length ?? 0) > 0
 
     if (!hasErrorMessages && !hasQuoteErrors) {
-      return <></>
+      return (
+        <>
+          <ErrorLabel>Earn features have been paused</ErrorLabel>
+        </>
+      )
     }
 
     const error = hasErrorMessages
@@ -787,21 +783,12 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
           walletAccount,
           walletIndex,
           hdMode,
-          dex
+          protocol: poolAddress.protocol
         }
         return result
       })
     )
-  }, [
-    oPoolAddress,
-    oSourceAssetWB,
-    oSaversQuote,
-    network,
-    asset.asset,
-    asset.baseAmount.decimal,
-    amountToSendMax1e8,
-    dex
-  ])
+  }, [oPoolAddress, oSourceAssetWB, oSaversQuote, network, asset.asset, asset.baseAmount.decimal, amountToSendMax1e8])
 
   const onClickUseLedger = useCallback(
     (useLedger: boolean) => {
@@ -1149,7 +1136,7 @@ export const AddSavers: React.FC<AddProps> = (props): JSX.Element => {
 
     const description1 =
       // extra info for ERC20 assets only
-      isEvmChain(asset.asset.chain) && isEvmToken(asset.asset)
+      isEvmChainToken(asset.asset)
         ? `${txtNeedsConnected} ${intl.formatMessage(
             {
               id: 'ledger.blindsign'

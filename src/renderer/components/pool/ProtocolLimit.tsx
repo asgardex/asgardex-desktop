@@ -9,7 +9,7 @@ import { AssetRuneNative } from '../../../shared/utils/asset'
 import { LimitRD } from '../../hooks/useProtocolLimit'
 import * as Styled from './ProtocolLimit.styles'
 
-export type Props = {
+type Props = {
   limit: LimitRD
 }
 

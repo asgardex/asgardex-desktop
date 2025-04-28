@@ -204,12 +204,10 @@ describe('walletHelper', () => {
   })
 
   describe('isEnabledLedger', () => {
-    it('THOR ledger stagenet -> false', () => {
-      expect(isEnabledLedger(THORChain, Network.Stagenet)).toBeFalsy()
-    })
-    it('THOR ledger mainnet/testnet -> true', () => {
+    it('THOR ledger mainnet/testnet/stagenet -> true', () => {
       expect(isEnabledLedger(THORChain, Network.Mainnet)).toBeTruthy()
       expect(isEnabledLedger(THORChain, Network.Testnet)).toBeTruthy()
+      expect(isEnabledLedger(THORChain, Network.Stagenet)).toBeTruthy()
     })
     it('LTC ledger testnet -> false', () => {
       expect(isEnabledLedger(LTCChain, Network.Testnet)).toBeFalsy()

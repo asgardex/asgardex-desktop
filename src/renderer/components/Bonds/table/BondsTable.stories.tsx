@@ -1,7 +1,8 @@
 import React, { useCallback, useState } from 'react'
 
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, baseAmount } from '@xchainjs/xchain-util'
 
 import { WalletType } from '../../../../shared/wallet/types'
@@ -14,6 +15,7 @@ const mockNodeInfo = (address: Address) => ({
   award: baseAmount(100000000 * 400000),
   status: NodeStatusEnum.Active,
   address,
+  pubKeySet: {},
   nodeOperatorAddress: '',
   bondProviders: {
     nodeOperatorFee: baseAmount(100000000 * 400000),
@@ -22,7 +24,7 @@ const mockNodeInfo = (address: Address) => ({
   signMembership: []
 })
 
-export const Default: Story = () => {
+export const Default: StoryFn = () => {
   // const nodesSelect: Record<Address, RDStatus> = {
   //   thor1766mazrxs5asuscepa227r6ekr657234f8p7nf: firstNodeRdKnob,
   //   thor1766mazrxs5asuscepa227r6ekr657234f9asda: secondNodeRdKnob,
@@ -56,6 +58,7 @@ export const Default: Story = () => {
     <BondsTable
       network={Network.Testnet}
       // TODO: update stories for Watchlist
+      protocol={THORChain}
       addWatchlist={addBondProvidersAddress}
       removeWatchlist={removeBondProvidersByAddress}
       removeNode={removeNode}

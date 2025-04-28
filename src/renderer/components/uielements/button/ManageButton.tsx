@@ -14,7 +14,7 @@ import * as walletRoutes from '../../../routes/wallet'
 import { InteractType } from '../../wallet/txs/interact/Interact.types'
 import type { Props as ButtonProps } from './FlatButton'
 
-export type ButtonVariant = 'runePool' | 'savers' | 'manage'
+type ButtonVariant = 'runePool' | 'savers' | 'manage'
 
 export type Props = Omit<ButtonProps, 'onClick'> & {
   variant: ButtonVariant
@@ -24,14 +24,14 @@ export type Props = Omit<ButtonProps, 'onClick'> & {
   useBorderButton?: boolean
 }
 
-export const ManageButton: React.FC<Props> = ({
+export const ManageButton = ({
   variant,
   asset,
   interactType,
   isTextView,
   useBorderButton = false,
   ...otherProps
-}) => {
+}: Props) => {
   const intl = useIntl()
   const navigate = useNavigate()
 
@@ -49,7 +49,7 @@ export const ManageButton: React.FC<Props> = ({
           poolsRoutes.deposit.path({
             asset: assetToString(asset),
             assetWalletType: DEFAULT_WALLET_TYPE,
-            runeWalletType: DEFAULT_WALLET_TYPE
+            dexWalletType: DEFAULT_WALLET_TYPE
           })
         )
       }

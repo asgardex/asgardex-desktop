@@ -4,7 +4,7 @@ import clsx from 'clsx'
 
 import * as Styled from './Label.styles'
 
-export type ComponentProps = {
+type ComponentProps = {
   className?: string
   children?: React.ReactNode
   loading?: boolean

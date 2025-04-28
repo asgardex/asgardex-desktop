@@ -5,7 +5,7 @@ import { palette } from 'styled-theme'
 export const Card = styled(A.Card).attrs({
   bodyStyle: { padding: '6px', minHeight: '100px' }
 })`
-  border-color: ${palette('primary', 0)};
+  border-color: ${palette('primary', 2)};
   background: transparent;
 `
 

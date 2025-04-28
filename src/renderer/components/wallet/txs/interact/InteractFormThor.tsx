@@ -33,7 +33,14 @@ import { HDMode, WalletType } from '../../../../../shared/wallet/types'
 import { AssetUSDTDAC, ZERO_BASE_AMOUNT } from '../../../../const'
 import { THORCHAIN_DECIMAL, isUSDAsset } from '../../../../helpers/assetHelper'
 import { validateAddress } from '../../../../helpers/form/validation'
-import { Action, getBondMemo, getLeaveMemo, getRunePoolMemo, getUnbondMemo } from '../../../../helpers/memoHelper'
+import {
+  Action,
+  getBondMemo,
+  getLeaveMemo,
+  getRunePoolMemo,
+  getUnbondMemo,
+  getWhitelistMemo
+} from '../../../../helpers/memoHelper'
 import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { emptyString } from '../../../../helpers/stringHelper'
 import { useMimirConstants } from '../../../../hooks/useMimirConstants'
@@ -65,7 +72,6 @@ import { UIFees, UIFeesRD } from '../../../uielements/fees'
 import { InfoIcon } from '../../../uielements/info'
 import { InputBigNumber } from '../../../uielements/input'
 import { Label } from '../../../uielements/label'
-import { checkMemo, memoCorrection } from '../TxForm.helpers'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
 import * as Styled from './Interact.styles'
@@ -145,6 +151,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   const [userNodeInfo, setUserNodeInfo] = useState<UserNodeInfo | undefined>(undefined)
   const [_amountToSend, setAmountToSend] = useState<BaseAmount>(ZERO_BASE_AMOUNT)
   const [runePoolAction, setRunePoolAction] = useState<Action>(Action.add)
+  const [whitelisting, setWhitelisting] = useState<boolean>(true)
 
   const nodes: NodeInfos = useMemo(
     () =>
@@ -253,6 +260,8 @@ export const InteractFormThor: React.FC<Props> = (props) => {
       case InteractType.THORName:
       case InteractType.MAYAName:
         return _amountToSend
+      case InteractType.Whitelist:
+        return ONE_RUNE_BASE_AMOUNT
       case InteractType.Leave:
       case InteractType.Unbond:
         return ZERO_BASE_AMOUNT
@@ -284,8 +293,6 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   const [isOwner, setIsOwner] = useState<boolean>(false) // if the thorname.owner is the wallet address then allow to update
   const [preferredAsset, setPreferredAsset] = useState<Asset>()
   const [aliasChain, setAliasChain] = useState<string>('')
-  const [affiliateTracking, setAffiliateTracking] = useState<string>('')
-  const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
 
   const [currentMemo, setCurrentMemo] = useState('')
 
@@ -303,20 +310,10 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   )
 
   const handleMemo = useCallback(() => {
-    let memoValue = form.getFieldValue('memo') as string
-
-    // Check if a swap memo is detected
-    if (checkMemo(memoValue) && network === Network.Mainnet) {
-      memoValue = memoCorrection(memoValue, network)
-      setSwapMemoDetected(true)
-
-      // Set affiliate tracking message
-      setAffiliateTracking(intl.formatMessage({ id: 'wallet.send.affiliateTracking' }))
-    } else {
-      setSwapMemoDetected(false)
-    }
+    const memoValue = form.getFieldValue('memo') as string
+    // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
-  }, [form, intl, network])
+  }, [form])
 
   const renderFeeError = useMemo(
     () => (
@@ -560,25 +557,28 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     },
     [addressValidation, interactType, intl, nodes]
   )
+
   // Send tx start time
   const [sendTxStartTime, setSendTxStartTime] = useState<number>(0)
 
   const getMemo = useCallback(() => {
     const thorAddress = form.getFieldValue('thorAddress')
-    const providerAddress =
-      form.getFieldValue('providerAddress') === undefined ? undefined : form.getFieldValue('providerAddress')
+    const whitelistAdd = form.getFieldValue('providerAddress')
     const nodeOperatorFee = form.getFieldValue('operatorFee')
     const feeInBasisPoints = nodeOperatorFee ? nodeOperatorFee * 100 : undefined
 
     let createMemo = ''
-
     switch (interactType) {
       case InteractType.Bond: {
-        createMemo = getBondMemo(thorAddress, providerAddress, feeInBasisPoints)
+        createMemo = getBondMemo(thorAddress)
         break
       }
       case InteractType.Unbond: {
-        createMemo = getUnbondMemo(thorAddress, _amountToSend, providerAddress)
+        createMemo = getUnbondMemo(thorAddress, _amountToSend)
+        break
+      }
+      case InteractType.Whitelist: {
+        createMemo = getWhitelistMemo(whitelisting, THORChain, thorAddress, whitelistAdd, feeInBasisPoints)
         break
       }
       case InteractType.Leave: {
@@ -604,7 +604,17 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     }
     setMemo(createMemo)
     return createMemo
-  }, [_amountToSend, currentMemo, form, interactType, memo, network, runePoolAction, runePoolProvider.value])
+  }, [
+    _amountToSend,
+    currentMemo,
+    form,
+    interactType,
+    memo,
+    network,
+    runePoolAction,
+    runePoolProvider.value,
+    whitelisting
+  ])
 
   const onChangeInput = useCallback(
     async (value: BigNumber) => {
@@ -783,6 +793,10 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         return `${intl.formatMessage({ id: 'deposit.interact.actions.unbond' })} ${intl.formatMessage({
           id: 'common.amount'
         })}`
+      case InteractType.Whitelist:
+        return `${intl.formatMessage({ id: 'deposit.interact.actions.whitelist' })} ${intl.formatMessage({
+          id: 'common.amount'
+        })}`
       case InteractType.Leave:
         return intl.formatMessage({ id: 'deposit.interact.actions.leave' })
       case InteractType.RunePool: {
@@ -815,6 +829,10 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         return intl.formatMessage({ id: 'deposit.interact.actions.unbond' })
       case InteractType.Leave:
         return intl.formatMessage({ id: 'deposit.interact.actions.leave' })
+      case InteractType.Whitelist:
+        return whitelisting
+          ? intl.formatMessage({ id: 'deposit.interact.actions.whitelist' })
+          : intl.formatMessage({ id: 'common.remove' })
       case InteractType.RunePool: {
         const label =
           runePoolAction === Action.add
@@ -831,7 +849,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
           return intl.formatMessage({ id: 'deposit.interact.actions.buyThorname' })
         }
     }
-  }, [interactType, hasProviderAddress, intl, runePoolAction, isOwner])
+  }, [interactType, hasProviderAddress, intl, whitelisting, isOwner, runePoolAction])
 
   const uiFeesRD: UIFeesRD = useMemo(
     () =>
@@ -847,29 +865,14 @@ export const InteractFormThor: React.FC<Props> = (props) => {
     [feeRD, interactType]
   )
 
-  const onClickHasProviderAddress = useCallback(() => {
-    // clean address
-    form.setFieldsValue({ providerAddress: undefined })
-    form.setFieldsValue({ operatorFee: undefined })
-    FP.pipe(
-      feeRD,
-      RD.fold(
-        () => {}, // Handle the initial or loading state
-        () => {}, // Handle the pending state
-        (error) => {
-          console.error('Error calculating fee:', error)
-        },
-        (fee) => {
-          // Calculate the amountToSend
-          const amountToSend = fee.plus(ONE_RUNE_BASE_AMOUNT)
-          setAmountToSend(amountToSend)
-        }
-      )
-    )
-    // toggle
-    setHasProviderAddress((v) => !v)
+  const onWhitelistAddress = useCallback(() => {
+    setWhitelisting(!whitelisting)
     getMemo()
-  }, [form, getMemo, feeRD])
+  }, [whitelisting, getMemo])
+
+  const handleLearn = useCallback(() => {
+    window.apiUrl.openExternal('https://dev.thorchain.org/concepts/memos.html')
+  }, [])
 
   useEffect(() => {
     // Whenever `amountToSend` has been updated, we put it back into input field
@@ -893,6 +896,16 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   const address = ''
   const amount = bn(0)
   const bondBaseAmount = userNodeInfo?.bondAmount ? userNodeInfo.bondAmount : baseAmount(0)
+
+  const exampleMemos = [
+    { type: 'Bond', memo: 'BOND:NODEADDRESS' },
+    { type: 'Unbond', memo: 'UNBOND:NODEADDRESS' },
+    { type: 'Leave', memo: 'LEAVE:NODEADDRESS' },
+    { type: 'Whitelist Bond Provider', memo: 'BOND:NODEADDRESS:PROVIDERADDRESS:FEE' },
+    { type: 'Unwhitelist Bond Provider', memo: 'UNBOND:NODEADDRESS:PROVIDERADDRESS' },
+    { type: 'Add LP Symmetrical', memo: 'ADD:POOL:PAIREDADDRESS' },
+    { type: 'Withdraw Lp', memo: 'WITHDRAW:POOL:BASISPOINTS' }
+  ]
 
   return (
     <Styled.Form
@@ -920,7 +933,27 @@ export const InteractFormThor: React.FC<Props> = (props) => {
               ]}>
               <Styled.Input disabled={isLoading} onChange={handleMemo} size="large" />
             </Form.Item>
-            {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
+            {/* Display example memos */}
+            <div className="mt-4">
+              <Styled.InputLabel>{intl.formatMessage({ id: 'common.examples' }, { name: 'Memos' })}</Styled.InputLabel>
+              <div className="rounded-lg bg-gray0 p-4 dark:bg-gray0d">
+                {exampleMemos.map((example, index) => (
+                  <div
+                    key={index}
+                    className="mb-2 flex items-center justify-between text-[12px] text-text2 dark:text-text2d">
+                    <span className="font-mainBold">{example.type}:</span>
+                    <span className="font-main">{example.memo}</span>
+                  </div>
+                ))}
+                <div className="flex justify-end border-t border-solid border-gray2/50 pt-2 dark:border-gray2d/50">
+                  <span
+                    className="cursor-pointer rounded-full bg-turquoise px-2 text-[12px] text-white"
+                    onClick={handleLearn}>
+                    Learn More...
+                  </span>
+                </div>
+              </div>
+            </div>
           </Styled.InputContainer>
         )}
         {/** Rune Pool Only */}
@@ -944,9 +977,17 @@ export const InteractFormThor: React.FC<Props> = (props) => {
           </div>
         )}
 
+        {interactType === InteractType.Whitelist && (
+          <div className="mb-2 flex items-center justify-end space-x-2">
+            <span className="dark:text=text2d text-14 text-text2">Toggle Whitelist / Unwhitelist</span>
+            <SwitchButton active={whitelisting} onChange={onWhitelistAddress} />
+          </div>
+        )}
+
         {/* Node address input (BOND/UNBOND/LEAVE only) */}
         {(interactType === InteractType.Bond ||
           interactType === InteractType.Unbond ||
+          interactType === InteractType.Whitelist ||
           interactType === InteractType.Leave) && (
           <Styled.InputContainer>
             <Styled.InputLabel>{intl.formatMessage({ id: 'common.nodeAddress' })}</Styled.InputLabel>
@@ -962,32 +1003,45 @@ export const InteractFormThor: React.FC<Props> = (props) => {
             </Form.Item>
           </Styled.InputContainer>
         )}
-
-        {/* Provider address input (BOND/UNBOND/ only) */}
-        {(interactType === InteractType.Bond || interactType === InteractType.Unbond) &&
-          !userNodeInfo?.bondProviderAddress && (
-            <Styled.InputContainer style={{ paddingBottom: '20px' }}>
-              <CheckButton checked={hasProviderAddress} clickHandler={onClickHasProviderAddress} disabled={isLoading}>
-                {intl.formatMessage({ id: 'deposit.interact.label.bondprovider' })}
-              </CheckButton>
-              {hasProviderAddress && (
-                <>
-                  <Styled.InputLabel>{intl.formatMessage({ id: 'common.providerAddress' })}</Styled.InputLabel>
-                  <Form.Item
-                    name="providerAddress"
-                    rules={[
-                      {
-                        required: hasProviderAddress,
-                        validator: addressValidator
-                      }
-                    ]}>
-                    <Styled.Input disabled={isLoading} onChange={() => getMemo()} size="large" />
-                  </Form.Item>
-                </>
-              )}
-            </Styled.InputContainer>
-          )}
-
+        {/* Provider address input (whitelist only) */}
+        {interactType === InteractType.Whitelist && (
+          <Styled.InputContainer>
+            {
+              <>
+                <Styled.InputLabel>{intl.formatMessage({ id: 'common.providerAddress' })}</Styled.InputLabel>
+                <Form.Item
+                  name="providerAddress"
+                  rules={[
+                    {
+                      required: true,
+                      validator: addressValidator
+                    }
+                  ]}>
+                  <Styled.Input disabled={isLoading} onChange={() => getMemo()} size="large" />
+                </Form.Item>
+              </>
+            }
+          </Styled.InputContainer>
+        )}
+        {interactType === InteractType.Whitelist && whitelisting && (
+          <Styled.InputContainer>
+            <Styled.InputLabel>{intl.formatMessage({ id: 'common.fee.nodeOperator' })}</Styled.InputLabel>
+            <Styled.FormItem
+              name="operatorFee"
+              rules={[
+                {
+                  required: false
+                }
+              ]}>
+              <Styled.Input
+                placeholder="Enter a % value, memo will populate with Basis Points automatically"
+                disabled={isLoading}
+                size="large"
+                onChange={() => getMemo()}
+              />
+            </Styled.FormItem>
+          </Styled.InputContainer>
+        )}
         {/* Amount input (BOND/UNBOND/CUSTOM only) */}
         {!hasProviderAddress && (
           <>
@@ -1050,33 +1104,6 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                     </div>
                   </div>
                 )}
-                <Styled.Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} disabled={isLoading} />
-                {isFeeError && renderFeeError}
-              </Styled.InputContainer>
-            )}
-          </>
-        )}
-
-        {hasProviderAddress && (
-          <>
-            {interactType === InteractType.Unbond && (
-              <Styled.InputContainer>
-                <Styled.InputLabel>{intl.formatMessage({ id: 'common.amount' })}</Styled.InputLabel>
-                <Styled.FormItem
-                  name="amount"
-                  rules={[
-                    {
-                      required: true,
-                      validator: amountValidator
-                    }
-                  ]}>
-                  <InputBigNumber
-                    disabled={isLoading}
-                    size="large"
-                    decimal={THORCHAIN_DECIMAL}
-                    onChange={onChangeInput}
-                  />
-                </Styled.FormItem>
                 <Styled.Fees fees={uiFeesRD} reloadFees={reloadFeesHandler} disabled={isLoading} />
                 {isFeeError && renderFeeError}
               </Styled.InputContainer>
@@ -1230,7 +1257,9 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                       }
                     ]}>
                     <StyledR.Radio.Group>
-                      <StyledR.Radio value={AssetRuneNative.chain}>THOR</StyledR.Radio>
+                      <StyledR.Radio className="text-gray2 dark:text-gray2d" value={AssetRuneNative.chain}>
+                        THOR
+                      </StyledR.Radio>
                     </StyledR.Radio.Group>
                   </Styled.FormItem>
                   <Styled.InputLabel>{intl.formatMessage({ id: 'common.aliasAddress' })}</Styled.InputLabel>
@@ -1261,23 +1290,19 @@ export const InteractFormThor: React.FC<Props> = (props) => {
           )}
         </>
       </>
-      {thornameQuoteValid && (
-        <>
-          <div>
-            <FlatButton
-              className="mt-10px min-w-[200px]"
-              loading={isLoading}
-              disabled={isLoading || !!form.getFieldsError().filter(({ errors }) => errors.length).length}
-              type="submit"
-              size="large">
-              {submitLabel}
-            </FlatButton>
-          </div>
-        </>
-      )}
+      <div className="flex items-center justify-center">
+        {thornameQuoteValid && (
+          <FlatButton
+            className="mt-10px min-w-[200px]"
+            loading={isLoading}
+            disabled={isLoading || !!form.getFieldsError().filter(({ errors }) => errors.length).length}
+            type="submit"
+            size="large">
+            {submitLabel}
+          </FlatButton>
+        )}
 
-      <div>
-        {interactType !== InteractType.THORName && (
+        {interactType === InteractType.RunePool && (
           <FlatButton
             className="mt-10px min-w-[200px]"
             loading={isLoading}
@@ -1290,6 +1315,17 @@ export const InteractFormThor: React.FC<Props> = (props) => {
                 runePoolData.value.blocksLeft > 0) ||
               !!form.getFieldsError().filter(({ errors }) => errors.length).length
             }
+            type="submit"
+            size="large">
+            {submitLabel}
+          </FlatButton>
+        )}
+
+        {interactType !== InteractType.RunePool && interactType !== InteractType.THORName && (
+          <FlatButton
+            className="mt-10px min-w-[200px]"
+            loading={isLoading}
+            disabled={isLoading}
             type="submit"
             size="large">
             {submitLabel}

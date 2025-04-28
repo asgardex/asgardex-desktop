@@ -8,7 +8,7 @@ export const base: Route<void> = {
   }
 }
 
-export type PoolDetailRouteParams = { asset: string }
+type PoolDetailRouteParams = { asset: string }
 export const poolDetail: Route<PoolDetailRouteParams> = {
   template: `${base.template}/:asset`,
   path: ({ asset }) => {

@@ -5,7 +5,6 @@ import type * as TN from '@xchainjs/xchain-thornode'
 import { Address, AnyAsset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as O from 'fp-ts/Option'
-import * as t from 'io-ts'
 import { IntlShape } from 'react-intl'
 import * as Rx from 'rxjs'
 
@@ -124,8 +123,14 @@ export type BondProviders = {
   providers: Providers[]
 }
 
+export type PubKeySet = {
+  secp256k1?: Address
+  ed25519?: Address
+}
+
 export type NodeInfo = {
   address: Address
+  pubKeySet: PubKeySet
   nodeOperatorAddress: Address
   bond: BaseAmount
   award: BaseAmount
@@ -176,10 +181,32 @@ export type PendingAssets = AssetsWithAmount1e8
 export type FailedAssets = AssetsWithAmount1e8
 export type PendingAssetsRD = RD.RemoteData<Error, PendingAssets>
 
+export type BondedNodes = {
+  nodeAddress: string
+  units: BigNumber
+}
+
+export type LiquidityProviderForPool = {
+  asset: AnyAsset
+  cacaoAddress: O.Option<Address>
+  lastAddHeight: O.Option<number>
+  assetAddress: O.Option<Address>
+  lastWithdrawHeight: string
+  units: string
+  pendingCacao: BaseAmount
+  pendingAsset: BaseAmount
+  cacaoDepositValue: BaseAmount
+  assetDepositValue: BaseAmount
+  nodeBondAddress: string
+  withdrawCounter: string
+  bondedNodes: BondedNodes[]
+  cacaoRedeemValue: BaseAmount
+  assetRedeemValue: BaseAmount
+}
+
 export type LiquidityProvider = {
   dexAssetAddress: O.Option<Address>
   assetAddress: O.Option<Address>
-
   pendingDexAsset: O.Option<PendingAsset>
   pendingAsset: O.Option<PendingAsset>
 }
@@ -222,111 +249,6 @@ export type RunePoolProvider = {
 export type RunePoolProviderRD = RD.RemoteData<Error, RunePoolProvider>
 export type RunePoolProviderLD = LiveData<Error, RunePoolProvider>
 
-export type BlockInformation = {
-  inboundConfirmationBlocks?: number
-  inboundConfirmationSeconds?: number
-  outboundDelayBlocks?: number
-  outbondDelaySeconds?: number
-}
-
-export type QuoteFees = {
-  asset: string
-  liquidity?: string
-  outbound?: string
-  total_bps?: number
-}
-
-export type LoanOpenQuote = {
-  inboundAddress: string
-  expectedWaitTime: BlockInformation
-  fees: QuoteFees
-  slippageBps?: number
-  streamingSlippageBps?: number
-  router?: string
-  expiry: number
-  warning: string
-  notes: string
-  dustThreshold?: string
-  recommendedMinAmountIn: BaseAmount
-  memo: string
-  expectedAmountOut: BaseAmount
-  expectedCollateralizationRatio: string
-  expectedCollateralDeposited: string
-  expectedDebtIssued: string
-  totalOpenLoanSeconds: number
-}
-
-export type LoanOpenQuoteRD = RD.RemoteData<Error, LoanOpenQuote>
-export type LoanOpenQuoteLD = LiveData<Error, LoanOpenQuote>
-
-export type LoanOpenParams = {
-  asset: AnyAsset
-  amount: BaseAmount
-  targetAsset: AnyAsset
-  destination: string
-  height?: number
-  minOut?: string
-  affiliateBps?: number
-  affiliate?: string
-}
-export type LoanRepayParams = {
-  poolAddress: string
-  asset: AnyAsset
-  sender: string
-  memo: string
-  network: Network
-}
-
-export type LoanCloseQuote = {
-  inboundAddress: string
-  expectedWaitTime: BlockInformation
-  fees: QuoteFees
-  slippageBps?: number
-  streamingSlippageBps?: number
-  router?: string
-  expiry: number
-  warning: string
-  notes: string
-  dustThreshold?: string
-  recommendedMinAmountIn: BaseAmount
-  reccommendedGasRate: string
-  memo: string
-  expectedAmountOut: BaseAmount
-  expectedAmountIn: BaseAmount
-  expectedCollateralWithdrawn: string
-  expectedDebtRepaid: string
-  totalRepaymentSeconds: number
-}
-
-export type LoanCloseQuoteRD = RD.RemoteData<Error, LoanCloseQuote>
-export type LoanCloseQuoteLD = LiveData<Error, LoanCloseQuote>
-
-export type LoanCloseParams = {
-  asset: AnyAsset
-  repayBps: number
-  collateralAsset: AnyAsset
-  loanOwner: string
-  height?: number
-  minOut?: string
-}
-
-export type BorrowerProvider = {
-  owner: Address
-  asset: AnyAsset
-  debtIssued: BaseAmount
-  debtRepaid: BaseAmount
-  debtCurrent: BaseAmount
-  collateralDeposited: BaseAmount
-  collateralWithdrawn: BaseAmount
-  collateralCurrent: BaseAmount
-  lastOpenHeight: O.Option<number>
-  lastRepayHeight: O.Option<number>
-  walletType?: WalletType
-}
-
-export type BorrowerProviderRD = RD.RemoteData<Error, BorrowerProvider>
-export type BorrowerProviderLD = LiveData<Error, BorrowerProvider>
-
 export type TradeAccount = {
   asset: AnyAsset
   units: BaseAmount
@@ -354,9 +276,6 @@ export type ThorchainPool = {
   synthSupply: BaseAmount
   saversDepth: BaseAmount
   saversUnits: string
-  loanCollateral: BaseAmount
-  loanCollateralRemaining: BaseAmount
-  loanCr: number
 }
 
 export type ThorchainPoolRD = RD.RemoteData<Error, ThorchainPool>
@@ -397,27 +316,6 @@ export type TxStages = {
 
 export type TxStagesRD = RD.RemoteData<Error, TxStages>
 export type TxStagesLD = LiveData<Error, TxStages>
-
-export const erc20WhitelistTokenIO = t.type({
-  chainId: t.number,
-  address: t.string,
-  symbol: t.string,
-  name: t.string,
-  logoURI: t.union([t.string, t.undefined])
-})
-
-export type ERC20WhitelistToken = t.TypeOf<typeof erc20WhitelistTokenIO>
-
-export const erc20WhitelistIO = t.type({
-  tokens: t.array(erc20WhitelistTokenIO),
-  version: t.type({
-    major: t.number,
-    minor: t.number,
-    patch: t.number
-  })
-})
-
-export type ERC20Whitelist = t.TypeOf<typeof erc20WhitelistIO>
 
 export enum NodeStatusEnum {
   Active = 'Active',

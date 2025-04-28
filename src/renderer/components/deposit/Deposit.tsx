@@ -9,14 +9,15 @@ import { useIntl } from 'react-intl'
 
 import { WalletAddress, WalletType } from '../../../shared/wallet/types'
 import { eqAddress, eqOAddress } from '../../helpers/fp/eq'
-import { PoolDetailRD as PoolDetailMayaRD, PoolShareRD as PoolShareMayaRD } from '../../services/mayaMigard/types'
-import { PoolDetailRD, PoolShareRD, PoolSharesRD } from '../../services/midgard/types'
-import { getSharesByAssetAndType } from '../../services/midgard/utils'
+import { PoolDetailRD as PoolDetailMayaRD } from '../../services/midgard/mayaMigard/types'
+import { PoolDetailRD, PoolShareRD, PoolSharesRD } from '../../services/midgard/midgardTypes'
+import { getSharesByAssetAndType } from '../../services/midgard/thorMidgard/utils'
 import { MimirHalt } from '../../services/thorchain/types'
 import { KeystoreState } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
 import { AssetWithDecimal } from '../../types/asgardex'
 import { Props as SymDepositContentProps } from '../../views/deposit/add/SymDepositView.types'
+import { ShareViewProps } from '../../views/deposit/share/ShareView'
 import { Props as WidthdrawContentProps } from '../../views/deposit/withdraw/WithdrawDepositView.types'
 import { AddWallet } from '../wallet/add'
 import * as Styled from './Deposit.styles'
@@ -33,26 +34,23 @@ type Tab = {
 export type Props = {
   haltedChains: Chain[]
   mimirHalt: MimirHalt
+  protocol: Chain
   asset: AssetWithDecimal
   shares: PoolSharesRD
   poolDetail: PoolDetailRD | PoolDetailMayaRD
-  ShareContent: React.ComponentType<{
-    asset: AssetWithDecimal
-    poolShare: PoolShareRD | PoolShareMayaRD
-    smallWidth?: boolean
-    poolDetail: PoolDetailRD | PoolDetailMayaRD
-  }>
+  ShareContent: React.ComponentType<ShareViewProps>
   SymDepositContent: React.ComponentType<SymDepositContentProps>
   WidthdrawContent: React.ComponentType<WidthdrawContentProps>
   keystoreState: KeystoreState
   dexWalletAddress: WalletAddress
   assetWalletAddress: WalletAddress
   assetWalletType: WalletType
-  runeWalletType: WalletType
+  dexWalletType: WalletType
 }
 
 export const Deposit: React.FC<Props> = (props) => {
   const {
+    protocol,
     asset: assetWD,
     ShareContent,
     haltedChains,
@@ -65,7 +63,7 @@ export const Deposit: React.FC<Props> = (props) => {
     dexWalletAddress,
     assetWalletAddress,
     assetWalletType,
-    runeWalletType
+    dexWalletType
   } = props
 
   const { asset } = assetWD
@@ -122,7 +120,7 @@ export const Deposit: React.FC<Props> = (props) => {
             haltedChains={haltedChains}
             mimirHalt={mimirHalt}
             assetWalletType={assetWalletType}
-            dexWalletType={runeWalletType}
+            dexWalletType={dexWalletType}
           />
         )
       },
@@ -133,6 +131,7 @@ export const Deposit: React.FC<Props> = (props) => {
         content: (
           <WidthdrawContent
             poolDetail={poolDetailRD}
+            protocol={protocol}
             asset={assetWD}
             dexWalletAddress={dexWalletAddress}
             assetWalletAddress={assetWalletAddress}
@@ -147,13 +146,14 @@ export const Deposit: React.FC<Props> = (props) => {
       intl,
       SymDepositContent,
       poolDetailRD,
+      protocol,
       assetWD,
       dexWalletAddress,
       assetWalletAddress,
       haltedChains,
       mimirHalt,
       assetWalletType,
-      runeWalletType,
+      dexWalletType,
       hasSymPoolShare,
       WidthdrawContent,
       symPoolShare
@@ -171,6 +171,7 @@ export const Deposit: React.FC<Props> = (props) => {
             <Styled.ShareContentCol xs={24} xl={9}>
               <Styled.ShareContentWrapper alignTop={hasSymPoolShare}>
                 <ShareContent
+                  protocol={protocol}
                   poolDetail={poolDetailRD}
                   asset={assetWD}
                   poolShare={symPoolShare}

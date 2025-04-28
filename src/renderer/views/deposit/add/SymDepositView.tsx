@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
+import { AssetBTC, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -26,9 +26,9 @@ import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { hasLedgerAddress } from '../../../helpers/addressHelper'
+import { isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { sequenceTRD } from '../../../helpers/fpHelpers'
 import * as PoolHelpers from '../../../helpers/poolHelper'
-import { useDex } from '../../../hooks/useDex'
 import { useLedgerAddresses } from '../../../hooks/useLedgerAddresses'
 import { useLiquidityProviders } from '../../../hooks/useLiquidityProviders'
 import { useNetwork } from '../../../hooks/useNetwork'
@@ -37,8 +37,8 @@ import { usePricePool } from '../../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../../hooks/usePricePoolMaya'
 import { useProtocolLimit } from '../../../hooks/useProtocolLimit'
 import * as poolsRoutes from '../../../routes/pools'
-import { PoolAddress, PoolAssetsRD } from '../../../services/midgard/types'
-import { toPoolData } from '../../../services/midgard/utils'
+import { PoolAddress, PoolAssetsRD } from '../../../services/midgard/midgardTypes'
+import { toPoolData } from '../../../services/midgard/thorMidgard/utils'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { useApp } from '../../../store/app/hooks'
 import { Props } from './SymDepositView.types'
@@ -59,14 +59,12 @@ export const SymDepositView: React.FC<Props> = (props) => {
   const intl = useIntl()
 
   const { network } = useNetwork()
-  const { isPrivate } = useApp()
-
-  const { dex } = useDex()
+  const { isPrivate, protocol } = useApp()
 
   const { reloadInboundAddresses: reloadInboundAddressesThor } = useThorchainContext()
   const { reloadInboundAddresses: reloadInboundAddressesMaya } = useMayachainContext()
 
-  const reloadInboundAddresses = dex.chain === THORChain ? reloadInboundAddressesThor : reloadInboundAddressesMaya
+  const reloadInboundAddresses = protocol === THORChain ? reloadInboundAddressesThor : reloadInboundAddressesMaya
   const {
     service: {
       pools: {
@@ -90,15 +88,15 @@ export const SymDepositView: React.FC<Props> = (props) => {
     }
   } = useMidgardMayaContext()
 
-  const availableAssets$ = dex.chain === THORChain ? availableAssetsThor$ : availableAssetsMaya$
-  const reloadSelectedPoolDetail = dex.chain === THORChain ? reloadSelectedPoolDetailThor : reloadSelectedPoolDetailMaya
+  const availableAssets$ = protocol === THORChain ? availableAssetsThor$ : availableAssetsMaya$
+  const reloadSelectedPoolDetail = protocol === THORChain ? reloadSelectedPoolDetailThor : reloadSelectedPoolDetailMaya
 
   const { symDepositFees$, symDeposit$, reloadSymDepositFees, saverDeposit$: asymDeposit$ } = useChainContext()
 
-  const poolsState = useObservableState(dex.chain === THORChain ? poolsState$ : poolsStateMaya$, RD.initial)
+  const poolsState = useObservableState(protocol === THORChain ? poolsState$ : poolsStateMaya$, RD.initial)
 
   const oPoolAddress: O.Option<PoolAddress> = useObservableState(
-    dex.chain === THORChain ? selectedPoolAddress$ : selectedPoolAddressMaya$,
+    protocol === THORChain ? selectedPoolAddress$ : selectedPoolAddressMaya$,
     O.none
   )
 
@@ -120,9 +118,9 @@ export const SymDepositView: React.FC<Props> = (props) => {
   // reload inbound addresses at `onMount` to get always latest `pool address` + `feeRates`
   useEffect(() => {
     reloadInboundAddresses()
-  }, [dex, reloadInboundAddresses])
+  }, [protocol, reloadInboundAddresses])
 
-  const pricePool = dex.chain === THORChain ? pricePoolThor : pricePoolMaya
+  const pricePool = protocol === THORChain ? pricePoolThor : pricePoolMaya
 
   const [balancesState] = useObservableState(
     () =>
@@ -135,8 +133,8 @@ export const SymDepositView: React.FC<Props> = (props) => {
 
   const reloadBalances = useCallback(() => {
     reloadBalancesByChain(assetWD.asset.chain, assetWalletType)()
-    reloadBalancesByChain(dex.chain, dexWalletType)()
-  }, [assetWD.asset.chain, assetWalletType, dex.chain, dexWalletType, reloadBalancesByChain])
+    reloadBalancesByChain(protocol, dexWalletType)()
+  }, [assetWD.asset.chain, assetWalletType, protocol, dexWalletType, reloadBalancesByChain])
 
   const onChangeAsset = useCallback(
     ({
@@ -162,16 +160,16 @@ export const SymDepositView: React.FC<Props> = (props) => {
 
       navigate(
         poolsRoutes.deposit.path({
-          asset: assetToString(asset),
+          asset: isRuneNativeAsset(asset) && protocol === THORChain ? assetToString(AssetBTC) : assetToString(asset),
           assetWalletType: checkedAssetWalletType,
-          runeWalletType: checkedRuneWalletType
+          dexWalletType: checkedRuneWalletType
         }),
         {
           replace: true
         }
       )
     },
-    [ledgerAddresses, navigate]
+    [protocol, ledgerAddresses, navigate]
   )
 
   useEffect(() => {
@@ -179,12 +177,12 @@ export const SymDepositView: React.FC<Props> = (props) => {
   }, [assetWalletType, dexWalletType, reloadBalances])
 
   useEffect(() => {
-    if (dex.chain === THORChain) {
+    if (protocol === THORChain) {
       reloadSelectedPoolDetail()
     } else {
       reloadSelectedPoolDetailMaya()
     }
-  }, [dex, reloadSelectedPoolDetail, reloadSelectedPoolDetailMaya])
+  }, [protocol, reloadSelectedPoolDetail, reloadSelectedPoolDetailMaya])
 
   const poolAssetsRD: PoolAssetsRD = useObservableState(availableAssets$, RD.initial)
 
@@ -193,7 +191,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
   )
 
   const { openExplorerTxUrl: openRuneExplorerTxUrl, getExplorerTxUrl: getRuneExplorerTxUrl } = useOpenExplorerTxUrl(
-    O.some(dex.chain)
+    O.some(protocol)
   )
 
   const protocolLimitReached = useMemo(
@@ -210,7 +208,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
     asset,
     dexAssetAddress: dexWalletAddress.address,
     assetAddress: assetWalletAddress.address,
-    dex
+    protocol
   })
 
   const openAsymDepositTool = useCallback(
@@ -231,7 +229,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
           openAssetExplorerTxUrl={openAssetExplorerTxUrl}
           getRuneExplorerTxUrl={getRuneExplorerTxUrl}
           getAssetExplorerTxUrl={getAssetExplorerTxUrl}
-          onChangeAsset={FP.constVoid}
+          onChangeAsset={onChangeAsset}
           asset={assetWD}
           walletBalances={balancesState}
           fees$={symDepositFees$}
@@ -242,8 +240,8 @@ export const SymDepositView: React.FC<Props> = (props) => {
           disabled={true}
           poolAddress={O.none}
           reloadBalances={reloadBalances}
-          reloadShares={dex.chain === THORChain ? reloadShares : reloadSharesMaya}
-          reloadSelectedPoolDetail={dex.chain === THORChain ? reloadSelectedPoolDetail : reloadSelectedPoolDetailMaya}
+          reloadShares={protocol === THORChain ? reloadShares : reloadSharesMaya}
+          reloadSelectedPoolDetail={protocol === THORChain ? reloadSelectedPoolDetail : reloadSelectedPoolDetailMaya}
           poolData={ZERO_POOL_DATA}
           deposit$={symDeposit$}
           asymDeposit$={asymDeposit$}
@@ -261,7 +259,6 @@ export const SymDepositView: React.FC<Props> = (props) => {
           assetWalletType={assetWalletAddress.type}
           runeWalletType={dexWalletAddress.type}
           hidePrivateData={isPrivate}
-          dex={dex}
         />
       </>
     ),
@@ -272,13 +269,14 @@ export const SymDepositView: React.FC<Props> = (props) => {
       openAssetExplorerTxUrl,
       getRuneExplorerTxUrl,
       getAssetExplorerTxUrl,
+      onChangeAsset,
       assetWD,
       balancesState,
       symDepositFees$,
       approveFee$,
       pricePool,
       reloadBalances,
-      dex,
+      protocol,
       reloadShares,
       reloadSharesMaya,
       reloadSelectedPoolDetail,
@@ -312,46 +310,43 @@ export const SymDepositView: React.FC<Props> = (props) => {
           PoolHelpers.disablePoolActions({ chain, haltedChains, mimirHalt })
 
         return (
-          <>
-            <SymDeposit
-              disableDepositAction={disableDepositAction}
-              validatePassword$={validatePassword$}
-              openRuneExplorerTxUrl={openRuneExplorerTxUrl}
-              openAssetExplorerTxUrl={openAssetExplorerTxUrl}
-              getRuneExplorerTxUrl={getRuneExplorerTxUrl}
-              getAssetExplorerTxUrl={getAssetExplorerTxUrl}
-              poolData={toPoolData(poolDetail)}
-              onChangeAsset={onChangeAsset}
-              asset={assetWD}
-              walletBalances={balancesState}
-              poolAddress={oPoolAddress}
-              fees$={symDepositFees$}
-              reloadFees={reloadSymDepositFees}
-              approveFee$={approveFee$}
-              reloadApproveFee={reloadApproveFee}
-              pricePool={pricePool}
-              reloadBalances={reloadBalances}
-              reloadShares={dex.chain === THORChain ? reloadShares : reloadSharesMaya}
-              reloadSelectedPoolDetail={reloadSelectedPoolDetail}
-              availableAssets={availableAssets}
-              deposit$={symDeposit$}
-              asymDeposit$={asymDeposit$}
-              network={network}
-              approveERC20Token$={approveERC20Token$}
-              isApprovedERC20Token$={isApprovedERC20Token$}
-              protocolLimitReached={protocolLimitReached}
-              poolDetails={poolDetails}
-              poolsData={poolsData}
-              symPendingAssets={symPendingAssets}
-              hasAsymAssets={hasAsymAssets}
-              symAssetMismatch={symAssetMismatch}
-              openAsymDepositTool={openAsymDepositTool}
-              assetWalletType={assetWalletAddress.type}
-              runeWalletType={dexWalletAddress.type}
-              hidePrivateData={isPrivate}
-              dex={dex}
-            />
-          </>
+          <SymDeposit
+            disableDepositAction={disableDepositAction}
+            validatePassword$={validatePassword$}
+            openRuneExplorerTxUrl={openRuneExplorerTxUrl}
+            openAssetExplorerTxUrl={openAssetExplorerTxUrl}
+            getRuneExplorerTxUrl={getRuneExplorerTxUrl}
+            getAssetExplorerTxUrl={getAssetExplorerTxUrl}
+            poolData={toPoolData(poolDetail)}
+            onChangeAsset={onChangeAsset}
+            asset={assetWD}
+            walletBalances={balancesState}
+            poolAddress={oPoolAddress}
+            fees$={symDepositFees$}
+            reloadFees={reloadSymDepositFees}
+            approveFee$={approveFee$}
+            reloadApproveFee={reloadApproveFee}
+            pricePool={pricePool}
+            reloadBalances={reloadBalances}
+            reloadShares={protocol === THORChain ? reloadShares : reloadSharesMaya}
+            reloadSelectedPoolDetail={reloadSelectedPoolDetail}
+            availableAssets={availableAssets}
+            deposit$={symDeposit$}
+            asymDeposit$={asymDeposit$}
+            network={network}
+            approveERC20Token$={approveERC20Token$}
+            isApprovedERC20Token$={isApprovedERC20Token$}
+            protocolLimitReached={protocolLimitReached}
+            poolDetails={poolDetails}
+            poolsData={poolsData}
+            symPendingAssets={symPendingAssets}
+            hasAsymAssets={hasAsymAssets}
+            symAssetMismatch={symAssetMismatch}
+            openAsymDepositTool={openAsymDepositTool}
+            assetWalletType={assetWalletAddress.type}
+            runeWalletType={dexWalletAddress.type}
+            hidePrivateData={isPrivate}
+          />
         )
       }
     )

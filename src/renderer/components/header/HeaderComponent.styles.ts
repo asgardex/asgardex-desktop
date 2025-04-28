@@ -1,25 +1,11 @@
-import { Network } from '@xchainjs/xchain-client'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Layout, Row, Drawer } from 'antd'
-import Text from 'antd/lib/typography/Text'
 import styled from 'styled-components'
 import { palette, size } from 'styled-theme'
-
-import { Dex } from '../../../shared/api/types'
-import { ReactComponent as UIAsgardexLogo } from '../../assets/svg/logo-asgardex.svg'
 
 export const HeaderContainer = styled(Layout.Header)`
   height: ${size('headerHeight', '70px')};
   width: 100%;
-  background-color: ${palette('background', 3)};
 
-  /* id's defined in svg */
-  #asgardex_logo {
-    > * {
-      fill: ${palette('text', 1)};
-    }
-  }
   /* Make sure following id's are defined in svg */
   #menu_icon,
   #close_icon,
@@ -63,72 +49,6 @@ export const HeaderContainer = styled(Layout.Header)`
   padding: 0px;
 `
 
-export const AsgardexLogo = styled(UIAsgardexLogo)`
-  margin-top: 8px;
-`
-
-export const DexLabel = styled(Text)<{ dex: Dex }>`
-  position: absolute;
-  left: 88px;
-  bottom: -13px;
-  text-transform: uppercase;
-  padding: 0;
-  font-family: 'MainFontRegular';
-  font-size: 12px;
-
-  color: ${({ dex }) => {
-    switch (dex.chain) {
-      case THORChain:
-        return palette('primary', 0)
-      case MAYAChain:
-        return palette('secondary', 0)
-      default:
-        return palette('text', 2)
-    }
-  }};
-`
-
-export const NetworkLabel = styled(Text)<{ network: Network; dex: Dex }>`
-  position: absolute;
-  right: 19px;
-  bottom: -13px;
-  text-transform: uppercase;
-  padding: 0;
-  font-family: 'MainFontRegular';
-  font-size: 12px;
-
-  color: ${({ network, dex }) => {
-    if (dex.chain === THORChain) {
-      switch (network) {
-        case Network.Mainnet:
-          return palette('primary', 0)
-        case Network.Stagenet:
-          return palette('danger', 1)
-        case Network.Testnet:
-          return palette('warning', 0)
-        default:
-          return palette('text', 2)
-      }
-    } else {
-      switch (network) {
-        case Network.Mainnet:
-          return palette('secondary', 0)
-        case Network.Stagenet:
-          return palette('danger', 1)
-        case Network.Testnet:
-          return palette('warning', 0)
-        default:
-          return palette('text', 2)
-      }
-    }
-  }};
-`
-
-export const LogoWrapper = styled.div`
-  position: relative;
-  height: ${size('headerHeight', '70px')};
-`
-
 export const HeaderDrawer = styled(Drawer)`
   .ant-drawer-body {
     margin: 4px 4px 0px 4px;
@@ -154,7 +74,7 @@ export const HeaderDrawerItem = styled(Row)<{ selected?: boolean }>`
   text-transform: uppercase;
   font-family: 'MainFontSemiBold';
   font-size: 18px;
-  color: ${({ selected }) => (selected ? palette('primary', 0) : palette('text', 1))};
+  color: ${({ selected }) => (selected ? palette('primary', 2) : palette('text', 1))};
   &.last {
     border: none;
   }

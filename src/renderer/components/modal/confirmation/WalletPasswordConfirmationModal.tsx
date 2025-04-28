@@ -107,7 +107,7 @@ const PasswordModal: React.FC<PasswordModalProps> = (props): JSX.Element => {
 /**
  * Wrapper around `PasswordModal` to validate password using `validatePassword$` stream
  */
-export type Props = {
+type Props = {
   onSuccess: FP.Lazy<void>
   onClose: FP.Lazy<void>
   validatePassword$: (_: string) => ValidatePasswordLD

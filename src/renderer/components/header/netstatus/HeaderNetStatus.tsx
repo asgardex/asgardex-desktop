@@ -14,11 +14,11 @@ import { OnlineStatus } from '../../../services/app/types'
 import {
   MidgardStatusRD as MidgardMayaStatusRD,
   MidgardUrlRD as MidgardMayaUrlRD
-} from '../../../services/mayaMigard/types'
-import { MidgardStatusRD, MidgardUrlRD } from '../../../services/midgard/types'
+} from '../../../services/midgard/midgardTypes'
+import { MidgardStatusRD, MidgardUrlRD } from '../../../services/midgard/midgardTypes'
 import { MimirRD } from '../../../services/thorchain/types'
 import { DownIcon } from '../../icons'
-import { ConnectionStatus } from '../../shared/icons/ConnectionStatus'
+import { ConnectionStatus } from '../../shared/icons'
 import { Menu } from '../../shared/menu/Menu'
 import { headerNetStatusSubheadline, headerNetStatusColor, HeaderNetStatusColor } from '../Header.util'
 import { HeaderDrawerItem } from '../HeaderComponent.styles'

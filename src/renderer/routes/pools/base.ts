@@ -27,10 +27,3 @@ export const savers: Route<void> = {
     return this.template
   }
 }
-
-export const lending: Route<void> = {
-  template: `${base.template}/lending`,
-  path() {
-    return this.template
-  }
-}

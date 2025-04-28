@@ -8,13 +8,17 @@ export const base: Route<void> = {
     return this.template
   }
 }
-export type DepositRouteParams = { asset: string; assetWalletType: WalletType; runeWalletType: WalletType }
+export type DepositRouteParams = {
+  asset: string
+  assetWalletType: WalletType
+  dexWalletType: WalletType
+}
 export const deposit: Route<DepositRouteParams> = {
   template: `${base.template}/:asset/:assetWalletType/:runeWalletType`,
-  path: ({ asset, assetWalletType, runeWalletType }) => {
+  path: ({ asset, assetWalletType, dexWalletType }) => {
     // Don't accept empty string for asset
     if (asset) {
-      return `${base.template}/${asset.toLowerCase()}/${assetWalletType}/${runeWalletType}`
+      return `${base.template}/${asset}/${assetWalletType}/${dexWalletType}`
     }
     // Redirect to base route if asset param is empty
     return base.path()

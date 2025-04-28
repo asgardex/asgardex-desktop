@@ -19,7 +19,6 @@ import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { Dex } from '../../../shared/api/types'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import * as ARB from '../arb'
 import * as AVAX from '../avax'
@@ -35,7 +34,7 @@ import * as ETH from '../ethereum'
 import * as KUJI from '../kuji'
 import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
-import { selectedPoolChain$ } from '../midgard/common'
+import { selectedPoolChain$ } from '../midgard/thorMidgard/common'
 import * as XRD from '../radix'
 import * as SOL from '../solana'
 import * as THOR from '../thorchain'
@@ -82,14 +81,14 @@ export const clientByChain$ = (chain: Chain): XChainClient$ => {
   }
 }
 
-export const clientByAsset$ = (asset: AnyAsset, dex: Dex): XChainClient$ => {
+export const clientByAsset$ = (asset: AnyAsset, protocol: Chain): XChainClient$ => {
   const chain = asset.chain
   if (!isSupportedChain(chain)) return Rx.of(O.none)
 
   // If the asset is synthetic, use the respective client based on dex.chain
   if (asset.type === AssetType.SYNTH) {
-    if (dex.chain === THORChain) return THOR.client$
-    if (dex.chain === MAYAChain) return MAYA.client$
+    if (protocol === THORChain) return THOR.client$
+    if (protocol === MAYAChain) return MAYA.client$
   }
 
   switch (chain) {

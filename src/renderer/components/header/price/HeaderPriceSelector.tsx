@@ -8,7 +8,7 @@ import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
-import { SelectedPricePoolAsset } from '../../../services/midgard/types'
+import { SelectedPricePoolAsset } from '../../../services/midgard/midgardTypes'
 import { PricePoolAsset, PricePoolAssets } from '../../../views/pools/Pools.types'
 import { DownIcon } from '../../icons'
 import { Menu } from '../../shared/menu/Menu'
@@ -24,7 +24,7 @@ export type Props = {
   changeHandler?: (asset: PricePoolAsset) => void
 }
 
-export const HeaderPriceSelector: React.FC<Props> = (props): JSX.Element => {
+export const HeaderPriceSelector = (props: Props): JSX.Element => {
   const { assets, selectedAsset, isDesktopView, disabled = false, changeHandler = (_) => {} } = props
 
   const changeItem: MenuProps['onClick'] = useCallback(

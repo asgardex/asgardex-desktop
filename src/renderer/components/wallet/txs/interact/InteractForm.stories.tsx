@@ -38,7 +38,8 @@ const mockNodeInfo = (address: Address) => ({
     nodeOperatorFee: baseAmount(100000000 * 400000),
     providers: []
   },
-  signMembership: []
+  signMembership: [],
+  pubKeySet: {}
 })
 
 const Template = ({ interactType, txRDStatus, feeRDStatus, balance, validAddress, walletType }: Args) => {

@@ -91,17 +91,14 @@ export const isInteractType = (u: unknown): u is InteractType =>
   u === InteractType.Custom ||
   u === InteractType.THORName ||
   u === InteractType.MAYAName ||
-  u === InteractType.RunePool
+  u === InteractType.RunePool ||
+  u === InteractType.Whitelist
 
 export const getInteractTypeFromNullableString = (s?: string): O.Option<InteractType> =>
   FP.pipe(s, optionFromNullableString, O.chain(O.fromPredicate(isInteractType)))
 
 export const findNodeIndex = (nodes: NodeInfos, inputaddress: string) => {
-  return nodes.findIndex(
-    ({ address, status, signMembership }) =>
-      (address.toLowerCase() === inputaddress && status === 'Active') ||
-      (signMembership.includes(inputaddress) && status === 'Standby')
-  )
+  return nodes.findIndex(({ address, status }) => address.toLowerCase() === inputaddress && status === 'Active')
 }
 
 export const getRunePoolWithdrawBps = (amountOne: BaseAmount, amountTwo: BaseAmount): number => {

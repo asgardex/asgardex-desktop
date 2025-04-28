@@ -14,7 +14,7 @@ import {
   explorerUrl$
 } from '../services/bitcoincash'
 
-export type BitcoinCashContextValue = {
+type BitcoinCashContextValue = {
   client$: typeof client$
   clientState$: typeof clientState$
   address$: typeof address$

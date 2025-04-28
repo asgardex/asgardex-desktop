@@ -2,8 +2,6 @@ import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
-import { Label } from '../label'
-
 export const Alert = styled(A.Alert)`
   /* description */
   &.ant-alert {
@@ -63,9 +61,4 @@ export const Alert = styled(A.Alert)`
       color: ${palette('error', 0)};
     }
   }
-`
-
-export const Description = styled(Label)`
-  color: ${palette('text', 1)};
-  padding: 0;
 `

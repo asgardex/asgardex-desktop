@@ -26,7 +26,7 @@ export const createFeesService = (client$: Client$): FeesService => {
           oClient,
           O.fold(
             () => Rx.EMPTY, // If no client, return an empty observable
-            (client) => Rx.from(client.getFees(reloadFeesParams || params))
+            (client) => Rx.from(client.getFees(params || reloadFeesParams))
           )
         )
       ),

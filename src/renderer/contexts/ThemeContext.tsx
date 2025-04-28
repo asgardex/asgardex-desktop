@@ -12,19 +12,7 @@ import { observableState } from '../helpers/stateHelper'
 
 const THEME_TYPE = 'asgdx-theme'
 
-export const themes: typeof t = {
-  ...t,
-  dark: {
-    ...t.dark,
-    // extend background colors - needed for bg of table rows
-    palette: { ...t.dark.palette, background: [...t.dark.palette.background, '#252c33'] }
-  },
-  light: {
-    ...t.light,
-    // extend background colors - needed for bg of table rows
-    palette: { ...t.light.palette, background: [...t.light.palette.background, '#ededed'] }
-  }
-}
+export const themes = t
 
 const initialTheme = (): ThemeType => (localStorage.getItem(THEME_TYPE) as ThemeType) || ThemeType.LIGHT
 

@@ -1,29 +1,42 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { DesktopOutlined } from '@ant-design/icons'
+import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
-import { Address, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
+import { Address, assetToString, BaseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { ColumnType } from 'antd/lib/table'
 import clsx from 'clsx'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
+import { useObservableState } from 'observable-hooks'
 import { FormattedMessage, useIntl } from 'react-intl'
 
+import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { truncateAddress } from '../../../helpers/addressHelper'
+import { getChainAsset } from '../../../helpers/chainHelper'
 import { useMimirConstants } from '../../../hooks/useMimirConstants'
-import { NodeInfo, NodeInfos, Providers } from '../../../services/thorchain/types'
-import { WalletAddressInfo } from '../../../views/wallet/BondsView'
+import { usePricePoolMaya } from '../../../hooks/usePricePoolMaya'
+import {
+  NodeInfo as MayaNodeInfo,
+  NodeInfos as MayaNodeInfos,
+  Providers as MayaProviders
+} from '../../../services/mayachain/types'
+import { NodeInfo as ThorNodeInfo, NodeInfos as ThorNodeInfos, Providers } from '../../../services/thorchain/types'
+import { WalletAddressInfo } from '../../../views/bonds/types'
 import { ConfirmationModal } from '../../modal/confirmation'
 import { RemoveAddressIcon } from '../../settings/WalletSettings.styles'
+import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { BaseButton, TextButton } from '../../uielements/button'
 import { ExternalLinkIcon, Tooltip } from '../../uielements/common/Common.styles'
+import { BondProviderInfo } from './BondProviderInfo'
 import * as Styled from './BondsTable.styles'
 import * as H from './helpers'
 
 type Props = {
-  nodes: NodeInfos
+  nodes: ThorNodeInfos | MayaNodeInfos
+  protocol: string // THORChain or MAYAChain
   watchlist?: string[]
   loading?: boolean
   addWatchlist: (nodeOrBond: Address, network: Network) => void
@@ -35,14 +48,16 @@ type Props = {
   className?: string
   walletAddresses: Record<'THOR' | 'MAYA', WalletAddressInfo[]>
 }
+
 interface CustomExpandIconProps {
   expanded: boolean
-  onExpand: (record: string, event: React.MouseEvent<HTMLSpanElement, MouseEvent>) => void // Adjusted for <span>// Adjust YourRecordType accordingly
+  onExpand: (record: string, event: React.MouseEvent<HTMLSpanElement, MouseEvent>) => void
   record: string
 }
 
 export const BondsTable: React.FC<Props> = ({
   nodes,
+  protocol,
   watchlist = [],
   addWatchlist,
   removeWatchlist,
@@ -57,17 +72,25 @@ export const BondsTable: React.FC<Props> = ({
   const intl = useIntl()
   const { MINIMUMBONDINRUNE: minBondInRune } = useMimirConstants(['MINIMUMBONDINRUNE'])
   const [nodeToRemove, setNodeToRemove] = useState<O.Option<Address>>(O.none)
+  const pricePoolMaya = usePricePoolMaya()
+  const {
+    service: {
+      pools: { allPoolDetails$: allPoolDetailsMaya$ }
+    }
+  } = useMidgardMayaContext()
+
+  const poolDetailsRD = useObservableState(allPoolDetailsMaya$, RD.pending)
 
   const isMyAddress = useCallback(
     (bondAddress: string) => {
       const match = [...walletAddresses.THOR, ...walletAddresses.MAYA].find((addr) => addr.address === bondAddress)
-
       return match !== undefined
     },
     [walletAddresses]
   )
 
-  const columns: ColumnType<NodeInfo>[] = useMemo(
+  // Common columns for both THORChain and MayaChain
+  const baseColumns: ColumnType<ThorNodeInfo | MayaNodeInfo>[] = useMemo(
     () => [
       {
         key: 'watch',
@@ -103,20 +126,6 @@ export const BondsTable: React.FC<Props> = ({
         align: 'left'
       },
       {
-        key: 'bond',
-        width: 150,
-        title: intl.formatMessage({ id: 'bonds.bond' }),
-        render: (_, data) => <H.BondValue data={data} />,
-        align: 'right'
-      },
-      {
-        key: 'award',
-        width: 150,
-        title: intl.formatMessage({ id: 'bonds.award' }),
-        align: 'right',
-        render: (_, data) => <H.AwardValue data={data} />
-      },
-      {
         key: 'status',
         width: 100,
         title: intl.formatMessage({ id: 'bonds.status' }),
@@ -135,17 +144,78 @@ export const BondsTable: React.FC<Props> = ({
     ],
     [intl, network, addWatchlist, goToNode]
   )
+
+  // THORChain-specific columns
+  const thorColumns: ColumnType<ThorNodeInfo | MayaNodeInfo>[] = useMemo(
+    () => [
+      ...baseColumns,
+      {
+        key: 'bond',
+        width: 150,
+        title: intl.formatMessage({ id: 'bonds.bond' }),
+        render: (_, data) => <H.BondValue data={data} />,
+        align: 'right'
+      },
+      {
+        key: 'award',
+        width: 150,
+        title: intl.formatMessage({ id: 'bonds.award' }),
+        align: 'right',
+        render: (_, data) => <H.AwardValue data={data} />
+      }
+    ],
+    [baseColumns, intl]
+  )
+
+  // MayaChain-specific columns with nested Pools
+  const mayaColumns: ColumnType<ThorNodeInfo | MayaNodeInfo>[] = useMemo(
+    () => [
+      ...baseColumns,
+      {
+        key: 'bond',
+        width: 150,
+        title: intl.formatMessage({ id: 'bonds.bond' }),
+        render: (_, data) => <H.BondValueMaya data={data} />,
+        align: 'right'
+      },
+      {
+        key: 'pools',
+        width: 200,
+        title: 'Bonded Pools',
+        render: (_, { bondProviders }: ThorNodeInfo | MayaNodeInfo) => {
+          // Collect all pools from all providers and deduplicate them
+          const allPools = (bondProviders.providers as MayaProviders[]).flatMap((provider) =>
+            provider.pools.map((pool) => assetToString(pool.asset))
+          )
+          const uniquePools = [...new Set(allPools)]
+
+          return (
+            <div className="flex flex-row items-center justify-end space-x-2">
+              {uniquePools.map((assetPool) => (
+                <AssetIcon
+                  key={assetPool}
+                  asset={getChainAsset(assetPool.split('.')[0])}
+                  size="small"
+                  network={network}
+                />
+              ))}
+            </div>
+          )
+        },
+        align: 'right'
+      }
+    ],
+    [baseColumns, intl, network]
+  )
+  const columns = protocol === THORChain ? thorColumns : mayaColumns
+
   const networkPrefix = network === 'mainnet' ? '' : 's'
 
   const getNodeChain = useCallback(
     (address: string) => {
-      if (address.startsWith(`${networkPrefix}maya`)) {
-        return MAYAChain
-      } else if (address.startsWith(`${networkPrefix}thor`)) {
-        return THORChain
-      } else {
-        return null // or throw an error if unexpected format
-      }
+      if (address.startsWith(`${networkPrefix}maya`)) return MAYAChain
+      if (address.startsWith(`${networkPrefix}thor`)) return THORChain
+      return null
     },
     [networkPrefix]
   )
@@ -165,38 +235,32 @@ export const BondsTable: React.FC<Props> = ({
   }, [collapseAll, nodes])
 
   useEffect(() => {
-    const chains: (keyof typeof walletAddresses)[] = ['THOR', 'MAYA']
+    const updateMatchedNodes = (nodeList: ThorNodeInfo[] | MayaNodeInfo[]) => {
+      const chains: (keyof typeof walletAddresses)[] = ['THOR', 'MAYA']
+      const matchedKeys: string[] = []
 
-    // Initialize an array to store all matched keys
-    const matchedKeys: string[] = []
+      for (const node of nodeList) {
+        node.bondProviders.providers.some((provider) =>
+          chains.some((chain) =>
+            walletAddresses[chain].some((walletAddress) => {
+              const networkPrefix = network === 'mainnet' ? '' : 's'
+              const isMatch =
+                (walletAddress.address.startsWith(`${networkPrefix}thor`) ||
+                  walletAddress.address.startsWith(`${networkPrefix}maya`)) &&
+                walletAddress.address === provider.bondAddress
 
-    for (const node of nodes) {
-      node.bondProviders.providers.some((provider) =>
-        chains.some((chain) =>
-          walletAddresses[chain].some((walletAddress) => {
-            const networkPrefix = network === 'mainnet' ? '' : 's'
-            const isMatch =
-              (walletAddress.address.startsWith(`${networkPrefix}thor`) ||
-                walletAddress.address.startsWith(`${networkPrefix}maya`)) &&
-              walletAddress.address === provider.bondAddress
-
-            if (isMatch) {
-              matchedKeys.push(node.address) // Store each matched key
-            }
-
-            return isMatch // Continue to check all providers and chains
-          })
+              if (isMatch) matchedKeys.push(node.address)
+              return isMatch
+            })
+          )
         )
-      )
+      }
+
+      setMatchedNodeAddress(matchedKeys)
+      setExpandedRowKeys(matchedKeys)
     }
 
-    if (matchedKeys.length > 0) {
-      setMatchedNodeAddress(matchedKeys)
-      setExpandedRowKeys(matchedKeys) // Expand all matched rows
-    } else {
-      setMatchedNodeAddress([])
-      setExpandedRowKeys([])
-    }
+    updateMatchedNodes(nodes)
   }, [network, nodes, walletAddresses])
 
   const removeConfirmationProps = useMemo(() => {
@@ -204,7 +268,6 @@ export const BondsTable: React.FC<Props> = ({
       nodeToRemove,
       O.getOrElse(() => '')
     )
-
     return {
       onClose: () => setNodeToRemove(O.none),
       onSuccess: () => removeNode(nodeAddress),
@@ -223,31 +286,30 @@ export const BondsTable: React.FC<Props> = ({
   }, [nodeToRemove, removeNode])
 
   const CustomExpandIcon: React.FC<CustomExpandIconProps> = ({ expanded, onExpand, record }) => (
-    <Styled.ExpandIcon onClick={(e) => onExpand(record, e)} rotate={expanded ? 90 : 0}></Styled.ExpandIcon>
+    <Styled.ExpandIcon onClick={(e) => onExpand(record, e)} rotate={expanded ? 90 : 0} />
   )
 
   const renderSubWalletType = useCallback(
     (bondAddress: string) => {
       let walletTypeLabel = 'Not a wallet address'
-
       const searchWalletAddresses = (addresses: WalletAddressInfo[], chainLabel: string) => {
         const match = addresses.find((addr) => addr.address === bondAddress)
-        if (match) {
-          walletTypeLabel = `${match.walletType} (${chainLabel})`
-        }
+        if (match) walletTypeLabel = `${match.walletType} (${chainLabel})`
       }
 
-      // Search in both THOR and MAYA wallet addresses
       searchWalletAddresses(walletAddresses.THOR, 'THOR')
       searchWalletAddresses(walletAddresses.MAYA, 'MAYA')
 
-      // Conditionally render the output based on whether a match was found
       return (
-        <div className="flex w-full items-center justify-between !text-11 text-text2 dark:text-text2d">
-          {walletTypeLabel !== 'Not a wallet address' && (
-            <Styled.TextLabel className="!text-11">{intl.formatMessage({ id: 'common.owner' })}</Styled.TextLabel>
+        <div className="flex w-full justify-between !text-11 text-text2 dark:text-text2d">
+          {walletTypeLabel !== 'Not a wallet address' ? (
+            <>
+              <Styled.TextLabel className="!text-11">{intl.formatMessage({ id: 'common.owner' })}</Styled.TextLabel>
+              <Styled.TextLabel className="!text-end !text-11">{walletTypeLabel}</Styled.TextLabel>
+            </>
+          ) : (
+            <Styled.TextLabel className="!text-11">{walletTypeLabel}</Styled.TextLabel>
           )}
-          {walletTypeLabel}
         </div>
       )
     },
@@ -255,55 +317,73 @@ export const BondsTable: React.FC<Props> = ({
   )
 
   const renderSubActions = useCallback(
-    (record) => {
+    (record: {
+      bondAddress: string
+      bondAmount?: BaseAmount
+      status: string
+      signMembership: string[]
+      nodeAddress: string
+    }) => {
       const { bondAddress, bondAmount, status, signMembership, nodeAddress } = record
-
-      // Check if the bond address matches a wallet address in either THOR or MAYA
       const matchedWalletInfo =
         walletAddresses.THOR.find((walletInfo) => walletInfo.address === bondAddress) ||
         walletAddresses.MAYA.find((walletInfo) => walletInfo.address === bondAddress)
-
-      // Check if the bond address belongs to the current user's wallet
       const isWalletAddress = !!matchedWalletInfo
-
       const nodeChain = getNodeChain(bondAddress)
-      const matchedAddresses = matchedNodeAddress.filter((address) => {
-        const addressChain = getNodeChain(address)
-        return addressChain === nodeChain
-      })
-
-      const isLeaveEligible = bondAmount.amount().gte(minBondInRune)
-
+      const matchedAddresses = matchedNodeAddress.filter((address) => getNodeChain(address) === nodeChain)
+      const isLeaveEligible = bondAmount ? baseToAsset(bondAmount).amount().gte(minBondInRune) : false
       const unbondDisabled =
         status === 'Active' || (status === 'Standby' && signMembership && signMembership.includes(nodeAddress))
-
-      // Store walletType for the address and pass it to bond/unbond actions
       const walletType = matchedWalletInfo?.walletType || 'Unknown'
 
       return (
-        <div className="mt-4 flex flex-grow items-end justify-center">
-          <TextButton
-            disabled={!isWalletAddress}
-            size="normal"
-            onClick={() => goToAction('bond', matchedAddresses[0], walletType)}>
-            {intl.formatMessage({ id: 'deposit.interact.actions.bond' })}
-          </TextButton>
-          <TextButton
-            disabled={!isWalletAddress || unbondDisabled}
-            size="normal"
-            onClick={() => goToAction('unbond', matchedAddresses[0], walletType)}>
-            {intl.formatMessage({ id: 'deposit.interact.actions.unbond' })}
-          </TextButton>
-          <TextButton
-            disabled={!isWalletAddress || !isLeaveEligible}
-            size="normal"
-            onClick={() => goToAction('leave', matchedAddresses[0], walletType)}>
-            {intl.formatMessage({ id: 'deposit.interact.actions.leave' })}
-          </TextButton>
+        <div className="flex flex-grow flex-col">
+          <div className="mt-4 w-full">
+            <div className="mt-2 flex items-center justify-between">
+              <Styled.TextLabel className="!text-11">
+                {intl.formatMessage({ id: 'bonds.bondProvider' })}
+              </Styled.TextLabel>
+              <span className="!text-14 lowercase text-text2 dark:text-text2d">
+                {truncateAddress(bondAddress, protocol, network)}
+              </span>
+            </div>
+            <div className="mt-2 flex items-center justify-between">{renderSubWalletType(bondAddress)}</div>
+          </div>
+          <div className="mt-4 flex items-center justify-center">
+            <TextButton
+              disabled={!isWalletAddress}
+              size="normal"
+              onClick={() => goToAction('bond', matchedAddresses[0] || nodeAddress, walletType)}>
+              {intl.formatMessage({ id: 'deposit.interact.actions.bond' })}
+            </TextButton>
+            <TextButton
+              disabled={!isWalletAddress || unbondDisabled}
+              size="normal"
+              onClick={() => goToAction('unbond', matchedAddresses[0] || nodeAddress, walletType)}>
+              {intl.formatMessage({ id: 'deposit.interact.actions.unbond' })}
+            </TextButton>
+            <TextButton
+              disabled={!isWalletAddress || !isLeaveEligible}
+              size="normal"
+              onClick={() => goToAction('leave', matchedAddresses[0] || nodeAddress, walletType)}>
+              {intl.formatMessage({ id: 'deposit.interact.actions.leave' })}
+            </TextButton>
+          </div>
         </div>
       )
     },
-    [walletAddresses.THOR, walletAddresses.MAYA, getNodeChain, matchedNodeAddress, minBondInRune, intl, goToAction]
+    [
+      walletAddresses.THOR,
+      walletAddresses.MAYA,
+      getNodeChain,
+      matchedNodeAddress,
+      minBondInRune,
+      intl,
+      protocol,
+      network,
+      renderSubWalletType,
+      goToAction
+    ]
   )
 
   return (
@@ -311,7 +391,7 @@ export const BondsTable: React.FC<Props> = ({
       <div className="flex justify-end">
         <BaseButton
           size="normal"
-          className="mx-4 mb-4 rounded-md border border-solid border-turquoise p-1 text-14 capitalize text-gray2 dark:border-gray1d dark:text-gray2d"
+          className="mx-4 mb-4 rounded-md border border-solid border-gray1 p-1 text-14 capitalize text-text2 dark:border-gray1d dark:text-text2d"
           onClick={handleCollapseAll}>
           {collapseAll
             ? intl.formatMessage({ id: 'common.collapseAll' })
@@ -324,81 +404,94 @@ export const BondsTable: React.FC<Props> = ({
         dataSource={nodes.map((node) => ({ ...node, key: node.address }))}
         loading={loading}
         expandable={{
-          expandedRowRender: (record) => (
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-              {record.bondProviders.providers.map((provider: Providers, index: string) => {
-                const isMonitoring = watchlist.includes(provider.bondAddress)
-                const isMyAddy = isMyAddress(provider.bondAddress)
+          expandedRowRender: (record) => {
+            if (protocol === THORChain) {
+              const thorRecord = record as ThorNodeInfo
+              return (
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+                  {thorRecord.bondProviders.providers.map((provider: Providers, index: number) => {
+                    const isMonitoring = watchlist.includes(provider.bondAddress)
+                    const isMyAddy = isMyAddress(provider.bondAddress)
 
-                return (
-                  <div
-                    key={`${record.address}-${index}`}
-                    className={clsx(
-                      'flex flex-col rounded-lg border border-solid border-gray0 p-4 dark:border-gray0d',
-                      { ' bg-gray0 dark:bg-gray0d': !isMonitoring && !isMyAddy },
-                      { 'bg-transparent': isMonitoring && !isMyAddy },
-                      { 'bg-turquoise/20': isMyAddy }
-                    )}>
-                    <div className="flex items-center justify-between">
-                      <Styled.TextLabel className="!text-18">
-                        {formatAssetAmountCurrency({
-                          asset: provider.bondAddress.startsWith('thor') ? AssetRuneNative : AssetCacao,
-                          amount: baseToAsset(provider.bond),
-                          trimZeros: true,
-                          decimal: 0
+                    return (
+                      <div
+                        key={`${record.address}-${index}`}
+                        className={clsx(
+                          'flex flex-col rounded-lg border border-solid border-gray0 p-4 dark:border-gray0d',
+                          { 'bg-gray0 dark:bg-gray0d': !isMonitoring && !isMyAddy },
+                          { 'bg-transparent': isMonitoring && !isMyAddy },
+                          { 'bg-turquoise/20': isMyAddy }
+                        )}>
+                        <div className="flex items-center justify-between">
+                          <Styled.TextLabel className="!text-18">
+                            {formatAssetAmountCurrency({
+                              asset: AssetRuneNative,
+                              amount: baseToAsset(provider.bond),
+                              trimZeros: true,
+                              decimal: 0
+                            })}
+                          </Styled.TextLabel>
+                          {isMonitoring ? (
+                            <Styled.DeleteButton>
+                              <Tooltip title="Remove this bond provider from the watch list">
+                                <RemoveAddressIcon onClick={() => removeWatchlist(provider.bondAddress, network)} />
+                              </Tooltip>
+                            </Styled.DeleteButton>
+                          ) : (
+                            <Styled.WatchlistButton>
+                              <Tooltip title="Add this bond provider to the watch list">
+                                <DesktopOutlined onClick={() => addWatchlist(provider.bondAddress, network)} />
+                              </Tooltip>
+                            </Styled.WatchlistButton>
+                          )}
+                        </div>
+                        {renderSubActions({
+                          bondAddress: provider.bondAddress,
+                          bondAmount: provider.bond,
+                          status: record.status,
+                          signMembership: record.signMembership,
+                          nodeAddress: record.address
                         })}
-                      </Styled.TextLabel>
-                      {/* TODO: locale (cinnamoroll) */}
-                      {isMonitoring ? (
-                        <Styled.DeleteButton>
-                          <Tooltip title="Remove this bond provider from the watch list">
-                            <RemoveAddressIcon onClick={() => removeWatchlist(provider.bondAddress, network)} />
-                          </Tooltip>
-                        </Styled.DeleteButton>
-                      ) : (
-                        <Styled.WatchlistButton>
-                          <Tooltip title="Add this bond provider to the watch list">
-                            <DesktopOutlined onClick={() => addWatchlist(provider.bondAddress, network)} />
-                          </Tooltip>
-                        </Styled.WatchlistButton>
-                      )}
-                    </div>
-                    <div className="mt-2 flex items-center justify-between">
-                      <Styled.TextLabel className="!text-11">
-                        {intl.formatMessage({ id: 'bonds.bondProvider' })}
-                      </Styled.TextLabel>
-                      <span className="!text-14 lowercase text-text2 dark:text-text2d">
-                        {truncateAddress(
-                          provider.bondAddress,
-                          provider.bondAddress.startsWith('thor') ? THORChain : MAYAChain,
-                          network
-                        )}
-                      </span>
-                    </div>
-                    <div className="mt-2 flex items-center justify-between">
-                      {renderSubWalletType(provider.bondAddress)}
-                    </div>
-                    {renderSubActions({
-                      bondAddress: provider.bondAddress,
-                      bondAmount: provider.bond,
-                      bond: record.status,
-                      signMembership: record.signMembership,
-                      nodeAddress: record.nodeAddress
-                    })}
-                    {record.nodeAddress}
-                  </div>
-                )
-              })}
-            </div>
-          ),
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            } else {
+              const mayaRecord = record as MayaNodeInfo
+              return (
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+                  {mayaRecord.bondProviders.providers.map((provider: MayaProviders, index: number) => (
+                    <BondProviderInfo
+                      key={`${record.address}-${index}`}
+                      provider={provider}
+                      nodeAddress={mayaRecord.address}
+                      network={network}
+                      pricePoolData={pricePoolMaya}
+                      poolDetails={poolDetailsRD}
+                      isMonitoring={watchlist.includes(provider.bondAddress)}
+                      isMyAddress={isMyAddress(provider.bondAddress)}
+                      addWatchlist={addWatchlist}
+                      removeWatchlist={removeWatchlist}
+                      renderSubActions={renderSubActions}
+                      recordStatus={record.status}
+                      recordSignMembership={record.signMembership}
+                      recordBond={record.bond}
+                    />
+                  ))}
+                </div>
+              )
+            }
+          },
           rowExpandable: (record) => record.bondProviders.providers.length > 0,
           expandedRowKeys: expandedRowKeys,
-          expandIcon: ({ expanded, onExpand, record }) => CustomExpandIcon({ expanded, onExpand, record }),
-          onExpand: (expanded, record) => {
-            if (expanded) {
-              setExpandedRowKeys((prevKeys) => [...prevKeys, record.address])
+          expandIcon: ({ expanded, onExpand, record }) =>
+            CustomExpandIcon({ expanded, onExpand, record: record.address }),
+          onExpand: (_, record) => {
+            if (expandedRowKeys.includes(record)) {
+              setExpandedRowKeys((prevKeys) => prevKeys.filter((key) => key !== record))
             } else {
-              setExpandedRowKeys((prevKeys) => prevKeys.filter((key) => key !== record.address))
+              setExpandedRowKeys((prevKeys) => [...prevKeys, record])
             }
           }
         }}

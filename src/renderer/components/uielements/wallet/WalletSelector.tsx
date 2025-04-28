@@ -43,18 +43,15 @@ export const WalletSelector: React.FC<Props> = (props): JSX.Element => {
           <div className={clsx('relative', className)}>
             <Listbox.Button
               as="div"
-              className={({ open }) =>
-                clsx(
-                  'group flex cursor-pointer items-center',
-                  'bg-bg0 py-10px pl-3 pr-10px dark:bg-bg0d',
-                  'font-main text-14 text-text0 dark:text-text0d',
-                  'transition duration-300 ease-in-out',
-                  'hover:shadow-full hover:dark:shadow-fulld',
-                  open ? 'shadow-full dark:shadow-fulld' : '',
-                  { 'opacity-70': disabled },
-                  buttonClassName
-                )
-              }>
+              className={clsx(
+                'group flex cursor-pointer items-center',
+                'bg-bg0 py-2 pl-3 pr-10px dark:bg-bg0d',
+                'border border-solid border-gray0 dark:border-gray0d',
+                'font-main text-14 text-text0 dark:text-text0d',
+                'transition duration-300 ease-in-out',
+                { 'opacity-70': disabled },
+                buttonClassName
+              )}>
               {({ open }) => (
                 <>
                   <span className="w-full">{selectedWallet.name}</span>
@@ -65,15 +62,10 @@ export const WalletSelector: React.FC<Props> = (props): JSX.Element => {
               )}
             </Listbox.Button>
             <Listbox.Options
-              className="
-              absolute z-[2000]
-              mt-[0px]
-            max-h-60 w-full overflow-auto
-            border
-            border-gray0 bg-bg0
-            focus:outline-none
-            dark:border-gray0d  dark:bg-bg0d
-            ">
+              className={clsx(
+                'absolute z-[2000] mt-0 max-h-60 w-full overflow-auto',
+                'border border-gray0 bg-bg0 focus:outline-none dark:border-gray0d dark:bg-bg0d'
+              )}>
               {FP.pipe(
                 wallets,
                 A.map((wallet) => {
@@ -82,17 +74,13 @@ export const WalletSelector: React.FC<Props> = (props): JSX.Element => {
                     <Listbox.Option
                       disabled={wallet.id === selectedWallet.id}
                       className={({ selected }) =>
-                        `flex w-full
-                      select-none
-                      items-center justify-between
-                      py-10px pl-20px pr-10px
-                      ${selected && 'text-gray2 dark:text-gray2d'}
-                      ${selected ? 'cursor-disabled' : 'cursor-pointer'}
-                      font-main text-14 text-text0
-                      dark:text-text0d
-                      ${!selected && 'hover:bg-gray0 hover:text-gray2'}
-                      ${!selected && 'hover:dark:bg-gray0d hover:dark:text-gray2d'}
-                      `
+                        clsx(
+                          'flex w-full select-none items-center justify-between',
+                          'py-10px pl-20px pr-10px',
+                          'font-main text-14 text-text0 dark:text-text0d',
+                          selected ? 'cursor-disabled text-text2 dark:text-text2d' : 'cursor-pointer',
+                          selected ? '' : 'hover:bg-gray0 hover:text-text2 hover:dark:bg-gray0d hover:dark:text-text2d'
+                        )
                       }
                       key={wallet.id}
                       value={wallet}>

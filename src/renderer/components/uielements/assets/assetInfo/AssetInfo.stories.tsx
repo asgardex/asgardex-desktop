@@ -19,7 +19,7 @@ export const Template = ({ address, balance }: Args) => {
       walletInfo={FP.pipe(
         address,
         O.fromPredicate((s) => !!s),
-        O.map((address) => ({ address, network: Network.Testnet, walletType: WalletType.Keystore }))
+        O.map(() => ({ walletType: WalletType.Keystore }))
       )}
       asset={O.some(AssetRuneNative)}
       assetsWB={O.some([

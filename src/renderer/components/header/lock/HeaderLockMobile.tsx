@@ -7,7 +7,7 @@ import { KeystoreState } from '../../../services/wallet/types'
 import * as WU from '../../../services/wallet/util'
 import { LockIcon, UnlockIcon } from '../../icons'
 import { HeaderIconWrapper } from '../HeaderIcon.styles'
-import * as Styled from './HeaderLock.styles'
+import * as Styled from '../theme/HeaderTheme.styles'
 
 export type Props = {
   keystoreState: KeystoreState

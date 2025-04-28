@@ -2,7 +2,7 @@ import React from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
 
-import { TxType } from '../../../services/midgard/types'
+import { TxType } from '../../../services/midgard/midgardTypes'
 import { AssetWithAmount } from '../../../types/asgardex'
 
 export type ActionProps = {

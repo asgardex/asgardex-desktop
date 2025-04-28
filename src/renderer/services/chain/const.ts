@@ -10,8 +10,7 @@ import {
   TxTypes,
   SymDepositAddresses,
   SwapTxState,
-  StreamingTxState,
-  BorrowerDepositState
+  StreamingTxState
 } from './types'
 
 export const MAX_SWAP_STEPS = 3
@@ -42,12 +41,7 @@ export const INITIAL_SAVER_DEPOSIT_STATE: SaverDepositState = {
   stepsTotal: 3,
   deposit: RD.initial
 }
-export const INITIAL_BORROWER_DEPOSIT_STATE: BorrowerDepositState = {
-  step: 1,
-  depositTx: RD.initial,
-  stepsTotal: 3,
-  deposit: RD.initial
-}
+
 export const INITIAL_SAVER_WITHDRAW_STATE: WithdrawState = {
   step: 1,
   withdrawTx: RD.initial,

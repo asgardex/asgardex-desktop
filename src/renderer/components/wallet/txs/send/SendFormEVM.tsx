@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { Cog8ToothIcon } from '@heroicons/react/20/solid'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { FeeOption, Fees, Network } from '@xchainjs/xchain-client'
 import { validateAddress } from '@xchainjs/xchain-evm'
+import { MayaChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   bn,
@@ -16,31 +16,31 @@ import {
   formatAssetAmountCurrency,
   baseAmount,
   eqAsset,
-  CryptoAmount
+  CryptoAmount,
+  Chain
 } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
-import Tooltip from 'antd/es/tooltip'
 import { RadioChangeEvent } from 'antd/lib/radio'
 import BigNumber from 'bignumber.js'
-import clsx from 'clsx'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
-import { useIntl } from 'react-intl'
+import { FormattedMessage, useIntl } from 'react-intl'
 
-import { Dex, TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
-import { chainToString, isChainOfMaya } from '../../../../../shared/utils/chain'
+import { TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
+import { chainToString, isChainOfMaya, isChainOfThor } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../../const'
 import { isUSDAsset } from '../../../../helpers/assetHelper'
 import { getChainAsset } from '../../../../helpers/chainHelper'
-import { isEvmChain, isEvmToken } from '../../../../helpers/evmHelper'
+import { isEvmChainAsset, isEvmChainToken } from '../../../../helpers/evmHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../../helpers/poolHelperMaya'
 import { loadingString } from '../../../../helpers/stringHelper'
 import { getEVMAmountFromBalances } from '../../../../helpers/walletHelper'
+import { MayaScanPriceRD } from '../../../../hooks/useMayascanPrice'
 import { usePricePool } from '../../../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
@@ -53,8 +53,8 @@ import {
 } from '../../../../services/chain/types'
 import { FeesRD, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../../../services/clients'
 import { TxParams } from '../../../../services/evm/types'
-import { PoolDetails as PoolDetailsMaya, PoolAddress as PoolAddressMaya } from '../../../../services/mayaMigard/types'
-import { PoolAddress, PoolDetails } from '../../../../services/midgard/types'
+import { PoolDetails as PoolDetailsMaya } from '../../../../services/midgard/mayaMigard/types'
+import { PoolAddress, PoolDetails } from '../../../../services/midgard/midgardTypes'
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
@@ -68,13 +68,12 @@ import { ShowDetails } from '../../../uielements/showDetails'
 import { Slider } from '../../../uielements/slider'
 import { AccountSelector } from '../../account'
 import * as H from '../TxForm.helpers'
-import { checkMemo, memoCorrection } from '../TxForm.helpers'
 import * as Styled from '../TxForm.styles'
 import { validateTxAmountInput } from '../TxForm.util'
 import { DEFAULT_FEE_OPTION } from './Send.const'
 import * as Shared from './Send.shared'
 
-export type FormValues = {
+type FormValues = {
   recipient: Address
   amount: BigNumber
   memo?: string
@@ -95,8 +94,8 @@ export type Props = {
   network: Network
   poolDetails: PoolDetails | PoolDetailsMaya
   oPoolAddress: O.Option<PoolAddress>
-  oPoolAddressMaya: O.Option<PoolAddressMaya>
-  dex: Dex
+  oPoolAddressMaya: O.Option<PoolAddress>
+  mayaScanPrice: MayaScanPriceRD
 }
 
 export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
@@ -116,7 +115,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     network,
     oPoolAddress,
     oPoolAddressMaya,
-    dex
+    mayaScanPrice
   } = props
 
   const intl = useIntl()
@@ -126,13 +125,17 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()
-  const pricePool = !isChainOfMaya(asset.chain) ? pricePoolThor : pricePoolMaya
+  const pricePool = useMemo(
+    () => (!isChainOfMaya(asset.chain) ? pricePoolThor : pricePoolMaya),
+    [asset.chain, pricePoolThor, pricePoolMaya]
+  )
 
   const [selectedFeeOption, setSelectedFeeOption] = useState<FeeOption>(DEFAULT_FEE_OPTION)
 
   const [amountToSend, setAmountToSend] = useState<O.Option<BaseAmount>>(O.none)
   const [recipientAddress, setRecipientAddress] = useState<O.Option<Address>>(O.none)
   const [poolDeposit, setPoolDeposit] = useState<boolean>(false)
+  const [oProtocol, setProtocol] = useState<O.Option<Chain>>(O.none)
 
   const [warningMessage, setWarningMessage] = useState<string>('')
   const {
@@ -160,14 +163,11 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   const [feePriceValue, setFeePriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const [amountPriceValue, setAmountPriceValue] = useState<CryptoAmount>(new CryptoAmount(baseAmount(0), asset))
   const feesAvailable = useMemo(() => O.isSome(oFees), [oFees])
-
-  const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
   const [notAllowed, setNotAllowed] = useState<boolean>(false)
 
   const [currentMemo, setCurrentMemo] = useState<string>('')
-  const [affiliateTracking, setAffiliateTracking] = useState<string>('')
-  const isChainAsset = getChainAsset(asset.chain) === asset
 
+  const isChainAsset = isEvmChainAsset(asset)
   const oSavedAddresses: O.Option<TrustedAddress[]> = useMemo(
     () =>
       FP.pipe(O.fromNullable(trustedAddresses?.addresses), O.map(A.filter((address) => address.chain === asset.chain))),
@@ -175,28 +175,10 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   )
 
   const handleMemo = useCallback(() => {
-    let memoValue = form.getFieldValue('memo') as string
-
-    // Check if a swap memo is detected
-    if (checkMemo(memoValue) && network === Network.Mainnet) {
-      memoValue = memoCorrection(memoValue, network)
-      setSwapMemoDetected(true)
-
-      // Set affiliate tracking message
-      setAffiliateTracking(
-        isChainAsset
-          ? intl.formatMessage({ id: 'wallet.send.affiliateTracking' })
-          : intl.formatMessage({ id: 'wallet.send.notAllowed' })
-      ) //Swap memo detected 10bps affiliate fee applied
-      setNotAllowed(!isChainAsset) // don't allow erc to send memo
-    } else {
-      setSwapMemoDetected(false)
-      setNotAllowed(false) // reset if not a swap memo
-    }
-
+    const memoValue = form.getFieldValue('memo') as string
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
-  }, [form, intl, isChainAsset, network])
+  }, [form])
 
   const { inboundAddress, routers } = useMemo(() => {
     const inboundAddress = {
@@ -318,6 +300,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       if (inboundAddress[THORChain] === value || inboundAddress['MAYA'] === value) {
         const dexInbound = inboundAddress[THORChain] === value ? 'Thorchain' : 'Mayachain'
         const type = `${dexInbound} ${asset.chain} Inbound`
+        setProtocol(O.some(inboundAddress[THORChain] === value ? THORChain : MayaChain)) // if an inbound address is of TC we assume they want to deposit to TC else its mayachain
         setWarningMessage(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type: type }))
       } else {
         setWarningMessage('')
@@ -329,7 +312,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.inbound' }, { type }))
       }
     },
-    [inboundAddress, routers, intl, asset.chain]
+    [inboundAddress, routers.THOR, routers.MAYA, intl, asset.chain]
   )
 
   const handleSavedAddressSelect = useCallback(
@@ -401,7 +384,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     const amountValue = O.getOrElse(() => ZERO_BASE_AMOUNT)(amountToSend)
 
     const maxAmountPrice =
-      isPoolDetails(poolDetails) && dex.chain === THORChain
+      isPoolDetails(poolDetails) && isChainOfThor(asset.chain)
         ? getPoolPriceValue({
             balance: { asset, amount: maxAmount },
             poolDetails,
@@ -410,10 +393,11 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         : getPoolPriceValueM({
             balance: { asset, amount: maxAmount },
             poolDetails,
-            pricePool: pricePoolMaya
+            pricePool: pricePoolMaya,
+            mayaPriceRD: mayaScanPrice
           })
     const amountPrice =
-      isPoolDetails(poolDetails) && dex.chain === THORChain
+      isPoolDetails(poolDetails) && isChainOfThor(asset.chain)
         ? getPoolPriceValue({
             balance: { asset, amount: amountValue },
             poolDetails,
@@ -422,10 +406,11 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         : getPoolPriceValueM({
             balance: { asset, amount: amountValue },
             poolDetails,
-            pricePool: pricePoolMaya
+            pricePool: pricePoolMaya,
+            mayaPriceRD: mayaScanPrice
           })
     const assetFeePrice =
-      isPoolDetails(poolDetails) && dex.chain === THORChain
+      isPoolDetails(poolDetails) && isChainOfThor(sourceChainAsset.chain)
         ? getPoolPriceValue({
             balance: { asset: sourceChainAsset, amount: assetFee.baseAmount },
             poolDetails,
@@ -434,7 +419,8 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         : getPoolPriceValueM({
             balance: { asset: sourceChainAsset, amount: assetFee.baseAmount },
             poolDetails,
-            pricePool: pricePoolMaya
+            pricePool: pricePoolMaya,
+            mayaPriceRD: mayaScanPrice
           })
     if (O.isSome(assetFeePrice)) {
       const maxCryptoAmount = new CryptoAmount(assetFeePrice.value, pricePool.asset)
@@ -458,8 +444,8 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     network,
     poolDetails,
     sourceChainAsset,
-    dex,
-    pricePoolMaya
+    pricePoolMaya,
+    mayaScanPrice
   ])
 
   const priceFeeLabel = useMemo(() => {
@@ -637,11 +623,15 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         addressValidator(undefined, address)
           .then(() => {
             setRecipientAddress(O.some(address))
-            setNotAllowed(isNotAllowed)
           })
           .catch(() => {
             setRecipientAddress(O.none)
+            setNotAllowed(true)
           })
+      } else {
+        setRecipientAddress(O.none)
+        setNotAllowed(false)
+        setMatchedAddresses(O.none)
       }
     },
     [addressValidator, isChainAsset, oSavedAddresses, routers.MAYA, routers.THOR]
@@ -659,7 +649,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
 
     return result
   }, [amountToSend, recipientAddress, reloadFeesHandler, asset, currentMemo, walletAddress])
-  const [showMemo, setShowMemo] = useState(false)
+  // const [showMemo, setShowMemo] = useState(false)
 
   // only render memo field for chain asset.
   const renderMemo = () => {
@@ -698,8 +688,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
               asset,
               amount,
               feeOption: selectedFeeOption,
-              memo: currentMemo,
-              dex
+              memo: currentMemo
             })
           )
           return true
@@ -717,15 +706,14 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       walletAddress,
       asset,
       selectedFeeOption,
-      currentMemo,
-      dex
+      currentMemo
     ]
   )
   const submitDepositTx = useCallback(
     () =>
       FP.pipe(
-        sequenceTOption(amountToSend, oPoolAddress),
-        O.map(([amount, poolAddress]) => {
+        sequenceTOption(amountToSend, oPoolAddress, oPoolAddressMaya, oProtocol),
+        O.map(([amount, poolAddressThor, poolAddressMaya, protocol]) => {
           setSendTxStartTime(Date.now())
           subscribeDepositState(
             deposit$({
@@ -734,11 +722,11 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
               walletIndex,
               hdMode,
               sender: walletAddress,
-              poolAddress,
+              poolAddress: protocol === THORChain ? poolAddressThor : poolAddressMaya,
               asset,
               amount,
               memo: currentMemo,
-              dex
+              protocol: protocol
             })
           )
           return true
@@ -747,6 +735,8 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     [
       amountToSend,
       oPoolAddress,
+      oPoolAddressMaya,
+      oProtocol,
       subscribeDepositState,
       deposit$,
       walletType,
@@ -755,8 +745,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       hdMode,
       walletAddress,
       asset,
-      currentMemo,
-      dex
+      currentMemo
     ]
   )
 
@@ -787,15 +776,14 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
       )
 
       // extended description for ERC20 tokens only
-      const description1 =
-        isEvmChain(asset.chain) && isEvmToken(asset)
-          ? `${txtNeedsConnected} ${intl.formatMessage(
-              {
-                id: 'ledger.blindsign'
-              },
-              { chain: evmChainString }
-            )}`
-          : txtNeedsConnected
+      const description1 = isEvmChainToken(asset)
+        ? `${txtNeedsConnected} ${intl.formatMessage(
+            {
+              id: 'ledger.blindsign'
+            },
+            { chain: evmChainString }
+          )}`
+        : txtNeedsConnected
 
       const description2 = intl.formatMessage({ id: 'ledger.sign' })
 
@@ -897,19 +885,16 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
   useEffect(() => {
     if (RD.isFailure(uiFeesRD)) {
       // Perform the side effect when there is an error
-      setRecipientAddress(O.none)
       setAmountToSend(O.none)
       reloadFees()
     }
-    // Add uiFeesRD as a dependency to trigger the effect when it changes
-  }, [uiFeesRD, form, asset.chain, reloadFees])
+  }, [uiFeesRD, asset.chain, reloadFees])
 
   const addMaxAmountHandler = useCallback(() => setAmountToSend(O.some(maxAmount)), [maxAmount])
 
   const renderFeeOptions = useMemo(() => {
     const onChangeHandler = (e: RadioChangeEvent) => {
       setSelectedFeeOption(e.target.value)
-      setAmountToSend(amountToSend)
     }
     const disabled = !feesAvailable || isLoading
 
@@ -926,7 +911,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
         </StyledR.Radio>
       </StyledR.Radio.Group>
     )
-  }, [amountToSend, feeOptionsLabel, feesAvailable, isLoading, selectedFeeOption])
+  }, [feeOptionsLabel, feesAvailable, isLoading, selectedFeeOption])
 
   const handleOnKeyUp = useCallback(() => {
     setRecipientAddress(O.some(form.getFieldValue('recipient')))
@@ -997,25 +982,39 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
             <Styled.Fees fees={uiFeesRD} reloadFees={reloadFees} disabled={isLoading} />
             {renderFeeError}
             <Form.Item name="fee">{renderFeeOptions}</Form.Item>
-            {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
-            <Styled.SettingsWrapper onClick={() => setShowMemo(!showMemo)}>
-              <Tooltip title={intl.formatMessage({ id: 'deposit.advancedMode' })}>
-                <Cog8ToothIcon
-                  className={clsx('ease h-[20px] w-[20px] text-text2 dark:text-text2d', { 'rotate-180': showMemo })}
-                />
-              </Tooltip>
-            </Styled.SettingsWrapper>
-            {showMemo && (
-              <div>
-                <div className="flex w-full">
-                  <SwitchButton disabled={false} onChange={() => setPoolDeposit(!poolDeposit)}></SwitchButton>
+
+            {/* Advanced Settings Section */}
+            {isChainAsset && (
+              <div className="mt-2 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+                {/* Switch for Pool Deposit */}
+                <Styled.SwitchWrapper>
+                  <SwitchButton disabled={false} onChange={() => setPoolDeposit(!poolDeposit)} active={poolDeposit} />
                   {poolDeposit ? (
-                    <div className="pl-4 text-text2 dark:text-text2d">{`Send pool transaction on ${dex.chain}. Admin use only or risk losing your funds`}</div>
+                    <Styled.Alert>
+                      <span className="text-red-600 dark:text-red-400 font-semibold">
+                        <FormattedMessage
+                          id="deposit.poolTransactionWarning"
+                          defaultMessage="Send pool transaction on {protocol}. Dev use only or risk losing your funds"
+                          values={{
+                            protocol: FP.pipe(
+                              oProtocol,
+                              O.getOrElse(() => 'an unknown protocol')
+                            )
+                          }}
+                        />
+                      </span>
+                    </Styled.Alert>
                   ) : (
-                    <div className="pl-4 text-text2 dark:text-text2d">{`Transfer token ${asset.ticker}`}</div>
+                    <span className="text-gray-600 dark:text-gray-300">
+                      <FormattedMessage
+                        id="deposit.transferToken"
+                        defaultMessage="Transfer token {ticker}"
+                        values={{ ticker: asset.ticker }}
+                      />
+                    </span>
                   )}
-                </div>
-                {isChainAsset && renderMemo()}
+                </Styled.SwitchWrapper>
+                {<Styled.MemoWrapper>{renderMemo()}</Styled.MemoWrapper>}
               </div>
             )}
           </Styled.SubForm>

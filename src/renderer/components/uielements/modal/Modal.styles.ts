@@ -9,7 +9,7 @@ export const Modal = styled(A.Modal)`
   .ant-modal-header {
     padding: 10px 14px;
     text-align: center;
-    background: ${palette('gradient', 0)};
+    background: ${palette('primary', 2)};
     border: none;
     text-transform: uppercase;
     font-family: 'MainFontRegular';
@@ -68,11 +68,11 @@ export const Modal = styled(A.Modal)`
     &:hover,
     &:active,
     &:focus {
-      color: ${palette('primary', 0)};
+      color: ${palette('primary', 2)};
     }
 
     &.ant-btn-primary {
-      color: ${palette('primary', 0)};
+      color: ${palette('primary', 2)};
       border-color: ${palette('gray', 0)};
       &:hover,
       &:active,

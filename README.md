@@ -100,7 +100,8 @@ This is the developer source repository, general information, and download page 
 
 - 100% open-source (built by the community)
 - Security first
-- 10 bps affiliate fees on swaps - free Under $1000 
+- 30 bps affiliate fees only on swaps over $1001
+- No affiliate fee on: RunePool, LP, Saver actions. 
 
 ## ASGARDEX utilizes the following libraries, frameworks, and more:
 
@@ -116,7 +117,6 @@ _(in alphabetical order)_
 - [Prettier](https://github.com/prettier/prettier)
 - [ReactJS](https://github.com/facebook/react/)
 - [Styled Components](https://styled-components.com/)
-- [Testcafe](https://github.com/DevExpress/testcafe)
 - [RxJS](https://rxjs.dev/)
 - [Typescript](https://github.com/microsoft/TypeScript)
 - [xchainjs-lib](https://github.com/xchainjs/xchainjs-lib/)
@@ -124,7 +124,7 @@ _(in alphabetical order)_
 
 ## Installation
 
-It's recommended to use a Node version as same as Electron is running with (currently: [`Electron v26.0.x` / Node `18.16.1`](https://github.com/electron/releases#releases)). It's recommended to install [nvm](https://github.com/nvm-sh/nvm) to run as the same Node version locally as used for building ASGARDEX on CI.
+It's recommended to use a Node version as same as Electron is running with (currently: [`Electron 27` / Node `18.17`](https://www.electronjs.org/docs/latest/tutorial/electron-timelines)). It's recommended to install [nvm](https://github.com/nvm-sh/nvm) to run as the same Node version locally as used for building ASGARDEX on CI.
 
 ```bash
 git clone https://github.com/asgardex/asgardex-desktop.git asgardex

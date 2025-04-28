@@ -1,7 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Meta, StoryFn } from '@storybook/react'
 import { BTCChain, BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
-import { Network, TxHash } from '@xchainjs/xchain-client'
+import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, assetToBase, assetToString, baseAmount, bn } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
@@ -23,7 +23,6 @@ const targetAsset: SwapAsset = { asset: AssetBTC, decimal: BTC_DECIMAL, price: b
 
 /* Mock all (default) data needed by `Swap` commponent */
 const defaultProps: SwapProps = {
-  disableSwapAction: false,
   keystore: O.none,
   poolAssets: [AssetBTC, AssetRuneNative],
   assets: { source: sourceAsset, target: targetAsset },
@@ -41,9 +40,23 @@ const defaultProps: SwapProps = {
     router: O.some('router-address'),
     halted: false
   }),
-  poolDetails: [],
+  poolDetailsThor: [],
+  poolDetailsMaya: [],
   // mock successfull result of swap$
   swap$: (params) =>
+    Rx.of(params).pipe(
+      RxOp.tap((params) => console.log('swap$ ', params)),
+      RxOp.switchMap((_) =>
+        Rx.of<SwapState>({
+          ...INITIAL_SWAP_STATE,
+          step: 3,
+          swapTx: RD.success('tx-hash'),
+          swap: RD.success(true),
+          stepsTotal: 3
+        })
+      )
+    ),
+  swapCF$: (params) =>
     Rx.of(params).pipe(
       RxOp.tap((params) => console.log('swap$ ', params)),
       RxOp.switchMap((_) =>
@@ -89,11 +102,6 @@ const defaultProps: SwapProps = {
     ]),
     loading: false
   },
-  goToTransaction: (txHash) => {
-    console.log(txHash)
-    return Promise.resolve(true)
-  },
-  getExplorerTxUrl: (txHash: TxHash) => O.some(`url/asset-${txHash}`),
   // mock password validation
   // Password: "123"
   validatePassword$: mockValidatePassword$,

@@ -1,14 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
+import { debounce } from 'lodash'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { Dex } from '../../../shared/api/types'
 import { DEFAULT_ENABLED_CHAINS, EnabledChain } from '../../../shared/utils/chain'
 import { RefreshButton } from '../../components/uielements/button'
 import { AssetsNav } from '../../components/wallet/assets'
@@ -16,14 +15,13 @@ import { AssetsTableCollapsable } from '../../components/wallet/assets/AssetsTab
 import type { AssetAction } from '../../components/wallet/assets/AssetsTableCollapsable'
 import { TotalAssetValue } from '../../components/wallet/assets/TotalAssetValue'
 import { InteractType } from '../../components/wallet/txs/interact/Interact.types'
-import { CHAIN_WEIGHTS_THOR, CHAIN_WEIGHTS_MAYA, DEFAULT_WALLET_TYPE } from '../../const'
+import { CHAIN_WEIGHTS_THOR, DEFAULT_WALLET_TYPE } from '../../const'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
-import { useDex } from '../../hooks/useDex'
-import { useMayaScanPrice } from '../../hooks/useMayascanPrice'
+import { useObserveMayaScanPrice } from '../../hooks/useMayascanPrice'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useTotalWalletBalance } from '../../hooks/useWalletBalance'
@@ -33,6 +31,8 @@ import { reloadBalancesByChain } from '../../services/wallet'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ChainBalances, SelectedWalletAsset } from '../../services/wallet/types'
 import { useApp } from '../../store/app/hooks'
+import { useCoingecko } from '../../store/gecko/hooks'
+import { GECKO_MAP } from '../../types/generated/geckoMap'
 
 export const AssetsView: React.FC = (): JSX.Element => {
   const navigate = useNavigate()
@@ -40,9 +40,8 @@ export const AssetsView: React.FC = (): JSX.Element => {
 
   const { balancesState$, setSelectedAsset } = useWalletContext()
   const { network } = useNetwork()
-  const { dex } = useDex()
-  const { mayaScanPriceRD } = useMayaScanPrice()
   const { isPrivate } = useApp()
+  const { geckoPriceMap, fetchPrice: fetchCoingeckoPrice } = useCoingecko()
 
   const {
     service: {
@@ -59,8 +58,8 @@ export const AssetsView: React.FC = (): JSX.Element => {
       }
     }
   } = useMidgardMayaContext()
-
-  const combinedBalances$ = useTotalWalletBalance()
+  const { mayaScanPriceRD } = useObserveMayaScanPrice()
+  const combinedBalances$ = useTotalWalletBalance(mayaScanPriceRD)
 
   const [enabledChains, setEnabledChains] = useState<Set<EnabledChain>>(new Set())
   const [disabledChains, setDisabledChains] = useState<EnabledChain[]>([])
@@ -100,17 +99,56 @@ export const AssetsView: React.FC = (): JSX.Element => {
         return true
       })
     }
-    const getChainWeight = (chain: Chain, dex: Dex) => {
-      const weights = dex.chain === THORChain ? CHAIN_WEIGHTS_THOR : CHAIN_WEIGHTS_MAYA
-      return enabledChains.has(chain) ? weights[chain] : Infinity
+    const getChainWeight = (chain: Chain) => {
+      // Will apply CHAIN_WEIGHTS_THOR only
+      return enabledChains.has(chain) ? CHAIN_WEIGHTS_THOR[chain] : Infinity
     }
 
     // First, filter out duplicates
     const uniqueBalances = getUniqueChainBalances(chainBalances)
 
     // Then, sort the unique balances
-    return uniqueBalances.sort((a, b) => getChainWeight(a.chain, dex) - getChainWeight(b.chain, dex))
-  }, [chainBalances, dex, enabledChains])
+    return uniqueBalances.sort((a, b) => getChainWeight(a.chain) - getChainWeight(b.chain))
+  }, [chainBalances, enabledChains])
+
+  const availableAssets = useMemo(() => {
+    let assetArr: string[] = []
+
+    sortedBalances.forEach(({ balances }) => {
+      const assetIds =
+        balances._tag === 'RemoteSuccess' ? balances.value.map(({ asset }) => asset.symbol.toUpperCase()) : []
+      assetArr = [...assetArr, ...assetIds]
+    })
+
+    // Use Set to remove duplicates
+    const uniqueAssets = Array.from(new Set(assetArr))
+
+    // Map to Gecko IDs and filter out null values
+    return uniqueAssets.map((item) => GECKO_MAP?.[item] ?? null).filter((item) => item)
+  }, [sortedBalances])
+
+  const [lastFetchedAssets, setLastFetchedAssets] = useState<string>('')
+
+  const allChainsLoaded = useMemo(() => {
+    return chainBalances.every(({ balances }) => balances._tag !== 'RemoteInitial' && balances._tag !== 'RemotePending')
+  }, [chainBalances])
+
+  const debouncedFetchCoingeckoPrice = useMemo(
+    () =>
+      debounce((assets: string) => {
+        fetchCoingeckoPrice(assets)
+      }, 300),
+    [fetchCoingeckoPrice]
+  )
+  useEffect(() => {
+    if (allChainsLoaded) {
+      const currentAssets = availableAssets.join(',')
+      if (currentAssets !== lastFetchedAssets) {
+        debouncedFetchCoingeckoPrice(currentAssets)
+        setLastFetchedAssets(currentAssets)
+      }
+    }
+  }, [allChainsLoaded, availableAssets, debouncedFetchCoingeckoPrice, lastFetchedAssets])
 
   const [{ loading: loadingBalances }] = useObservableState(
     () => balancesState$(DEFAULT_BALANCES_FILTER),
@@ -191,6 +229,7 @@ export const AssetsView: React.FC = (): JSX.Element => {
         disableRefresh={disableRefresh}
         chainBalances={sortedBalances}
         pricePool={selectedPricePool}
+        geckoPrice={geckoPriceMap}
         mayaPricePool={selectedPricePoolMaya}
         poolDetails={poolDetails}
         poolDetailsMaya={poolDetailsMaya}
@@ -203,7 +242,6 @@ export const AssetsView: React.FC = (): JSX.Element => {
         mimirHalt={mimirHaltRD}
         network={network}
         hidePrivateData={isPrivate}
-        dex={dex}
         mayaScanPrice={mayaScanPriceRD}
         disabledChains={disabledChains}
       />

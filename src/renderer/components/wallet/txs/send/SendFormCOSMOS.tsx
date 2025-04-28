@@ -3,7 +3,9 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, AssetType, baseAmount, CryptoAmount, eqAsset } from '@xchainjs/xchain-util'
 import { formatAssetAmountCurrency, assetAmount, bn, assetToBase, BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
@@ -13,7 +15,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
-import { Dex, TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
+import { TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
 import { isChainOfMaya } from '../../../../../shared/utils/chain'
 import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
@@ -31,7 +33,7 @@ import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import { FeeRD, SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../../../services/clients'
-import { PoolAddress } from '../../../../services/midgard/types'
+import { PoolAddress } from '../../../../services/midgard/midgardTypes'
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
@@ -47,13 +49,13 @@ import * as Styled from '../TxForm.styles'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as Shared from './Send.shared'
 
-export type FormValues = {
+type FormValues = {
   recipient: string
   amount: BigNumber
   memo?: string
 }
 
-export type Props = {
+type Props = {
   asset: SelectedWalletAsset
   trustedAddresses: TrustedAddresses | undefined
   balances: WalletBalances
@@ -69,7 +71,6 @@ export type Props = {
   mayaScanPrice: MayaScanPriceRD
   poolDetails: PoolDetails
   oPoolAddress: O.Option<PoolAddress>
-  dex: Dex
 }
 
 export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
@@ -88,15 +89,16 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     validatePassword$,
     network,
     mayaScanPrice,
-    oPoolAddress,
-    dex
+    oPoolAddress
   } = props
 
   const intl = useIntl()
 
   const { asset } = balance
   const { walletAddress: sender } = balance
-  const chainAsset = getChainAsset(asset.type === AssetType.SYNTH ? dex.chain : asset.chain)
+  const chainAsset = getChainAsset(
+    asset.type === AssetType.SYNTH ? MAYAChain : asset.type === AssetType.SECURED ? THORChain : asset.chain
+  )
 
   const pricePoolThor = usePricePool()
   const pricePoolMaya = usePricePoolMaya()
@@ -123,8 +125,6 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   const [form] = Form.useForm<FormValues>()
   const [showDetails, setShowDetails] = useState<boolean>(true)
   const [currentMemo, setCurrentMemo] = useState<string>('')
-  const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
-  const [affiliateTracking, setAffiliateTracking] = useState<string>('')
 
   const oSavedAddresses: O.Option<TrustedAddress[]> = useMemo(
     () =>
@@ -136,22 +136,10 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   )
 
   const handleMemo = useCallback(() => {
-    let memoValue = form.getFieldValue('memo') as string
-
-    // Check if a swap memo is detected
-    if (H.checkMemo(memoValue) && network === Network.Mainnet) {
-      memoValue = H.memoCorrection(memoValue, network)
-      setSwapMemoDetected(true)
-
-      // Set affiliate tracking message
-      setAffiliateTracking(intl.formatMessage({ id: 'wallet.send.affiliateTracking' }))
-    } else {
-      setSwapMemoDetected(false)
-    }
-
+    const memoValue = form.getFieldValue('memo') as string
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
-  }, [form, intl, network])
+  }, [form])
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
 
@@ -239,7 +227,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
         setWarningMessage('')
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.empty' }))
       }
-      if (!addressValidation(value.toLowerCase())) {
+      if (!addressValidation(value)) {
         return Promise.reject(intl.formatMessage({ id: 'wallet.errors.address.invalid' }))
       }
       if (inboundAddress.THOR === value) {
@@ -338,18 +326,21 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     const maxAmountPrice = getPoolPriceValue({
       balance: { asset, amount: maxAmount },
       poolDetails,
-      pricePool
+      pricePool,
+      mayaPriceRD: mayaScanPrice
     })
 
     const assetFeePrice = getPoolPriceValue({
       balance: { asset: chainAsset, amount: assetFee.baseAmount },
       poolDetails,
-      pricePool
+      pricePool,
+      mayaPriceRD: mayaScanPrice
     })
     const amountPrice = getPoolPriceValue({
       balance: { asset, amount: amountToSend },
       poolDetails,
-      pricePool
+      pricePool,
+      mayaPriceRD: mayaScanPrice
     })
     if (O.isSome(maxAmountPrice)) {
       const maxCryptoAmount = new CryptoAmount(maxAmountPrice.value, pricePool.asset)
@@ -501,8 +492,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
         asset,
         amount: amountToSend,
         memo: form.getFieldValue('memo'),
-        hdMode,
-        dex
+        hdMode
       })
     )
   }, [
@@ -516,8 +506,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
     asset,
     amountToSend,
     form,
-    hdMode,
-    dex
+    hdMode
   ])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
@@ -669,7 +658,6 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
             <Form.Item name="memo">
               <Styled.Input size="large" disabled={isLoading} onChange={handleMemo} />
             </Form.Item>
-            {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
           </Styled.SubForm>
           <FlatButton
             className="mt-40px min-w-[200px]"

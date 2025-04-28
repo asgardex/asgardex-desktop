@@ -13,7 +13,7 @@ import { useParams } from 'react-router-dom'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { Deposit } from '../../components/deposit/Deposit'
+import { Deposit } from '../../components/deposit'
 import { ErrorView } from '../../components/shared/error'
 import { BackLinkButton, RefreshButton } from '../../components/uielements/button'
 import { DEFAULT_WALLET_TYPE } from '../../const'
@@ -25,13 +25,13 @@ import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useWalletContext } from '../../contexts/WalletContext'
 import { getAssetFromNullableString } from '../../helpers/assetHelper'
 import { sequenceTOption } from '../../helpers/fpHelpers'
-import { useDex } from '../../hooks/useDex'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useSymDepositAddresses } from '../../hooks/useSymDepositAddresses'
 import { DepositRouteParams } from '../../routes/pools/deposit'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
-import { PoolDetailRD as PoolDetailMayaRD } from '../../services/mayaMigard/types'
-import { PoolDetailRD, PoolSharesLD, PoolSharesRD } from '../../services/midgard/types'
+import { PoolDetailRD as PoolDetailMayaRD } from '../../services/midgard/mayaMigard/types'
+import { PoolDetailRD, PoolSharesLD, PoolSharesRD } from '../../services/midgard/midgardTypes'
+import { useApp } from '../../store/app/hooks'
 import { SymDepositView } from './add/SymDepositView'
 import { ShareView } from './share/ShareView'
 import { WithdrawDepositView } from './withdraw/WithdrawDepositView'
@@ -39,20 +39,20 @@ import { WithdrawDepositView } from './withdraw/WithdrawDepositView'
 type Props = {}
 
 export const DepositView: React.FC<Props> = () => {
+  const { protocol } = useApp()
   const intl = useIntl()
-
-  const { dex } = useDex()
-
-  const { reloadLiquidityProviders: reloadLiquidityProvidersThor } = useThorchainContext()
-  const { reloadLiquidityProviders: reloadLiquidityProvidersMaya } = useMayachainContext()
-
-  const reloadLiquidityProviders = dex.chain === THORChain ? reloadLiquidityProvidersThor : reloadLiquidityProvidersMaya
 
   const {
     asset: routeAsset,
     assetWalletType: routeAssetWalletType,
-    runeWalletType: routeRuneWalletType
+    dexWalletType: routeRuneWalletType
   } = useParams<DepositRouteParams>()
+
+  const { reloadLiquidityProviders: reloadLiquidityProvidersThor } = useThorchainContext()
+  const { reloadLiquidityProviders: reloadLiquidityProvidersMaya } = useMayachainContext()
+
+  const reloadLiquidityProviders = protocol === THORChain ? reloadLiquidityProvidersThor : reloadLiquidityProvidersMaya
+
   const {
     service: {
       setSelectedPoolAsset,
@@ -79,10 +79,10 @@ export const DepositView: React.FC<Props> = () => {
     }
   } = useMidgardMayaContext()
 
-  const selectedPoolAsset$ = dex.chain === THORChain ? selectedPoolAssetThor$ : selectedPoolAssetMaya$
+  const selectedPoolAsset$ = protocol === THORChain ? selectedPoolAssetThor$ : selectedPoolAssetMaya$
 
-  const haltedChains$ = dex.chain === THORChain ? haltedChainsThor$ : haltedChainsMaya$
-  const shares$ = dex.chain === THORChain ? sharesThor$ : sharesMaya$
+  const haltedChains$ = protocol === THORChain ? haltedChainsThor$ : haltedChainsMaya$
+  const shares$ = protocol === THORChain ? sharesThor$ : sharesMaya$
 
   const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
   const { mimirHalt } = useThorchainMimirHalt()
@@ -92,7 +92,7 @@ export const DepositView: React.FC<Props> = () => {
 
   const oRouteAsset = useMemo(() => getAssetFromNullableString(routeAsset), [routeAsset])
   const assetWalletType = routeAssetWalletType || DEFAULT_WALLET_TYPE
-  const runeWalletType = routeRuneWalletType || DEFAULT_WALLET_TYPE
+  const dexWalletType = routeRuneWalletType || DEFAULT_WALLET_TYPE
 
   // if the user switches dex to thorchain we don't want THOR on the asset side
   const getAlternativeAsset = (): O.Option<Asset> => {
@@ -102,7 +102,7 @@ export const DepositView: React.FC<Props> = () => {
   // Set selected pool asset whenever an asset in route has been changed
   useEffect(() => {
     // Function to determine if the dex and the asset's chain are equal
-    const isDexEqualAssetChain = (asset: AnyAsset) => dex.chain === asset.chain
+    const isDexEqualAssetChain = (asset: AnyAsset) => protocol === asset.chain
 
     O.fold(
       () => {},
@@ -113,21 +113,21 @@ export const DepositView: React.FC<Props> = () => {
           O.fold(
             () => {},
             (altAsset: AnyAsset) => {
-              dex.chain === THORChain
+              protocol === THORChain
                 ? setSelectedPoolAsset(O.some(altAsset))
                 : setSelectedPoolAssetMaya(O.some(altAsset))
             }
           )(alternativeAsset)
         } else {
-          dex.chain === THORChain ? setSelectedPoolAsset(O.some(asset)) : setSelectedPoolAssetMaya(O.some(asset))
+          protocol === THORChain ? setSelectedPoolAsset(O.some(asset)) : setSelectedPoolAssetMaya(O.some(asset))
         }
       }
     )(oRouteAsset)
 
     return () => {
-      dex.chain === THORChain ? setSelectedPoolAsset(O.none) : setSelectedPoolAssetMaya(O.none)
+      protocol === THORChain ? setSelectedPoolAsset(O.none) : setSelectedPoolAssetMaya(O.none)
     }
-  }, [dex, oRouteAsset, setSelectedPoolAsset, setSelectedPoolAssetMaya])
+  }, [protocol, oRouteAsset, setSelectedPoolAsset, setSelectedPoolAssetMaya])
 
   const assetWithDecimalLD: AssetWithDecimalLD = useMemo(
     () =>
@@ -151,12 +151,12 @@ export const DepositView: React.FC<Props> = () => {
   const oSelectedAssetWithDecimal = useMemo(() => RD.toOption(assetWithDecimalRD), [assetWithDecimalRD])
 
   const {
-    addresses: { rune: oDexWalletAddress, asset: oAssetWalletAddress }
+    addresses: { dex: oDexWalletAddress, asset: oAssetWalletAddress }
   } = useSymDepositAddresses({
     asset: oRouteAsset,
-    dex,
+    protocol,
     assetWalletType,
-    runeWalletType
+    dexWalletType
   })
 
   /**
@@ -166,7 +166,7 @@ export const DepositView: React.FC<Props> = () => {
   const poolShares$: PoolSharesLD = useMemo(
     () =>
       FP.pipe(
-        // re-load shares whenever selected asset or rune address has been changed
+        // re-load shares whenever selected asset or dex address has been changed
         sequenceTOption(oAssetWalletAddress, oDexWalletAddress),
         O.fold(
           () => Rx.EMPTY,
@@ -194,15 +194,15 @@ export const DepositView: React.FC<Props> = () => {
       oSelectedAssetWithDecimal,
       O.map(({ asset: { chain } }) => {
         reloadBalancesByChain(chain, assetWalletType)()
-        reloadBalancesByChain(dex.chain, runeWalletType)()
+        reloadBalancesByChain(protocol, dexWalletType)()
         return true
       })
     )
-  }, [assetWalletType, dex.chain, oSelectedAssetWithDecimal, reloadBalancesByChain, runeWalletType])
+  }, [assetWalletType, protocol, oSelectedAssetWithDecimal, reloadBalancesByChain, dexWalletType])
 
   const reloadHandler = useCallback(() => {
     reloadChainAndRuneBalances()
-    if (dex.chain === THORChain) {
+    if (protocol === THORChain) {
       reloadShares()
       reloadLiquidityProviders()
       reloadSelectedPoolDetail()
@@ -211,7 +211,7 @@ export const DepositView: React.FC<Props> = () => {
       reloadSelectedPoolDetailMaya()
     }
   }, [
-    dex,
+    protocol,
     reloadChainAndRuneBalances,
     reloadLiquidityProviders,
     reloadSelectedPoolDetail,
@@ -229,7 +229,7 @@ export const DepositView: React.FC<Props> = () => {
 
   const poolDetailThorRD: PoolDetailRD = useObservableState(selectedPoolDetailThor$, RD.initial)
   const poolDetailMayaRD: PoolDetailMayaRD = useObservableState(selectedPoolDetailMaya$, RD.initial)
-  const poolDetailRD = dex.chain === THORChain ? poolDetailThorRD : poolDetailMayaRD
+  const poolDetailRD = protocol === THORChain ? poolDetailThorRD : poolDetailMayaRD
   const renderTopContent = useMemo(
     () => (
       <div className="relative mb-20px flex items-center justify-between">
@@ -287,6 +287,7 @@ export const DepositView: React.FC<Props> = () => {
                     haltedChains={haltedChains}
                     mimirHalt={mimirHalt}
                     poolDetail={poolDetailRD}
+                    protocol={protocol}
                     asset={asset}
                     shares={poolSharesRD}
                     dexWalletAddress={dexWalletAddress}
@@ -296,7 +297,7 @@ export const DepositView: React.FC<Props> = () => {
                     SymDepositContent={SymDepositView}
                     WidthdrawContent={WithdrawDepositView}
                     assetWalletType={assetWalletType}
-                    runeWalletType={runeWalletType}
+                    dexWalletType={dexWalletType}
                   />
                 )
               )

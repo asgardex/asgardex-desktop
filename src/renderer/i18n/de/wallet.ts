@@ -78,7 +78,6 @@ const wallet: WalletMessages = {
   'wallet.send.success': 'Transaktion war erfolgreich.',
   'wallet.send.fastest': 'Am schnellsten',
   'wallet.send.fast': 'Schnell',
-  'wallet.send.affiliateTracking': 'Swap-Memo erkannt, Affiliate-Gebühr angewendet',
   'wallet.send.notAllowed': 'Nicht erlaubt',
   'wallet.send.average': 'Mittel',
   'wallet.send.fundsLoss': 'Gelder werden beim Senden an diese Adresse verloren gehen.',
@@ -114,7 +113,9 @@ const wallet: WalletMessages = {
   'wallet.ledger.verifyAddress.modal.title': 'Ledger Adresse überprüfen',
   'wallet.ledger.verifyAddress.modal.description': 'Überprüfe die Adresse {address} auf Deinem Ledger',
   'wallet.ledger.removeAddress': 'Löschen Sie die Ledger-Adresse für die Kette {chain}',
-  'wallet.ledger.viewAddress': 'Adresse im Explorer anzeigen'
+  'wallet.ledger.viewAddress': 'Adresse im Explorer anzeigen',
+  'wallet.evmToken.tooltip':
+    'Token nicht gefunden? Gehen Sie zu den Einstellungen und fügen Sie es manuell zur Whitelist hinzu.'
 }
 
 export default wallet

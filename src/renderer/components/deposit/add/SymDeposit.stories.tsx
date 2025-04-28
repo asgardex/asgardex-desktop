@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Story, Meta } from '@storybook/react'
+import { StoryFn, Meta } from '@storybook/react'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase, baseAmount, assetToString, AnyAsset } from '@xchainjs/xchain-util'
@@ -7,7 +7,6 @@ import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { thorDetails } from '../../../../shared/api/types'
 import { mockValidatePassword$ } from '../../../../shared/mock/wallet'
 import { AssetBSC, AssetBTC, AssetETH, AssetRuneNative } from '../../../../shared/utils/asset'
 import { WalletType } from '../../../../shared/wallet/types'
@@ -138,15 +137,14 @@ const defaultProps: SymDepositProps = {
   hasAsymAssets: RD.initial,
   symAssetMismatch: RD.initial,
   openAsymDepositTool: () => console.log('openAsymDepositTool'),
-  hidePrivateData: false,
-  dex: thorDetails
+  hidePrivateData: false
 }
 
-export const Default: Story = () => <SymDeposit {...defaultProps} />
+export const Default: StoryFn = () => <SymDeposit {...defaultProps} />
 
 Default.storyName = 'default'
 
-export const BalanceError: Story = () => {
+export const BalanceError: StoryFn = () => {
   const props: SymDepositProps = {
     ...defaultProps,
     walletBalances: {
@@ -172,7 +170,7 @@ export const BalanceLoading = () => {
 }
 BalanceError.storyName = 'balance loading'
 
-export const FeeError: Story = () => {
+export const FeeError: StoryFn = () => {
   const props: SymDepositProps = {
     ...defaultProps,
     fees$: () =>

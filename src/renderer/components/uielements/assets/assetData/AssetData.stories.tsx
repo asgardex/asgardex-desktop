@@ -52,7 +52,7 @@ const meta: Meta<typeof Template> = {
     walletType: {
       name: 'wallet type',
       control: {
-        type: 'selection',
+        type: 'select',
         options: ['ledger', 'keystore', 'undefined'],
         mapping: {
           ledger: WalletType.Ledger,

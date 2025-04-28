@@ -45,7 +45,7 @@ export const ProgressBar: React.FC<Props> = ({
         percent={percent}
         strokeLinecap={strokeLinecap}
         showInfo={showInfo}
-        strokeColor={{ from: '#F3BA2F', to: '#23DCC8' }}>
+        strokeColor={{ from: '#0068F7', to: '#23DCC8' }}>
         <Progress {...rest} percent={percent} format={() => customInfo} />
       </ProgressWrapper>
       {withLabel && labelPosition !== 'top' && percentLabels}

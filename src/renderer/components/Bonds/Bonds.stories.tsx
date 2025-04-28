@@ -1,5 +1,6 @@
+import { useCallback, useState } from 'react'
+
 import * as RD from '@devexperts/remote-data-ts'
-import { useCallback, useState } from '@storybook/addons'
 import { Meta, StoryFn } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { Address, baseAmount } from '@xchainjs/xchain-util'
@@ -15,12 +16,15 @@ const mockNodeInfo = (address: Address) => ({
   award: baseAmount(100000000 * 400000),
   status: NodeStatusEnum.Active,
   address,
+  pubKeySet: {},
   nodeOperatorAddress: '',
   bondProviders: {
     nodeOperatorFee: baseAmount(100000000 * 400000),
     providers: []
   },
-  signMembership: []
+  signMembership: [],
+  isUserBondProvider: true,
+  isUserStoredNodeAddress: true
 })
 const addressValidation: AddressValidation = (_) => true
 
@@ -51,14 +55,14 @@ export const Default: StoryFn = () => {
       addressValidationMaya={addressValidation}
       network={Network.Testnet}
       addNode={addNode}
-      // TODO: Thorianite
       addWatchlist={addBondProvidersAddress}
       removeWatchlist={removeBondProvidersByAddress}
       removeNode={removeNode}
       goToNode={(node) => console.log('go to ', node)}
       goToAction={(action) => console.log('go to ', action)}
       reloadNodeInfos={() => console.log('reloadNodeInfos')}
-      nodes={RD.success(nodesList.map((address) => mockNodeInfo(address)))}
+      nodesThor={RD.success(nodesList.map((address) => mockNodeInfo(address)))}
+      nodesMaya={RD.success(nodesList.map((address) => mockNodeInfo(address)))}
       walletAddresses={mockWalletAddresses}
       watchList={[]}
     />

@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { FeeRate, Network, TxHash, TxParams } from '@xchainjs/xchain-client'
+import { Network, TxHash } from '@xchainjs/xchain-client'
 import { Keystore } from '@xchainjs/xchain-crypto'
 import { AssetCacao, CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
@@ -14,7 +14,7 @@ import { EnabledChain } from '../utils/chain'
 import { HDMode, WalletAddress } from '../wallet/types'
 import { IPCLedgerAddressesIO, KeystoreWallets, PoolsStorageEncoded } from './io'
 
-type DexDetails = {
+export type Dex = {
   chain: Chain
   asset: Asset
   decimals: number
@@ -32,7 +32,6 @@ export const mayaDetails: Dex = {
   decimals: CACAO_DECIMAL,
   url: 'Mayascan.com'
 }
-export type Dex = DexDetails
 
 export type TrustedAddress = {
   name: string
@@ -149,31 +148,10 @@ export type LedgerError = {
   msg: string
 }
 
-export type LedgerBNBTxParams = TxParams & {
-  sender: Address
-}
-
 export type NodeUrl = {
   node: string
   rpc: string
 }
-
-export type LedgerTHORTxParams = TxParams & {
-  sender: Address
-  nodeUrl: NodeUrl
-}
-
-export type LedgerBTCTxInfo = Pick<TxParams, 'amount' | 'recipient'> & {
-  feeRate: FeeRate
-  sender: Address
-}
-
-export type LedgerLTCTxInfo = Pick<TxParams, 'amount' | 'recipient'> & {
-  feeRate: FeeRate
-  sender: Address
-}
-
-export type LedgerTxParams = LedgerTHORTxParams | LedgerBNBTxParams
 
 export type IPCLedgerAdddressParams = {
   chain: Chain

@@ -4,6 +4,7 @@ const deposit: DepositMessages = {
   'deposit.interact.actions.bond': 'निवेश करें',
   'deposit.interact.actions.unbond': 'निकालें',
   'deposit.interact.actions.leave': 'बाहर जाएं',
+  'deposit.interact.actions.whitelist': 'श्वेत सूची',
   'deposit.interact.actions.runePool': 'रून पूल',
   'deposit.interact.actions.buyThorname': 'THORName खरीदें',
   'deposit.interact.actions.buyMayaname': 'MAYAName खरीदें',

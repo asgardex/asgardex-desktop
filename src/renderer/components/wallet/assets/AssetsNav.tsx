@@ -15,7 +15,6 @@ enum MenuKey {
   POOLSHARES = 'poolshares',
   SAVERS = 'savers',
   RUNEPOOL = 'runepool',
-  BONDS = 'bonds',
   HISTORY = 'history',
   WALLETSETTINGS = 'walletsettings',
   UNKNOWN = 'unknown'
@@ -61,11 +60,6 @@ export const AssetsNav: React.FC = (): JSX.Element => {
           path: walletRoutes.runepool.path()
         },
         {
-          key: MenuKey.BONDS,
-          label: intl.formatMessage({ id: 'wallet.nav.bonds' }),
-          path: walletRoutes.bonds.path()
-        },
-        {
           key: MenuKey.HISTORY,
           label: intl.formatMessage({ id: 'common.history' }),
           path: walletRoutes.history.path()
@@ -79,7 +73,6 @@ export const AssetsNav: React.FC = (): JSX.Element => {
   const poolSharesRoute = matchPath(walletRoutes.poolShares.path(), pathname)
   const saversRoute = matchPath(walletRoutes.savers.path(), pathname)
   const runepoolRoute = matchPath(walletRoutes.runepool.path(), pathname)
-  const bondsRoute = matchPath(walletRoutes.bonds.path(), pathname)
   const matchHistoryRoute = matchPath(walletRoutes.history.path(), pathname)
 
   const activeMenu: MenuKey = useMemo(() => {
@@ -93,14 +86,12 @@ export const AssetsNav: React.FC = (): JSX.Element => {
       return MenuKey.SAVERS
     } else if (runepoolRoute) {
       return MenuKey.RUNEPOOL
-    } else if (bondsRoute) {
-      return MenuKey.BONDS
     } else if (matchHistoryRoute) {
       return MenuKey.HISTORY
     } else {
       return MenuKey.UNKNOWN
     }
-  }, [assetsRoute, tradeAssetsRoute, poolSharesRoute, saversRoute, runepoolRoute, bondsRoute, matchHistoryRoute])
+  }, [assetsRoute, tradeAssetsRoute, poolSharesRoute, saversRoute, runepoolRoute, matchHistoryRoute])
 
   return (
     <>

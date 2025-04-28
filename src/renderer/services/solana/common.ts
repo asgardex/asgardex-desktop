@@ -1,16 +1,28 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { Network } from '@xchainjs/xchain-client'
 import { Client as SolClient, SOLChain, defaultSolanaParams } from '@xchainjs/xchain-solana'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
+import { envOrDefault } from '../../../shared/utils/env'
 import { isError } from '../../../shared/utils/guard'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
 import { keystoreService } from '../wallet/keystore'
 import { getPhrase } from '../wallet/util'
 import { Client$, ClientState, ClientState$ } from './types'
+
+const solApiKey = envOrDefault(process.env.REACT_APP_SOL_API_KEY, '')
+
+const defaultClientUrls = (): Record<Network, string[]> => {
+  return {
+    [Network.Testnet]: ['https://api.testnet.solana.com'],
+    [Network.Stagenet]: [`https://devnet.helius-rpc.com/?api-key=${solApiKey}`],
+    [Network.Mainnet]: [`https://mainnet.helius-rpc.com/?api-key=${solApiKey}`]
+  }
+}
 
 /**
  * Stream to create an observable `XrdchainClient` depending on existing phrase in keystore
@@ -31,7 +43,8 @@ const clientState$: ClientState$ = FP.pipe(
               const solInitParams = {
                 ...defaultSolanaParams,
                 network: network,
-                phrase: phrase
+                phrase: phrase,
+                clientUrls: defaultClientUrls()
               }
               const client = new SolClient(solInitParams)
               return RD.success(client)

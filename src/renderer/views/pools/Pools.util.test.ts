@@ -9,9 +9,9 @@ import * as O from 'fp-ts/lib/Option'
 import { ASSETS_MAINNET, ERC20_TESTNET } from '../../../shared/mock/assets'
 import { AssetAVAX, AssetBCH, AssetBTC, AssetETH, AssetLTC } from '../../../shared/utils/asset'
 import { AssetUSDC, AssetUSDT62E, AssetUSDTDAC } from '../../const'
-import { GetPoolsStatusEnum } from '../../services/midgard/types'
+import { GetPoolsStatusEnum, PoolData } from '../../services/midgard/midgardTypes'
 import { LastblockItems } from '../../services/thorchain/types'
-import { PoolData, PoolTableRowData } from './Pools.types'
+import { PoolTableRowData } from './Pools.types'
 import {
   getPoolTableRowData,
   getBlocksLeftForPendingPool,
@@ -169,7 +169,7 @@ describe('views/pools/utils', () => {
     })
 
     it('base', () => {
-      expect(filterTableData(O.some('__base__'))(tableData)).toEqual([
+      expect(filterTableData(O.some('__native__'))(tableData)).toEqual([
         tableData[0],
         tableData[1],
         tableData[2],

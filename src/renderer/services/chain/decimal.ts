@@ -7,8 +7,9 @@ import { DASH_DECIMAL } from '@xchainjs/xchain-dash'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { EthChain } from '@xchainjs/xchain-mayachain-query'
-import { MidgardQuery } from '@xchainjs/xchain-midgard-query'
 import { XRD_DECIMAL } from '@xchainjs/xchain-radix'
+import { SOL_DECIMALS } from '@xchainjs/xchain-solana'
+import { ThorchainCache } from '@xchainjs/xchain-thorchain-query'
 import { AnyAsset } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -22,6 +23,7 @@ import {
   isDashChain,
   isKujiChain,
   isMayaChain,
+  isSolChain,
   isThorChain,
   isXrdChain
 } from '../../helpers/chainHelper'
@@ -35,7 +37,6 @@ export const getDecimal = (asset: AnyAsset): Promise<number> => {
   if (isArbChain(chain)) {
     return Promise.resolve(ARB_GAS_ASSET_DECIMAL)
   }
-  // @St0rmzy find out why bsc.bnb on midgard -1 instead of being the correct decimals.
   if (isBscChain(chain)) {
     return Promise.resolve(BSC_GAS_ASSET_DECIMAL)
   }
@@ -61,6 +62,9 @@ export const getDecimal = (asset: AnyAsset): Promise<number> => {
   if (isBchChain(chain)) {
     return Promise.resolve(BCH_DECIMAL)
   }
+  if (isSolChain(chain)) {
+    return Promise.resolve(SOL_DECIMALS)
+  }
   // Fix until Decimals for maya midgard is completed.
   if (
     asset.chain === EthChain &&
@@ -69,9 +73,16 @@ export const getDecimal = (asset: AnyAsset): Promise<number> => {
     return Promise.resolve(ETH_GAS_ASSET_DECIMAL)
   }
 
-  const midgardQuery = new MidgardQuery()
+  const thorchainCache = new ThorchainCache()
 
-  return Rx.from(midgardQuery.getDecimalForAsset(asset)).toPromise()
+  return Rx.from(
+    thorchainCache.midgardQuery.getDecimalForAsset({
+      chain: asset.chain,
+      ticker: asset.ticker,
+      symbol: asset.symbol.toUpperCase(),
+      type: asset.type
+    })
+  ).toPromise()
 }
 
 export const assetWithDecimal$ = (asset: AnyAsset): AssetWithDecimalLD =>

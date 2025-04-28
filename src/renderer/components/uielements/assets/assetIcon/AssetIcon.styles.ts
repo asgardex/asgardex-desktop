@@ -9,6 +9,7 @@ type IconProps = {
   isNotNative?: boolean
   isSynth?: boolean
   isTrade?: boolean
+  isSecured?: boolean
 }
 
 const fontSizes: FontSizes = {
@@ -19,7 +20,7 @@ const fontSizes: FontSizes = {
   xsmall: 5
 }
 
-export const sizes: Sizes = {
+const sizes: Sizes = {
   large: 72,
   big: 55,
   normal: 40,
@@ -27,7 +28,7 @@ export const sizes: Sizes = {
   xsmall: 20
 }
 
-export const borders: Sizes = {
+const borders: Sizes = {
   large: 6,
   big: 5,
   normal: 4,
@@ -38,16 +39,17 @@ export const borders: Sizes = {
 export const IconWrapper = styled.div<IconProps>`
   width: ${({ size }) => `${sizes[size]}px`};
   height: ${({ size }) => `${sizes[size]}px`};
-  border: ${({ isSynth, isTrade, size }) => (isSynth || isTrade ? `solid ${borders[size]}px` : `none`)};
-  border-color: ${({ isSynth, isTrade }) =>
-    isSynth ? palette('primary', 0) : isTrade ? palette('primary', 2) : 'transparent'};
+  border: ${({ isSynth, isTrade, isSecured, size }) =>
+    isSynth || isTrade || isSecured ? `solid ${borders[size]}px` : `none`};
+  border-color: ${({ isSynth, isTrade, isSecured }) =>
+    isSynth ? palette('primary', 0) : isTrade ? palette('primary', 2) : isSecured ? '#B224EC' : 'transparent'};
   border-radius: 50%;
   position: relative;
   background-size: cover;
   background-position: center;
 
   /* Add shadow effect around the border */
-  ${({ isSynth, isTrade }) => {
+  ${({ isSynth, isTrade, isSecured }) => {
     if (isSynth) {
       return `
       box-shadow: 0px 0px 15px 5px rgba(80, 227, 194, 0.8); /* A greenish shadow for synth  */
@@ -58,6 +60,11 @@ export const IconWrapper = styled.div<IconProps>`
       box-shadow: 0px 0px 15px 5px rgba(113, 188, 247, 0.8);  /* A blueish shadow */
     `
     }
+    if (isSecured) {
+      return `
+      box-shadow: 0px 0px 15px 5px rgba(178, 36, 236, 0.8);  /* A purpleish shadow */
+    `
+    }
     return '' /* No shadow for non-synth and non-trade assets */
   }}
 `
@@ -65,15 +72,6 @@ export const IconWrapper = styled.div<IconProps>`
 export const LoadingOutlined = styled(ALoadingOutlined)`
   width: 100%;
   height: 100%;
-`
-
-export const IconBG = styled.div<IconProps>`
-  width: ${({ size, isNotNative }) => `${sizes[size] - (isNotNative ? 2 : 0) * borders[size]}px`};
-  height: ${({ size, isNotNative }) => `${sizes[size] - (isNotNative ? 2 : 0) * borders[size]}px`};
-  position: absolute;
-  left: 0;
-  top: 0;
-  background-color: ${palette('gray', 1)};
 `
 
 export const IconFallback = styled.div<IconProps>`

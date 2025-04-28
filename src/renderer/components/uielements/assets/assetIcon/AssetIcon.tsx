@@ -7,10 +7,12 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
-import { AnyAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
+import { SOLChain } from '@xchainjs/xchain-solana'
+import { AnyAsset, isSecuredAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
+import { AssetSOLUSDC } from '../../../../const'
 import {
   iconUrlInERC20Whitelist,
   isBchAsset,
@@ -44,7 +46,8 @@ import {
   isBaseChain,
   isBscChain,
   isEthChain,
-  isMayaChain
+  isMayaChain,
+  isSolChain
 } from '../../../../helpers/chainHelper'
 import { getIntFromName, rainbowStop } from '../../../../helpers/colorHelpers'
 import { useRemoteImage } from '../../../../hooks/useRemoteImage'
@@ -91,6 +94,8 @@ const chainIconMap = (asset: AnyAsset): string | null => {
       return baseIcon
     case BSCChain:
       return bscIcon
+    case SOLChain:
+      return solIcon
     default:
       return null // return null if no chain matches
   }
@@ -201,6 +206,10 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
           O.getOrElse(() => '')
         )
       }
+      // Add a specific check for sol.usdc
+      if (isSolChain(asset.chain) && asset.ticker === AssetSOLUSDC.ticker) {
+        return 'https://storage.googleapis.com/token-list-swapkit/images/sol.usdc-epjfwdd5aufqssqem2qn1xzybapc8g4weggkzwytdt1v.png'
+      }
       // Since we've already checked AVAX.AVAX before,
       // we know any asset is ERC20 here - no need to run expensive `isAvaxTokenAsset`
       if (isAvaxChain(asset.chain)) {
@@ -233,21 +242,22 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
 
   const isSynth = isSynthAsset(asset)
   const isTrade = isTradeAsset(asset)
+  const isSecured = isSecuredAsset(asset)
 
   const renderIcon = useCallback(
     (src: string) => {
       const overlayIconSrc = chainIconMap(asset)
 
       return (
-        <Styled.IconWrapper size={size} isSynth={isSynth} isTrade={isTrade} className={className}>
-          <Styled.Icon src={src} isNotNative={isSynth || isTrade} size={size} />
+        <Styled.IconWrapper size={size} isSynth={isSynth} isTrade={isTrade} isSecured={isSecured} className={className}>
+          <Styled.Icon src={src} isNotNative={isSynth || isTrade || isSecured} size={size} />
           {overlayIconSrc && !asset.symbol.includes(asset.chain) && (
             <Styled.OverlayIcon src={overlayIconSrc} size={size} />
           )}
         </Styled.IconWrapper>
       )
     },
-    [asset, size, isSynth, className, isTrade]
+    [asset, size, isSynth, isTrade, className, isSecured]
   )
   const renderPendingIcon = useCallback(() => {
     return (

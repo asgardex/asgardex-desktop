@@ -1,4 +1,4 @@
-import { AnyAsset, Asset, BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
+import { AnyAsset, BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
 import * as A from 'fp-ts/Array'
 import * as E from 'fp-ts/Either'
 import * as FP from 'fp-ts/function'
@@ -9,7 +9,7 @@ import { isChainAsset, isUtxoAssetChain, max1e8BaseAmount } from '../../helpers/
 import { eqAsset, eqChain } from '../../helpers/fp/eq'
 import { priceFeeAmountForAsset } from '../../services/chain/fees/utils'
 import { SwapFees } from '../../services/chain/types'
-import { PoolAssetDetail, PoolAssetDetails, PoolsDataMap } from '../../services/midgard/types'
+import { PoolAssetDetail, PoolAssetDetails, PoolsDataMap } from '../../services/midgard/midgardTypes'
 import { WalletBalances } from '../../services/wallet/types'
 import { AssetsToSwap } from './Swap.types'
 
@@ -99,32 +99,6 @@ export const minAmountToSwapMax1e8 = ({
     // increase min value by 10k satoshi (for meaningful UTXO assets' only)
     E.getOrElse((amount) => amount.plus(10000))
   )
-}
-
-/**
- * Helper to calculate balance available to swap by considering possible fees
- *
- * @param assetAmountMax1e8 Balances of source asset - max 1e8
- * @param sourceAsset Source asset to swap from
- * @param inFeeAmount fee of inbound tx
- *
- * @returns BaseAmount available to swap from
- */
-export const calcAmountToSwapMax1e8 = ({
-  amountToSwapMax1e8,
-  sourceAsset,
-  inFeeAmount
-}: {
-  amountToSwapMax1e8: BaseAmount
-  sourceAsset: Asset
-  inFeeAmount: BaseAmount
-}): BaseAmount => {
-  // No chain asset, no fee
-  if (!isChainAsset(sourceAsset)) return amountToSwapMax1e8
-  // In case of chain asset
-  // fees needs to be deducted
-  const amountToSwap = amountToSwapMax1e8.minus(max1e8BaseAmount(inFeeAmount))
-  return amountToSwap.gt(baseAmount(0)) ? amountToSwap : baseAmount(0, amountToSwapMax1e8.decimal)
 }
 
 /**

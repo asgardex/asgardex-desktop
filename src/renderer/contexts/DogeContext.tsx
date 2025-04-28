@@ -17,7 +17,7 @@ import {
   reloadFeesWithRates
 } from '../services/doge'
 
-export type DogeContextValue = {
+type DogeContextValue = {
   client$: typeof client$
   clientState$: typeof clientState$
   address$: typeof address$

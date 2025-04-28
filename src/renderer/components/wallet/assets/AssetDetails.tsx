@@ -1,8 +1,16 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 
+import {
+  ArrowDownOnSquareIcon,
+  ArrowRightOnRectangleIcon,
+  ArrowsRightLeftIcon,
+  ArrowUpOnSquareIcon,
+  ChartPieIcon
+} from '@heroicons/react/24/outline'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, assetToString, AssetType, Chain } from '@xchainjs/xchain-util'
 import { AnyAsset } from '@xchainjs/xchain-util'
 import { Row, Col } from 'antd'
@@ -11,7 +19,6 @@ import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { Dex, mayaDetails, thorDetails } from '../../../../shared/api/types'
 import { chainToString, isChainOfMaya, isChainOfThor } from '../../../../shared/utils/chain'
 import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
@@ -22,12 +29,15 @@ import { OpenExplorerTxUrl, TxsPageRD } from '../../../services/clients'
 import { MAX_ITEMS_PER_PAGE } from '../../../services/const'
 import { EMPTY_LOAD_TXS_HANDLER } from '../../../services/wallet/const'
 import { LoadTxsHandler, NonEmptyWalletBalances } from '../../../services/wallet/types'
+import { useApp } from '../../../store/app/hooks'
 import { WarningView } from '../../shared/warning'
 import { AssetInfo } from '../../uielements/assets/assetInfo'
 import { BackLinkButton } from '../../uielements/button'
-import { BorderButton, FlatButton, RefreshButton, TextButton } from '../../uielements/button'
+import { FlatButton, RefreshButton, TextButton } from '../../uielements/button'
+import { ActionIconButton } from '../../uielements/button/ActionIconButton'
+import { QRCodeModal } from '../../uielements/qrCodeModal'
 import { InteractType } from '../txs/interact/Interact.types'
-import { TxsTable } from '../txs/table/TxsTable'
+import { TxsTable } from '../txs/table'
 import * as Styled from './AssetDetails.styles'
 
 export type Props = {
@@ -42,12 +52,11 @@ export type Props = {
   walletAddress: Address
   disableSend: boolean
   network: Network
-  dex: Dex
-  changeDex: (dex: Dex) => void
-  haltedChains: Chain[]
+  haltedChainsThor: Chain[]
+  haltedChainsMaya: Chain[]
 }
 
-export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
+export const AssetDetails = (props: Props): JSX.Element => {
   const {
     walletType,
     txsPageRD,
@@ -60,20 +69,23 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
     walletAddress,
     disableSend,
     network,
-    dex,
-    haltedChains,
-    changeDex
+    haltedChainsThor,
+    haltedChainsMaya
   } = props
   const [currentPage, setCurrentPage] = useState(1)
+  const [showQRModal, setShowQRModal] = useState(false)
+  const { protocol, setProtocol } = useApp()
 
-  const { chain } = asset.type === AssetType.SYNTH ? dex.asset : asset
+  const dexAsset = useMemo(() => (protocol === THORChain ? AssetRuneNative : AssetCacao), [protocol])
+  const { chain } = asset.type === AssetType.SYNTH || asset.type === AssetType.SECURED ? dexAsset : asset
 
   const navigate = useNavigate()
   const intl = useIntl()
 
-  const isHaltedChain = haltedChains.includes(chain)
-  const disableSwap = isHaltedChain || AssetHelper.isMayaAsset(asset)
-  const disableAdd = isHaltedChain || AssetHelper.isMayaAsset(asset)
+  const isResumedOnThor = isChainOfThor(chain) && !haltedChainsThor.includes(chain)
+  const isResumedOnMaya = isChainOfMaya(chain) && !haltedChainsMaya.includes(chain)
+  const disableSwap = (!isResumedOnThor && !isResumedOnMaya) || AssetHelper.isMayaAsset(asset)
+  const disableAdd = (!isResumedOnThor && !isResumedOnMaya) || AssetHelper.isMayaAsset(asset)
 
   // If the chain is not halted, perform the action
 
@@ -83,12 +95,12 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
 
   const walletActionSwapClick = useCallback(() => {
     // Determine if the asset's chain is supported by the current DEX
-    const currentChainSupported = dex.chain === 'MAYA' ? isChainOfMaya(chain) : isChainOfThor(chain)
+    const currentChainSupported = protocol === MAYAChain ? isResumedOnMaya : isResumedOnThor
 
     // If the current DEX doesn't support the asset's chain, switch DEXes
     if (!currentChainSupported) {
-      const newDex = dex.chain === 'MAYA' ? thorDetails : mayaDetails
-      changeDex(newDex)
+      const newProtocol = protocol === MAYAChain ? THORChain : MAYAChain
+      setProtocol(newProtocol)
     }
 
     const path = poolsRoutes.swap.path({
@@ -98,26 +110,26 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
       targetWalletType: DEFAULT_WALLET_TYPE
     })
     navigate(path)
-  }, [asset, chain, changeDex, dex, navigate, walletType])
+  }, [protocol, isResumedOnMaya, isResumedOnThor, asset, walletType, navigate, setProtocol])
 
   const walletActionManageClick = useCallback(() => {
     // Determine if the asset's chain is supported by the current DEX
-    const currentChainSupported = dex.chain === 'MAYA' ? isChainOfMaya(chain) : isChainOfThor(chain)
+    const currentChainSupported = protocol === MAYAChain ? isResumedOnMaya : isResumedOnThor
 
     // If the current DEX doesn't support the asset's chain, switch DEXes
     if (!currentChainSupported) {
-      const newDex = dex.chain === 'MAYA' ? thorDetails : mayaDetails
-      changeDex(newDex)
+      const newProtocol = protocol === MAYAChain ? THORChain : MAYAChain
+      setProtocol(newProtocol)
     }
     const routeAsset = AssetHelper.isRuneNativeAsset(asset) || AssetHelper.isCacaoAsset(asset) ? AssetBTC : asset
 
     const path = poolsRoutes.deposit.path({
       asset: assetToString(routeAsset),
       assetWalletType: walletType,
-      runeWalletType: DEFAULT_WALLET_TYPE
+      dexWalletType: DEFAULT_WALLET_TYPE
     })
     navigate(path)
-  }, [asset, chain, changeDex, dex, navigate, walletType])
+  }, [protocol, isResumedOnMaya, isResumedOnThor, asset, walletType, navigate, setProtocol])
 
   const walletActionDepositClick = useCallback(() => {
     const path = walletRoutes.interact.path({
@@ -143,8 +155,25 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
     [loadTxsHandler]
   )
 
+  const closeQrModal = useCallback(() => setShowQRModal(false), [])
+
+  const renderQRCodeModal = useMemo(() => {
+    return (
+      <QRCodeModal
+        key="qr-modal"
+        asset={asset}
+        address={walletAddress}
+        network={network}
+        visible={showQRModal}
+        onCancel={closeQrModal}
+        onOk={closeQrModal}
+      />
+    )
+  }, [asset, walletAddress, network, showQRModal, closeQrModal])
+
   return (
     <>
+      {renderQRCodeModal}
       <Row justify="space-between">
         <Col>
           <BackLinkButton path={walletRoutes.assets.path()} />
@@ -153,78 +182,47 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
           <RefreshButton onClick={refreshHandler} />
         </Col>
       </Row>
-      <Row>
-        <Col span={24}>
-          <AssetInfo
-            walletInfo={O.some({
-              address: walletAddress,
-              network,
-              walletType
-            })}
-            asset={O.some(asset)}
-            assetsWB={oBalances}
-            network={network}
-          />
-        </Col>
+      <div className="flex flex-col space-y-8 rounded-xl bg-bg1 p-8 dark:bg-bg1d">
+        <AssetInfo walletInfo={O.some({ walletType })} asset={O.some(asset)} assetsWB={oBalances} network={network} />
 
-        <Styled.Divider />
-
-        <Styled.ActionRow>
-          <Styled.ActionWrapper>
-            <Styled.ActionCol>
-              <Row justify="space-between">
-                <FlatButton
-                  className="m-2 ml-2 min-w-[200px]"
-                  size="large"
-                  color="primary"
-                  onClick={disableSend ? undefined : walletActionSendClick}
-                  disabled={disableSend}>
-                  {intl.formatMessage({ id: 'wallet.action.send' })}
-                </FlatButton>
-                <FlatButton
-                  className="m-2 ml-2 min-w-[200px]"
-                  size="large"
-                  color="primary"
-                  onClick={disableSwap ? undefined : walletActionSwapClick}
-                  disabled={disableSwap}>
-                  {intl.formatMessage({ id: 'common.swap' })}
-                </FlatButton>
-                {asset.type !== AssetType.SYNTH && (
-                  <FlatButton
-                    className="m-2 ml-2 min-w-[200px]"
-                    size="large"
-                    color="primary"
-                    onClick={disableAdd ? undefined : walletActionManageClick}
-                    disabled={disableAdd}>
-                    {intl.formatMessage({ id: 'common.manage' })}
-                  </FlatButton>
-                )}
-                {AssetHelper.isRuneNativeAsset(asset) && (
-                  <BorderButton
-                    className="m-2 ml-2 min-w-[200px]"
-                    size="large"
-                    color="primary"
-                    onClick={disableSend ? undefined : walletActionDepositClick}
-                    disabled={disableSend}>
-                    {intl.formatMessage({ id: 'wallet.action.deposit' })}
-                  </BorderButton>
-                )}
-                {AssetHelper.isCacaoAsset(asset) && (
-                  <BorderButton
-                    className="m-2 ml-2 min-w-[200px]"
-                    size="large"
-                    color="primary"
-                    onClick={disableSend ? undefined : walletActionDepositClick}
-                    disabled={disableSend}>
-                    {intl.formatMessage({ id: 'wallet.action.deposit' })}
-                  </BorderButton>
-                )}
-              </Row>
-            </Styled.ActionCol>
-          </Styled.ActionWrapper>
-        </Styled.ActionRow>
-        <Styled.Divider />
-      </Row>
+        <div className="w-full">
+          <div className="flex flex-col items-center justify-center space-x-0 space-y-1 sm:flex-row sm:space-x-2 sm:space-y-0">
+            <ActionIconButton
+              icon={<ArrowUpOnSquareIcon className="h-6 w-6" />}
+              text={intl.formatMessage({ id: 'wallet.action.send' })}
+              onClick={walletActionSendClick}
+              disabled={disableSend}
+            />
+            <ActionIconButton
+              icon={<ArrowDownOnSquareIcon className="h-6 w-6" />}
+              text={intl.formatMessage({ id: 'wallet.action.receive' })}
+              onClick={() => setShowQRModal(true)}
+            />
+            <ActionIconButton
+              icon={<ArrowsRightLeftIcon className="h-6 w-6" />}
+              text={intl.formatMessage({ id: 'common.swap' })}
+              onClick={walletActionSwapClick}
+              disabled={disableSwap}
+            />
+            {asset.type !== AssetType.SYNTH && (
+              <ActionIconButton
+                icon={<ChartPieIcon className="h-6 w-6" />}
+                text={intl.formatMessage({ id: 'common.manage' })}
+                onClick={walletActionManageClick}
+                disabled={disableAdd}
+              />
+            )}
+            {(AssetHelper.isRuneNativeAsset(asset) || AssetHelper.isCacaoAsset(asset)) && (
+              <ActionIconButton
+                icon={<ArrowRightOnRectangleIcon className="h-6 w-6" />}
+                text={intl.formatMessage({ id: 'wallet.action.deposit' })}
+                onClick={walletActionDepositClick}
+                disabled={disableSend}
+              />
+            )}
+          </div>
+        </div>
+      </div>
       <Row>
         <Col span={24}>
           <TextButton
@@ -237,11 +235,15 @@ export const AssetDetails: React.FC<Props> = (props): JSX.Element => {
           </TextButton>
         </Col>
         <Col span={24}>
-          {asset.type === AssetType.SYNTH || asset === AssetRuneNative ? (
+          {asset.type === AssetType.SYNTH || asset.type === AssetType.SECURED || asset === AssetRuneNative ? (
             <WarningView
               subTitle={intl.formatMessage(
                 { id: 'wallet.txs.history.disabled' },
-                { chain: `${chainToString(chain)} ${asset.type === AssetType.SYNTH ? 'synth' : ''}` }
+                {
+                  chain: `${chainToString(chain)} ${
+                    asset.type === AssetType.SYNTH ? 'synth' : asset.type === AssetType.SECURED ? 'secured' : ''
+                  }`
+                }
               )}
               extra={
                 <FlatButton size="normal" color="neutral" onClick={openExplorerAddressUrl}>

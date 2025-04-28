@@ -7,6 +7,7 @@ const deposit: DepositMessages = {
   'deposit.interact.actions.bond': 'Bond',
   'deposit.interact.actions.unbond': 'Unbond',
   'deposit.interact.actions.leave': 'Leave',
+  'deposit.interact.actions.whitelist': 'Whitelist',
   'deposit.interact.actions.runePool': 'Rune Pool',
   'deposit.interact.actions.buyThorname': 'Buy THORName',
   'deposit.interact.actions.buyMayaname': 'Buy MAYAName',

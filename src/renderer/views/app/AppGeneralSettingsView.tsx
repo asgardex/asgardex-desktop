@@ -8,12 +8,10 @@ import { envOrDefault } from '../../../shared/utils/env'
 import { AppGeneralSettings } from '../../components/settings/AppGeneralSettings'
 import { useI18nContext } from '../../contexts/I18nContext'
 import { useAppUpdate } from '../../hooks/useAppUpdate'
-import { useDex } from '../../hooks/useDex'
 import { useNetwork } from '../../hooks/useNetwork'
 
 export const AppGeneralSettingsView: React.FC = (): JSX.Element => {
   const { network, changeNetwork } = useNetwork()
-  const { dex, changeDex } = useDex()
   const { appUpdater, checkForUpdates } = useAppUpdate()
 
   const { changeLocale, locale$ } = useI18nContext()
@@ -29,9 +27,7 @@ export const AppGeneralSettingsView: React.FC = (): JSX.Element => {
       locale={currentLocale}
       changeLocale={changeLocale}
       network={network}
-      dex={dex}
       changeNetwork={changeNetwork}
-      changeDex={changeDex}
       version={envOrDefault($VERSION, '-')}
       appUpdateState={appUpdater}
       checkForUpdates={checkForUpdates}

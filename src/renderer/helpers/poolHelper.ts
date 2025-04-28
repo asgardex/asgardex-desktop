@@ -1,7 +1,7 @@
 import { Balance, Network } from '@xchainjs/xchain-client'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
-import { THORChain } from '@xchainjs/xchain-thorchain'
-import { bnOrZero, assetFromString, BaseAmount, Chain, baseAmount } from '@xchainjs/xchain-util'
+import { isAssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { bnOrZero, assetFromString, BaseAmount, Chain, baseAmount, AnyAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
@@ -11,12 +11,17 @@ import * as Ord from 'fp-ts/lib/Ord'
 import { PoolsWatchList } from '../../shared/api/io'
 import { ONE_RUNE_BASE_AMOUNT } from '../../shared/mock/amount'
 import { AssetRuneNative } from '../../shared/utils/asset'
-import { PoolDetails as PoolDetailsMaya } from '../services/mayaMigard/types'
-import { PoolAddress, PoolDetails } from '../services/midgard/types'
-import { getPoolDetail, toPoolData } from '../services/midgard/utils'
+import { PoolDetails as PoolDetailsMaya } from '../services/midgard/mayaMigard/types'
+import { PoolAddress, PoolData, PoolDetails, PricePool } from '../services/midgard/midgardTypes'
+import { getPoolDetail, toPoolData } from '../services/midgard/thorMidgard/utils'
 import { MimirHalt } from '../services/thorchain/types'
-import { PoolData, PoolTableRowData, PoolTableRowsData, PricePool } from '../views/pools/Pools.types'
-import { getPoolTableRowData, getValueOfAsset1InAsset2, getValueOfRuneInAsset } from '../views/pools/Pools.utils'
+import { PoolTableRowData, PoolTableRowsData } from '../views/pools/Pools.types'
+import {
+  getPoolTableRowData,
+  getValueOfAsset1InAsset2,
+  getValueOfAssetInRune,
+  getValueOfRuneInAsset
+} from '../views/pools/Pools.utils'
 import { to1e8BaseAmount, isRuneAsset } from './assetHelper'
 import { eqAsset, eqChain, eqString } from './fp/eq'
 import { ordBaseAmount } from './fp/ord'
@@ -134,6 +139,23 @@ export const getDeepestPool = (pools: PoolDetails): O.Option<PoolDetail> =>
     return runeDepth.isGreaterThanOrEqualTo(bnOrZero(prev?.runeDepth)) ? O.some(pool) : acc
   }, O.none)
 
+export const getSecondDeepestPool = (pools: PoolDetails): O.Option<PoolDetail> => {
+  const deepestPool = getDeepestPool(pools)
+
+  // Filter out the deepest pool and find the next deepest pool
+  return pools.reduce((acc: O.Option<PoolDetail>, pool: PoolDetail) => {
+    const runeDepth = bnOrZero(pool.runeDepth)
+    const prev = O.toNullable(acc)
+
+    // Exclude the deepest pool
+    if (O.toNullable(deepestPool)?.asset === pool.asset) {
+      return acc
+    }
+
+    return runeDepth.isGreaterThanOrEqualTo(bnOrZero(prev?.runeDepth)) ? O.some(pool) : acc
+  }, O.none)
+}
+
 /**
  * Converts Asset's pool price according to runePrice in selectedPriceAsset
  */
@@ -180,7 +202,7 @@ export const getPoolPriceValue = ({
 export const getUSDValue = ({
   balance: { asset, amount },
   poolDetails,
-  pricePool: { asset: priceAsset }
+  pricePool: { asset: priceAsset, poolData: pricePoolData }
 }: {
   balance: Balance
   poolDetails: PoolDetails
@@ -188,6 +210,9 @@ export const getUSDValue = ({
 }): O.Option<BaseAmount> => {
   // no pricing if balance asset === price pool asset
   if (eqAsset.equals(asset, priceAsset)) return O.some(amount)
+  if (isAssetRuneNative(asset)) {
+    return O.some(getValueOfRuneInAsset(amount, pricePoolData))
+  }
 
   return FP.pipe(
     getPoolDetail(poolDetails, asset), // Get the pool detail for the asset
@@ -198,6 +223,46 @@ export const getUSDValue = ({
           const amountDecimal = amount.amount().toNumber() // Convert amount to a decimal number
           const usdValue = Number(assetPriceUSD) * amountDecimal // Multiply by the price in USD
           return baseAmount(usdValue, amount.decimal) // Convert back to `BaseAmount` with 1e8 decimals
+        })
+      )
+    )
+  )
+}
+
+/**
+ * Helper to get an asset amount from its USD value in THOR pools
+ */
+export const getAssetAmountFromUSDValue = ({
+  usdValue,
+  poolDetails,
+  asset,
+  amount,
+  pricePool: { asset: priceAsset, poolData: pricePoolData }
+}: {
+  usdValue: BaseAmount
+  poolDetails: PoolDetails
+  asset: AnyAsset
+  amount: BaseAmount
+  pricePool: PricePool
+}): O.Option<BaseAmount> => {
+  // no pricing logic needed if asset === price pool asset
+  if (eqAsset.equals(asset, priceAsset)) return O.some(usdValue)
+
+  // Handle Rune as a special case
+  if (isAssetRuneNative(asset)) {
+    return O.some(getValueOfAssetInRune(usdValue, pricePoolData))
+  }
+
+  // For other assets
+  return FP.pipe(
+    getPoolDetail(poolDetails, asset), // Get the pool detail for the asset
+    O.chain((poolDetail) =>
+      FP.pipe(
+        O.fromNullable(poolDetail.assetPriceUSD), // Extract `assetPriceUSD` safely
+        O.map((assetPriceUSD) => {
+          const usdDecimal = usdValue.amount().toNumber() // Convert USD value to a decimal number
+          const assetAmount = usdDecimal / Number(assetPriceUSD) // Divide USD value by the asset price in USD
+          return baseAmount(assetAmount, amount.decimal) // Convert back to `BaseAmount`
         })
       )
     )

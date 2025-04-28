@@ -1,6 +1,6 @@
 import React, { createContext, useContext } from 'react'
 
-import { service } from '../services/mayaMigard/service'
+import { service } from '../services/midgard/mayaMigard/service'
 import { pools as poolsStorage } from '../services/storage'
 
 type MidgardContextValue = {

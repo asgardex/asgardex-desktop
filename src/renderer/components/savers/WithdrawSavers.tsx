@@ -32,7 +32,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { Dex } from '../../../shared/api/types'
 import { chainToString } from '../../../shared/utils/chain'
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
@@ -45,7 +44,7 @@ import {
   max1e8BaseAmount
 } from '../../helpers/assetHelper'
 import { getChainAsset } from '../../helpers/chainHelper'
-import { isEvmChain, isEvmToken } from '../../helpers/evmHelper'
+import { isEvmChain, isEvmChainToken } from '../../helpers/evmHelper'
 import { eqBaseAmount, eqOApproveParams, eqOAsset } from '../../helpers/fp/eq'
 import { sequenceTOption, sequenceTOptionFromArray } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
@@ -78,7 +77,7 @@ import {
   IsApproveParams,
   LoadApproveFeeHandler
 } from '../../services/evm/types'
-import { PoolAddress } from '../../services/midgard/types'
+import { PoolAddress, PricePool } from '../../services/midgard/midgardTypes'
 import { SaverProviderLD } from '../../services/thorchain/types'
 import {
   KeystoreState,
@@ -90,10 +89,10 @@ import {
   TxHashRD
 } from '../../services/wallet/types'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
-import { PricePool } from '../../views/pools/Pools.types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
 import { TxModal } from '../modal/tx'
 import { DepositAsset } from '../modal/tx/extra/DepositAsset'
+import { ErrorLabel } from '../settings/AppSettings.styles'
 import { LoadingView } from '../shared/loading'
 import { AssetInput } from '../uielements/assets/assetInput'
 import { BaseButton, FlatButton, ViewTxButton } from '../uielements/button'
@@ -103,9 +102,7 @@ import { Fees, UIFeesRD } from '../uielements/fees'
 import { Slider } from '../uielements/slider'
 import * as Utils from './Saver.utils'
 
-export const ASSET_SELECT_BUTTON_WIDTH = 'w-[180px]'
-
-export type WithDrawProps = {
+type WithDrawProps = {
   keystore: KeystoreState
   thorchainQuery: ThorchainQuery
   poolAssets: AnyAsset[]
@@ -133,7 +130,6 @@ export type WithDrawProps = {
   reloadBalances: FP.Lazy<void>
   disableSaverAction: boolean
   hidePrivateData: boolean
-  dex: Dex
 }
 
 export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
@@ -163,8 +159,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     getExplorerTxUrl,
     saverWithdraw$,
     disableSaverAction,
-    hidePrivateData,
-    dex
+    hidePrivateData
   } = props
 
   const intl = useIntl()
@@ -219,10 +214,8 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
     // not needed for users with locked or not imported wallets
     if (!hasImportedKeystore(keystore) || isLocked(keystore)) return O.some(false)
 
-    return isEvmChain(sourceChain) && isEvmToken(sourceAsset)
-      ? O.some(isEVMTokenAsset(sourceAsset as TokenAsset))
-      : O.none
-  }, [keystore, sourceAsset, sourceChain])
+    return isEvmChainToken(sourceAsset) ? O.some(isEVMTokenAsset(sourceAsset as TokenAsset)) : O.none
+  }, [keystore, sourceAsset])
   /**
    * Selectable source assets to add to savers.
    * Based on savers the address has
@@ -867,12 +860,12 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
           walletIndex,
           sender: address,
           hdMode,
-          dex
+          protocol: poolAddress.protocol
         }
         return result
       })
     )
-  }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceChainAsset, dustAmount, network, address, dex])
+  }, [oPoolAddress, oSourceAssetWB, oSaverWithdrawQuote, sourceChainAsset, dustAmount, network, address])
 
   const resetEnteredAmounts = useCallback(() => {
     setAmountToWithdrawMax1e8(initialAmountToWithdrawMax1e8)
@@ -1082,7 +1075,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
 
     const description1 =
       // extra info for ERC20 assets only
-      isEvmChain(sourceChain) && isEvmToken(sourceAsset)
+      isEvmChainToken(sourceAsset)
         ? `${txtNeedsConnected} ${intl.formatMessage(
             {
               id: 'ledger.blindsign'
@@ -1377,6 +1370,7 @@ export const WithdrawSavers: React.FC<WithDrawProps> = (props): JSX.Element => {
                     disabled={disableSubmit}>
                     {intl.formatMessage({ id: 'common.withdraw' })}
                   </FlatButton>
+                  <ErrorLabel>Savers withdraw have been paused by TC</ErrorLabel>
                 </div>
               </>
             ) : (

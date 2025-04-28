@@ -1,1 +1,1 @@
-export { TxsTable as TransactionsTable } from './TxsTable'
+export { TxsTable } from './TxsTable'

@@ -11,7 +11,6 @@ import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 
-import { thorDetails } from '../../../../shared/api/types'
 import { getMockRDValueFactory, RDStatus } from '../../../../shared/mock/rdByStatus'
 import { AssetBTC, AssetETH, AssetLTC, AssetRuneNative, AssetMaya, AssetCacao } from '../../../../shared/utils/asset'
 import { EnabledChain, isSupportedChain } from '../../../../shared/utils/chain'
@@ -166,6 +165,7 @@ const Template = (args: Partial<Record<EnabledChain, RDStatus>>) => {
       disableRefresh={disableRefresh}
       selectAssetHandler={selectAssetHandler}
       assetHandler={assetHandler}
+      geckoPrice={{}}
       chainBalances={FP.pipe(
         Object.entries(balances),
         A.map(([chain, chainBalances]) =>
@@ -192,7 +192,6 @@ const Template = (args: Partial<Record<EnabledChain, RDStatus>>) => {
       network={Network.Testnet}
       mimirHalt={RD.initial}
       hidePrivateData={false}
-      dex={thorDetails}
       mayaScanPrice={RD.initial}
       disabledChains={[]}
     />

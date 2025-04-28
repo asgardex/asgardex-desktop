@@ -13,10 +13,12 @@ import {
   swapFees$,
   assetAddress$,
   swap$,
+  swapCF$,
   saverDeposit$,
   symDeposit$,
   symWithdraw$,
   saverWithdraw$,
+  tradeWithdraw$,
   transfer$,
   assetWithDecimal$,
   utxoFeesWithRates$,
@@ -36,10 +38,12 @@ type ChainContextValue = {
   swapFees$: typeof swapFees$
   assetAddress$: typeof assetAddress$
   swap$: typeof swap$
+  swapCF$: typeof swapCF$
   saverDeposit$: typeof saverDeposit$
   symDeposit$: typeof symDeposit$
   symWithdraw$: typeof symWithdraw$
   saverWithdraw$: typeof saverWithdraw$
+  tradeWithdraw$: typeof tradeWithdraw$
   transfer$: typeof transfer$
   assetWithDecimal$: typeof assetWithDecimal$
   utxoFeesWithRates$: typeof utxoFeesWithRates$
@@ -59,10 +63,12 @@ const initialContext: ChainContextValue = {
   swapFees$,
   assetAddress$,
   swap$,
+  swapCF$,
   saverDeposit$,
   symDeposit$,
   symWithdraw$,
   saverWithdraw$,
+  tradeWithdraw$,
   transfer$,
   assetWithDecimal$,
   utxoFeesWithRates$,

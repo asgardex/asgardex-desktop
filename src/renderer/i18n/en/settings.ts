@@ -15,6 +15,7 @@ const settings: SettingMessages = {
   'setting.connected': 'Connected',
   'setting.notconnected': 'Not connected',
   'setting.add.device': 'ADD DEVICE',
+  'setting.wallet.whitelist.modal': 'Add / Remove tokens for whitelist',
   'setting.wallet.index': 'Index',
   'setting.wallet.account': 'Account',
   'setting.wallet.index.info': 'Enter the index number of the Ledger address you want to use',

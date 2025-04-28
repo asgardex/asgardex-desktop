@@ -8,14 +8,15 @@ import * as O from 'fp-ts/Option'
 import { useIntl } from 'react-intl'
 
 import { DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
+import { Alert } from '../../components/uielements/alert'
 import { unionChains } from '../../helpers/fp/array'
 import { rdAltOnPending } from '../../helpers/fpHelpers'
 import { MimirHalt } from '../../services/thorchain/types'
-import * as Styled from './AppView.styles'
 
 type HaltedChainsWarningProps = {
   haltedChainsRD: RD.RemoteData<Error, Chain[]>
   mimirHaltRD: RD.RemoteData<Error, MimirHalt>
+  protocol: Chain
 }
 
 type HaltedChainsState = {
@@ -25,7 +26,7 @@ type HaltedChainsState = {
   pausedLP: boolean
 }
 
-const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD }: HaltedChainsWarningProps) => {
+const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol }: HaltedChainsWarningProps) => {
   const intl = useIntl()
   const prevHaltedChains = useRef<Chain[]>([])
   const prevMimirHalt = useRef<MimirHalt>({
@@ -72,9 +73,12 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD }: HaltedChainsWarnin
 
         msg =
           haltedChains.length === 1
-            ? `${msg} ${intl.formatMessage({ id: 'halt.chain' }, { chain: haltedChains[0] })}`
+            ? `${msg} ${intl.formatMessage({ id: 'halt.chain' }, { chain: haltedChains[0], dex: protocol })}`
             : haltedChains.length > 1
-            ? `${msg} ${intl.formatMessage({ id: 'halt.chains' }, { chains: haltedChains.join(', ') })}`
+            ? `${msg} ${intl.formatMessage(
+                { id: 'halt.chains' },
+                { chains: haltedChains.join(', '), protocol: protocol }
+              )}`
             : `${msg}`
 
         const haltedTradingChains = haltedChainsState
@@ -93,7 +97,7 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD }: HaltedChainsWarnin
             ? `${msg} ${intl.formatMessage({ id: 'halt.chain.pauseall' })}`
             : `${msg}`
       }
-      return msg ? <Styled.Alert key={'halted warning'} type="warning" message={msg} /> : <></>
+      return msg ? <Alert key={'halted warning'} type="warning" message={msg} /> : <></>
     }),
     O.getOrElse(() => <></>)
   )

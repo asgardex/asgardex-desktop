@@ -34,7 +34,6 @@ import { eqChain, eqNetwork, eqWalletType } from '../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import { addressFromOptionalWalletAddress } from '../../helpers/walletHelper'
-import { useDex } from '../../hooks/useDex'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
@@ -45,7 +44,7 @@ import * as saversRoutes from '../../routes/pools/savers'
 import { saverDepositFee$ } from '../../services/chain'
 import { saverWithdrawFee$ } from '../../services/chain/fees'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
-import { PoolAddress } from '../../services/midgard/types'
+import { PoolAddress } from '../../services/midgard/midgardTypes'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/wallet/const'
 import { ledgerAddressToWalletAddress } from '../../services/wallet/util'
 import { useApp } from '../../store/app/hooks'
@@ -85,8 +84,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
   const navigate = useNavigate()
 
   const { network } = useNetwork()
-
-  const { dex } = useDex()
 
   const { thorchainQuery } = useThorchainQueryContext()
   const { isPrivate } = useApp()
@@ -319,7 +316,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         hidePrivateData={isPrivate}
                         onChangeAsset={onChangeAssetHandler}
                         disableSaverAction={checkDisableSaverAction()}
-                        dex={dex}
                       />
                     )
                   case TabIndex.WITHDRAW:
@@ -352,7 +348,6 @@ const Content: React.FC<Props> = (props): JSX.Element => {
                         onChangeAsset={onChangeAssetHandler}
                         saverPosition={getSaverProvider$}
                         disableSaverAction={checkDisableSaverAction()}
-                        dex={dex}
                       />
                     )
                   default:

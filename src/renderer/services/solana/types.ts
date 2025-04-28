@@ -19,6 +19,8 @@ export type SendTxParams = {
   walletAccount: number
   walletIndex: number
   hdMode: HDMode
+  priorityFee: BaseAmount
+  allowOwnerOffCurve?: boolean
 }
 
 export type FeesService = {

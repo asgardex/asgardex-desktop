@@ -15,6 +15,7 @@ const settings: SettingMessages = {
   'setting.connected': 'Connecté',
   'setting.notconnected': 'Déconnecté',
   'setting.add.device': 'AJOUTER UN PÉRIPHÉRIQUE',
+  'setting.wallet.whitelist.modal': 'Ajouter / Supprimer des jetons de la liste blanche',
   'setting.wallet.index': 'Index',
   'setting.wallet.account': 'Compte',
   'setting.wallet.index.info': "Entrez le numéro d'index de l'adresse Ledger que vous souhaitez utiliser",

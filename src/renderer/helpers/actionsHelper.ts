@@ -1,7 +1,7 @@
 import { IntlShape } from 'react-intl'
 
 import { CommonMessageKey } from '../i18n/types'
-import { TxType as MidgardTxType } from '../services/midgard/types'
+import { TxType as MidgardTxType } from '../services/midgard/midgardTypes'
 
 const getTxTypeI18nKey = (type: MidgardTxType): CommonMessageKey | undefined => {
   switch (type) {

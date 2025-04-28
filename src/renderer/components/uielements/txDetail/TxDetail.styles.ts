@@ -58,7 +58,8 @@ export const InOutContainer = styled(ContainerWithDelimeter)`
   padding: 3px 5px;
   line-height: 22px;
   margin-bottom: 5px;
-  background: ${palette('gray', 1)};
+  background: ${palette('background', 2)};
+  border: 1px solid ${palette('gray', 2)};
   color: ${palette('text', 0)};
 
   &:first-child {

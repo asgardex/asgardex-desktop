@@ -3,8 +3,6 @@ import { useObservableState } from 'observable-hooks'
 import { useMidgardContext } from '../contexts/MidgardContext'
 import { RUNE_PRICE_POOL } from '../helpers/poolHelper'
 
-export type UsePricePoolsResult = ReturnType<typeof usePricePool>
-
 export const usePricePool = () => {
   const {
     service: {

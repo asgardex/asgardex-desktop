@@ -27,7 +27,7 @@ export const SliderWrapper = styled(Slider)<SliderSingleProps & { error: boolean
         margin-top: -6px;
         margin-left: -6px;
         border: 3px solid;
-        border-color: ${({ error }) => (error ? palette('error', 0) : palette('success', 0))} !important;
+        border-color: ${({ error }) => (error ? palette('error', 0) : palette('primary', 2))} !important;
         background-color: ${palette('background', 1)};
       }
 
@@ -61,7 +61,7 @@ export const SliderWrapper = styled(Slider)<SliderSingleProps & { error: boolean
 
   &:hover {
     .ant-slider-track {
-      background: ${({ error }) => (error ? palette('error', 0) : palette('primary', 0))};
+      background: ${({ error }) => (error ? palette('error', 0) : palette('primary', 2))};
     }
   }
 

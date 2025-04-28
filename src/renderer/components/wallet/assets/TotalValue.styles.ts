@@ -10,7 +10,7 @@ export const Container = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: cemter;
-  padding: 20px 10px 30px 20px;
+  padding: 20px 16px 30px 20px;
   background-color: ${palette('background', 1)};
 `
 

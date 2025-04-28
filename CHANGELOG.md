@@ -1,3 +1,72 @@
+# 1.30.4 (2025-3-28)
+
+## Update/Fixes
+
+- Update midgard mayachain endpoint URL [#657](https://github.com/asgardex/asgardex-desktop/pull/658)
+
+# 1.30.3 (2025-3-28)
+
+## Add
+
+- Language support Korean [#631] (https://github.com/asgardex/asgardex-desktop/pull/632)
+- Add Chainflip quoting & swapping [#495](https://github.com/asgardex/asgardex-desktop/pull/495)
+- Add BOND UNBOND support for MayaChain [#636](https://github.com/asgardex/asgardex-desktop/pull/636)
+
+## Update/Fixes
+
+- fix synth fee issue [#622] (https://github.com/asgardex/asgardex-desktop/pull/622)
+- fix Evm token helper function [#635] (https://github.com/asgardex/asgardex-desktop/pull/635)
+- fix Provider err BSC / AVAX [#641] (https://github.com/asgardex/asgardex-desktop/pull/641)
+- Update bonds view [#612](https://github.com/asgardex/asgardex-desktop/pull/612)
+- fix synth issue Mayachain [#624](https://github.com/asgardex/asgardex-desktop/pull/624)
+- Update interact form MayaChain & Thorchain [#644](https://github.com/asgardex/asgardex-desktop/pull/644)
+
+# 1.30.2 (2025-1-17)
+
+## Add
+
+- min threshold dust amount check [#590](https://github.com/asgardex/asgardex-desktop/pull/591)
+- add maya price to total wallet balance [#599](https://github.com/asgardex/asgardex-desktop/pull/599)
+
+## Updates/Fixes
+
+- removed all loan/lending logic [#603](https://github.com/asgardex/asgardex-desktop/pull/604)
+- update Aggregator route info [#600] (https://github.com/asgardex/asgardex-desktop/pull/602)
+- fix token router approval flow [#601] (https://github.com/asgardex/asgardex-desktop/pull/601)
+
+# 1.30.1 (2025-1-17)
+
+## add
+
+- support for reading secured asset balances [#573] (https://github.com/asgardex/asgardex-desktop/pull/576)
+
+## Updates/Fixes
+
+- fix small swap interface UI issues [#573] (https://github.com/asgardex/asgardex-desktop/pull/576)
+- update quote logic [#579] (https://github.com/asgardex/asgardex-desktop/pull/579)
+- add support for Secured Asset view & quotes [#583] (https://github.com/asgardex/asgardex-desktop/pull/583)
+- Update swapping support for basechain [#583](https://github.com/asgardex/asgardex-desktop/pull/583)
+- fix interact view node address check [#583] (https://github.com/asgardex/asgardex-desktop/pull/583)
+- update fee estimates for inbound pool transactions [#588] (https://github.com/asgardex/asgardex-desktop/pull/588)
+
+# 1.30.0 (2024-12-16)
+
+## add
+
+- coingecko price feed for assets not it pools [#541] (https://github.com/asgardex/asgardex-desktop/pull/541)
+- Add Linux screen scaling [#534](https://github.com/asgardex/asgardex-desktop/pull/534)
+- Add Trade asset quick withdraw [#544] (https://github.com/asgardex/asgardex-desktop/pull/554)
+
+## Updates/Fixes
+
+- Dex switch deprecated no longer available [#544] (https://github.com/asgardex/asgardex-desktop/pull/544)
+- use Aggregator package to fetch quotes [#506] (https://github.com/asgardex/asgardex-desktop/pull/506)
+- allow testing of stagenet rune for ledger on asgardex [#562] (https://github.com/asgardex/asgardex-desktop/pull/562)
+- fix utxo send bug & update xchain clients [#568] (https://github.com/asgardex/asgardex-desktop/pull/568)
+- Udpated UI to show correct outbound fee [#565](https://github.com/asgardex/asgardex-desktop/pull/565)
+- updated Stagenet support to THORChain ledger [#562](https://github.com/asgardex/asgardex-desktop/pull/562)
+- Only Mayachain supports Synthetic assets for swapping [#564] (https://github.com/asgardex/asgardex-desktop/pull/564)
+
 # 1.22.9 (2024-11-26)
 
 ## add

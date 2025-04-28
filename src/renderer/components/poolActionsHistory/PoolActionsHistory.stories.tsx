@@ -1,16 +1,16 @@
 import { useMemo, useState } from 'react'
 
-import { Meta } from '@storybook/react'
+import { ArgTypes, Meta } from '@storybook/react'
 import { Network, TxHash } from '@xchainjs/xchain-client'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 
-import { thorDetails } from '../../../shared/api/types'
 import { getMockRDValueFactory, RDStatus, rdStatusOptions } from '../../../shared/mock/rdByStatus'
 import { MOCK_WALLET_ADDRESSES } from '../../../shared/mock/wallet'
 import { AssetLTC, AssetBTC, AssetRuneNative } from '../../../shared/utils/asset'
 import { WalletAddress } from '../../../shared/wallet/types'
-import { Actions } from '../../services/midgard/types'
+import { Actions } from '../../services/midgard/thorMidgard/types'
 import { ErrorId } from '../../services/wallet/types'
 import { PoolActionsHistory } from './PoolActionsHistory'
 import { Filter } from './types'
@@ -126,7 +126,7 @@ const actions: Actions = [
   }
 ]
 
-const argTypes = {
+const argTypes: ArgTypes<{ dataStatus: RDStatus }> = {
   dataStatus: {
     control: {
       type: 'select',
@@ -161,7 +161,7 @@ const Template = ({ dataStatus }: { dataStatus: RDStatus }) => {
       onClickAddressIcon={() => {
         console.log('on click address icon')
       }}
-      dex={thorDetails}
+      protocol={THORChain}
     />
   )
 
@@ -188,7 +188,7 @@ const meta: Meta<typeof Template> = {
   title: 'Components/PoolActionsHistory',
   argTypes,
   args: {
-    dataStatus: argTypes.dataStatus.control.options[0]
+    dataStatus: 'initial'
   }
 }
 export default meta

@@ -76,7 +76,6 @@ const wallet: WalletMessages = {
   'wallet.send.success': 'Транзакция завершена.',
   'wallet.send.fastest': 'Наибыстро',
   'wallet.send.fast': 'Быстро',
-  'wallet.send.affiliateTracking': 'Обнаружено мемо обмена, применена партнерская комиссия',
   'wallet.send.notAllowed': 'Не разрешено',
   'wallet.send.average': 'Среднее',
   'wallet.send.fundsLoss': 'Средства будут потеряны при отправке на этот адрес.',
@@ -111,7 +110,8 @@ const wallet: WalletMessages = {
   'wallet.ledger.verifyAddress.modal.title': 'Проверка адреса Ledger',
   'wallet.ledger.verifyAddress.modal.description': 'Проверьте адрес {address} на вашем устройстве',
   'wallet.ledger.removeAddress': 'Удалить адрес Ledger для цепочки {chain}',
-  'wallet.ledger.viewAddress': 'Просмотреть адрес в проводнике'
+  'wallet.ledger.viewAddress': 'Просмотреть адрес в проводнике',
+  'wallet.evmToken.tooltip': 'Не можете найти свой токен? Перейдите в настройки и добавьте его в белый список вручную.'
 }
 
 export default wallet

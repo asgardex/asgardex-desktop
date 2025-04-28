@@ -78,7 +78,6 @@ const wallet: WalletMessages = {
   'wallet.send.error': 'Erreur de transaction.',
   'wallet.send.fastest': 'Très rapide',
   'wallet.send.fast': 'Rapide',
-  'wallet.send.affiliateTracking': `Mémo de swap détecté, frais d'affiliation appliqués`,
   'wallet.send.notAllowed': 'Non autorisé',
   'wallet.send.average': 'Normal',
   'wallet.send.fundsLoss': 'Les fonds seront perdus en envoyant à cette adresse.',
@@ -111,7 +110,9 @@ const wallet: WalletMessages = {
   'wallet.ledger.verifyAddress.modal.title': "Vérification de l'adresse Ledger",
   'wallet.ledger.verifyAddress.modal.description': "Vérifiez l'adresse {address} sur votre appareil",
   'wallet.ledger.removeAddress': 'Supprimer l’adresse du ledger pour la chaîne {chain}',
-  'wallet.ledger.viewAddress': 'Voir l’adresse dans l’explorateur'
+  'wallet.ledger.viewAddress': 'Voir l’adresse dans l’explorateur',
+  'wallet.evmToken.tooltip':
+    'Vous ne trouvez pas votre token ? Allez dans les paramètres et ajoutez-le manuellement à la liste blanche.'
 }
 
 export default wallet

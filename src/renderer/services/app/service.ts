@@ -3,10 +3,9 @@ import { Network } from '@xchainjs/xchain-client'
 import * as Rx from 'rxjs'
 import { startWith, mapTo, distinctUntilChanged } from 'rxjs/operators'
 
-import { Dex } from '../../../shared/api/types'
 import { observableState } from '../../helpers/stateHelper'
 import { SlipTolerance } from '../../types/asgardex'
-import { DEFAULT_DEX, DEFAULT_NETWORK, DEFAULT_SLIP_TOLERANCE } from '../const'
+import { DEFAULT_NETWORK, DEFAULT_SLIP_TOLERANCE } from '../const'
 import {
   Network$,
   SlipTolerance$,
@@ -14,7 +13,6 @@ import {
   CollapsableSettings,
   SettingType,
   ToggleCollapsableSetting,
-  Dex$,
   PrivateData$
 } from './types'
 
@@ -31,11 +29,6 @@ const onlineStatus$ = Rx.merge(online$, offline$).pipe(startWith(navigator.onLin
 const { get$: getNetwork$, set: changeNetwork, get: getCurrentNetworkState } = observableState<Network>(DEFAULT_NETWORK)
 
 /**
- * State of `DEX`
- */
-const { get$: getDex$, set: changeDex, get: getCurrentDexState } = observableState<Dex>(DEFAULT_DEX)
-
-/**
  * State of private Data
  */
 const {
@@ -48,8 +41,6 @@ const {
 // it might emit same values, we don't interested in.
 // So we do need a simple "dirty check" to provide "real" changes of selected network
 const network$: Network$ = getNetwork$.pipe(distinctUntilChanged())
-
-const dex$: Dex$ = getDex$.pipe(distinctUntilChanged())
 
 const privateData$: PrivateData$ = getPrivateData$.pipe(distinctUntilChanged())
 
@@ -83,9 +74,6 @@ export {
   onlineStatus$,
   network$,
   changeNetwork,
-  dex$,
-  changeDex,
-  getCurrentDexState,
   getCurrentNetworkState,
   privateData$,
   changePrivateData,

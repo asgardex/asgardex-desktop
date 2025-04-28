@@ -19,14 +19,14 @@ import * as O from 'fp-ts/lib/Option'
 import { PoolsWatchList } from '../../../shared/api/io'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { isChainAsset, isUSDAsset } from '../../helpers/assetHelper'
-import { isAvaxChain, isEthChain } from '../../helpers/chainHelper'
+import { isArbChain, isAvaxChain, isBaseChain, isEthChain } from '../../helpers/chainHelper'
 import { eqString, eqAsset } from '../../helpers/fp/eq'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { LastblockItem as LastblockItemMaya } from '../../services/mayachain/types'
-import { GetPoolsStatusEnum, PoolFilter } from '../../services/midgard/types'
-import { toPoolData } from '../../services/midgard/utils'
+import { GetPoolsStatusEnum, PoolData, PoolFilter } from '../../services/midgard/midgardTypes'
+import { toPoolData } from '../../services/midgard/thorMidgard/utils'
 import { LastblockItem } from '../../services/thorchain/types'
-import { PoolData, PoolTableRowData } from './Pools.types'
+import { PoolTableRowData } from './Pools.types'
 
 export const stringToGetPoolsStatus = (status: string): GetPoolsStatusEnum => {
   switch (status) {
@@ -199,7 +199,7 @@ export const getBlocksLeftForPendingPool = (
     O.map(([newPoolCycle, lastHeight]) => newPoolCycle - (lastHeight % newPoolCycle))
   )
 }
-export const getBlocksLeftForPendingMayaPool = (
+const getBlocksLeftForPendingMayaPool = (
   lastblocks: Array<Pick<LastblockItemMaya, 'chain' | 'mayachain'>>,
   asset: AnyAsset,
   oNewPoolCycle: O.Option<number>
@@ -263,8 +263,8 @@ export const filterTableData =
             if (value === '__watched__') {
               return tableRow.watched ? O.some(tableRow) : O.none
             }
-            // all base chain assets
-            if (value === '__base__') {
+            // all native chain assets
+            if (value === '__native__') {
               return isChainAsset(asset) ? O.some(tableRow) : O.none
             }
             // usd assets
@@ -278,6 +278,14 @@ export const filterTableData =
             // avax
             if (value === '__avax__') {
               return isAvaxChain(asset.chain) ? O.some(tableRow) : O.none
+            }
+            // base
+            if (value === '__base__') {
+              return isBaseChain(asset.chain) ? O.some(tableRow) : O.none
+            }
+            // arb
+            if (value === '__arb__') {
+              return isArbChain(asset.chain) ? O.some(tableRow) : O.none
             }
             // custom
             if (value.length > 0) {

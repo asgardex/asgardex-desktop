@@ -66,7 +66,7 @@ export const isSupportedChain = (u: string): u is EnabledChain =>
   Object.keys(DEFAULT_ENABLED_CHAINS).includes(u as EnabledChain)
 
 // Mapping of DEXs to their supported chains, Update this when new chains are added
-export const DEX_CHAINS: { [key: string]: ReadonlyArray<Chain> } = {
+const DEX_CHAINS: { [key: string]: ReadonlyArray<Chain> } = {
   MAYA: ['DASH', 'BTC', 'ETH', 'KUJI', 'THOR', 'MAYA', 'ARB', 'XRD'],
   // For THOR, filter out chains that are maya specific
   THOR: Object.keys(DEFAULT_ENABLED_CHAINS).filter((chain) => !['DASH', 'KUJI', 'MAYA', 'ARB', 'XRD'].includes(chain))
@@ -103,7 +103,7 @@ export const chainToString = (chain: Chain): string => {
 /**
  * Represents chain attributes.
  */
-export type ChainAttributes = {
+type ChainAttributes = {
   blockReward: number
   avgBlockTimeInSecs: number
 }

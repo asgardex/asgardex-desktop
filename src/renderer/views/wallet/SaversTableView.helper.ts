@@ -4,8 +4,8 @@ import { BaseAmount, baseAmount, assetFromString } from '@xchainjs/xchain-util'
 import * as O from 'fp-ts/lib/Option'
 
 import * as PoolHelpers from '../../helpers/poolHelper'
+import { PricePool } from '../../services/midgard/midgardTypes'
 import { SaverProvider, SaverProviderRD } from '../../services/thorchain/types'
-import { PricePool } from '../pools/Pools.types'
 
 export const getSaversTotal = (
   allSaverProviders: Record<string, SaverProviderRD>,

@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { MayaChain } from '@xchainjs/xchain-mayachain-query'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Grid } from 'antd'
 import * as FP from 'fp-ts/function'
 import { useObservableState } from 'observable-hooks'
@@ -144,7 +146,7 @@ export const AppView = (): JSX.Element => {
     <Styled.AppWrapper>
       <div className="flex h-full flex-col">
         <AppUpdateView />
-        <Styled.AppLayout>
+        <Styled.AppLayout className="!bg-bg3 dark:!bg-bg3d">
           {isDesktopView && <Sidebar commitHash={envOrDefault($COMMIT_HASH, '')} isDev={$IS_DEV} publicIP={publicIP} />}
           <View>
             <Header />
@@ -152,8 +154,18 @@ export const AppView = (): JSX.Element => {
             <MidgardErrorAlert apiEndpoint={apiEndpointMaya} reloadHandler={reloadApiEndpointMaya} />
             {renderImportKeystoreWalletsError}
             {renderImportLedgerAddressesError}
-            <HaltedChainsWarning haltedChainsRD={haltedChainsThorRD} mimirHaltRD={mimirHaltThorRD} />
-            <HaltedChainsWarning haltedChainsRD={haltedChainsMayaRD} mimirHaltRD={mimirHaltMayaRD} />
+            <div className="mb-10 flex flex-col gap-2">
+              <HaltedChainsWarning
+                haltedChainsRD={haltedChainsThorRD}
+                mimirHaltRD={mimirHaltThorRD}
+                protocol={THORChain}
+              />
+              <HaltedChainsWarning
+                haltedChainsRD={haltedChainsMayaRD}
+                mimirHaltRD={mimirHaltMayaRD}
+                protocol={MayaChain}
+              />
+            </div>
             <ViewRoutes />
           </View>
         </Styled.AppLayout>

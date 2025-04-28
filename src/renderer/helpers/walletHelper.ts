@@ -14,16 +14,7 @@ import { WalletBalances } from '../services/clients'
 import { TradeAccount } from '../services/thorchain/types'
 import { NonEmptyWalletBalances, WalletBalance } from '../services/wallet/types'
 import { isLtcAsset, isRuneNativeAsset, isMayaAsset } from './assetHelper'
-import {
-  isArbChain,
-  isBchChain,
-  isDashChain,
-  isDogeChain,
-  isLtcChain,
-  isMayaChain,
-  isThorChain,
-  isXrdChain
-} from './chainHelper'
+import { isArbChain, isBchChain, isDashChain, isDogeChain, isLtcChain, isMayaChain, isXrdChain } from './chainHelper'
 import { eqAddress, eqAsset, eqChain, eqWalletType } from './fp/eq'
 
 /**
@@ -178,28 +169,6 @@ export const filterWalletBalancesByAssets = (balances: NonEmptyWalletBalances, a
     return assetIndex >= 0
   })
 }
-// export const filterWalletBalancesByAssetsForDex = (
-//   balances: NonEmptyWalletBalances,
-//   assets: AnyAsset[],
-//   dex: Dex
-// ): WalletBalances => {
-//   return balances.filter((balance) => {
-//     // Check if the balance is a synthetic asset and filter based on dex
-
-//     const walletAddressPrefix = balance.walletAddress.substring(0, 4).toUpperCase()
-//     if (dex.chain !== walletAddressPrefix && balance.asset.type === AssetType.SYNTH) {
-//       return false
-//     }
-
-//     const assetIndex = assets.findIndex(
-//       (asset) =>
-//         asset.chain.toUpperCase() === balance.asset.chain.toUpperCase() &&
-//         asset.symbol.toUpperCase() === balance.asset.symbol.toUpperCase() &&
-//         asset.ticker.toUpperCase() === balance.asset.ticker.toUpperCase()
-//     )
-//     return assetIndex >= 0
-//   })
-// }
 
 export const addressFromWalletAddress = ({ address }: Pick<WalletAddress, 'address'>): Address => address
 
@@ -214,8 +183,6 @@ export const getWalletByAddress = (walletBalances: WalletBalances, address: Addr
   )
 
 export const isEnabledLedger = (chain: Chain, network: Network) => {
-  // Disable THORChain ledger wallets in stagenet
-  if (isThorChain(chain) && network === Network.Stagenet) return false
   // Disable LTC ledger wallets in testnet
   // It seems Ledger can not derive LTC addresses on Testnet properly
   if (isLtcChain(chain) && network === Network.Testnet) return false

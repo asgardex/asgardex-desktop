@@ -2,17 +2,17 @@ import React from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { Chain } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 
-import { Dex } from '../../../shared/api/types'
 import { WalletAddress, WalletAddresses } from '../../../shared/wallet/types'
 import { AccountAddressSelector } from '../AccountAddressSelector'
 import { PoolActionsHistoryFilter } from './PoolActionsHistoryFilter'
 import { Filter } from './types'
 import * as Styled from './WalletPoolActionsHistoryHeader.styles'
 
-export type Props = {
+type Props = {
   network: Network
   addresses: WalletAddresses
   selectedAddress: O.Option<WalletAddress>
@@ -22,7 +22,7 @@ export type Props = {
   onWalletAddressChanged: (address: WalletAddress) => void
   onClickAddressIcon: FP.Lazy<void>
   disabled?: boolean
-  dex: Dex
+  protocol: Chain
 }
 
 export const WalletPoolActionsHistoryHeader: React.FC<Props> = (props) => {
@@ -36,7 +36,7 @@ export const WalletPoolActionsHistoryHeader: React.FC<Props> = (props) => {
     onClickAddressIcon,
     onWalletAddressChanged,
     disabled = false,
-    dex
+    protocol
   } = props
 
   return (
@@ -57,8 +57,8 @@ export const WalletPoolActionsHistoryHeader: React.FC<Props> = (props) => {
         />
       </Styled.FilterContainer>
       <Styled.LinkContainer>
-        <Styled.Headline onClick={onClickAddressIcon}>
-          {dex.chain === THORChain ? `RuneScan` : 'MayaScan'}
+        <Styled.Headline className="flex items-center" onClick={onClickAddressIcon}>
+          {protocol === THORChain ? `RuneScan` : 'MayaScan'}
           <Styled.ExplorerLinkIcon />
         </Styled.Headline>
       </Styled.LinkContainer>

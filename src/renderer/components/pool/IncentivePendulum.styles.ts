@@ -4,8 +4,6 @@ import { palette } from 'styled-theme'
 import { AlertIcon as AlertIconUI } from '../uielements/alert'
 import { Label as UILabel } from '../uielements/label'
 
-export const Container = styled.div``
-
 const ICON_SIZE = 19
 export const AlertIcon = styled(AlertIconUI)`
   & svg {

@@ -27,7 +27,7 @@ import {
 } from '../services/base'
 import { getStorageState$, modifyStorage } from '../services/storage/common'
 
-export type BaseContextValue = {
+type BaseContextValue = {
   client$: typeof client$
   clientState$: typeof clientState$
   txs$: typeof txs$

@@ -4,8 +4,6 @@ import { palette } from 'styled-theme'
 
 import { Label as UILabel } from '../../label'
 
-export type AssetLabelSize = 'small' | 'big'
-
 export const Wrapper = styled(Row).attrs({
   align: 'middle'
 })`

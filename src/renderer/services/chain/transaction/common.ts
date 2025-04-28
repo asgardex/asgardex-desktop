@@ -12,9 +12,9 @@ import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
+import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
-import { SOLChain } from '@xchainjs/xchain-solana'
+import { CompatibleAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, AssetType } from '@xchainjs/xchain-util'
 import { Chain } from '@xchainjs/xchain-util'
@@ -64,9 +64,10 @@ export const sendTx$ = ({
   walletAccount,
   walletIndex,
   hdMode,
-  dex
+  allowOwnerOffCurve
 }: SendTxParams): TxHashLD => {
-  const { chain } = asset.type === AssetType.SYNTH ? dex.asset : asset
+  const { chain } =
+    asset.type === AssetType.SYNTH ? AssetCacao : asset.type === AssetType.SECURED ? { chain: THORChain } : asset
   if (!isSupportedChain(chain)) return txFailure$(`${chain} is not supported for 'sendTx$'`)
   switch (chain) {
     case BTCChain:
@@ -106,8 +107,28 @@ export const sendTx$ = ({
       return BASE.sendTx({ walletType, asset, recipient, amount, memo, feeOption, walletAccount, walletIndex, hdMode })
 
     case SOLChain:
-      return SOL.sendTx({ walletType, asset, recipient, amount, memo, walletAccount, walletIndex, hdMode })
-
+      return FP.pipe(
+        SOL.fees$({ recipient: recipient, amount, asset: asset as CompatibleAsset, memo, allowOwnerOffCurve }),
+        liveData.mapLeft((error) => ({
+          errorId: ErrorId.GET_FEES,
+          msg: error?.message ?? error.toString()
+        })),
+        liveData.chain((fees) => {
+          return SOL.sendTx({
+            walletType,
+            sender,
+            recipient,
+            amount,
+            asset,
+            memo,
+            walletAccount,
+            walletIndex,
+            hdMode,
+            priorityFee: fees[feeOption],
+            allowOwnerOffCurve
+          })
+        })
+      )
     case BSCChain:
       return BSC.sendTx({ walletType, asset, recipient, amount, memo, feeOption, walletAccount, walletIndex, hdMode })
 
@@ -257,11 +278,14 @@ export const sendPoolTx$ = ({
   amount,
   memo,
   feeOption = DEFAULT_FEE_OPTION,
-  dex
+  protocol
 }: SendPoolTxParams): TxHashLD => {
   const { chain } =
-    asset.type === AssetType.SYNTH ? dex.asset : asset.type === AssetType.TRADE ? { chain: THORChain } : asset
-
+    asset.type === AssetType.SYNTH
+      ? AssetCacao
+      : asset.type === AssetType.TRADE || asset.type === AssetType.SECURED
+      ? { chain: THORChain }
+      : asset
   if (!isSupportedChain(chain)) return txFailure$(`${chain} is not enabled`)
 
   switch (chain) {
@@ -344,7 +368,7 @@ export const sendPoolTx$ = ({
       })
 
     case THORChain:
-      return dex.chain === THORChain
+      return protocol === THORChain
         ? THOR.sendPoolTx$({ walletType, amount, asset, memo, walletAccount, walletIndex, hdMode })
         : THOR.sendTx({ sender, walletType, asset, recipient, amount, memo, walletAccount, walletIndex, hdMode })
 
@@ -369,8 +393,7 @@ export const sendPoolTx$ = ({
         feeOption,
         walletAccount,
         walletIndex,
-        hdMode,
-        dex
+        hdMode
       })
     default:
       return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)

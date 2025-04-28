@@ -34,8 +34,12 @@ const {
   reloadMimir,
   getLiquidityProviders,
   reloadLiquidityProviders,
+  getLiquidityProvider,
+  reloadLiquidityProvider,
   getSaverProvider$,
-  reloadSaverProvider
+  reloadSaverProvider,
+  getMayanodePools,
+  reloadMayanodePools
 } = createMayanodeService$(network$, clientUrl$)
 
 const { txs$, tx$, txStatus$, subscribeTx, resetTx, sendTx, txRD$, sendPoolTx$ } = createTransactionService(
@@ -87,6 +91,10 @@ export {
   reloadMimir,
   getLiquidityProviders,
   reloadLiquidityProviders,
+  getLiquidityProvider,
+  reloadLiquidityProvider,
   getSaverProvider$,
-  reloadSaverProvider
+  reloadSaverProvider,
+  getMayanodePools,
+  reloadMayanodePools
 }

@@ -35,7 +35,7 @@ export const assetIO = new t.Type(
   assetToString
 )
 
-export const assetListIO = t.array(assetIO)
+const assetListIO = t.array(assetIO)
 
 export type BaseAmountEncoded = { amount: string; decimal: number }
 
@@ -159,7 +159,7 @@ export const ipcLedgerApproveERC20TokenParamsIO = t.type({
 
 export type IPCLedgerApproveERC20TokenParams = t.TypeOf<typeof ipcLedgerApproveERC20TokenParamsIO>
 
-export const poolsWatchListIO = assetListIO
+const poolsWatchListIO = assetListIO
 
 export type PoolsWatchList = t.TypeOf<typeof poolsWatchListIO>
 

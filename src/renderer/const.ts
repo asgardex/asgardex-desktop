@@ -1,9 +1,9 @@
-import { ARBChain, AssetARB } from '@xchainjs/xchain-arbitrum'
-import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
-import { BASEChain, AssetBETH } from '@xchainjs/xchain-base'
+import { ARBChain } from '@xchainjs/xchain-arbitrum'
+import { AVAXChain } from '@xchainjs/xchain-avax'
+import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
-import { AssetBSC, BSCChain } from '@xchainjs/xchain-bsc'
+import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
@@ -11,18 +11,17 @@ import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, bn, assetToString, baseAmount, Chain, AssetType, TokenAsset } from '@xchainjs/xchain-util'
 
-import { AssetBTC, AssetETH, AssetRuneNative } from '../shared/utils/asset'
+import { AssetBTC, AssetETH, AssetRuneNative, AssetARB, AssetAVAX, AssetCacao, AssetBSC } from '../shared/utils/asset'
 import { EnabledChain } from '../shared/utils/chain'
 import { WalletType } from '../shared/wallet/types'
-import { GetPoolsPeriodEnum as GetPoolsPeriodEnumMaya } from './services/mayaMigard/types'
-import { GetPoolsPeriodEnum } from './services/midgard/types'
-import { PricePoolCurrencyWeights, PricePoolAssets, PoolData } from './views/pools/Pools.types'
+import { GetPoolsPeriodEnum, PoolData } from './services/midgard/midgardTypes'
+import { PricePoolCurrencyWeights, PricePoolAssets } from './views/pools/Pools.types'
 
 //
 // ERC-20 assets
@@ -113,7 +112,7 @@ export const AssetUSDCAVAX: TokenAsset = {
 }
 
 // AVAX.USDT mainnet
-export const AssetUSDTAVAX: TokenAsset = {
+const AssetUSDTAVAX: TokenAsset = {
   chain: AVAXChain,
   symbol: 'USDT-0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7',
   ticker: 'USDC',
@@ -135,9 +134,30 @@ export const AssetUSDCBSC: TokenAsset = {
   type: AssetType.TOKEN
 }
 
-export const AssetUSDCARB: TokenAsset = {
+const AssetUSDCARB: TokenAsset = {
   chain: ARBChain,
   symbol: 'USDC-0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+  ticker: 'USDC',
+  type: AssetType.TOKEN
+}
+
+const AssetCBBTC: TokenAsset = {
+  chain: BASEChain,
+  symbol: 'CBBTC-0XCBB7C0000AB88B473B1F5AFD9EF808440EED33BF',
+  ticker: 'CBBTC',
+  type: AssetType.TOKEN
+}
+
+const AssetUSDCBASE: TokenAsset = {
+  chain: BASEChain,
+  symbol: 'USDC-0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913',
+  ticker: 'USDC',
+  type: AssetType.TOKEN
+}
+
+export const AssetSOLUSDC: TokenAsset = {
+  chain: SOLChain,
+  symbol: 'USDC-EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
   ticker: 'USDC',
   type: AssetType.TOKEN
 }
@@ -152,7 +172,7 @@ export const ETHAssetsFallBack = [AssetUSDTDAC, AssetUSDC]
 export const BSCAssetsFallBack = [AssetUSDCBSC, AssetUSDTBSC]
 export const AVAXAssetsFallback = [AssetUSDTAVAX, AssetUSDCAVAX]
 export const ARBAssetsFallback = [AssetUSDCARB]
-export const BASEAssetsFallback = [AssetBETH]
+export const BASEAssetsFallback = [AssetCBBTC, AssetUSDCBASE]
 
 // for evm only
 export const DEFAULT_USER_ASSETS = [
@@ -186,28 +206,6 @@ export const CHAIN_WEIGHTS_THOR: Record<EnabledChain, number> = {
   [DASHChain]: 12,
   [KUJIChain]: 13,
   [RadixChain]: 14,
-  [BASEChain]: 15
-}
-
-// Weight of chains
-// Needed for ordering chain related things (wallets, balances etc.)
-// The higher the value the higher the weight
-export const CHAIN_WEIGHTS_MAYA: Record<EnabledChain, number> = {
-  [MAYAChain]: 0,
-  [THORChain]: 1,
-  [BTCChain]: 2,
-  [ETHChain]: 3,
-  [DASHChain]: 4,
-  [KUJIChain]: 5,
-  [ARBChain]: 6,
-  [BSCChain]: 7,
-  [BCHChain]: 8,
-  [LTCChain]: 9,
-  [AVAXChain]: 10,
-  [DOGEChain]: 11,
-  [GAIAChain]: 12,
-  [RadixChain]: 13,
-  [SOLChain]: 14,
   [BASEChain]: 15
 }
 
@@ -251,12 +249,6 @@ export const ZERO_BASE_AMOUNT = baseAmount(ZERO_BN)
 
 export const ZERO_POOL_DATA: PoolData = { dexBalance: ZERO_BASE_AMOUNT, assetBalance: ZERO_BASE_AMOUNT }
 
-export const RECOVERY_TOOL_URL: Record<Network, string> = {
-  testnet: 'https://testnet.thorswap.finance/pending',
-  stagenet: 'https://stagenet.thorswap.finance/pending',
-  mainnet: 'https://app.thorswap.finance/pending'
-}
-
 export const ASYM_DEPOSIT_TOOL_URL: Record<Network, string> = {
   testnet: 'https://testnet.thorswap.finance/',
   stagenet: 'https://stagenet.thorswap.finance/',
@@ -267,6 +259,6 @@ export const ASYM_DEPOSIT_TOOL_URL: Record<Network, string> = {
 export const SUPPORTED_LEDGER_APPS: Chain[] = [THORChain, BTCChain, LTCChain, DOGEChain, BCHChain, ETHChain, GAIAChain]
 
 export const DEFAULT_GET_POOLS_PERIOD = GetPoolsPeriodEnum._30d
-export const DEFAULT_GET_POOLS_PERIOD_MAYA = GetPoolsPeriodEnumMaya._30d
+export const DEFAULT_GET_POOLS_PERIOD_MAYA = GetPoolsPeriodEnum._30d
 
 export const DEFAULT_WALLET_TYPE: WalletType = WalletType.Keystore

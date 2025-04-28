@@ -41,6 +41,18 @@ export const AssetSynthLabel = styled(UILabel).attrs({
   width: auto;
 `
 
+export const AssetSecuredLabel = styled(UILabel).attrs({
+  textTransform: 'uppercase',
+  size: 'small'
+})`
+  font-family: 'MainFontRegular';
+  color: ${palette('text', 3)};
+  background: #b224ec;
+  border-radius: 5px;
+  padding: 1px 7px;
+  width: auto;
+`
+
 export const Tooltip = styled(A.Tooltip).attrs({
   overlayStyle: {
     fontSize: 11,
