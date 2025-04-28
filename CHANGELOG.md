@@ -2,7 +2,8 @@
 
 ## Update/Fixes
 
-- update xchain-packages [#671](https://github.com/asgardex/asgardex-desktop/pull/671)
+- update xchain-packages [#671](https://github.com/asgardex/asgardex-desktop/pull/673)
+- perfomance improvements to mayachain quotes [#671](https://github.com/asgardex/asgardex-desktop/pull/673)
 
 ## Add
 
