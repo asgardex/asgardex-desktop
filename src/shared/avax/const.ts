@@ -1,22 +1,12 @@
 import { AVAXChain, AVAX_DECIMAL, AVAX_GAS_ASSET_DECIMAL, AssetAVAX, UPPER_FEE_BOUND } from '@xchainjs/xchain-avax'
-import { ExplorerProvider, FeeBounds, Network } from '@xchainjs/xchain-client'
+import { ExplorerProvider, Network } from '@xchainjs/xchain-client'
 import { EVMClientParams } from '@xchainjs/xchain-evm'
 import { EtherscanProvider, RoutescanProvider } from '@xchainjs/xchain-evm-providers'
 import { BigNumber, ethers } from 'ethers'
 
 import { envOrDefault } from '../utils/env'
 
-const LOWER_FEE_BOUND = 1_000_000_000
-
-export const FEE_BOUNDS: Record<Network, FeeBounds | undefined> = {
-  /* for main|stagenet use default values defined in ETH.Client */
-  [Network.Mainnet]: undefined,
-  [Network.Stagenet]: undefined,
-  [Network.Testnet]: {
-    lower: LOWER_FEE_BOUND,
-    upper: UPPER_FEE_BOUND
-  }
-}
+const LOWER_FEE_BOUND = 100000000
 
 export const avaxscanApiKey = envOrDefault(process.env.REACT_APP_SNOWTRACE_API_KEY, '')
 export const ankrApiKey = envOrDefault(process.env.REACT_APP_ANKR_API_KEY, '')
@@ -25,7 +15,9 @@ export const ankrApiKey = envOrDefault(process.env.REACT_APP_ANKR_API_KEY, '')
 const AVALANCHE_MAINNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider(
   `https://rpc.ankr.com/avalanche/${ankrApiKey}`
 )
-const AVALANCHE_TESTNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider('https://rpc.ankr.com/avalanche_fuji')
+const AVALANCHE_TESTNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider(
+  `https://rpc.ankr.com/avalanche_fuji/${ankrApiKey}`
+)
 
 const ethersJSProviders = {
   [Network.Mainnet]: AVALANCHE_MAINNET_ETHERS_PROVIDER,

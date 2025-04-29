@@ -5,7 +5,7 @@ import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { defaultArbParams, FEE_BOUNDS } from '../../../shared/arb/const'
+import { defaultArbParams } from '../../../shared/arb/const'
 import { isError } from '../../../shared/utils/guard'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
@@ -33,8 +33,7 @@ const clientState$: ClientState$ = FP.pipe(
               const client = new Client({
                 ...defaultArbParams,
                 network: network,
-                phrase: phrase,
-                feeBounds: FEE_BOUNDS[network]
+                phrase: phrase
               })
               return RD.success(client)
             } catch (error) {
