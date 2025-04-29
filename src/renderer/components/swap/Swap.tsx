@@ -29,7 +29,8 @@ import {
   SynthAsset,
   isTokenAsset,
   isTradeAsset,
-  isSecuredAsset
+  isSecuredAsset,
+  SecuredAsset
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import clsx from 'clsx'
@@ -1575,16 +1576,16 @@ export const Swap = ({
               } as SynthAsset
             ]
           }
-          // if (isTCSupportedAsset(asset, poolDetailsThor) && isTCSupportedAsset(sourceAsset, poolDetailsThor)) {
-          //   // Create secured assets for ThorChain
-          //   return [
-          //     asset,
-          //     {
-          //       ...asset,
-          //       type: AssetType.SECURED
-          //     } as SecuredAsset
-          //   ]
-          // }
+          if (isTCSupportedAsset(asset, poolDetailsThor) && isTCSupportedAsset(sourceAsset, poolDetailsThor)) {
+            // Create secured assets for ThorChain
+            return [
+              asset,
+              {
+                ...asset,
+                type: AssetType.SECURED
+              } as SecuredAsset
+            ]
+          }
           return [asset]
         }),
         A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
