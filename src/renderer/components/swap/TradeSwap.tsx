@@ -38,7 +38,8 @@ import {
   ASGARDEX_ADDRESS,
   ASGARDEX_AFFILIATE_FEE_MIN,
   getAsgardexAffiliateFee,
-  getAsgardexThorname
+  getAsgardexThorname,
+  getAsgardexTradeAffiliateFee
 } from '../../../shared/const'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'
 import { chainToString, DEFAULT_ENABLED_CHAINS, EnabledChain } from '../../../shared/utils/chain'
@@ -651,7 +652,7 @@ export const TradeSwap = ({
 
   //Helper Affiliate function, swaps where tx is greater than affiliate aff is free
   const applyBps = useMemo(() => {
-    const aff = getAsgardexAffiliateFee(network)
+    const aff = getAsgardexTradeAffiliateFee(network)
     const txFeeCovered = priceAmountToSwapMax1e8.assetAmount.gt(ASGARDEX_AFFILIATE_FEE_MIN)
     const applyBps = txFeeCovered ? aff : 0
     return applyBps
