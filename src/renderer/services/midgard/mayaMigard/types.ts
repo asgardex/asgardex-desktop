@@ -18,6 +18,7 @@ import {
   GetPoolsPeriodEnum,
   GetSwapHistoryRequest,
   HaltedChainsLD,
+  PausedChainsLD,
   PoolAddress,
   PoolAddress$,
   PoolAddressLD,
@@ -125,6 +126,7 @@ export type PoolsService = {
   setPoolsFilter: (poolKey: PoolType, filter: O.Option<PoolFilter>) => void
   outboundAssetFeeByChain$: (chain: Chain) => PoolFeeLD
   haltedChains$: HaltedChainsLD
+  pausedLPChains$: PausedChainsLD
 }
 
 export type Action = {

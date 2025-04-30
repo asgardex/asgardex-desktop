@@ -53,7 +53,8 @@ import {
   GetLiquidityHistoryRequest,
   GetPoolsStatusEnum,
   PricePools,
-  PricePool
+  PricePool,
+  PausedChainsLD
 } from '../midgardTypes'
 import {
   ApiGetSwapHistoryParams,
@@ -518,6 +519,13 @@ const createPoolsService = ({
     liveData.map(A.filterMap((inboundAddress) => (inboundAddress.halted ? O.some(inboundAddress.chain) : O.none)))
   )
 
+  const pausedLPChains$: PausedChainsLD = FP.pipe(
+    inboundAddressesShared$,
+    liveData.map(
+      A.filterMap((inboundAddress) => (inboundAddress.chain_lp_actions_paused ? O.some(inboundAddress.chain) : O.none))
+    )
+  )
+
   /**
    * Load pool addresses once
    * Use it whenever you do need latest data (e.g. for validation)
@@ -904,7 +912,8 @@ const createPoolsService = ({
     poolsFilters$,
     setPoolsFilter,
     outboundAssetFeeByChain$,
-    haltedChains$
+    haltedChains$,
+    pausedLPChains$
   }
 }
 

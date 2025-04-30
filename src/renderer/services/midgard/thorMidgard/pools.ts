@@ -52,7 +52,6 @@ import {
   PoolEarningHistoryLD,
   PoolAddresses,
   PoolsState,
-  HaltedChainsLD,
   SelectedPoolAsset,
   PoolType,
   MidgardUrlLD,
@@ -64,7 +63,8 @@ import {
   GetLiquidityHistoryRequest,
   GetPoolsStatusEnum,
   PricePools,
-  PricePool
+  PricePool,
+  PausedChainsLD
 } from '../midgardTypes'
 import {
   getPoolAddressesByChain,
@@ -510,9 +510,16 @@ const createPoolsService = ({
     RxOp.map(([poolsState, selectedPricePoolAsset]) => pricePoolSelectorFromRD(poolsState, selectedPricePoolAsset))
   )
 
-  const haltedChains$: HaltedChainsLD = FP.pipe(
+  const haltedChains$: PausedChainsLD = FP.pipe(
     inboundAddressesShared$,
     liveData.map(A.filterMap((inboundAddress) => (inboundAddress.halted ? O.some(inboundAddress.chain) : O.none)))
+  )
+
+  const pausedLPChains$: PausedChainsLD = FP.pipe(
+    inboundAddressesShared$,
+    liveData.map(
+      A.filterMap((inboundAddress) => (inboundAddress.chain_lp_actions_paused ? O.some(inboundAddress.chain) : O.none))
+    )
   )
 
   /**
@@ -901,7 +908,8 @@ const createPoolsService = ({
     poolsFilters$,
     setPoolsFilter,
     outboundAssetFeeByChain$,
-    haltedChains$
+    haltedChains$,
+    pausedLPChains$
   }
 }
 
