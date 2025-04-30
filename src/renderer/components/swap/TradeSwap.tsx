@@ -23,8 +23,7 @@ import {
   CryptoAmount,
   AssetType,
   AnyAsset,
-  TradeAsset,
-  isTradeAsset
+  TradeAsset
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import * as A from 'fp-ts/Array'
@@ -250,6 +249,7 @@ export const TradeSwap = ({
 
   const [enabledChains, setEnabledChains] = useState<Set<EnabledChain>>(new Set())
   const [disabledChains, setDisabledChains] = useState<EnabledChain[]>([])
+  const [oErrorProtocol, setErrorProtocol] = useState<O.Option<Error>>(O.none)
 
   const isTargetChainDisabled = disabledChains.includes(targetChain)
   const isSourceChainDisabled = disabledChains.includes(sourceChain)
@@ -697,9 +697,8 @@ export const TradeSwap = ({
           const destinationAsset = targetAsset
           const amount = new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset)
           const address = destinationAddress
-          const affiliate =
-            ASGARDEX_ADDRESS === walletAddress || isTradeAsset(sourceAsset) ? undefined : getAsgardexThorname(network)
-          const affiliateBps = ASGARDEX_ADDRESS === walletAddress || isTradeAsset(sourceAsset) ? undefined : applyBps
+          const affiliate = ASGARDEX_ADDRESS === walletAddress ? undefined : getAsgardexThorname(network)
+          const affiliateBps = ASGARDEX_ADDRESS === walletAddress ? undefined : applyBps
           const streamingInt = isStreaming ? streamingInterval : 0
           const streaminQuant = isStreaming ? streamingQuantity : 0
           const toleranceBps = isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100 // convert to basis points
@@ -741,12 +740,15 @@ export const TradeSwap = ({
           setQuote(O.some(quote))
         })
         .catch((error) => {
+          setQuote(O.none)
           console.error('Failed to get quote:', error)
+          setErrorProtocol(O.some(error as Error))
         })
     }, 500)
   )
 
   useEffect(() => {
+    setQuote(O.none)
     const currentDebouncedEffect = debouncedEffect.current
     FP.pipe(
       sequenceTOption(oQuoteSwapData, oSourceAssetWB),
@@ -771,6 +773,7 @@ export const TradeSwap = ({
         ([quoteSwapDataThor]) => {
           const quoteSwapData = quoteSwapDataThor
           if (!quoteSwapData.amount.baseAmount.eq(baseAmount(0)) && !disableSwapAction) {
+            setErrorProtocol(O.none)
             currentDebouncedEffect(quoteSwapData)
           }
         }
@@ -904,6 +907,29 @@ export const TradeSwap = ({
 
     [oQuote]
   )
+
+  // Aggregator api Fetch Error
+  const aggregatorErrors: JSX.Element = useMemo(() => {
+    const protocolErrors: string[] = FP.pipe(
+      oErrorProtocol,
+      O.fold(
+        () => [],
+        (error) => [error.message]
+      )
+    )
+
+    if (protocolErrors.length === 0) {
+      return <></>
+    }
+
+    return (
+      <ErrorLabel>
+        {protocolErrors.map((error, index) => (
+          <div key={index}>{`${error} try adjusting amount`}</div>
+        ))}
+      </ErrorLabel>
+    )
+  }, [oErrorProtocol])
 
   /**
    * Price of swap result in max 1e8 // boolean to convert between streaming and regular swaps
@@ -2427,6 +2453,7 @@ export const TradeSwap = ({
             </FlatButton>
             {sourceChainFeeErrorLabel}
             {quoteError}
+            {aggregatorErrors}
           </>
         ) : (
           <>
