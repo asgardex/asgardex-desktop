@@ -4,7 +4,7 @@
 
 - update xchain-packages [#671](https://github.com/asgardex/asgardex-desktop/pull/673)
 - perfomance improvements to mayachain quotes [#671](https://github.com/asgardex/asgardex-desktop/pull/673)
-- remove saver features for Thorchain & Mayachain. Support for TCY coming []()
+- remove saver features for Thorchain & Mayachain. Support for TCY coming [#677](https://github.com/asgardex/asgardex-desktop/pull/677)
 
 ## Add
 
