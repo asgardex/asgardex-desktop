@@ -66,17 +66,14 @@ export const PoolsOverview = (): JSX.Element => {
   const { mimirHalt } = useThorchainMimirHalt()
 
   const matchPoolsPendingRoute = useMatch({ path: poolsRoutes.pending.path(), end: false })
-  const matchPoolsSaversRoute = useMatch({ path: poolsRoutes.savers.path(), end: false })
 
   const selectedIndex: number = useMemo(() => {
-    if (matchPoolsSaversRoute) {
-      return TAB_INDEX['savers']
-    } else if (matchPoolsPendingRoute) {
+    if (matchPoolsPendingRoute) {
       return TAB_INDEX['pending']
     } else {
       return TAB_INDEX['active']
     }
-  }, [matchPoolsPendingRoute, matchPoolsSaversRoute])
+  }, [matchPoolsPendingRoute])
 
   const tabs = useMemo(
     (): TabContent[] => [
@@ -116,9 +113,6 @@ export const PoolsOverview = (): JSX.Element => {
             break
           case TAB_INDEX['pending']:
             navigate(poolsRoutes.pending.path())
-            break
-          case TAB_INDEX['savers']:
-            navigate(poolsRoutes.savers.path())
             break
           default:
           // nothing to do

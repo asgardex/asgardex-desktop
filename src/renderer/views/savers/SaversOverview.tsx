@@ -1,17 +1,8 @@
 import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import {
-  AnyAsset,
-  assetToString,
-  BaseAmount,
-  baseToAsset,
-  Chain,
-  formatAssetAmountCurrency,
-  formatBN
-} from '@xchainjs/xchain-util'
+import { AnyAsset, BaseAmount, baseToAsset, Chain, formatAssetAmountCurrency, formatBN } from '@xchainjs/xchain-util'
 import { Grid } from 'antd'
 import { ColumnsType, ColumnType } from 'antd/lib/table'
 import BigNumber from 'bignumber.js'
@@ -20,12 +11,9 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
-import { useNavigate } from 'react-router-dom'
 
-import { FlatButton } from '../../components/uielements/button'
 import { PoolsPeriodSelector } from '../../components/uielements/pools/PoolsPeriodSelector'
 import { Table } from '../../components/uielements/table'
-import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { ordBigNumber } from '../../helpers/fp/ord'
@@ -36,7 +24,6 @@ import { getSaversTableRowsData, ordSaversByDepth } from '../../helpers/savers'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePoolWatchlist } from '../../hooks/usePoolWatchlist'
 import { useSynthConstants } from '../../hooks/useSynthConstants'
-import * as saversRoutes from '../../routes/pools/savers'
 import { PoolsState as PoolStateMaya, PoolDetails as PoolDetailsMaya } from '../../services/midgard/mayaMigard/types'
 import { GetPoolsPeriodEnum, PoolDetails, PoolsState } from '../../services/midgard/midgardTypes'
 import type { MimirHalt } from '../../services/thorchain/types'
@@ -51,9 +38,9 @@ type Props = {
 }
 
 export const SaversOverview = (props: Props): JSX.Element => {
-  const { haltedChains, mimirHalt, protocol, walletLocked } = props
+  const { protocol } = props
   const intl = useIntl()
-  const navigate = useNavigate()
+
   const { network } = useNetwork()
 
   const {
@@ -182,42 +169,6 @@ export const SaversOverview = (props: Props): JSX.Element => {
     [intl]
   )
 
-  const renderBtnColumn = useCallback(
-    (_: string, { asset }: { asset: AnyAsset }) => {
-      const { chain } = asset
-      const disableAllPoolActions = PoolHelpers.disableAllActions({ chain, haltedChains, mimirHalt })
-      const disableTradingActions = PoolHelpers.disableTradingActions({
-        chain,
-        haltedChains,
-        mimirHalt
-      })
-      const disablePoolActions = PoolHelpers.disablePoolActions({
-        chain,
-        haltedChains,
-        mimirHalt
-      })
-
-      const disabled =
-        disableAllPoolActions || disableTradingActions || disablePoolActions || walletLocked || protocol === MAYAChain
-
-      const onClickHandler = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
-        event.preventDefault()
-        event.stopPropagation()
-        navigate(saversRoutes.earn.path({ asset: assetToString(asset), walletType: DEFAULT_WALLET_TYPE }))
-      }
-
-      return (
-        <div className="relative flex flex-col items-center justify-center">
-          <FlatButton className="min-w-[120px]" disabled={disabled} size="normal" onClick={onClickHandler}>
-            {intl.formatMessage({ id: 'common.earn' })}
-          </FlatButton>
-        </div>
-      )
-    },
-
-    [protocol, haltedChains, intl, mimirHalt, navigate, walletLocked]
-  )
-
   const btnColumn = useCallback(
     <T extends { asset: AnyAsset }>(): ColumnType<T> => ({
       key: 'btn',
@@ -226,10 +177,9 @@ export const SaversOverview = (props: Props): JSX.Element => {
         clickHandler: refreshHandler,
         iconOnly: !isDesktopView
       }),
-      width: 280,
-      render: renderBtnColumn
+      width: 280
     }),
-    [refreshHandler, intl, renderBtnColumn, isDesktopView]
+    [refreshHandler, intl, isDesktopView]
   )
 
   const desktopColumns: ColumnsType<SaversTableRowData> = useMemo(

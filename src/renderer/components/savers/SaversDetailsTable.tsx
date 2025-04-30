@@ -9,7 +9,6 @@ import { hiddenString } from '../../helpers/stringHelper'
 import { ParentProps } from '../../views/wallet/SaversTableView'
 import * as Styled from '../PoolShares/PoolShares.styles'
 import { AssetIcon } from '../uielements/assets/assetIcon'
-import { ManageButton } from '../uielements/button/ManageButton'
 
 export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX.Element => {
   const intl = useIntl()
@@ -60,21 +59,6 @@ export const SaversDetailsTable: React.FC<ParentProps> = ({ assetDetails }): JSX
       title: 'Wallet Type',
       dataIndex: 'walletType',
       key: 'walletType'
-    },
-    {
-      title: intl.formatMessage({ id: 'common.managePosition' }),
-      key: 'manage',
-      render: (record: typeof dataSource[0]) => {
-        const assetDetail = assetDetails.find(
-          (detail) =>
-            detail.asset.chain === record.key.split('.')[0] && detail.asset.symbol === record.key.split('.')[1]
-        )
-        return assetDetail ? (
-          <ManageButton asset={assetDetail.asset} variant="savers" isTextView={true}></ManageButton>
-        ) : (
-          'N/A'
-        )
-      }
     }
   ]
 

@@ -10,18 +10,7 @@ const savers: SaversMessages = {
   'savers.detail.priceGrowth': 'Crecimiento de los precios',
   'savers.detail.assetAmount': 'Activo Importe',
   'savers.info.max.redeem.value': 'Valor máximo para canjear',
-  'savers.info.max.balance': 'Saldo máximo',
-  'savers.add.state.sending': 'Envío de la operación de ahorro',
-  'savers.add.state.checkResults': 'Comprobación de los resultados de las transacciones',
-  'savers.add.state.pending': 'Añadir ahorrador',
-  'savers.add.state.success': 'Añadir ahorrador con éxito',
-  'savers.withdraw.state.sending': 'Envío de la operación de retirada de fondos',
-  'savers.withdraw.state.checkResults': 'Comprobación de los resultados de las transacciones',
-  'savers.withdraw.state.pending': 'Retirar Ahorro',
-  'savers.withdraw.state.success': 'Retirada con éxito del ahorrador',
-  'savers.add.state.error': 'Error al añadir protectores',
-  'savers.withdraw.state.error': 'Error al retirar los ahorros',
-  'savers.quote.error': 'Error de cotización: {error}'
+  'savers.info.max.balance': 'Saldo máximo'
 }
 
 export default savers

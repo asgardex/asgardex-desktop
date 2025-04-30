@@ -86,7 +86,6 @@ export const saverDeposit$ = ({
       // Update progress
       setState({ ...getState(), step: 2, deposit: RD.progress({ loaded: 50, total }) })
       // 2. send deposit tx
-      // doesn't need arg dex as rune is never a savers
       return sendPoolTx$({
         sender,
         walletType,

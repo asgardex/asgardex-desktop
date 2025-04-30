@@ -331,17 +331,6 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         O.chain(({ asset }) => O.fromNullable(assetFromString(asset))),
         O.toNullable
       )
-      const hasSaversAssets = FP.pipe(
-        poolDetails,
-        A.filter(({ saversDepth }) => Number(saversDepth) > 0),
-        A.filterMap(({ asset: assetString }) => O.fromNullable(assetFromString(assetString))),
-        A.exists(
-          (assetPool) =>
-            assetPool.chain.toUpperCase() === asset.chain.toUpperCase() &&
-            assetPool.symbol.toUpperCase() === asset.symbol.toUpperCase() &&
-            assetPool.ticker.toUpperCase() === asset.ticker.toUpperCase()
-        )
-      )
 
       const createAction = (labelId: string, callback: () => void) => ({
         label: intl.formatMessage({ id: labelId }),
@@ -444,19 +433,6 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
               })
             )
           })
-        )
-      }
-
-      if (hasSaversAssets && !isSynthAsset(asset) && !isSecuredAsset(asset)) {
-        actions.push(
-          createAction('common.earn', () =>
-            navigate(
-              poolsRoutes.earn.path({
-                asset: assetToString(asset),
-                walletType: walletType
-              })
-            )
-          )
         )
       }
 
