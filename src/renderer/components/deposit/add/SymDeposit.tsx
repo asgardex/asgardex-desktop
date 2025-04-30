@@ -53,7 +53,7 @@ import { LiveData } from '../../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../../helpers/stringHelper'
 import * as WalletHelper from '../../../helpers/walletHelper'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
-import { INITIAL_SAVER_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../../../services/chain/const'
+import { INITIAL_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../../../services/chain/const'
 import {
   SymDepositState,
   SymDepositParams,
@@ -63,9 +63,9 @@ import {
   ReloadSymDepositFeesHandler,
   SymDepositFeesHandler,
   SymDepositFeesRD,
-  SaverDepositStateHandler,
-  SaverDepositState,
-  SaverDepositParams
+  DepositStateHandler,
+  DepositState,
+  DepositParams
 } from '../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../services/clients'
 import {
@@ -151,7 +151,7 @@ export type Props = {
   disabled?: boolean
   poolData: PoolData
   deposit$: SymDepositStateHandler
-  asymDeposit$: SaverDepositStateHandler
+  asymDeposit$: DepositStateHandler
   network: Network
   approveERC20Token$: (params: ApproveParams) => TxHashLD
   isApprovedERC20Token$: (params: IsApproveParams) => LiveData<ApiError, boolean>
@@ -399,7 +399,7 @@ export const SymDeposit = (props: Props) => {
     state: asymDepositState,
     reset: resetAsymDepositState,
     subscribe: subscribeAsymDepositState
-  } = useSubscriptionState<SaverDepositState>(INITIAL_SAVER_DEPOSIT_STATE)
+  } = useSubscriptionState<DepositState>(INITIAL_DEPOSIT_STATE)
 
   // Deposit start time
   const [depositStartTime, setDepositStartTime] = useState<number>(0)
@@ -854,7 +854,7 @@ export const SymDeposit = (props: Props) => {
       assetBalance.decimal
     ]
   )
-  const oAsymDepositParams: O.Option<SaverDepositParams> = useMemo(
+  const oAsymDepositParams: O.Option<DepositParams> = useMemo(
     () =>
       FP.pipe(
         sequenceTOption(oDepositParams, oFailedAssetAmount),

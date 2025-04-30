@@ -44,13 +44,8 @@ import { MayaScanPriceRD } from '../../../../hooks/useMayascanPrice'
 import { usePricePool } from '../../../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
-import { INITIAL_SAVER_DEPOSIT_STATE, INITIAL_SEND_STATE } from '../../../../services/chain/const'
-import {
-  SaverDepositState,
-  SaverDepositStateHandler,
-  SendTxState,
-  SendTxStateHandler
-} from '../../../../services/chain/types'
+import { INITIAL_DEPOSIT_STATE, INITIAL_SEND_STATE } from '../../../../services/chain/const'
+import { DepositState, DepositStateHandler, SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
 import { FeesRD, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../../../services/clients'
 import { TxParams } from '../../../../services/evm/types'
 import { PoolDetails as PoolDetailsMaya } from '../../../../services/midgard/mayaMigard/types'
@@ -85,7 +80,7 @@ export type Props = {
   balances: WalletBalances
   balance: WalletBalance
   transfer$: SendTxStateHandler
-  deposit$: SaverDepositStateHandler
+  deposit$: DepositStateHandler
   openExplorerTxUrl: OpenExplorerTxUrl
   getExplorerTxUrl: GetExplorerTxUrl
   fees: FeesRD
@@ -148,7 +143,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     state: depositState,
     reset: resetDepositState,
     subscribe: subscribeDepositState
-  } = useSubscriptionState<SaverDepositState>(INITIAL_SAVER_DEPOSIT_STATE)
+  } = useSubscriptionState<DepositState>(INITIAL_DEPOSIT_STATE)
 
   const isLoading = useMemo(() => RD.isPending(sendTxState.status), [sendTxState.status])
 

@@ -57,9 +57,7 @@ This is the developer source repository, general information, and download page 
 | Deposit \*     | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
 | Withdraw \*    | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
 | Recovery tool  | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Synths         | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
-| Savers         | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
-| Lending        | -                  | -                  | - | -                  | -                  | - | -                  | -                  | -                  | -                  |
+
 
 (\*) Symmetrical deposit/withdraw only
 
@@ -88,20 +86,20 @@ This is the developer source repository, general information, and download page 
 
 | Overview           | Status             | BOND               | UNBOND             | LEAVE              | MAYAName           |
 | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
-| :heavy_check_mark: | :white_check_mark: | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_check_mark: |
+| :heavy_check_mark: | :white_check_mark: | :heavy_check_mark: |:heavy_check_mark:  | :heavy_multiplication_x: | :heavy_check_mark: |
 
 ### Languages
 
-| ENGLISH :us:       | GERMAN :de:        | FRENCH :fr:        | RUSSIAN :ru:       | HINDI :hi:         | SPANISH :es:       |
-| ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
-| :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| ENGLISH :us:       | GERMAN :de:        | FRENCH :fr:        | RUSSIAN :ru:       | HINDI :hi:         | SPANISH :es:       | KOREAN :ko:        |
+| ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
+| :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 
 ### Misc
 
 - 100% open-source (built by the community)
 - Security first
 - 30 bps affiliate fees only on swaps over $1001
-- No affiliate fee on: RunePool, LP, Saver actions. 
+- No affiliate fee on: RunePool, LP actions 
 
 ## ASGARDEX utilizes the following libraries, frameworks, and more:
 

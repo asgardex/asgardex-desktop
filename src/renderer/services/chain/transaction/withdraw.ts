@@ -26,7 +26,7 @@ import { observableState } from '../../../helpers/stateHelper'
 import { service as mayaMidgardService } from '../../midgard/mayaMigard/service'
 import { service as midgardService } from '../../midgard/thorMidgard/service'
 import { INITIAL_WITHDRAW_STATE, ChainTxFeeOption } from '../const'
-import { SaverWithdrawParams, SymWithdrawParams, TradeWithdrawParams, WithdrawState, WithdrawState$ } from '../types'
+import { PoolWithdrawParams, SymWithdrawParams, TradeWithdrawParams, WithdrawState, WithdrawState$ } from '../types'
 import { poolTxStatusByChain$, sendPoolTx$ } from './common'
 import { smallestAmountToSent } from './transaction.helper'
 
@@ -154,7 +154,7 @@ export const symWithdraw$ = ({
 }
 
 /**
- * Saver withdraw stream does 3 steps:
+ * Pool withdraw stream does 3 steps:
  *
  * 1. Validate pool address or node
  * 2. Send withdraw transaction
@@ -163,7 +163,7 @@ export const symWithdraw$ = ({
  * @returns WithdrawState$ - Observable state to reflect loading status. It provides all data we do need to display status in `TxModal`
  *
  */
-export const saverWithdraw$ = ({
+export const poolWithdraw$ = ({
   poolAddress,
   asset,
   memo,
@@ -174,7 +174,7 @@ export const saverWithdraw$ = ({
   sender,
   walletType,
   protocol
-}: SaverWithdrawParams): WithdrawState$ => {
+}: PoolWithdrawParams): WithdrawState$ => {
   // total of progress
   const total = O.some(100)
   const { chain } = asset
@@ -192,7 +192,7 @@ export const saverWithdraw$ = ({
   })
 
   // All requests will be done in a sequence
-  // to update `SaverWithdrawState` step by step
+  // to update `PoolWithdrawState` step by step
   const requests$ = Rx.of(poolAddress).pipe(
     // 1. validate pool address or node
     RxOp.switchMap((poolAddresses) =>
