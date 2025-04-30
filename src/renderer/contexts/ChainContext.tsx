@@ -15,7 +15,7 @@ import {
   poolDeposit$,
   symDeposit$,
   symWithdraw$,
-  saverWithdraw$,
+  poolWithdraw$,
   tradeWithdraw$,
   transfer$,
   assetWithDecimal$,
@@ -38,7 +38,7 @@ type ChainContextValue = {
   poolDeposit$: typeof poolDeposit$
   symDeposit$: typeof symDeposit$
   symWithdraw$: typeof symWithdraw$
-  saverWithdraw$: typeof saverWithdraw$
+  poolWithdraw$: typeof poolWithdraw$
   tradeWithdraw$: typeof tradeWithdraw$
   transfer$: typeof transfer$
   assetWithDecimal$: typeof assetWithDecimal$
@@ -61,7 +61,7 @@ const initialContext: ChainContextValue = {
   poolDeposit$,
   symDeposit$,
   symWithdraw$,
-  saverWithdraw$,
+  poolWithdraw$,
   tradeWithdraw$,
   transfer$,
   assetWithDecimal$,

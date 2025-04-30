@@ -17,7 +17,7 @@ import {
   poolDeposit$,
   symDeposit$,
   symWithdraw$,
-  saverWithdraw$,
+  poolWithdraw$,
   transfer$,
   tradeWithdraw$
 } from './transaction'
@@ -40,7 +40,7 @@ export {
   poolDeposit$,
   symDeposit$,
   symWithdraw$,
-  saverWithdraw$,
+  poolWithdraw$,
   tradeWithdraw$,
   transfer$,
   assetWithDecimal$,
