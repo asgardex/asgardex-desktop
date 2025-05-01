@@ -64,11 +64,11 @@ export const useMayachainMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: 
               const pauseLP = createMimirGroup(pauseLPKeys, mimir, lastHeight)
 
               const haltTradingGlobal: MimirHaltTradingGlobal = {
-                haltTrading: getMimirStatus(mimir.HALTTRADING, lastHeight)
+                haltGlobalTrading: getMimirStatus(mimir.HALTTRADING, lastHeight)
               }
 
               const pauseLpGlobal: MimirHaltLpGlobal = {
-                pauseLp: getMimirStatus(mimir.PAUSELP, lastHeight)
+                pauseGlobalLp: getMimirStatus(mimir.PAUSELP, lastHeight)
               }
 
               return { ...haltChain, ...haltTrading, ...pauseLP, ...haltTradingGlobal, ...pauseLpGlobal } as MimirHalt

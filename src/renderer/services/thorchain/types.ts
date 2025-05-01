@@ -167,11 +167,11 @@ export type MimirPauseLP = Record<`PAUSELP${EnabledChain}`, boolean>
 export type MimirPauseLPDeposit = Record<`PAUSELPDEPOSIT-${EnabledChain}-${EnabledChain}`, boolean>
 
 export type MimirHaltTradingGlobal = {
-  haltTrading: boolean
+  haltGlobalTrading: boolean
 }
 
 export type MimirHaltLpGlobal = {
-  pauseLp: boolean
+  pauseGlobalLp: boolean
 }
 
 export type MimirHalt = MimirHaltChain &

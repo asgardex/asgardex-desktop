@@ -17,13 +17,13 @@ export const createDefaultMimirHalt = (): MimirHalt => {
       acc[`HALT${chain}CHAIN`] = false
       acc[`HALT${chain}TRADING`] = false
       acc[`PAUSELP${chain}`] = false
-      acc[`PAUSELPDEPOSIT${chain}`] = false
+      acc[`PAUSELPDEPOSIT-${chain}-${chain}`] = false
       return acc
     },
     {
       HALTTHORCHAIN: false,
-      haltTrading: false,
-      pauseLp: false
+      haltGlobalTrading: false,
+      pauseGlobalLp: false
     } as MimirHalt
   )
 }

@@ -32,8 +32,8 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol }: HaltedCh
   const prevHaltedChains = useRef<Chain[]>([])
   const prevMimirHalt = useRef<MimirHalt>({
     HALTTHORCHAIN: false,
-    haltTrading: false,
-    pauseLp: false
+    haltGlobalTrading: false,
+    pauseGlobalLp: false
   })
   const renderWarning = FP.pipe(
     RD.combine(haltedChainsRD, mimirHaltRD),

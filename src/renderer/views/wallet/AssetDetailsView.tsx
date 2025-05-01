@@ -159,7 +159,7 @@ export const AssetDetailsView: React.FC = (): JSX.Element => {
           openExplorerTxUrl={openExplorerTxUrl}
           openExplorerAddressUrl={openExplorerAddressUrlHandler}
           walletAddress={walletAddress}
-          disableSend={isRuneNativeAsset(asset) && mimirHalt.haltTHORChain}
+          disableSend={isRuneNativeAsset(asset) && mimirHalt.HALTTHORTRADING}
           network={network}
           haltedChainsThor={haltedChainsThor}
           haltedChainsMaya={haltedChainsMaya}

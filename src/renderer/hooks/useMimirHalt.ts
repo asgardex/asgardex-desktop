@@ -69,11 +69,11 @@ export const useThorchainMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: 
               const pauseLPDeposit = createMimirGroup(pauseLPDepositKeys, mimir, lastHeight)
 
               const haltTradingGlobal: MimirHaltTradingGlobal = {
-                haltTrading: getMimirStatus(mimir.HALTTRADING, lastHeight)
+                haltGlobalTrading: getMimirStatus(mimir.HALTTRADING, lastHeight)
               }
 
               const pauseLpGlobal: MimirHaltLpGlobal = {
-                pauseLp: getMimirStatus(mimir.PAUSELP, lastHeight)
+                pauseGlobalLp: getMimirStatus(mimir.PAUSELP, lastHeight)
               }
 
               return {

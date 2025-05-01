@@ -12,10 +12,10 @@ import * as Ord from 'fp-ts/lib/Ord'
 import { PoolsWatchList } from '../../shared/api/io'
 import { ONE_CACAO_BASE_AMOUNT } from '../../shared/mock/amount'
 import { MayaScanPrice, MayaScanPriceRD } from '../hooks/useMayascanPrice'
+import { MimirHalt } from '../services/mayachain/types'
 import { PoolDetails } from '../services/midgard/mayaMigard/types'
 import { getPoolDetail, toPoolData } from '../services/midgard/mayaMigard/utils'
 import { PoolAddress, PoolData, PricePool } from '../services/midgard/midgardTypes'
-import { MimirHalt } from '../services/thorchain/types'
 import { PoolTableRowData, PoolTableRowsData } from '../views/pools/Pools.types'
 import {
   getPoolTableRowDataMaya,
@@ -290,7 +290,7 @@ export const disableAllActions = ({
   haltedChains: Chain[]
   mimirHalt: MimirHalt
 }) => {
-  // Check `haltTHORChain` (provided by `mimir` endpoint) to disable all actions for all pools
+  // Check `HALTMAYATRADING` (provided by `mimir` endpoint) to disable all actions for all pools
   if (mimirHalt.HALTMAYACHAIN) return true
 
   // Dynamic check for the specific chain halt status
@@ -318,7 +318,7 @@ export const disableTradingActions = ({
   mimirHalt: MimirHalt
 }) => {
   // 1. Check `haltTrading` (provided by `mimir` endpoint) to disable all actions for all pools
-  if (mimirHalt.haltTrading) return true
+  if (mimirHalt.haltGlobalTrading) return true
 
   // 2. Dynamic check for the specific chain trading halt status
   const haltTradingKey = `HALT${chain}TRADING` as keyof MimirHalt
@@ -346,7 +346,7 @@ export const disablePoolActions = ({
   mimirHalt: MimirHalt
 }) => {
   // Check all `pauseLp{chain}` values (provided by `mimir` endpoint) to disable pool actions
-  if (mimirHalt.pauseLp) return true
+  if (mimirHalt.pauseGlobalLp) return true
   // 2. Dynamic check for the specific chain trading halt status
   const haltTradingKey = `PAUSELP${chain}` as keyof MimirHalt
   if (mimirHalt[haltTradingKey]) return true

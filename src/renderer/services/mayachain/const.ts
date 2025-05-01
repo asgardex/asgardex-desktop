@@ -22,8 +22,8 @@ const createDefaultMimirHalt = (): MimirHalt => {
     },
     {
       HALTMAYACHAIN: false,
-      haltTrading: false,
-      pauseLp: false
+      haltGlobalTrading: false,
+      pauseGlobalLp: false
     } as MimirHalt
   )
 }

@@ -289,7 +289,7 @@ export const disableAllActions = ({
   haltedChains: Chain[]
   mimirHalt: MimirHalt
 }) => {
-  // Check `haltTHORChain` (provided by `mimir` endpoint) to disable all actions for all pools
+  // Check `HALTTHORTRADING ` (provided by `mimir` endpoint) to disable all actions for all pools
   if (mimirHalt.HALTTHORCHAIN) return true
 
   // Dynamic check for the specific chain halt status
@@ -317,7 +317,7 @@ export const disableTradingActions = ({
   mimirHalt: MimirHalt
 }) => {
   // 1. Check `haltTrading` (provided by `mimir` endpoint) to disable all actions for all pools
-  if (mimirHalt.haltTrading) return true
+  if (mimirHalt.haltGlobalTrading) return true
 
   // 2. Dynamic check for the specific chain trading halt status
   const haltTradingKey = `HALT${chain}TRADING` as keyof MimirHalt
@@ -346,7 +346,7 @@ export const disablePoolActions = ({
   mimirHalt: MimirHalt
 }) => {
   // Check all `pauseLp{chain}` values (provided by `mimir` endpoint) to disable pool actions
-  if (mimirHalt.PAUSELP) return true
+  if (mimirHalt.pauseGlobalLp) return true
 
   // 2. Dynamic check for the specific chain trading halt status
   const haltTradingKey = `PAUSELP${chain}` as keyof MimirHalt
