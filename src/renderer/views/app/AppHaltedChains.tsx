@@ -52,10 +52,10 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol }: HaltedCh
     RD.toOption,
     O.map(({ inboundHaltedChains, mimirHalt }) => {
       let msg = ''
-      msg = mimirHalt.HALTTRADING ? intl.formatMessage({ id: 'halt.trading' }) : msg
+      msg = mimirHalt.haltGlobalTrading ? intl.formatMessage({ id: 'halt.trading' }) : msg
       msg = mimirHalt.HALTTHORCHAIN ? intl.formatMessage({ id: 'halt.thorchain' }) : msg
 
-      if (!mimirHalt.HALTTHORCHAIN && !mimirHalt.HALTTRADING) {
+      if (!mimirHalt.HALTTHORCHAIN && !mimirHalt.haltGlobalTrading) {
         const haltedChainsState: HaltedChainsState[] = Object.keys(DEFAULT_ENABLED_CHAINS).map((chain) => {
           return {
             chain,
