@@ -67,7 +67,10 @@
     "kujira",
     "arb"
   ],
-  "workspaces": ["xchainjs-lib/packages/*", "asgardex-desktop"],
+  "workspaces": [
+    "xchainjs-lib/packages/*",
+    "asgardex-desktop"
+  ],
   "homepage": "https://thorchain.org",
   "dependencies": {
     "@ant-design/icons": "^4.7.0",

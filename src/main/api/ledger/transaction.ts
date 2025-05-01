@@ -358,7 +358,7 @@ const chainDepositFunctions: Record<
         msg: `Invalid EthHDMode set - needed to send Ledger transaction on ${chainToString(ETHChain)}`
       })
     }
-    if (apiKey === undefined) {
+    if (!apiKey) {
       return E.left({
         errorId: LedgerErrorId.INVALID_DATA,
         msg: `Eth needs an api key ${chainToString(ETHChain)}`
