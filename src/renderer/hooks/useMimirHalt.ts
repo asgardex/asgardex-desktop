@@ -60,7 +60,7 @@ export const useThorchainMimirHalt = (): { mimirHaltRD: MimirHaltRD; mimirHalt: 
               const lastHeight = getLastHeightThorchain(lastblockItems as LastblockItems)
 
               const haltChainKeys = enabledChains.map((chain) => `HALT${chain}Chain`)
-              const haltTradingKeys = enabledChains.map((chain) => `HALT${chain}ChainTRADING`)
+              const haltTradingKeys = enabledChains.map((chain) => `HALT${chain}TRADING`)
               const pauseLPKeys = enabledChains.map((chain) => `PAUSELP${chain}`)
               const pauseLPDepositKeys = enabledChains.map((chain) => `PAUSELPDEPOSIT-${chain}-${chain}`)
               const haltChain = createMimirGroup(haltChainKeys, mimir, lastHeight)
