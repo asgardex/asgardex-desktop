@@ -158,11 +158,13 @@ export type MimirRD = RD.RemoteData<Error, Mimir>
 
 export type MimirConstantsRD = RD.RemoteData<Error, Mimir>
 
-export type MimirHaltChain = Record<`halt${EnabledChain}Chain`, boolean>
+export type MimirHaltChain = Record<`HALT${EnabledChain}CHAIN`, boolean>
 
-export type MimirHaltTrading = Record<`halt${EnabledChain}Trading`, boolean>
+export type MimirHaltTrading = Record<`HALT${EnabledChain}TRADING`, boolean>
 
-export type MimirPauseLP = Record<`pauseLp${EnabledChain}`, boolean>
+export type MimirPauseLP = Record<`PAUSELP${EnabledChain}`, boolean>
+
+export type MimirPauseLPDeposit = Record<`PAUSELPDEPOSIT-${EnabledChain}-${EnabledChain}`, boolean>
 
 export type MimirHaltTradingGlobal = {
   haltTrading: boolean
@@ -172,7 +174,12 @@ export type MimirHaltLpGlobal = {
   pauseLp: boolean
 }
 
-export type MimirHalt = MimirHaltChain & MimirHaltTrading & MimirPauseLP & MimirHaltTradingGlobal & MimirHaltLpGlobal
+export type MimirHalt = MimirHaltChain &
+  MimirHaltTrading &
+  MimirPauseLP &
+  MimirPauseLPDeposit &
+  MimirHaltTradingGlobal &
+  MimirHaltLpGlobal
 
 export type MimirHaltRD = RD.RemoteData<Error, MimirHalt>
 

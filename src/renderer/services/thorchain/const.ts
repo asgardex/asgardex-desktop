@@ -14,13 +14,14 @@ export const INITIAL_INTERACT_STATE: InteractState = {
 export const createDefaultMimirHalt = (): MimirHalt => {
   return Object.keys(DEFAULT_ENABLED_CHAINS).reduce(
     (acc, chain) => {
-      acc[`halt${chain}Chain`] = false
-      acc[`halt${chain}Trading`] = false
-      acc[`pauseLp${chain}`] = false
+      acc[`HALT${chain}CHAIN`] = false
+      acc[`HALT${chain}TRADING`] = false
+      acc[`PAUSELP${chain}`] = false
+      acc[`PAUSELPDEPOSIT${chain}`] = false
       return acc
     },
     {
-      haltTHORChain: false,
+      HALTTHORCHAIN: false,
       haltTrading: false,
       pauseLp: false
     } as MimirHalt

@@ -53,6 +53,7 @@ jobs:
           REACT_APP_BASE_API_KEY: ${{ secrets.REACT_APP_BASE_API_KEY }}
           REACT_APP_SNOWTRACE_API_KEY: ${{ secrets.REACT_APP_SNOWTRACE_API_KEY }}
           REACT_APP_ANKR_API_KEY: ${{ secrets.REACT_APP_ANKR_API_KEY }}
+          REACT_APP_SOL_API_KEY: ${{ secrets.REACT_APP_SOL_API_KEY }}
 
       - name: Staple Notarization Ticket
         if: success()

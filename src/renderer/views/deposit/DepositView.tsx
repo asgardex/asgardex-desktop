@@ -85,6 +85,7 @@ export const DepositView: React.FC<Props> = () => {
 
   const haltedChains$ = protocol === THORChain ? haltedChainsThor$ : haltedChainsMaya$
   const pauseLpChains$ = protocol === THORChain ? pausedLpChainsThor$ : pausedLpChainsMaya$
+
   const shares$ = protocol === THORChain ? sharesThor$ : sharesMaya$
 
   const [unavailableChains] = useObservableState(
