@@ -1,5 +1,5 @@
 import { Network, ExplorerProvider } from '@xchainjs/xchain-client'
-import { AssetETH, ETHChain, ETH_GAS_ASSET_DECIMAL, LOWER_FEE_BOUND, UPPER_FEE_BOUND } from '@xchainjs/xchain-ethereum'
+import { AssetETH, ETHChain, ETH_GAS_ASSET_DECIMAL, UPPER_FEE_BOUND } from '@xchainjs/xchain-ethereum'
 import { EVMClientParams } from '@xchainjs/xchain-evm'
 import { EtherscanProvider } from '@xchainjs/xchain-evm-providers'
 import { BigNumber, ethers } from 'ethers'
@@ -7,6 +7,8 @@ import { BigNumber, ethers } from 'ethers'
 import { etherscanApiKey } from '../api/etherscan'
 
 export const DEFAULT_APPROVE_GAS_LIMIT_FALLBACK = '65000'
+
+const LOWER_FEE_BOUND = 100000000
 
 const ETH_MAINNET_ETHERS_PROVIDER = new ethers.providers.EtherscanProvider('homestead', etherscanApiKey)
 const network = ethers.providers.getNetwork('sepolia')
