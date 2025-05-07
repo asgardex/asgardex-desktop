@@ -16,7 +16,7 @@ import { apiLang } from './api/lang'
 import IPCMessages from './ipc/messages'
 
 // ContextBridge is used here to expose custom api objects on `window`
-// to be accessable at `renderer` processes,
+// to be accessible at `renderer` processes,
 // even if `contextIsolation` is enabled
 // https://www.electronjs.org/docs/api/context-bridge
 

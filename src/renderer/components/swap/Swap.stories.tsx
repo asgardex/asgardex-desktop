@@ -21,7 +21,7 @@ import { SwapAsset, SwapProps } from './Swap.types'
 const sourceAsset: SwapAsset = { asset: AssetRuneNative, decimal: THORCHAIN_DECIMAL, price: ONE_BN }
 const targetAsset: SwapAsset = { asset: AssetBTC, decimal: BTC_DECIMAL, price: bn('56851.67420275761') }
 
-/* Mock all (default) data needed by `Swap` commponent */
+/* Mock all (default) data needed by `Swap` component */
 const defaultProps: SwapProps = {
   keystore: O.none,
   poolAssets: [AssetBTC, AssetRuneNative],
@@ -42,7 +42,7 @@ const defaultProps: SwapProps = {
   }),
   poolDetailsThor: [],
   poolDetailsMaya: [],
-  // mock successfull result of swap$
+  // mock successful result of swap$
   swap$: (params) =>
     Rx.of(params).pipe(
       RxOp.tap((params) => console.log('swap$ ', params)),

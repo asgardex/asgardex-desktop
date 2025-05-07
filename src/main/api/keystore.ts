@@ -72,7 +72,7 @@ const migrateLegacyWallet = (): TE.TaskEither<Error, KeystoreWallets> =>
       FP.pipe(
         // rename keystore file to backup it
         renameFile(LEGACY_KEYSTORE_FILE, path.join(STORAGE_DIR, `keystore-legacy-${new Date().getTime()}.json`)),
-        // return wallets in case of successfull backup
+        // return wallets in case of successful backup
         TE.map(() => wallets)
       )
     )

@@ -143,7 +143,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
   const inboundAddressesInterval$ = Rx.timer(0 /* no delay for first value */, 5 * 60 * 1000 /* delay of 5 min  */)
 
   /**
-   * Get's inbound addresses once and share result by next subscription
+   * Gets inbound addresses once and share result by next subscription
    *
    * It will be updated using a timer defined in `inboundAddressesInterval`
    * or by reloading of data possible by `reloadInboundAddresses`
@@ -448,7 +448,7 @@ export const createMayanodeService$ = (network$: Network$, clientUrl$: ClientUrl
         (provider): SaverProvider => {
           const { asset_deposit_value, asset_redeem_value, growth_pct, last_add_height, last_withdraw_height } =
             provider
-          /* 1e8 decimal by default, which is default decimal for ALL accets at MAYAChain  */
+          /* 1e8 decimal by default, which is default decimal for ALL accepts at MAYAChain  */
           const depositValue = baseAmount(asset_deposit_value, CACAO_DECIMAL)
           const redeemValue = baseAmount(asset_redeem_value, CACAO_DECIMAL)
           const growthPercent = bnOrZero(growth_pct)

@@ -628,6 +628,7 @@ type HaltMessageKey =
   | 'halt.chain.synth'
   | 'halt.chain.pause'
   | 'halt.chain.pauseall'
+  | 'halt.chain.pauseDeposits'
 
 export type HaltMessages = { [key in HaltMessageKey]: string }
 

@@ -15,7 +15,7 @@ const onFinish = () => console.log('onFinish')
 const _onViewTxClick = (txHash: TxHash) => console.log('txHash', txHash)
 
 export const StoryInitial: StoryFn = () => (
-  <TxModal title="intial" txRD={RD.initial} onClose={onClose} onFinish={onFinish} />
+  <TxModal title="initial" txRD={RD.initial} onClose={onClose} onFinish={onFinish} />
 )
 StoryInitial.storyName = 'initial'
 

@@ -166,7 +166,7 @@ export const poolDeposit$ = ({
 }
 
 /**
- * Symetrical deposit stream does 4 steps:
+ * Symmetrical deposit stream does 4 steps:
  *
  * 1. Validate pool address + node
  * 2. Send deposit ASSET transaction

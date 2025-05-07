@@ -52,7 +52,6 @@ import {
   PoolEarningHistoryLD,
   PoolAddresses,
   PoolsState,
-  HaltedChainsLD,
   SelectedPoolAsset,
   PoolType,
   MidgardUrlLD,
@@ -64,7 +63,8 @@ import {
   GetLiquidityHistoryRequest,
   GetPoolsStatusEnum,
   PricePools,
-  PricePool
+  PricePool,
+  PausedChainsLD
 } from '../midgardTypes'
 import {
   getPoolAddressesByChain,
@@ -510,9 +510,16 @@ const createPoolsService = ({
     RxOp.map(([poolsState, selectedPricePoolAsset]) => pricePoolSelectorFromRD(poolsState, selectedPricePoolAsset))
   )
 
-  const haltedChains$: HaltedChainsLD = FP.pipe(
+  const haltedChains$: PausedChainsLD = FP.pipe(
     inboundAddressesShared$,
     liveData.map(A.filterMap((inboundAddress) => (inboundAddress.halted ? O.some(inboundAddress.chain) : O.none)))
+  )
+
+  const pausedLPChains$: PausedChainsLD = FP.pipe(
+    inboundAddressesShared$,
+    liveData.map(
+      A.filterMap((inboundAddress) => (inboundAddress.chain_lp_actions_paused ? O.some(inboundAddress.chain) : O.none))
+    )
   )
 
   /**
@@ -522,7 +529,7 @@ const createPoolsService = ({
   const poolAddresses$ = (): PoolAddressesLD => FP.pipe(loadInboundAddresses$(), liveData.map(inboundToPoolAddresses))
 
   /**
-   * Get's (cached) pool addresses
+   * Gets (cached) pool addresses
    *
    * It will be updated as soon as `inboundAddressesInterval` is triggered
    * or by reloading via `reloadInboundAddresses`
@@ -535,7 +542,7 @@ const createPoolsService = ({
       return FP.pipe(
         poolAddresses,
         RD.toOption,
-        // TODO (@Veado) Will we ingore router for some cases (e.g. by withdrawing something from ETH vault not using router)=
+        // TODO (@Veado) Will we ignore router for some cases (e.g. by withdrawing something from ETH vault not using router)=
         (oPoolAddresses) => sequenceTOption(oPoolAddresses, oSelectedPoolAsset),
         O.chain(([addresses, { chain }]) => getPoolAddressesByChain(addresses, chain))
       )
@@ -901,7 +908,8 @@ const createPoolsService = ({
     poolsFilters$,
     setPoolsFilter,
     outboundAssetFeeByChain$,
-    haltedChains$
+    haltedChains$,
+    pausedLPChains$
   }
 }
 

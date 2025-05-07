@@ -43,7 +43,7 @@ const defaultProps: WitdrawProps = {
   // Password: "123"
   validatePassword$: mockValidatePassword$,
   reloadBalances: () => console.log('reload balances'),
-  // mock successfull result of withdraw$
+  // mock successful result of withdraw$
   withdraw$: (params) =>
     Rx.of(params).pipe(
       RxOp.tap((params) => console.log('withdraw$ ', params)),

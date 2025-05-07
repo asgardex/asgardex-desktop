@@ -151,7 +151,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
   const inboundAddressesInterval$ = Rx.timer(0 /* no delay for first value */, 5 * 60 * 1000 /* delay of 5 min  */)
 
   /**
-   * Get's inbound addresses once and share result by next subscription
+   * Gets inbound addresses once and share result by next subscription
    *
    * It will be updated using a timer defined in `inboundAddressesInterval`
    * or by reloading of data possible by `reloadInboundAddresses`
@@ -465,7 +465,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
         (provider): SaverProvider => {
           const { asset_deposit_value, asset_redeem_value, growth_pct, last_add_height, last_withdraw_height } =
             provider
-          /* 1e8 decimal by default, which is default decimal for ALL accets at THORChain  */
+          /* 1e8 decimal by default, which is default decimal for ALL accepts at THORChain  */
           const depositValue = baseAmount(asset_deposit_value, THORCHAIN_DECIMAL)
           const redeemValue = baseAmount(asset_redeem_value, THORCHAIN_DECIMAL)
           const growthPercent = bnOrZero(growth_pct)
@@ -511,7 +511,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
         // transform RUNEPool -> RunepoolProvider
         (provider): RunePoolProvider => {
           const { value, pnl, deposit_amount, withdraw_amount, last_deposit_height, last_withdraw_height } = provider
-          /* 1e8 decimal by default, which is default decimal for ALL accets at THORChain  */
+          /* 1e8 decimal by default, which is default decimal for ALL accepts at THORChain  */
           const currentValue = baseAmount(value, THORCHAIN_DECIMAL)
           const depositAmount = baseAmount(deposit_amount, THORCHAIN_DECIMAL)
           const withdrawAmount = baseAmount(withdraw_amount, THORCHAIN_DECIMAL)
@@ -573,7 +573,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
             savers_depth,
             savers_units
           } = pool
-          /* 1e8 decimal by default, which is default decimal for ALL accets at THORChain  */
+          /* 1e8 decimal by default, which is default decimal for ALL accepts at THORChain  */
           const poolAsset = assetFromStringEx(asset)
           const shortCode = short_code ? short_code : ''
           const assetDecimal = Number(decimals)
@@ -634,7 +634,7 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       liveData.map((tradeAccounts) =>
         tradeAccounts.map((tradeAccount): TradeAccount => {
           const { owner, units, asset, last_add_height, last_withdraw_height } = tradeAccount
-          /* 1e8 decimal by default, which is default decimal for ALL accets at THORChain  */
+          /* 1e8 decimal by default, which is default decimal for ALL accepts at THORChain  */
           const tradeAssetUnits = baseAmount(units, THORCHAIN_DECIMAL)
           return {
             owner,

@@ -822,7 +822,7 @@ export const SymDeposit = (props: Props) => {
             poolAddress,
             amounts: {
               rune: dexAmountToDeposit,
-              // Decimal needs to be converted back for using orginal decimal of this asset (provided by `assetBalance`)
+              // Decimal needs to be converted back for using original decimal of this asset (provided by `assetBalance`)
               asset: convertBaseAmountDecimal(assetAmountToDepositMax1e8, assetBalance.decimal)
             },
             memos: {
@@ -1118,7 +1118,7 @@ export const SymDeposit = (props: Props) => {
   const updateRuneAmount = useCallback(
     (newAmount: BaseAmount) => {
       let runeAmount = newAmount.gt(maxDexAmountToDeposit)
-        ? { ...maxDexAmountToDeposit } // Use copy to avoid missmatch with values in input fields
+        ? { ...maxDexAmountToDeposit } // Use copy to avoid mismatch with values in input fields
         : baseAmount(newAmount.amount().toNumber(), protocolDecimals)
       // assetAmount max. 1e8 decimal
       const assetAmountMax1e8 = Helper.getAssetAmountToDeposit({
@@ -1160,7 +1160,7 @@ export const SymDeposit = (props: Props) => {
       const newAmountMax1e8 = convertBaseAmountDecimal(newAmount, assetBalanceMax1e8.decimal)
 
       let assetAmountMax1e8 = newAmountMax1e8.gt(maxAssetAmountToDepositMax1e8)
-        ? { ...maxAssetAmountToDepositMax1e8 } // Use copy to avoid missmatch with values in input fields
+        ? { ...maxAssetAmountToDepositMax1e8 } // Use copy to avoid  mismatch with values in input fields
         : { ...newAmountMax1e8 }
 
       const dexAmount = Helper.getDexAmountToDeposit(assetAmountMax1e8, poolData, protocolDecimals)

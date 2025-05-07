@@ -39,7 +39,7 @@ export const calcRefundFee = (inboundFee: BaseAmount): BaseAmount => inboundFee.
 /**
  * Helper to get min. amount to swap
  *
- * It checks fees for happy path (successfull swap) or unhappy path (failed swap)
+ * It checks fees for happy path (successful swap) or unhappy path (failed swap)
  *
  * Formulas based on "Better Fees Handling #1381"
  * @see https://github.com/thorchain/asgardex-electron/issues/1381

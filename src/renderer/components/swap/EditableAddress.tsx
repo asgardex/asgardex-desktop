@@ -121,7 +121,7 @@ export const EditableAddress = ({
   const renderEditableAddress = useCallback(
     (editableAddress: Address) => {
       return (
-        // `items-start` is needed to postion icons on top in case of error message
+        // `items-start` is needed to position icons on top in case of error message
         <InnerForm
           className="flex w-full items-start"
           form={form}

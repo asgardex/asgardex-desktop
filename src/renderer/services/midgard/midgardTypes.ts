@@ -207,6 +207,9 @@ export type MidgardStatusLD = LiveData<Error, boolean>
 export type HaltedChainsRD = RD.RemoteData<Error, Chain[]>
 export type HaltedChainsLD = LiveData<Error, Chain[]>
 
+export type PausedChainsRD = RD.RemoteData<Error, Chain[]>
+export type PausedChainsLD = LiveData<Error, Chain[]>
+
 export type PoolData = {
   assetBalance: BaseAmount
   dexBalance: BaseAmount
@@ -323,6 +326,7 @@ export type PoolsService = {
   setPoolsFilter: (poolKey: PoolType, filter: O.Option<PoolFilter>) => void
   outboundAssetFeeByChain$: (chain: Chain) => PoolFeeLD
   haltedChains$: HaltedChainsLD
+  pausedLPChains$: PausedChainsLD
 }
 
 export type PoolShareType = DepositType | 'all'

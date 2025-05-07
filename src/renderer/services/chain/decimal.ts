@@ -14,7 +14,7 @@ import { AnyAsset } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
+import { isTCYAsset, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import {
   isArbChain,
   isBchChain,
@@ -64,6 +64,9 @@ export const getDecimal = (asset: AnyAsset): Promise<number> => {
   }
   if (isSolChain(chain)) {
     return Promise.resolve(SOL_DECIMALS)
+  }
+  if (isTCYAsset(asset)) {
+    return Promise.resolve(THORCHAIN_DECIMAL)
   }
   // Fix until Decimals for maya midgard is completed.
   if (

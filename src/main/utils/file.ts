@@ -1,5 +1,9 @@
+import path from 'path'
+
 import * as TE from 'fp-ts/lib/TaskEither'
 import * as fs from 'fs-extra'
+
+import { INVALID_PATH_SEGMENT, VALID_SEGMENT_PATTERN } from '../../shared/const'
 
 /**
  * Reads a file.
@@ -70,3 +74,37 @@ export const renameFile: (oldPath: fs.PathLike, newPath: fs.PathLike) => TE.Task
   Error,
   void
 >(fs.rename)
+
+/**
+ * Sanitizes a segment of a file path to prevent path traversal vulnerabilities.
+ * Disallows slashes, backslashes, "..", and other potentially dangerous patterns.
+ * Optionally, you can enforce an alphanumeric+safe symbols whitelist.
+ *
+ * @param segment - The dynamic portion of the path (e.g., file name or version).
+ * @param label - A label used in error messages for context (e.g., "file name").
+ * @returns The validated and safe segment string.
+ * @throws If the segment contains potentially dangerous characters or patterns.
+ */
+export const sanitizePathSegment = (segment: string, label: string): string => {
+  if (INVALID_PATH_SEGMENT.test(segment) || !VALID_SEGMENT_PATTERN.test(segment)) {
+    throw new Error(`Invalid path segment for ${label}: "${segment}"`)
+  }
+  return segment
+}
+
+/**
+ * Builds a safe file path for storing JSON config or state files.
+ * Each input is validated to prevent path traversal and injection risks.
+ *
+ * @param baseDir - The base directory to store the file in.
+ * @param name - A sanitized identifier for the file name prefix.
+ * @param version - A sanitized version identifier.
+ * @returns The fully constructed and safe file path.
+ */
+export const buildJsonFilePath = (baseDir: string, name: string, version: string): string => {
+  const safeName = sanitizePathSegment(name, 'file name')
+  const safeVersion = sanitizePathSegment(version, 'version')
+
+  /* trunk-ignore(semgrep/javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal) */
+  return path.join(baseDir, `${safeName}-${safeVersion}.json`)
+}

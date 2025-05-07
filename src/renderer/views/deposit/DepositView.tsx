@@ -60,7 +60,8 @@ export const DepositView: React.FC<Props> = () => {
       pools: {
         reloadSelectedPoolDetail,
         selectedPoolDetail$: selectedPoolDetailThor$,
-        haltedChains$: haltedChainsThor$
+        haltedChains$: haltedChainsThor$,
+        pausedLPChains$: pausedLpChainsThor$
       },
       shares: { shares$: sharesThor$, reloadShares }
     }
@@ -73,7 +74,8 @@ export const DepositView: React.FC<Props> = () => {
       pools: {
         reloadSelectedPoolDetail: reloadSelectedPoolDetailMaya,
         selectedPoolDetail$: selectedPoolDetailMaya$,
-        haltedChains$: haltedChainsMaya$
+        haltedChains$: haltedChainsMaya$,
+        pausedLPChains$: pausedLpChainsMaya$
       },
       shares: { shares$: sharesMaya$, reloadShares: reloadSharesMaya }
     }
@@ -82,9 +84,23 @@ export const DepositView: React.FC<Props> = () => {
   const selectedPoolAsset$ = protocol === THORChain ? selectedPoolAssetThor$ : selectedPoolAssetMaya$
 
   const haltedChains$ = protocol === THORChain ? haltedChainsThor$ : haltedChainsMaya$
+  const pauseLpChains$ = protocol === THORChain ? pausedLpChainsThor$ : pausedLpChainsMaya$
+
   const shares$ = protocol === THORChain ? sharesThor$ : sharesMaya$
 
-  const [haltedChains] = useObservableState(() => FP.pipe(haltedChains$, RxOp.map(RD.getOrElse((): Chain[] => []))), [])
+  const [unavailableChains] = useObservableState(
+    () =>
+      FP.pipe(
+        Rx.combineLatest([haltedChains$, pauseLpChains$]),
+        RxOp.map(([haltedRD, pausedRD]) => {
+          const halted = RD.getOrElse((): Chain[] => [])(haltedRD)
+          const paused = RD.getOrElse((): Chain[] => [])(pausedRD)
+          // Union the two arrays and remove duplicates
+          return [...new Set([...halted, ...paused])]
+        })
+      ),
+    []
+  )
   const { mimirHalt } = useThorchainMimirHalt()
   const { keystoreService, reloadBalancesByChain } = useWalletContext()
 
@@ -284,7 +300,7 @@ export const DepositView: React.FC<Props> = () => {
                 ),
                 (asset) => (
                   <Deposit
-                    haltedChains={haltedChains}
+                    haltedChains={unavailableChains}
                     mimirHalt={mimirHalt}
                     poolDetail={poolDetailRD}
                     protocol={protocol}

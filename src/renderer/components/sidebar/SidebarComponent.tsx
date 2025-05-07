@@ -34,6 +34,7 @@ import * as poolsRoutes from '../../routes/pools'
 import * as portfolioRoutes from '../../routes/portfolio'
 import * as walletRoutes from '../../routes/wallet'
 import { mayaIconT } from '../icons'
+import { Tooltip } from '../uielements/common/Common.styles'
 import * as Styled from './SidebarComponent.styles'
 
 type IconProps = {
@@ -241,30 +242,44 @@ export const SidebarComponent = (props: Props): JSX.Element => {
           )}
           <div>
             <FooterIcon url={ExternalUrl.ASGARDEX} onClick={clickIconHandler}>
-              <GlobalOutlined />
+              <Tooltip title="Asgardex Website">
+                <GlobalOutlined />
+              </Tooltip>
             </FooterIcon>
             <FooterIcon url={ExternalUrl.GITHUB_REPO} onClick={clickIconHandler}>
-              <GithubOutlined />
+              <Tooltip title="Asgardex GitHub">
+                <GithubOutlined />
+              </Tooltip>
             </FooterIcon>
             <FooterIcon url={ExternalUrl.DISCORD} onClick={clickIconHandler}>
-              <Icon component={DiscordIcon} />
+              <Tooltip title="Asgardex Discord">
+                <Icon component={DiscordIcon} />
+              </Tooltip>
             </FooterIcon>
             <FooterIcon url={ExternalUrl.TWITTER} onClick={clickIconHandler}>
-              <TwitterOutlined />
+              <Tooltip title="Asgardex X">
+                <TwitterOutlined />
+              </Tooltip>
             </FooterIcon>
             <FooterIcon url={ExternalUrl.LICENSE} onClick={clickIconHandler}>
-              <FileTextOutlined />
+              <Tooltip title="MIT License">
+                <FileTextOutlined />
+              </Tooltip>
             </FooterIcon>
             {/* hidden in production build */}
             {isDev && commitHash && (
               <FooterIcon url={`${ExternalUrl.GITHUB_REPO}/commit/${commitHash}`} onClick={clickIconHandler}>
-                <BranchesOutlined />
+                <Tooltip title="Commit Hash">
+                  <BranchesOutlined />
+                </Tooltip>
               </FooterIcon>
             )}
             {/* hidden in production build */}
             {isDev && (
               <Styled.IconWrapper onClick={gotoPlayground}>
-                <BugOutlined />
+                <Tooltip title="Playground">
+                  <BugOutlined />
+                </Tooltip>
               </Styled.IconWrapper>
             )}
           </div>

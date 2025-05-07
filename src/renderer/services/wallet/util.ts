@@ -97,7 +97,7 @@ export const getKeystoreWalletName: (id: KeystoreId) => (wallets: KeystoreWallet
 export const generateKeystoreId = (): KeystoreId =>
   // id for keystore is current time (ms) at the time of importing
   // Note: An user can import one keystore at time only
-  // and a keystore with same id can't be overriden. That's no duplications.
+  // and a keystore with same id can't be overridden. That's no duplications.
   new Date().getTime()
 
 export const hasImportedKeystore = (state: KeystoreState): boolean => O.isSome(state)

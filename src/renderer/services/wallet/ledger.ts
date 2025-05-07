@@ -81,7 +81,7 @@ export const createLedgerService = ({
     // Transform pair of `KeystoreWalletsUI[]` to pair of `KeystoreId[]`
     RxOp.map((pair) => FP.pipe(pair, A.map(FP.flow(A.map(({ id }) => id))))),
     RxOp.map(([prev, curr]) =>
-      // get's the difference
+      // Gets the difference
       FP.pipe(prev, A.difference(N.Eq)(curr), A.head)
     )
   )

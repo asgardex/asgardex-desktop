@@ -138,7 +138,7 @@ export const pricePoolSelector = (pools: PricePools, oAsset: O.Option<PricePoolA
     O.chainNullableK((asset) => pools.find((pool) => eqAsset.equals(pool.asset, asset))),
     // (2) If (1) fails, check if USD pool is available in `PricePools`
     O.fold(() => O.fromNullable(pools.find((pool) => isUSDAsset(pool.asset))), O.some),
-    // (3) If (2) failes, return MAYA pool, which is always first entry in pools list
+    // (3) If (2) fails, return MAYA pool, which is always first entry in pools list
     O.getOrElse(() => NEA.head(pools))
   )
 
@@ -258,7 +258,7 @@ export const getOutboundAssetFeeByChain = (
           })
         case ETHChain: {
           return O.some({
-            // Convertion of decimal needed: 1e10 (by default in MayaChain) -> 1e18 (ETH)
+            // Conversion of decimal needed: 1e10 (by default in MayaChain) -> 1e18 (ETH)
             amount: convertBaseAmountDecimal(baseAmount(value, CACAO_DECIMAL), ETH_GAS_ASSET_DECIMAL),
             asset: AssetETH
           })
@@ -285,7 +285,7 @@ export const getOutboundAssetFeeByChain = (
           })
         case ARBChain: {
           return O.some({
-            // Convertion of decimal needed: 1e10 (by default in MayaChain) -> 1e18 (ARB)
+            // Conversion of decimal needed: 1e10 (by default in MayaChain) -> 1e18 (ARB)
             amount: convertBaseAmountDecimal(baseAmount(value, CACAO_DECIMAL), ARB_GAS_ASSET_DECIMAL),
             asset: AssetAETH
           })

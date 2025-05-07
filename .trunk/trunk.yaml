@@ -22,10 +22,10 @@ lint:
     - eslint@8.23.0!             # JS/TS linting
     - prettier@2.6.2!            # Code formatting
     - markdownlint@0.44.0        # Markdown formatting
-    # - codespell@2.4.1           # Spell-checking
+    - codespell@2.4.1           # Spell-checking
     # - stylelint@16.18.0         # CSS / SCSS linting
-    # - yamllint@1.37.0           # YAML formatting
-    # - shfmt@3.6.0               # Shell formatting
+    - yamllint@1.37.0           # YAML formatting
+    - shfmt@3.6.0               # Shell formatting
     # - svgo@3.3.2                # Optimize SVGs
     # - oxipng@9.1.4              # Optimize PNGs
 
@@ -33,30 +33,37 @@ lint:
     # - osv-scanner@2.0.1         # Open source vuln scanner
     - checkov@3.2.407           # IaC security scanning
     - trufflehog@3.88.25        # Secrets detection
-    # - npm-audit@9.0.0           # Scan for vulnerable npm packages
     - semgrep@1.120.0             # Static analysis tool that detects security issues, bugs, and code quality problems
 
     # 📦 Project Hygiene
-    # - git-diff-check           # Restrict to changed files
-
+    - git-diff-check           # Restrict to changed files
 
     # 🔧 CI/CD
     - actionlint@1.7.7          # GitHub Actions workflows
 
   definitions:
+    - name: stylelint
+      commands:
+      - run: stylelint --config .stylelint.config.js ${target}
+
     - name: codespell
       commands:
-        # trunk-ignore(codespell/misspelled)
-        - run: codespell --uri-ignore-words-list=* --ignore-words-list=liquify,TE ${target}
+        - run: codespell --uri-ignore-words-list=* --ignore-words-list=liquify,TE,iif,afterAll,amountIn ${target}
 
   ignore:
     - linters: [ALL]
       paths:
+        - node_modules/**
+        - build/**
+        - release/**
+        - .yarn/**
+        - .vscode/**
         - src/renderer/i18n/**
         - src/renderer/types/generated/**
-        - .yarn/**
         - .storybook/**
-
+    - linters: [eslint]
+      paths:
+        - .stylelint.config.js
     - linters: [codespell]
       paths:
         - scripts/**
@@ -66,12 +73,10 @@ lint:
     - linters: [markdownlint]
       paths:
         - README.md
-        - CODE_OF_CONDUCT.md
         - PACKAGE_MACOS.md
-        - CHANGELOG.md
+        - .github/ISSUE_TEMPLATE.md
         - .github/ISSUE_TEMPLATE/**
         - BRANCHING_WORKFLOW.md
-        - .github/ISSUE_TEMPLATE.md
 
     - linters: [yamllint]
       paths:
@@ -87,14 +92,12 @@ lint:
 actions:
   disabled:
     - trunk-announce
-    - trunk-check-pre-push
-    - trunk-fmt-pre-commit
 
   enabled:
+    - trunk-fmt-pre-commit # Replaces lint-staged pre-commit
+    - trunk-check-pre-push
     - trunk-upgrade-available
 
-# Many linters and tools depend on runtimes - configure them here.
-# https://docs.trunk.io/runtimes
 runtimes:
   enabled:
     - python@3.10.8

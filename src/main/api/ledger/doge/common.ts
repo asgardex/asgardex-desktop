@@ -14,12 +14,12 @@ import { LedgerErrorId } from '../../../../shared/api/types'
 // Similar to default values in `Client` of `xchain-doge`
 // see https://github.com/xchainjs/xchainjs-lib/blob/1f892f0cbd95b39df84e5800b0396e487b20c277/packages/xchain-doge/src/client.ts#L50-L54
 export const getDerivationPath = (walletAccount: number, network: Network): string => {
-  const DERIVATION_PATHES = {
+  const DERIVATION_PATHS = {
     [Network.Mainnet]: ["44'", "3'", `${walletAccount}'`, '0/'],
     [Network.Testnet]: ["44'", "1'", `${walletAccount}'`, '0/'],
     [Network.Stagenet]: ["44'", "3'", `${walletAccount}'`, '0/']
   }
-  const path = DERIVATION_PATHES[network].join('/')
+  const path = DERIVATION_PATHS[network].join('/')
   return path
 }
 

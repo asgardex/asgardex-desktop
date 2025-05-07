@@ -34,7 +34,7 @@ const { pools: midgardPoolsService, validateNode$: validateNodeThor$ } = midgard
 const { validateNode$: validateNodeMaya$ } = mayaMidgardService
 
 /**
- * Symetrical withdraw stream does 3 steps:
+ * Symmetrical withdraw stream does 3 steps:
  *
  * 1. Validate node
  * 2. Send RUNE transaction
@@ -352,7 +352,7 @@ export const tradeWithdraw$ = ({
         hdMode,
         router: O.none, // no router for Trade Asset
         asset,
-        recipient: '', // no pool addres for trade asset
+        recipient: '', // no pool address for trade asset
         amount,
         memo,
         feeOption: ChainTxFeeOption.WITHDRAW,

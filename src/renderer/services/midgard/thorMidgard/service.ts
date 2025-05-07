@@ -60,7 +60,7 @@ const getMidgardUrl = (): ApiUrls =>
   )
 
 /**
- * Updates Midgard url and stores it persistantly
+ * Updates Midgard url and stores it persistently
  */
 const setMidgardUrl = (url: string, network: Network) => {
   const midgardUrls = { ...getMidgardUrl(), [network]: url }

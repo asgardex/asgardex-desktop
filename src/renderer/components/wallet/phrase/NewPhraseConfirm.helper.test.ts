@@ -27,7 +27,7 @@ describe('wallet/NewMnemonicConfirm', () => {
     expect(setMnemonicError).not.toBeCalled()
   })
 
-  it('should set error to true for missmatched elements', () => {
+  it('should set error to true for mismatched elements', () => {
     const a = [{ _id: '1' }, { _id: '5' }, { _id: '3' }, { _id: '4' }, { _id: '6' }, { _id: '2' }] as WordType[]
     const res = checkPhraseConfirmWordsFactory(setWordsList, setMnemonicError)(wordsMock, a)
     expect(res).toBeFalsy()

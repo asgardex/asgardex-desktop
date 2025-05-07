@@ -98,7 +98,7 @@ const defaultProps: SymDepositProps = {
   // mock password validation
   // Password: "123"
   validatePassword$: mockValidatePassword$,
-  // mock successfull result of sym. deposit$
+  // mock successful result of sym. deposit$
   deposit$: (params) =>
     Rx.of(params).pipe(
       RxOp.tap((params) => console.log('deposit$ ', params)),
@@ -111,7 +111,7 @@ const defaultProps: SymDepositProps = {
         })
       )
     ),
-  // mock successfull result of sym. deposit$
+  // mock successful result of sym. deposit$
   asymDeposit$: (params) =>
     Rx.of(params).pipe(
       RxOp.tap((params) => console.log('deposit$ ', params)),

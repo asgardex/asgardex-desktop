@@ -11,7 +11,7 @@ import { isArbChain, isAvaxChain, isBaseChain, isBscChain, isEthChain } from './
 export const isEvmChain = (chain: Chain): boolean => {
   return isEthChain(chain) || isAvaxChain(chain) || isBscChain(chain) || isArbChain(chain) || isBaseChain(chain)
 }
-// Helper function to be used in conjuction with isEvmChain
+// Helper function to be used in conjunction with isEvmChain
 const isEvmToken = (asset: AnyAsset): boolean => {
   return !isEthAsset(asset) && !isAethAsset(asset) && !isAvaxAsset(asset) && !isBscAsset(asset) && !isBASEAsset(asset)
 }

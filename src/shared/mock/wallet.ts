@@ -12,12 +12,13 @@ import { WalletAddresses, WalletType } from '../wallet/types'
 
 export const mockValidatePassword$ = (password: string) =>
   Rx.of(password).pipe(
-    // ignore emtpy strings
+    // ignore empty strings
     RxOp.takeWhile((v) => !!v),
     // short delay needed to render modal, which will close in other cases
     RxOp.debounceTime(500),
     RxOp.tap((pw) => console.log('validatePassword$ ', pw)),
     RxOp.switchMap((pw) =>
+      // codespell-ignore: iif
       Rx.iif(() => pw === '123', Rx.of(RD.success(undefined)), Rx.of(RD.failure(new Error('invalid password'))))
     )
   )

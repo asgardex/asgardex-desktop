@@ -269,7 +269,7 @@ export const minRuneAmountToDeposit = ({ inFee, outFee, refundFee }: DepositFees
 /**
  * Returns min. balance to cover fees for deposit txs
  *
- * It sums fees for happy path (successfull deposit) or unhappy path (failed deposit)
+ * It sums fees for happy path (successful deposit) or unhappy path (failed deposit)
  *
  * This helper is only needed if source asset is not a chain asset,
  * In other case use `minAmountToSwapMax1e8` to get min value

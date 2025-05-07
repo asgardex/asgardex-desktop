@@ -7,7 +7,7 @@ import { truncateAddress } from '../../../helpers/addressHelper'
 import * as Styled from './AddressEllipsis.styles'
 
 /**
- * Custome address ellipsis component
+ * Custom address ellipsis component
  * Based on https://github.com/bluepeter/react-middle-ellipsis/
  */
 
