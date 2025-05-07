@@ -1549,26 +1549,42 @@ export const Swap = ({
     (): AnyAsset[] =>
       FP.pipe(
         poolAssets,
+        // Remove unsupported tokens
         A.filter((asset) => {
           if (isTCSupportedAsset(sourceAsset, poolDetailsThor) && isTCSupportedAsset(asset, poolDetailsThor))
             return true
           if (isMayaSupportedAsset(sourceAsset, poolDetailsMaya) && isMayaSupportedAsset(asset, poolDetailsMaya))
             return true
-          if (isAssetSupported$(asset)) return true
+          if (isAssetSupported$(asset)) {
+            return true
+          }
           return false
         }),
         A.chain((asset) => {
           if (isRuneNativeAsset(asset) || isCacaoAsset(asset)) {
+            // Keep native Rune or Cacao assets as is
             return [asset]
           }
           if (isMayaSupportedAsset(asset, poolDetailsMaya) && isMayaSupportedAsset(sourceAsset, poolDetailsMaya)) {
-            return [asset, { ...asset, type: AssetType.SYNTH, synth: true } as SynthAsset]
+            // Synthesize MAYAChain assets
+            return [
+              asset,
+              {
+                ...asset,
+                type: AssetType.SYNTH,
+                synth: true
+              } as SynthAsset
+            ]
           }
           if (isTCSupportedAsset(asset, poolDetailsThor) && isTCSupportedAsset(sourceAsset, poolDetailsThor)) {
-            if (sourceAsset.type === AssetType.SECURED) {
-              return [{ ...asset, type: AssetType.SECURED } as SecuredAsset]
-            }
-            return [asset]
+            // Create secured assets for ThorChain
+            return [
+              asset,
+              {
+                ...asset,
+                type: AssetType.SECURED
+              } as SecuredAsset
+            ]
           }
           return [asset]
         }),
