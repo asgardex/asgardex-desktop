@@ -11,7 +11,17 @@ on:
 
 jobs:
   build:
-    runs-on: macOS-14
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macOS-13, macOS-14]
+        os-name: [Ventura, Sonoma]
+        exclude:
+          # Ensure macOS-13 pairs with Ventura, macOS-14 pairs with Sonoma
+          - os: macOS-13
+            os-name: Sonoma
+          - os: macOS-14
+            os-name: Ventura
 
     steps:
       - name: Checkout git repo
@@ -57,6 +67,7 @@ jobs:
           REACT_APP_SNOWTRACE_API_KEY: ${{ secrets.REACT_APP_SNOWTRACE_API_KEY }}
           REACT_APP_ANKR_API_KEY: ${{ secrets.REACT_APP_ANKR_API_KEY }}
           REACT_APP_SOL_API_KEY: ${{ secrets.REACT_APP_SOL_API_KEY }}
+          OS_NAME: ${{ matrix.os-name }}
 
       - name: Staple Notarization Ticket
         if: success()
@@ -66,7 +77,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ runner.OS }}
+          name: ${{ matrix.os }}-${{ matrix.os-name }}
           path: release
 
       - name: List artifacts

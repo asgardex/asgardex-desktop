@@ -50,7 +50,7 @@ export enum ExternalUrl {
   DISCORD = 'https://discord.gg/bzvbD7tdZv',
   GITHUB_REPO = `https://github.com/asgardex/asgardex-desktop`,
   GITHUB_RELEASE = `https://github.com/asgardex/asgardex-desktop/releases/tag/v`,
-  TWITTER = 'https://twitter.com/asgardex',
+  TWITTER = 'https://x.com/asgardex',
   ASGARDEX = 'https://asgardex.com',
   LICENSE = 'https://github.com/asgardex/asgardex-desktop?tab=MIT-1-ov-file'
 }

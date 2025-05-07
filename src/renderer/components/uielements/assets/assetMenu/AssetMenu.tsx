@@ -3,7 +3,7 @@ import React, { useCallback, useState, useMemo, useRef, Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { ArchiveBoxXMarkIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
-import { AnyAsset, assetToString, AssetType, Chain, isSecuredAsset } from '@xchainjs/xchain-util'
+import { AnyAsset, assetToString, AssetType, Chain } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import * as A from 'fp-ts/lib/Array'
 import * as FP from 'fp-ts/lib/function'
@@ -15,11 +15,10 @@ import { getChainAsset } from '../../../../helpers/chainHelper'
 import { eqAsset } from '../../../../helpers/fp/eq'
 import { emptyString } from '../../../../helpers/stringHelper'
 import { BaseButton } from '../../button'
+import { FilterButton } from '../../button'
 import { InputSearch } from '../../input'
-import { Label } from '../../label'
 import { AssetData } from '../assetData'
 import { AssetIcon } from '../assetIcon/AssetIcon'
-import { FilterCheckbox } from './AssetMenu.styles'
 
 export type Props = {
   asset: AnyAsset
@@ -31,6 +30,33 @@ export type Props = {
   headline?: string
   network: Network
 }
+
+export enum ExtendedAssetType {
+  All = 'all',
+  Favorite = 'favorite',
+  Native = AssetType.NATIVE,
+  Synth = AssetType.SYNTH,
+  Secured = AssetType.SECURED
+}
+
+export const filterButtons = [
+  {
+    text: 'All',
+    type: ExtendedAssetType.All
+  },
+  {
+    text: 'Native',
+    type: ExtendedAssetType.Native
+  },
+  {
+    text: 'Synth',
+    type: ExtendedAssetType.Synth
+  },
+  {
+    text: 'Secured',
+    type: ExtendedAssetType.Secured
+  }
+]
 
 export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
   const {
@@ -45,15 +71,13 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
   } = props
 
   const [searchValue, setSearchValue] = useState<string>(emptyString)
-  const [excludeSecured, setExcludeSecured] = useState(false)
+  const [activeFilter, setActiveFilter] = useState(ExtendedAssetType.All)
 
   const clearSearchValue = useCallback(() => {
     setSearchValue(emptyString)
   }, [])
 
   const intl = useIntl()
-
-  const hasSecuredAssets = useMemo(() => assets.some(isSecuredAsset), [assets])
 
   const handleChangeAsset = useCallback(
     async (asset: AnyAsset) => {
@@ -68,9 +92,9 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
       FP.pipe(
         assets,
         A.filter((asset) => {
-          if (excludeSecured && asset.type === AssetType.SECURED) {
-            return false
-          }
+          if (activeFilter === ExtendedAssetType.Native && asset.type !== AssetType.NATIVE) return false
+          if (activeFilter === ExtendedAssetType.Synth && asset.type !== AssetType.SYNTH) return false
+          if (activeFilter === ExtendedAssetType.Secured && asset.type !== AssetType.SECURED) return false
 
           if (searchValue) {
             const lowerSearchValue = searchValue.toLowerCase()
@@ -80,7 +104,7 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
           return true
         })
       ),
-    [assets, excludeSecured, searchValue]
+    [activeFilter, assets, searchValue]
   )
 
   const renderAssets = useMemo(
@@ -90,7 +114,7 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
         NEA.fromArray,
         O.fold(
           () => (
-            <div className="flex h-full w-full flex-col items-center justify-center px-20px py-50px">
+            <div className="flex h-full w-[calc(100%-32px)] flex-col items-center justify-center px-20px py-50px border border-solid border-gray0 dark:border-gray0d rounded-lg p-1">
               <ArchiveBoxXMarkIcon className="h-[75px] w-[75px] text-gray0 dark:text-gray0d" />
               <h2 className="mb-10px text-[14px] uppercase text-gray1 dark:text-gray1d">
                 {intl.formatMessage({ id: 'common.noResult' })}
@@ -98,14 +122,14 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
             </div>
           ),
           (assets) => (
-            <div className="w-[calc(100%-32px)] overflow-y-auto">
+            <div className="w-[calc(100%-32px)] overflow-y-auto border border-solid border-gray0 dark:border-gray0d rounded-lg p-1">
               {FP.pipe(
                 assets,
                 NEA.map((assetInList) => {
                   const selected = eqAsset.equals(asset, assetInList)
                   return (
                     <BaseButton
-                      className="w-full !justify-between !pr-20px hover:bg-gray0 hover:dark:bg-gray0d"
+                      className="w-full !justify-between !pr-20px hover:bg-gray0 hover:dark:bg-gray0d rounded-lg"
                       key={assetToString(assetInList)}
                       onClick={() => handleChangeAsset(assetInList)}
                       disabled={selected}>
@@ -144,6 +168,7 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
 
   const onCloseMenu = useCallback(() => {
     clearSearchValue()
+    setActiveFilter(ExtendedAssetType.All)
     onClose()
   }, [clearSearchValue, onClose])
 
@@ -229,7 +254,7 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
                 )}
                 <BaseButton
                   className="!p-0 text-gray1 hover:text-gray2 dark:text-gray1d hover:dark:text-gray2d"
-                  onClick={() => onClose()}>
+                  onClick={onCloseMenu}>
                   <XMarkIcon className="h-20px w-20px text-inherit" />
                 </BaseButton>
               </div>
@@ -247,22 +272,15 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
                   placeholder={intl.formatMessage({ id: 'common.searchAsset' })}
                 />
               </div>
-              <div className="my-2 flex w-full flex-col px-4">
-                {!hasSecuredAssets && (
-                  <div className="flex items-center justify-between">
-                    <Label className="mr-2 cursor-pointer font-medium text-text2 dark:text-text2d">
-                      {/* TODO: locale (cinnamoroll) */}
-                      Exclude Secured Assets
-                    </Label>
-                    <FilterCheckbox
-                      id="secured-toggle"
-                      type="checkbox"
-                      className="cursor-pointer rounded border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                      checked={excludeSecured}
-                      onChange={(e) => setExcludeSecured(e.target.checked)}
-                    />
-                  </div>
-                )}
+              <div className="my-2 flex w-full px-4">
+                {filterButtons.map(({ type, text }) => (
+                  <FilterButton
+                    key={type}
+                    active={activeFilter === type ? 'true' : 'false'}
+                    onClick={() => setActiveFilter(type)}>
+                    {text}
+                  </FilterButton>
+                ))}
               </div>
               {renderAssets}
             </Dialog.Panel>

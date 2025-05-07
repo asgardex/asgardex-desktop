@@ -36,7 +36,10 @@ export const TxModal: React.FC<Props> = (props): JSX.Element => {
             () => <TxTimer status={true} maxValue={100} value={timerValue} startTime={startTime} />,
             (error) => (
               // Show full error message without truncation
-              <Styled.ErrorView subTitle={error?.msg || intl.formatMessage({ id: 'common.error' })} />
+              <Styled.ErrorView
+                className="bg-bg1 dark:bg-bg1d"
+                subTitle={error?.msg || intl.formatMessage({ id: 'common.error' })}
+              />
             ),
             () => <TxTimer status={false} />
           )
