@@ -101,4 +101,4 @@ actions:
 runtimes:
   enabled:
     - python@3.10.8
-    - node@20.17.0
+    - node@22.14.0
