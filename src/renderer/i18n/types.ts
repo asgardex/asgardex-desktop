@@ -586,17 +586,6 @@ type SaversMessageKey =
   | 'savers.detail.assetAmount'
   | 'savers.info.max.redeem.value'
   | 'savers.info.max.balance'
-  | 'savers.add.state.sending'
-  | 'savers.add.state.checkResults'
-  | 'savers.add.state.pending'
-  | 'savers.add.state.success'
-  | 'savers.add.state.error'
-  | 'savers.withdraw.state.sending'
-  | 'savers.withdraw.state.checkResults'
-  | 'savers.withdraw.state.pending'
-  | 'savers.withdraw.state.success'
-  | 'savers.withdraw.state.error'
-  | 'savers.quote.error'
 
 export type SaversMessages = { [key in SaversMessageKey]: string }
 
@@ -639,6 +628,7 @@ type HaltMessageKey =
   | 'halt.chain.synth'
   | 'halt.chain.pause'
   | 'halt.chain.pauseall'
+  | 'halt.chain.pauseDeposits'
 
 export type HaltMessages = { [key in HaltMessageKey]: string }
 

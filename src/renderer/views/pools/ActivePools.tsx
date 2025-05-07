@@ -43,7 +43,6 @@ import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
 import { useProtocolLimit } from '../../hooks/useProtocolLimit'
 import * as poolsRoutes from '../../routes/pools'
-import * as saversRoutes from '../../routes/pools/savers'
 import { DEFAULT_NETWORK } from '../../services/const'
 import { PoolsState as MayaPoolState } from '../../services/midgard/mayaMigard/types'
 import { GetPoolsPeriodEnum, PoolsState, DEFAULT_POOL_FILTERS } from '../../services/midgard/midgardTypes'
@@ -149,12 +148,6 @@ export const ActivePools = (): JSX.Element => {
                       dexWalletType: DEFAULT_WALLET_TYPE
                     })
                   )
-                }
-              },
-              {
-                label: intl.formatMessage({ id: 'common.earn' }),
-                callback: () => {
-                  navigate(saversRoutes.earn.path({ asset: assetToString(asset), walletType: DEFAULT_WALLET_TYPE }))
                 }
               }
             ]

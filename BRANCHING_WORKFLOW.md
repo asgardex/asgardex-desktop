@@ -21,7 +21,7 @@ To add new features, create a feature branch and name it based on issue number `
 
 Example:
 
-```
+```bash
 git checkout -b issue-123/example develop
 ```
 
@@ -29,7 +29,7 @@ git checkout -b issue-123/example develop
 
 Open a PR to review at GitHub and squash merge changes after that into `develop` or as following:
 
-```
+```bash
 git checkout develop
 git merge --squash issue-123/example
 git push
@@ -44,7 +44,7 @@ To open a release, create a release branch (name it `release/{version}`) and pus
 
 Example:
 
-```
+```bash
 git checkout -b release/v1.30.4
 git push --set-upstream origin release/v1.30.4
 ```
@@ -57,7 +57,7 @@ Prepare a draft release as described in [RELEASE.md](./RELEASE.md) and point it 
 
 After that, bring changes of release branch into `develop` by squash merging previous created PR or like following:
 
-```
+```bash
 git checkout develop
 git merge --squash release/v.0.0.5
 git push
@@ -67,7 +67,7 @@ Delete release branch.
 
 Example:
 
-```
+```bash
 git branch -D release/v.0.0.5
 git push origin --delete release/v.0.0.5
 ```
@@ -80,7 +80,7 @@ To create a hotfix branch name it `hotfix/{version}`, checkout from latest `tag`
 
 Example:
 
-```
+```bash
 git checkout -b hotfix/0.0.6 v0.0.5
 ```
 
@@ -92,9 +92,9 @@ Squash merge hotfix back to develop in GitHub or as follow:
 
 Example:
 
-```
-$ git checkout hotfix/0.0.6
-$ git checkout develop
-$ git merge --squash hotfix/0.0.6
-$ git branch -d hotfix/2.3.1
+```bash
+git checkout hotfix/0.0.6
+git checkout develop
+git merge --squash hotfix/0.0.6
+git branch -d hotfix/2.3.1
 ```

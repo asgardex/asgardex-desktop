@@ -6,12 +6,12 @@ import { LedgerErrorId } from '../../../../shared/api/types'
 // Similar to default values in `Client` of `xchain-bitcoincash`
 // see https://github.com/xchainjs/xchainjs-lib/blob/56adf1e0d6ceab0bdf93f53fe808fe45bf79930f/packages/xchain-bitcoincash/src/client.ts#L65-L69
 export const getDerivationPath = (walletAccount: number, network: Network): string => {
-  const DERIVATION_PATHES = {
+  const DERIVATION_PATHS = {
     [Network.Mainnet]: ["44'", "145'", `${walletAccount}'`, '0/'],
     [Network.Testnet]: ["44'", "1'", `${walletAccount}'`, '0/'],
     [Network.Stagenet]: ["44'", "145'", `${walletAccount}'`, '0/']
   }
-  const path = DERIVATION_PATHES[network].join('/')
+  const path = DERIVATION_PATHS[network].join('/')
   return path
 }
 export const getDerivationPaths = (walletAccount: number, network: Network): RootDerivationPaths => {

@@ -18,6 +18,7 @@ import {
   GetPoolsPeriodEnum,
   GetSwapHistoryRequest,
   HaltedChainsLD,
+  PausedChainsLD,
   PoolAddress,
   PoolAddress$,
   PoolAddressLD,
@@ -111,7 +112,7 @@ export type PoolsService = {
   reloadPoolStatsDetail: FP.Lazy<void>
   poolEarningHistory$: PoolEarningHistoryLD
   reloadPoolEarningHistory: FP.Lazy<void>
-  getPoolLiquidityHistory$: (parmas: PoolLiquidityHistoryParams) => PoolLiquidityHistoryLD
+  getPoolLiquidityHistory$: (params: PoolLiquidityHistoryParams) => PoolLiquidityHistoryLD
   getSelectedPoolSwapHistory$: (params: GetSwapHistoryParams) => SwapHistoryLD
   apiGetSwapHistory$: (params: ApiGetSwapHistoryParams) => SwapHistoryLD
   apiGetLiquidityHistory$: (params: GetLiquidityHistoryRequest) => PoolLiquidityHistoryLD
@@ -125,6 +126,7 @@ export type PoolsService = {
   setPoolsFilter: (poolKey: PoolType, filter: O.Option<PoolFilter>) => void
   outboundAssetFeeByChain$: (chain: Chain) => PoolFeeLD
   haltedChains$: HaltedChainsLD
+  pausedLPChains$: PausedChainsLD
 }
 
 export type Action = {

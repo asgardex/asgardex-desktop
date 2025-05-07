@@ -1,11 +1,8 @@
 {
   "files.associations": {
     ".electronbuildrc": "jsonc",
-    ".eslintrc": "jsonc",
     ".prettierrc": "jsonc",
     ".stylelintrc": "json",
-    ".huskyrc": "json",
-    ".lintstagedrc": "json"
   },
   "typescript.tsdk": "./node_modules/typescript/lib",
   "editor.codeActionsOnSave": {

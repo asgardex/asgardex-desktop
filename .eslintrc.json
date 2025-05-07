@@ -7,11 +7,12 @@
       "jsx": true
     }
   },
-  "plugins": ["react", "react-hooks", "prettier", "unused-imports"],
+  "plugins": ["react", "react-hooks", "prettier", "unused-imports", "security"],
   "extends": [
     "eslint:recommended",
     "plugin:react/recommended",
     "plugin:@typescript-eslint/recommended",
+    "plugin:security/recommended",
     "react-app",
     "plugin:prettier/recommended"
   ],
@@ -40,6 +41,7 @@
     "@typescript-eslint/ban-ts-ignore": "off",
     "@typescript-eslint/no-unused-vars": ["error", { "varsIgnorePattern": "^_", "argsIgnorePattern": "^_" }],
     "@typescript-eslint/no-var-requires": "off",
+    "security/detect-object-injection": "off",
     "import/no-anonymous-default-export": "off",
     "import/newline-after-import": ["error", { "count": 1 }],
     "import/order": [

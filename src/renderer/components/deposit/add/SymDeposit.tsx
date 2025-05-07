@@ -53,7 +53,7 @@ import { LiveData } from '../../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../../helpers/stringHelper'
 import * as WalletHelper from '../../../helpers/walletHelper'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
-import { INITIAL_SAVER_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../../../services/chain/const'
+import { INITIAL_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../../../services/chain/const'
 import {
   SymDepositState,
   SymDepositParams,
@@ -63,9 +63,9 @@ import {
   ReloadSymDepositFeesHandler,
   SymDepositFeesHandler,
   SymDepositFeesRD,
-  SaverDepositStateHandler,
-  SaverDepositState,
-  SaverDepositParams
+  DepositStateHandler,
+  DepositState,
+  DepositParams
 } from '../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../services/clients'
 import {
@@ -151,7 +151,7 @@ export type Props = {
   disabled?: boolean
   poolData: PoolData
   deposit$: SymDepositStateHandler
-  asymDeposit$: SaverDepositStateHandler
+  asymDeposit$: DepositStateHandler
   network: Network
   approveERC20Token$: (params: ApproveParams) => TxHashLD
   isApprovedERC20Token$: (params: IsApproveParams) => LiveData<ApiError, boolean>
@@ -399,7 +399,7 @@ export const SymDeposit = (props: Props) => {
     state: asymDepositState,
     reset: resetAsymDepositState,
     subscribe: subscribeAsymDepositState
-  } = useSubscriptionState<SaverDepositState>(INITIAL_SAVER_DEPOSIT_STATE)
+  } = useSubscriptionState<DepositState>(INITIAL_DEPOSIT_STATE)
 
   // Deposit start time
   const [depositStartTime, setDepositStartTime] = useState<number>(0)
@@ -822,7 +822,7 @@ export const SymDeposit = (props: Props) => {
             poolAddress,
             amounts: {
               rune: dexAmountToDeposit,
-              // Decimal needs to be converted back for using orginal decimal of this asset (provided by `assetBalance`)
+              // Decimal needs to be converted back for using original decimal of this asset (provided by `assetBalance`)
               asset: convertBaseAmountDecimal(assetAmountToDepositMax1e8, assetBalance.decimal)
             },
             memos: {
@@ -854,7 +854,7 @@ export const SymDeposit = (props: Props) => {
       assetBalance.decimal
     ]
   )
-  const oAsymDepositParams: O.Option<SaverDepositParams> = useMemo(
+  const oAsymDepositParams: O.Option<DepositParams> = useMemo(
     () =>
       FP.pipe(
         sequenceTOption(oDepositParams, oFailedAssetAmount),
@@ -1118,7 +1118,7 @@ export const SymDeposit = (props: Props) => {
   const updateRuneAmount = useCallback(
     (newAmount: BaseAmount) => {
       let runeAmount = newAmount.gt(maxDexAmountToDeposit)
-        ? { ...maxDexAmountToDeposit } // Use copy to avoid missmatch with values in input fields
+        ? { ...maxDexAmountToDeposit } // Use copy to avoid mismatch with values in input fields
         : baseAmount(newAmount.amount().toNumber(), protocolDecimals)
       // assetAmount max. 1e8 decimal
       const assetAmountMax1e8 = Helper.getAssetAmountToDeposit({
@@ -1160,7 +1160,7 @@ export const SymDeposit = (props: Props) => {
       const newAmountMax1e8 = convertBaseAmountDecimal(newAmount, assetBalanceMax1e8.decimal)
 
       let assetAmountMax1e8 = newAmountMax1e8.gt(maxAssetAmountToDepositMax1e8)
-        ? { ...maxAssetAmountToDepositMax1e8 } // Use copy to avoid missmatch with values in input fields
+        ? { ...maxAssetAmountToDepositMax1e8 } // Use copy to avoid  mismatch with values in input fields
         : { ...newAmountMax1e8 }
 
       const dexAmount = Helper.getDexAmountToDeposit(assetAmountMax1e8, poolData, protocolDecimals)

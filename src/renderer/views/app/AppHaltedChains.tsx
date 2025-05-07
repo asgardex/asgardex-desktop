@@ -7,7 +7,7 @@ import * as A from 'fp-ts/lib/Array'
 import * as O from 'fp-ts/Option'
 import { useIntl } from 'react-intl'
 
-import { DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
+import { chainToString, DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
 import { Alert } from '../../components/uielements/alert'
 import { unionChains } from '../../helpers/fp/array'
 import { rdAltOnPending } from '../../helpers/fpHelpers'
@@ -24,15 +24,16 @@ type HaltedChainsState = {
   haltedChain: boolean
   haltedTrading: boolean
   pausedLP: boolean
+  pausedLPDeposit: boolean
 }
 
 const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol }: HaltedChainsWarningProps) => {
   const intl = useIntl()
   const prevHaltedChains = useRef<Chain[]>([])
   const prevMimirHalt = useRef<MimirHalt>({
-    haltTrading: false,
-    haltTHORChain: false,
-    pauseLp: false
+    HALTTHORCHAIN: false,
+    haltGlobalTrading: false,
+    pauseGlobalLp: false
   })
   const renderWarning = FP.pipe(
     RD.combine(haltedChainsRD, mimirHaltRD),
@@ -51,16 +52,17 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol }: HaltedCh
     RD.toOption,
     O.map(({ inboundHaltedChains, mimirHalt }) => {
       let msg = ''
-      msg = mimirHalt.haltTrading ? intl.formatMessage({ id: 'halt.trading' }) : msg
-      msg = mimirHalt.haltTHORChain ? intl.formatMessage({ id: 'halt.thorchain' }) : msg
+      msg = mimirHalt.haltGlobalTrading ? intl.formatMessage({ id: 'halt.trading' }) : msg
+      msg = mimirHalt.HALTTHORCHAIN ? intl.formatMessage({ id: 'halt.thorchain' }) : msg
 
-      if (!mimirHalt.haltTHORChain && !mimirHalt.haltTrading) {
+      if (!mimirHalt.HALTTHORCHAIN && !mimirHalt.haltGlobalTrading) {
         const haltedChainsState: HaltedChainsState[] = Object.keys(DEFAULT_ENABLED_CHAINS).map((chain) => {
           return {
             chain,
-            haltedChain: mimirHalt[`halt${chain}Chain`],
-            haltedTrading: mimirHalt[`halt${chain}Trading`],
-            pausedLP: mimirHalt[`pauseLp${chain}`]
+            haltedChain: mimirHalt[`HALT${chain}CHAIN`],
+            haltedTrading: mimirHalt[`HALT${chain}TRADING`],
+            pausedLP: mimirHalt[`PAUSELP${chain}`],
+            pausedLPDeposit: mimirHalt[`PAUSELPDEPOSIT-${chain}-${chain}`]
           }
         })
 
@@ -90,11 +92,20 @@ const HaltedChainsWarning = ({ haltedChainsRD, mimirHaltRD, protocol }: HaltedCh
             : `${msg}`
 
         const pausedLPs = haltedChainsState.filter(({ pausedLP }) => pausedLP).map(({ chain }) => chain)
+        const pausedLPsDeposits = haltedChainsState
+          .filter(({ pausedLPDeposit }) => pausedLPDeposit)
+          .map(({ chain }) => chain)
+
         msg =
           pausedLPs.length > 0
             ? `${msg} ${intl.formatMessage({ id: 'halt.chain.pause' }, { chains: pausedLPs.join(', ') })}`
-            : mimirHalt.pauseLp
+            : mimirHalt.PAUSELP
             ? `${msg} ${intl.formatMessage({ id: 'halt.chain.pauseall' })}`
+            : pausedLPsDeposits.length > 0
+            ? `${msg} ${intl.formatMessage(
+                { id: 'halt.chain.pauseDeposits' },
+                { chains: pausedLPsDeposits.join(', '), protocol: chainToString(protocol) }
+              )}`
             : `${msg}`
       }
       return msg ? <Alert key={'halted warning'} type="warning" message={msg} /> : <></>

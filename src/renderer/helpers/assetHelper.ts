@@ -7,11 +7,13 @@ import {
   assetAmount,
   AssetAmount,
   assetFromString,
+  assetFromStringEx,
   AssetType,
   baseAmount,
   BaseAmount,
   bn,
   Chain,
+  SecuredAsset,
   TokenAsset
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -71,6 +73,13 @@ export const THORCHAIN_DECIMAL = 8
  */
 export const isRuneNativeAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetRuneNative)
 
+//TCY
+export const AssetTCY = assetFromStringEx('THOR.TCY') as TokenAsset
+/**
+ * Checks whether an asset is a TCY asset
+ */
+export const isTCYAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetTCY)
+
 /**
  * Checks whether an asset is a Rune (native or non-native) asset
  */
@@ -110,6 +119,11 @@ export const isMayaAsset = (asset: AnyAsset): boolean =>
  * Checks whether an asset is a native | synth | trade BTC asset
  */
 export const isBtcAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetBTC.chain && asset.symbol.toUpperCase() === AssetBTC.symbol.toUpperCase()
+/**
+ * Checks whether an asset is a native | synth | trade BTC asset
+ */
+export const isBtcSecuredAsset = (asset: SecuredAsset): boolean =>
   asset.chain === AssetBTC.chain && asset.symbol.toUpperCase() === AssetBTC.symbol.toUpperCase()
 
 /**
@@ -210,7 +224,7 @@ export const assetInERC20Whitelist = (asset: AnyAsset): boolean =>
   )
 
 /**
- * Get's icon url from white list
+ * Gets icon url from white list
  */
 export const iconUrlInERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   FP.pipe(
@@ -229,7 +243,7 @@ const assetInARBERC20Whitelist = (asset: AnyAsset): boolean =>
   )
 
 /**
- * Get's icon url from white list
+ * Gets icon url from white list
  */
 export const iconUrlInARBERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   FP.pipe(
@@ -249,7 +263,7 @@ const assetInAVAXERC20Whitelist = (asset: AnyAsset): boolean =>
   )
 
 /**
- * Get's icon url from white list
+ * Gets icon url from white list
  */
 export const iconUrlInAVAXERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   FP.pipe(
@@ -269,7 +283,7 @@ const assetInBSCERC20Whitelist = (asset: AnyAsset): boolean =>
   )
 
 /**
- * Get's icon url from white list
+ * Gets icon url from white list
  */
 export const iconUrlInBSCERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   FP.pipe(
@@ -279,7 +293,7 @@ export const iconUrlInBSCERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   )
 
 /**
- * Get's icon url from white list
+ * Gets icon url from white list
  */
 export const iconUrlInBASEERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   FP.pipe(

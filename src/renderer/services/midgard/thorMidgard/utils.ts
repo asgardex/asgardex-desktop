@@ -142,7 +142,7 @@ export const pricePoolSelector = (pools: PricePools, oAsset: O.Option<PricePoolA
     O.chainNullableK((asset) => pools.find((pool) => eqAsset.equals(pool.asset, asset))),
     // (2) If (1) fails, check if USD pool is available in `PricePools`
     O.fold(() => O.fromNullable(pools.find((pool) => isUSDAsset(pool.asset))), O.some),
-    // (3) If (2) failes, return RUNE pool, which is always first entry in pools list
+    // (3) If (2) fails, return RUNE pool, which is always first entry in pools list
     O.getOrElse(() => NEA.head(pools))
   )
 
@@ -266,34 +266,34 @@ export const getOutboundAssetFeeByChain = (
           })
         case ETHChain: {
           return O.some({
-            // Convertion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
+            // Conversion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
             amount: convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), ETH_GAS_ASSET_DECIMAL),
             asset: AssetETH
           })
         }
         case AVAXChain: {
           return O.some({
-            // Convertion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
+            // Conversion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
             amount: convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), AVAX_GAS_ASSET_DECIMAL),
             asset: AssetAVAX
           })
         }
         case BASEChain: {
           return O.some({
-            // Convertion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
+            // Conversion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
             amount: convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), BASE_GAS_ASSET_DECIMAL),
             asset: AssetBETH
           })
         }
         case BSCChain: {
           return O.some({
-            // Convertion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
+            // Conversion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
             amount: convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), BSC_GAS_ASSET_DECIMAL),
             asset: AssetBSC
           })
         }
         case GAIAChain: {
-          // Convertion of decimal needed: 1e8 (by default in THORChain) -> 1e6 (COSMOS)
+          // Conversion of decimal needed: 1e8 (by default in THORChain) -> 1e6 (COSMOS)
           const amount = convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), COSMOS_DECIMAL)
           return O.some({
             amount,

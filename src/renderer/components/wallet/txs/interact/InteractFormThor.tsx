@@ -898,6 +898,9 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   const bondBaseAmount = userNodeInfo?.bondAmount ? userNodeInfo.bondAmount : baseAmount(0)
 
   const exampleMemos = [
+    { type: 'Claim TCY', memo: 'TCY:ADDR' },
+    { type: 'Stake TCY', memo: 'TCY+' },
+    { type: 'Unstake TCY', memo: 'TCY-:BASISPOINTS' },
     { type: 'Bond', memo: 'BOND:NODEADDRESS' },
     { type: 'Unbond', memo: 'UNBOND:NODEADDRESS' },
     { type: 'Leave', memo: 'LEAVE:NODEADDRESS' },

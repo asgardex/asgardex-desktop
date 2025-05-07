@@ -1,5 +1,8 @@
 name: Electron build - Linux
 
+permissions:
+  contents: write
+
 on:
   push:
     branches:
@@ -52,6 +55,7 @@ jobs:
           REACT_APP_BASE_API_KEY: ${{ secrets.REACT_APP_BASE_API_KEY }}
           REACT_APP_SNOWTRACE_API_KEY: ${{ secrets.REACT_APP_SNOWTRACE_API_KEY }}
           REACT_APP_ANKR_API_KEY: ${{ secrets.REACT_APP_ANKR_API_KEY }}
+          REACT_APP_SOL_API_KEY: ${{ secrets.REACT_APP_SOL_API_KEY }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

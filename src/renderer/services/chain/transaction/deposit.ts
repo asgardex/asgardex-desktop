@@ -15,11 +15,11 @@ import { observableState } from '../../../helpers/stateHelper'
 import { service as mayaMidgardService } from '../../midgard/mayaMigard/service'
 import { service as midgardService } from '../../midgard/thorMidgard/service'
 import { ApiError, ErrorId } from '../../wallet/types'
-import { ChainTxFeeOption, INITIAL_SAVER_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../const'
+import { ChainTxFeeOption, INITIAL_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../const'
 import {
-  SaverDepositParams,
-  SaverDepositState,
-  SaverDepositState$,
+  DepositParams,
+  DepositState,
+  DepositState$,
   SymDepositFinalityResult,
   SymDepositParams,
   SymDepositState,
@@ -32,16 +32,16 @@ const { pools: midgardPoolsService, validateNode$ } = midgardService
 const { pools: mayaMidgardPoolsService, validateNode$: mayaValidateNode$ } = mayaMidgardService
 
 /**
- * Saver deposit stream does 3 steps:
+ * Pool deposit stream does 3 steps:
  *
  * 1. Validate pool address
  * 2. Send deposit transaction
  * 3. Check status of deposit transaction
  *
- * @returns SaverDepositState$ - Observable state to reflect loading status. It provides all data we do need to display status in `TxModul`
+ * @returns DepositState$ - Observable state to reflect loading status. It provides all data we do need to display status in `TxModul`
  *
  */
-export const saverDeposit$ = ({
+export const poolDeposit$ = ({
   poolAddress,
   asset,
   amount,
@@ -52,7 +52,7 @@ export const saverDeposit$ = ({
   walletIndex,
   hdMode,
   protocol
-}: SaverDepositParams): SaverDepositState$ => {
+}: DepositParams): DepositState$ => {
   // total of progress
   const total = O.some(100)
 
@@ -64,13 +64,13 @@ export const saverDeposit$ = ({
     get$: getState$,
     get: getState,
     set: setState
-  } = observableState<SaverDepositState>({
-    ...INITIAL_SAVER_DEPOSIT_STATE,
+  } = observableState<DepositState>({
+    ...INITIAL_DEPOSIT_STATE,
     deposit: RD.progress({ loaded: 25, total })
   })
 
   // All requests will be done in a sequence
-  // and `SaverDepositState` will be updated step by step
+  // and `DepositState` will be updated step by step
   const requests$ = Rx.of(poolAddress).pipe(
     // 1. validate pool address or node
     RxOp.switchMap((poolAddresses) =>
@@ -86,7 +86,6 @@ export const saverDeposit$ = ({
       // Update progress
       setState({ ...getState(), step: 2, deposit: RD.progress({ loaded: 50, total }) })
       // 2. send deposit tx
-      // doesn't need arg dex as rune is never a savers
       return sendPoolTx$({
         sender,
         walletType,
@@ -146,7 +145,7 @@ export const saverDeposit$ = ({
               RxOp.map(() =>
                 FP.pipe(
                   oProgress,
-                  O.map(({ loaded }): SaverDepositState => {
+                  O.map(({ loaded }): DepositState => {
                     // From 75 to 97 we count progress with small steps, but stop it at 98
                     const updatedLoaded = loaded >= 75 && loaded <= 97 ? loaded++ : loaded
                     return { ...state, deposit: RD.progress({ loaded: updatedLoaded, total }) }
@@ -167,7 +166,7 @@ export const saverDeposit$ = ({
 }
 
 /**
- * Symetrical deposit stream does 4 steps:
+ * Symmetrical deposit stream does 4 steps:
  *
  * 1. Validate pool address + node
  * 2. Send deposit ASSET transaction
@@ -365,10 +364,3 @@ export const symDeposit$ = ({
     RxOp.startWith({ ...getState() })
   )
 }
-// const sendMockTx$ = (params: SendPoolTxParams): TxHashLD => {
-//   console.log('Mock transaction initiated:', params)
-//   const assetHash = '0xed5bbb55813dfd85e3a6400456eebbcd788c04827faa5a376bda0f8e4f9c9b7e'
-//   const runeHash = '6AE7989D676F15611BA835BEC868A007029EB3C85A18EC1D8513FED3962E9857'
-//   const hash = params.asset === AssetRuneNative ? runeHash : assetHash
-//   return Rx.of(RD.success(`${hash}`)) // Replace 'mock-tx-hash' with a desired value
-// }

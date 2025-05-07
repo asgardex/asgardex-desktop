@@ -91,7 +91,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
   const availableAssets$ = protocol === THORChain ? availableAssetsThor$ : availableAssetsMaya$
   const reloadSelectedPoolDetail = protocol === THORChain ? reloadSelectedPoolDetailThor : reloadSelectedPoolDetailMaya
 
-  const { symDepositFees$, symDeposit$, reloadSymDepositFees, saverDeposit$: asymDeposit$ } = useChainContext()
+  const { symDepositFees$, symDeposit$, reloadSymDepositFees, poolDeposit$: asymDeposit$ } = useChainContext()
 
   const poolsState = useObservableState(protocol === THORChain ? poolsState$ : poolsStateMaya$, RD.initial)
 

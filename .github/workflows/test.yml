@@ -1,23 +1,32 @@
-name: Test
+name: CI-Test
 
-on: push
+on:
+  push:
+    branches:
+      - '**' # Trigger on all branches
+
+permissions:
+  contents: read # As assets are not uploaded
+
+env:
+  NODE_OPTIONS: --max-old-space-size=7168
 
 jobs:
   test:
     name: Unit tests
-
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'yarn'
 
       - name: Install missing dependencies on Linux
-        run: sudo apt-get update && sudo apt-get install libudev-dev libusb-1.0-0-dev
         if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install libudev-dev libusb-1.0-0-dev
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -25,48 +34,51 @@ jobs:
       - name: Run unit tests
         run: yarn test
 
-  eslint:
-    name: ESLint
-
-    runs-on: ubuntu-latest
+  trunk-check:
+    name: Trunk Check
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'yarn'
 
       - name: Install missing dependencies on Linux
-        run: sudo apt-get update && sudo apt-get install libudev-dev libusb-1.0-0-dev
         if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install libudev-dev libusb-1.0-0-dev
 
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Run ESLint
-        run: yarn lint
+      - name: Install Trunk CLI
+        run: |
+          curl https://get.trunk.io -fsSL | bash
+          echo "$HOME/.trunk/bin" >> $GITHUB_PATH
+
+      - name: Run Trunk via yarn check:trunk
+        run: yarn check:trunk
 
   build:
     name: Production build
-
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'yarn'
 
       - name: Install missing dependencies on Linux
-        run: sudo apt-get update && sudo apt-get install libudev-dev libusb-1.0-0-dev
         if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install libudev-dev libusb-1.0-0-dev
 
       - name: Install dependencies
         run: yarn install --immutable
 
       - name: Run build
-        env:
-          NODE_OPTIONS: --max-old-space-size=7168
         run: yarn build

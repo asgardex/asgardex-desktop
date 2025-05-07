@@ -556,7 +556,8 @@ export const PortfolioView: React.FC = (): JSX.Element => {
 
   const chartData = useMemo(() => {
     return portfolioDatasource.map(({ title, amount }) => {
-      const value = amount.trim() ? parseFloat(amount.replace('$', '').replace(',', '').trim()) : 0
+      const sanitized = amount.trim().replace(/[$,]/g, '') // remove all '$' and ',' characters
+      const value = sanitized ? parseFloat(sanitized) : 0
       return {
         name: title,
         value: parseFloat(value.toFixed(value < 1 ? 2 : 0))

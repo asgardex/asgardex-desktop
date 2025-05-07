@@ -16,9 +16,9 @@ import { DEFAULT_NETWORK } from '../services/const'
 // TODO (@veado)
 // 1. Extract into helper/routes + test
 // 2. Extract changeNetworkHandler into App (not needed to have this in this hook)
-const matchPaths = (pathes: string[], pathname: string): O.Option<string> =>
+const matchPaths = (paths: string[], pathname: string): O.Option<string> =>
   FP.pipe(
-    pathes,
+    paths,
     A.map((path) => matchPath(path, pathname)),
     A.map(O.fromNullable),
     // filter `None` out from list

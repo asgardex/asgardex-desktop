@@ -1,35 +1,24 @@
 import { Fragment, useMemo } from 'react'
 
-import * as RD from '@devexperts/remote-data-ts'
 import { Tab } from '@headlessui/react'
-import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Chain } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 import * as FP from 'fp-ts/function'
 import * as A from 'fp-ts/lib/Array'
-import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useMatch, useNavigate } from 'react-router'
-import * as RxOp from 'rxjs/operators'
 
 import { ProtocolSwitch } from '../../components/uielements/protocolSwitch'
-import { useMidgardContext } from '../../contexts/MidgardContext'
-import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
-import { useKeystoreState } from '../../hooks/useKeystoreState'
-import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import * as poolsRoutes from '../../routes/pools'
 import { PoolType } from '../../services/midgard/midgardTypes'
 import { useApp } from '../../store/app/hooks'
-import { SaversOverview } from '../savers/SaversOverview'
 import { ActivePools } from './ActivePools'
 import { PendingPools } from './PendingPools'
 
-type TabType = PoolType | 'savers'
+type TabType = PoolType
 
 const TAB_INDEX: Record<TabType, number> = {
   active: 0,
-  pending: 1,
-  savers: 2
+  pending: 1
 }
 
 type TabContent = {
@@ -44,39 +33,15 @@ export const PoolsOverview = (): JSX.Element => {
 
   const navigate = useNavigate()
 
-  const { locked: walletLocked } = useKeystoreState()
-
-  const {
-    service: {
-      pools: { haltedChains$ }
-    }
-  } = useMidgardContext()
-  const {
-    service: {
-      pools: { haltedChains$: haltedChainsMaya$ }
-    }
-  } = useMidgardMayaContext()
-
-  const [haltedChains] = useObservableState(
-    () =>
-      FP.pipe(protocol === THORChain ? haltedChains$ : haltedChainsMaya$, RxOp.map(RD.getOrElse((): Chain[] => []))),
-    []
-  )
-
-  const { mimirHalt } = useThorchainMimirHalt()
-
   const matchPoolsPendingRoute = useMatch({ path: poolsRoutes.pending.path(), end: false })
-  const matchPoolsSaversRoute = useMatch({ path: poolsRoutes.savers.path(), end: false })
 
   const selectedIndex: number = useMemo(() => {
-    if (matchPoolsSaversRoute) {
-      return TAB_INDEX['savers']
-    } else if (matchPoolsPendingRoute) {
+    if (matchPoolsPendingRoute) {
       return TAB_INDEX['pending']
     } else {
       return TAB_INDEX['active']
     }
-  }, [matchPoolsPendingRoute, matchPoolsSaversRoute])
+  }, [matchPoolsPendingRoute])
 
   const tabs = useMemo(
     (): TabContent[] => [
@@ -89,21 +54,9 @@ export const PoolsOverview = (): JSX.Element => {
         index: TAB_INDEX['pending'],
         label: intl.formatMessage({ id: 'pools.pending' }),
         content: <PendingPools />
-      },
-      {
-        index: TAB_INDEX['savers'],
-        label: intl.formatMessage({ id: 'common.savers' }),
-        content: (
-          <SaversOverview
-            haltedChains={haltedChains}
-            mimirHalt={mimirHalt}
-            protocol={protocol}
-            walletLocked={walletLocked}
-          />
-        )
       }
     ],
-    [intl, protocol, haltedChains, mimirHalt, walletLocked]
+    [intl]
   )
 
   return (
@@ -116,9 +69,6 @@ export const PoolsOverview = (): JSX.Element => {
             break
           case TAB_INDEX['pending']:
             navigate(poolsRoutes.pending.path())
-            break
-          case TAB_INDEX['savers']:
-            navigate(poolsRoutes.savers.path())
             break
           default:
           // nothing to do

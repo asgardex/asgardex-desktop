@@ -61,7 +61,7 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
     )
   }, [asset.asset, asset.walletAddress, oBalances])
 
-  const { transfer$, saverDeposit$: deposit$ } = useChainContext()
+  const { transfer$, poolDeposit$: deposit$ } = useChainContext()
 
   const { fees$, reloadFees } = useEvmContext(asset.asset.chain)
 

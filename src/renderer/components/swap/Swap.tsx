@@ -846,7 +846,7 @@ export const Swap = ({
               ...sourceAsset,
               symbol: sourceAsset.symbol.toUpperCase()
             }),
-            fromAddress: sourceWalletAddress,
+            fromAddress: isSecuredAsset(sourceAsset) ? undefined : sourceWalletAddress,
             destinationAddress: quoteOnly ? undefined : destinationWalletAddress,
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
@@ -1454,7 +1454,7 @@ export const Swap = ({
       )
     )
 
-    const minAmountErrorMessage = errors.find((error) => error.includes('is less than reccommended Min Amount:'))
+    const minAmountErrorMessage = errors.find((error) => error.includes('is less than recommended Min Amount:'))
 
     if (!minAmountErrorMessage) {
       return false
@@ -1797,7 +1797,7 @@ export const Swap = ({
       />
     )
   }, [swapState, sourceAsset, amountToSwapMax1e8, targetAsset, swapResultAmountMax.baseAmount, network, intl])
-  // assuming on a unsucessful tx that the swap state should remain the same
+  // assuming on a unsuccessful tx that the swap state should remain the same
   const onCloseTxModal = useCallback(() => {
     resetSwapState()
   }, [resetSwapState])
@@ -1933,8 +1933,8 @@ export const Swap = ({
       <ErrorLabel>
         {swapErrors.map((error, index) => {
           // Check for specific error patterns
-          if (error.includes('is less than reccommended Min Amount')) {
-            const matches = error.match(/amount in: (\d+) is less than reccommended Min Amount: (\d+)/)
+          if (error.includes('is less than recommended Min Amount')) {
+            const matches = error.match(/amount in: (\d+) is less than recommended Min Amount: (\d+)/)
             if (matches) {
               const [_, amountIn, minAmount] = matches
               const formattedAmountIn = new CryptoAmount(baseAmount(amountIn), sourceAsset).formatedAssetString()

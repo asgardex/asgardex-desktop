@@ -48,7 +48,7 @@ export const ImportsView: React.FC = (): JSX.Element => {
     resetImportingKeystoreState()
   }, [resetImportingKeystoreState])
 
-  // Redirect after successfull import
+  // Redirect after successful import
   useEffect(() => {
     if (RD.isSuccess(importingKeystoreState)) {
       resetImportingKeystoreState()
