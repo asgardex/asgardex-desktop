@@ -8,6 +8,7 @@ import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { SOLChain } from '@xchainjs/xchain-solana'
+import { isTCYAsset } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, isSecuredAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
@@ -38,8 +39,7 @@ import {
   isAethAsset,
   isSolAsset,
   isBaseAsset,
-  iconUrlInBASEERC20Whitelist,
-  isTCYAsset
+  iconUrlInBASEERC20Whitelist
 } from '../../../../helpers/assetHelper'
 import {
   isArbChain,

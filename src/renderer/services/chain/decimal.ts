@@ -9,12 +9,13 @@ import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { EthChain } from '@xchainjs/xchain-mayachain-query'
 import { XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { SOL_DECIMALS } from '@xchainjs/xchain-solana'
+import { isTCYAsset } from '@xchainjs/xchain-thorchain'
 import { ThorchainCache } from '@xchainjs/xchain-thorchain-query'
 import { AnyAsset } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { isTCYAsset, THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
+import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import {
   isArbChain,
   isBchChain,
