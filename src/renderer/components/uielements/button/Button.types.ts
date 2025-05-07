@@ -6,7 +6,7 @@ export type ButtonWeight = 'normal' | 'bold' | '500'
 export type ButtonType = 'normal' | 'default' | 'outline' | 'ghost' | 'transparent' | 'underline'
 export type ButtonRound = 'true' | 'false'
 
-export type ComponentProps = {
+type ComponentProps = {
   sizevalue?: ButtonSize
   color?: ButtonColor
   weight?: ButtonWeight

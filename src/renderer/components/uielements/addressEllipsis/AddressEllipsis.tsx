@@ -7,7 +7,7 @@ import { truncateAddress } from '../../../helpers/addressHelper'
 import * as Styled from './AddressEllipsis.styles'
 
 /**
- * Custome address ellipsis component
+ * Custom address ellipsis component
  * Based on https://github.com/bluepeter/react-middle-ellipsis/
  */
 
@@ -20,7 +20,7 @@ export type Props = {
   linkIcon?: React.ReactElement
 }
 
-export const AddressEllipsis: React.FC<Props> = (props): JSX.Element => {
+export const AddressEllipsis = (props: Props): JSX.Element => {
   const { address, chain, network, className, enableCopy = false, linkIcon } = props
   const prepEllipse = useCallback(
     (node: HTMLElement, txtToEllipse: HTMLElement, copyIcon: HTMLElement) => {

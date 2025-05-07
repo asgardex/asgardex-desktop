@@ -6,9 +6,8 @@ import { convertBaseAmountDecimal, isRuneNativeAsset, to1e8BaseAmount } from '..
 import { eqAsset } from '../../../helpers/fp/eq'
 import { sequenceTOption } from '../../../helpers/fpHelpers'
 import { RUNE_POOL_DATA } from '../../../helpers/poolHelper'
-import { PoolData } from '../../../views/pools/Pools.types'
 import { getValueOfAsset1InAsset2 } from '../../../views/pools/Pools.utils'
-import { PoolsDataMap } from '../../midgard/types'
+import { PoolData, PoolsDataMap } from '../../midgard/midgardTypes'
 
 export const getPoolData = (poolsData: PoolsDataMap, asset: AnyAsset): O.Option<PoolData> =>
   FP.pipe(

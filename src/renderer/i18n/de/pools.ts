@@ -17,7 +17,8 @@ const pools: PoolsMessages = {
   'pools.limit.info': 'Protokoll-Limit erreicht! {pooled} hinterlegt in Pools, {bonded} bonded in Nodes',
   'pools.incentivependulum.info': 'Incentive Pendulum: {percentage}%',
   'pools.incentivependulum.tooltip': '{pooled} in Pools, {bonded} in Nodes',
-  'pools.incentivependulum.error': 'Fehler beim Laden der Daten des Incentive Pendulums'
+  'pools.incentivependulum.error': 'Fehler beim Laden der Daten des Incentive Pendulums',
+  'pools.bondable': 'Bindbar'
 }
 
 export default pools

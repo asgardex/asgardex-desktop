@@ -1,4 +1,4 @@
-import { join } from 'path'
+import path, { join } from 'path'
 
 import { BrowserWindow, app, ipcMain, nativeImage } from 'electron'
 import electronDebug from 'electron-debug'
@@ -34,6 +34,7 @@ import { approveLedgerERC20Token } from './api/ledger/evm/approve'
 import { openExternal } from './api/url'
 import IPCMessages from './ipc/messages'
 import { setMenu } from './menu'
+import { sanitizePathSegment } from './utils/file'
 
 export const IS_DEV = isDev && process.env.NODE_ENV !== 'production'
 export const PORT = process.env.PORT || 3000
@@ -50,8 +51,8 @@ const APP_ICON = join(APP_ROOT, 'resources', process.platform.match('win32') ? '
 const initLogger = () => {
   log.transports.file.resolvePath = (variables: log.PathVariables) => {
     // Logs go into ~/.config/{appName}/logs/ dir
-    const path = join(app.getPath('userData'), 'logs', variables.fileName as string)
-    return path
+    const safeFileName = sanitizePathSegment(variables.fileName as string, 'log file name')
+    return path.join(app.getPath('userData'), 'logs', safeFileName)
   }
 }
 
@@ -158,7 +159,7 @@ const getDeviceScaleFactor = () => {
 
 const langChangeHandler = (locale: Locale) => {
   setMenu(locale, IS_DEV)
-  // show menu, which is hided at start
+  // show menu, which is hidden at start
   if (mainWindow && !mainWindow.isMenuBarVisible()) {
     mainWindow.setMenuBarVisibility(true)
   }

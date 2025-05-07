@@ -29,7 +29,8 @@ import {
   SynthAsset,
   isTokenAsset,
   isTradeAsset,
-  isSecuredAsset
+  isSecuredAsset,
+  SecuredAsset
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import clsx from 'clsx'
@@ -68,7 +69,7 @@ import {
   getEVMTokenAddressForChain
 } from '../../helpers/assetHelper'
 import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isLtcChain } from '../../helpers/chainHelper'
-import { isEvmChain, isEvmToken } from '../../helpers/evmHelper'
+import { isEvmChainToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqAddress, eqOApproveParams } from '../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../helpers/fpHelpers'
@@ -91,9 +92,9 @@ import { INITIAL_SWAP_STATE } from '../../services/chain/const'
 import { getZeroSwapFees } from '../../services/chain/fees/swap'
 import { SwapTxParams, SwapFeesRD, SwapFees, FeeRD, SwapTxState, SendTxParams } from '../../services/chain/types'
 import { ApproveParams, IsApprovedRD } from '../../services/evm/types'
-import { getPoolDetail as getPoolDetailMaya } from '../../services/mayaMigard/utils'
-import { PoolAddress } from '../../services/midgard/types'
-import { getPoolDetail } from '../../services/midgard/utils'
+import { getPoolDetail as getPoolDetailMaya } from '../../services/midgard/mayaMigard/utils'
+import { PoolAddress } from '../../services/midgard/midgardTypes'
+import { getPoolDetail } from '../../services/midgard/thorMidgard/utils'
 import { userChains$ } from '../../services/storage/userChains'
 import { addAsset } from '../../services/storage/userChainTokens'
 import { TxHashRD, WalletBalance, WalletBalances } from '../../services/wallet/types'
@@ -1242,10 +1243,8 @@ export const Swap = ({
   }, [rateDirection, sourceAsset, sourceAssetPrice, targetAsset, targetAssetPrice])
 
   const needApprovement: O.Option<boolean> = useMemo(() => {
-    return isEvmChain(sourceChain) && isEvmToken(sourceAsset)
-      ? O.some(isEVMTokenAsset(sourceAsset as TokenAsset))
-      : O.none
-  }, [sourceAsset, sourceChain])
+    return isEvmChainToken(sourceAsset) ? O.some(isEVMTokenAsset(sourceAsset as TokenAsset)) : O.none
+  }, [sourceAsset])
 
   const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
     const oRouterAddress: O.Option<Address> = FP.pipe(
@@ -1455,7 +1454,7 @@ export const Swap = ({
       )
     )
 
-    const minAmountErrorMessage = errors.find((error) => error.includes('is less than reccommended Min Amount:'))
+    const minAmountErrorMessage = errors.find((error) => error.includes('is less than recommended Min Amount:'))
 
     if (!minAmountErrorMessage) {
       return false
@@ -1577,16 +1576,16 @@ export const Swap = ({
               } as SynthAsset
             ]
           }
-          // if (isTCSupportedAsset(asset, poolDetailsThor) && isTCSupportedAsset(sourceAsset, poolDetailsThor)) {
-          //   // Create secured assets for ThorChain
-          //   return [
-          //     asset,
-          //     {
-          //       ...asset,
-          //       type: AssetType.SECURED
-          //     } as SecuredAsset
-          //   ]
-          // }
+          if (isTCSupportedAsset(asset, poolDetailsThor) && isTCSupportedAsset(sourceAsset, poolDetailsThor)) {
+            // Create secured assets for ThorChain
+            return [
+              asset,
+              {
+                ...asset,
+                type: AssetType.SECURED
+              } as SecuredAsset
+            ]
+          }
           return [asset]
         }),
         A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
@@ -1694,7 +1693,7 @@ export const Swap = ({
     <Collapse
       header={
         <div className="flex flex-row items-center justify-between">
-          <span className="m-0 font-main text-[14px] text-gray2 dark:text-gray2d">
+          <span className="m-0 font-main text-[14px] text-text2 dark:text-text2d">
             {intl.formatMessage({ id: 'common.swap' })} {intl.formatMessage({ id: 'common.settings' })} ({labelMin})
           </span>
         </div>
@@ -1798,7 +1797,7 @@ export const Swap = ({
       />
     )
   }, [swapState, sourceAsset, amountToSwapMax1e8, targetAsset, swapResultAmountMax.baseAmount, network, intl])
-  // assuming on a unsucessful tx that the swap state should remain the same
+  // assuming on a unsuccessful tx that the swap state should remain the same
   const onCloseTxModal = useCallback(() => {
     resetSwapState()
   }, [resetSwapState])
@@ -1808,11 +1807,11 @@ export const Swap = ({
     reloadBalances()
     setAmountToSwapMax1e8(initialAmountToSwapMax1e8)
     setQuoteProtocol(O.none)
-    // Conditionally add asset if both conditions are true
-    if (isEvmChain(targetChain) && isEvmToken(targetAsset)) {
+    //Add asset to userAssets if true
+    if (isEvmChainToken(targetAsset)) {
       addAsset(targetAsset as TokenAsset)
     }
-  }, [resetSwapState, reloadBalances, setAmountToSwapMax1e8, initialAmountToSwapMax1e8, targetChain, targetAsset])
+  }, [resetSwapState, reloadBalances, setAmountToSwapMax1e8, initialAmountToSwapMax1e8, targetAsset])
 
   const renderPasswordConfirmationModal = useMemo(() => {
     const onSuccess = () => {
@@ -1864,7 +1863,7 @@ export const Swap = ({
 
     const description1 =
       // extra info for ERC20 assets only
-      isEvmChain(sourceAsset.chain) && isEvmToken(sourceAsset)
+      isEvmChainToken(sourceAsset)
         ? `${txtNeedsConnected} ${intl.formatMessage(
             {
               id: 'ledger.blindsign'
@@ -1934,8 +1933,8 @@ export const Swap = ({
       <ErrorLabel>
         {swapErrors.map((error, index) => {
           // Check for specific error patterns
-          if (error.includes('is less than reccommended Min Amount')) {
-            const matches = error.match(/amount in: (\d+) is less than reccommended Min Amount: (\d+)/)
+          if (error.includes('is less than recommended Min Amount')) {
+            const matches = error.match(/amount in: (\d+) is less than recommended Min Amount: (\d+)/)
             if (matches) {
               const [_, amountIn, minAmount] = matches
               const formattedAmountIn = new CryptoAmount(baseAmount(amountIn), sourceAsset).formatedAssetString()
@@ -2360,17 +2359,21 @@ export const Swap = ({
     return (
       <>
         <div className={`flex w-full justify-between ${showDetails ? 'pt-10px' : ''} font-mainBold text-[14px]`}>
-          <div>{intl.formatMessage({ id: 'common.time.title' })}</div>
-          <div>{formatSwapTime(transactionTime)}</div>
+          <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'common.time.title' })}</div>
+          <div className="text-text2 dark:text-text2d">{formatSwapTime(transactionTime)}</div>
         </div>
         {showDetails && (
           <>
             <div className="flex w-full justify-between pl-10px text-[12px]">
-              <div className="flex items-center">{intl.formatMessage({ id: 'common.inbound.time' })}</div>
-              <div>{formatSwapTime(Number(DefaultChainAttributes[sourceChain].avgBlockTimeInSecs))}</div>
+              <div className="flex items-center text-text2 dark:text-text2d">
+                {intl.formatMessage({ id: 'common.inbound.time' })}
+              </div>
+              <div className="text-text2 dark:text-text2d">
+                {formatSwapTime(Number(DefaultChainAttributes[sourceChain].avgBlockTimeInSecs))}
+              </div>
             </div>
             <div className="flex w-full justify-between pl-10px text-[12px]">
-              <div className="flex items-center">
+              <div className="flex items-center text-text2 dark:text-text2d">
                 {intl.formatMessage(
                   { id: 'common.confirmation.time' },
                   {
@@ -2383,7 +2386,9 @@ export const Swap = ({
                   }
                 )}
               </div>
-              <div>{formatSwapTime(Number(DefaultChainAttributes[targetAsset.chain].avgBlockTimeInSecs))}</div>
+              <div className="text-text2 dark:text-text2d">
+                {formatSwapTime(Number(DefaultChainAttributes[targetAsset.chain].avgBlockTimeInSecs))}
+              </div>
             </div>
           </>
         )}
@@ -2502,7 +2507,7 @@ export const Swap = ({
           <Collapse
             header={
               <div className="flex flex-row items-center justify-between">
-                <span className="m-0 font-main text-[14px] text-gray2 dark:text-gray2d">
+                <span className="m-0 font-main text-[14px] text-text2 dark:text-text2d">
                   {intl.formatMessage({ id: 'common.swap' })} {intl.formatMessage({ id: 'common.details' })}
                 </span>
               </div>
@@ -2524,7 +2529,7 @@ export const Swap = ({
                   {/* Rate */}
                   <div className="flex w-full justify-between font-mainBold text-[14px]">
                     <BaseButton
-                      className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                      className="group !p-0 !font-mainBold !text-text2 dark:!text-text2d"
                       onClick={() =>
                         // toggle rate
                         setRateDirection((current) =>
@@ -2534,39 +2539,39 @@ export const Swap = ({
                       {intl.formatMessage({ id: 'common.rate' })}
                       <ArrowsRightLeftIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
                     </BaseButton>
-                    <div>{rateLabel}</div>
+                    <div className="text-text2 dark:text-text2d">{rateLabel}</div>
                   </div>
                   {/* fees */}
                   <div className="flex w-full items-center justify-between font-mainBold">
                     <BaseButton
                       disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
-                      className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                      className="group !p-0 !font-mainBold !text-text2 dark:!text-text2d"
                       onClick={reloadFeesHandler}>
                       {intl.formatMessage({ id: 'common.fees.estimated' })}
                       <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
                     </BaseButton>
-                    <div>{priceSwapFeesLabel}</div>
+                    <div className="text-text2 dark:text-text2d">{priceSwapFeesLabel}</div>
                   </div>
 
                   {showDetails && (
                     <>
                       {O.isSome(needApprovement) && (
-                        <div className="flex w-full justify-between pl-10px text-[12px]">
+                        <div className="flex w-full justify-between pl-10px text-[12px] text-text2 dark:text-text2d">
                           <div>{intl.formatMessage({ id: 'common.approve' })}</div>
                           <div>{priceApproveFeeLabel}</div>
                         </div>
                       )}
-                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                      <div className="flex w-full justify-between pl-10px text-[12px] text-text2 dark:text-text2d">
                         <div>{intl.formatMessage({ id: 'common.fee.inbound' })}</div>
                         <div>{priceSwapInFeeLabel}</div>
                       </div>
-                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                      <div className="flex w-full justify-between pl-10px text-[12px] text-text2 dark:text-text2d">
                         <div>{intl.formatMessage({ id: 'common.fee.outbound' })}</div>
                         <div>{priceSwapOutFeeLabel}</div>
                       </div>
-                      <div className="flex w-full justify-between pl-10px text-[12px]">
+                      <div className="flex w-full justify-between pl-10px text-[12px] text-text2 dark:text-text2d">
                         <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
-                        <div className={clsx({ '!text-turquoise': priceAffiliateFeeLabel === 'free' })}>
+                        <div className={clsx({ 'font-bold !text-turquoise': priceAffiliateFeeLabel === 'free' })}>
                           {priceAffiliateFeeLabel}
                         </div>
                       </div>
@@ -2579,8 +2584,10 @@ export const Swap = ({
                         className={`flex w-full justify-between ${
                           showDetails ? 'pt-10px' : ''
                         } font-mainBold text-[14px] ${isCausedSlippage ? 'text-error0 dark:text-error0d' : ''}`}>
-                        <div>{intl.formatMessage({ id: 'swap.slip.title' })}</div>
-                        <div>
+                        <div className="text-text2 dark:text-text2d">
+                          {intl.formatMessage({ id: 'swap.slip.title' })}
+                        </div>
+                        <div className="text-text2 dark:text-text2d">
                           {formatAssetAmountCurrency({
                             amount: priceAmountToSwapMax1e8.assetAmount.times(
                               (swapSlippage > 0 ? swapSlippage : slipTolerance) / 100
@@ -2648,8 +2655,10 @@ export const Swap = ({
                         className={`flex w-full justify-between ${
                           showDetails ? 'pt-10px' : ''
                         } font-mainBold text-[14px] ${isCausedSlippage ? 'text-error0 dark:text-error0d' : ''}`}>
-                        <div>{intl.formatMessage({ id: 'swap.slip.title' })}</div>
-                        <div>
+                        <div className="text-text2 dark:text-text2d">
+                          {intl.formatMessage({ id: 'swap.slip.title' })}
+                        </div>
+                        <div className="text-text2 dark:text-text2d">
                           {formatAssetAmountCurrency({
                             amount: priceAmountToSwapMax1e8.assetAmount.times(swapSlippage / 100), // Find the value of swap slippage
                             asset: priceAmountToSwapMax1e8.asset,
@@ -2661,24 +2670,24 @@ export const Swap = ({
                       {showDetails && (
                         <>
                           <div className="flex w-full justify-between pl-10px text-[12px]">
-                            <div className={`flex items-center `}>
+                            <div className="flex items-center text-text2 dark:text-text2d">
                               {intl.formatMessage({ id: 'swap.streaming.interval' })}
                               <InfoIcon
                                 className="ml-[3px] h-[15px] w-[15px] text-inherit"
                                 tooltip={intl.formatMessage({ id: 'swap.streaming.interval.info' })}
                               />
                             </div>
-                            <div>{streamingInterval}</div>
+                            <div className="text-text2 dark:text-text2d">{streamingInterval}</div>
                           </div>
                           <div className="flex w-full justify-between pl-10px text-[12px]">
-                            <div className={`flex items-center`}>
+                            <div className="flex items-center text-text2 dark:text-text2d">
                               {intl.formatMessage({ id: 'swap.streaming.quantity' })}
                               <InfoIcon
                                 className="ml-[3px] h-[15px] w-[15px] text-inherit"
                                 tooltip={intl.formatMessage({ id: 'swap.streaming.quantity.info' })}
                               />
                             </div>
-                            <div>{streamingQuantity}</div>
+                            <div className="text-text2 dark:text-text2d">{streamingQuantity}</div>
                           </div>
                         </>
                       )}
@@ -2689,13 +2698,13 @@ export const Swap = ({
                   {/* addresses */}
                   {showDetails && (
                     <>
-                      <div className={`w-full pt-10px font-mainBold text-[14px]`}>
+                      <div className="w-full pt-10px font-mainBold text-[14px] text-text2 dark:text-text2d">
                         {intl.formatMessage({ id: 'common.addresses' })}
                       </div>
                       {/* sender address */}
                       <div className="flex w-full items-center justify-between pl-10px text-[12px]">
-                        <div>{intl.formatMessage({ id: 'common.sender' })}</div>
-                        <div className="truncate pl-20px text-[13px] normal-case leading-normal">
+                        <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'common.sender' })}</div>
+                        <div className="truncate pl-20px text-[13px] normal-case leading-normal text-text2 dark:text-text2d">
                           {FP.pipe(
                             oSourceWalletAddress,
                             O.map((address) => (
@@ -2709,8 +2718,10 @@ export const Swap = ({
                       </div>
                       {/* recipient address */}
                       <div className="flex w-full items-center justify-between pl-10px text-[12px]">
-                        <div>{intl.formatMessage({ id: 'common.recipient' })}</div>
-                        <div className="truncate pl-20px text-[13px] normal-case leading-normal">
+                        <div className="text-text2 dark:text-text2d">
+                          {intl.formatMessage({ id: 'common.recipient' })}
+                        </div>
+                        <div className="truncate pl-20px text-[13px] normal-case leading-normal text-text2 dark:text-text2d">
                           {FP.pipe(
                             oRecipientAddress,
                             O.map((address) => (
@@ -2748,7 +2759,7 @@ export const Swap = ({
                       <div className={`w-full pt-10px text-[14px]`}>
                         <BaseButton
                           disabled={walletBalancesLoading}
-                          className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                          className="group !p-0 !font-mainBold !text-text2 dark:!text-text2d"
                           onClick={reloadBalances}>
                           {intl.formatMessage({ id: 'common.balances' })}
                           <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
@@ -2756,8 +2767,8 @@ export const Swap = ({
                       </div>
                       {/* sender balance */}
                       <div className="flex w-full items-center justify-between pl-10px text-[12px]">
-                        <div>{intl.formatMessage({ id: 'common.sender' })}</div>
-                        <div className="truncate pl-20px text-[13px] normal-case leading-normal">
+                        <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'common.sender' })}</div>
+                        <div className="truncate pl-20px text-[13px] normal-case leading-normal text-text2 dark:text-text2d">
                           {walletBalancesLoading
                             ? loadingString
                             : hidePrivateData
@@ -2775,10 +2786,10 @@ export const Swap = ({
                   {/* memo */}
                   {showDetails && (
                     <>
-                      <div className="ml-[-2px] flex w-full items-start pt-10px font-mainBold text-[14px]">
+                      <div className="ml-[-2px] flex w-full items-start pt-10px font-mainBold text-[14px] text-text2 dark:text-text2d">
                         {memoTitle}
                       </div>
-                      <div className="truncate pl-10px font-main text-[12px]">
+                      <div className="truncate pl-10px font-main text-[12px] text-text2 dark:text-text2d">
                         {hidePrivateData ? hiddenString : memoLabel}
                       </div>
                     </>
@@ -2791,7 +2802,7 @@ export const Swap = ({
                   {/* Rate */}
                   <div className={`flex w-full justify-between font-mainBold text-[14px]`}>
                     <BaseButton
-                      className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                      className="group !p-0 !font-mainBold !text-text2 dark:!text-text2d"
                       onClick={() =>
                         // toggle rate
                         setRateDirection((current) =>
@@ -2801,26 +2812,28 @@ export const Swap = ({
                       {intl.formatMessage({ id: 'common.rate' })}
                       <ArrowsRightLeftIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
                     </BaseButton>
-                    <div>{rateLabel}</div>
+                    <div className="text-text2 dark:text-text2d">{rateLabel}</div>
                   </div>
                   {/* fees */}
                   <div className="flex w-full items-center justify-between font-mainBold">
                     <BaseButton
                       disabled={RD.isPending(swapFeesRD) || RD.isInitial(swapFeesRD)}
-                      className="group !p-0 !font-mainBold !text-gray2 dark:!text-gray2d"
+                      className="group !p-0 !font-mainBold !text-text2 dark:!text-text2d"
                       onClick={reloadFeesHandler}>
                       {intl.formatMessage({ id: 'common.fees.estimated' })}
                       <ArrowPathIcon className="ease ml-5px h-[15px] w-[15px] group-hover:rotate-180" />
                     </BaseButton>
-                    <div>{priceSwapFeesLabel}</div>
+                    <div className="text-text2 dark:text-text2d">{priceSwapFeesLabel}</div>
                   </div>
                   <div className="flex w-full justify-between pl-10px text-[12px]">
-                    <div>{intl.formatMessage({ id: 'common.fee.inbound' })}</div>
-                    <div>{priceSwapInFeeLabel}</div>
+                    <div className="text-text2 dark:text-text2d">
+                      {intl.formatMessage({ id: 'common.fee.inbound' })}
+                    </div>
+                    <div className="text-text2 dark:text-text2d">{priceSwapInFeeLabel}</div>
                   </div>
                   <div className="flex w-full justify-between pl-10px text-[12px]">
-                    <div>{intl.formatMessage({ id: 'swap.slip.title' })}</div>
-                    <div>
+                    <div className="text-text2 dark:text-text2d">{intl.formatMessage({ id: 'swap.slip.title' })}</div>
+                    <div className="text-text2 dark:text-text2d">
                       {formatAssetAmountCurrency({
                         amount: priceAmountToSwapMax1e8.assetAmount.times(swapSlippage / 100), // Find the value of swap slippage
                         asset: priceAmountToSwapMax1e8.asset,
@@ -2830,12 +2843,16 @@ export const Swap = ({
                     </div>
                   </div>
                   <div className="flex w-full justify-between pl-10px text-[12px]">
-                    <div>{intl.formatMessage({ id: 'common.fee.outbound' })}</div>
-                    <div>{priceSwapOutFeeLabel}</div>
+                    <div className="text-text2 dark:text-text2d">
+                      {intl.formatMessage({ id: 'common.fee.outbound' })}
+                    </div>
+                    <div className="text-text2 dark:text-text2d">{priceSwapOutFeeLabel}</div>
                   </div>
                   <div className="flex w-full justify-between pl-10px text-[12px]">
-                    <div>{intl.formatMessage({ id: 'common.fee.affiliate' })}</div>
-                    <div className={clsx({ '!text-turquoise': priceAffiliateFeeLabel === 'free' })}>
+                    <div className="text-text2 dark:text-text2d">
+                      {intl.formatMessage({ id: 'common.fee.affiliate' })}
+                    </div>
+                    <div className={clsx({ 'font-bold !text-turquoise': priceAffiliateFeeLabel === 'free' })}>
                       {priceAffiliateFeeLabel}
                     </div>
                   </div>
@@ -2851,10 +2868,10 @@ export const Swap = ({
               oRecipientAddress,
               O.map((address) => (
                 <div
-                  className="flex flex-col rounded-lg border border-solid border-gray1 px-4 py-2 dark:border-gray0d"
+                  className="flex flex-col rounded-lg border border-solid border-gray0 px-4 py-2 dark:border-gray0d"
                   key="edit-address">
                   <div className="flex items-center">
-                    <h3 className="font-[12px] !mb-0 mr-10px w-auto p-0 font-main uppercase text-gray2 dark:text-gray2d">
+                    <h3 className="font-[12px] !mb-0 mr-10px w-auto p-0 font-main uppercase text-text2 dark:text-text2d">
                       {intl.formatMessage({ id: 'common.recipient' })}
                     </h3>
                     <WalletTypeLabel key="target-w-type">{getWalletTypeLabel(oTargetWalletType, intl)}</WalletTypeLabel>

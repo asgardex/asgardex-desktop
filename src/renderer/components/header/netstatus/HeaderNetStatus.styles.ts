@@ -3,7 +3,6 @@ import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
 import { media } from '../../../helpers/styleHelper'
-import { Menu } from '../../shared/menu'
 import { Label } from '../../uielements/label'
 
 export const Wrapper = styled(Row)`
@@ -21,12 +20,6 @@ export const Wrapper = styled(Row)`
     width: auto;
   `}
 `
-
-export const MenuItem = styled(Menu.Item).attrs({
-  display: 'flex',
-  alignItems: 'center',
-  padding: '8px 10px'
-})``
 
 export const MenuItemHeadline = styled(Label).attrs({
   size: 'normal',

@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { QuoteSwap as QuoteSwapProtocol } from '@xchainjs/xchain-aggregator'
+import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
 import { useIntl } from 'react-intl'
@@ -73,18 +74,25 @@ export const SwapTxModal = ({
     [intl, swapTx]
   )
 
+  const protocol: O.Option<Protocol> = FP.pipe(
+    oQuoteProtocol,
+    O.map((quoteProtocol) => quoteProtocol.protocol)
+  )
+
   const oTxHash = useMemo(
     () =>
       FP.pipe(
         RD.toOption(swapTx),
-        // Note: As long as we link to `viewblock` to open tx details in a browser,
-        // `0x` needs to be removed from tx hash in case of ETH
-        // @see https://github.com/thorchain/asgardex-electron/issues/1787#issuecomment-931934508
-        O.map((txHash) => (isEvmChain(sourceChain) ? txHash.replace(/0x/i, '') : txHash))
+        O.map((txHash) => {
+          const protocolValue = FP.pipe(
+            protocol,
+            O.getOrElse(() => 'default' as Protocol)
+          )
+          return isEvmChain(sourceChain) && protocolValue !== 'Chainflip' ? txHash.replace(/0x/i, '') : txHash
+        })
       ),
-    [sourceChain, swapTx]
+    [protocol, sourceChain, swapTx]
   )
-
   const txRDasBoolean = useMemo(
     () =>
       FP.pipe(

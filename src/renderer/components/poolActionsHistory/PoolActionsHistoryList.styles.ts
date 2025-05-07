@@ -4,7 +4,7 @@ import { ListProps } from 'antd/lib/list'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
-import { Action } from '../../services/midgard/types'
+import { Action } from '../../services/midgard/thorMidgard/types'
 import { Button as UIButton } from '../uielements/button'
 import { TxType as TxTypeUI } from '../uielements/txType'
 
@@ -62,7 +62,7 @@ export const TxType = styled(TxTypeUI)`
 
 export const InfoArrow = styled(AIcons.ArrowUpOutlined)`
   transform: rotateZ(45deg);
-  color: ${palette('primary', 0)};
+  color: ${palette('primary', 2)};
 `
 
 export const GoToButton = styled(UIButton).attrs({ typevalue: 'transparent' })`

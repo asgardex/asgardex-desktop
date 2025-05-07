@@ -49,7 +49,7 @@ export const Label = styled(UILabel)`
   margin-bottom: 14px;
   font-family: 'MainFontRegular';
   text-transform: uppercase;
-  color: ${({ color }) => (color === 'error' ? palette('error', 0) : palette('primary', 0))};
+  color: ${({ color }) => (color === 'error' ? palette('error', 0) : palette('primary', 2))};
 `
 
 export const Fees = styled(UIFees)`
@@ -76,6 +76,7 @@ export const Result = styled(A.Result)`
   justify-content: center;
   background: ${palette('background', 1)};
 `
+
 export const Button = styled(UIButton).attrs({
   type: 'primary',
   round: 'true',
@@ -135,18 +136,38 @@ export const Input = styled(A.Input)`
   background: inherit !important;
   color: ${palette('text', 0)};
 `
-export const SettingsWrapper = styled(`div`)`
-  cursor: ${() => 'pointer'};
-  justify-content: space-between;
-  width: 100vw;
-  height: 40px;
+export const SwitchWrapper = styled('div')`
+  display: flex;
   align-items: center;
+  gap: 16px;
+  padding: 10px 0;
+  flex-wrap: wrap;
+`
+export const Alert = styled('div')`
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: ${palette('error', 0)}20;
+  border: 1px solid ${palette('error', 0)}40;
+  border-radius: 8px;
+  flex: 1;
+  max-width: 100%;
 
-  ${media.lg`
-    width: auto;
-    padding: 0 10px;
+  span {
+    font-size: 14px;
+    line-height: 1.4;
+    color: ${palette('error', 0)};
+  }
+
+  ${media.sm`
+    max-width: 500px;
   `}
 `
+
+export const MemoWrapper = styled('div')`
+  margin-top: 16px;
+`
+
 export const CustomSelect = styled(A.Select)`
   background: inherit !important;
   color: ${palette('text', 0)};
@@ -163,6 +184,6 @@ export const CustomSelect = styled(A.Select)`
     color: ${palette('text', 0)};
   }
   &:hover {
-    border-color: ${palette('primary', 0)};
+    border-color: ${palette('primary', 2)};
   }
 `

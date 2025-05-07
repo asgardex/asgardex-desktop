@@ -5,11 +5,12 @@ import * as O from 'fp-ts/lib/Option'
 import * as RxOp from 'rxjs/operators'
 
 import { ZERO_BASE_AMOUNT } from '../../../const'
-import { isRuneNativeAsset } from '../../../helpers/assetHelper'
+import { isCacaoAsset, isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { eqOSwapFeesParams } from '../../../helpers/fp/eq'
 import { liveData } from '../../../helpers/rx/liveData'
 import { observableState } from '../../../helpers/stateHelper'
+import * as MAYA from '../../mayachain'
 import * as THOR from '../../thorchain'
 import { reloadInboundAddresses } from '../../thorchain'
 import { SwapFeesHandler, SwapFeesParams, SwapFees } from '../types'
@@ -50,15 +51,11 @@ const reloadSwapFees = (params: SwapFeesParams) => {
   }
 
   // (1) Check reload of fees for RUNE
-  if (
-    isRuneNativeAsset(inAsset) ||
-    isRuneNativeAsset(outAsset) ||
-    isSynthAsset(inAsset) ||
-    isSynthAsset(outAsset) ||
-    isTradeAsset(inAsset) ||
-    isTradeAsset(outAsset)
-  ) {
+  if (isRuneNativeAsset(inAsset) || isRuneNativeAsset(outAsset) || isTradeAsset(inAsset) || isTradeAsset(outAsset)) {
     THOR.reloadFees()
+  }
+  if (isCacaoAsset(inAsset) || isCacaoAsset(outAsset) || isSynthAsset(inAsset) || isSynthAsset(outAsset)) {
+    MAYA.reloadFees()
   }
 
   // OR (2) check other fees, which all depend on outbound fees defined in `inbound_addresses`

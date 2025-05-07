@@ -55,7 +55,7 @@ export const ConfirmationModal = ({ visible, title, okText, content, onSuccess, 
                 'mx-auto flex flex-col items-center pt-5 pb-2',
                 'w-full max-w-[360px] md:max-w-[480px]',
                 'bg-bg0 dark:bg-bg0d',
-                'rounded-lg border border-solid border-gray1 dark:border-gray0d'
+                'rounded-lg border border-solid border-gray0 dark:border-gray0d'
               )}>
               <div className="flex w-full items-center justify-between px-5">
                 <h1 className="my-0 text-center text-xl uppercase text-text2 dark:text-text2d">
@@ -67,9 +67,9 @@ export const ConfirmationModal = ({ visible, title, okText, content, onSuccess, 
                   <XMarkIcon className="h-20px w-20px text-inherit" />
                 </BaseButton>
               </div>
-              <div className="my-4 h-[1px] w-full bg-gray1 dark:bg-gray0d" />
+              <div className="my-4 h-[1px] w-full bg-gray0 dark:bg-gray0d" />
               <div className="w-full px-4">{content}</div>
-              <div className="mt-4 mb-2 h-[1px] w-full bg-gray1 dark:bg-gray0d" />
+              <div className="mt-4 mb-2 h-[1px] w-full bg-gray0 dark:bg-gray0d" />
               <div className="flex w-full items-center justify-end px-4">
                 <div className="flex items-center space-x-4">
                   <BaseButton

@@ -17,7 +17,7 @@ import {
   fees$
 } from '../services/cosmos'
 
-export type CosmosContextValue = {
+type CosmosContextValue = {
   client$: typeof client$
   clientState$: typeof clientState$
   address$: typeof address$

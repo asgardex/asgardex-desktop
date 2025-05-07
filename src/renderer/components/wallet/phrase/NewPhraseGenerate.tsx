@@ -26,7 +26,7 @@ type Props = {
   onSubmit: (info: PhraseInfo) => void
 }
 
-export type FormValues = {
+type FormValues = {
   password: string
   name: string
 }

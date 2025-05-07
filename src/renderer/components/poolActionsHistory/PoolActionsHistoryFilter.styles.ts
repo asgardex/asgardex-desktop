@@ -24,7 +24,7 @@ export const Menu = styled(A.Menu)`
 export const FilterButton = styled(Button).attrs({ typevalue: 'outline' })`
   font-size: 14px !important;
 
-  & .anticon-caret-down {
+  &.anticon-caret-down {
     width: 14px;
     height: 14px;
     transition: transform 0.3s;

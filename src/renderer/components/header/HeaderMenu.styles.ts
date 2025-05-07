@@ -4,7 +4,6 @@ import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
 import { media } from '../../helpers/styleHelper'
-import { Menu } from '../shared/menu'
 
 export const HeaderDropdownWrapper = styled.div`
   width: 100%;
@@ -18,16 +17,11 @@ export const HeaderDropdownWrapper = styled.div`
   #down_icon {
     cursor: pointer;
     & > * {
-      fill: ${palette('primary', 0)};
+      fill: ${palette('primary', 2)};
     }
   }
 `
 
-export const HeaderDropdownMenuItem = styled(Menu.Item)`
-  display: flex;
-  align-items: center;
-  padding: 8px 10px;
-`
 export const HeaderDropdownContentWrapper = styled(Row)`
   justify-content: space-between;
   padding-right: 15px;

@@ -43,18 +43,9 @@ import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
 import { useProtocolLimit } from '../../hooks/useProtocolLimit'
 import * as poolsRoutes from '../../routes/pools'
-import * as saversRoutes from '../../routes/pools/savers'
 import { DEFAULT_NETWORK } from '../../services/const'
-import {
-  PoolsState as MayaPoolState,
-  GetPoolsPeriodEnum as GetPoolsPeriodEnumMaya
-} from '../../services/mayaMigard/types'
-import {
-  GetPoolsPeriodEnum,
-  PoolsState,
-  DEFAULT_POOL_FILTERS,
-  DEFAULT_MAYA_POOL_FILTERS
-} from '../../services/midgard/types'
+import { PoolsState as MayaPoolState } from '../../services/midgard/mayaMigard/types'
+import { GetPoolsPeriodEnum, PoolsState, DEFAULT_POOL_FILTERS } from '../../services/midgard/midgardTypes'
 import { hasImportedKeystore } from '../../services/wallet/util'
 import { useApp } from '../../store/app/hooks'
 import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
@@ -154,15 +145,9 @@ export const ActivePools = (): JSX.Element => {
                     poolsRoutes.deposit.path({
                       asset: assetToString(asset),
                       assetWalletType: DEFAULT_WALLET_TYPE,
-                      runeWalletType: DEFAULT_WALLET_TYPE
+                      dexWalletType: DEFAULT_WALLET_TYPE
                     })
                   )
-                }
-              },
-              {
-                label: intl.formatMessage({ id: 'common.earn' }),
-                callback: () => {
-                  navigate(saversRoutes.earn.path({ asset: assetToString(asset), walletType: DEFAULT_WALLET_TYPE }))
                 }
               }
             ]
@@ -187,7 +172,7 @@ export const ActivePools = (): JSX.Element => {
                     poolsRoutes.deposit.path({
                       asset: assetToString(asset),
                       assetWalletType: DEFAULT_WALLET_TYPE,
-                      runeWalletType: DEFAULT_WALLET_TYPE
+                      dexWalletType: DEFAULT_WALLET_TYPE
                     })
                   )
                 }
@@ -276,7 +261,7 @@ export const ActivePools = (): JSX.Element => {
   const sortAPYColumn = useCallback((a: { apy: number }, b: { apy: number }) => ordNumber.compare(a.apy, b.apy), [])
   const apyColumn = useCallback(
     <T extends { apy: number }>(
-      poolsPeriod: GetPoolsPeriodEnum | GetPoolsPeriodEnumMaya,
+      poolsPeriod: GetPoolsPeriodEnum,
       dex: string // Add a parameter to accept the 'dex' value
     ): ColumnType<T> => {
       // Determine which setPoolsPeriod function to use based on the 'dex' value
@@ -349,11 +334,7 @@ export const ActivePools = (): JSX.Element => {
 
       return (
         <>
-          <Styled.AssetsFilter
-            activeFilter={poolFilter}
-            setFilter={setPoolFilter}
-            poolFilters={protocol === THORChain ? DEFAULT_POOL_FILTERS : DEFAULT_MAYA_POOL_FILTERS}
-          />
+          <Styled.AssetsFilter activeFilter={poolFilter} setFilter={setPoolFilter} poolFilters={DEFAULT_POOL_FILTERS} />
           <ProtocolLimit limit={limitRD} />
           <IncentivePendulum incentivePendulum={incentivePendulumRD} protocol={protocol} />
           <Table columns={columns} dataSource={dataSource} loading={loading} rowKey="key" />

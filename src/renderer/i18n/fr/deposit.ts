@@ -7,6 +7,7 @@ const deposit: DepositMessages = {
   'deposit.interact.actions.bond': 'Caution',
   'deposit.interact.actions.unbond': 'Retrait',
   'deposit.interact.actions.leave': 'Quitter',
+  'deposit.interact.actions.whitelist': 'Liste blanche',
   'deposit.interact.actions.runePool': 'Piscine de Rune',
   'deposit.interact.actions.buyThorname': 'Acheter THORName',
   'deposit.interact.actions.buyMayaname': 'Acheter MAYAName',

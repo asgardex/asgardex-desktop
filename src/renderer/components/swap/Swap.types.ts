@@ -1,5 +1,5 @@
 import { Network } from '@xchainjs/xchain-client'
-import { Address, AnyAsset, Asset, BaseAmount } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, Asset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as FP from 'fp-ts/function'
 import * as O from 'fp-ts/Option'
@@ -10,17 +10,12 @@ import { ChangeSlipToleranceHandler } from '../../services/app/types'
 import { SwapFeesHandler, ReloadSwapFeesHandler, SwapHandler, SwapCFHandler } from '../../services/chain/types'
 import { AddressValidationAsync } from '../../services/clients'
 import { ApproveFeeHandler, ApproveParams, IsApproveParams, LoadApproveFeeHandler } from '../../services/evm/types'
-import { PoolDetails as PoolDetailsMaya } from '../../services/mayaMigard/types'
-import { PoolAddress, PoolDetails, PoolsDataMap } from '../../services/midgard/types'
+import { PoolDetails as PoolDetailsMaya } from '../../services/midgard/mayaMigard/types'
+import { PoolAddress, PoolDetails, PoolsDataMap } from '../../services/midgard/midgardTypes'
 import { ApiError, KeystoreState, TxHashLD, ValidatePasswordHandler, BalancesState } from '../../services/wallet/types'
 import { AssetWithDecimal, SlipTolerance } from '../../types/asgardex'
 
 export type SwapAsset = AssetWithDecimal & { price: BigNumber }
-
-export type SwapData = {
-  readonly slip: BigNumber
-  readonly swapResult: BaseAmount
-}
 
 export type AssetsToSwap = { source: Asset; target: Asset }
 

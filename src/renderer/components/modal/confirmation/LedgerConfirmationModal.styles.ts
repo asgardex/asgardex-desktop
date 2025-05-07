@@ -95,7 +95,7 @@ export const ExpandIcon = styled(CaretRightOutlined)`
 `
 
 export const CopyLabel = styled(CopyLabelUI)`
-  color: ${palette('primary', 0)};
+  color: ${palette('primary', 2)};
   padding-top: 20px;
   font-size: 12px;
 `

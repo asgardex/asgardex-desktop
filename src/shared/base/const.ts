@@ -1,25 +1,11 @@
 // Import necessary modules and classes from external packages and files
-import { BASEChain, LOWER_FEE_BOUND, UPPER_FEE_BOUND, BASE_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-base'
-import { ExplorerProvider, FeeBounds, Network } from '@xchainjs/xchain-client'
+import { BASEChain, LOWER_FEE_BOUND, UPPER_FEE_BOUND, BASE_GAS_ASSET_DECIMAL, AssetBETH } from '@xchainjs/xchain-base'
+import { ExplorerProvider, Network } from '@xchainjs/xchain-client'
 import { EVMClientParams } from '@xchainjs/xchain-evm'
 import { EtherscanProvider } from '@xchainjs/xchain-evm-providers'
-import { Asset, AssetType } from '@xchainjs/xchain-util'
 import { BigNumber, ethers } from 'ethers'
 
 import { envOrDefault } from '../utils/env'
-
-// Define constants related to Base
-export const FEE_BOUNDS: Record<Network, FeeBounds | undefined> = {
-  /* for main|stagenet use default values defined in ETH.Client */
-  [Network.Mainnet]: undefined,
-  [Network.Stagenet]: undefined,
-  [Network.Testnet]: {
-    lower: LOWER_FEE_BOUND,
-    upper: UPPER_FEE_BOUND
-  }
-}
-// BASE ETH Gas asset
-export const AssetBETH: Asset = { chain: BASEChain, symbol: 'ETH', ticker: 'ETH', type: AssetType.NATIVE }
 
 export const baseScanApiKey = envOrDefault(process.env.REACT_APP_BASE_API_KEY, '')
 

@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
-export type ConnectionColors = 'red' | 'yellow' | 'green'
+type ConnectionColors = 'red' | 'yellow' | 'green'
 
 type ColorMap = {
   [key in ConnectionColors]: string

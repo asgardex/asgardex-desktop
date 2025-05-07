@@ -9,12 +9,11 @@ import { useNavigate } from 'react-router-dom'
 import { FlatButton, BorderButton } from '.'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
 import * as poolsRoutes from '../../../routes/pools'
-import * as saversRoutes from '../../../routes/pools/savers'
 import * as walletRoutes from '../../../routes/wallet'
 import { InteractType } from '../../wallet/txs/interact/Interact.types'
 import type { Props as ButtonProps } from './FlatButton'
 
-export type ButtonVariant = 'runePool' | 'savers' | 'manage'
+type ButtonVariant = 'runePool' | 'savers' | 'manage'
 
 export type Props = Omit<ButtonProps, 'onClick'> & {
   variant: ButtonVariant
@@ -42,14 +41,12 @@ export const ManageButton = ({
 
       if (variant === 'runePool' && interactType) {
         navigate(walletRoutes.interact.path({ interactType }))
-      } else if (variant === 'savers' && asset) {
-        navigate(saversRoutes.withdraw.path({ asset: assetToString(asset), walletType: DEFAULT_WALLET_TYPE }))
       } else if (variant === 'manage' && asset) {
         navigate(
           poolsRoutes.deposit.path({
             asset: assetToString(asset),
             assetWalletType: DEFAULT_WALLET_TYPE,
-            runeWalletType: DEFAULT_WALLET_TYPE
+            dexWalletType: DEFAULT_WALLET_TYPE
           })
         )
       }

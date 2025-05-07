@@ -182,7 +182,7 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
     )
   }, [assets, handleChainSelect, network, intl])
 
-  // Ref to `InputSearch` - needed for intial focus in dialog
+  // Ref to `InputSearch` - needed for initial focus in dialog
   // @see https://headlessui.com/react/dialog#managing-initial-focus
   const inputSearchRef = useRef(null)
 

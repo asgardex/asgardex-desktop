@@ -22,20 +22,16 @@ import { to1e8BaseAmount } from '../../../helpers/assetHelper'
 import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
 import * as ShareHelpers from '../../../helpers/poolShareHelper'
-import {
-  PoolDetailRD as PoolDetailMayaRD,
-  PoolShareRD as PoolShareMayaRD,
-  PoolShare as PoolShareMaya
-} from '../../../services/mayaMigard/types'
-import { PoolDetailRD, PoolShareRD, PoolShare } from '../../../services/midgard/types'
-import { toPoolData } from '../../../services/midgard/utils'
+import { PoolDetailRD as PoolDetailMayaRD } from '../../../services/midgard/mayaMigard/types'
+import { PoolDetailRD, PoolShareRD, PoolShare } from '../../../services/midgard/midgardTypes'
+import { toPoolData } from '../../../services/midgard/thorMidgard/utils'
 import { AssetWithDecimal } from '../../../types/asgardex'
 import { getValueOfAsset1InAsset2, getValueOfRuneInAsset } from '../../pools/Pools.utils'
 
 export type ShareViewProps = {
   protocol: Chain
   asset: AssetWithDecimal
-  poolShare: PoolShareRD | PoolShareMayaRD
+  poolShare: PoolShareRD
   poolDetail: PoolDetailRD | PoolDetailMayaRD
   smallWidth?: boolean
 }
@@ -70,7 +66,7 @@ export const ShareView = ({
   )
 
   const renderPoolShareReady = useCallback(
-    ({ units, runeAddress, assetAddress }: PoolShare | PoolShareMaya, poolDetail: PoolDetail | PoolDetailMaya) => {
+    ({ units, runeAddress, assetAddress }: PoolShare, poolDetail: PoolDetail | PoolDetailMaya) => {
       const runeShare: BaseAmount = ShareHelpers.getRuneShare(
         units,
         poolDetail,

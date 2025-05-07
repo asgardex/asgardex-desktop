@@ -40,7 +40,7 @@ export const TxsTable: React.FC<Props> = (props): JSX.Element => {
   const previousTxs = useRef<O.Option<TxsPage>>(O.none)
 
   // Helper to render a text with a line break
-  // That's needed to have multline texts in ant's table cell
+  // That's needed to have multiline texts in ant's table cell
   // and still an option to render ellipsis if a text do not fit in a cell
   const renderTextWithBreak = useCallback(
     (text: string, key: string) => (

@@ -7,7 +7,7 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
 
 import { OpenExplorerTxUrl } from '../../services/clients'
-import { ActionsPage, ActionsPageRD } from '../../services/midgard/types'
+import { ActionsPage, ActionsPageRD } from '../../services/midgard/thorMidgard/types'
 import * as Styled from './PoolActionsHistory.styles'
 import { PoolActionsHistoryList } from './PoolActionsHistoryList'
 import { PoolActionsHistoryTable, Props as PoolActionsHistoryTableProps } from './PoolActionsHistoryTable'

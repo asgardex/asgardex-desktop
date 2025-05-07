@@ -17,7 +17,7 @@ import {
   fees$
 } from '../services/radix'
 
-export type XrdContextValue = {
+type XrdContextValue = {
   client$: typeof client$
   clientState$: typeof clientState$
   address$: typeof address$

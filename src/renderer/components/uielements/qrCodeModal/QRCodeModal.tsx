@@ -6,7 +6,7 @@ import * as FP from 'fp-ts/lib/function'
 import { useIntl } from 'react-intl'
 
 import { chainToString } from '../../../../shared/utils/chain'
-import { QRCode } from '../qrCode/QRCode'
+import { QRCode } from '../qrCode'
 import * as Styled from './QRCodeModal.styles'
 
 export type Props = {

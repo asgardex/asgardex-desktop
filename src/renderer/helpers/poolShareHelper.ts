@@ -58,7 +58,7 @@ export const getAssetShare = ({
 /**
  * Pool share in percent
  *
- * Note: The only reason ot use BigNumber here is for formatting it easily in UI
+ * Note: The only reason to use BigNumber here is for formatting it easily in UI
  */
 export const getPoolShare = (liquidityUnits: BigNumber, { units: poolUnits }: Pick<PoolDetail, 'units'>): BigNumber =>
   poolUnits ? liquidityUnits.div(poolUnits).multipliedBy(100) : ZERO_BN

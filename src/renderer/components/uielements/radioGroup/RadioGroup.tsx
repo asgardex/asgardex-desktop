@@ -1,5 +1,3 @@
-import { Fragment } from 'react'
-
 import clsx from 'clsx'
 
 export const RadioGroup = ({
@@ -13,20 +11,19 @@ export const RadioGroup = ({
 }) => {
   return (
     <div className="h-fit">
-      <div className="flex rounded-lg border border-solid border-gray1 dark:border-gray0d">
+      <div className="flex gap-x-[2px] rounded-lg border border-solid border-gray1 bg-bg0 p-[1px] dark:border-gray0d dark:bg-bg0d">
         {options.map((option, index) => (
-          <Fragment key={option.value}>
-            {index !== 0 && <div className="h-10 w-[1px] bg-gray0 dark:bg-gray0d" />}
-            <div
-              className={clsx(
-                'cursor-pointer p-2 hover:bg-gray1 hover:dark:bg-gray1d',
-                'first:rounded-l-md last:rounded-r-md',
-                activeIndex === index ? 'bg-gray1 dark:bg-gray0d' : 'bg-transparent'
-              )}
-              onClick={() => onChange(index)}>
-              {option.label}
-            </div>
-          </Fragment>
+          <div
+            key={option.value}
+            className={clsx(
+              'flex min-w-[64px] cursor-pointer items-center justify-center rounded-lg p-2',
+              activeIndex === index
+                ? 'bg-turquoise text-white'
+                : 'bg-bg0 text-text2 hover:bg-turquoise/20 hover:text-turquoise dark:bg-bg0d dark:text-text2d'
+            )}
+            onClick={() => onChange(index)}>
+            {option.label}
+          </div>
         ))}
       </div>
     </div>

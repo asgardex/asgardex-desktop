@@ -12,7 +12,7 @@ import { PoolActionsHistoryFilter } from './PoolActionsHistoryFilter'
 import { Filter } from './types'
 import * as Styled from './WalletPoolActionsHistoryHeader.styles'
 
-export type Props = {
+type Props = {
   network: Network
   addresses: WalletAddresses
   selectedAddress: O.Option<WalletAddress>
@@ -57,7 +57,7 @@ export const WalletPoolActionsHistoryHeader: React.FC<Props> = (props) => {
         />
       </Styled.FilterContainer>
       <Styled.LinkContainer>
-        <Styled.Headline onClick={onClickAddressIcon}>
+        <Styled.Headline className="flex items-center" onClick={onClickAddressIcon}>
           {protocol === THORChain ? `RuneScan` : 'MayaScan'}
           <Styled.ExplorerLinkIcon />
         </Styled.Headline>

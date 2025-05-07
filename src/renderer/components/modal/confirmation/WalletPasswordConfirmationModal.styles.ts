@@ -8,12 +8,6 @@ export const Content = styled.div`
   flex-direction: column;
 `
 
-export const WalletIconContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`
-
 export const WalletIcon = styled(WalletIconSVG)`
   width: 20%;
   height: 20%;

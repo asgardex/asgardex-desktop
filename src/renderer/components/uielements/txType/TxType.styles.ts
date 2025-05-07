@@ -24,6 +24,6 @@ export const IconContainer = styled.span`
   height: 30px;
 
   svg {
-    stroke: ${palette('primary', 0)};
+    stroke: ${palette('primary', 2)};
   }
 `

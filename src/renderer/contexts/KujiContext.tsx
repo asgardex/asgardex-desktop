@@ -17,7 +17,7 @@ import {
   fees$
 } from '../services/kuji'
 
-export type KujiContextValue = {
+type KujiContextValue = {
   client$: typeof client$
   clientState$: typeof clientState$
   address$: typeof address$

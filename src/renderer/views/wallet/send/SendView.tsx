@@ -30,7 +30,7 @@ import { BackLinkButton, RefreshButton } from '../../../components/uielements/bu
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
-import { PoolAddress } from '../../../services/midgard/types'
+import { PoolAddress } from '../../../services/midgard/midgardTypes'
 import { userAddresses$ } from '../../../services/storage/userAddresses'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { SelectedWalletAsset } from '../../../services/wallet/types'

@@ -1,7 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { FeeOption, Network } from '@xchainjs/xchain-client'
 import { XChainClient } from '@xchainjs/xchain-client'
-import { FeesWithGasPricesAndLimits } from '@xchainjs/xchain-evm'
 import { TxParams as BaseEvmTxParams } from '@xchainjs/xchain-evm'
 import ClientKeystore from '@xchainjs/xchain-evm'
 import { Address, AnyAsset, Asset, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
@@ -13,9 +12,6 @@ import { LiveData } from '../../helpers/rx/liveData'
 import { FeeLD, FeesLD, Memo } from '../chain/types'
 import * as C from '../clients'
 import { ApiError, TxHashLD } from '../wallet/types'
-
-export type FeesWithGasPricesAndLimitsRD = RD.RemoteData<Error, FeesWithGasPricesAndLimits>
-export type FeesWithGasPricesAndLimitsLD = LiveData<Error, FeesWithGasPricesAndLimits>
 
 export type ApproveFeeHandler = (p: ApproveParams) => FeeLD
 

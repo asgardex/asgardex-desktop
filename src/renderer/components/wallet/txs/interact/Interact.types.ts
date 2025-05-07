@@ -5,5 +5,6 @@ export enum InteractType {
   Custom = 'custom',
   THORName = 'thorname',
   MAYAName = 'mayaname',
-  RunePool = 'runePool'
+  RunePool = 'runePool',
+  Whitelist = 'whitelist'
 }

@@ -18,18 +18,6 @@ export const Success = styled(AlertUI).attrs({
   }
 `
 
-export const Error = styled(AlertUI).attrs({
-  type: 'error'
-})`
-  .anticon-close {
-    color: ${palette('text', 0)};
-  }
-
-  .ant-alert-close-icon {
-    align-self: flex-start;
-  }
-`
-
 export const Title = styled.span`
   line-height: 1rem;
 

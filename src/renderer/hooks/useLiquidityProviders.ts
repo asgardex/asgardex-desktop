@@ -145,7 +145,7 @@ export const useLiquidityProviders = ({
   )
 
   /**
-   * Looking into LP data to check a possible asset missmatch
+   * Looking into LP data to check a possible asset mismatch
    * That's RUNE or asset side has been already used with another pair
    *
    * Sym. deposits only

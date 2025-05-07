@@ -8,13 +8,13 @@ import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/lib/Option'
 import { useIntl } from 'react-intl'
 
-import { GetPoolsPeriodEnum } from '../../../services/midgard/types'
+import { GetPoolsPeriodEnum } from '../../../services/midgard/midgardTypes'
 
 type PeriodItem = { value: GetPoolsPeriodEnum; label: string }
 
 const DEFAULT_ITEM: PeriodItem = { value: GetPoolsPeriodEnum._30d, label: '30 days' }
 
-export type Props = {
+type Props = {
   selectedValue: GetPoolsPeriodEnum
   onChange: (value: GetPoolsPeriodEnum) => void
   className?: string

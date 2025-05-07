@@ -33,7 +33,7 @@ import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import { FeeRD, SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../../../services/clients'
-import { PoolAddress } from '../../../../services/midgard/types'
+import { PoolAddress } from '../../../../services/midgard/midgardTypes'
 import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
 import { WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
@@ -49,13 +49,13 @@ import * as Styled from '../TxForm.styles'
 import { validateTxAmountInput } from '../TxForm.util'
 import * as Shared from './Send.shared'
 
-export type FormValues = {
+type FormValues = {
   recipient: string
   amount: BigNumber
   memo?: string
 }
 
-export type Props = {
+type Props = {
   asset: SelectedWalletAsset
   trustedAddresses: TrustedAddresses | undefined
   balances: WalletBalances
@@ -125,8 +125,6 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   const [form] = Form.useForm<FormValues>()
   const [showDetails, setShowDetails] = useState<boolean>(true)
   const [currentMemo, setCurrentMemo] = useState<string>('')
-  const [swapMemoDetected, setSwapMemoDetected] = useState<boolean>(false)
-  const [affiliateTracking, setAffiliateTracking] = useState<string>('')
 
   const oSavedAddresses: O.Option<TrustedAddress[]> = useMemo(
     () =>
@@ -138,22 +136,10 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   )
 
   const handleMemo = useCallback(() => {
-    let memoValue = form.getFieldValue('memo') as string
-
-    // Check if a swap memo is detected
-    if (H.checkMemo(memoValue) && network === Network.Mainnet) {
-      memoValue = H.memoCorrection(memoValue, network)
-      setSwapMemoDetected(true)
-
-      // Set affiliate tracking message
-      setAffiliateTracking(intl.formatMessage({ id: 'wallet.send.affiliateTracking' }))
-    } else {
-      setSwapMemoDetected(false)
-    }
-
+    const memoValue = form.getFieldValue('memo') as string
     // Update the state with the adjusted memo value
     setCurrentMemo(memoValue)
-  }, [form, intl, network])
+  }, [form])
 
   const oFee: O.Option<BaseAmount> = useMemo(() => FP.pipe(feeRD, RD.toOption), [feeRD])
 
@@ -672,7 +658,6 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
             <Form.Item name="memo">
               <Styled.Input size="large" disabled={isLoading} onChange={handleMemo} />
             </Form.Item>
-            {swapMemoDetected && <div className="pb-20px text-warning0 dark:text-warning0d ">{affiliateTracking}</div>}
           </Styled.SubForm>
           <FlatButton
             className="mt-40px min-w-[200px]"

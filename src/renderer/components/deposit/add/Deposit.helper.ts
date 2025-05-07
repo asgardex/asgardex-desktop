@@ -20,9 +20,8 @@ import { getChainAsset } from '../../../helpers/chainHelper'
 import { eqChain } from '../../../helpers/fp/eq'
 import { priceFeeAmountForAsset } from '../../../services/chain/fees/utils'
 import { DepositAssetFees, DepositFees, SymDepositFees, SymDepositFeesRD } from '../../../services/chain/types'
-import { PoolsDataMap } from '../../../services/midgard/types'
+import { PoolData, PoolsDataMap } from '../../../services/midgard/midgardTypes'
 import { AssetWithAmount } from '../../../types/asgardex'
-import { PoolData } from '../../../views/pools/Pools.types'
 
 /**
  * Returns zero sym deposit fees
@@ -270,7 +269,7 @@ export const minRuneAmountToDeposit = ({ inFee, outFee, refundFee }: DepositFees
 /**
  * Returns min. balance to cover fees for deposit txs
  *
- * It sums fees for happy path (successfull deposit) or unhappy path (failed deposit)
+ * It sums fees for happy path (successful deposit) or unhappy path (failed deposit)
  *
  * This helper is only needed if source asset is not a chain asset,
  * In other case use `minAmountToSwapMax1e8` to get min value

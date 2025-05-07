@@ -23,19 +23,20 @@ require('dotenv').config()
 
 export const ASGARDEX_IDENTIFIER = 999
 
-// Asgardex full address
 export const ASGARDEX_ADDRESS = 'thor1rr6rahhd4sy76a7rdxkjaen2q4k4pw2g06w7qp'
 
 export const ASGARDEX_AFFILIATE_FEE = 30
+export const ASGARDEX_TRADE_AFFILIATE_FEE = 15
 export const ASGARDEX_THORNAME = envOrDefault(process.env.REACT_APP_ASGARDEX_THORNAME, 'dx')
 
-// Dynamically evaluate Asgardex Thorname
 export const getAsgardexThorname = (network: Network): string | undefined =>
   network === Network.Mainnet ? ASGARDEX_THORNAME : undefined
 
-// Dynamically evaluate Asgardex Affiliate Fee
 export const getAsgardexAffiliateFee = (network: Network): number | undefined =>
   network === Network.Mainnet ? ASGARDEX_AFFILIATE_FEE : undefined
+
+export const getAsgardexTradeAffiliateFee = (network: Network): number | undefined =>
+  network === Network.Mainnet ? ASGARDEX_TRADE_AFFILIATE_FEE : undefined
 
 // Affiliate Fee min apply value
 export const ASGARDEX_AFFILIATE_FEE_MIN = 1001
@@ -53,6 +54,9 @@ export enum ExternalUrl {
   ASGARDEX = 'https://asgardex.com',
   LICENSE = 'https://github.com/asgardex/asgardex-desktop?tab=MIT-1-ov-file'
 }
+
+export const INVALID_PATH_SEGMENT = /[\\/]|\.\./
+export const VALID_SEGMENT_PATTERN = /^[a-zA-Z0-9._-]+$/
 
 // increase it by `1` if you want to ignore previous version of `UserNodesStorage`
 const USER_NODES_STORAGE_VERSION = '1'

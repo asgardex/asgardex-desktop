@@ -6,6 +6,7 @@ const common: CommonMessages = {
   'common.dex': 'Dex',
   'common.faqs': 'सामान्य प्रश्न',
   'common.greeting': 'स्वागत है, {name}',
+  'common.examples': 'उदाहरण {name}',
   'common.copyright': '©',
   'common.type': 'प्रकार',
   'common.chain': 'श्रृंखला',

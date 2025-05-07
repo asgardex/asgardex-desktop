@@ -33,7 +33,7 @@ module.exports = {
       // Light theme https://github.com/asgardex/asgardex-theme/-/blob/master/src/light.ts
       // Dark theme https://github.com/asgardex/asgardex-theme/-/blob/master/src/dark.ts
       colors: {
-        turquoise: '#23DCC8', //'#50E3C2'
+        turquoise: '#0068F7',
         cyanblue: '#1fb6ff',
         red: '#FF4954',
         // text

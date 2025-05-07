@@ -5,7 +5,7 @@ import { Network } from '@xchainjs/xchain-client'
 import * as Styled from './Common.styles'
 import * as C from './Common.types'
 
-export type Props = {
+type Props = {
   asset: C.AssetData
   description: string
   network: Network

@@ -27,7 +27,7 @@ import * as Styled from './AssetData.styles'
  *
  */
 
-export type Props = {
+type Props = {
   asset: AnyAsset
   walletType?: WalletType
   noTicker?: boolean

@@ -6,7 +6,7 @@ import clsx from 'clsx'
 
 import { TableWrapper } from './Table.styles'
 
-export type Props = {
+type Props = {
   className?: string
 }
 

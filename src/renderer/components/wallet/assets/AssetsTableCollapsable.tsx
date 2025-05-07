@@ -41,8 +41,8 @@ import { hiddenString, noDataString } from '../../../helpers/stringHelper'
 import { calculateMayaValueInUSD, MayaScanPriceRD } from '../../../hooks/useMayascanPrice'
 import * as poolsRoutes from '../../../routes/pools'
 import { WalletBalancesRD } from '../../../services/clients'
-import { PoolDetails as PoolDetailsMaya } from '../../../services/mayaMigard/types'
-import { PoolDetails, PoolsDataMap } from '../../../services/midgard/types'
+import { PoolDetails as PoolDetailsMaya } from '../../../services/midgard/mayaMigard/types'
+import { PoolDetails, PoolsDataMap, PricePool } from '../../../services/midgard/midgardTypes'
 import { MimirHaltRD } from '../../../services/thorchain/types'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import {
@@ -56,7 +56,6 @@ import {
 import { walletTypeToI18n } from '../../../services/wallet/util'
 import { useApp } from '../../../store/app/hooks'
 import { GECKO_MAP } from '../../../types/generated/geckoMap'
-import { PricePool } from '../../../views/pools/Pools.types'
 import { ErrorView } from '../../shared/error/'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { Action as ActionButtonAction, ActionButton } from '../../uielements/button/ActionButton'
@@ -69,13 +68,13 @@ const { Panel } = Collapse
 
 export type AssetAction = 'send' | 'deposit'
 
-export type GetPoolPriceValueFnThor = (params: {
+type GetPoolPriceValueFnThor = (params: {
   balance: Balance
   poolDetails: PoolDetails
   pricePool: PricePool
 }) => O.Option<BaseAmount>
 
-export type GetPoolPriceValueFnMaya = (params: {
+type GetPoolPriceValueFnMaya = (params: {
   balance: Balance
   poolDetails: PoolDetailsMaya
   pricePool: PricePool
@@ -332,17 +331,6 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         O.chain(({ asset }) => O.fromNullable(assetFromString(asset))),
         O.toNullable
       )
-      const hasSaversAssets = FP.pipe(
-        poolDetails,
-        A.filter(({ saversDepth }) => Number(saversDepth) > 0),
-        A.filterMap(({ asset: assetString }) => O.fromNullable(assetFromString(assetString))),
-        A.exists(
-          (assetPool) =>
-            assetPool.chain.toUpperCase() === asset.chain.toUpperCase() &&
-            assetPool.symbol.toUpperCase() === asset.symbol.toUpperCase() &&
-            assetPool.ticker.toUpperCase() === asset.ticker.toUpperCase()
-        )
-      )
 
       const createAction = (labelId: string, callback: () => void) => ({
         label: intl.formatMessage({ id: labelId }),
@@ -433,19 +421,6 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         )
       }
 
-      if (hasSaversAssets && !isSynthAsset(asset) && !isSecuredAsset(asset)) {
-        actions.push(
-          createAction('common.earn', () =>
-            navigate(
-              poolsRoutes.earn.path({
-                asset: assetToString(asset),
-                walletType: walletType
-              })
-            )
-          )
-        )
-      }
-
       if (hasActivePool) {
         actions.push(
           createAction('common.add', () => {
@@ -454,7 +429,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
               poolsRoutes.deposit.path({
                 asset: assetToString(asset),
                 assetWalletType: walletType,
-                runeWalletType: DEFAULT_WALLET_TYPE
+                dexWalletType: DEFAULT_WALLET_TYPE
               })
             )
           })
@@ -584,22 +559,20 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
       )
 
       const header = (
-        <Styled.HeaderRow className="flex w-full justify-between space-x-4 py-1">
-          <div className="flex items-center space-x-2">
-            <Styled.HeaderChainContainer>
-              <Styled.HeaderLabel>{chainToString(chain)}</Styled.HeaderLabel>
-              {!isKeystoreWallet(walletType) && (
-                <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
+        <Styled.HeaderRow className="flex w-full justify-between space-x-4 bg-bg0 py-1 dark:bg-bg0d">
+          <div className="flex flex-row items-center space-x-2">
+            <Styled.HeaderLabel>{chainToString(chain)}</Styled.HeaderLabel>
+            {!isKeystoreWallet(walletType) && (
+              <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
+            )}
+            <Styled.HeaderLabel
+              className="flex items-center space-x-2"
+              color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>
+              <span style={{ marginLeft: isEvmChain(chain) ? '5px' : '0' }}>{assetsTxt}</span>
+              {isEvmChain(chain) && (
+                <InfoIcon tooltip={intl.formatMessage({ id: 'wallet.evmToken.tooltip' })} color="primary" />
               )}
-              <Styled.HeaderLabel
-                className="flex items-center space-x-2"
-                color={RD.isFailure(balancesRD) ? 'error' : 'gray'}>
-                <span style={{ marginLeft: isEvmChain(chain) ? '5px' : '0' }}>{assetsTxt}</span>
-                {isEvmChain(chain) && (
-                  <InfoIcon tooltip={intl.formatMessage({ id: 'wallet.evmToken.tooltip' })} color="primary" />
-                )}
-              </Styled.HeaderLabel>
-            </Styled.HeaderChainContainer>
+            </Styled.HeaderLabel>
           </div>
           <div className="flex items-center justify-end space-x-2">
             <Styled.HeaderAddress className="flex items-center text-text0 dark:text-text0d">
@@ -628,7 +601,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
       )
 
       return (
-        <Panel header={header} key={key}>
+        <Panel key={key} header={header}>
           {renderBalances({
             balancesRD,
             index: key,
@@ -687,20 +660,20 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
 
   return (
     <>
-      <Row className="items-center">
+      <Row className="items-center space-x-2">
         <div
-          className="m-2 cursor-pointer rounded-md border border-solid border-turquoise p-1 text-14 text-gray2 dark:border-gray1d dark:text-gray2d"
+          className="my-2 cursor-pointer rounded-md border border-solid border-turquoise bg-bg0 py-1 px-2 text-14 text-text2 dark:border-gray1d dark:bg-bg0d dark:text-text2d"
           onClick={handleCollapseAll}>
           {collapseAll
             ? intl.formatMessage({ id: 'common.collapseAll' })
             : intl.formatMessage({ id: 'common.expandAll' })}
         </div>
         {disabledChains.length > 0 ? (
-          <div className="flex items-center text-14 text-gray2 dark:border-gray1d dark:text-gray2d">
-            <p className="m-2 ">{intl.formatMessage({ id: 'common.disabledChains' })}</p>
+          <div className="flex items-center text-14 text-text2 dark:border-gray1d dark:text-text2d">
+            <p className="m-2">{intl.formatMessage({ id: 'common.disabledChains' })}</p>
             <div className="flex space-x-2">
               {disabledChains.map((chain) => (
-                <span key={chain} className="rounded bg-gray-200 px-2 py-1">
+                <span key={chain} className="rounded bg-gray-200 px-2 py-1 dark:bg-gray0d">
                   {chain}
                 </span>
               ))}

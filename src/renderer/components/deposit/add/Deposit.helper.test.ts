@@ -10,7 +10,7 @@ import { AssetUSDCBSC, AssetUSDTBSC, AssetUSDTERC20 } from '../../../const'
 import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { eqBaseAmount, eqODepositAssetFees, eqODepositFees } from '../../../helpers/fp/eq'
 import { DepositAssetFees, DepositFees, SymDepositFees, SymDepositFeesRD } from '../../../services/chain/types'
-import { PoolData } from '../../../views/pools/Pools.types'
+import { PoolData } from '../../../services/midgard/midgardTypes'
 import {
   getAssetAmountToDeposit,
   getDexAmountToDeposit,

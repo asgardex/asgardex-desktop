@@ -5,7 +5,6 @@ import type * as TN from '@xchainjs/xchain-thornode'
 import { Address, AnyAsset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import * as O from 'fp-ts/Option'
-import * as t from 'io-ts'
 import { IntlShape } from 'react-intl'
 import * as Rx from 'rxjs'
 
@@ -159,21 +158,28 @@ export type MimirRD = RD.RemoteData<Error, Mimir>
 
 export type MimirConstantsRD = RD.RemoteData<Error, Mimir>
 
-export type MimirHaltChain = Record<`halt${EnabledChain}Chain`, boolean>
+export type MimirHaltChain = Record<`HALT${EnabledChain}CHAIN`, boolean>
 
-export type MimirHaltTrading = Record<`halt${EnabledChain}Trading`, boolean>
+export type MimirHaltTrading = Record<`HALT${EnabledChain}TRADING`, boolean>
 
-export type MimirPauseLP = Record<`pauseLp${EnabledChain}`, boolean>
+export type MimirPauseLP = Record<`PAUSELP${EnabledChain}`, boolean>
+
+export type MimirPauseLPDeposit = Record<`PAUSELPDEPOSIT-${EnabledChain}-${EnabledChain}`, boolean>
 
 export type MimirHaltTradingGlobal = {
-  haltTrading: boolean
+  haltGlobalTrading: boolean
 }
 
 export type MimirHaltLpGlobal = {
-  pauseLp: boolean
+  pauseGlobalLp: boolean
 }
 
-export type MimirHalt = MimirHaltChain & MimirHaltTrading & MimirPauseLP & MimirHaltTradingGlobal & MimirHaltLpGlobal
+export type MimirHalt = MimirHaltChain &
+  MimirHaltTrading &
+  MimirPauseLP &
+  MimirPauseLPDeposit &
+  MimirHaltTradingGlobal &
+  MimirHaltLpGlobal
 
 export type MimirHaltRD = RD.RemoteData<Error, MimirHalt>
 
@@ -182,10 +188,32 @@ export type PendingAssets = AssetsWithAmount1e8
 export type FailedAssets = AssetsWithAmount1e8
 export type PendingAssetsRD = RD.RemoteData<Error, PendingAssets>
 
+export type BondedNodes = {
+  nodeAddress: string
+  units: BigNumber
+}
+
+export type LiquidityProviderForPool = {
+  asset: AnyAsset
+  cacaoAddress: O.Option<Address>
+  lastAddHeight: O.Option<number>
+  assetAddress: O.Option<Address>
+  lastWithdrawHeight: string
+  units: string
+  pendingCacao: BaseAmount
+  pendingAsset: BaseAmount
+  cacaoDepositValue: BaseAmount
+  assetDepositValue: BaseAmount
+  nodeBondAddress: string
+  withdrawCounter: string
+  bondedNodes: BondedNodes[]
+  cacaoRedeemValue: BaseAmount
+  assetRedeemValue: BaseAmount
+}
+
 export type LiquidityProvider = {
   dexAssetAddress: O.Option<Address>
   assetAddress: O.Option<Address>
-
   pendingDexAsset: O.Option<PendingAsset>
   pendingAsset: O.Option<PendingAsset>
 }
@@ -227,20 +255,6 @@ export type RunePoolProvider = {
 
 export type RunePoolProviderRD = RD.RemoteData<Error, RunePoolProvider>
 export type RunePoolProviderLD = LiveData<Error, RunePoolProvider>
-
-export type BlockInformation = {
-  inboundConfirmationBlocks?: number
-  inboundConfirmationSeconds?: number
-  outboundDelayBlocks?: number
-  outbondDelaySeconds?: number
-}
-
-export type QuoteFees = {
-  asset: string
-  liquidity?: string
-  outbound?: string
-  total_bps?: number
-}
 
 export type TradeAccount = {
   asset: AnyAsset
@@ -309,27 +323,6 @@ export type TxStages = {
 
 export type TxStagesRD = RD.RemoteData<Error, TxStages>
 export type TxStagesLD = LiveData<Error, TxStages>
-
-export const erc20WhitelistTokenIO = t.type({
-  chainId: t.number,
-  address: t.string,
-  symbol: t.string,
-  name: t.string,
-  logoURI: t.union([t.string, t.undefined])
-})
-
-export type ERC20WhitelistToken = t.TypeOf<typeof erc20WhitelistTokenIO>
-
-export const erc20WhitelistIO = t.type({
-  tokens: t.array(erc20WhitelistTokenIO),
-  version: t.type({
-    major: t.number,
-    minor: t.number,
-    patch: t.number
-  })
-})
-
-export type ERC20Whitelist = t.TypeOf<typeof erc20WhitelistIO>
 
 export enum NodeStatusEnum {
   Active = 'Active',

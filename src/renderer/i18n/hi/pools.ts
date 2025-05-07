@@ -17,7 +17,8 @@ const pools: PoolsMessages = {
   'pools.limit.info': 'प्रोटोकॉल सीमा प्राप्त! पूलों में {pooled} जमा किया गया, नोड्स में {bonded} बंधक रखा गया',
   'pools.incentivependulum.info': 'प्रोत्साहन पेंडुलम: {percentage}%',
   'pools.incentivependulum.tooltip': 'पूलों में {pooled} जमा किया गया, नोड्स में {bonded} बंधक रखा गया',
-  'pools.incentivependulum.error': 'प्रोत्साहन पेंडुलम डेटा लोड करते समय त्रुटि'
+  'pools.incentivependulum.error': 'प्रोत्साहन पेंडुलम डेटा लोड करते समय त्रुटि',
+  'pools.bondable': 'बंधन योग्य'
 }
 
 export default pools

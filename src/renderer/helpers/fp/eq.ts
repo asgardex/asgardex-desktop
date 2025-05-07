@@ -13,10 +13,9 @@ import { ApiUrls, KeystoreId, LedgerError } from '../../../shared/api/types'
 import { HDMode, WalletAddress, WalletType } from '../../../shared/wallet/types'
 import { DepositAssetFees, DepositFees, SwapFeesParams, SymDepositAddresses } from '../../services/chain/types'
 import { ApproveParams } from '../../services/evm/types'
-import { PoolAddress, PoolShare } from '../../services/midgard/types'
+import { PoolAddress, PoolData, PoolShare, PricePool } from '../../services/midgard/midgardTypes'
 import { ApiError, LedgerAddress, SelectedWalletAsset, WalletBalance } from '../../services/wallet/types'
 import { AssetWithAmount } from '../../types/asgardex'
-import { PoolData, PricePool } from '../../views/pools/Pools.types'
 
 export const eqString = S.Eq
 

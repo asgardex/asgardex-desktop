@@ -42,7 +42,7 @@ import {
   to1e8BaseAmount
 } from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
-import { isEvmChain, isEvmToken } from '../../../helpers/evmHelper'
+import { isEvmChain, isEvmChainToken } from '../../../helpers/evmHelper'
 import { unionAssets } from '../../../helpers/fp/array'
 import { eqBaseAmount, eqOAsset, eqOApproveParams, eqAsset } from '../../../helpers/fp/eq'
 import { sequenceSOption, sequenceTOption } from '../../../helpers/fpHelpers'
@@ -53,7 +53,7 @@ import { LiveData } from '../../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../../helpers/stringHelper'
 import * as WalletHelper from '../../../helpers/walletHelper'
 import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
-import { INITIAL_SAVER_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../../../services/chain/const'
+import { INITIAL_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../../../services/chain/const'
 import {
   SymDepositState,
   SymDepositParams,
@@ -63,9 +63,9 @@ import {
   ReloadSymDepositFeesHandler,
   SymDepositFeesHandler,
   SymDepositFeesRD,
-  SaverDepositStateHandler,
-  SaverDepositState,
-  SaverDepositParams
+  DepositStateHandler,
+  DepositState,
+  DepositParams
 } from '../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../services/clients'
 import {
@@ -75,8 +75,8 @@ import {
   IsApproveParams,
   LoadApproveFeeHandler
 } from '../../../services/evm/types'
-import { PoolDetails as PoolDetailsMaya } from '../../../services/mayaMigard/types'
-import { PoolAddress, PoolDetails, PoolsDataMap } from '../../../services/midgard/types'
+import { PoolDetails as PoolDetailsMaya } from '../../../services/midgard/mayaMigard/types'
+import { PoolAddress, PoolData, PoolDetails, PoolsDataMap, PricePool } from '../../../services/midgard/midgardTypes'
 import {
   FailedAssets,
   LiquidityProviderAssetMismatch,
@@ -97,7 +97,6 @@ import {
 } from '../../../services/wallet/types'
 import { useApp } from '../../../store/app/hooks'
 import { AssetWithAmount, AssetsWithAmount1e8, AssetWithDecimal, AssetWithAmount1e8 } from '../../../types/asgardex'
-import { PoolData, PricePool } from '../../../views/pools/Pools.types'
 import { ConfirmationModal, LedgerConfirmationModal } from '../../modal/confirmation'
 import { WalletPasswordConfirmationModal } from '../../modal/confirmation'
 import { TxModal } from '../../modal/tx'
@@ -152,7 +151,7 @@ export type Props = {
   disabled?: boolean
   poolData: PoolData
   deposit$: SymDepositStateHandler
-  asymDeposit$: SaverDepositStateHandler
+  asymDeposit$: DepositStateHandler
   network: Network
   approveERC20Token$: (params: ApproveParams) => TxHashLD
   isApprovedERC20Token$: (params: IsApproveParams) => LiveData<ApiError, boolean>
@@ -400,7 +399,7 @@ export const SymDeposit = (props: Props) => {
     state: asymDepositState,
     reset: resetAsymDepositState,
     subscribe: subscribeAsymDepositState
-  } = useSubscriptionState<SaverDepositState>(INITIAL_SAVER_DEPOSIT_STATE)
+  } = useSubscriptionState<DepositState>(INITIAL_DEPOSIT_STATE)
 
   // Deposit start time
   const [depositStartTime, setDepositStartTime] = useState<number>(0)
@@ -439,8 +438,8 @@ export const SymDeposit = (props: Props) => {
   const needApprovement = useMemo(() => {
     // not needed for users with locked or not imported wallets
 
-    return isEvmChain(chain) && isEvmToken(asset) ? O.some(isEVMTokenAsset(asset as TokenAsset)) : O.none
-  }, [asset, chain])
+    return isEvmChainToken(asset) ? O.some(isEVMTokenAsset(asset as TokenAsset)) : O.none
+  }, [asset])
 
   const oApproveParams: O.Option<ApproveParams> = useMemo(() => {
     const oRouterAddress: O.Option<Address> = FP.pipe(
@@ -823,7 +822,7 @@ export const SymDeposit = (props: Props) => {
             poolAddress,
             amounts: {
               rune: dexAmountToDeposit,
-              // Decimal needs to be converted back for using orginal decimal of this asset (provided by `assetBalance`)
+              // Decimal needs to be converted back for using original decimal of this asset (provided by `assetBalance`)
               asset: convertBaseAmountDecimal(assetAmountToDepositMax1e8, assetBalance.decimal)
             },
             memos: {
@@ -855,7 +854,7 @@ export const SymDeposit = (props: Props) => {
       assetBalance.decimal
     ]
   )
-  const oAsymDepositParams: O.Option<SaverDepositParams> = useMemo(
+  const oAsymDepositParams: O.Option<DepositParams> = useMemo(
     () =>
       FP.pipe(
         sequenceTOption(oDepositParams, oFailedAssetAmount),
@@ -1119,7 +1118,7 @@ export const SymDeposit = (props: Props) => {
   const updateRuneAmount = useCallback(
     (newAmount: BaseAmount) => {
       let runeAmount = newAmount.gt(maxDexAmountToDeposit)
-        ? { ...maxDexAmountToDeposit } // Use copy to avoid missmatch with values in input fields
+        ? { ...maxDexAmountToDeposit } // Use copy to avoid mismatch with values in input fields
         : baseAmount(newAmount.amount().toNumber(), protocolDecimals)
       // assetAmount max. 1e8 decimal
       const assetAmountMax1e8 = Helper.getAssetAmountToDeposit({
@@ -1161,7 +1160,7 @@ export const SymDeposit = (props: Props) => {
       const newAmountMax1e8 = convertBaseAmountDecimal(newAmount, assetBalanceMax1e8.decimal)
 
       let assetAmountMax1e8 = newAmountMax1e8.gt(maxAssetAmountToDepositMax1e8)
-        ? { ...maxAssetAmountToDepositMax1e8 } // Use copy to avoid missmatch with values in input fields
+        ? { ...maxAssetAmountToDepositMax1e8 } // Use copy to avoid  mismatch with values in input fields
         : { ...newAmountMax1e8 }
 
       const dexAmount = Helper.getDexAmountToDeposit(assetAmountMax1e8, poolData, protocolDecimals)
@@ -1963,7 +1962,7 @@ export const SymDeposit = (props: Props) => {
 
     const description1 =
       // extra info for ERC20 assets only
-      isEvmChain(assetForLedger.chain) && isEvmToken(assetForLedger)
+      isEvmChainToken(assetForLedger)
         ? `${txtNeedsConnected} ${intl.formatMessage(
             {
               id: 'ledger.blindsign'

@@ -1,5 +1,6 @@
 import { Network } from '@xchainjs/xchain-client'
-import { Address, AnyAsset, AssetType, BaseAmount } from '@xchainjs/xchain-util'
+import { THORChain } from '@xchainjs/xchain-thorchain'
+import { Address, AnyAsset, AssetType, BaseAmount, Chain } from '@xchainjs/xchain-util'
 
 import { getAsgardexThorname } from '../../shared/const'
 
@@ -54,8 +55,18 @@ export const getBondMemo = (thorAddress: string, providerAddress?: string, nodeF
   mkMemo(['BOND', thorAddress, providerAddress, nodeFee])
 
 /**
- * Memo to unbond
+ * Memo to bond Mayachain
+ * @param assetPool asset string corresponding to the pool
+ * @param lpUnits units to unbond
+ * @param MayaAddress MAYA address to send amounts to
  *
+ * Memo is based on definition in https://github.com/asgardex/asgardex-desktop/issues/176
+ */
+export const getBondMemoMayanode = (assetPool: string, lpUnits: string, mayaNodeAddress: string) =>
+  mkMemo(['BOND', assetPool, lpUnits, mayaNodeAddress])
+
+/**
+ * Memo to unbond
  * @param thorAddress THOR address unbond from
  * @param units Base Amount of units to unbond
  *
@@ -64,6 +75,16 @@ export const getBondMemo = (thorAddress: string, providerAddress?: string, nodeF
  */
 export const getUnbondMemo = (thorAddress: string, units: BaseAmount, providerAddress?: string) =>
   mkMemo(['UNBOND', thorAddress, units.amount().toString(), providerAddress])
+
+/**
+ * Memo to unbond
+ * @param assetPool asset string corresponding to the pool
+ * @param lpUnits units to unbond
+ * @param mayaNodeAddress node address unbond from
+ *
+ */
+export const getUnbondMemoMayanode = (assetPool: string, lpUnits: string, mayaNodeAddress: string) =>
+  mkMemo(['UNBOND', assetPool, lpUnits, mayaNodeAddress])
 
 /**
  * Memo to withdraw
@@ -145,6 +166,42 @@ export const updateMemo = (memo: string, network: Network): string => {
 export const getLeaveMemo = (thorAddress: string) => mkMemo(['LEAVE', thorAddress])
 
 /**
+ * Memo to whitelist
+ *
+ * @param nodeAddress address to bond to
+ * @param whitelistAddress address to whitelist
+ *
+ */
+export const getWhitelistMemo = (
+  whitelisting: boolean,
+  protocol: Chain,
+  nodeAddress: string,
+  whitelistAddress: string,
+  fee?: number
+) => {
+  return whitelisting
+    ? protocol === THORChain
+      ? mkMemo(['BOND', nodeAddress, whitelistAddress, fee])
+      : mkMemo(['BOND::', nodeAddress, whitelistAddress, fee])
+    : protocol === THORChain
+    ? mkMemo(['UNBOND', nodeAddress, whitelistAddress])
+    : mkMemo(['UNBOND::', nodeAddress, whitelistAddress])
+}
+
+// /**
+//  * Memo to Unwhitelist
+//  *
+//  * @param nodeAddress address to bond to
+//  * @param whitelistAddress address to whitelist
+//  *
+//  */
+// export const getUnWhitelistMemo = (protocol: Chain, nodeAddress: string, whitelistAddress: string) => {
+//   return protocol === THORChain
+//     ? mkMemo(['UNBOND', nodeAddress, whitelistAddress])
+//     : mkMemo(['UNBOND::', nodeAddress, whitelistAddress])
+// }
+
+/**
  * Memo to deposit
  *
  * @param asset Asset to deposit into a specified pool
@@ -175,7 +232,7 @@ export const getRunePoolMemo = ({ action, bps, network }: { action: Action; bps:
   return mkMemo(memoParts)
 }
 
-export type AssetCodes = {
+type AssetCodes = {
   [key: string]: string
 }
 
@@ -192,7 +249,7 @@ const assetCodes: AssetCodes = {
   'BASE.ETH': 'f'
 }
 
-export const shortenMemo = (input: string): string => {
+const shortenMemo = (input: string): string => {
   // Extract the asset identifier from the input string
   const assetPattern = /:([^:]+):/
   const match = assetPattern.exec(input)

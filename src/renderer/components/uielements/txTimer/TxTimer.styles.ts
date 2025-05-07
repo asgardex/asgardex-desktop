@@ -46,7 +46,7 @@ export const IconWrapper = styled.div`
 
 export const SuccessIcon = styled(CheckOutlined)`
   font-size: 35px;
-  color: ${palette('primary', 0)};
+  color: ${palette('primary', 2)};
 `
 
 export const TimerLabel = styled(Label)`

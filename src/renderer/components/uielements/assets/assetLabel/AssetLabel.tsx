@@ -14,7 +14,7 @@ import * as Styled from './AssetLabel.styles'
  *
  */
 
-export type Props = {
+type Props = {
   asset: AnyAsset
   // `className` is needed by `styled components`
   className?: string

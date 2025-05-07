@@ -10,13 +10,13 @@ export const Pagination = styled(A.Pagination)`
 
   .ant-pagination-item-link {
     transition: none;
-    border-color: ${palette('primary', 0)};
+    border-color: ${palette('primary', 2)};
 
     &:hover {
-      border-color: ${palette('primary', 0)};
+      border-color: ${palette('primary', 2)};
     }
     > .anticon {
-      color: ${palette('primary', 0)};
+      color: ${palette('primary', 2)};
     }
   }
 
@@ -26,17 +26,17 @@ export const Pagination = styled(A.Pagination)`
     color: ${palette('text', 0)};
 
     > a {
-      color: ${palette('primary', 0)};
+      color: ${palette('primary', 2)};
     }
 
     &:hover {
-      border-color: ${palette('primary', 0)};
+      border-color: ${palette('primary', 2)};
       background: ${palette('background', 2)};
-      color: ${palette('primary', 0)};
+      color: ${palette('primary', 2)};
     }
 
     &.ant-pagination-item-active {
-      border-color: ${palette('primary', 0)};
+      border-color: ${palette('primary', 2)};
       cursor: not-allowed;
 
       &:hover {
@@ -46,13 +46,13 @@ export const Pagination = styled(A.Pagination)`
   }
 
   .ant-pagination-item-link {
-    color: ${palette('primary', 0)};
+    color: ${palette('primary', 2)};
     background: ${palette('background', 1)};
 
     &:hover {
-      border-color: ${palette('primary', 0)};
+      border-color: ${palette('primary', 2)};
       background: ${palette('background', 2)};
-      color: ${palette('primary', 0)};
+      color: ${palette('primary', 2)};
     }
 
     &:disabled {
@@ -62,10 +62,10 @@ export const Pagination = styled(A.Pagination)`
   }
 
   .ant-pagination-item-container .ant-pagination-item-ellipsis {
-    color: ${palette('primary', 0)};
+    color: ${palette('primary', 2)};
   }
 
   .ant-pagination-item-link-icon {
-    color: ${palette('primary', 0)} !important;
+    color: ${palette('primary', 2)} !important;
   }
 `

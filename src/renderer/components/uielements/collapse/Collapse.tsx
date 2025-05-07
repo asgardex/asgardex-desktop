@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 
-export type Props = {
+type Props = {
   className?: string
   header: React.ReactNode
   children: React.ReactNode
@@ -15,7 +15,7 @@ export const Collapse = ({ className, header, children }: Props): JSX.Element =>
   return (
     <div
       className={clsx(
-        'flex flex-col overflow-hidden rounded-lg border border-solid border-gray1 dark:border-gray0d',
+        'flex flex-col overflow-hidden rounded-lg border border-solid border-gray0 dark:border-gray0d',
         className
       )}>
       <div

@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { Col, Row } from 'antd'
 import * as A from 'fp-ts/Array'
 import * as FP from 'fp-ts/function'
@@ -28,6 +29,7 @@ import { liveData } from '../../../helpers/rx/liveData'
 import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
+import { usePoolShares } from '../../../hooks/usePoolShares'
 import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import * as walletRoutes from '../../../routes/wallet'
 import { FeeRD } from '../../../services/chain/types'
@@ -43,6 +45,8 @@ export const InteractViewMAYA: React.FC = () => {
   const { interactType: routeInteractType } = useParams<walletRoutes.InteractParams>()
 
   const { selectedAsset$ } = useWalletContext()
+
+  const { allSharesRD: allMayaSharesRD } = usePoolShares(MAYAChain)
 
   const [selectedAssetRD] = useObservableState<SelectedWalletAssetRD>(
     () =>
@@ -215,6 +219,7 @@ export const InteractViewMAYA: React.FC = () => {
                       network={network}
                       poolDetails={poolDetails}
                       nodes={nodeInfos}
+                      poolShares={allMayaSharesRD}
                     />
                   </Interact>
                 )

@@ -2,6 +2,7 @@ import { Locale } from '../../shared/i18n/types'
 
 export type CommonMessageKey =
   | 'common.greeting'
+  | 'common.examples'
   | 'common.copyright'
   | 'common.stats'
   | 'common.network'
@@ -237,6 +238,7 @@ type PoolsMessageKey =
   | 'pools.incentivependulum.info'
   | 'pools.incentivependulum.tooltip'
   | 'pools.incentivependulum.error'
+  | 'pools.bondable'
 
 export type PoolsMessages = { [key in PoolsMessageKey]: string }
 
@@ -313,7 +315,6 @@ type WalletMessageKey =
   | 'wallet.send.success'
   | 'wallet.send.fastest'
   | 'wallet.send.fast'
-  | 'wallet.send.affiliateTracking'
   | 'wallet.send.notAllowed'
   | 'wallet.send.average'
   | 'wallet.send.max.doge'
@@ -501,6 +502,7 @@ type DepositMessageKey =
   | 'deposit.interact.actions.addBondProvider'
   | 'deposit.interact.actions.unbond'
   | 'deposit.interact.actions.leave'
+  | 'deposit.interact.actions.whitelist'
   | 'deposit.interact.actions.runePool'
   | 'deposit.interact.actions.buyThorname'
   | 'deposit.interact.actions.buyMayaname'
@@ -584,17 +586,6 @@ type SaversMessageKey =
   | 'savers.detail.assetAmount'
   | 'savers.info.max.redeem.value'
   | 'savers.info.max.balance'
-  | 'savers.add.state.sending'
-  | 'savers.add.state.checkResults'
-  | 'savers.add.state.pending'
-  | 'savers.add.state.success'
-  | 'savers.add.state.error'
-  | 'savers.withdraw.state.sending'
-  | 'savers.withdraw.state.checkResults'
-  | 'savers.withdraw.state.pending'
-  | 'savers.withdraw.state.success'
-  | 'savers.withdraw.state.error'
-  | 'savers.quote.error'
 
 export type SaversMessages = { [key in SaversMessageKey]: string }
 
@@ -628,7 +619,7 @@ type RunePoolMessageKey =
 
 export type RunePoolMessages = { [key in RunePoolMessageKey]: string }
 
-export type HaltMessageKey =
+type HaltMessageKey =
   | 'halt.thorchain'
   | 'halt.trading'
   | 'halt.chain'
@@ -637,6 +628,7 @@ export type HaltMessageKey =
   | 'halt.chain.synth'
   | 'halt.chain.pause'
   | 'halt.chain.pauseall'
+  | 'halt.chain.pauseDeposits'
 
 export type HaltMessages = { [key in HaltMessageKey]: string }
 

@@ -17,7 +17,7 @@ import {
   fees$
 } from '../services/solana'
 
-export type SolContextValue = {
+type SolContextValue = {
   client$: typeof client$
   clientState$: typeof clientState$
   address$: typeof address$

@@ -9,7 +9,7 @@ import { ButtonProps as UIButtonProps } from '../../uielements/button'
 import { TxTimer } from '../../uielements/txTimer'
 import * as Styled from './TxModal.styles'
 
-export type Props = {
+type Props = {
   txRD: RD.RemoteData<ApiError, boolean>
   timerValue?: number
   title: string
@@ -54,7 +54,7 @@ export const TxModal: React.FC<Props> = (props): JSX.Element => {
 
   const renderResult = useMemo(() => {
     const defaultButtonProps: UIButtonProps = {
-      color: 'success',
+      color: 'primary',
       disabled: false,
       onClick: onClose,
       sizevalue: 'xnormal',

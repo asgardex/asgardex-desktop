@@ -1,17 +1,14 @@
-import { AssetAETH, AssetARB } from '@xchainjs/xchain-arbitrum'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetDASH } from '@xchainjs/xchain-dash'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
-import { AssetUSK } from '@xchainjs/xchain-kujira'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
-import { AssetXRD } from '@xchainjs/xchain-radix'
-import { SOLAsset } from '@xchainjs/xchain-solana'
 import {
   Address,
   AnyAsset,
+  Asset,
   assetAmount,
   AssetAmount,
   assetFromString,
+  assetFromStringEx,
   AssetType,
   baseAmount,
   BaseAmount,
@@ -37,7 +34,13 @@ import {
   AssetCacao,
   AssetMaya,
   AssetKUJI,
-  AssetBETH
+  AssetBETH,
+  AssetARB,
+  AssetAETH,
+  AssetDASH,
+  SOLAsset,
+  AssetUSK,
+  AssetXRD
 } from '../../shared/utils/asset'
 import { isSupportedChain } from '../../shared/utils/chain'
 import { AssetTGTERC20, DEFAULT_PRICE_ASSETS, USD_PRICE_ASSETS } from '../const'
@@ -65,13 +68,17 @@ import { sequenceTOption } from './fpHelpers'
  * */
 export const THORCHAIN_DECIMAL = 8
 
-export const isAssetInMayachainPools = (asset: AnyAsset): boolean =>
-  eqAsset.equals(asset, AssetCacao || AssetDASH || AssetKUJI || AssetXRD)
-
 /**
  * Checks whether an asset is an RuneNative asset
  */
 export const isRuneNativeAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetRuneNative)
+
+//TCY
+export const AssetTCY = assetFromStringEx('THOR.TCY') as Asset
+/**
+ * Checks whether an asset is a TCY asset
+ */
+export const isTCYAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetTCY)
 
 /**
  * Checks whether an asset is a Rune (native or non-native) asset
@@ -212,7 +219,7 @@ export const assetInERC20Whitelist = (asset: AnyAsset): boolean =>
   )
 
 /**
- * Get's icon url from white list
+ * Gets icon url from white list
  */
 export const iconUrlInERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   FP.pipe(
@@ -223,7 +230,7 @@ export const iconUrlInERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
 /**
  * Checks whether an ERC20 asset is white listed or not
  */
-export const assetInARBERC20Whitelist = (asset: AnyAsset): boolean =>
+const assetInARBERC20Whitelist = (asset: AnyAsset): boolean =>
   FP.pipe(
     ARB_TOKEN_WHITELIST,
     A.map(({ asset }) => asset),
@@ -231,7 +238,7 @@ export const assetInARBERC20Whitelist = (asset: AnyAsset): boolean =>
   )
 
 /**
- * Get's icon url from white list
+ * Gets icon url from white list
  */
 export const iconUrlInARBERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   FP.pipe(
@@ -243,7 +250,7 @@ export const iconUrlInARBERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
 /**
  * Checks whether an ERC20 asset is white listed or not
  */
-export const assetInAVAXERC20Whitelist = (asset: AnyAsset): boolean =>
+const assetInAVAXERC20Whitelist = (asset: AnyAsset): boolean =>
   FP.pipe(
     AVAX_TOKEN_WHITELIST,
     A.map(({ asset }) => asset),
@@ -251,7 +258,7 @@ export const assetInAVAXERC20Whitelist = (asset: AnyAsset): boolean =>
   )
 
 /**
- * Get's icon url from white list
+ * Gets icon url from white list
  */
 export const iconUrlInAVAXERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   FP.pipe(
@@ -263,7 +270,7 @@ export const iconUrlInAVAXERC20Whitelist = (asset: AnyAsset): O.Option<string> =
 /**
  * Checks whether an ERC20 asset is white listed or not
  */
-export const assetInBSCERC20Whitelist = (asset: AnyAsset): boolean =>
+const assetInBSCERC20Whitelist = (asset: AnyAsset): boolean =>
   FP.pipe(
     BSC_TOKEN_WHITELIST,
     A.map(({ asset }) => asset),
@@ -271,7 +278,7 @@ export const assetInBSCERC20Whitelist = (asset: AnyAsset): boolean =>
   )
 
 /**
- * Get's icon url from white list
+ * Gets icon url from white list
  */
 export const iconUrlInBSCERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   FP.pipe(
@@ -281,7 +288,7 @@ export const iconUrlInBSCERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   )
 
 /**
- * Get's icon url from white list
+ * Gets icon url from white list
  */
 export const iconUrlInBASEERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   FP.pipe(
