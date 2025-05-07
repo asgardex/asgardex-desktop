@@ -15,7 +15,7 @@ import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { AnyAsset, Asset, AssetType, baseAmount, isSynthAsset } from '@xchainjs/xchain-util'
+import { AnyAsset, Asset, AssetType, baseAmount, isSecuredAsset, isSynthAsset } from '@xchainjs/xchain-util'
 import * as FP from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
 import * as Rx from 'rxjs'
@@ -82,6 +82,12 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
     return FP.pipe(
       MAYA.fees$(),
       liveData.map((fees) => ({ amount: fees.fast, asset: AssetCacao }))
+    )
+  }
+  if (isSecuredAsset(asset)) {
+    return FP.pipe(
+      THOR.fees$(),
+      liveData.map((fees) => ({ amount: fees.fast, asset: AssetRuneNative }))
     )
   }
   switch (asset.chain) {
