@@ -846,7 +846,7 @@ export const Swap = ({
               ...sourceAsset,
               symbol: sourceAsset.symbol.toUpperCase()
             }),
-            fromAddress: sourceWalletAddress,
+            fromAddress: isSecuredAsset(sourceAsset) ? undefined : sourceWalletAddress,
             destinationAddress: quoteOnly ? undefined : destinationWalletAddress,
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
@@ -1549,42 +1549,26 @@ export const Swap = ({
     (): AnyAsset[] =>
       FP.pipe(
         poolAssets,
-        // Remove unsupported tokens
         A.filter((asset) => {
           if (isTCSupportedAsset(sourceAsset, poolDetailsThor) && isTCSupportedAsset(asset, poolDetailsThor))
             return true
           if (isMayaSupportedAsset(sourceAsset, poolDetailsMaya) && isMayaSupportedAsset(asset, poolDetailsMaya))
             return true
-          if (isAssetSupported$(asset)) {
-            return true
-          }
+          if (isAssetSupported$(asset)) return true
           return false
         }),
         A.chain((asset) => {
           if (isRuneNativeAsset(asset) || isCacaoAsset(asset)) {
-            // Keep native Rune or Cacao assets as is
             return [asset]
           }
           if (isMayaSupportedAsset(asset, poolDetailsMaya) && isMayaSupportedAsset(sourceAsset, poolDetailsMaya)) {
-            // Synthesize MAYAChain assets
-            return [
-              asset,
-              {
-                ...asset,
-                type: AssetType.SYNTH,
-                synth: true
-              } as SynthAsset
-            ]
+            return [asset, { ...asset, type: AssetType.SYNTH, synth: true } as SynthAsset]
           }
           if (isTCSupportedAsset(asset, poolDetailsThor) && isTCSupportedAsset(sourceAsset, poolDetailsThor)) {
-            // Create secured assets for ThorChain
-            return [
-              asset,
-              {
-                ...asset,
-                type: AssetType.SECURED
-              } as SecuredAsset
-            ]
+            if (sourceAsset.type === AssetType.SECURED) {
+              return [{ ...asset, type: AssetType.SECURED } as SecuredAsset]
+            }
+            return [asset]
           }
           return [asset]
         }),

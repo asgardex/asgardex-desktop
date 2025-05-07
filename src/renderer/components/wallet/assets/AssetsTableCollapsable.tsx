@@ -32,7 +32,14 @@ import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE, ZERO_BASE_AMOUNT } from '../../../const'
 import { truncateAddress } from '../../../helpers/addressHelper'
-import { isBtcAsset, isCacaoAsset, isMayaAsset, isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
+import {
+  isBtcAsset,
+  isBtcSecuredAsset,
+  isCacaoAsset,
+  isMayaAsset,
+  isRuneNativeAsset,
+  isUSDAsset
+} from '../../../helpers/assetHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { isEvmChain } from '../../../helpers/evmHelper'
 import { getDeepestPool, getPoolPriceValue, getSecondDeepestPool } from '../../../helpers/poolHelper'
@@ -326,6 +333,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         O.chain(({ asset }) => O.fromNullable(assetFromString(asset))),
         O.toNullable
       )
+
       const secondDeepestPoolAsset = FP.pipe(
         getSecondDeepestPool(poolDetails),
         O.chain(({ asset }) => O.fromNullable(assetFromString(asset))),
@@ -405,7 +413,8 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
         deepestPoolAsset &&
         secondDeepestPoolAsset &&
         !isCacaoAsset(asset) &&
-        !isRuneNativeAsset(asset)
+        !isRuneNativeAsset(asset) &&
+        !isSecuredAsset(asset)
       ) {
         actions.push(
           createAction('common.swap', () =>
@@ -413,6 +422,22 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
               poolsRoutes.swap.path({
                 source: assetToString(asset),
                 target: assetToString(isBtcAsset(asset) ? secondDeepestPoolAsset : deepestPoolAsset),
+                sourceWalletType: walletType,
+                targetWalletType: DEFAULT_WALLET_TYPE
+              })
+            )
+          )
+        )
+      }
+      if (isSecuredAsset(asset)) {
+        actions.push(
+          createAction('common.swap', () =>
+            navigate(
+              poolsRoutes.swap.path({
+                source: assetToString(asset),
+                target: isBtcSecuredAsset(asset)
+                  ? `${secondDeepestPoolAsset?.chain}-${secondDeepestPoolAsset?.symbol}`
+                  : `${deepestPoolAsset?.chain}-${deepestPoolAsset?.symbol}`,
                 sourceWalletType: walletType,
                 targetWalletType: DEFAULT_WALLET_TYPE
               })
