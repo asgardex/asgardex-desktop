@@ -6,7 +6,6 @@ import * as O from 'fp-ts/lib/Option'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { AssetRuneNative } from '../../../shared/utils/asset'
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { liveData } from '../../helpers/rx/liveData'
 import { LiveData } from '../../helpers/rx/liveData'
@@ -37,7 +36,7 @@ export const createInteractService$ =
     ) => LiveData<ApiError, string>,
     getTxStatus: (txHash: string, assetAddress: O.Option<Address>) => TxLD
   ) =>
-  ({ walletType, walletAccount, walletIndex, hdMode, amount, memo }: InteractParams): InteractState$ => {
+  ({ walletType, walletAccount, walletIndex, hdMode, amount, memo, asset }: InteractParams): InteractState$ => {
     // total of progress
     const total = O.some(100)
 
@@ -61,7 +60,7 @@ export const createInteractService$ =
         walletAccount,
         walletIndex,
         hdMode,
-        asset: AssetRuneNative,
+        asset,
         amount,
         memo
       }),
