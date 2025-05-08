@@ -86,14 +86,16 @@ const loadBalances$ = <C extends XChainClientOverride>({
         Rx.from(client.getBalance(walletAddress, assets, walletBalanceType === 'confirmed')).pipe(
           map(RD.success),
           liveData.map(
-            A.map((balance) => ({
-              ...balance,
-              walletType,
-              walletAddress,
-              walletAccount,
-              walletIndex,
-              hdMode
-            }))
+            A.map((balance) => {
+              return {
+                ...balance,
+                walletType,
+                walletAddress,
+                walletAccount,
+                walletIndex,
+                hdMode
+              }
+            })
           ),
           catchError((error: Error) =>
             Rx.of(RD.failure<ApiError>({ errorId: ErrorId.GET_BALANCES, msg: error.message || 'Unknown error' }))
@@ -205,7 +207,7 @@ export const balancesByAddress$: BalancesByAddress$ =
                     client,
                     address,
                     walletType,
-                    assets: assets, // Use filtered assets
+                    assets: assets.length === 0 ? undefined : assets, // Use filtered assets
                     walletAccount,
                     walletIndex,
                     walletBalanceType,
