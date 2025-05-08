@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
-import { Client, DepositParam } from '@xchainjs/xchain-thorchain'
+import { Client, CompatibleAsset, DepositParam } from '@xchainjs/xchain-thorchain'
 import type * as TN from '@xchainjs/xchain-thornode'
 import { Address, AnyAsset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
@@ -95,6 +95,7 @@ export type InteractParams = {
   readonly hdMode: HDMode
   readonly amount: BaseAmount
   readonly memo: string
+  readonly asset: CompatibleAsset
 }
 
 /**

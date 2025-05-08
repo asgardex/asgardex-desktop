@@ -142,6 +142,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   const intl = useIntl()
 
   const { asset } = balance
+
   const { walletAddress } = balance
   const pricePool = usePricePool()
   const mimirKeys = useMimirConstants(['RUNEPOOLDEPOSITMATURITYBLOCKS', 'RUNEPOOLENABLED'])
@@ -644,10 +645,11 @@ export const InteractFormThor: React.FC<Props> = (props) => {
         walletIndex,
         hdMode,
         amount: amountToSend,
-        memo: getMemo()
+        memo: getMemo(),
+        asset: asset
       })
     )
-  }, [subscribeInteractState, interact$, walletType, walletAccount, walletIndex, hdMode, amountToSend, getMemo])
+  }, [subscribeInteractState, interact$, walletType, walletAccount, walletIndex, hdMode, amountToSend, getMemo, asset])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
 
@@ -898,7 +900,6 @@ export const InteractFormThor: React.FC<Props> = (props) => {
   const bondBaseAmount = userNodeInfo?.bondAmount ? userNodeInfo.bondAmount : baseAmount(0)
 
   const exampleMemos = [
-    { type: 'Claim TCY', memo: 'TCY:ADDR' },
     { type: 'Stake TCY', memo: 'TCY+' },
     { type: 'Unstake TCY', memo: 'TCY-:BASISPOINTS' },
     { type: 'Bond', memo: 'BOND:NODEADDRESS' },

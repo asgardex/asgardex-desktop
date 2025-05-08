@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Client, DepositParam } from '@xchainjs/xchain-mayachain'
+import { Client, CompatibleAsset, DepositParam } from '@xchainjs/xchain-mayachain'
 import type * as TN from '@xchainjs/xchain-mayanode'
 import { LPBondedNode } from '@xchainjs/xchain-mayanode'
 import { Address, AnyAsset, BaseAmount, Chain } from '@xchainjs/xchain-util'
@@ -95,6 +95,7 @@ export type InteractParams = {
   readonly hdMode: HDMode
   readonly amount: BaseAmount
   readonly memo: string
+  readonly asset: CompatibleAsset
 }
 
 /**
