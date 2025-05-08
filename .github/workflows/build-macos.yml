@@ -69,11 +69,6 @@ jobs:
           REACT_APP_SOL_API_KEY: ${{ secrets.REACT_APP_SOL_API_KEY }}
           OS_NAME: ${{ matrix.os-name }}
 
-      - name: Staple Notarization Ticket
-        if: success()
-        run: |
-          xcrun stapler staple "./release/mac/ASGARDEX.app"
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
