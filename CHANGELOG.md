@@ -1,5 +1,11 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.30.7 (2025-5-12)
+
+## Update/Fixes
+
+- fig thorchain native send assets bug (out of gas fee)
+
 # 1.30.5 (2025-4-28)
 
 ## Update/Fixes
