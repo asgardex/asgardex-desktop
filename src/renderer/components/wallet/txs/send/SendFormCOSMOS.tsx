@@ -21,7 +21,7 @@ import { isKeystoreWallet, isLedgerWallet } from '../../../../../shared/utils/gu
 import { WalletType } from '../../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../../const'
 import { isMayaAsset, isUSDAsset } from '../../../../helpers/assetHelper'
-import { getChainAsset } from '../../../../helpers/chainHelper'
+import { getChainAsset, isThorChain } from '../../../../helpers/chainHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import { getPoolPriceValue } from '../../../../helpers/poolHelperMaya'
 import { loadingString } from '../../../../helpers/stringHelper'
@@ -162,6 +162,11 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
   }, [balance.amount, balances, chainAsset, isChainAsset])
 
   const isFeeError = useMemo(() => {
+    // For THORChain native assets, ignore fee errors
+    if (isThorChain(asset.chain)) {
+      return false // Always allow THORChain transactions to proceed
+    }
+    // For other chains
     return FP.pipe(
       sequenceTOption(oFee, oChainAssetAmount),
       O.fold(
@@ -172,7 +177,7 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
         }
       )
     )
-  }, [oChainAssetAmount, oFee])
+  }, [oChainAssetAmount, oFee, asset.chain])
 
   const renderFeeError = useMemo(() => {
     if (!isFeeError) return <></>
