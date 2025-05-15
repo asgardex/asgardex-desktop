@@ -32,7 +32,7 @@ import { getEVMAddress, verifyEVMAddress } from './evm/address'
 import { getAddress as getLTCAddress, verifyAddress as verifyLTCAddress } from './litecoin/address'
 import { getAddress as getTHORAddress, verifyAddress as verifyTHORAddress } from './thorchain/address'
 
-const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid')
+const TransportNodeHid = require('@ledgerhq/hw-transport-node-hid').default
 
 const handleEVMChain = (
   chain: Chain,
@@ -96,7 +96,7 @@ export const getAddress = async ({
   hdMode
 }: IPCLedgerAdddressParams): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
-    const transport = await TransportNodeHidSingleton.default.create()
+    const transport = await TransportNodeHid.create()
 
     if (!isSupportedChain(chain) || unsupportedChains.includes(chain)) {
       return E.left({
@@ -131,7 +131,7 @@ export const verifyLedgerAddress = async ({
   walletIndex,
   hdMode
 }: IPCLedgerAdddressParams) => {
-  const transport = await TransportNodeHidSingleton.create()
+  const transport = await TransportNodeHid.create()
   let result = false
 
   if (!isSupportedChain(chain)) throw Error(`${chain} is not supported for 'verifyAddress'`)
