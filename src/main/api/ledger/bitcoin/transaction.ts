@@ -1,4 +1,4 @@
-import * as Transport from '@ledgerhq/hw-transport'
+import type Transport from '@ledgerhq/hw-transport'
 import {
   AddressFormat,
   AssetBTC,
@@ -34,7 +34,7 @@ export const send = async ({
   addressFormat = AddressFormat.P2WPKH,
   apiKey
 }: {
-  transport: Transport.default
+  transport: Transport
   network: Network
   sender?: Address
   recipient: Address
