@@ -1,7 +1,7 @@
-const t = require('@asgardex/asgardex-theme').default
+import { default as t } from '@asgardex/asgardex-theme'
 
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   // https://tailwindcss.com/docs/dark-mode#toggling-dark-mode-manually
   darkMode: 'class',
   content: ['./src/**/*.{ts,tsx}'],

@@ -91,7 +91,8 @@ export default defineConfig(async ({ mode }) => {
           http: path.resolve(__dirname, 'empty.js'),
           zlib: path.resolve(__dirname, 'empty.js'),
           fs: path.resolve(__dirname, 'empty.js')
-        }
+        },
+        extensions: ['.ts', '.js', '.tsx']
       },
       optimizeDeps: {
         include: ['process', 'buffer'],
