@@ -4,7 +4,7 @@
   "version": "1.30.6",
   "description": "WALLET AND EXCHANGE CLIENT FOR THORCHAIN, MAYACHAIN, CHAINFLIP",
   "type": "module",
-  "exports": "build/main/electron.js",
+  "main": "./build/main/electron.js",
   "scripts": {
     "dev": "electron-vite dev",
     "force-rebuild-native-deps": "rimraf ./node_modules/prebuild-install",
