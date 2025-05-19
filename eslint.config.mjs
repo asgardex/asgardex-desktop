@@ -31,8 +31,6 @@ export default [
       '**/npm-debug.log*',
       '**/yarn-debug.log*',
       '**/yarn-error.log*',
-      'public/dev.js',
-      'public/electron.js',
       'src/renderer/types/generated'
     ]
   },
