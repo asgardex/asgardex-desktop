@@ -89,7 +89,6 @@ export default [
         'warn',
         {
           functions: false,
-          classes: false,
           variables: false,
           typedefs: false
         }
