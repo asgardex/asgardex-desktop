@@ -66,7 +66,7 @@ export const NewPhraseGenerate: React.FC<Props> = ({ onSubmit, walletId, walletN
         try {
           setLoading(true)
           onSubmit({ phrase, password, name: name || initialWalletName })
-        } catch (err) {
+        } catch (_err) {
           setLoading(false)
         }
       }

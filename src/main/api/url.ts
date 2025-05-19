@@ -65,7 +65,7 @@ export const openExternal = (target: string) => {
       return shell.openExternal(target)
     }
     return Promise.reject(`URL ${target} has been blocked by ASGARDEX`)
-  } catch (e) {
+  } catch (_e) {
     return Promise.reject(`URL ${target} could not be parsed`)
   }
 }

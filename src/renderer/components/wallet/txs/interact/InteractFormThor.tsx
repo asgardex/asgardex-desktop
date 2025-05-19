@@ -453,7 +453,7 @@ export const InteractFormThor: React.FC<Props> = (props) => {
           setThornameRegister(thornameDetails.name === '')
           setIsOwner(balance.walletAddress === thornameDetails.owner)
         }
-      } catch (error) {
+      } catch (_error) {
         setThornameAvailable(true)
       }
       // setThorname(O.none)

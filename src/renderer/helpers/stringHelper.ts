@@ -12,7 +12,7 @@ export const getPair = (info?: string): Pair => ({
 export const compareShallowStr = (str1: string, str2: string): boolean => {
   try {
     return str1.toLowerCase() === str2.toLowerCase()
-  } catch (error) {
+  } catch (_error) {
     return false
   }
 }
