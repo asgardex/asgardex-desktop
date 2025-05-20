@@ -505,10 +505,21 @@ export const InteractFormMaya = (props: Props) => {
         walletIndex,
         hdMode,
         amount: amountToSend,
-        memo: getMemo()
+        memo: getMemo(),
+        asset
       })
     )
-  }, [subscribeInteractState, interactMaya$, walletType, walletAccount, walletIndex, hdMode, amountToSend, getMemo])
+  }, [
+    subscribeInteractState,
+    interactMaya$,
+    walletType,
+    walletAccount,
+    walletIndex,
+    hdMode,
+    amountToSend,
+    getMemo,
+    asset
+  ])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
 
