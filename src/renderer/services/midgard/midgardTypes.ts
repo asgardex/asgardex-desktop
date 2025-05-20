@@ -21,7 +21,7 @@ import { option as O } from 'fp-ts'
 import { IntlShape } from 'react-intl'
 import * as Rx from 'rxjs'
 
-type NonEmptyArray = nonEmptyArray.NonEmptyArray
+type NonEmptyArray<T> = nonEmptyArray.NonEmptyArray<T>
 
 import { LiveData } from '../../helpers/rx/liveData'
 import { AssetWithAmount, DepositType } from '../../types/asgardex'

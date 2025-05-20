@@ -8,7 +8,7 @@ import { function as FP } from 'fp-ts'
 import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 
-type NonEmptyArray = nonEmptyArray.NonEmptyArray
+type NonEmptyArray<T> = nonEmptyArray.NonEmptyArray<T>
 const { getMonoid } = array
 
 import { KeystoreWallet, KeystoreWallets } from '../../../shared/api/io'

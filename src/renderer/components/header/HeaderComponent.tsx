@@ -22,6 +22,7 @@ import * as walletRoutes from '../../routes/wallet'
 import {
   MidgardStatusRD,
   MidgardUrlRD,
+  PricePool,
   PricePools,
   PriceRD,
   SelectedPricePoolAsset
@@ -130,7 +131,7 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
   const pricePoolAssets = useMemo(() => {
     return FP.pipe(
       oPricePools,
-      O.map(A.map((pool) => pool.asset)),
+      O.map(A.map((pool: PricePool) => pool.asset)),
       O.map((assets) => {
         prevPricePoolAssets.current = assets
         return assets

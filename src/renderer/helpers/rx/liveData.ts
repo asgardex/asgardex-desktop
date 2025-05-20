@@ -7,12 +7,8 @@ import {
   coproductMapLeft
 } from '@devexperts/utils/dist/typeclasses/product-left-coproduct-left/product-left-coproduct-left.utils'
 
-import type { filterable } from 'fp-ts'
-import type { monadThrow } from 'fp-ts'
-
-type Filterable2 = filterable.Filterable2
-type MonadThrow2 = monadThrow.MonadThrow2
-
+import type { filterable as Fi } from 'fp-ts'
+import type { monadThrow as MT } from 'fp-ts'
 import { apply } from 'fp-ts'
 import { array as A } from 'fp-ts'
 import { option as O } from 'fp-ts'
@@ -33,13 +29,13 @@ declare module 'fp-ts/lib/HKT' {
   }
 }
 
-const foldableValueRemoteData: FoldableValue2<typeof RD.remoteData.URI> & MonadThrow2<typeof RD.remoteData.URI> = {
+const foldableValueRemoteData: FoldableValue2<typeof RD.remoteData.URI> & MT.MonadThrow2<typeof RD.remoteData.URI> = {
   ...RD.remoteData,
   foldValue: (fa, onNever, onValue) => (RD.isSuccess(fa) ? onValue(fa.value) : onNever(fa)),
   throwError: RD.failure
 }
 
-export const instanceLiveData: MonadThrow2<URIType> & CoproductLeft<URIType> & Filterable2<URIType> = {
+export const instanceLiveData: MT.MonadThrow2<URIType> & CoproductLeft<URIType> & Fi.Filterable2<URIType> = {
   URI,
   ...getLiveDataM(instanceObservable, foldableValueRemoteData)
 }

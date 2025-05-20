@@ -8,8 +8,8 @@ import { RunHelpers } from 'rxjs/internal/testing/TestScheduler'
 import { TestScheduler } from 'rxjs/testing'
 import { vi } from 'vitest'
 
-type Either = either.Either
-type Option = option.Option
+type Either<T, U> = either.Either<T, U>
+type Option<T> = option.Option<T>
 const { isLeft } = either
 const { isNone } = option
 

@@ -17,7 +17,7 @@ export const sequenceSOption = sequenceS(O.Applicative)
 export const sequenceTRD = sequenceT(RD.remoteData)
 export const sequenceTRDFromArray = A.sequence(RD.remoteData)
 
-type Lazy = F.Lazy
+type Lazy<T> = F.Lazy<T>
 
 /**
  * Creation
