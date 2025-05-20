@@ -153,6 +153,7 @@
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^8.57.1",
     "@rollup/plugin-inject": "^5.0.5",
+    "@rollup/plugin-typescript": "^12.1.2",
     "@storybook/addon-docs": "^8.6.12",
     "@storybook/addon-essentials": "^8.6.12",
     "@storybook/addon-viewport": "^8.6.12",
