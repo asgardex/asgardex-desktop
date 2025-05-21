@@ -25,7 +25,7 @@ import { getChainAsset } from '../../../../helpers/chainHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import { getPoolPriceValue } from '../../../../helpers/poolHelperMaya'
 import { loadingString } from '../../../../helpers/stringHelper'
-import { getCacaoAmountFromBalances } from '../../../../helpers/walletHelper'
+import { getAmountFromBalances } from '../../../../helpers/walletHelper'
 import { calculateMayaValueInUSD, MayaScanPriceRD } from '../../../../hooks/useMayascanPrice'
 import { usePricePool } from '../../../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../../../hooks/usePricePoolMaya'
@@ -149,8 +149,8 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
       return O.some(balance.amount)
     }
     // or check list of other assets to get balance
-    return FP.pipe(getCacaoAmountFromBalances(balances, getChainAsset(asset.chain)), O.map(assetToBase))
-  }, [asset.chain, balance.amount, balances, isChainAsset])
+    return FP.pipe(getAmountFromBalances(balances, balance.walletType, getChainAsset(asset.chain)), O.map(assetToBase))
+  }, [asset.chain, balance.amount, balance.walletType, balances, isChainAsset])
 
   const oChainAssetAmount: O.Option<BaseAmount> = useMemo(() => {
     // return balance of current asset
@@ -158,8 +158,8 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
       return O.some(balance.amount)
     }
     // or check list of other assets to get balance
-    return FP.pipe(getCacaoAmountFromBalances(balances, chainAsset), O.map(assetToBase))
-  }, [balance.amount, balances, chainAsset, isChainAsset])
+    return FP.pipe(getAmountFromBalances(balances, balance.walletType, chainAsset), O.map(assetToBase))
+  }, [balance.amount, balance.walletType, balances, chainAsset, isChainAsset])
 
   const isFeeError = useMemo(() => {
     return FP.pipe(
