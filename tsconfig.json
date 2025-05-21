@@ -13,6 +13,7 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "noEmit": true,
+    "noEmitOnError": true,
     "jsx": "react-jsx",
     "isolatedModules": true,
     "types": ["vitest/globals"]
