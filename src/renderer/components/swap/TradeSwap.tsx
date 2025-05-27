@@ -1899,10 +1899,10 @@ export const TradeSwap = ({
         {/* Note: Input value is shown as AssetAmount */}
         <Row>
           <FlatButton
-            onClick={quoteOnlyButton}
+            className="mb-3 rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld"
             size="small"
             color={quoteOnly ? 'warning' : 'primary'}
-            className="mb-20px  rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
+            onClick={quoteOnlyButton}>
             {quoteOnly ? 'Preview Only' : 'Preview & Swap'}
           </FlatButton>
           {disabledChains.length > 0 ? (

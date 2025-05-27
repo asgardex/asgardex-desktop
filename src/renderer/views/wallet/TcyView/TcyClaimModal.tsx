@@ -41,7 +41,7 @@ export const TcyClaimModal = (props: Props) => {
             enter="ease"
             enterFrom="opacity-0 scale-95"
             enterTo="opacity-100 scale-100"
-            leave="ease-"
+            leave="ease"
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95">
             <Dialog.Panel
