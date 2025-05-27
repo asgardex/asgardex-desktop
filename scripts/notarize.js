@@ -1,5 +1,5 @@
-import 'dotenv/config'
-import { notarize } from '@electron/notarize'
+require('dotenv').config()
+const { notarize } = require('@electron/notarize')
 
 /*
  Pre-requisites: https://github.com/electron/electron-notarize#prerequisites
