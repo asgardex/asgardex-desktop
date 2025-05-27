@@ -12,7 +12,7 @@
     "node_modules/**/*",
     "package.json"
   ],
-  "afterSign": "scripts/notarize.js",
+  "afterSign": "scripts/notarize.mjs",
   "directories": {
     "buildResources": "resources",
     "output": "release"
