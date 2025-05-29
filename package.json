@@ -12,7 +12,7 @@
     "build:dev": "cross-env VITE_NODE_ENV=development CI=false electron-vite build --mode development",
     "test": "vitest --config vite.test.config.ts",
     "package": "yarn build && yarn package:electron",
-    "package:electron": "yarn force-rebuild-native-deps && electron-builder build -c.extraMetadata.main=build/main/electron.js --config .electronbuildrc",
+    "package:electron": "yarn force-rebuild-native-deps && electron-builder build -c.extraMetadata.main=build/main/electron.js --config .electronbuildrc.config.js",
     "package:ci": "yarn postinstall && yarn build && yarn package:electron --publish always",
     "postinstall": "git config blame.ignoreRevsFile .git-blame-ignore-revs && yarn force-rebuild-native-deps && electron-builder install-app-deps",
     "lint": "trunk check --filter=eslint --filter=prettier",
