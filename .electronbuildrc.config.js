@@ -2,7 +2,7 @@ module.exports = {
   appId: 'org.thorchain.asgardex',
   productName: 'ASGARDEX',
   copyright: 'Copyright © 2025 ${author}',
-  artifactName: '${productName}-${version}-${os}${customName}.${ext}',
+
   files: [
     'resources/icon.png',
     'src/renderer/assets/svg/coin-*.svg',
@@ -18,6 +18,7 @@ module.exports = {
     output: 'release'
   },
   mac: {
+    artifactName: '${productName}-${version}-${os}${OS_VERSION_SUFFIX}.${ext}',
     target: ['dmg'],
     category: 'public.app-category.finance',
     hardenedRuntime: true,
@@ -40,6 +41,7 @@ module.exports = {
     ]
   },
   win: {
+    artifactName: '${productName}-${version}-${os}.${ext}',
     target: [
       {
         target: 'nsis',
@@ -48,6 +50,7 @@ module.exports = {
     ]
   },
   linux: {
+    artifactName: '${productName}-${version}-${os}.${ext}',
     category: 'Finance',
     packageCategory: 'wallet',
     target: [

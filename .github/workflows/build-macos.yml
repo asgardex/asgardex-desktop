@@ -75,6 +75,7 @@ jobs:
           VITE_SOL_API_KEY: ${{ secrets.REACT_APP_SOL_API_KEY }}
           OS_NAME: ${{ matrix.os-name }}
           OS_VERSION: ${{ matrix.os-version }}
+          OS_VERSION_SUFFIX: '-${{ matrix.os-version }}-${{ matrix.os-name }}'
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
