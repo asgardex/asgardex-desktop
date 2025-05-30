@@ -2,7 +2,7 @@ import React from 'react'
 
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
-import * as FP from 'fp-ts/function'
+import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { iconSize } from './BaseButton'

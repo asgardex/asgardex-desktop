@@ -1,26 +1,21 @@
-import { FeeBounds, Network, ExplorerProvider } from '@xchainjs/xchain-client'
-import { AssetETH, ETHChain, ETH_GAS_ASSET_DECIMAL, LOWER_FEE_BOUND, UPPER_FEE_BOUND } from '@xchainjs/xchain-ethereum'
+import { Network, ExplorerProvider } from '@xchainjs/xchain-client'
+import { AssetETH, ETHChain, ETH_GAS_ASSET_DECIMAL, UPPER_FEE_BOUND } from '@xchainjs/xchain-ethereum'
 import { EVMClientParams } from '@xchainjs/xchain-evm'
-import { EtherscanProvider } from '@xchainjs/xchain-evm-providers'
+import { EtherscanProviderV2 } from '@xchainjs/xchain-evm-providers'
 import { BigNumber, ethers } from 'ethers'
 
 import { etherscanApiKey } from '../api/etherscan'
 
 export const DEFAULT_APPROVE_GAS_LIMIT_FALLBACK = '65000'
 
-export const FEE_BOUNDS: Record<Network, FeeBounds | undefined> = {
-  /* for main|stagenet use default values defined in ETH.Client */
-  [Network.Mainnet]: undefined,
-  [Network.Stagenet]: undefined,
-  [Network.Testnet]: {
-    lower: 1,
-    upper: 150_000_000_000_000_0000 // 1.5 ETH (in case testnet gas fees are going to be crazy)
-  }
-}
+const LOWER_FEE_BOUND = 1000000
 
-const ETH_MAINNET_ETHERS_PROVIDER = new ethers.providers.EtherscanProvider('homestead', etherscanApiKey)
+const ETH_MAINNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider('https://eth.llamarpc.com', 'homestead')
 const network = ethers.providers.getNetwork('sepolia')
-const ETH_TESTNET_ETHERS_PROVIDER = new ethers.providers.EtherscanProvider(network)
+const ETH_TESTNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider(
+  'https://ethereum-sepolia-rpc.publicnode.com',
+  network
+)
 
 const ethersJSProviders = {
   [Network.Mainnet]: ETH_MAINNET_ETHERS_PROVIDER,
@@ -30,22 +25,24 @@ const ethersJSProviders = {
 // =====Ethers providers=====
 
 // =====ONLINE providers=====
-const ETH_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
+const ETH_ONLINE_PROVIDER_TESTNET = new EtherscanProviderV2(
   ETH_TESTNET_ETHERS_PROVIDER,
-  'https://api-sepolia.etherscan.io/',
+  'https://api.etherscan.io/v2',
   etherscanApiKey,
   ETHChain,
   AssetETH,
-  ETH_GAS_ASSET_DECIMAL
+  ETH_GAS_ASSET_DECIMAL,
+  11155111
 )
 
-const ETH_ONLINE_PROVIDER_MAINNET = new EtherscanProvider(
+const ETH_ONLINE_PROVIDER_MAINNET = new EtherscanProviderV2(
   ETH_MAINNET_ETHERS_PROVIDER,
-  'https://api.etherscan.io/',
+  'https://api.etherscan.io/v2',
   etherscanApiKey,
   ETHChain,
   AssetETH,
-  ETH_GAS_ASSET_DECIMAL
+  ETH_GAS_ASSET_DECIMAL,
+  1
 )
 const ethProviders = {
   [Network.Mainnet]: ETH_ONLINE_PROVIDER_MAINNET,

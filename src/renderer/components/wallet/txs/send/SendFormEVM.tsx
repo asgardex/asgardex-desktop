@@ -22,9 +22,7 @@ import {
 import { Form } from 'antd'
 import { RadioChangeEvent } from 'antd/lib/radio'
 import BigNumber from 'bignumber.js'
-import * as A from 'fp-ts/lib/Array'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { array as A, function as FP, option as O } from 'fp-ts'
 import { FormattedMessage, useIntl } from 'react-intl'
 
 import { TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
@@ -44,19 +42,13 @@ import { MayaScanPriceRD } from '../../../../hooks/useMayascanPrice'
 import { usePricePool } from '../../../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../../../hooks/usePricePoolMaya'
 import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
-import { INITIAL_SAVER_DEPOSIT_STATE, INITIAL_SEND_STATE } from '../../../../services/chain/const'
-import {
-  SaverDepositState,
-  SaverDepositStateHandler,
-  SendTxState,
-  SendTxStateHandler
-} from '../../../../services/chain/types'
+import { INITIAL_DEPOSIT_STATE, INITIAL_SEND_STATE } from '../../../../services/chain/const'
+import { DepositState, DepositStateHandler, SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
 import { FeesRD, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../../../services/clients'
 import { TxParams } from '../../../../services/evm/types'
 import { PoolDetails as PoolDetailsMaya } from '../../../../services/midgard/mayaMigard/types'
 import { PoolAddress, PoolDetails } from '../../../../services/midgard/midgardTypes'
-import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
-import { WalletBalance } from '../../../../services/wallet/types'
+import { SelectedWalletAsset, ValidatePasswordHandler, WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
 import * as StyledR from '../../../shared/form/Radio.styles'
 import { BaseButton, FlatButton } from '../../../uielements/button'
@@ -85,7 +77,7 @@ export type Props = {
   balances: WalletBalances
   balance: WalletBalance
   transfer$: SendTxStateHandler
-  deposit$: SaverDepositStateHandler
+  deposit$: DepositStateHandler
   openExplorerTxUrl: OpenExplorerTxUrl
   getExplorerTxUrl: GetExplorerTxUrl
   fees: FeesRD
@@ -148,7 +140,7 @@ export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
     state: depositState,
     reset: resetDepositState,
     subscribe: subscribeDepositState
-  } = useSubscriptionState<SaverDepositState>(INITIAL_SAVER_DEPOSIT_STATE)
+  } = useSubscriptionState<DepositState>(INITIAL_DEPOSIT_STATE)
 
   const isLoading = useMemo(() => RD.isPending(sendTxState.status), [sendTxState.status])
 

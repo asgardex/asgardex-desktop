@@ -3,7 +3,7 @@ import React, { Fragment, useCallback } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
-import * as FP from 'fp-ts/function'
+import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { BaseButton } from '../../uielements/button'
@@ -47,7 +47,7 @@ export const ConfirmationModal = ({ visible, title, okText, content, onSuccess, 
             enter="ease"
             enterFrom="opacity-0 scale-95"
             enterTo="opacity-100 scale-100"
-            leave="ease-"
+            leave="ease"
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95">
             <Dialog.Panel

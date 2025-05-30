@@ -6,7 +6,7 @@ import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, baseAmount, baseToAsset, Chain, formatAssetAmountCurrency, formatBN } from '@xchainjs/xchain-util'
 import { Grid, Row } from 'antd'
 import { ColumnsType, ColumnType } from 'antd/lib/table'
-import * as FP from 'fp-ts/lib/function'
+import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import * as PoolHelpers from '../../helpers/poolHelper'

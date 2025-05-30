@@ -13,9 +13,11 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "noEmit": true,
+    "noEmitOnError": true,
     "jsx": "react-jsx",
-    "isolatedModules": true
+    "isolatedModules": true,
+    "types": ["vitest/globals"]
   },
-  "include": ["src/shared", "src/renderer", "src/setupTests.ts", "./jest-setup.ts"],
+  "include": ["src/shared", "src/renderer", "src/setupTests.ts", "./jest-setup.ts", "src/vite-env.d.ts"],
   "exclude": ["src/main/"]
 }

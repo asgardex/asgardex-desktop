@@ -1,7 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Address, AnyAsset } from '@xchainjs/xchain-util'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { function as FP, option as O } from 'fp-ts'
 import { IntlShape } from 'react-intl'
 
 import { TrustedAddress } from '../../../../shared/api/types'

@@ -2,22 +2,16 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AssetAVAX, AVAX_GAS_ASSET_DECIMAL, AVAXChain } from '@xchainjs/xchain-avax'
 import { AssetBETH, BASE_GAS_ASSET_DECIMAL, BASEChain } from '@xchainjs/xchain-base'
-import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
-import { BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
-import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { BTC_DECIMAL, BTCChain } from '@xchainjs/xchain-bitcoin'
+import { BCH_DECIMAL, BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC, BSC_GAS_ASSET_DECIMAL, BSCChain } from '@xchainjs/xchain-bsc'
 import { ADAChain } from '@xchainjs/xchain-cardano'
-import { COSMOS_DECIMAL } from '@xchainjs/xchain-cosmos'
-import { GAIAChain } from '@xchainjs/xchain-cosmos'
+import { COSMOS_DECIMAL, GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
-import { DOGE_DECIMAL } from '@xchainjs/xchain-doge'
-import { DOGEChain } from '@xchainjs/xchain-doge'
-import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
-import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { DOGE_DECIMAL, DOGEChain } from '@xchainjs/xchain-doge'
+import { ETH_GAS_ASSET_DECIMAL, ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
-import { LTC_DECIMAL } from '@xchainjs/xchain-litecoin'
-import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { LTC_DECIMAL, LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { RadixChain } from '@xchainjs/xchain-radix'
@@ -33,14 +27,10 @@ import {
   bn,
   BaseAmount,
   Address,
-  AnyAsset
+  AnyAsset,
+  Chain
 } from '@xchainjs/xchain-util'
-import { Chain } from '@xchainjs/xchain-util'
-import * as A from 'fp-ts/lib/Array'
-import * as FP from 'fp-ts/lib/function'
-import * as NEA from 'fp-ts/lib/NonEmptyArray'
-import * as O from 'fp-ts/lib/Option'
-import * as P from 'fp-ts/lib/Predicate'
+import { array as A, function as FP, nonEmptyArray as NEA, option as O, predicate as P } from 'fp-ts'
 
 import { AssetATOM, AssetBCH, AssetBTC, AssetDOGE, AssetETH, AssetLTC } from '../../../../shared/utils/asset'
 import { isSupportedChain } from '../../../../shared/utils/chain'
@@ -143,7 +133,7 @@ export const pricePoolSelector = (pools: PricePools, oAsset: O.Option<PricePoolA
     O.chainNullableK((asset) => pools.find((pool) => eqAsset.equals(pool.asset, asset))),
     // (2) If (1) fails, check if USD pool is available in `PricePools`
     O.fold(() => O.fromNullable(pools.find((pool) => isUSDAsset(pool.asset))), O.some),
-    // (3) If (2) failes, return RUNE pool, which is always first entry in pools list
+    // (3) If (2) fails, return RUNE pool, which is always first entry in pools list
     O.getOrElse(() => NEA.head(pools))
   )
 
@@ -267,34 +257,34 @@ export const getOutboundAssetFeeByChain = (
           })
         case ETHChain: {
           return O.some({
-            // Convertion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
+            // Conversion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
             amount: convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), ETH_GAS_ASSET_DECIMAL),
             asset: AssetETH
           })
         }
         case AVAXChain: {
           return O.some({
-            // Convertion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
+            // Conversion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
             amount: convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), AVAX_GAS_ASSET_DECIMAL),
             asset: AssetAVAX
           })
         }
         case BASEChain: {
           return O.some({
-            // Convertion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
+            // Conversion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
             amount: convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), BASE_GAS_ASSET_DECIMAL),
             asset: AssetBETH
           })
         }
         case BSCChain: {
           return O.some({
-            // Convertion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
+            // Conversion of decimal needed: 1e8 (by default in THORChain) -> 1e18 (ETH)
             amount: convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), BSC_GAS_ASSET_DECIMAL),
             asset: AssetBSC
           })
         }
         case GAIAChain: {
-          // Convertion of decimal needed: 1e8 (by default in THORChain) -> 1e6 (COSMOS)
+          // Conversion of decimal needed: 1e8 (by default in THORChain) -> 1e6 (COSMOS)
           const amount = convertBaseAmountDecimal(baseAmount(value, THORCHAIN_DECIMAL), COSMOS_DECIMAL)
           return O.some({
             amount,

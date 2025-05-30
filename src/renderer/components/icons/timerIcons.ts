@@ -1,3 +1,3 @@
-import { ReactComponent as RefundIcon } from '../../assets/timer/refund.svg'
+import RefundIcon from '../../assets/timer/refund.svg?react'
 
 export { RefundIcon }

@@ -9,9 +9,9 @@ import pools from './pools'
 import poolShares from './poolshares'
 import routes from './routes'
 import runePool from './runePool'
-import savers from './savers'
 import settings from './settings'
 import swap from './swap'
+import tcy from './tcy'
 import update from './update'
 import wallet from './wallet'
 
@@ -22,8 +22,8 @@ export default {
   ...wallet,
   ...settings,
   ...swap,
+  ...tcy,
   ...deposit,
-  ...savers,
   ...runePool,
   ...midgard,
   ...ledger,

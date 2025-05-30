@@ -1,10 +1,18 @@
 {
   "appId": "org.thorchain.asgardex",
   "productName": "ASGARDEX",
-  "copyright": "Copyright © 2024 ${author}",
-  "artifactName": "${productName}-${version}-${os}.${ext}",
-  "files": ["resources/icon.png", "src/renderer/assets/svg/coin-*.svg"],
-  "afterSign": "scripts/notarize.js",
+  "copyright": "Copyright © 2025 ${author}",
+  "artifactName": "${productName}-${version}-${os}${osVersion && osName ? '-' + osVersion + '-' + osName : ''}.${ext}",
+  "files": [
+    "resources/icon.png",
+    "src/renderer/assets/svg/coin-*.svg",
+    "build/main/**/*",
+    "build/renderer/**/*",
+    "build/preload/**/*",
+    "node_modules/**/*",
+    "package.json"
+  ],
+  "afterSign": "scripts/notarize.mjs",
   "directories": {
     "buildResources": "resources",
     "output": "release"

@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 
 import { MOCK_WALLET_ADDRESSES } from '../../../shared/mock/wallet'
 import { AccountAddressSelector as Component } from './AccountAddressSelector'

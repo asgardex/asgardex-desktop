@@ -15,7 +15,7 @@ export const Dot = styled.div`
   background: ${palette('gray', 1)};
 `
 
-export const Line = styled.div<{ size: Number }>`
+export const Line = styled.div<{ size: number }>`
   width: 5px;
   ${({ size }) => `height: ${size}px;`};
   border-right: 1px solid ${palette('gray', 1)};

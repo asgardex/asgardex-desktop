@@ -1,10 +1,9 @@
-import * as AIcons from '@ant-design/icons/lib'
+import { ArrowUpIcon } from '@heroicons/react/24/outline' // Import Heroicon
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
 import { AssetIcon as AssetIconUI } from '../uielements/assets/assetIcon'
-import { ManageButton as ManageButtonUI } from '../uielements/button'
-import { Button as UIButton } from '../uielements/button'
+import { ManageButton as ManageButtonUI, Button as UIButton } from '../uielements/button'
 import { Label as UILabel } from '../uielements/label'
 import { Table as UITable } from '../uielements/table'
 
@@ -85,9 +84,11 @@ export const ManageButton = styled(ManageButtonUI)`
   }
 `
 
-export const InfoArrow = styled(AIcons.ArrowUpOutlined)`
+export const InfoArrow = styled(ArrowUpIcon)`
   transform: rotateZ(45deg);
-  color: ${palette('primary', 2)};
+  stroke: ${palette('primary', 2)}; /* Heroicons use stroke for outline */
+  width: 16px; /* Match Ant Design's default size */
+  height: 16px;
 `
 
 export const TextLabel = styled(UILabel).attrs({ textTransform: 'uppercase' })`

@@ -1,9 +1,9 @@
-import Transport from '@ledgerhq/hw-transport'
+import * as Transport from '@ledgerhq/hw-transport'
 import { FeeRate, Network, TxHash } from '@xchainjs/xchain-client'
 import { AssetDOGE, BitgoProviders, ClientLedger, DOGEChain } from '@xchainjs/xchain-doge'
 import { Address, BaseAmount } from '@xchainjs/xchain-util'
 import { BlockcypherNetwork, BlockcypherProvider, UtxoOnlineDataProviders } from '@xchainjs/xchain-utxo-providers'
-import * as E from 'fp-ts/lib/Either'
+import { either as E } from 'fp-ts'
 
 import { blockcypherUrl } from '../../../../shared/api/blockcypher'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
@@ -25,7 +25,7 @@ export const send = async ({
   walletIndex,
   apiKey
 }: {
-  transport: Transport
+  transport: Transport.default
   network: Network
   sender?: Address
   recipient: Address

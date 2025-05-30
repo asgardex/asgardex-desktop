@@ -3,7 +3,7 @@ import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { assetAmount, assetToBase, baseAmount } from '@xchainjs/xchain-util'
-import * as O from 'fp-ts/Option'
+import { option as O } from 'fp-ts'
 
 import { AssetBTC, AssetETH, AssetBSC } from '../../../../shared/utils/asset'
 import { AssetUSDCBSC, AssetUSDTBSC, AssetUSDTERC20 } from '../../../const'

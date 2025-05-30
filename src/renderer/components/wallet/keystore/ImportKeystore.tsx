@@ -1,11 +1,11 @@
 import React, { useCallback, useMemo } from 'react'
 
-import { CheckCircleTwoTone, UploadOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
+import { CheckCircleIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline'
 import { Keystore } from '@xchainjs/xchain-crypto'
 import { Form } from 'antd'
 import { Store } from 'antd/lib/form/interface'
-import * as FP from 'fp-ts/lib/function'
+import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 /* css import is needed to override antd */
@@ -130,7 +130,7 @@ export const ImportKeystore: React.FC<Props> = (props): JSX.Element => {
             </Label>
             {/* import button */}
             <BorderButton className="mb-30px cursor-pointer !rounded-none" size="normal" onClick={uploadKeystore}>
-              {RD.isSuccess(loadKeystoreState) ? <CheckCircleTwoTone twoToneColor="#50e3c2" /> : <UploadOutlined />}
+              {RD.isSuccess(loadKeystoreState) ? <CheckCircleIcon color="#50e3c2" /> : <ArrowUpTrayIcon />}
               <span className="ml-10px">{intl.formatMessage({ id: 'wallet.imports.keystore.select' })}</span>
             </BorderButton>
             {renderLoadError}

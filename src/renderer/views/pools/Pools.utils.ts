@@ -12,9 +12,7 @@ import {
   baseToAsset,
   AnyAsset
 } from '@xchainjs/xchain-util'
-import * as A from 'fp-ts/Array'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { array as A, function as FP, option as O } from 'fp-ts'
 
 import { PoolsWatchList } from '../../../shared/api/io'
 import { ONE_RUNE_BASE_AMOUNT } from '../../../shared/mock/amount'

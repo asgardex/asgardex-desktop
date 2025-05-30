@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react'
 
-import { DeleteOutlined, RedoOutlined } from '@ant-design/icons'
+import { TrashIcon as DeleteOutlined, ArrowUturnRightIcon as RedoOutlined } from '@heroicons/react/24/outline'
 import { Form } from 'antd'
 import shuffleArray from 'lodash.shuffle'
 import { useIntl } from 'react-intl'

@@ -1,7 +1,7 @@
 import type Transport from '@ledgerhq/hw-transport'
 import { Network } from '@xchainjs/xchain-client'
 import { ClientLedger, LTCChain, defaultLtcParams } from '@xchainjs/xchain-litecoin'
-import * as E from 'fp-ts/Either'
+import { either as E } from 'fp-ts'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'

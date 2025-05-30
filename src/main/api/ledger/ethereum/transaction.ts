@@ -1,15 +1,15 @@
 import type Transport from '@ledgerhq/hw-transport'
 import { FeeOption, Network, Protocol, TxHash } from '@xchainjs/xchain-client'
-import { defaultEthParams } from '@xchainjs/xchain-ethereum'
 import * as ETH from '@xchainjs/xchain-evm'
 import { Address, AnyAsset, Asset, assetToString, baseAmount, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { ethers } from 'ethers'
-import * as E from 'fp-ts/Either'
+import { either as E } from 'fp-ts'
 
 import { isEthAsset } from '../../../../renderer/helpers/assetHelper'
 import { EVMZeroAddress } from '../../../../renderer/services/evm/const'
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
+import { defaultEthParams } from '../../../../shared/ethereum/const'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { getBlocktime } from '../../../../shared/evm/provider'
 import { EvmHDMode } from '../../../../shared/evm/types'
@@ -55,14 +55,14 @@ export const send = async ({
     const ledgerClient = new ETH.ClientLedger({
       ...defaultEthParams,
       providers: {
-        mainnet: new ethers.providers.EtherscanProvider('homestead', apiKey),
+        mainnet: new ethers.providers.JsonRpcProvider('https://eth.llamarpc.com', 'homestead'),
         testnet: ETH_TESTNET_ETHERS_PROVIDER,
         stagenet: ETH_MAINNET_ETHERS_PROVIDER
       },
       dataProviders: [ethProviders],
       signer: new ETH.LedgerSigner({
         transport,
-        provider: new ethers.providers.EtherscanProvider('homestead', apiKey),
+        provider: new ethers.providers.JsonRpcProvider('https://eth.llamarpc.com', 'homestead'),
         derivationPath: getDerivationPath(walletAccount, evmHDMode)
       }),
       rootDerivationPaths: getDerivationPaths(walletAccount, evmHDMode),

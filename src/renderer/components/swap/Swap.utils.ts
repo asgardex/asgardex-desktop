@@ -1,8 +1,5 @@
 import { AnyAsset, BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
-import * as A from 'fp-ts/Array'
-import * as E from 'fp-ts/Either'
-import * as FP from 'fp-ts/function'
-import * as O from 'fp-ts/Option'
+import { array as A, either as E, function as FP, option as O } from 'fp-ts'
 
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { isChainAsset, isUtxoAssetChain, max1e8BaseAmount } from '../../helpers/assetHelper'
@@ -39,7 +36,7 @@ export const calcRefundFee = (inboundFee: BaseAmount): BaseAmount => inboundFee.
 /**
  * Helper to get min. amount to swap
  *
- * It checks fees for happy path (successfull swap) or unhappy path (failed swap)
+ * It checks fees for happy path (successful swap) or unhappy path (failed swap)
  *
  * Formulas based on "Better Fees Handling #1381"
  * @see https://github.com/thorchain/asgardex-electron/issues/1381

@@ -1,4 +1,4 @@
-import * as A from 'fp-ts/lib/Array'
+import { array as A } from 'fp-ts'
 
 import { eqAsset, eqChain } from './eq'
 

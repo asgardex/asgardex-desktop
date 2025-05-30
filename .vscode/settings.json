@@ -1,11 +1,8 @@
 {
   "files.associations": {
     ".electronbuildrc": "jsonc",
-    ".eslintrc": "jsonc",
     ".prettierrc": "jsonc",
     ".stylelintrc": "json",
-    ".huskyrc": "json",
-    ".lintstagedrc": "json"
   },
   "typescript.tsdk": "./node_modules/typescript/lib",
   "editor.codeActionsOnSave": {
@@ -24,6 +21,5 @@
     "editor.formatOnSave": false
   },
   "javascript.updateImportsOnFileMove.enabled": "always",
-  "eslint.nodePath": "./node_modules/react-scripts/node_modules/",
   "eslint.enable": true
 }

@@ -1,10 +1,9 @@
-import path from 'path'
-
 import { ipcMain } from 'electron'
 import * as fs from 'fs-extra'
 
 import { StorageVersion, StoreFileName } from '../../shared/api/types'
 import { getStoreFilesIPCMessages } from '../../shared/ipc/fileStore'
+import { buildJsonFilePath } from '../utils/file'
 import { STORAGE_DIR } from './const'
 
 // If `fullFilePathname' does not exist, `fs.remove` silently does nothing.
@@ -15,7 +14,7 @@ const isFileExist = async (path: string) => fs.pathExists(path)
 
 // full file path - it includes a version number, so we can ignore deprecated config files (if needed)
 const getFilePath = (fileStoreName: StoreFileName, version: string) =>
-  path.join(STORAGE_DIR, `${fileStoreName}-${version}.json`)
+  buildJsonFilePath(STORAGE_DIR, fileStoreName, version)
 
 /**
  * @returns

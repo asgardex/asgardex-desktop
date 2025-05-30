@@ -4,8 +4,6 @@ import { assetWithDecimal$ } from './decimal'
 import {
   reloadSymDepositFees,
   symDepositFees$,
-  reloadSaverDepositFee,
-  saverDepositFee$,
   symWithdrawFee$,
   reloadWithdrawFees,
   reloadSwapFees,
@@ -16,10 +14,10 @@ import {
 import {
   swap$,
   swapCF$,
-  saverDeposit$,
+  poolDeposit$,
   symDeposit$,
   symWithdraw$,
-  saverWithdraw$,
+  poolWithdraw$,
   transfer$,
   tradeWithdraw$
 } from './transaction'
@@ -32,8 +30,6 @@ export {
   clientByChain$,
   reloadSymDepositFees,
   symDepositFees$,
-  reloadSaverDepositFee,
-  saverDepositFee$,
   symWithdrawFee$,
   reloadWithdrawFees,
   reloadSwapFees,
@@ -41,10 +37,10 @@ export {
   assetAddress$,
   swap$,
   swapCF$,
-  saverDeposit$,
+  poolDeposit$,
   symDeposit$,
   symWithdraw$,
-  saverWithdraw$,
+  poolWithdraw$,
   tradeWithdraw$,
   transfer$,
   assetWithDecimal$,

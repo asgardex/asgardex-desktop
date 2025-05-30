@@ -1,8 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
-import { Address, AnyAsset } from '@xchainjs/xchain-util'
-import { formatAssetAmountCurrency, baseToAsset, assetToString } from '@xchainjs/xchain-util'
+import { Address, AnyAsset, formatAssetAmountCurrency, baseToAsset, assetToString } from '@xchainjs/xchain-util'
 import { Dropdown, Row, Col } from 'antd'
 import { useIntl } from 'react-intl'
 

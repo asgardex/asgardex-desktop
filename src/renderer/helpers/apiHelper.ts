@@ -1,4 +1,4 @@
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 
 /**
  * Helper to get `hostname` from url

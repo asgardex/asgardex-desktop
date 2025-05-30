@@ -3,8 +3,10 @@ import React, { RefObject, useCallback, useMemo, useRef } from 'react'
 import { AssetCacao, CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { THORCHAIN_DECIMAL } from '@xchainjs/xchain-thorchain-query'
-import { Address, AnyAsset, Chain } from '@xchainjs/xchain-util'
 import {
+  Address,
+  AnyAsset,
+  Chain,
   formatBN,
   BaseAmount,
   baseToAsset,
@@ -14,8 +16,7 @@ import {
 } from '@xchainjs/xchain-util'
 import { Col } from 'antd'
 import BigNumber from 'bignumber.js'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { AssetWithDecimal } from '../../../types/asgardex'

@@ -1,4 +1,4 @@
-import { SyncOutlined } from '@ant-design/icons'
+import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import { Meta, StoryObj } from '@storybook/react'
 
 import { Button } from '../../uielements/button'
@@ -8,7 +8,7 @@ import { WarningView as Component, Props } from './WarningView'
 // if it needs to be dynamically added based on story args.
 const ActionButton = () => (
   <Button onClick={() => console.log('action')} typevalue="outline">
-    <SyncOutlined />
+    <ArrowPathIcon />
     Action Button
   </Button>
 )

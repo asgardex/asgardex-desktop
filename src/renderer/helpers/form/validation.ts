@@ -1,7 +1,6 @@
 import { isValidBN } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
-import * as E from 'fp-ts/Either'
-import * as FP from 'fp-ts/lib/function'
+import { either as E, function as FP } from 'fp-ts'
 
 export const validateBN =
   (errorMsg: string) =>

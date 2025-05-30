@@ -3,11 +3,9 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { Squares2X2Icon, ChartPieIcon } from '@heroicons/react/24/outline'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { PoolDetails } from '@xchainjs/xchain-midgard'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import {
   assetAmount,
-  assetFromStringEx,
   assetToBase,
   baseAmount,
   BaseAmount,
@@ -16,9 +14,7 @@ import {
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
-import * as FP from 'fp-ts/function'
-import * as A from 'fp-ts/lib/Array'
-import * as O from 'fp-ts/Option'
+import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
@@ -33,14 +29,12 @@ import { AssetUSDC, DEFAULT_WALLET_TYPE } from '../../../const'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { isUSDAsset } from '../../../helpers/assetHelper'
-import { sequenceTRD } from '../../../helpers/fpHelpers'
 import { getCurrencyFormat } from '../../../helpers/numberHelper'
 import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
 import { hiddenString } from '../../../helpers/stringHelper'
 import { filterWalletBalancesByAssets } from '../../../helpers/walletHelper'
 import { useRunePoolProviders } from '../../../hooks/useAllRunePoolProviders'
-import { useAllSaverProviders } from '../../../hooks/useAllSaverProviders'
 import { useObserveMayaScanPrice } from '../../../hooks/useMayascanPrice'
 import { useThorNodeInfos } from '../../../hooks/useNodeInfos'
 import { useMayaNodeInfos } from '../../../hooks/useNodeInfosMaya'
@@ -62,7 +56,6 @@ import { BaseAmountRD } from '../../../types'
 import { WalletAddressInfo } from '../../bonds/types'
 import { getValueOfRuneInAsset } from '../../pools/Pools.utils'
 import * as H from '../../wallet/PoolShareView.helper'
-import { getSaversTotal } from '../../wallet/SaversTableView.helper'
 import * as Styled from './PortfolioView.style'
 import { PortfolioTabKey } from './utils'
 
@@ -117,7 +110,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
 
   const {
     service: {
-      pools: { allPoolDetails$: allPoolDetailsThor$, poolsState$, selectedPricePool$: selectedPricePoolThor$ }
+      pools: { allPoolDetails$: allPoolDetailsThor$, selectedPricePool$: selectedPricePoolThor$ }
     }
   } = useMidgardContext()
 
@@ -126,8 +119,6 @@ export const PortfolioView: React.FC = (): JSX.Element => {
       pools: { allPoolDetails$: allPoolDetailsMaya$, selectedPricePool$: selectedPricePoolMaya$ }
     }
   } = useMidgardMayaContext()
-
-  const poolsStateRD = useObservableState(poolsState$, RD.initial)
 
   // State for selected price pools
   const [selectedPricePoolThor] = useObservableState(() => selectedPricePoolThor$, RUNE_PRICE_POOL)
@@ -152,32 +143,6 @@ export const PortfolioView: React.FC = (): JSX.Element => {
     balancesByChain: {},
     errorsByChain: {}
   })
-
-  const poolSavers = useMemo(
-    () =>
-      FP.pipe(
-        sequenceTRD(poolsStateRD),
-        RD.fold(
-          () => null,
-          () => null,
-          (error) => {
-            console.error('An error occurred:', error)
-            return null
-          },
-          ([poolsState]) => {
-            const poolDetailsFiltered: PoolDetails = FP.pipe(
-              poolsState.poolDetails,
-              A.filter(({ saversDepth }) => Number(saversDepth) > 0)
-            )
-            return poolDetailsFiltered // replace this with what you actually want to return
-          }
-        )
-      ),
-    [poolsStateRD]
-  )
-  const poolAsset = useMemo(() => {
-    return poolSavers ? poolSavers.map((detail) => assetFromStringEx(detail.asset)) : []
-  }, [poolSavers])
 
   const { balances: oWalletBalances } = balancesState
   const allBalances: WalletBalances = useMemo(() => {
@@ -330,7 +295,6 @@ export const PortfolioView: React.FC = (): JSX.Element => {
 
   const { allSharesRD: allThorSharesRD } = usePoolShares(THORChain)
   const { allSharesRD: allMayaSharesRD } = usePoolShares(MAYAChain)
-  const { allSaverProviders } = useAllSaverProviders(poolAsset)
 
   const renderSharesTotal = useMemo((): string => {
     const sharesThorTotalRD: BaseAmountRD = FP.pipe(
@@ -434,35 +398,6 @@ export const PortfolioView: React.FC = (): JSX.Element => {
     )
   }, [allRunePoolProviders, intl, selectedPricePoolThor.asset])
 
-  const renderSaversTotal = useMemo(() => {
-    const allSaverProvidersRD = RD.success(allSaverProviders)
-    const saversTotalRD: BaseAmountRD = FP.pipe(
-      RD.combine(allSaverProvidersRD, poolDetailsThorRD),
-      RD.map(([allSaverProviders, poolDetails]) =>
-        getSaversTotal(allSaverProviders, poolDetails, selectedPricePoolThor)
-      )
-    )
-
-    return FP.pipe(
-      saversTotalRD,
-      RD.fold(
-        // Initial loading state
-        () => '',
-        // Pending state
-        () => '',
-        // Error state
-        (error) => intl.formatMessage({ id: 'common.error.api.limit' }, { errorMsg: error.message }),
-        // Success state
-        (total) =>
-          formatAssetAmountCurrency({
-            amount: baseToAsset(total),
-            asset: selectedPricePoolThor.asset,
-            decimal: isUSDAsset(selectedPricePoolThor.asset) ? 2 : 4
-          })
-      )
-    )
-  }, [allSaverProviders, poolDetailsThorRD, selectedPricePoolThor, intl])
-
   const totalBalanceDisplay = useMemo(() => {
     const chainValues = Object.entries(balancesByChain).map(([_, balance]) => baseToAsset(balance).amount().toNumber())
     const total = chainValues.reduce((acc, value) => acc + value, 0)
@@ -477,7 +412,7 @@ export const PortfolioView: React.FC = (): JSX.Element => {
     return formattedTotal
   }, [balancesByChain])
 
-  const calculatedTotal = [totalBalanceDisplay, renderSharesTotal, renderSaversTotal, renderBondTotal]
+  const calculatedTotal = [totalBalanceDisplay, renderSharesTotal, renderBondTotal]
     .map((amount) => parseFloat(amount.replace(/[^0-9.-]+/g, '')))
     .reduce((acc, num) => (!isNaN(num) ? acc + num : acc), 0)
 
@@ -511,16 +446,15 @@ export const PortfolioView: React.FC = (): JSX.Element => {
         amount: renderSharesTotal,
         action: 'Manage'
       },
-      { key: '3', title: intl.formatMessage({ id: 'wallet.nav.savers' }), amount: renderSaversTotal, action: 'Manage' },
       {
-        key: '4',
+        key: '3',
         title: intl.formatMessage({ id: 'deposit.interact.actions.runePool' }),
         amount: renderRunePoolTotal,
         action: 'Manage'
       },
-      { key: '5', title: intl.formatMessage({ id: 'wallet.nav.bonds' }), amount: renderBondTotal, action: 'Manage' }
+      { key: '4', title: intl.formatMessage({ id: 'wallet.nav.bonds' }), amount: renderBondTotal, action: 'Manage' }
     ],
-    [totalBalanceDisplay, renderSharesTotal, renderSaversTotal, renderBondTotal, renderRunePoolTotal, intl]
+    [totalBalanceDisplay, renderSharesTotal, renderBondTotal, renderRunePoolTotal, intl]
   )
 
   const cardItemInfo = useMemo(
@@ -536,11 +470,6 @@ export const PortfolioView: React.FC = (): JSX.Element => {
         route: walletRoutes.poolShares.path()
       },
       {
-        title: intl.formatMessage({ id: 'wallet.nav.savers' }),
-        value: renderSaversTotal,
-        route: walletRoutes.savers.path()
-      },
-      {
         title: intl.formatMessage({ id: 'deposit.interact.actions.runePool' }),
         value: renderRunePoolTotal,
         route: walletRoutes.runepool.path()
@@ -551,12 +480,13 @@ export const PortfolioView: React.FC = (): JSX.Element => {
         route: walletRoutes.bonds.path()
       }
     ],
-    [intl, totalBalanceDisplay, renderSharesTotal, renderSaversTotal, renderBondTotal, renderRunePoolTotal]
+    [intl, totalBalanceDisplay, renderSharesTotal, renderBondTotal, renderRunePoolTotal]
   )
 
   const chartData = useMemo(() => {
     return portfolioDatasource.map(({ title, amount }) => {
-      const value = amount.trim() ? parseFloat(amount.replace('$', '').replace(',', '').trim()) : 0
+      const sanitized = amount.trim().replace(/[$,]/g, '') // remove all '$' and ',' characters
+      const value = sanitized ? parseFloat(sanitized) : 0
       return {
         name: title,
         value: parseFloat(value.toFixed(value < 1 ? 2 : 0))

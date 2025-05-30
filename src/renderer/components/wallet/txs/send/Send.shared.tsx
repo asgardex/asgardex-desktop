@@ -1,12 +1,11 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { AnyAsset, BaseAmount } from '@xchainjs/xchain-util'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { function as FP, option as O } from 'fp-ts'
 import { IntlShape } from 'react-intl'
 
 import { isEvmChain } from '../../../../helpers/evmHelper'
-import { SaverDepositState, SendTxState } from '../../../../services/chain/types'
+import { DepositState, SendTxState } from '../../../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../services/clients'
 import { TxModal } from '../../../modal/tx'
 import { SendAsset } from '../../../modal/tx/extra/SendAsset'
@@ -85,7 +84,7 @@ export const renderDepositModal = ({
   asset: AnyAsset
   amountToSend: BaseAmount
   network: Network
-  depositState: SaverDepositState
+  depositState: DepositState
   resetDepositState: FP.Lazy<void>
   sendTxStartTime: number
   openExplorerTxUrl: OpenExplorerTxUrl

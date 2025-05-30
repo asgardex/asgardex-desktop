@@ -2,8 +2,7 @@ import React, { useCallback } from 'react'
 
 import { Popover } from '@headlessui/react'
 import { Cog8ToothIcon } from '@heroicons/react/20/solid'
-import * as A from 'fp-ts/lib/Array'
-import * as FP from 'fp-ts/lib/function'
+import { array as A, function as FP } from 'fp-ts'
 
 import { ChangeSlipToleranceHandler } from '../../services/app/types'
 import { SlipTolerance } from '../../types/asgardex'

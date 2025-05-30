@@ -1,8 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { Configuration, MidgardApi } from '@xchainjs/xchain-midgard'
-import * as FP from 'fp-ts/function'
-import * as O from 'fp-ts/Option'
+import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -60,7 +59,7 @@ const getMidgardUrl = (): ApiUrls =>
   )
 
 /**
- * Updates Midgard url and stores it persistantly
+ * Updates Midgard url and stores it persistently
  */
 const setMidgardUrl = (url: string, network: Network) => {
   const midgardUrls = { ...getMidgardUrl(), [network]: url }

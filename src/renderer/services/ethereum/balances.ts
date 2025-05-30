@@ -2,7 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { TokenAsset } from '@xchainjs/xchain-util'
-import * as FP from 'fp-ts/lib/function'
+import { function as FP } from 'fp-ts'
 import { of } from 'rxjs'
 import { switchMap } from 'rxjs/operators'
 

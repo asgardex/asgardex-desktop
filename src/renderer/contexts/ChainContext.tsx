@@ -5,8 +5,6 @@ import {
   clientByChain$,
   symDepositFees$,
   reloadSymDepositFees,
-  saverDepositFee$,
-  reloadSaverDepositFee,
   symWithdrawFee$,
   reloadWithdrawFees,
   reloadSwapFees,
@@ -14,10 +12,10 @@ import {
   assetAddress$,
   swap$,
   swapCF$,
-  saverDeposit$,
+  poolDeposit$,
   symDeposit$,
   symWithdraw$,
-  saverWithdraw$,
+  poolWithdraw$,
   tradeWithdraw$,
   transfer$,
   assetWithDecimal$,
@@ -30,8 +28,6 @@ type ChainContextValue = {
   clientByChain$: typeof clientByChain$
   symDepositFees$: typeof symDepositFees$
   reloadSymDepositFees: typeof reloadSymDepositFees
-  saverDepositFee$: typeof saverDepositFee$
-  reloadSaverDepositFee: typeof reloadSaverDepositFee
   symWithdrawFee$: typeof symWithdrawFee$
   reloadWithdrawFees: typeof reloadWithdrawFees
   reloadSwapFees: typeof reloadSwapFees
@@ -39,10 +35,10 @@ type ChainContextValue = {
   assetAddress$: typeof assetAddress$
   swap$: typeof swap$
   swapCF$: typeof swapCF$
-  saverDeposit$: typeof saverDeposit$
+  poolDeposit$: typeof poolDeposit$
   symDeposit$: typeof symDeposit$
   symWithdraw$: typeof symWithdraw$
-  saverWithdraw$: typeof saverWithdraw$
+  poolWithdraw$: typeof poolWithdraw$
   tradeWithdraw$: typeof tradeWithdraw$
   transfer$: typeof transfer$
   assetWithDecimal$: typeof assetWithDecimal$
@@ -55,8 +51,6 @@ const initialContext: ChainContextValue = {
   clientByChain$,
   symDepositFees$,
   reloadSymDepositFees,
-  saverDepositFee$,
-  reloadSaverDepositFee,
   symWithdrawFee$,
   reloadWithdrawFees,
   reloadSwapFees,
@@ -64,10 +58,10 @@ const initialContext: ChainContextValue = {
   assetAddress$,
   swap$,
   swapCF$,
-  saverDeposit$,
+  poolDeposit$,
   symDeposit$,
   symWithdraw$,
-  saverWithdraw$,
+  poolWithdraw$,
   tradeWithdraw$,
   transfer$,
   assetWithDecimal$,

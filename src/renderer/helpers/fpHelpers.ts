@@ -1,8 +1,8 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Lazy } from 'fp-ts/function'
-import { sequenceS, sequenceT } from 'fp-ts/lib/Apply'
-import * as A from 'fp-ts/lib/Array'
-import * as O from 'fp-ts/lib/Option'
+import type { function as F } from 'fp-ts'
+import { apply, array as A, option as O } from 'fp-ts'
+
+const { sequenceS, sequenceT } = apply
 
 /**
  * Sequence
@@ -14,6 +14,8 @@ export const sequenceSOption = sequenceS(O.Applicative)
 
 export const sequenceTRD = sequenceT(RD.remoteData)
 export const sequenceTRDFromArray = A.sequence(RD.remoteData)
+
+type Lazy<T> = F.Lazy<T>
 
 /**
  * Creation

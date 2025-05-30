@@ -8,7 +8,9 @@ const halt: HaltMessages = {
   'halt.chains': '{chains} chains on {protocol} have been halted temporarily.',
   'halt.chain.trading': 'Trade has been halted for {chains} chain(s) temporarily.',
   'halt.chain.pause': 'Liquidity activities (add/remove) for {chains} chain(s) have been disabled temporarily.',
-  'halt.chain.pauseall': 'Liquidity activities (add/remove) for all chains have been disabled temporarily.'
+  'halt.chain.pauseall': 'Liquidity activities (add/remove) for all chains have been disabled temporarily.',
+  'halt.chain.pauseDeposits':
+    'Liquidity deposits (add) for {chains} chain(s) on {protocol} have been disabled temporarily.'
 }
 
 export default halt

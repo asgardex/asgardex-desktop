@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 
 import { QuoteSwap as QuoteSwapProtocol } from '@xchainjs/xchain-aggregator'
-import * as O from 'fp-ts/Option'
+import { option as O } from 'fp-ts'
 
 import { ProgressBar } from '../uielements/progressBar'
 

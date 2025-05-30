@@ -7,7 +7,7 @@ import {
   tapRootDerivationPaths
 } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
-import * as E from 'fp-ts/Either'
+import { either as E } from 'fp-ts'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'

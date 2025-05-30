@@ -1,4 +1,4 @@
-import * as AIcons from '@ant-design/icons/lib'
+import { ArrowUpIcon } from '@heroicons/react/24/outline'
 import * as A from 'antd'
 import { ListProps } from 'antd/lib/list'
 import styled from 'styled-components'
@@ -60,9 +60,11 @@ export const TxType = styled(TxTypeUI)`
   margin-right: 10px;
 `
 
-export const InfoArrow = styled(AIcons.ArrowUpOutlined)`
+export const InfoArrow = styled(ArrowUpIcon)`
   transform: rotateZ(45deg);
-  color: ${palette('primary', 2)};
+  stroke: ${palette('primary', 2)}; /* Heroicons use stroke for outline */
+  width: 16px; /* Match Ant Design's default size */
+  height: 16px;
 `
 
 export const GoToButton = styled(UIButton).attrs({ typevalue: 'transparent' })`

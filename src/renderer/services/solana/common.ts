@@ -1,8 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { Client as SolClient, SOLChain, defaultSolanaParams } from '@xchainjs/xchain-solana'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -14,7 +13,7 @@ import { keystoreService } from '../wallet/keystore'
 import { getPhrase } from '../wallet/util'
 import { Client$, ClientState, ClientState$ } from './types'
 
-const solApiKey = envOrDefault(process.env.REACT_APP_SOL_API_KEY, '')
+const solApiKey = envOrDefault(import.meta.env.VITE_SOL_API_KEY, '')
 
 const defaultClientUrls = (): Record<Network, string[]> => {
   return {

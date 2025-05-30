@@ -4,18 +4,15 @@ import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-mayamidgard'
 import { bnOrZero, assetFromString, BaseAmount, Chain, baseAmount, AnyAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
-import * as A from 'fp-ts/lib/Array'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
-import * as Ord from 'fp-ts/lib/Ord'
+import { array as A, function as FP, option as O, ord as Ord } from 'fp-ts'
 
 import { PoolsWatchList } from '../../shared/api/io'
 import { ONE_CACAO_BASE_AMOUNT } from '../../shared/mock/amount'
 import { MayaScanPrice, MayaScanPriceRD } from '../hooks/useMayascanPrice'
+import { MimirHalt } from '../services/mayachain/types'
 import { PoolDetails } from '../services/midgard/mayaMigard/types'
 import { getPoolDetail, toPoolData } from '../services/midgard/mayaMigard/utils'
 import { PoolAddress, PoolData, PricePool } from '../services/midgard/midgardTypes'
-import { MimirHalt } from '../services/thorchain/types'
 import { PoolTableRowData, PoolTableRowsData } from '../views/pools/Pools.types'
 import {
   getPoolTableRowDataMaya,
@@ -131,7 +128,7 @@ export const getPoolTableRowsData = ({
 }
 
 /**
- * Filters a pool out with hightest value of RUNE
+ * Filters a pool out with highest value of RUNE
  */
 export const getDeepestPool = (pools: PoolDetails): O.Option<PoolDetail> =>
   pools.reduce((acc: O.Option<PoolDetail>, pool: PoolDetail) => {
@@ -290,11 +287,11 @@ export const disableAllActions = ({
   haltedChains: Chain[]
   mimirHalt: MimirHalt
 }) => {
-  // Check `haltTHORChain` (provided by `mimir` endpoint) to disable all actions for all pools
-  if (mimirHalt.haltMAYAChain) return true
+  // Check `HALTMAYATRADING` (provided by `mimir` endpoint) to disable all actions for all pools
+  if (mimirHalt.HALTMAYACHAIN) return true
 
   // Dynamic check for the specific chain halt status
-  const haltChainKey = `halt${chain}Chain` as keyof MimirHalt
+  const haltChainKey = `HALT${chain}CHAIN` as keyof MimirHalt
   if (mimirHalt[haltChainKey]) return true
 
   // Check `chain` is included in `haltedChains` (provided by `inbound_addresses` endpoint)
@@ -318,10 +315,10 @@ export const disableTradingActions = ({
   mimirHalt: MimirHalt
 }) => {
   // 1. Check `haltTrading` (provided by `mimir` endpoint) to disable all actions for all pools
-  if (mimirHalt.haltTrading) return true
+  if (mimirHalt.haltGlobalTrading) return true
 
   // 2. Dynamic check for the specific chain trading halt status
-  const haltTradingKey = `halt${chain}Trading` as keyof MimirHalt
+  const haltTradingKey = `HALT${chain}TRADING` as keyof MimirHalt
   if (mimirHalt[haltTradingKey]) return true
 
   // 3. Check `chain` is included in `haltedChains` (provided by `inbound_addresses` endpoint)
@@ -333,8 +330,8 @@ export const disableTradingActions = ({
  *
  * |                | ADD | WITHDRAW | SWAP |
  * |----------------|-----|----------|------|
- * | pauseLP{chain} | NO  | NO       | YES  |
- * | halt{chain}    | NO  | NO       | NO   |
+ * | PAUSELP{chain} | NO  | NO       | YES  |
+ * | HALT{chain}    | NO  | NO       | NO   |
  */
 export const disablePoolActions = ({
   chain,
@@ -346,9 +343,9 @@ export const disablePoolActions = ({
   mimirHalt: MimirHalt
 }) => {
   // Check all `pauseLp{chain}` values (provided by `mimir` endpoint) to disable pool actions
-  if (mimirHalt.pauseLp) return true
+  if (mimirHalt.pauseGlobalLp) return true
   // 2. Dynamic check for the specific chain trading halt status
-  const haltTradingKey = `pauseLp${chain}` as keyof MimirHalt
+  const haltTradingKey = `PAUSELP${chain}` as keyof MimirHalt
   if (mimirHalt[haltTradingKey]) return true
 
   // Check `chain` is included in `haltedChains` (provided by `inbound_addresses` endpoint)

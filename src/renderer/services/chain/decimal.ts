@@ -10,6 +10,7 @@ import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { EthChain } from '@xchainjs/xchain-mayachain-query'
 import { XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { SOL_DECIMALS } from '@xchainjs/xchain-solana'
+import { isTCYAsset } from '@xchainjs/xchain-thorchain'
 import { ThorchainCache } from '@xchainjs/xchain-thorchain-query'
 import { AnyAsset } from '@xchainjs/xchain-util'
 import * as Rx from 'rxjs'
@@ -42,7 +43,6 @@ export const getDecimal = (asset: AnyAsset): Promise<number> => {
   if (isBscChain(chain)) {
     return Promise.resolve(BSC_GAS_ASSET_DECIMAL)
   }
-
   if (isThorChain(chain)) {
     return Promise.resolve(THORCHAIN_DECIMAL)
   }
@@ -69,6 +69,9 @@ export const getDecimal = (asset: AnyAsset): Promise<number> => {
   }
   if (isAdaChain(chain)) {
     return Promise.resolve(ADA_DECIMALS)
+  }
+  if (isTCYAsset(asset)) {
+    return Promise.resolve(THORCHAIN_DECIMAL)
   }
   // Fix until Decimals for maya midgard is completed.
   if (

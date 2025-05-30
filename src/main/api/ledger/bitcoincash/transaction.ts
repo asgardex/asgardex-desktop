@@ -1,8 +1,8 @@
-import Transport from '@ledgerhq/hw-transport'
+import * as Transport from '@ledgerhq/hw-transport'
 import { AssetBCH, ClientLedger, defaultBchParams } from '@xchainjs/xchain-bitcoincash'
 import { FeeOption, FeeRate, Network, TxHash } from '@xchainjs/xchain-client'
 import { Address, BaseAmount } from '@xchainjs/xchain-util'
-import * as E from 'fp-ts/lib/Either'
+import { either as E } from 'fp-ts'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
@@ -22,7 +22,7 @@ export const send = async ({
   walletAccount,
   walletIndex
 }: {
-  transport: Transport
+  transport: Transport.default
   network: Network
   sender?: Address
   recipient: Address

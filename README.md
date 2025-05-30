@@ -1,9 +1,14 @@
-<div align="center">
+<!-- markdownlint-disable MD045 -->
+<!-- markdownlint-disable MD033 -->
+<!-- trunk-ignore(markdownlint/MD041) -->
+<p align="center">
   <img src="internals/img/asgardex-banner.png" width="100%" />
-  <br/>
-  <br/>
+  <br/><br/>
   <img src="internals/img/asgardex-splash.png" width="100%" />
-</div>
+</p>
+
+<!-- markdownlint-enable MD045 -->
+<!-- markdownlint-enable MD033 -->
 
 [![Version](https://img.shields.io/github/package-json/v/asgardex/asgardex-desktop?color=xyz&filename=package.json&style=flat-square)](https://github.com/asgardex/asgardex-desktop/releases)
 
@@ -20,6 +25,7 @@
 [![Check our Website](https://img.shields.io/badge/Visit-Our%20Website-blue)](https://asgardex.com)
 
 ## Website
+
 This is the developer source repository, general information, and download page can be found at [Asgardex](https://asgardex.com)
 
 ## Feature list
@@ -32,16 +38,16 @@ This is the developer source repository, general information, and download page 
 
 #### Wallet
 
-|                | RUNE               | BTC                | BCH                | DOGE               | ETH / ERC20        | LTC                | COSMOS             | BSC                | AVAX               | MAYA               | DASH               | KUJI               |
-| -------------- | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
-| Keystore       | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Ledger \*      | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | -                  | -                  |                    |
-| Send \*\*      | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Receive        | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Deposit        | :heavy_check_mark: | -                  | -                  | -                  | -                  | -                  | -                  | -                  | -                  | :heavy_check_mark: | -                  | -                  |
-| Shares         | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| History        | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Synths         | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | -                  | -                  | -                  |
+|           | RUNE               | BTC                | BCH                | DOGE               | ETH / ERC20        | LTC                | COSMOS             | BSC                | AVAX               | MAYA               | DASH               | KUJI               |
+| --------- | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
+| Keystore  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Ledger \* | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | -                  | -                  |                    |
+| Send \*\* | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Receive   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Deposit   | :heavy_check_mark: | -                  | -                  | -                  | -                  | -                  | -                  | -                  | -                  | :heavy_check_mark: | -                  | -                  |
+| Shares    | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| History   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Synths    | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | -                  | -                  | -                  |
 
 (\*) Ledger `RUNE` is not supported at `stagenet`. Ledger `LTC`/`BCH`/`DOGE` are not supported at `testnet`. `Maya` is not supported on Ledger.
 
@@ -49,32 +55,29 @@ This is the developer source repository, general information, and download page 
 
 #### THORChain Exchange
 
-|                | RUNE               | BSC /BEP20         | BTC                | BCH                | DOGE               | ETH / ERC20        | LTC                | COSMOS             | AVAX               | 
-| -------------- | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | 
-| Pools overview | -                  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
-| Pool detail    | -                  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
-| Swap           | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
-| Deposit \*     | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
-| Withdraw \*    | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
-| Recovery tool  | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Synths         | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
-| Savers         | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
-| Lending        | -                  | -                  | - | -                  | -                  | - | -                  | -                  | -                  | -                  |
+|                | RUNE               | BSC /BEP20         | BTC                | BCH                | DOGE               | ETH / ERC20        | LTC                | COSMOS             | AVAX               |
+| -------------- | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
+| Pools overview | -                  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Pool detail    | -                  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Swap           | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Deposit \*     | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Withdraw \*    | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Recovery tool  | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 
 (\*) Symmetrical deposit/withdraw only
 
 #### MAYA Exchange
 
-|                | MAYA               | RUNE               | BTC                | ETH / ERC20        | KUJI               |  DASH              | ARB
-| -------------- | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
-| Pools overview | -                  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
-| Pool detail    | -                  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Swap           | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
-| Deposit \*     | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
-| Withdraw \*    | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
-| Recovery tool  | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Synths         | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
-| Savers         | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: |  :heavy_multiplication_x: |
+|                | MAYA                     | RUNE                     | BTC                      | ETH / ERC20              | KUJI                     | DASH                     | ARB                      |
+| -------------- | ------------------------ | ------------------------ | ------------------------ | ------------------------ | ------------------------ | ------------------------ | ------------------------ |
+| Pools overview | -                        | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       |
+| Pool detail    | -                        | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       |
+| Swap           | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       |
+| Deposit \*     | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       |
+| Withdraw \*    | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       |
+| Recovery tool  | :white_check_mark:       | :white_check_mark:       | :white_check_mark:       | :white_check_mark:       | :white_check_mark:       | :white_check_mark:       | :white_check_mark:       |
+| Synths         | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       | :heavy_check_mark:       |
+| Savers         | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: |
 
 (\*) Symmetrical deposit/withdraw only
 
@@ -86,33 +89,33 @@ This is the developer source repository, general information, and download page 
 
 #### MAYANode
 
-| Overview           | Status             | BOND               | UNBOND             | LEAVE              | MAYAName           |
-| ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
-| :heavy_check_mark: | :white_check_mark: | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_check_mark: |
+| Overview           | Status             | BOND               | UNBOND             | LEAVE                    | MAYAName           |
+| ------------------ | ------------------ | ------------------ | ------------------ | ------------------------ | ------------------ |
+| :heavy_check_mark: | :white_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_multiplication_x: | :heavy_check_mark: |
 
 ### Languages
 
-| ENGLISH :us:       | GERMAN :de:        | FRENCH :fr:        | RUSSIAN :ru:       | HINDI :hi:         | SPANISH :es:       |
-| ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
-| :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| ENGLISH :us:       | GERMAN :de:        | FRENCH :fr:        | RUSSIAN :ru:       | HINDI :hi:         | SPANISH :es:       | KOREAN :ko:        |
+| ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ |
+| :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 
 ### Misc
 
 - 100% open-source (built by the community)
 - Security first
 - 30 bps affiliate fees only on swaps over $1001
-- No affiliate fee on: RunePool, LP, Saver actions. 
+- No affiliate fee on: RunePool, LP actions
 
 ## ASGARDEX utilizes the following libraries, frameworks, and more:
 
 _(in alphabetical order)_
 
 - [Ant Design](https://github.com/ant-design/ant-design/)
-- [Create React App](https://github.com/facebook/create-react-app)
+- [Vite](https://github.com/vitejs/vite)
 - [ESLint](https://github.com/eslint/eslint)
 - [Electron](https://github.com/electron/electron/)
 - [fp-ts](https://gcanti.github.io/fp-ts/)
-- [Jest](https://github.com/facebook/jest)
+- [Vitest](https://github.com/vitest-dev/vitest)
 - [Observable Hooks](https://observable-hooks.js.org/)
 - [Prettier](https://github.com/prettier/prettier)
 - [ReactJS](https://github.com/facebook/react/)
@@ -124,7 +127,7 @@ _(in alphabetical order)_
 
 ## Installation
 
-It's recommended to use a Node version as same as Electron is running with (currently: [`Electron 27` / Node `18.17`](https://www.electronjs.org/docs/latest/tutorial/electron-timelines)). It's recommended to install [nvm](https://github.com/nvm-sh/nvm) to run as the same Node version locally as used for building ASGARDEX on CI.
+It's recommended to use a Node version as same as Electron is running with (currently: [`Electron 35` / Node `22.14`](https://www.electronjs.org/docs/latest/tutorial/electron-timelines)). It's recommended to install [nvm](https://github.com/nvm-sh/nvm) to run as the same Node version locally as used for building ASGARDEX on CI.
 
 ```bash
 git clone https://github.com/asgardex/asgardex-desktop.git asgardex
@@ -159,13 +162,7 @@ While environment variables are not required (defaults are set), you can configu
 
 ## Development
 
-- Build sources needed by [`main` process](https://www.electronjs.org/docs/glossary#main-process) (only once or whenever you change something in [`preload.ts`](./src/main/preload.ts) or [`electron.ts`](./src/main/electron.ts))
-
-```bash
-yarn prebuild
-```
-
-- Build everything needed by [`renderer` process](https://www.electronjs.org/docs/glossary#renderer-process) and run application in `watch` mode
+- Build everything needed (main, preload and renderer) and run application in `watch` mode
 
 ```bash
 yarn dev
@@ -173,7 +170,7 @@ yarn dev
 
 In case Node might run into memory issues locally set `--max-old-space-size` as follow:
 
-```
+```json
 export NODE_OPTIONS="--max-old-space-size=4096"
 ```
 
@@ -194,6 +191,7 @@ You may need to install the following dependencies in your local machine in orde
 ```bash
 sudo apt-get install build-essential
 ```
+
 3. Install dependency libudev-dev
 
 ```bash
@@ -214,13 +212,13 @@ yarn generate:arberc20whitelist
 
 ### How to auto-unlock a locked wallet while hot-reloading the app (for development only, disabled in production build)
 
-Use `REACT_APP_WALLET_PASSWORD` to run the app by replacing `password` with your own password
+Use `VITE_WALLET_PASSWORD` to run the app by replacing `password` with your own password
 
 ```bash
-REACT_APP_WALLET_PASSWORD=password yarn dev
+VITE_WALLET_PASSWORD=password yarn dev
 ```
 
-Or add to `REACT_APP_WALLET_PASSWORD=password` to `.env` file and run `yarn dev`
+Or add to `VITE_WALLET_PASSWORD=password` to `.env` file and run `yarn dev`
 
 ## Tests
 
@@ -230,21 +228,11 @@ Or add to `REACT_APP_WALLET_PASSWORD=password` to `.env` file and run `yarn dev`
 yarn test
 ```
 
-### `e2e`
-
-Note: Running test-cafe is disabled (see https://github.com/asgardex/asgardex-desktop/issues/750)
-
-```bash
-yarn test:e2e
-```
-
 ### `lint`
 
 ```bash
 yarn lint
 ```
-
-Note: `eslint` is provided by `react-scripts` located in `./node_modules/react-scripts/node_modules/` and don't need to be extra installed. If your editor has some issues to find `eslint`, you might point it to this location (see [VSCode settings file](.vscode/settings.json) as an example).
 
 ## Storybook
 
@@ -272,7 +260,6 @@ your GutHub personal access token. After that just play locally with version pro
 
 ```bash
 src
-├── index.ts # entry point for CRA
 ├── main # sources of Electron's main process
 ├── renderer # sources of Electron's renderer process (aka webapp)
 └── shared # shared sources for Electron's main and renderer processes
@@ -319,7 +306,7 @@ ASGARDEX follows [security recommendation made by Electron team](https://www.ele
 
 **Important note** for `macOS` users: Please follow guide of ["How to package `ASGARDEX` on macOS"](./PACKAGE_MACOS.md) before running following command.
 
-```
+```bash
 yarn package:electron
 ```
 

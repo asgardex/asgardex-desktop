@@ -2,7 +2,7 @@ import type Transport from '@ledgerhq/hw-transport'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { ClientLedger, defaultClientConfig } from '@xchainjs/xchain-thorchain'
 import { Address, AnyAsset, BaseAmount } from '@xchainjs/xchain-util'
-import * as E from 'fp-ts/Either'
+import { either as E } from 'fp-ts'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'

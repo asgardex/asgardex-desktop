@@ -11,10 +11,10 @@ import {
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import clsx from 'clsx'
-import * as FP from 'fp-ts/lib/function'
+import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
-import { ReactComponent as WalletIcon } from '../../../../assets/svg/icon-wallet.svg'
+import WalletIcon from '../../../../assets/svg/icon-wallet.svg?react'
 import { isUSDAsset } from '../../../../helpers/assetHelper'
 import { AssetWithAmount, FixmeType } from '../../../../types/asgardex'
 import { Button } from '../../button'
@@ -153,7 +153,7 @@ export const AssetInput: React.FC<Props> = (props): JSX.Element => {
             disabled={asLabel || disabled}
             decimal={amount.decimal}
             // override text style of input for acting as label only
-            className={clsx('w-full px-0 leading-none', { 'text-text0 !opacity-100 dark:text-text0d': asLabel })}
+            className={clsx('w-full !px-0 leading-none', { 'text-text0 !opacity-100 dark:text-text0d': asLabel })}
           />
 
           <p className="mb-0 font-main text-[14px] leading-none text-gray1 dark:text-gray1d">

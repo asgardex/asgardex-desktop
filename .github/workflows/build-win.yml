@@ -1,5 +1,8 @@
 name: Electron build - Windows
 
+permissions:
+  contents: write
+
 on:
   push:
     branches:
@@ -13,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2019]
+        os: [windows-2022]
 
     steps:
       - name: Checkout git repo
@@ -41,20 +44,19 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=7168
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REACT_APP_BLOCKCYPHER_API_KEY: ${{ secrets.REACT_APP_BLOCKCYPHER_API_KEY }}
-          REACT_APP_ETHERSCAN_API_KEY: ${{ secrets.REACT_APP_ETHERSCAN_API_KEY }}
-          REACT_APP_BSCSCAN_API_KEY: ${{ secrets.REACT_APP_BSCSCAN_API_KEY }}
-          REACT_APP_ARBISCAN_API_KEY: ${{ secrets.REACT_APP_ARBISCAN_API_KEY }}
-          REACT_APP_ASGARDEX_THORNAME: ${{ secrets.REACT_APP_ASGARDEX_THORNAME }}
-          REACT_APP_BASE_API_KEY: ${{ secrets.REACT_APP_BASE_API_KEY }}
-          REACT_APP_SNOWTRACE_API_KEY: ${{ secrets.REACT_APP_SNOWTRACE_API_KEY }}
-          REACT_APP_ANKR_API_KEY: ${{ secrets.REACT_APP_ANKR_API_KEY }}
+          NODE_ENV: production
+          VITE_NODE_ENV: ${{ env.NODE_ENV }}
+          VITE_BLOCKCYPHER_API_KEY: ${{ secrets.REACT_APP_BLOCKCYPHER_API_KEY }}
+          VITE_ETHERSCAN_API_KEY: ${{ secrets.REACT_APP_ETHERSCAN_API_KEY }}
+          VITE_ASGARDEX_THORNAME: ${{ secrets.REACT_APP_ASGARDEX_THORNAME }}
+          VITE_ANKR_API_KEY: ${{ secrets.REACT_APP_ANKR_API_KEY }}
+          VITE_SOL_API_KEY: ${{ secrets.REACT_APP_SOL_API_KEY }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.OS }}
           path: release
- 
+
       - name: List artifacts
         run: ls ./release

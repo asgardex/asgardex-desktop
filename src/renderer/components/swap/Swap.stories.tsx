@@ -4,7 +4,7 @@ import { BTCChain, BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, assetToBase, assetToString, baseAmount, bn } from '@xchainjs/xchain-util'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -21,7 +21,7 @@ import { SwapAsset, SwapProps } from './Swap.types'
 const sourceAsset: SwapAsset = { asset: AssetRuneNative, decimal: THORCHAIN_DECIMAL, price: ONE_BN }
 const targetAsset: SwapAsset = { asset: AssetBTC, decimal: BTC_DECIMAL, price: bn('56851.67420275761') }
 
-/* Mock all (default) data needed by `Swap` commponent */
+/* Mock all (default) data needed by `Swap` component */
 const defaultProps: SwapProps = {
   keystore: O.none,
   poolAssets: [AssetBTC, AssetRuneNative],
@@ -42,7 +42,7 @@ const defaultProps: SwapProps = {
   }),
   poolDetailsThor: [],
   poolDetailsMaya: [],
-  // mock successfull result of swap$
+  // mock successful result of swap$
   swap$: (params) =>
     Rx.of(params).pipe(
       RxOp.tap((params) => console.log('swap$ ', params)),

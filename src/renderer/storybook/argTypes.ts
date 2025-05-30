@@ -1,5 +1,5 @@
 import { Network } from '@xchainjs/xchain-client'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 import { InputType } from 'storybook/internal/types'
 
 import { MOCK_PHRASE } from '../../shared/mock/wallet'

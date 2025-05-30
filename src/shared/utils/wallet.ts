@@ -1,8 +1,4 @@
-import * as A from 'fp-ts/lib/Array'
-import * as FP from 'fp-ts/lib/function'
-import * as NEA from 'fp-ts/lib/NonEmptyArray'
-import * as O from 'fp-ts/lib/Option'
-import * as S from 'fp-ts/lib/string'
+import { array as A, function as FP, nonEmptyArray as NEA, option as O, string as S } from 'fp-ts'
 
 /**
  * Helper transform a derivationPath from string to an array

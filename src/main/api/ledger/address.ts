@@ -1,5 +1,4 @@
-import Transport from '@ledgerhq/hw-transport'
-import TransportNodeHidSingleton from '@ledgerhq/hw-transport-node-hid-singleton'
+import * as Transport from '@ledgerhq/hw-transport'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
@@ -19,9 +18,9 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
-import * as E from 'fp-ts/Either'
+import { either as E } from 'fp-ts'
 
-import { IPCLedgerAdddressParams, LedgerError, LedgerErrorId } from '../../../shared/api/types'
+import { IPCLedgerAddressParams, LedgerError, LedgerErrorId } from '../../../shared/api/types'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { isError, isEvmHDMode } from '../../../shared/utils/guard'
 import { HDMode, WalletAddress } from '../../../shared/wallet/types'
@@ -34,9 +33,11 @@ import { getEVMAddress, verifyEVMAddress } from './evm/address'
 import { getAddress as getLTCAddress, verifyAddress as verifyLTCAddress } from './litecoin/address'
 import { getAddress as getTHORAddress, verifyAddress as verifyTHORAddress } from './thorchain/address'
 
+const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid')
+
 const handleEVMChain = (
   chain: Chain,
-  transport: Transport,
+  transport: Transport.default,
   network: Network,
   walletAccount: number,
   walletIndex: number,
@@ -57,7 +58,7 @@ const handleEVMChain = (
 const chainAddressFunctions: Record<
   Chain,
   (
-    transport: Transport,
+    transport: Transport.default,
     network: Network,
     walletAccount: number,
     walletIndex: number,
@@ -94,9 +95,9 @@ export const getAddress = async ({
   walletAccount,
   walletIndex,
   hdMode
-}: IPCLedgerAdddressParams): Promise<E.Either<LedgerError, WalletAddress>> => {
+}: IPCLedgerAddressParams): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
-    const transport = await TransportNodeHidSingleton.create()
+    const transport = await TransportNodeHidSingleton.default.create()
 
     if (!isSupportedChain(chain) || unsupportedChains.includes(chain)) {
       return E.left({
@@ -130,7 +131,7 @@ export const verifyLedgerAddress = async ({
   walletAccount,
   walletIndex,
   hdMode
-}: IPCLedgerAdddressParams) => {
+}: IPCLedgerAddressParams) => {
   const transport = await TransportNodeHidSingleton.create()
   let result = false
 

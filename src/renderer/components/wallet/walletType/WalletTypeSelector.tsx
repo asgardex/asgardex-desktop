@@ -1,9 +1,7 @@
 import React, { useMemo } from 'react'
 
 import { Dropdown } from 'antd'
-import * as A from 'fp-ts/lib/Array'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { array as A, function as FP, option as O } from 'fp-ts'
 
 import { emptyString } from '../../../helpers/stringHelper'
 import { DownIcon } from '../../icons'

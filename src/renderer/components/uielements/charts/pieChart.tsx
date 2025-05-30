@@ -1,4 +1,3 @@
-/* eslint-disable no-template-curly-in-string */
 import { useMemo } from 'react'
 
 import ReactECharts from 'echarts-for-react'

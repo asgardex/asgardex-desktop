@@ -2,7 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { Network } from '@xchainjs/xchain-client'
 import { Asset } from '@xchainjs/xchain-util'
-import * as FP from 'fp-ts/lib/function'
+import { function as FP } from 'fp-ts'
 import { of } from 'rxjs'
 import { switchMap } from 'rxjs/operators'
 

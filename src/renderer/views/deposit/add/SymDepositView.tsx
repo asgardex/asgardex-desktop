@@ -6,8 +6,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
-import * as FP from 'fp-ts/function'
-import * as O from 'fp-ts/lib/Option'
+import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
@@ -91,7 +90,7 @@ export const SymDepositView: React.FC<Props> = (props) => {
   const availableAssets$ = protocol === THORChain ? availableAssetsThor$ : availableAssetsMaya$
   const reloadSelectedPoolDetail = protocol === THORChain ? reloadSelectedPoolDetailThor : reloadSelectedPoolDetailMaya
 
-  const { symDepositFees$, symDeposit$, reloadSymDepositFees, saverDeposit$: asymDeposit$ } = useChainContext()
+  const { symDepositFees$, symDeposit$, reloadSymDepositFees, poolDeposit$: asymDeposit$ } = useChainContext()
 
   const poolsState = useObservableState(protocol === THORChain ? poolsState$ : poolsStateMaya$, RD.initial)
 

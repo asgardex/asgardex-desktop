@@ -12,7 +12,6 @@ export const checkPhraseConfirmWordsFactory =
         const selectedWord = selectedWords[i]
 
         if (word._id !== selectedWord._id) {
-          // eslint-disable-next-line no-loop-func
           newWords = words.map((e: WordType) => {
             if (e._id === selectedWord._id) {
               e.error = true

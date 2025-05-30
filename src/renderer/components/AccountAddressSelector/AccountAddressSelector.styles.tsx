@@ -1,4 +1,3 @@
-import { CaretDownOutlined as CaretDownOutlinedUI } from '@ant-design/icons'
 import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
@@ -41,12 +40,6 @@ export const WalletAddress = styled.div`
 export const TruncatedAddress = styled.div`
   margin: 3px 15px 3px 10px;
   font-size: 14px;
-  color: ${palette('primary', 2)};
-`
-
-export const CaretDownOutlined = styled(CaretDownOutlinedUI)`
-  margin-left: 5px;
-  padding: 5px;
   color: ${palette('primary', 2)};
 `
 

@@ -1,7 +1,7 @@
 import React, { forwardRef, useCallback } from 'react'
 
 import clsx from 'clsx'
-import * as FP from 'fp-ts/lib/function'
+import { function as FP } from 'fp-ts'
 
 import type { Size } from './Input.types'
 

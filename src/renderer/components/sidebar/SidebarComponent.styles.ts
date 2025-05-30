@@ -4,7 +4,7 @@ import Text from 'antd/lib/typography/Text'
 import styled from 'styled-components'
 import { palette, size } from 'styled-theme'
 
-import { ReactComponent as UIAsgardexLogo } from '../../assets/svg/logo-asgardex.svg'
+import UIAsgardexLogo from '../../assets/svg/logo-asgardex.svg?react'
 import { Label as UILabel } from '../uielements/label'
 
 export const HeaderContainer = styled(Layout.Header)`

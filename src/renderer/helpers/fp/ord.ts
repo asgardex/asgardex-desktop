@@ -1,8 +1,6 @@
 import { AnyAsset, assetToString, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
-import * as N from 'fp-ts/lib/number'
-import * as Ord from 'fp-ts/lib/Ord'
-import * as S from 'fp-ts/lib/string'
+import { number as N, ord as Ord, string as S } from 'fp-ts'
 
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { WalletAddress } from '../../../shared/wallet/types'

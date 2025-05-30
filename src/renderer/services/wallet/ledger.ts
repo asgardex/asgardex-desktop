@@ -1,9 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Chain } from '@xchainjs/xchain-util'
-import * as A from 'fp-ts/lib/Array'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
-import * as N from 'fp-ts/number'
+import { array as A, function as FP, option as O, number as N } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -81,7 +78,7 @@ export const createLedgerService = ({
     // Transform pair of `KeystoreWalletsUI[]` to pair of `KeystoreId[]`
     RxOp.map((pair) => FP.pipe(pair, A.map(FP.flow(A.map(({ id }) => id))))),
     RxOp.map(([prev, curr]) =>
-      // get's the difference
+      // Gets the difference
       FP.pipe(prev, A.difference(N.Eq)(curr), A.head)
     )
   )

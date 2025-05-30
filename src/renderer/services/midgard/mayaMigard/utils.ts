@@ -2,16 +2,14 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ARB_GAS_ASSET_DECIMAL, ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
-import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
-import { BTCChain } from '@xchainjs/xchain-bitcoin'
+import { BTC_DECIMAL, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
 import { ADAChain, ADA_DECIMALS, ADAAsset } from '@xchainjs/xchain-cardano'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASH_DECIMAL, DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
-import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
-import { ETHChain } from '@xchainjs/xchain-ethereum'
+import { ETH_GAS_ASSET_DECIMAL, ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
@@ -29,14 +27,10 @@ import {
   bn,
   BaseAmount,
   Address,
-  AnyAsset
+  AnyAsset,
+  Chain
 } from '@xchainjs/xchain-util'
-import { Chain } from '@xchainjs/xchain-util'
-import * as A from 'fp-ts/lib/Array'
-import * as FP from 'fp-ts/lib/function'
-import * as NEA from 'fp-ts/lib/NonEmptyArray'
-import * as O from 'fp-ts/lib/Option'
-import * as P from 'fp-ts/lib/Predicate'
+import { array as A, function as FP, nonEmptyArray as NEA, option as O, predicate as P } from 'fp-ts'
 
 import { AssetBTC, AssetETH, AssetKUJI, AssetDASH, AssetAETH } from '../../../../shared/utils/asset'
 import { isSupportedChain } from '../../../../shared/utils/chain'
@@ -139,7 +133,7 @@ export const pricePoolSelector = (pools: PricePools, oAsset: O.Option<PricePoolA
     O.chainNullableK((asset) => pools.find((pool) => eqAsset.equals(pool.asset, asset))),
     // (2) If (1) fails, check if USD pool is available in `PricePools`
     O.fold(() => O.fromNullable(pools.find((pool) => isUSDAsset(pool.asset))), O.some),
-    // (3) If (2) failes, return MAYA pool, which is always first entry in pools list
+    // (3) If (2) fails, return MAYA pool, which is always first entry in pools list
     O.getOrElse(() => NEA.head(pools))
   )
 
@@ -259,7 +253,7 @@ export const getOutboundAssetFeeByChain = (
           })
         case ETHChain: {
           return O.some({
-            // Convertion of decimal needed: 1e10 (by default in MayaChain) -> 1e18 (ETH)
+            // Conversion of decimal needed: 1e10 (by default in MayaChain) -> 1e18 (ETH)
             amount: convertBaseAmountDecimal(baseAmount(value, CACAO_DECIMAL), ETH_GAS_ASSET_DECIMAL),
             asset: AssetETH
           })
@@ -291,7 +285,7 @@ export const getOutboundAssetFeeByChain = (
           })
         case ARBChain: {
           return O.some({
-            // Convertion of decimal needed: 1e10 (by default in MayaChain) -> 1e18 (ARB)
+            // Conversion of decimal needed: 1e10 (by default in MayaChain) -> 1e18 (ARB)
             amount: convertBaseAmountDecimal(baseAmount(value, CACAO_DECIMAL), ARB_GAS_ASSET_DECIMAL),
             asset: AssetAETH
           })

@@ -2,8 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { PoolDetail, PoolStatsDetail, SwapHistory } from '@xchainjs/xchain-mayamidgard'
 import { AnyAsset, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 
 import { LiveData } from '../../../helpers/rx/liveData'
@@ -18,6 +17,7 @@ import {
   GetPoolsPeriodEnum,
   GetSwapHistoryRequest,
   HaltedChainsLD,
+  PausedChainsLD,
   PoolAddress,
   PoolAddress$,
   PoolAddressLD,
@@ -111,7 +111,7 @@ export type PoolsService = {
   reloadPoolStatsDetail: FP.Lazy<void>
   poolEarningHistory$: PoolEarningHistoryLD
   reloadPoolEarningHistory: FP.Lazy<void>
-  getPoolLiquidityHistory$: (parmas: PoolLiquidityHistoryParams) => PoolLiquidityHistoryLD
+  getPoolLiquidityHistory$: (params: PoolLiquidityHistoryParams) => PoolLiquidityHistoryLD
   getSelectedPoolSwapHistory$: (params: GetSwapHistoryParams) => SwapHistoryLD
   apiGetSwapHistory$: (params: ApiGetSwapHistoryParams) => SwapHistoryLD
   apiGetLiquidityHistory$: (params: GetLiquidityHistoryRequest) => PoolLiquidityHistoryLD
@@ -125,6 +125,7 @@ export type PoolsService = {
   setPoolsFilter: (poolKey: PoolType, filter: O.Option<PoolFilter>) => void
   outboundAssetFeeByChain$: (chain: Chain) => PoolFeeLD
   haltedChains$: HaltedChainsLD
+  pausedLPChains$: PausedChainsLD
 }
 
 export type Action = {

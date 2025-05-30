@@ -3,7 +3,7 @@ import { StoryFn, Meta } from '@storybook/react'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase, baseAmount, assetToString, AnyAsset } from '@xchainjs/xchain-util'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -13,8 +13,8 @@ import { WalletType } from '../../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../../const'
 import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
 import { mockWalletBalance } from '../../../helpers/test/testWalletHelper'
-import { INITIAL_SAVER_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../../../services/chain/const'
-import { SaverDepositState, SymDepositState } from '../../../services/chain/types'
+import { INITIAL_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../../../services/chain/const'
+import { DepositState, SymDepositState } from '../../../services/chain/types'
 import { WalletBalance } from '../../../services/wallet/types'
 import { SymDeposit, Props as SymDepositProps } from './SymDeposit'
 
@@ -98,7 +98,7 @@ const defaultProps: SymDepositProps = {
   // mock password validation
   // Password: "123"
   validatePassword$: mockValidatePassword$,
-  // mock successfull result of sym. deposit$
+  // mock successful result of sym. deposit$
   deposit$: (params) =>
     Rx.of(params).pipe(
       RxOp.tap((params) => console.log('deposit$ ', params)),
@@ -111,13 +111,13 @@ const defaultProps: SymDepositProps = {
         })
       )
     ),
-  // mock successfull result of sym. deposit$
+  // mock successful result of sym. deposit$
   asymDeposit$: (params) =>
     Rx.of(params).pipe(
       RxOp.tap((params) => console.log('deposit$ ', params)),
       RxOp.switchMap((_) =>
-        Rx.of<SaverDepositState>({
-          ...INITIAL_SAVER_DEPOSIT_STATE,
+        Rx.of<DepositState>({
+          ...INITIAL_DEPOSIT_STATE,
           step: 4,
           deposit: RD.success(true)
         })

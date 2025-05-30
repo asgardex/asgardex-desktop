@@ -1,7 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Meta, StoryFn } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 
 import { AssetRuneNative } from '../../../shared/utils/asset'
 import * as AT from '../../storybook/argTypes'

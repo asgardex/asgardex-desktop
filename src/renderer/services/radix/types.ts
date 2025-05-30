@@ -1,6 +1,6 @@
 import { Client } from '@xchainjs/xchain-radix'
 import { Address, AnyAsset, BaseAmount } from '@xchainjs/xchain-util'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import * as C from '../clients'

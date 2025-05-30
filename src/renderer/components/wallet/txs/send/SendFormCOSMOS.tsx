@@ -6,13 +6,22 @@ import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetails } from '@xchainjs/xchain-mayamidgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Address, AssetType, baseAmount, CryptoAmount, eqAsset } from '@xchainjs/xchain-util'
-import { formatAssetAmountCurrency, assetAmount, bn, assetToBase, BaseAmount, baseToAsset } from '@xchainjs/xchain-util'
+import {
+  Address,
+  AssetType,
+  baseAmount,
+  CryptoAmount,
+  eqAsset,
+  formatAssetAmountCurrency,
+  assetAmount,
+  bn,
+  assetToBase,
+  BaseAmount,
+  baseToAsset
+} from '@xchainjs/xchain-util'
 import { Form } from 'antd'
 import BigNumber from 'bignumber.js'
-import * as A from 'fp-ts/lib/Array'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { array as A, function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { TrustedAddress, TrustedAddresses } from '../../../../../shared/api/types'
@@ -25,7 +34,7 @@ import { getChainAsset } from '../../../../helpers/chainHelper'
 import { sequenceTOption } from '../../../../helpers/fpHelpers'
 import { getPoolPriceValue } from '../../../../helpers/poolHelperMaya'
 import { loadingString } from '../../../../helpers/stringHelper'
-import { getCacaoAmountFromBalances } from '../../../../helpers/walletHelper'
+import { getAmountFromBalances } from '../../../../helpers/walletHelper'
 import { calculateMayaValueInUSD, MayaScanPriceRD } from '../../../../hooks/useMayascanPrice'
 import { usePricePool } from '../../../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../../../hooks/usePricePoolMaya'
@@ -34,8 +43,7 @@ import { INITIAL_SEND_STATE } from '../../../../services/chain/const'
 import { FeeRD, SendTxState, SendTxStateHandler } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl, WalletBalances } from '../../../../services/clients'
 import { PoolAddress } from '../../../../services/midgard/midgardTypes'
-import { SelectedWalletAsset, ValidatePasswordHandler } from '../../../../services/wallet/types'
-import { WalletBalance } from '../../../../services/wallet/types'
+import { SelectedWalletAsset, ValidatePasswordHandler, WalletBalance } from '../../../../services/wallet/types'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../../../modal/confirmation'
 import { BaseButton, FlatButton } from '../../../uielements/button'
 import { MaxBalanceButton } from '../../../uielements/button/MaxBalanceButton'
@@ -149,8 +157,8 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
       return O.some(balance.amount)
     }
     // or check list of other assets to get balance
-    return FP.pipe(getCacaoAmountFromBalances(balances, getChainAsset(asset.chain)), O.map(assetToBase))
-  }, [asset.chain, balance.amount, balances, isChainAsset])
+    return FP.pipe(getAmountFromBalances(balances, balance.walletType, getChainAsset(asset.chain)), O.map(assetToBase))
+  }, [asset.chain, balance.amount, balance.walletType, balances, isChainAsset])
 
   const oChainAssetAmount: O.Option<BaseAmount> = useMemo(() => {
     // return balance of current asset
@@ -158,8 +166,8 @@ export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
       return O.some(balance.amount)
     }
     // or check list of other assets to get balance
-    return FP.pipe(getCacaoAmountFromBalances(balances, chainAsset), O.map(assetToBase))
-  }, [balance.amount, balances, chainAsset, isChainAsset])
+    return FP.pipe(getAmountFromBalances(balances, balance.walletType, chainAsset), O.map(assetToBase))
+  }, [balance.amount, balance.walletType, balances, chainAsset, isChainAsset])
 
   const isFeeError = useMemo(() => {
     return FP.pipe(

@@ -1,5 +1,5 @@
 import { baseAmount, bn } from '@xchainjs/xchain-util'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 
 import { NodeInfo, NodeStatusEnum } from '../../../../services/thorchain/types'
 import {
@@ -23,25 +23,25 @@ describe('wallet/interact/helpers', () => {
 
     it('valid (> 0)', async () => {
       const result = validateUnboundAmountInput(validValues)
-      expect(result).resolves.toBeUndefined()
+      await expect(result).resolves.toBeUndefined()
     })
 
     it('invalid (not numbers)', async () => {
       const props = { ...validValues, input: bn('hello') }
       const result = validateUnboundAmountInput(props)
-      expect(result).rejects.toBe(errors.msg1)
+      await expect(result).rejects.toBe(errors.msg1)
     })
 
     it('invalid (input < 0)', async () => {
       const props = { ...validValues, input: bn(-1) }
       const result = validateUnboundAmountInput(props)
-      expect(result).rejects.toBe(errors.msg2)
+      await expect(result).rejects.toBe(errors.msg2)
     })
 
     it('invalid (input === 0)', async () => {
       const props = { ...validValues, input: bn('0') }
       const result = validateUnboundAmountInput(props)
-      expect(result).rejects.toBe(errors.msg2)
+      await expect(result).rejects.toBe(errors.msg2)
     })
   })
 
@@ -57,25 +57,25 @@ describe('wallet/interact/helpers', () => {
 
     it('valid (> 0)', async () => {
       const result = validateCustomAmountInput(validValues)
-      expect(result).resolves.toBeUndefined()
+      await expect(result).resolves.toBeUndefined()
     })
 
     it('valid (=== 0)', async () => {
       const props = { ...validValues, input: bn(0) }
       const result = validateCustomAmountInput(props)
-      expect(result).resolves.toBeUndefined()
+      await expect(result).resolves.toBeUndefined()
     })
 
     it('invalid (not numbers)', async () => {
       const props = { ...validValues, input: bn('hello') }
       const result = validateCustomAmountInput(props)
-      expect(result).rejects.toBe(errors.msg1)
+      await expect(result).rejects.toBe(errors.msg1)
     })
 
     it('invalid (input <= 0)', async () => {
       const props = { ...validValues, input: bn(-1) }
       const result = validateCustomAmountInput(props)
-      expect(result).rejects.toBe(errors.msg2)
+      await expect(result).rejects.toBe(errors.msg2)
     })
   })
 

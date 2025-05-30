@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 
-import * as FP from 'fp-ts/lib/function'
+import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { useTheme } from '../../../hooks/useTheme'

@@ -1,5 +1,5 @@
 import { Meta } from '@storybook/react'
-import * as FP from 'fp-ts/lib/function'
+import { function as FP } from 'fp-ts'
 
 import { CheckButton } from './CheckButton'
 

@@ -252,6 +252,7 @@ type WalletMessageKey =
   | 'wallet.nav.deposits'
   | 'wallet.nav.bonds'
   | 'wallet.nav.poolshares'
+  | 'wallet.nav.tcy'
   | 'wallet.nav.savers'
   | 'wallet.nav.runepool'
   | 'wallet.column.name'
@@ -575,30 +576,21 @@ type DepositMessageKey =
 
 export type DepositMessages = { [key in DepositMessageKey]: string }
 
-type SaversMessageKey =
-  | 'savers.noSavings'
-  | 'savers.detail.title'
-  | 'savers.detail.current.title'
-  | 'savers.detail.redeem.title'
-  | 'savers.detail.percent'
-  | 'savers.detail.totalGrowth'
-  | 'savers.detail.priceGrowth'
-  | 'savers.detail.assetAmount'
-  | 'savers.info.max.redeem.value'
-  | 'savers.info.max.balance'
-  | 'savers.add.state.sending'
-  | 'savers.add.state.checkResults'
-  | 'savers.add.state.pending'
-  | 'savers.add.state.success'
-  | 'savers.add.state.error'
-  | 'savers.withdraw.state.sending'
-  | 'savers.withdraw.state.checkResults'
-  | 'savers.withdraw.state.pending'
-  | 'savers.withdraw.state.success'
-  | 'savers.withdraw.state.error'
-  | 'savers.quote.error'
+type TcyMessageKey =
+  | 'tcy.claim'
+  | 'tcy.stake'
+  | 'tcy.unstake'
+  | 'tcy.status'
+  | 'tcy.stakedAmount'
+  | 'tcy.stakedAmountTooltip'
+  | 'tcy.walletBalance'
+  | 'tcy.walletBalanceTooltip'
+  | 'tcy.claimableAmount'
+  | 'tcy.claimNotice'
+  | 'tcy.stakeNotice'
+  | 'tcy.unstakeNotice'
 
-export type SaversMessages = { [key in SaversMessageKey]: string }
+export type TcyMessages = { [key in TcyMessageKey]: string }
 
 type RunePoolMessageKey =
   | 'runePool.noRuneAdded'
@@ -639,6 +631,7 @@ type HaltMessageKey =
   | 'halt.chain.synth'
   | 'halt.chain.pause'
   | 'halt.chain.pauseall'
+  | 'halt.chain.pauseDeposits'
 
 export type HaltMessages = { [key in HaltMessageKey]: string }
 
@@ -649,7 +642,7 @@ export type Messages = CommonMessages &
   SettingMessages &
   SwapMessages &
   DepositMessages &
-  SaversMessages &
+  TcyMessages &
   RunePoolMessages &
   LedgerMessages &
   BondsMessages &

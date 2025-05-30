@@ -16,7 +16,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 
 import { isSupportedChain } from '../../../shared/utils/chain'

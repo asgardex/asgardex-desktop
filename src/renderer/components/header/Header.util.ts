@@ -1,6 +1,5 @@
 import { currencySymbolByAsset } from '@xchainjs/xchain-util'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { function as FP, option as O } from 'fp-ts'
 
 import * as API from '../../helpers/apiHelper'
 import { isUSDAsset } from '../../helpers/assetHelper'

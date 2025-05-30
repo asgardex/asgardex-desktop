@@ -1,11 +1,10 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { AVAXChain, Client } from '@xchainjs/xchain-avax'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { defaultAvaxParams, FEE_BOUNDS } from '../../../shared/avax/const'
+import { defaultAvaxParams } from '../../../shared/avax/const'
 import { isError } from '../../../shared/utils/guard'
 import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
@@ -33,8 +32,7 @@ const clientState$: ClientState$ = FP.pipe(
               const client = new Client({
                 ...defaultAvaxParams,
                 network: network,
-                phrase: phrase,
-                feeBounds: FEE_BOUNDS[network]
+                phrase: phrase
               })
               return RD.success(client)
             } catch (error) {

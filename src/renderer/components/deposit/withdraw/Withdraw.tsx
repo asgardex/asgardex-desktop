@@ -16,8 +16,7 @@ import {
 } from '@xchainjs/xchain-util'
 import { Col } from 'antd'
 import BigNumber from 'bignumber.js'
-import * as FP from 'fp-ts/function'
-import * as O from 'fp-ts/lib/Option'
+import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
@@ -599,7 +598,9 @@ export const Withdraw: React.FC<Props> = ({
           {intl.formatMessage({ id: 'common.withdraw' })}
         </FlatButton>
       </div>
-      <div className="w-full pt-10px font-mainBold text-[14px]">{intl.formatMessage({ id: 'common.memos' })}</div>
+      <div className="w-full pt-10px font-mainBold text-[14px] text-text2 dark:text-text2d">
+        {intl.formatMessage({ id: 'common.memos' })}
+      </div>
       <div className="flex w-full items-center justify-between pl-10px text-[12px]">
         <div className="">
           <CopyLabel
@@ -610,7 +611,7 @@ export const Withdraw: React.FC<Props> = ({
           />
         </div>
 
-        <div className="truncate pl-10px font-main text-[12px]">
+        <div className="truncate pl-10px font-main text-[12px] text-gray2 dark:text-gray2d">
           <Tooltip
             title={`Alternate position withdraw use custom deposit with this memo ${memo}`}
             key={`tooltip-${protocolAsset.chain}-memo`}>

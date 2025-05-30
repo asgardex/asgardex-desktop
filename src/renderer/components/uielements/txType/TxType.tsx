@@ -1,15 +1,15 @@
 import React from 'react'
 
-import { PlusCircleOutlined, MinusCircleOutlined, ExperimentOutlined, StopOutlined } from '@ant-design/icons'
+import { PlusCircleIcon, MinusCircleIcon, BeakerIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { useIntl } from 'react-intl'
 
-import { ReactComponent as DonateIcon } from '../../../assets/svg/tx-donate.svg'
-import { ReactComponent as RefundIcon } from '../../../assets/svg/tx-refund.svg'
-import { ReactComponent as RunePoolIcon } from '../../../assets/svg/tx-runePool.svg'
-import { ReactComponent as SendIcon } from '../../../assets/svg/tx-send.svg'
-import { ReactComponent as DepositIcon } from '../../../assets/svg/tx-stake.svg'
-import { ReactComponent as SwapIcon } from '../../../assets/svg/tx-swap.svg'
-import { ReactComponent as WithdrawIcon } from '../../../assets/svg/tx-withdraw.svg'
+import DonateIcon from '../../../assets/svg/tx-donate.svg?react'
+import RefundIcon from '../../../assets/svg/tx-refund.svg?react'
+import RunePoolIcon from '../../../assets/svg/tx-runePool.svg?react'
+import SendIcon from '../../../assets/svg/tx-send.svg?react'
+import DepositIcon from '../../../assets/svg/tx-stake.svg?react'
+import SwapIcon from '../../../assets/svg/tx-swap.svg?react'
+import WithdrawIcon from '../../../assets/svg/tx-withdraw.svg?react'
 import { getTxTypeI18n } from '../../../helpers/actionsHelper'
 import { TxType as MidgardTxType } from '../../../services/midgard/midgardTypes'
 import * as Styled from './TxType.styles'
@@ -39,14 +39,14 @@ const getIcon = (type: MidgardTxType) => {
     case 'RUNEPOOLWITHDRAW':
       return <RunePoolIcon className="rotate-180" />
     case 'BOND':
-      return <PlusCircleOutlined className="text-[18px] !text-turquoise" />
+      return <PlusCircleIcon className="!stroke-turquoise" width={18} height={18} />
     case 'UNBOND':
     case 'LEAVE':
-      return <MinusCircleOutlined className="text-[18px] !text-turquoise" />
+      return <MinusCircleIcon className="!text-turquoise" width={18} height={18} />
     case 'TRADE':
-      return <ExperimentOutlined className="text-[18px] !text-turquoise" />
+      return <BeakerIcon className="!text-turquoise" width={18} height={18} />
     case 'FAILED':
-      return <StopOutlined className="text-[18px] !text-red" />
+      return <XMarkIcon className="!stroke-red" width={18} height={18} />
     default:
       return <></>
   }

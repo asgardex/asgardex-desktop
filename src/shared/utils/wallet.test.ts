@@ -1,4 +1,4 @@
-import * as NEA from 'fp-ts/lib/NonEmptyArray'
+import { nonEmptyArray as NEA } from 'fp-ts'
 
 import { toDerivationPathArray } from './wallet'
 

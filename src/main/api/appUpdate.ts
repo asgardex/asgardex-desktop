@@ -2,7 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { ipcMain } from 'electron'
 import log from 'electron-log'
 import { autoUpdater } from 'electron-updater'
-import * as O from 'fp-ts/Option'
+import { option as O } from 'fp-ts'
 
 import { AppUpdateRD } from '../../shared/api/types'
 import IPCMessages from '../ipc/messages'

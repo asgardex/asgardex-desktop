@@ -4,9 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { XChainClient } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AssetType } from '@xchainjs/xchain-util'
-import * as FP from 'fp-ts/function'
-import * as O from 'fp-ts/lib/Option'
-import * as NEA from 'fp-ts/NonEmptyArray'
+import { function as FP, option as O, nonEmptyArray as NEA } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -159,7 +157,7 @@ export const AssetDetailsView: React.FC = (): JSX.Element => {
           openExplorerTxUrl={openExplorerTxUrl}
           openExplorerAddressUrl={openExplorerAddressUrlHandler}
           walletAddress={walletAddress}
-          disableSend={isRuneNativeAsset(asset) && mimirHalt.haltTHORChain}
+          disableSend={isRuneNativeAsset(asset) && mimirHalt.HALTTHORTRADING}
           network={network}
           haltedChainsThor={haltedChainsThor}
           haltedChainsMaya={haltedChainsMaya}

@@ -2,8 +2,7 @@ import React, { useCallback, useState } from 'react'
 
 import { CheckCircleIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { function as FP, option as O } from 'fp-ts'
 import { useForm } from 'react-hook-form'
 import { useIntl } from 'react-intl'
 

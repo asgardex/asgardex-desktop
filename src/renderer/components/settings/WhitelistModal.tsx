@@ -8,7 +8,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { TokenAsset } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
-import * as FP from 'fp-ts/lib/function'
+import { function as FP } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 

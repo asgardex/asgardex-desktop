@@ -1,10 +1,10 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { Client, DepositParam } from '@xchainjs/xchain-mayachain'
+import { Client, CompatibleAsset, DepositParam } from '@xchainjs/xchain-mayachain'
 import type * as TN from '@xchainjs/xchain-mayanode'
 import { LPBondedNode } from '@xchainjs/xchain-mayanode'
 import { Address, AnyAsset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
-import * as O from 'fp-ts/Option'
+import { option as O } from 'fp-ts'
 import { IntlShape } from 'react-intl'
 import * as Rx from 'rxjs'
 
@@ -95,6 +95,7 @@ export type InteractParams = {
   readonly hdMode: HDMode
   readonly amount: BaseAmount
   readonly memo: string
+  readonly asset: CompatibleAsset
 }
 
 /**
@@ -163,18 +164,18 @@ export type MimirRD = RD.RemoteData<Error, Mimir>
 
 export type MimirConstantsRD = RD.RemoteData<Error, Mimir>
 
-export type MimirHaltChain = Record<`halt${EnabledChain}Chain`, boolean>
+export type MimirHaltChain = Record<`HALT${EnabledChain}CHAIN`, boolean>
 
-export type MimirHaltTrading = Record<`halt${EnabledChain}Trading`, boolean>
+export type MimirHaltTrading = Record<`HALT${EnabledChain}TRADING`, boolean>
 
-export type MimirPauseLP = Record<`pauseLp${EnabledChain}`, boolean>
+export type MimirPauseLP = Record<`PAUSELP${EnabledChain}`, boolean>
 
 export type MimirHaltTradingGlobal = {
-  haltTrading: boolean
+  haltGlobalTrading: boolean
 }
 
 export type MimirHaltLpGlobal = {
-  pauseLp: boolean
+  pauseGlobalLp: boolean
 }
 
 export type MimirHalt = MimirHaltChain & MimirHaltTrading & MimirPauseLP & MimirHaltTradingGlobal & MimirHaltLpGlobal

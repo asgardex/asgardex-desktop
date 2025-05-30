@@ -23,9 +23,7 @@ import {
 import { Form, RadioChangeEvent, Tooltip } from 'antd'
 import { FormInstance } from 'antd/es/form/Form'
 import BigNumber from 'bignumber.js'
-import * as E from 'fp-ts/Either'
-import * as FP from 'fp-ts/function'
-import * as O from 'fp-ts/lib/Option'
+import { either as E, function as FP, option as O } from 'fp-ts'
 import { debounce } from 'lodash'
 import { useIntl } from 'react-intl'
 
@@ -505,10 +503,21 @@ export const InteractFormMaya = (props: Props) => {
         walletIndex,
         hdMode,
         amount: amountToSend,
-        memo: getMemo()
+        memo: getMemo(),
+        asset
       })
     )
-  }, [subscribeInteractState, interactMaya$, walletType, walletAccount, walletIndex, hdMode, amountToSend, getMemo])
+  }, [
+    subscribeInteractState,
+    interactMaya$,
+    walletType,
+    walletAccount,
+    walletIndex,
+    hdMode,
+    amountToSend,
+    getMemo,
+    asset
+  ])
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
 

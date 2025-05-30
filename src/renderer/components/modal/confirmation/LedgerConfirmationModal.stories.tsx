@@ -1,7 +1,7 @@
 import { Meta, StoryFn } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { Chain } from '@xchainjs/xchain-util'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 
 import { LedgerConfirmationModal } from './'
 

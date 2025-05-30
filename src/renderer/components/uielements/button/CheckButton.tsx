@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react'
 
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
-import * as FP from 'fp-ts/function'
+import { function as FP } from 'fp-ts'
 
 import { Color, Size } from './Button.types'
 import { TextButton } from './TextButton'

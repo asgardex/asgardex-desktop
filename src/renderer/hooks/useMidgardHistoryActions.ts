@@ -1,8 +1,7 @@
 import { useRef, useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'

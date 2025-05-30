@@ -2,7 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Meta, StoryObj } from '@storybook/react'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
-import * as NEA from 'fp-ts/lib/NonEmptyArray'
+import { nonEmptyArray as NEA } from 'fp-ts'
 
 import { AssetBSC, AssetRuneNative } from '../../../../shared/utils/asset'
 import { WalletType } from '../../../../shared/wallet/types'

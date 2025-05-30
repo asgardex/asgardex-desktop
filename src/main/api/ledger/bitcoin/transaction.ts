@@ -1,4 +1,4 @@
-import Transport from '@ledgerhq/hw-transport'
+import * as Transport from '@ledgerhq/hw-transport'
 import {
   AddressFormat,
   AssetBTC,
@@ -12,7 +12,7 @@ import {
 import { FeeOption, Network, TxHash } from '@xchainjs/xchain-client'
 import { Address, BaseAmount } from '@xchainjs/xchain-util'
 import { BlockcypherNetwork, BlockcypherProvider, UtxoOnlineDataProviders } from '@xchainjs/xchain-utxo-providers'
-import * as E from 'fp-ts/lib/Either'
+import { either as E } from 'fp-ts'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'
@@ -34,7 +34,7 @@ export const send = async ({
   addressFormat = AddressFormat.P2WPKH,
   apiKey
 }: {
-  transport: Transport
+  transport: Transport.default
   network: Network
   sender?: Address
   recipient: Address

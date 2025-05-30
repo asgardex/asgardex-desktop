@@ -4,7 +4,7 @@ import * as ARB from '@xchainjs/xchain-evm'
 import { Address, AnyAsset, assetToString, baseAmount, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { ethers } from 'ethers'
-import * as E from 'fp-ts/Either'
+import { either as E } from 'fp-ts'
 
 import { isAethAsset } from '../../../../renderer/helpers/assetHelper'
 import { DEPOSIT_EXPIRATION_OFFSET, EVMZeroAddress } from '../../../../renderer/services/evm/const'

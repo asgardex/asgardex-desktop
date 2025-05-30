@@ -1,8 +1,7 @@
 import { Meta } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { assetToBase, assetAmount } from '@xchainjs/xchain-util'
-import * as FP from 'fp-ts/function'
-import * as O from 'fp-ts/Option'
+import { function as FP, option as O } from 'fp-ts'
 
 import { AssetRuneNative } from '../../../../../shared/utils/asset'
 import { WalletType } from '../../../../../shared/wallet/types'

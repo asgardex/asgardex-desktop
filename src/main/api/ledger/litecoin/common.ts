@@ -6,12 +6,12 @@ import { LedgerErrorId } from '../../../../shared/api/types'
 // Similar to default values in `Client` of `xchain-litecoin`
 // see https://github.com/xchainjs/xchainjs-lib/blob/56adf1e0d6ceab0bdf93f53fe808fe45bf79930f/packages/xchain-litecoin/src/client.ts#L56-L60
 export const getDerivationPath = (walletAccount: number, network: Network): string => {
-  const DERIVATION_PATHES = {
+  const DERIVATION_PATHS = {
     [Network.Mainnet]: ["84'", "2'", `${walletAccount}'`, '0/'],
     [Network.Testnet]: ["84'", "1'", `${walletAccount}'`, '0/'],
     [Network.Stagenet]: ["84'", "2'", `${walletAccount}'`, '0/']
   }
-  const path = DERIVATION_PATHES[network].join('/')
+  const path = DERIVATION_PATHS[network].join('/')
   return path
 }
 

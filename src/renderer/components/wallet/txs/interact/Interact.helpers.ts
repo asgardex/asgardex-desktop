@@ -1,9 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { BaseAmount, bn } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
-import * as E from 'fp-ts/Either'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { either as E, function as FP, option as O } from 'fp-ts'
 import { IntlShape } from 'react-intl'
 
 import { optionFromNullableString } from '../../../../../shared/utils/fp'

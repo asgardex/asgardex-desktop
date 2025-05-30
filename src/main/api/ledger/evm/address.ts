@@ -7,7 +7,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { ETHChain, defaultEthParams } from '@xchainjs/xchain-ethereum'
 import { ClientLedger, LedgerSigner } from '@xchainjs/xchain-evm'
 import { Chain } from '@xchainjs/xchain-util'
-import * as E from 'fp-ts/Either'
+import { either as E } from 'fp-ts'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { defaultAvaxParams } from '../../../../shared/avax/const'

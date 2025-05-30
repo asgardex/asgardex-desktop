@@ -10,6 +10,7 @@ const wallet: WalletMessages = {
   'wallet.nav.deposits': '예금',
   'wallet.nav.bonds': '채권',
   'wallet.nav.poolshares': 'LP 지분',
+  'wallet.nav.tcy': 'TCY',
   'wallet.nav.savers': '세이버',
   'wallet.nav.runepool': '룬 풀',
   'wallet.column.name': '이름',

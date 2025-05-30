@@ -4,7 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { MayaChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Grid } from 'antd'
-import * as FP from 'fp-ts/function'
+import { function as FP } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 

@@ -4,8 +4,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { Grid } from 'antd'
 import { ColumnsType, ColumnType } from 'antd/lib/table'
-import * as FP from 'fp-ts/function'
-import * as O from 'fp-ts/Option'
+import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { OpenExplorerTxUrl } from '../../services/clients'
@@ -71,7 +70,14 @@ export const PoolActionsHistoryTable: React.FC<Props> = ({
       FP.pipe(
         action,
         H.getTxId,
-        O.map((txID) => <CommonStyled.ExternalLinkIcon key="external link" onClick={() => openExplorerTxUrl(txID)} />),
+        O.map((txID) => (
+          <CommonStyled.ExternalLinkIcon
+            key="external link"
+            width={16}
+            height={16}
+            onClick={() => openExplorerTxUrl(txID)}
+          />
+        )),
         O.getOrElse(() => <></>)
       ),
     [openExplorerTxUrl]

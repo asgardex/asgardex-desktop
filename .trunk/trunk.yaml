@@ -1,0 +1,104 @@
+# This file controls the behavior of Trunk: https://docs.trunk.io/cli
+# To learn more about the format of this file, see https://docs.trunk.io/reference/trunk-yaml
+# trunk-ignore(prettier/SyntaxError)
+version: 0.1
+
+cli:
+  version: 1.22.12
+
+# Trunk provides extensibility via plugins: https://docs.trunk.io/plugins
+plugins:
+  sources:
+    - id: trunk
+      ref: v1.6.8
+      uri: https://github.com/trunk-io/plugins
+
+repo:
+  trunk_branch: develop
+
+lint:
+  enabled:
+    # 🧹 General Code Quality & Formatting
+    - eslint@8.57.0!             # JS/TS linting
+    - prettier@2.6.2!            # Code formatting
+    - markdownlint@0.44.0        # Markdown formatting
+    - codespell@2.4.1           # Spell-checking
+    # - stylelint@16.18.0         # CSS / SCSS linting
+    - yamllint@1.37.0           # YAML formatting
+    - shfmt@3.6.0               # Shell formatting
+    # - svgo@3.3.2                # Optimize SVGs
+    # - oxipng@9.1.4              # Optimize PNGs
+
+    # 🔐 Security
+    # - osv-scanner@2.0.1         # Open source vuln scanner
+    - checkov@3.2.407           # IaC security scanning
+    - trufflehog@3.88.25        # Secrets detection
+    - semgrep@1.120.0             # Static analysis tool that detects security issues, bugs, and code quality problems
+
+    # 📦 Project Hygiene
+    - git-diff-check           # Restrict to changed files
+
+    # 🔧 CI/CD
+    - actionlint@1.7.7          # GitHub Actions workflows
+
+  definitions:
+    - name: stylelint
+      commands:
+      - run: stylelint --config .stylelint.config.js ${target}
+
+    - name: codespell
+      commands:
+        - run: codespell --uri-ignore-words-list=* --ignore-words-list=liquify,TE,iif,afterAll,amountIn ${target}
+
+  ignore:
+    - linters: [ALL]
+      paths:
+        - node_modules/**
+        - build/**
+        - release/**
+        - .yarn/**
+        - .vscode/**
+        - src/renderer/i18n/**
+        - src/renderer/types/generated/**
+        - .storybook/**
+    - linters: [eslint]
+      paths:
+        - .stylelint.config.js
+    - linters: [codespell]
+      paths:
+        - scripts/**
+        - src/shared/utils/**
+        - src/main/utils/**
+
+    - linters: [markdownlint]
+      paths:
+        - README.md
+        - PACKAGE_MACOS.md
+        - .github/ISSUE_TEMPLATE.md
+        - .github/ISSUE_TEMPLATE/**
+        - BRANCHING_WORKFLOW.md
+
+    - linters: [yamllint]
+      paths:
+        - .github/config.yml
+        - .github/workflows/*
+
+    - linters: [prettier]
+      paths:
+        - package.json
+        - .github/ISSUE_TEMPLATE/**
+        - .trunk/trunk.yaml
+
+actions:
+  disabled:
+    - trunk-announce
+
+  enabled:
+    - trunk-fmt-pre-commit # Replaces lint-staged pre-commit
+    - trunk-check-pre-push
+    - trunk-upgrade-available
+
+runtimes:
+  enabled:
+    - python@3.10.8
+    - node@22.14.0

@@ -1,4 +1,4 @@
-import * as O from 'fp-ts/Option'
+import { option as O } from 'fp-ts'
 
 /**
  * queryString might be a full valid address or just a search query

@@ -10,7 +10,9 @@ const halt: HaltMessages = {
   'halt.chain.pause':
     'Las actividades de liquidez (añadir/eliminar) para cadena(s) {chains} han sido desactivadas temporalmente.',
   'halt.chain.pauseall':
-    'Se han desactivado temporalmente las actividades de liquidez (añadir/eliminar) para todas las cadenas.'
+    'Se han desactivado temporalmente las actividades de liquidez (añadir/eliminar) para todas las cadenas.',
+  'halt.chain.pauseDeposits':
+    'Los depósitos de liquidez (agregar) para la(s) cadena(s) {chains} han sido desactivados temporalmente.'
 }
 
 export default halt

@@ -2,7 +2,7 @@ import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
-import { ReactComponent as AllIconUI } from '../../assets/svg/filter-all.svg'
+import AllIconUI from '../../assets/svg/filter-all.svg?react'
 import { Button } from '../uielements/button'
 
 export const Menu = styled(A.Menu)`

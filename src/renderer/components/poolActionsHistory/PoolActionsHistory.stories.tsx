@@ -4,7 +4,7 @@ import { ArgTypes, Meta } from '@storybook/react'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, assetToBase } from '@xchainjs/xchain-util'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 
 import { getMockRDValueFactory, RDStatus, rdStatusOptions } from '../../../shared/mock/rdByStatus'
 import { MOCK_WALLET_ADDRESSES } from '../../../shared/mock/wallet'

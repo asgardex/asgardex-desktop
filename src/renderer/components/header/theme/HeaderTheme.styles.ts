@@ -2,8 +2,8 @@ import Text from 'antd/lib/typography/Text'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
-import { ReactComponent as DayThemeIconUI } from '../../../assets/svg/icon-theme-day.svg'
-import { ReactComponent as NightThemeIconUI } from '../../../assets/svg/icon-theme-night.svg'
+import DayThemeIconUI from '../../../assets/svg/icon-theme-day.svg?react'
+import NightThemeIconUI from '../../../assets/svg/icon-theme-night.svg?react'
 import { HeaderIconWrapper } from '../HeaderIcon.styles'
 
 export const HeaderThemeWrapper = styled(HeaderIconWrapper)``

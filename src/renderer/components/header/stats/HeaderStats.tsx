@@ -2,10 +2,10 @@ import React, { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
+import { AssetRuneNative, AssetTCY, THORChain } from '@xchainjs/xchain-thorchain'
 import { baseToAsset, formatAssetAmountCurrency, currencySymbolByAsset } from '@xchainjs/xchain-util'
 import { Grid, Row } from 'antd'
-import * as FP from 'fp-ts/lib/function'
+import { function as FP } from 'fp-ts'
 
 import { abbreviateNumber } from '../../../helpers/numberHelper'
 import { loadingString } from '../../../helpers/stringHelper'
@@ -16,8 +16,10 @@ import * as Styled from './HeaderStats.styles'
 
 export type Props = {
   runePrice: PriceRD
+  tcyPrice: RD.RemoteData<Error, string>
   mayaPrice: PriceRD
   reloadRunePrice: FP.Lazy<void>
+  reloadTcyPrice: FP.Lazy<void>
   reloadMayaPrice: FP.Lazy<void>
   volume24PriceRune: PriceRD
   volume24PriceMaya: PriceRD
@@ -28,8 +30,10 @@ export type Props = {
 export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
   const {
     runePrice: runePriceRD,
+    tcyPrice: tcyPriceRD,
     mayaPrice: mayaPriceRD,
     reloadRunePrice,
+    reloadTcyPrice,
     reloadMayaPrice,
     volume24PriceRune: volume24PriceRuneRD,
     volume24PriceMaya: volume24PriceMayaRD,
@@ -38,10 +42,13 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
   } = props
 
   const isSmallMobileView = Grid.useBreakpoint()?.xs ?? false
+  const isLargeMobileView = Grid.useBreakpoint()?.lg ?? false
+  const isXLargeMobileView = Grid.useBreakpoint()?.xl ?? false
 
   const { network } = useNetwork()
 
   const prevRunePriceLabel = useRef<string>(loadingString)
+  const prevTcyPriceLabel = useRef<string>(loadingString)
   const prevMayaPriceLabel = useRef<string>(loadingString)
   const runePriceLabel = useMemo(
     () =>
@@ -69,6 +76,25 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
       ),
 
     [runePriceRD]
+  )
+
+  const tcyPriceLabel = useMemo(
+    () =>
+      FP.pipe(
+        tcyPriceRD,
+        RD.fold(
+          () => prevTcyPriceLabel.current,
+          () => prevTcyPriceLabel.current,
+          () => '--',
+          // Success state
+          (price) => {
+            const label = price ?? '--' // Use the price or default to '--'
+            prevTcyPriceLabel.current = label // Update previous label
+            return label
+          }
+        )
+      ),
+    [tcyPriceRD]
   )
 
   const mayaPriceLabel = useMemo(
@@ -160,6 +186,15 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
     }
   }, [reloadRunePrice, reloadVolume24PriceRune, runePriceRD, volume24PriceRuneRD])
 
+  const reloadTcyStats = useCallback(() => {
+    if (!RD.isPending(volume24PriceRuneRD)) {
+      reloadVolume24PriceRune()
+    }
+    if (!RD.isPending(tcyPriceRD)) {
+      reloadTcyPrice()
+    }
+  }, [reloadTcyPrice, reloadVolume24PriceRune, tcyPriceRD, volume24PriceRuneRD])
+
   const reloadMayaStats = useCallback(() => {
     if (!RD.isPending(volume24PriceMayaRD)) {
       reloadVolume24PriceMaya()
@@ -187,6 +222,17 @@ export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
           </>
         )}
       </div>
+
+      {isSmallMobileView ||
+        (!(isLargeMobileView && !isXLargeMobileView) && (
+          <div
+            className="flex cursor-pointer items-center space-x-2 rounded-xl bg-bg0 py-1 pl-1 pr-2 drop-shadow dark:bg-gray0d"
+            onClick={reloadTcyStats}>
+            <AssetIcon size="xsmall" asset={AssetTCY} network={network} />
+            <Styled.Protocol>TCY</Styled.Protocol>
+            <Styled.Label loading={RD.isPending(tcyPriceRD) ? 'true' : 'false'}>{tcyPriceLabel}</Styled.Label>
+          </div>
+        ))}
 
       <div
         className="flex cursor-pointer items-center space-x-2 rounded-xl bg-bg0 py-1 pl-1 pr-2 drop-shadow dark:bg-gray0d"

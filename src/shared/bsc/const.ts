@@ -1,28 +1,20 @@
 import { AssetBSC, BSCChain, BSC_GAS_ASSET_DECIMAL, UPPER_FEE_BOUND } from '@xchainjs/xchain-bsc'
-import { ExplorerProvider, FeeBounds, Network } from '@xchainjs/xchain-client'
+import { ExplorerProvider, Network } from '@xchainjs/xchain-client'
 import { EVMClientParams } from '@xchainjs/xchain-evm'
-import { EtherscanProvider } from '@xchainjs/xchain-evm-providers'
+import { EtherscanProviderV2 } from '@xchainjs/xchain-evm-providers'
 import { BigNumber, ethers } from 'ethers'
 
+import { etherscanApiKey } from '../api/etherscan'
 import { envOrDefault } from '../utils/env'
 
-const LOWER_FEE_BOUND = 1_000_000_000
+const LOWER_FEE_BOUND = 1000000
 
-export const FEE_BOUNDS: Record<Network, FeeBounds | undefined> = {
-  /* for main|stagenet use default values defined in ETH.Client */
-  [Network.Mainnet]: undefined,
-  [Network.Stagenet]: undefined,
-  [Network.Testnet]: {
-    lower: LOWER_FEE_BOUND,
-    upper: UPPER_FEE_BOUND
-  }
-}
-
-export const bscScanApiKey = envOrDefault(process.env.REACT_APP_BSCSCAN_API_KEY, '')
-export const ankrApiKey = envOrDefault(process.env.REACT_APP_ANKR_API_KEY, '')
+export const ankrApiKey = envOrDefault(import.meta.env.VITE_ANKR_API_KEY, '')
 // =====Ethers providers=====
 const BSC_MAINNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider(`https://rpc.ankr.com/bsc/${ankrApiKey}`)
-const BSC_TESTNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider('https://bsc-testnet.public.blastapi.io')
+const BSC_TESTNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider(
+  `https://rpc.ankr.com/bsc_testnet_chapel/${ankrApiKey}`
+)
 
 const ethersJSProviders = {
   [Network.Mainnet]: BSC_MAINNET_ETHERS_PROVIDER,
@@ -32,21 +24,23 @@ const ethersJSProviders = {
 // =====Ethers providers=====
 
 // =====ONLINE providers=====
-const BSC_ONLINE_PROVIDER_TESTNET = new EtherscanProvider(
+const BSC_ONLINE_PROVIDER_TESTNET = new EtherscanProviderV2(
   BSC_TESTNET_ETHERS_PROVIDER,
-  'https://api-testnet.bscscan.com',
-  bscScanApiKey,
+  'https://api.etherscan.io/v2',
+  etherscanApiKey,
   BSCChain,
   AssetBSC,
-  BSC_GAS_ASSET_DECIMAL
+  BSC_GAS_ASSET_DECIMAL,
+  97
 )
-const BSC_ONLINE_PROVIDER_MAINNET = new EtherscanProvider(
+const BSC_ONLINE_PROVIDER_MAINNET = new EtherscanProviderV2(
   BSC_MAINNET_ETHERS_PROVIDER,
-  'https://api.bscscan.com',
-  bscScanApiKey,
+  'https://api.etherscan.io/v2',
+  etherscanApiKey,
   BSCChain,
   AssetBSC,
-  BSC_GAS_ASSET_DECIMAL
+  BSC_GAS_ASSET_DECIMAL,
+  56
 )
 const bscProviders = {
   [Network.Mainnet]: BSC_ONLINE_PROVIDER_MAINNET,

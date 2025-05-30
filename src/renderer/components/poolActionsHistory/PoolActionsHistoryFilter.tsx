@@ -1,11 +1,10 @@
 import React, { useCallback, useMemo } from 'react'
 
-import { CaretDownOutlined } from '@ant-design/icons'
+import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import { Dropdown } from 'antd'
 import { MenuProps } from 'antd/lib/menu'
 import { ItemType } from 'antd/lib/menu/hooks/useItems'
-import * as A from 'fp-ts/Array'
-import * as FP from 'fp-ts/function'
+import { array as A, function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { getTxTypeI18n } from '../../helpers/actionsHelper'
@@ -74,7 +73,7 @@ export const PoolActionsHistoryFilter: React.FC<Props> = ({
     <Dropdown overlay={menu} trigger={['click']} disabled={disabled}>
       <Styled.FilterButton className={className}>
         {currentFilter === 'ALL' ? intl.formatMessage({ id: 'common.all' }) : getTxTypeI18n(currentFilter, intl)}
-        <CaretDownOutlined />
+        <ChevronRightIcon width={16} height={16} />
       </Styled.FilterButton>
     </Dropdown>
   )

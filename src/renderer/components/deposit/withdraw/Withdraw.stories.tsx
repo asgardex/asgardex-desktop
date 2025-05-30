@@ -4,7 +4,7 @@ import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { AnyAsset, assetAmount, assetToBase, assetToString, baseAmount, bn } from '@xchainjs/xchain-util'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -43,7 +43,7 @@ const defaultProps: WitdrawProps = {
   // Password: "123"
   validatePassword$: mockValidatePassword$,
   reloadBalances: () => console.log('reload balances'),
-  // mock successfull result of withdraw$
+  // mock successful result of withdraw$
   withdraw$: (params) =>
     Rx.of(params).pipe(
       RxOp.tap((params) => console.log('withdraw$ ', params)),

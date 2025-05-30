@@ -2,7 +2,7 @@ import React, { forwardRef, useCallback, useEffect, useState } from 'react'
 
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
-import * as FP from 'fp-ts/lib/function'
+import { function as FP } from 'fp-ts'
 
 import { emptyString } from '../../../helpers/stringHelper'
 import { BaseButton } from '../button'

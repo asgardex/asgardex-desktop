@@ -4,7 +4,7 @@ import { ArrowTopRightOnSquareIcon, ChevronRightIcon } from '@heroicons/react/20
 import { Network } from '@xchainjs/xchain-client'
 import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
-import * as FP from 'fp-ts/lib/function'
+import { function as FP } from 'fp-ts'
 import { FormattedMessage, useIntl } from 'react-intl'
 
 import { ASYM_DEPOSIT_TOOL_URL } from '../../../const'

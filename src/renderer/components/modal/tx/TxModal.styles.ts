@@ -63,9 +63,7 @@ export const ErrorView = styled(UIErrorView)`
   display: block;
   font-size: 14px;
   line-height: 1.5;
-  background: #f7f7f7; /* Optional styling for better readability */
   padding: 10px; /* Padding for spacing */
-  border: 1px solid #ccc; /* Optional border for clarity */
 `
 
 // Style for displaying the status of each stage in the transaction

@@ -1,4 +1,4 @@
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 import { Observable } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 

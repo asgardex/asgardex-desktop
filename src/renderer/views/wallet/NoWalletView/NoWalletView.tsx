@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 
-import { FileOutlined, FileProtectOutlined } from '@ant-design/icons'
+import { DocumentIcon, DocumentCheckIcon } from '@heroicons/react/24/outline'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
@@ -21,8 +21,8 @@ export const NoWalletView = () => {
 
   return (
     <div className="flex h-full w-full items-center justify-center bg-bg1 dark:bg-bg1d">
-      <div className="hover:gray1 mx-4 flex flex-col justify-center rounded-lg border border-transparent p-4 text-center transition duration-500 ease-in-out hover:border-gray0 dark:hover:border-gray0d">
-        <FileOutlined className="mb-4 text-4xl dark:text-turquoise" />
+      <div className="hover:gray1 mx-4 flex flex-col items-center justify-center rounded-lg border border-transparent p-4 text-center transition duration-500 ease-in-out hover:border-gray0 dark:hover:border-gray0d">
+        <DocumentIcon className="mb-4 text-turquoise" width={36} height={36} />
         <BorderButton
           className="w-full min-w-[200px] p-20px"
           size="normal"
@@ -34,7 +34,7 @@ export const NoWalletView = () => {
       </div>
 
       <div className="hover:gray1 mx-4 flex flex-col items-center justify-center rounded-lg border border-transparent p-4 text-center transition duration-500 ease-in-out hover:border-gray0 dark:hover:border-gray0d">
-        <FileProtectOutlined className="mb-4 text-4xl dark:text-turquoise" />
+        <DocumentCheckIcon className="mb-4 text-turquoise" width={36} height={36} />
         <BorderButton
           className="w-full min-w-[200px] p-20px"
           size="normal"

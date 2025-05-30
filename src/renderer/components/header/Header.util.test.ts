@@ -1,4 +1,4 @@
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 
 import { AssetBTC, AssetETH, AssetRuneNative } from '../../../shared/utils/asset'
 import { AssetUSDCAVAX, AssetUSDCBSC } from '../../const'

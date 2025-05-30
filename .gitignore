@@ -6,7 +6,6 @@
 /build
 /release
 
-
 .DS_Store
 
 npm-debug.log*
@@ -22,17 +21,19 @@ yarn-error.log*
 
 .eslintcache
 
-/public/electron.js
-/public/preload.js
-
 # storybook static
 /storybook-static
 
 # don't share .env, but .env.sample
 .env
 
-# don't need to share yarn.lock
-yarn.lock
-
 dev-app-update.yml
 /.idea/
+
+# Trunk CLI cache directories
+.trunk/tools/
+.trunk/tmp/
+.trunk/out/
+.trunk/logs/
+
+stats.html

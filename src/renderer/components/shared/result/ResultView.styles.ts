@@ -1,4 +1,4 @@
-import { InfoCircleOutlined } from '@ant-design/icons'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
@@ -33,7 +33,7 @@ export const IconWrapper = styled.div`
   background: ${palette('background', 2)};
 `
 
-export const Icon = styled(InfoCircleOutlined)`
+export const Icon = styled(InformationCircleIcon)`
   display: flex;
   width: 100%;
   height: 100%;

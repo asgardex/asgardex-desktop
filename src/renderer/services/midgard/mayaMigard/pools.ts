@@ -2,11 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { DefaultApi } from '@xchainjs/xchain-mayamidgard'
 import { AnyAsset, assetFromString, assetToString, bn, Chain, currencySymbolByAsset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
-import * as A from 'fp-ts/Array'
-import * as FP from 'fp-ts/lib/function'
-import * as NEA from 'fp-ts/lib/NonEmptyArray'
-import * as P from 'fp-ts/lib/Predicate'
-import * as O from 'fp-ts/Option'
+import { array as A, function as FP, nonEmptyArray as NEA, predicate as P, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -53,7 +49,8 @@ import {
   GetLiquidityHistoryRequest,
   GetPoolsStatusEnum,
   PricePools,
-  PricePool
+  PricePool,
+  PausedChainsLD
 } from '../midgardTypes'
 import {
   ApiGetSwapHistoryParams,
@@ -518,6 +515,13 @@ const createPoolsService = ({
     liveData.map(A.filterMap((inboundAddress) => (inboundAddress.halted ? O.some(inboundAddress.chain) : O.none)))
   )
 
+  const pausedLPChains$: PausedChainsLD = FP.pipe(
+    inboundAddressesShared$,
+    liveData.map(
+      A.filterMap((inboundAddress) => (inboundAddress.chain_lp_actions_paused ? O.some(inboundAddress.chain) : O.none))
+    )
+  )
+
   /**
    * Load pool addresses once
    * Use it whenever you do need latest data (e.g. for validation)
@@ -525,7 +529,7 @@ const createPoolsService = ({
   const poolAddresses$ = (): PoolAddressesLD => FP.pipe(loadInboundAddresses$(), liveData.map(inboundToPoolAddresses))
 
   /**
-   * Get's (cached) pool addresses
+   * Gets (cached) pool addresses
    *
    * It will be updated as soon as `inboundAddressesInterval` is triggered
    * or by reloading via `reloadInboundAddresses`
@@ -538,7 +542,7 @@ const createPoolsService = ({
       return FP.pipe(
         poolAddresses,
         RD.toOption,
-        // TODO (@Veado) Will we ingore router for some cases (e.g. by withdrawing something from ETH vault not using router)=
+        // TODO (@Veado) Will we ignore router for some cases (e.g. by withdrawing something from ETH vault not using router)=
         (oPoolAddresses) => sequenceTOption(oPoolAddresses, oSelectedPoolAsset),
         O.chain(([addresses, { chain }]) => getPoolAddressesByChain(addresses, chain))
       )
@@ -904,7 +908,8 @@ const createPoolsService = ({
     poolsFilters$,
     setPoolsFilter,
     outboundAssetFeeByChain$,
-    haltedChains$
+    haltedChains$,
+    pausedLPChains$
   }
 }
 

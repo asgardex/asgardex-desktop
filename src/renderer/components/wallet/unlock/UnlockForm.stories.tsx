@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Meta, StoryObj } from '@storybook/react'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 
 import * as AT from '../../../storybook/argTypes'

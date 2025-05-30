@@ -2,14 +2,12 @@ import * as RD from '@devexperts/remote-data-ts'
 import { FeeOption, Fees, Network, Tx } from '@xchainjs/xchain-client'
 import { Address, AnyAsset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 
-import { Dex } from '../../../shared/api/types'
 import { WalletType, WalletAddress, HDMode } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
-import { AssetWithDecimal } from '../../types/asgardex'
-import { AssetWithAmount } from '../../types/asgardex'
+import { AssetWithDecimal, AssetWithAmount } from '../../types/asgardex'
 import { PoolAddress } from '../midgard/midgardTypes'
 import { TxStagesRD } from '../thorchain/types'
 import { ApiError, TxHashRD } from '../wallet/types'
@@ -40,26 +38,6 @@ export type DepositFees = { inFee: BaseAmount; outFee: BaseAmount; refundFee: Ba
 export type DepositAssetFees = DepositFees & { asset: AnyAsset }
 
 /**
- * Saver deposit fees
- *
- */
-export type SaverDepositFees = {
-  /** fee for asset txs */
-  readonly asset: DepositAssetFees
-}
-
-export type SaverDepositFeesRD = RD.RemoteData<Error, SaverDepositFees>
-export type SaverDepositFeesLD = LiveData<Error, SaverDepositFees>
-
-export type SaverDepositFeesParams = {
-  readonly asset: AnyAsset
-}
-
-export type SaverDepositFeesHandler = (asset: AnyAsset) => SaverDepositFeesLD
-
-export type ReloadSaverDepositFeesHandler = (asset: AnyAsset) => void
-
-/**
  * Sym. deposit fees
  *
  */
@@ -80,7 +58,7 @@ export type SymDepositFeesParams = {
 export type SymDepositFeesHandler = (asset: AnyAsset, protocolAsset: AnyAsset) => SymDepositFeesLD
 export type ReloadSymDepositFeesHandler = (asset: AnyAsset, protocolAsset: AnyAsset) => void
 
-export type SaverDepositParams = {
+export type DepositParams = {
   readonly poolAddress: PoolAddress
   readonly asset: AnyAsset
   readonly amount: BaseAmount
@@ -91,19 +69,6 @@ export type SaverDepositParams = {
   readonly walletType: WalletType
   readonly hdMode: HDMode
   readonly protocol: Chain
-}
-
-export type BorrowerDepositParams = {
-  readonly poolAddress: PoolAddress
-  readonly asset: AnyAsset
-  readonly amount: BaseAmount
-  readonly memo: string
-  readonly sender: Address
-  readonly walletIndex: number
-  readonly walletAccount: number
-  readonly walletType: WalletType
-  readonly hdMode: HDMode
-  readonly dex: Dex
 }
 
 export type SymDepositAmounts = { rune: BaseAmount; asset: BaseAmount }
@@ -229,9 +194,9 @@ export type SwapFeesHandler = (p: SwapFeesParams) => SwapFeesLD
 export type ReloadSwapFeesHandler = (p: SwapFeesParams) => void
 
 /**
- * State to reflect status of an Saver deposit by doing different requests
+ * State to reflect status of an Pool deposit by doing different requests
  */
-export type SaverDepositState = {
+export type DepositState = {
   // Number of current step
   readonly step: number
   // Constant total amount of steps
@@ -242,9 +207,9 @@ export type SaverDepositState = {
   readonly deposit: RD.RemoteData<ApiError, boolean>
 }
 
-export type SaverDepositState$ = Rx.Observable<SaverDepositState>
+export type DepositState$ = Rx.Observable<DepositState>
 
-export type SaverDepositStateHandler = (p: SaverDepositParams) => SaverDepositState$
+export type DepositStateHandler = (p: DepositParams) => DepositState$
 
 export type SymDepositValidationResult = { pool: boolean; node: boolean }
 export type SymDepositTxs = { rune: TxHashRD; asset: TxHashRD }
@@ -292,18 +257,6 @@ export type SymWithdrawFeesHandler = (asset: AnyAsset, protocolAsset: AnyAsset) 
 export type ReloadWithdrawFeesHandler = (asset: AnyAsset, protocolAsset: AnyAsset) => void
 
 /**
- * Saver Withdraw Fees
- */
-export type WithdrawAssetFees = WithdrawFees & {
-  /** fee asset */
-  asset: AnyAsset
-}
-
-export type SaverWithdrawFeesRD = RD.RemoteData<Error, WithdrawAssetFees>
-export type SaverWithdrawFeesLD = LiveData<Error, WithdrawAssetFees>
-export type SaverWithdrawFeesHandler = (asset: AnyAsset) => SaverWithdrawFeesLD
-
-/**
  * State to reflect status of a sym / saver. withdraw by doing different requests
  */
 export type WithdrawState = {
@@ -345,7 +298,7 @@ export type TradeWithdrawParams = {
 
 export type SymWithdrawStateHandler = (p: SymWithdrawParams) => WithdrawState$
 
-export type SaverWithdrawParams = {
+export type PoolWithdrawParams = {
   readonly poolAddress: PoolAddress
   readonly asset: AnyAsset
   readonly amount: BaseAmount
@@ -359,7 +312,7 @@ export type SaverWithdrawParams = {
   readonly protocol: Chain
 }
 
-export type SaverWithdrawStateHandler = (p: SaverWithdrawParams) => WithdrawState$
+export type PoolWithdrawStateHandler = (p: PoolWithdrawParams) => WithdrawState$
 
 export type TradeWithdrawStateHandler = (p: TradeWithdrawParams) => WithdrawState$
 

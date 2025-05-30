@@ -1,5 +1,5 @@
 import { Meta, StoryFn } from '@storybook/react'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 
 import * as AT from '../../../storybook/argTypes'
 import { HeaderLock as Component, Props } from './HeaderLock'

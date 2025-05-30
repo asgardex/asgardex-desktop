@@ -1,4 +1,4 @@
-import * as E from 'fp-ts/Either'
+import { either as E } from 'fp-ts'
 
 import { PoolsStorageEncoded } from '../api/io'
 import {
@@ -11,9 +11,10 @@ import {
   UserChainStorage,
   UserAssetStorage,
   UserTrustedAddressStorage,
-  UserBondProvidersStorage
+  UserBondProvidersStorage,
+  ApiFileStoreService,
+  CommonStorage
 } from '../api/types'
-import { ApiFileStoreService, CommonStorage } from '../api/types'
 import { Locale } from '../i18n/types'
 import { WalletType } from '../wallet/types'
 import { MOCK_KEYSTORE } from './wallet'

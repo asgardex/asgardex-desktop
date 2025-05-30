@@ -1,4 +1,4 @@
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 import * as RxOp from 'rxjs/operators'
 
 import { eqOString } from '../../helpers/fp/eq'

@@ -1,7 +1,7 @@
 import type Transport from '@ledgerhq/hw-transport'
 import { BCHChain, ClientLedger, defaultBchParams } from '@xchainjs/xchain-bitcoincash'
 import { Network } from '@xchainjs/xchain-client'
-import * as E from 'fp-ts/Either'
+import { either as E } from 'fp-ts'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'

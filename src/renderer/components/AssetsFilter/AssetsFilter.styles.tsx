@@ -1,10 +1,11 @@
-import * as AI from '@ant-design/icons'
+import { StarIcon } from '@heroicons/react/24/solid'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
 import { Button as ButtonUI, ButtonProps } from '../uielements/button'
 
 const filterButtonBorderRadius = 15
+
 export const FilterButton = styled(ButtonUI)<ButtonProps & { active: 'true' | 'false' }>`
   margin-right: 10px;
   &:last-child {
@@ -34,10 +35,8 @@ export const FilterButton = styled(ButtonUI)<ButtonProps & { active: 'true' | 'f
   }
 `
 
-export const Star = styled(AI.StarFilled)`
-  svg {
-    fill: ${palette('grey', 0)};
-    width: 15px;
-    height: 15px;
-  }
+export const Star = styled(StarIcon)`
+  fill: ${palette('grey', 0)}; /* Use fill for solid Heroicons */
+  width: 15px;
+  height: 15px;
 `

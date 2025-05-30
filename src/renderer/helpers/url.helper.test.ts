@@ -1,4 +1,4 @@
-import * as O from 'fp-ts/Option'
+import { option as O } from 'fp-ts'
 
 import { getUrlSearchParam } from './url.helper'
 

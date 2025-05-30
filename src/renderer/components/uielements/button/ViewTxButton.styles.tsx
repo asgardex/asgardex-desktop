@@ -4,8 +4,8 @@ import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
-import { Button as UIButton } from '.'
 import { ExternalLinkIcon as UIExternalLinkIcon } from '../common/Common.styles'
+import { Button as UIButton } from './Button'
 
 export const Wrapper = styled.div`
   display: flex;

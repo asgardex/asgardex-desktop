@@ -3,9 +3,7 @@ import React, { useMemo, useRef } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { Dropdown, Row, Col } from 'antd'
 import { ItemType } from 'antd/lib/menu/hooks/useItems'
-import * as FP from 'fp-ts/function'
-import * as A from 'fp-ts/lib/Array'
-import * as O from 'fp-ts/lib/Option'
+import { function as FP, array as A, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
@@ -13,9 +11,10 @@ import { useAppContext } from '../../../contexts/AppContext'
 import { OnlineStatus } from '../../../services/app/types'
 import {
   MidgardStatusRD as MidgardMayaStatusRD,
-  MidgardUrlRD as MidgardMayaUrlRD
+  MidgardUrlRD as MidgardMayaUrlRD,
+  MidgardStatusRD,
+  MidgardUrlRD
 } from '../../../services/midgard/midgardTypes'
-import { MidgardStatusRD, MidgardUrlRD } from '../../../services/midgard/midgardTypes'
 import { MimirRD } from '../../../services/thorchain/types'
 import { DownIcon } from '../../icons'
 import { ConnectionStatus } from '../../shared/icons'
@@ -307,7 +306,7 @@ export const HeaderNetStatus: React.FC<Props> = (props): JSX.Element => {
       {isDesktopView && (
         <Col span={24}>
           <Dropdown overlay={desktopMenu} trigger={['click']} placement="bottom">
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+            {}
             <a className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
               <Row justify="space-between" align="middle">
                 <ConnectionStatus color={appOnlineStatusColor} />

@@ -1,11 +1,11 @@
-import { SelectOutlined } from '@ant-design/icons'
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
 import { Label as UILabel } from '../../../components/uielements/label'
 
-export const ExternalLinkIcon = styled(SelectOutlined)`
+export const ExternalLinkIcon = styled(ArrowTopRightOnSquareIcon)`
   svg {
     height: 20px;
     width: 20px;

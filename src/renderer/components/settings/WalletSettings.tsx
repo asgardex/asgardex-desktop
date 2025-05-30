@@ -1,7 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { DeleteOutlined, ExportOutlined, EyeOutlined, LockOutlined, SearchOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
+import {
+  TrashIcon,
+  ArrowUpTrayIcon,
+  EyeIcon,
+  ExclamationTriangleIcon,
+  LockClosedIcon,
+  MagnifyingGlassIcon,
+  QrCodeIcon,
+  ArrowUpRightIcon,
+  PlusCircleIcon
+} from '@heroicons/react/24/outline'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
@@ -23,9 +33,7 @@ import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Address, Chain } from '@xchainjs/xchain-util'
 import { List, RadioChangeEvent, message } from 'antd'
 import clsx from 'clsx'
-import * as FP from 'fp-ts/function'
-import * as A from 'fp-ts/lib/Array'
-import * as O from 'fp-ts/lib/Option'
+import { function as FP, array as A, option as O } from 'fp-ts'
 import { FormattedMessage, useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
@@ -35,6 +43,7 @@ import { EvmHDMode } from '../../../shared/evm/types'
 import { chainToString, EnabledChain, isSupportedChain } from '../../../shared/utils/chain'
 import { isError } from '../../../shared/utils/guard'
 import { HDMode, WalletAddress, WalletType } from '../../../shared/wallet/types'
+import RemoveIcon from '../../assets/svg/icon-remove.svg?react'
 import { WalletPasswordConfirmationModal } from '../../components/modal/confirmation'
 import { RemoveWalletConfirmationModal } from '../../components/modal/confirmation/RemoveWalletConfirmationModal'
 import { AssetIcon } from '../../components/uielements/assets/assetIcon/AssetIcon'
@@ -67,7 +76,6 @@ import {
 } from '../../services/wallet/types'
 import { walletTypeToI18n } from '../../services/wallet/util'
 import { useApp } from '../../store/app/hooks'
-import { AttentionIcon } from '../icons'
 import * as StyledR from '../shared/form/Radio.styles'
 import { FlatButton } from '../uielements/button'
 import { SwitchButton } from '../uielements/button/SwitchButton'
@@ -265,7 +273,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
       <div className="mt-10px w-full">
         <Styled.WalletTypeLabel>{walletTypeToI18n(WalletType.Ledger, intl)}</Styled.WalletTypeLabel>
         <div className="ml-40px flex items-center pt-5px text-[12px] uppercase text-text2 dark:text-text2d">
-          <Styled.Icon component={AttentionIcon} />
+          <ExclamationTriangleIcon className="mr-2" width={24} height={24} />
           {intl.formatMessage({ id: 'common.notsupported.fornetwork' }, { network })}
         </div>
       </div>
@@ -348,8 +356,9 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
           <>
             <div className="flex w-full flex-col md:w-auto lg:flex-row">
               <div className="mr-30px flex items-center md:mr-0">
-                <Styled.AddLedgerButton onClick={addLedgerAddressHandler} loading={loading}>
-                  <Styled.AddLedgerIcon /> {intl.formatMessage({ id: 'ledger.add.device' })}
+                <Styled.AddLedgerButton className="gap-x-1" loading={loading} onClick={addLedgerAddressHandler}>
+                  <PlusCircleIcon className="text-turquoise" width={20} height={20} />
+                  {intl.formatMessage({ id: 'ledger.add.device' })}
                 </Styled.AddLedgerButton>
                 <>
                   <div className="text-[12px] uppercase text-text2 dark:text-text2d">
@@ -368,7 +377,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                   <InfoIcon tooltip={intl.formatMessage({ id: 'setting.wallet.account.info' })} />
                 </>
                 <>
-                  <div className="text-[12px] uppercase text-text2 dark:text-text2d">
+                  <div className="ml-2 text-[12px] uppercase text-text2 dark:text-text2d">
                     {intl.formatMessage({ id: 'setting.wallet.index' })}
                   </div>
                   <Styled.WalletIndexInput
@@ -436,14 +445,24 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
         const { address, chain } = walletAddress
         return (
           <>
-            <div className="flex w-full items-center">
+            <div className="flex w-full items-center gap-x-1">
               <Styled.AddressEllipsis address={address} chain={chain} network={network} enableCopy={true} />
-              <Styled.QRCodeIcon onClick={() => setShowQRModal(O.some({ asset: getChainAsset(chain), address }))} />
+              <QrCodeIcon
+                className="cursor-pointer text-turquoise"
+                width={20}
+                height={20}
+                onClick={() => setShowQRModal(O.some({ asset: getChainAsset(chain), address }))}
+              />
               <Tooltip
                 title={intl.formatMessage({
                   id: 'wallet.ledger.viewAddress'
                 })}>
-                <Styled.AddressLinkIcon onClick={() => clickAddressLinkHandler(chain, address)} />
+                <ArrowUpRightIcon
+                  className="cursor-pointer text-turquoise"
+                  width={20}
+                  height={20}
+                  onClick={() => clickAddressLinkHandler(chain, address)}
+                />
               </Tooltip>
               <Tooltip
                 title={intl.formatMessage(
@@ -452,7 +471,12 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                   },
                   { address }
                 )}>
-                <Styled.EyeOutlined onClick={() => verifyLedgerAddressHandler(walletAddress)} />
+                <EyeIcon
+                  className="text-turquoise cursor-pointer"
+                  width={20}
+                  height={20}
+                  onClick={() => verifyLedgerAddressHandler(walletAddress)}
+                />
               </Tooltip>
               <Tooltip
                 title={intl.formatMessage(
@@ -461,7 +485,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                   },
                   { chain }
                 )}>
-                <Styled.RemoveAddressIcon onClick={() => removeLedgerAddress(chain)} />
+                <RemoveIcon className="w-4 h-4" onClick={() => removeLedgerAddress(chain)} />
               </Tooltip>
             </div>
           </>
@@ -524,14 +548,24 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
         <>
           <Styled.WalletTypeLabel>{walletTypeToI18n(WalletType.Keystore, intl)}</Styled.WalletTypeLabel>
           <div className="my-0 w-full overflow-hidden px-40px ">
-            <div className="flex w-full items-center">
+            <div className="flex w-full items-center gap-x-1">
               <Styled.AddressEllipsis address={address} chain={chain} network={network} enableCopy={true} />
-              <Styled.QRCodeIcon onClick={() => setShowQRModal(O.some({ asset: getChainAsset(chain), address }))} />
+              <QrCodeIcon
+                className="cursor-pointer text-turquoise"
+                width={20}
+                height={20}
+                onClick={() => setShowQRModal(O.some({ asset: getChainAsset(chain), address }))}
+              />
               <Tooltip
                 title={intl.formatMessage({
                   id: 'wallet.ledger.viewAddress'
                 })}>
-                <Styled.AddressLinkIcon onClick={() => clickAddressLinkHandler(chain, address)} />
+                <ArrowUpRightIcon
+                  className="cursor-pointer text-turquoise"
+                  width={20}
+                  height={20}
+                  onClick={() => clickAddressLinkHandler(chain, address)}
+                />
               </Tooltip>
             </div>
           </div>
@@ -702,8 +736,9 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
         />
 
         <div className="mr-30px flex items-center md:mr-0">
-          <Styled.AddLedgerButton onClick={handleAddAddress}>
-            <Styled.AddLedgerIcon /> {intl.formatMessage({ id: 'common.store' })}
+          <Styled.AddLedgerButton className="gap-x-1" onClick={handleAddAddress}>
+            <PlusCircleIcon className="text-turquoise" width={20} height={20} />
+            {intl.formatMessage({ id: 'common.store' })}
           </Styled.AddLedgerButton>
           <InfoIcon className="ml-10px" tooltip={intl.formatMessage({ id: 'setting.wallet.storeAddress.info' })} />
         </div>
@@ -725,7 +760,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
                   <div className="flex w-full items-center ">
                     {' '}
                     <Styled.AddressEllipsis address={item.address} chain={chain} network={network} enableCopy={true} />
-                    <Styled.RemoveAddressIcon onClick={() => handleRemoveAddress(item)} />
+                    <RemoveIcon className="w-4 h-4" onClick={() => handleRemoveAddress(item)} />
                   </div>
                 }
               />
@@ -928,22 +963,22 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
         {renderRenameWalletError}
         <div className="mt-10 flex flex-row items-center justify-center space-x-2">
           <ActionButton
-            icon={<ExportOutlined className="text-[24px]" />}
+            icon={<ArrowUpTrayIcon width={24} height={24} />}
             text={intl.formatMessage({ id: 'setting.export' })}
             onClick={exportKeystoreHandler}
           />
           <ActionButton
-            icon={<LockOutlined className="text-[24px]" />}
+            icon={<LockClosedIcon width={24} height={24} />}
             text={intl.formatMessage({ id: 'setting.lock' })}
             onClick={lockWallet}
           />
           <ActionButton
-            icon={<EyeOutlined className="text-[24px]" />}
+            icon={<EyeIcon width={24} height={24} />}
             text={intl.formatMessage({ id: 'setting.view.phrase' })}
             onClick={() => setShowPasswordModal(true)}
           />
           <ActionButton
-            icon={<DeleteOutlined className="text-[24px]" />}
+            icon={<TrashIcon width={24} height={24} />}
             text={intl.formatMessage({ id: 'wallet.remove.label' })}
             onClick={() => setShowRemoveWalletModal(true)}
           />
@@ -954,7 +989,7 @@ export const WalletSettings: React.FC<Props> = (props): JSX.Element => {
         <div className="mt-30px flex justify-center md:ml-4 md:justify-start">
           <Styled.Input
             className="rounded-lg border border-solid border-bg2 bg-bg0 dark:border-bg2d dark:bg-bg0d"
-            prefix={<SearchOutlined />}
+            prefix={<MagnifyingGlassIcon />}
             onChange={filterAccounts}
             allowClear
             placeholder={intl.formatMessage({ id: 'common.search' }).toUpperCase()}

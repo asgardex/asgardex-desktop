@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { AssetTCY } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 import { debounce } from 'lodash'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -178,7 +179,11 @@ export const AssetsView: React.FC = (): JSX.Element => {
           navigate(walletRoutes.send.path())
           break
         case 'deposit':
-          navigate(walletRoutes.interact.path({ interactType: InteractType.Bond }))
+          navigate(
+            walletRoutes.interact.path({
+              interactType: selectedAsset.asset === AssetTCY ? InteractType.Custom : InteractType.Bond
+            })
+          )
           break
       }
     },

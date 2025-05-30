@@ -1,10 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { SwapOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
+import { ArrowsRightLeftIcon as SwapOutlined } from '@heroicons/react/20/solid'
 import { Network } from '@xchainjs/xchain-client'
-import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { Client as MayachainClient } from '@xchainjs/xchain-mayachain'
+import { AssetCacao, MAYAChain, Client as MayachainClient } from '@xchainjs/xchain-mayachain'
 import { Client as ThorchainClient, THORChain, AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import {
   Address,
@@ -14,8 +13,7 @@ import {
   baseToAsset,
   formatAssetAmountCurrency
 } from '@xchainjs/xchain-util'
-import * as FP from 'fp-ts/function'
-import * as O from 'fp-ts/Option'
+import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
@@ -364,7 +362,7 @@ export const BondsView = (): JSX.Element => {
               onClick={() =>
                 setActiveLabel((prev) => (prev === LabelView.Connected ? LabelView.Monitored : LabelView.Connected))
               }>
-              <SwapOutlined className="rounded-full border border-solid border-turquoise p-1" />
+              <SwapOutlined className="rounded-full border border-solid border-turquoise p-[2px] w-5 h-5" />
             </BaseButton>
           </Styled.TitleContainer>
           <div className="absolute right-0 flex items-center">

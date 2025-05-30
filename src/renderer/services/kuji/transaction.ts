@@ -1,8 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { KUJIChain, AssetKUJI } from '@xchainjs/xchain-kujira'
-import * as E from 'fp-ts/lib/Either'
-import * as FP from 'fp-ts/lib/function'
+import { either as E, function as FP } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -12,8 +11,7 @@ import { isLedgerWallet } from '../../../shared/utils/guard'
 import { Network$ } from '../app/types'
 import * as C from '../clients'
 import { TxHashLD, ErrorId } from '../wallet/types'
-import { TransactionService } from './types'
-import { Client$, SendTxParams } from './types'
+import { TransactionService, Client$, SendTxParams } from './types'
 
 export const createTransactionService = (client$: Client$, network$: Network$): TransactionService => {
   const common = C.createTransactionService(client$)

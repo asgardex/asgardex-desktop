@@ -1,20 +1,3 @@
-// All icons used as <MysvgIcon> components
-// Note: CRA5 + webpack has some issues by importing svg properly
-// Workaround: Use `file-loader` explicit for imports
-// See https://github.com/facebook/create-react-app/issues/11770#issuecomment-1022024494
-/* eslint-disable import/no-webpack-loader-syntax */
-import adaIcon from '!file-loader!../../assets/svg/asset-ada.svg'
-import arbIcon from '!file-loader!../../assets/svg/asset-arb.svg'
-import atomIcon from '!file-loader!../../assets/svg/asset-atom.svg'
-import avaxIcon from '!file-loader!../../assets/svg/asset-avax.svg'
-import baseIcon from '!file-loader!../../assets/svg/asset-base.svg'
-import bscIcon from '!file-loader!../../assets/svg/asset-bsc.svg'
-import btcIcon from '!file-loader!../../assets/svg/asset-btc.svg'
-import dashIcon from '!file-loader!../../assets/svg/asset-dash.svg'
-import ethIcon from '!file-loader!../../assets/svg/asset-eth.svg'
-import xrdIcon from '!file-loader!../../assets/svg/asset-radix.svg'
-import runeIcon from '!file-loader!../../assets/svg/asset-rune.svg'
-import solIcon from '!file-loader!../../assets/svg/asset-sol.svg'
 import cacaoIcon from '../../assets/png/asset-cacao.png'
 import dogeIcon from '../../assets/png/asset-doge.png'
 import kujiIcon from '../../assets/png/asset-kuji.png'
@@ -23,15 +6,28 @@ import mayaIcon from '../../assets/png/asset-maya.png'
 import tgtIcon from '../../assets/png/asset-tgt.png'
 import usdpIcon from '../../assets/png/asset-usdp.png'
 import uskIcon from '../../assets/png/asset-usk.png'
-import { ReactComponent as CurrencyIcon } from '../../assets/svg/currency-icon.svg'
-import { ReactComponent as AttentionIcon } from '../../assets/svg/icon-attention.svg'
-import { ReactComponent as DownIcon } from '../../assets/svg/icon-down.svg'
-import { ReactComponent as EyeHideIcon } from '../../assets/svg/icon-eye-hide.svg'
-import { ReactComponent as EyeIcon } from '../../assets/svg/icon-eye.svg'
-import { ReactComponent as LoadingIcon } from '../../assets/svg/icon-loading.svg'
-import { ReactComponent as LockIcon } from '../../assets/svg/icon-lock-warning.svg'
-import { ReactComponent as UnlockIcon } from '../../assets/svg/icon-unlock-warning.svg'
-import { ReactComponent as LedgerIcon } from '../../assets/svg/ledger.svg'
+import arbIcon from '../../assets/svg/asset-arb.svg?url'
+import atomIcon from '../../assets/svg/asset-atom.svg?url'
+import avaxIcon from '../../assets/svg/asset-avax.svg?url'
+import baseIcon from '../../assets/svg/asset-base.svg?url'
+import bscIcon from '../../assets/svg/asset-bsc.svg?url'
+import btcIcon from '../../assets/svg/asset-btc.svg?url'
+import dashIcon from '../../assets/svg/asset-dash.svg?url'
+import ethIcon from '../../assets/svg/asset-eth.svg?url'
+import xrdIcon from '../../assets/svg/asset-radix.svg?url'
+import runeIcon from '../../assets/svg/asset-rune.svg'
+import solIcon from '../../assets/svg/asset-sol.svg?url'
+import tcyIcon from '../../assets/svg/asset-tcy.svg?url'
+import CurrencyIcon from '../../assets/svg/currency-icon.svg?react'
+import AttentionIcon from '../../assets/svg/icon-attention.svg?react'
+import DownIcon from '../../assets/svg/icon-down.svg?react'
+import EyeHideIcon from '../../assets/svg/icon-eye-hide.svg?react'
+import EyeIcon from '../../assets/svg/icon-eye.svg?react'
+import LoadingIcon from '../../assets/svg/icon-loading.svg?react'
+import LockIcon from '../../assets/svg/icon-lock-warning.svg?react'
+import UnlockIcon from '../../assets/svg/icon-unlock-warning.svg?react'
+import LedgerIcon from '../../assets/svg/ledger.svg?react'
+import adaIcon from '../../assets/svg/asset-ada.svg?url'
 
 export {
   arbIcon,
@@ -43,6 +39,7 @@ export {
   dogeIcon,
   ethIcon,
   runeIcon,
+  tcyIcon,
   tgtIcon,
   CurrencyIcon,
   DownIcon,

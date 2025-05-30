@@ -3,7 +3,7 @@ import { Network, TxHash } from '@xchainjs/xchain-client'
 import { AssetATOM, ClientLedger, defaultClientConfig, getDenom } from '@xchainjs/xchain-cosmos'
 import { CompatibleAsset } from '@xchainjs/xchain-cosmos/lib/types'
 import { Address, AnyAsset, assetToString, BaseAmount } from '@xchainjs/xchain-util'
-import * as E from 'fp-ts/Either'
+import { either as E } from 'fp-ts'
 
 import { LedgerError, LedgerErrorId } from '../../../../shared/api/types'
 import { isError } from '../../../../shared/utils/guard'

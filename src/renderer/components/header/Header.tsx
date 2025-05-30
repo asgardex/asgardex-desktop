@@ -1,7 +1,7 @@
 import React from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 
 import { useMidgardContext } from '../../contexts/MidgardContext'
@@ -14,6 +14,7 @@ import { useMayaPrice } from '../../hooks/useMayaPrice'
 import { useNetwork } from '../../hooks/useNetwork'
 import { usePricePools } from '../../hooks/usePricePools'
 import { useRunePrice } from '../../hooks/useRunePrice'
+import { useTcyPrice } from '../../hooks/useTcyPrice'
 import { useThorchainClientUrl } from '../../hooks/useThorchainClientUrl'
 import { useVolume24PriceMaya } from '../../hooks/useVolume24HrPriceMaya'
 import { useVolume24Price } from '../../hooks/useVolume24Price'
@@ -39,6 +40,7 @@ export const Header: React.FC = (): JSX.Element => {
   const oSelectedPricePoolAsset = useObservableState<SelectedPricePoolAsset>(selectedPricePoolAsset$, O.none)
 
   const { runePriceRD, reloadRunePrice } = useRunePrice()
+  const { tcyPriceRD, reloadTcyPrice } = useTcyPrice()
   const { mayaPriceRD, reloadMayaPrice } = useMayaPrice()
   const { volume24PriceRD, reloadVolume24Price } = useVolume24Price()
   const { volume24PriceRD: volume24PriceMayaRD, reloadVolume24Price: reloadVolume24PriceMaya } = useVolume24PriceMaya()
@@ -64,6 +66,8 @@ export const Header: React.FC = (): JSX.Element => {
       setSelectedPricePool={setSelectedPricePool}
       runePrice={runePriceRD}
       reloadRunePrice={reloadRunePrice}
+      tcyPrice={tcyPriceRD}
+      reloadTcyPrice={reloadTcyPrice}
       mayaPrice={mayaPriceRD}
       reloadMayaPrice={reloadMayaPrice}
       volume24PriceRune={volume24PriceRD}

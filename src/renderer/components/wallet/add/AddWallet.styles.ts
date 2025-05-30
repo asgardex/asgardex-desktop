@@ -1,4 +1,4 @@
-import { SwitcherOutlined, UnlockOutlined } from '@ant-design/icons/lib'
+import { ArrowsUpDownIcon, LockOpenIcon } from '@heroicons/react/20/solid'
 import styled from 'styled-components'
 import { key, palette } from 'styled-theme'
 
@@ -20,11 +20,11 @@ export const Label = styled(UILabel)`
   text-transform: uppercase;
 `
 
-export const ConnectIcon = styled(SwitcherOutlined)`
+export const ConnectIcon = styled(ArrowsUpDownIcon)`
   height: 60px;
   width: 60px;
   margin-bottom: ${key('sizes.gutter.vertical', '0px')};
-  color: ${palette('gray', 2)};
+  stroke: ${palette('gray', 2)};
 
   svg {
     height: 100%;
@@ -32,11 +32,11 @@ export const ConnectIcon = styled(SwitcherOutlined)`
   }
 `
 
-export const UnlockIcon = styled(UnlockOutlined)`
+export const UnlockIcon = styled(LockOpenIcon)`
   height: 60px;
   width: 60px;
   margin-bottom: ${key('sizes.gutter.vertical', '0px')};
-  color: ${palette('gray', 2)};
+  stroke: ${palette('gray', 2)};
 
   svg {
     height: 100%;

@@ -1,6 +1,4 @@
-import * as A from 'fp-ts/Array'
-import * as FP from 'fp-ts/function'
-import * as O from 'fp-ts/Option'
+import { array as A, function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 

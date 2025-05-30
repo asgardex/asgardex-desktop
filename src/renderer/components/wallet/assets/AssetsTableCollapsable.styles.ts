@@ -1,4 +1,4 @@
-import { CaretRightOutlined } from '@ant-design/icons'
+import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
@@ -125,11 +125,11 @@ export const Collapse = styled(A.Collapse)`
   }
 `
 
-export const ExpandIcon = styled(CaretRightOutlined)`
+export const ExpandIcon = styled(ChevronRightIcon)`
   margin-top: -13px;
-  svg {
-    color: ${palette('primary', 2)};
-  }
+  stroke: ${palette('primary', 2)};
+  width: 16px; /* Match Ant Design size */
+  height: 16px;
 `
 
 const ICON_SIZE = 16

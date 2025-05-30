@@ -3,7 +3,7 @@ import { StoryFn, Meta } from '@storybook/react'
 import { AssetBSC, BSC_GAS_ASSET_DECIMAL, BSCChain } from '@xchainjs/xchain-bsc'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { assetAmount, assetToBase, bn } from '@xchainjs/xchain-util'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 
 import { BSC_ADDRESS_TESTNET, RUNE_ADDRESS_TESTNET } from '../../../shared/mock/address'
 import { WalletType } from '../../../shared/wallet/types'

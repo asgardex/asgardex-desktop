@@ -1,15 +1,16 @@
 import { useMemo } from 'react'
 
-/* eslint-disable import/no-webpack-loader-syntax */
-import ThorchainIcon from '!file-loader!../../assets/svg/asset-rune.svg'
+import clsx from 'clsx'
 import ChainflipIcon from '../../assets/png/asset-flip.png'
 import MayaIcon from '../../assets/png/asset-maya.png'
+import ThorchainIcon from '../../assets/svg/asset-rune.svg?url'
 
 type Props = {
+  className?: string
   protocol: string
 }
 
-export const ProviderIcon = ({ protocol }: Props) => {
+export const ProviderIcon = ({ className, protocol }: Props) => {
   const providerIcon = useMemo(() => {
     if (protocol === 'Thorchain') return ThorchainIcon
     if (protocol === 'Mayachain') return MayaIcon
@@ -18,5 +19,9 @@ export const ProviderIcon = ({ protocol }: Props) => {
     return null
   }, [protocol])
 
-  return providerIcon ? <img className="h-6 w-6 rounded-full" src={providerIcon} alt="provider" /> : <></>
+  return providerIcon ? (
+    <img className={clsx('h-6 w-6 rounded-full', className)} src={providerIcon} alt="provider" />
+  ) : (
+    <></>
+  )
 }

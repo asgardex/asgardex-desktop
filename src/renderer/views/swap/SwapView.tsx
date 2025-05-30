@@ -6,10 +6,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { ThorChain } from '@xchainjs/xchain-mayachain-query'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, assetToString, bn, Chain, baseAmount, AnyAsset, AssetType } from '@xchainjs/xchain-util'
-import * as FP from 'fp-ts/function'
-import * as A from 'fp-ts/lib/Array'
-import * as Eq from 'fp-ts/lib/Eq'
-import * as O from 'fp-ts/lib/Option'
+import { function as FP, array as A, eq as Eq, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
@@ -26,8 +23,7 @@ import { Swap, TradeSwap } from '../../components/swap'
 import { SLIP_TOLERANCE_KEY } from '../../components/swap/SelectableSlipTolerance'
 import { SwapAsset } from '../../components/swap/Swap.types'
 import * as Utils from '../../components/swap/Swap.utils'
-import { BackLinkButton } from '../../components/uielements/button'
-import { Button, RefreshButton } from '../../components/uielements/button'
+import { BackLinkButton, Button, RefreshButton } from '../../components/uielements/button'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useAppContext } from '../../contexts/AppContext'
 import { useChainContext } from '../../contexts/ChainContext'
@@ -54,7 +50,7 @@ import { SwapRouteParams, SwapRouteTargetWalletType } from '../../routes/pools/s
 import * as walletRoutes from '../../routes/wallet'
 import { getDecimal } from '../../services/chain/decimal'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
-import { cAssetToXAsset } from '../../services/chainflip/utils'
+import { cAssetToXAsset, cChainToXChain } from '../../services/chainflip/utils'
 import { DEFAULT_SLIP_TOLERANCE } from '../../services/const'
 import { TradeAccount } from '../../services/thorchain/types'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
@@ -171,19 +167,19 @@ const SuccessRouteView: React.FC<Props> = ({
   const pendingPoolsStateMayaRD = useObservableState(pendingPoolsStateMaya$, RD.initial)
 
   const sourceAssetDecimal$: AssetWithDecimalLD = useMemo(() => {
-    // Check if chainFlipAssets is available and contains the sourceAsset
-    if (RD.isSuccess(chainFlipAssets)) {
-      const matchingAsset = chainFlipAssets.value.find((asset) => asset.asset === sourceAsset.ticker)
-
-      if (matchingAsset) {
-        // If a matching asset is found, return its decimal value
-        return Rx.of(
+    // Check the condition to skip fetching
+    if (sourceAsset.type === AssetType.SECURED) {
+      // Resolve `getDecimal` and return the observable
+      return Rx.from(getDecimal(AssetRuneNative)).pipe(
+        RxOp.map((decimal) =>
           RD.success({
             asset: sourceAsset,
-            decimal: matchingAsset.decimals
+            decimal
           })
-        )
-      }
+        ),
+        RxOp.catchError((error) => Rx.of(RD.failure(error?.msg ?? error.toString()))),
+        RxOp.startWith(RD.pending)
+      )
     }
     // Check the condition to skip fetching
     if (sourceAsset.type === AssetType.SYNTH) {
@@ -199,7 +195,21 @@ const SuccessRouteView: React.FC<Props> = ({
         RxOp.startWith(RD.pending)
       )
     }
-
+    // Check if chainFlipAssets is available and contains the sourceAsset
+    if (RD.isSuccess(chainFlipAssets)) {
+      const matchingAsset = chainFlipAssets.value.find(
+        (asset) => cChainToXChain(asset.chain) === sourceAsset.chain && asset.asset === sourceAsset.ticker
+      )
+      if (matchingAsset) {
+        // If a matching asset is found, return its decimal value
+        return Rx.of(
+          RD.success({
+            asset: sourceAsset,
+            decimal: matchingAsset.decimals
+          })
+        )
+      }
+    }
     // Use the existing `assetWithDecimal$` function for fetching
     return assetWithDecimal$(sourceAsset)
   }, [assetWithDecimal$, chainFlipAssets, sourceAsset])
@@ -210,6 +220,19 @@ const SuccessRouteView: React.FC<Props> = ({
     if (targetAsset.type === AssetType.SYNTH) {
       // Return a default `LiveData` if the condition is met
       return Rx.from(getDecimal(AssetCacao)).pipe(
+        RxOp.map((decimal) =>
+          RD.success({
+            asset: targetAsset,
+            decimal
+          })
+        ),
+        RxOp.catchError((error) => Rx.of(RD.failure(error?.msg ?? error.toString()))),
+        RxOp.startWith(RD.pending)
+      )
+    }
+    if (targetAsset.type === AssetType.SECURED) {
+      // Return a default `LiveData` if the condition is met
+      return Rx.from(getDecimal(AssetRuneNative)).pipe(
         RxOp.map((decimal) =>
           RD.success({
             asset: targetAsset,

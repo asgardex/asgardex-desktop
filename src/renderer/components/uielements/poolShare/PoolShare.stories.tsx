@@ -1,7 +1,7 @@
 import { Meta, StoryFn } from '@storybook/react'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
 import { bn, assetToBase, assetAmount } from '@xchainjs/xchain-util'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 
 import { BSC_ADDRESS_TESTNET, RUNE_ADDRESS_TESTNET } from '../../../../shared/mock/address'
 import { AssetBSC, AssetRuneNative } from '../../../../shared/utils/asset'

@@ -7,7 +7,7 @@ import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 
 import { WalletType } from '../../shared/wallet/types'
 import { LedgerAddresses } from '../services/wallet/types'

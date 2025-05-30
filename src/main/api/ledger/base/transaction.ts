@@ -12,7 +12,7 @@ import {
   TokenAsset
 } from '@xchainjs/xchain-util'
 import { ethers } from 'ethers'
-import * as E from 'fp-ts/Either'
+import { either as E } from 'fp-ts'
 
 import { isBaseAsset, isEVMTokenAsset } from '../../../../renderer/helpers/assetHelper'
 import { DEPOSIT_EXPIRATION_OFFSET, EVMZeroAddress } from '../../../../renderer/services/evm/const'

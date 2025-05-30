@@ -17,25 +17,25 @@ describe('wallet/txs/utils/', () => {
 
     it('resolves if everything validates', async () => {
       const result = validateTxAmountInput(validValues)
-      expect(result).resolves.toBeUndefined()
+      await expect(result).resolves.toBeUndefined()
     })
 
     it('rejects for non number inputs', async () => {
       const props = { ...validValues, input: bn('hello') }
       const result = validateTxAmountInput(props)
-      expect(result).rejects.toBe(errors.msg1)
+      await expect(result).rejects.toBe(errors.msg1)
     })
 
     it('rejects for input <= 0', async () => {
       const props = { ...validValues, input: bn('0') }
       const result = validateTxAmountInput(props)
-      expect(result).rejects.toBe(errors.msg2)
+      await expect(result).rejects.toBe(errors.msg2)
     })
 
     it('rejects for input > maxAmount', async () => {
       const props = { ...validValues, input: bn('1001') }
       const result = validateTxAmountInput(props)
-      expect(result).rejects.toBe(errors.msg3)
+      await expect(result).rejects.toBe(errors.msg3)
     })
   })
 })

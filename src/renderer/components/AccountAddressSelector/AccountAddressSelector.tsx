@@ -1,10 +1,9 @@
 import React, { useMemo } from 'react'
 
+import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { Dropdown } from 'antd'
-import * as A from 'fp-ts/lib/Array'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { array as A, function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { isLedgerWallet } from '../../../shared/utils/guard'
@@ -83,7 +82,7 @@ export const AccountAddressSelector: React.FC<Props> = (props) => {
           <AssetIcon asset={getChainAsset(chain)} size={'xsmall'} network={network} />
           <Styled.TruncatedAddress>{truncateAddress(address, chain, network)}</Styled.TruncatedAddress>
           {isLedgerWallet(type) && <WalletTypeLabel>{walletTypeToI18n(type, intl)}</WalletTypeLabel>}
-          <Styled.CaretDownOutlined />
+          <ChevronDownIcon className="mx-1 text-turquoise" width={16} height={16} />
         </>
       )
     )

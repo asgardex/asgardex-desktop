@@ -8,9 +8,9 @@ import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { SOLChain } from '@xchainjs/xchain-solana'
+import { isTCYAsset } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, isSecuredAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { function as FP, option as O } from 'fp-ts'
 
 import { AssetSOLUSDC } from '../../../../const'
 import {
@@ -71,7 +71,8 @@ import {
   uskIcon,
   xrdIcon,
   solIcon,
-  baseIcon
+  baseIcon,
+  tcyIcon
 } from '../../../icons'
 import * as Styled from './AssetIcon.styles'
 import { Size } from './AssetIcon.types'
@@ -129,6 +130,10 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     // RUNE
     if (isRuneNativeAsset(asset)) {
       return runeIcon
+    }
+    // TCY
+    if (isTCYAsset(asset)) {
+      return tcyIcon
     }
     // Cacao
     if (isCacaoAsset(asset)) {

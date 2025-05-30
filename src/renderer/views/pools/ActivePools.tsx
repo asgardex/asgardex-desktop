@@ -14,9 +14,7 @@ import {
 } from '@xchainjs/xchain-util'
 import { Grid } from 'antd'
 import { ColumnsType, ColumnType } from 'antd/lib/table'
-import * as A from 'fp-ts/Array'
-import * as FP from 'fp-ts/function'
-import * as O from 'fp-ts/Option'
+import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
@@ -43,7 +41,6 @@ import { usePricePool } from '../../hooks/usePricePool'
 import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
 import { useProtocolLimit } from '../../hooks/useProtocolLimit'
 import * as poolsRoutes from '../../routes/pools'
-import * as saversRoutes from '../../routes/pools/savers'
 import { DEFAULT_NETWORK } from '../../services/const'
 import { PoolsState as MayaPoolState } from '../../services/midgard/mayaMigard/types'
 import { GetPoolsPeriodEnum, PoolsState, DEFAULT_POOL_FILTERS } from '../../services/midgard/midgardTypes'
@@ -150,12 +147,6 @@ export const ActivePools = (): JSX.Element => {
                     })
                   )
                 }
-              },
-              {
-                label: intl.formatMessage({ id: 'common.earn' }),
-                callback: () => {
-                  navigate(saversRoutes.earn.path({ asset: assetToString(asset), walletType: DEFAULT_WALLET_TYPE }))
-                }
               }
             ]
           : [
@@ -207,7 +198,7 @@ export const ActivePools = (): JSX.Element => {
       title: Shared.renderRefreshBtnColTitle({
         title: intl.formatMessage({ id: 'common.refresh' }),
         clickHandler: refreshHandler,
-        iconOnly: !isDesktopView
+        icononly: !isDesktopView
       }),
       width: 280,
       render: renderBtnPoolsColumn

@@ -13,19 +13,19 @@ import { Network } from '@xchainjs/xchain-client'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { assetToString } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import { useMatch, useNavigate } from 'react-router-dom'
 
 import { ExternalUrl } from '../../../shared/const'
-import { ReactComponent as DiscordIcon } from '../../assets/svg/discord.svg'
-import { ReactComponent as BondsIcon } from '../../assets/svg/icon-bonds.svg'
-import { ReactComponent as SettingsIcon } from '../../assets/svg/icon-cog.svg'
-import { ReactComponent as PoolIcon } from '../../assets/svg/icon-pools.svg'
-import { ReactComponent as PortfolioIcon } from '../../assets/svg/icon-portfolio.svg'
-import { ReactComponent as SwapIcon } from '../../assets/svg/icon-swap.svg'
-import { ReactComponent as WalletIcon } from '../../assets/svg/icon-wallet.svg'
-import { ReactComponent as ThorChainIcon } from '../../assets/svg/logo-thorchain.svg'
+import DiscordIcon from '../../assets/svg/discord.svg?react'
+import BondsIcon from '../../assets/svg/icon-bonds.svg?react'
+import SettingsIcon from '../../assets/svg/icon-cog.svg?react'
+import PoolIcon from '../../assets/svg/icon-pools.svg?react'
+import PortfolioIcon from '../../assets/svg/icon-portfolio.svg?react'
+import SwapIcon from '../../assets/svg/icon-swap.svg?react'
+import WalletIcon from '../../assets/svg/icon-wallet.svg?react'
+import ThorChainIcon from '../../assets/svg/logo-thorchain.svg?react'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import * as appRoutes from '../../routes/app'
 import * as bondsRoutes from '../../routes/bonds'
@@ -34,6 +34,7 @@ import * as poolsRoutes from '../../routes/pools'
 import * as portfolioRoutes from '../../routes/portfolio'
 import * as walletRoutes from '../../routes/wallet'
 import { mayaIconT } from '../icons'
+import { Tooltip } from '../uielements/common/Common.styles'
 import * as Styled from './SidebarComponent.styles'
 
 type IconProps = {
@@ -241,30 +242,44 @@ export const SidebarComponent = (props: Props): JSX.Element => {
           )}
           <div>
             <FooterIcon url={ExternalUrl.ASGARDEX} onClick={clickIconHandler}>
-              <GlobalOutlined />
+              <Tooltip title="Asgardex Website">
+                <GlobalOutlined />
+              </Tooltip>
             </FooterIcon>
             <FooterIcon url={ExternalUrl.GITHUB_REPO} onClick={clickIconHandler}>
-              <GithubOutlined />
+              <Tooltip title="Asgardex GitHub">
+                <GithubOutlined />
+              </Tooltip>
             </FooterIcon>
             <FooterIcon url={ExternalUrl.DISCORD} onClick={clickIconHandler}>
-              <Icon component={DiscordIcon} />
+              <Tooltip title="Asgardex Discord">
+                <Icon component={DiscordIcon} />
+              </Tooltip>
             </FooterIcon>
             <FooterIcon url={ExternalUrl.TWITTER} onClick={clickIconHandler}>
-              <TwitterOutlined />
+              <Tooltip title="Asgardex X">
+                <TwitterOutlined />
+              </Tooltip>
             </FooterIcon>
             <FooterIcon url={ExternalUrl.LICENSE} onClick={clickIconHandler}>
-              <FileTextOutlined />
+              <Tooltip title="MIT License">
+                <FileTextOutlined />
+              </Tooltip>
             </FooterIcon>
             {/* hidden in production build */}
             {isDev && commitHash && (
               <FooterIcon url={`${ExternalUrl.GITHUB_REPO}/commit/${commitHash}`} onClick={clickIconHandler}>
-                <BranchesOutlined />
+                <Tooltip title="Commit Hash">
+                  <BranchesOutlined />
+                </Tooltip>
               </FooterIcon>
             )}
             {/* hidden in production build */}
             {isDev && (
               <Styled.IconWrapper onClick={gotoPlayground}>
-                <BugOutlined />
+                <Tooltip title="Playground">
+                  <BugOutlined />
+                </Tooltip>
               </Styled.IconWrapper>
             )}
           </div>

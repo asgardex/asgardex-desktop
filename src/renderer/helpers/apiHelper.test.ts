@@ -1,4 +1,4 @@
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 
 import { getHostnameFromUrl } from './apiHelper'
 

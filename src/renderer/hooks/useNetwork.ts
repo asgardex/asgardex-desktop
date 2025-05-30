@@ -1,9 +1,7 @@
 import { useCallback } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
-import * as A from 'fp-ts/lib/Array'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useNavigate, matchPath, useLocation } from 'react-router-dom'
 
@@ -16,9 +14,9 @@ import { DEFAULT_NETWORK } from '../services/const'
 // TODO (@veado)
 // 1. Extract into helper/routes + test
 // 2. Extract changeNetworkHandler into App (not needed to have this in this hook)
-const matchPaths = (pathes: string[], pathname: string): O.Option<string> =>
+const matchPaths = (paths: string[], pathname: string): O.Option<string> =>
   FP.pipe(
-    pathes,
+    paths,
     A.map((path) => matchPath(path, pathname)),
     A.map(O.fromNullable),
     // filter `None` out from list
@@ -56,7 +54,6 @@ export const useNetwork = (): { network: Network; changeNetwork: ChangeNetworkHa
       walletRoutes.bonds.template,
       walletRoutes.history.template,
       walletRoutes.poolShares.template,
-      walletRoutes.savers.template,
       walletRoutes.runepool.template,
       walletRoutes.interact.template
     ],

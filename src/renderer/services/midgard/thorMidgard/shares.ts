@@ -1,9 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { DefaultApi, MemberPool } from '@xchainjs/xchain-midgard'
 import { Address, Asset, assetFromString, baseAmount, bnOrZero } from '@xchainjs/xchain-util'
-import * as A from 'fp-ts/lib/Array'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { array as A, function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 

@@ -5,8 +5,7 @@ import { Network, Tx, TxsPage } from '@xchainjs/xchain-client'
 import { Address, baseToAsset, Chain, formatAssetAmount } from '@xchainjs/xchain-util'
 import { Grid, Col, Row } from 'antd'
 import { ColumnsType, ColumnType } from 'antd/lib/table'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { function as FP, option as O } from 'fp-ts'
 import { useIntl, FormattedTime } from 'react-intl'
 
 import { TxsPageRD } from '../../../../services/clients'
@@ -40,7 +39,7 @@ export const TxsTable: React.FC<Props> = (props): JSX.Element => {
   const previousTxs = useRef<O.Option<TxsPage>>(O.none)
 
   // Helper to render a text with a line break
-  // That's needed to have multline texts in ant's table cell
+  // That's needed to have multiline texts in ant's table cell
   // and still an option to render ellipsis if a text do not fit in a cell
   const renderTextWithBreak = useCallback(
     (text: string, key: string) => (

@@ -1,4 +1,4 @@
-import * as FP from 'fp-ts/function'
+import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { ConfirmationModal } from './ConfirmationModal'

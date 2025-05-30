@@ -1,4 +1,6 @@
-import { some } from 'fp-ts/lib/Option'
+import { option } from 'fp-ts'
+
+const { some } = option
 
 import { Pair } from '../types/asgardex'
 import { getPair, compareShallowStr, truncateMiddle } from './stringHelper'

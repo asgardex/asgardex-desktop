@@ -6,14 +6,14 @@ import {
   CoproductLeft,
   coproductMapLeft
 } from '@devexperts/utils/dist/typeclasses/product-left-coproduct-left/product-left-coproduct-left.utils'
-import { sequenceS, sequenceT } from 'fp-ts/lib/Apply'
-import * as A from 'fp-ts/lib/Array'
-import { Filterable2 } from 'fp-ts/lib/Filterable'
-import { MonadThrow2 } from 'fp-ts/lib/MonadThrow'
-import { pipeable } from 'fp-ts/lib/pipeable'
-import * as O from 'fp-ts/Option'
+
+import type { filterable as Fi, monadThrow as MT } from 'fp-ts'
+import { apply, array as A, option as O, pipeable as P } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
+
+const { sequenceS, sequenceT } = apply
+const { pipeable } = P
 
 export type LiveData<E, A> = Rx.Observable<RD.RemoteData<E, A>>
 
@@ -25,13 +25,13 @@ declare module 'fp-ts/lib/HKT' {
   }
 }
 
-const foldableValueRemoteData: FoldableValue2<typeof RD.remoteData.URI> & MonadThrow2<typeof RD.remoteData.URI> = {
+const foldableValueRemoteData: FoldableValue2<typeof RD.remoteData.URI> & MT.MonadThrow2<typeof RD.remoteData.URI> = {
   ...RD.remoteData,
   foldValue: (fa, onNever, onValue) => (RD.isSuccess(fa) ? onValue(fa.value) : onNever(fa)),
   throwError: RD.failure
 }
 
-export const instanceLiveData: MonadThrow2<URIType> & CoproductLeft<URIType> & Filterable2<URIType> = {
+export const instanceLiveData: MT.MonadThrow2<URIType> & CoproductLeft<URIType> & Fi.Filterable2<URIType> = {
   URI,
   ...getLiveDataM(instanceObservable, foldableValueRemoteData)
 }

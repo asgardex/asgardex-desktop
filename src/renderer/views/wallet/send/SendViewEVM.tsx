@@ -3,8 +3,7 @@ import React, { useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { baseAmount } from '@xchainjs/xchain-util'
 import { Spin } from 'antd'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 
 import { TrustedAddresses } from '../../../../shared/api/types'
@@ -61,7 +60,7 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
     )
   }, [asset.asset, asset.walletAddress, oBalances])
 
-  const { transfer$, saverDeposit$: deposit$ } = useChainContext()
+  const { transfer$, poolDeposit$: deposit$ } = useChainContext()
 
   const { fees$, reloadFees } = useEvmContext(asset.asset.chain)
 

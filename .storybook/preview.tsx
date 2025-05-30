@@ -1,14 +1,14 @@
 import React from 'react'
-import { IntlProvider } from 'react-intl'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { INITIAL_VIEWPORTS } from '@storybook/addon-viewport'
 import type { Decorator } from '@storybook/react'
+import { IntlProvider } from 'react-intl'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
 import { AppProvider } from '../src/renderer/contexts/AppContext'
 import { ThemeProvider, themes } from '../src/renderer/contexts/ThemeContext'
+import { getMessagesByLocale } from '../src/renderer/i18n'
 import * as Styled from '../src/renderer/views/app/AppView.styles'
 import { Locale } from '../src/shared/i18n/types'
-import { getMessagesByLocale } from '../src/renderer/i18n'
 
 import * as mockApi from '../src/shared/mock/api'
 

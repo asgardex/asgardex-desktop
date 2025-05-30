@@ -1,7 +1,6 @@
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, AssetType, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
+import { function as FP, option as O } from 'fp-ts'
 import * as RxOp from 'rxjs/operators'
 
 import { ZERO_BASE_AMOUNT } from '../../../const'

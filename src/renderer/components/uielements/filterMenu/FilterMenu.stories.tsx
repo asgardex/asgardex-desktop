@@ -12,7 +12,7 @@ import { FilterMenu as Component, Props as ComponentProps } from './FilterMenu'
 const coinsProps: ComponentProps<AssetWithAmount> = {
   filterFunction: (item: AssetWithAmount, searchTerm: string) => {
     const symbol = item.asset.symbol?.toLowerCase() ?? ''
-    return symbol.indexOf(searchTerm.toLowerCase()) === 0 ?? false
+    return symbol.indexOf(searchTerm.toLowerCase()) === 0
   },
   cellRenderer: (data: AssetWithAmount) => {
     const { asset, amount } = data
@@ -49,8 +49,7 @@ export default Coins
 
 // General (string) example
 const generalProps: ComponentProps<string> = {
-  filterFunction: (name: string, searchTerm: string) =>
-    name.toLowerCase().indexOf(searchTerm.toLowerCase()) === 0 ?? false,
+  filterFunction: (name: string, searchTerm: string) => name.toLowerCase().indexOf(searchTerm.toLowerCase()) === 0,
 
   cellRenderer: (name: string) => ({
     key: `${Math.random()}-name`,

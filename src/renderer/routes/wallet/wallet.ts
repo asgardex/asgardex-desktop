@@ -49,8 +49,8 @@ export const poolShares: Route<void> = {
     return this.template
   }
 }
-export const savers: Route<void> = {
-  template: `${base.template}/savers`,
+export const tcy: Route<void> = {
+  template: `${base.template}/tcy`,
   path() {
     return this.template
   }

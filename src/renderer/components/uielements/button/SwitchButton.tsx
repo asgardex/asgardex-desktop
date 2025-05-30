@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 
 import { Switch } from '@headlessui/react'
 import clsx from 'clsx'
-import * as FP from 'fp-ts/lib/function'
+import { function as FP } from 'fp-ts'
 
 type Props = {
   disabled?: boolean
@@ -37,7 +37,6 @@ export const SwitchButton: React.FC<Props> = (props): JSX.Element => {
         active ? 'bg-turquoise' : 'bg-gray1 dark:bg-gray1d',
         className
       )}>
-      <span className="sr-only">Enable notifications</span>
       <span
         className={clsx(
           'inline-block h-4 w-4 transform rounded-full bg-white',

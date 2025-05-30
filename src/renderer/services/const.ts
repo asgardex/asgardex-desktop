@@ -11,28 +11,28 @@ export const DEFAULT_CLIENT_NETWORK: Client.Network = Client.Network.Mainnet
 
 /**
  * Enabled networks -`stagenet` + `mainnet` by default
- * Can be overridden by `REACT_APP_NETWORKS` defined in `.env`
+ * Can be overridden by `VITE_NETWORKS` defined in `.env`
  */
-export const AVAILABLE_NETWORKS: Network[] = envOrDefault(process.env.REACT_APP_NETWORKS, 'stagenet,mainnet')
+export const AVAILABLE_NETWORKS: Network[] = envOrDefault(import.meta.env.VITE_NETWORKS, 'stagenet,mainnet')
   .replace(/\s/g, '')
   .split(',')
   .filter(isNetwork)
 
 /**
  * Enabled networks -`stagenet` + `mainnet` by default
- * Can be overridden by `REACT_APP_NETWORKS` defined in `.env`
+ * Can be overridden by `VITE_NETWORKS` defined in `.env`
  */
 export const AVAILABLE_DEXS: Dex[] = [thorDetails, mayaDetails]
 
-const ENV_NETWORK = process.env.REACT_APP_DEFAULT_NETWORK
+const ENV_NETWORK = import.meta.env.VITE_DEFAULT_NETWORK
 
 /**
  * Default network - `mainnet` by default
- * Can be overridden by `REACT_APP_DEFAULT_NETWORK` defined in `.env`
+ * Can be overridden by `VITE_DEFAULT_NETWORK` defined in `.env`
  * But in `dev` mode only
  */
 export const DEFAULT_NETWORK: Network =
-  process.env.NODE_ENV !== 'production' && isNetwork(ENV_NETWORK) && AVAILABLE_NETWORKS.includes(ENV_NETWORK)
+  import.meta.env.VITE_NODE_ENV !== 'production' && isNetwork(ENV_NETWORK) && AVAILABLE_NETWORKS.includes(ENV_NETWORK)
     ? ENV_NETWORK
     : Network.Mainnet
 

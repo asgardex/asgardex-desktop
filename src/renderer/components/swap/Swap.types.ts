@@ -1,8 +1,7 @@
 import { Network } from '@xchainjs/xchain-client'
 import { Address, AnyAsset, Asset } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
-import * as FP from 'fp-ts/function'
-import * as O from 'fp-ts/Option'
+import { function as FP, option as O } from 'fp-ts'
 
 import { WalletType } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'

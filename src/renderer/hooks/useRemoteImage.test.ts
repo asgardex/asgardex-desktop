@@ -1,13 +1,16 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { vi } from 'vitest'
 
 import { useRemoteImage } from './useRemoteImage'
 
-const mockSetValue = jest.fn()
+const mockSetValue = vi.fn()
 
-jest.mock('react', () => ({
-  useState: (value: unknown) => [value, mockSetValue],
-  useEffect: (fn: () => void) => fn()
-}))
+vi.mock('react', async () => {
+  return {
+    useState: (value: unknown) => [value, mockSetValue],
+    useEffect: (fn: () => void) => fn()
+  }
+})
 
 describe('hooks/useRemoteImage', () => {
   const LOAD_FAILURE_SRC = 'fail'

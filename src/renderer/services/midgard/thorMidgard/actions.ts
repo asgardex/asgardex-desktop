@@ -1,7 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Action, GetActions200Response, MidgardApi } from '@xchainjs/xchain-midgard'
-import * as A from 'fp-ts/Array'
-import * as FP from 'fp-ts/function'
+import { array as A, function as FP } from 'fp-ts'
 import * as Rx from 'rxjs'
 import { from } from 'rxjs'
 import * as RxOp from 'rxjs/operators'

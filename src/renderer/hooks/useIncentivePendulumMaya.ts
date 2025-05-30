@@ -1,7 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { baseAmount } from '@xchainjs/xchain-util'
-import * as FP from 'fp-ts/lib/function'
+import { function as FP } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
 

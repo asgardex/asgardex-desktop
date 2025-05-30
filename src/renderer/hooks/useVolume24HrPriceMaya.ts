@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { baseAmount, bnOrZero } from '@xchainjs/xchain-util'
-import * as FP from 'fp-ts/lib/function'
+import { function as FP } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'

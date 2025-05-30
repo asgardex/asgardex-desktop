@@ -1,5 +1,5 @@
 import { baseAmount } from '@xchainjs/xchain-util'
-import * as O from 'fp-ts/lib/Option'
+import { option as O } from 'fp-ts'
 
 import { ASSETS_MAINNET } from '../../../shared/mock/assets'
 import { AssetBSC, AssetBTC, AssetDOGE, AssetETH, AssetRuneNative } from '../../../shared/utils/asset'

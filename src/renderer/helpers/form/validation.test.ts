@@ -1,6 +1,5 @@
 import { bn } from '@xchainjs/xchain-util'
-import * as E from 'fp-ts/lib/Either'
-import * as FP from 'fp-ts/lib/function'
+import { either as E, function as FP } from 'fp-ts'
 
 import { validateBN, lessThanOrEqualTo, greaterThan, validateAddress, greaterThanEqualTo } from './validation'
 

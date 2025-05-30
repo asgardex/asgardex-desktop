@@ -2,10 +2,10 @@ import { useMemo } from 'react'
 
 import { QuoteSwap, QuoteSwap as QuoteSwapProtocol } from '@xchainjs/xchain-aggregator'
 import clsx from 'clsx'
-import * as O from 'fp-ts/Option'
+import { option as O } from 'fp-ts'
 
-import { ReactComponent as Amount } from '../../assets/svg/amount.svg'
-import { ReactComponent as StopWatch } from '../../assets/svg/stopwatch.svg'
+import Amount from '../../assets/svg/amount.svg?react'
+import StopWatch from '../../assets/svg/stopwatch.svg?react'
 import { Spin } from '../shared/loading'
 import { Collapse } from '../uielements/collapse'
 import { ProviderIcon } from './ProviderIcon'

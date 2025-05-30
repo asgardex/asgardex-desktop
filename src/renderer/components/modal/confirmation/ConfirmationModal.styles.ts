@@ -1,4 +1,4 @@
-import { LockOutlined as BaseLockOutlined } from '@ant-design/icons/lib'
+import { LockClosedIcon as BaseLockOutlined } from '@heroicons/react/24/outline'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 

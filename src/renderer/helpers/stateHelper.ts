@@ -1,4 +1,4 @@
-import * as FP from 'fp-ts/lib/function'
+import { function as FP } from 'fp-ts'
 import { Observable, BehaviorSubject } from 'rxjs'
 
 type ObservableState<T> = {
