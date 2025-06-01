@@ -18,7 +18,7 @@ module.exports = {
     output: 'release'
   },
   mac: {
-    artifactName: '${productName}-${version}-${os}-${OS_VERSION_SUFFIX}.${ext}',
+    artifactName: '${productName}-${version}-${os}-${env.OS_VERSION_SUFFIX}.${ext}',
     target: ['dmg'],
     category: 'public.app-category.finance',
     hardenedRuntime: true,
