@@ -5053,6 +5053,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/prettier@npm:^2.7.3":
+  version: 2.7.3
+  resolution: "@types/prettier@npm:2.7.3"
+  checksum: 10/cda84c19acc3bf327545b1ce71114a7d08efbd67b5030b9e8277b347fa57b05178045f70debe1d363ff7efdae62f237260713aafc2d7217e06fc99b048a88497
+  languageName: node
+  linkType: hard
+
 "@types/prop-types@npm:*":
   version: 15.7.5
   resolution: "@types/prop-types@npm:15.7.5"
@@ -6724,6 +6731,7 @@ __metadata:
     "@types/lodash": "npm:^4"
     "@types/lodash.shuffle": "npm:^4.2.7"
     "@types/node": "npm:^22.14"
+    "@types/prettier": "npm:^2.7.3"
     "@types/qrcode": "npm:^1.4.2"
     "@types/react": "npm:^18.0.15"
     "@types/react-dom": "npm:^18.0.6"
