@@ -2,14 +2,16 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { AnyAsset, assetFromStringEx } from '@xchainjs/xchain-util'
 import ansis from 'ansis'
 import axios from 'axios'
-import * as IO from 'fp-ts/IO'
-import * as C from 'fp-ts/lib/Console'
-import * as E from 'fp-ts/lib/Either'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
-import * as TE from 'fp-ts/lib/TaskEither'
-import * as S from 'fp-ts/string'
-import * as T from 'fp-ts/Task'
+import {
+  io as IO,
+  console as C,
+  either as E,
+  function as FP,
+  option as O,
+  taskEither as TE,
+  string as S,
+  task as T
+} from 'fp-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 import prettier from 'prettier'
 
