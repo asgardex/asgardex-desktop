@@ -85,7 +85,7 @@ const createTemplate = (list: AssetList): string => {
      *
      */
 
-    import * as O from 'fp-ts/lib/Option'
+    import { option as O } from 'fp-ts'
     import {TokenAsset} from "@xchainjs/xchain-util";
     import {ARBChain} from "@xchainjs/xchain-arbitrum";
 

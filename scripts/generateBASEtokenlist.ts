@@ -58,7 +58,7 @@ const createTemplate = (list: AssetList): string => `
    * BASE_TOKEN_WHITELIST
    * This file has been generated - don't edit.
    */
-  import * as O from 'fp-ts/lib/Option'
+  import { option as O } from 'fp-ts'
   import { TokenAsset } from '@xchainjs/xchain-util';
   import { BASEChain } from '@xchainjs/xchain-base';
 
