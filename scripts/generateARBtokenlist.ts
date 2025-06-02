@@ -104,10 +104,13 @@ const writeList = (list: AssetList): TE.TaskEither<Error, void> =>
     (c) => writeFile(PATH, c)
   )
 
+const options = prettier.resolveConfig.sync('./.prettierrc') ?? {}
+options.parser = 'typescript'
+
 const formatList = () =>
   FP.pipe(
     readFile(PATH, 'utf8'),
-    TE.chain((content) => writeFile(PATH, prettier.format(content, { filepath: PATH })))
+    TE.chain((content) => writeFile(PATH, prettier.format(content, options)))
   )
 
 const onError = (e: Error): T.Task<void> =>

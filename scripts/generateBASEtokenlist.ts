@@ -88,10 +88,13 @@ const writeList = (list: AssetList): TE.TaskEither<Error, void> =>
   FP.pipe(list, createTemplate, S.replace(/"chain":"BASE"/g, 'chain: BASEChain'), (c) => writeFile(PATH, c))
 
 // Format the generated file
+const options = prettier.resolveConfig.sync('./.prettierrc') ?? {}
+options.parser = 'typescript'
+
 const formatList = () =>
   FP.pipe(
     readFile(PATH, 'utf8'),
-    TE.chain((content) => writeFile(PATH, prettier.format(content, { filepath: PATH })))
+    TE.chain((content) => writeFile(PATH, prettier.format(content, options)))
   )
 
 // Error and success handlers
