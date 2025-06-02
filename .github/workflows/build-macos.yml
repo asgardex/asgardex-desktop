@@ -14,22 +14,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macOS-13, macOS-14, macOS-15]
-        os-name: [Ventura, Sonoma, Sequoia]
-        os-version: [13, 14, 15]
-        exclude:
+        include:
           - os: macOS-13
-            os-name: Sonoma
-          - os: macOS-13
-            os-name: Sequoia
-          - os: macOS-14
             os-name: Ventura
+            os-version: 13
           - os: macOS-14
-            os-name: Sequoia
-          - os: macOS-15
-            os-name: Ventura
-          - os: macOS-15
             os-name: Sonoma
+            os-version: 14
+          - os: macOS-15
+            os-name: Sequoia
+            os-version: 15
 
     steps:
       - name: Checkout git repo
@@ -75,7 +69,7 @@ jobs:
           VITE_SOL_API_KEY: ${{ secrets.REACT_APP_SOL_API_KEY }}
           OS_NAME: ${{ matrix.os-name }}
           OS_VERSION: ${{ matrix.os-version }}
-          OS_VERSION_SUFFIX: '-${{ matrix.os-version }}-${{ matrix.os-name }}'
+          OS_VERSION_SUFFIX: '${{ matrix.os-version }}-${{ matrix.os-name }}'
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
