@@ -4,7 +4,7 @@ import { BASEChain, AssetBETH } from '@xchainjs/xchain-base'
 import { AssetBTC, BTCChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDBTC } from '@xchainjs/xchain-bitcoin'
 import { AssetBCH, BCHChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDBCH } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC, BSCChain } from '@xchainjs/xchain-bsc'
-import { ADAChain, ADAAsset } from '@xchainjs/xchain-cardano'
+import { ADAChain, ADAAsset, UPPER_FEE_BOUND as UPPER_FEE_BOUNDADA } from '@xchainjs/xchain-cardano'
 import { AssetATOM, GAIAChain } from '@xchainjs/xchain-cosmos'
 import { AssetDASH, DASHChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDDASH } from '@xchainjs/xchain-dash'
 import { AssetDOGE, DOGEChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDDOGE } from '@xchainjs/xchain-doge'
@@ -61,6 +61,8 @@ export const getChainFeeBounds = (chain: Chain): number => {
       return UPPER_FEE_BOUNDDOGE
     case DASHChain:
       return UPPER_FEE_BOUNDDASH
+    case ADAChain:
+      return UPPER_FEE_BOUNDADA
     default:
       return 0
   }

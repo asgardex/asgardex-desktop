@@ -16,7 +16,7 @@ import { Client$, ClientState, ClientState$ } from './types'
 const blockfrostApiKeys: BlockfrostApiKey[] = [
   {
     mainnet: adaApiKey,
-    stagenet: '',
+    stagenet: adaApiKey,
     testnet: ''
   }
 ]

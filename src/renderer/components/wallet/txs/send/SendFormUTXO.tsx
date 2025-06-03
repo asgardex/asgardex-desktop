@@ -243,10 +243,10 @@ export const SendFormUTXO: React.FC<Props> = (props): JSX.Element => {
           const feeRate = rates[selectedFeeOptionKey]
           const transactionSize = feeAmount.amount().toNumber() / feeRate
           const roundedFeeRate = Math.ceil(feeRate)
-          const adjustedFee = baseAmount(roundedFeeRate * transactionSize)
+          const adjustedFee = baseAmount(roundedFeeRate * transactionSize, feeAmount.decimal)
           const feeValue = adjustedFee.amount().toNumber()
           const roundedFeeValue = Math.ceil(feeValue / 1000) * 1000
-          const roundedAdjustedFee = baseAmount(roundedFeeValue)
+          const roundedAdjustedFee = baseAmount(roundedFeeValue, feeAmount.decimal)
           prevSelectedFeeRef.current = O.some(roundedAdjustedFee)
           setFeeRate(roundedFeeRate)
           return roundedAdjustedFee

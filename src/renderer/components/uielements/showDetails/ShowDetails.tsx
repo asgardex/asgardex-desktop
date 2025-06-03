@@ -2,6 +2,7 @@ import React from 'react'
 
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
@@ -45,6 +46,8 @@ export const ShowDetails: React.FC<Props> = ({
         return 'ltc/Byte'
       case DASHChain:
         return 'DASH/kB'
+      case ADAChain:
+        return 'lovelances/Byte'
       default:
         return asset.chain
     }

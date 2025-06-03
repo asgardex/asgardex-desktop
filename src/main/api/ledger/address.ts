@@ -5,7 +5,6 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { AddressFormat, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
-import { ADAChain } from '@xchainjs/xchain-cardano'
 import { Network } from '@xchainjs/xchain-client'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
@@ -87,7 +86,7 @@ const chainAddressFunctions: Record<
   [GAIAChain]: getCOSMOSAddress
 }
 
-const unsupportedChains: Chain[] = [MAYAChain, KUJIChain, RadixChain, SOLChain, ADAChain]
+const unsupportedChains: Chain[] = [MAYAChain, KUJIChain, RadixChain, SOLChain, 'ADA']
 
 export const getAddress = async ({
   chain,

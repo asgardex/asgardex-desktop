@@ -359,6 +359,11 @@ export const utxoFeesWithRates$ = (asset: Asset, address: string): FeesWithRates
         DASH.feesWithRates$(address),
         liveData.map((feesWithRates) => feesWithRates)
       )
+    case ADAChain:
+      return FP.pipe(
+        ADA.feesWithRates$(address),
+        liveData.map((feesWithRates) => feesWithRates)
+      )
     default:
       return FP.pipe(
         BTC.feesWithRates$(address),
@@ -379,6 +384,8 @@ export const reloadUtxoFeesWithRates$ = (asset: Asset) => {
       return FP.pipe(LTC.reloadFeesWithRates)
     case DASHChain:
       return FP.pipe(DASH.reloadFeesWithRates)
+    case ADAChain:
+      return FP.pipe(ADA.reloadFeesWithRates)
     default:
       return FP.pipe(BTC.reloadFeesWithRates)
   }

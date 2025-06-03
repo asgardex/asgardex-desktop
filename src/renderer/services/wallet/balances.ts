@@ -112,7 +112,8 @@ export const createBalancesService = ({
     [GAIAChain]: COSMOS.reloadBalances,
     [RadixChain]: XRD.reloadBalances,
     [SOLChain]: SOL.reloadBalances,
-    [BASEChain]: BASE.reloadBalances
+    [BASEChain]: BASE.reloadBalances,
+    [ADAChain]: ADA.reloadBalances
   }
 
   const reloadBalancesByChain =
