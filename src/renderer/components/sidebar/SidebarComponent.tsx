@@ -243,34 +243,34 @@ export const SidebarComponent = (props: Props): JSX.Element => {
           <div>
             <FooterIcon url={ExternalUrl.ASGARDEX} onClick={clickIconHandler}>
               <Tooltip title="Asgardex Website">
-                <GlobalOutlined />
+                <GlobalOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />
               </Tooltip>
             </FooterIcon>
             <FooterIcon url={ExternalUrl.GITHUB_REPO} onClick={clickIconHandler}>
               <Tooltip title="Asgardex GitHub">
-                <GithubOutlined />
+                <GithubOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />
               </Tooltip>
             </FooterIcon>
             <FooterIcon url={ExternalUrl.DISCORD} onClick={clickIconHandler}>
               <Tooltip title="Asgardex Discord">
-                <Icon component={DiscordIcon} />
+                <Icon component={DiscordIcon} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />
               </Tooltip>
             </FooterIcon>
             <FooterIcon url={ExternalUrl.TWITTER} onClick={clickIconHandler}>
               <Tooltip title="Asgardex X">
-                <TwitterOutlined />
+                <TwitterOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />
               </Tooltip>
             </FooterIcon>
             <FooterIcon url={ExternalUrl.LICENSE} onClick={clickIconHandler}>
               <Tooltip title="MIT License">
-                <FileTextOutlined />
+                <FileTextOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />
               </Tooltip>
             </FooterIcon>
             {/* hidden in production build */}
             {isDev && commitHash && (
               <FooterIcon url={`${ExternalUrl.GITHUB_REPO}/commit/${commitHash}`} onClick={clickIconHandler}>
                 <Tooltip title="Commit Hash">
-                  <BranchesOutlined />
+                  <BranchesOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />
                 </Tooltip>
               </FooterIcon>
             )}
@@ -278,7 +278,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
             {isDev && (
               <Styled.IconWrapper onClick={gotoPlayground}>
                 <Tooltip title="Playground">
-                  <BugOutlined />
+                  <BugOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />
                 </Tooltip>
               </Styled.IconWrapper>
             )}
