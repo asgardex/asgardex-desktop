@@ -5,6 +5,7 @@ import type * as TN from '@xchainjs/xchain-thornode'
 import { Address, AnyAsset, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
 import { option as O } from 'fp-ts'
+import * as t from 'io-ts'
 import { IntlShape } from 'react-intl'
 import * as Rx from 'rxjs'
 
@@ -332,3 +333,24 @@ export enum NodeStatusEnum {
   Ready = 'Ready',
   Disabled = 'Disabled'
 }
+
+export const erc20WhitelistTokenIO = t.type({
+  chainId: t.number,
+  address: t.string,
+  symbol: t.string,
+  name: t.string,
+  logoURI: t.union([t.string, t.undefined])
+})
+
+export type ERC20WhitelistToken = t.TypeOf<typeof erc20WhitelistTokenIO>
+
+export const erc20WhitelistIO = t.type({
+  tokens: t.array(erc20WhitelistTokenIO),
+  version: t.type({
+    major: t.number,
+    minor: t.number,
+    patch: t.number
+  })
+})
+
+export type ERC20Whitelist = t.TypeOf<typeof erc20WhitelistIO>

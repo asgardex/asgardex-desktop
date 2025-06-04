@@ -15,7 +15,7 @@ import { failure } from 'io-ts/lib/PathReporter'
 import prettier from 'prettier'
 
 import { writeFile, readFile } from '../src/main/utils/file'
-import { ERC20Whitelist, erc20WhitelistIO } from '../src/renderer/services/mayachain/types'
+import { ERC20Whitelist, erc20WhitelistIO } from '../src/renderer/services/thorchain/types'
 
 const WHITELIST_URL =
   'https://gitlab.com/mayachain/mayanode/-/raw/mainnet/common/tokenlist/arbtokens/arb_mainnet_latest.json'
