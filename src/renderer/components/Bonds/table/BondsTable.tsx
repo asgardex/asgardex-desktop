@@ -1,18 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { DesktopOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
+import { TvIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, assetToString, BaseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { ColumnType } from 'antd/lib/table'
 import clsx from 'clsx'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { FormattedMessage, useIntl } from 'react-intl'
 
+import RemoveIcon from '../../../assets/svg/icon-remove.svg?react'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { truncateAddress } from '../../../helpers/addressHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
@@ -26,7 +26,6 @@ import {
 import { NodeInfo as ThorNodeInfo, NodeInfos as ThorNodeInfos, Providers } from '../../../services/thorchain/types'
 import { WalletAddressInfo } from '../../../views/bonds/types'
 import { ConfirmationModal } from '../../modal/confirmation'
-import { RemoveAddressIcon } from '../../settings/WalletSettings.styles'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { BaseButton, TextButton } from '../../uielements/button'
 import { ExternalLinkIcon, Tooltip } from '../../uielements/common/Common.styles'
@@ -286,7 +285,11 @@ export const BondsTable: React.FC<Props> = ({
   }, [nodeToRemove, removeNode])
 
   const CustomExpandIcon: React.FC<CustomExpandIconProps> = ({ expanded, onExpand, record }) => (
-    <Styled.ExpandIcon onClick={(e) => onExpand(record, e)} rotate={expanded ? 90 : 0} />
+    <div className="flex items-center justify-center" onClick={(e) => onExpand(record, e)}>
+      <ChevronRightIcon
+        className={clsx('mt-0 w-5 h-5 stroke-turquoise cursor-pointer', expanded ? 'rotate-90' : 'rotate-0')}
+      />
+    </div>
   )
 
   const renderSubWalletType = useCallback(
@@ -432,17 +435,21 @@ export const BondsTable: React.FC<Props> = ({
                             })}
                           </Styled.TextLabel>
                           {isMonitoring ? (
-                            <Styled.DeleteButton>
-                              <Tooltip title="Remove this bond provider from the watch list">
-                                <RemoveAddressIcon onClick={() => removeWatchlist(provider.bondAddress, network)} />
-                              </Tooltip>
-                            </Styled.DeleteButton>
+                            <Tooltip title="Remove this bond provider from the watch list">
+                              <RemoveIcon
+                                className="w-4 h-4 cursor-pointer"
+                                onClick={() => removeWatchlist(provider.bondAddress, network)}
+                              />
+                            </Tooltip>
                           ) : (
-                            <Styled.WatchlistButton>
-                              <Tooltip title="Add this bond provider to the watch list">
-                                <DesktopOutlined onClick={() => addWatchlist(provider.bondAddress, network)} />
-                              </Tooltip>
-                            </Styled.WatchlistButton>
+                            <Tooltip title="Add this bond provider to the watch list">
+                              <TvIcon
+                                className="cursor-pointer text-turquoise"
+                                width={16}
+                                height={16}
+                                onClick={() => addWatchlist(provider.bondAddress, network)}
+                              />
+                            </Tooltip>
                           )}
                         </div>
                         {renderSubActions({

@@ -3,11 +3,9 @@ import path, { join } from 'path'
 import { BrowserWindow, app, ipcMain, nativeImage } from 'electron'
 import electronDebug from 'electron-debug'
 import isDev from 'electron-is-dev'
-import log from 'electron-log'
-import { warn } from 'electron-log'
+import log, { warn } from 'electron-log'
 import windowStateKeeper from 'electron-window-state'
-import { either as E } from 'fp-ts'
-import { function as FP } from 'fp-ts'
+import { either as E, function as FP } from 'fp-ts'
 
 import {
   IPCLedgerAddressesIO,
@@ -16,7 +14,7 @@ import {
   ipcLedgerDepositTxParamsIO,
   ipcLedgerSendTxParamsIO
 } from '../shared/api/io'
-import type { IPCExportKeystoreParams, IPCLedgerAdddressParams, StoreFileName } from '../shared/api/types'
+import type { IPCExportKeystoreParams, IPCLedgerAddressParams, StoreFileName } from '../shared/api/types'
 import { DEFAULT_STORAGES } from '../shared/const'
 import type { Locale } from '../shared/i18n/types'
 import { registerAppCheckUpdatedHandler } from './api/appUpdate'
@@ -185,8 +183,8 @@ const initIPC = () => {
   // Url
   ipcMain.handle(IPCMessages.OPEN_EXTERNAL_URL, async (_, url) => openExternal(url))
   // Ledger
-  ipcMain.handle(IPCMessages.GET_LEDGER_ADDRESS, async (_, params: IPCLedgerAdddressParams) => getLedgerAddress(params))
-  ipcMain.handle(IPCMessages.VERIFY_LEDGER_ADDRESS, async (_, params: IPCLedgerAdddressParams) =>
+  ipcMain.handle(IPCMessages.GET_LEDGER_ADDRESS, async (_, params: IPCLedgerAddressParams) => getLedgerAddress(params))
+  ipcMain.handle(IPCMessages.VERIFY_LEDGER_ADDRESS, async (_, params: IPCLedgerAddressParams) =>
     verifyLedgerAddress(params)
   )
   ipcMain.handle(IPCMessages.SEND_LEDGER_TX, async (_, params: unknown) => {

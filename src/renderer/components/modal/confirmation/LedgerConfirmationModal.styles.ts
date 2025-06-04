@@ -1,4 +1,4 @@
-import AIcon, { CaretRightOutlined } from '@ant-design/icons'
+import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
@@ -19,7 +19,7 @@ export const LedgerContainer = styled.div`
 export const LedgerConnect = styled(LedgerConnectUI)`
   transform: scale(0.65, 0.65);
   ${media.md`
-  transform: scale(0.85, 0.85);
+    transform: scale(0.85, 0.85);
   `}
 `
 
@@ -54,7 +54,8 @@ export const NoteBCH = styled.p`
   text-align: center;
 `
 
-export const Icon = styled(AIcon)`
+export const Icon = styled.div`
+  // Changed from AIcon to div
   display: inline-block;
   margin-right: 5px;
   svg {
@@ -64,11 +65,13 @@ export const Icon = styled(AIcon)`
     fill: none;
   }
 `
+
 export const AddressWrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding: 20px 0 0 0;
 `
+
 export const AddressContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -89,9 +92,11 @@ export const CompareAddressButton = styled(Button)`
   box-shadow: none;
 `
 
-export const ExpandIcon = styled(CaretRightOutlined)`
+export const ExpandIcon = styled(ChevronRightIcon)`
   svg {
-    color: inherit;
+    stroke: inherit; // Changed from color to stroke for Heroicons
+    width: 16px; // Match Ant Design's default size
+    height: 16px;
   }
 `
 

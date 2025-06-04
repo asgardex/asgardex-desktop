@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 
 /**

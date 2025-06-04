@@ -1,9 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Chain } from '@xchainjs/xchain-util'
-import { array as A } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
-import { number as N } from 'fp-ts'
+import { array as A, function as FP, option as O, number as N } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 

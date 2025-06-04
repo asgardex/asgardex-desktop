@@ -2,8 +2,7 @@ import { Fragment, useMemo } from 'react'
 
 import { Tab } from '@headlessui/react'
 import clsx from 'clsx'
-import { function as FP } from 'fp-ts'
-import { array as A } from 'fp-ts'
+import { function as FP, array as A } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import { useMatch, useNavigate } from 'react-router'
 

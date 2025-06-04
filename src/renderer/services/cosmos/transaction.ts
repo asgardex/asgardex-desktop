@@ -2,9 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { Client, GAIAChain } from '@xchainjs/xchain-cosmos'
 import { Asset } from '@xchainjs/xchain-util'
-import { either as E } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { either as E, function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -14,8 +12,7 @@ import { isLedgerWallet } from '../../../shared/utils/guard'
 import { Network$ } from '../app/types'
 import * as C from '../clients'
 import { ErrorId, TxHashLD } from '../wallet/types'
-import { TransactionService } from './types'
-import { Client$, SendTxParams } from './types'
+import { TransactionService, Client$, SendTxParams } from './types'
 
 export const createTransactionService = (client$: Client$, network$: Network$): TransactionService => {
   const common = C.createTransactionService(client$)

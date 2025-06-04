@@ -6,8 +6,7 @@ import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address } from '@xchainjs/xchain-util'
 import { Form } from 'antd'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { ExtendedNodeInfoThor } from '../../hooks/useNodeInfos'
@@ -294,7 +293,7 @@ export const Bonds: React.FC<Props> = ({
                 disabled={disableForm}
               />
             </Form.Item>
-            <Styled.SubmitButton htmlType="submit" disabled={disableForm}>
+            <Styled.SubmitButton className="space-x-2" htmlType="submit" disabled={disableForm}>
               <Styled.AddIcon /> {intl.formatMessage({ id: 'bonds.node.add' })}
             </Styled.SubmitButton>
           </div>

@@ -1,5 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { Aggregator, QuoteSwapParams } from '@xchainjs/xchain-aggregator'
+import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import { Client as ArbClient } from '@xchainjs/xchain-arbitrum'
 import { Client as AvaxClient } from '@xchainjs/xchain-avax'
 import { Client as BaseClient } from '@xchainjs/xchain-base'
@@ -18,10 +19,12 @@ export const getEstimate = createAsyncThunk(
   'aggregator/estimate',
   async ({
     aggregator,
+    protocols,
     params,
     useAffiliate
   }: {
     aggregator: Aggregator
+    protocols: Protocol[]
     params: QuoteSwapParams
     useAffiliate: boolean
   }) => {
@@ -50,6 +53,7 @@ export const getEstimate = createAsyncThunk(
           basisPoints: useAffiliate ? ASGARDEX_AFFILIATE_FEE : 0,
           affiliates: { Thorchain: ASGARDEX_THORNAME, Mayachain: ASGARDEX_THORNAME }
         },
+        protocols,
         wallet
       })
 

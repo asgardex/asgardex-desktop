@@ -20,7 +20,8 @@ import { AssetDetailsView } from './wallet/AssetDetailsView'
 import { AssetsView } from './wallet/AssetsView'
 import { CreateView } from './wallet/CreateView'
 import { WalletHistoryView } from './wallet/history'
-import { ImportsView } from './wallet/importsView'
+import { ImportKeystoreView } from './wallet/ImportKeystoreView'
+import { ImportPhraseView } from './wallet/ImportPhraseView'
 import { InteractView } from './wallet/Interact'
 import { NoWalletView } from './wallet/NoWalletView'
 import { PoolShareView } from './wallet/PoolShareView'
@@ -73,7 +74,8 @@ export const ViewRoutes: React.FC<{}> = (): JSX.Element => {
       <Route path={walletRoutes.noWallet.template} element={<NoWalletView />} />
       <Route path={`${walletRoutes.create.base.template}/*`} element={<CreateView />} />
       <Route path={walletRoutes.locked.template} element={<UnlockView />} />
-      <Route path={`${walletRoutes.imports.base.template}/*`} element={<ImportsView />} />
+      <Route path={walletRoutes.imports.keystore.template} element={<ImportKeystoreView />} />
+      <Route path={walletRoutes.imports.phrase.template} element={<ImportPhraseView />} />
       <Route
         path={walletRoutes.base.template}
         element={<Navigate to={{ pathname: walletRoutes.assets.path(), search: location.search }} />}

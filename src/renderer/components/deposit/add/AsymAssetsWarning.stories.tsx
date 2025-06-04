@@ -1,9 +1,7 @@
 import { Meta } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { assetFromString } from '@xchainjs/xchain-util'
-import { array as A } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { array as A, function as FP, option as O } from 'fp-ts'
 
 import * as AT from '../../../storybook/argTypes'
 import { AsymAssetsWarning } from './AsymAssetsWarning'

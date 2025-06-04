@@ -4,9 +4,7 @@ import { Network, TxHash } from '@xchainjs/xchain-client'
 import { abi, isApproved } from '@xchainjs/xchain-evm'
 import { baseAmount, getContractAddressFromAsset, TokenAsset } from '@xchainjs/xchain-util'
 import { ethers } from 'ethers'
-import { either as E } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { either as E, function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -35,9 +33,10 @@ import {
   SendPoolTxParams,
   IsApproveParams,
   SendTxParams,
-  EvmTxParams
+  EvmTxParams,
+  Client$,
+  Client as ArbClient
 } from '../evm/types'
-import { Client$, Client as ArbClient } from '../evm/types'
 import { ApiError, ErrorId, TxHashLD } from '../wallet/types'
 
 export const createTransactionService = (client$: Client$, network$: Network$): TransactionService => {

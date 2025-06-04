@@ -1,15 +1,14 @@
 import { useCallback, useState } from 'react'
 
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { isCashAddress, toCashAddress, toLegacyAddress } from '@xchainjs/xchain-bitcoincash'
 import { Network } from '@xchainjs/xchain-client'
 import { Address, Chain } from '@xchainjs/xchain-util'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { chainToString } from '../../../../shared/utils/chain'
 import { getChainAsset, isBchChain } from '../../../helpers/chainHelper'
-import { AttentionIcon } from '../../icons'
 import { AddressEllipsis } from '../../uielements/addressEllipsis'
 import { ConfirmationModal } from './ConfirmationModal'
 import * as Styled from './LedgerConfirmationModal.styles'
@@ -121,7 +120,7 @@ export const LedgerConfirmationModal: React.FC<Props> = ({
                 (bchAddresses) => (
                   <>
                     <Styled.NoteBCH>
-                      <Styled.Icon component={AttentionIcon} />
+                      <ExclamationTriangleIcon />
                       {intl.formatMessage({ id: 'ledger.legacyformat.note' }, { url: 'ulr' })}
                     </Styled.NoteBCH>
 

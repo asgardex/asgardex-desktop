@@ -41,6 +41,7 @@ export default [
     'plugin:security/recommended-legacy',
     'plugin:prettier/recommended'
   ),
+  _import.flatConfigs.recommended,
   {
     plugins: {
       react,
@@ -48,7 +49,6 @@ export default [
       prettier,
       'unused-imports': unusedImports,
       security,
-      import: fixupPluginRules(_import),
       'jsx-a11y': jsxA11Y
     },
 
@@ -70,6 +70,9 @@ export default [
     },
 
     settings: {
+      'import/resolver': {
+        typescript: {}
+      },
       react: {
         version: 'detect'
       }

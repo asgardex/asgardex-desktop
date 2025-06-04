@@ -16,9 +16,7 @@ import {
   TokenAsset
 } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
-import { array as A } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { array as A, function as FP, option as O } from 'fp-ts'
 
 import {
   AssetATOM,

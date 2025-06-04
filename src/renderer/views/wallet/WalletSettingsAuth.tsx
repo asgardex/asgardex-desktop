@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react'
 
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useLocation, useNavigate } from 'react-router-dom'
 import * as RxOp from 'rxjs/operators'

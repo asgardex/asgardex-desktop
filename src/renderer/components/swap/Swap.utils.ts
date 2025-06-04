@@ -1,8 +1,5 @@
 import { AnyAsset, BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
-import { array as A } from 'fp-ts'
-import { either as E } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { array as A, either as E, function as FP, option as O } from 'fp-ts'
 
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { isChainAsset, isUtxoAssetChain, max1e8BaseAmount } from '../../helpers/assetHelper'

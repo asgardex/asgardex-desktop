@@ -1,14 +1,12 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { TxHash, XChainClient } from '@xchainjs/xchain-client'
-import { TxsPage, Fees } from '@xchainjs/xchain-client'
+import { TxHash, XChainClient, TxsPage, Fees } from '@xchainjs/xchain-client'
 import { Address, AnyAsset } from '@xchainjs/xchain-util'
 import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 
 import { WalletAddress } from '../../../shared/wallet/types'
 import { LiveData } from '../../helpers/rx/liveData'
-import { ApiError, TxLD, WalletBalance } from '../wallet/types'
-import { TxHashLD } from '../wallet/types'
+import { ApiError, TxLD, WalletBalance, TxHashLD } from '../wallet/types'
 /**
  * States:
  * (1) `initial` -> no client has been instantiated

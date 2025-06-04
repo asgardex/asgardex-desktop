@@ -1,11 +1,6 @@
 import { Keystore } from '@xchainjs/xchain-crypto'
 import { Asset, assetToString, baseAmount } from '@xchainjs/xchain-util'
-import { array as A } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
-import { number as N } from 'fp-ts'
-import { ord as Ord } from 'fp-ts'
-import { string as S } from 'fp-ts'
+import { array as A, function as FP, option as O, number as N, ord as Ord, string as S } from 'fp-ts'
 import { IntlShape } from 'react-intl'
 
 import { KeystoreWallets, KeystoreWallet, IPCLedgerAddressesIO } from '../../../shared/api/io'

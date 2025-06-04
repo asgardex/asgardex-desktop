@@ -1,6 +1,5 @@
 import { baseAmount, assetToString, BaseAmount, AnyAsset } from '@xchainjs/xchain-util'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 
 import { convertBaseAmountDecimal, isRuneNativeAsset, to1e8BaseAmount } from '../../../helpers/assetHelper'
 import { eqAsset } from '../../../helpers/fp/eq'

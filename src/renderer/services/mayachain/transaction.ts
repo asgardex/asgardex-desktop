@@ -1,9 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { DepositParam, MAYAChain } from '@xchainjs/xchain-mayachain'
-import { either as E } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { either as E, function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -21,8 +19,7 @@ import { Network$ } from '../app/types'
 import * as C from '../clients'
 import { ClientUrl } from '../thorchain/types'
 import { TxHashLD, ErrorId } from '../wallet/types'
-import { TransactionService } from './types'
-import { Client$, ClientUrl$, SendTxParams } from './types'
+import { TransactionService, Client$, ClientUrl$, SendTxParams } from './types'
 
 export const createTransactionService = (
   client$: Client$,

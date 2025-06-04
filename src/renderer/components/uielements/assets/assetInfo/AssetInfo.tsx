@@ -1,10 +1,8 @@
 import React, { useMemo, useRef } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
-import { AnyAsset, AssetType } from '@xchainjs/xchain-util'
-import { formatAssetAmount, assetToString, AssetAmount } from '@xchainjs/xchain-util'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { AnyAsset, AssetType, formatAssetAmount, assetToString, AssetAmount } from '@xchainjs/xchain-util'
+import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { chainToString } from '../../../../../shared/utils/chain'

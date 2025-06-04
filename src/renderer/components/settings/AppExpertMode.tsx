@@ -6,8 +6,9 @@ import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { CheckMayanodeNodeUrlHandler, CheckMayanodeRpcUrlHandler } from '../../services/mayachain/types'
-import { CheckMidgardUrlHandler, MidgardUrlRD } from '../../services/midgard/midgardTypes'
 import {
+  CheckMidgardUrlHandler,
+  MidgardUrlRD,
   CheckMidgardUrlHandler as CheckMidgardMayaUrlHandler,
   MidgardUrlRD as MidgardMayaUrlRD
 } from '../../services/midgard/midgardTypes'

@@ -1,4 +1,4 @@
-import { SelectOutlined } from '@ant-design/icons'
+import { CursorArrowRaysIcon as SelectOutlined } from '@heroicons/react/24/outline'
 import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
@@ -84,9 +84,7 @@ export const Button = styled(UIButton).attrs({
 })``
 
 export const ButtonLinkIcon = styled(SelectOutlined)`
-  svg {
-    transform: scale(-1, 1);
-  }
+  transform: scale(-1, 1);
 `
 
 export const Text = styled('span')`

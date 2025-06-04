@@ -1,8 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { DOGEChain } from '@xchainjs/xchain-doge'
-import { either as E } from 'fp-ts'
-import { function as FP } from 'fp-ts'
+import { either as E, function as FP } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 

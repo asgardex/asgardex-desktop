@@ -1,9 +1,9 @@
-import { SyncOutlined } from '@ant-design/icons'
+import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { AnyAsset, BaseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
-import { Row } from 'antd'
 import { ColumnType } from 'antd/lib/table'
-import { function as FP } from 'fp-ts'
+import * as FP from 'fp-ts/function'
+import styled from 'styled-components'
 
 import { ErrorView } from '../../components/shared/error'
 import { AssetIcon } from '../../components/uielements/assets/assetIcon'
@@ -13,6 +13,18 @@ import { ordBaseAmount } from '../../helpers/fp/ord'
 import { sortByDepth } from '../../helpers/poolHelper'
 import * as Styled from './PoolsOverview.styles'
 
+const RowContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+`
+
+const SyncIcon = styled(ArrowPathIcon)<{ icononly: 'true' | 'false' }>`
+  width: 16px;
+  height: 16px;
+  margin-right: ${({ icononly }) => (icononly === 'true' ? '0' : '8px')};
+`
 const renderWatchColumn = ({
   data: { watched },
   add,
@@ -63,9 +75,9 @@ export const assetColumn = <T extends { asset: AnyAsset }>(title: string): Colum
 })
 
 const renderPoolColumn = ({ asset, network }: { asset: AnyAsset; network: Network }) => (
-  <Row justify="center" align="middle">
+  <RowContainer>
     <AssetIcon asset={asset} network={network} />
-  </Row>
+  </RowContainer>
 )
 
 export const poolColumn = <T extends { network: Network; asset: AnyAsset }>(title: string): ColumnType<T> => ({
@@ -77,10 +89,11 @@ export const poolColumn = <T extends { network: Network; asset: AnyAsset }>(titl
 })
 
 const renderPoolColumnMobile = ({ asset, network }: { network: Network; asset: AnyAsset }) => (
-  <Row justify="center" align="middle" style={{ width: '100%' }}>
+  <RowContainer>
     <AssetIcon asset={asset} network={network} />
-  </Row>
+  </RowContainer>
 )
+
 export const poolColumnMobile = <T extends { network: Network; asset: AnyAsset }>(title: string): ColumnType<T> => ({
   key: 'pool',
   title,
@@ -147,23 +160,22 @@ export const depthColumn = <T extends { depthPrice: BaseAmount }>(
   render: renderDepthColumn(pricePoolAsset),
   sorter: sortByDepth,
   sortDirections: ['descend', 'ascend'],
-  // Note: `defaultSortOrder` has no effect here, that's we do a default sort in `getPoolTableRowsData`
   defaultSortOrder: 'descend'
 })
 
 export const renderRefreshBtnColTitle = ({
   title,
   clickHandler,
-  iconOnly
+  icononly
 }: {
   title: string
   clickHandler: FP.Lazy<void>
-  iconOnly: boolean
+  icononly: boolean
 }) => (
   <div className="flex items-center justify-center">
-    <TextButton size={iconOnly ? 'large' : 'normal'} onClick={clickHandler} className="">
+    <TextButton size={icononly ? 'large' : 'normal'} onClick={clickHandler} className="">
       <div className="flex items-center">
-        <SyncOutlined className={iconOnly ? 'mr-0' : 'mr-[8px]'} /> {!iconOnly && title}
+        <SyncIcon icononly={icononly ? 'true' : 'false'} /> {!icononly && title}
       </div>
     </TextButton>
   </div>

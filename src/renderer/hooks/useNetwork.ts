@@ -1,9 +1,7 @@
 import { useCallback } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
-import { array as A } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useNavigate, matchPath, useLocation } from 'react-router-dom'
 

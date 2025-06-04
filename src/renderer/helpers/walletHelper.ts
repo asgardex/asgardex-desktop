@@ -1,8 +1,6 @@
 import { Network } from '@xchainjs/xchain-client'
 import { Address, AnyAsset, Chain, AssetAmount, baseToAsset } from '@xchainjs/xchain-util'
-import { array as A } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { array as A, function as FP, option as O } from 'fp-ts'
 import { IntlShape } from 'react-intl'
 
 import { DEFAULT_EVM_HD_MODE } from '../../shared/evm/types'
@@ -153,8 +151,15 @@ export const getLtcAmountFromBalances = (balances: WalletBalances): O.Option<Ass
 export const getRuneNativeAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
   getAssetAmountFromBalances(balances, isRuneNativeAsset)
 
-export const getCacaoAmountFromBalances = (balances: WalletBalances, assetToFind: AnyAsset): O.Option<AssetAmount> =>
-  getAssetAmountFromBalances(balances, (asset) => asset === assetToFind)
+export const getAmountFromBalances = (
+  balances: WalletBalances,
+  walletType: WalletType,
+  assetToFind: AnyAsset
+): O.Option<AssetAmount> =>
+  getAssetAmountFromBalances(
+    balances.filter((balance) => balance.walletType === walletType),
+    (asset) => asset === assetToFind
+  )
 export const getMayaAmountFromBalances = (balances: WalletBalances): O.Option<AssetAmount> =>
   getAssetAmountFromBalances(balances, isMayaAsset)
 

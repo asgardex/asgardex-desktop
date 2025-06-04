@@ -1,8 +1,8 @@
 import React from 'react'
 
-import { SyncOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
-import { function as FP } from 'fp-ts'
+import { ArrowPathIcon as SyncOutlined } from '@heroicons/react/20/solid'
+import * as FP from 'fp-ts/function'
 import { useIntl } from 'react-intl'
 
 import { BorderButton } from '../../components/uielements/button'

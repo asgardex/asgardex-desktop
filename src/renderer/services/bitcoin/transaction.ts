@@ -1,8 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { Network, TxHash } from '@xchainjs/xchain-client'
-import { either as E } from 'fp-ts'
-import { function as FP } from 'fp-ts'
+import { either as E, function as FP } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 

@@ -1,6 +1,5 @@
 import { AnyAsset, BaseAmount, baseAmount, bn } from '@xchainjs/xchain-util'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 
 import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../const'
 import { isChainAsset, max1e8BaseAmount } from '../../../helpers/assetHelper'

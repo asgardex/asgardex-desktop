@@ -14,9 +14,7 @@ import {
 } from '@xchainjs/xchain-util'
 import { Grid } from 'antd'
 import { ColumnsType, ColumnType } from 'antd/lib/table'
-import { array as A } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
@@ -200,7 +198,7 @@ export const ActivePools = (): JSX.Element => {
       title: Shared.renderRefreshBtnColTitle({
         title: intl.formatMessage({ id: 'common.refresh' }),
         clickHandler: refreshHandler,
-        iconOnly: !isDesktopView
+        icononly: !isDesktopView
       }),
       width: 280,
       render: renderBtnPoolsColumn

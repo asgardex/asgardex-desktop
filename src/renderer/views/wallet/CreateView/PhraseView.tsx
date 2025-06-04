@@ -1,7 +1,6 @@
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 
 import { NewPhraseConfirm, NewPhraseGenerate } from '../../../components/wallet/phrase'
 import { PhraseInfo } from '../../../components/wallet/phrase/Phrase.types'
@@ -10,7 +9,7 @@ import { getWalletNamesFromKeystoreWallets } from '../../../helpers/walletHelper
 import { useKeystoreWallets } from '../../../hooks/useKeystoreWallets'
 import { generateKeystoreId } from '../../../services/wallet/util'
 
-export const PhraseView: React.FC = () => {
+export const PhraseView = () => {
   const { keystoreService } = useWalletContext()
 
   const [phraseInfo, setPhraseInfo] = useState<O.Option<PhraseInfo>>(O.none)

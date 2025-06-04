@@ -1,8 +1,6 @@
 import * as path from 'path'
 
-import { either as E } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { taskEither as TE } from 'fp-ts'
+import { either as E, function as FP, taskEither as TE } from 'fp-ts'
 import * as fs from 'fs-extra'
 
 import { IPCLedgerAddressesIO, ipcLedgerAddressesIO } from '../../../shared/api/io'

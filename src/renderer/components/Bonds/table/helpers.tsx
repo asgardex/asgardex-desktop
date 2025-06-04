@@ -1,7 +1,7 @@
 import React from 'react'
 
-import { DesktopOutlined, StopOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
+import { TvIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -9,8 +9,8 @@ import { Address, BaseAmount, baseAmount, baseToAsset, formatAssetAmountCurrency
 import { Col } from 'antd'
 import { option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
-
 import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
+import RemoveIcon from '../../../assets/svg/icon-remove.svg?react'
 import { getUSDValue } from '../../../helpers/poolHelperMaya'
 import {
   LiquidityProviderForPool,
@@ -103,15 +103,11 @@ export const Status: React.FC<{ data: NodeInfo | NodeInfoMaya }> = ({ data }) =>
 }
 
 export const Watchlist: React.FC<{ addWatchlist: () => void }> = ({ addWatchlist }) => (
-  <Styled.WatchlistButton onClick={addWatchlist}>
-    <DesktopOutlined />
-  </Styled.WatchlistButton>
+  <TvIcon className="cursor-pointer text-turquoise w-5 h-5" onClick={addWatchlist} />
 )
 
 export const Delete: React.FC<{ deleteNode: () => void }> = ({ deleteNode }) => (
-  <Styled.DeleteButton onClick={deleteNode}>
-    <StopOutlined />
-  </Styled.DeleteButton>
+  <RemoveIcon className="cursor-pointer w-5 h-5" onClick={deleteNode} />
 )
 
 type CalculateBondedAmountParams = {

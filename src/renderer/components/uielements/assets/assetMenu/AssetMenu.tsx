@@ -5,17 +5,13 @@ import { ArchiveBoxXMarkIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/o
 import { Network } from '@xchainjs/xchain-client'
 import { AnyAsset, assetToString, AssetType, Chain } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
-import { array as A } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { nonEmptyArray as NEA } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { array as A, function as FP, nonEmptyArray as NEA, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { getChainAsset } from '../../../../helpers/chainHelper'
 import { eqAsset } from '../../../../helpers/fp/eq'
 import { emptyString } from '../../../../helpers/stringHelper'
-import { BaseButton } from '../../button'
-import { FilterButton } from '../../button'
+import { BaseButton, FilterButton } from '../../button'
 import { InputSearch } from '../../input'
 import { AssetData } from '../assetData'
 import { AssetIcon } from '../assetIcon/AssetIcon'
@@ -238,7 +234,7 @@ export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
             enter="ease"
             enterFrom="opacity-0 scale-95"
             enterTo="opacity-100 scale-100"
-            leave="ease-"
+            leave="ease"
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95">
             <Dialog.Panel

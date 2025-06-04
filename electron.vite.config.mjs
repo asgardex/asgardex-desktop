@@ -1,6 +1,7 @@
 import path from 'path'
 
 import inject from '@rollup/plugin-inject'
+import typescript from '@rollup/plugin-typescript'
 import react from '@vitejs/plugin-react'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import simpleGit from 'simple-git'
@@ -23,6 +24,7 @@ export default defineConfig(async ({ mode }) => {
         extensions: ['.ts', '.js']
       },
       plugins: [
+        typescript({ tsconfig: './tsconfig.main.json' }),
         externalizeDepsPlugin({
           include: ['@ledgerhq/hw-transport-node-hid', '@ledgerhq/hw-transport', 'node-hid', 'usb']
         })
@@ -99,7 +101,7 @@ export default defineConfig(async ({ mode }) => {
           inject: ['./src/shims/buffer-shim.js']
         }
       },
-      plugins: [react(), svgr()],
+      plugins: [react(), svgr(), typescript()],
       define: {
         'process.env': {}, // TODO: Fix from xchain
         global: 'globalThis',

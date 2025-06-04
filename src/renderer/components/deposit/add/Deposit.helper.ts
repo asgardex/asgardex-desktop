@@ -1,10 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { AnyAsset, baseAmount, BaseAmount, Chain } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
-import { either as E } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { array as A } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { either as E, function as FP, array as A, option as O } from 'fp-ts'
 
 import { WalletType } from '../../../../shared/wallet/types'
 import { SUPPORTED_LEDGER_APPS, ZERO_BASE_AMOUNT } from '../../../const'

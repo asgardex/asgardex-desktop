@@ -1,6 +1,7 @@
 import { CommonMessages } from '../types'
 
 const common: CommonMessages = {
+  'common.welcome': 'Willkommen',
   'common.stats': 'Statistiken',
   'common.network': 'Netzwerk',
   'common.dex': 'Dex',

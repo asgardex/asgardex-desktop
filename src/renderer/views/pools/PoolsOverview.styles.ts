@@ -1,4 +1,5 @@
-import * as AI from '@ant-design/icons'
+import { StarIcon as StarFilledHero } from '@heroicons/react/20/solid' // Filled star
+import { StarIcon as StarOutlinedHero } from '@heroicons/react/24/outline' // Outlined star
 import styled, { css } from 'styled-components'
 import { palette } from 'styled-theme'
 
@@ -24,6 +25,7 @@ export const BlockLeftLabel = styled(UILabel)`
 export const Label = styled(UILabel)`
   font-size: 16px;
 `
+
 export const AssetsFilter = styled(AssetsFilterUI)`
   margin-bottom: 20px;
 `
@@ -37,16 +39,15 @@ export const WatchContainer = styled.div`
 `
 
 const starStyle = css`
-  svg {
-    fill: ${palette('primary', 2)};
-    width: 20px;
-    height: 20px;
-  }
+  width: 20px;
+  height: 20px;
+  stroke: ${palette('primary', 2)};
 `
 
-export const StarOutlined = styled(AI.StarOutlined)`
+export const StarOutlined = styled(StarOutlinedHero)`
   ${starStyle}
 `
-export const StarFilled = styled(AI.StarFilled)`
+
+export const StarFilled = styled(StarFilledHero)`
   ${starStyle}
 `

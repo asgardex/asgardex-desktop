@@ -1,4 +1,4 @@
-import * as AIcons from '@ant-design/icons'
+import { PlusIcon } from '@heroicons/react/24/outline'
 import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
@@ -26,8 +26,8 @@ export const SubmitButton = styled(UIButton).attrs({
   typevalue: 'transparent'
 })``
 
-export const AddIcon = styled(AIcons.PlusOutlined)`
-  color: ${palette('text', 3)};
+export const AddIcon = styled(PlusIcon)`
+  stroke: ${palette('text', 3)}; /* Heroicons use stroke for outline */
   background: ${palette('primary', 2)};
   border-radius: 50%;
   height: 18px;

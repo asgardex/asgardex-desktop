@@ -1,14 +1,15 @@
 {
   "compilerOptions": {
-    "target": "es2019",
-    "lib": ["ESNext", "dom"],
+    "target": "es2022",
+    "lib": ["es2024", "ESNext.Array", "ESNext.Collection", "ESNext.Iterator", "dom"],
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "outDir": "./public/",
+    "module": "es2022",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "noEmitOnError": true,
     "pretty": true
   },
   "include": ["./src/main", "./src/shared", "src/vite-env.d.ts"],

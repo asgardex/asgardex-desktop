@@ -1,4 +1,4 @@
-import { CheckOutlined } from '@ant-design/icons'
+import { CheckCircleIcon } from '@heroicons/react/24/outline'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
@@ -44,7 +44,7 @@ export const IconWrapper = styled.div`
   height: 75%;
 `
 
-export const SuccessIcon = styled(CheckOutlined)`
+export const SuccessIcon = styled(CheckCircleIcon)`
   font-size: 35px;
   color: ${palette('primary', 2)};
 `

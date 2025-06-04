@@ -2,8 +2,7 @@ import React, { useCallback, useState, useEffect, forwardRef } from 'react'
 
 import { delay, bnOrZero } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 
 import { ZERO_BN } from '../../../const'
 import { eqBigNumber } from '../../../helpers/fp/eq'

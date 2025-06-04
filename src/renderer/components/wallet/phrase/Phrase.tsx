@@ -1,9 +1,6 @@
 import React from 'react'
 
-import { Row, Col } from 'antd'
-
 import type { WordType } from './NewPhraseConfirm.types'
-import * as Styled from './Phrase.styles'
 
 type Props = {
   words: WordType[]
@@ -14,32 +11,23 @@ type Props = {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const Phrase = React.forwardRef<any, Props>(
-  ({ words, onWordClick = () => {}, readOnly, wordIcon = null, className = '' }, ref) => {
-    return (
-      <Styled.Row ref={ref} className={className}>
-        <Col span={24}>
-          <Styled.Card>
-            <Row>
-              {words.map((word) => (
-                <Col sm={{ span: 12 }} md={{ span: 4 }} key={word._id} style={{ padding: '6px' }}>
-                  <Styled.Button
-                    type={'text'}
-                    size={'large'}
-                    tabIndex={readOnly ? -1 : 0}
-                    danger={word.error}
-                    readOnly={readOnly}
-                    onClick={readOnly ? undefined : () => onWordClick(word._id)}
-                    style={{ margin: '6px' }}>
-                    {word.text}
-                    <Styled.IconWrapper>{wordIcon}</Styled.IconWrapper>
-                  </Styled.Button>
-                </Col>
-              ))}
-            </Row>
-          </Styled.Card>
-        </Col>
-      </Styled.Row>
-    )
-  }
-)
+export const Phrase = ({ words, onWordClick = () => {}, readOnly, wordIcon = null }: Props) => {
+  return (
+    <div className="grid grid-cols-3 rounded-xl p-2 gap-1 min-h-[142px] border border-solid border-gray0 dark:border-gray0d">
+      {words.map((word, index) => (
+        <div
+          key={word._id}
+          className="flex items-center justify-between bg-turquoise/10 px-2 py-1 rounded-full max-h-7"
+          onClick={readOnly ? undefined : () => onWordClick(word._id)}>
+          <span key={word._id} className="text-sm text-text0 dark:text-text0d font-bold">
+            {index + 1}. {word.text}
+          </span>
+          {wordIcon}
+        </div>
+      ))}
+      {Array.from({ length: 12 - words.length }, (_, i) => i).map((_, index) => (
+        <div key={index} className="bg-turquoise/10 px-2 py-1 rounded-full max-h-7 h-7" />
+      ))}
+    </div>
+  )
+}

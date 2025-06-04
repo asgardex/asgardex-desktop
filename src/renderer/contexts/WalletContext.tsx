@@ -2,7 +2,7 @@ import React, { createContext, useContext } from 'react'
 
 import { option as O } from 'fp-ts'
 
-type Option = O.Option
+type Option<T> = O.Option<T>
 const { none, some } = O
 
 import {
@@ -73,7 +73,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   <WalletContext.Provider value={some(initialContext)}>{children}</WalletContext.Provider>
 )
 
-export const useWalletContext = () => {
+export const useWalletContext = (): WalletContextValue => {
   const context = O.toNullable(useContext(WalletContext))
   if (!context) {
     throw new Error('Context must be used within a WalletProvider.')

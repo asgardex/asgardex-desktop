@@ -3,9 +3,7 @@ import React, { useMemo, useState, useCallback, useRef } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { Row, Col, Grid } from 'antd'
-import { function as FP } from 'fp-ts'
-import { array as A } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { function as FP, array as A, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useMatch, Link, useNavigate, useLocation } from 'react-router-dom'
@@ -22,11 +20,10 @@ import * as walletRoutes from '../../routes/wallet'
 import {
   MidgardStatusRD,
   MidgardUrlRD,
+  PricePool,
   PricePools,
   PriceRD,
-  SelectedPricePoolAsset
-} from '../../services/midgard/midgardTypes'
-import {
+  SelectedPricePoolAsset,
   MidgardStatusRD as MidgardStatusMayaRD,
   MidgardUrlRD as MidgardMayaUrlRD
 } from '../../services/midgard/midgardTypes'
@@ -130,7 +127,7 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
   const pricePoolAssets = useMemo(() => {
     return FP.pipe(
       oPricePools,
-      O.map(A.map((pool) => pool.asset)),
+      O.map(A.map((pool: PricePool) => pool.asset)),
       O.map((assets) => {
         prevPricePoolAssets.current = assets
         return assets

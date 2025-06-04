@@ -3,8 +3,7 @@ import React from 'react'
 import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 
 import { WalletAddress, WalletAddresses } from '../../../shared/wallet/types'
 import { AccountAddressSelector } from '../AccountAddressSelector'
@@ -59,7 +58,7 @@ export const WalletPoolActionsHistoryHeader: React.FC<Props> = (props) => {
       <Styled.LinkContainer>
         <Styled.Headline className="flex items-center" onClick={onClickAddressIcon}>
           {protocol === THORChain ? `RuneScan` : 'MayaScan'}
-          <Styled.ExplorerLinkIcon />
+          <Styled.ExplorerLinkIcon width={18} height={18} />
         </Styled.Headline>
       </Styled.LinkContainer>
     </>

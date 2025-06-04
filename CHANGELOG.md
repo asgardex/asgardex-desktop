@@ -1,5 +1,19 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.40.0 (2025-5-28)
+
+## Update/Fixes
+
+- update imports remove duplicates [#733](https://github.com/asgardex/asgardex-desktop/pull/733)
+- fixed logic for token send & ldger [#732](https://github.com/asgardex/asgardex-desktop/pull/732)
+- fix logic for CJS modules [#726](https://github.com/asgardex/asgardex-desktop/pull/726)
+- migrate from CRA-react scripts to Vite [#698](https://github.com/asgardex/asgardex-desktop/pull/698)
+
+## Add
+
+- Add protocol select for swaps [#737](https://github.com/asgardex/asgardex-desktop/pull/737)
+- Add logic for tcy staking [#694](https://github.com/asgardex/asgardex-desktop/pull/694)
+
 # 1.30.5 (2025-4-28)
 
 ## Update/Fixes

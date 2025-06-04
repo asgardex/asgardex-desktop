@@ -1,6 +1,7 @@
 import { CommonMessages } from '../types'
 
 const common: CommonMessages = {
+  'common.welcome': '환영합니다',
   'common.stats': '통계',
   'common.network': '네트워크',
   'common.dex': 'Dex',

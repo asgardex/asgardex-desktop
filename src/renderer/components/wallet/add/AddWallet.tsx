@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 
-import { FolderAddOutlined, FolderOpenOutlined } from '@ant-design/icons/lib'
+import { FolderPlusIcon, FolderOpenIcon } from '@heroicons/react/20/solid'
 import { useIntl } from 'react-intl'
 import { useLocation, useNavigate } from 'react-router-dom'
 
@@ -26,7 +26,7 @@ export const AddWallet: React.FC<Props> = ({ isLocked = false }) => {
       {isLocked ? <Styled.UnlockIcon /> : <Styled.ConnectIcon />}
       <Styled.Label>{intl.formatMessage({ id: intlLabelId })}</Styled.Label>
       <Button onClick={onButtonClick} round="true">
-        {isLocked ? <FolderOpenOutlined /> : <FolderAddOutlined />}
+        {isLocked ? <FolderOpenIcon color="primary" /> : <FolderPlusIcon />}
         {intl.formatMessage({ id: intlButtonId })}
       </Button>
     </Styled.Container>

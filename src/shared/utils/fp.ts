@@ -1,7 +1,4 @@
-import { apply as AP } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { taskEither as TE } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { apply as AP, function as FP, taskEither as TE, option as O } from 'fp-ts'
 import * as IO from 'io-ts'
 import * as PR from 'io-ts/lib/PathReporter'
 

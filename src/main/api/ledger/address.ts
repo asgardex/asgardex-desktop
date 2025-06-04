@@ -19,7 +19,7 @@ import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
 import { either as E } from 'fp-ts'
 
-import { IPCLedgerAdddressParams, LedgerError, LedgerErrorId } from '../../../shared/api/types'
+import { IPCLedgerAddressParams, LedgerError, LedgerErrorId } from '../../../shared/api/types'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { isError, isEvmHDMode } from '../../../shared/utils/guard'
 import { HDMode, WalletAddress } from '../../../shared/wallet/types'
@@ -94,7 +94,7 @@ export const getAddress = async ({
   walletAccount,
   walletIndex,
   hdMode
-}: IPCLedgerAdddressParams): Promise<E.Either<LedgerError, WalletAddress>> => {
+}: IPCLedgerAddressParams): Promise<E.Either<LedgerError, WalletAddress>> => {
   try {
     const transport = await TransportNodeHid.create()
 
@@ -130,7 +130,7 @@ export const verifyLedgerAddress = async ({
   walletAccount,
   walletIndex,
   hdMode
-}: IPCLedgerAdddressParams) => {
+}: IPCLedgerAddressParams) => {
   const transport = await TransportNodeHid.create()
   let result = false
 

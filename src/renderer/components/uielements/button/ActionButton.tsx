@@ -1,7 +1,6 @@
 import React from 'react'
 
-import { array as A } from 'fp-ts'
-import { function as FP } from 'fp-ts'
+import { array as A, function as FP } from 'fp-ts'
 
 import type { Props as ButtonProps } from './FlatButton'
 import { FlatButton } from './index'

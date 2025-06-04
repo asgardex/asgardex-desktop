@@ -1,5 +1,4 @@
-import { contextBridge } from 'electron'
-import { ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 
 import type {
   ApiFileStoreService,

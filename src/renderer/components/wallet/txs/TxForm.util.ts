@@ -1,7 +1,6 @@
 import { bn, AssetAmount } from '@xchainjs/xchain-util'
 import BigNumber from 'bignumber.js'
-import { either as E } from 'fp-ts'
-import { function as FP } from 'fp-ts'
+import { either as E, function as FP } from 'fp-ts'
 
 import { lessThanOrEqualTo, greaterThan, validateBN } from '../../../helpers/form/validation'
 

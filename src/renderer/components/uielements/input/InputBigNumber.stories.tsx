@@ -7,8 +7,7 @@ import { Rule } from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 
 import { Button } from '../button'
-import { InputBigNumber } from './InputBigNumber'
-import { InputBigNumber as Component } from './InputBigNumber'
+import { InputBigNumber, InputBigNumber as Component } from './InputBigNumber'
 
 const meta: Meta<typeof Component> = {
   component: Component,

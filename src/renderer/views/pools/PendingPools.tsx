@@ -7,10 +7,7 @@ import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Grid } from 'antd'
 import { ColumnsType, ColumnType } from 'antd/lib/table'
-import { array as A } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
-import { predicate as P } from 'fp-ts'
+import { array as A, function as FP, option as O, predicate as P } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
@@ -40,8 +37,8 @@ import { PendingPoolsState, DEFAULT_POOL_FILTERS } from '../../services/midgard/
 import { ThorchainLastblockRD } from '../../services/thorchain/types'
 import { useApp } from '../../store/app/hooks'
 import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
-import { filterTableData } from './Pools.utils'
 import {
+  filterTableData,
   getBlocksLeftForPendingPoolAsString,
   getBlocksLeftForPendingPoolAsStringMaya,
   isEmptyPool
@@ -134,7 +131,7 @@ export const PendingPools = (): JSX.Element => {
       title: Shared.renderRefreshBtnColTitle({
         title: intl.formatMessage({ id: 'common.refresh' }),
         clickHandler: refreshHandler,
-        iconOnly: !isDesktopView
+        icononly: !isDesktopView
       }),
       width: 200,
       render: renderBtnPoolsColumn

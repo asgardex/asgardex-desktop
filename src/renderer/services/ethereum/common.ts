@@ -1,7 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { ETHChain, Client } from '@xchainjs/xchain-ethereum'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 

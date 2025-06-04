@@ -26,10 +26,7 @@ import {
   TradeAsset
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
-import { array as A } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { nonEmptyArray as NEA } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { array as A, function as FP, nonEmptyArray as NEA, option as O } from 'fp-ts'
 import debounce from 'lodash/debounce'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -1899,10 +1896,10 @@ export const TradeSwap = ({
         {/* Note: Input value is shown as AssetAmount */}
         <Row>
           <FlatButton
-            onClick={quoteOnlyButton}
+            className="mb-3 rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld"
             size="small"
             color={quoteOnly ? 'warning' : 'primary'}
-            className="mb-20px  rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
+            onClick={quoteOnlyButton}>
             {quoteOnly ? 'Preview Only' : 'Preview & Swap'}
           </FlatButton>
           {disabledChains.length > 0 ? (

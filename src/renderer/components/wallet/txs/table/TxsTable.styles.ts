@@ -1,4 +1,4 @@
-import { SwapOutlined } from '@ant-design/icons'
+import { ArrowPathRoundedSquareIcon as SwapOutlined } from '@heroicons/react/20/solid'
 import { Typography } from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
@@ -28,11 +28,9 @@ export const Text = styled(Typography.Text)`
 `
 
 export const TransferIcon = styled(SwapOutlined)`
-  svg {
-    height: 20px;
-    width: 20px;
-    color: ${palette('text', 1)};
-  }
+  height: 20px;
+  width: 20px;
+  stroke: ${palette('text', 1)};
 `
 
 export const OwnText = styled.div`

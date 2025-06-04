@@ -1,9 +1,7 @@
 import React from 'react'
 
 import { TxHash } from '@xchainjs/xchain-client'
-import { array as A } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { array as A, function as FP, option as O } from 'fp-ts'
 import { GetRowKey } from 'rc-table/lib/interface'
 import { FormattedDateParts, FormattedTime } from 'react-intl'
 

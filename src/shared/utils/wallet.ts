@@ -1,8 +1,4 @@
-import { array as A } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { nonEmptyArray as NEA } from 'fp-ts'
-import { option as O } from 'fp-ts'
-import { string as S } from 'fp-ts'
+import { array as A, function as FP, nonEmptyArray as NEA, option as O, string as S } from 'fp-ts'
 
 /**
  * Helper transform a derivationPath from string to an array

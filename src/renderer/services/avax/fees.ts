@@ -4,8 +4,7 @@ import { Fees, FeeType } from '@xchainjs/xchain-client'
 import { getFee, GasPrices, Client } from '@xchainjs/xchain-evm'
 import { Asset, baseAmount } from '@xchainjs/xchain-util'
 import { ethers } from 'ethers'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -15,8 +14,7 @@ import { FeeLD } from '../chain/types'
 import * as C from '../clients'
 import { FeesLD } from '../clients'
 import { ERC20_OUT_TX_GAS_LIMIT, ETH_OUT_TX_GAS_LIMIT, EVMZeroAddress } from '../evm/const'
-import { FeesService, PoolInTxFeeParams, ApproveFeeHandler, ApproveParams, TxParams } from '../evm/types'
-import { Client$ } from '../evm/types'
+import { FeesService, PoolInTxFeeParams, ApproveFeeHandler, ApproveParams, TxParams, Client$ } from '../evm/types'
 
 export const createFeesService = (client$: Client$): FeesService => {
   const { get$: reloadFees$, set: reloadFees } = observableState<TxParams>({

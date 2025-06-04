@@ -3,9 +3,7 @@ import React, { useMemo, useRef } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { Dropdown, Row, Col } from 'antd'
 import { ItemType } from 'antd/lib/menu/hooks/useItems'
-import { function as FP } from 'fp-ts'
-import { array as A } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { function as FP, array as A, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
@@ -13,9 +11,10 @@ import { useAppContext } from '../../../contexts/AppContext'
 import { OnlineStatus } from '../../../services/app/types'
 import {
   MidgardStatusRD as MidgardMayaStatusRD,
-  MidgardUrlRD as MidgardMayaUrlRD
+  MidgardUrlRD as MidgardMayaUrlRD,
+  MidgardStatusRD,
+  MidgardUrlRD
 } from '../../../services/midgard/midgardTypes'
-import { MidgardStatusRD, MidgardUrlRD } from '../../../services/midgard/midgardTypes'
 import { MimirRD } from '../../../services/thorchain/types'
 import { DownIcon } from '../../icons'
 import { ConnectionStatus } from '../../shared/icons'

@@ -1,6 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 
 import { sequenceTOptionFromArray, sequenceTRDFromArray } from './fpHelpers'
 

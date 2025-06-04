@@ -1,10 +1,6 @@
 import { Network } from '@xchainjs/xchain-client'
 import { AnyAsset } from '@xchainjs/xchain-util'
-import { function as FP } from 'fp-ts'
-import { array as A } from 'fp-ts'
-import { either as E } from 'fp-ts'
-import { task as T } from 'fp-ts'
-import { taskEither as TE } from 'fp-ts'
+import { function as FP, array as A, either as E, task as T, taskEither as TE } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 

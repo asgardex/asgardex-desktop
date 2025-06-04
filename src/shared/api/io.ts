@@ -1,7 +1,6 @@
 import { Keystore } from '@xchainjs/xchain-crypto'
 import { assetToString, assetFromString, BaseAmount, baseAmount, AnyAsset } from '@xchainjs/xchain-util'
-import { either as E } from 'fp-ts'
-import { function as FP } from 'fp-ts'
+import { either as E, function as FP } from 'fp-ts'
 import * as t from 'io-ts'
 import * as IOD from 'io-ts/Decoder'
 import * as IOG from 'io-ts/Guard'

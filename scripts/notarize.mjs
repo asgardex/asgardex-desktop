@@ -13,7 +13,7 @@ import { notarize } from '@electron/notarize'
 
 const isEmpty = (v) => !v || v.length === 0
 
-exports.default = async function notarizing(context) {
+export default async function notarizing(context) {
   const { electronPlatformName, appOutDir } = context
   if (electronPlatformName !== 'darwin') {
     console.log(`No need to notarize app on ${electronPlatformName}`)

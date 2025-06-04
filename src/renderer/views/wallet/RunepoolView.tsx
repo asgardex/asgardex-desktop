@@ -15,9 +15,7 @@ import {
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import BigNumber from 'bignumber.js'
-import { function as FP } from 'fp-ts'
-import { nonEmptyArray as NEA } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { function as FP, nonEmptyArray as NEA, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 

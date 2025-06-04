@@ -33,10 +33,7 @@ import {
   bnOrZero
 } from '@xchainjs/xchain-util'
 import { AxiosResponse } from 'axios'
-import { array as A } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { number as N } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { array as A, function as FP, number as N, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 

@@ -1,10 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { decryptFromKeystore, encryptToKeyStore, Keystore } from '@xchainjs/xchain-crypto'
 import { delay } from '@xchainjs/xchain-util'
-import { function as FP } from 'fp-ts'
-import { array as A } from 'fp-ts'
-import { either as E } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { function as FP, array as A, either as E, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 

@@ -1,4 +1,4 @@
-import { LoadingOutlined as ALoadingOutlined } from '@ant-design/icons'
+import { ArrowPathIcon as ALoadingOutlined } from '@heroicons/react/20/solid'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 

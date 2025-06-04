@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 
 import { ExternalUrl } from '../../../shared/const'
 import { AppUpdate, AppUpdateModalProps } from '../../components/app'

@@ -37,7 +37,6 @@ export const SwitchButton: React.FC<Props> = (props): JSX.Element => {
         active ? 'bg-turquoise' : 'bg-gray1 dark:bg-gray1d',
         className
       )}>
-      <span className="sr-only">Enable notifications</span>
       <span
         className={clsx(
           'inline-block h-4 w-4 transform rounded-full bg-white',

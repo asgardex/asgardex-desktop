@@ -2,11 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { Address, Chain } from '@xchainjs/xchain-util'
-import { AnyAsset } from '@xchainjs/xchain-util'
-import { array as A } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { Address, Chain, AnyAsset } from '@xchainjs/xchain-util'
+import { array as A, function as FP, option as O } from 'fp-ts'
 
 import { useMayachainContext } from '../contexts/MayachainContext'
 import { useThorchainContext } from '../contexts/ThorchainContext'

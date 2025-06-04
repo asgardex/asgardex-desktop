@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react'
 
-import { DesktopOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
+import { TvIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { Address, BaseAmount, assetToString, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import clsx from 'clsx'
 
+import RemoveIcon from '../../../assets/svg/icon-remove.svg?react'
 import { getLiquidityProvider } from '../../../services/mayachain'
 import { Providers as MayaProviders, LiquidityProviderForPoolRD } from '../../../services/mayachain/types'
 import { PoolDetailsRD } from '../../../services/midgard/mayaMigard/types'
 import { PricePool } from '../../../services/midgard/midgardTypes'
-import { RemoveAddressIcon } from '../../settings/WalletSettings.styles'
 import { Tooltip } from '../../uielements/common/Common.styles'
 import * as Styled from './BondsTable.styles'
 import * as H from './helpers'
@@ -78,7 +78,7 @@ export const BondProviderInfo: React.FC<Props> = ({
         { 'bg-transparent': isMonitoring && !isMyAddress },
         { 'bg-turquoise/10': isMyAddress }
       )}>
-      <div className="flex justify-between">
+      <div className="flex items-start justify-between">
         <div className="flex flex-col">
           {Object.entries(provider.pools).map(([pool, assetWithLpUnits]) => {
             const assetPool = assetToString(assetWithLpUnits.asset)
@@ -114,17 +114,21 @@ export const BondProviderInfo: React.FC<Props> = ({
           )}
         </div>
         {isMonitoring ? (
-          <Styled.DeleteButton>
-            <Tooltip title="Remove this bond provider from the watch list">
-              <RemoveAddressIcon onClick={() => removeWatchlist(provider.bondAddress, network)} />
-            </Tooltip>
-          </Styled.DeleteButton>
+          <Tooltip title="Remove this bond provider from the watch list">
+            <RemoveIcon
+              className="w-4 h-4 cursor-pointer"
+              onClick={() => removeWatchlist(provider.bondAddress, network)}
+            />
+          </Tooltip>
         ) : (
-          <Styled.WatchlistButton>
-            <Tooltip title="Add this bond provider to the watch list">
-              <DesktopOutlined onClick={() => addWatchlist(provider.bondAddress, network)} />
-            </Tooltip>
-          </Styled.WatchlistButton>
+          <Tooltip title="Add this bond provider to the watch list">
+            <TvIcon
+              className="cursor-pointer text-turquoise"
+              width={16}
+              height={16}
+              onClick={() => addWatchlist(provider.bondAddress, network)}
+            />
+          </Tooltip>
         )}
       </div>
       {renderSubActions({

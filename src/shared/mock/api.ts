@@ -11,9 +11,10 @@ import {
   UserChainStorage,
   UserAssetStorage,
   UserTrustedAddressStorage,
-  UserBondProvidersStorage
+  UserBondProvidersStorage,
+  ApiFileStoreService,
+  CommonStorage
 } from '../api/types'
-import { ApiFileStoreService, CommonStorage } from '../api/types'
 import { Locale } from '../i18n/types'
 import { WalletType } from '../wallet/types'
 import { MOCK_KEYSTORE } from './wallet'

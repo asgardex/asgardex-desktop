@@ -4,8 +4,7 @@ import { Keystore } from '@xchainjs/xchain-crypto'
 import { AssetCacao, CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Asset, Chain, TokenAsset } from '@xchainjs/xchain-util'
-import { either as E } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { either as E, option as O } from 'fp-ts'
 
 import { THORCHAIN_DECIMAL } from '../../renderer/helpers/assetHelper'
 import { EvmHDMode } from '../evm/types'
@@ -153,7 +152,7 @@ export type NodeUrl = {
   rpc: string
 }
 
-export type IPCLedgerAdddressParams = {
+export type IPCLedgerAddressParams = {
   chain: Chain
   network: Network
   walletAccount: number
@@ -162,8 +161,8 @@ export type IPCLedgerAdddressParams = {
 }
 
 export type ApiHDWallet = {
-  getLedgerAddress: (params: IPCLedgerAdddressParams) => Promise<E.Either<LedgerError, WalletAddress>>
-  verifyLedgerAddress: (params: IPCLedgerAdddressParams) => Promise<boolean>
+  getLedgerAddress: (params: IPCLedgerAddressParams) => Promise<E.Either<LedgerError, WalletAddress>>
+  verifyLedgerAddress: (params: IPCLedgerAddressParams) => Promise<boolean>
   sendLedgerTx: (
     params: unknown /* will be de-/serialized by ipcLedgerSendTxParamsIO */
   ) => Promise<E.Either<LedgerError, TxHash>>

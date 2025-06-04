@@ -1,9 +1,7 @@
 import { ArgTypes, Meta } from '@storybook/react'
 import { Network } from '@xchainjs/xchain-client'
 import { assetAmount, assetFromString, assetToBase, assetToString } from '@xchainjs/xchain-util'
-import { array as A } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { array as A, function as FP, option as O } from 'fp-ts'
 
 import { AssetBCH, AssetBTC, AssetRuneNative } from '../../../../shared/utils/asset'
 import { TxDetail } from './TxDetail'

@@ -9,9 +9,7 @@ import {
   generateStringParam,
   CompatibleAsset
 } from '@xchainjs/xchain-radix'
-import { either as E } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { either as E, function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -27,8 +25,7 @@ import { sequenceSOption } from '../../helpers/fpHelpers'
 import { Network$ } from '../app/types'
 import * as C from '../clients'
 import { TxHashLD, ErrorId, ApiError } from '../wallet/types'
-import { SendPoolTxParams, TransactionService } from './types'
-import { Client$, SendTxParams } from './types'
+import { SendPoolTxParams, TransactionService, Client$, SendTxParams } from './types'
 
 export const createTransactionService = (client$: Client$, network$: Network$): TransactionService => {
   const common = C.createTransactionService(client$)

@@ -4,8 +4,7 @@ import { CheckCircleIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react
 import { Network } from '@xchainjs/xchain-client'
 import { Address, AnyAsset } from '@xchainjs/xchain-util'
 import { Form, Tooltip } from 'antd'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { truncateAddress } from '../../helpers/addressHelper'

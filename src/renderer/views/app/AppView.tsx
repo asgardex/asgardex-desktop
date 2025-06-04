@@ -7,7 +7,7 @@ import { Grid } from 'antd'
 import { function as FP } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
-
+import { useLocation } from 'react-router-dom'
 import { DEFAULT_LOCALE } from '../../../shared/i18n/const'
 import { envOrDefault } from '../../../shared/utils/env'
 import { Header } from '../../components/header'
@@ -21,6 +21,9 @@ import { useLedgerAddresses } from '../../hooks/useLedgerAddresses'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
 import { useMayachainMimirHalt } from '../../hooks/useMimirHaltMaya'
 import { useTheme } from '../../hooks/useTheme'
+import { noWallet } from '../../routes/wallet'
+import { base as createWalletBase } from '../../routes/wallet/create'
+import { base as importWalletBase } from '../../routes/wallet/imports'
 import { View } from '../View'
 import { ViewRoutes } from '../ViewRoutes'
 import HaltedChainsWarning from './AppHaltedChains'
@@ -34,7 +37,16 @@ export const AppView = (): JSX.Element => {
   const { locale$ } = useI18nContext()
   const currentLocale = useObservableState(locale$, DEFAULT_LOCALE)
 
+  const location = useLocation()
   const { isLight } = useTheme()
+
+  const shouldHideLayout = useMemo(() => {
+    const isNoWalletView = location.pathname === noWallet.path()
+    const isCreateWalletView = location.pathname.includes(createWalletBase.path())
+    const isImportWalletView = location.pathname.includes(importWalletBase.path())
+
+    return isNoWalletView || isCreateWalletView || isImportWalletView
+  }, [location.pathname])
 
   const isDesktopView = Grid.useBreakpoint()?.lg ?? false
 
@@ -144,32 +156,38 @@ export const AppView = (): JSX.Element => {
 
   return (
     <Styled.AppWrapper>
-      <div className="flex h-full flex-col">
-        <AppUpdateView />
-        <Styled.AppLayout className="!bg-bg3 dark:!bg-bg3d">
-          {isDesktopView && <Sidebar commitHash={envOrDefault($COMMIT_HASH, '')} isDev={$IS_DEV} publicIP={publicIP} />}
-          <View>
-            <Header />
-            <MidgardErrorAlert apiEndpoint={apiEndpointThor} reloadHandler={reloadApiEndpoint} />
-            <MidgardErrorAlert apiEndpoint={apiEndpointMaya} reloadHandler={reloadApiEndpointMaya} />
-            {renderImportKeystoreWalletsError}
-            {renderImportLedgerAddressesError}
-            <div className="mb-10 flex flex-col gap-2">
-              <HaltedChainsWarning
-                haltedChainsRD={haltedChainsThorRD}
-                mimirHaltRD={mimirHaltThorRD}
-                protocol={THORChain}
-              />
-              <HaltedChainsWarning
-                haltedChainsRD={haltedChainsMayaRD}
-                mimirHaltRD={mimirHaltMayaRD}
-                protocol={MayaChain}
-              />
-            </div>
-            <ViewRoutes />
-          </View>
-        </Styled.AppLayout>
-      </div>
+      {shouldHideLayout ? (
+        <ViewRoutes />
+      ) : (
+        <div className="flex h-full flex-col">
+          <AppUpdateView />
+          <Styled.AppLayout className="!bg-bg3 dark:!bg-bg3d">
+            {isDesktopView && (
+              <Sidebar commitHash={envOrDefault($COMMIT_HASH, '')} isDev={$IS_DEV} publicIP={publicIP} />
+            )}
+            <View>
+              <Header />
+              <MidgardErrorAlert apiEndpoint={apiEndpointThor} reloadHandler={reloadApiEndpoint} />
+              <MidgardErrorAlert apiEndpoint={apiEndpointMaya} reloadHandler={reloadApiEndpointMaya} />
+              {renderImportKeystoreWalletsError}
+              {renderImportLedgerAddressesError}
+              <div className="mb-10 flex flex-col gap-2">
+                <HaltedChainsWarning
+                  haltedChainsRD={haltedChainsThorRD}
+                  mimirHaltRD={mimirHaltThorRD}
+                  protocol={THORChain}
+                />
+                <HaltedChainsWarning
+                  haltedChainsRD={haltedChainsMayaRD}
+                  mimirHaltRD={mimirHaltMayaRD}
+                  protocol={MayaChain}
+                />
+              </div>
+              <ViewRoutes />
+            </View>
+          </Styled.AppLayout>
+        </div>
+      )}
     </Styled.AppWrapper>
   )
 }

@@ -1,9 +1,7 @@
 import React, { useEffect, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { function as FP } from 'fp-ts'
-import { array as A } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { function as FP, array as A, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { formatFee } from './Fees.helper'

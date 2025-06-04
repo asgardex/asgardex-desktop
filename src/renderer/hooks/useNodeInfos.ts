@@ -1,8 +1,7 @@
 import { useEffect, useState, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { array as A } from 'fp-ts'
-import { function as FP } from 'fp-ts'
+import { array as A, function as FP } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 

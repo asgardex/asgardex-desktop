@@ -1,7 +1,5 @@
 import { TokenAsset, Chain } from '@xchainjs/xchain-util'
-import { array as A } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { array as A, function as FP, option as O } from 'fp-ts'
 import { isEqual } from 'lodash'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'

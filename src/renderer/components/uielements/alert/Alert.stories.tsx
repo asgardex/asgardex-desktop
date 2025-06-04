@@ -1,4 +1,4 @@
-import { SyncOutlined } from '@ant-design/icons'
+import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import { Meta, StoryFn } from '@storybook/react'
 
 import { Button } from '../button'
@@ -14,7 +14,7 @@ const renderActionButton = (color: ButtonColor) => (
   <div>
     <p>{description}</p>
     <Button onClick={() => console.log('action')} typevalue="outline" color={color}>
-      <SyncOutlined />
+      <ArrowPathIcon />
       Action Button
     </Button>
   </div>

@@ -1,9 +1,7 @@
 import * as RD from '@devexperts/remote-data-ts'
 import { Network, TxHash } from '@xchainjs/xchain-client'
 import { DepositParam, THORChain } from '@xchainjs/xchain-thorchain'
-import { either as E } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { either as E, function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
@@ -20,8 +18,7 @@ import { retryRequest } from '../../helpers/rx/retryRequest'
 import { Network$ } from '../app/types'
 import * as C from '../clients'
 import { TxHashLD, ErrorId } from '../wallet/types'
-import { ClientUrl, TransactionService } from './types'
-import { Client$, ClientUrl$, SendTxParams } from './types'
+import { ClientUrl, TransactionService, Client$, ClientUrl$, SendTxParams } from './types'
 
 export const createTransactionService = (
   client$: Client$,

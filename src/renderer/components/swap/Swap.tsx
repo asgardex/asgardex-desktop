@@ -34,10 +34,7 @@ import {
 } from '@xchainjs/xchain-util'
 import { Row } from 'antd'
 import clsx from 'clsx'
-import { array as A } from 'fp-ts'
-import { function as FP } from 'fp-ts'
-import { nonEmptyArray as NEA } from 'fp-ts'
-import { option as O } from 'fp-ts'
+import { array as A, function as FP, nonEmptyArray as NEA, option as O } from 'fp-ts'
 import { debounce } from 'lodash'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
@@ -102,6 +99,7 @@ import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
 import { useAggregator } from '../../store/aggregator/hooks'
 import { AssetWithAmount } from '../../types/asgardex'
 import { LedgerConfirmationModal, WalletPasswordConfirmationModal } from '../modal/confirmation'
+import { ProviderModal } from '../modal/provider'
 import { SwapAssets } from '../modal/tx/extra'
 import { LoadingView, Spin } from '../shared/loading'
 import { AssetInput } from '../uielements/assets/assetInput'
@@ -2403,13 +2401,16 @@ export const Swap = ({
       <div>
         {/* Note: Input value is shown as AssetAmount */}
         <Row>
-          <FlatButton
-            onClick={quoteOnlyButton}
-            size="small"
-            color={quoteOnly ? 'warning' : 'primary'}
-            className="mb-20px  rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld">
-            {quoteOnly ? 'Preview Only' : 'Preview & Swap'}
-          </FlatButton>
+          <div className="mb-3 w-full flex items-center justify-between">
+            <FlatButton
+              className="rounded-full hover:shadow-full group-hover:rotate-180 dark:hover:shadow-fulld"
+              size="small"
+              color={quoteOnly ? 'warning' : 'primary'}
+              onClick={quoteOnlyButton}>
+              {quoteOnly ? 'Preview Only' : 'Preview & Swap'}
+            </FlatButton>
+            <ProviderModal />
+          </div>
           {disabledChains.length > 0 ? (
             <div className="text-12 text-gray2 dark:border-gray1d dark:text-gray2d">
               <div className="flex pb-4">

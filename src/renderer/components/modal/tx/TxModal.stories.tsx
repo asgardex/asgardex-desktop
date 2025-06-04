@@ -1,5 +1,5 @@
-import { SyncOutlined } from '@ant-design/icons'
 import * as RD from '@devexperts/remote-data-ts'
+import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import { Meta, StoryFn } from '@storybook/react'
 import { TxHash } from '@xchainjs/xchain-client'
 import { Row } from 'antd'
@@ -51,7 +51,7 @@ const extraContent = (): JSX.Element => (
       Extra Content
     </Label>
     <Button onClick={() => console.log('extra button clicked')} typevalue="outline" color="warning">
-      <SyncOutlined />
+      <ArrowPathIcon />
       Extra Button
     </Button>
   </Row>

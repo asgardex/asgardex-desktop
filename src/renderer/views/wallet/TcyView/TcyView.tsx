@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { InformationCircleIcon } from '@heroicons/react/20/solid'
+import { InformationCircleIcon, RocketLaunchIcon } from '@heroicons/react/20/solid'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { AssetDOGE } from '@xchainjs/xchain-doge'
 import { AssetETH } from '@xchainjs/xchain-ethereum'
@@ -31,17 +31,17 @@ const tabTitle = {
 const mockData: TcyInfo[] = [
   {
     asset: AssetBTC,
-    amount: 2593,
+    amount: 0,
     isClaimed: false
   },
   {
     asset: AssetETH,
-    amount: 25493,
+    amount: 0,
     isClaimed: false
   },
   {
     asset: AssetDOGE,
-    amount: 12593,
+    amount: 0,
     isClaimed: false
   }
 ]
@@ -79,7 +79,11 @@ export const TcyView = () => {
 
       <AssetsNav />
 
-      <div className="grid grid-cols-8 gap-2 bg-bg1 dark:bg-bg1d rounded-b-lg space-x-0 space-y-2 sm:space-x-2 sm:space-y-0 py-8 px-4 sm:px-8">
+      <div className="relative grid grid-cols-8 gap-2 bg-bg1 dark:bg-bg1d rounded-b-lg space-x-0 space-y-2 sm:space-x-2 sm:space-y-0 py-8 px-4 sm:px-8">
+        <div className="absolute w-full h-full backdrop-blur z-20 flex flex-col items-center justify-center gap-y-2 p-8">
+          <RocketLaunchIcon className="cursor-pointer text-text1 dark:text-text1d w-8 h-8" />
+          <span className="text-lg text-text1 dark:text-text1d">Coming Soon</span>
+        </div>
         <div className="col-span-8 md:col-span-5">
           <div className="flex flex-col py-4 w-full border border-solid border-gray0 dark:border-gray0d rounded-lg ">
             <div className="flex flex-row space-x-4 px-4 pb-4 mb-4 border-b border-solid border-gray0 dark:border-gray0d">
@@ -198,7 +202,7 @@ export const TcyView = () => {
                   <InformationCircleIcon className="cursor-pointer text-turquoise w-4 h-4" />
                 </Tooltip>
               </div>
-              <span className="text-turquoise">1000 TCY</span>.
+              <span className="text-turquoise">0 TCY</span>.
             </div>
 
             <div className="flex flex-col space-y-2 px-4">
@@ -208,7 +212,7 @@ export const TcyView = () => {
                   <InformationCircleIcon className="cursor-pointer text-turquoise w-4 h-4" />
                 </Tooltip>
               </div>
-              <span className="text-turquoise">1000 TCY</span>
+              <span className="text-turquoise">0 TCY</span>
             </div>
           </div>
         </div>
