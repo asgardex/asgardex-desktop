@@ -23,6 +23,7 @@
     "generate:bscerc20whitelist": "./node_modules/.bin/ts-node --project tsconfig.scripts.json ./scripts/generateBSCtokenlist.ts",
     "generate:arberc20whitelist": "./node_modules/.bin/ts-node --project tsconfig.scripts.json ./scripts/generateARBtokenlist.ts",
     "generate:baseErc20whitelist": "./node_modules/.bin/ts-node --project tsconfig.scripts.json ./scripts/generateBASEtokenlist.ts",
+    "test:e2e": "playwright test",
     "storybook": "NODE_OPTIONS=\"--max-old-space-size=4096\" storybook dev -p 9009 ",
     "build-storybook": "NODE_OPTIONS=\"--max-old-space-size=8192\" storybook build",
     "analyze": "yarn build:dev && source-map-explorer 'build/renderer/assets/*.js'"
@@ -152,6 +153,7 @@
     "@eslint/compat": "1.1.1",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^8.57.1",
+    "@playwright/test": "^1.52.0",
     "@rollup/plugin-inject": "^5.0.5",
     "@rollup/plugin-typescript": "^12.1.2",
     "@storybook/addon-docs": "^8.6.12",
@@ -201,6 +203,7 @@
     "happy-dom": "^17.4.6",
     "husky": "^8.0.1",
     "lint-staged": "^13.0.0",
+    "playwright": "^1.52.0",
     "postcss": "8.4.47",
     "prebuild-install": "^7.1.3",
     "prettier": "^2.6.2",
