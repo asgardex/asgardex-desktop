@@ -1,4 +1,3 @@
-import { StarIcon } from '@heroicons/react/24/solid'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
@@ -33,10 +32,4 @@ export const FilterButton = styled(ButtonUI)<ButtonProps & { active: 'true' | 'f
       color: ${({ active }) => (active === 'true' ? '#fff' : palette('primary', 2))};
     }
   }
-`
-
-export const Star = styled(StarIcon)`
-  fill: ${palette('grey', 0)}; /* Use fill for solid Heroicons */
-  width: 15px;
-  height: 15px;
 `
