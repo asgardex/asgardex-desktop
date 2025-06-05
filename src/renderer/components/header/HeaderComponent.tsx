@@ -317,7 +317,7 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
                 </Row>
               </Col>
               <Col>
-                <Row align="middle">
+                <Row className="space-x-2" align="middle">
                   {renderHeaderNetStatus}
                   <HeaderTheme isDesktopView={isDesktopView} />
                   {renderHeaderCurrency}
