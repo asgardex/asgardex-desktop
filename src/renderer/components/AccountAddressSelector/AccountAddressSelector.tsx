@@ -3,6 +3,7 @@ import React, { useMemo } from 'react'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
 import { Dropdown } from 'antd'
+import clsx from 'clsx'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
@@ -57,13 +58,23 @@ export const AccountAddressSelector: React.FC<Props> = (props) => {
             const selected = isSelected(walletAddress)
             return {
               label: (
-                <Styled.MenuItemWrapper onClick={() => onChangeAddress(walletAddress)}>
-                  <Styled.AssetIcon asset={getChainAsset(chain)} size={size} network={network} />
-                  <Styled.WalletAddress>{address}</Styled.WalletAddress>
+                <div
+                  className="flex items-center justify-between text-14 p-1"
+                  onClick={() => onChangeAddress(walletAddress)}>
+                  <div className="flex items-center">
+                    <AssetIcon className="m-0.5" asset={getChainAsset(chain)} size={size} network={network} />
+                    <div className="my-1 mx-4 text-text2 dark:text-text2d">{address}</div>
+                  </div>
                   {isLedgerWallet(type) && (
-                    <Styled.WalletTypeLabel selected={selected}>{walletTypeToI18n(type, intl)}</Styled.WalletTypeLabel>
+                    <WalletTypeLabel
+                      className={clsx(
+                        'leading-[14px]',
+                        selected ? 'bg-gray1 dark:bg-gray1d' : 'bg-gray0 dark:bg-gray0d'
+                      )}>
+                      {walletTypeToI18n(type, intl)}
+                    </WalletTypeLabel>
                   )}
-                </Styled.MenuItemWrapper>
+                </div>
               ),
               key: `${chain}:${address}`
             }
@@ -78,12 +89,14 @@ export const AccountAddressSelector: React.FC<Props> = (props) => {
     O.fold(
       () => <></>,
       ({ chain, type, address }) => (
-        <>
-          <AssetIcon asset={getChainAsset(chain)} size={'xsmall'} network={network} />
-          <Styled.TruncatedAddress>{truncateAddress(address, chain, network)}</Styled.TruncatedAddress>
-          {isLedgerWallet(type) && <WalletTypeLabel>{walletTypeToI18n(type, intl)}</WalletTypeLabel>}
-          <ChevronDownIcon className="mx-1 text-turquoise" width={16} height={16} />
-        </>
+        <div className="flex items-center justify-between border border-solid border-turquoise rounded px-2 py-1">
+          <div className="flex items-center">
+            <AssetIcon asset={getChainAsset(chain)} size="xsmall" network={network} />
+            <div className="ml-1 text-14 text-turquoise">{truncateAddress(address, chain, network)}</div>
+            {isLedgerWallet(type) && <WalletTypeLabel>{walletTypeToI18n(type, intl)}</WalletTypeLabel>}
+          </div>
+          <ChevronDownIcon className="ml-4 text-turquoise" width={16} height={16} />
+        </div>
       )
     )
   )
