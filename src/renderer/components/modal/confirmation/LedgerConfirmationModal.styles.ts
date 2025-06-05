@@ -5,7 +5,6 @@ import { palette } from 'styled-theme'
 import LedgerConnectUI from '../../../assets/svg/ledger-device-connect.svg?react'
 import { media } from '../../../helpers/styleHelper'
 import { AssetIcon as AssetIconUI } from '../../uielements/assets/assetIcon'
-import { Button } from '../../uielements/button'
 import { CopyLabel as CopyLabelUI } from '../../uielements/label'
 
 export const LedgerContainer = styled.div`
@@ -66,19 +65,6 @@ export const Icon = styled.div`
   }
 `
 
-export const AddressWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding: 20px 0 0 0;
-`
-
-export const AddressContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  text-transform: none;
-  align-items: center;
-`
-
 export const AddressTitle = styled.p`
   font-family: 'MainFontBold';
   font-size: 10px;
@@ -86,10 +72,6 @@ export const AddressTitle = styled.p`
   text-transform: uppercase;
   padding: 0;
   margin: 0;
-`
-
-export const CompareAddressButton = styled(Button)`
-  box-shadow: none;
 `
 
 export const ExpandIcon = styled(ChevronRightIcon)`
