@@ -29,6 +29,7 @@ import { ConfirmationModal } from '../../modal/confirmation'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { BaseButton, TextButton } from '../../uielements/button'
 import { ExternalLinkIcon, Tooltip } from '../../uielements/common/Common.styles'
+import { Label } from '../../uielements/label'
 import { BondProviderInfo } from './BondProviderInfo'
 import * as Styled from './BondsTable.styles'
 import * as H from './helpers'
@@ -271,14 +272,14 @@ export const BondsTable: React.FC<Props> = ({
       onClose: () => setNodeToRemove(O.none),
       onSuccess: () => removeNode(nodeAddress),
       content: (
-        <Styled.ConfirmationModalText>
+        <Label className="text-14 text-center font-main">
           <FormattedMessage
             id="bonds.node.removeMessage"
             values={{
-              node: <Styled.ConfirmationModalAddress>{nodeAddress}</Styled.ConfirmationModalAddress>
+              node: <span className="text-16 font-bold font-mainBold">{nodeAddress}</span>
             }}
           />
-        </Styled.ConfirmationModalText>
+        </Label>
       ),
       visible: !!nodeAddress
     }
