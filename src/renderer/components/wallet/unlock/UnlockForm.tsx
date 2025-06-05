@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useMemo } from 'react'
+import { useCallback, useState, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import clsx from 'clsx'
@@ -39,9 +39,7 @@ export type Props = {
   wallets: KeystoreWalletsUI
 }
 
-export const UnlockForm = (props: Props): JSX.Element => {
-  const { keystore, unlock, removeKeystore, changeKeystore$, wallets } = props
-
+export const UnlockForm = ({ keystore, unlock, removeKeystore, changeKeystore$, wallets }: Props) => {
   const [showRemoveModal, setShowRemoveModal] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
@@ -140,7 +138,7 @@ export const UnlockForm = (props: Props): JSX.Element => {
   }, [navigate])
 
   const importWalletHandler = useCallback(() => {
-    navigate(walletRoutes.imports.base.path())
+    navigate(walletRoutes.imports.keystore.path())
   }, [navigate])
 
   const renderChangeWalletError = useMemo(
@@ -171,8 +169,8 @@ export const UnlockForm = (props: Props): JSX.Element => {
         <div
           className={clsx(
             'flex h-full flex-col items-center justify-between',
-            'bg-bg0 dark:bg-bg0d',
-            'pl-30px pr-30px pt-[45px] pb-[35px] sm:pb-[70px] sm:pl-[60px] sm:pr-[60px] sm:pt-[90px]'
+            'bg-bg0 dark:bg-bg0d rounded-lg',
+            'px-30px pt-[45px] pb-[35px] sm:pb-[70px] sm:px-[60px] sm:pt-[90px]'
           )}>
           <div className="w-full max-w-[320px] space-y-3">
             <div className="flex flex-col">
