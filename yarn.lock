@@ -6129,19 +6129,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-cardano@portal:../../Kairos/xchainjs-lib/packages/xchain-cardano::locator=asgardex%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "@xchainjs/xchain-cardano@portal:../../Kairos/xchainjs-lib/packages/xchain-cardano::locator=asgardex%40workspace%3A."
+"@xchainjs/xchain-cardano@npm:1.1.0":
+  version: 1.1.0
+  resolution: "@xchainjs/xchain-cardano@npm:1.1.0"
   dependencies:
     "@emurgo/cardano-serialization-lib-browser": "npm:^14.1.2"
-    "@xchainjs/xchain-client": "npm:latest"
-    "@xchainjs/xchain-crypto": "npm:latest"
-    "@xchainjs/xchain-util": "npm:latest"
+    "@xchainjs/xchain-client": "npm:2.0.1"
+    "@xchainjs/xchain-crypto": "npm:1.0.0"
+    "@xchainjs/xchain-util": "npm:2.0.0"
     multicoin-address-validator: "npm:^0.5.25"
+  checksum: 10/f725a650678c25aff0f221b206083b9a25469d24f2e458b44f6b91f028af0e229670527aebe1c49c3b38b5a83d9938c6469773449ea4f74e212c6492442f50da
   languageName: node
-  linkType: soft
+  linkType: hard
 
-"@xchainjs/xchain-client@npm:2.0.0, @xchainjs/xchain-client@npm:latest":
+"@xchainjs/xchain-client@npm:2.0.0":
   version: 2.0.0
   resolution: "@xchainjs/xchain-client@npm:2.0.0"
   dependencies:
@@ -6149,6 +6150,17 @@ __metadata:
     "@xchainjs/xchain-util": "npm:2.0.0"
     axios: "npm:1.8.4"
   checksum: 10/b6d79e77d282f4226f50c6de54a68cd2e27bcad93310c147fd4eb1c03e1f349fa7f0cbd359f989156c45ee56edbee7c2f3a0f51ed8feffb073ccd1bc26ab523e
+  languageName: node
+  linkType: hard
+
+"@xchainjs/xchain-client@npm:2.0.1":
+  version: 2.0.1
+  resolution: "@xchainjs/xchain-client@npm:2.0.1"
+  dependencies:
+    "@xchainjs/xchain-crypto": "npm:1.0.0"
+    "@xchainjs/xchain-util": "npm:2.0.0"
+    axios: "npm:1.8.4"
+  checksum: 10/6b811fe2b209dd455b29d0d6f87b13bccc2c02f5ff288a8399833381b8d9d8e3253292491496504775b84d9faceae4204429337826ae06812ceab17431725678
   languageName: node
   linkType: hard
 
@@ -6197,7 +6209,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-crypto@npm:1.0.0, @xchainjs/xchain-crypto@npm:latest":
+"@xchainjs/xchain-crypto@npm:1.0.0":
   version: 1.0.0
   resolution: "@xchainjs/xchain-crypto@npm:1.0.0"
   dependencies:
@@ -6552,7 +6564,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-util@npm:2.0.0, @xchainjs/xchain-util@npm:latest":
+"@xchainjs/xchain-util@npm:2.0.0":
   version: 2.0.0
   resolution: "@xchainjs/xchain-util@npm:2.0.0"
   dependencies:
@@ -7117,7 +7129,7 @@ __metadata:
     "@xchainjs/xchain-bitcoin": "npm:2.0.0"
     "@xchainjs/xchain-bitcoincash": "npm:2.0.0"
     "@xchainjs/xchain-bsc": "npm:2.0.1"
-    "@xchainjs/xchain-cardano": "portal:../../Kairos/xchainjs-lib/packages/xchain-cardano"
+    "@xchainjs/xchain-cardano": "npm:1.1.0"
     "@xchainjs/xchain-client": "npm:2.0.0"
     "@xchainjs/xchain-cosmos": "npm:3.0.0"
     "@xchainjs/xchain-crypto": "npm:1.0.0"

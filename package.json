@@ -88,7 +88,7 @@
     "@xchainjs/xchain-bitcoin": "2.0.0",
     "@xchainjs/xchain-bitcoincash": "2.0.0",
     "@xchainjs/xchain-bsc": "2.0.1",
-    "@xchainjs/xchain-cardano": "1.0.0",
+    "@xchainjs/xchain-cardano": "1.1.0",
     "@xchainjs/xchain-client": "2.0.0",
     "@xchainjs/xchain-cosmos": "3.0.0",
     "@xchainjs/xchain-crypto": "1.0.0",
