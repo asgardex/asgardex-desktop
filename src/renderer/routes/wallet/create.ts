@@ -7,13 +7,6 @@ export const base: Route<void> = {
   }
 }
 
-export const keystore: Route<void> = {
-  template: `${base.template}/keystore`,
-  path() {
-    return this.template
-  }
-}
-
 export const phrase: Route<void> = {
   template: `${base.template}/phrase`,
   path() {

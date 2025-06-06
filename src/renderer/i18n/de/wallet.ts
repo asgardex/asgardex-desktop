@@ -42,8 +42,10 @@ const wallet: WalletMessages = {
     'Die Wallet konnte nicht entsperrt werden. Bitte überprüfe Dein Passwort und versuche es erneut.',
   'wallet.imports.keystore.select': 'Keystore-Datei auswählen',
   'wallet.imports.keystore.title': 'Bitte wähle die Keystore-Datei Deiner Wallet',
+  'wallet.imports.keystore.description': 'Eine vorhandene Keystore-Wallet importieren',
   'wallet.imports.phrase.title':
     'Bitte gib die Phrase Deiner Wallet ein, jeweils mit einem Leerzeichen zwischen den Wörtern',
+  'wallet.imports.phrase.description': 'Eine vorhandene Wallet mit Seed-Phrase importieren',
   'wallet.imports.wallet': 'Importiere eine bestehende Wallet',
   'wallet.imports.enterphrase': 'Phrase eingeben',
   'wallet.imports.error.instance': 'Es konnte keine Instanz vom Client erstellt werden',

@@ -39,9 +39,5 @@ export const HeaderTheme: React.FC<Props> = (props): JSX.Element => {
     )
   }, [intl, isLightTheme])
 
-  return (
-    <Styled.HeaderThemeWrapper onClick={() => clickSwitchThemeHandler()}>
-      {isDesktopView ? desktopView : mobileView}
-    </Styled.HeaderThemeWrapper>
-  )
+  return <div onClick={() => clickSwitchThemeHandler()}>{isDesktopView ? desktopView : mobileView}</div>
 }

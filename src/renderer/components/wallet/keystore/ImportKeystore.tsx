@@ -17,7 +17,6 @@ import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import { MAX_WALLET_NAME_CHARS } from '../../../services/wallet/const'
 import { ImportingKeystoreStateRD, ImportKeystoreParams, LoadKeystoreLD } from '../../../services/wallet/types'
 import { InnerForm } from '../../shared/form/Form.styles'
-import { Spin } from '../../shared/loading'
 import { BorderButton, FlatButton } from '../../uielements/button'
 import { InputPassword, Input } from '../../uielements/input'
 import { Label } from '../../uielements/label'
@@ -60,7 +59,7 @@ export const ImportKeystore: React.FC<Props> = (props): JSX.Element => {
   }
 
   const renderError = (msg: string) => (
-    <Label className="mb-20px" color="error" textTransform="uppercase" align="center">
+    <Label className="font-main mb-20px" color="error" size="normal" textTransform="uppercase">
       {msg}
     </Label>
   )
@@ -120,61 +119,60 @@ export const ImportKeystore: React.FC<Props> = (props): JSX.Element => {
     <>
       <InnerForm className="w-full p-30px pt-15px" labelCol={{ span: 24 }} form={form} onFinish={submitForm}>
         {renderClientError}
-        <Spin
-          spinning={RD.isPending(importingKeystoreState) || RD.isPending(loadKeystoreState)}
-          tip={intl.formatMessage({ id: 'common.loading' })}>
-          <div className="flex flex-col items-center">
-            {/* title */}
-            <Label className="mb-20px w-full" size="big" align="center" textTransform="uppercase">
-              {intl.formatMessage({ id: 'wallet.imports.keystore.title' })}
-            </Label>
-            {/* import button */}
-            <BorderButton className="mb-30px cursor-pointer !rounded-none" size="normal" onClick={uploadKeystore}>
-              {RD.isSuccess(loadKeystoreState) ? <CheckCircleIcon color="#50e3c2" /> : <ArrowUpTrayIcon />}
-              <span className="ml-10px">{intl.formatMessage({ id: 'wallet.imports.keystore.select' })}</span>
-            </BorderButton>
-            {renderLoadError}
-            {renderImportError}
-            {/* password */}
-            <Form.Item
-              className="w-full !max-w-[380px]"
-              name="password"
-              label={intl.formatMessage({ id: 'common.keystorePassword' })}
-              validateTrigger={['onSubmit', 'onBlur']}
-              rules={[{ required: true, message: intl.formatMessage({ id: 'wallet.password.empty' }) }]}>
-              <InputPassword className="!text-lg" size="large" />
-            </Form.Item>
-            {/* name */}
-            <Form.Item
-              className="w-full !max-w-[380px]"
-              name="name"
-              rules={[{ validator: walletNameValidator }]}
-              label={
-                <div>
-                  {intl.formatMessage({ id: 'wallet.name' })}
-                  <span className="pl-5px text-[12px] text-gray1 dark:text-gray1d">
-                    ({intl.formatMessage({ id: 'wallet.name.maxChars' }, { max: MAX_WALLET_NAME_CHARS })})
-                  </span>
-                </div>
-              }>
-              <Input
-                className="!text-lg"
-                size="large"
-                maxLength={MAX_WALLET_NAME_CHARS}
-                placeholder={defaultWalletName(walletId)}
-              />
-            </Form.Item>
-            {/* submit button */}
-            <FlatButton
-              className="mt-50px min-w-[150px]"
+        <div className="flex flex-col items-center">
+          {/* import button */}
+          <BorderButton className="mb-2 cursor-pointer !rounded-lg w-full" size="large" onClick={uploadKeystore}>
+            {RD.isSuccess(loadKeystoreState) ? (
+              <CheckCircleIcon className="w-4 h-4 text-turquoise" />
+            ) : (
+              <ArrowUpTrayIcon className="w-4 h-4" />
+            )}
+            <span className="ml-10px">{intl.formatMessage({ id: 'wallet.imports.keystore.select' })}</span>
+          </BorderButton>
+          {renderLoadError}
+          {renderImportError}
+          {/* password */}
+          <Form.Item
+            className="w-full"
+            name="password"
+            label={intl.formatMessage({ id: 'common.keystorePassword' })}
+            validateTrigger={['onSubmit', 'onBlur']}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'wallet.password.empty' }) }]}>
+            <InputPassword
+              className="!text-14 border border-solid border-gray0 dark:border-gray0d !rounded-lg"
               size="large"
-              color="primary"
-              type="submit"
-              disabled={!RD.isSuccess(loadKeystoreState) || RD.isPending(importingKeystoreState)}>
-              {intl.formatMessage({ id: 'wallet.action.import' })}
-            </FlatButton>
-          </div>
-        </Spin>
+            />
+          </Form.Item>
+          {/* name */}
+          <Form.Item
+            className="w-full"
+            name="name"
+            rules={[{ validator: walletNameValidator }]}
+            label={
+              <div>
+                {intl.formatMessage({ id: 'wallet.name' })}
+                <span className="pl-5px text-[12px] text-gray1 dark:text-gray1d">
+                  ({intl.formatMessage({ id: 'wallet.name.maxChars' }, { max: MAX_WALLET_NAME_CHARS })})
+                </span>
+              </div>
+            }>
+            <Input
+              className="!text-14 border border-solid border-gray0 dark:border-gray0d !rounded-lg"
+              size="large"
+              maxLength={MAX_WALLET_NAME_CHARS}
+              placeholder={defaultWalletName(walletId)}
+            />
+          </Form.Item>
+          {/* submit button */}
+          <FlatButton
+            className="mt-20px min-w-[150px]"
+            size="large"
+            color="primary"
+            type="submit"
+            disabled={!RD.isSuccess(loadKeystoreState) || RD.isPending(importingKeystoreState)}>
+            {intl.formatMessage({ id: 'wallet.action.import' })}
+          </FlatButton>
+        </div>
       </InnerForm>
     </>
   )

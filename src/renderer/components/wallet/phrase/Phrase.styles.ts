@@ -19,6 +19,7 @@ export const Button = styled(A.Button)<{ readOnly?: boolean }>`
   font-weight: bold;
   cursor: ${(props) => (props?.readOnly ? 'default' : 'pointer')};
   color: ${palette('text', 0)} !important;
+  padding: 0px;
 
   &:hover,
   &:active,

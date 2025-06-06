@@ -12,8 +12,6 @@ import { MAX_WALLET_NAME_CHARS } from '../../../services/wallet/const'
 import { FlatButton, RefreshButton } from '../../uielements/button'
 import { Input, InputPassword } from '../../uielements/input'
 import { CopyLabel } from '../../uielements/label'
-import { Phrase } from './index'
-import * as Styled from './NewPhrase.styles'
 import type { WordType } from './NewPhraseConfirm.types'
 import { PhraseInfo } from './Phrase.types'
 
@@ -28,7 +26,7 @@ type FormValues = {
   name: string
 }
 
-export const NewPhraseGenerate: React.FC<Props> = ({ onSubmit, walletId, walletNames }: Props): JSX.Element => {
+export const NewPhraseGenerate = ({ onSubmit, walletId, walletNames }: Props) => {
   const [loading, setLoading] = useState(false)
   const intl = useIntl()
 
@@ -96,16 +94,26 @@ export const NewPhraseGenerate: React.FC<Props> = ({ onSubmit, walletId, walletN
   )
 
   return (
-    <>
-      <Styled.TitleContainer justify="space-between">
-        <CopyLabel
-          className="text-turquoise"
-          textToCopy={phrase}
-          label={intl.formatMessage({ id: 'wallet.create.copy.phrase' })}
-        />
-        <RefreshButton onClick={clickRefreshButtonHandler} />
-      </Styled.TitleContainer>
-      <Phrase words={phraseWords} readOnly={true} />
+    <div className="flex flex-col items-center justify-center gap-4">
+      <div className="relative flex flex-col max-w-2xl w-full">
+        <div className="flex items-center justify-between mb-4">
+          <CopyLabel
+            className="text-turquoise"
+            textToCopy={phrase}
+            label={intl.formatMessage({ id: 'wallet.create.copy.phrase' })}
+          />
+          <RefreshButton onClick={clickRefreshButtonHandler} />
+        </div>
+        <div className="grid grid-cols-3 border border-solid border-gray0 dark:border-gray0d rounded-xl p-2 gap-1">
+          {phraseWords.map((word, index) => (
+            <span
+              key={word._id}
+              className="text-sm bg-turquoise/10 text-text0 dark:text-text0d font-bold px-2 py-1 rounded-full">
+              {index + 1}. {word.text}
+            </span>
+          ))}
+        </div>
+      </div>
       <Form form={form} onFinish={handleFormFinish} labelCol={{ span: 24 }} className="w-full p-30px pt-15px">
         <div className="flex flex-col items-center">
           <Form.Item
@@ -157,6 +165,6 @@ export const NewPhraseGenerate: React.FC<Props> = ({ onSubmit, walletId, walletN
           </FlatButton>
         </div>
       </Form>
-    </>
+    </div>
   )
 }

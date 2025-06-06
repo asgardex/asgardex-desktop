@@ -16,14 +16,11 @@ import * as NewPhraseStyled from './NewPhrase.styles'
 import { checkPhraseConfirmWordsFactory } from './NewPhraseConfirm.helper'
 import { WordType } from './NewPhraseConfirm.types'
 
-export const NewPhraseConfirm: React.FC<{ mnemonic: string; onConfirm: () => Promise<void> }> = ({
-  mnemonic,
-  onConfirm
-}): JSX.Element => {
+export const NewPhraseConfirm = ({ mnemonic, onConfirm }: { mnemonic: string; onConfirm: () => Promise<void> }) => {
   const [wordsList, setWordsList] = useState<WordType[]>([])
   const [shuffledWordsList, setShuffledWordsList] = useState<WordType[]>([])
-  const [mnemonicError, setMnemonicError] = useState<string>('')
-  const [initialized, setInitialized] = useState<boolean>(false)
+  const [mnemonicError, setMnemonicError] = useState('')
+  const [initialized, setInitialized] = useState(false)
   const intl = useIntl()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
@@ -130,34 +127,33 @@ export const NewPhraseConfirm: React.FC<{ mnemonic: string; onConfirm: () => Pro
   }, [checkPhraseConfirmWords, wordsList, sortedSelectedWords, loading, onConfirm, navigate, intl])
 
   return (
-    <>
+    <div className="flex flex-col w-full">
       <Form labelCol={{ span: 24 }} onFinish={handleFormSubmit}>
-        <h2 className="mb-20px text-center font-mainSemiBold text-16 uppercase text-text0 dark:text-text0d">
+        <h2 className="mb-20px font-mainSemiBold text-sm text-text0 dark:text-text0d">
           {intl.formatMessage({ id: 'wallet.create.enter.phrase' })}
         </h2>
         <div className="flex w-full flex-col items-center justify-center">
-          <NewPhraseStyled.FormItem
-            className="w-full"
-            name="mnemonic"
-            validateStatus={mnemonicError && 'error'}
-            help={!!mnemonicError && mnemonicError}>
-            <Phrase wordIcon={<DeleteOutlined />} words={sortedSelectedWords} onWordClick={handleRemoveWord} />
+          <NewPhraseStyled.FormItem className="w-full !mb-2" name="mnemonic">
+            <Phrase
+              wordIcon={<DeleteOutlined className="w-4 h-4 text-red" />}
+              words={sortedSelectedWords}
+              onWordClick={handleRemoveWord}
+            />
           </NewPhraseStyled.FormItem>
 
-          <h2 className="flex items-center font-mainSemiBold text-16 uppercase text-text0 dark:text-text0d">
+          <span className="text-red text-xs px-2">{mnemonicError}</span>
+
+          <h2 className="w-full flex items-center font-mainSemiBold text-sm text-text0 dark:text-text0d mt-8">
             {intl.formatMessage({ id: 'wallet.create.words.click' })}
             <FlatButton onClick={handleResetPhrase} color="neutral" className="ml-10px">
-              <RedoOutlined />
+              <RedoOutlined className="w-4 h-4" />
             </FlatButton>
           </h2>
-          <div
-            className="my-20px grid
-                gap-4 p-[6p6] sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6
-                ">
+          <div className="mb-20px w-full grid grid-cols-3 gap-1">
             {shuffledWordsList.map((word: WordType) => (
               <div key={word._id} className="text-center">
                 <TextButton
-                  className="m-[6px]"
+                  className="w-full rounded-xl border border-solid border-gray0 dark:border-gray0d"
                   uppercase={false}
                   size="large"
                   color="neutral"
@@ -179,6 +175,6 @@ export const NewPhraseConfirm: React.FC<{ mnemonic: string; onConfirm: () => Pro
           </FlatButton>
         </div>
       </Form>
-    </>
+    </div>
   )
 }

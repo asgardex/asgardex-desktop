@@ -16,7 +16,6 @@ import { AddKeystoreParams } from '../../../services/wallet/types'
 import { Spin } from '../../shared/loading'
 import { FlatButton } from '../../uielements/button'
 import { InputPassword, InputTextArea, Input } from '../../uielements/input'
-import { Label } from '../../uielements/label'
 
 /* css import is needed to override antd */
 import '../../uielements/input/overrides.css'
@@ -131,51 +130,52 @@ export const ImportPhrase: React.FC<Props> = (props): JSX.Element => {
       <Form form={form} onFinish={submitForm} labelCol={{ span: 24 }} className="w-full p-30px pt-15px">
         <Spin spinning={importing} tip={intl.formatMessage({ id: 'common.loading' })}>
           <div className="flex flex-col items-center">
-            {/* title */}
-            <Label className="mb-20px w-full" size="big" align="center" textTransform="uppercase">
-              {intl.formatMessage({ id: 'wallet.imports.phrase.title' })}
-            </Label>
-
             {/* phrase */}
             <Form.Item
+              className="w-full"
               name="phrase"
-              className="w-full !max-w-[800px] "
               rules={[{ required: true, validator: phraseValidator }]}
               validateTrigger={['onSubmit', 'onChange']}>
               <InputTextArea
+                className="!p-2 !text-14 border border-solid border-gray0 dark:border-gray0d !rounded-lg"
                 color="primary"
                 typevalue="normal"
-                placeholder={intl.formatMessage({ id: 'wallet.imports.enterphrase' }).toUpperCase()}
+                placeholder={intl.formatMessage({ id: 'wallet.imports.enterphrase' })}
                 rows={5}
-                className="!text-lg"
               />
             </Form.Item>
             {renderImportError}
             {/* password */}
             <Form.Item
               name="password"
-              className="w-full !max-w-[380px]"
+              className="w-full"
               validateTrigger={['onSubmit', 'onBlur']}
               rules={passwordRules}
               label={intl.formatMessage({ id: 'common.password' })}>
-              <InputPassword className="!text-lg" size="large" />
+              <InputPassword
+                className="!text-14 border border-solid border-gray0 dark:border-gray0d !rounded-lg"
+                size="large"
+              />
             </Form.Item>
 
             {/* repeat password */}
             <Form.Item
               name="repeatPassword"
-              className="w-full !max-w-[380px]"
+              className="w-full"
               dependencies={['password']}
               validateTrigger={['onSubmit', 'onBlur']}
               rules={passwordRules}
               label={intl.formatMessage({ id: 'wallet.password.repeat' })}>
-              <InputPassword className="!text-lg" size="large" />
+              <InputPassword
+                className="!text-14 border border-solid border-gray0 dark:border-gray0d !rounded-lg"
+                size="large"
+              />
             </Form.Item>
 
             {/* name */}
             <Form.Item
               name="name"
-              className="w-full !max-w-[380px]"
+              className="w-full"
               rules={[{ validator: walletNameValidator }]}
               label={
                 <div>
@@ -186,7 +186,7 @@ export const ImportPhrase: React.FC<Props> = (props): JSX.Element => {
                 </div>
               }>
               <Input
-                className="!text-lg"
+                className="!text-14 border border-solid border-gray0 dark:border-gray0d !rounded-lg"
                 size="large"
                 maxLength={MAX_WALLET_NAME_CHARS}
                 placeholder={defaultWalletName(walletId)}
@@ -194,7 +194,7 @@ export const ImportPhrase: React.FC<Props> = (props): JSX.Element => {
             </Form.Item>
 
             <FlatButton
-              className="mt-50px min-w-[150px]"
+              className="mt-20px min-w-[150px]"
               size="large"
               color="primary"
               type="submit"
