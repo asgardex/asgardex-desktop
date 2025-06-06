@@ -6,6 +6,7 @@ import mayaIcon from '../../assets/png/asset-maya.png'
 import tgtIcon from '../../assets/png/asset-tgt.png'
 import usdpIcon from '../../assets/png/asset-usdp.png'
 import uskIcon from '../../assets/png/asset-usk.png'
+import adaIcon from '../../assets/svg/asset-ada.svg?url'
 import arbIcon from '../../assets/svg/asset-arb.svg?url'
 import atomIcon from '../../assets/svg/asset-atom.svg?url'
 import avaxIcon from '../../assets/svg/asset-avax.svg?url'
@@ -27,7 +28,6 @@ import LoadingIcon from '../../assets/svg/icon-loading.svg?react'
 import LockIcon from '../../assets/svg/icon-lock-warning.svg?react'
 import UnlockIcon from '../../assets/svg/icon-unlock-warning.svg?react'
 import LedgerIcon from '../../assets/svg/ledger.svg?react'
-import adaIcon from '../../assets/svg/asset-ada.svg?url'
 
 export {
   arbIcon,
