@@ -48,7 +48,7 @@ export const PhraseCopyModal = (props: Props) => {
             <Dialog.Panel
               className={clsx(
                 'mx-auto flex flex-col items-center py-5',
-                'w-full max-w-[360px]',
+                'w-full max-w-[420px]',
                 'bg-bg0 dark:bg-bg0d',
                 'rounded-lg border border-solid border-gray1 dark:border-gray0d'
               )}>
