@@ -20,7 +20,7 @@ export const LayoutlessWrapper = ({ title, children }: Props) => {
         <HeaderTheme isDesktopView />
       </div>
 
-      <div className="flex flex-col p-4 w-full max-w-[380px]">
+      <div className="flex flex-col p-4 w-full max-w-[420px]">
         <div className="flex items-center mb-10">
           <Headline>{title}</Headline>
         </div>
