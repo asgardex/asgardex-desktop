@@ -102,7 +102,7 @@ const chainIconMap = (asset: AnyAsset): string | null => {
   }
 }
 
-export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = '', network }): JSX.Element => {
+export const AssetIcon = ({ asset, size = 'small', className = '', network }: Props) => {
   const imgUrl = useMemo(() => {
     // BTC
     if (isBtcAsset(asset)) {

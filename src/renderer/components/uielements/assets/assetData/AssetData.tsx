@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Network } from '@xchainjs/xchain-client'
 import {
   BaseAmount,
@@ -16,6 +14,7 @@ import { isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { walletTypeToI18n } from '../../../../services/wallet/util'
 import { PricePoolAsset } from '../../../../views/pools/Pools.types'
+import { AssetIcon } from '../assetIcon'
 import * as Styled from './AssetData.styles'
 
 /**
@@ -40,7 +39,7 @@ type Props = {
   network: Network
 }
 
-export const AssetData: React.FC<Props> = (props): JSX.Element => {
+export const AssetData = (props: Props) => {
   const {
     asset,
     walletType,
@@ -60,21 +59,21 @@ export const AssetData: React.FC<Props> = (props): JSX.Element => {
 
   return (
     <Styled.Wrapper className={className}>
-      <Styled.AssetIconContainer>
-        <Styled.AssetIcon asset={asset} size={size} network={network} />
-      </Styled.AssetIconContainer>
+      <div className="relative flex items-center mr-2 px-0 py-10px">
+        <AssetIcon asset={asset} size={size} network={network} />
+      </div>
       {!noTicker && (
-        <Styled.LabelContainer>
+        <div className="flex flex-col items-start">
           <Styled.TickerLabel>{`${asset.ticker}`}</Styled.TickerLabel>
-          <Styled.ChainLabelWrapper>
+          <div className="flex items-center">
             {!isSynthAsset(asset) && !isSecuredAsset(asset) && <Styled.ChainLabel>{asset.chain}</Styled.ChainLabel>}
             {isSynthAsset(asset) && <Styled.AssetSynthLabel>synth</Styled.AssetSynthLabel>}
             {isSecuredAsset(asset) && <Styled.AssetSecuredLabel>secured</Styled.AssetSecuredLabel>}
-          </Styled.ChainLabelWrapper>
+          </div>
           {walletType && isLedgerWallet(walletType) && (
             <Styled.WalletTypeLabel>{walletTypeToI18n(walletType, intl)}</Styled.WalletTypeLabel>
           )}
-        </Styled.LabelContainer>
+        </div>
       )}
       {assetAmount && (
         <Styled.Col>

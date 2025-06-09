@@ -8,7 +8,6 @@ import {
   AssetSecuredLabel as AssetSecuredLabelUI
 } from '../../common/Common.styles'
 import { Label as UILabel } from '../../label'
-import { AssetIcon as UIAssetIcon } from '../assetIcon'
 
 export type AssetDataSize = 'small' | 'big'
 
@@ -22,8 +21,6 @@ export const Wrapper = styled(A.Row).attrs({
     margin: 0;
   }
 `
-
-export const AssetIcon = styled(UIAssetIcon)``
 
 export const TickerLabel = styled(UILabel).attrs({
   textTransform: 'uppercase',
@@ -66,30 +63,10 @@ export const Col = styled(A.Col)`
   }
 `
 
-export const AssetIconContainer = styled.div`
-  display: flex;
-  align-items: center;
-  margin-right: 8px;
-  padding: 10px 0;
-
-  position: relative;
-`
-
 export const WalletTypeLabel = styled(WalletTypeLabelUI)`
   font-size: 8px;
   line-height: 12px;
   margin-left: 10px;
-`
-
-export const LabelContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-`
-
-export const ChainLabelWrapper = styled.div`
-  display: flex;
-  align-items: center;
 `
 
 export const AssetSynthLabel = styled(AssetSynthLabelUI)`
