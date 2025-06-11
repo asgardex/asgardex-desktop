@@ -5,6 +5,7 @@ import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { AnyAsset } from '@xchainjs/xchain-util'
+import { ZECChain } from '@mayaprotocol/xchain-zcash'
 import { useIntl } from 'react-intl'
 
 import { TooltipAddress } from '../common/Common.styles'
@@ -44,6 +45,8 @@ export const ShowDetails = ({
         return 'DASH/kB'
       case ADAChain:
         return 'lovelances/Byte'
+      case ZECChain:
+        return 'zats/vB'
       default:
         return asset.chain
     }

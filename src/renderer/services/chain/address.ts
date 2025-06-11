@@ -16,6 +16,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
+import { ZECChain } from '@mayaprotocol/xchain-zcash'
 import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 
@@ -38,6 +39,7 @@ import * as MAYA from '../mayachain'
 import * as XRD from '../radix'
 import * as SOL from '../solana'
 import * as THOR from '../thorchain'
+import * as ZEC from '../zcash'
 import { client$ } from './client'
 
 /**
@@ -81,6 +83,8 @@ const addressByChain$ = (chain: Chain): WalletAddress$ => {
       return SOL.address$
     case ADAChain:
       return ADA.address$
+    case ZECChain:
+      return ZEC.address$
     default:
       return Rx.of(O.none)
   }

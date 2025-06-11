@@ -18,6 +18,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { CompatibleAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, AssetType, Chain } from '@xchainjs/xchain-util'
+import { ZECChain } from '@mayaprotocol/xchain-zcash'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 
@@ -41,6 +42,7 @@ import * as MAYA from '../../mayachain'
 import * as XRD from '../../radix'
 import * as SOL from '../../solana'
 import * as THOR from '../../thorchain'
+import * as ZEC from '../../zcash'
 import { ApiError, ErrorId, TxHashLD, TxLD } from '../../wallet/types'
 import { SendPoolTxParams, SendTxParams } from '../types'
 
@@ -263,6 +265,29 @@ export const sendTx$ = ({
           })
         })
       )
+    case ZECChain:
+      return FP.pipe(
+        ZEC.feesWithRates$(sender, memo),
+        liveData.mapLeft((error) => ({
+          errorId: ErrorId.GET_FEES,
+          msg: error?.message ?? error.toString()
+        })),
+        liveData.chain(({ rates }) => {
+          return ZEC.sendTx({
+            walletType,
+            recipient,
+            asset,
+            amount,
+            feeOption,
+            feeRate: rates[feeOption],
+            memo,
+            walletAccount,
+            walletIndex,
+            hdMode,
+            sender
+          })
+        })
+      )
     default:
       return txFailure$(`${chain} is not supported for 'sendPoolTx$'`)
   }
@@ -382,6 +407,7 @@ export const sendPoolTx$ = ({
     case DOGEChain:
     case LTCChain:
     case DASHChain:
+    case ZECChain:
     case GAIAChain:
     case KUJIChain:
     case ADAChain:
@@ -447,6 +473,8 @@ export const txStatusByChain$: (params: { txHash: TxHash; chain: Chain }) => TxL
       return XRD.txStatus$(txHash, O.none)
     case SOLChain:
       return SOL.txStatus$(txHash, O.none)
+    case ZECChain:
+      return ZEC.txStatus$(txHash, O.none)
     default:
       return Rx.of(
         RD.failure({

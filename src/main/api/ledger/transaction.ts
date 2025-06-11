@@ -17,6 +17,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
+import { ZECChain } from '@mayaprotocol/xchain-zcash'
 import { either as E } from 'fp-ts'
 
 import { IPCLedgerDepositTxParams, IPCLedgerSendTxParams } from '../../../shared/api/io'
@@ -236,7 +237,7 @@ const chainSendFunctions: Record<
   }
 }
 
-const unsupportedChains: Chain[] = [MAYAChain, KUJIChain, RadixChain, SOLChain, 'ADA']
+const unsupportedChains: Chain[] = [MAYAChain, KUJIChain, RadixChain, SOLChain, 'ADA', ZECChain]
 
 export const sendTx = async ({
   chain,

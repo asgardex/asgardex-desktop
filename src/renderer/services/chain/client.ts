@@ -16,6 +16,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, AssetType, Chain } from '@xchainjs/xchain-util'
+import { ZECChain } from '@mayaprotocol/xchain-zcash'
 import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -40,6 +41,7 @@ import { selectedPoolChain$ } from '../midgard/thorMidgard/common'
 import * as XRD from '../radix'
 import * as SOL from '../solana'
 import * as THOR from '../thorchain'
+import * as ZEC from '../zcash'
 import type { Chain$ } from './types'
 
 export const clientByChain$ = (chain: Chain): XChainClient$ => {
@@ -80,6 +82,8 @@ export const clientByChain$ = (chain: Chain): XChainClient$ => {
       return SOL.client$
     case ADAChain:
       return ADA.client$
+    case ZECChain:
+      return ZEC.client$
     default:
       return Rx.of(O.none) // Add a default case to handle unsupported chains
   }
@@ -130,6 +134,8 @@ export const clientByAsset$ = (asset: AnyAsset, protocol: Chain): XChainClient$ 
       return SOL.client$
     case ADAChain:
       return ADA.client$
+    case ZECChain:
+      return ZEC.client$
     default:
       return Rx.of(O.none) // Add a default case to handle unsupported chains
   }

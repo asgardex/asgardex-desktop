@@ -33,6 +33,7 @@ import {
   isDashAsset,
   isKujiAsset,
   isXrdAsset,
+  isZecAsset,
   isUskAsset,
   iconUrlInARBERC20Whitelist,
   isAethAsset,
@@ -142,6 +143,10 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
     // Dash
     if (isDashAsset(asset)) {
       return dashIcon
+    }
+    // ZEC
+    if (isZecAsset(asset)) {
+      return `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/zcash/info/logo.png`
     }
     // LTC
     if (isLtcAsset(asset)) {

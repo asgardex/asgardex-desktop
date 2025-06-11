@@ -38,7 +38,8 @@ import {
   AssetDASH,
   SOLAsset,
   AssetUSK,
-  AssetXRD
+  AssetXRD,
+  AssetZEC
 } from '../../shared/utils/asset'
 import { isSupportedChain } from '../../shared/utils/chain'
 import { AssetTGTERC20, DEFAULT_PRICE_ASSETS, USD_PRICE_ASSETS } from '../const'
@@ -93,6 +94,12 @@ export const isBchAsset = (asset: AnyAsset): boolean =>
  */
 export const isDashAsset = (asset: AnyAsset): boolean =>
   asset.chain === AssetDASH.chain && asset.symbol.toUpperCase() === AssetDASH.symbol.toUpperCase()
+
+/**
+ * Checks whether an asset is a ZEC asset
+ */
+export const isZecAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetZEC.chain && asset.symbol.toUpperCase() === AssetZEC.symbol.toUpperCase()
 
 /**
  * Checks whether an asset is a native | synth | trade Cacao asset

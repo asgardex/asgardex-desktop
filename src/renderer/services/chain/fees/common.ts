@@ -17,6 +17,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { isTCYAsset, THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, Asset, AssetType, baseAmount, isSecuredAsset, isSynthAsset } from '@xchainjs/xchain-util'
+import { ZECChain } from '@mayaprotocol/xchain-zcash'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -44,6 +45,7 @@ import { service as midgardService } from '../../midgard/thorMidgard/service'
 import * as XRD from '../../radix'
 import * as SOL from '../../solana'
 import * as THOR from '../../thorchain'
+import * as ZEC from '../../zcash'
 import { FeesWithRatesLD } from '../../utxo/types'
 import { PoolFeeLD } from '../types'
 
@@ -324,6 +326,23 @@ export const poolInboundFee$ = (asset: AnyAsset, memo: string): PoolFeeLD => {
           RxOp.startWith(RD.pending)
         )
       )
+    case ZECChain:
+      return FP.pipe(
+        ZEC.address$.pipe(
+          RxOp.switchMap(
+            O.fold(
+              () => Rx.of(RD.failure(new Error('No address available'))),
+              (address) =>
+                FP.pipe(
+                  ZEC.feesWithRates$(address.address, memo),
+                  liveData.map((fees) => ({ asset, amount: fees.fees.fast }))
+                )
+            )
+          ),
+          RxOp.catchError((error) => Rx.of(RD.failure(error))),
+          RxOp.startWith(RD.pending)
+        )
+      )
     default:
       return FP.pipe(
         poolOutboundFee$(asset),
@@ -364,6 +383,11 @@ export const utxoFeesWithRates$ = (asset: Asset, address: string): FeesWithRates
         ADA.feesWithRates$(address),
         liveData.map((feesWithRates) => feesWithRates)
       )
+    case ZECChain:
+      return FP.pipe(
+        ZEC.feesWithRates$(address),
+        liveData.map((feesWithRates) => feesWithRates)
+      )
     default:
       return FP.pipe(
         BTC.feesWithRates$(address),
@@ -386,6 +410,8 @@ export const reloadUtxoFeesWithRates$ = (asset: Asset) => {
       return FP.pipe(DASH.reloadFeesWithRates)
     case ADAChain:
       return FP.pipe(ADA.reloadFeesWithRates)
+    case ZECChain:
+      return FP.pipe(ZEC.reloadFeesWithRates)
     default:
       return FP.pipe(BTC.reloadFeesWithRates)
   }

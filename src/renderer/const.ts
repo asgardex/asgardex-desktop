@@ -17,6 +17,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, bn, assetToString, baseAmount, Chain, AssetType, TokenAsset } from '@xchainjs/xchain-util'
+import { ZECChain } from '@mayaprotocol/xchain-zcash'
 
 import { AssetBTC, AssetETH, AssetRuneNative, AssetARB, AssetAVAX, AssetCacao, AssetBSC } from '../shared/utils/asset'
 import { EnabledChain } from '../shared/utils/chain'
@@ -208,7 +209,8 @@ export const CHAIN_WEIGHTS_THOR: Record<EnabledChain, number> = {
   [KUJIChain]: 13,
   [RadixChain]: 14,
   [BASEChain]: 15,
-  [ADAChain]: 16
+  [ADAChain]: 16,
+  [ZECChain]: 17
 }
 
 // Weight of currencies needed for pricing
