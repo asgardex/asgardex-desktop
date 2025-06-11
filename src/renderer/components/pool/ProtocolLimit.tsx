@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
@@ -7,15 +7,13 @@ import { useIntl } from 'react-intl'
 
 import { AssetRuneNative } from '../../../shared/utils/asset'
 import { LimitRD } from '../../hooks/useProtocolLimit'
-import * as Styled from './ProtocolLimit.styles'
+import { Alert } from '../uielements/alert'
 
 type Props = {
   limit: LimitRD
 }
 
-export const ProtocolLimit: React.FC<Props> = (props): JSX.Element => {
-  const { limit: limitRD } = props
-
+export const ProtocolLimit = ({ limit: limitRD }: Props) => {
   const intl = useIntl()
 
   const render = useMemo(() => {
@@ -43,7 +41,7 @@ export const ProtocolLimit: React.FC<Props> = (props): JSX.Element => {
             }
           )
 
-          return reached ? <Styled.Alert type="error" message={msg} /> : empty
+          return reached ? <Alert className="mb-[10px] lg:mb-5" type="error" message={msg} /> : empty
         }
       )
     )

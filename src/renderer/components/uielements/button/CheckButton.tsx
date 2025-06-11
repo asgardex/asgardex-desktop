@@ -16,7 +16,7 @@ type Props = {
   className?: string
 }
 
-export const CheckButton: React.FC<Props> = (props): JSX.Element => {
+export const CheckButton = (props: Props): JSX.Element => {
   const {
     color = 'primary',
     size = 'normal',

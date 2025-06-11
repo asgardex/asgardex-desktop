@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { AssetTCY } from '@xchainjs/xchain-thorchain'
@@ -35,7 +35,7 @@ import { useApp } from '../../store/app/hooks'
 import { useCoingecko } from '../../store/gecko/hooks'
 import { GECKO_MAP } from '../../types/generated/geckoMap'
 
-export const AssetsView: React.FC = (): JSX.Element => {
+export const AssetsView = (): JSX.Element => {
   const navigate = useNavigate()
   const intl = useIntl()
 

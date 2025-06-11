@@ -13,7 +13,7 @@ interface MayachainQueryContextValue {
 const MayachainQueryContext = createContext<MayachainQueryContextValue | null>(null)
 
 // Provider component
-export const MayachainQueryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const MayachainQueryProvider = ({ children }: { children: React.ReactNode }) => {
   const [mayachainQuery, setMayachainQuery] = useState<MayachainQuery>(new MayachainQuery())
 
   useEffect(() => {

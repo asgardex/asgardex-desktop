@@ -16,7 +16,7 @@ const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/WalletSelector',
   decorators: [
-    (Story: React.FC) => (
+    (Story) => (
       <div className="flex h-full w-full items-center justify-center">
         <Story />
       </div>

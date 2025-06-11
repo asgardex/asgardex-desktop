@@ -21,7 +21,7 @@ type AssetIconAmountProps = {
   loading: boolean
 }
 
-const AssetIconAmount: React.FC<AssetIconAmountProps> = (props): JSX.Element => {
+const AssetIconAmount = (props: AssetIconAmountProps): JSX.Element => {
   const {
     assetWA: { asset, amount1e8 },
     network,
@@ -51,16 +51,16 @@ type PendingAssetsProps = {
   className?: string
 }
 
-export const PendingAssetsWarning: React.FC<PendingAssetsProps> = (props): JSX.Element => {
+const Description = ({ children }: { children: React.ReactNode }): JSX.Element => (
+  <p className="p-0 pb-10px font-main text-[12px] uppercase leading-[17px]">{children}</p>
+)
+
+export const PendingAssetsWarning = (props: PendingAssetsProps): JSX.Element => {
   const { pendingAssets, failedAssets, network, loading, className = '' } = props
 
   const intl = useIntl()
 
   const [collapsed, setCollapsed] = useState(true)
-
-  const Description: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => (
-    <p className="p-0 pb-10px font-main text-[12px] uppercase leading-[17px]">{children}</p>
-  )
 
   const subContent = (
     <>

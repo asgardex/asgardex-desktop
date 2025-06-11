@@ -1,4 +1,5 @@
-import { ArrowPathIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon, StarIcon as StarOutlined } from '@heroicons/react/24/outline'
+import { StarIcon as StarFilled } from '@heroicons/react/24/solid'
 import { Network } from '@xchainjs/xchain-client'
 import { AnyAsset, BaseAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
 import { ColumnType } from 'antd/lib/table'
@@ -9,9 +10,9 @@ import { ErrorView } from '../../components/shared/error'
 import { AssetIcon } from '../../components/uielements/assets/assetIcon'
 import { AssetLabel } from '../../components/uielements/assets/assetLabel'
 import { ReloadButton, TextButton } from '../../components/uielements/button'
+import { Label } from '../../components/uielements/label'
 import { ordBaseAmount } from '../../helpers/fp/ord'
 import { sortByDepth } from '../../helpers/poolHelper'
-import * as Styled from './PoolsOverview.styles'
 
 const RowContainer = styled.div`
   display: flex;
@@ -34,14 +35,19 @@ const renderWatchColumn = ({
   add: FP.Lazy<void>
   remove: FP.Lazy<void>
 }) => (
-  <Styled.WatchContainer
+  <div
+    className="flex items-center justify-center w-full h-full"
     onClick={(event) => {
       event.preventDefault()
       event.stopPropagation()
       watched ? remove() : add()
     }}>
-    {watched ? <Styled.StarFilled /> : <Styled.StarOutlined />}
-  </Styled.WatchContainer>
+    {watched ? (
+      <StarFilled className="w-5 h-5 stroke-turquoise fill-turquoise" />
+    ) : (
+      <StarOutlined className="w-5 h-5 stroke-turquoise" />
+    )}
+  </div>
 )
 
 const sortWatchColumn = ({ watched: watchedA }: { watched: boolean }, { watched: watchedB }: { watched: boolean }) =>
@@ -104,13 +110,13 @@ const renderPriceColumn =
   (pricePoolAsset: AnyAsset) =>
   ({ poolPrice }: { poolPrice: BaseAmount }) =>
     (
-      <Styled.Label align="right" nowrap>
+      <Label className="!text-16" align="right" nowrap>
         {formatAssetAmountCurrency({
           amount: baseToAsset(poolPrice),
           asset: pricePoolAsset,
           decimal: 3
         })}
-      </Styled.Label>
+      </Label>
     )
 
 const sortPriceColumn = (a: { poolPrice: BaseAmount }, b: { poolPrice: BaseAmount }) =>

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 
 import { SliderMarks, SliderSingleProps } from 'antd/lib/slider'
 import { TooltipPlacement } from 'antd/lib/tooltip'
@@ -16,7 +16,7 @@ type CustomProps = {
 
 type Props = CustomProps & SliderSingleProps
 
-export const Slider: React.FC<Props> = ({
+export const Slider = ({
   tooltipPlacement = 'bottom',
   withLabel = true,
   tipFormatter = (value) => `${value}`,
@@ -26,7 +26,7 @@ export const Slider: React.FC<Props> = ({
   disabled = false,
   labels = ['0%', '50%', '100%'], // Default labels, you can modify them
   ...rest
-}): JSX.Element => {
+}: Props): JSX.Element => {
   const ref = useRef()
   const getTooltipPopupContainer = useCallback((container: HTMLElement) => container, [])
 

@@ -1,9 +1,9 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { Button } from 'antd'
 import { useNavigate } from 'react-router-dom'
 
-export const NoContentView: React.FC = (): JSX.Element => {
+export const NoContentView = (): JSX.Element => {
   const navigate = useNavigate()
 
   const clickHandler = useCallback(() => {

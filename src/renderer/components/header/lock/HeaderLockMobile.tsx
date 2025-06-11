@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
@@ -14,7 +14,7 @@ export type Props = {
   onPress: FP.Lazy<void>
 }
 
-export const HeaderLockMobile: React.FC<Props> = (props): JSX.Element => {
+export const HeaderLockMobile = (props: Props): JSX.Element => {
   const { keystoreState, onPress } = props
 
   const intl = useIntl()

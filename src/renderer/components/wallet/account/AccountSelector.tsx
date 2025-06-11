@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
 import { Address, AnyAsset, formatAssetAmountCurrency, baseToAsset, assetToString } from '@xchainjs/xchain-util'
@@ -28,7 +28,7 @@ const filterFunction = ({ asset }: WalletBalance, searchTerm: string) => {
   return ticker?.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
 }
 
-export const AccountSelector: React.FC<Props> = (props): JSX.Element => {
+export const AccountSelector = (props: Props): JSX.Element => {
   const { selectedWallet, walletBalances = [], onChange = (_) => {}, size = 'large', network } = props
 
   const intl = useIntl()

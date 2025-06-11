@@ -13,7 +13,7 @@ interface Props extends ModalProps {
   children?: React.ReactNode
 }
 
-export const Modal: React.FC<Props> = ({ className = '', children, okButtonProps, ...rest }): JSX.Element => {
+export const Modal = ({ className = '', children, okButtonProps, ...rest }: Props): JSX.Element => {
   return (
     <Styled.Modal
       className={clsx('modal-wrapper', className)}
@@ -25,14 +25,21 @@ export const Modal: React.FC<Props> = ({ className = '', children, okButtonProps
   )
 }
 
-export const HeadlessModal: React.FC<{
+export const HeadlessModal = ({
+  className,
+  title,
+  isOpen,
+  children,
+  initialFocus,
+  onClose
+}: {
   className?: string
   title: string
   isOpen: boolean
   children: React.ReactNode
   initialFocus?: React.MutableRefObject<HTMLElement | null> | undefined
   onClose: () => void
-}> = ({ className, title, isOpen, children, initialFocus, onClose }) => {
+}) => {
   return (
     <Dialog as="div" className="relative z-10" initialFocus={initialFocus} open={isOpen} onClose={onClose}>
       <Transition appear show={isOpen} as="div">

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
@@ -7,6 +7,7 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { XChainClient } from '@xchainjs/xchain-client'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
@@ -29,6 +30,7 @@ import { DEFAULT_EVM_HD_MODE, EvmHDMode } from '../../../shared/evm/types'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { HDMode } from '../../../shared/wallet/types'
 import { WalletSettings } from '../../components/settings'
+import { useAdaContext } from '../../contexts/AdaContext'
 import { useArbContext } from '../../contexts/ArbContext'
 import { useAvaxContext } from '../../contexts/AvaxContext'
 import { useBaseContext } from '../../contexts/BaseContext'
@@ -64,7 +66,8 @@ import {
   isDashChain,
   isKujiChain,
   isXrdChain,
-  isSolChain
+  isSolChain,
+  isAdaChain
 } from '../../helpers/chainHelper'
 import { sequenceTOptionFromArray } from '../../helpers/fpHelpers'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
@@ -78,7 +81,7 @@ type Props = {
   keystoreUnlocked: KeystoreUnlocked
 }
 
-export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.Element => {
+export const WalletSettingsView = ({ keystoreUnlocked }: Props): JSX.Element => {
   const { id: keystoreId } = keystoreUnlocked
 
   const { walletsUI } = useKeystoreWallets()
@@ -105,6 +108,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
   const { addressUI$: mayaAddressUI$ } = useMayachainContext()
   const { addressUI$: dashAddressUI$ } = useDashContext()
   const { addressUI$: kujiAddressUI$ } = useKujiContext()
+  const { addressUI$: adaAddressUI$ } = useAdaContext()
   const { addressUI$: xrdAddressUI$ } = useXrdContext()
   const { addressUI$: solAddressUI$ } = useSolContext()
 
@@ -144,6 +148,12 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     address: oKujiLedgerWalletAddress,
     removeAddress: removeLedgerKujiAddress
   } = useLedger(KUJIChain, keystoreId)
+  const {
+    addAddress: addLedgerAdaAddress,
+    verifyAddress: verifyLedgerAdaAddress,
+    address: oAdaLedgerWalletAddress,
+    removeAddress: removeLedgerAdaAddress
+  } = useLedger(ADAChain, keystoreId)
   const {
     addAddress: addLedgerXrdAddress,
     verifyAddress: verifyLedgerXrdAddress,
@@ -242,6 +252,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     if (isMayaChain(chain)) return addLedgerMayaAddress(walletAccount, walletIndex, hdMode)
     if (isDashChain(chain)) return addLedgerDashAddress(walletAccount, walletIndex, hdMode)
     if (isKujiChain(chain)) return addLedgerKujiAddress(walletAccount, walletIndex, hdMode)
+    if (isAdaChain(chain)) return addLedgerAdaAddress(walletAccount, walletIndex, hdMode)
     if (isXrdChain(chain)) return addLedgerXrdAddress(walletAccount, walletIndex, hdMode)
     if (isSolChain(chain)) return addLedgerSolAddress(walletAccount, walletIndex, hdMode)
 
@@ -278,6 +289,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     if (isMayaChain(chain)) return verifyLedgerMayaAddress(walletAccount, walletIndex, hdMode)
     if (isDashChain(chain)) return verifyLedgerDashAddress(walletAccount, walletIndex, hdMode)
     if (isKujiChain(chain)) return verifyLedgerKujiAddress(walletAccount, walletIndex, hdMode)
+    if (isAdaChain(chain)) return verifyLedgerAdaAddress(walletAccount, walletIndex, hdMode)
     if (isXrdChain(chain)) return verifyLedgerXrdAddress(walletAccount, walletIndex, hdMode)
     if (isSolChain(chain)) return verifyLedgerSolAddress(walletAccount, walletIndex, hdMode)
 
@@ -299,6 +311,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     if (isMayaChain(chain)) return removeLedgerMayaAddress()
     if (isDashChain(chain)) return removeLedgerDashAddress()
     if (isKujiChain(chain)) return removeLedgerKujiAddress()
+    if (isAdaChain(chain)) return removeLedgerAdaAddress()
     if (isXrdChain(chain)) return removeLedgerXrdAddress()
     if (isSolChain(chain)) return removeLedgerSolAddress()
 
@@ -321,6 +334,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
   const oMayaClient = useObservableState(clientByChain$(MAYAChain), O.none)
   const oDashClient = useObservableState(clientByChain$(DASHChain), O.none)
   const oKujiClient = useObservableState(clientByChain$(KUJIChain), O.none)
+  const oAdaClient = useObservableState(clientByChain$(ADAChain), O.none)
   const oXrdClient = useObservableState(clientByChain$(RadixChain), O.none)
   const oSolClient = useObservableState(clientByChain$(SOLChain), O.none)
 
@@ -376,6 +390,9 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
         break
       case KUJIChain:
         FP.pipe(oKujiClient, O.map(openExplorerAddressUrl))
+        break
+      case ADAChain:
+        FP.pipe(oAdaClient, O.map(openExplorerAddressUrl))
         break
       case RadixChain:
         FP.pipe(oXrdClient, O.map(openExplorerAddressUrl))
@@ -462,6 +479,11 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
       ledgerAddress: oKujiLedgerWalletAddress,
       chain: KUJIChain
     })
+    const adaWalletAccount$ = walletAccount$({
+      addressUI$: adaAddressUI$,
+      ledgerAddress: oAdaLedgerWalletAddress,
+      chain: ADAChain
+    })
     const xrdWalletAccount$ = walletAccount$({
       addressUI$: xrdAddressUI$,
       ledgerAddress: oXrdLedgerWalletAddress,
@@ -485,6 +507,7 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
           MAYA: [mayaWalletAccount$],
           DASH: [dashWalletAccount$],
           KUJI: [kujiWalletAccount$],
+          ADA: [adaWalletAccount$],
           XRD: [xrdWalletAccount$],
           SOL: [solWalletAccount$],
           BASE: [baseWalletAccount$]
@@ -524,6 +547,8 @@ export const WalletSettingsView: React.FC<Props> = ({ keystoreUnlocked }): JSX.E
     oDashLedgerWalletAddress,
     kujiAddressUI$,
     oKujiLedgerWalletAddress,
+    adaAddressUI$,
+    oAdaLedgerWalletAddress,
     xrdAddressUI$,
     oXrdLedgerWalletAddress
   ])

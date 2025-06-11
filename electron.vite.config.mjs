@@ -6,6 +6,7 @@ import react from '@vitejs/plugin-react'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import simpleGit from 'simple-git'
 import svgr from 'vite-plugin-svgr'
+import wasm from 'vite-plugin-wasm'
 
 import pkg from './package.json'
 
@@ -50,6 +51,7 @@ export default defineConfig(async ({ mode }) => {
 
     renderer: {
       input: 'src/renderer/index.html',
+      assetsInclude: ['**/*.wasm'],
       build: {
         sourcemap: mode === 'development',
         outDir: 'build/renderer',
@@ -101,7 +103,7 @@ export default defineConfig(async ({ mode }) => {
           inject: ['./src/shims/buffer-shim.js']
         }
       },
-      plugins: [react(), svgr(), typescript()],
+      plugins: [wasm(), react(), svgr(), typescript()],
       define: {
         'process.env': {}, // TODO: Fix from xchain
         global: 'globalThis',

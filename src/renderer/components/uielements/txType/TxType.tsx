@@ -1,6 +1,5 @@
-import React from 'react'
-
 import { PlusCircleIcon, MinusCircleIcon, BeakerIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
 import DonateIcon from '../../../assets/svg/tx-donate.svg?react'
@@ -12,7 +11,7 @@ import SwapIcon from '../../../assets/svg/tx-swap.svg?react'
 import WithdrawIcon from '../../../assets/svg/tx-withdraw.svg?react'
 import { getTxTypeI18n } from '../../../helpers/actionsHelper'
 import { TxType as MidgardTxType } from '../../../services/midgard/midgardTypes'
-import * as Styled from './TxType.styles'
+import { Label } from '../label'
 
 type Props = {
   type: MidgardTxType
@@ -52,13 +51,15 @@ const getIcon = (type: MidgardTxType) => {
   }
 }
 
-export const TxType: React.FC<Props> = ({ type, showTypeIcon, className }) => {
+export const TxType = ({ type, showTypeIcon, className }: Props) => {
   const intl = useIntl()
 
   return (
-    <Styled.Container className={className}>
-      {showTypeIcon && <Styled.IconContainer>{getIcon(type)}</Styled.IconContainer>}
-      <Styled.Label>{getTxTypeI18n(type, intl)}</Styled.Label>
-    </Styled.Container>
+    <div className={clsx('flex items-center', className)}>
+      {showTypeIcon && <div className="w-8 h-8 flex items-center justify-center">{getIcon(type)}</div>}
+      <Label className="ml-10px !w-auto" size="big" textTransform="uppercase">
+        {getTxTypeI18n(type, intl)}
+      </Label>
+    </div>
   )
 }

@@ -5,6 +5,7 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BTC_DECIMAL, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ADAChain, ADA_DECIMALS, ADAAsset } from '@xchainjs/xchain-cardano'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASH_DECIMAL, DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
@@ -266,6 +267,11 @@ export const getOutboundAssetFeeByChain = (
           return O.some({
             amount: baseAmount(value, KUJI_DECIMAL),
             asset: AssetKUJI
+          })
+        case ADAChain:
+          return O.some({
+            amount: baseAmount(value, ADA_DECIMALS),
+            asset: ADAAsset
           })
         case RadixChain:
           return O.some({

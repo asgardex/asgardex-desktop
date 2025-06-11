@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react'
+import { createContext, useContext } from 'react'
 
 import {
   client$,
@@ -53,7 +53,7 @@ const initialContext: KujiContextValue = {
 
 const KujiContext = createContext<KujiContextValue | null>(null)
 
-export const KujiProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => {
+export const KujiProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   return <KujiContext.Provider value={initialContext}>{children}</KujiContext.Provider>
 }
 

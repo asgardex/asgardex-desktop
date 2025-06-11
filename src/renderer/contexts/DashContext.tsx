@@ -56,7 +56,7 @@ const initialContext: DashContextValue = {
 
 const DashContext = createContext<DashContextValue | null>(null)
 
-export const DashProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => {
+export const DashProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   return <DashContext.Provider value={initialContext}>{children}</DashContext.Provider>
 }
 

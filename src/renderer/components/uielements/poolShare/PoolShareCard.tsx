@@ -1,5 +1,3 @@
-import React from 'react'
-
 import * as Styled from './PoolShareCard.styles'
 
 export type Props = {
@@ -7,7 +5,7 @@ export type Props = {
   children: React.ReactNode
 }
 
-export const PoolShareCard: React.FC<Props> = ({ title, children }) => {
+export const PoolShareCard = ({ title, children }: Props) => {
   return (
     <Styled.Wrapper>
       <Styled.Title>{title}</Styled.Title>

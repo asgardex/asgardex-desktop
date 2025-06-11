@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
 import { Network } from '@xchainjs/xchain-client'
 import { function as FP, option as O } from 'fp-ts'
@@ -13,7 +13,7 @@ export type Props = {
   network: Network
 }
 
-export const DepositAssets: React.FC<Props> = (props): JSX.Element => {
+export const DepositAssets = (props: Props): JSX.Element => {
   const { source: oSource, target, stepDescription, network } = props
 
   const hasSource = useMemo(() => FP.pipe(oSource, O.isSome), [oSource])

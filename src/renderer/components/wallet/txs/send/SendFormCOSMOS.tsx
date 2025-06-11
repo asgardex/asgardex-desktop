@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
@@ -81,7 +81,7 @@ type Props = {
   oPoolAddress: O.Option<PoolAddress>
 }
 
-export const SendFormCOSMOS: React.FC<Props> = (props): JSX.Element => {
+export const SendFormCOSMOS = (props: Props): JSX.Element => {
   const {
     asset: { walletType, walletAccount, walletIndex, hdMode },
     trustedAddresses,

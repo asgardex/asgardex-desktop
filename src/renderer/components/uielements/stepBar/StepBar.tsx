@@ -1,5 +1,3 @@
-import React from 'react'
-
 import * as Styled from './StepBar.styles'
 
 export type Props = {
@@ -7,7 +5,7 @@ export type Props = {
   className?: string
 }
 
-export const StepBar: React.FC<Props> = ({ size = 150, className }): JSX.Element => {
+export const StepBar = ({ size = 150, className }: Props): JSX.Element => {
   return (
     <Styled.Container className={className}>
       <Styled.Dot />

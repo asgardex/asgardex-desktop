@@ -22,7 +22,7 @@ type Props = {
   network: Network
 }
 
-export const AssetSelect: React.FC<Props> = (props): JSX.Element => {
+export const AssetSelect = (props: Props): JSX.Element => {
   const {
     asset,
     assets = [],

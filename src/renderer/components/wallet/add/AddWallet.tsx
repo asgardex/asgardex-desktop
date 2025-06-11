@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { FolderPlusIcon, FolderOpenIcon } from '@heroicons/react/20/solid'
 import { useIntl } from 'react-intl'
@@ -10,7 +10,7 @@ import * as Styled from './AddWallet.styles'
 
 export type Props = { isLocked?: boolean }
 
-export const AddWallet: React.FC<Props> = ({ isLocked = false }) => {
+export const AddWallet = ({ isLocked = false }: Props) => {
   const intl = useIntl()
   const navigate = useNavigate()
   const location = useLocation()

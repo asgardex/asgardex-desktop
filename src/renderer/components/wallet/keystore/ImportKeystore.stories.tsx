@@ -44,7 +44,7 @@ const meta: Meta<typeof Component> = {
     walletId: new Date().getTime()
   },
   decorators: [
-    (Story: React.FC) => (
+    (Story) => (
       <div className="w-full bg-white">
         <Story />
       </div>

@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useRef } from 'react'
+import { useMemo, useCallback, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network, Tx, TxsPage } from '@xchainjs/xchain-client'
@@ -30,7 +30,7 @@ type Props = {
   walletAddress: Address
 }
 
-export const TxsTable: React.FC<Props> = (props): JSX.Element => {
+export const TxsTable = (props: Props): JSX.Element => {
   const { txsPageRD, clickTxLinkHandler, changePaginationHandler, network, chain, walletAddress, reloadHandler } = props
   const intl = useIntl()
   const isDesktopView = Grid.useBreakpoint()?.lg ?? false

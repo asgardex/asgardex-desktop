@@ -32,14 +32,6 @@ export const SubContentRow = styled(Row).attrs({
   width: 100%;
 `
 
-export const ResultContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding-bottom: 30px;
-`
-
 export const ExtraResultContainer = styled(Row).attrs({
   align: 'middle',
   justify: 'center'
@@ -64,13 +56,6 @@ export const ErrorView = styled(UIErrorView)`
   font-size: 14px;
   line-height: 1.5;
   padding: 10px; /* Padding for spacing */
-`
-
-// Style for displaying the status of each stage in the transaction
-export const StageStatus = styled.div`
-  margin-bottom: 10px; // Space between each status
-  font-size: 16px; // Adjust font size as needed
-  color: ${palette('text', 0)}; // Adjust color as needed
 `
 
 // Style for the close button at the bottom of the modal

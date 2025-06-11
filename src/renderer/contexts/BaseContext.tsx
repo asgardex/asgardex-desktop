@@ -87,7 +87,7 @@ const initialContext: BaseContextValue = {
 
 const BaseContext = createContext<BaseContextValue | null>(null)
 
-export const BaseProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => {
+export const BaseProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   return <BaseContext.Provider value={initialContext}>{children}</BaseContext.Provider>
 }
 

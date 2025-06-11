@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { SpinSize } from 'antd/lib/spin'
 import { useIntl } from 'react-intl'
 
@@ -11,7 +9,7 @@ export type Props = {
   className?: string
 }
 
-export const LoadingView: React.FC<Props> = ({ label, size = 'default', className }) => {
+export const LoadingView = ({ label, size = 'default', className }: Props) => {
   const intl = useIntl()
   return (
     <Styled.Space className={className}>

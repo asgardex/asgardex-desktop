@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
@@ -73,13 +73,13 @@ type Props = {
   recipientAddress: O.Option<Address>
 }
 
-const SuccessRouteView: React.FC<Props> = ({
+const SuccessRouteView = ({
   sourceAsset,
   targetAsset,
   sourceWalletType,
   targetWalletType: oTargetWalletType,
   recipientAddress: oRecipientAddress
-}): JSX.Element => {
+}: Props): JSX.Element => {
   const intl = useIntl()
   const navigate = useNavigate()
   const location = useLocation()
@@ -614,13 +614,13 @@ const SuccessRouteView: React.FC<Props> = ({
   )
 }
 
-const SuccessTradeRouteView: React.FC<Props> = ({
+const SuccessTradeRouteView = ({
   sourceAsset,
   targetAsset,
   sourceWalletType,
   targetWalletType: oTargetWalletType,
   recipientAddress: oRecipientAddress
-}): JSX.Element => {
+}: Props): JSX.Element => {
   const intl = useIntl()
   const navigate = useNavigate()
   const location = useLocation()
@@ -1054,7 +1054,7 @@ const SuccessTradeRouteView: React.FC<Props> = ({
   )
 }
 
-export const SwapView: React.FC = (): JSX.Element => {
+export const SwapView = (): JSX.Element => {
   const {
     source,
     target,

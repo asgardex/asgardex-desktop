@@ -1,6 +1,7 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { Label as Component, LabelProps } from './Label'
+import { Label as Component } from './Label'
+import { LabelProps } from './Label.types'
 
 const Template: StoryFn<LabelProps> = (args) => <Component {...args} ref={null} />
 export const Default = Template.bind({})

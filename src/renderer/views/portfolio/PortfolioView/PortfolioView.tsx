@@ -90,7 +90,7 @@ const CardItem = ({
   )
 }
 
-export const PortfolioView: React.FC = (): JSX.Element => {
+export const PortfolioView = (): JSX.Element => {
   const [activeIndex, setActiveIndex] = useState(PortfolioTabKey.ChartView)
   const [protocol, setProtocol] = useState<string>(Protocol.All)
 

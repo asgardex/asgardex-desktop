@@ -44,7 +44,7 @@ const initialContext: BitcoinCashContextValue = {
 
 const BitcoinCashContext = createContext<BitcoinCashContextValue | null>(null)
 
-export const BitcoinCashProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => {
+export const BitcoinCashProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   return <BitcoinCashContext.Provider value={initialContext}>{children}</BitcoinCashContext.Provider>
 }
 

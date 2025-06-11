@@ -13,7 +13,7 @@ type Props = TabsProps & {
   onChange?: (tabKey: string) => void
 }
 
-export const Tabs: React.FC<Props> = ({
+export const Tabs = ({
   tabs,
   defaultTabIndex,
   defaultActiveKey,
@@ -24,7 +24,7 @@ export const Tabs: React.FC<Props> = ({
   tabBarExtraContent,
   destroyInactiveTabPane,
   onChange = (_: string) => {}
-}): JSX.Element => {
+}: Props): JSX.Element => {
   const [activeTabKey, setActiveTabKey] = useState(defaultActiveKey || tabs[defaultTabIndex || 0].key)
 
   const content = useMemo(

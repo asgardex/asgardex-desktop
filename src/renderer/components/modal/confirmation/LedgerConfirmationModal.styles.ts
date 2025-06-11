@@ -5,16 +5,7 @@ import { palette } from 'styled-theme'
 import LedgerConnectUI from '../../../assets/svg/ledger-device-connect.svg?react'
 import { media } from '../../../helpers/styleHelper'
 import { AssetIcon as AssetIconUI } from '../../uielements/assets/assetIcon'
-import { Button } from '../../uielements/button'
 import { CopyLabel as CopyLabelUI } from '../../uielements/label'
-
-export const LedgerContainer = styled.div`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 20px;
-`
 
 export const LedgerConnect = styled(LedgerConnectUI)`
   transform: scale(0.65, 0.65);
@@ -36,47 +27,11 @@ export const AssetIcon = styled(AssetIconUI)`
   `}
 `
 
-export const Content = styled.div`
-  display: flex;
-  flex-direction: column;
-`
-
 export const Description = styled.p`
   font-family: 'MainFontRegular';
   font-size: 12;
   text-align: center;
   color: ${palette('text', 2)};
-`
-
-export const NoteBCH = styled.p`
-  font-family: 'MainFontRegular';
-  font-size: 12;
-  text-align: center;
-`
-
-export const Icon = styled.div`
-  // Changed from AIcon to div
-  display: inline-block;
-  margin-right: 5px;
-  svg {
-    width: 17px;
-    height: 17px;
-    stroke: ${palette('warning', 0)};
-    fill: none;
-  }
-`
-
-export const AddressWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding: 20px 0 0 0;
-`
-
-export const AddressContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  text-transform: none;
-  align-items: center;
 `
 
 export const AddressTitle = styled.p`
@@ -86,10 +41,6 @@ export const AddressTitle = styled.p`
   text-transform: uppercase;
   padding: 0;
   margin: 0;
-`
-
-export const CompareAddressButton = styled(Button)`
-  box-shadow: none;
 `
 
 export const ExpandIcon = styled(ChevronRightIcon)`

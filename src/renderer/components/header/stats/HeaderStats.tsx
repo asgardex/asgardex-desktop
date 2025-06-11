@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
@@ -27,7 +27,7 @@ export type Props = {
   reloadVolume24PriceMaya: FP.Lazy<void>
 }
 
-export const HeaderStats: React.FC<Props> = (props): JSX.Element => {
+export const HeaderStats = (props: Props): JSX.Element => {
   const {
     runePrice: runePriceRD,
     tcyPrice: tcyPriceRD,

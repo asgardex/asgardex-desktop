@@ -4,9 +4,6 @@ import Text from 'antd/lib/typography/Text'
 import styled from 'styled-components'
 import { palette, size } from 'styled-theme'
 
-import UIAsgardexLogo from '../../assets/svg/logo-asgardex.svg?react'
-import { Label as UILabel } from '../uielements/label'
-
 export const HeaderContainer = styled(Layout.Header)`
   width: 240px;
   height: 100%;
@@ -59,10 +56,6 @@ export const HeaderContainer = styled(Layout.Header)`
   }
 
   padding: 20px 0;
-`
-
-export const AsgardexLogo = styled(UIAsgardexLogo)`
-  margin-top: 8px;
 `
 
 export const NetworkLabel = styled(Text)<{ network: Network }>`
@@ -118,16 +111,4 @@ export const IconWrapper = styled.div`
       fill: ${palette('text', 1)};
     }
   }
-`
-
-export const Icon = styled.img`
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-`
-export const TextLabel = styled(UILabel).attrs({ textTransform: 'uppercase' })`
-  color: inherit;
-  font-size: 14px;
-  font-family: 'MainFontRegular';
-  padding: 0;
 `

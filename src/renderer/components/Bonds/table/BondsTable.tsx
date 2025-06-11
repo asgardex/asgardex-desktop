@@ -29,6 +29,7 @@ import { ConfirmationModal } from '../../modal/confirmation'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { BaseButton, TextButton } from '../../uielements/button'
 import { ExternalLinkIcon, Tooltip } from '../../uielements/common/Common.styles'
+import { Label } from '../../uielements/label'
 import { BondProviderInfo } from './BondProviderInfo'
 import * as Styled from './BondsTable.styles'
 import * as H from './helpers'
@@ -54,7 +55,7 @@ interface CustomExpandIconProps {
   record: string
 }
 
-export const BondsTable: React.FC<Props> = ({
+export const BondsTable = ({
   nodes,
   protocol,
   watchlist = [],
@@ -67,7 +68,7 @@ export const BondsTable: React.FC<Props> = ({
   walletAddresses,
   loading = false,
   className
-}) => {
+}: Props) => {
   const intl = useIntl()
   const { MINIMUMBONDINRUNE: minBondInRune } = useMimirConstants(['MINIMUMBONDINRUNE'])
   const [nodeToRemove, setNodeToRemove] = useState<O.Option<Address>>(O.none)
@@ -271,20 +272,20 @@ export const BondsTable: React.FC<Props> = ({
       onClose: () => setNodeToRemove(O.none),
       onSuccess: () => removeNode(nodeAddress),
       content: (
-        <Styled.ConfirmationModalText>
+        <Label align="center" size="big">
           <FormattedMessage
             id="bonds.node.removeMessage"
             values={{
-              node: <Styled.ConfirmationModalAddress>{nodeAddress}</Styled.ConfirmationModalAddress>
+              node: <span className="text-16 font-bold font-mainBold">{nodeAddress}</span>
             }}
           />
-        </Styled.ConfirmationModalText>
+        </Label>
       ),
       visible: !!nodeAddress
     }
   }, [nodeToRemove, removeNode])
 
-  const CustomExpandIcon: React.FC<CustomExpandIconProps> = ({ expanded, onExpand, record }) => (
+  const CustomExpandIcon = ({ expanded, onExpand, record }: CustomExpandIconProps) => (
     <div className="flex items-center justify-center" onClick={(e) => onExpand(record, e)}>
       <ChevronRightIcon
         className={clsx('mt-0 w-5 h-5 stroke-turquoise cursor-pointer', expanded ? 'rotate-90' : 'rotate-0')}
@@ -307,11 +308,17 @@ export const BondsTable: React.FC<Props> = ({
         <div className="flex w-full justify-between !text-11 text-text2 dark:text-text2d">
           {walletTypeLabel !== 'Not a wallet address' ? (
             <>
-              <Styled.TextLabel className="!text-11">{intl.formatMessage({ id: 'common.owner' })}</Styled.TextLabel>
-              <Styled.TextLabel className="!text-end !text-11">{walletTypeLabel}</Styled.TextLabel>
+              <Label size="small" textTransform="uppercase">
+                {intl.formatMessage({ id: 'common.owner' })}
+              </Label>
+              <Label size="small" align="right" textTransform="uppercase">
+                {walletTypeLabel}
+              </Label>
             </>
           ) : (
-            <Styled.TextLabel className="!text-11">{walletTypeLabel}</Styled.TextLabel>
+            <Label size="small" textTransform="uppercase">
+              {walletTypeLabel}
+            </Label>
           )}
         </div>
       )
@@ -342,13 +349,13 @@ export const BondsTable: React.FC<Props> = ({
       return (
         <div className="flex flex-grow flex-col">
           <div className="mt-4 w-full">
-            <div className="mt-2 flex items-center justify-between">
-              <Styled.TextLabel className="!text-11">
+            <div className="flex items-center justify-between">
+              <Label size="small" textTransform="uppercase">
                 {intl.formatMessage({ id: 'bonds.bondProvider' })}
-              </Styled.TextLabel>
-              <span className="!text-14 lowercase text-text2 dark:text-text2d">
+              </Label>
+              <Label size="big" textTransform="lowercase" color="gray">
                 {truncateAddress(bondAddress, protocol, network)}
-              </span>
+              </Label>
             </div>
             <div className="mt-2 flex items-center justify-between">{renderSubWalletType(bondAddress)}</div>
           </div>
@@ -426,14 +433,14 @@ export const BondsTable: React.FC<Props> = ({
                           { 'bg-turquoise/20': isMyAddy }
                         )}>
                         <div className="flex items-center justify-between">
-                          <Styled.TextLabel className="!text-18">
+                          <Label size="large" textTransform="uppercase">
                             {formatAssetAmountCurrency({
                               asset: AssetRuneNative,
                               amount: baseToAsset(provider.bond),
                               trimZeros: true,
                               decimal: 0
                             })}
-                          </Styled.TextLabel>
+                          </Label>
                           {isMonitoring ? (
                             <Tooltip title="Remove this bond provider from the watch list">
                               <RemoveIcon

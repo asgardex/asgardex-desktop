@@ -54,7 +54,7 @@ export const filterButtons = [
   }
 ]
 
-export const AssetMenu: React.FC<Props> = (props): JSX.Element => {
+export const AssetMenu = (props: Props): JSX.Element => {
   const {
     asset,
     open,

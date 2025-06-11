@@ -23,6 +23,7 @@ import PortfolioIcon from '../../assets/svg/icon-portfolio.svg?react'
 import SwapIcon from '../../assets/svg/icon-swap.svg?react'
 import TwitterIcon from '../../assets/svg/icon-twitter.svg?react'
 import WalletIcon from '../../assets/svg/icon-wallet.svg?react'
+import AsgardexLogo from '../../assets/svg/logo-asgardex.svg?react'
 import ThorChainIcon from '../../assets/svg/logo-thorchain.svg?react'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import * as appRoutes from '../../routes/app'
@@ -33,6 +34,7 @@ import * as portfolioRoutes from '../../routes/portfolio'
 import * as walletRoutes from '../../routes/wallet'
 import { mayaIconT } from '../icons'
 import { Tooltip } from '../uielements/common/Common.styles'
+import { Label } from '../uielements/label'
 import * as Styled from './SidebarComponent.styles'
 
 type IconProps = {
@@ -197,7 +199,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
   const renderLogo = useMemo(
     () => (
       <Styled.LogoWrapper>
-        <Styled.AsgardexLogo />
+        <AsgardexLogo className="mt-2" />
         <Styled.NetworkLabel network={network}>{network}</Styled.NetworkLabel>
       </Styled.LogoWrapper>
     ),
@@ -224,13 +226,11 @@ export const SidebarComponent = (props: Props): JSX.Element => {
             </div>
           </FooterIcon>
           <FooterIcon className="!ml-0" url={ExternalUrl.DOCSMAYA} onClick={clickIconHandler}>
-            <div className="flex h-12 flex-row items-center">
-              <div className="mr-2">
-                <Styled.Icon src={mayaIconT} />
-              </div>
-              <div>
-                <Styled.TextLabel>MAYACHAIN</Styled.TextLabel>
-              </div>
+            <div className="flex h-12 flex-row items-center space-x-2">
+              <img className="rounded-full w-8 h-8" src={mayaIconT} />
+              <Label size="big" textTransform="uppercase">
+                MAYACHAIN
+              </Label>
             </div>
           </FooterIcon>
           {publicIP && (

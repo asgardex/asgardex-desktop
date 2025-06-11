@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Cog8ToothIcon } from '@heroicons/react/20/solid'
 import { useIntl } from 'react-intl'
 
@@ -12,7 +10,7 @@ export type Props = {
   isDesktopView: boolean
 }
 
-export const HeaderSettings: React.FC<Props> = (props): JSX.Element => {
+export const HeaderSettings = (props: Props): JSX.Element => {
   const { onPress = () => {}, isDesktopView } = props
   const intl = useIntl()
 

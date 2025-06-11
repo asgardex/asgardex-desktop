@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
@@ -21,7 +21,7 @@ type Props = {
   hidePrivateData: boolean
 }
 
-export const TotalValue: React.FC<Props> = (props): JSX.Element => {
+export const TotalValue = (props: Props): JSX.Element => {
   const { pricePool, total: totalRD, title, info, hidePrivateData } = props
 
   const intl = useIntl()

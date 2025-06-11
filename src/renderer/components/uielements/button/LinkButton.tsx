@@ -1,5 +1,3 @@
-import React from 'react'
-
 import clsx from 'clsx'
 
 import type { Color, Size } from './Button.types'
@@ -9,7 +7,7 @@ export type Props = TextButtonProps & {
   size?: Size
 }
 
-export const LinkButton: React.FC<Props> = (props): JSX.Element => {
+export const LinkButton = (props: Props): JSX.Element => {
   const { color = 'primary', size = 'normal', disabled = false, className = '', children, ...otherProps } = props
 
   const decorationColor: Record<Color, string> = {

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ChevronLeftIcon } from '@heroicons/react/24/outline'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
@@ -14,7 +12,7 @@ export type Props = {
   className?: string
 }
 
-export const BackLinkButton: React.FC<Props> = ({ label, path, size = 'normal', className = '' }): JSX.Element => {
+export const BackLinkButton = ({ label, path, size = 'normal', className = '' }: Props): JSX.Element => {
   const navigate = useNavigate()
   const intl = useIntl()
 

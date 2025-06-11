@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { useObservableState } from 'observable-hooks'
 
@@ -10,7 +10,7 @@ import { useI18nContext } from '../../contexts/I18nContext'
 import { useAppUpdate } from '../../hooks/useAppUpdate'
 import { useNetwork } from '../../hooks/useNetwork'
 
-export const AppGeneralSettingsView: React.FC = (): JSX.Element => {
+export const AppGeneralSettingsView = (): JSX.Element => {
   const { network, changeNetwork } = useNetwork()
   const { appUpdater, checkForUpdates } = useAppUpdate()
 

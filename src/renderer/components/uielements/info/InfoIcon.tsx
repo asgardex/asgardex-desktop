@@ -18,7 +18,7 @@ export type Props = {
   className?: string
 }
 
-export const InfoIcon: React.FC<Props> = ({ tooltip, color = 'primary', className = '' }) => (
+export const InfoIcon = ({ tooltip, color = 'primary', className = '' }: Props) => (
   <Tooltip title={tooltip}>
     <InformationCircleIcon className={clsx(iconColor[color], 'h-[20px] w-[20px]', className)} />
   </Tooltip>

@@ -4,6 +4,7 @@ import { BASEChain, BASE_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-base'
 import { BTC_DECIMAL, BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCH_DECIMAL, BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain, BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
+import { ADAChain, ADA_DECIMALS } from '@xchainjs/xchain-cardano'
 import { Network } from '@xchainjs/xchain-client'
 import { COSMOS_DECIMAL, GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain, DASH_DECIMAL } from '@xchainjs/xchain-dash'
@@ -61,6 +62,9 @@ export const smallestAmountToSent = (chain: Chain, _network: Network): BaseAmoun
       return baseAmount(1000, DOGE_DECIMAL)
     case KUJIChain:
       return baseAmount(5000, KUJI_DECIMAL)
+    case ADAChain:
+      // 1170000 love lace
+      return baseAmount(1170000, ADA_DECIMALS)
     case BCHChain:
       // 1000 satoshi
       return baseAmount(1000, BCH_DECIMAL)

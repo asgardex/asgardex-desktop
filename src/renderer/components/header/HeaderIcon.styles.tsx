@@ -1,5 +1,3 @@
-import * as React from 'react'
-
 import { Row } from 'antd'
 import { RowProps } from 'antd/lib/row'
 import styled from 'styled-components'
@@ -8,7 +6,7 @@ import { media } from '../../helpers/styleHelper'
 
 type HeaderIconWrapperProps = RowProps & { disabled?: boolean }
 
-const Wrapper: React.FC<HeaderIconWrapperProps> = ({ children, ...otherProps }) => <Row {...otherProps}>{children}</Row>
+const Wrapper = ({ children, ...otherProps }: HeaderIconWrapperProps) => <Row {...otherProps}>{children}</Row>
 
 export const HeaderIconWrapper = styled(Wrapper)`
   cursor: ${({ disabled = false }) => (disabled ? 'not-allowed' : 'pointer')};

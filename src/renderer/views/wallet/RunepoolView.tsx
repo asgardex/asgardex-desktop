@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
@@ -60,7 +60,7 @@ export type ParentProps = {
   assetDetails: AssetProps[]
 }
 
-export const RunepoolView: React.FC = (): JSX.Element => {
+export const RunepoolView = (): JSX.Element => {
   const intl = useIntl()
 
   const { isPrivate } = useApp()

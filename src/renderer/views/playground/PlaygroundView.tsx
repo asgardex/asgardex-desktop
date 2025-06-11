@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -14,7 +14,7 @@ import { PoolsState as PoolStateMaya } from '../../services/midgard/mayaMigard/t
 import { PoolsState } from '../../services/midgard/midgardTypes'
 import { useApp } from '../../store/app/hooks'
 
-export const PlaygroundView: React.FC = (): JSX.Element => {
+export const PlaygroundView = (): JSX.Element => {
   const intl = useIntl()
   const { protocol, setProtocol } = useApp()
 

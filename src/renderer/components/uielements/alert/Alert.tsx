@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { AlertProps } from 'antd/lib/alert'
 
@@ -7,7 +5,7 @@ import * as Styled from './Alert.styles'
 
 export type Props = Omit<AlertProps, 'showIcon' | 'icon'>
 
-export const Alert: React.FC<Props> = (props): JSX.Element => {
+export const Alert = (props: Props): JSX.Element => {
   const { description, ...rest } = props
 
   return (

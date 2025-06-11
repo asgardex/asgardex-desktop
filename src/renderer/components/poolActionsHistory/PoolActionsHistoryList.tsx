@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
@@ -27,7 +27,7 @@ type Props = {
   className?: string
 }
 
-export const PoolActionsHistoryList: React.FC<Props> = ({
+export const PoolActionsHistoryList = ({
   network,
   changePaginationHandler,
   historyPageRD,
@@ -36,7 +36,7 @@ export const PoolActionsHistoryList: React.FC<Props> = ({
   currentPage,
   reloadHistory,
   className
-}) => {
+}: Props) => {
   const isDesktopView = Grid.useBreakpoint()?.lg ?? false
 
   const intl = useIntl()

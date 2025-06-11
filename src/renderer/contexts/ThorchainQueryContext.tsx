@@ -13,7 +13,7 @@ interface ThorchainQueryContextValue {
 const ThorchainQueryContext = createContext<ThorchainQueryContextValue | null>(null)
 
 // Provider component
-export const ThorchainQueryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ThorchainQueryProvider = ({ children }: { children: React.ReactNode }) => {
   const [thorchainQuery, setThorchainQuery] = useState<ThorchainQuery>(new ThorchainQuery())
 
   useEffect(() => {

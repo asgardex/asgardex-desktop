@@ -29,7 +29,7 @@ type Props = {
   className?: string
 }
 
-const EditableUrl: React.FC<Props> = (props): JSX.Element => {
+const EditableUrl = (props: Props): JSX.Element => {
   const { url: initialUrl, className, successMsg, loading = false, onChange = FP.constVoid, checkUrl$ } = props
 
   const [editableUrl, setEditableUrl] = useState<O.Option<string>>(O.none)

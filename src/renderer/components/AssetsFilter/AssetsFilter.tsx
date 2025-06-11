@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
 
+import { StarIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
 import { array as A, function as FP, option as O, predicate as P } from 'fp-ts'
 import { useIntl } from 'react-intl'
@@ -16,7 +17,7 @@ type Props = {
   setFilter: (filter: O.Option<PoolFilter>) => void
 }
 
-export const AssetsFilter: React.FC<Props> = ({ poolFilters, className, activeFilter: oActiveFilter, setFilter }) => {
+export const AssetsFilter = ({ poolFilters, className, activeFilter: oActiveFilter, setFilter }: Props) => {
   const intl = useIntl()
 
   const filterNames: Partial<Record<StaticPoolFilter, string>> = useMemo(
@@ -45,7 +46,7 @@ export const AssetsFilter: React.FC<Props> = ({ poolFilters, className, activeFi
   }, [oActiveFilter])
 
   const setCustomFilter = useCallback(
-    ({ target }: React.ChangeEvent<HTMLInputElement>) => {
+    ({ target }: ChangeEvent<HTMLInputElement>) => {
       const filter = target.value
       setInputValue(filter)
       // Use non-empty strings only
@@ -101,7 +102,7 @@ export const AssetsFilter: React.FC<Props> = ({ poolFilters, className, activeFi
             weight={isActive ? 'bold' : 'normal'}
             onClick={() => buttonClickHandler(filter)}
             key={filter}>
-            {filter !== '__watched__' ? filterLabel : <Styled.Star />}
+            {filter !== '__watched__' ? filterLabel : <StarIcon className="w-4 h-4" />}
           </Styled.FilterButton>
         )
       )
@@ -116,7 +117,7 @@ export const AssetsFilter: React.FC<Props> = ({ poolFilters, className, activeFi
           className="mt-10px md:mt-0"
           // Note: `delay-200` needed to handle `onCancel` callback of InputSearch
           // in other case X icon in InputSearch does not fire `onClick` event internally due focus changes + animation of width (tailwind bug?)
-          classNameInput="w-[150px] focus:w-[300px] !bg-bg0 focus:dark:!bg-bg0d focus:!bg-bg0 dark:!bg-bg0d"
+          classNameInput="rounded-full w-[150px] focus:w-[300px] !bg-bg0 focus:dark:!bg-bg0d focus:!bg-bg0 dark:!bg-bg0d"
           onChange={setCustomFilter}
           value={inputValue}
           size="normal"

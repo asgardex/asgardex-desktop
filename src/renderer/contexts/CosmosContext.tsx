@@ -53,7 +53,7 @@ const initialContext: CosmosContextValue = {
 
 const CosmosContext = createContext<CosmosContextValue | null>(null)
 
-export const CosmosProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => {
+export const CosmosProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   return <CosmosContext.Provider value={initialContext}>{children}</CosmosContext.Provider>
 }
 

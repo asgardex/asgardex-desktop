@@ -64,7 +64,7 @@ const getAntdLocale = (locale: Locale) => {
   }
 }
 
-export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => {
+export const I18nProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const locale = useObservableState(locale$, DEFAULT_LOCALE)
   const messages = useMemo(() => getMessagesByLocale(locale), [locale])
   const antdLocale = getAntdLocale(locale)

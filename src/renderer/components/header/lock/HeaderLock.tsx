@@ -32,7 +32,7 @@ export type Props = {
   lockHandler: FP.Lazy<void>
 }
 
-export const HeaderLock: React.FC<Props> = (props): JSX.Element => {
+export const HeaderLock = (props: Props): JSX.Element => {
   const { keystoreState, wallets, changeWalletHandler$, lockHandler: onPress } = props
 
   const intl = useIntl()

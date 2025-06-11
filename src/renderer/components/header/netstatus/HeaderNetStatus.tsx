@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react'
+import { useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Dropdown, Row, Col } from 'antd'
@@ -19,6 +19,7 @@ import { MimirRD } from '../../../services/thorchain/types'
 import { DownIcon } from '../../icons'
 import { ConnectionStatus } from '../../shared/icons'
 import { Menu } from '../../shared/menu/Menu'
+import { Label } from '../../uielements/label'
 import { headerNetStatusSubheadline, headerNetStatusColor, HeaderNetStatusColor } from '../Header.util'
 import { HeaderDrawerItem } from '../HeaderComponent.styles'
 import * as Styled from './HeaderNetStatus.styles'
@@ -44,7 +45,7 @@ export type Props = {
   mayachainRpcUrl: string
 }
 
-export const HeaderNetStatus: React.FC<Props> = (props): JSX.Element => {
+export const HeaderNetStatus = (props: Props) => {
   const {
     isDesktopView,
     midgardStatus: midgardStatusRD,
@@ -269,8 +270,18 @@ export const HeaderNetStatus: React.FC<Props> = (props): JSX.Element => {
                     <ConnectionStatus color={color} />
                   </Col>
                   <Col span={20}>
-                    <Styled.MenuItemHeadline nowrap>{headline}</Styled.MenuItemHeadline>
-                    <Styled.MenuItemSubHeadline nowrap>{subheadline}</Styled.MenuItemSubHeadline>
+                    <Label
+                      className="pr-5 tracking-tight"
+                      color="normal"
+                      size="big"
+                      weight="bold"
+                      textTransform="uppercase"
+                      nowrap>
+                      {headline}
+                    </Label>
+                    <Label className="pr-5" size="small" textTransform="lowercase" nowrap>
+                      {subheadline}
+                    </Label>
                   </Col>
                 </Row>
               ),
@@ -292,8 +303,12 @@ export const HeaderNetStatus: React.FC<Props> = (props): JSX.Element => {
           </Row>
           <Row>
             <Col>
-              <Styled.MenuItemHeadline nowrap>{headline}</Styled.MenuItemHeadline>
-              <Styled.MenuItemSubHeadline nowrap>{subheadline}</Styled.MenuItemSubHeadline>
+              <Label className="pr-5" color="normal" size="big" weight="bold" textTransform="uppercase" nowrap>
+                {headline}
+              </Label>
+              <Label className="pr-5" size="small" textTransform="lowercase" nowrap>
+                {subheadline}
+              </Label>
             </Col>
           </Row>
         </HeaderDrawerItem>
