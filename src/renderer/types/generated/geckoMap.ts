@@ -14,6 +14,7 @@ export const GECKO_MAP: Record<string, string> = {
     'ATOM': "cosmos",
     'LTC': "litecoin",
     'SOL': "solana",
+    'ADA': "cardano",
     "FORE-0XCBE94D75EC713B7EAD84F55620DC3174BEEB1CFE": "fore-protocol",
     "GOOD-0X17176A9868F321411B15CCB9B934CF95597E89C4": "good-entry",
     "GG-0X000000000026839B3F4181F2CF69336AF6153B99": "reboot",
@@ -1395,4 +1396,3 @@ export const GECKO_MAP: Record<string, string> = {
     "FLIP-0X826180541412D574CF1336D22C0C0A287822678A": "chainflip",
     "LENDS-0X2C06BA9E7F0DACCBC1F6A33EA67E85BB68FBEE3A": "lends",
   };
-  
