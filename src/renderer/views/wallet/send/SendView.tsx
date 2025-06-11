@@ -18,6 +18,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AssetType, baseAmount } from '@xchainjs/xchain-util'
+import { ZECChain } from '@mayaprotocol/xchain-zcash'
 import { Row } from 'antd'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
@@ -126,6 +127,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
         case DOGEChain:
         case DASHChain:
         case LTCChain:
+        case ZECChain:
           return (
             <SendViewUTXO
               asset={asset}

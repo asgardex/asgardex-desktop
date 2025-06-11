@@ -16,6 +16,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Chain } from '@xchainjs/xchain-util'
+import { ZECChain } from '@mayaprotocol/xchain-zcash'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -45,6 +46,7 @@ import * as MAYA from '../mayachain'
 import * as XRD from '../radix'
 import * as SOL from '../solana'
 import * as THOR from '../thorchain'
+import * as ZEC from '../zcash'
 import { INITIAL_BALANCES_STATE } from './const'
 import {
   ChainBalances$,
@@ -89,6 +91,7 @@ export const createBalancesService = ({
       if (enabledChains.includes(KUJIChain)) KUJI.reloadBalances()
       if (enabledChains.includes(RadixChain)) XRD.reloadBalances()
       if (enabledChains.includes(SOLChain)) SOL.reloadBalances()
+      if (enabledChains.includes(ZECChain)) ZEC.reloadBalances(DEFAULT_WALLET_TYPE)
     })
   }
 
@@ -109,7 +112,8 @@ export const createBalancesService = ({
     [GAIAChain]: COSMOS.reloadBalances,
     [RadixChain]: XRD.reloadBalances,
     [SOLChain]: SOL.reloadBalances,
-    [BASEChain]: BASE.reloadBalances
+    [BASEChain]: BASE.reloadBalances,
+    [ZECChain]: ZEC.reloadBalances
   }
 
   const reloadBalancesByChain =
@@ -293,6 +297,13 @@ export const createBalancesService = ({
             resetReloadBalances: SOL.resetReloadBalances,
             balances$: SOL.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: SOL.reloadBalances$
+          }
+        case ZECChain:
+          return {
+            reloadBalances: () => ZEC.reloadBalances(walletType),
+            resetReloadBalances: () => ZEC.resetReloadBalances(walletType),
+            balances$: ZEC.balances$({ walletType, walletAccount, walletIndex, walletBalanceType, hdMode }),
+            reloadBalances$: ZEC.reloadBalances$
           }
         default:
           return {
@@ -1042,6 +1053,40 @@ export const createBalancesService = ({
   )
 
   /**
+   * Transforms ZEC balances into `ChainBalance`
+   */
+  const zecChainBalance$: ChainBalance$ = Rx.combineLatest([
+    ZEC.addressUI$,
+    getChainBalance$({
+      chain: ZECChain,
+      walletType: WalletType.Keystore,
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
+      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
+      hdMode: 'default',
+      walletBalanceType: 'all'
+    })
+  ]).pipe(
+    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
+      walletType: WalletType.Keystore,
+      chain: ZECChain,
+      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
+      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
+      balances,
+      balancesType: 'all'
+    }))
+  )
+
+  /**
+   * ZEC Ledger balances
+   */
+  const zecLedgerChainBalance$: ChainBalance$ = ledgerChainBalance$({
+    chain: ZECChain,
+    walletBalanceType: 'all',
+    getBalanceByAddress$: ZEC.getBalanceByAddress$('all')
+  })
+
+  /**
    * List of `ChainBalances` for all available chains (order is important)
    *
    * It includes keystore + Ledger balances
@@ -1063,7 +1108,8 @@ export const createBalancesService = ({
     KUJI: [kujiChainBalance$, kujiLedgerChainBalance$],
     XRD: [xrdChainBalance$, xrdLedgerChainBalance$],
     SOL: [solChainBalance$, solLedgerChainBalance$],
-    BASE: [baseChainBalance$, baseLedgerChainBalance$]
+    BASE: [baseChainBalance$, baseLedgerChainBalance$],
+    ZEC: [zecChainBalance$, zecLedgerChainBalance$]
   }
 
   // Combine enabled chains with their corresponding balance observables
