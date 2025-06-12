@@ -1,3 +1,4 @@
+import { getPrefix as getZcashPrefix, ZECChain } from '@mayaprotocol/xchain-zcash'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
@@ -17,7 +18,6 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { getPrefix as getThorchainPrefix, THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Chain } from '@xchainjs/xchain-util'
-import { getPrefix as getZcashPrefix, ZECChain } from '@mayaprotocol/xchain-zcash'
 import { ethers } from 'ethers'
 import { array as A, function as FP, option as O } from 'fp-ts'
 

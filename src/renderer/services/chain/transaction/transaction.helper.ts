@@ -1,3 +1,4 @@
+import { ZEC_DECIMAL, ZECChain } from '@mayaprotocol/xchain-zcash'
 import { ARBChain, ARB_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AVAX_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-avax'
 import { BASEChain, BASE_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-base'
@@ -16,7 +17,6 @@ import { RadixChain, XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { SOLChain, SOL_DECIMALS } from '@xchainjs/xchain-solana'
 import { RUNE_DECIMAL as THOR_DECIMAL, THORChain } from '@xchainjs/xchain-thorchain'
 import { BaseAmount, baseAmount, Chain } from '@xchainjs/xchain-util'
-import { ZEC_DECIMAL, ZECChain } from '@mayaprotocol/xchain-zcash'
 
 import { isSupportedChain } from '../../../../shared/utils/chain'
 import { KUJI_DECIMAL } from '../../kuji/const'

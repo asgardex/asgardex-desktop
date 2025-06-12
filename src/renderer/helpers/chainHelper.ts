@@ -1,3 +1,4 @@
+import { AssetZEC, ZECChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDZEC } from '@mayaprotocol/xchain-zcash'
 import { ARBChain, AssetAETH } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
 import { BASEChain, AssetBETH } from '@xchainjs/xchain-base'
@@ -15,7 +16,6 @@ import { AssetXRD, RadixChain } from '@xchainjs/xchain-radix'
 import { SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Chain } from '@xchainjs/xchain-util'
-import { AssetZEC, ZECChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDZEC } from '@mayaprotocol/xchain-zcash'
 
 import { isSupportedChain } from '../../shared/utils/chain'
 import { eqChain } from './fp/eq'
