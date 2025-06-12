@@ -845,7 +845,7 @@ export const Swap = ({
             destinationAddress: quoteOnly ? undefined : destinationWalletAddress,
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
-            toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100
+            toleranceBps: isStreaming || network === Network.Stagenet ? 1000 : slipTolerance * 100
           },
           applyBps
         )
