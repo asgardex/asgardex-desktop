@@ -1,5 +1,9 @@
 import path, { join } from 'path'
 
+import * as dotenv from 'dotenv'
+
+dotenv.config()
+
 import { BrowserWindow, app, ipcMain, nativeImage } from 'electron'
 import electronDebug from 'electron-debug'
 import isDev from 'electron-is-dev'
@@ -34,8 +38,8 @@ import IPCMessages from './ipc/messages'
 import { setMenu } from './menu'
 import { sanitizePathSegment } from './utils/file'
 
-export const IS_DEV = isDev && import.meta.env.VITE_NODE_ENV !== 'production'
-export const PORT = import.meta.env.VITE_PORT || 3000
+export const IS_DEV = isDev && process.env.VITE_NODE_ENV !== 'production'
+export const PORT = process.env.VITE_PORT || '3000'
 
 export const APP_ROOT = join(__dirname, '..', '..')
 

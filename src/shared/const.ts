@@ -27,7 +27,7 @@ export const ASGARDEX_ADDRESS = 'thor1rr6rahhd4sy76a7rdxkjaen2q4k4pw2g06w7qp'
 
 export const ASGARDEX_AFFILIATE_FEE = 30
 export const ASGARDEX_TRADE_AFFILIATE_FEE = 15
-export const ASGARDEX_THORNAME = envOrDefault(import.meta.env.VITE_ASGARDEX_THORNAME, 'dx')
+export const ASGARDEX_THORNAME = envOrDefault(process.env.VITE_ASGARDEX_THORNAME, 'dx')
 
 export const getAsgardexThorname = (network: Network): string | undefined =>
   network === Network.Mainnet ? ASGARDEX_THORNAME : undefined
