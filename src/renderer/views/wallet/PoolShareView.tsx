@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useEffect, useState } from 'react'
+import { useCallback, useMemo, useRef, useEffect, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon as SyncOutlined } from '@heroicons/react/24/outline'
@@ -30,7 +30,7 @@ import { usePoolShares } from '../../hooks/usePoolShares'
 import { useApp } from '../../store/app/hooks'
 import * as H from './PoolShareView.helper'
 
-export const PoolShareView: React.FC = (): JSX.Element => {
+export const PoolShareView = (): JSX.Element => {
   const intl = useIntl()
   const { network } = useNetwork()
 

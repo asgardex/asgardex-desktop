@@ -3,6 +3,7 @@ import { ARB_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-arbitrum'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
 import { BSC_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-bsc'
+import { ADA_DECIMALS } from '@xchainjs/xchain-cardano'
 import { DASH_DECIMAL } from '@xchainjs/xchain-dash'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
@@ -17,6 +18,7 @@ import * as RxOp from 'rxjs/operators'
 
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import {
+  isAdaChain,
   isArbChain,
   isBchChain,
   isBscChain,
@@ -64,6 +66,9 @@ export const getDecimal = (asset: AnyAsset): Promise<number> => {
   }
   if (isSolChain(chain)) {
     return Promise.resolve(SOL_DECIMALS)
+  }
+  if (isAdaChain(chain)) {
+    return Promise.resolve(ADA_DECIMALS)
   }
   if (isTCYAsset(asset)) {
     return Promise.resolve(THORCHAIN_DECIMAL)

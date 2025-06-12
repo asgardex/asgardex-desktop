@@ -20,16 +20,16 @@ type AsymAssetsWarningProps = {
   className?: string
 }
 
-export const AsymAssetsWarning: React.FC<AsymAssetsWarningProps> = (props): JSX.Element => {
+const Description = ({ children }: { children: React.ReactNode }): JSX.Element => (
+  <p className="p-0 pb-10px font-main text-[12px] uppercase leading-[17px]">{children}</p>
+)
+
+export const AsymAssetsWarning = (props: AsymAssetsWarningProps): JSX.Element => {
   const { assets, network, onClickOpenAsymTool, className = '' } = props
 
   const intl = useIntl()
 
   const [collapsed, setCollapsed] = useState(false)
-
-  const Description: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => (
-    <p className="p-0 pb-10px font-main text-[12px] uppercase leading-[17px]">{children}</p>
-  )
 
   const subContent = (
     <>

@@ -236,7 +236,7 @@ const chainSendFunctions: Record<
   }
 }
 
-const unsupportedChains: Chain[] = [MAYAChain, KUJIChain, RadixChain, SOLChain]
+const unsupportedChains: Chain[] = [MAYAChain, KUJIChain, RadixChain, SOLChain, 'ADA']
 
 export const sendTx = async ({
   chain,

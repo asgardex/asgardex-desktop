@@ -1,26 +1,13 @@
-import React from 'react'
-
 import { AnyAsset } from '@xchainjs/xchain-util'
 
 import * as Styled from './AssetLabel.styles'
 
-/**
- * AssetLabel - Component to show data of an asset:
- *
- * |--------|
- * | ticker |
- * | chain  |
- * |--------|
- *
- */
-
 type Props = {
   asset: AnyAsset
-  // `className` is needed by `styled components`
   className?: string
 }
 
-export const AssetLabel: React.FC<Props> = (props): JSX.Element => {
+export const AssetLabel = (props: Props) => {
   const { asset, className } = props
 
   return (

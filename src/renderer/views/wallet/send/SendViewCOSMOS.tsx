@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
@@ -36,7 +36,6 @@ import { PoolAddress } from '../../../services/midgard/midgardTypes'
 import { ZERO_ADDRESS } from '../../../services/solana/fees'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAsset, WalletBalance } from '../../../services/wallet/types'
-import * as Styled from '../Interact/InteractView.styles'
 
 type Props = {
   asset: SelectedWalletAsset
@@ -46,7 +45,7 @@ type Props = {
   oPoolAddress: O.Option<PoolAddress>
 }
 
-export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
+export const SendViewCOSMOS = (props: Props): JSX.Element => {
   const { asset, trustedAddresses, emptyBalance, poolDetails, oPoolAddress } = props
 
   const { chain } =
@@ -149,7 +148,7 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
     O.fold(
       () => (
         <Spin>
-          <Styled.Container>
+          <div className="flex flex-col items-center justify-center overflow-auto bg-bg0 dark:bg-bg0d">
             <SendFormCOSMOS
               asset={asset}
               trustedAddresses={trustedAddresses}
@@ -170,11 +169,11 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
               mayaScanPrice={mayaScanPriceRD}
               oPoolAddress={oPoolAddress}
             />
-          </Styled.Container>
+          </div>
         </Spin>
       ),
       (walletBalance) => (
-        <Styled.Container>
+        <div className="flex flex-col items-center justify-center overflow-auto bg-bg0 dark:bg-bg0d">
           <SendFormCOSMOS
             asset={asset}
             trustedAddresses={trustedAddresses}
@@ -195,7 +194,7 @@ export const SendViewCOSMOS: React.FC<Props> = (props): JSX.Element => {
             mayaScanPrice={mayaScanPriceRD}
             oPoolAddress={oPoolAddress}
           />
-        </Styled.Container>
+        </div>
       )
     )
   )

@@ -11,8 +11,10 @@ import { array as A, function as FP, option as O, predicate as P } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
+import { AssetsFilter } from '../../components/AssetsFilter'
 import { ProtocolLimit, IncentivePendulum } from '../../components/pool'
 import { ManageButton } from '../../components/uielements/button'
+import { Label } from '../../components/uielements/label'
 import { Table } from '../../components/uielements/table'
 import { useAppContext } from '../../contexts/AppContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
@@ -44,8 +46,6 @@ import {
   isEmptyPool
 } from './Pools.utils'
 import * as Shared from './PoolsOverview.shared'
-import * as Styled from './PoolsOverview.styles'
-import { TableAction, BlockLeftLabel } from './PoolsOverview.styles'
 
 export const PendingPools = (): JSX.Element => {
   const { protocol } = useApp()
@@ -111,7 +111,7 @@ export const PendingPools = (): JSX.Element => {
   const renderBtnPoolsColumn = useCallback(
     (_: string, { asset }: PoolTableRowData) => {
       return (
-        <TableAction>
+        <div className="flex items-center justify-center [&>*:not(:first-child)]:ml-10px">
           <ManageButton
             className="min-w-[120px]"
             variant="manage"
@@ -119,7 +119,7 @@ export const PendingPools = (): JSX.Element => {
             asset={asset}
             isTextView={isDesktopView}
           />
-        </TableAction>
+        </div>
       )
     },
     [isDesktopView]
@@ -155,9 +155,11 @@ export const PendingPools = (): JSX.Element => {
       )
 
       return (
-        <TableAction>
-          <BlockLeftLabel>{deepest ? (protocol === THORChain ? blocksLeft : blocksLeftMaya) : '--'}</BlockLeftLabel>
-        </TableAction>
+        <div className="flex items-center justify-center [&>*:not(:first-child)]:ml-10px">
+          <Label className="inline-block w-24 !text-16" align="right">
+            {deepest ? (protocol === THORChain ? blocksLeft : blocksLeftMaya) : '--'}
+          </Label>
+        </div>
       )
     },
     [thorchainLastblockRD, mayachainLastblockRD, protocol, oNewPoolCycle]
@@ -203,7 +205,12 @@ export const PendingPools = (): JSX.Element => {
 
       return (
         <>
-          <Styled.AssetsFilter setFilter={setPoolFilter} activeFilter={poolFilter} poolFilters={DEFAULT_POOL_FILTERS} />
+          <AssetsFilter
+            className="mb-5"
+            setFilter={setPoolFilter}
+            activeFilter={poolFilter}
+            poolFilters={DEFAULT_POOL_FILTERS}
+          />
           <ProtocolLimit limit={limitRD} />
           <IncentivePendulum incentivePendulum={incentivePendulumRD} protocol={protocol} />
           <Table columns={columns} dataSource={dataSource} loading={loading} rowKey="key" />

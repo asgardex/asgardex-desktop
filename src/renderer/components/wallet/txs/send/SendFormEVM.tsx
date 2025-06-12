@@ -90,7 +90,7 @@ export type Props = {
   mayaScanPrice: MayaScanPriceRD
 }
 
-export const SendFormEVM: React.FC<Props> = (props): JSX.Element => {
+export const SendFormEVM = (props: Props): JSX.Element => {
   const {
     asset: { walletType, walletAccount, walletIndex, hdMode, walletAddress },
     trustedAddresses,

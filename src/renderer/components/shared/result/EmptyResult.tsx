@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { InboxIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 
@@ -8,7 +6,7 @@ type Props = {
   className?: string
 }
 
-export const EmptyResult: React.FC<Props> = ({ title = '', className = '' }): JSX.Element => {
+export const EmptyResult = ({ title = '', className = '' }: Props): JSX.Element => {
   return (
     <div className={clsx('flex flex-col items-center justify-center p-20px', className)}>
       <InboxIcon className="h-[40px] w-[40px] text-gray1 dark:text-gray1d lg:h-[60px] lg:w-[60px]" />

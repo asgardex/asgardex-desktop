@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Col, Row } from 'antd'
@@ -33,9 +33,8 @@ import { NodeInfosRD, RunePoolProviderRD, ThorchainLastblockRD } from '../../../
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAssetRD } from '../../../services/wallet/types'
-import * as Styled from './InteractView.styles'
 
-export const InteractViewTHOR: React.FC = () => {
+export const InteractViewTHOR = () => {
   const { interactType: routeInteractType } = useParams<walletRoutes.BondParams>()
 
   const { selectedAsset$ } = useWalletContext()
@@ -256,7 +255,7 @@ export const InteractViewTHOR: React.FC = () => {
             </Row>
           </div>
 
-          <Styled.Container>
+          <div className="flex flex-col items-center justify-center overflow-auto bg-bg0 dark:bg-bg0d">
             {FP.pipe(
               oWalletBalance,
               O.fold(
@@ -293,7 +292,7 @@ export const InteractViewTHOR: React.FC = () => {
                 )
               )
             )}
-          </Styled.Container>
+          </div>
         </>
       )
     )

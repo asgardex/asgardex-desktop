@@ -17,6 +17,7 @@ import { DownIcon } from '../icons'
 import { Menu } from '../shared/menu'
 import { BorderButton } from '../uielements/button'
 import { SwitchButton } from '../uielements/button/SwitchButton'
+import { Label } from '../uielements/label'
 import * as Styled from './AppSettings.styles'
 
 type Props = {
@@ -52,7 +53,7 @@ const Section = ({ title, subtitle, className, children }: SectionProps) => (
   </div>
 )
 
-export const AppGeneralSettings = (props: Props): JSX.Element => {
+export const AppGeneralSettings = (props: Props) => {
   const {
     appUpdateState = RD.initial,
     changeNetwork = FP.constVoid,
@@ -217,13 +218,19 @@ export const AppGeneralSettings = (props: Props): JSX.Element => {
           FP.constNull,
           FP.constNull,
           ({ message }) => (
-            <Styled.ErrorLabel>
-              {intl.formatMessage({ id: 'update.checkFailed' }, { error: message })}
-            </Styled.ErrorLabel>
+            <Label color="error">{intl.formatMessage({ id: 'update.checkFailed' }, { error: message })}</Label>
           ),
           O.fold(
-            () => <Styled.Label>{intl.formatMessage({ id: 'update.noUpdate' })}</Styled.Label>,
-            (version) => <Styled.Label>{intl.formatMessage({ id: 'update.description' }, { version })}</Styled.Label>
+            () => (
+              <Label color="dark" size="big" textTransform="uppercase">
+                {intl.formatMessage({ id: 'update.noUpdate' })}
+              </Label>
+            ),
+            (version) => (
+              <Label color="dark" size="big" textTransform="uppercase">
+                {intl.formatMessage({ id: 'update.description' }, { version })}
+              </Label>
+            )
           )
         )
       ),
@@ -247,7 +254,9 @@ export const AppGeneralSettings = (props: Props): JSX.Element => {
       <Section title={intl.formatMessage({ id: 'setting.version' })} subtitle="Asgardex Software Version">
         <div className="flex max-w-[240px] flex-col space-y-1">
           <div className="flex min-w-[240px] items-center justify-between">
-            <Styled.Label>v{version}</Styled.Label>
+            <Label color="dark" size="big" textTransform="uppercase">
+              v{version}
+            </Label>
             <BorderButton size="normal" className="" {...checkUpdatesProps} />
           </div>
           {renderVersionUpdateResult}

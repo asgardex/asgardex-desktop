@@ -47,7 +47,7 @@ export type Props = {
   dexWalletType: WalletType
 }
 
-export const Deposit: React.FC<Props> = (props) => {
+export const Deposit = (props: Props) => {
   const {
     protocol,
     asset: assetWD,

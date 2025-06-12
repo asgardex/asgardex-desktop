@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
@@ -11,7 +11,7 @@ export type Props = {
   isDesktopView: boolean
 }
 
-export const HeaderTheme: React.FC<Props> = (props): JSX.Element => {
+export const HeaderTheme = (props: Props): JSX.Element => {
   const { onPress = FP.constVoid, isDesktopView } = props
 
   const intl = useIntl()

@@ -56,7 +56,7 @@ const meta: Meta<typeof Template> = {
     }
   },
   decorators: [
-    (Story: React.FC) => (
+    (Story) => (
       <div
         style={{
           display: 'flex',

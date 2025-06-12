@@ -50,7 +50,7 @@ type Props = {
   children: React.ReactNode
 }
 
-export const ThemeProvider: React.FC<Props> = ({ children, theme }): JSX.Element => {
+export const ThemeProvider = ({ children, theme }: Props): JSX.Element => {
   const themeFromObservable = useObservableState(theme$)
   const selectedTheme = theme || themeFromObservable
   return (

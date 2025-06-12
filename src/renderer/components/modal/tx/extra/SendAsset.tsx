@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Network } from '@xchainjs/xchain-client'
 
 import * as Styled from './Common.styles'
@@ -11,7 +9,7 @@ type Props = {
   network: Network
 }
 
-export const SendAsset: React.FC<Props> = (props): JSX.Element => {
+export const SendAsset = (props: Props): JSX.Element => {
   const { asset, description = '', network } = props
   return (
     <>

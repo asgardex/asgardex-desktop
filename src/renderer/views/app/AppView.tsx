@@ -160,12 +160,12 @@ export const AppView = (): JSX.Element => {
         <ViewRoutes />
       ) : (
         <div className="flex h-full flex-col">
-          <AppUpdateView />
           <Styled.AppLayout className="!bg-bg3 dark:!bg-bg3d">
             {isDesktopView && (
               <Sidebar commitHash={envOrDefault($COMMIT_HASH, '')} isDev={$IS_DEV} publicIP={publicIP} />
             )}
             <View>
+              <AppUpdateView />
               <Header />
               <MidgardErrorAlert apiEndpoint={apiEndpointThor} reloadHandler={reloadApiEndpoint} />
               <MidgardErrorAlert apiEndpoint={apiEndpointMaya} reloadHandler={reloadApiEndpointMaya} />

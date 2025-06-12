@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Listbox } from '@headlessui/react'
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
@@ -16,9 +14,13 @@ export type Props = {
   disabled?: boolean
 }
 
-export const WalletSelector: React.FC<Props> = (props): JSX.Element => {
-  const { wallets, onChange, disabled = false, className = '', buttonClassName = '' } = props
-
+export const WalletSelector = ({
+  wallets,
+  onChange,
+  disabled = false,
+  className = '',
+  buttonClassName = ''
+}: Props): JSX.Element => {
   const oSelectedWallet = FP.pipe(
     wallets,
     // get selected wallet

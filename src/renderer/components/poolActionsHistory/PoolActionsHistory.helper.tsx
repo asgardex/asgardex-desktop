@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { TxHash } from '@xchainjs/xchain-client'
 import { array as A, function as FP, option as O } from 'fp-ts'
 import { GetRowKey } from 'rc-table/lib/interface'

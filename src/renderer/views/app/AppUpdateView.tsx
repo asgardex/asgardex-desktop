@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { function as FP, option as O } from 'fp-ts'
@@ -9,7 +9,7 @@ import { useAppUpdate } from '../../hooks/useAppUpdate'
 
 const ONE_HOUR_PERIOD = 1000 * 60 * 60
 
-export const AppUpdateView: React.FC = () => {
+export const AppUpdateView = () => {
   const { appUpdater, resetAppUpdater, checkForUpdates } = useAppUpdate()
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { Popover } from '@headlessui/react'
 import { Cog8ToothIcon } from '@heroicons/react/20/solid'
@@ -16,9 +16,7 @@ type Props = {
   onChange: ChangeSlipToleranceHandler
 }
 
-export const SelectableSlipTolerance: React.FC<Props> = (props): JSX.Element => {
-  const { onChange, value } = props
-
+export const SelectableSlipTolerance = ({ onChange, value }: Props): JSX.Element => {
   const changeSlipToleranceHandler = useCallback(
     (slipTolerance: SlipTolerance) => {
       // TODO (@veado) Move storage to services/app, there is already a `changeSlipTolerance` state

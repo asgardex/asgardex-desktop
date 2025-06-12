@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
 import * as appRoutes from '../routes/app'
@@ -32,7 +30,7 @@ import { TradeAssetsView } from './wallet/TradeAssetsView'
 import { UnlockView } from './wallet/UnlockView'
 import { WalletAuth } from './wallet/WalletAuth'
 
-export const ViewRoutes: React.FC<{}> = (): JSX.Element => {
+export const ViewRoutes = (): JSX.Element => {
   const location = useLocation()
   return (
     <Routes>

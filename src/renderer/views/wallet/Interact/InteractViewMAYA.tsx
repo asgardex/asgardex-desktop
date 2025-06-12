@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
@@ -37,9 +37,8 @@ import { userNodes$ } from '../../../services/storage/userNodes'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAssetRD } from '../../../services/wallet/types'
-import * as Styled from './InteractView.styles'
 
-export const InteractViewMAYA: React.FC = () => {
+export const InteractViewMAYA = () => {
   const { interactType: routeInteractType } = useParams<walletRoutes.InteractParams>()
 
   const { selectedAsset$ } = useWalletContext()
@@ -178,7 +177,6 @@ export const InteractViewMAYA: React.FC = () => {
       ([interactType, { walletType, walletAccount, walletIndex, hdMode }]) => (
         <>
           <div className="relative mb-20px flex items-center justify-between">
-            {' '}
             <Row justify="space-between">
               <Col>
                 <BackLinkButton />
@@ -187,7 +185,7 @@ export const InteractViewMAYA: React.FC = () => {
             </Row>
           </div>
 
-          <Styled.Container>
+          <div className="flex flex-col items-center justify-center overflow-auto bg-bg0 dark:bg-bg0d">
             {FP.pipe(
               oWalletBalance,
               O.fold(
@@ -223,7 +221,7 @@ export const InteractViewMAYA: React.FC = () => {
                 )
               )
             )}
-          </Styled.Container>
+          </div>
         </>
       )
     )

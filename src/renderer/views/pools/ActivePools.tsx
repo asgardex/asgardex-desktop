@@ -21,8 +21,10 @@ import { useNavigate } from 'react-router-dom'
 
 import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
 import { WalletType } from '../../../shared/wallet/types'
+import { AssetsFilter } from '../../components/AssetsFilter'
 import { ProtocolLimit, IncentivePendulum } from '../../components/pool'
 import { Action as ActionButtonAction, ActionButton } from '../../components/uielements/button/ActionButton'
+import { Label } from '../../components/uielements/label'
 import { PoolsPeriodSelector } from '../../components/uielements/pools/PoolsPeriodSelector'
 import { Table } from '../../components/uielements/table'
 import { DEFAULT_WALLET_TYPE } from '../../const'
@@ -49,7 +51,6 @@ import { useApp } from '../../store/app/hooks'
 import { PoolTableRowData, PoolTableRowsData } from './Pools.types'
 import { filterTableData } from './Pools.utils'
 import * as Shared from './PoolsOverview.shared'
-import * as Styled from './PoolsOverview.styles'
 
 export const ActivePools = (): JSX.Element => {
   const navigate = useNavigate()
@@ -184,9 +185,9 @@ export const ActivePools = (): JSX.Element => {
             ]
 
       return (
-        <Styled.TableAction>
+        <div className="flex items-center justify-center [&>*:not(:first-child)]:ml-10px">
           <ActionButton size="normal" actions={actions} />
-        </Styled.TableAction>
+        </div>
       )
     },
     [protocol, hasKeystore, intl, navigate]
@@ -208,7 +209,7 @@ export const ActivePools = (): JSX.Element => {
 
   const renderVolumeColumn = useCallback(
     ({ asset, volumePrice, volumeAmount }: { asset: AnyAsset; volumePrice: BaseAmount; volumeAmount: BaseAmount }) => (
-      <Styled.Label align="right" nowrap>
+      <Label className="!text-16" align="right" nowrap>
         <div className="flex flex-col items-end justify-center font-main">
           <div className="whitespace-nowrap text-16 text-text0 dark:text-text0d">
             {formatAssetAmountCurrency({
@@ -225,7 +226,7 @@ export const ActivePools = (): JSX.Element => {
             })}
           </div>
         </div>
-      </Styled.Label>
+      </Label>
     ),
     [pricePool]
   )
@@ -249,9 +250,9 @@ export const ActivePools = (): JSX.Element => {
 
   const renderAPYColumn = useCallback(
     ({ apy }: { apy: number }) => (
-      <Styled.Label align="center" nowrap>
+      <Label className="!text-16" align="center" nowrap>
         {formatBN(bn(apy), 2)}%
-      </Styled.Label>
+      </Label>
     ),
     []
   )
@@ -332,7 +333,12 @@ export const ActivePools = (): JSX.Element => {
 
       return (
         <>
-          <Styled.AssetsFilter activeFilter={poolFilter} setFilter={setPoolFilter} poolFilters={DEFAULT_POOL_FILTERS} />
+          <AssetsFilter
+            className="mb-5"
+            activeFilter={poolFilter}
+            setFilter={setPoolFilter}
+            poolFilters={DEFAULT_POOL_FILTERS}
+          />
           <ProtocolLimit limit={limitRD} />
           <IncentivePendulum incentivePendulum={incentivePendulumRD} protocol={protocol} />
           <Table columns={columns} dataSource={dataSource} loading={loading} rowKey="key" />

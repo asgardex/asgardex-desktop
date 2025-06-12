@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { BaseButton, BaseButtonProps } from './BaseButton'
 import { borderSize, dropShadow, borderColor } from './Button.shared'
 import type { Color } from './Button.types'
@@ -9,7 +7,7 @@ export type Props = BaseButtonProps & {
   transparent?: boolean
 }
 
-export const BorderButton: React.FC<Props> = (props): JSX.Element => {
+export const BorderButton = (props: Props): JSX.Element => {
   const {
     color = 'primary',
     size = 'normal',

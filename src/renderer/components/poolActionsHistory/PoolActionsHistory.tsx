@@ -7,7 +7,6 @@ import { function as FP, option as O } from 'fp-ts'
 
 import { OpenExplorerTxUrl } from '../../services/clients'
 import { ActionsPage, ActionsPageRD } from '../../services/midgard/thorMidgard/types'
-import * as Styled from './PoolActionsHistory.styles'
 import { PoolActionsHistoryList } from './PoolActionsHistoryList'
 import { PoolActionsHistoryTable, Props as PoolActionsHistoryTableProps } from './PoolActionsHistoryTable'
 
@@ -23,7 +22,7 @@ type Props = {
   className?: string
 }
 
-export const PoolActionsHistory: React.FC<Props> = (props) => {
+export const PoolActionsHistory = (props: Props) => {
   const {
     network,
     headerContent: HeaderContent,
@@ -60,7 +59,9 @@ export const PoolActionsHistory: React.FC<Props> = (props) => {
 
   return (
     <>
-      {HeaderContent && <Styled.Header>{HeaderContent}</Styled.Header>}
+      {HeaderContent && (
+        <div className="flex flex-col items-center p-5 bg-bg1 dark:bg-bg1d md:flex-row">{HeaderContent}</div>
+      )}
       {isDesktopView ? (
         <PoolActionsHistoryTable prevHistoryPage={prevHistoryPageRef.current} {...tableProps} />
       ) : (

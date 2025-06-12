@@ -125,7 +125,7 @@ const initialContext: ThorchainContextValue = {
 
 const ThorchainContext = createContext<ThorchainContextValue | null>(null)
 
-export const ThorchainProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => {
+export const ThorchainProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   return <ThorchainContext.Provider value={initialContext}>{children}</ThorchainContext.Provider>
 }
 

@@ -3,6 +3,7 @@ import { function as FP } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
 
+import { useAdaContext } from '../contexts/AdaContext'
 import { useArbContext } from '../contexts/ArbContext'
 import { useAvaxContext } from '../contexts/AvaxContext'
 import { useBaseContext } from '../contexts/BaseContext'
@@ -36,6 +37,7 @@ export const useKeystoreClientStates = (): { clientStates: KeystoreClientStates 
   const { clientState$: baseClientState$ } = useBaseContext()
   const { clientState$: xrdClientState$ } = useXrdContext()
   const { clientState$: kujiClientState$ } = useKujiContext()
+  const { clientState$: adaClientState$ } = useAdaContext()
   const { clientState$: dashClientState$ } = useDashContext()
   const { clientState$: arbClientState$ } = useArbContext()
 
@@ -58,7 +60,8 @@ export const useKeystoreClientStates = (): { clientStates: KeystoreClientStates 
           dash: dashClientState$,
           kuji: kujiClientState$,
           xrd: xrdClientState$,
-          base: baseClientState$
+          base: baseClientState$,
+          ada: adaClientState$
         }),
         liveData.map((_) => true),
         RxOp.startWith(RD.pending)

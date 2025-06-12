@@ -1,7 +1,7 @@
 {
   "name": "asgardex",
   "productName": "ASGARDEX",
-  "version": "1.40.0",
+  "version": "1.40.1",
   "description": "WALLET AND EXCHANGE CLIENT FOR THORCHAIN, MAYACHAIN, CHAINFLIP",
   "main": "build/main/electron.js",
   "scripts": {
@@ -25,7 +25,7 @@
     "generate:baseErc20whitelist": "./node_modules/.bin/ts-node --project tsconfig.scripts.json ./scripts/generateBASEtokenlist.ts",
     "storybook": "NODE_OPTIONS=\"--max-old-space-size=4096\" storybook dev -p 9009 ",
     "build-storybook": "NODE_OPTIONS=\"--max-old-space-size=8192\" storybook build",
-    "analyze": "yarn build:dev && source-map-explorer 'build/renderer/assets/*.js'"
+    "analyze": "NODE_OPTIONS=\"--max-old-space-size=12000\" yarn build:dev && source-map-explorer 'build/renderer/assets/*.js'"
   },
   "repository": {
     "type": "git",
@@ -88,6 +88,7 @@
     "@xchainjs/xchain-bitcoin": "2.0.0",
     "@xchainjs/xchain-bitcoincash": "2.0.0",
     "@xchainjs/xchain-bsc": "2.0.1",
+    "@xchainjs/xchain-cardano": "1.1.0",
     "@xchainjs/xchain-client": "2.0.0",
     "@xchainjs/xchain-cosmos": "3.0.0",
     "@xchainjs/xchain-crypto": "1.0.0",
@@ -185,7 +186,7 @@
     "cross-env": "^7.0.3",
     "crypto-browserify": "^3.12.0",
     "electron": "^35",
-    "electron-builder": "24.9.1",
+    "electron-builder": "^24.13.3",
     "electron-devtools-installer": "^3.2.0",
     "electron-vite": "^3.1.0",
     "eslint": "^8.57.0",
@@ -217,6 +218,7 @@
     "typescript": "5.8.3",
     "vite": "^6.3.5",
     "vite-plugin-svgr": "^4.3.0",
+    "vite-plugin-wasm": "^3.4.1",
     "vitest": "^3.1.3"
   },
   "resolutions": {

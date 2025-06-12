@@ -118,10 +118,7 @@ import SwapExpiryProgressBar from './SwapExpiryProgressBar'
 import { SwapRoute } from './SwapRoute'
 import { SwapTxModal } from './SwapTxModal'
 
-const ErrorLabel: React.FC<{
-  children: React.ReactNode
-  className?: string
-}> = ({ children, className }): JSX.Element => (
+const ErrorLabel = ({ children, className }: { children: React.ReactNode; className?: string }): JSX.Element => (
   <div
     className={clsx('mb-[14px] text-center font-main text-[12px] uppercase text-error0 dark:text-error0d', className)}>
     {children}

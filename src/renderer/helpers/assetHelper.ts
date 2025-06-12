@@ -32,6 +32,7 @@ import {
   AssetMaya,
   AssetKUJI,
   AssetBETH,
+  ADAAsset,
   AssetARB,
   AssetAETH,
   AssetDASH,
@@ -168,6 +169,12 @@ export const isDogeAsset = (asset: AnyAsset): boolean =>
  */
 export const isKujiAsset = (asset: AnyAsset): boolean =>
   asset.chain === AssetKUJI.chain && asset.symbol.toUpperCase() === AssetKUJI.symbol.toUpperCase()
+
+/**
+ * Checks whether an asset is a Ada asset
+ */
+export const isAdaAsset = (asset: AnyAsset): boolean =>
+  asset.chain === ADAAsset.chain && asset.symbol.toUpperCase() === ADAAsset.symbol.toUpperCase()
 /**
  * Checks whether an asset is a Radix asset
  */

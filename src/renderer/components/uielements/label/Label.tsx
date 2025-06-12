@@ -1,51 +1,50 @@
 import React from 'react'
-
 import clsx from 'clsx'
 
-import * as Styled from './Label.styles'
+import { LabelProps, sizeMap, colorMap } from './Label.types'
 
-type ComponentProps = {
-  className?: string
-  children?: React.ReactNode
-  loading?: boolean
-  nowrap?: boolean
-  onClick?: (_: React.MouseEvent<HTMLElement>) => void
-  style?: React.CSSProperties
-}
+export const Label = React.forwardRef<HTMLDivElement, LabelProps>(
+  (
+    {
+      align = 'left',
+      size = 'normal',
+      color = 'normal',
+      disabled = false,
+      weight = 'normal',
+      textTransform = 'none',
+      nowrap = false,
+      loading = false,
+      className,
+      children,
+      onClick
+    },
+    ref
+  ): JSX.Element => {
+    const baseClasses = clsx(
+      'w-full p-0',
+      sizeMap[size],
+      colorMap[color],
+      {
+        'font-bold': weight === 'bold',
+        'font-normal': weight !== 'bold',
+        uppercase: textTransform === 'uppercase',
+        lowercase: textTransform === 'lowercase',
+        capitalize: textTransform === 'capitalize',
+        'whitespace-nowrap': nowrap,
+        'whitespace-normal': !nowrap,
+        'opacity-50': disabled,
+        'cursor-pointer': !!onClick,
+        'text-left': align === 'left',
+        'text-center': align === 'center',
+        'text-right': align === 'right'
+      },
+      className
+    )
 
-export type LabelProps = ComponentProps & Styled.Props
-
-export const Label = React.forwardRef<HTMLDivElement, LabelProps>((props, ref): JSX.Element => {
-  const {
-    loading = false,
-    align = 'left',
-    size = 'normal',
-    color = 'normal',
-    weight = 'normal',
-    textTransform = 'none',
-    nowrap = false,
-    children,
-    className = '',
-    disabled = false,
-    onClick,
-    style
-  } = props
-
-  return (
-    <Styled.LabelWrapper
-      ref={ref}
-      className={clsx('label-wrapper', className)}
-      size={size}
-      color={color}
-      weight={weight}
-      textTransform={textTransform}
-      style={style}
-      align={align}
-      nowrap={nowrap}
-      disabled={disabled}
-      onClick={onClick}>
-      {loading && <Styled.Skeleton />}
-      {!loading && children}
-    </Styled.LabelWrapper>
-  )
-})
+    return (
+      <div ref={ref} className={baseClasses} onClick={onClick}>
+        {loading ? <div className="animate-pulse bg-gray-200 rounded h-4 w-full" /> : children}
+      </div>
+    )
+  }
+)

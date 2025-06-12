@@ -1,5 +1,3 @@
-import React from 'react'
-
 import * as RD from '@devexperts/remote-data-ts'
 import { TvIcon } from '@heroicons/react/24/outline'
 import { Network } from '@xchainjs/xchain-client'
@@ -21,11 +19,13 @@ import {
 import { PoolDetails, PoolDetailsRD } from '../../../services/midgard/mayaMigard/types'
 import { PricePool } from '../../../services/midgard/midgardTypes'
 import { NodeInfo, NodeStatusEnum } from '../../../services/thorchain/types'
-import * as Styled from './BondsTable.styles'
+import { AddressEllipsis } from '../../uielements/addressEllipsis'
+import { Label } from '../../uielements/label'
 
-export const NodeAddress: React.FC<{ address: Address; network: Network }> = ({ address, network }) => (
+export const NodeAddress = ({ address, network }: { address: Address; network: Network }) => (
   <Col xs={18} lg={20} xl={24}>
-    <Styled.AddressEllipsis
+    <AddressEllipsis
+      className="font-light text-16 text-text1 dark:text-text1d normal-case"
       address={address}
       chain={address.startsWith('thor') ? THORChain : MAYAChain}
       network={network}
@@ -33,45 +33,45 @@ export const NodeAddress: React.FC<{ address: Address; network: Network }> = ({ 
   </Col>
 )
 
-export const BondValue: React.FC<{ data: NodeInfo | NodeInfoMaya }> = ({ data }) => (
+export const BondValue = ({ data }: { data: NodeInfo | NodeInfoMaya }) => (
   <Col>
-    <Styled.TextLabel align="right" nowrap>
+    <Label align="right" nowrap size="big" textTransform="uppercase">
       {formatAssetAmountCurrency({
         asset: AssetRuneNative,
         amount: baseToAsset(data.bond),
         trimZeros: true,
         decimal: 0
       })}
-    </Styled.TextLabel>
+    </Label>
   </Col>
 )
-export const BondValueMaya: React.FC<{ data: NodeInfo | NodeInfoMaya }> = ({ data }) => (
+export const BondValueMaya = ({ data }: { data: NodeInfo | NodeInfoMaya }) => (
   <Col>
-    <Styled.TextLabel align="right" nowrap>
+    <Label align="right" nowrap size="big" textTransform="uppercase">
       {formatAssetAmountCurrency({
         asset: AssetCacao,
         amount: baseToAsset(data.bond),
         trimZeros: true,
         decimal: 0
       })}
-    </Styled.TextLabel>
+    </Label>
   </Col>
 )
 
-export const AwardValue: React.FC<{ data: NodeInfo | NodeInfoMaya }> = ({ data }) => (
+export const AwardValue = ({ data }: { data: NodeInfo | NodeInfoMaya }) => (
   <Col>
-    <Styled.TextLabel align="right" nowrap>
+    <Label align="right" nowrap size="big" textTransform="uppercase">
       {formatAssetAmountCurrency({
         asset: data.address.startsWith('thor') ? AssetRuneNative : AssetCacao,
         amount: baseToAsset(data.award),
         trimZeros: true,
         decimal: 0
       })}
-    </Styled.TextLabel>
+    </Label>
   </Col>
 )
 
-export const Status: React.FC<{ data: NodeInfo | NodeInfoMaya }> = ({ data }) => {
+export const Status = ({ data }: { data: NodeInfo | NodeInfoMaya }) => {
   const intl = useIntl()
 
   const getStatusMessageId = (status: NodeStatusEnum) => {
@@ -98,15 +98,17 @@ export const Status: React.FC<{ data: NodeInfo | NodeInfoMaya }> = ({ data }) =>
   }
 
   return (
-    <Styled.TextLabel align="center">{intl.formatMessage({ id: getStatusMessageId(data.status) })}</Styled.TextLabel>
+    <Label align="center" size="big" textTransform="uppercase">
+      {intl.formatMessage({ id: getStatusMessageId(data.status) })}
+    </Label>
   )
 }
 
-export const Watchlist: React.FC<{ addWatchlist: () => void }> = ({ addWatchlist }) => (
+export const Watchlist = ({ addWatchlist }: { addWatchlist: () => void }) => (
   <TvIcon className="cursor-pointer text-turquoise w-5 h-5" onClick={addWatchlist} />
 )
 
-export const Delete: React.FC<{ deleteNode: () => void }> = ({ deleteNode }) => (
+export const Delete = ({ deleteNode }: { deleteNode: () => void }) => (
   <RemoveIcon className="cursor-pointer w-5 h-5" onClick={deleteNode} />
 )
 

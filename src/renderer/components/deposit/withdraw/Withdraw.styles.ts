@@ -2,9 +2,7 @@ import { Row } from 'antd'
 import styled from 'styled-components'
 
 import { media } from '../../../helpers/styleHelper'
-import { AssetIcon as AssetIconBase } from '../../uielements/assets/assetIcon'
 import { AssetLabel as AssetLabelUI } from '../../uielements/assets/assetLabel'
-import { ViewTxButton as UIViewTxButton } from '../../uielements/button'
 import { WalletTypeLabel as WalletTypeLabelUI } from '../../uielements/common/Common.styles'
 import { Label as UILabel } from '../../uielements/label'
 import { Slider as BaseSlider } from '../../uielements/slider'
@@ -14,23 +12,6 @@ export const Container = styled('div')`
     font-size: 21px;
     font-family: 'MainFontSemiBold';
   }
-`
-
-export const Title = styled(UILabel)`
-  text-transform: uppercase;
-  font-size: 16px;
-  font-family: 'MainFontSemiBold';
-`
-
-export const Description = styled(UILabel)`
-  text-transform: uppercase;
-  font-size: 14px;
-  font-family: 'MainFontRegular';
-`
-
-export const MinLabel = styled(UILabel)`
-  padding: 0;
-  display: inline;
 `
 
 export const AssetOutputContainer = styled.div`
@@ -48,10 +29,6 @@ export const AssetOutputContainer = styled.div`
   }
 `
 
-export const AssetIcon = styled(AssetIconBase)`
-  margin-right: 10px;
-`
-
 export const Slider = styled(BaseSlider).attrs({
   useMiddleLabel: true,
   tooltipPlacement: 'bottom',
@@ -59,11 +36,6 @@ export const Slider = styled(BaseSlider).attrs({
   labelPosition: 'top'
 })`
   margin-bottom: 40px;
-`
-
-export const OutputContainer = styled.div`
-  display: flex;
-  flex-direction: column;
 `
 
 export const OutputLabel = styled(UILabel)`
@@ -113,32 +85,6 @@ export const FeeErrorRow = styled(Row).attrs({
     padding-top: 20px;
     padding-bottom: 0px;
 `}
-`
-
-export const FeeErrorLabel = styled(UILabel).attrs({
-  color: 'error',
-  textTransform: 'uppercase'
-})`
-  font-family: 'MainFontRegular';
-  padding: 0;
-  margin-bottom: 10px;
-`
-
-export const ExtraContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-`
-
-export const ViewTxButtonTop = styled(UIViewTxButton)`
-  padding-bottom: 20px;
-`
-
-export const AssetContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
 `
 
 export const AssetLabel = styled(AssetLabelUI)`

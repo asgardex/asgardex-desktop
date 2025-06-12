@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useMemo } from 'react'
+import { useCallback, useState, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import * as crypto from '@xchainjs/xchain-crypto'
@@ -27,7 +27,7 @@ type Props = {
   clientStates: KeystoreClientStates
 }
 
-export const ImportPhrase: React.FC<Props> = (props): JSX.Element => {
+export const ImportPhrase = (props: Props): JSX.Element => {
   const { addKeystore, clientStates, walletId, walletNames } = props
   const [form] = Form.useForm()
 

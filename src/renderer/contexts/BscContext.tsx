@@ -87,7 +87,7 @@ const initialContext: BscContextValue = {
 
 const BscContext = createContext<BscContextValue | null>(null)
 
-export const BscProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => {
+export const BscProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   return <BscContext.Provider value={initialContext}>{children}</BscContext.Provider>
 }
 

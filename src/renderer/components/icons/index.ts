@@ -6,6 +6,7 @@ import mayaIcon from '../../assets/png/asset-maya.png'
 import tgtIcon from '../../assets/png/asset-tgt.png'
 import usdpIcon from '../../assets/png/asset-usdp.png'
 import uskIcon from '../../assets/png/asset-usk.png'
+import adaIcon from '../../assets/svg/asset-ada.svg?url'
 import arbIcon from '../../assets/svg/asset-arb.svg?url'
 import atomIcon from '../../assets/svg/asset-atom.svg?url'
 import avaxIcon from '../../assets/svg/asset-avax.svg?url'
@@ -53,6 +54,7 @@ export {
   usdpIcon,
   dashIcon,
   kujiIcon,
+  adaIcon,
   uskIcon,
   mayaIconT,
   xrdIcon,

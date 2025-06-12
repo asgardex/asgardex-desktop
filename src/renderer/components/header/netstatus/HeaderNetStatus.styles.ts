@@ -3,7 +3,6 @@ import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
 import { media } from '../../../helpers/styleHelper'
-import { Label } from '../../uielements/label'
 
 export const Wrapper = styled(Row)`
   /* id defined in svg */
@@ -19,26 +18,4 @@ export const Wrapper = styled(Row)`
   ${media.lg`
     width: auto;
   `}
-`
-
-export const MenuItemHeadline = styled(Label).attrs({
-  size: 'normal',
-  weight: 'bold',
-  textTransform: 'uppercase',
-  color: 'normal'
-})`
-  padding: 0 20px 0 0;
-  font-size: 14px;
-`
-
-export const MenuItemSubHeadline = styled(Label).attrs({
-  size: 'small',
-  weight: 'normal',
-  textTransform: 'uppercase',
-  color: 'normal'
-})`
-  padding: 0 20px 0 0;
-  text-transform: lowercase;
-  margin-bottom: 0;
-  font-size: 14px;
 `

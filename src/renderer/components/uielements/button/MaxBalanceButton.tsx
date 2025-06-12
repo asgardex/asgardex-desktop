@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { Balance } from '@xchainjs/xchain-client'
 import { BaseAmount, CryptoAmount, baseToAsset, formatAssetAmountCurrency } from '@xchainjs/xchain-util'
@@ -24,7 +24,7 @@ export type ComponentProps = {
 
 type Props = ComponentProps & Omit<ButtonProps, 'onClick'>
 
-export const MaxBalanceButton: React.FC<Props> = (props): JSX.Element => {
+export const MaxBalanceButton = (props: Props): JSX.Element => {
   const {
     balance,
     maxDollarValue,

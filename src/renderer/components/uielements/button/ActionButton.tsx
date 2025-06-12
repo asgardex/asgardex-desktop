@@ -17,9 +17,13 @@ export type Props = Omit<ButtonProps, 'onClick'> & {
   isTextView?: boolean
 }
 
-export const ActionButton: React.FC<Props> = (props): JSX.Element => {
-  const { size, actions, isTextView = true, className = '', btnClassName = '' } = props
-
+export const ActionButton = ({
+  size,
+  actions,
+  isTextView = true,
+  className = '',
+  btnClassName = ''
+}: Props): JSX.Element => {
   return (
     <div className={`flex w-full justify-start space-x-2 ${className}`}>
       {FP.pipe(

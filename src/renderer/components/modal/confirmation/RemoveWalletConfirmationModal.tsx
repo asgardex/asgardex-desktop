@@ -10,7 +10,7 @@ type Props = {
   onClose: FP.Lazy<void>
 }
 
-export const RemoveWalletConfirmationModal: React.FC<Props> = ({ visible, onClose, onSuccess, walletName }) => {
+export const RemoveWalletConfirmationModal = ({ visible, onClose, onSuccess, walletName }: Props) => {
   const intl = useIntl()
 
   return (

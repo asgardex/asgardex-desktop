@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useState, useEffect } from 'react'
+import { useMemo, useCallback, useState, useEffect } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -32,7 +32,7 @@ import { useApp } from '../../../store/app/hooks'
 
 const HISTORY_FILTERS: Filter[] = ['ALL', 'SEND', 'DEPOSIT', 'SWAP', 'WITHDRAW', 'DONATE', 'REFUND', 'RUNEPOOLDEPOSIT']
 
-export const WalletHistoryView: React.FC = () => {
+export const WalletHistoryView = () => {
   const { protocol, setProtocol } = useApp()
   const { network } = useNetwork()
 

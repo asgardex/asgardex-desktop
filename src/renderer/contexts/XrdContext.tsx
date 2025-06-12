@@ -53,7 +53,7 @@ const initialContext: XrdContextValue = {
 
 const XrdContext = createContext<XrdContextValue | null>(null)
 
-export const XrdProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => {
+export const XrdProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   return <XrdContext.Provider value={initialContext}>{children}</XrdContext.Provider>
 }
 

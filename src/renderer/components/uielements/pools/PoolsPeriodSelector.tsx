@@ -19,9 +19,12 @@ type Props = {
   disabled?: boolean
 }
 
-export const PoolsPeriodSelector: React.FC<Props> = (props): JSX.Element => {
-  const { selectedValue, onChange, disabled = false, className = '' } = props
-
+export const PoolsPeriodSelector = ({
+  selectedValue,
+  onChange,
+  disabled = false,
+  className = ''
+}: Props): JSX.Element => {
   const intl = useIntl()
 
   const defaultItem: PeriodItem = useMemo(

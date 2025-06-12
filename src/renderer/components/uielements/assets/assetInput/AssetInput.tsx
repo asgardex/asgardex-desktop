@@ -72,7 +72,7 @@ const amountShortcuts = [
   }
 ]
 
-export const AssetInput: React.FC<Props> = (props): JSX.Element => {
+export const AssetInput = (props: Props): JSX.Element => {
   const {
     title,
     amount: { amount, asset },

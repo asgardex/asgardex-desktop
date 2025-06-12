@@ -4,6 +4,7 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
@@ -32,7 +33,8 @@ export const CHAIN_STRINGS: Record<Chain, string> = {
   [KUJIChain]: 'KUJI',
   [RADIXChain]: 'RADIX',
   [SOLChain]: 'Solana',
-  [BASEChain]: 'Base'
+  [BASEChain]: 'Base',
+  [ADAChain]: 'Cardano'
 }
 
 export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
@@ -51,7 +53,8 @@ export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
   [KUJIChain]: CHAIN_STRINGS[KUJIChain],
   [RADIXChain]: CHAIN_STRINGS[RADIXChain],
   [SOLChain]: CHAIN_STRINGS[SOLChain],
-  [BASEChain]: CHAIN_STRINGS[BASEChain]
+  [BASEChain]: CHAIN_STRINGS[BASEChain],
+  [ADAChain]: CHAIN_STRINGS[ADAChain]
 }
 
 export type EnabledChain = keyof typeof DEFAULT_ENABLED_CHAINS
@@ -67,9 +70,11 @@ export const isSupportedChain = (u: string): u is EnabledChain =>
 
 // Mapping of DEXs to their supported chains, Update this when new chains are added
 const DEX_CHAINS: { [key: string]: ReadonlyArray<Chain> } = {
-  MAYA: ['DASH', 'BTC', 'ETH', 'KUJI', 'THOR', 'MAYA', 'ARB', 'XRD'],
+  MAYA: ['DASH', 'BTC', 'ETH', 'KUJI', 'THOR', 'MAYA', 'ARB', 'XRD', 'ADA'],
   // For THOR, filter out chains that are maya specific
-  THOR: Object.keys(DEFAULT_ENABLED_CHAINS).filter((chain) => !['DASH', 'KUJI', 'MAYA', 'ARB', 'XRD'].includes(chain))
+  THOR: Object.keys(DEFAULT_ENABLED_CHAINS).filter(
+    (chain) => !['DASH', 'KUJI', 'MAYA', 'ARB', 'XRD', 'ADA'].includes(chain)
+  )
 }
 
 // Function to retrieve chains for a specific DEX
@@ -172,5 +177,9 @@ export const DefaultChainAttributes: Record<Chain, ChainAttributes> = {
   BASE: {
     blockReward: 0,
     avgBlockTimeInSecs: 2
+  },
+  ADA: {
+    blockReward: 0,
+    avgBlockTimeInSecs: 20
   }
 }

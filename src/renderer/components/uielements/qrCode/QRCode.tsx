@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Spin } from 'antd'
@@ -13,7 +13,7 @@ type Props = {
   text: string
   qrError: string
 }
-export const QRCode: React.FC<Props> = ({ text, qrError }) => {
+export const QRCode = ({ text, qrError }: Props) => {
   const canvasContainer = useRef<HTMLDivElement>(null)
   const intl = useIntl()
 

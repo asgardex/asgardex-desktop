@@ -36,7 +36,7 @@ const meta: Meta<typeof Component> = {
     keystore: AT.keystore
   },
   decorators: [
-    (Story: React.FC) => (
+    (Story) => (
       <div className="h-full w-full bg-bg2 p-20">
         <Story />
       </div>

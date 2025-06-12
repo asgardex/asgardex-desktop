@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback, useRef } from 'react'
+import { useMemo, useState, useCallback, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
@@ -83,7 +83,7 @@ export type Props = {
   mayachainRpcUrl: string
 }
 
-export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
+export const HeaderComponent = (props: Props): JSX.Element => {
   const {
     keystore,
     wallets,
@@ -317,7 +317,7 @@ export const HeaderComponent: React.FC<Props> = (props): JSX.Element => {
                 </Row>
               </Col>
               <Col>
-                <Row align="middle">
+                <Row className="space-x-2" align="middle">
                   {renderHeaderNetStatus}
                   <HeaderTheme isDesktopView={isDesktopView} />
                   {renderHeaderCurrency}

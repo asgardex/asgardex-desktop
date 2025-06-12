@@ -53,7 +53,7 @@ const initialContext: SolContextValue = {
 
 const SolContext = createContext<SolContextValue | null>(null)
 
-export const SolProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => {
+export const SolProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   return <SolContext.Provider value={initialContext}>{children}</SolContext.Provider>
 }
 

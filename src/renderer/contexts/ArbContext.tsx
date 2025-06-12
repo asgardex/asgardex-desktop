@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react'
+import { createContext, useContext } from 'react'
 
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
@@ -87,7 +87,7 @@ const initialContext: ArbContextValue = {
 
 const ArbContext = createContext<ArbContextValue | null>(null)
 
-export const ArbProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => {
+export const ArbProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   return <ArbContext.Provider value={initialContext}>{children}</ArbContext.Provider>
 }
 

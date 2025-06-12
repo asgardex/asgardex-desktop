@@ -61,9 +61,7 @@ const getWhitelistAssets = (
     })
 }
 
-export const WhitelistModal: React.FC<Props> = (props): JSX.Element => {
-  const { open, onClose } = props
-
+export const WhitelistModal = ({ open, onClose }: Props): JSX.Element => {
   const [page, setPage] = useState(1)
   const [searchValue, setSearchValue] = useState<string>(emptyString)
   const [chain, setChain] = useState<typeof EVMChains[number]>(ETHChain)

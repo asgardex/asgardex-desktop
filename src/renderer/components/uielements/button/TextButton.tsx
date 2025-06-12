@@ -1,5 +1,3 @@
-import React from 'react'
-
 import clsx from 'clsx'
 
 import { BaseButton, BaseButtonProps } from './BaseButton'
@@ -9,7 +7,7 @@ export type Props = BaseButtonProps & {
   color?: Color
 }
 
-export const TextButton: React.FC<Props> = (props): JSX.Element => {
+export const TextButton = (props: Props): JSX.Element => {
   const { color = 'primary', disabled = false, className = '', children, ...otherProps } = props
 
   const textColor: Record<Color, string> = {

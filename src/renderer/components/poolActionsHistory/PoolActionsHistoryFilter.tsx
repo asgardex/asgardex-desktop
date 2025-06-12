@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import { Dropdown } from 'antd'
@@ -20,13 +20,13 @@ type Props = {
   availableFilters: Filter[]
 }
 
-export const PoolActionsHistoryFilter: React.FC<Props> = ({
+export const PoolActionsHistoryFilter = ({
   currentFilter,
   onFilterChanged,
   className,
   disabled,
   availableFilters
-}) => {
+}: Props) => {
   const intl = useIntl()
   const activeFilterIndex = useMemo(() => {
     const index = availableFilters.indexOf(currentFilter)

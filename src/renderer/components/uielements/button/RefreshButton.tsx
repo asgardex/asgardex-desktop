@@ -21,7 +21,7 @@ export type Props = {
 /**
  * Refresh Button - a `TextButton` w/ an ReloadIcon
  */
-export const RefreshButton: React.FC<Props> = (props): JSX.Element => {
+export const RefreshButton = (props: Props): JSX.Element => {
   const { label, size = 'normal', color = 'primary', onClick = FP.constVoid, disabled, className = '' } = props
   const intl = useIntl()
 
