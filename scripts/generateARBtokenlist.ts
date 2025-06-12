@@ -2,15 +2,17 @@ import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AnyAsset, assetFromString } from '@xchainjs/xchain-util'
 import ansis from 'ansis'
 import axios from 'axios'
-import * as IO from 'fp-ts/IO'
-import * as A from 'fp-ts/lib/Array'
-import * as C from 'fp-ts/lib/Console'
-import * as E from 'fp-ts/lib/Either'
-import * as FP from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
-import * as TE from 'fp-ts/lib/TaskEither'
-import * as S from 'fp-ts/string'
-import * as T from 'fp-ts/Task'
+import {
+  io as IO,
+  array as A,
+  console as C,
+  either as E,
+  function as FP,
+  option as O,
+  taskEither as TE,
+  string as S,
+  task as T
+} from 'fp-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 import prettier from 'prettier'
 
@@ -85,7 +87,7 @@ const createTemplate = (list: AssetList): string => {
      *
      */
 
-    import * as O from 'fp-ts/lib/Option'
+    import { option as O } from 'fp-ts'
     import {TokenAsset} from "@xchainjs/xchain-util";
     import {ARBChain} from "@xchainjs/xchain-arbitrum";
 
@@ -102,10 +104,13 @@ const writeList = (list: AssetList): TE.TaskEither<Error, void> =>
     (c) => writeFile(PATH, c)
   )
 
+const options = prettier.resolveConfig.sync('./.prettierrc') ?? {}
+options.parser = 'typescript'
+
 const formatList = () =>
   FP.pipe(
     readFile(PATH, 'utf8'),
-    TE.chain((content) => writeFile(PATH, prettier.format(content, { filepath: PATH })))
+    TE.chain((content) => writeFile(PATH, prettier.format(content, options)))
   )
 
 const onError = (e: Error): T.Task<void> =>
