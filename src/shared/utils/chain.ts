@@ -1,3 +1,4 @@
+import { ZECChain } from '@mayaprotocol/xchain-zcash'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
@@ -16,7 +17,6 @@ import { RadixChain as RADIXChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
-import { ZECChain } from '@mayaprotocol/xchain-zcash'
 
 export const CHAIN_STRINGS: Record<Chain, string> = {
   [BCHChain]: 'Bitcoin Cash',

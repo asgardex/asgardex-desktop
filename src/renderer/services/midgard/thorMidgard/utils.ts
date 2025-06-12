@@ -1,4 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { ZEC_DECIMAL, ZECChain } from '@mayaprotocol/xchain-zcash'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AssetAVAX, AVAX_GAS_ASSET_DECIMAL, AVAXChain } from '@xchainjs/xchain-avax'
 import { AssetBETH, BASE_GAS_ASSET_DECIMAL, BASEChain } from '@xchainjs/xchain-base'
@@ -17,7 +18,6 @@ import { PoolDetail } from '@xchainjs/xchain-midgard'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
-import { ZEC_DECIMAL, ZECChain } from '@mayaprotocol/xchain-zcash'
 import {
   assetFromString,
   bnOrZero,
