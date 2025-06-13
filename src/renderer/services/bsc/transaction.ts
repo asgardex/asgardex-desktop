@@ -57,7 +57,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       sequenceSOption({ address: getEVMAssetAddress(params.asset), router: params.router }),
       O.fold(
         () => failure$(`Invalid values: Asset ${params.asset} / router address ${params.router}`),
-        ({ router }) =>
+        ({ router }): TxHashLD =>
           FP.pipe(
             Rx.forkJoin({
               gasPrices: Rx.from(client.estimateGasPrices()),
