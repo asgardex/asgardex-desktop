@@ -339,18 +339,22 @@ export const erc20WhitelistTokenIO = t.type({
   address: t.string,
   symbol: t.string,
   name: t.string,
-  logoURI: t.union([t.string, t.undefined])
+  decimals: t.number,
+  logoURI: t.union([t.string, t.undefined, t.null])
 })
 
 export type ERC20WhitelistToken = t.TypeOf<typeof erc20WhitelistTokenIO>
 
-export const erc20WhitelistIO = t.type({
+export const erc20WhitelistIO = t.partial({
   tokens: t.array(erc20WhitelistTokenIO),
   version: t.type({
     major: t.number,
     minor: t.number,
     patch: t.number
-  })
+  }),
+  name: t.string,
+  timestamp: t.string,
+  keywords: t.array(t.string)
 })
 
 export type ERC20Whitelist = t.TypeOf<typeof erc20WhitelistIO>

@@ -21,7 +21,7 @@ import { ARB_TOKEN_WHITELIST } from '../../types/generated/mayachain/arberc20whi
 import { AVAX_TOKEN_WHITELIST } from '../../types/generated/thorchain/avaxerc20whitelist'
 import { BASE_TOKEN_WHITELIST } from '../../types/generated/thorchain/baseerc20whitelist'
 import { BSC_TOKEN_WHITELIST } from '../../types/generated/thorchain/bscerc20whitelist'
-import { ERC20_WHITELIST } from '../../types/generated/thorchain/erc20whitelist'
+import { ETH_TOKEN_WHITELIST } from '../../types/generated/thorchain/etherc20whitelist'
 import { AssetData } from '../uielements/assets/assetData'
 import { AssetIcon } from '../uielements/assets/assetIcon'
 import { SwitchButton } from '../uielements/button/SwitchButton'
@@ -42,7 +42,7 @@ const getWhitelistAssets = (
   const upperSearchValue = searchQuery.toUpperCase()
 
   const whitelistMap = {
-    [ETHChain]: ERC20_WHITELIST,
+    [ETHChain]: ETH_TOKEN_WHITELIST,
     [AVAXChain]: AVAX_TOKEN_WHITELIST,
     [BASEChain]: BASE_TOKEN_WHITELIST,
     [BSCChain]: BSC_TOKEN_WHITELIST,

@@ -47,7 +47,7 @@ import { ARB_TOKEN_WHITELIST } from '../types/generated/mayachain/arberc20whitel
 import { AVAX_TOKEN_WHITELIST } from '../types/generated/thorchain/avaxerc20whitelist'
 import { BASE_TOKEN_WHITELIST } from '../types/generated/thorchain/baseerc20whitelist'
 import { BSC_TOKEN_WHITELIST } from '../types/generated/thorchain/bscerc20whitelist'
-import { ERC20_WHITELIST } from '../types/generated/thorchain/erc20whitelist'
+import { ETH_TOKEN_WHITELIST } from '../types/generated/thorchain/etherc20whitelist'
 import { PricePoolAsset } from '../views/pools/Pools.types'
 import { getEVMChecksumAddress } from './addressHelper'
 import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isEthChain, isLtcChain } from './chainHelper'
@@ -215,7 +215,7 @@ export const assetInList =
  */
 export const assetInERC20Whitelist = (asset: AnyAsset): boolean =>
   FP.pipe(
-    ERC20_WHITELIST,
+    ETH_TOKEN_WHITELIST,
     A.map(({ asset }) => asset),
     assetInList(asset)
   )
@@ -225,7 +225,7 @@ export const assetInERC20Whitelist = (asset: AnyAsset): boolean =>
  */
 export const iconUrlInERC20Whitelist = (asset: AnyAsset): O.Option<string> =>
   FP.pipe(
-    ERC20_WHITELIST,
+    ETH_TOKEN_WHITELIST,
     A.findFirst(({ asset: assetInList }) => assetInList.symbol.toUpperCase() === asset.symbol.toUpperCase()),
     O.chain(({ iconUrl }) => iconUrl)
   )
@@ -363,7 +363,7 @@ const addressInList = (address: Address, list: TokenAsset[]): boolean => {
 }
 
 const erc20WhiteListAssetOnly = FP.pipe(
-  ERC20_WHITELIST,
+  ETH_TOKEN_WHITELIST,
   A.map(({ asset }) => asset)
 )
 
