@@ -81,7 +81,8 @@ export default defineConfig(async ({ mode }) => {
           ]
         },
         commonjsOptions: {
-          transformMixedEsModules: false
+          transformMixedEsModules: true,
+          include: [/node_modules/, /@mayaprotocol\/zcash-js/]
         }
       },
       resolve: {
@@ -94,11 +95,13 @@ export default defineConfig(async ({ mode }) => {
           https: path.resolve(__dirname, 'empty.js'),
           http: path.resolve(__dirname, 'empty.js'),
           zlib: path.resolve(__dirname, 'empty.js'),
-          fs: path.resolve(__dirname, 'empty.js')
+          fs: path.resolve(__dirname, 'empty.js'),
+          // Force @mayaprotocol/zcash-js to use CommonJS build instead of browser bundle
+          '@mayaprotocol/zcash-js': path.resolve(__dirname, 'node_modules/@mayaprotocol/zcash-js/dist/src/index.js')
         }
       },
       optimizeDeps: {
-        include: ['process', 'buffer'],
+        include: ['process', 'buffer', '@mayaprotocol/zcash-js'],
         esbuildOptions: {
           inject: ['./src/shims/buffer-shim.js']
         }
