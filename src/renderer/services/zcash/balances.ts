@@ -1,4 +1,4 @@
-import { HDMode, WalletBalanceType, WalletType } from '../../../shared/wallet/types'
+import { HDMode, WalletType } from '../../../shared/wallet/types'
 import { observableState } from '../../helpers/stateHelper'
 import * as C from '../clients'
 import { client$ } from './common'
@@ -32,14 +32,12 @@ const balances$ = ({
   walletType,
   walletAccount,
   walletIndex,
-  hdMode,
-  walletBalanceType
+  hdMode
 }: {
   walletType: WalletType
   walletAccount: number
   walletIndex: number
   hdMode: HDMode
-  walletBalanceType: WalletBalanceType
 }): C.WalletBalancesLD =>
   // For ZEC, we'll always use 'all' balance type since it might not support confirmed/unconfirmed distinction
   C.balances$({
@@ -53,7 +51,10 @@ const balances$ = ({
   })
 
 // State of balances loaded by Client and Address
-const getBalanceByAddress$ = (walletBalanceType: WalletBalanceType) =>
-  C.balancesByAddress$({ client$, trigger$: reloadLedgerBalances$, walletBalanceType: 'all' })
+const getBalanceByAddress$ = C.balancesByAddress$({
+  client$,
+  trigger$: reloadLedgerBalances$,
+  walletBalanceType: 'all'
+})
 
 export { balances$, reloadBalances, getBalanceByAddress$, reloadBalances$, resetReloadBalances }
