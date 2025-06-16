@@ -210,7 +210,7 @@ export const CHAIN_WEIGHTS_THOR: Record<EnabledChain, number> = {
   [RadixChain]: 14,
   [BASEChain]: 15,
   [ZECChain]: 16,
-  [ADAChain]: 16
+  [ADAChain]: 17
 }
 
 // Weight of currencies needed for pricing

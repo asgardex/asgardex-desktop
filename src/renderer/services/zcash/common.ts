@@ -68,10 +68,9 @@ const clientState$: ClientState$ = FP.pipe(
               }
 
               const client = new Client(zecInitParams)
-              console.log('ZEC client created successfully')
+              //console.log(client.getAddressAsync(0))
               return RD.success(client)
             } catch (error) {
-              console.error('Failed to create ZEC client', error)
               return RD.failure<Error>(isError(error) ? error : new Error('Unknown error'))
             }
           }),

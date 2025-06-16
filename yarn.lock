@@ -3409,11 +3409,11 @@ __metadata:
   linkType: hard
 
 "@noble/curves@npm:^1.7.0":
-  version: 1.9.1
-  resolution: "@noble/curves@npm:1.9.1"
+  version: 1.9.2
+  resolution: "@noble/curves@npm:1.9.2"
   dependencies:
     "@noble/hashes": "npm:1.8.0"
-  checksum: 10/5c82ec828ca4a4218b1666ba0ddffde17afd224d0bd5e07b64c2a0c83a3362483387f55c11cfd8db0fc046605394fe4e2c67fe024628a713e864acb541a7d2bb
+  checksum: 10/f60f00ad86296054566b67be08fd659999bb64b692bfbf11dbe3be1f422ad4d826bf5ebb2015ce2e246538eab2b677707e0a46ffa8323a6fae7a9a30ec1fe318
   languageName: node
   linkType: hard
 
@@ -6074,6 +6074,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@xchainjs/xchain-client@npm:2.0.0":
+  version: 2.0.0
+  resolution: "@xchainjs/xchain-client@npm:2.0.0"
+  dependencies:
+    "@xchainjs/xchain-crypto": "npm:1.0.0"
+    "@xchainjs/xchain-util": "npm:2.0.0"
+    axios: "npm:1.8.4"
+  checksum: 10/b6d79e77d282f4226f50c6de54a68cd2e27bcad93310c147fd4eb1c03e1f349fa7f0cbd359f989156c45ee56edbee7c2f3a0f51ed8feffb073ccd1bc26ab523e
+  languageName: node
+  linkType: hard
+
 "@xchainjs/xchain-client@npm:2.0.1":
   version: 2.0.1
   resolution: "@xchainjs/xchain-client@npm:2.0.1"
@@ -6500,6 +6511,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@xchainjs/xchain-utxo-providers@npm:2.0.0":
+  version: 2.0.0
+  resolution: "@xchainjs/xchain-utxo-providers@npm:2.0.0"
+  dependencies:
+    "@supercharge/promise-pool": "npm:2.4.0"
+    "@xchainjs/xchain-client": "npm:2.0.0"
+    "@xchainjs/xchain-util": "npm:2.0.0"
+    axios: "npm:1.8.4"
+  checksum: 10/f90289d554ba7d11bbd13513aa9e51f5bedbc8863b039da6ff74ae92063f5be3f47938ba066b8efbdb579c74bfa26f47522c50ee002522ebd518c48ddf2b0388
+  languageName: node
+  linkType: hard
+
 "@xchainjs/xchain-utxo-providers@npm:2.0.1":
   version: 2.0.1
   resolution: "@xchainjs/xchain-utxo-providers@npm:2.0.1"
@@ -6509,6 +6532,17 @@ __metadata:
     "@xchainjs/xchain-util": "npm:2.0.0"
     axios: "npm:1.8.4"
   checksum: 10/46b894b6878631424399149de9e3b129c192df5b3b676fa0dd871775e8aa7b6353e160d0e370a16223f0cd2e8deb6a092211d5a6529bfa26a45f5ddee44d64b8
+  languageName: node
+  linkType: hard
+
+"@xchainjs/xchain-utxo@npm:2.0.0":
+  version: 2.0.0
+  resolution: "@xchainjs/xchain-utxo@npm:2.0.0"
+  dependencies:
+    "@xchainjs/xchain-client": "npm:2.0.0"
+    "@xchainjs/xchain-util": "npm:2.0.0"
+    "@xchainjs/xchain-utxo-providers": "npm:2.0.0"
+  checksum: 10/d68ab924573f9ca89621c47bfc123beae8418d80e96abd58be1c27990fabe52b7df40adc72302ee22fb824fbab99fc0c7d638f5010ec2741cab6ea5c4c0e4bd2
   languageName: node
   linkType: hard
 
@@ -7322,13 +7356,13 @@ __metadata:
   linkType: hard
 
 "axios@npm:^1.7.9":
-  version: 1.9.0
-  resolution: "axios@npm:1.9.0"
+  version: 1.10.0
+  resolution: "axios@npm:1.10.0"
   dependencies:
     follow-redirects: "npm:^1.15.6"
     form-data: "npm:^4.0.0"
     proxy-from-env: "npm:^1.1.0"
-  checksum: 10/a2f90bba56820883879f32a237e2b9ff25c250365dcafd41cec41b3406a3df334a148f90010182dfdadb4b41dc59f6f0b3e8898ff41b666d1157b5f3f4523497
+  checksum: 10/d43c80316a45611fd395743e15d16ea69a95f2b7f7095f2bb12cb78f9ca0a905194a02e52a3bf4e0db9f85fd1186d6c690410644c10ecd8bb0a468e57c2040e4
   languageName: node
   linkType: hard
 

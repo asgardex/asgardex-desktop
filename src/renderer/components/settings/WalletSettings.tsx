@@ -12,6 +12,7 @@ import {
   ArrowUpRightIcon,
   PlusCircleIcon
 } from '@heroicons/react/24/outline'
+import { ZECChain } from '@mayaprotocol/xchain-zcash'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
@@ -227,7 +228,8 @@ export const WalletSettings = (props: Props): JSX.Element => {
     [ARBChain]: 0,
     [RadixChain]: 0,
     [SOLChain]: 0,
-    [ADAChain]: 0
+    [ADAChain]: 0,
+    [ZECChain]: 0
   })
   const [walletAccountMap, setWalletAccountMap] = useState<Record<EnabledChain, number>>({
     [BTCChain]: 0,
@@ -246,7 +248,8 @@ export const WalletSettings = (props: Props): JSX.Element => {
     [ARBChain]: 0,
     [RadixChain]: 0,
     [SOLChain]: 0,
-    [ADAChain]: 0
+    [ADAChain]: 0,
+    [ZECChain]: 0
   })
 
   const {
@@ -654,8 +657,9 @@ export const WalletSettings = (props: Props): JSX.Element => {
     () =>
       FP.pipe(
         oWalletAccounts,
-        O.map((walletAccounts) =>
-          FP.pipe(
+        O.map((walletAccounts) => {
+          console.log(walletAccounts)
+          return FP.pipe(
             walletAccounts,
             A.filter(({ chain }) =>
               accountFilter
@@ -664,7 +668,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                 : true
             )
           )
-        )
+        })
       ),
     [accountFilter, oWalletAccounts]
   )

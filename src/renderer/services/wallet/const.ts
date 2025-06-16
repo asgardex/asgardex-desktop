@@ -1,3 +1,4 @@
+import { ZECChain } from '@mayaprotocol/xchain-zcash'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
@@ -50,7 +51,8 @@ export const DEFAULT_BALANCES_FILTER: BalancesStateFilter = {
   [RadixChain]: 'all',
   [SOLChain]: 'all',
   [BASEChain]: 'all',
-  [ADAChain]: 'all'
+  [ADAChain]: 'all',
+  [ZECChain]: 'all'
 }
 
 export const INITIAL_LOAD_TXS_PROPS: LoadTxsParams = {

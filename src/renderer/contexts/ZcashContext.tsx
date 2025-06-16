@@ -2,6 +2,7 @@ import React, { createContext, useContext } from 'react'
 
 import {
   address$,
+  addressUI$,
   client$,
   clientState$,
   balances$,
@@ -22,6 +23,7 @@ export type ZcashContextValue = {
   client$: typeof client$
   clientState$: typeof clientState$
   address$: typeof address$
+  addressUI$: typeof addressUI$
   balances$: typeof balances$
   reloadBalances: typeof reloadBalances
   txs$: typeof txs$
@@ -40,6 +42,7 @@ const initialContext: ZcashContextValue = {
   client$,
   clientState$,
   address$,
+  addressUI$,
   balances$,
   reloadBalances,
   txs$,
@@ -56,7 +59,7 @@ const initialContext: ZcashContextValue = {
 
 const ZcashContext = createContext<ZcashContextValue | null>(null)
 
-export const ZcashProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => {
+export const ZcashProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   return <ZcashContext.Provider value={initialContext}>{children}</ZcashContext.Provider>
 }
 

@@ -56,7 +56,8 @@ export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {
   [RADIXChain]: CHAIN_STRINGS[RADIXChain],
   [SOLChain]: CHAIN_STRINGS[SOLChain],
   [BASEChain]: CHAIN_STRINGS[BASEChain],
-  [ADAChain]: CHAIN_STRINGS[ADAChain]
+  [ADAChain]: CHAIN_STRINGS[ADAChain],
+  [ZECChain]: CHAIN_STRINGS[ZECChain]
 }
 
 export type EnabledChain = keyof typeof DEFAULT_ENABLED_CHAINS
