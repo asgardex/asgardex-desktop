@@ -20,7 +20,7 @@ export type Props = {
   linkIcon?: React.ReactElement
 }
 
-export const AddressEllipsis = (props: Props): JSX.Element => {
+export const AddressEllipsis = (props: Props) => {
   const { address, chain, network, className, enableCopy = false, linkIcon } = props
   const prepEllipse = useCallback(
     (node: HTMLElement, txtToEllipse: HTMLElement, copyIcon: HTMLElement) => {
@@ -71,13 +71,13 @@ export const AddressEllipsis = (props: Props): JSX.Element => {
   }, [])
 
   return (
-    <Styled.Container className={className}>
-      <Styled.AddressContainer ref={measuredParent}>
-        <Styled.Address>{address}</Styled.Address>
+    <div className={className}>
+      <div className="flex items-center break-keep break-normal" ref={measuredParent}>
+        <span className="text-text2 dark:text-text2d font-main">{address}</span>
         {linkIcon}
         <Styled.CopyLabel copyable={{ text: address }} />
-      </Styled.AddressContainer>
-    </Styled.Container>
+      </div>
+    </div>
   )
 }
 

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
 import {
@@ -25,7 +25,7 @@ type Props = {
   hidePrivateData: boolean
 }
 
-export const TotalAssetValue: React.FC<Props> = (props): JSX.Element => {
+export const TotalAssetValue = (props: Props): JSX.Element => {
   const { balancesByChain, title, info, hidePrivateData, errorsByChain } = props
   const [showDetails, setShowDetails] = useState<boolean>(false)
   const chartData = useMemo(

@@ -21,7 +21,7 @@ export type Props = {
 /**
  * `ReloadButton` - a `FlatButton` w/ an ReloadIcon
  */
-export const ReloadButton: React.FC<Props> = (props): JSX.Element => {
+export const ReloadButton = (props: Props): JSX.Element => {
   const { label, size = 'normal', color = 'primary', onClick = FP.constVoid, disabled, className = '' } = props
   const intl = useIntl()
 

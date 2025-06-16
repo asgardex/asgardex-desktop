@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
@@ -71,7 +71,7 @@ type Props = {
 
 type AssetAddressMap = Record<string, O.Option<string>>
 
-export const TradeAssetsTableCollapsable: React.FC<Props> = ({
+export const TradeAssetsTableCollapsable = ({
   chainBalances: chainBalances$,
   disableRefresh,
   tradeAccountBalances,
@@ -81,7 +81,7 @@ export const TradeAssetsTableCollapsable: React.FC<Props> = ({
   selectAssetHandler,
   network,
   hidePrivateData
-}) => {
+}: Props) => {
   const intl = useIntl()
   const navigate = useNavigate()
 

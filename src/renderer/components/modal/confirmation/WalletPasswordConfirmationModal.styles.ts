@@ -3,11 +3,6 @@ import styled from 'styled-components'
 import WalletIconSVG from '../../../assets/svg/icon-wallet.svg?react'
 import { media } from '../../../helpers/styleHelper'
 
-export const Content = styled.div`
-  display: flex;
-  flex-direction: column;
-`
-
 export const WalletIcon = styled(WalletIconSVG)`
   width: 20%;
   height: 20%;

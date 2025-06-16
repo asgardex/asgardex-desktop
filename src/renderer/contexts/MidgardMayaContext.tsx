@@ -14,7 +14,7 @@ const initialContext: MidgardContextValue = {
 }
 const MidgardMayaContext = createContext<MidgardContextValue | null>(null)
 
-export const MayaMidgardProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => {
+export const MayaMidgardProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   return <MidgardMayaContext.Provider value={initialContext}>{children}</MidgardMayaContext.Provider>
 }
 

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { ZECChain } from '@mayaprotocol/xchain-zcash'
@@ -8,6 +8,7 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
@@ -36,9 +37,7 @@ import { reloadBalancesByChain } from '../../../services/wallet'
 import { SelectedWalletAsset } from '../../../services/wallet/types'
 import { SendViewCOSMOS, SendViewEVM, SendViewUTXO } from './index'
 
-type Props = {}
-
-export const SendView: React.FC<Props> = (): JSX.Element => {
+export const SendView = (): JSX.Element => {
   const intl = useIntl()
 
   const { selectedAsset$ } = useWalletContext()
@@ -125,6 +124,7 @@ export const SendView: React.FC<Props> = (): JSX.Element => {
         case BCHChain:
         case BTCChain:
         case DOGEChain:
+        case ADAChain:
         case DASHChain:
         case LTCChain:
         case ZECChain:

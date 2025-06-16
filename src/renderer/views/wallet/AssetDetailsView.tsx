@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { XChainClient } from '@xchainjs/xchain-client'
@@ -26,7 +26,7 @@ import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/
 import { SelectedWalletAsset } from '../../services/wallet/types'
 import { useApp } from '../../store/app/hooks'
 
-export const AssetDetailsView: React.FC = (): JSX.Element => {
+export const AssetDetailsView = (): JSX.Element => {
   const { mimirHalt } = useThorchainMimirHalt()
   const {
     service: {

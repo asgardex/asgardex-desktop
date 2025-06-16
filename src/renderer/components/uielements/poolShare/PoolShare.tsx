@@ -1,4 +1,4 @@
-import React, { RefObject, useCallback, useMemo, useRef } from 'react'
+import { RefObject, useCallback, useMemo, useRef } from 'react'
 
 import { AssetCacao, CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
@@ -42,21 +42,19 @@ export type Props = {
   protocol: Chain
 }
 
-export const PoolShare: React.FC<Props> = (props): JSX.Element => {
-  const {
-    asset: assetWD,
-    addresses: { rune: oRuneAddress, asset: oAssetAddress },
-    runePrice,
-    loading,
-    priceAsset,
-    shares: { rune: runeShare, asset: assetShare },
-    assetPrice,
-    poolShare,
-    depositUnits,
-    smallWidth,
-    protocol
-  } = props
-
+export const PoolShare = ({
+  asset: assetWD,
+  addresses: { rune: oRuneAddress, asset: oAssetAddress },
+  runePrice,
+  loading,
+  priceAsset,
+  shares: { rune: runeShare, asset: assetShare },
+  assetPrice,
+  poolShare,
+  depositUnits,
+  smallWidth,
+  protocol
+}: Props): JSX.Element => {
   const intl = useIntl()
 
   const dexAsset = protocol === THORChain ? AssetRuneNative : AssetCacao

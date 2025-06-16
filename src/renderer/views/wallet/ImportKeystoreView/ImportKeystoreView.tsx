@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { useObservableState } from 'observable-hooks'
@@ -14,7 +14,7 @@ import { useKeystoreWallets } from '../../../hooks/useKeystoreWallets'
 import * as walletRoutes from '../../../routes/wallet'
 import { generateKeystoreId } from '../../../services/wallet/util'
 
-export const ImportKeystoreView: React.FC = (): JSX.Element => {
+export const ImportKeystoreView = (): JSX.Element => {
   const intl = useIntl()
   const navigate = useNavigate()
 

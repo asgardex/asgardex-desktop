@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -27,7 +27,7 @@ import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/
 import { ChainBalance, SelectedWalletAsset } from '../../services/wallet/types'
 import { useApp } from '../../store/app/hooks'
 
-export const TradeAssetsView: React.FC = (): JSX.Element => {
+export const TradeAssetsView = (): JSX.Element => {
   const intl = useIntl()
 
   const { balancesState$, setSelectedAsset } = useWalletContext()

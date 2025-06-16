@@ -55,7 +55,8 @@ const EXTERNALS_WHITELIST = [
   'arbiscan.io',
   'mainnet.radixdlt.com',
   'dashboard.radixdlt.com',
-  'explorer.solana.com'
+  'explorer.solana.com',
+  'adastat.net'
 ]
 
 export const openExternal = (target: string) => {

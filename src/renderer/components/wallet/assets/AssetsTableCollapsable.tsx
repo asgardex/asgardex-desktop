@@ -607,6 +607,7 @@ export const AssetsTableCollapsable = (props: Props): JSX.Element => {
                 disabled={disableRefresh}
                 onClick={(e) => {
                   e.stopPropagation()
+                  console.log('refresh', chain, walletType)
                   handleRefreshClick(chain, walletType)
                 }}>
                 <ArrowPathIcon className="ease h-5 w-5 text-text0 group-hover:rotate-180 dark:text-text0d" />

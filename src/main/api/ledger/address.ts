@@ -87,7 +87,7 @@ const chainAddressFunctions: Record<
   [GAIAChain]: getCOSMOSAddress
 }
 
-const unsupportedChains: Chain[] = [MAYAChain, KUJIChain, RadixChain, SOLChain, ZECChain]
+const unsupportedChains: Chain[] = [MAYAChain, KUJIChain, RadixChain, SOLChain, ZECChain, 'ADA']
 
 export const getAddress = async ({
   chain,

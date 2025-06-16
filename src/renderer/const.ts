@@ -5,6 +5,7 @@ import { BASEChain } from '@xchainjs/xchain-base'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { BSCChain } from '@xchainjs/xchain-bsc'
+import { ADAChain } from '@xchainjs/xchain-cardano'
 import { Network } from '@xchainjs/xchain-client'
 import { GAIAChain } from '@xchainjs/xchain-cosmos'
 import { DASHChain } from '@xchainjs/xchain-dash'
@@ -208,7 +209,8 @@ export const CHAIN_WEIGHTS_THOR: Record<EnabledChain, number> = {
   [KUJIChain]: 13,
   [RadixChain]: 14,
   [BASEChain]: 15,
-  [ZECChain]: 16
+  [ZECChain]: 16,
+  [ADAChain]: 16
 }
 
 // Weight of currencies needed for pricing

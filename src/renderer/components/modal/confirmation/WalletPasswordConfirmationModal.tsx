@@ -22,7 +22,7 @@ type PasswordModalProps = {
   isSuccess?: boolean
 }
 
-const PasswordModal: React.FC<PasswordModalProps> = (props): JSX.Element => {
+const PasswordModal = (props: PasswordModalProps) => {
   const {
     visible,
     invalidPassword,
@@ -71,7 +71,7 @@ const PasswordModal: React.FC<PasswordModalProps> = (props): JSX.Element => {
       closable={false}
       okText={intl.formatMessage({ id: 'common.confirm' })}
       cancelText={intl.formatMessage({ id: 'common.cancel' })}>
-      <CStyled.Content>
+      <div className="flex flex-col">
         <CStyled.WalletIcon />
         <CStyled.Description>
           {intl.formatMessage({ id: 'wallet.password.confirmation.description' })}
@@ -99,7 +99,7 @@ const PasswordModal: React.FC<PasswordModalProps> = (props): JSX.Element => {
             )}
           </Form.Item>
         </Form>
-      </CStyled.Content>
+      </div>
     </Styled.Modal>
   )
 }
@@ -113,7 +113,7 @@ type Props = {
   validatePassword$: (_: string) => ValidatePasswordLD
 }
 
-export const WalletPasswordConfirmationModal: React.FC<Props> = ({ onSuccess, onClose, validatePassword$ }) => {
+export const WalletPasswordConfirmationModal = ({ onSuccess, onClose, validatePassword$ }: Props) => {
   const [passwordToValidate, setPasswordToValidate] = useState('')
 
   const passwordValidationResult$ = useMemo(

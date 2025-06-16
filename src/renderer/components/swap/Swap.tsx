@@ -118,10 +118,7 @@ import SwapExpiryProgressBar from './SwapExpiryProgressBar'
 import { SwapRoute } from './SwapRoute'
 import { SwapTxModal } from './SwapTxModal'
 
-const ErrorLabel: React.FC<{
-  children: React.ReactNode
-  className?: string
-}> = ({ children, className }): JSX.Element => (
+const ErrorLabel = ({ children, className }: { children: React.ReactNode; className?: string }): JSX.Element => (
   <div
     className={clsx('mb-[14px] text-center font-main text-[12px] uppercase text-error0 dark:text-error0d', className)}>
     {children}
@@ -848,7 +845,7 @@ export const Swap = ({
             destinationAddress: quoteOnly ? undefined : destinationWalletAddress,
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
-            toleranceBps: isStreaming || network === Network.Stagenet ? 10000 : slipTolerance * 100
+            toleranceBps: isStreaming || network === Network.Stagenet ? 1000 : slipTolerance * 100
           },
           applyBps
         )
@@ -2466,7 +2463,7 @@ export const Swap = ({
             useLedgerHandler={onClickUseTargetAssetLedger}
             hasLedger={hasTargetAssetLedger}
           />
-          <div className="absolute -top-[32px] left-[calc(50%-30px)] flex w-full flex-col justify-center">
+          <div className="absolute -top-[32px] left-[calc(50%-30px)] flex flex-col justify-center">
             <div className="w-60px h-60px">
               <BaseButton
                 size="small"

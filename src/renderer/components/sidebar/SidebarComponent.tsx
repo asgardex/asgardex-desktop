@@ -1,13 +1,5 @@
 import React, { useMemo, useCallback, useRef } from 'react'
 
-import Icon, {
-  BranchesOutlined,
-  BugOutlined,
-  FileTextOutlined,
-  GithubOutlined,
-  GlobalOutlined,
-  TwitterOutlined
-} from '@ant-design/icons'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { Network } from '@xchainjs/xchain-client'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
@@ -18,13 +10,20 @@ import { useIntl } from 'react-intl'
 import { useMatch, useNavigate } from 'react-router-dom'
 
 import { ExternalUrl } from '../../../shared/const'
-import DiscordIcon from '../../assets/svg/discord.svg?react'
 import BondsIcon from '../../assets/svg/icon-bonds.svg?react'
+import BranchIcon from '../../assets/svg/icon-branch.svg?react'
+import BugIcon from '../../assets/svg/icon-bug.svg?react'
 import SettingsIcon from '../../assets/svg/icon-cog.svg?react'
+import DiscordIcon from '../../assets/svg/icon-discord.svg?react'
+import FileIcon from '../../assets/svg/icon-file.svg?react'
+import GithubIcon from '../../assets/svg/icon-github.svg?react'
+import GlobeIcon from '../../assets/svg/icon-globe.svg?react'
 import PoolIcon from '../../assets/svg/icon-pools.svg?react'
 import PortfolioIcon from '../../assets/svg/icon-portfolio.svg?react'
 import SwapIcon from '../../assets/svg/icon-swap.svg?react'
+import TwitterIcon from '../../assets/svg/icon-twitter.svg?react'
 import WalletIcon from '../../assets/svg/icon-wallet.svg?react'
+import AsgardexLogo from '../../assets/svg/logo-asgardex.svg?react'
 import ThorChainIcon from '../../assets/svg/logo-thorchain.svg?react'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import * as appRoutes from '../../routes/app'
@@ -35,6 +34,7 @@ import * as portfolioRoutes from '../../routes/portfolio'
 import * as walletRoutes from '../../routes/wallet'
 import { mayaIconT } from '../icons'
 import { Tooltip } from '../uielements/common/Common.styles'
+import { Label } from '../uielements/label'
 import * as Styled from './SidebarComponent.styles'
 
 type IconProps = {
@@ -199,7 +199,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
   const renderLogo = useMemo(
     () => (
       <Styled.LogoWrapper>
-        <Styled.AsgardexLogo />
+        <AsgardexLogo className="mt-2" />
         <Styled.NetworkLabel network={network}>{network}</Styled.NetworkLabel>
       </Styled.LogoWrapper>
     ),
@@ -226,13 +226,11 @@ export const SidebarComponent = (props: Props): JSX.Element => {
             </div>
           </FooterIcon>
           <FooterIcon className="!ml-0" url={ExternalUrl.DOCSMAYA} onClick={clickIconHandler}>
-            <div className="flex h-12 flex-row items-center">
-              <div className="mr-2">
-                <Styled.Icon src={mayaIconT} />
-              </div>
-              <div>
-                <Styled.TextLabel>MAYACHAIN</Styled.TextLabel>
-              </div>
+            <div className="flex h-12 flex-row items-center space-x-2">
+              <img className="rounded-full w-8 h-8" src={mayaIconT} />
+              <Label size="big" textTransform="uppercase">
+                MAYACHAIN
+              </Label>
             </div>
           </FooterIcon>
           {publicIP && (
@@ -240,37 +238,37 @@ export const SidebarComponent = (props: Props): JSX.Element => {
               Public IP: {publicIP}
             </div>
           )}
-          <div>
+          <div className="mt-6 flex items-center justify-center">
             <FooterIcon url={ExternalUrl.ASGARDEX} onClick={clickIconHandler}>
               <Tooltip title="Asgardex Website">
-                <GlobalOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />
+                <GlobeIcon className="w-5 h-5" />
               </Tooltip>
             </FooterIcon>
             <FooterIcon url={ExternalUrl.GITHUB_REPO} onClick={clickIconHandler}>
               <Tooltip title="Asgardex GitHub">
-                <GithubOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />
+                <GithubIcon className="w-5 h-5" />
               </Tooltip>
             </FooterIcon>
             <FooterIcon url={ExternalUrl.DISCORD} onClick={clickIconHandler}>
               <Tooltip title="Asgardex Discord">
-                <Icon component={DiscordIcon} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />
+                <DiscordIcon className="w-5 h-5" />
               </Tooltip>
             </FooterIcon>
             <FooterIcon url={ExternalUrl.TWITTER} onClick={clickIconHandler}>
               <Tooltip title="Asgardex X">
-                <TwitterOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />
+                <TwitterIcon className="w-5 h-5" />
               </Tooltip>
             </FooterIcon>
             <FooterIcon url={ExternalUrl.LICENSE} onClick={clickIconHandler}>
               <Tooltip title="MIT License">
-                <FileTextOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />
+                <FileIcon className="w-5 h-5" />
               </Tooltip>
             </FooterIcon>
             {/* hidden in production build */}
             {isDev && commitHash && (
               <FooterIcon url={`${ExternalUrl.GITHUB_REPO}/commit/${commitHash}`} onClick={clickIconHandler}>
                 <Tooltip title="Commit Hash">
-                  <BranchesOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />
+                  <BranchIcon className="w-5 h-5" />
                 </Tooltip>
               </FooterIcon>
             )}
@@ -278,7 +276,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
             {isDev && (
               <Styled.IconWrapper onClick={gotoPlayground}>
                 <Tooltip title="Playground">
-                  <BugOutlined onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />
+                  <BugIcon className="w-5 h-5" />
                 </Tooltip>
               </Styled.IconWrapper>
             )}

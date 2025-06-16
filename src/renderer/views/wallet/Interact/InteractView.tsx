@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
@@ -13,9 +13,7 @@ import { SelectedWalletAsset } from '../../../services/wallet/types'
 import { InteractViewMAYA } from './InteractViewMAYA'
 import { InteractViewTHOR } from './InteractViewTHOR'
 
-type Props = {}
-
-export const InteractView: React.FC<Props> = (): JSX.Element => {
+export const InteractView = () => {
   const intl = useIntl()
 
   const { selectedAsset$ } = useWalletContext()

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import * as RD from '@devexperts/remote-data-ts'
 import { option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
@@ -21,7 +19,7 @@ import { useVolume24Price } from '../../hooks/useVolume24Price'
 import { SelectedPricePoolAsset } from '../../services/midgard/midgardTypes'
 import { HeaderComponent } from './HeaderComponent'
 
-export const Header: React.FC = (): JSX.Element => {
+export const Header = (): JSX.Element => {
   const { lock, state: keystoreState, change$: changeWalletHandler$ } = useKeystoreState()
   const { walletsUI } = useKeystoreWallets()
   const { mimir$ } = useThorchainContext()

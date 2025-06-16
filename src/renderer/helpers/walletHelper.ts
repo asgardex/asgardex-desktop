@@ -12,7 +12,16 @@ import { WalletBalances } from '../services/clients'
 import { TradeAccount } from '../services/thorchain/types'
 import { NonEmptyWalletBalances, WalletBalance } from '../services/wallet/types'
 import { isLtcAsset, isRuneNativeAsset, isMayaAsset } from './assetHelper'
-import { isArbChain, isBchChain, isDashChain, isDogeChain, isLtcChain, isMayaChain, isXrdChain } from './chainHelper'
+import {
+  isAdaChain,
+  isArbChain,
+  isBchChain,
+  isDashChain,
+  isDogeChain,
+  isLtcChain,
+  isMayaChain,
+  isXrdChain
+} from './chainHelper'
 import { eqAddress, eqAsset, eqChain, eqWalletType } from './fp/eq'
 
 /**
@@ -202,6 +211,7 @@ export const isEnabledLedger = (chain: Chain, network: Network) => {
   // Disable for these chains
   if (isMayaChain(chain)) return false
   if (isXrdChain(chain)) return false
+  if (isAdaChain(chain)) return false
   return true
 }
 

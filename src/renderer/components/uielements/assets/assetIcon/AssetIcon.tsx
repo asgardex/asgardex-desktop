@@ -39,7 +39,8 @@ import {
   isAethAsset,
   isSolAsset,
   isBaseAsset,
-  iconUrlInBASEERC20Whitelist
+  iconUrlInBASEERC20Whitelist,
+  isAdaAsset
 } from '../../../../helpers/assetHelper'
 import {
   isArbChain,
@@ -67,6 +68,7 @@ import {
   usdpIcon,
   dashIcon,
   kujiIcon,
+  adaIcon,
   uskIcon,
   xrdIcon,
   solIcon,
@@ -103,7 +105,7 @@ const chainIconMap = (asset: AnyAsset): string | null => {
   }
 }
 
-export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = '', network }): JSX.Element => {
+export const AssetIcon = ({ asset, size = 'small', className = '', network }: Props): JSX.Element => {
   const imgUrl = useMemo(() => {
     // BTC
     if (isBtcAsset(asset)) {
@@ -167,6 +169,10 @@ export const AssetIcon: React.FC<Props> = ({ asset, size = 'small', className = 
     // KUJI
     if (isKujiAsset(asset)) {
       return kujiIcon
+    }
+    // ADA
+    if (isAdaAsset(asset)) {
+      return adaIcon
     }
     // XRD
     if (isXrdAsset(asset)) {

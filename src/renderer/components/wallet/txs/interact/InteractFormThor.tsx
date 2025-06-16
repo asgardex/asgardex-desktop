@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon } from '@heroicons/react/24/outline'
@@ -115,28 +115,27 @@ type Props = {
   runePoolProvider: RunePoolProviderRD
   thorchainLastblock: ThorchainLastblockRD
 }
-export const InteractFormThor: React.FC<Props> = (props) => {
-  const {
-    interactType,
-    poolDetails,
-    balance,
-    walletType,
-    hdMode,
-    walletIndex,
-    walletAccount,
-    interact$,
-    openExplorerTxUrl,
-    getExplorerTxUrl,
-    addressValidation,
-    fee: feeRD,
-    reloadFeesHandler,
-    validatePassword$,
-    thorchainQuery,
-    network,
-    nodes: nodesRD,
-    runePoolProvider: runePoolProviderRd,
-    thorchainLastblock: thorchainLastblockRd
-  } = props
+export const InteractFormThor = ({
+  interactType,
+  poolDetails,
+  balance,
+  walletType,
+  hdMode,
+  walletIndex,
+  walletAccount,
+  interact$,
+  openExplorerTxUrl,
+  getExplorerTxUrl,
+  addressValidation,
+  fee: feeRD,
+  reloadFeesHandler,
+  validatePassword$,
+  thorchainQuery,
+  network,
+  nodes: nodesRD,
+  runePoolProvider: runePoolProviderRd,
+  thorchainLastblock: thorchainLastblockRd
+}: Props) => {
   const intl = useIntl()
 
   const { asset } = balance

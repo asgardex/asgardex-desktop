@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Network } from '@xchainjs/xchain-client'
 import {
   BaseAmount,
@@ -40,7 +38,7 @@ type Props = {
   network: Network
 }
 
-export const AssetData: React.FC<Props> = (props): JSX.Element => {
+export const AssetData = (props: Props): JSX.Element => {
   const {
     asset,
     walletType,

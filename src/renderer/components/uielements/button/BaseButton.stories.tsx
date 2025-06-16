@@ -39,7 +39,7 @@ const meta: Meta<typeof Component> = {
     uppercase: true
   },
   decorators: [
-    (Story: React.FC) => (
+    (Story) => (
       <div className="flex justify-center bg-white p-50px">
         <Story />
       </div>

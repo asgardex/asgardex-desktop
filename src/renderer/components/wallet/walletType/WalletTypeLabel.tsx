@@ -7,6 +7,6 @@ export type Props = {
   children?: React.ReactNode
 }
 
-export const WalletTypeLabel: React.FC<Props> = ({ className = '', children }): JSX.Element => (
+export const WalletTypeLabel = ({ className = '', children }: Props) => (
   <Styled.WalletTypeLabel className={className}>{children}</Styled.WalletTypeLabel>
 )

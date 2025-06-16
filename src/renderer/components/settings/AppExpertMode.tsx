@@ -49,7 +49,7 @@ const expertModeDefault: Record<string, boolean> = {
   mayachain: true
 }
 
-const SubSection: React.FC<SubSectionProps> = ({ title, className, children }) => (
+const SubSection = ({ title, className, children }: SubSectionProps) => (
   <div
     className={clsx(
       'flex w-full items-center justify-between px-4',

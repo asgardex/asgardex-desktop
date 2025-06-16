@@ -69,7 +69,7 @@ const initialContext: WalletContextValue = {
 }
 const WalletContext = createContext<Option<WalletContextValue>>(none)
 
-export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => (
+export const WalletProvider = ({ children }: { children: React.ReactNode }): JSX.Element => (
   <WalletContext.Provider value={some(initialContext)}>{children}</WalletContext.Provider>
 )
 

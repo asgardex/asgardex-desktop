@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
 import { ItemType } from 'antd/lib/menu/hooks/useItems'
 import { array as A, function as FP } from 'fp-ts'
@@ -25,7 +25,7 @@ type MenuType = {
   path: string
 }
 
-export const AssetsNav: React.FC = (): JSX.Element => {
+export const AssetsNav = (): JSX.Element => {
   const intl = useIntl()
 
   const { pathname } = useLocation()

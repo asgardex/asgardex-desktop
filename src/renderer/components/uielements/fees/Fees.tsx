@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { function as FP, array as A, option as O } from 'fp-ts'
@@ -15,7 +15,7 @@ export type Props = {
   className?: string
 }
 
-export const Fees: React.FC<Props> = ({ fees, reloadFees, disabled = false, className }) => {
+export const Fees = ({ fees, reloadFees, disabled = false, className }: Props) => {
   const intl = useIntl()
 
   const prevFeesRef = useRef<O.Option<string>>(O.none)

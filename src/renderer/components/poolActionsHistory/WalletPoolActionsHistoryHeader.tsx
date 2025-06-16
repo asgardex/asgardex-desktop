@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Network } from '@xchainjs/xchain-client'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
@@ -24,7 +22,7 @@ type Props = {
   protocol: Chain
 }
 
-export const WalletPoolActionsHistoryHeader: React.FC<Props> = (props) => {
+export const WalletPoolActionsHistoryHeader = (props: Props) => {
   const {
     network,
     addresses,

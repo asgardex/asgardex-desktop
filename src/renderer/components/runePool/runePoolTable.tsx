@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { baseToAsset, formatAssetAmountCurrency, baseAmount, formatBN } from '@xchainjs/xchain-util'
 import { useIntl } from 'react-intl'
 
@@ -12,7 +10,7 @@ import { AssetIcon } from '../uielements/assets/assetIcon'
 import { ManageButton } from '../uielements/button/ManageButton'
 import { InteractType } from '../wallet/txs/interact/Interact.types'
 
-export const RunePoolTable: React.FC<ParentProps> = ({ assetDetails }): JSX.Element => {
+export const RunePoolTable = ({ assetDetails }: ParentProps): JSX.Element => {
   const intl = useIntl()
   const columns = [
     {

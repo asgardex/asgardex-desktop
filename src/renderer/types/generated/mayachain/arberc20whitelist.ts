@@ -1,13 +1,10 @@
 /**
  * ARB_TOKEN_WHITELIST
- *
  * This file has been generated - don't edit.
- *
  */
-
-import * as O from "fp-ts/lib/Option";
-import { TokenAsset } from "@xchainjs/xchain-util";
-import { ARBChain } from "@xchainjs/xchain-arbitrum";
+import { option as O } from 'fp-ts';
+import { TokenAsset } from '@xchainjs/xchain-util';
+import { ARBChain } from '@xchainjs/xchain-arbitrum';
 
 export const ARB_TOKEN_WHITELIST: {
   asset: TokenAsset;
@@ -16,589 +13,404 @@ export const ARB_TOKEN_WHITELIST: {
   {
     asset: {
       chain: ARBChain,
-      symbol: "FORE-0xcbe94d75ec713b7ead84f55620dc3174beeb1cfe",
-      ticker: "FORE",
+      symbol: 'FORE-0xcbe94d75ec713b7ead84f55620dc3174beeb1cfe',
+      ticker: 'FORE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31001/thumb/EXCHANGE_LOGO_FORE.png?1696529839"
+      'https://assets.coingecko.com/coins/images/31001/thumb/EXCHANGE_LOGO_FORE.png?1696529839'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GOOD-0x17176a9868f321411b15ccb9b934cf95597e89c4",
-      ticker: "GOOD",
+      symbol: 'GOOD-0x17176a9868f321411b15ccb9b934cf95597e89c4',
+      ticker: 'GOOD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33407/thumb/photo_2023-12-04_22-16-42.jpg?1701699782"
+      'https://assets.coingecko.com/coins/images/33407/thumb/photo_2023-12-04_22-16-42.jpg?1701699782'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GG-0x000000000026839b3f4181f2cf69336af6153b99",
-      ticker: "GG",
+      symbol: 'GG-0x000000000026839b3f4181f2cf69336af6153b99',
+      ticker: 'GG',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31228/thumb/gg_cyan_black_square.png?1703749951"
+      'https://assets.coingecko.com/coins/images/31228/thumb/gg_cyan_black_square.png?1703749951'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ODIN-0xee9857de0e55d4a54d36a5a5a73a15e57435fdca",
-      ticker: "ODIN",
+      symbol: 'ODIN-0xee9857de0e55d4a54d36a5a5a73a15e57435fdca',
+      ticker: 'ODIN',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29157/thumb/IMG_20230222_053621_351.jpg?1696528116"
+      'https://assets.coingecko.com/coins/images/29157/thumb/IMG_20230222_053621_351.jpg?1696528116'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ASTRADAO-0xd3188e0df68559c0b63361f6160c57ad88b239d8",
-      ticker: "ASTRADAO",
+      symbol: 'ASTRADAO-0xd3188e0df68559c0b63361f6160c57ad88b239d8',
+      ticker: 'ASTRADAO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32870/thumb/ASTRADAO.jpg?1699673097"
+      'https://assets.coingecko.com/coins/images/32870/thumb/ASTRADAO.jpg?1699673097'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PLSRDNT-0x6dbf2155b0636cb3fd5359fccefb8a2c02b6cb51",
-      ticker: "PLSRDNT",
+      symbol: 'PLSRDNT-0x6dbf2155b0636cb3fd5359fccefb8a2c02b6cb51',
+      ticker: 'PLSRDNT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30635/thumb/plsRDNT.png?1696529508"
+      'https://assets.coingecko.com/coins/images/30635/thumb/plsRDNT.png?1696529508'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LILAI-0x655a6beebf2361a19549a99486ff65f709bd2646",
-      ticker: "LILAI",
+      symbol: 'LILAI-0x655a6beebf2361a19549a99486ff65f709bd2646',
+      ticker: 'LILAI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30621/thumb/LogoLilai_CoinGecko.png?1696529495"
+      'https://assets.coingecko.com/coins/images/30621/thumb/LogoLilai_CoinGecko.png?1696529495'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PZT-0xfb17d52f77db6e32b5a082ed4307fcfb0a86beee",
-      ticker: "PZT",
+      symbol: 'PZT-0xfb17d52f77db6e32b5a082ed4307fcfb0a86beee',
+      ticker: 'PZT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30120/thumb/pizon.jpeg?1696529042"
+      'https://assets.coingecko.com/coins/images/30120/thumb/pizon.jpeg?1696529042'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MAGIC-0x539bde0d7dbd336b79148aa742883198bbf60342",
-      ticker: "MAGIC",
+      symbol: 'MAGIC-0x539bde0d7dbd336b79148aa742883198bbf60342',
+      ticker: 'MAGIC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/18623/thumb/magic.png?1696518095"
+      'https://assets.coingecko.com/coins/images/18623/thumb/magic.png?1696518095'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CYG-0x05eaea39f69b24f8f2da13af2d8ee0853889f2a8",
-      ticker: "CYG",
+      symbol: 'CYG-0x05eaea39f69b24f8f2da13af2d8ee0853889f2a8',
+      ticker: 'CYG',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33521/thumb/cyg.png?1702133561"
+      'https://assets.coingecko.com/coins/images/33521/thumb/cyg.png?1702133561'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ARBI-0x07dd5beaffb65b8ff2e575d500bdf324a05295dc",
-      ticker: "ARBI",
+      symbol: 'ARBI-0x07dd5beaffb65b8ff2e575d500bdf324a05295dc',
+      ticker: 'ARBI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30275/thumb/ARBI_Logo.png?1696529181"
+      'https://assets.coingecko.com/coins/images/30275/thumb/ARBI_Logo.png?1696529181'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BFR-0x1a5b0aaf478bf1fda7b934c76e7692d722982a6d",
-      ticker: "BFR",
+      symbol: 'BFR-0x1a5b0aaf478bf1fda7b934c76e7692d722982a6d',
+      ticker: 'BFR',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/18540/thumb/Qk6pjeZ3_400x400.jpg?1696518020"
+      'https://assets.coingecko.com/coins/images/18540/thumb/Qk6pjeZ3_400x400.jpg?1696518020'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CERT-0xe8e87b8f47bda705ce1a5286fbddd26e93d8dffe",
-      ticker: "CERT",
+      symbol: 'CERT-0xe8e87b8f47bda705ce1a5286fbddd26e93d8dffe',
+      ticker: 'CERT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/35078/thumb/C62C9ou.png?1707301357"
+      'https://assets.coingecko.com/coins/images/35078/thumb/C62C9ou.png?1707301357'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GMX-0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a",
-      ticker: "GMX",
+      symbol: 'GMX-0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a',
+      ticker: 'GMX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/18323/thumb/arbit.png?1696517814"
+      'https://assets.coingecko.com/coins/images/18323/thumb/arbit.png?1696517814'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AARB-0x6533afac2e7bccb20dca161449a13a32d391fb00",
-      ticker: "AARB",
+      symbol: 'AARB-0x6533afac2e7bccb20dca161449a13a32d391fb00',
+      ticker: 'AARB',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32912/thumb/arbitrum.png?1699824441"
+      'https://assets.coingecko.com/coins/images/32912/thumb/arbitrum.png?1699824441'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "USDEX+-0x4117ec0a779448872d3820f37ba2060ae0b7c34b",
-      ticker: "USDEX+",
+      symbol: 'USDEX+-0x4117ec0a779448872d3820f37ba2060ae0b7c34b',
+      ticker: 'USDEX+',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30670/thumb/USDEX_-icon-200x200.png?1696529540"
+      'https://assets.coingecko.com/coins/images/30670/thumb/USDEX_-icon-200x200.png?1696529540'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "NCWW-0x3006e4cc90440c7d011c20f36c841a269ae6601a",
-      ticker: "NCWW",
+      symbol: 'NCWW-0x3006e4cc90440c7d011c20f36c841a269ae6601a',
+      ticker: 'NCWW',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31544/thumb/IMG_20230830_084557.jpg?1696530357"
+      'https://assets.coingecko.com/coins/images/31544/thumb/IMG_20230830_084557.jpg?1696530357'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PRISM-0x0b5c6ac0e1082f2d81e829b8c2957886e6bb3994",
-      ticker: "PRISM",
+      symbol: 'PRISM-0x0b5c6ac0e1082f2d81e829b8c2957886e6bb3994',
+      ticker: 'PRISM',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31081/thumb/download_%2818%29.png?1696529914"
+      'https://assets.coingecko.com/coins/images/31081/thumb/download_%2818%29.png?1696529914'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CR-0xe018c227bc84e44c96391d3067fab5a9a46b7e62",
-      ticker: "CR",
+      symbol: 'CR-0xe018c227bc84e44c96391d3067fab5a9a46b7e62',
+      ticker: 'CR',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28310/thumb/Chromium.png?1696527315"
+      'https://assets.coingecko.com/coins/images/28310/thumb/Chromium.png?1696527315'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SPEC-0x54c1b12da9594c7cd8fc9a172bb2cc6f83ecf6d4",
-      ticker: "SPEC",
+      symbol: 'SPEC-0x54c1b12da9594c7cd8fc9a172bb2cc6f83ecf6d4',
+      ticker: 'SPEC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33617/thumb/Goin_Gecko.png?1702515106"
+      'https://assets.coingecko.com/coins/images/33617/thumb/Goin_Gecko.png?1702515106'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "W3N-0xf7693c6fd9a7172d537fa75d133d309501cbd657",
-      ticker: "W3N",
+      symbol: 'W3N-0xf7693c6fd9a7172d537fa75d133d309501cbd657',
+      ticker: 'W3N',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32083/thumb/w3n-logo-comp200x200.png?1696530881"
+      'https://assets.coingecko.com/coins/images/32083/thumb/w3n-logo-comp200x200.png?1696530881'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GMD-0x4945970efeec98d393b4b979b9be265a3ae28a8b",
-      ticker: "GMD",
+      symbol: 'GMD-0x4945970efeec98d393b4b979b9be265a3ae28a8b',
+      ticker: 'GMD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28088/thumb/gmd.png?1696527098"
+      'https://assets.coingecko.com/coins/images/28088/thumb/gmd.png?1696527098'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GSWIFT-0x580e933d90091b9ce380740e3a4a39c67eb85b4c",
-      ticker: "GSWIFT",
+      symbol: 'GSWIFT-0x580e933d90091b9ce380740e3a4a39c67eb85b4c',
+      ticker: 'GSWIFT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30949/thumb/GameSwift_Token.png?1696529788"
+      'https://assets.coingecko.com/coins/images/30949/thumb/GameSwift_Token.png?1696529788'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "RKV-0xea1e79d4a0d347edcadd78d98a7da65d15e8cba1",
-      ticker: "RKV",
+      symbol: 'RKV-0xea1e79d4a0d347edcadd78d98a7da65d15e8cba1',
+      ticker: 'RKV',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30004/thumb/RVK.jpg?1696528929"
+      'https://assets.coingecko.com/coins/images/30004/thumb/RVK.jpg?1696528929'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LUAUSD-0x1dd6b5f9281c6b4f043c02a83a46c2772024636c",
-      ticker: "LUAUSD",
+      symbol: 'LUAUSD-0x1dd6b5f9281c6b4f043c02a83a46c2772024636c',
+      ticker: 'LUAUSD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33503/thumb/LUAUSD.png?1702038709"
+      'https://assets.coingecko.com/coins/images/33503/thumb/LUAUSD.png?1702038709'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ATA-0x296a0b8847bd4ed9af71a9ef238fa5be0778b611",
-      ticker: "ATA",
+      symbol: 'ATA-0x296a0b8847bd4ed9af71a9ef238fa5be0778b611',
+      ticker: 'ATA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29570/thumb/1024.png?1696528510"
+      'https://assets.coingecko.com/coins/images/29570/thumb/1024.png?1696528510'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ECLIP-0x93ca0d85837ff83158cd14d65b169cdb223b1921",
-      ticker: "ECLIP",
+      symbol: 'ECLIP-0x93ca0d85837ff83158cd14d65b169cdb223b1921',
+      ticker: 'ECLIP',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31815/thumb/ECLIP_token_logo.png?1696530629"
+      'https://assets.coingecko.com/coins/images/31815/thumb/ECLIP_token_logo.png?1696530629'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PLSJONES-0xe7f6c3c1f0018e4c08acc52965e5cbff99e34a44",
-      ticker: "PLSJONES",
+      symbol: 'PLSJONES-0xe7f6c3c1f0018e4c08acc52965e5cbff99e34a44',
+      ticker: 'PLSJONES',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30553/thumb/plsJONES.png?1696529424"
+      'https://assets.coingecko.com/coins/images/30553/thumb/plsJONES.png?1696529424'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DUO-0x322f15d4bedaa20c178fb75b2628663d2da19736",
-      ticker: "DUO",
+      symbol: 'DUO-0x322f15d4bedaa20c178fb75b2628663d2da19736',
+      ticker: 'DUO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29843/thumb/DUO_ticker_200x200.png?1696528770"
+      'https://assets.coingecko.com/coins/images/29843/thumb/DUO_ticker_200x200.png?1696528770'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "USDT-0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-      ticker: "USDT",
+      symbol: 'USDT-0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
+      ticker: 'USDT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/35073/thumb/logo.png?1707292836"
+      'https://assets.coingecko.com/coins/images/35073/thumb/logo.png?1707292836'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "WINR-0xd77b108d4f6cefaa0cae9506a934e825becca46e",
-      ticker: "WINR",
+      symbol: 'WINR-0xd77b108d4f6cefaa0cae9506a934e825becca46e',
+      ticker: 'WINR',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29340/thumb/WINR.png?1696528290"
+      'https://assets.coingecko.com/coins/images/29340/thumb/WINR.png?1696528290'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LEVI-0x954ac1c73e16c77198e83c088ade88f6223f3d44",
-      ticker: "LEVI",
+      symbol: 'LEVI-0x954ac1c73e16c77198e83c088ade88f6223f3d44',
+      ticker: 'LEVI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28147/thumb/IMG_20221107_091938_841.png?1696527152"
+      'https://assets.coingecko.com/coins/images/28147/thumb/IMG_20221107_091938_841.png?1696527152'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "EUROS-0x643b34980e635719c15a2d4ce69571a258f940e9",
-      ticker: "EUROS",
+      symbol: 'EUROS-0x643b34980e635719c15a2d4ce69571a258f940e9',
+      ticker: 'EUROS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32231/thumb/EUROs-coingecko.png?1696936278"
+      'https://assets.coingecko.com/coins/images/32231/thumb/EUROs-coingecko.png?1696936278'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "RDO-0x033f193b3fceb22a440e89a2867e8fee181594d9",
-      ticker: "RDO",
+      symbol: 'RDO-0x033f193b3fceb22a440e89a2867e8fee181594d9',
+      ticker: 'RDO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30905/thumb/RDO_ticker_logo_-_color-01-01.png?1696529750"
+      'https://assets.coingecko.com/coins/images/30905/thumb/RDO_ticker_logo_-_color-01-01.png?1696529750'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LUAOP-0x15b6ec24f59fea164c6e235941aa00fb0d4a32f6",
-      ticker: "LUAOP",
+      symbol: 'LUAOP-0x15b6ec24f59fea164c6e235941aa00fb0d4a32f6',
+      ticker: 'LUAOP',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33507/thumb/LUAOP.png?1702039814"
+      'https://assets.coingecko.com/coins/images/33507/thumb/LUAOP.png?1702039814'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "POT-0x76ce14237110c865f431e18f91fc1b225fb6fe99",
-      ticker: "POT",
+      symbol: 'POT-0x76ce14237110c865f431e18f91fc1b225fb6fe99',
+      ticker: 'POT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30493/thumb/TraderDAO-POT-Coin_%282%29.png?1696529380"
+      'https://assets.coingecko.com/coins/images/30493/thumb/TraderDAO-POT-Coin_%282%29.png?1696529380'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AICORE-0x1aae7de64d9ae1487e95858bbf98185f21e926fd",
-      ticker: "AICORE",
-      type: 1,
-    },
-    iconUrl: O.none,
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "MAKI-0xc7d91ec2b29cd22c45c15760abc189c4e78e8036",
-      ticker: "MAKI",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28909/thumb/Maki_Logo.png?1696527885"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "BONER-0xf9ca0ec182a94f6231df9b14bd147ef7fb9fa17c",
-      ticker: "BONER",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33968/thumb/unnamed.png?1703575844"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "ARB-0x912ce59144191c1204e64559fe8253a0e49e6548",
-      ticker: "ARB",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/16547/thumb/photo_2023-03-29_21.47.00.jpeg?1696516109"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "AFG-0x619c82392cb6e41778b7d088860fea8447941f4c",
-      ticker: "AFG",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/35084/thumb/Token_GEM_AOFVERSE.png?1707317138"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "TIAN-0xd56734d7f9979dd94fae3d67c7e928234e71cd4c",
-      ticker: "TIAN",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33199/thumb/tia.n.png?1701047832"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "ZTX-0x1c43d05be7e5b54d506e3ddb6f0305e8a66cd04e",
-      ticker: "ZTX",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32340/thumb/CoinGecko_200_x_200.jpg?1697466589"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "FFM-0x3269a3c00ab86c753856fd135d97b87facb0d848",
-      ticker: "FFM",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/34382/thumb/M_PNG_200x200_copy.png?1704779326"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "LUA-0xc3abc47863524ced8daf3ef98d74dd881e131c38",
-      ticker: "LUA",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33502/thumb/LUA.png?1702038548"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "BEEF-0x98c435070c24e5152fc14d130937a38810c104b9",
-      ticker: "BEEF",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/35004/thumb/beef-icon-1.png?1707227494"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "KNJ-0xfbbb21d8e7a461f06e5e27efd69703acb5c732a8",
-      ticker: "KNJ",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31651/thumb/logo_mark_Main_%283%29.png?1696530466"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "FUSDC-0x4cfa50b7ce747e2d61724fcac57f24b748ff2b2a",
-      ticker: "FUSDC",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28471/thumb/fUSDC-200x200.png?1696527465"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "XAI-0x4cb9a7ae498cedcbb5eae9f25736ae7d428c9d66",
-      ticker: "XAI",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/34258/thumb/2024-01-09_16.31.28.jpg?1704789138"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "ATE-0xd5da32ad4c7510457c0e46fa4332f75f6c4c4dc0",
-      ticker: "ATE",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30938/thumb/ATE_logo.jpg?1696529777"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "MPCKT-0xd1c533a00548dd9c1e7b0f8ea834f65383b116de",
-      ticker: "MPCKT",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31163/thumb/android-chrome-192x192.png?1696529992"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "JONES-0x10393c20975cf177a3513071bc110f7962cd67da",
-      ticker: "JONES",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/23290/thumb/3c8c2ed8-afb3-4b67-9937-5493acd88b50.jpg?1696522508"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "CRYSTAL-0xd07d35368e04a839dee335e213302b21ef14bb4a",
-      ticker: "CRYSTAL",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/35099/thumb/CRYSTAL.jpg?1707412769"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "DLP-0x32df62dc3aed2cd6224193052ce665dc18165841",
-      ticker: "DLP",
+      symbol: 'AICORE-0x1aae7de64d9ae1487e95858bbf98185f21e926fd',
+      ticker: 'AICORE',
       type: 1,
     },
     iconUrl: O.none,
@@ -606,943 +418,184 @@ export const ARB_TOKEN_WHITELIST: {
   {
     asset: {
       chain: ARBChain,
-      symbol: "GRAIL-0x3d9907f9a368ad0a51be60f7da3b97cf940982d8",
-      ticker: "GRAIL",
+      symbol: 'MAKI-0xc7d91ec2b29cd22c45c15760abc189c4e78e8036',
+      ticker: 'MAKI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28416/thumb/vj5DIMhP_400x400.jpeg?1696527414"
+      'https://assets.coingecko.com/coins/images/28909/thumb/Maki_Logo.png?1696527885'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "TLPT-0xfac38532829fdd744373fdcd4708ab90fa0c4078",
-      ticker: "TLPT",
+      symbol: 'BONER-0xf9ca0ec182a94f6231df9b14bd147ef7fb9fa17c',
+      ticker: 'BONER',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/26972/thumb/tenderLPT.png?1696526026"
+      'https://assets.coingecko.com/coins/images/33968/thumb/unnamed.png?1703575844'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "XSHRAP-0x1e3c6c53f9f60bf8aae0d7774c21fa6b1afddc57",
-      ticker: "XSHRAP",
+      symbol: 'ARB-0x912ce59144191c1204e64559fe8253a0e49e6548',
+      ticker: 'ARB',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29346/thumb/xshrapnel.png?1696528295"
+      'https://assets.coingecko.com/coins/images/16547/thumb/photo_2023-03-29_21.47.00.jpeg?1696516109'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "RDNT-0x3082cc23568ea640225c2467653db90e9250aaa0",
-      ticker: "RDNT",
+      symbol: 'AFG-0x619c82392cb6e41778b7d088860fea8447941f4c',
+      ticker: 'AFG',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/26536/thumb/Radiant-Logo-200x200.png?1696525610"
+      'https://assets.coingecko.com/coins/images/35084/thumb/Token_GEM_AOFVERSE.png?1707317138'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "HDN-0x3404149e9ee6f17fb41db1ce593ee48fbdcd9506",
-      ticker: "HDN",
+      symbol: 'TIAN-0xd56734d7f9979dd94fae3d67c7e928234e71cd4c',
+      ticker: 'TIAN',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/25177/thumb/HDXdarkblueInv.png?1696524322"
+      'https://assets.coingecko.com/coins/images/33199/thumb/tia.n.png?1701047832'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AISP-0x493070ef5280e7a275a106a30b0414dbdb21febd",
-      ticker: "AISP",
+      symbol: 'ZTX-0x1c43d05be7e5b54d506e3ddb6f0305e8a66cd04e',
+      ticker: 'ZTX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30900/thumb/200.png?1696529746"
+      'https://assets.coingecko.com/coins/images/32340/thumb/CoinGecko_200_x_200.jpg?1697466589'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BRUH-0xb5b5b428e4de365f809ced8271d202449e5c2f72",
-      ticker: "BRUH",
+      symbol: 'FFM-0x3269a3c00ab86c753856fd135d97b87facb0d848',
+      ticker: 'FFM',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32227/thumb/BRUH.jpg?1696931468"
+      'https://assets.coingecko.com/coins/images/34382/thumb/M_PNG_200x200_copy.png?1704779326'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "HMX-0x83d6c8c06ac276465e4c92e7ac8c23740f435140",
-      ticker: "HMX",
+      symbol: 'LUA-0xc3abc47863524ced8daf3ef98d74dd881e131c38',
+      ticker: 'LUA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31206/thumb/HMXlogo_CG.png?1696530033"
+      'https://assets.coingecko.com/coins/images/33502/thumb/LUA.png?1702038548'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ICE-0xe4421566a501045ae4285996577a36f6cf074190",
-      ticker: "ICE",
+      symbol: 'BEEF-0x98c435070c24e5152fc14d130937a38810c104b9',
+      ticker: 'BEEF',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/35093/thumb/ICE_LOGO.jpg?1707363813"
+      'https://assets.coingecko.com/coins/images/35004/thumb/beef-icon-1.png?1707227494'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SYNO-0x577fd586c9e6ba7f2e85e025d5824dbe19896656",
-      ticker: "SYNO",
+      symbol: 'KNJ-0xfbbb21d8e7a461f06e5e27efd69703acb5c732a8',
+      ticker: 'KNJ',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/35065/thumb/SYNO-token.png?1707241258"
+      'https://assets.coingecko.com/coins/images/31651/thumb/logo_mark_Main_%283%29.png?1696530466'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "TT-0x0ae1bb2bc04308765a6b1215236cea8cfee8cab9",
-      ticker: "TT",
+      symbol: 'FUSDC-0x4cfa50b7ce747e2d61724fcac57f24b748ff2b2a',
+      ticker: 'FUSDC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32725/thumb/20220929-180435.png?1699018453"
+      'https://assets.coingecko.com/coins/images/28471/thumb/fUSDC-200x200.png?1696527465'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BARB-0xb98058640970d8aa7bbce3b067b2d63c14143786",
-      ticker: "BARB",
+      symbol: 'XAI-0x4cb9a7ae498cedcbb5eae9f25736ae7d428c9d66',
+      ticker: 'XAI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29671/thumb/BabyArbitrum200x200.png?1696528606"
+      'https://assets.coingecko.com/coins/images/34258/thumb/2024-01-09_16.31.28.jpg?1704789138'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CATMOUSE-0xafa5676a6ef790f08290dd4a45e0ec2a5cc5cdab",
-      ticker: "CATMOUSE",
+      symbol: 'ATE-0xd5da32ad4c7510457c0e46fa4332f75f6c4c4dc0',
+      ticker: 'ATE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29947/thumb/favicon200.png?1696528874"
+      'https://assets.coingecko.com/coins/images/30938/thumb/ATE_logo.jpg?1696529777'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "STAR-0xc19669a405067927865b40ea045a2baabbbe57f5",
-      ticker: "STAR",
+      symbol: 'MPCKT-0xd1c533a00548dd9c1e7b0f8ea834f65383b116de',
+      ticker: 'MPCKT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31277/thumb/STAR.png?1696530101"
+      'https://assets.coingecko.com/coins/images/31163/thumb/android-chrome-192x192.png?1696529992'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "EXPO-0xcb24b141ecaaad0d2c255d6f99d6f4790546a75c",
-      ticker: "EXPO",
+      symbol: 'JONES-0x10393c20975cf177a3513071bc110f7962cd67da',
+      ticker: 'JONES',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29646/thumb/expo_capital.jpg?1696528582"
+      'https://assets.coingecko.com/coins/images/23290/thumb/3c8c2ed8-afb3-4b67-9937-5493acd88b50.jpg?1696522508'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "EQU-0x87aaffdf26c6885f6010219208d5b161ec7609c0",
-      ticker: "EQU",
+      symbol: 'CRYSTAL-0xd07d35368e04a839dee335e213302b21ef14bb4a',
+      ticker: 'CRYSTAL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32592/thumb/equation_logo.png?1699220377"
+      'https://assets.coingecko.com/coins/images/35099/thumb/CRYSTAL.jpg?1707412769'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "VELA-0x088cd8f5ef3652623c22d48b1605dcfe860cd704",
-      ticker: "VELA",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28739/thumb/VELA_logo_-_no_background.png?1696527719"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "AIDOGE-0x09e18590e8f76b6cf471b3cd75fe1a1a9d2b2c2b",
-      ticker: "AIDOGE",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29852/thumb/photo_2023-04-18_14-25-28.jpg?1696528778"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "PLDD-0x118346c2bb9d24412ed58c53bf9bb6f61a20d7ec",
-      ticker: "PLDD",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32980/thumb/Frame_16189.png?1700091507"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "GBOT-0x32e4d98d3010ac12d75019c484caa78665b03986",
-      ticker: "GBOT",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31429/thumb/fW3tA1ZL_400x400.jpg?1696530244"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "SPAI-0x358e5d2378f5fc3fa5504aebb728c4c568f973a4",
-      ticker: "SPAI",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33563/thumb/20231211_004306.png?1702443934"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "GMBL-0xe9a5af50874c0ef2748b5db70104b5ccb5557f6d",
-      ticker: "GMBL",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31659/thumb/GMBL.png?1696530474"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "GDX-0x2f27118e3d2332afb7d165140cf1bb127ea6975d",
-      ticker: "GDX",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29182/thumb/gridex-token.png?1696528140"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "URD-0x842216e0aa2ae608699f7b1063f26ce6b30c5311",
-      ticker: "URD",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29970/thumb/UrDEXLogo.png?1696528896"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "AISHIB-0xf1a82bfa7fceb8b8741e7e04a6b8efd348ca6393",
-      ticker: "AISHIB",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29945/thumb/200200.jpg?1696528872"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "ASCN-0x1b8d516e2146d7a32aca0fcbf9482db85fd42c3a",
-      ticker: "ASCN",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31180/thumb/AlphaScan_logo.jpg?1696530008"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "SPINAQ-0x802124eb78e43fd8d3d4e6daaaa4be28dc7993dc",
-      ticker: "SPINAQ",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33626/thumb/SPINAQ_200x200.png?1702532970"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "IGRAIL-0x2ef354c71caab6dc7469bb3c99642878ccd1143f",
-      ticker: "IGRAIL",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33487/thumb/iGRAIL_Ticker_LOGO_200_by_200.png?1702028919"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "L2DAO-0x2cab3abfc1670d1a452df502e216a66883cdf079",
-      ticker: "L2DAO",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/23699/thumb/Khp7Y4Sn.png?1696522900"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "VRTX-0x95146881b86b3ee99e63705ec87afe29fcc044d9",
-      ticker: "VRTX",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/27927/thumb/vrtx.png?1696526947"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "ROSX-0xdc8184ba488e949815d4aafb35b3c56ad03b4179",
-      ticker: "ROSX",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29698/thumb/roseon.png?1696528631"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "GOB-0xa2f9ecf83a48b86265ff5fd36cdbaaa1f349916c",
-      ticker: "GOB",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/27104/thumb/TokenLogo200x200.png?1702250134"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "ADOGE-0x155f0dd04424939368972f4e1838687d6a831151",
-      ticker: "ADOGE",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/18333/thumb/Screen-Shot-2021-09-04-at-11-59-16-AM.png?1696517824"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "MAGICGLP-0x85667409a723684fe1e57dd1abde8d88c2f54214",
-      ticker: "MAGICGLP",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29071/thumb/Token-mGLP.png?1696528037"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "PLS-0x51318b7d00db7acc4026c88c3952b66278b6a67f",
-      ticker: "PLS",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/25326/thumb/M6nUndNU_400x400.jpg?1696524461"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "PLVGLP-0x5326e71ff593ecc2cf7acae5fe57582d6e74cff1",
-      ticker: "PLVGLP",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30554/thumb/plvGLP.png?1696529425"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "ARKEN-0xaf5db6e1cc585ca312e8c8f7c499033590cf5c98",
-      ticker: "ARKEN",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/26137/thumb/arken.png?1696525225"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "USDS-0xd74f5255d557944cf7dd0e45ff521520002d5748",
-      ticker: "USDS",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/21973/thumb/USDs_logo_1000X1000.png?1696521321"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "POLY-0x34772c4d12f288368aa35ae7bc527a6b2b3e8906",
-      ticker: "POLY",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30758/thumb/ZkdFe8ym_400x400.jpg?1696529627"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "METAD-0x519062155b0591627c8a0c0958110a8c5639dca6",
-      ticker: "METAD",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32394/thumb/token-icon.png?1698053183"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "SVETH-0xf7728582002ef82908c8242cf552e969ba863ffa",
-      ticker: "SVETH",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31005/thumb/logo_%288%29.png?1696529842"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "SPI-0xbb5b3d9f6b57077b4545ea9879ee7fd0bdb08db0",
-      ticker: "SPI",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/34936/thumb/spi_eclipse.png?1706720688"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "SVUSD-0xf202ab403cd7e90197ec0f010ee897e283037706",
-      ticker: "SVUSD",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31006/thumb/logo_%289%29.png?1696529843"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "MAW-0xb4e3eeec43ebc04f28d31f2c021d15e9f56f0e54",
-      ticker: "MAW",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31152/thumb/MAW._LOGO.png?1696529980"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "USDCE-0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
-      ticker: "USDCE",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30691/thumb/usdc.png?1696529560"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "FIN-0x903ca00944d0b51e50d9f4fc96167c89f211542a",
-      ticker: "FIN",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33964/thumb/finTokenLogo_1_%281%29.png?1703570409"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "CRX-0xb21be1caf592a5dc1e75e418704d1b6d50b0d083",
-      ticker: "CRX",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29446/thumb/CRX200x200.png?1696528393"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "UMAMI-0x1622bf67e6e5747b81866fe0b85178a93c7f86e3",
-      ticker: "UMAMI",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/21159/thumb/_UMAMI-200px.jpg?1696520536"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "PYPLD-0x5b6424769823e82a1829b0a8bcaf501bffd90d25",
-      ticker: "PYPLD",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32426/thumb/token-icon.png?1698119995"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "GOOGLD-0x8e50d11a54cff859b202b7fe5225353be0646410",
-      ticker: "GOOGLD",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32428/thumb/token-icon.png?1698120046"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "AMDD-0xd8f728adb72a46ae2c92234ae8870d04907786c5",
-      ticker: "AMDD",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32981/thumb/Frame_16189.png?1700091539"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "SEN-0x154388a4650d63acc823e06ef9e47c1eddd3cbb2",
-      ticker: "SEN",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32852/thumb/200x200.png?1699663676"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "PFED-0xf1f18f765f118c3598cc54dcac1d0e12066263fe",
-      ticker: "PFED",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32537/thumb/token-icon.png?1698469161"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "TLSD-0xc56dc613c8ef3c57314171d73eaefe87aa469186",
-      ticker: "TLSD",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30748/thumb/Icon-200.png?1696529617"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "TST-0xf5a27e55c748bcddbfea5477cb9ae924f0f7fd2e",
-      ticker: "TST",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/20598/thumb/TheStandard-logo_variation-01.png?1696520005"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "AVIVE-0x5117f4ad0bc70dbb3b05bf39a1ec1ee40dd67654",
-      ticker: "AVIVE",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33697/thumb/avive_token.png?1702814979"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "VSTA-0xa684cd057951541187f288294a1e1c2646aa2d24",
-      ticker: "VSTA",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/23306/thumb/vesta-finance.png?1696522523"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "MOZ-0x20547341e58fb558637fa15379c92e11f7b7f710",
-      ticker: "MOZ",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30100/thumb/Main_Logo_1-200x200jpg.jpg?1696529024"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "ARMD-0x67bad479f77488f0f427584e267e66086a7da43a",
-      ticker: "ARMD",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32982/thumb/Frame_16189.png?1700091554"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "DISD-0x3c9f23db4ddc5655f7be636358d319a3de1ff0c4",
-      ticker: "DISD",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32538/thumb/token-icon.png?1698469167"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "OREO-0x319e222de462ac959baf2aec848697aec2bbd770",
-      ticker: "OREO",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28582/thumb/oreoswapx.png?1696527570"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "PEPEX-0x5f320aae9b786a9f329a39e41a74e88e14783067",
-      ticker: "PEPEX",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30028/thumb/COIN.png?1696528951"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "SPYD-0xf4bd09b048248876e39fcf2e0cdf1aee1240a9d2",
-      ticker: "SPYD",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32403/thumb/token-icon.png?1698055561"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "STR-0x5db7b150c5f38c5f5db11dcbdb885028fcc51d68",
-      ticker: "STR",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29167/thumb/FullLogo_Transparent_NoBuffer.png?1696528125"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "AUSDCE-0x625e7708f30ca75bfd92586e17077590c60eb4cd",
-      ticker: "AUSDCE",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32911/thumb/usdc.png?1699824302"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "CHUNKS-0x894a3abb764a0ef5da69c62336ac3c15b88bf106",
-      ticker: "CHUNKS",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30163/thumb/Chunks_Logo_v2_200x200.png?1696529083"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "SVY-0x43ab8f7d2a8dd4102ccea6b438f6d747b1b9f034",
-      ticker: "SVY",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31253/thumb/SAVVY.png?1696530077"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "AWSTETH-0x513c7e3a9c69ca3e22550ef58ac1c0088e918fff",
-      ticker: "AWSTETH",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32890/thumb/WSTETH.png?1699776336"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "OPXVESLIZ-0xd29f8a9e76ef42ba9f749583ed07cae7bfaec389",
-      ticker: "OPXVESLIZ",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29291/thumb/62833FE7-F28E-4D33-886E-9E4F8D72EEB7.png?1696528243"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "OIL-0x500756c7d239aee30f52c7e52af4f4f008d1a98f",
-      ticker: "OIL",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28350/thumb/OIL_200.png?1696527354"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "LOTUS-0xef261714f7e5ba6b86f4780eb6e3bf26b10729cf",
-      ticker: "LOTUS",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30206/thumb/logo2.png?1696529116"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "COIND-0x46b979440ac257151ee5a5bc9597b76386907fa1",
-      ticker: "COIND",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32983/thumb/Frame_16189.png?1700091568"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "EUR24-0x2c5d06f591d0d8cd43ac232c2b654475a142c7da",
-      ticker: "EUR24",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33297/thumb/EUR24.png?1701402541"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "USFRD-0x9c46e1b70d447b770dbfc8d450543a431af6df3a",
-      ticker: "USFRD",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32402/thumb/token-icon.png?1698055558"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "ZPC-0xee0b14e8fc86691cf6ee42b9954985b4cf968534",
-      ticker: "ZPC",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30269/thumb/panda.png?1696529176"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "LEX-0x6bb7a17acc227fd1f6781d1eedeae01b42047ee0",
-      ticker: "LEX",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29888/thumb/LEX.png?1696528812"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "BOOP-0x13a7dedb7169a17be92b0e3c7c2315b46f4772b3",
-      ticker: "BOOP",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33874/thumb/Boop_resized.png?1703144302"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "ETH+-0xd4939d69b31fbe981ed6904a3af43ee1dc777aab",
-      ticker: "ETH+",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32326/thumb/ETH__200x200.png?1700298095"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "DFTL-0xcb6460d56825ddc12229c7a7d94b6b26a9f9c867",
-      ticker: "DFTL",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29136/thumb/tank_%282%29.png?1696528097"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "NVDAD-0x4dafffddea93ddf1e0e7b61e844331455053ce5c",
-      ticker: "NVDAD",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32401/thumb/token-icon.png?1698055556"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "XRAI-0x617b76412bd9f3f80fe87d1533dc7017defa8ad1",
-      ticker: "XRAI",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32364/thumb/image_2023-10-14_16-00-43.png?1698029814"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "RUX-0xc701f86e6d242b97d3035f6c2cecaf8e7087e898",
-      ticker: "RUX",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29766/thumb/sh5z8C-0_400x400.jpg?1696528697"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "CEX-AI-0x3a74a9032f731d504f10e02d7247d23b939ea4f6",
-      ticker: "CEX",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29231/thumb/200x200_black.png?1696528188"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "2CRV-0x7f90122bf0700f9e7e1f688fe926940e8839f353",
-      ticker: "2CRV",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28365/thumb/curve2.png?1696527368"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "GDEX-0x92a212d9f5eef0b262ac7d84aea64a0d0758b94f",
-      ticker: "GDEX",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30671/thumb/gDEX-icon-200x200.png?1696529541"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "HOTT-0x14e8687af6c94c7c68590bacf0f1d1e338f2862b",
-      ticker: "HOTT",
+      symbol: 'DLP-0x32df62dc3aed2cd6224193052ce665dc18165841',
+      ticker: 'DLP',
       type: 1,
     },
     iconUrl: O.none,
@@ -1550,547 +603,943 @@ export const ARB_TOKEN_WHITELIST: {
   {
     asset: {
       chain: ARBChain,
-      symbol: "AA-0xb0ecc6ac0073c063dcfc026ccdc9039cae2998e1",
-      ticker: "AA",
+      symbol: 'GRAIL-0x3d9907f9a368ad0a51be60f7da3b97cf940982d8',
+      ticker: 'GRAIL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32133/thumb/A3S.jpg?1696588511"
+      'https://assets.coingecko.com/coins/images/28416/thumb/vj5DIMhP_400x400.jpeg?1696527414'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CRC-0xe4177c1400a8eee1799835dcde2489c6f0d5d616",
-      ticker: "CRC",
+      symbol: 'TLPT-0xfac38532829fdd744373fdcd4708ab90fa0c4078',
+      ticker: 'TLPT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33468/thumb/logo-no-background.png?1701943008"
+      'https://assets.coingecko.com/coins/images/26972/thumb/tenderLPT.png?1696526026'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CREDA-0xc136e6b376a9946b156db1ed3a34b08afdaed76d",
-      ticker: "CREDA",
+      symbol: 'XSHRAP-0x1e3c6c53f9f60bf8aae0d7774c21fa6b1afddc57',
+      ticker: 'XSHRAP',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/22551/thumb/gZ4EgSXD_400x400.jpg?1696521871"
+      'https://assets.coingecko.com/coins/images/29346/thumb/xshrapnel.png?1696528295'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SPARTA-0x11f98c7e42a367dab4f200d2fdc460fb445ce9a8",
-      ticker: "SPARTA",
+      symbol: 'RDNT-0x3082cc23568ea640225c2467653db90e9250aaa0',
+      ticker: 'RDNT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30836/thumb/SpartaDex_200x200.jpg?1696529694"
+      'https://assets.coingecko.com/coins/images/26536/thumb/Radiant-Logo-200x200.png?1696525610'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "D2-0xed7f000ee335b8199b004cca1c6f36d188cf6cb8",
-      ticker: "D2",
+      symbol: 'HDN-0x3404149e9ee6f17fb41db1ce593ee48fbdcd9506',
+      ticker: 'HDN',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/34914/thumb/D2_Token_Logo.png?1706610408"
+      'https://assets.coingecko.com/coins/images/25177/thumb/HDXdarkblueInv.png?1696524322'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PESOS-0x17afc249db786fc300f2d26381fec5cf0c3913fb",
-      ticker: "PESOS",
+      symbol: 'AISP-0x493070ef5280e7a275a106a30b0414dbdb21febd',
+      ticker: 'AISP',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29512/thumb/Shiba_cartel.jpeg?1696528456"
+      'https://assets.coingecko.com/coins/images/30900/thumb/200.png?1696529746'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "OPENBET-0x2c7513f299778a84797f293503db1a73a15fd48d",
-      ticker: "OPENBET",
+      symbol: 'BRUH-0xb5b5b428e4de365f809ced8271d202449e5c2f72',
+      ticker: 'BRUH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29774/thumb/openbetlogo200x200.png?1696528705"
+      'https://assets.coingecko.com/coins/images/32227/thumb/BRUH.jpg?1696931468'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FORGE-0xab10645297d5b2b124523b5181df2e8815190aeb",
-      ticker: "FORGE",
+      symbol: 'HMX-0x83d6c8c06ac276465e4c92e7ac8c23740f435140',
+      ticker: 'HMX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29768/thumb/logo_200x200.png?1696528699"
+      'https://assets.coingecko.com/coins/images/31206/thumb/HMXlogo_CG.png?1696530033'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ELM-0xeeac5e75216571773c0064b3b591a86253791db6",
-      ticker: "ELM",
+      symbol: 'ICE-0xe4421566a501045ae4285996577a36f6cf074190',
+      ticker: 'ICE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28153/thumb/elm.png?1696527158"
+      'https://assets.coingecko.com/coins/images/35093/thumb/ICE_LOGO.jpg?1707363813'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MAY-0xf9df075716b2d9b95616341dc6bc64c85e56645c",
-      ticker: "MAY",
+      symbol: 'SYNO-0x577fd586c9e6ba7f2e85e025d5824dbe19896656',
+      ticker: 'SYNO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30548/thumb/a1VkJI0r_400x400.jpg?1696529420"
+      'https://assets.coingecko.com/coins/images/35065/thumb/SYNO-token.png?1707241258'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GRB-0x5fd71280b6385157b291b9962f22153fc9e79000",
-      ticker: "GRB",
+      symbol: 'TT-0x0ae1bb2bc04308765a6b1215236cea8cfee8cab9',
+      ticker: 'TT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29142/thumb/garbi.png?1696528102"
+      'https://assets.coingecko.com/coins/images/32725/thumb/20220929-180435.png?1699018453'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "XB-0x50aa7a13b28eea97dc6c3f5e8aaa7fe512e7306d",
-      ticker: "XB",
+      symbol: 'BARB-0xb98058640970d8aa7bbce3b067b2d63c14143786',
+      ticker: 'BARB',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29375/thumb/photo_2023-03-04_15-07-08.png?1696528322"
+      'https://assets.coingecko.com/coins/images/29671/thumb/BabyArbitrum200x200.png?1696528606'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AAPLD-0xce38e140fc3982a6bcebc37b040913ef2cd6c5a7",
-      ticker: "AAPLD",
+      symbol: 'CATMOUSE-0xafa5676a6ef790f08290dd4a45e0ec2a5cc5cdab',
+      ticker: 'CATMOUSE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32393/thumb/token-icon.png?1698053181"
+      'https://assets.coingecko.com/coins/images/29947/thumb/favicon200.png?1696528874'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AMZND-0x8240affe697cde618ad05c3c8963f5bfe152650b",
-      ticker: "AMZND",
+      symbol: 'STAR-0xc19669a405067927865b40ea045a2baabbbe57f5',
+      ticker: 'STAR',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32529/thumb/token-icon.png?1698460876"
+      'https://assets.coingecko.com/coins/images/31277/thumb/STAR.png?1696530101'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FUC-0x1f52145666c862ed3e2f1da213d479e61b2892af",
-      ticker: "FUC",
+      symbol: 'EXPO-0xcb24b141ecaaad0d2c255d6f99d6f4790546a75c',
+      ticker: 'EXPO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30081/thumb/fuc.png?1696529005"
+      'https://assets.coingecko.com/coins/images/29646/thumb/expo_capital.jpg?1696528582'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DALLE2-0x1772d876f9df830693b8004322cb8885b77e47e5",
-      ticker: "DALLE2",
+      symbol: 'EQU-0x87aaffdf26c6885f6010219208d5b161ec7609c0',
+      ticker: 'EQU',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29511/thumb/200_pix.png?1696528455"
+      'https://assets.coingecko.com/coins/images/32592/thumb/equation_logo.png?1699220377'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ZOCI-0x45d780cfe839b8a8f292c9e26aa5d1805bc536dc",
-      ticker: "ZOCI",
+      symbol: 'VELA-0x088cd8f5ef3652623c22d48b1605dcfe860cd704',
+      ticker: 'VELA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31809/thumb/200x.png?1696530624"
+      'https://assets.coingecko.com/coins/images/28739/thumb/VELA_logo_-_no_background.png?1696527719'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AEGGS-0x2e516ba5bf3b7ee47fb99b09eadb60bde80a82e0",
-      ticker: "AEGGS",
+      symbol: 'AIDOGE-0x09e18590e8f76b6cf471b3cd75fe1a1a9d2b2c2b',
+      ticker: 'AIDOGE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29520/thumb/aeggs.png?1696528463"
+      'https://assets.coingecko.com/coins/images/29852/thumb/photo_2023-04-18_14-25-28.jpg?1696528778'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "NUON-0xfb9fed8cb962548a11fe7f6f282949061395c7f5",
-      ticker: "NUON",
+      symbol: 'PLDD-0x118346c2bb9d24412ed58c53bf9bb6f61a20d7ec',
+      ticker: 'PLDD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29739/thumb/Nuon_image.jpg?1696528669"
+      'https://assets.coingecko.com/coins/images/32980/thumb/Frame_16189.png?1700091507'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MSFTD-0x77308f8b63a99b24b262d930e0218ed2f49f8475",
-      ticker: "MSFTD",
+      symbol: 'GBOT-0x32e4d98d3010ac12d75019c484caa78665b03986',
+      ticker: 'GBOT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32427/thumb/token-icon.png?1698120021"
+      'https://assets.coingecko.com/coins/images/31429/thumb/fW3tA1ZL_400x400.jpg?1696530244'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "EDE-0xccd3891c1452b7cb0e4632774b9365dc4ee24f20",
-      ticker: "EDE",
+      symbol: 'SPAI-0x358e5d2378f5fc3fa5504aebb728c4c568f973a4',
+      ticker: 'SPAI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29386/thumb/Z6eU0fpI_400x400.jpg?1696528332"
+      'https://assets.coingecko.com/coins/images/33563/thumb/20231211_004306.png?1702443934'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "NFLXD-0x3ad63b3c0ea6d7a093ff98fde040baddc389ecdc",
-      ticker: "NFLXD",
+      symbol: 'GMBL-0xe9a5af50874c0ef2748b5db70104b5ccb5557f6d',
+      ticker: 'GMBL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32425/thumb/token-icon.png?1698119029"
+      'https://assets.coingecko.com/coins/images/31659/thumb/GMBL.png?1696530474'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "TSLAD-0x36d37b6cbca364cf1d843eff8c2f6824491bcf81",
-      ticker: "TSLAD",
+      symbol: 'GDX-0x2f27118e3d2332afb7d165140cf1bb127ea6975d',
+      ticker: 'GDX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32536/thumb/token-icon.png?1698469155"
+      'https://assets.coingecko.com/coins/images/29182/thumb/gridex-token.png?1696528140'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "HOLD-0xb4bbfe92702730ef7f1d28e4b9e42381182f48a5",
-      ticker: "HOLD",
+      symbol: 'URD-0x842216e0aa2ae608699f7b1063f26ce6b30c5311',
+      ticker: 'URD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30129/thumb/RteOSWQ__400x400.jpg?1696529050"
+      'https://assets.coingecko.com/coins/images/29970/thumb/UrDEXLogo.png?1696528896'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PLX-0xc8ccbd97b96834b976c995a67bf46e5754e2c48e",
-      ticker: "PLX",
+      symbol: 'AISHIB-0xf1a82bfa7fceb8b8741e7e04a6b8efd348ca6393',
+      ticker: 'AISHIB',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31536/thumb/Parallax_round_logo_-_transparent_bg.png?1696530345"
+      'https://assets.coingecko.com/coins/images/29945/thumb/200200.jpg?1696528872'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "YSL-0xf5db7c04bcec3bea25bd4fdc501cff0864f726e7",
-      ticker: "YSL",
+      symbol: 'ASCN-0x1b8d516e2146d7a32aca0fcbf9482db85fd42c3a',
+      ticker: 'ASCN',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/34512/thumb/YSL-Light_200px.png?1705288632"
+      'https://assets.coingecko.com/coins/images/31180/thumb/AlphaScan_logo.jpg?1696530008'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MMT-0x27d8de4c30ffde34e982482ae504fc7f23061f61",
-      ticker: "MMT",
+      symbol: 'SPINAQ-0x802124eb78e43fd8d3d4e6daaaa4be28dc7993dc',
+      ticker: 'SPINAQ',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29161/thumb/MMT_logo_Vert.png?1696528120"
+      'https://assets.coingecko.com/coins/images/33626/thumb/SPINAQ_200x200.png?1702532970'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GFLY-0x872bad41cfc8ba731f811fea8b2d0b9fd6369585",
-      ticker: "GFLY",
+      symbol: 'IGRAIL-0x2ef354c71caab6dc7469bb3c99642878ccd1143f',
+      ticker: 'IGRAIL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28828/thumb/GFLY_LOGO.png?1696527804"
+      'https://assets.coingecko.com/coins/images/33487/thumb/iGRAIL_Ticker_LOGO_200_by_200.png?1702028919'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "EQB-0xbfbcfe8873fe28dfa25f1099282b088d52bbad9c",
-      ticker: "EQB",
+      symbol: 'L2DAO-0x2cab3abfc1670d1a452df502e216a66883cdf079',
+      ticker: 'L2DAO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30645/thumb/QLLK8pmR_400x400.jpg?1696529516"
+      'https://assets.coingecko.com/coins/images/23699/thumb/Khp7Y4Sn.png?1696522900'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LQDR-0x816e21c33fa5f8440ebcdf6e01d39314541bea72",
-      ticker: "LQDR",
+      symbol: 'VRTX-0x95146881b86b3ee99e63705ec87afe29fcc044d9',
+      ticker: 'VRTX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/15782/thumb/LQDR_Glowing_Icon.png?1696515405"
+      'https://assets.coingecko.com/coins/images/27927/thumb/vrtx.png?1696526947'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "REUNI-0x9ed7e4b1bff939ad473da5e7a218c771d1569456",
-      ticker: "REUNI",
+      symbol: 'ROSX-0xdc8184ba488e949815d4aafb35b3c56ad03b4179',
+      ticker: 'ROSX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29492/thumb/reunit_200.png?1696528436"
+      'https://assets.coingecko.com/coins/images/29698/thumb/roseon.png?1696528631'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CHF24-0xd41f1f0cf89fd239ca4c1f8e8ada46345c86b0a4",
-      ticker: "CHF24",
+      symbol: 'GOB-0xa2f9ecf83a48b86265ff5fd36cdbaaa1f349916c',
+      ticker: 'GOB',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33296/thumb/CHF24.png?1701402516"
+      'https://assets.coingecko.com/coins/images/27104/thumb/TokenLogo200x200.png?1702250134'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DRA-0x93c157932e5649e794df8999714af8690226a1c9",
-      ticker: "DRA",
+      symbol: 'ADOGE-0x155f0dd04424939368972f4e1838687d6a831151',
+      ticker: 'ADOGE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30156/thumb/da.jpeg?1696529076"
+      'https://assets.coingecko.com/coins/images/18333/thumb/Screen-Shot-2021-09-04-at-11-59-16-AM.png?1696517824'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "XBIT-0xc4a0e0915d538b5ec2e6895261d34f70c64fb13d",
-      ticker: "XBIT",
+      symbol: 'MAGICGLP-0x85667409a723684fe1e57dd1abde8d88c2f54214',
+      ticker: 'MAGICGLP',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33961/thumb/photo_2023-12-26_21-57-47.jpg?1703622923"
+      'https://assets.coingecko.com/coins/images/29071/thumb/Token-mGLP.png?1696528037'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DGS-0x1bebd15adbc64f2f1eea7c3604d7a4b13a28c89c",
-      ticker: "DGS",
+      symbol: 'PLS-0x51318b7d00db7acc4026c88c3952b66278b6a67f',
+      ticker: 'PLS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/34822/thumb/daoglas.jpg?1706189265"
+      'https://assets.coingecko.com/coins/images/25326/thumb/M6nUndNU_400x400.jpg?1696524461'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CHAOS-0x6d9d8b50a0cccdf510f681a85472626c26377876",
-      ticker: "CHAOS",
+      symbol: 'PLVGLP-0x5326e71ff593ecc2cf7acae5fe57582d6e74cff1',
+      ticker: 'PLVGLP',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32973/thumb/QUANTUM_CHAOS.jpg?1700068286"
+      'https://assets.coingecko.com/coins/images/30554/thumb/plvGLP.png?1696529425'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PLSARB-0x7a5d193fe4ed9098f7eadc99797087c96b002907",
-      ticker: "PLSARB",
+      symbol: 'ARKEN-0xaf5db6e1cc585ca312e8c8f7c499033590cf5c98',
+      ticker: 'ARKEN',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30636/thumb/plsARB.png?1696529509"
+      'https://assets.coingecko.com/coins/images/26137/thumb/arken.png?1696525225'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ODG-0x000d636bd52bfc1b3a699165ef5aa340bea8939c",
-      ticker: "ODG",
+      symbol: 'USDS-0xd74f5255d557944cf7dd0e45ff521520002d5748',
+      ticker: 'USDS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/34689/thumb/ODG_Token_200_x_200.png?1705853107"
+      'https://assets.coingecko.com/coins/images/21973/thumb/USDs_logo_1000X1000.png?1696521321'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GMUSD-0xec13336bbd50790a00cdc0feddf11287eaf92529",
-      ticker: "GMUSD",
+      symbol: 'POLY-0x34772c4d12f288368aa35ae7bc527a6b2b3e8906',
+      ticker: 'POLY',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30345/thumb/Logo.jpg?1696529245"
+      'https://assets.coingecko.com/coins/images/30758/thumb/ZkdFe8ym_400x400.jpg?1696529627'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LODE-0xf19547f9ed24aa66b03c3a552d181ae334fbb8db",
-      ticker: "LODE",
+      symbol: 'METAD-0x519062155b0591627c8a0c0958110a8c5639dca6',
+      ticker: 'METAD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28218/thumb/Lodestar_PFP_350x350px.jpg?1696527220"
+      'https://assets.coingecko.com/coins/images/32394/thumb/token-icon.png?1698053183'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "RBX-0x4c4b907bd5c38d14a084aac4f511a9b46f7ec429",
-      ticker: "RBX",
+      symbol: 'SVETH-0xf7728582002ef82908c8242cf552e969ba863ffa',
+      ticker: 'SVETH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29660/thumb/Share_token.png?1696528595"
+      'https://assets.coingecko.com/coins/images/31005/thumb/logo_%288%29.png?1696529842'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "KNS-0xf1264873436a0771e440e2b28072fafcc5eebd01",
-      ticker: "KNS",
+      symbol: 'SPI-0xbb5b3d9f6b57077b4545ea9879ee7fd0bdb08db0',
+      ticker: 'SPI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30759/thumb/kenshi.jpg?1696529628"
+      'https://assets.coingecko.com/coins/images/34936/thumb/spi_eclipse.png?1706720688'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GLEND-0x43df266501dff4773f8f33179e3b96ab94dbc28d",
-      ticker: "GLEND",
+      symbol: 'SVUSD-0xf202ab403cd7e90197ec0f010ee897e283037706',
+      ticker: 'SVUSD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/34850/thumb/GLend_Logo.png?1706261233"
+      'https://assets.coingecko.com/coins/images/31006/thumb/logo_%289%29.png?1696529843'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SAS-0x4e05d153305bc472e220ec3f7a7894b38f74741f",
-      ticker: "SAS",
+      symbol: 'MAW-0xb4e3eeec43ebc04f28d31f2c021d15e9f56f0e54',
+      ticker: 'MAW',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30710/thumb/SAS200x200.png?1699220256"
+      'https://assets.coingecko.com/coins/images/31152/thumb/MAW._LOGO.png?1696529980'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CEX-0x306634bd3a7982afdb42dec1c6b15176cd9e02e0",
-      ticker: "CEX",
+      symbol: 'USDCE-0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
+      ticker: 'USDCE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32492/thumb/CEX.jpg?1698293422"
+      'https://assets.coingecko.com/coins/images/30691/thumb/usdc.png?1696529560'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ARC-0x7f465507f058e17ad21623927a120ac05ca32741",
-      ticker: "ARC",
+      symbol: 'FIN-0x903ca00944d0b51e50d9f4fc96167c89f211542a',
+      ticker: 'FIN',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29044/thumb/arc.png?1696528012"
+      'https://assets.coingecko.com/coins/images/33964/thumb/finTokenLogo_1_%281%29.png?1703570409'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "JUSDC-0xe66998533a1992ece9ea99cdf47686f4fc8458e0",
-      ticker: "JUSDC",
+      symbol: 'CRX-0xb21be1caf592a5dc1e75e418704d1b6d50b0d083',
+      ticker: 'CRX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28893/thumb/jUSDC.png?1696527869"
+      'https://assets.coingecko.com/coins/images/29446/thumb/CRX200x200.png?1696528393'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ALUSD-0x8ffdf2de812095b1d19cb146e4c004587c0a0692",
-      ticker: "ALUSD",
+      symbol: 'UMAMI-0x1622bf67e6e5747b81866fe0b85178a93c7f86e3',
+      ticker: 'UMAMI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32894/thumb/LUSD.png?1699789893"
+      'https://assets.coingecko.com/coins/images/21159/thumb/_UMAMI-200px.jpg?1696520536'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ARX-0xd5954c3084a1ccd70b4da011e67760b8e78aee84",
-      ticker: "ARX",
+      symbol: 'PYPLD-0x5b6424769823e82a1829b0a8bcaf501bffd90d25',
+      ticker: 'PYPLD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29506/thumb/tokenlogo.png?1696528451"
+      'https://assets.coingecko.com/coins/images/32426/thumb/token-icon.png?1698119995'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GMLP-0xc16ce97d04de6c5e0391e308dbc17a397183067b",
-      ticker: "GMLP",
+      symbol: 'GOOGLD-0x8e50d11a54cff859b202b7fe5225353be0646410',
+      ticker: 'GOOGLD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32428/thumb/token-icon.png?1698120046'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AMDD-0xd8f728adb72a46ae2c92234ae8870d04907786c5',
+      ticker: 'AMDD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32981/thumb/Frame_16189.png?1700091539'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SEN-0x154388a4650d63acc823e06ef9e47c1eddd3cbb2',
+      ticker: 'SEN',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32852/thumb/200x200.png?1699663676'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'PFED-0xf1f18f765f118c3598cc54dcac1d0e12066263fe',
+      ticker: 'PFED',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32537/thumb/token-icon.png?1698469161'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'TLSD-0xc56dc613c8ef3c57314171d73eaefe87aa469186',
+      ticker: 'TLSD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30748/thumb/Icon-200.png?1696529617'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'TST-0xf5a27e55c748bcddbfea5477cb9ae924f0f7fd2e',
+      ticker: 'TST',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/20598/thumb/TheStandard-logo_variation-01.png?1696520005'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AVIVE-0x5117f4ad0bc70dbb3b05bf39a1ec1ee40dd67654',
+      ticker: 'AVIVE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33697/thumb/avive_token.png?1702814979'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'VSTA-0xa684cd057951541187f288294a1e1c2646aa2d24',
+      ticker: 'VSTA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/23306/thumb/vesta-finance.png?1696522523'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'MOZ-0x20547341e58fb558637fa15379c92e11f7b7f710',
+      ticker: 'MOZ',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30100/thumb/Main_Logo_1-200x200jpg.jpg?1696529024'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ARMD-0x67bad479f77488f0f427584e267e66086a7da43a',
+      ticker: 'ARMD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32982/thumb/Frame_16189.png?1700091554'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'DISD-0x3c9f23db4ddc5655f7be636358d319a3de1ff0c4',
+      ticker: 'DISD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32538/thumb/token-icon.png?1698469167'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'OREO-0x319e222de462ac959baf2aec848697aec2bbd770',
+      ticker: 'OREO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28582/thumb/oreoswapx.png?1696527570'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'PEPEX-0x5f320aae9b786a9f329a39e41a74e88e14783067',
+      ticker: 'PEPEX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30028/thumb/COIN.png?1696528951'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SPYD-0xf4bd09b048248876e39fcf2e0cdf1aee1240a9d2',
+      ticker: 'SPYD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32403/thumb/token-icon.png?1698055561'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'STR-0x5db7b150c5f38c5f5db11dcbdb885028fcc51d68',
+      ticker: 'STR',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29167/thumb/FullLogo_Transparent_NoBuffer.png?1696528125'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AUSDCE-0x625e7708f30ca75bfd92586e17077590c60eb4cd',
+      ticker: 'AUSDCE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32911/thumb/usdc.png?1699824302'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'CHUNKS-0x894a3abb764a0ef5da69c62336ac3c15b88bf106',
+      ticker: 'CHUNKS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30163/thumb/Chunks_Logo_v2_200x200.png?1696529083'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SVY-0x43ab8f7d2a8dd4102ccea6b438f6d747b1b9f034',
+      ticker: 'SVY',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/31253/thumb/SAVVY.png?1696530077'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AWSTETH-0x513c7e3a9c69ca3e22550ef58ac1c0088e918fff',
+      ticker: 'AWSTETH',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32890/thumb/WSTETH.png?1699776336'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'OPXVESLIZ-0xd29f8a9e76ef42ba9f749583ed07cae7bfaec389',
+      ticker: 'OPXVESLIZ',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29291/thumb/62833FE7-F28E-4D33-886E-9E4F8D72EEB7.png?1696528243'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'OIL-0x500756c7d239aee30f52c7e52af4f4f008d1a98f',
+      ticker: 'OIL',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28350/thumb/OIL_200.png?1696527354'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'LOTUS-0xef261714f7e5ba6b86f4780eb6e3bf26b10729cf',
+      ticker: 'LOTUS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30206/thumb/logo2.png?1696529116'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'COIND-0x46b979440ac257151ee5a5bc9597b76386907fa1',
+      ticker: 'COIND',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32983/thumb/Frame_16189.png?1700091568'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'EUR24-0x2c5d06f591d0d8cd43ac232c2b654475a142c7da',
+      ticker: 'EUR24',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33297/thumb/EUR24.png?1701402541'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'USFRD-0x9c46e1b70d447b770dbfc8d450543a431af6df3a',
+      ticker: 'USFRD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32402/thumb/token-icon.png?1698055558'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ZPC-0xee0b14e8fc86691cf6ee42b9954985b4cf968534',
+      ticker: 'ZPC',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30269/thumb/panda.png?1696529176'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'LEX-0x6bb7a17acc227fd1f6781d1eedeae01b42047ee0',
+      ticker: 'LEX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29888/thumb/LEX.png?1696528812'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BOOP-0x13a7dedb7169a17be92b0e3c7c2315b46f4772b3',
+      ticker: 'BOOP',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33874/thumb/Boop_resized.png?1703144302'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ETH+-0xd4939d69b31fbe981ed6904a3af43ee1dc777aab',
+      ticker: 'ETH+',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32326/thumb/ETH__200x200.png?1700298095'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'DFTL-0xcb6460d56825ddc12229c7a7d94b6b26a9f9c867',
+      ticker: 'DFTL',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29136/thumb/tank_%282%29.png?1696528097'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'NVDAD-0x4dafffddea93ddf1e0e7b61e844331455053ce5c',
+      ticker: 'NVDAD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32401/thumb/token-icon.png?1698055556'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'XRAI-0x617b76412bd9f3f80fe87d1533dc7017defa8ad1',
+      ticker: 'XRAI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32364/thumb/image_2023-10-14_16-00-43.png?1698029814'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'RUX-0xc701f86e6d242b97d3035f6c2cecaf8e7087e898',
+      ticker: 'RUX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29766/thumb/sh5z8C-0_400x400.jpg?1696528697'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'CEX-AI-0x3a74a9032f731d504f10e02d7247d23b939ea4f6',
+      ticker: 'CEX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29231/thumb/200x200_black.png?1696528188'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: '2CRV-0x7f90122bf0700f9e7e1f688fe926940e8839f353',
+      ticker: '2CRV',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28365/thumb/curve2.png?1696527368'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'GDEX-0x92a212d9f5eef0b262ac7d84aea64a0d0758b94f',
+      ticker: 'GDEX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30671/thumb/gDEX-icon-200x200.png?1696529541'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'HOTT-0x14e8687af6c94c7c68590bacf0f1d1e338f2862b',
+      ticker: 'HOTT',
       type: 1,
     },
     iconUrl: O.none,
@@ -2098,657 +1547,547 @@ export const ARB_TOKEN_WHITELIST: {
   {
     asset: {
       chain: ARBChain,
-      symbol: "PINGU-0x4615fa30ffa5716984d4372030ce28d99fcb702f",
-      ticker: "PINGU",
+      symbol: 'AA-0xb0ecc6ac0073c063dcfc026ccdc9039cae2998e1',
+      ticker: 'AA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/34790/thumb/icon_primary.png?1706030846"
+      'https://assets.coingecko.com/coins/images/32133/thumb/A3S.jpg?1696588511'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ASCEND-0x9e724698051da34994f281bd81c3e7372d1960ae",
-      ticker: "ASCEND",
+      symbol: 'CRC-0xe4177c1400a8eee1799835dcde2489c6f0d5d616',
+      ticker: 'CRC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/16019/thumb/icon200.png?1696515630"
+      'https://assets.coingecko.com/coins/images/33468/thumb/logo-no-background.png?1701943008'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MAGIC-0x2c852d3334188be136bfc540ef2bb8c37b590bad",
-      ticker: "MAGIC",
+      symbol: 'CREDA-0xc136e6b376a9946b156db1ed3a34b08afdaed76d',
+      ticker: 'CREDA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/18844/thumb/logo_-_2021-10-07T141625.399.png?1696518305"
+      'https://assets.coingecko.com/coins/images/22551/thumb/gZ4EgSXD_400x400.jpg?1696521871'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FOX-0x6bcc14b02cd624ebe1a8a665cb6d4067aa097230",
-      ticker: "FOX",
+      symbol: 'SPARTA-0x11f98c7e42a367dab4f200d2fdc460fb445ce9a8',
+      ticker: 'SPARTA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32354/thumb/Foxify_200x200.png?1697475371"
+      'https://assets.coingecko.com/coins/images/30836/thumb/SpartaDex_200x200.jpg?1696529694'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GSHARE-0x0f96d8c1277bd75a251238af952a7a99db1320e3",
-      ticker: "GSHARE",
+      symbol: 'D2-0xed7f000ee335b8199b004cca1c6f36d188cf6cb8',
+      ticker: 'D2',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29730/thumb/logoABS.ac04548d_2.png?1696528660"
+      'https://assets.coingecko.com/coins/images/34914/thumb/D2_Token_Logo.png?1706610408'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AMC-0x299142a6370e1912156e53fbd4f25d7ba49ddcc5",
-      ticker: "AMC",
+      symbol: 'PESOS-0x17afc249db786fc300f2d26381fec5cf0c3913fb',
+      ticker: 'PESOS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31919/thumb/aimeta.jpg?1696530728"
+      'https://assets.coingecko.com/coins/images/29512/thumb/Shiba_cartel.jpeg?1696528456'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "STBZ-0x2c110867ca90e43d372c1c2e92990b00ea32818b",
-      ticker: "STBZ",
+      symbol: 'OPENBET-0x2c7513f299778a84797f293503db1a73a15fd48d',
+      ticker: 'OPENBET',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/12753/thumb/icon.png?1696512551"
+      'https://assets.coingecko.com/coins/images/29774/thumb/openbetlogo200x200.png?1696528705'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LUAG-0xcb55d61e6299597c39feec3d4036e727afbe11be",
-      ticker: "LUAG",
+      symbol: 'FORGE-0xab10645297d5b2b124523b5181df2e8815190aeb',
+      ticker: 'FORGE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33506/thumb/LUAG.png?1702039637"
+      'https://assets.coingecko.com/coins/images/29768/thumb/logo_200x200.png?1696528699'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MEOW-0xfb1f65955e168e0ef500b170eed4a4efeb99ae32",
-      ticker: "MEOW",
+      symbol: 'ELM-0xeeac5e75216571773c0064b3b591a86253791db6',
+      ticker: 'ELM',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28810/thumb/AdZJegQB_400x400.jpg?1696527787"
+      'https://assets.coingecko.com/coins/images/28153/thumb/elm.png?1696527158'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "KORA-0x50e401255275dc405a99d3281f396cca681eea9d",
-      ticker: "KORA",
+      symbol: 'MAY-0xf9df075716b2d9b95616341dc6bc64c85e56645c',
+      ticker: 'MAY',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30966/thumb/Logo_Kortana_Redondo-4_%281%29.png?1696529806"
+      'https://assets.coingecko.com/coins/images/30548/thumb/a1VkJI0r_400x400.jpg?1696529420'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CHR-0x15b2fb8f08e4ac1ce019eadae02ee92aedf06851",
-      ticker: "CHR",
+      symbol: 'GRB-0x5fd71280b6385157b291b9962f22153fc9e79000',
+      ticker: 'GRB',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29622/thumb/chronos_icono-01.png?1696528558"
+      'https://assets.coingecko.com/coins/images/29142/thumb/garbi.png?1696528102'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ARBI-0x4810e5a7741ea5fdbb658eda632ddfac3b19e3c6",
-      ticker: "ARBI",
+      symbol: 'XB-0x50aa7a13b28eea97dc6c3f5e8aaa7fe512e7306d',
+      ticker: 'XB',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32042/thumb/Frame_2881_%281%29.png?1696530839"
+      'https://assets.coingecko.com/coins/images/29375/thumb/photo_2023-03-04_15-07-08.png?1696528322'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CMUMAMI-0x1922c36f3bc762ca300b4a46bb2102f84b1684ab",
-      ticker: "CMUMAMI",
+      symbol: 'AAPLD-0xce38e140fc3982a6bcebc37b040913ef2cd6c5a7',
+      ticker: 'AAPLD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28433/thumb/Cqx8QjSL_400x400.jpeg?1696527429"
+      'https://assets.coingecko.com/coins/images/32393/thumb/token-icon.png?1698053181'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "UWU-0x05d35769a222affd6185e20f3f3676abde56c25f",
-      ticker: "UWU",
+      symbol: 'AMZND-0x8240affe697cde618ad05c3c8963f5bfe152650b',
+      ticker: 'AMZND',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30829/thumb/_UWU_new_logo.png?1696529682"
+      'https://assets.coingecko.com/coins/images/32529/thumb/token-icon.png?1698460876'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GHA-0xeca66820ed807c096e1bd7a1a091cd3d3152cc79",
-      ticker: "GHA",
+      symbol: 'FUC-0x1f52145666c862ed3e2f1da213d479e61b2892af',
+      ticker: 'FUC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30497/thumb/gha.png?1696529383"
+      'https://assets.coingecko.com/coins/images/30081/thumb/fuc.png?1696529005'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AGPT-0xd2f8b81cfff297c70e5d58ac58762dd5d213ea20",
-      ticker: "AGPT",
+      symbol: 'DALLE2-0x1772d876f9df830693b8004322cb8885b77e47e5',
+      ticker: 'DALLE2',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29111/thumb/IMG_20230217_063445_776.png?1696528073"
+      'https://assets.coingecko.com/coins/images/29511/thumb/200_pix.png?1696528455'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "JGLP-0x7241bc8035b65865156ddb5edef3eb32874a3af6",
-      ticker: "JGLP",
+      symbol: 'ZOCI-0x45d780cfe839b8a8f292c9e26aa5d1805bc536dc',
+      ticker: 'ZOCI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28892/thumb/hatGLP.png?1696527868"
+      'https://assets.coingecko.com/coins/images/31809/thumb/200x.png?1696530624'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "TIG-0x3a33473d7990a605a88ac72a78ad4efc40a54adb",
-      ticker: "TIG",
+      symbol: 'AEGGS-0x2e516ba5bf3b7ee47fb99b09eadb60bde80a82e0',
+      ticker: 'AEGGS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30641/thumb/logo.png?1696529513"
+      'https://assets.coingecko.com/coins/images/29520/thumb/aeggs.png?1696528463'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "HORNY-0x9925130735a30cae869230a9f19eedbaa71a2c02",
-      ticker: "HORNY",
+      symbol: 'NUON-0xfb9fed8cb962548a11fe7f6f282949061395c7f5',
+      ticker: 'NUON',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28979/thumb/horny.png?1696527952"
+      'https://assets.coingecko.com/coins/images/29739/thumb/Nuon_image.jpg?1696528669'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SLZUSDC-0x54355cc6913b26a15cca1f820cf17d362fa65db5",
-      ticker: "SLZUSDC",
+      symbol: 'MSFTD-0x77308f8b63a99b24b262d930e0218ed2f49f8475',
+      ticker: 'MSFTD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29900/thumb/slzUSDC2.png?1696528829"
+      'https://assets.coingecko.com/coins/images/32427/thumb/token-icon.png?1698120021'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ELSD-0x22ab6bc52cad84aae84bd5781258677a6e0cfab0",
-      ticker: "ELSD",
+      symbol: 'EDE-0xccd3891c1452b7cb0e4632774b9365dc4ee24f20',
+      ticker: 'EDE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30746/thumb/Icon-200.png?1696529616"
+      'https://assets.coingecko.com/coins/images/29386/thumb/Z6eU0fpI_400x400.jpg?1696528332'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CIP-0xd7a892f28dedc74e6b7b33f93be08abfc394a360",
-      ticker: "CIP",
+      symbol: 'NFLXD-0x3ad63b3c0ea6d7a093ff98fde040baddc389ecdc',
+      ticker: 'NFLXD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32504/thumb/photo_6176746894382970935_y_%281%29.jpg?1698313185"
+      'https://assets.coingecko.com/coins/images/32425/thumb/token-icon.png?1698119029'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PLSSPA-0x0d111e482146fe9ac9ca3a65d92e65610bbc1ba6",
-      ticker: "PLSSPA",
+      symbol: 'TSLAD-0x36d37b6cbca364cf1d843eff8c2f6824491bcf81',
+      ticker: 'TSLAD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30552/thumb/plsSPA.png?1696529423"
+      'https://assets.coingecko.com/coins/images/32536/thumb/token-icon.png?1698469155'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "TORQ-0xb56c29413af8778977093b9b4947efeea7136c36",
-      ticker: "TORQ",
+      symbol: 'HOLD-0xb4bbfe92702730ef7f1d28e4b9e42381182f48a5',
+      ticker: 'HOLD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33549/thumb/torque-200px.png?1702389376"
+      'https://assets.coingecko.com/coins/images/30129/thumb/RteOSWQ__400x400.jpg?1696529050'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BRR-0xd6e7c8af05d2d06a76811d44917613bdd258b995",
-      ticker: "BRR",
+      symbol: 'PLX-0xc8ccbd97b96834b976c995a67bf46e5754e2c48e',
+      ticker: 'PLX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29558/thumb/BRR_Protocol.png?1696528498"
+      'https://assets.coingecko.com/coins/images/31536/thumb/Parallax_round_logo_-_transparent_bg.png?1696530345'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LIQUID-0x935a33e05ecbd424c1691623c99e501ae22400e6",
-      ticker: "LIQUID",
+      symbol: 'YSL-0xf5db7c04bcec3bea25bd4fdc501cff0864f726e7',
+      ticker: 'YSL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29882/thumb/F25AB89F-C960-41A3-8093-06B3EAE88997.jpeg?1696528807"
+      'https://assets.coingecko.com/coins/images/34512/thumb/YSL-Light_200px.png?1705288632'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SAT-0x17eb7c08c4057b6c270dc0549745adbc874eb15b",
-      ticker: "SAT",
+      symbol: 'MMT-0x27d8de4c30ffde34e982482ae504fc7f23061f61',
+      ticker: 'MMT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/34036/thumb/IMG_20231225_194035_093.jpg?1703690482"
+      'https://assets.coingecko.com/coins/images/29161/thumb/MMT_logo_Vert.png?1696528120'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "IGS-0x51f9f9ff6cb2266d68c04ec289c7aba81378a383",
-      ticker: "IGS",
+      symbol: 'GFLY-0x872bad41cfc8ba731f811fea8b2d0b9fd6369585',
+      ticker: 'GFLY',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31416/thumb/igs_logo.png?1696530231"
+      'https://assets.coingecko.com/coins/images/28828/thumb/GFLY_LOGO.png?1696527804'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AEURS-0x6d80113e533a2c0fe82eabd35f1875dcea89ea97",
-      ticker: "AEURS",
+      symbol: 'EQB-0xbfbcfe8873fe28dfa25f1099282b088d52bbad9c',
+      ticker: 'EQB',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32913/thumb/eurs.png?1699824583"
+      'https://assets.coingecko.com/coins/images/30645/thumb/QLLK8pmR_400x400.jpg?1696529516'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ETHFAI-0x67c31056358b8977ea95a3a899dd380d4bced706",
-      ticker: "ETHFAI",
+      symbol: 'LQDR-0x816e21c33fa5f8440ebcdf6e01d39314541bea72',
+      ticker: 'LQDR',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29515/thumb/ethfai_logo.png?1696528459"
+      'https://assets.coingecko.com/coins/images/15782/thumb/LQDR_Glowing_Icon.png?1696515405'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "NFTE-0x51b902f19a56f0c8e409a34a215ad2673edf3284",
-      ticker: "NFTE",
+      symbol: 'REUNI-0x9ed7e4b1bff939ad473da5e7a218c771d1569456',
+      ticker: 'REUNI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29116/thumb/20230223_224134.jpg?1696528078"
+      'https://assets.coingecko.com/coins/images/29492/thumb/reunit_200.png?1696528436'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "YACHT-0xde70aed3d14d39b4955147efcf272334bdb75ab5",
-      ticker: "YACHT",
+      symbol: 'CHF24-0xd41f1f0cf89fd239ca4c1f8e8ada46345c86b0a4',
+      ticker: 'CHF24',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32858/thumb/aMmNwBTH_400x400.jpg?1699666370"
+      'https://assets.coingecko.com/coins/images/33296/thumb/CHF24.png?1701402516'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AFX-0x42972edecd94bdd19a622a6a419bdded2de56e08",
-      ticker: "AFX",
+      symbol: 'DRA-0x93c157932e5649e794df8999714af8690226a1c9',
+      ticker: 'DRA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28973/thumb/afx.png?1696527946"
+      'https://assets.coingecko.com/coins/images/30156/thumb/da.jpeg?1696529076'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AFC-0x4568ca00299819998501914690d6010ae48a59ba",
-      ticker: "AFC",
+      symbol: 'XBIT-0xc4a0e0915d538b5ec2e6895261d34f70c64fb13d',
+      ticker: 'XBIT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32577/thumb/UI_Icon_Coin_Token_AFC_200x200.png?1698558434"
+      'https://assets.coingecko.com/coins/images/33961/thumb/photo_2023-12-26_21-57-47.jpg?1703622923'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "POGAI-0x6fd58f5a2f3468e35feb098b5f59f04157002407",
-      ticker: "POGAI",
+      symbol: 'DGS-0x1bebd15adbc64f2f1eea7c3604d7a4b13a28c89c',
+      ticker: 'DGS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30116/thumb/pogai.jpeg?1696529039"
+      'https://assets.coingecko.com/coins/images/34822/thumb/daoglas.jpg?1706189265'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "WAR-0x1f6e4b5ffc94cca08cf6bb1479148d6329d4baf5",
-      ticker: "WAR",
+      symbol: 'CHAOS-0x6d9d8b50a0cccdf510f681a85472626c26377876',
+      ticker: 'CHAOS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30665/thumb/l_logo_blue.png?1696529535"
+      'https://assets.coingecko.com/coins/images/32973/thumb/QUANTUM_CHAOS.jpg?1700068286'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "HONEY-0xde31e75182276738b0c025daa8f80020a4f2fbfe",
-      ticker: "HONEY",
+      symbol: 'PLSARB-0x7a5d193fe4ed9098f7eadc99797087c96b002907',
+      ticker: 'PLSARB',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/18380/thumb/ac6fTCfDQDIV.jpg?1696517872"
+      'https://assets.coingecko.com/coins/images/30636/thumb/plsARB.png?1696529509'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "XLSD-0xce3a75572bc375476438206f6f29f46f8466ecc2",
-      ticker: "XLSD",
+      symbol: 'ODG-0x000d636bd52bfc1b3a699165ef5aa340bea8939c',
+      ticker: 'ODG',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30747/thumb/Icon-200.png?1696529616"
+      'https://assets.coingecko.com/coins/images/34689/thumb/ODG_Token_200_x_200.png?1705853107'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AIEN-0x0d8f04522c5792c7378e39c92ab348f315f4fc4f",
-      ticker: "AIEN",
+      symbol: 'GMUSD-0xec13336bbd50790a00cdc0feddf11287eaf92529',
+      ticker: 'GMUSD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30291/thumb/200.png?1696529196"
+      'https://assets.coingecko.com/coins/images/30345/thumb/Logo.jpg?1696529245'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BLOB-0x91c0ab2e50db1afe9e673bbb1fd5a3e0e4adf1f9",
-      ticker: "BLOB",
+      symbol: 'LODE-0xf19547f9ed24aa66b03c3a552d181ae334fbb8db',
+      ticker: 'LODE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/34183/thumb/blobby%282%29.png?1704257061"
+      'https://assets.coingecko.com/coins/images/28218/thumb/Lodestar_PFP_350x350px.jpg?1696527220'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GOLD-0xf16585365bfe050eff7c926f22df87f46da2cafe",
-      ticker: "GOLD",
+      symbol: 'RBX-0x4c4b907bd5c38d14a084aac4f511a9b46f7ec429',
+      ticker: 'RBX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29126/thumb/gold.png?1696528087"
+      'https://assets.coingecko.com/coins/images/29660/thumb/Share_token.png?1696528595'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "TWST-0x62cffe9917790edd44fbc36a76cb8e4920bd1268",
-      ticker: "TWST",
+      symbol: 'KNS-0xf1264873436a0771e440e2b28072fafcc5eebd01',
+      ticker: 'KNS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30330/thumb/unnamed.jpg?1696529231"
+      'https://assets.coingecko.com/coins/images/30759/thumb/kenshi.jpg?1696529628'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MWOM-0x509fd25ee2ac7833a017f17ee8a6fb4aaf947876",
-      ticker: "MWOM",
+      symbol: 'GLEND-0x43df266501dff4773f8f33179e3b96ab94dbc28d',
+      ticker: 'GLEND',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29924/thumb/mWOM.png?1696528852"
+      'https://assets.coingecko.com/coins/images/34850/thumb/GLend_Logo.png?1706261233'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "HWT-0xbcc9c1763d54427bdf5efb6e9eb9494e5a1fbabf",
-      ticker: "HWT",
+      symbol: 'SAS-0x4e05d153305bc472e220ec3f7a7894b38f74741f',
+      ticker: 'SAS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28559/thumb/hwt.png?1696527549"
+      'https://assets.coingecko.com/coins/images/30710/thumb/SAS200x200.png?1699220256'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DOMDOM-0x635d0e13f98e107cf6c5cdfbf52c19843f87e76a",
-      ticker: "DOMDOM",
+      symbol: 'CEX-0x306634bd3a7982afdb42dec1c6b15176cd9e02e0',
+      ticker: 'CEX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29731/thumb/IMG_20230406_230429_102.jpg?1696528661"
+      'https://assets.coingecko.com/coins/images/32492/thumb/CEX.jpg?1698293422'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GMC-0x654c908305021b2eaf881cee774ece1d2bcac5fc",
-      ticker: "GMC",
+      symbol: 'ARC-0x7f465507f058e17ad21623927a120ac05ca32741',
+      ticker: 'ARC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29722/thumb/Token.png?1696528653"
+      'https://assets.coingecko.com/coins/images/29044/thumb/arc.png?1696528012'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "NYAN-0xed3fb761414da74b74f33e5c5a1f78104b188dfc",
-      ticker: "NYAN",
+      symbol: 'JUSDC-0xe66998533a1992ece9ea99cdf47686f4fc8458e0',
+      ticker: 'JUSDC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/18309/thumb/Qmf8DSV4RbSuVRLJvmj4WwEMjwtYcCd53EFXPPjkEwzx4B.png?1696517801"
+      'https://assets.coingecko.com/coins/images/28893/thumb/jUSDC.png?1696527869'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SEX-0xd26b0c6ef8581e921ae41c66e508c62a581b709d",
-      ticker: "SEX",
+      symbol: 'ALUSD-0x8ffdf2de812095b1d19cb146e4c004587c0a0692',
+      ticker: 'ALUSD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32135/thumb/IMG_20231004_163306_491.jpg?1696589011"
+      'https://assets.coingecko.com/coins/images/32894/thumb/LUSD.png?1699789893'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "POST-0xc29b9c4f45fd4f07768cf913acde0c7772b47124",
-      ticker: "POST",
+      symbol: 'ARX-0xd5954c3084a1ccd70b4da011e67760b8e78aee84',
+      ticker: 'ARX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/34260/thumb/bird-logo-color.png?1704360008"
+      'https://assets.coingecko.com/coins/images/29506/thumb/tokenlogo.png?1696528451'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MNLT-0x0a1694716de67c98f61942b2cab7df7fe659c87a",
-      ticker: "MNLT",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30687/thumb/Untitled_design_%282%29.png?1696529556"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "TAI-0xd2eb76feff5fbd549ca078908fb5efce7533a09d",
-      ticker: "TAI",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29117/thumb/100.png?1696528079"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "PLSDPX-0xf236ea74b515ef96a9898f5a4ed4aa591f253ce1",
-      ticker: "PLSDPX",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29652/thumb/plsDPX.png?1696528588"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "AITOM-0x9578a9937dff45b4e29e49120ab83cb806f1aa4f",
-      ticker: "AITOM",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32013/thumb/aitom.png?1696530811"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "PGS-0x8933fedd98cbb482e27c41e1bd7216a4e42ebd39",
-      ticker: "PGS",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31306/thumb/baneer8.png?1696530125"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "WHEAT-0x771146816a0c7d74daf652252d646ab0bff7c21a",
-      ticker: "WHEAT",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29190/thumb/LBdDnLA__400x400.jpg?1696528149"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "ARBS-0xf50874f8246776ca4b89eef471e718f70f38458f",
-      ticker: "ARBS",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30565/thumb/Arb-Logo_Circle_DARK_LOGO_ONLY.png?1696529436"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "NEADRAM-0x40301951af3f80b8c1744ca77e55111dd3c1dba1",
-      ticker: "NEADRAM",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29748/thumb/Ennead.png?1696528680"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "PEPER-0x7ddf25cb4861590578f1fb85fcf1c5afd00a01de",
-      ticker: "PEPER",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30603/thumb/peper_logo.jpg?1696529473"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "DBL-0xd3f1da62cafb7e7bc6531ff1cef6f414291f03d3",
-      ticker: "DBL",
-      type: 1,
-    },
-    iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/23660/thumb/galleon-sky.png?1696522863"
-    ),
-  },
-  {
-    asset: {
-      chain: ARBChain,
-      symbol: "GEM-0x458a2df1a5c74c5dc9ed6e01dd1178e6d353243b",
-      ticker: "GEM",
+      symbol: 'GMLP-0xc16ce97d04de6c5e0391e308dbc17a397183067b',
+      ticker: 'GMLP',
       type: 1,
     },
     iconUrl: O.none,
@@ -2756,96 +2095,657 @@ export const ARB_TOKEN_WHITELIST: {
   {
     asset: {
       chain: ARBChain,
-      symbol: "KEWL-0xa15907f3e7fdd0a83ec56f4ac543cb10f4d783eb",
-      ticker: "KEWL",
+      symbol: 'PINGU-0x4615fa30ffa5716984d4372030ce28d99fcb702f',
+      ticker: 'PINGU',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30534/thumb/Group_599.png?1696529407"
+      'https://assets.coingecko.com/coins/images/34790/thumb/icon_primary.png?1706030846'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BANANA-0x7985de01b26c1efaba8bf4a9971a32dff8661bfb",
-      ticker: "BANANA",
+      symbol: 'ASCEND-0x9e724698051da34994f281bd81c3e7372d1960ae',
+      ticker: 'ASCEND',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30422/thumb/IMG_20230516_112154_145.jpg?1696529310"
+      'https://assets.coingecko.com/coins/images/16019/thumb/icon200.png?1696515630'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ANT-0x4406509b532b111bd39b5b579561001cbf0d7acf",
-      ticker: "ANT",
+      symbol: 'MAGIC-0x2c852d3334188be136bfc540ef2bb8c37b590bad',
+      ticker: 'MAGIC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30464/thumb/fb0d911c2ac181aed2bc06dc9862ab3.png?1696529351"
+      'https://assets.coingecko.com/coins/images/18844/thumb/logo_-_2021-10-07T141625.399.png?1696518305'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "KABOSU-0x53bcf6698c911b2a7409a740eacddb901fc2a2c6",
-      ticker: "KABOSU",
+      symbol: 'FOX-0x6bcc14b02cd624ebe1a8a665cb6d4067aa097230',
+      ticker: 'FOX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30320/thumb/IMG_20230510_204814_554_copy_200x200.jpg?1696529222"
+      'https://assets.coingecko.com/coins/images/32354/thumb/Foxify_200x200.png?1697475371'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ACID-0x29c1ea5ed7af53094b1a79ef60d20641987c867e",
-      ticker: "ACID",
+      symbol: 'GSHARE-0x0f96d8c1277bd75a251238af952a7a99db1320e3',
+      ticker: 'GSHARE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29418/thumb/acid_200_200.png?1696528367"
+      'https://assets.coingecko.com/coins/images/29730/thumb/logoABS.ac04548d_2.png?1696528660'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SANCTA-0x810cf1757b51963102e0b4fe9fdfcdf749dea98a",
-      ticker: "SANCTA",
+      symbol: 'AMC-0x299142a6370e1912156e53fbd4f25d7ba49ddcc5',
+      ticker: 'AMC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30135/thumb/image_%289%29.png?1696529056"
+      'https://assets.coingecko.com/coins/images/31919/thumb/aimeta.jpg?1696530728'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "RB-0xfc0c4114ccba4a91d05bdab4a8480cbec46654dd",
-      ticker: "RB",
+      symbol: 'STBZ-0x2c110867ca90e43d372c1c2e92990b00ea32818b',
+      ticker: 'STBZ',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29623/thumb/Main_token.png?1696528559"
+      'https://assets.coingecko.com/coins/images/12753/thumb/icon.png?1696512551'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "HOME-0x1bd013bd089c2b6b2d30a0e0b545810a5844e761",
-      ticker: "HOME",
+      symbol: 'LUAG-0xcb55d61e6299597c39feec3d4036e727afbe11be',
+      ticker: 'LUAG',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30740/thumb/LOGO.png?1696529610"
+      'https://assets.coingecko.com/coins/images/33506/thumb/LUAG.png?1702039637'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PAC-0x7e325091e5525d3ea4d54a1488ecca8d1df732f3",
-      ticker: "PAC",
+      symbol: 'MEOW-0xfb1f65955e168e0ef500b170eed4a4efeb99ae32',
+      ticker: 'MEOW',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28810/thumb/AdZJegQB_400x400.jpg?1696527787'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'KORA-0x50e401255275dc405a99d3281f396cca681eea9d',
+      ticker: 'KORA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30966/thumb/Logo_Kortana_Redondo-4_%281%29.png?1696529806'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'CHR-0x15b2fb8f08e4ac1ce019eadae02ee92aedf06851',
+      ticker: 'CHR',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29622/thumb/chronos_icono-01.png?1696528558'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ARBI-0x4810e5a7741ea5fdbb658eda632ddfac3b19e3c6',
+      ticker: 'ARBI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32042/thumb/Frame_2881_%281%29.png?1696530839'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'CMUMAMI-0x1922c36f3bc762ca300b4a46bb2102f84b1684ab',
+      ticker: 'CMUMAMI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28433/thumb/Cqx8QjSL_400x400.jpeg?1696527429'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'UWU-0x05d35769a222affd6185e20f3f3676abde56c25f',
+      ticker: 'UWU',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30829/thumb/_UWU_new_logo.png?1696529682'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'GHA-0xeca66820ed807c096e1bd7a1a091cd3d3152cc79',
+      ticker: 'GHA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30497/thumb/gha.png?1696529383'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AGPT-0xd2f8b81cfff297c70e5d58ac58762dd5d213ea20',
+      ticker: 'AGPT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29111/thumb/IMG_20230217_063445_776.png?1696528073'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'JGLP-0x7241bc8035b65865156ddb5edef3eb32874a3af6',
+      ticker: 'JGLP',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28892/thumb/hatGLP.png?1696527868'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'TIG-0x3a33473d7990a605a88ac72a78ad4efc40a54adb',
+      ticker: 'TIG',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30641/thumb/logo.png?1696529513'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'HORNY-0x9925130735a30cae869230a9f19eedbaa71a2c02',
+      ticker: 'HORNY',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28979/thumb/horny.png?1696527952'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SLZUSDC-0x54355cc6913b26a15cca1f820cf17d362fa65db5',
+      ticker: 'SLZUSDC',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29900/thumb/slzUSDC2.png?1696528829'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ELSD-0x22ab6bc52cad84aae84bd5781258677a6e0cfab0',
+      ticker: 'ELSD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30746/thumb/Icon-200.png?1696529616'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'CIP-0xd7a892f28dedc74e6b7b33f93be08abfc394a360',
+      ticker: 'CIP',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32504/thumb/photo_6176746894382970935_y_%281%29.jpg?1698313185'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'PLSSPA-0x0d111e482146fe9ac9ca3a65d92e65610bbc1ba6',
+      ticker: 'PLSSPA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30552/thumb/plsSPA.png?1696529423'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'TORQ-0xb56c29413af8778977093b9b4947efeea7136c36',
+      ticker: 'TORQ',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33549/thumb/torque-200px.png?1702389376'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BRR-0xd6e7c8af05d2d06a76811d44917613bdd258b995',
+      ticker: 'BRR',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29558/thumb/BRR_Protocol.png?1696528498'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'LIQUID-0x935a33e05ecbd424c1691623c99e501ae22400e6',
+      ticker: 'LIQUID',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29882/thumb/F25AB89F-C960-41A3-8093-06B3EAE88997.jpeg?1696528807'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SAT-0x17eb7c08c4057b6c270dc0549745adbc874eb15b',
+      ticker: 'SAT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/34036/thumb/IMG_20231225_194035_093.jpg?1703690482'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'IGS-0x51f9f9ff6cb2266d68c04ec289c7aba81378a383',
+      ticker: 'IGS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/31416/thumb/igs_logo.png?1696530231'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AEURS-0x6d80113e533a2c0fe82eabd35f1875dcea89ea97',
+      ticker: 'AEURS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32913/thumb/eurs.png?1699824583'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ETHFAI-0x67c31056358b8977ea95a3a899dd380d4bced706',
+      ticker: 'ETHFAI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29515/thumb/ethfai_logo.png?1696528459'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'NFTE-0x51b902f19a56f0c8e409a34a215ad2673edf3284',
+      ticker: 'NFTE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29116/thumb/20230223_224134.jpg?1696528078'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'YACHT-0xde70aed3d14d39b4955147efcf272334bdb75ab5',
+      ticker: 'YACHT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32858/thumb/aMmNwBTH_400x400.jpg?1699666370'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AFX-0x42972edecd94bdd19a622a6a419bdded2de56e08',
+      ticker: 'AFX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28973/thumb/afx.png?1696527946'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AFC-0x4568ca00299819998501914690d6010ae48a59ba',
+      ticker: 'AFC',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32577/thumb/UI_Icon_Coin_Token_AFC_200x200.png?1698558434'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'POGAI-0x6fd58f5a2f3468e35feb098b5f59f04157002407',
+      ticker: 'POGAI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30116/thumb/pogai.jpeg?1696529039'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'WAR-0x1f6e4b5ffc94cca08cf6bb1479148d6329d4baf5',
+      ticker: 'WAR',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30665/thumb/l_logo_blue.png?1696529535'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'HONEY-0xde31e75182276738b0c025daa8f80020a4f2fbfe',
+      ticker: 'HONEY',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/18380/thumb/ac6fTCfDQDIV.jpg?1696517872'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'XLSD-0xce3a75572bc375476438206f6f29f46f8466ecc2',
+      ticker: 'XLSD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30747/thumb/Icon-200.png?1696529616'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AIEN-0x0d8f04522c5792c7378e39c92ab348f315f4fc4f',
+      ticker: 'AIEN',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30291/thumb/200.png?1696529196'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BLOB-0x91c0ab2e50db1afe9e673bbb1fd5a3e0e4adf1f9',
+      ticker: 'BLOB',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/34183/thumb/blobby%282%29.png?1704257061'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'GOLD-0xf16585365bfe050eff7c926f22df87f46da2cafe',
+      ticker: 'GOLD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29126/thumb/gold.png?1696528087'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'TWST-0x62cffe9917790edd44fbc36a76cb8e4920bd1268',
+      ticker: 'TWST',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30330/thumb/unnamed.jpg?1696529231'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'MWOM-0x509fd25ee2ac7833a017f17ee8a6fb4aaf947876',
+      ticker: 'MWOM',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29924/thumb/mWOM.png?1696528852'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'HWT-0xbcc9c1763d54427bdf5efb6e9eb9494e5a1fbabf',
+      ticker: 'HWT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28559/thumb/hwt.png?1696527549'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'DOMDOM-0x635d0e13f98e107cf6c5cdfbf52c19843f87e76a',
+      ticker: 'DOMDOM',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29731/thumb/IMG_20230406_230429_102.jpg?1696528661'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'GMC-0x654c908305021b2eaf881cee774ece1d2bcac5fc',
+      ticker: 'GMC',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29722/thumb/Token.png?1696528653'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'NYAN-0xed3fb761414da74b74f33e5c5a1f78104b188dfc',
+      ticker: 'NYAN',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/18309/thumb/Qmf8DSV4RbSuVRLJvmj4WwEMjwtYcCd53EFXPPjkEwzx4B.png?1696517801'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SEX-0xd26b0c6ef8581e921ae41c66e508c62a581b709d',
+      ticker: 'SEX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32135/thumb/IMG_20231004_163306_491.jpg?1696589011'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'POST-0xc29b9c4f45fd4f07768cf913acde0c7772b47124',
+      ticker: 'POST',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/34260/thumb/bird-logo-color.png?1704360008'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'MNLT-0x0a1694716de67c98f61942b2cab7df7fe659c87a',
+      ticker: 'MNLT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30687/thumb/Untitled_design_%282%29.png?1696529556'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'TAI-0xd2eb76feff5fbd549ca078908fb5efce7533a09d',
+      ticker: 'TAI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29117/thumb/100.png?1696528079'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'PLSDPX-0xf236ea74b515ef96a9898f5a4ed4aa591f253ce1',
+      ticker: 'PLSDPX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29652/thumb/plsDPX.png?1696528588'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AITOM-0x9578a9937dff45b4e29e49120ab83cb806f1aa4f',
+      ticker: 'AITOM',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32013/thumb/aitom.png?1696530811'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'PGS-0x8933fedd98cbb482e27c41e1bd7216a4e42ebd39',
+      ticker: 'PGS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/31306/thumb/baneer8.png?1696530125'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'WHEAT-0x771146816a0c7d74daf652252d646ab0bff7c21a',
+      ticker: 'WHEAT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29190/thumb/LBdDnLA__400x400.jpg?1696528149'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ARBS-0xf50874f8246776ca4b89eef471e718f70f38458f',
+      ticker: 'ARBS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30565/thumb/Arb-Logo_Circle_DARK_LOGO_ONLY.png?1696529436'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'NEADRAM-0x40301951af3f80b8c1744ca77e55111dd3c1dba1',
+      ticker: 'NEADRAM',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29748/thumb/Ennead.png?1696528680'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'PEPER-0x7ddf25cb4861590578f1fb85fcf1c5afd00a01de',
+      ticker: 'PEPER',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30603/thumb/peper_logo.jpg?1696529473'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'DBL-0xd3f1da62cafb7e7bc6531ff1cef6f414291f03d3',
+      ticker: 'DBL',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/23660/thumb/galleon-sky.png?1696522863'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'GEM-0x458a2df1a5c74c5dc9ed6e01dd1178e6d353243b',
+      ticker: 'GEM',
       type: 1,
     },
     iconUrl: O.none,
@@ -2853,4023 +2753,6910 @@ export const ARB_TOKEN_WHITELIST: {
   {
     asset: {
       chain: ARBChain,
-      symbol: "LOPO-0x700e4edb5c7d8f53ccb0cf212b81a121728e1d5b",
-      ticker: "LOPO",
+      symbol: 'KEWL-0xa15907f3e7fdd0a83ec56f4ac543cb10f4d783eb',
+      ticker: 'KEWL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29250/thumb/IMG_20230220_222454_192.png?1696528205"
+      'https://assets.coingecko.com/coins/images/30534/thumb/Group_599.png?1696529407'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ARBPAD-0x2a35c341f4dcf2d18e0fb38e0df50e8a47af1368",
-      ticker: "ARBPAD",
+      symbol: 'BANANA-0x7985de01b26c1efaba8bf4a9971a32dff8661bfb',
+      ticker: 'BANANA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29629/thumb/xconvert.com.png?1696528567"
+      'https://assets.coingecko.com/coins/images/30422/thumb/IMG_20230516_112154_145.jpg?1696529310'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SHARKY-0x73ed68b834e44096eb4bea6edead038c945722f1",
-      ticker: "SHARKY",
+      symbol: 'ANT-0x4406509b532b111bd39b5b579561001cbf0d7acf',
+      ticker: 'ANT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29152/thumb/SharkySwapPNG.png?1696528111"
+      'https://assets.coingecko.com/coins/images/30464/thumb/fb0d911c2ac181aed2bc06dc9862ab3.png?1696529351'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "1MB-0xab9ec601b82a22fbf2b030ac0dd7c1c34f52fa04",
-      ticker: "1MB",
+      symbol: 'KABOSU-0x53bcf6698c911b2a7409a740eacddb901fc2a2c6',
+      ticker: 'KABOSU',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29606/thumb/CGK.png?1696528542"
+      'https://assets.coingecko.com/coins/images/30320/thumb/IMG_20230510_204814_554_copy_200x200.jpg?1696529222'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BRKAD-0x9da913f4dca9b210a232d588113047685a4ed4b1",
-      ticker: "BRKAD",
+      symbol: 'ACID-0x29c1ea5ed7af53094b1a79ef60d20641987c867e',
+      ticker: 'ACID',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32979/thumb/Frame_16189.png?1700091475"
+      'https://assets.coingecko.com/coins/images/29418/thumb/acid_200_200.png?1696528367'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "OMO-0xe2db86ce824cf3dcc0c31a073de294239fdde060",
-      ticker: "OMO",
+      symbol: 'SANCTA-0x810cf1757b51963102e0b4fe9fdfcdf749dea98a',
+      ticker: 'SANCTA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29270/thumb/omo.png?1696528223"
+      'https://assets.coingecko.com/coins/images/30135/thumb/image_%289%29.png?1696529056'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SVBTC-0xeee18334c414a47fb886a7317e1885b2bfb8c2a6",
-      ticker: "SVBTC",
+      symbol: 'RB-0xfc0c4114ccba4a91d05bdab4a8480cbec46654dd',
+      ticker: 'RB',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31004/thumb/logo_%287%29.png?1696529841"
+      'https://assets.coingecko.com/coins/images/29623/thumb/Main_token.png?1696528559'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LG-0x9c8ef67c9168587134e1f29a71405dc753500a45",
-      ticker: "LG",
+      symbol: 'HOME-0x1bd013bd089c2b6b2d30a0e0b545810a5844e761',
+      ticker: 'HOME',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30079/thumb/004_%281%29.png?1696529003"
+      'https://assets.coingecko.com/coins/images/30740/thumb/LOGO.png?1696529610'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "YFX-0xaae0c3856e665ff9b3e2872b6d75939d810b7e40",
-      ticker: "YFX",
+      symbol: 'PAC-0x7e325091e5525d3ea4d54a1488ecca8d1df732f3',
+      ticker: 'PAC',
       type: 1,
     },
+    iconUrl: O.none,
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'LOPO-0x700e4edb5c7d8f53ccb0cf212b81a121728e1d5b',
+      ticker: 'LOPO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29250/thumb/IMG_20230220_222454_192.png?1696528205'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ARBPAD-0x2a35c341f4dcf2d18e0fb38e0df50e8a47af1368',
+      ticker: 'ARBPAD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29629/thumb/xconvert.com.png?1696528567'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SHARKY-0x73ed68b834e44096eb4bea6edead038c945722f1',
+      ticker: 'SHARKY',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29152/thumb/SharkySwapPNG.png?1696528111'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: '1MB-0xab9ec601b82a22fbf2b030ac0dd7c1c34f52fa04',
+      ticker: '1MB',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29606/thumb/CGK.png?1696528542'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BRKAD-0x9da913f4dca9b210a232d588113047685a4ed4b1',
+      ticker: 'BRKAD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32979/thumb/Frame_16189.png?1700091475'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'OMO-0xe2db86ce824cf3dcc0c31a073de294239fdde060',
+      ticker: 'OMO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29270/thumb/omo.png?1696528223'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SVBTC-0xeee18334c414a47fb886a7317e1885b2bfb8c2a6',
+      ticker: 'SVBTC',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/31004/thumb/logo_%287%29.png?1696529841'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'LG-0x9c8ef67c9168587134e1f29a71405dc753500a45',
+      ticker: 'LG',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30079/thumb/004_%281%29.png?1696529003'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'YFX-0xaae0c3856e665ff9b3e2872b6d75939d810b7e40',
+      ticker: 'YFX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29399/thumb/l1v2_transparent.png?1696528349'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BLS-0x8a66794e1aaebc7018a7b75f61f384e30ae3b159',
+      ticker: 'BLS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30300/thumb/logo_BLS_200_bg.png?1696529204'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'FXUSD-0x8616e8ea83f048ab9a5ec513c9412dd2993bce3f',
+      ticker: 'FXUSD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/26954/thumb/fxUSDlogo.png?1696526009'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'MMF-0x56b251d4b493ee3956e3f899d36b7290902d2326',
+      ticker: 'MMF',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29729/thumb/MMF_Arb_org.png?1696528659'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'FENGLVZIV2-0xb1070c40d5b3d10e1f1c8876c3d2ff5ffed4b3ac',
+      ticker: 'FENGLVZIV2',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30324/thumb/logo.png?1696529225'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ARBINU-0xdd8e557c8804d326c72074e987de02a23ae6ef84',
+      ticker: 'ARBINU',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28812/thumb/Arbinu_Coingecko_50px.png?1696527789'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BET-0x9eb6299e4bb6669e42cb295a254c8492f67ae2c6',
+      ticker: 'BET',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29545/thumb/200.png?1696528486'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'LSDOGE-0x4c70d32295de15fdf302d3bcbb7fc2631ace1c91',
+      ticker: 'LSDOGE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29999/thumb/LSDoge_200_200.png?1696528924'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SEED-0xe6be2f5ab2ad4b8b146e3008f81832cf7b279f43',
+      ticker: 'SEED',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30736/thumb/SEED200x200.png?1696529606'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'CHAI-0x743b077b103d91109082a7a48e19ffc1093137a5',
+      ticker: 'CHAI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29473/thumb/Ai200px.png?1696528418'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'TAIKULA-0xb2498cde54810424a24fdd23579164265a0c14c5',
+      ticker: 'TAIKULA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30265/thumb/8MV4Pr9j_400x400.png?1696529173'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'OT-0xb4b07b60455a2f38cba98a8f3dd161f7ca396a9c',
+      ticker: 'OT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29133/thumb/OTCMC.png?1696528094'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ALP-0xb49b6a3fd1f4bb510ef776de7a88a9e65904478a',
+      ticker: 'ALP',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30769/thumb/alp.jpg?1696529637'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'YURI-0x077bc655c8d81b7de71c79318d0eb8f987e12820',
+      ticker: 'YURI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/31032/thumb/Yuri_logo_200x200.jpg?1696529868'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ZSP-0xb2dcbd5258a22385240e4ac13fc6726b66f0de96',
+      ticker: 'ZSP',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29658/thumb/zenithswaplogo.png?1696528593'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'LION-0x8ebb85d53e6955e557b7c53acde1d42fd68561ec',
+      ticker: 'LION',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29685/thumb/Lion_Token.png?1696528619'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ALIEN-0x6740acb82ac5c63a7ad2397ee1faed7c788f5f8c',
+      ticker: 'ALIEN',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29175/thumb/alien.png?1696528133'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ARCHI-0x93d504070ab0eede5449c89c5ea0f5e34d8103f8',
+      ticker: 'ARCHI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30823/thumb/ARCHILOGO.png?1696529677'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'POION-0x31c91d8fb96bff40955dd2dbc909b36e8b104dde',
+      ticker: 'POION',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28630/thumb/poisonlogo160x160.png?1696527614'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'YOU-0xf93fc7d6508ae2faf8fc5675e896bc38d6e7212c',
+      ticker: 'YOU',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/34553/thumb/YOU_logo.png?1705368741'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'VST-0x64343594ab9b56e99087bfa6f2335db24c2d1f17',
+      ticker: 'VST',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/23621/thumb/vesta.png?1696522826'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'CAP-0x031d35296154279dc1984dcd93e392b1f946737b',
+      ticker: 'CAP',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/11775/thumb/cap.png?1696511654'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'UND-0xb5a628803ee72d82098d4bcaf29a42e63531b441',
+      ticker: 'UND',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29819/thumb/cglogocen.png?1707169718'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SECT-0x0b63c61bba4a876a6eb8b5e596800f7649a9b71e',
+      ticker: 'SECT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29672/thumb/ZVLrbTWD_400x400.jpg?1696528607'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SLIZ-0x463913d3a3d3d291667d53b8325c598eb88d3b0e',
+      ticker: 'SLIZ',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28968/thumb/sliz-logo.png?1696527941'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'GND-0xd67a097dce9d4474737e6871684ae3c05460f571',
+      ticker: 'GND',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30043/thumb/image-removebg-preview_%281%29.png?1696528965'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'TND-0xc47d9753f3b32aa9548a7c3f30b6aec3b2d2798c',
+      ticker: 'TND',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28659/thumb/tenderlogo.png?1696527644'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'USD24-0xbe00f3db78688d9704bcb4e0a827aea3a9cc0d62',
+      ticker: 'USD24',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/25598/thumb/USD24.png?1696524732'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'CONE-0xd3934a2e428e31ffc14b1f69b0bec79db3e0c614',
+      ticker: 'CONE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/31713/thumb/cone.png?1696530535'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'Y2K-0x65c936f008bc34fe819bce9fa5afd9dc2d49977f',
+      ticker: 'Y2K',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28542/thumb/l7jRo-5-_400x400.jpg?1696527534'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'LIQD-0x93c15cd7de26f07265f0272e0b831c5d7fab174f',
+      ticker: 'LIQD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/27056/thumb/liqd.png?1696526107'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SHIBAI-0xfa296fca3c7dba4a92a42ec0b5e2138da3b29050',
+      ticker: 'SHIBAI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29898/thumb/Fotor_AI%EF%BC%882%EF%BC%89.png?1696528822'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'NEU-0x6609be1547166d1c4605f3a243fdcff467e600c3',
+      ticker: 'NEU',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28813/thumb/NEU_Token_logo.png?1696527789'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'MOD-0x244ae62439c1ef3187f244d8604ac2c391ef2b53',
+      ticker: 'MOD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29267/thumb/Captura_de_Pantalla_2023-03-01_a_la%28s%29_14.22.57.png?1696528220'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AICODE-0x7c8a1a80fdd00c9cccd6ebd573e9ecb49bfa2a59',
+      ticker: 'AICODE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30057/thumb/AICODE.png?1696528979'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'DMT-0x8b0e6f19ee57089f7649a455d89d7bc6314d04e8',
+      ticker: 'DMT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30505/thumb/dmt.png?1696529391'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'RAM-0xaaa6c1e32c55a7bfa8066a6fae9b42650f262418',
+      ticker: 'RAM',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29420/thumb/RAMSES.png?1700027864'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'MZR-0xbbea044f9e7c0520195e49ad1e561572e7e1b948',
+      ticker: 'MZR',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/23272/thumb/V1DTptkT_400x400.jpg?1696522492'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'XNF-0xc84fae1141b92fa5bf847276828f69caf651cb7f',
+      ticker: 'XNF',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33406/thumb/XNF-Light_200px.png?1706018312'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'PSI-0x602eb0d99a5e3e76d1510372c4d2020e12eaea8a',
+      ticker: 'PSI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28955/thumb/trident.jpg?1696527928'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SUNDAE-0x352f4bf396a7353a0877f99e99757e5d294df374',
+      ticker: 'SUNDAE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32010/thumb/sundae.jpg?1696530808'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'CHOKE-0x6fc2680d8ad8e8312191441b4eca9eff8d06b45a',
+      ticker: 'CHOKE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30354/thumb/Choke_icon_-_Small.png?1696529254'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'VKA-0xafccb724e3aec1657fc9514e3e53a0e71e80622d',
+      ticker: 'VKA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32408/thumb/VKA_logo_PNG.png?1698057073'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'RDP-0x54bdbf3ce36f451ec61493236b8e6213ac87c0f6',
+      ticker: 'RDP',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/34052/thumb/Radpie_token_3_2.png?1704672743'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SHARBI-0xaa54e84a3e6e5a80288d2c2f8e36ea5ca3a3ca30',
+      ticker: 'SHARBI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29075/thumb/WhatsApp_Image_2023-01-25_at_12.08.22_PM-removebg-1.png?1696528041'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: '10SHARE-0xc8a1c0d8255bc2eb5f6236e119e3428fd0c33a74',
+      ticker: '10SHARE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29798/thumb/arbiten-s-200.png?1696528727'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'TROVE-0x982239d38af50b0168da33346d85fb12929c4c07',
+      ticker: 'TROVE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29017/thumb/trove.png?1696527988'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'REKT-0x1d987200df3b744cfa9c14f713f5334cb4bc4d5d',
+      ticker: 'REKT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29954/thumb/New_Project_%288%29.png?1696528881'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'GEM-0x4d010dbe0c6cdc0571bba026d6dfabbf40c9af28',
+      ticker: 'GEM',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32533/thumb/logogemdrop.png?1698461472'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'GRIMACE-0x764bfc309090e7f93edce53e5befa374cdcb7b8e',
+      ticker: 'GRIMACE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30957/thumb/Grimace.png?1696529796'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'NISHIB-0x910d3c72c5177c3f1bfb0863b793ec23fa7f6990',
+      ticker: 'NISHIB',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/27288/thumb/nishib_logo.png?1696526340'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'XTS-0x9c7049d2ddbda7df5da9a9069926f517d2d9e6ff',
+      ticker: 'XTS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33370/thumb/t%E1%BA%A3i_xu%E1%BB%91ng.png?1701619978'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'HTE-0x80dd74145b8bb10cef01bf914f796bd8b54d7809',
+      ticker: 'HTE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30274/thumb/HTECoingecko.png?1696529180'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'FCTR-0x6dd963c510c2d2f09d5eddb48ede45fed063eb36',
+      ticker: 'FCTR',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29018/thumb/FactorLogo.png?1696527989'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'NOLA-0xf8388c2b6edf00e2e27eef5200b1befb24ce141d',
+      ticker: 'NOLA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33708/thumb/nola.jpg?1702854587'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SMOL-0x9e64d3b9e8ec387a9a58ced80b71ed815f8d82b5',
+      ticker: 'SMOL',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33951/thumb/Smol_Coin_Icon.png?1703558329'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'XPET-0x00cbcf7b3d37844e44b888bc747bdd75fcf4e555',
+      ticker: 'XPET',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33553/thumb/xpet_token.jpeg?1702428894'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BPET-0x6daf586b7370b14163171544fca24abcc0862ac5',
+      ticker: 'BPET',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33848/thumb/BPET_logo.png?1703122571'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AIBB-0xb9af4762c039d63e30039f1712dfab77026408c7',
+      ticker: 'AIBB',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30096/thumb/ICON_200.png?1696529020'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'NGT-0x640278bada847b7ce71bb22f20517a009a049640',
+      ticker: 'NGT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29826/thumb/NGT200_200.png?1696528754'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ZZZ-0x7a2c1b8e26c48a5b73816b7ec826fd4053f5f34b',
+      ticker: 'ZZZ',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29901/thumb/ZZZ200_200.png?1696528830'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'CRDS-0x13461c85887e85fdc942ac94c4d2699995ad1960',
+      ticker: 'CRDS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33084/thumb/cradles_icon.png?1700601703'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'PRY-0x1824a51c106efc27d35a74efb56d9bf54ddb22d4',
+      ticker: 'PRY',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29525/thumb/perpy-icon-dark.png?1696528468'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ANIMA-0xccd05a0fcfc1380e9da27862adb2198e58e0d66f',
+      ticker: 'ANIMA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30377/thumb/anima_logo_yellow.png?1696529271'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'VOLTA-0x417a1afd44250314bffb11ff68e989775e990ab6',
+      ticker: 'VOLTA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29130/thumb/real_VoltaLogo.png?1696528091'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'LOCUS-0xe1d3495717f9534db67a6a8d4940dd17435b6a9e',
+      ticker: 'LOCUS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33441/thumb/locus_finance_logo.jpeg?1701854209'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ZYB-0x3b475f6f2f41853706afc9fa6a6b8c5df1a2724c',
+      ticker: 'ZYB',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28943/thumb/logo_with_bg.png?1696527917'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'DSQ-0xdb0c6fc9e01cd95eb1d3bbae6689962de489cd7b',
+      ticker: 'DSQ',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29016/thumb/dsquared.finance.jpg?1696527987'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BRAIN-0x847db21ef9de627c23d3dff470af6599b1a30d3f',
+      ticker: 'BRAIN',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28966/thumb/200x200.png?1696527939'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'EMP-0x772598e9e62155d7fdfe65fdf01eb5a53a8465be',
+      ticker: 'EMP',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/31374/thumb/emplogotransparent_%281%29.png?1696530191'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AMX-0xb2d948be3a74ecce80378d4093e6cd7f4dc1cf9c',
+      ticker: 'AMX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29025/thumb/logo-200.png?1696527995'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'HAMI-0x02150e97271fdc0d6e3a16d9094a0948266f07dd',
+      ticker: 'HAMI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28783/thumb/icon.png?1696527762'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'FLAME-0x4a7779abed707a9c7deadbbef5c15f3e52370a99',
+      ticker: 'FLAME',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/34280/thumb/20240104-164053.jpg?1704452348'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SPA-0x5575552988a3a80504bbaeb1311674fcfd40ad4b',
+      ticker: 'SPA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/12232/thumb/sperax_logo.jpg?1696512065'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'IPOR-0x34229b3f16fbcdfa8d8d9d17c0852f9496f4c7bb',
+      ticker: 'IPOR',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28373/thumb/IPOR-token-200x200.png?1696527376'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'USDLR-0x7e40b3e0fd0473e0240288d2b7618ac6f0c17e1b',
+      ticker: 'USDLR',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33115/thumb/0x68592c5c98c4f4a8a4bc6da2121e65da3d1c0917.png?1700731571'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'CRVUSD-0x498bf2b1e120fed3ad3d42ea2165e9b73f99c1e5',
+      ticker: 'CRVUSD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30118/thumb/crvusd.jpeg?1696529040'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'QUACK-0x59debed8d46a0cb823d8be8b957add987ead39aa',
+      ticker: 'QUACK',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/31436/thumb/0x639C0D019C257966C4907bD4E68E3F349bB58109.png?1696530251'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ULS-0x0cdbbc7fe1c8da0cc41ba96d7edb4cce5982f23f',
+      ticker: 'ULS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33560/thumb/dark_token.png?1702429859'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'DACKIE-0x47c337bd5b9344a6f3d6f58c474d9d8cd419d8ca',
+      ticker: 'DACKIE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30752/thumb/dackieswap_large.png?1707290196'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'GMAC-0xdc8b6b6beab4d5034ae91b7a1cf7d05a41f0d239',
+      ticker: 'GMAC',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32334/thumb/gmac-200x200.png?1697452788'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'DFX-0x27f485b62c4a7e635f561a87560adf5090239e93',
+      ticker: 'DFX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/14091/thumb/DFX.png?1696513813'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'FRM-0x9f6abbf0ba6b5bfa27f4deb6597cc6ec20573fda',
+      ticker: 'FRM',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/8251/thumb/FRM.png?1696508455'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'XWG-0xeb4d25db65dcef52380c99ba7e1344c820ecb1fc',
+      ticker: 'XWG',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/17847/thumb/200_200_%281%29_%281%29.png?1696790226'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'WBAN-0xe20b9e246db5a0d21bf9209e4858bc9a3ff7a034',
+      ticker: 'WBAN',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32617/thumb/WBAN.jpg?1698749253'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'XDAO-0x71eeba415a523f5c952cc2f06361d5443545ad28',
+      ticker: 'XDAO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/27363/thumb/token_2.png?1696526408'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'EDG-0x4e0da40b9063dc48364c1c0ffb4ae9d091fc2270',
+      ticker: 'EDG',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/8452/thumb/logo-edgeware.png?1696508638'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'YAK-0x7f4db37d7beb31f445307782bc3da0f18df13696',
+      ticker: 'YAK',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/17654/thumb/yieldyak.png?1696517185'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ACS-0x8888888888f004100c0353d657be6300587a6ccd',
+      ticker: 'ACS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32721/thumb/ACS.jpg?1699009686'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'STEUR-0x004626a008b1acdc4c74ab51644093b155e59a23',
+      ticker: 'STEUR',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32036/thumb/stEUR-x4.png?1696530832'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'PORT3-0xb4357054c3da8d46ed642383f03139ac7f090343',
+      ticker: 'PORT3',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33383/thumb/PORT3_200x200.png?1701671125'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'QKNTL-0xbcd4d5ac29e06e4973a1ddcd782cd035d04bc0b7',
+      ticker: 'QKNTL',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29605/thumb/IMG_6589D0616DF1-1.jpeg?1696528542'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'TBTC-0x6c84a8f1c29108f47a79964b5fe888d4f4d0de40',
+      ticker: 'TBTC',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/11224/thumb/0x18084fba666a33d37592fa2633fd49a74dd93a88.png?1696511155'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AWETH-0xe50fa9b3c56ffb159cb0fca61f5c9d750e8128c8',
+      ticker: 'AWETH',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32882/thumb/WETH_%281%29.png?1699716492'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'OSAK-0xbfd5206962267c7b4b4a8b3d76ac2e1b2a5c4d5e',
+      ticker: 'OSAK',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30911/thumb/osak_logo.png?1696529756'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ABI-0xb827710314a05bcbee9180e11c2abe5823289422',
+      ticker: 'ABI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/31225/thumb/Abachi.png?1696530051'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ITP-0x2b1d36f5b61addaf7da7ebbd11b35fd8cfb0de31',
+      ticker: 'ITP',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28338/thumb/ITP_Logo_200.png?1696527344'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ALTD-0x8929e9dbd2785e3ba16175e596cdd61520fee0d1',
+      ticker: 'ALTD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30114/thumb/logo.png?1696529036'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ZUSD-0x6e4cc0ab2b4d2edafa6723cfa1582229f1dd1be1',
+      ticker: 'ZUSD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/14192/thumb/icon_zusd_200_200.png?1696513910'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'LBR-0xa23e44aea714fbbc08ef28340d78067b9a8cad73',
+      ticker: 'LBR',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29958/thumb/New_LBR_V2.png?1696528884'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'NEXT-0x58b9cb810a68a7f3e1e4f8cb45d1b9b3c79705e8',
+      ticker: 'NEXT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/31293/thumb/connext.png?1696530113'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'KAP-0x965d00aa7abc62ca10132e641d08593435ac811d',
+      ticker: 'KAP',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/27682/thumb/KAP_Logo.png?1696526710'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SILO-0x0341c0c0ec423328621788d4854119b97f44e391',
+      ticker: 'SILO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/21454/thumb/y0iYKZOv_400x400.png?1696520816'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'OVN-0xa3d1a8deb97b111454b294e2324efad13a9d8396',
+      ticker: 'OVN',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/31970/thumb/OVN.png?1696959174'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'NPM-0x57f12fe6a4e5fe819eec699fadf9db2d06606bb4',
+      ticker: 'NPM',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28235/thumb/Neptune_Mutual_Logo_Icon_Regular_128.png?1696527238'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BETS-0x94025780a1ab58868d9b2dbbb775f44b32e8e6e5',
+      ticker: 'BETS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/26618/thumb/icon_200.png?1696525691'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AURY-0x11bf4f05eb28b802ed3ab672594decb20ffe2313',
+      ticker: 'AURY',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/19324/thumb/Ico_Blanc.png?1696518766'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'WNT-0xad4b9c1fbf4923061814dd9d5732eb703faa53d4',
+      ticker: 'WNT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/21223/thumb/wicrypt.PNG?1696520597'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ZENF-0xa6099b214e8d069911702bc92ef274f63c476c5a',
+      ticker: 'ZENF',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29477/thumb/tokenicon200px.png?1696528421'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AUSDC-0x724dc807b04555b71ed48a6896b6f41593b8c637',
+      ticker: 'AUSDC',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32847/thumb/usdc_%281%29.png?1699619355'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'DUSD-0x8ec1877698acf262fe8ad8a295ad94d6ea258988',
+      ticker: 'DUSD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28775/thumb/dusd_logo_200x200.png?1696527754'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AXLETH-0xb829b68f57cc546da7e5806a929e53be32a4625d',
+      ticker: 'AXLETH',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28171/thumb/weth-wei_D_3x.png?1696527174'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'LADYS-0x3b60ff35d3f7f62d636b067dd0dc0dfdad670e4e',
+      ticker: 'LADYS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30194/thumb/logo.png?1696529109'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'TUSD-0x4d15a3a2286d883af0aa1b3f21367843fac63e07',
+      ticker: 'TUSD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30837/thumb/tusd.jpeg?1696529695'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AXLUSDT-0x7f5373ae26c3e8ffc4c77b7255df7ec1a9af52a6',
+      ticker: 'AXLUSDT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/31002/thumb/uusdt_D_3x.png?1696529840'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'GRG-0x7f4638a58c0615037decc86f1dae60e55fe92874',
+      ticker: 'GRG',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/1532/thumb/Symbol-RigoblockRGB.png?1696502572'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'YDF-0x30dcba0405004cf124045793e1933c798af9e66a',
+      ticker: 'YDF',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/26699/thumb/logo.png?1696525772'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ACX-0x53691596d1bce8cea565b84d4915e69e03d9c99d',
+      ticker: 'ACX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28161/thumb/across-200x200.png?1696527165'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'PEPE-0xef00278d7eadf3b2c05267a2f185e468ad7eab7d',
+      ticker: 'PEPE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30321/thumb/logo200.png?1696529222'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BONK-0x09199d9a5f4448d0848e4395d065e1ad9c4a1f74',
+      ticker: 'BONK',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28600/thumb/bonk.jpg?1696527587'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'USDD-0x680447595e8b7b3aa1b43beb9f6098c79ac2ab3f',
+      ticker: 'USDD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/25380/thumb/UUSD.jpg?1696524513'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SUBTC-0xe85411c030fb32a9d8b14bbbc6cb19417391f711',
+      ticker: 'SUBTC',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33264/thumb/Sumer_Money_Logo.jpg?1701321397'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'FPI-0x1b01514a2b3cdef16fd3c680a818a0ab97da8a09',
+      ticker: 'FPI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/24945/thumb/FPI_icon.png?1696524100'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BOND-0x0d81e50bc677fa67341c44d7eaa9228dee64a4e1',
+      ticker: 'BOND',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/12811/thumb/barnbridge.jpg?1696512604'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'LON-0x55678cd083fcdc2947a0df635c93c838c89454a3',
+      ticker: 'LON',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/13454/thumb/lon_logo.png?1696513217'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'GOVI-0x07e49d5de43dda6162fa28d24d5935c151875283',
+      ticker: 'GOVI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/13875/thumb/GOVI.png?1696513619'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'GOLD-0xc4be0798e5b5b1c15eda36d9b2d8c1a60717fa92',
+      ticker: 'GOLD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28427/thumb/anon-npc-pixel.png?1696527424'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'KOM-0xa58663faef461761e44066ea26c1fcddf2927b80',
+      ticker: 'KOM',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/17483/thumb/1_f1S3h57YLT1e1cl8g7RJpw_2x.jpeg?1696517024'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'PERP-0x753d224bcf9aafacd81558c32341416df61d3dac',
+      ticker: 'PERP',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/12381/thumb/60d18e06844a844ad75901a9_mark_only_03.png?1696512205'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'DRC-0x2b089381f53525451fe5115f23e9d2cc92d7ff1d',
+      ticker: 'DRC',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/12802/thumb/DRC_Logo.jpg?1696512595'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'GENSX-0xf29fdf6b7bdffb025d7e6dfdf344992d2d16e249',
+      ticker: 'GENSX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30904/thumb/GX_short_logo.png?1696529749'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'DSLA-0x7ce746b45eabd0c4321538dec1b849c79a9a8476',
+      ticker: 'DSLA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/6694/thumb/dsla_logo-squared_200x200.png?1696507035'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AGEUR-0xfa5ed56a203466cbbc2430a43c66b9d8723528e7',
+      ticker: 'AGEUR',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/19479/thumb/agEUR.png?1696518915'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'PENDLE-0x0c880f6761f1af8d9aa9c466984b80dab9a8c9e8',
+      ticker: 'PENDLE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/15069/thumb/Pendle_Logo_Normal-03.png?1696514728'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AXLUSDC-0xeb466342c4d449bc9f53a865d5cb90586f405215',
+      ticker: 'AXLUSDC',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/26476/thumb/uausdc_D_3x.png?1696525548'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'PBX-0xbad58ed9b5f26a002ea250d7a60dc6729a4a2403',
+      ticker: 'PBX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/18410/thumb/paribus.PNG?1696517900'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'OK-0xd3ac016b1b8c80eeadde4d186a9138c9324e4189',
+      ticker: 'OK',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/274/thumb/ok-logo-200px.png?1696501624'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AWBTC-0x078f358208685046a11c85e8ad32895ded33a249',
+      ticker: 'AWBTC',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32883/thumb/wbtc.png?1699719908'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'OLE-0x7be5dd337cc6ce3e474f64e2a92a566445290864',
+      ticker: 'OLE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/26098/thumb/256x256_OLE_Token_Logo.png?1696525189'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'USDV-0x323665443cef804a3b5206103304bd4872ea4253',
+      ticker: 'USDV',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32948/thumb/usdv_%281%29.png?1699933314'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AGUSD-0x0000206329b97db379d5e1bf586bbdb969c63274',
+      ticker: 'AGUSD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/34510/thumb/agUSD-coingecko.png?1705288392'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'LNDX-0xe10d4a4255d2d35c9e23e2c4790e073046fbaf5c',
+      ticker: 'LNDX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33565/thumb/LNDX-200.png?1702445947'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'FUZZ-0x58e50e24d5160def294b6b6410d12c597054b79e',
+      ticker: 'FUZZ',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/18395/thumb/Fuzz-200x200.png?1696517886'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SUETH-0x1c22531aa9747d76fff8f0a43b37954ca67d28e0',
+      ticker: 'SUETH',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33265/thumb/Sumer_Money_Logo.jpg?1701321407'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AUSDT-0x6ab707aca953edaefbc4fd23ba73294241490620',
+      ticker: 'AUSDT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32884/thumb/USDT.PNG?1699768611'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'WSTETH-0x5979d7b546e38e414f7e9822514be443a4800529',
+      ticker: 'WSTETH',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/18834/thumb/wstETH.png?1696518295'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'VOLTA-0x9b06f3c5de42d4623d7a2bd940ec735103c68a76',
+      ticker: 'VOLTA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/31602/thumb/volta-200x200.png?1696530418'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'CFSH-0xc218a06a17feb66b1a730889fb9624326fabff4b',
+      ticker: 'CFSH',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/34623/thumb/TokenLogo.png?1705504570'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SUUSD-0x8bf591eae535f93a242d5a954d3cde648b48a5a8',
+      ticker: 'SUUSD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33266/thumb/Sumer_Money_Logo.jpg?1701321416'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BLOK-0x9dce8e754913d928eb39bc4fc3cf047e364f7f2c',
+      ticker: 'BLOK',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/18819/thumb/logo-bholdus-6.png?1696518281'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'EPENDLE-0xd4848211b699503c772aa1bc7d33b433c4242ac3',
+      ticker: 'EPENDLE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33379/thumb/photo_2023-12-02_19-45-14.jpg?1701665986'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'TAROT-0x6688b00f0c23a4a546beaae51a7c90c439895d48',
+      ticker: 'TAROT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/17881/thumb/tarot-200px.png?1696517403'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'PSM-0x17a8541b82bf67e10b0874284b4ae66858cb1fd5',
+      ticker: 'PSM',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/33596/thumb/PSM.png?1702521046'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'RELAY-0x1426cf37caa89628c4da2864e40cf75e6d66ac6b',
+      ticker: 'RELAY',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/17816/thumb/relay-logo-200.png?1696517336'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SWTH-0xf763fa322dc58dee588252fafee5f448e863b633',
+      ticker: 'SWTH',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/3645/thumb/SWTH_Symbol_Origin.png?1696504327'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'USDGLO-0x4f604735c1cf31399c6e711d5962b2b3e0225ad3',
+      ticker: 'USDGLO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29319/thumb/glo_logo_coingecko.png?1696528270'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BOMB-0x74ccbe53f77b08632ce0cb91d3a545bf6b8e0979',
+      ticker: 'BOMB',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/24109/thumb/logo-blue.png?1696523301'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'LYRA-0x079504b86d38119f859c4194765029f692b7b7aa',
+      ticker: 'LYRA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/21490/thumb/Add-a-heading-26.png?1696520850'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AGG-0x10663b695b8f75647bd3ff0ff609e16d35bbd1ec',
+      ticker: 'AGG',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29137/thumb/original-icon-transparent.png?1696528098'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'RING-0x9e523234d36973f9e38642886197d023c88e307e',
+      ticker: 'RING',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/9443/thumb/RING.png?1696509535'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'YOU-0x2fac624899a844e0628bfdcc70efcd25f6e90b95',
+      ticker: 'YOU',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/25353/thumb/youwho_200.png?1696524487'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'RETH-0xec70dcb4a1efa46b8f2d97c310c9c4790ba5ffa8',
+      ticker: 'RETH',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/20764/thumb/reth.png?1696520159'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'STFX-0x7dd747d63b094971e6638313a6a2685e80c7fb2e',
+      ticker: 'STFX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28631/thumb/stfx.png?1696527615'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'GENE-0x59a729658e9245b0cf1f8cb9fb37945d2b06ea27',
+      ticker: 'GENE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/20807/thumb/1637683704200x200.png?1696520200'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'GNOME-0x7698ac5d15bb3ba7185adcbff32a80ebd9d0709b',
+      ticker: 'GNOME',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/20885/thumb/gnome.png?1696520278'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BICO-0xa68ec98d7ca870cf1dd0b00ebbb7c4bf60a8e74d',
+      ticker: 'BICO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/21061/thumb/biconomy_logo.jpg?1696520444'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'JPG-0xafdefd913286a1cec75aca503938c6bba01a5445',
+      ticker: 'JPG',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/25071/thumb/JPG-token-logo-01.png?1696524219'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'GUARD-0xbcf339df10d78f2b44aa760ead0f715a7a7d7269',
+      ticker: 'GUARD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/17995/thumb/LS_wolfDen_logo.0025_Light_200x200.png?1696517512'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'JRT-0x6aa395f06986ea4efe0a4630c7865c1eb08d5e7e',
+      ticker: 'JRT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/10390/thumb/cfeii0y.png?1696510389'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SIS-0x9e758b8a98a42d612b3d38b66a22074dc03d7370',
+      ticker: 'SIS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/20805/thumb/SymbiosisFinance_logo-150x150.jpeg?1696520198'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BOB-0xb0b195aefa3650a6908f15cdac7d92f8a5791b0b',
+      ticker: 'BOB',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/27266/thumb/Bob-logo.png?1696526318'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'LUSD-0x93b346b6bc2548da6a1e7d98e9a421b42541425b',
+      ticker: 'LUSD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/14666/thumb/Group_3.png?1696514341'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'RAB-0x24ef78c7092d255ed14a0281ac1800c359af3afe',
+      ticker: 'RAB',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29433/thumb/200x200.png?1696528381'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'DOLA-0x6a7661795c374c0bfc635934efaddff3a7ee23b6',
+      ticker: 'DOLA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/14287/thumb/dola.png?1696513984'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'FIEF-0xe2105bea3819d3131b5b2306d44eb3271bfcfe0e',
+      ticker: 'FIEF',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/23710/thumb/61f837d2703b649ab0213d45_Black_logo_-_no_background-p-500.png?1696522910'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'PET-0x43c25f828390de5a3648864eb485cc523e039e67',
+      ticker: 'PET',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/14354/thumb/hello_pets.jpg?1696514040'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ZOO-0x1689a6e1f09658ff37d0bb131514e701045876da',
+      ticker: 'ZOO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/24305/thumb/Zt2BM_8D_400x400.jpg?1696523486'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SPOOL-0xeca14f81085e5b8d1c9d32dcb596681574723561',
+      ticker: 'SPOOL',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/21532/thumb/spool.png?1696520891'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SDEX-0xabd587f2607542723b17f14d00d99b987c29b074',
+      ticker: 'SDEX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29470/thumb/SDEX_logo_transparent_outside_240x240.png?1696930070'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'TRB-0xd58d345fd9c82262e087d2d0607624b410d88242',
+      ticker: 'TRB',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/9644/thumb/Blk_icon_current.png?1696509713'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'OBX-0x188fb5f5ae5bbe4154d5778f2bbb2fb985c94d25',
+      ticker: 'OBX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/26150/thumb/OBX_token-black_background_preview.png?1696525239'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'THALES-0xe85b662fe97e8562f4099d8a1d5a92d4b453bf30',
+      ticker: 'THALES',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/18388/thumb/CLVZJN_C_400x400.png?1696517879'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'FRXETH-0x178412e79c25968a32e89b11f63b33f733770c2a',
+      ticker: 'FRXETH',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28284/thumb/frxETH_icon.png?1696527284'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'MGP-0xa61f74247455a40b01b0559ff6274441fafa22a3',
+      ticker: 'MGP',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/27972/thumb/MagpieLogo.png?1696526991'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'FLASH-0xc628534100180582e43271448098cb2c185795bd',
+      ticker: 'FLASH',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/13533/thumb/FLASH.png?1696513294'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SQUAD-0xd45e486a90ebb84e9336d371a35dcb021424b96c',
+      ticker: 'SQUAD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28466/thumb/SQUAD200X200.png?1696527460'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'FLUX-0xf80d589b3dbe130c270a69f1a69d050f268786df',
+      ticker: 'FLUX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/11756/thumb/fluxres.png?1696511637'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'OJA-0x6cc5b1fb8c2fd7af1d2858f916f274b8faac82e1',
+      ticker: 'OJA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/18947/thumb/ojamu-icon-PNK.png?1696518402'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SFRXETH-0x95ab45875cffdba1e5f451b950bc2e42c0053f39',
+      ticker: 'SFRXETH',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28285/thumb/sfrxETH_icon.png?1696527285'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'IBEX-0x56659245931cb6920e39c189d2a0e7dd0da2d57b',
+      ticker: 'IBEX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/27606/thumb/IqwOmX-c_400x400.jpeg?1696526637'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'CDT-0x0cbd6fadcf8096cc9a43d90b45f65826102e3ece',
+      ticker: 'CDT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/20370/thumb/token-200x200_%281%29.png?1696519781'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ICHI-0xadf5dd3e51bf28ab4f07e684ecf5d00691818790',
+      ticker: 'ICHI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/13119/thumb/ICHI_%28Round%29.jpg?1696512907'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'GYEN-0x589d35656641d6ab57a545f08cf473ecd9b6d5f7',
+      ticker: 'GYEN',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/14191/thumb/icon_gyen_200_200.png?1696513909'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'MVD-0x15a808ed3846d25e88ae868de79f1bcb1ac382b5',
+      ticker: 'MVD',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/23899/thumb/MVD_Coin-simple.png?1696523099'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SEAN-0x37596f20adef5cc9618c8b6ddfa9dcb6329cb0fd',
+      ticker: 'SEAN',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/27533/thumb/SEAN_Token_icon.png?1696526570'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'GRAIN-0x80bb30d62a16e1f2084deae84dc293531c3ac3a1',
+      ticker: 'GRAIN',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29740/thumb/Grain.png?1696528670'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BRG-0xc9c4fd7579133701fa2769b6955e7e56bb386db1',
+      ticker: 'BRG',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/12512/thumb/brg.png?1696512327'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'FPIS-0x3405e88af759992937b84e58f2fe691ef0eea320',
+      ticker: 'FPIS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/24944/thumb/FPIS_icon.png?1696524099'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'KUJI-0x3a18dcc9745edcd1ef33ecb93b0b6eba5671e7ca',
+      ticker: 'KUJI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/20685/thumb/kuji-200x200.png?1696520085'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'WUSDR-0x9483ab65847a447e36d21af1cab8c87e9712ff93',
+      ticker: 'WUSDR',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28800/thumb/wUSDRlogo.png?1696527777'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'GNS-0x18c11fd286c5ec11c3b683caa813b77f5163a122',
+      ticker: 'GNS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/19737/thumb/logo.png?1696519161'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'JOE-0x371c7ec6d8039ff7933a2aa28eb827ffe1f52f07',
+      ticker: 'JOE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/17569/thumb/JoeToken.png?1703732357'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'DAO-0xcaa38bcc8fb3077975bbe217acfaa449e6596a84',
+      ticker: 'DAO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/13915/thumb/4.png?1696513656'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'HEGIC-0x431402e8b9de9aa016c743880e04e517074d8cec',
+      ticker: 'HEGIC',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/12454/thumb/new.png?1696512274'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'KNC-0xe4dddfe67e7164b0fe14e218d80dc4c08edc01cb',
+      ticker: 'KNC',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/14899/thumb/RwdVsGcw_400x400.jpg?1696514562'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'LPT-0x289ba1701c2f088cf0faf8b3705246331cb8a839',
+      ticker: 'LPT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/7137/thumb/logo-circle-green.png?1696507437'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'WOM-0x7b5eb3940021ec0e8e463d5dbb4b7b09a89ddf96',
+      ticker: 'WOM',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/26946/thumb/Wombat_Token.png?1696526001'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'LQTY-0xfb9e5d956d889d91a82737b9bfcdac1dce3e1449',
+      ticker: 'LQTY',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/14665/thumb/200-lqty-icon.png?1696514340'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'EUROE-0xcf985aba4647a432e60efceeb8054bbd64244305',
+      ticker: 'EUROE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28913/thumb/euroe-200x200-round.png?1696527889'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ACRE-0x5f006745a9a192a7cd1236089f704f9b35d3b9cd',
+      ticker: 'ACRE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/23659/thumb/acre_token-02.png?1696522862'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BTCB-0x2297aebd383787a160dd0d9f71508148769342e3',
+      ticker: 'BTCB',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/26115/thumb/btcb.png?1696525205'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ARETH-0x8eb270e296023e9d92081fdf967ddd7878724424',
+      ticker: 'ARETH',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/32885/thumb/reth.png?1699768947'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'GO-0x739e93844adabfd58b00b2bed540d1661d9af682',
+      ticker: 'GO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29300/thumb/go-token-medium.png?1696528252'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'USDS-0x097bf766e427f5ccd306f21ba05632e0be849b0e',
+      ticker: 'USDS',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/7596/thumb/USDS_Classic_Standard.png?1702476175'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'MINTME-0x7d05d38e6109a3aeeebf0a570eb8f6856cb4b55e',
+      ticker: 'MINTME',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/5127/thumb/MINTME_logo.png?1696505647'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'APEX-0x61a1ff55c5216b636a294a07d77c6f4df10d3b56',
+      ticker: 'APEX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/25266/thumb/CxpMECpk_400x400_%281%29.png?1696524406'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AMKT-0x498c620c7c91c6eba2e3cd5485383f41613b7eb6',
+      ticker: 'AMKT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28496/thumb/22999.png?1696527488'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'RISITA-0x7d86f1eaff29f076576b2ff09ce3bcc7533fd2c5',
+      ticker: 'RISITA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30333/thumb/200x200.png?1696529234'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'POND-0xda0a57b710768ae17941a9fa33f8b720c8bd9ddd',
+      ticker: 'POND',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/8903/thumb/200x200.png?1706115827'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'WMX-0x5190f06eacefa2c552dc6bd5e763b81c73293293',
+      ticker: 'WMX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/27844/thumb/WMX_logo.png?1696526863'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'PEPE-0x25d887ce7a35172c62febfd67a1856f20faebb00',
+      ticker: 'PEPE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29850/thumb/pepe-token.jpeg?1696528776'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'OHM-0xf0cb2dc0db5e6c66b9a70ac27b06b878da017028',
+      ticker: 'OHM',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/14483/thumb/token_OHM_%281%29.png?1696514169'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ENQAI-0xadd5620057336f868eae78a451c503ae7b576bad',
+      ticker: 'ENQAI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29908/thumb/icon.png?1702507913'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'USH-0x51a80238b5738725128d3a3e06ab41c1d4c05c74',
+      ticker: 'USH',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29337/thumb/unsheth_large_logo.png?1696528287'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BNIU-0x2f11eeee0bf21e7661a22dbbbb9068f4ad191b86',
+      ticker: 'BNIU',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/31869/thumb/b-NIU-200x200.png?1696530681'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'DAI+-0xeb8e93a0c7504bffd8a8ffa56cd754c63aaebfe8',
+      ticker: 'DAI+',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29634/thumb/DAI_.png?1696528571'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'RPL-0xb766039cc6db368759c1e56b79affe831d0cc507',
+      ticker: 'RPL',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/2090/thumb/rocket_pool_%28RPL%29.png?1696503058'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'YF-DAI-0xf061956612b3dc79fd285d3d51bc128f2ea87740',
+      ticker: 'YF',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/12385/thumb/1619048513068.png?1696512208'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'UNSHETH-0x0ae38f7e10a43b5b2fb064b42a2f4514cba909ef',
+      ticker: 'UNSHETH',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30365/thumb/ush.png?1696529262'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'USD+-0xe80772eaf6e2e18b651f160bc9158b2a5cafca65',
+      ticker: 'USD+',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/25757/thumb/USD__logo.png?1696524843'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AXL-0x23ee2343b892b1bb63503a4fabc840e0e2c6810f',
+      ticker: 'AXL',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/27277/thumb/V-65_xQ1_400x400.jpeg?1696526329'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'LVL-0xb64e280e9d1b5dbec4accedb2257a87b400db149',
+      ticker: 'LVL',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/28628/thumb/Token.png?1696527613'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'CBETH-0x1debd73e752beaf79865fd6446b0c970eae7732f',
+      ticker: 'CBETH',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/27008/thumb/cbeth.png?1696526061'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BLKC-0x8626264b6a1b4e920905efd381002aba52ea0eea',
+      ticker: 'BLKC',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/15987/thumb/logo_light.png?1696515600'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'IFARM-0x9dca587dc65ac0a043828b0acd946d71eb8d46c1',
+      ticker: 'IFARM',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/14472/thumb/ifarm.png?1696514159'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'NSWAP-0xfdad8edc724277e975f4955d288c6eb5b20a3146',
+      ticker: 'NSWAP',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30099/thumb/nswap-circ_%283%29.png?1696529023'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'OPUL-0x0c5fa0e07949f941a6c2c29a008252db1527d6ee',
+      ticker: 'OPUL',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/16548/thumb/opulous.PNG?1696516110'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'WEFI-0xffa188493c15dfaf2c206c97d8633377847b6a52',
+      ticker: 'WEFI',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30540/thumb/wefi.png?1696529412'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ANKRETH-0xe05a08226c49b636acf99c40da8dc6af83ce5bb3',
+      ticker: 'ANKRETH',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/13403/thumb/aETHc.png?1696513165'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BLID-0x81de4945807bb31425362f8f7109c18e3dc4f8f0',
+      ticker: 'BLID',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/25548/thumb/5XvLQULP_400x400.jpg?1703622595'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'FIRE-0xb25ea095997f5bbaa6cea962c4fbf3bfc3c09776',
+      ticker: 'FIRE',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30750/thumb/Fire_Logo.png?1696529619'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'TAROT-0x13278cd824d33a7adb9f0a9a84aca7c0d2deebf7',
+      ticker: 'TAROT',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/31800/thumb/TAROT.jpg?1696530615'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'ERN-0xa334884bf6b0a066d553d19e507315e839409e62',
+      ticker: 'ERN',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/29744/thumb/ERN200x200.png?1696528676'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'PNP-0x2ac2b254bc18cd4999f64773a966e4f4869c34ee',
+      ticker: 'PNP',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/30760/thumb/PNP_Token.png?1696529629'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'IDIA-0xe6045890b20945d00e6f3c01878265c03c5435d3',
+      ticker: 'IDIA',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/17803/thumb/IDIA.png?1696517325'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'WOO-0xcafcd85d8ca7ad1e1c6f82f651fa15e33aefd07b',
+      ticker: 'WOO',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/12921/thumb/WOO_Logos_2023_Profile_Pic_WOO.png?1696512709'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'RDPX-0x32eb7902d4134bf98a28b963d26de779af92a212',
+      ticker: 'RDPX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/16659/thumb/rDPX_200x200_Coingecko.png?1696516221'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'DPX-0x6c2c06790b3e3e3c38e12ee22f8183b37a13ee55',
+      ticker: 'DPX',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/16652/thumb/DPX_%281%29.png?1696516213'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'SFUND-0x560363bda52bc6a44ca6c8c9b4a5fadbda32fa60',
+      ticker: 'SFUND',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/14614/thumb/Favicon_Icon.png?1696514292'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'AUC-0xea986d33ef8a20a96120ecc44dbdd49830192043',
+      ticker: 'AUC',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/2165/thumb/Auc_Discord_Avatar1.png?1696503126'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'BADGER-0xbfa641051ba0a0ad1b0acf549a89536a0d76472e',
+      ticker: 'BADGER',
+      type: 1,
+    },
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/13287/thumb/badger_dao_logo.jpg?1696513059'
+    ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'DODO-0x69eb4fa4a2fbd498c257c57ea8b7655a2559a581',
+      ticker: 'DODO',
+      type: 1,
+    },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29399/thumb/l1v2_transparent.png?1696528349"
+      'https://assets.coingecko.com/coins/images/12651/thumb/dodo_logo.png?1696512458'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BLS-0x8a66794e1aaebc7018a7b75f61f384e30ae3b159",
-      ticker: "BLS",
+      symbol: 'GNO-0xa0b862f60edef4452f25b4160f177db44deb6cf1',
+      ticker: 'GNO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30300/thumb/logo_BLS_200_bg.png?1696529204"
+      'https://assets.coingecko.com/coins/images/662/thumb/logo_square_simple_300px.png?1696501854'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FXUSD-0x8616e8ea83f048ab9a5ec513c9412dd2993bce3f",
-      ticker: "FXUSD",
+      symbol: 'DXD-0xc3ae0333f0f34aa734d5493276223d95b8f9cb37',
+      ticker: 'DXD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/26954/thumb/fxUSDlogo.png?1696526009"
+      'https://assets.coingecko.com/coins/images/11148/thumb/dxdao.png?1696511083'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MMF-0x56b251d4b493ee3956e3f899d36b7290902d2326",
-      ticker: "MMF",
+      symbol: 'CREAM-0xf4d48ce3ee1ac3651998971541badbb9a14d7234',
+      ticker: 'CREAM',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29729/thumb/MMF_Arb_org.png?1696528659"
+      'https://assets.coingecko.com/coins/images/11976/thumb/Cream.png?1696511834'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FENGLVZIV2-0xb1070c40d5b3d10e1f1c8876c3d2ff5ffed4b3ac",
-      ticker: "FENGLVZIV2",
+      symbol: 'SUSHI-0xd4d42f0b6def4ce0383636770ef773390d85c61a',
+      ticker: 'SUSHI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30324/thumb/logo.png?1696529225"
+      'https://assets.coingecko.com/coins/images/12271/thumb/512x512_Logo_no_chop.png?1696512101'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ARBINU-0xdd8e557c8804d326c72074e987de02a23ae6ef84",
-      ticker: "ARBINU",
+      symbol: 'DAI-0xda10009cbd5d07dd0cecc66161fc93d7c9000da1',
+      ticker: 'DAI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28812/thumb/Arbinu_Coingecko_50px.png?1696527789"
+      'https://assets.coingecko.com/coins/images/9956/thumb/Badge_Dai.png?1696509996'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BET-0x9eb6299e4bb6669e42cb295a254c8492f67ae2c6",
-      ticker: "BET",
+      symbol: 'PREMIA-0x51fc0f6660482ea73330e414efd7808811a57fa2',
+      ticker: 'PREMIA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29545/thumb/200.png?1696528486"
+      'https://assets.coingecko.com/coins/images/13962/thumb/apple-touch-icon.png?1696513698'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LSDOGE-0x4c70d32295de15fdf302d3bcbb7fc2631ace1c91",
-      ticker: "LSDOGE",
+      symbol: 'RGT-0xef888bca6ab6b1d26dbec977c455388ecd794794',
+      ticker: 'RGT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29999/thumb/LSDoge_200_200.png?1696528924"
+      'https://assets.coingecko.com/coins/images/12900/thumb/Rari_Logo_Transparent.png?1696512688'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SEED-0xe6be2f5ab2ad4b8b146e3008f81832cf7b279f43",
-      ticker: "SEED",
+      symbol: 'XUSD-0x3509f19581afedeff07c53592bc0ca84e4855475',
+      ticker: 'XUSD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30736/thumb/SEED200x200.png?1696529606"
+      'https://assets.coingecko.com/coins/images/16291/thumb/xUSD-web-transparent.png?1696515890'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CHAI-0x743b077b103d91109082a7a48e19ffc1093137a5",
-      ticker: "CHAI",
+      symbol: 'SUSD-0xa970af1a584579b618be4d69ad6f73459d112f95',
+      ticker: 'SUSD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29473/thumb/Ai200px.png?1696528418"
+      'https://assets.coingecko.com/coins/images/5013/thumb/sUSD.png?1696505546'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "TAIKULA-0xb2498cde54810424a24fdd23579164265a0c14c5",
-      ticker: "TAIKULA",
+      symbol: 'TCR-0xa72159fc390f0e3c6d415e658264c7c4051e9b87',
+      ticker: 'TCR',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30265/thumb/8MV4Pr9j_400x400.png?1696529173"
+      'https://assets.coingecko.com/coins/images/18271/thumb/tracer_logo.png?1696517765'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "OT-0xb4b07b60455a2f38cba98a8f3dd161f7ca396a9c",
-      ticker: "OT",
+      symbol: 'SWPR-0xde903e2712288a1da82942dddf2c20529565ac30',
+      ticker: 'SWPR',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29133/thumb/OTCMC.png?1696528094"
+      'https://assets.coingecko.com/coins/images/18740/thumb/swapr.jpg?1696518206'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ALP-0xb49b6a3fd1f4bb510ef776de7a88a9e65904478a",
-      ticker: "ALP",
+      symbol: 'SDT-0x7ba4a00d54a07461d9db2aef539e91409943adc9',
+      ticker: 'SDT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30769/thumb/alp.jpg?1696529637"
+      'https://assets.coingecko.com/coins/images/13724/thumb/stakedao_logo.jpg?1696513468'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "YURI-0x077bc655c8d81b7de71c79318d0eb8f987e12820",
-      ticker: "YURI",
+      symbol: 'MATH-0x99f40b01ba9c469193b360f72740e416b17ac332',
+      ticker: 'MATH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31032/thumb/Yuri_logo_200x200.jpg?1696529868"
+      'https://assets.coingecko.com/coins/images/11335/thumb/2020-05-19-token-200.png?1696511257'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ZSP-0xb2dcbd5258a22385240e4ac13fc6726b66f0de96",
-      ticker: "ZSP",
+      symbol: 'LRC-0x46d0ce7de6247b0a95f67b43b589b4041bae7fbe',
+      ticker: 'LRC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29658/thumb/zenithswaplogo.png?1696528593"
+      'https://assets.coingecko.com/coins/images/913/thumb/LRC.png?1696502034'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LION-0x8ebb85d53e6955e557b7c53acde1d42fd68561ec",
-      ticker: "LION",
+      symbol: '0XBTC-0x7cb16cb78ea464ad35c8a50abf95dff3c9e09d5d',
+      ticker: '0XBTC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29685/thumb/Lion_Token.png?1696528619"
+      'https://assets.coingecko.com/coins/images/4454/thumb/0xbtc.png?1696505045'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ALIEN-0x6740acb82ac5c63a7ad2397ee1faed7c788f5f8c",
-      ticker: "ALIEN",
+      symbol: 'DVF-0xa7aa2921618e3d63da433829d448b58c9445a4c3',
+      ticker: 'DVF',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29175/thumb/alien.png?1696528133"
+      'https://assets.coingecko.com/coins/images/16414/thumb/rhinologo.png?1697736807'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ARCHI-0x93d504070ab0eede5449c89c5ea0f5e34d8103f8",
-      ticker: "ARCHI",
+      symbol: 'DOG-0x4425742f1ec8d98779690b5a3a6276db85ddc01a',
+      ticker: 'DOG',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30823/thumb/ARCHILOGO.png?1696529677"
+      'https://assets.coingecko.com/coins/images/18111/thumb/Doge.png?1696517615'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "POION-0x31c91d8fb96bff40955dd2dbc909b36e8b104dde",
-      ticker: "POION",
+      symbol: 'DHT-0x8038f3c971414fd1fc220ba727f2d4a0fc98cb65',
+      ticker: 'DHT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28630/thumb/poisonlogo160x160.png?1696527614"
+      'https://assets.coingecko.com/coins/images/12508/thumb/dht.png?1696512323'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "YOU-0xf93fc7d6508ae2faf8fc5675e896bc38d6e7212c",
-      ticker: "YOU",
+      symbol: 'ANKR-0xaeaeed23478c3a4b798e4ed40d8b7f41366ae861',
+      ticker: 'ANKR',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/34553/thumb/YOU_logo.png?1705368741"
+      'https://assets.coingecko.com/coins/images/4324/thumb/U85xTl2.png?1696504928'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "VST-0x64343594ab9b56e99087bfa6f2335db24c2d1f17",
-      ticker: "VST",
+      symbol: 'USDM-0x59d9356e565ab3a36dd77763fc0d87feaf85508c',
+      ticker: 'USDM',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/23621/thumb/vesta.png?1696522826"
+      'https://assets.coingecko.com/coins/images/31719/thumb/usdm.png?1696530540'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CAP-0x031d35296154279dc1984dcd93e392b1f946737b",
-      ticker: "CAP",
+      symbol: 'HORD-0xb1bc21f748ae2be95674876710bc6d78235480e0',
+      ticker: 'HORD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/11775/thumb/cap.png?1696511654"
+      'https://assets.coingecko.com/coins/images/14972/thumb/HORD_TOKEN_%281%29_1.png?1705414356'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "UND-0xb5a628803ee72d82098d4bcaf29a42e63531b441",
-      ticker: "UND",
+      symbol: 'DF-0xae6aab43c4f3e0cea4ab83752c278f8debaba689',
+      ticker: 'DF',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29819/thumb/cglogocen.png?1707169718"
+      'https://assets.coingecko.com/coins/images/9709/thumb/xlGxxIjI_400x400.jpg?1696509776'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SECT-0x0b63c61bba4a876a6eb8b5e596800f7649a9b71e",
-      ticker: "SECT",
+      symbol: 'LINK-0xf97f4df75117a78c1a5a0dbb814af92458539fb4',
+      ticker: 'LINK',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29672/thumb/ZVLrbTWD_400x400.jpg?1696528607"
+      'https://assets.coingecko.com/coins/images/877/thumb/chainlink-new-logo.png?1696502009'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SLIZ-0x463913d3a3d3d291667d53b8325c598eb88d3b0e",
-      ticker: "SLIZ",
+      symbol: 'UNI-0xfa7f8980b0f1e64a2062791cc3b0871572f1f7f0',
+      ticker: 'UNI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28968/thumb/sliz-logo.png?1696527941"
+      'https://assets.coingecko.com/coins/images/12504/thumb/uni.jpg?1696512319'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GND-0xd67a097dce9d4474737e6871684ae3c05460f571",
-      ticker: "GND",
+      symbol: 'USDC-0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+      ticker: 'USDC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30043/thumb/image-removebg-preview_%281%29.png?1696528965"
+      'https://assets.coingecko.com/coins/images/6319/thumb/usdc.png?1696506694'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "TND-0xc47d9753f3b32aa9548a7c3f30b6aec3b2d2798c",
-      ticker: "TND",
+      symbol: 'FRAX-0x17fc002b466eec40dae837fc4be5c67993ddbd6f',
+      ticker: 'FRAX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28659/thumb/tenderlogo.png?1696527644"
+      'https://assets.coingecko.com/coins/images/13422/thumb/FRAX_icon.png?1696513182'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "USD24-0xbe00f3db78688d9704bcb4e0a827aea3a9cc0d62",
-      ticker: "USD24",
+      symbol: 'FXS-0x9d2f299715d94d8a7e6f5eaa8e654e8c74a988a7',
+      ticker: 'FXS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/25598/thumb/USD24.png?1696524732"
+      'https://assets.coingecko.com/coins/images/13423/thumb/Frax_Shares_icon.png?1696513183'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CONE-0xd3934a2e428e31ffc14b1f69b0bec79db3e0c614",
-      ticker: "CONE",
+      symbol: 'UNIDX-0x5429706887fcb58a595677b73e9b0441c25d993d',
+      ticker: 'UNIDX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31713/thumb/cone.png?1696530535"
+      'https://assets.coingecko.com/coins/images/13178/thumb/unidx.png?1696512961'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "Y2K-0x65c936f008bc34fe819bce9fa5afd9dc2d49977f",
-      ticker: "Y2K",
+      symbol: 'GOHM-0x8d9ba570d6cb60c7e3e0f31343efe75ab8e65fb1',
+      ticker: 'GOHM',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28542/thumb/l7jRo-5-_400x400.jpg?1696527534"
+      'https://assets.coingecko.com/coins/images/21129/thumb/token_wsOHM_logo.png?1696520508'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LIQD-0x93c15cd7de26f07265f0272e0b831c5d7fab174f",
-      ticker: "LIQD",
+      symbol: 'USX-0x641441c631e2f909700d2f41fd87f0aa6a6b4edb',
+      ticker: 'USX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/27056/thumb/liqd.png?1696526107"
+      'https://assets.coingecko.com/coins/images/17422/thumb/usx_32.png?1696516969'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SHIBAI-0xfa296fca3c7dba4a92a42ec0b5e2138da3b29050",
-      ticker: "SHIBAI",
+      symbol: 'STG-0x6694340fc020c5e6b96567843da2df01b2ce1eb6',
+      ticker: 'STG',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29898/thumb/Fotor_AI%EF%BC%882%EF%BC%89.png?1696528822"
+      'https://assets.coingecko.com/coins/images/24413/thumb/STG_LOGO.png?1696523595'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "NEU-0x6609be1547166d1c4605f3a243fdcff467e600c3",
-      ticker: "NEU",
+      symbol: 'MIMATIC-0x3f56e0c36d275367b8c502090edf38289b3dea0d',
+      ticker: 'MIMATIC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28813/thumb/NEU_Token_logo.png?1696527789"
+      'https://assets.coingecko.com/coins/images/15264/thumb/mimatic-red.png?1696514916'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MOD-0x244ae62439c1ef3187f244d8604ac2c391ef2b53",
-      ticker: "MOD",
+      symbol: 'CTSI-0x319f865b287fcc10b30d8ce6144e8b6d1b476999',
+      ticker: 'CTSI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29267/thumb/Captura_de_Pantalla_2023-03-01_a_la%28s%29_14.22.57.png?1696528220"
+      'https://assets.coingecko.com/coins/images/11038/thumb/Cartesi_Logo.png?1696510982'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AICODE-0x7c8a1a80fdd00c9cccd6ebd573e9ecb49bfa2a59",
-      ticker: "AICODE",
+      symbol: 'MNTO-0xf0dfad1817b5ba73726b02ab34dd4b4b00bcd392',
+      ticker: 'MNTO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30057/thumb/AICODE.png?1696528979"
+      'https://assets.coingecko.com/coins/images/24622/thumb/MNTO_200x200.png?1696523794'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DMT-0x8b0e6f19ee57089f7649a455d89d7bc6314d04e8",
-      ticker: "DMT",
+      symbol: 'ROOBEE-0x3bd2dfd03bc7c3011ed7fb8c4d0949b382726cee',
+      ticker: 'ROOBEE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30505/thumb/dmt.png?1696529391"
+      'https://assets.coingecko.com/coins/images/8791/thumb/Group_11.png?1696508946'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "RAM-0xaaa6c1e32c55a7bfa8066a6fae9b42650f262418",
-      ticker: "RAM",
+      symbol: 'DERI-0x21e60ee73f17ac0a411ae5d690f908c3ed66fe12',
+      ticker: 'DERI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29420/thumb/RAMSES.png?1700027864"
+      'https://assets.coingecko.com/coins/images/13931/thumb/200vs200.jpg?1696513670'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MZR-0xbbea044f9e7c0520195e49ad1e561572e7e1b948",
-      ticker: "MZR",
+      symbol: 'POP-0x68ead55c258d6fa5e46d67fc90f53211eab885be',
+      ticker: 'POP',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/23272/thumb/V1DTptkT_400x400.jpg?1696522492"
+      'https://assets.coingecko.com/coins/images/21438/thumb/pop-1_200_x_200.png?1696520801'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "XNF-0xc84fae1141b92fa5bf847276828f69caf651cb7f",
-      ticker: "XNF",
+      symbol: 'OSEA-0xc72633f995e98ac3bb8a89e6a9c4af335c3d6e44',
+      ticker: 'OSEA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33406/thumb/XNF-Light_200px.png?1706018312"
+      'https://assets.coingecko.com/coins/images/26475/thumb/293837892_407994084681555_3167689470652146992_n.png?1696525547'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PSI-0x602eb0d99a5e3e76d1510372c4d2020e12eaea8a",
-      ticker: "PSI",
+      symbol: 'PBTC-0x115d8bf0a53e751f8a472f88d587944ec1c8ca6d',
+      ticker: 'PBTC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28955/thumb/trident.jpg?1696527928"
+      'https://assets.coingecko.com/coins/images/25861/thumb/wMTpRljt_400x400.png?1696524945'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SUNDAE-0x352f4bf396a7353a0877f99e99757e5d294df374",
-      ticker: "SUNDAE",
+      symbol: 'ARTH-0x5441695f4445e40900b4c4b0fb3ed2b9e51601a6',
+      ticker: 'ARTH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32010/thumb/sundae.jpg?1696530808"
+      'https://assets.coingecko.com/coins/images/16876/thumb/Ik5dhOq.png?1696516444'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CHOKE-0x6fc2680d8ad8e8312191441b4eca9eff8d06b45a",
-      ticker: "CHOKE",
+      symbol: 'UTS-0x3b6564b5da73a41d3a66e6558a98fd0e9e1e77ad',
+      ticker: 'UTS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30354/thumb/Choke_icon_-_Small.png?1696529254"
+      'https://assets.coingecko.com/coins/images/33178/thumb/IMG_0051.jpeg?1700924333'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "VKA-0xafccb724e3aec1657fc9514e3e53a0e71e80622d",
-      ticker: "VKA",
+      symbol: 'ORBS-0xf3c091ed43de9c270593445163a41a876a0bb3dd',
+      ticker: 'ORBS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32408/thumb/VKA_logo_PNG.png?1698057073"
+      'https://assets.coingecko.com/coins/images/4630/thumb/Orbs.jpg?1696505200'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "RDP-0x54bdbf3ce36f451ec61493236b8e6213ac87c0f6",
-      ticker: "RDP",
+      symbol: 'GOLD-0x8b5e4c9a188b1a187f2d1e80b1c2fb17fa2922e1',
+      ticker: 'GOLD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/34052/thumb/Radpie_token_3_2.png?1704672743"
+      'https://assets.coingecko.com/coins/images/31353/thumb/goldenboys.png?1696530170'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SHARBI-0xaa54e84a3e6e5a80288d2c2f8e36ea5ca3a3ca30",
-      ticker: "SHARBI",
+      symbol: 'ROUTE-0x11bbf12363dc8375b78d2719395d505f52a02f68',
+      ticker: 'ROUTE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29075/thumb/WhatsApp_Image_2023-01-25_at_12.08.22_PM-removebg-1.png?1696528041"
+      'https://assets.coingecko.com/coins/images/13709/thumb/route_token_200x200-19.png?1696513454'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "10SHARE-0xc8a1c0d8255bc2eb5f6236e119e3428fd0c33a74",
-      ticker: "10SHARE",
+      symbol: 'FUSE-0x6b021b3f68491974be6d4009fee61a4e3c708fd6',
+      ticker: 'FUSE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29798/thumb/arbiten-s-200.png?1696528727"
+      'https://assets.coingecko.com/coins/images/10347/thumb/fuse.png?1696510348'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "TROVE-0x982239d38af50b0168da33346d85fb12929c4c07",
-      ticker: "TROVE",
+      symbol: 'PEUSD-0xdce765f021410b3266aa0053c93cb4535f1e12e0',
+      ticker: 'PEUSD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29017/thumb/trove.png?1696527988"
+      'https://assets.coingecko.com/coins/images/31521/thumb/peUSD_200x200.png?1696530331'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "REKT-0x1d987200df3b744cfa9c14f713f5334cb4bc4d5d",
-      ticker: "REKT",
+      symbol: 'MPENDLE-0xb688ba096b7bb75d7841e47163cd12d18b36a5bf',
+      ticker: 'MPENDLE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29954/thumb/New_Project_%288%29.png?1696528881"
+      'https://assets.coingecko.com/coins/images/31918/thumb/mPendle.png?1696530726'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GEM-0x4d010dbe0c6cdc0571bba026d6dfabbf40c9af28",
-      ticker: "GEM",
+      symbol: 'SWETH-0xbc011a12da28e8f0f528d9ee5e7039e22f91cf18',
+      ticker: 'SWETH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32533/thumb/logogemdrop.png?1698461472"
+      'https://assets.coingecko.com/coins/images/30326/thumb/_lB7zEtS_400x400.jpg?1696529227'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GRIMACE-0x764bfc309090e7f93edce53e5befa374cdcb7b8e",
-      ticker: "GRIMACE",
+      symbol: 'WAGMI-0xaf20f5f19698f1d19351028cd7103b63d30de7d7',
+      ticker: 'WAGMI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30957/thumb/Grimace.png?1696529796"
+      'https://assets.coingecko.com/coins/images/31887/thumb/wagmi_token_logo.png?1696530698'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "NISHIB-0x910d3c72c5177c3f1bfb0863b793ec23fa7f6990",
-      ticker: "NISHIB",
+      symbol: 'USDT+-0xb1084db8d3c05cebd5fa9335df95ee4b8a0edc30',
+      ticker: 'USDT+',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/27288/thumb/nishib_logo.png?1696526340"
+      'https://assets.coingecko.com/coins/images/30168/thumb/USDT_.png?1696529088'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "XTS-0x9c7049d2ddbda7df5da9a9069926f517d2d9e6ff",
-      ticker: "XTS",
+      symbol: 'AXL-WSTETH-0x9cfb13e6c11054ac9fcb92ba89644f30775436e4',
+      ticker: 'AXL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33370/thumb/t%E1%BA%A3i_xu%E1%BB%91ng.png?1701619978"
+      'https://assets.coingecko.com/coins/images/32223/thumb/steth-wei_D_3x.png?1696926841'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "HTE-0x80dd74145b8bb10cef01bf914f796bd8b54d7809",
-      ticker: "HTE",
+      symbol: 'OATH-0x00e1724885473b63bce08a9f0a52f35b0979e35a',
+      ticker: 'OATH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30274/thumb/HTECoingecko.png?1696529180"
+      'https://assets.coingecko.com/coins/images/24075/thumb/OATH.png?1698051304'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FCTR-0x6dd963c510c2d2f09d5eddb48ede45fed063eb36",
-      ticker: "FCTR",
+      symbol: 'CELO-0x4e51ac49bc5e2d87e0ef713e9e5ab2d71ef4f336',
+      ticker: 'CELO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29018/thumb/FactorLogo.png?1696527989"
+      'https://assets.coingecko.com/coins/images/32400/thumb/celo_wh.png?1698055352'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "NOLA-0xf8388c2b6edf00e2e27eef5200b1befb24ce141d",
-      ticker: "NOLA",
+      symbol: 'ADAI-0x82e64f49ed5ec1bc6e43dad4fc8af9bb3a2312ee',
+      ticker: 'ADAI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33708/thumb/nola.jpg?1702854587"
+      'https://assets.coingecko.com/coins/images/32886/thumb/dai.png?1699769446'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SMOL-0x9e64d3b9e8ec387a9a58ced80b71ed815f8d82b5",
-      ticker: "SMOL",
+      symbol: 'STERN-0xf7a0dd3317535ec4f4d29adf9d620b3d8d5d5069',
+      ticker: 'STERN',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33951/thumb/Smol_Coin_Icon.png?1703558329"
+      'https://assets.coingecko.com/coins/images/31522/thumb/stERN.png?1696530332'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "XPET-0x00cbcf7b3d37844e44b888bc747bdd75fcf4e555",
-      ticker: "XPET",
+      symbol: 'AAAVE-0xf329e36c7bf6e5e86ce2150875a84ce77f477375',
+      ticker: 'AAAVE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33553/thumb/xpet_token.jpeg?1702428894"
+      'https://assets.coingecko.com/coins/images/32887/thumb/aave.png?1699773604'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BPET-0x6daf586b7370b14163171544fca24abcc0862ac5",
-      ticker: "BPET",
+      symbol: 'ALINK-0x191c10aa4af7c30e871e70c95db0e4eb77237530',
+      ticker: 'ALINK',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33848/thumb/BPET_logo.png?1703122571"
+      'https://assets.coingecko.com/coins/images/32888/thumb/link.png?1699773900'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AIBB-0xb9af4762c039d63e30039f1712dfab77026408c7",
-      ticker: "AIBB",
+      symbol: 'GRAI-0x894134a25a5fac1c2c26f1d8fbf05111a3cb9487',
+      ticker: 'GRAI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30096/thumb/ICON_200.png?1696529020"
+      'https://assets.coingecko.com/coins/images/30427/thumb/GRAI_Token.png?1696529315'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "NGT-0x640278bada847b7ce71bb22f20517a009a049640",
-      ticker: "NGT",
+      symbol: 'AFRAX-0x38d693ce1df5aadf7bc62595a37d667ad57922e5',
+      ticker: 'AFRAX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29826/thumb/NGT200_200.png?1696528754"
+      'https://assets.coingecko.com/coins/images/32904/thumb/FRAX.png?1699802848'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ZZZ-0x7a2c1b8e26c48a5b73816b7ec826fd4053f5f34b",
-      ticker: "ZZZ",
+      symbol: 'BANANA-0xd978f8489e1245568704407a479a71fcce2afe8f',
+      ticker: 'BANANA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29901/thumb/ZZZ200_200.png?1696528830"
+      'https://assets.coingecko.com/coins/images/14870/thumb/banana.png?1696514534'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CRDS-0x13461c85887e85fdc942ac94c4d2699995ad1960",
-      ticker: "CRDS",
+      symbol: 'GBL-0xc14a7747cfec02cfea62e72bb93538de6b2078e6',
+      ticker: 'GBL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33084/thumb/cradles_icon.png?1700601703"
+      'https://assets.coingecko.com/coins/images/34205/thumb/gbl.png?1704275447'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PRY-0x1824a51c106efc27d35a74efb56d9bf54ddb22d4",
-      ticker: "PRY",
+      symbol: 'OMNI-0x9e20461bc2c4c980f62f1b279d71734207a6a356',
+      ticker: 'OMNI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29525/thumb/perpy-icon-dark.png?1696528468"
+      'https://assets.coingecko.com/coins/images/33917/thumb/2023-12-21_21.39.10.jpg?1703321588'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ANIMA-0xccd05a0fcfc1380e9da27862adb2198e58e0d66f",
-      ticker: "ANIMA",
+      symbol: 'AI-0x2598c30330d5771ae9f983979209486ae26de875',
+      ticker: 'AI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30377/thumb/anima_logo_yellow.png?1696529271"
+      'https://assets.coingecko.com/coins/images/34126/thumb/anyinulogo200.png?1704174269'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "VOLTA-0x417a1afd44250314bffb11ff68e989775e990ab6",
-      ticker: "VOLTA",
+      symbol: 'MAHA-0xedd6ca8a4202d4a36611e2fff109648c4863ae19',
+      ticker: 'MAHA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29130/thumb/real_VoltaLogo.png?1696528091"
+      'https://assets.coingecko.com/coins/images/13404/thumb/MAHA_Token.png?1696513166'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LOCUS-0xe1d3495717f9534db67a6a8d4940dd17435b6a9e",
-      ticker: "LOCUS",
+      symbol: 'SYN-0x080f6aed32fc474dd5717105dba5ea57268f46eb',
+      ticker: 'SYN',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33441/thumb/locus_finance_logo.jpeg?1701854209"
+      'https://assets.coingecko.com/coins/images/18024/thumb/synapse_social_icon.png?1696517540'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ZYB-0x3b475f6f2f41853706afc9fa6a6b8c5df1a2724c",
-      ticker: "ZYB",
+      symbol: 'AGVE-0x848e0ba28b637e8490d88bae51fa99c87116409b',
+      ticker: 'AGVE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28943/thumb/logo_with_bg.png?1696527917"
+      'https://assets.coingecko.com/coins/images/14146/thumb/agve.png?1696513865'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DSQ-0xdb0c6fc9e01cd95eb1d3bbae6689962de489cd7b",
-      ticker: "DSQ",
+      symbol: 'GRT-0x9623063377ad1b27544c965ccd7342f7ea7e88c7',
+      ticker: 'GRT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29016/thumb/dsquared.finance.jpg?1696527987"
+      'https://assets.coingecko.com/coins/images/13397/thumb/Graph_Token.png?1696513159'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BRAIN-0x847db21ef9de627c23d3dff470af6599b1a30d3f",
-      ticker: "BRAIN",
+      symbol: 'WETH-0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
+      ticker: 'WETH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28966/thumb/200x200.png?1696527939"
+      'https://assets.coingecko.com/coins/images/2518/thumb/weth.png?1696503332'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "EMP-0x772598e9e62155d7fdfe65fdf01eb5a53a8465be",
-      ticker: "EMP",
+      symbol: 'CELR-0x3a8b787f78d775aecfeea15706d4221b40f345ab',
+      ticker: 'CELR',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31374/thumb/emplogotransparent_%281%29.png?1696530191"
+      'https://assets.coingecko.com/coins/images/4379/thumb/Celr.png?1696504978'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AMX-0xb2d948be3a74ecce80378d4093e6cd7f4dc1cf9c",
-      ticker: "AMX",
+      symbol: 'CRV-0x11cdb42b0eb46d95f990bedd4695a6e3fa034978',
+      ticker: 'CRV',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29025/thumb/logo-200.png?1696527995"
+      'https://assets.coingecko.com/coins/images/12124/thumb/Curve.png?1696511967'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "HAMI-0x02150e97271fdc0d6e3a16d9094a0948266f07dd",
-      ticker: "HAMI",
+      symbol: 'MCB-0x4e352cf164e64adcbad318c3a1e222e9eba4ce42',
+      ticker: 'MCB',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28783/thumb/icon.png?1696527762"
+      'https://assets.coingecko.com/coins/images/11796/thumb/mux.jpg?1696511672'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FLAME-0x4a7779abed707a9c7deadbbef5c15f3e52370a99",
-      ticker: "FLAME",
+      symbol: 'SPELL-0x3e6648c5a70a150a88bce65f4ad4d506fe15d2af',
+      ticker: 'SPELL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/34280/thumb/20240104-164053.jpg?1704452348"
+      'https://assets.coingecko.com/coins/images/15861/thumb/abracadabra-3.png?1696515477'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SPA-0x5575552988a3a80504bbaeb1311674fcfd40ad4b",
-      ticker: "SPA",
+      symbol: 'YFI-0x82e3a8f066a6989666b031d916c43672085b1582',
+      ticker: 'YFI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/12232/thumb/sperax_logo.jpg?1696512065"
+      'https://assets.coingecko.com/coins/images/11849/thumb/yearn.jpg?1696511720'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "IPOR-0x34229b3f16fbcdfa8d8d9d17c0852f9496f4c7bb",
-      ticker: "IPOR",
+      symbol: 'PICKLE-0x965772e0e9c84b6f359c8597c891108dcf1c5b1a',
+      ticker: 'PICKLE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28373/thumb/IPOR-token-200x200.png?1696527376"
+      'https://assets.coingecko.com/coins/images/12435/thumb/0M4W6Yr6_400x400.jpg?1696512255'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "USDLR-0x7e40b3e0fd0473e0240288d2b7618ac6f0c17e1b",
-      ticker: "USDLR",
+      symbol: 'BAL-0x040d1edc9569d4bab2d15287dc5a4f10f56a56b8',
+      ticker: 'BAL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33115/thumb/0x68592c5c98c4f4a8a4bc6da2121e65da3d1c0917.png?1700731571"
+      'https://assets.coingecko.com/coins/images/11683/thumb/Balancer.png?1696511572'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CRVUSD-0x498bf2b1e120fed3ad3d42ea2165e9b73f99c1e5",
-      ticker: "CRVUSD",
+      symbol: 'COMP-0x354a6da3fcde098f8389cad84b0182725c6c91de',
+      ticker: 'COMP',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30118/thumb/crvusd.jpeg?1696529040"
+      'https://assets.coingecko.com/coins/images/10775/thumb/COMP.png?1696510737'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "QUACK-0x59debed8d46a0cb823d8be8b957add987ead39aa",
-      ticker: "QUACK",
+      symbol: 'NDX-0xb965029343d55189c25a7f3e0c9394dc0f5d41b1',
+      ticker: 'NDX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31436/thumb/0x639C0D019C257966C4907bD4E68E3F349bB58109.png?1696530251"
+      'https://assets.coingecko.com/coins/images/13546/thumb/indexed-light.74bb5471.png?1696513306'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ULS-0x0cdbbc7fe1c8da0cc41ba96d7edb4cce5982f23f",
-      ticker: "ULS",
+      symbol: 'HND-0x10010078a54396f62c96df8532dc2b4847d47ed3',
+      ticker: 'HND',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33560/thumb/dark_token.png?1702429859"
+      'https://assets.coingecko.com/coins/images/18445/thumb/hnd.PNG?1696517933'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DACKIE-0x47c337bd5b9344a6f3d6f58c474d9d8cd419d8ca",
-      ticker: "DACKIE",
+      symbol: 'MIM-0xfea7a6a0b346362bf88a9e4a88416b77a57d6c2a',
+      ticker: 'MIM',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30752/thumb/dackieswap_large.png?1707290196"
+      'https://assets.coingecko.com/coins/images/16786/thumb/mimlogopng.png?1696516358'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GMAC-0xdc8b6b6beab4d5034ae91b7a1cf7d05a41f0d239",
-      ticker: "GMAC",
+      symbol: 'FOREX-0xdb298285fe4c5410b05390ca80e8fbe9de1f259b',
+      ticker: 'FOREX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32334/thumb/gmac-200x200.png?1697452788"
+      'https://assets.coingecko.com/coins/images/18533/thumb/handle.fiFOREXLogoDark200x200.png?1696518013'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DFX-0x27f485b62c4a7e635f561a87560adf5090239e93",
-      ticker: "DFX",
+      symbol: 'ZYX-0x377c6e37633e390aef9afb4f5e0b16689351eed4',
+      ticker: 'ZYX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/14091/thumb/DFX.png?1696513813"
+      'https://assets.coingecko.com/coins/images/11964/thumb/zyx.png?1696511823'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FRM-0x9f6abbf0ba6b5bfa27f4deb6597cc6ec20573fda",
-      ticker: "FRM",
+      symbol: 'SDL-0x75c9bc761d88f70156daf83aa010e84680baf131',
+      ticker: 'SDL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/8251/thumb/FRM.png?1696508455"
+      'https://assets.coingecko.com/coins/images/20476/thumb/SDL_token.png?1696519884'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "XWG-0xeb4d25db65dcef52380c99ba7e1344c820ecb1fc",
-      ticker: "XWG",
+      symbol: 'KROM-0x55ff62567f09906a85183b866df84bf599a4bf70',
+      ticker: 'KROM',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/17847/thumb/200_200_%281%29_%281%29.png?1696790226"
+      'https://assets.coingecko.com/coins/images/20541/thumb/KROM_Transparent.png?1696519948'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "WBAN-0xe20b9e246db5a0d21bf9209e4858bc9a3ff7a034",
-      ticker: "WBAN",
+      symbol: 'XTK-0xf0a5717ec0883ee56438932b0fe4a20822735fba',
+      ticker: 'XTK',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32617/thumb/WBAN.jpg?1698749253"
+      'https://assets.coingecko.com/coins/images/14089/thumb/xtk.png?1696513811'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "XDAO-0x71eeba415a523f5c952cc2f06361d5443545ad28",
-      ticker: "XDAO",
+      symbol: 'ALN-0x9b3fa2a7c3eb36d048a5d38d81e7fafc6bc47b25',
+      ticker: 'ALN',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/27363/thumb/token_2.png?1696526408"
+      'https://assets.coingecko.com/coins/images/14379/thumb/uaLoLU8c_400x400_%281%29.png?1696514071'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "EDG-0x4e0da40b9063dc48364c1c0ffb4ae9d091fc2270",
-      ticker: "EDG",
+      symbol: 'MULTI-0x9fb9a33956351cf4fa040f65a13b835a3c8764e3',
+      ticker: 'MULTI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/8452/thumb/logo-edgeware.png?1696508638"
+      'https://assets.coingecko.com/coins/images/22087/thumb/1_Wyot-SDGZuxbjdkaOeT2-A.png?1696521430'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "YAK-0x7f4db37d7beb31f445307782bc3da0f18df13696",
-      ticker: "YAK",
+      symbol: 'FST-0x488cc08935458403a0458e45e20c0159c8ab2c92',
+      ticker: 'FST',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/17654/thumb/yieldyak.png?1696517185"
+      'https://assets.coingecko.com/coins/images/14520/thumb/futureswap_logo.png?1696514206'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ACS-0x8888888888f004100c0353d657be6300587a6ccd",
-      ticker: "ACS",
+      symbol: 'CNFI-0x6f5401c53e2769c858665621d22ddbf53d8d27c5',
+      ticker: 'CNFI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32721/thumb/ACS.jpg?1699009686"
+      'https://assets.coingecko.com/coins/images/13592/thumb/cf-logo-iconic-black.png?1696513344'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "STEUR-0x004626a008b1acdc4c74ab51644093b155e59a23",
-      ticker: "STEUR",
+      symbol: 'STRP-0x326c33fd1113c1f29b35b4407f3d6312a8518431',
+      ticker: 'STRP',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32036/thumb/stEUR-x4.png?1696530832"
+      'https://assets.coingecko.com/coins/images/18327/thumb/Logo-Strips-200-x-200px---without-words.png?1696517818'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PORT3-0xb4357054c3da8d46ed642383f03139ac7f090343",
-      ticker: "PORT3",
+      symbol: 'O3-0xee9801669c6138e84bd50deb500827b776777d28',
+      ticker: 'O3',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33383/thumb/PORT3_200x200.png?1701671125"
+      'https://assets.coingecko.com/coins/images/15460/thumb/o3.png?1696515107'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "QKNTL-0xbcd4d5ac29e06e4973a1ddcd782cd035d04bc0b7",
-      ticker: "QKNTL",
+      symbol: 'EMAX-0x123389c2f0e9194d9ba98c21e63c375b67614108',
+      ticker: 'EMAX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29605/thumb/IMG_6589D0616DF1-1.jpeg?1696528542"
+      'https://assets.coingecko.com/coins/images/15540/thumb/EMAX-Coin-Final2000x.png?1696515181'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "TBTC-0x6c84a8f1c29108f47a79964b5fe888d4f4d0de40",
-      ticker: "TBTC",
+      symbol: 'IUSD-0x0a3bb08b3a15a19b4de82f8acfc862606fb69a2d',
+      ticker: 'IUSD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/11224/thumb/0x18084fba666a33d37592fa2633fd49a74dd93a88.png?1696511155"
+      'https://assets.coingecko.com/coins/images/25388/thumb/iusd-logo-symbol-10k%E5%A4%A7%E5%B0%8F.png?1696524521'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AWETH-0xe50fa9b3c56ffb159cb0fca61f5c9d750e8128c8",
-      ticker: "AWETH",
+      symbol: 'PHONON-0x39a49bc5017fc668299cd32e734c9269acc35295',
+      ticker: 'PHONON',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32882/thumb/WETH_%281%29.png?1699716492"
+      'https://assets.coingecko.com/coins/images/22308/thumb/ezgif-2-e7fb84364d.png?1696521653'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "OSAK-0xbfd5206962267c7b4b4a8b3d76ac2e1b2a5c4d5e",
-      ticker: "OSAK",
+      symbol: 'MYC-0xc74fe4c715510ec2f8c61d70d397b32043f55abe',
+      ticker: 'MYC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30911/thumb/osak_logo.png?1696529756"
+      'https://assets.coingecko.com/coins/images/26874/thumb/MYC_Token.png?1696525933'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ABI-0xb827710314a05bcbee9180e11c2abe5823289422",
-      ticker: "ABI",
+      symbol: 'LDO-0x13ad51ed4f1b7e9dc168d8a00cb3f4ddd85efa60',
+      ticker: 'LDO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31225/thumb/Abachi.png?1696530051"
+      'https://assets.coingecko.com/coins/images/13573/thumb/Lido_DAO.png?1696513326'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ITP-0x2b1d36f5b61addaf7da7ebbd11b35fd8cfb0de31",
-      ticker: "ITP",
+      symbol: 'HOP-0xc5102fe9359fd9a28f877a67e36b0f050d81a3cc',
+      ticker: 'HOP',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28338/thumb/ITP_Logo_200.png?1696527344"
+      'https://assets.coingecko.com/coins/images/25445/thumb/hop.png?1696524577'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ALTD-0x8929e9dbd2785e3ba16175e596cdd61520fee0d1",
-      ticker: "ALTD",
+      symbol: 'WMEMO-0xecf2adaff1de8a512f6e8bfe67a2c836edb25da3',
+      ticker: 'WMEMO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30114/thumb/logo.png?1696529036"
+      'https://assets.coingecko.com/coins/images/22392/thumb/wMEMO.png?1696521735'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ZUSD-0x6e4cc0ab2b4d2edafa6723cfa1582229f1dd1be1",
-      ticker: "ZUSD",
+      symbol: 'WBTC-0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f',
+      ticker: 'WBTC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/14192/thumb/icon_zusd_200_200.png?1696513910"
+      'https://assets.coingecko.com/coins/images/7598/thumb/wrapped_bitcoin_wbtc.png?1696507857'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LBR-0xa23e44aea714fbbc08ef28340d78067b9a8cad73",
-      ticker: "LBR",
+      symbol: 'TGT-0x429fEd88f10285E61b12BDF00848315fbDfCC341',
+      ticker: 'TGT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29958/thumb/New_LBR_V2.png?1696528884"
+      'https://assets.coingecko.com/coins/images/21843/small/tgt_logo.png'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "NEXT-0x58b9cb810a68a7f3e1e4f8cb45d1b9b3c79705e8",
-      ticker: "NEXT",
+      symbol: 'GLD-0xaFD091f140C21770f4e5d53d26B2859Ae97555Aa',
+      ticker: 'GLD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31293/thumb/connext.png?1696530113"
+      'https://mayaswap.s3.eu-central-1.amazonaws.com/tokens/id459693155083483.png'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "KAP-0x965d00aa7abc62ca10132e641d08593435ac811d",
-      ticker: "KAP",
+      symbol: 'LEO-0x93864d81175095DD93360FFA2A529b8642F76A6E',
+      ticker: 'LEO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/27682/thumb/KAP_Logo.png?1696526710"
+      'https://img.inleo.io/DQmZhBmRaQx5tozZLZai579SjktJDigtmoXNP73jHmh6nWK/leoLogo.png'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SILO-0x0341c0c0ec423328621788d4854119b97f44e391",
-      ticker: "SILO",
+      symbol: 'XDEFI-0x180F7cF38805d1be95C7632F653E26B0838e2969',
+      ticker: 'XDEFI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/21454/thumb/y0iYKZOv_400x400.png?1696520816"
+      'https://assets.coingecko.com/coins/images/19524/standard/FilledLogo.png?1696518958'
     ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'YUM-0x9F41b34f42058a7b74672055a5fae22c4b113Fd1',
+      ticker: 'YUM',
+      type: 1,
+    },
+    iconUrl: O.some('https://i.ibb.co/D1FNt8V/IMG-9250.png'),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "OVN-0xa3d1a8deb97b111454b294e2324efad13a9d8396",
-      ticker: "OVN",
+      symbol: 'FORTUN-0xe6d40F7a705BD83Ae0E52f8628A8C8f2E6E8b5B3',
+      ticker: 'FORTUN',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31970/thumb/OVN.png?1696959174"
+      'https://assets.coingecko.com/coins/images/22308/thumb/ezgif-2-e7fb84364d.png?1696521653'
     ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'WEWE-0x7787bfD77E1caac0A6AcADA87f4CF97031569824',
+      ticker: 'WEWE',
+      type: 1,
+    },
+    iconUrl: O.none,
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "NPM-0x57f12fe6a4e5fe819eec699fadf9db2d06606bb4",
-      ticker: "NPM",
+      symbol: 'SYK-0xacc51ffdef63fb0c014c882267c3a17261a5ed50',
+      ticker: 'SYK',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28235/thumb/Neptune_Mutual_Logo_Icon_Regular_128.png?1696527238"
+      'https://assets.coingecko.com/coins/images/36531/thumb/stryke.jpeg?1711704094'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BETS-0x94025780a1ab58868d9b2dbbb775f44b32e8e6e5",
-      ticker: "BETS",
+      symbol: 'APTR-0x1c986661170c1834db49c3830130d4038eeeb866',
+      ticker: 'APTR',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/26618/thumb/icon_200.png?1696525691"
+      'https://assets.coingecko.com/coins/images/37940/thumb/icon_white.png?1715967425'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AURY-0x11bf4f05eb28b802ed3ab672594decb20ffe2313",
-      ticker: "AURY",
+      symbol: 'STXAI-0xab5c23bdbe99d75a7ae4756e7ccefd0a97b37e78',
+      ticker: 'STXAI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/19324/thumb/Ico_Blanc.png?1696518766"
+      'https://assets.coingecko.com/coins/images/50667/thumb/0xab5c23bdbe99d75a7ae4756e7ccefd0a97b37e78.png?1728669229'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "WNT-0xad4b9c1fbf4923061814dd9d5732eb703faa53d4",
-      ticker: "WNT",
+      symbol: 'BOGE-0xfd2fb8de10ec41ddd898a8c7fa70d8fc100834c4',
+      ticker: 'BOGE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/21223/thumb/wicrypt.PNG?1696520597"
+      'https://assets.coingecko.com/coins/images/38048/thumb/DOGE_TOKEN_200.png?1716401036'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ZENF-0xa6099b214e8d069911702bc92ef274f63c476c5a",
-      ticker: "ZENF",
+      symbol: 'G3-0xc24a365a870821eb83fd216c9596edd89479d8d7',
+      ticker: 'G3',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29477/thumb/tokenicon200px.png?1696528421"
+      'https://assets.coingecko.com/coins/images/35662/thumb/G3_logo.jpg?1709454143'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AUSDC-0x724dc807b04555b71ed48a6896b6f41593b8c637",
-      ticker: "AUSDC",
+      symbol: 'DLCBTC-0x050c24dbf1eec17babe5fc585f06116a259cc77a',
+      ticker: 'DLCBTC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32847/thumb/usdc_%281%29.png?1699619355"
+      'https://assets.coingecko.com/coins/images/37289/thumb/dlcBTC_ico_200px.png?1713946623'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DUSD-0x8ec1877698acf262fe8ad8a295ad94d6ea258988",
-      ticker: "DUSD",
+      symbol: 'GS-0xb08d8becab1bf76a9ce3d2d5fa946f65ec1d3e83',
+      ticker: 'GS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28775/thumb/dusd_logo_200x200.png?1696527754"
+      'https://assets.coingecko.com/coins/images/29222/thumb/GS.jpeg?1725447410'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AXLETH-0xb829b68f57cc546da7e5806a929e53be32a4625d",
-      ticker: "AXLETH",
+      symbol: 'RIOTD-0x0b5ac0d7dcf6964609a12af4f6c6f3c257070193',
+      ticker: 'RIOTD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28171/thumb/weth-wei_D_3x.png?1696527174"
+      'https://assets.coingecko.com/coins/images/39812/thumb/RIOT.d-200.png?1724166370'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LADYS-0x3b60ff35d3f7f62d636b067dd0dc0dfdad670e4e",
-      ticker: "LADYS",
+      symbol: 'GUBERTO-0x4727a7d2022e99ee5c298513b730307f458f9b40',
+      ticker: 'GUBERTO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30194/thumb/logo.png?1696529109"
+      'https://assets.coingecko.com/coins/images/50787/thumb/guberto_%281%29.jpg?1729210166'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "TUSD-0x4d15a3a2286d883af0aa1b3f21367843fac63e07",
-      ticker: "TUSD",
+      symbol: 'UXLINK-0x1a6b3a62391eccaaa992ade44cd4afe6bec8cff1',
+      ticker: 'UXLINK',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30837/thumb/tusd.jpeg?1696529695"
+      'https://assets.coingecko.com/coins/images/39229/thumb/uxlink.jpg?1721201390'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AXLUSDT-0x7f5373ae26c3e8ffc4c77b7255df7ec1a9af52a6",
-      ticker: "AXLUSDT",
+      symbol: 'QTLX-0x4d840b741bc05fde325d4ec0b4cfcd0cea237e4e',
+      ticker: 'QTLX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31002/thumb/uusdt_D_3x.png?1696529840"
+      'https://assets.coingecko.com/coins/images/50217/thumb/eebgcbNa_400x400.jpg?1726443400'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GRG-0x7f4638a58c0615037decc86f1dae60e55fe92874",
-      ticker: "GRG",
+      symbol: 'STAR-0xb299751b088336e165da313c33e3195b8c6663a6',
+      ticker: 'STAR',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/1532/thumb/Symbol-RigoblockRGB.png?1696502572"
+      'https://assets.coingecko.com/coins/images/34147/thumb/Screenshot_2024-03-08_180444.png?1709892309'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "YDF-0x30dcba0405004cf124045793e1933c798af9e66a",
-      ticker: "YDF",
+      symbol: 'PCH-0xbe5acfd64358805616b5cbd5277b9a85011d7cf1',
+      ticker: 'PCH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/26699/thumb/logo.png?1696525772"
+      'https://assets.coingecko.com/coins/images/39683/thumb/Group_1000003884.png?1723654999'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ACX-0x53691596d1bce8cea565b84d4915e69e03d9c99d",
-      ticker: "ACX",
+      symbol: 'BMSTR-0xac28c9178acc8ba4a11a29e013a3a2627086e422',
+      ticker: 'BMSTR',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28161/thumb/across-200x200.png?1696527165"
+      'https://assets.coingecko.com/coins/images/38914/thumb/b-MSTR-200x200.png?1719474793'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PEPE-0xef00278d7eadf3b2c05267a2f185e468ad7eab7d",
-      ticker: "PEPE",
+      symbol: 'LUDAMOON-0x292975973200064b1c6453505aeac5be697f5233',
+      ticker: 'LUDAMOON',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30321/thumb/logo200.png?1696529222"
+      'https://assets.coingecko.com/coins/images/38855/thumb/Token-x.png?1719213356'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BONK-0x09199d9a5f4448d0848e4395d065e1ad9c4a1f74",
-      ticker: "BONK",
+      symbol: 'OIL-0xafe8107123eefd62469474dec9680860b890e5b6',
+      ticker: 'OIL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28600/thumb/bonk.jpg?1696527587"
+      'https://assets.coingecko.com/coins/images/39504/thumb/logo_oil_200%D1%85200.png?1722581566'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "USDD-0x680447595e8b7b3aa1b43beb9f6098c79ac2ab3f",
-      ticker: "USDD",
+      symbol: 'SFRAX-0xe3b3fe7bca19ca77ad877a5bebab186becfad906',
+      ticker: 'SFRAX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/25380/thumb/UUSD.jpg?1696524513"
+      'https://assets.coingecko.com/coins/images/35383/thumb/sfrax.png?1708445569'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SUBTC-0xe85411c030fb32a9d8b14bbbc6cb19417391f711",
-      ticker: "SUBTC",
+      symbol: 'ALXAI-0x4ac623237de0aa622b4fdf4da63cf97216371acf',
+      ticker: 'ALXAI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33264/thumb/Sumer_Money_Logo.jpg?1701321397"
+      'https://assets.coingecko.com/coins/images/50491/thumb/alXAI_Dark_200x200.png?1727935684'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FPI-0x1b01514a2b3cdef16fd3c680a818a0ab97da8a09",
-      ticker: "FPI",
+      symbol: 'FLY-0x000f1720a263f96532d1ac2bb9cdc12b72c6f386',
+      ticker: 'FLY',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/24945/thumb/FPI_icon.png?1696524100"
+      'https://assets.coingecko.com/coins/images/36086/thumb/FLY_2D_Old_Map_Double_Border.png?1710434215'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BOND-0x0d81e50bc677fa67341c44d7eaa9228dee64a4e1",
-      ticker: "BOND",
+      symbol: 'LAVA-0x11e969e9b3f89cb16d686a03cd8508c9fc0361af',
+      ticker: 'LAVA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/12811/thumb/barnbridge.jpg?1696512604"
+      'https://assets.coingecko.com/coins/images/37354/thumb/lava_logo.png?1714098423'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LON-0x55678cd083fcdc2947a0df635c93c838c89454a3",
-      ticker: "LON",
+      symbol: 'BRI-0x51f6ee60108cbcb3b613093bd3f224cb49aa1610',
+      ticker: 'BRI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/13454/thumb/lon_logo.png?1696513217"
+      'https://assets.coingecko.com/coins/images/36508/thumb/icon-BRI-negative.png?1714119505'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GOVI-0x07e49d5de43dda6162fa28d24d5935c151875283",
-      ticker: "GOVI",
+      symbol: 'ROSNET-0xd79bb960dc8a206806c3a428b31bca49934d18d7',
+      ticker: 'ROSNET',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/13875/thumb/GOVI.png?1696513619"
+      'https://assets.coingecko.com/coins/images/35279/thumb/RosnetLogo200x200.png?1708054752'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GOLD-0xc4be0798e5b5b1c15eda36d9b2d8c1a60717fa92",
-      ticker: "GOLD",
+      symbol: 'KNOX-0x0bbf664d46becc28593368c97236faa0fb397595',
+      ticker: 'KNOX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28427/thumb/anon-npc-pixel.png?1696527424"
+      'https://assets.coingecko.com/coins/images/38074/thumb/knox%28200_x_200_px%29.png?1716449113'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "KOM-0xa58663faef461761e44066ea26c1fcddf2927b80",
-      ticker: "KOM",
+      symbol: 'BERNA-0x0f76d32cdccdcbd602a55af23eaf58fd1ee17245',
+      ticker: 'BERNA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/17483/thumb/1_f1S3h57YLT1e1cl8g7RJpw_2x.jpeg?1696517024"
+      'https://assets.coingecko.com/coins/images/36757/thumb/b-ERNA-200x200.png?1712245846'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PERP-0x753d224bcf9aafacd81558c32341416df61d3dac",
-      ticker: "PERP",
+      symbol: 'LOGX-0x59062301fb510f4ea2417b67404cb16d31e604ba',
+      ticker: 'LOGX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/12381/thumb/60d18e06844a844ad75901a9_mark_only_03.png?1696512205"
+      'https://assets.coingecko.com/coins/images/50226/thumb/Token_200px.png?1726556358'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DRC-0x2b089381f53525451fe5115f23e9d2cc92d7ff1d",
-      ticker: "DRC",
+      symbol: 'S-0xd44257dde89ca53f1471582f718632e690e46dc2',
+      ticker: 'S',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/12802/thumb/DRC_Logo.jpg?1696512595"
+      'https://assets.coingecko.com/coins/images/50350/thumb/s.jpg?1727249471'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GENSX-0xf29fdf6b7bdffb025d7e6dfdf344992d2d16e249",
-      ticker: "GENSX",
+      symbol: 'GAME-0xc4cbd54ffa7a6a142fd73554cc6c23dd95cd8e01',
+      ticker: 'GAME',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30904/thumb/GX_short_logo.png?1696529749"
+      'https://assets.coingecko.com/coins/images/38429/thumb/_GAME_Token.png?1717497071'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DSLA-0x7ce746b45eabd0c4321538dec1b849c79a9a8476",
-      ticker: "DSLA",
+      symbol: 'KIMA-0x94fcd9c18f99538c0f7c61c5500ca79f0d5c4dab',
+      ticker: 'KIMA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/6694/thumb/dsla_logo-squared_200x200.png?1696507035"
+      'https://assets.coingecko.com/coins/images/50764/thumb/K-logo-01.png?1729053099'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AGEUR-0xfa5ed56a203466cbbc2430a43c66b9d8723528e7",
-      ticker: "AGEUR",
+      symbol: 'PEAR-0x3212dc0f8c834e4de893532d27cc9b6001684db0',
+      ticker: 'PEAR',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/19479/thumb/agEUR.png?1696518915"
+      'https://assets.coingecko.com/coins/images/50484/thumb/pearlogo.jpg?1727897446'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PENDLE-0x0c880f6761f1af8d9aa9c466984b80dab9a8c9e8",
-      ticker: "PENDLE",
+      symbol: 'GOA-0x8c6bd546fb8b53fe371654a0e54d7a5bd484b319',
+      ticker: 'GOA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/15069/thumb/Pendle_Logo_Normal-03.png?1696514728"
+      'https://assets.coingecko.com/coins/images/35982/thumb/256x256_Main_Logo_-_Rounded.png?1710338882'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AXLUSDC-0xeb466342c4d449bc9f53a865d5cb90586f405215",
-      ticker: "AXLUSDC",
+      symbol: 'LPOOL-0xf6dae0d2be4993b00a2673360820af6bafd53887',
+      ticker: 'LPOOL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/26476/thumb/uausdc_D_3x.png?1696525548"
+      'https://assets.coingecko.com/coins/images/14041/thumb/dGUvV0HQ_400x400.jpg?1696513767'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PBX-0xbad58ed9b5f26a002ea250d7a60dc6729a4a2403",
-      ticker: "PBX",
+      symbol: 'EGP-0x7e7a7c916c19a45769f6bdaf91087f93c6c12f78',
+      ticker: 'EGP',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/18410/thumb/paribus.PNG?1696517900"
+      'https://assets.coingecko.com/coins/images/37810/thumb/eigenpie.jpeg?1715597613'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "OK-0xd3ac016b1b8c80eeadde4d186a9138c9324e4189",
-      ticker: "OK",
+      symbol: 'MOR-0x092baadb7def4c3981454dd9c0a0d7ff07bcfc86',
+      ticker: 'MOR',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/274/thumb/ok-logo-200px.png?1696501624"
+      'https://assets.coingecko.com/coins/images/37969/thumb/MOR200X200.png?1716327119'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AWBTC-0x078f358208685046a11c85e8ad32895ded33a249",
-      ticker: "AWBTC",
+      symbol: 'BDT-0x21ccbc5e7f353ec43b2f5b1fb12c3e9d89d30dca',
+      ticker: 'BDT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32883/thumb/wbtc.png?1699719908"
+      'https://assets.coingecko.com/coins/images/13426/thumb/Black-Dragon-Black.png?1696513186'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "OLE-0x7be5dd337cc6ce3e474f64e2a92a566445290864",
-      ticker: "OLE",
+      symbol: 'USSD-0x33c88d4cac6ac34f77020915a2a88cd0417dc069',
+      ticker: 'USSD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/26098/thumb/256x256_OLE_Token_Logo.png?1696525189"
+      'https://assets.coingecko.com/coins/images/39227/thumb/Avatar_1.png?1721189801'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "USDV-0x323665443cef804a3b5206103304bd4872ea4253",
-      ticker: "USDV",
+      symbol: 'GUSDC-0xd3443ee1e91af28e5fb858fbd0d72a63ba8046e0',
+      ticker: 'GUSDC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32948/thumb/usdv_%281%29.png?1699933314"
+      'https://assets.coingecko.com/coins/images/39042/thumb/logo_gUSDC.png?1720066451'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AGUSD-0x0000206329b97db379d5e1bf586bbdb969c63274",
-      ticker: "AGUSD",
+      symbol: 'HIP-0xa0995d43901551601060447f9abf93ebc277cec2',
+      ticker: 'HIP',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/34510/thumb/agUSD-coingecko.png?1705288392"
+      'https://assets.coingecko.com/coins/images/37854/thumb/KakaoTalk_Image_2024-05-14-16-50-31.png?1715781999'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LNDX-0xe10d4a4255d2d35c9e23e2c4790e073046fbaf5c",
-      ticker: "LNDX",
+      symbol: 'PFWETH-0x13a78809528b02ad5e7c42f39232d332761dfb1d',
+      ticker: 'PFWETH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33565/thumb/LNDX-200.png?1702445947"
+      'https://assets.coingecko.com/coins/images/36644/thumb/200x200weth.png?1712339446'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FUZZ-0x58e50e24d5160def294b6b6410d12c597054b79e",
-      ticker: "FUZZ",
+      symbol: 'RPM-0x158bd2d5238700a332fdc0cdf97e5fe13f8ed0de',
+      ticker: 'RPM',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/18395/thumb/Fuzz-200x200.png?1696517886"
+      'https://assets.coingecko.com/coins/images/39347/thumb/rev-logo.png?1721882667'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SUETH-0x1c22531aa9747d76fff8f0a43b37954ca67d28e0",
-      ticker: "SUETH",
+      symbol: 'BEBE-0x406d59819bc2aef682f4ff2769085c98a264f97b',
+      ticker: 'BEBE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33265/thumb/Sumer_Money_Logo.jpg?1701321407"
+      'https://assets.coingecko.com/coins/images/37555/thumb/new_logo.jpg?1723247635'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AUSDT-0x6ab707aca953edaefbc4fd23ba73294241490620",
-      ticker: "AUSDT",
+      symbol: 'GAST-0x6f9590958ce2beaf9c92a3a8fca6d1ddf310e052',
+      ticker: 'GAST',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32884/thumb/USDT.PNG?1699768611"
+      'https://assets.coingecko.com/coins/images/35348/thumb/Xg34kjR0_400x400.png?1708321178'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "WSTETH-0x5979d7b546e38e414f7e9822514be443a4800529",
-      ticker: "WSTETH",
+      symbol: 'AIR-0x284592a004d945f98de5b040808578c61a4bb39a',
+      ticker: 'AIR',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/18834/thumb/wstETH.png?1696518295"
+      'https://assets.coingecko.com/coins/images/36113/thumb/Air_%28AIR%29_1.png?1710487829'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "VOLTA-0x9b06f3c5de42d4623d7a2bd940ec735103c68a76",
-      ticker: "VOLTA",
+      symbol: 'UIBT-0x76bc2e765414e6c8b596c0f52c4240f80268f41d',
+      ticker: 'UIBT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31602/thumb/volta-200x200.png?1696530418"
+      'https://assets.coingecko.com/coins/images/36911/thumb/Unibit.png?1712764033'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CFSH-0xc218a06a17feb66b1a730889fb9624326fabff4b",
-      ticker: "CFSH",
+      symbol: 'LASAGNA-0x344c796cc2474e4b779d0e81765afb91d7741a42',
+      ticker: 'LASAGNA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/34623/thumb/TokenLogo.png?1705504570"
+      'https://assets.coingecko.com/coins/images/38322/thumb/garffeldo.png?1717072102'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SUUSD-0x8bf591eae535f93a242d5a954d3cde648b48a5a8",
-      ticker: "SUUSD",
+      symbol: 'DORAB-0x6612ce012ba5574a2ecea3a825c1ddf641f78623',
+      ticker: 'DORAB',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33266/thumb/Sumer_Money_Logo.jpg?1701321416"
+      'https://assets.coingecko.com/coins/images/38347/thumb/Dorado_Logo.png?1717143752'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BLOK-0x9dce8e754913d928eb39bc4fc3cf047e364f7f2c",
-      ticker: "BLOK",
+      symbol: 'GNB-0x439c0cf1038f8002a4cad489b427e217ba4b42ad',
+      ticker: 'GNB',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/18819/thumb/logo-bholdus-6.png?1696518281"
+      'https://assets.coingecko.com/coins/images/38687/thumb/GINAICNLOGO.png?1718344439'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "EPENDLE-0xd4848211b699503c772aa1bc7d33b433c4242ac3",
-      ticker: "EPENDLE",
+      symbol: 'BONSAI-0x79ead7a012d97ed8deece279f9bc39e264d7eef9',
+      ticker: 'BONSAI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33379/thumb/photo_2023-12-02_19-45-14.jpg?1701665986"
+      'https://assets.coingecko.com/coins/images/37883/thumb/bonsai.jpeg?1715840730'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "TAROT-0x6688b00f0c23a4a546beaae51a7c90c439895d48",
-      ticker: "TAROT",
+      symbol: 'MAIA-0x00000000702749f73e5210b08b0a3d440078f888',
+      ticker: 'MAIA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/17881/thumb/tarot-200px.png?1696517403"
+      'https://assets.coingecko.com/coins/images/22502/thumb/Transparent-04_%281%29_%281%29.png?1725187885'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PSM-0x17a8541b82bf67e10b0874284b4ae66858cb1fd5",
-      ticker: "PSM",
+      symbol: 'PLX-0xfb853acea0e76f73f8274b521fe1611c888670cc',
+      ticker: 'PLX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33596/thumb/PSM.png?1702521046"
+      'https://assets.coingecko.com/coins/images/29360/thumb/Token-Symbol_Main200.png?1696528308'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "RELAY-0x1426cf37caa89628c4da2864e40cf75e6d66ac6b",
-      ticker: "RELAY",
+      symbol: 'BBO-0x86efb351b092a32d833a1ad7374d9bf0fc164aab',
+      ticker: 'BBO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/17816/thumb/relay-logo-200.png?1696517336"
+      'https://assets.coingecko.com/coins/images/29124/thumb/download.png?1696528085'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SWTH-0xf763fa322dc58dee588252fafee5f448e863b633",
-      ticker: "SWTH",
+      symbol: 'BIB01-0xca30c93b02514f86d5c86a6e375e3a330b435fb5',
+      ticker: 'BIB01',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/3645/thumb/SWTH_Symbol_Origin.png?1696504327"
+      'https://assets.coingecko.com/coins/images/31755/thumb/b-IB01-200x200.png?1696530574'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "USDGLO-0x4f604735c1cf31399c6e711d5962b2b3e0225ad3",
-      ticker: "USDGLO",
+      symbol: 'PINGU-0x83e60b9f7f4db5cdb0877659b1740e73c662c55b',
+      ticker: 'PINGU',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29319/thumb/glo_logo_coingecko.png?1696528270"
+      'https://assets.coingecko.com/coins/images/34790/thumb/icon_primary.png?1706030846'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BOMB-0x74ccbe53f77b08632ce0cb91d3a545bf6b8e0979",
-      ticker: "BOMB",
+      symbol: 'SIZE-0x939727d85d99d0ac339bf1b76dfe30ca27c19067',
+      ticker: 'SIZE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/24109/thumb/logo-blue.png?1696523301"
+      'https://assets.coingecko.com/coins/images/34084/thumb/adadad.jpg?1703910572'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LYRA-0x079504b86d38119f859c4194765029f692b7b7aa",
-      ticker: "LYRA",
+      symbol: 'NUMA-0x7fb7ede54259cb3d4e1eaf230c7e2b1ffc951e9a',
+      ticker: 'NUMA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/21490/thumb/Add-a-heading-26.png?1696520850"
+      'https://assets.coingecko.com/coins/images/35807/thumb/numa200.png?1709845645'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AGG-0x10663b695b8f75647bd3ff0ff609e16d35bbd1ec",
-      ticker: "AGG",
+      symbol: 'CU-0x89c49a3fa372920ac23ce757a029e6936c0b8e02',
+      ticker: 'CU',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29137/thumb/original-icon-transparent.png?1696528098"
+      'https://assets.coingecko.com/coins/images/37702/thumb/CU_RainbowToken_PhysicalCoin.png?1715245519'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "RING-0x9e523234d36973f9e38642886197d023c88e307e",
-      ticker: "RING",
+      symbol: 'AARK-0xca4e51f6ad4afd9d1068e5899de9dd7d73f3463d',
+      ticker: 'AARK',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/9443/thumb/RING.png?1696509535"
+      'https://assets.coingecko.com/coins/images/37813/thumb/aark.png?1715599394'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "YOU-0x2fac624899a844e0628bfdcc70efcd25f6e90b95",
-      ticker: "YOU",
+      symbol: 'XGPU-0x36295e7de7024362ad95bb8be93d6d6d21d7f6c1',
+      ticker: 'XGPU',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/25353/thumb/youwho_200.png?1696524487"
+      'https://assets.coingecko.com/coins/images/37453/thumb/xgpu.png?1714448873'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "RETH-0xec70dcb4a1efa46b8f2d97c310c9c4790ba5ffa8",
-      ticker: "RETH",
+      symbol: 'PFUSDC-0xe11508d3e0cf09e6fd6e94fdf41e83836d83ce50',
+      ticker: 'PFUSDC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/20764/thumb/reth.png?1696520159"
+      'https://assets.coingecko.com/coins/images/36645/thumb/200x200pfusdc.png?1712339425'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "STFX-0x7dd747d63b094971e6638313a6a2685e80c7fb2e",
-      ticker: "STFX",
+      symbol: 'MKC-0xfa58c669b855b29f99374d0f160db286849d139b',
+      ticker: 'MKC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28631/thumb/stfx.png?1696527615"
+      'https://assets.coingecko.com/coins/images/36759/thumb/MonkeyCoin_Logo_256x256.png?1712247022'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GENE-0x59a729658e9245b0cf1f8cb9fb37945d2b06ea27",
-      ticker: "GENE",
+      symbol: 'WRT-0xddd6ebd74684318fa912084a41a01f11b6c277f7',
+      ticker: 'WRT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/20807/thumb/1637683704200x200.png?1696520200"
+      'https://assets.coingecko.com/coins/images/37270/thumb/wrt.jpg?1713888102'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GNOME-0x7698ac5d15bb3ba7185adcbff32a80ebd9d0709b",
-      ticker: "GNOME",
+      symbol: 'LTM04-0xa6ef0ad746d1c35d6ff4d66ceeae0e596d742924',
+      ticker: 'LTM04',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/20885/thumb/gnome.png?1696520278"
+      'https://assets.coingecko.com/coins/images/36209/thumb/Totem_Token_ICON.png?1710835365'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BICO-0xa68ec98d7ca870cf1dd0b00ebbb7c4bf60a8e74d",
-      ticker: "BICO",
+      symbol: 'MXTK-0x3e4ffeb394b371aaaa0998488046ca19d870d9ba',
+      ticker: 'MXTK',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/21061/thumb/biconomy_logo.jpg?1696520444"
+      'https://assets.coingecko.com/coins/images/37683/thumb/MT_32x32_logo_revised_cropped.png?1715216346'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "JPG-0xafdefd913286a1cec75aca503938c6bba01a5445",
-      ticker: "JPG",
+      symbol: 'LUMIN-0x1fc01117e196800f416a577350cb1938d10501c2',
+      ticker: 'LUMIN',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/25071/thumb/JPG-token-logo-01.png?1696524219"
+      'https://assets.coingecko.com/coins/images/36594/thumb/Lumin_Logo_Circle_-_Balancer.png?1711949756'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GUARD-0xbcf339df10d78f2b44aa760ead0f715a7a7d7269",
-      ticker: "GUARD",
+      symbol: 'KERC-0x2389f6a46562ae5f1557db8562c39ef553f3832b',
+      ticker: 'KERC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/17995/thumb/LS_wolfDen_logo.0025_Light_200x200.png?1696517512"
+      'https://assets.coingecko.com/coins/images/35976/thumb/KERC_Logo_1.png?1710306026'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "JRT-0x6aa395f06986ea4efe0a4630c7865c1eb08d5e7e",
-      ticker: "JRT",
+      symbol: 'TUXC-0x4b019aaa21e98e212d31e54c843e73ff34d25717',
+      ticker: 'TUXC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/10390/thumb/cfeii0y.png?1696510389"
+      'https://assets.coingecko.com/coins/images/37537/thumb/tuxc.jpg?1714687219'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SIS-0x9e758b8a98a42d612b3d38b66a22074dc03d7370",
-      ticker: "SIS",
+      symbol: 'MARK-0x4d01397994aa636bdcc65c9e8024bc497498c3bb',
+      ticker: 'MARK',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/20805/thumb/SymbiosisFinance_logo-150x150.jpeg?1696520198"
+      'https://assets.coingecko.com/coins/images/37447/thumb/mchain.png?1714447037'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BOB-0xb0b195aefa3650a6908f15cdac7d92f8a5791b0b",
-      ticker: "BOB",
+      symbol: 'NOLA-0xe934ab7e98d81e39477b1e47b961876c2d902598',
+      ticker: 'NOLA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/27266/thumb/Bob-logo.png?1696526318"
+      'https://assets.coingecko.com/coins/images/37420/thumb/NOLA.png?1714377065'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LUSD-0x93b346b6bc2548da6a1e7d98e9a421b42541425b",
-      ticker: "LUSD",
+      symbol: 'STC-0x89073b7aaae498771bdb789360b0d3de9d15ad56',
+      ticker: 'STC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/14666/thumb/Group_3.png?1696514341"
+      'https://assets.coingecko.com/coins/images/37399/thumb/IMG_20240427_233605_522.png?1714320620'
     ),
+  },
+  {
+    asset: {
+      chain: ARBChain,
+      symbol: 'LUAB-0xd4519f4a905c4b6794a146a3852e4f74ceb66f17',
+      ticker: 'LUAB',
+      type: 1,
+    },
+    iconUrl: O.none,
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "RAB-0x24ef78c7092d255ed14a0281ac1800c359af3afe",
-      ticker: "RAB",
+      symbol: 'BRIX-0xf65247b6ed3e7fdbac313959b3f62475fbb5f8e4',
+      ticker: 'BRIX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29433/thumb/200x200.png?1696528381"
+      'https://assets.coingecko.com/coins/images/37446/thumb/IMAGE_2024-04-29_13_55_38.jpg?1714446963'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DOLA-0x6a7661795c374c0bfc635934efaddff3a7ee23b6",
-      ticker: "DOLA",
+      symbol: 'WSG-0xef04804e1e474d3f9b73184d7ef5d786f3fce930',
+      ticker: 'WSG',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/14287/thumb/dola.png?1696513984"
+      'https://assets.coingecko.com/coins/images/36483/thumb/wsg.jpeg?1711539007'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FIEF-0xe2105bea3819d3131b5b2306d44eb3271bfcfe0e",
-      ticker: "FIEF",
+      symbol: 'ESPRF-0xfc675adfdd721064ba923d07a8a238a9e52d8ace',
+      ticker: 'ESPRF',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/23710/thumb/61f837d2703b649ab0213d45_Black_logo_-_no_background-p-500.png?1696522910"
+      'https://assets.coingecko.com/coins/images/36646/thumb/esprf_200x200.png?1712037087'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PET-0x43c25f828390de5a3648864eb485cc523e039e67",
-      ticker: "PET",
+      symbol: 'RWAS-0x1f2b426417663ac76eb92149a037753a45969f31',
+      ticker: 'RWAS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/14354/thumb/hello_pets.jpg?1696514040"
+      'https://assets.coingecko.com/coins/images/37074/thumb/H_Black_on_Green-Finance.jpg?1713247063'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ZOO-0x1689a6e1f09658ff37d0bb131514e701045876da",
-      ticker: "ZOO",
+      symbol: 'ALTR-0xb9600c807f069d27f92a2a65b48f12eeef7e2007',
+      ticker: 'ALTR',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/24305/thumb/Zt2BM_8D_400x400.jpg?1696523486"
+      'https://assets.coingecko.com/coins/images/38301/thumb/altr.jpg?1717034749'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SPOOL-0xeca14f81085e5b8d1c9d32dcb596681574723561",
-      ticker: "SPOOL",
+      symbol: 'MOLANDAK-0xa170eaa9a74ab4b3218c736210b0421af35c3c00',
+      ticker: 'MOLANDAK',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/21532/thumb/spool.png?1696520891"
+      'https://assets.coingecko.com/coins/images/38177/thumb/molandak.png?1716787888'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SDEX-0xabd587f2607542723b17f14d00d99b987c29b074",
-      ticker: "SDEX",
+      symbol: 'USDE-0x5d3a1ff2b6bab83b63cd9ad0787074081a52ef34',
+      ticker: 'USDE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29470/thumb/SDEX_logo_transparent_outside_240x240.png?1696930070"
+      'https://assets.coingecko.com/coins/images/39962/thumb/usde.png?1724952425'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "TRB-0xd58d345fd9c82262e087d2d0607624b410d88242",
-      ticker: "TRB",
+      symbol: 'WBC-0x7ae9ab13fc8945323b778b3f8678145e80ec2efb',
+      ticker: 'WBC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/9644/thumb/Blk_icon_current.png?1696509713"
+      'https://assets.coingecko.com/coins/images/39650/thumb/Frame_48096646.png?1723455673'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "OBX-0x188fb5f5ae5bbe4154d5778f2bbb2fb985c94d25",
-      ticker: "OBX",
+      symbol: 'NRN-0xdadeca1167fe47499e53eb50f261103630974905',
+      ticker: 'NRN',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/26150/thumb/OBX_token-black_background_preview.png?1696525239"
+      'https://assets.coingecko.com/coins/images/38838/thumb/Nrn_with_gradient_-NEW_TO_BE_UPDATED.png?1728551601'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "THALES-0xe85b662fe97e8562f4099d8a1d5a92d4b453bf30",
-      ticker: "THALES",
+      symbol: 'MYRC-0x3ed03e95dd894235090b3d4a49e0c3239edce59e',
+      ticker: 'MYRC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/18388/thumb/CLVZJN_C_400x400.png?1696517879"
+      'https://assets.coingecko.com/coins/images/38632/thumb/myrc-token-trans-200x200.png?1718172187'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "RUX-0xc701f86e6d242b97d3035f6c2cecaf8e7087e898",
-      ticker: "RUX",
+      symbol: 'QODA-0x763a716dd74a79d037e57f993fe3047271879bc1',
+      ticker: 'QODA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/26156/thumb/img_v2_37fc1523-649d-45bc-a75f-387f9de1bfch.png?1696525244"
+      'https://assets.coingecko.com/coins/images/38563/thumb/LogoMark.png?1718003510'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FRXETH-0x178412e79c25968a32e89b11f63b33f733770c2a",
-      ticker: "FRXETH",
+      symbol: 'SCT-0xe82335d58abb1cd44cd5f47cf7f5b378e4c32f05',
+      ticker: 'SCT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28284/thumb/frxETH_icon.png?1696527284"
+      'https://assets.coingecko.com/coins/images/38800/thumb/photo_2024-09-24_18-31-07.jpg?1728417418'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MGP-0xa61f74247455a40b01b0559ff6274441fafa22a3",
-      ticker: "MGP",
+      symbol: 'RSETH-0x4186bfc76e2e237523cbc30fd220fe055156b41f',
+      ticker: 'RSETH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/27972/thumb/MagpieLogo.png?1696526991"
+      'https://assets.coingecko.com/coins/images/39543/thumb/rseth.png?1722849891'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FLASH-0xc628534100180582e43271448098cb2c185795bd",
-      ticker: "FLASH",
+      symbol: 'DGW-0x9cce9ae579142e372a8959285e3a5a2e211904f7',
+      ticker: 'DGW',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/13533/thumb/FLASH.png?1696513294"
+      'https://assets.coingecko.com/coins/images/39642/thumb/1000146817.jpg?1723410321'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SQUAD-0xd45e486a90ebb84e9336d371a35dcb021424b96c",
-      ticker: "SQUAD",
+      symbol: 'MTMS-0x4dd40ec670722067241b4396dbd253c38dd820b5',
+      ticker: 'MTMS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28466/thumb/SQUAD200X200.png?1696527460"
+      'https://assets.coingecko.com/coins/images/39043/thumb/Logo-MTMS.png?1720067131'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FLUX-0xf80d589b3dbe130c270a69f1a69d050f268786df",
-      ticker: "FLUX",
+      symbol: 'ARBINAUTS-0x836975c507bff631fcd7fba875e9127c8a50dba6',
+      ticker: 'ARBINAUTS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/11756/thumb/fluxres.png?1696511637"
+      'https://assets.coingecko.com/coins/images/38181/thumb/arbinauts.png?1716788248'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "OJA-0x6cc5b1fb8c2fd7af1d2858f916f274b8faac82e1",
-      ticker: "OJA",
+      symbol: 'GAMBIT-0x889cf9b647039c4d06754896bfcab0e21d28fb75',
+      ticker: 'GAMBIT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/18947/thumb/ojamu-icon-PNK.png?1696518402"
+      'https://assets.coingecko.com/coins/images/39982/thumb/gambit-logo-black.png?1725024995'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SFRXETH-0x95ab45875cffdba1e5f451b950bc2e42c0053f39",
-      ticker: "SFRXETH",
+      symbol: 'AGIO-0xa992b7dde2ed1632d0b66c56744e914ed673a37f',
+      ticker: 'AGIO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28285/thumb/sfrxETH_icon.png?1696527285"
+      'https://assets.coingecko.com/coins/images/39146/thumb/rsz_64036a48422e3abd31bca6b2_agio-logo-a_1-p-1080.png?1720766707'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "IBEX-0x56659245931cb6920e39c189d2a0e7dd0da2d57b",
-      ticker: "IBEX",
+      symbol: 'USD+-0xfc90518d5136585ba45e34ed5e1d108bd3950cfa',
+      ticker: 'USD+',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/27606/thumb/IqwOmX-c_400x400.jpeg?1696526637"
+      'https://assets.coingecko.com/coins/images/38879/thumb/USDplus-200.png?1719374938'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CDT-0x0cbd6fadcf8096cc9a43d90b45f65826102e3ece",
-      ticker: "CDT",
+      symbol: 'BTRM-0x221c5799209132766a01c4cbed0d28600d282b41',
+      ticker: 'BTRM',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/20370/thumb/token-200x200_%281%29.png?1696519781"
+      'https://assets.coingecko.com/coins/images/39118/thumb/20240709-160716.png?1720593799'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ICHI-0xadf5dd3e51bf28ab4f07e684ecf5d00691818790",
-      ticker: "ICHI",
+      symbol: 'OD-0x221a0f68770658c15b525d0f89f5da2baab5f321',
+      ticker: 'OD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/13119/thumb/ICHI_%28Round%29.jpg?1696512907"
+      'https://assets.coingecko.com/coins/images/38630/thumb/OD_Token_200_x_200.png?1718170821'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GYEN-0x589d35656641d6ab57a545f08cf473ecd9b6d5f7",
-      ticker: "GYEN",
+      symbol: 'ABCRAM-0x9efcfc5b49390fc3fb9b58607d2e89445bb380bf',
+      ticker: 'ABCRAM',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/14191/thumb/icon_gyen_200_200.png?1696513909"
+      'https://assets.coingecko.com/coins/images/29748/thumb/abcram.jpg?1721629586'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MVD-0x15a808ed3846d25e88ae868de79f1bcb1ac382b5",
-      ticker: "MVD",
+      symbol: 'BTORO-0xb6212b633c941e9be168c4b9c2d9e785f1cd42fb',
+      ticker: 'BTORO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/23899/thumb/MVD_Coin-simple.png?1696523099"
+      'https://assets.coingecko.com/coins/images/50334/thumb/bitoro-logo-highres.jpg?1727306095'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SEAN-0x37596f20adef5cc9618c8b6ddfa9dcb6329cb0fd",
-      ticker: "SEAN",
+      symbol: '7007-0x75ec618a817eb0a4a7e44ac3dfc64c963daf921a',
+      ticker: '7007',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/27533/thumb/SEAN_Token_icon.png?1696526570"
+      'https://assets.coingecko.com/coins/images/50293/thumb/token7007.png?1726931640'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GRAIN-0x80bb30d62a16e1f2084deae84dc293531c3ac3a1",
-      ticker: "GRAIN",
+      symbol: 'REDUX-0x1a0eeaa7bf60e01646eff96bfcaada850ed250ae',
+      ticker: 'REDUX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29740/thumb/Grain.png?1696528670"
+      'https://assets.coingecko.com/coins/images/50205/thumb/logo.png?1726295415'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BRG-0xc9c4fd7579133701fa2769b6955e7e56bb386db1",
-      ticker: "BRG",
+      symbol: 'PLAH-0x8347dff20de05b11c0781aaea90d5bee46c30252',
+      ticker: 'PLAH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/12512/thumb/brg.png?1696512327"
+      'https://assets.coingecko.com/coins/images/40098/thumb/logoPlayahh10.png?1725632328'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FPIS-0x3405e88af759992937b84e58f2fe691ef0eea320",
-      ticker: "FPIS",
+      symbol: 'OC-0x057153eb8ad87bd483ff9ec4e411b8c3bce90ff0',
+      ticker: 'OC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/24944/thumb/FPIS_icon.png?1696524099"
+      'https://assets.coingecko.com/coins/images/40140/thumb/photo_2024-07-22_08-22-45.jpg?1725992337'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "KUJI-0x3a18dcc9745edcd1ef33ecb93b0b6eba5671e7ca",
-      ticker: "KUJI",
+      symbol: 'CORSI-0x13654df31871b5d01e5fba8e6c21a5d0344820f5',
+      ticker: 'CORSI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/20685/thumb/kuji-200x200.png?1696520085"
+      'https://assets.coingecko.com/coins/images/50189/thumb/Corsi-Token-Logo.png?1726202715'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "WUSDR-0x9483ab65847a447e36d21af1cab8c87e9712ff93",
-      ticker: "WUSDR",
+      symbol: 'COLLAB-0x8b21e9b7daf2c4325bf3d18c1beb79a347fe902a',
+      ticker: 'COLLAB',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28800/thumb/wUSDRlogo.png?1696527777"
+      'https://assets.coingecko.com/coins/images/29098/thumb/collab.png?1696528061'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GNS-0x18c11fd286c5ec11c3b683caa813b77f5163a122",
-      ticker: "GNS",
+      symbol: 'KEI-0xa06d505ec28fd9756a200d2b503a66103db98d09',
+      ticker: 'KEI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/19737/thumb/logo.png?1696519161"
+      'https://assets.coingecko.com/coins/images/29840/thumb/200x200.png?1696528767'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "JOE-0x371c7ec6d8039ff7933a2aa28eb827ffe1f52f07",
-      ticker: "JOE",
+      symbol: 'BMSFT-0x374a457967ba24fd3ae66294cab08244185574b0',
+      ticker: 'BMSFT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/17569/thumb/JoeToken.png?1703732357"
+      'https://assets.coingecko.com/coins/images/38915/thumb/b-MSFT-200x200.png?1719474832'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DAO-0xcaa38bcc8fb3077975bbe217acfaa449e6596a84",
-      ticker: "DAO",
+      symbol: 'WSTLINK-0x3106e2e148525b3db36795b04691d444c24972fb',
+      ticker: 'WSTLINK',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/13915/thumb/4.png?1696513656"
+      'https://assets.coingecko.com/coins/images/35678/thumb/wstlink_logo.png?1709525182'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "HEGIC-0x431402e8b9de9aa016c743880e04e517074d8cec",
-      ticker: "HEGIC",
+      symbol: 'AMCD-0x28bf1c9ee2eb746a2d61a0bec97a344028171d6c',
+      ticker: 'AMCD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/12454/thumb/new.png?1696512274"
+      'https://assets.coingecko.com/coins/images/39835/thumb/Dinari-token-icon.png?1724254655'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "KNC-0xe4dddfe67e7164b0fe14e218d80dc4c08edc01cb",
-      ticker: "KNC",
+      symbol: 'JARVIS-0x2c7941a0fe9c52223b229747322af16160161c98',
+      ticker: 'JARVIS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/14899/thumb/RwdVsGcw_400x400.jpg?1696514562"
+      'https://assets.coingecko.com/coins/images/35812/thumb/jarvis.png?1709873633'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LPT-0x289ba1701c2f088cf0faf8b3705246331cb8a839",
-      ticker: "LPT",
+      symbol: 'GMED-0xb415998a7bb6f11dc589e0eb20adf586ba32f12a',
+      ticker: 'GMED',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/7137/thumb/logo-circle-green.png?1696507437"
+      'https://assets.coingecko.com/coins/images/39619/thumb/Dinari-token-icon.png?1723148884'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "WOM-0x7b5eb3940021ec0e8e463d5dbb4b7b09a89ddf96",
-      ticker: "WOM",
+      symbol: 'UBERD-0xa0eefbba9c18925fb6bab26281806772398cca1f',
+      ticker: 'UBERD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/26946/thumb/Wombat_Token.png?1696526001"
+      'https://assets.coingecko.com/coins/images/39834/thumb/Dinari-token-icon.png?1724254647'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LQTY-0xfb9e5d956d889d91a82737b9bfcdac1dce3e1449",
-      ticker: "LQTY",
+      symbol: 'ARC-0xe8876189a80b2079d8c0a7867e46c50361d972c1',
+      ticker: 'ARC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/14665/thumb/200-lqty-icon.png?1696514340"
+      'https://assets.coingecko.com/coins/images/37308/thumb/arc-logo-circle-200.png?1713952763'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "EUROE-0xcf985aba4647a432e60efceeb8054bbd64244305",
-      ticker: "EUROE",
+      symbol: 'RDDTD-0x97ec5dada8262bd922bffd54a93f5a11efe0b136',
+      ticker: 'RDDTD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28913/thumb/euroe-200x200-round.png?1696527889"
+      'https://assets.coingecko.com/coins/images/39618/thumb/Dinari-token-icon.png?1723148750'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ACRE-0x5f006745a9a192a7cd1236089f704f9b35d3b9cd",
-      ticker: "ACRE",
+      symbol: 'BONZAI-0x0a84edf70f30325151631ce7a61307d1f4d619a3',
+      ticker: 'BONZAI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/23659/thumb/acre_token-02.png?1696522862"
+      'https://assets.coingecko.com/coins/images/36032/thumb/bonzai.jpeg?1710394145'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BTCB-0x2297aebd383787a160dd0d9f71508148769342e3",
-      ticker: "BTCB",
+      symbol: 'BTSLA-0x14a5f2872396802c3cc8942a39ab3e4118ee5038',
+      ticker: 'BTSLA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/26115/thumb/btcb.png?1696525205"
+      'https://assets.coingecko.com/coins/images/38916/thumb/b-TSLA-200x200.png?1719474888'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ARETH-0x8eb270e296023e9d92081fdf967ddd7878724424",
-      ticker: "ARETH",
+      symbol: 'BGOOGL-0xebee37aaf2905b7bda7e3b928043862e982e8f32',
+      ticker: 'BGOOGL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32885/thumb/reth.png?1699768947"
+      'https://assets.coingecko.com/coins/images/38913/thumb/b-GOOGL-200x200.png?1719474755'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GO-0x739e93844adabfd58b00b2bed540d1661d9af682",
-      ticker: "GO",
+      symbol: 'BCSBGC3-0xd8b95b1987741849ca7e71e976aeb535fd2e55a2',
+      ticker: 'BCSBGC3',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29300/thumb/go-token-medium.png?1696528252"
+      'https://assets.coingecko.com/coins/images/38920/thumb/b-CSBGC3-200x200.png?1719513620'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "USDS-0x097bf766e427f5ccd306f21ba05632e0be849b0e",
-      ticker: "USDS",
+      symbol: 'BNVDA-0xa34c5e0abe843e10461e2c9586ea03e55dbcc495',
+      ticker: 'BNVDA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/7596/thumb/USDS_Classic_Standard.png?1702476175"
+      'https://assets.coingecko.com/coins/images/38911/thumb/b-NVDA-200x200.png?1719474429'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MINTME-0x7d05d38e6109a3aeeebf0a570eb8f6856cb4b55e",
-      ticker: "MINTME",
+      symbol: 'HERMES-0x00000000000451f49c692bfc24971cacea2db678',
+      ticker: 'HERMES',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/5127/thumb/MINTME_logo.png?1696505647"
+      'https://assets.coingecko.com/coins/images/24251/thumb/Transparent-13_%281%29_%281%29.png?1725188033'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "APEX-0x61a1ff55c5216b636a294a07d77c6f4df10d3b56",
-      ticker: "APEX",
+      symbol: 'TAP-0x2c650dab03a59332e2e0c0c4a7f726913e5028c1',
+      ticker: 'TAP',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/25266/thumb/CxpMECpk_400x400_%281%29.png?1696524406"
+      'https://assets.coingecko.com/coins/images/38756/thumb/TAPP.png?1718729124'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AMKT-0x498c620c7c91c6eba2e3cd5485383f41613b7eb6",
-      ticker: "AMKT",
+      symbol: 'NOX-0xf34450d1f23902657cffb2636153677be7d38750',
+      ticker: 'NOX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28496/thumb/22999.png?1696527488"
+      'https://assets.coingecko.com/coins/images/35266/thumb/ex_logo_coin.png?1708012097'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "RISITA-0x7d86f1eaff29f076576b2ff09ce3bcc7533fd2c5",
-      ticker: "RISITA",
+      symbol: 'BONUS-0x7f7d7806f4eb90d63b0b278daf32a2db2c2001bd',
+      ticker: 'BONUS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30333/thumb/200x200.png?1696529234"
+      'https://assets.coingecko.com/coins/images/36364/thumb/Coingecko_logo.png?1711336118'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "POND-0xda0a57b710768ae17941a9fa33f8b720c8bd9ddd",
-      ticker: "POND",
+      symbol: 'KNOW-0x6b5b5eac259e883b484ed879d43dd4d616a90e65',
+      ticker: 'KNOW',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/8903/thumb/200x200.png?1706115827"
+      'https://assets.coingecko.com/coins/images/36964/thumb/63_%281%29.png?1712907583'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "WMX-0x5190f06eacefa2c552dc6bd5e763b81c73293293",
-      ticker: "WMX",
+      symbol: 'EMC-0xdfb8be6f8c87f74295a87de951974362cedcfa30',
+      ticker: 'EMC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/27844/thumb/WMX_logo.png?1696526863"
+      'https://assets.coingecko.com/coins/images/34461/thumb/cgc.jpg?1725022711'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PEPE-0x25d887ce7a35172c62febfd67a1856f20faebb00",
-      ticker: "PEPE",
+      symbol: 'CATCH-0xbc4c97fb9befaa8b41448e1dfcc5236da543217f',
+      ticker: 'CATCH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29850/thumb/pepe-token.jpeg?1696528776"
+      'https://assets.coingecko.com/coins/images/36632/thumb/Logomark_colours.png?1712022405'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "OHM-0xf0cb2dc0db5e6c66b9a70ac27b06b878da017028",
-      ticker: "OHM",
+      symbol: 'RWA-0x3096e7bfd0878cc65be71f8899bc4cfb57187ba3',
+      ticker: 'RWA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/14483/thumb/token_OHM_%281%29.png?1696514169"
+      'https://assets.coingecko.com/coins/images/14496/thumb/WeChat_Image_20210325163206.png?1696514181'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ENQAI-0xadd5620057336f868eae78a451c503ae7b576bad",
-      ticker: "ENQAI",
+      symbol: 'WALK-0x9d0c0675a995d5f12b03e880763f639d0628b5c6',
+      ticker: 'WALK',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29908/thumb/icon.png?1702507913"
+      'https://assets.coingecko.com/coins/images/37379/thumb/superwalk.jpeg?1714213441'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "USH-0x51a80238b5738725128d3a3e06ab41c1d4c05c74",
-      ticker: "USH",
+      symbol: 'MBOX-0xda661fa59320b808c5a6d23579fcfedf1fd3cf36',
+      ticker: 'MBOX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29337/thumb/unsheth_large_logo.png?1696528287"
+      'https://assets.coingecko.com/coins/images/14751/thumb/mobox.PNG?1696514420'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BNIU-0x2f11eeee0bf21e7661a22dbbbb9068f4ad191b86",
-      ticker: "BNIU",
+      symbol: 'ZUN-0x346e74dc9935a9b02eb34fb84658a66010fa056d',
+      ticker: 'ZUN',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31869/thumb/b-NIU-200x200.png?1696530681"
+      'https://assets.coingecko.com/coins/images/38298/thumb/ZUN_200x200.png?1717194404'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DAI+-0xeb8e93a0c7504bffd8a8ffa56cd754c63aaebfe8",
-      ticker: "DAI+",
+      symbol: 'SOLVBTCENA-0xafafd68afe3fe65d376eec9eab1802616cfaccb8',
+      ticker: 'SOLVBTCENA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29634/thumb/DAI_.png?1696528571"
+      'https://assets.coingecko.com/coins/images/38931/thumb/BTC_ena.png?1719562313'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "RPL-0xb766039cc6db368759c1e56b79affe831d0cc507",
-      ticker: "RPL",
+      symbol: 'DD-0x71b3a0566f4bf80331d115d8026a7022bf670cce',
+      ticker: 'DD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/2090/thumb/rocket_pool_%28RPL%29.png?1696503058"
+      'https://assets.coingecko.com/coins/images/37047/thumb/200x200_DD.png?1713296168'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "YF-DAI-0xf061956612b3dc79fd285d3d51bc128f2ea87740",
-      ticker: "YF",
+      symbol: 'PRIME-0x3de81ce90f5a27c5e6a5adb04b54aba488a6d14e',
+      ticker: 'PRIME',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/12385/thumb/1619048513068.png?1696512208"
+      'https://assets.coingecko.com/coins/images/39234/thumb/PRIME.jpg?1721240215'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "UNSHETH-0x0ae38f7e10a43b5b2fb064b42a2f4514cba909ef",
-      ticker: "UNSHETH",
+      symbol: 'NYA-0x38f9bf9dce51833ec7f03c9dc218197999999999',
+      ticker: 'NYA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30365/thumb/ush.png?1696529262"
+      'https://assets.coingecko.com/coins/images/40082/thumb/nya.jpg?1725523655'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "USD+-0xe80772eaf6e2e18b651f160bc9158b2a5cafca65",
-      ticker: "USD+",
+      symbol: 'PAW-0xc11158c5da9db1d553ed28f0c2ba1cbedd42cfcb',
+      ticker: 'PAW',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/25757/thumb/USD__logo.png?1696524843"
+      'https://assets.coingecko.com/coins/images/28946/thumb/PawLogo.png?1699394612'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AXL-0x23ee2343b892b1bb63503a4fabc840e0e2c6810f",
-      ticker: "AXL",
+      symbol: 'ENO-0x2b41806cbf1ffb3d9e31a9ece6b738bf9d6f645f',
+      ticker: 'ENO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/27277/thumb/V-65_xQ1_400x400.jpeg?1696526329"
+      'https://assets.coingecko.com/coins/images/26501/thumb/Logo_%281%29.png?1709565574'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LVL-0xb64e280e9d1b5dbec4accedb2257a87b400db149",
-      ticker: "LVL",
+      symbol: 'COW-0xcb8b5cd20bdcaea9a010ac1f8d835824f5c87a04',
+      ticker: 'COW',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/28628/thumb/Token.png?1696527613"
+      'https://assets.coingecko.com/coins/images/24384/thumb/CoW-token_logo.png?1719524382'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CBETH-0x1debd73e752beaf79865fd6446b0c970eae7732f",
-      ticker: "CBETH",
+      symbol: 'WUSDM-0x57f5e098cad7a3d1eed53991d4d66c45c9af7812',
+      ticker: 'WUSDM',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/27008/thumb/cbeth.png?1696526061"
+      'https://assets.coingecko.com/coins/images/33785/thumb/wUSDM_PNG_240px.png?1702981552'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BLKC-0x8626264b6a1b4e920905efd381002aba52ea0eea",
-      ticker: "BLKC",
+      symbol: 'GHO-0x7dff72693f6a4149b17e7c6314655f6a9f7c8b33',
+      ticker: 'GHO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/15987/thumb/logo_light.png?1696515600"
+      'https://assets.coingecko.com/coins/images/30663/thumb/gho-token-logo.png?1720517092'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "IFARM-0x9dca587dc65ac0a043828b0acd946d71eb8d46c1",
-      ticker: "IFARM",
+      symbol: 'BENJI-0xb9e4765bce2609bc1949592059b17ea72fee6c6a',
+      ticker: 'BENJI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/14472/thumb/ifarm.png?1696514159"
+      'https://assets.coingecko.com/coins/images/39660/thumb/FOBXX.jpg?1723523072'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "NSWAP-0xfdad8edc724277e975f4955d288c6eb5b20a3146",
-      ticker: "NSWAP",
+      symbol: 'U-0x6604b5da093f3f35066c6c79e51d581a44c35288',
+      ticker: 'U',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30099/thumb/nswap-circ_%283%29.png?1696529023"
+      'https://assets.coingecko.com/coins/images/32571/thumb/Logo_Black_Background.png?1698608787'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "OPUL-0x0c5fa0e07949f941a6c2c29a008252db1527d6ee",
-      ticker: "OPUL",
+      symbol: 'VES-0x1bc8bf18256d8b45d8367aac50fe2e24fc6aa8ca',
+      ticker: 'VES',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/16548/thumb/opulous.PNG?1696516110"
+      'https://assets.coingecko.com/coins/images/35475/thumb/IMG_0759.png?1708772732'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "WEFI-0xffa188493c15dfaf2c206c97d8633377847b6a52",
-      ticker: "WEFI",
+      symbol: 'IDIA-0x6db8b088c4d41d622b44cd81b900ba690f2d496c',
+      ticker: 'IDIA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30540/thumb/wefi.png?1696529412"
+      'https://assets.coingecko.com/coins/images/17803/thumb/IDIA.png?1696517325'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ANKRETH-0xe05a08226c49b636acf99c40da8dc6af83ce5bb3",
-      ticker: "ANKRETH",
+      symbol: 'LAND-0x27bc2757fab0b8ab406016d1f71d8123452095d3',
+      ticker: 'LAND',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/13403/thumb/aETHc.png?1696513165"
+      'https://assets.coingecko.com/coins/images/17507/thumb/Landshare.png?1696517046'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BLID-0x81de4945807bb31425362f8f7109c18e3dc4f8f0",
-      ticker: "BLID",
+      symbol: 'SMURFCAT-0x06e90a57d1ece8752d6ce92d1ad348ead5eae4f4',
+      ticker: 'SMURFCAT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/25548/thumb/5XvLQULP_400x400.jpg?1703622595"
+      'https://assets.coingecko.com/coins/images/31751/thumb/SMURFCAT.png?1708079642'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FIRE-0xb25ea095997f5bbaa6cea962c4fbf3bfc3c09776",
-      ticker: "FIRE",
+      symbol: 'UNIETH-0x3d15fd46ce9e551498328b1c83071d9509e2c3a0',
+      ticker: 'UNIETH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30750/thumb/Fire_Logo.png?1696529619"
+      'https://assets.coingecko.com/coins/images/28477/thumb/uniETH_200.png?1696527471'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "TAROT-0x13278cd824d33a7adb9f0a9a84aca7c0d2deebf7",
-      ticker: "TAROT",
+      symbol: 'DCKUSD-0x711b771c7c443ebb695e4b3495c337fdaf37be11',
+      ticker: 'DCKUSD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31800/thumb/TAROT.jpg?1696530615"
+      'https://assets.coingecko.com/coins/images/39966/thumb/Dackie_USD_Stablecoin.png?1724957262'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ERN-0xa334884bf6b0a066d553d19e507315e839409e62",
-      ticker: "ERN",
+      symbol: 'FOX-0xf929de51d91c77e42f5090069e0ad7a09e513c73',
+      ticker: 'FOX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/29744/thumb/ERN200x200.png?1696528676"
+      'https://assets.coingecko.com/coins/images/9988/thumb/fox_token.png?1728373561'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PNP-0x2ac2b254bc18cd4999f64773a966e4f4869c34ee",
-      ticker: "PNP",
+      symbol: 'ALUSD-0xcb8fa9a76b8e203d8c3797bf438d8fb81ea3326a',
+      ticker: 'ALUSD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30760/thumb/PNP_Token.png?1696529629"
+      'https://assets.coingecko.com/coins/images/14114/thumb/Alchemix_USD.png?1696513835'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "IDIA-0xe6045890b20945d00e6f3c01878265c03c5435d3",
-      ticker: "IDIA",
+      symbol: 'IZI-0x60d01ec2d5e98ac51c8b4cf84dfcce98d527c747',
+      ticker: 'IZI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/17803/thumb/IDIA.png?1696517325"
+      'https://assets.coingecko.com/coins/images/21791/thumb/izumi-logo-symbol.png?1696521144'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "WOO-0xcafcd85d8ca7ad1e1c6f82f651fa15e33aefd07b",
-      ticker: "WOO",
+      symbol: 'SCHRODI-0x35ca1e5a9b1c09fa542fa18d1ba4d61c8edff852',
+      ticker: 'SCHRODI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/12921/thumb/WOO_Logos_2023_Profile_Pic_WOO.png?1696512709"
+      'https://assets.coingecko.com/coins/images/36255/thumb/apzs3q26_200x200.jpg?1710927534'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "RDPX-0x32eb7902d4134bf98a28b963d26de779af92a212",
-      ticker: "RDPX",
+      symbol: 'SOLVBTCBBN-0x346c574c56e1a4aaa8dc88cda8f7eb12b39947ab',
+      ticker: 'SOLVBTCBBN',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/16659/thumb/rDPX_200x200_Coingecko.png?1696516221"
+      'https://assets.coingecko.com/coins/images/39384/thumb/unnamed.png?1721961640'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DPX-0x6c2c06790b3e3e3c38e12ee22f8183b37a13ee55",
-      ticker: "DPX",
+      symbol: 'HAT-0x4d22e37eb4d71d1acc5f4889a65936d2a44a2f15',
+      ticker: 'HAT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/16652/thumb/DPX_%281%29.png?1696516213"
+      'https://assets.coingecko.com/coins/images/39394/thumb/Black_circle_%281%29.png?1721976884'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SFUND-0x560363bda52bc6a44ca6c8c9b4a5fadbda32fa60",
-      ticker: "SFUND",
+      symbol: 'ETHFI-0x7189fb5b6504bbff6a852b13b7b82a3c118fdc27',
+      ticker: 'ETHFI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/14614/thumb/Favicon_Icon.png?1696514292"
+      'https://assets.coingecko.com/coins/images/35958/thumb/etherfi.jpeg?1710254562'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AUC-0xea986d33ef8a20a96120ecc44dbdd49830192043",
-      ticker: "AUC",
+      symbol: 'DZHV-0x3419875b4d3bca7f3fdda2db7a476a79fd31b4fe',
+      ticker: 'DZHV',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/2165/thumb/Auc_Discord_Avatar1.png?1696503126"
+      'https://assets.coingecko.com/coins/images/35575/thumb/dizzyhavoc_circle_3_200_200_transparentBg.png?1709194317'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BADGER-0xbfa641051ba0a0ad1b0acf549a89536a0d76472e",
-      ticker: "BADGER",
+      symbol: 'TBILL-0xf84d28a8d28292842dd73d1c5f99476a80b6666a',
+      ticker: 'TBILL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/13287/thumb/badger_dao_logo.jpg?1696513059"
+      'https://assets.coingecko.com/coins/images/30576/thumb/OE_Logo_200x200_Transparent.png?1696529441'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DODO-0x69eb4fa4a2fbd498c257c57ea8b7655a2559a581",
-      ticker: "DODO",
+      symbol: 'COLX-0xe5cca68b9e1d5575b7e3062fa34b0c725b003a69',
+      ticker: 'COLX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/12651/thumb/dodo_logo.png?1696512458"
+      'https://assets.coingecko.com/coins/images/966/thumb/colossusxt.png?1696502082'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GNO-0xa0b862f60edef4452f25b4160f177db44deb6cf1",
-      ticker: "GNO",
+      symbol: 'GORPLES-0x0002bcdaf53f4889bf2f43a3252d7c03fe1b80bc',
+      ticker: 'GORPLES',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/662/thumb/logo_square_simple_300px.png?1696501854"
+      'https://assets.coingecko.com/coins/images/38681/thumb/Round_Avatar.png?1720520435'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DXD-0xc3ae0333f0f34aa734d5493276223d95b8f9cb37",
-      ticker: "DXD",
+      symbol: 'SX-0x8cf7e3aa6faf6ae180e5ec3f0fb95081c2086ebe',
+      ticker: 'SX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/11148/thumb/dxdao.png?1696511083"
+      'https://assets.coingecko.com/coins/images/34934/thumb/sx-ntework.jpeg?1706699134'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CREAM-0xf4d48ce3ee1ac3651998971541badbb9a14d7234",
-      ticker: "CREAM",
+      symbol: 'ZUNUSD-0x870908873b6f940e025a7c6879678cb82ec6c9b6',
+      ticker: 'ZUNUSD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/11976/thumb/Cream.png?1696511834"
+      'https://assets.coingecko.com/coins/images/37809/thumb/zunUSD_200x200.png?1715591997'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SUSHI-0xd4d42f0b6def4ce0383636770ef773390d85c61a",
-      ticker: "SUSHI",
+      symbol: 'KIBSHI-0xf525e73bdeb4ac1b0e741af3ed8a8cbb43ab0756',
+      ticker: 'KIBSHI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/12271/thumb/512x512_Logo_no_chop.png?1696512101"
+      'https://assets.coingecko.com/coins/images/29335/thumb/foto_no_exif_%2811%29%282%29_%281%29.png?1696528285'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DAI-0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
-      ticker: "DAI",
+      symbol: 'AXLFRXETH-0xecc68d0451e20292406967fe7c04280e5238ac7d',
+      ticker: 'AXLFRXETH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/9956/thumb/Badge_Dai.png?1696509996"
+      'https://assets.coingecko.com/coins/images/38976/thumb/Screen_Shot_2024-06-18_at_12.55.54_PM_2.png?1719714886'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PREMIA-0x51fc0f6660482ea73330e414efd7808811a57fa2",
-      ticker: "PREMIA",
+      symbol: 'WUSD-0x386601d1e55c48e759bbf57c56015aad0d7f1b56',
+      ticker: 'WUSD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/13962/thumb/apple-touch-icon.png?1696513698"
+      'https://assets.coingecko.com/coins/images/35358/thumb/WUSD%282%29.png?1715042139'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "RGT-0xef888bca6ab6b1d26dbec977c455388ecd794794",
-      ticker: "RGT",
+      symbol: 'HYETH-0x8b5d1d8b3466ec21f8ee33ce63f319642c026142',
+      ticker: 'HYETH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/12900/thumb/Rari_Logo_Transparent.png?1696512688"
+      'https://assets.coingecko.com/coins/images/39462/thumb/hyETH_Logo.png?1722399401'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "XUSD-0x3509f19581afedeff07c53592bc0ca84e4855475",
-      ticker: "XUSD",
+      symbol: 'VCNT-0x60bf4e7cf16ff34513514b968483b54beff42a81',
+      ticker: 'VCNT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/16291/thumb/xUSD-web-transparent.png?1696515890"
+      'https://assets.coingecko.com/coins/images/31305/thumb/ViciCoin_-_small.png?1696530124'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SUSD-0xa970af1a584579b618be4d69ad6f73459d112f95",
-      ticker: "SUSD",
+      symbol: 'NPAI-0xa9011ee5796be43123651181dc75c0e72bb1191c',
+      ticker: 'NPAI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/5013/thumb/sUSD.png?1696505546"
+      'https://assets.coingecko.com/coins/images/31848/thumb/NPAI.png?1700257725'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "TCR-0xa72159fc390f0e3c6d415e658264c7c4051e9b87",
-      ticker: "TCR",
+      symbol: 'MBTC-0x2172fad929e857ddfd7ddc31e24904438434cb0b',
+      ticker: 'MBTC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/18271/thumb/tracer_logo.png?1696517765"
+      'https://assets.coingecko.com/coins/images/50314/thumb/mbtc_%281%29.png?1727079604'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SWPR-0xde903e2712288a1da82942dddf2c20529565ac30",
-      ticker: "SWPR",
+      symbol: 'SHELL-0xe47ba52f326806559c1dec7ddd997f6957d0317d',
+      ticker: 'SHELL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/18740/thumb/swapr.jpg?1696518206"
+      'https://assets.coingecko.com/coins/images/35192/thumb/shellprotocoltoken-reduced.png?1712428374'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SDT-0x7ba4a00d54a07461d9db2aef539e91409943adc9",
-      ticker: "SDT",
+      symbol: 'MOON-0x24404dc041d74cd03cfe28855f555559390c931b',
+      ticker: 'MOON',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/13724/thumb/stakedao_logo.jpg?1696513468"
+      'https://assets.coingecko.com/coins/images/11222/thumb/Moons.png?1696511153'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MATH-0x99f40b01ba9c469193b360f72740e416b17ac332",
-      ticker: "MATH",
+      symbol: 'USDY-0x35e050d3c0ec2d29d269a8ecea763a183bdf9a9d',
+      ticker: 'USDY',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/11335/thumb/2020-05-19-token-200.png?1696511257"
+      'https://assets.coingecko.com/coins/images/31700/thumb/usdy_%281%29.png?1696530524'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LRC-0x46d0ce7de6247b0a95f67b43b589b4041bae7fbe",
-      ticker: "LRC",
+      symbol: 'XVS-0xc1eb7689147c81ac840d4ff0d298489fc7986d52',
+      ticker: 'XVS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/913/thumb/LRC.png?1696502034"
+      'https://assets.coingecko.com/coins/images/12677/thumb/XVS_Token.jpg?1727454303'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "0XBTC-0x7cb16cb78ea464ad35c8a50abf95dff3c9e09d5d",
-      ticker: "0XBTC",
+      symbol: 'COLLAB-0xf18c263ec50cc211ef3f172228549b6618f10613',
+      ticker: 'COLLAB',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/4454/thumb/0xbtc.png?1696505045"
+      'https://assets.coingecko.com/coins/images/29098/thumb/collab.png?1696528061'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DVF-0xa7aa2921618e3d63da433829d448b58c9445a4c3",
-      ticker: "DVF",
+      symbol: 'VRSW-0xd1e094cabc5acb9d3b0599c3f76f2d01ff8d3563',
+      ticker: 'VRSW',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/16414/thumb/rhinologo.png?1697736807"
+      'https://assets.coingecko.com/coins/images/30629/thumb/VirtuSwap_Logo_Red_200x200.png?1696529502'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DOG-0x4425742f1ec8d98779690b5a3a6276db85ddc01a",
-      ticker: "DOG",
+      symbol: 'AXGT-0xe0ee18eacafddaeb38f8907c74347c44385578ab',
+      ticker: 'AXGT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/18111/thumb/Doge.png?1696517615"
+      'https://assets.coingecko.com/coins/images/35290/thumb/AXGT-logo-7.png?1708076161'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DHT-0x8038f3c971414fd1fc220ba727f2d4a0fc98cb65",
-      ticker: "DHT",
+      symbol: 'FU-0x9aee3c99934c88832399d6c6e08ad802112ebeab',
+      ticker: 'FU',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/12508/thumb/dht.png?1696512323"
+      'https://assets.coingecko.com/coins/images/38629/thumb/FU_logo_black.png?1718170125'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ANKR-0xaeaeed23478c3a4b798e4ed40d8b7f41366ae861",
-      ticker: "ANKR",
+      symbol: 'LDY-0x999faf0af2ff109938eefe6a7bf91ca56f0d07e1',
+      ticker: 'LDY',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/4324/thumb/U85xTl2.png?1696504928"
+      'https://assets.coingecko.com/coins/images/35046/thumb/ldy-token.png?1707204910'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "USDM-0x59d9356e565ab3a36dd77763fc0d87feaf85508c",
-      ticker: "USDM",
+      symbol: 'ATH-0xc87b37a581ec3257b734886d9d3a581f5a9d056c',
+      ticker: 'ATH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31719/thumb/usdm.png?1696530540"
+      'https://assets.coingecko.com/coins/images/36179/thumb/logogram_circle_dark_green_vb_green_%281%29.png?1718232706'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "HORD-0xb1bc21f748ae2be95674876710bc6d78235480e0",
-      ticker: "HORD",
+      symbol: 'VCHF-0x02cea97794d2cfb5f560e1ff4e9c59d1bec75969',
+      ticker: 'VCHF',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/14972/thumb/HORD_TOKEN_%281%29_1.png?1705414356"
+      'https://assets.coingecko.com/coins/images/29547/thumb/VNXCHF_%282%29.png?1696528488'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DF-0xae6aab43c4f3e0cea4ab83752c278f8debaba689",
-      ticker: "DF",
+      symbol: 'VEUR-0x4883c8f0529f37e40ebea870f3c13cdfad5d01f8',
+      ticker: 'VEUR',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/9709/thumb/xlGxxIjI_400x400.jpg?1696509776"
+      'https://assets.coingecko.com/coins/images/29351/thumb/VNXEUR_%281%29.png?1696528300'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LINK-0xf97f4df75117a78c1a5a0dbb814af92458539fb4",
-      ticker: "LINK",
+      symbol: 'RSR-0xca5ca9083702c56b481d1eec86f1776fdbd2e594',
+      ticker: 'RSR',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/877/thumb/chainlink-new-logo.png?1696502009"
+      'https://assets.coingecko.com/coins/images/8365/thumb/RSR_Blue_Circle_1000.png?1721777856'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "UNI-0xfa7f8980b0f1e64a2062791cc3b0871572f1f7f0",
-      ticker: "UNI",
+      symbol: 'ZRO-0x6985884c4392d348587b19cb9eaaf157f13271cd',
+      ticker: 'ZRO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/12504/thumb/uni.jpg?1696512319"
+      'https://assets.coingecko.com/coins/images/28206/thumb/ftxG9_TJ_400x400.jpeg?1696527208'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "USDC-0xaf88d065e77c8cc2239327c5edb3a432268e5831",
-      ticker: "USDC",
+      symbol: 'XCHNG-0x51c601dc278eb2cfea8e52c4caa35b3d6a9a2c26',
+      ticker: 'XCHNG',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/6319/thumb/usdc.png?1696506694"
+      'https://assets.coingecko.com/coins/images/16526/thumb/chainge.jpeg?1708099639'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FRAX-0x17fc002b466eec40dae837fc4be5c67993ddbd6f",
-      ticker: "FRAX",
+      symbol: 'MONEY-0x69420f9e38a4e60a62224c489be4bf7a94402496',
+      ticker: 'MONEY',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/13422/thumb/FRAX_icon.png?1696513182"
+      'https://assets.coingecko.com/coins/images/39230/thumb/Token_2x-1.png?1725438128'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FXS-0x9d2f299715d94d8a7e6f5eaa8e654e8c74a988a7",
-      ticker: "FXS",
+      symbol: 'SEED-0x86f65121804d2cdbef79f9f072d4e0c2eebabc08',
+      ticker: 'SEED',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/13423/thumb/Frax_Shares_icon.png?1696513183"
+      'https://assets.coingecko.com/coins/images/34671/thumb/icon.png?1705656915'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "UNIDX-0x5429706887fcb58a595677b73e9b0441c25d993d",
-      ticker: "UNIDX",
+      symbol: 'BSKT-0xa3210cd727fe6daf8386af5623ba51a367e46263',
+      ticker: 'BSKT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/13178/thumb/unidx.png?1696512961"
+      'https://assets.coingecko.com/coins/images/34661/thumb/BSKT_Logo.png?1705636891'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GOHM-0x8d9ba570d6cb60c7e3e0f31343efe75ab8e65fb1",
-      ticker: "GOHM",
+      symbol: 'EUSD-0x12275dcb9048680c4be40942ea4d92c74c63b844',
+      ticker: 'EUSD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/21129/thumb/token_wsOHM_logo.png?1696520508"
+      'https://assets.coingecko.com/coins/images/28445/thumb/0xa0d69e286b938e21cbf7e51d71f6a4c8918f482f.png?1696527441'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "USX-0x641441c631e2f909700d2f41fd87f0aa6a6b4edb",
-      ticker: "USX",
+      symbol: 'ORDER-0x4e200fe2f3efb977d5fd9c430a41531fb04d97b8',
+      ticker: 'ORDER',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/17422/thumb/usx_32.png?1696516969"
+      'https://assets.coingecko.com/coins/images/38501/thumb/Orderly_Network_Coingecko_200*200.png?1717751359'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "STG-0x6694340fc020c5e6b96567843da2df01b2ce1eb6",
-      ticker: "STG",
+      symbol: 'TLOS-0x193f4a4a6ea24102f49b931deeeb931f6e32405d',
+      ticker: 'TLOS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/24413/thumb/STG_LOGO.png?1696523595"
+      'https://assets.coingecko.com/coins/images/7588/thumb/tlos_png.png?1722391289'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MIMATIC-0x3f56e0c36d275367b8c502090edf38289b3dea0d",
-      ticker: "MIMATIC",
+      symbol: 'O404-0xb5c457ddb4ce3312a6c5a2b056a1652bd542a208',
+      ticker: 'O404',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/15264/thumb/mimatic-red.png?1696514916"
+      'https://assets.coingecko.com/coins/images/35196/thumb/O404.jpg?1707839531'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CTSI-0x319f865b287fcc10b30d8ce6144e8b6d1b476999",
-      ticker: "CTSI",
+      symbol: 'USDX-0xf3527ef8de265eaa3716fb312c12847bfba66cef',
+      ticker: 'USDX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/11038/thumb/Cartesi_Logo.png?1696510982"
+      'https://assets.coingecko.com/coins/images/50360/thumb/USDX_100px.png?1727322749'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MNTO-0xf0dfad1817b5ba73726b02ab34dd4b4b00bcd392",
-      ticker: "MNTO",
+      symbol: 'SOLVBTC-0x3647c54c4c2c65bc7a2d63c0da2809b399dbbdc0',
+      ticker: 'SOLVBTC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/24622/thumb/MNTO_200x200.png?1696523794"
+      'https://assets.coingecko.com/coins/images/36800/thumb/solvBTC.png?1719810684'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ROOBEE-0x3bd2dfd03bc7c3011ed7fb8c4d0949b382726cee",
-      ticker: "ROOBEE",
+      symbol: 'FLUID-0x4e47951508fd4a4126f8ff9cf5e6fa3b7cc8e073',
+      ticker: 'FLUID',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/8791/thumb/Group_11.png?1696508946"
+      'https://assets.coingecko.com/coins/images/31890/thumb/fluidlogo200x200.png?1696530701'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "DERI-0x21e60ee73f17ac0a411ae5d690f908c3ed66fe12",
-      ticker: "DERI",
+      symbol: 'POKT-0x764a726d9ced0433a8d7643335919deb03a9a935',
+      ticker: 'POKT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/13931/thumb/200vs200.jpg?1696513670"
+      'https://assets.coingecko.com/coins/images/22506/thumb/POKT.jpg?1703257310'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "POP-0x68ead55c258d6fa5e46d67fc90f53211eab885be",
-      ticker: "POP",
+      symbol: 'CAKE-0x1b896893dfc86bb67cf57767298b9073d2c1ba2c',
+      ticker: 'CAKE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/21438/thumb/pop-1_200_x_200.png?1696520801"
+      'https://assets.coingecko.com/coins/images/12632/thumb/pancakeswap-cake-logo_%281%29.png?1696512440'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "OSEA-0xc72633f995e98ac3bb8a89e6a9c4af335c3d6e44",
-      ticker: "OSEA",
+      symbol: 'WALC-0xdc1bb8018e711f71293a6edfb5c148187008ebdc',
+      ticker: 'WALC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/26475/thumb/293837892_407994084681555_3167689470652146992_n.png?1696525547"
+      'https://assets.coingecko.com/coins/images/34332/thumb/WALC_-_Logo.png?1704668584'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PBTC-0x115d8bf0a53e751f8a472f88d587944ec1c8ca6d",
-      ticker: "PBTC",
+      symbol: 'WEETH-0x35751007a407ca6feffe80b3cb397736d2cf4dbe',
+      ticker: 'WEETH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/25861/thumb/wMTpRljt_400x400.png?1696524945"
+      'https://assets.coingecko.com/coins/images/33033/thumb/weETH.png?1701438396'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ARTH-0x5441695f4445e40900b4c4b0fb3ed2b9e51601a6",
-      ticker: "ARTH",
+      symbol: 'GNOME-0x42069d11a2cc72388a2e06210921e839cfbd3280',
+      ticker: 'GNOME',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/16876/thumb/Ik5dhOq.png?1696516444"
+      'https://assets.coingecko.com/coins/images/35201/thumb/logopng.png?1707841763'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "UTS-0x3b6564b5da73a41d3a66e6558a98fd0e9e1e77ad",
-      ticker: "UTS",
+      symbol: 'CTOK-0xa586b3b80d7e3e8d439e25fbc16bc5bcee3e2c85',
+      ticker: 'CTOK',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33178/thumb/IMG_0051.jpeg?1700924333"
+      'https://assets.coingecko.com/coins/images/23592/thumb/ctok.jpg?1715904249'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ORBS-0xf3c091ed43de9c270593445163a41a876a0bb3dd",
-      ticker: "ORBS",
+      symbol: 'MOLTEN-0x66e535e8d2ebf13f49f3d49e5c50395a97c137b1',
+      ticker: 'MOLTEN',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/4630/thumb/Orbs.jpg?1696505200"
+      'https://assets.coingecko.com/coins/images/36726/thumb/moltenmesh.png?1712147407'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GOLD-0x8b5e4c9a188b1a187f2d1e80b1c2fb17fa2922e1",
-      ticker: "GOLD",
+      symbol: 'OX-0xba0dda8762c24da9487f5fa026a9b64b695a07ea',
+      ticker: 'OX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31353/thumb/goldenboys.png?1696530170"
+      'https://assets.coingecko.com/coins/images/35365/thumb/9.png?1727331352'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ROUTE-0x11bbf12363dc8375b78d2719395d505f52a02f68",
-      ticker: "ROUTE",
+      symbol: 'OOE-0xdcbf4cb83d27c408b30dd7f39bfcabd7176b1ba3',
+      ticker: 'OOE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/13709/thumb/route_token_200x200-19.png?1696513454"
+      'https://assets.coingecko.com/coins/images/17014/thumb/ooe_log.png?1696516578'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FUSE-0x6b021b3f68491974be6d4009fee61a4e3c708fd6",
-      ticker: "FUSE",
+      symbol: 'PACT-0x4fb21b1dbd1da7616003ff3a8eb57aeab3d241f0',
+      ticker: 'PACT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/10347/thumb/fuse.png?1696510348"
+      'https://assets.coingecko.com/coins/images/21907/thumb/PACT_Token_Ticker_Blue_2x.png?1696521258'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PEUSD-0xdce765f021410b3266aa0053c93cb4535f1e12e0",
-      ticker: "PEUSD",
+      symbol: 'TRADE-0xe22c452bd2ade15dfc8ad98286bc6bdf0c9219b7',
+      ticker: 'TRADE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31521/thumb/peUSD_200x200.png?1696530331"
+      'https://assets.coingecko.com/coins/images/16416/thumb/Logo_colored_200.png?1696516012'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MPENDLE-0xb688ba096b7bb75d7841e47163cd12d18b36a5bf",
-      ticker: "MPENDLE",
+      symbol: 'LINDA-0x039d2e8f097331278bd6c1415d839310e0d5ece4',
+      ticker: 'LINDA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31918/thumb/mPendle.png?1696530726"
+      'https://assets.coingecko.com/coins/images/33699/thumb/linda-logo-200.png?1705166731'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SWETH-0xbc011a12da28e8f0f528d9ee5e7039e22f91cf18",
-      ticker: "SWETH",
+      symbol: 'BUMP-0xfb930d1a28990820c98144201637c99bea8cb91c',
+      ticker: 'BUMP',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30326/thumb/_lB7zEtS_400x400.jpg?1696529227"
+      'https://assets.coingecko.com/coins/images/17822/thumb/Bumper_-__Icon_-_256x256.png?1715280092'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "WAGMI-0xaf20f5f19698f1d19351028cd7103b63d30de7d7",
-      ticker: "WAGMI",
+      symbol: 'ATF-0xfb9fbcb328317123f5275cda30b6589d5841216b',
+      ticker: 'ATF',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31887/thumb/wagmi_token_logo.png?1696530698"
+      'https://assets.coingecko.com/coins/images/28821/thumb/ATF.png?1696527797'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "USDT+-0xb1084db8d3c05cebd5fa9335df95ee4b8a0edc30",
-      ticker: "USDT+",
+      symbol: 'USDL-0x7f850b0ab1988dd17b69ac564c1e2857949e4dee',
+      ticker: 'USDL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30168/thumb/USDT_.png?1696529088"
+      'https://assets.coingecko.com/coins/images/38484/thumb/USDL-Token-200px.png?1725022887'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AXL-WSTETH-0x9cfb13e6c11054ac9fcb92ba89644f30775436e4",
-      ticker: "AXL",
+      symbol: 'WMTX-0xdbb5cf12408a3ac17d668037ce289f9ea75439d7',
+      ticker: 'WMTX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32223/thumb/steth-wei_D_3x.png?1696926841"
+      'https://assets.coingecko.com/coins/images/17333/thumb/1000097112.png?1727698144'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "OATH-0x00e1724885473b63bce08a9f0a52f35b0979e35a",
-      ticker: "OATH",
+      symbol: 'NST-0x88a269df8fe7f53e590c561954c52fccc8ec0cfb',
+      ticker: 'NST',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/24075/thumb/OATH.png?1698051304"
+      'https://assets.coingecko.com/coins/images/22248/thumb/nst-logo-200x200.png?1711559985'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CELO-0x4e51ac49bc5e2d87e0ef713e9e5ab2d71ef4f336",
-      ticker: "CELO",
+      symbol: 'SNSY-0x3124678d62d2aa1f615b54525310fbfda6dcf7ae',
+      ticker: 'SNSY',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32400/thumb/celo_wh.png?1698055352"
+      'https://assets.coingecko.com/coins/images/36121/thumb/sensay.jpeg?1710495398'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ADAI-0x82e64f49ed5ec1bc6e43dad4fc8af9bb3a2312ee",
-      ticker: "ADAI",
+      symbol: 'WOETH-0xd8724322f44e5c58d7a815f542036fb17dbbf839',
+      ticker: 'WOETH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32886/thumb/dai.png?1699769446"
+      'https://assets.coingecko.com/coins/images/29734/thumb/woeth-200x200.png?1714796686'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "STERN-0xf7a0dd3317535ec4f4d29adf9d620b3d8d5d5069",
-      ticker: "STERN",
+      symbol: 'XBG-0x93fa0b88c0c78e45980fa74cdd87469311b7b3e4',
+      ticker: 'XBG',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/31522/thumb/stERN.png?1696530332"
+      'https://assets.coingecko.com/coins/images/39830/thumb/XBorg_Logo.png?1724209192'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AAAVE-0xf329e36c7bf6e5e86ce2150875a84ce77f477375",
-      ticker: "AAAVE",
+      symbol: 'USD3-0x046029f68b0e00ebec2e394d17f70ec848fcf1d2',
+      ticker: 'USD3',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32887/thumb/aave.png?1699773604"
+      'https://assets.coingecko.com/coins/images/39865/thumb/2024-04-stable_com-usd3_coin.png?1724379520'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ALINK-0x191c10aa4af7c30e871e70c95db0e4eb77237530",
-      ticker: "ALINK",
+      symbol: 'EGOLD-0x6099f4cfeacb9be8d5c3435da0ba2853cd5188e4',
+      ticker: 'EGOLD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32888/thumb/link.png?1699773900"
+      'https://assets.coingecko.com/coins/images/50815/thumb/eGOLD.png?1729238938'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GRAI-0x894134a25a5fac1c2c26f1d8fbf05111a3cb9487",
-      ticker: "GRAI",
+      symbol: 'EZETH-0x2416092f143378750bb29b79ed961ab195cceea5',
+      ticker: 'EZETH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/30427/thumb/GRAI_Token.png?1696529315"
+      'https://assets.coingecko.com/coins/images/34753/thumb/Ezeth_logo_circle.png?1713496404'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AFRAX-0x38d693ce1df5aadf7bc62595a37d667ad57922e5",
-      ticker: "AFRAX",
+      symbol: 'POOL-0xcf934e2402a5e072928a39a956964eb8f2b5b79c',
+      ticker: 'POOL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/32904/thumb/FRAX.png?1699802848"
+      'https://assets.coingecko.com/coins/images/14003/thumb/PoolTogether.png?1696513732'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BANANA-0xd978f8489e1245568704407a479a71fcce2afe8f",
-      ticker: "BANANA",
+      symbol: 'SAIL-0xb52bd62ee0cf462fa9ccbda4bf27fe84d9ab6cf7',
+      ticker: 'SAIL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/14870/thumb/banana.png?1696514534"
+      'https://assets.coingecko.com/coins/images/31380/thumb/SAIL-Logo.png?1696530197'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GBL-0xc14a7747cfec02cfea62e72bb93538de6b2078e6",
-      ticker: "GBL",
+      symbol: 'SPACE-0x1d1498166ddceee616a6d99868e1e0677300056f',
+      ticker: 'SPACE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/34205/thumb/gbl.png?1704275447"
+      'https://assets.coingecko.com/coins/images/20676/thumb/jYw3kgsY_400x400.png?1696520076'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "OMNI-0x9e20461bc2c4c980f62f1b279d71734207a6a356",
-      ticker: "OMNI",
+      symbol: 'ZUNETH-0x06d65ec13465ac5a4376dc101e1141252c4addf8',
+      ticker: 'ZUNETH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/33917/thumb/2023-12-21_21.39.10.jpg?1703321588"
+      'https://assets.coingecko.com/coins/images/37835/thumb/zunETH_200x200.png?1715741123'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AI-0x2598c30330d5771ae9f983979209486ae26de875",
-      ticker: "AI",
+      symbol: 'SUSX-0xbc404429558292ee2d769e57d57d6e74bbd2792d',
+      ticker: 'SUSX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/34126/thumb/anyinulogo200.png?1704174269"
+      'https://assets.coingecko.com/coins/images/39895/thumb/IMG_7024.png?1724724019'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MAHA-0xedd6ca8a4202d4a36611e2fff109648c4863ae19",
-      ticker: "MAHA",
+      symbol: 'SUSDX-0x7788a3538c5fc7f9c7c8a74eac4c898fc8d87d92',
+      ticker: 'SUSDX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/13404/thumb/MAHA_Token.png?1696513166"
+      'https://assets.coingecko.com/coins/images/50836/thumb/100.png?1729256678'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SYN-0x080f6aed32fc474dd5717105dba5ea57268f46eb",
-      ticker: "SYN",
+      symbol: 'USDFI-0x249c48e22e95514ca975de31f473f30c2f3c0916',
+      ticker: 'USDFI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/18024/thumb/synapse_social_icon.png?1696517540"
+      'https://assets.coingecko.com/coins/images/31149/thumb/USDFI_200.png?1696529977'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "AGVE-0x848e0ba28b637e8490d88bae51fa99c87116409b",
-      ticker: "AGVE",
+      symbol: 'STABLE-0x666966ef3925b1c92fa355fda9722899f3e73451',
+      ticker: 'STABLE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/14146/thumb/agve.png?1696513865"
+      'https://assets.coingecko.com/coins/images/31148/thumb/stable_200.png?1696529976'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GRT-0x9623063377ad1b27544c965ccd7342f7ea7e88c7",
-      ticker: "GRT",
+      symbol: 'EPOCH-0x4939ac5c1855302891c5888634b2f65cc30b9155',
+      ticker: 'EPOCH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/13397/thumb/Graph_Token.png?1696513159"
+      'https://assets.coingecko.com/coins/images/33684/thumb/EpochLogo_200x200.png?1702731332'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "WETH-0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-      ticker: "WETH",
+      symbol: 'BTB-0x86bb316d5803c10624c1d634b4d7080d6e242142',
+      ticker: 'BTB',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/2518/thumb/weth.png?1696503332"
+      'https://assets.coingecko.com/coins/images/37293/thumb/BTB_TOKEN.png?1713948183'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CELR-0x3a8b787f78d775aecfeea15706d4221b40f345ab",
-      ticker: "CELR",
+      symbol: 'ALOT-0x9d5a383581882750ce27f84c72f017b378edb736',
+      ticker: 'ALOT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/4379/thumb/Celr.png?1696504978"
+      'https://assets.coingecko.com/coins/images/24188/thumb/logo_200x200.png?1696523376'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CRV-0x11cdb42b0eb46d95f990bedd4695a6e3fa034978",
-      ticker: "CRV",
+      symbol: 'MLN-0x8f5c1a99b1df736ad685006cb6adca7b7ae4b514',
+      ticker: 'MLN',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/12124/thumb/Curve.png?1696511967"
+      'https://assets.coingecko.com/coins/images/605/thumb/Enzyme_Icon_Secondary.png?1696501803'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MCB-0x4e352cf164e64adcbad318c3a1e222e9eba4ce42",
-      ticker: "MCB",
+      symbol: 'ROSA-0xee0a242f28034fce0bdfac33c0ad2a58ec35fd38',
+      ticker: 'ROSA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/11796/thumb/mux.jpg?1696511672"
+      'https://assets.coingecko.com/coins/images/37963/thumb/ROSA_TOKEN_3.png?1716183016'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SPELL-0x3e6648c5a70a150a88bce65f4ad4d506fe15d2af",
-      ticker: "SPELL",
+      symbol: 'GALAXIS-0xa5312c3e42a82d459162b2a3bd7ffc4f9099b911',
+      ticker: 'GALAXIS',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/15861/thumb/abracadabra-3.png?1696515477"
+      'https://assets.coingecko.com/coins/images/36221/thumb/500x500.png?1714755244'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "YFI-0x82e3a8f066a6989666b031d916c43672085b1582",
-      ticker: "YFI",
+      symbol: 'CARV-0xc08cd26474722ce93f4d0c34d16201461c10aa8c',
+      ticker: 'CARV',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/11849/thumb/yearn.jpg?1696511720"
+      'https://assets.coingecko.com/coins/images/37689/thumb/CARV_%281%29.png?1728418485'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PICKLE-0x965772e0e9c84b6f359c8597c891108dcf1c5b1a",
-      ticker: "PICKLE",
+      symbol: 'USDZ-0x47de40ec7aa115fbc1f7b99ca4effc46a113de9b',
+      ticker: 'USDZ',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/12435/thumb/0M4W6Yr6_400x400.jpg?1696512255"
+      'https://assets.coingecko.com/coins/images/39733/thumb/Group_4.png?1723771588'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "BAL-0x040d1edc9569d4bab2d15287dc5a4f10f56a56b8",
-      ticker: "BAL",
+      symbol: 'AGATA-0xda315aad0c080b40a3859b0b039fec4f28b56797',
+      ticker: 'AGATA',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/11683/thumb/Balancer.png?1696511572"
+      'https://assets.coingecko.com/coins/images/35835/thumb/agatechlogo.jpg?1716055496'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "COMP-0x354a6da3fcde098f8389cad84b0182725c6c91de",
-      ticker: "COMP",
+      symbol: 'INETH-0x5a7a183b6b44dc4ec2e3d2ef43f98c5152b1d76d',
+      ticker: 'INETH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/10775/thumb/COMP.png?1696510737"
+      'https://assets.coingecko.com/coins/images/34127/thumb/inETH.png?1715036464'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "NDX-0xb965029343d55189c25a7f3e0c9394dc0f5d41b1",
-      ticker: "NDX",
+      symbol: 'GRND-0x3b58a4c865b568a2f6a957c264f6b50cba35d8ce',
+      ticker: 'GRND',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/13546/thumb/indexed-light.74bb5471.png?1696513306"
+      'https://assets.coingecko.com/coins/images/27186/thumb/GRND_3x.png?1696526235'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "HND-0x10010078a54396f62c96df8532dc2b4847d47ed3",
-      ticker: "HND",
+      symbol: 'RGUSD-0x96a993f06951b01430523d0d5590192d650ebf3e',
+      ticker: 'RGUSD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/18445/thumb/hnd.PNG?1696517933"
+      'https://assets.coingecko.com/coins/images/38146/thumb/rgusd%28200_x_200_px%29.png?1716654569'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MIM-0xfea7a6a0b346362bf88a9e4a88416b77a57d6c2a",
-      ticker: "MIM",
+      symbol: 'RBC-0x10aaed289a7b1b0155bf4b86c862f297e84465e0',
+      ticker: 'RBC',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/16786/thumb/mimlogopng.png?1696516358"
+      'https://assets.coingecko.com/coins/images/12629/thumb/rubic.png?1696512437'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FOREX-0xdb298285fe4c5410b05390ca80e8fbe9de1f259b",
-      ticker: "FOREX",
+      symbol: 'ETH+-0x18c14c2d707b2212e17d1579789fc06010cfca23',
+      ticker: 'ETH+',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/18533/thumb/handle.fiFOREXLogoDark200x200.png?1696518013"
+      'https://assets.coingecko.com/coins/images/38061/thumb/ETH__Logo.png?1716440789'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ZYX-0x377c6e37633e390aef9afb4f5e0b16689351eed4",
-      ticker: "ZYX",
+      symbol: 'WXM-0xb6093b61544572ab42a0e43af08abafd41bf25a6',
+      ticker: 'WXM',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/11964/thumb/zyx.png?1696511823"
+      'https://assets.coingecko.com/coins/images/38154/thumb/weatherxm-network-logo.png?1716668976'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "SDL-0x75c9bc761d88f70156daf83aa010e84680baf131",
-      ticker: "SDL",
+      symbol: 'OOOOOO-0xddf7d080c82b8048baae54e376a3406572429b4e',
+      ticker: 'OOOOOO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/20476/thumb/SDL_token.png?1696519884"
+      'https://assets.coingecko.com/coins/images/38157/thumb/Goddog_logo_for_Coingecko_200x200.png?1716669510'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "KROM-0x55ff62567f09906a85183b866df84bf599a4bf70",
-      ticker: "KROM",
+      symbol: 'INSTETH-0xd08c3f25862077056cb1b710937576af899a4959',
+      ticker: 'INSTETH',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/20541/thumb/KROM_Transparent.png?1696519948"
+      'https://assets.coingecko.com/coins/images/34954/thumb/Group_14.png?1706773546'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "XTK-0xf0a5717ec0883ee56438932b0fe4a20822735fba",
-      ticker: "XTK",
+      symbol: 'CVPAD-0x259b0f9494b3f02c652fa11417b94cb700f1f7d8',
+      ticker: 'CVPAD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/14089/thumb/xtk.png?1696513811"
+      'https://assets.coingecko.com/coins/images/38293/thumb/200x200.png?1716999673'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "ALN-0x9b3fa2a7c3eb36d048a5d38d81e7fafc6bc47b25",
-      ticker: "ALN",
+      symbol: 'A51-0xb3f13b0c61d65d67d7d6215d70c89533ee567a91',
+      ticker: 'A51',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/14379/thumb/uaLoLU8c_400x400_%281%29.png?1696514071"
+      'https://assets.coingecko.com/coins/images/36723/thumb/a51.png?1712141364'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MULTI-0x9fb9a33956351cf4fa040f65a13b835a3c8764e3",
-      ticker: "MULTI",
+      symbol: 'UNV-0x51707dc661630f8fd624b985fa6ef4f1d4d919db',
+      ticker: 'UNV',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/22087/thumb/1_Wyot-SDGZuxbjdkaOeT2-A.png?1696521430"
+      'https://assets.coingecko.com/coins/images/18119/thumb/UNV.jpg?1696517622'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FST-0x488cc08935458403a0458e45e20c0159c8ab2c92",
-      ticker: "FST",
+      symbol: 'YEL-0x949185d3be66775ea648f4a306740ea9eff9c567',
+      ticker: 'YEL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/14520/thumb/futureswap_logo.png?1696514206"
+      'https://assets.coingecko.com/coins/images/17429/thumb/Logo200.png?1696516976'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "CNFI-0x6f5401c53e2769c858665621d22ddbf53d8d27c5",
-      ticker: "CNFI",
+      symbol: 'YFX-0x569deb225441fd18bde18aed53e2ec7eb4e10d93',
+      ticker: 'YFX',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/13592/thumb/cf-logo-iconic-black.png?1696513344"
+      'https://assets.coingecko.com/coins/images/15654/thumb/yfx.PNG?1696515285'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "STRP-0x326c33fd1113c1f29b35b4407f3d6312a8518431",
-      ticker: "STRP",
+      symbol: 'GYD-0xca5d8f8a8d49439357d3cf46ca2e720702f132b8',
+      ticker: 'GYD',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/18327/thumb/Logo-Strips-200-x-200px---without-words.png?1696517818"
+      'https://assets.coingecko.com/coins/images/33428/thumb/GYD-gradient_resized_transparent.png?1702316822'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "O3-0xee9801669c6138e84bd50deb500827b776777d28",
-      ticker: "O3",
+      symbol: 'DONUT-0xf42e2b8bc2af8b110b65be98db1321b1ab8d44f5',
+      ticker: 'DONUT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/15460/thumb/o3.png?1696515107"
+      'https://assets.coingecko.com/coins/images/7538/thumb/Donut.png?1696507804'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "EMAX-0x123389c2f0e9194d9ba98c21e63c375b67614108",
-      ticker: "EMAX",
+      symbol: 'STYLE-0x9500ba777560daf9d3ab148ea1cf1ed39df9ebdb',
+      ticker: 'STYLE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/15540/thumb/EMAX-Coin-Final2000x.png?1696515181"
+      'https://assets.coingecko.com/coins/images/37507/thumb/style.jpeg?1714618775'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "IUSD-0x0a3bb08b3a15a19b4de82f8acfc862606fb69a2d",
-      ticker: "IUSD",
+      symbol: 'PRF-0x1310952bc5594852459ee45bfd0df70b34ac5509',
+      ticker: 'PRF',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/25388/thumb/iusd-logo-symbol-10k%E5%A4%A7%E5%B0%8F.png?1696524521"
+      'https://assets.coingecko.com/coins/images/34710/thumb/parifi200x200.png?1705894380'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "PHONON-0x39a49bc5017fc668299cd32e734c9269acc35295",
-      ticker: "PHONON",
+      symbol: 'XAV-0x1db06f39c14d813d7b1ccb275a93f5b052de1cac',
+      ticker: 'XAV',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/22308/thumb/ezgif-2-e7fb84364d.png?1696521653"
+      'https://assets.coingecko.com/coins/images/28299/thumb/Xave_logo_gradient.png?1696527298'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "MYC-0xc74fe4c715510ec2f8c61d70d397b32043f55abe",
-      ticker: "MYC",
+      symbol: 'OOOI-0xd7b675cd5c84a13d1d0f84509345530f6421b57c',
+      ticker: 'OOOI',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/26874/thumb/MYC_Token.png?1696525933"
+      'https://assets.coingecko.com/coins/images/36057/thumb/corridor-logo-without-text-8bit.jpg?1710404509'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LDO-0x13ad51ed4f1b7e9dc168d8a00cb3f4ddd85efa60",
-      ticker: "LDO",
+      symbol: 'BYTE-0x847503fbf003ce8b005546aa3c03b80b7c2f9771',
+      ticker: 'BYTE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/13573/thumb/Lido_DAO.png?1696513326"
+      'https://assets.coingecko.com/coins/images/33527/thumb/Byte200.jpeg?1702138460'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "HOP-0xc5102fe9359fd9a28f877a67e36b0f050d81a3cc",
-      ticker: "HOP",
+      symbol: 'SMT-0x2680e82fb8beb5a153a67fe687ffa67abb6b9013',
+      ticker: 'SMT',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/25445/thumb/hop.png?1696524577"
+      'https://assets.coingecko.com/coins/images/17488/thumb/swarm-SMT-token-symbol_200x200.png?1696517029'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "WMEMO-0xecf2adaff1de8a512f6e8bfe67a2c836edb25da3",
-      ticker: "WMEMO",
+      symbol: 'KWL-0xed5740209fcf6974d6f3a5f11e295b5e468ac27c',
+      ticker: 'KWL',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/22392/thumb/wMEMO.png?1696521735"
+      'https://assets.coingecko.com/coins/images/36883/thumb/yamuk.png?1712649510'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "WBTC-0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f",
-      ticker: "WBTC",
+      symbol: 'CAW-0x16f1967565aad72dd77588a332ce445e7cef752b',
+      ticker: 'CAW',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/7598/thumb/wrapped_bitcoin_wbtc.png?1696507857"
+      'https://assets.coingecko.com/coins/images/36067/thumb/200px.png?1710405601'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "TGT-0x429fEd88f10285E61b12BDF00848315fbDfCC341",
-      ticker: "TGT",
+      symbol: 'W-0xb0ffa8000886e57f86dd5264b9582b2ad87b2b91',
+      ticker: 'W',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/21843/small/tgt_logo.png"
+      'https://assets.coingecko.com/coins/images/35087/thumb/womrhole_logo_full_color_rgb_2000px_72ppi_fb766ac85a.png?1708688954'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "GLD-0xaFD091f140C21770f4e5d53d26B2859Ae97555Aa",
-      ticker: "GLD",
+      symbol: 'TRUF-0xb59c8912c83157a955f9d715e556257f432c35d7',
+      ticker: 'TRUF',
       type: 1,
     },
     iconUrl: O.some(
-      "https://mayaswap.s3.eu-central-1.amazonaws.com/tokens/id459693155083483.png"
+      'https://assets.coingecko.com/coins/images/36642/thumb/TRUF_Token_Logo_Blue.png?1712034385'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "LEO-0x93864d81175095DD93360FFA2A529b8642F76A6E",
-      ticker: "LEO",
+      symbol: 'HARAMBE-0x255f1b39172f65dc6406b8bee8b08155c45fe1b6',
+      ticker: 'HARAMBE',
       type: 1,
     },
     iconUrl: O.some(
-      "https://img.inleo.io/DQmZhBmRaQx5tozZLZai579SjktJDigtmoXNP73jHmh6nWK/leoLogo.png"
+      'https://assets.coingecko.com/coins/images/36043/thumb/HarambeCoin_full_cameo_200.png?1710400612'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "XDEFI-0x180F7cF38805d1be95C7632F653E26B0838e2969",
-      ticker: "XDEFI",
+      symbol: 'YAKU-0xb00eaedb98f1e30ad545703d8ff14b24d109514f',
+      ticker: 'YAKU',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/19524/standard/FilledLogo.png?1696518958"
+      'https://assets.coingecko.com/coins/images/26785/thumb/yaku_logo.png?1706636424'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "YUM-0x9F41b34f42058a7b74672055a5fae22c4b113Fd1",
-      ticker: "YUM",
+      symbol: 'SDUSD-0x5a691001bf7065a17e150681f5bfbd7bc45a668e',
+      ticker: 'SDUSD',
       type: 1,
     },
-    iconUrl: O.some("https://i.ibb.co/D1FNt8V/IMG-9250.png"),
+    iconUrl: O.some(
+      'https://assets.coingecko.com/coins/images/37909/thumb/image_%281%29.png?1715934988'
+    ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "FORTUN-0xe6d40F7a705BD83Ae0E52f8628A8C8f2E6E8b5B3",
-      ticker: "FORTUN",
+      symbol: 'BOO-0x28514bd097d5f9ecea778cc7a4ca4bac5fedb0b6',
+      ticker: 'BOO',
       type: 1,
     },
     iconUrl: O.some(
-      "https://assets.coingecko.com/coins/images/22308/thumb/ezgif-2-e7fb84364d.png?1696521653"
+      'https://assets.coingecko.com/coins/images/34234/thumb/boo_coin_%28200%29.png?1704306085'
     ),
   },
   {
     asset: {
       chain: ARBChain,
-      symbol: "WEWE-0x7787bfD77E1caac0A6AcADA87f4CF97031569824",
-      ticker: "WEWE",
+      symbol: 'Moca-0x53312f85bba24c8cb99cffc13bf82420157230d3',
+      ticker: 'Moca',
       type: 1,
     },
-    iconUrl: O.some(""),
+    iconUrl: O.some('https://arbiscan.io/token/images/mocaapp_32.png'),
   },
 ];

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 import { QuoteSwap as QuoteSwapProtocol } from '@xchainjs/xchain-aggregator'
 import { option as O } from 'fp-ts'
@@ -10,7 +10,7 @@ interface SwapExpiryProgressBarProps {
   swapExpiry: Date
 }
 
-const SwapExpiryProgressBar: React.FC<SwapExpiryProgressBarProps> = ({ oQuoteProtocol, swapExpiry }) => {
+const SwapExpiryProgressBar = ({ oQuoteProtocol, swapExpiry }: SwapExpiryProgressBarProps) => {
   const [currentDate, setCurrentDate] = useState(new Date())
 
   // Update the current date every second

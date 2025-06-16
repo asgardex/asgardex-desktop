@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { TxHash } from '@xchainjs/xchain-client'
 import clsx from 'clsx'
@@ -20,7 +20,7 @@ type Props = {
   channelId?: O.Option<string>
 }
 
-export const ViewTxButton: React.FC<Props> = ({
+export const ViewTxButton = ({
   onClick,
   txHash: oTxHash,
   txUrl: oTxUrl,
@@ -30,7 +30,7 @@ export const ViewTxButton: React.FC<Props> = ({
   trackable = false,
   protocol = O.none,
   channelId = O.none
-}): JSX.Element => {
+}: Props): JSX.Element => {
   const intl = useIntl()
 
   const onClickHandler = useCallback(() => {

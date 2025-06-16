@@ -10,7 +10,6 @@ type Props = {
   className?: string
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const Phrase = ({ words, onWordClick = () => {}, readOnly, wordIcon = null }: Props) => {
   return (
     <div className="grid grid-cols-3 rounded-xl p-2 gap-1 min-h-[142px] border border-solid border-gray0 dark:border-gray0d">

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { CheckCircleIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline'
@@ -30,7 +30,7 @@ export type Props = {
   importingKeystoreState: ImportingKeystoreStateRD
 }
 
-export const ImportKeystore: React.FC<Props> = (props): JSX.Element => {
+export const ImportKeystore = (props: Props): JSX.Element => {
   const { importKeystore, importingKeystoreState, loadKeystore$, clientStates, walletId, walletNames } = props
 
   const [form] = Form.useForm()

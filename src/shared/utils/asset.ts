@@ -5,6 +5,7 @@ import { AssetBETH } from '@xchainjs/xchain-base'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
 import { AssetBCH } from '@xchainjs/xchain-bitcoincash'
 import { AssetBSC } from '@xchainjs/xchain-bsc'
+import { ADAAsset } from '@xchainjs/xchain-cardano'
 import { AssetATOM } from '@xchainjs/xchain-cosmos'
 import { AssetDASH } from '@xchainjs/xchain-dash'
 import { AssetDOGE } from '@xchainjs/xchain-doge'
@@ -38,6 +39,7 @@ export {
   AssetRuneNative,
   AssetKUJI,
   AssetBETH,
+  ADAAsset,
   AssetAETH,
   AssetXRD,
   SOLAsset,

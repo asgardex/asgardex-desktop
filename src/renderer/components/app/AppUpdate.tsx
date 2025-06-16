@@ -1,9 +1,9 @@
-import React from 'react'
-
+import { ArrowDownTrayIcon } from '@heroicons/react/24/outline'
 import { Grid } from 'antd'
 import { useIntl } from 'react-intl'
 
-import * as Styled from './AppUpdate.styles'
+import { Button } from '../uielements/button'
+import { ExternalLinkIcon } from '../uielements/common/Common.styles'
 
 export type AppUpdateModalProps =
   | {
@@ -16,37 +16,26 @@ export type AppUpdateModalProps =
       isOpen: false
     }
 
-export const AppUpdate: React.FC<AppUpdateModalProps> = (props) => {
+export const AppUpdate = (props: AppUpdateModalProps) => {
   const intl = useIntl()
   const isDesktopView = Grid.useBreakpoint()?.lg ?? false
 
   if (props.isOpen) {
     return (
-      <Styled.Success
-        action={
-          isDesktopView ? (
-            <Styled.OkButton onClick={props.goToUpdates}>
-              <Styled.OkContent>
-                {intl.formatMessage({ id: 'update.link' })} <Styled.ExternalLinkIcon />
-              </Styled.OkContent>
-            </Styled.OkButton>
-          ) : null
-        }
-        message={
-          <Styled.Content>
-            <Styled.Title>{intl.formatMessage({ id: 'update.description' }, { version: props.version })}</Styled.Title>
-            {!isDesktopView && (
-              <Styled.OkButton onClick={props.goToUpdates}>
-                <Styled.OkContent>
-                  <Styled.ExternalLinkIcon />
-                </Styled.OkContent>
-              </Styled.OkButton>
-            )}
-          </Styled.Content>
-        }
-        onClose={props.close}
-        closable
-      />
+      <div className="flex items-center justify-between p-2 rounded-xl border border-solid border-turquoise bg-turquoise/10">
+        <div className="flex items-center space-x-2 w-full">
+          <ArrowDownTrayIcon className="w-6 h-6 text-turquoise" />
+          <span className="uppercase text-turquoise">
+            {intl.formatMessage({ id: 'update.description' }, { version: props.version })}
+          </span>
+        </div>
+        <Button className="!min-w-[auto] !rounded-lg" size="small" type="primary" onClick={props.goToUpdates}>
+          <div className="flex items-center px-1">
+            {isDesktopView && intl.formatMessage({ id: 'update.link' })}
+            <ExternalLinkIcon className="w-4 h-4 ml-0 lg:ml-2" />
+          </div>
+        </Button>
+      </div>
     )
   }
 

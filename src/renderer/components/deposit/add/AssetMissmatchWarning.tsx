@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import { Network } from '@xchainjs/xchain-client'
@@ -16,7 +16,7 @@ export type Props = {
   className?: string
 }
 
-export const AssetMissmatchWarning: React.FC<Props> = (props): JSX.Element => {
+export const AssetMissmatchWarning = (props: Props): JSX.Element => {
   const { assets: assetsWA, network, className = '' } = props
 
   const intl = useIntl()

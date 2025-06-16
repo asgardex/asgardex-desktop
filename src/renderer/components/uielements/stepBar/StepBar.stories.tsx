@@ -8,7 +8,7 @@ const meta: Meta<typeof Component> = {
   component: Component,
   title: 'Components/StepBar',
   decorators: [
-    (Story: React.FC) => (
+    (Story) => (
       <div style={{ padding: '20px' }}>
         <Story />
       </div>

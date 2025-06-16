@@ -87,7 +87,7 @@ const initialContext: AvaxContextValue = {
 
 const AvaxContext = createContext<AvaxContextValue | null>(null)
 
-export const AvaxProvider: React.FC<{ children: React.ReactNode }> = ({ children }): JSX.Element => {
+export const AvaxProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   return <AvaxContext.Provider value={initialContext}>{children}</AvaxContext.Provider>
 }
 

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
@@ -35,9 +35,7 @@ import { SymDepositView } from './add/SymDepositView'
 import { ShareView } from './share/ShareView'
 import { WithdrawDepositView } from './withdraw/WithdrawDepositView'
 
-type Props = {}
-
-export const DepositView: React.FC<Props> = () => {
+export const DepositView = () => {
   const { protocol } = useApp()
   const intl = useIntl()
 

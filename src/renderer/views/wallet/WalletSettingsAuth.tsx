@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
@@ -12,7 +12,7 @@ import { INITIAL_KEYSTORE_STATE } from '../../services/wallet/const'
 import { isKeystoreUnlocked } from '../../services/wallet/types'
 import { WalletSettingsView } from './WalletSettingsView'
 
-export const WalletSettingsAuth: React.FC = (): JSX.Element => {
+export const WalletSettingsAuth = (): JSX.Element => {
   const navigate = useNavigate()
   const location = useLocation()
   const {

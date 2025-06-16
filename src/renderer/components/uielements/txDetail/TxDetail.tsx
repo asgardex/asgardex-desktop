@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
@@ -10,15 +10,7 @@ import { Fees } from '../fees'
 import * as Styled from './TxDetail.styles'
 import { ActionProps } from './types'
 
-export const TxDetail: React.FC<ActionProps> = ({
-  className,
-  outgos,
-  incomes,
-  fees = [],
-  slip,
-  network,
-  isDesktopView
-}) => {
+export const TxDetail = ({ className, outgos, incomes, fees = [], slip, network, isDesktopView }: ActionProps) => {
   const renderIncomes = useMemo(
     () =>
       FP.pipe(

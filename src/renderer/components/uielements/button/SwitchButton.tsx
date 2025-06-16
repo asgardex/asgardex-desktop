@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { Switch } from '@headlessui/react'
 import clsx from 'clsx'
@@ -11,7 +11,7 @@ type Props = {
   className?: string
 }
 
-export const SwitchButton: React.FC<Props> = (props): JSX.Element => {
+export const SwitchButton = (props: Props): JSX.Element => {
   const { disabled, active: initialActive = true, onChange = FP.constVoid, className = '' } = props
   const [active, setActive] = useState(initialActive)
 

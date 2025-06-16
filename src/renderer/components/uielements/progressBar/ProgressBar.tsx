@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
 import { Progress } from 'antd' // Import the Ant Design Progress and Tooltip components
 import { ProgressProps } from 'antd/lib/progress'
@@ -17,7 +17,7 @@ type CustomProps = {
 
 type Props = CustomProps & ProgressProps
 
-export const ProgressBar: React.FC<Props> = ({
+export const ProgressBar = ({
   percent = 10, //default
   withLabel = false,
   labelPosition,
@@ -26,7 +26,7 @@ export const ProgressBar: React.FC<Props> = ({
   customInfo = 'info',
   showInfo = false,
   ...rest
-}): JSX.Element => {
+}: Props): JSX.Element => {
   const percentLabels = useMemo(
     () => (
       <ProgressLabel>

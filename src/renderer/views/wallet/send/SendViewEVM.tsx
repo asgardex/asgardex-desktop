@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
 import { baseAmount } from '@xchainjs/xchain-util'
@@ -22,7 +22,6 @@ import { PoolDetails as PoolDetailsMaya } from '../../../services/midgard/mayaMi
 import { PoolAddress, PoolDetails } from '../../../services/midgard/midgardTypes'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAsset, WalletBalance } from '../../../services/wallet/types'
-import * as Styled from '../Interact/InteractView.styles'
 
 type Props = {
   asset: SelectedWalletAsset
@@ -33,7 +32,7 @@ type Props = {
   oPoolAddressMaya: O.Option<PoolAddress>
 }
 
-export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
+export const SendViewEVM = (props: Props): JSX.Element => {
   const { asset, trustedAddresses, emptyBalance, poolDetails, oPoolAddress, oPoolAddressMaya } = props
 
   const { network } = useNetwork()
@@ -84,7 +83,7 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
     O.fold(
       () => (
         <Spin>
-          <Styled.Container>
+          <div className="flex flex-col items-center justify-center overflow-auto bg-bg0 dark:bg-bg0d">
             <SendFormEVM
               asset={asset}
               trustedAddresses={trustedAddresses}
@@ -106,11 +105,11 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
               oPoolAddressMaya={O.none}
               mayaScanPrice={mayaScanPriceRD}
             />
-          </Styled.Container>
+          </div>
         </Spin>
       ),
       (walletBalance) => (
-        <Styled.Container>
+        <div className="flex flex-col items-center justify-center overflow-auto bg-bg0 dark:bg-bg0d">
           <SendFormEVM
             asset={asset}
             trustedAddresses={trustedAddresses}
@@ -132,7 +131,7 @@ export const SendViewEVM: React.FC<Props> = (props): JSX.Element => {
             mayaScanPrice={mayaScanPriceRD}
             oPoolAddressMaya={oPoolAddressMaya}
           />
-        </Styled.Container>
+        </div>
       )
     )
   )

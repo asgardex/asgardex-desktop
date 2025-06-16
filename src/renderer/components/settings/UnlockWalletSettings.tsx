@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
@@ -12,8 +10,7 @@ type Props = {
   unlockHandler: FP.Lazy<void>
 }
 
-export const UnlockWalletSettings: React.FC<Props> = (props): JSX.Element => {
-  const { keystoreState, unlockHandler } = props
+export const UnlockWalletSettings = ({ keystoreState, unlockHandler }: Props): JSX.Element => {
   const intl = useIntl()
 
   return (

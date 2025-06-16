@@ -1,18 +1,13 @@
-import React, { useMemo, useCallback } from 'react'
+import { useMemo } from 'react'
 
-import { AnyAsset, assetFromString, assetToString } from '@xchainjs/xchain-util'
-import { Row, Dropdown } from 'antd'
-import { MenuProps } from 'antd/lib/menu'
-import { ItemType } from 'antd/lib/menu/hooks/useItems'
 import { array as A, function as FP, option as O } from 'fp-ts'
 
 import { SelectedPricePoolAsset } from '../../../services/midgard/midgardTypes'
 import { PricePoolAsset, PricePoolAssets } from '../../../views/pools/Pools.types'
 import { DownIcon } from '../../icons'
-import { Menu } from '../../shared/menu/Menu'
+import { Dropdown } from '../../uielements/dropdown'
+import { Label } from '../../uielements/label'
 import { toHeaderCurrencyLabel } from '../Header.util'
-import { HeaderDropdownContentWrapper, HeaderDropdownMenuItemText, HeaderDropdownTitle } from '../HeaderMenu.styles'
-import * as Styled from './HeaderPriceSelector.styles'
 
 export type Props = {
   isDesktopView: boolean
@@ -23,31 +18,21 @@ export type Props = {
 }
 
 export const HeaderPriceSelector = (props: Props): JSX.Element => {
-  const { assets, selectedAsset, isDesktopView, disabled = false, changeHandler = (_) => {} } = props
-
-  const changeItem: MenuProps['onClick'] = useCallback(
-    ({ key }: { key: string }) => FP.pipe(key, assetFromString, O.fromNullable, O.map(changeHandler)),
-    [changeHandler]
-  )
+  const { assets, selectedAsset, isDesktopView, changeHandler = (_) => {} } = props
 
   const menu = useMemo(
-    () => (
-      <Menu
-        onClick={changeItem}
-        items={FP.pipe(
-          assets,
-          A.map<AnyAsset, ItemType>((asset) => ({
-            label: (
-              <HeaderDropdownMenuItemText strong className="px-10px py-[8px]">
-                {toHeaderCurrencyLabel(asset)}
-              </HeaderDropdownMenuItemText>
-            ),
-            key: assetToString(asset)
-          }))
-        )}
-      />
-    ),
-    [changeItem, assets]
+    () =>
+      FP.pipe(
+        assets,
+        A.map((asset) => (
+          <div key={asset.symbol} className="px-2 py-1" onClick={() => changeHandler(asset)}>
+            <Label size="big" color="dark" textTransform="uppercase" weight="bold">
+              {toHeaderCurrencyLabel(asset)}
+            </Label>
+          </div>
+        ))
+      ),
+    [assets, changeHandler]
   )
 
   const title = useMemo(
@@ -60,16 +45,24 @@ export const HeaderPriceSelector = (props: Props): JSX.Element => {
   )
 
   return (
-    <Styled.Wrapper>
-      <Dropdown disabled={disabled} overlay={menu} trigger={['click']} placement="bottom">
-        <HeaderDropdownContentWrapper>
-          {!isDesktopView && <HeaderDropdownTitle>Currency</HeaderDropdownTitle>}
-          <Row style={{ alignItems: 'center' }}>
-            <HeaderDropdownMenuItemText strong>{title}</HeaderDropdownMenuItemText>
+    <div className="flex items-center justify-between w-full px-4 lg:w-auto lg:px-0">
+      {!isDesktopView && (
+        <Label size="large" textTransform="uppercase" weight="bold">
+          Currency
+        </Label>
+      )}
+      <Dropdown
+        anchor={{ to: 'bottom', gap: 4 }}
+        trigger={
+          <div className="min-w-24 lg:min-w-0 flex items-center cursor-pointer">
+            <Label className="!text-16" color="dark" weight="bold" textTransform="uppercase">
+              {title}
+            </Label>
             <DownIcon />
-          </Row>
-        </HeaderDropdownContentWrapper>
-      </Dropdown>
-    </Styled.Wrapper>
+          </div>
+        }
+        options={menu}
+      />
+    </div>
   )
 }

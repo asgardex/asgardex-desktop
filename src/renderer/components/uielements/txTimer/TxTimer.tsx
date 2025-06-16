@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 
 import { Progress } from 'antd'
 import clsx from 'clsx'
@@ -21,21 +21,19 @@ export type Props = {
   onEnd?: () => void
 }
 
-export const TxTimer: React.FC<Props> = (props): JSX.Element => {
-  const {
-    status = false,
-    value = NaN,
-    maxValue = 100,
-    maxSec = 0,
-    startTime = NaN,
-    onChange = () => {},
-    interval = 1000,
-    maxDuration = 100,
-    refunded = false,
-    onEnd = () => {},
-    className = ''
-  } = props
-
+export const TxTimer = ({
+  status = false,
+  value = NaN,
+  maxValue = 100,
+  maxSec = 0,
+  startTime = NaN,
+  onChange = () => {},
+  interval = 1000,
+  maxDuration = 100,
+  refunded = false,
+  onEnd = () => {},
+  className = ''
+}: Props): JSX.Element => {
   const [active, setActive] = useState(true)
   const [totalDuration, setTotalDuration] = useState<number>(0)
   const [internalValue, setInternalValue] = useState<number>(0)
