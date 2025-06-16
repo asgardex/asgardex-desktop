@@ -313,7 +313,7 @@ export const createBalancesService = ({
           return {
             reloadBalances: () => ZEC.reloadBalances(walletType),
             resetReloadBalances: () => ZEC.resetReloadBalances(walletType),
-            balances$: ZEC.balances$({ walletType, walletAccount, walletIndex, walletBalanceType, hdMode }),
+            balances$: ZEC.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: ZEC.reloadBalances$
           }
         default:
