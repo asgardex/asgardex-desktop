@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ZECChain } from '@xchainjs/xchain-zcash'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
@@ -18,6 +17,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { isTCYAsset, THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, Asset, AssetType, baseAmount, isSecuredAsset, isSynthAsset } from '@xchainjs/xchain-util'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -378,14 +378,11 @@ export const utxoFeesWithRates$ = (asset: Asset, address: string): FeesWithRates
         DASH.feesWithRates$(address),
         liveData.map((feesWithRates) => feesWithRates)
       )
+    case ZECChain:
+      return FP.pipe(ZEC.feesWithRates$(address))
     case ADAChain:
       return FP.pipe(
         ADA.feesWithRates$(address),
-        liveData.map((feesWithRates) => feesWithRates)
-      )
-    case ZECChain:
-      return FP.pipe(
-        ZEC.feesWithRates$(address),
         liveData.map((feesWithRates) => feesWithRates)
       )
     default:
@@ -408,10 +405,10 @@ export const reloadUtxoFeesWithRates$ = (asset: Asset) => {
       return FP.pipe(LTC.reloadFeesWithRates)
     case DASHChain:
       return FP.pipe(DASH.reloadFeesWithRates)
-    case ADAChain:
-      return FP.pipe(ADA.reloadFeesWithRates)
     case ZECChain:
       return FP.pipe(ZEC.reloadFeesWithRates)
+    case ADAChain:
+      return FP.pipe(ADA.reloadFeesWithRates)
     default:
       return FP.pipe(BTC.reloadFeesWithRates)
   }

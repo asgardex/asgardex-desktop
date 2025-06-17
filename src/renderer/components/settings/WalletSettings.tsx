@@ -31,6 +31,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Address, Chain } from '@xchainjs/xchain-util'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 import { List, RadioChangeEvent, message } from 'antd'
 import clsx from 'clsx'
 import { function as FP, array as A, option as O } from 'fp-ts'
@@ -227,7 +228,8 @@ export const WalletSettings = (props: Props): JSX.Element => {
     [ARBChain]: 0,
     [RadixChain]: 0,
     [SOLChain]: 0,
-    [ADAChain]: 0
+    [ADAChain]: 0,
+    [ZECChain]: 0
   })
   const [walletAccountMap, setWalletAccountMap] = useState<Record<EnabledChain, number>>({
     [BTCChain]: 0,
@@ -246,7 +248,8 @@ export const WalletSettings = (props: Props): JSX.Element => {
     [ARBChain]: 0,
     [RadixChain]: 0,
     [SOLChain]: 0,
-    [ADAChain]: 0
+    [ADAChain]: 0,
+    [ZECChain]: 0
   })
 
   const {
@@ -654,8 +657,8 @@ export const WalletSettings = (props: Props): JSX.Element => {
     () =>
       FP.pipe(
         oWalletAccounts,
-        O.map((walletAccounts) =>
-          FP.pipe(
+        O.map((walletAccounts) => {
+          return FP.pipe(
             walletAccounts,
             A.filter(({ chain }) =>
               accountFilter
@@ -664,7 +667,7 @@ export const WalletSettings = (props: Props): JSX.Element => {
                 : true
             )
           )
-        )
+        })
       ),
     [accountFilter, oWalletAccounts]
   )

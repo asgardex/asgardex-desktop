@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ZECChain } from '@xchainjs/xchain-zcash'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
@@ -18,6 +17,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Chain } from '@xchainjs/xchain-util'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -122,30 +122,30 @@ export const createBalancesService = ({
 
   const reloadBalancesByChain =
     (chain: Chain, walletType: WalletType): FP.Lazy<void> =>
-    () => {
-      userChains$
-        .pipe(
-          RxOp.take(1),
-          RxOp.map((enabledChains) => {
-            if (!enabledChains.includes(chain)) {
-              return FP.constVoid
-            }
+      () => {
+        userChains$
+          .pipe(
+            RxOp.take(1),
+            RxOp.map((enabledChains) => {
+              if (!enabledChains.includes(chain)) {
+                return FP.constVoid
+              }
 
-            const reloadBalances = chainReloadBalances[chain]
-            if (!reloadBalances) {
-              return FP.constVoid
-            }
+              const reloadBalances = chainReloadBalances[chain]
+              if (!reloadBalances) {
+                return FP.constVoid
+              }
 
-            return () => reloadBalances(walletType) // Pass walletType dynamically
-          }),
-          RxOp.shareReplay(1) // Cache the latest result for multiple subscribers
-        )
-        .subscribe((reloadFunction) => {
-          if (reloadFunction !== FP.constVoid) {
-            reloadFunction()
-          }
-        })
-    }
+              return () => reloadBalances(walletType) // Pass walletType dynamically
+            }),
+            RxOp.shareReplay(1) // Cache the latest result for multiple subscribers
+          )
+          .subscribe((reloadFunction) => {
+            if (reloadFunction !== FP.constVoid) {
+              reloadFunction()
+            }
+          })
+      }
 
   const getBalancesServiceByChain = ({
     chain,
@@ -313,7 +313,7 @@ export const createBalancesService = ({
           return {
             reloadBalances: () => ZEC.reloadBalances(walletType),
             resetReloadBalances: () => ZEC.resetReloadBalances(walletType),
-            balances$: ZEC.balances$({ walletType, walletAccount, walletIndex, walletBalanceType, hdMode }),
+            balances$: ZEC.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: ZEC.reloadBalances$
           }
         default:

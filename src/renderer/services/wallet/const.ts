@@ -15,6 +15,7 @@ import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 import { option as O } from 'fp-ts'
 
 import { LoadTxsParams } from '../clients'
@@ -50,7 +51,8 @@ export const DEFAULT_BALANCES_FILTER: BalancesStateFilter = {
   [RadixChain]: 'all',
   [SOLChain]: 'all',
   [BASEChain]: 'all',
-  [ADAChain]: 'all'
+  [ADAChain]: 'all',
+  [ZECChain]: 'all'
 }
 
 export const INITIAL_LOAD_TXS_PROPS: LoadTxsParams = {

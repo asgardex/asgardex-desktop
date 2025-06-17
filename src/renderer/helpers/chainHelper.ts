@@ -1,4 +1,3 @@
-import { AssetZEC, ZECChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDZEC } from '@xchainjs/xchain-zcash'
 import { ARBChain, AssetAETH } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AssetAVAX } from '@xchainjs/xchain-avax'
 import { BASEChain, AssetBETH } from '@xchainjs/xchain-base'
@@ -17,6 +16,7 @@ import { AssetXRD, RadixChain } from '@xchainjs/xchain-radix'
 import { SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Chain } from '@xchainjs/xchain-util'
+import { AssetZEC, ZECChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDZEC } from '@xchainjs/xchain-zcash'
 
 import { isSupportedChain } from '../../shared/utils/chain'
 import { eqChain } from './fp/eq'
@@ -63,10 +63,10 @@ export const getChainFeeBounds = (chain: Chain): number => {
       return UPPER_FEE_BOUNDDOGE
     case DASHChain:
       return UPPER_FEE_BOUNDDASH
-    case ADAChain:
-      return UPPER_FEE_BOUNDADA
     case ZECChain:
       return UPPER_FEE_BOUNDZEC
+    case ADAChain:
+      return UPPER_FEE_BOUNDADA
     default:
       return 0
   }
@@ -200,10 +200,10 @@ export const getChain = (chain: string): Chain => {
       return SOLChain
     case 'BASE':
       return BASEChain
-    case 'ADA':
-      return ADAChain
     case 'ZEC':
       return ZECChain
+    case 'ADA':
+      return ADAChain
     default:
       throw Error('Unknown chain')
   }

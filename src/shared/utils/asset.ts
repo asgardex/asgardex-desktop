@@ -1,4 +1,3 @@
-import { AssetZEC } from '@xchainjs/xchain-zcash'
 import { AssetARB, AssetAETH } from '@xchainjs/xchain-arbitrum'
 import { AssetAVAX } from '@xchainjs/xchain-avax'
 import { AssetBETH } from '@xchainjs/xchain-base'
@@ -17,6 +16,7 @@ import { AssetXRD } from '@xchainjs/xchain-radix'
 import { SOLAsset } from '@xchainjs/xchain-solana'
 import { AssetRuneNative } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, assetToString } from '@xchainjs/xchain-util'
+import { AssetZEC } from '@xchainjs/xchain-zcash'
 
 import { eqAsset } from '../../renderer/helpers/fp/eq'
 import { PoolDetails as PoolDetailsMaya } from '../../renderer/services/midgard/mayaMigard/types'

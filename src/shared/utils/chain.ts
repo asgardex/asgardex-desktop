@@ -1,4 +1,3 @@
-import { ZECChain } from '@xchainjs/xchain-zcash'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
@@ -17,6 +16,7 @@ import { RadixChain as RADIXChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Chain } from '@xchainjs/xchain-util'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 
 export const CHAIN_STRINGS: Record<Chain, string> = {
   [BCHChain]: 'Bitcoin Cash',
@@ -73,10 +73,10 @@ export const isSupportedChain = (u: string): u is EnabledChain =>
 
 // Mapping of DEXs to their supported chains, Update this when new chains are added
 const DEX_CHAINS: { [key: string]: ReadonlyArray<Chain> } = {
-  MAYA: ['DASH', 'BTC', 'ETH', 'KUJI', 'THOR', 'MAYA', 'ARB', 'XRD', 'ADA', 'ZEC'],
+  MAYA: ['DASH', 'BTC', 'ETH', 'KUJI', 'THOR', 'MAYA', 'ARB', 'XRD', 'ZEC', 'ADA'],
   // For THOR, filter out chains that are maya specific
   THOR: Object.keys(DEFAULT_ENABLED_CHAINS).filter(
-    (chain) => !['DASH', 'KUJI', 'MAYA', 'ARB', 'XRD', 'ADA', 'ZEC'].includes(chain)
+    (chain) => !['DASH', 'KUJI', 'MAYA', 'ARB', 'XRD', 'ZEC', 'ADA'].includes(chain)
   )
 }
 
@@ -181,12 +181,12 @@ export const DefaultChainAttributes: Record<Chain, ChainAttributes> = {
     blockReward: 0,
     avgBlockTimeInSecs: 2
   },
-  ADA: {
-    blockReward: 0,
-    avgBlockTimeInSecs: 20
-  },
   ZEC: {
     blockReward: 6.25,
     avgBlockTimeInSecs: 75
+  },
+  ADA: {
+    blockReward: 0,
+    avgBlockTimeInSecs: 20
   }
 }

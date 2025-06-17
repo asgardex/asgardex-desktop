@@ -1,4 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { Network } from '@xchainjs/xchain-client'
+import { NownodesProvider, UtxoOnlineDataProviders } from '@xchainjs/xchain-utxo-providers'
 import {
   Client,
   defaultZECParams,
@@ -7,11 +9,8 @@ import {
   ZEC_DECIMAL,
   zcashExplorerProviders
 } from '@xchainjs/xchain-zcash'
-import { Network } from '@xchainjs/xchain-client'
-import { NownodesProvider, UtxoOnlineDataProviders } from '@xchainjs/xchain-utxo-providers'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
-import { Observable } from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { isError } from '../../../shared/utils/guard'
@@ -19,7 +18,7 @@ import { clientNetwork$ } from '../app/service'
 import * as C from '../clients'
 import { keystoreService } from '../wallet/keystore'
 import { getPhrase } from '../wallet/util'
-import { ClientState, ClientState$ } from './types'
+import { Client$, ClientState, ClientState$ } from './types'
 
 const LOWER_FEE_BOUND = 10000
 const UPPER_FEE_BOUND = 100000
@@ -56,12 +55,12 @@ const clientState$: ClientState$ = FP.pipe(
                 network === Network.Testnet
                   ? [] // No providers for testnet
                   : [
-                      {
-                        [Network.Testnet]: undefined,
-                        [Network.Stagenet]: mainnetNownodesProvider,
-                        [Network.Mainnet]: mainnetNownodesProvider
-                      }
-                    ]
+                    {
+                      [Network.Testnet]: undefined,
+                      [Network.Stagenet]: mainnetNownodesProvider,
+                      [Network.Mainnet]: mainnetNownodesProvider
+                    }
+                  ]
 
               const zecInitParams = {
                 ...defaultZECParams,
@@ -91,34 +90,12 @@ const clientState$: ClientState$ = FP.pipe(
   RxOp.shareReplay(1)
 )
 
-const client$: Observable<O.Option<Client>> = clientState$.pipe(
-  RxOp.map(RD.toOption),
-  RxOp.tap((clientOption) => {
-    console.log('ZEC client$ observable emitted:', {
-      isSome: O.isSome(clientOption),
-      isNone: O.isNone(clientOption)
-    })
-  }),
-  RxOp.shareReplay(1)
-)
+const client$: Client$ = clientState$.pipe(RxOp.map(RD.toOption), RxOp.shareReplay(1))
 
 /**
  * ZEC `Address`
  */
-const address$: C.WalletAddress$ = C.address$(client$, ZECChain).pipe(
-  RxOp.tap((addressOption) => {
-    console.log('ZEC address$ observable emitted:', {
-      isSome: O.isSome(addressOption),
-      isNone: O.isNone(addressOption),
-      value: O.isSome(addressOption) ? addressOption.value : 'None'
-    })
-    if (O.isSome(addressOption)) {
-      console.log('ZEC address generated successfully:', addressOption.value.address)
-    } else {
-      console.warn('ZEC address generation resulted in None')
-    }
-  })
-)
+const address$: C.WalletAddress$ = C.address$(client$, ZECChain)
 
 /**
  * ZEC `Address`

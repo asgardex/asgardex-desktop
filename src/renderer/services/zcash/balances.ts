@@ -32,14 +32,12 @@ const balances$ = ({
   walletType,
   walletAccount,
   walletIndex,
-  hdMode,
-  walletBalanceType
+  hdMode
 }: {
   walletType: WalletType
   walletAccount: number
   walletIndex: number
   hdMode: HDMode
-  walletBalanceType: WalletBalanceType
 }): C.WalletBalancesLD =>
   // For ZEC, we'll always use 'all' balance type since it might not support confirmed/unconfirmed distinction
   C.balances$({
@@ -54,6 +52,6 @@ const balances$ = ({
 
 // State of balances loaded by Client and Address
 const getBalanceByAddress$ = (walletBalanceType: WalletBalanceType) =>
-  C.balancesByAddress$({ client$, trigger$: reloadLedgerBalances$, walletBalanceType: 'all' })
+  C.balancesByAddress$({ client$, trigger$: reloadLedgerBalances$, walletBalanceType })
 
 export { balances$, reloadBalances, getBalanceByAddress$, reloadBalances$, resetReloadBalances }

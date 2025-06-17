@@ -1,6 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ZECChain, AssetZEC } from '@xchainjs/xchain-zcash'
 import { Network, TxHash } from '@xchainjs/xchain-client'
+import { ZECChain, AssetZEC } from '@xchainjs/xchain-zcash'
 import { either as E, function as FP } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
-import { ZECChain } from '@xchainjs/xchain-zcash'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
@@ -20,6 +19,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AssetType, baseAmount } from '@xchainjs/xchain-util'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 import { Row } from 'antd'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
@@ -94,8 +94,8 @@ export const SendView = (): JSX.Element => {
         asset.asset.type === AssetType.SYNTH
           ? MAYAChain
           : asset.asset.type === AssetType.SECURED
-          ? THORChain
-          : asset.asset.chain
+            ? THORChain
+            : asset.asset.chain
       if (!isSupportedChain(chain)) {
         return (
           <h1>
@@ -186,8 +186,8 @@ export const SendView = (): JSX.Element => {
                 selectedAsset.asset.type === AssetType.SYNTH
                   ? MAYAChain
                   : selectedAsset.asset.type === AssetType.SECURED
-                  ? THORChain
-                  : selectedAsset.asset.chain,
+                    ? THORChain
+                    : selectedAsset.asset.chain,
                 selectedAsset.walletType
               )}></RefreshButton>
           </Row>

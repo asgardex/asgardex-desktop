@@ -1,4 +1,3 @@
-import { ZECChain } from '@xchainjs/xchain-zcash'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
@@ -17,6 +16,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AnyAsset, AssetType, Chain } from '@xchainjs/xchain-util'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 import { option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -80,10 +80,10 @@ export const clientByChain$ = (chain: Chain): XChainClient$ => {
       return XRD.client$
     case SOLChain:
       return SOL.client$
-    case ADAChain:
-      return ADA.client$
     case ZECChain:
       return ZEC.client$
+    case ADAChain:
+      return ADA.client$
     default:
       return Rx.of(O.none) // Add a default case to handle unsupported chains
   }
@@ -132,10 +132,10 @@ export const clientByAsset$ = (asset: AnyAsset, protocol: Chain): XChainClient$ 
       return XRD.client$
     case SOLChain:
       return SOL.client$
-    case ADAChain:
-      return ADA.client$
     case ZECChain:
       return ZEC.client$
+    case ADAChain:
+      return ADA.client$
     default:
       return Rx.of(O.none) // Add a default case to handle unsupported chains
   }
