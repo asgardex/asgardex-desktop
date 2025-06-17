@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ZECChain } from '@mayaprotocol/xchain-zcash'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
@@ -19,6 +18,7 @@ import { RadixChain } from '@xchainjs/xchain-radix'
 import { CompatibleAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, AssetType, Chain } from '@xchainjs/xchain-util'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 

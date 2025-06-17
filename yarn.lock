@@ -3131,24 +3131,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mayaprotocol/xchain-zcash@npm:^1.0.5":
-  version: 1.0.5
-  resolution: "@mayaprotocol/xchain-zcash@npm:1.0.5"
+"@mayaprotocol/zcash-js@npm:1.0.7":
+  version: 1.0.7
+  resolution: "@mayaprotocol/zcash-js@npm:1.0.7"
   dependencies:
-    "@bitcoin-js/tiny-secp256k1-asmjs": "npm:^2.2.3"
-    "@mayaprotocol/zcash-js": "npm:1.0.5"
-    "@xchainjs/xchain-client": "npm:2.0.0"
-    "@xchainjs/xchain-crypto": "npm:1.0.0"
-    "@xchainjs/xchain-util": "npm:2.0.0"
-    "@xchainjs/xchain-utxo": "npm:2.0.0"
-    "@xchainjs/xchain-utxo-providers": "npm:2.0.0"
-    bip32: "npm:^5.0.0-rc.0"
-    ecpair: "npm:^3.0.0"
-  checksum: 10/548ce68f819b67b28ee2cdd73152806f64e77a73293355b0225a4514b8b50f9e2d211e6a14cff7d7b4863de4677f9889e12070f3459f205f3a15cd4842540723
+    "@noble/curves": "npm:^1.7.0"
+    "@noble/hashes": "npm:^1.6.1"
+    axios: "npm:^1.7.9"
+    bl: "npm:^6.0.16"
+    blake2b-wasm: "npm:^2.4.0"
+    bs58check: "npm:^4.0.0"
+    buffer: "npm:^6.0.3"
+    js-sha256: "npm:^0.11.0"
+    js-yaml: "npm:^4.1.0"
+    json-rpc-2.0: "npm:^1.7.0"
+    lodash: "npm:^4.17.21"
+  checksum: 10/c55174ff6f865309aca1c82f2977d91ccd90014d6903d497f10c26a02cc116a00b25fd94e800abb778a2ea0e9cc3e1897ee5cc55f93339d9599bce7dad020213
   languageName: node
   linkType: hard
 
-"@mayaprotocol/zcash-js@npm:1.0.5, @mayaprotocol/zcash-js@npm:^1.0.5":
+"@mayaprotocol/zcash-js@npm:^1.0.5":
   version: 1.0.5
   resolution: "@mayaprotocol/zcash-js@npm:1.0.5"
   dependencies:
@@ -6074,17 +6076,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-client@npm:2.0.0":
-  version: 2.0.0
-  resolution: "@xchainjs/xchain-client@npm:2.0.0"
-  dependencies:
-    "@xchainjs/xchain-crypto": "npm:1.0.0"
-    "@xchainjs/xchain-util": "npm:2.0.0"
-    axios: "npm:1.8.4"
-  checksum: 10/b6d79e77d282f4226f50c6de54a68cd2e27bcad93310c147fd4eb1c03e1f349fa7f0cbd359f989156c45ee56edbee7c2f3a0f51ed8feffb073ccd1bc26ab523e
-  languageName: node
-  linkType: hard
-
 "@xchainjs/xchain-client@npm:2.0.1":
   version: 2.0.1
   resolution: "@xchainjs/xchain-client@npm:2.0.1"
@@ -6511,18 +6502,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-utxo-providers@npm:2.0.0":
-  version: 2.0.0
-  resolution: "@xchainjs/xchain-utxo-providers@npm:2.0.0"
-  dependencies:
-    "@supercharge/promise-pool": "npm:2.4.0"
-    "@xchainjs/xchain-client": "npm:2.0.0"
-    "@xchainjs/xchain-util": "npm:2.0.0"
-    axios: "npm:1.8.4"
-  checksum: 10/f90289d554ba7d11bbd13513aa9e51f5bedbc8863b039da6ff74ae92063f5be3f47938ba066b8efbdb579c74bfa26f47522c50ee002522ebd518c48ddf2b0388
-  languageName: node
-  linkType: hard
-
 "@xchainjs/xchain-utxo-providers@npm:2.0.1":
   version: 2.0.1
   resolution: "@xchainjs/xchain-utxo-providers@npm:2.0.1"
@@ -6532,17 +6511,6 @@ __metadata:
     "@xchainjs/xchain-util": "npm:2.0.0"
     axios: "npm:1.8.4"
   checksum: 10/46b894b6878631424399149de9e3b129c192df5b3b676fa0dd871775e8aa7b6353e160d0e370a16223f0cd2e8deb6a092211d5a6529bfa26a45f5ddee44d64b8
-  languageName: node
-  linkType: hard
-
-"@xchainjs/xchain-utxo@npm:2.0.0":
-  version: 2.0.0
-  resolution: "@xchainjs/xchain-utxo@npm:2.0.0"
-  dependencies:
-    "@xchainjs/xchain-client": "npm:2.0.0"
-    "@xchainjs/xchain-util": "npm:2.0.0"
-    "@xchainjs/xchain-utxo-providers": "npm:2.0.0"
-  checksum: 10/d68ab924573f9ca89621c47bfc123beae8418d80e96abd58be1c27990fabe52b7df40adc72302ee22fb824fbab99fc0c7d638f5010ec2741cab6ea5c4c0e4bd2
   languageName: node
   linkType: hard
 
@@ -6570,6 +6538,23 @@ __metadata:
     "@xchainjs/xchain-utxo": "npm:2.0.1"
     ethers: "npm:5.7.2"
   checksum: 10/bf46847a5de69bb6c62ebd195ba528e9cade1ea28aaeec12169ae3ca568852f663db84c9cd0becf8ac81e84955dd0755f49532fdff9b01f74994d28f774fbd7a
+  languageName: node
+  linkType: hard
+
+"@xchainjs/xchain-zcash@npm:1.0.2":
+  version: 1.0.2
+  resolution: "@xchainjs/xchain-zcash@npm:1.0.2"
+  dependencies:
+    "@bitcoin-js/tiny-secp256k1-asmjs": "npm:^2.2.3"
+    "@mayaprotocol/zcash-js": "npm:1.0.7"
+    "@xchainjs/xchain-client": "npm:2.0.1"
+    "@xchainjs/xchain-crypto": "npm:1.0.0"
+    "@xchainjs/xchain-util": "npm:2.0.0"
+    "@xchainjs/xchain-utxo": "npm:2.0.1"
+    "@xchainjs/xchain-utxo-providers": "npm:2.0.1"
+    bip32: "npm:^5.0.0-rc.0"
+    ecpair: "npm:^3.0.0"
+  checksum: 10/355b93a666d46a4b03b466d5cef24770383bdc27b156178b5378082cc25e3a3e62f51bc3448ccc4a90ed2e110b8c45f59556bbd2ffe4f023e322b86fbe807e6e
   languageName: node
   linkType: hard
 
@@ -7058,7 +7043,6 @@ __metadata:
     "@heroicons/react": "npm:^2.2.0"
     "@ledgerhq/hw-transport": "npm:^6.30.1"
     "@ledgerhq/hw-transport-node-hid-singleton": "npm:^6.30.1"
-    "@mayaprotocol/xchain-zcash": "npm:^1.0.5"
     "@mayaprotocol/zcash-js": "npm:^1.0.5"
     "@reduxjs/toolkit": "npm:^2.3.0"
     "@rollup/plugin-inject": "npm:^5.0.5"
@@ -7120,6 +7104,7 @@ __metadata:
     "@xchainjs/xchain-utxo": "npm:2.0.1"
     "@xchainjs/xchain-utxo-providers": "npm:2.0.1"
     "@xchainjs/xchain-wallet": "npm:2.0.6"
+    "@xchainjs/xchain-zcash": "npm:1.0.2"
     ansis: "npm:^1.5.5"
     antd: "npm:^4.20.7"
     assert: "npm:^2.1.0"

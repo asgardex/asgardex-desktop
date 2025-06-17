@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ZEC_DECIMAL } from '@mayaprotocol/xchain-zcash'
 import { ARB_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-arbitrum'
 import { BTC_DECIMAL } from '@xchainjs/xchain-bitcoin'
 import { BCH_DECIMAL } from '@xchainjs/xchain-bitcoincash'
@@ -14,6 +13,7 @@ import { SOL_DECIMALS } from '@xchainjs/xchain-solana'
 import { isTCYAsset } from '@xchainjs/xchain-thorchain'
 import { ThorchainCache } from '@xchainjs/xchain-thorchain-query'
 import { AnyAsset } from '@xchainjs/xchain-util'
+import { ZEC_DECIMAL } from '@xchainjs/xchain-zcash'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 

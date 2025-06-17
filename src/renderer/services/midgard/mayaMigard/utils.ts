@@ -1,5 +1,4 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ZEC_DECIMAL, ZECChain } from '@mayaprotocol/xchain-zcash'
 import { ARB_GAS_ASSET_DECIMAL, ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'
@@ -31,6 +30,7 @@ import {
   AnyAsset,
   Chain
 } from '@xchainjs/xchain-util'
+import { ZEC_DECIMAL, ZECChain } from '@xchainjs/xchain-zcash'
 import { array as A, function as FP, nonEmptyArray as NEA, option as O, predicate as P } from 'fp-ts'
 
 import { AssetBTC, AssetETH, AssetKUJI, AssetDASH, AssetAETH, AssetZEC } from '../../../../shared/utils/asset'

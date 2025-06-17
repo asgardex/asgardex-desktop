@@ -1,4 +1,6 @@
 import * as RD from '@devexperts/remote-data-ts'
+import { Network } from '@xchainjs/xchain-client'
+import { NownodesProvider, UtxoOnlineDataProviders } from '@xchainjs/xchain-utxo-providers'
 import {
   Client,
   defaultZECParams,
@@ -6,9 +8,7 @@ import {
   AssetZEC,
   ZEC_DECIMAL,
   zcashExplorerProviders
-} from '@mayaprotocol/xchain-zcash'
-import { Network } from '@xchainjs/xchain-client'
-import { NownodesProvider, UtxoOnlineDataProviders } from '@xchainjs/xchain-utxo-providers'
+} from '@xchainjs/xchain-zcash'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'

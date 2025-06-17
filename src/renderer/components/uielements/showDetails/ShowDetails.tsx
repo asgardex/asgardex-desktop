@@ -1,6 +1,5 @@
 import React from 'react'
 
-import { ZECChain } from '@mayaprotocol/xchain-zcash'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { ADAChain } from '@xchainjs/xchain-cardano'
@@ -8,6 +7,7 @@ import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { AnyAsset } from '@xchainjs/xchain-util'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 import { useIntl } from 'react-intl'
 
 import { TooltipAddress } from '../common/Common.styles'

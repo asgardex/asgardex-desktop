@@ -1,4 +1,4 @@
-import { Client } from '@mayaprotocol/xchain-zcash'
+import { Client } from '@xchainjs/xchain-zcash'
 
 import * as C from '../clients'
 
