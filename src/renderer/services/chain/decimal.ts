@@ -75,6 +75,9 @@ export const getDecimal = (asset: AnyAsset): Promise<number> => {
   if (isAdaChain(chain)) {
     return Promise.resolve(ADA_DECIMALS)
   }
+  if (isZecChain(chain)) {
+    return Promise.resolve(ZEC_DECIMAL)
+  }
   if (isTCYAsset(asset)) {
     return Promise.resolve(THORCHAIN_DECIMAL)
   }

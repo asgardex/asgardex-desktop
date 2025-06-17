@@ -49,8 +49,8 @@ const chainPrefixLengthFunctions: Record<Chain, (network: Network) => number> = 
   [KUJIChain]: () => 'kujira'.length,
   [RadixChain]: () => 'account_'.length,
   [SOLChain]: () => 0,
-  [ZECChain]: (network: Network) => getZcashPrefix(network).length,
-  [ADAChain]: () => 'addr'.length
+  [ADAChain]: () => 'addr'.length,
+  [ZECChain]: (network: Network) => getZcashPrefix(network).length
 }
 
 export const getAddressPrefixLength = (chain: Chain, network: Network): number => {

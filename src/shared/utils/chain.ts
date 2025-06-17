@@ -35,8 +35,8 @@ export const CHAIN_STRINGS: Record<Chain, string> = {
   [RADIXChain]: 'RADIX',
   [SOLChain]: 'Solana',
   [BASEChain]: 'Base',
-  [ZECChain]: 'Zcash',
-  [ADAChain]: 'Cardano'
+  [ADAChain]: 'Cardano',
+  [ZECChain]: 'Zcash'
 }
 
 export const DEFAULT_ENABLED_CHAINS: Record<Chain, string> = {

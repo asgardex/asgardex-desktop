@@ -39,8 +39,8 @@ const chainAssets: Record<Chain, Asset> = {
   XRD: AssetXRD,
   SOL: SOLAsset,
   BASE: AssetBETH,
-  ZEC: AssetZEC,
-  ADA: ADAAsset
+  ADA: ADAAsset,
+  ZEC: AssetZEC
 }
 
 export const getChainAsset = (chain: Chain): Asset => {

@@ -85,6 +85,8 @@ const addressByChain$ = (chain: Chain): WalletAddress$ => {
       return ZEC.address$
     case ADAChain:
       return ADA.address$
+    case ZECChain:
+      return ZEC.address$
     default:
       return Rx.of(O.none)
   }

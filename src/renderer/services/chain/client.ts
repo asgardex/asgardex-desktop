@@ -84,6 +84,8 @@ export const clientByChain$ = (chain: Chain): XChainClient$ => {
       return ZEC.client$
     case ADAChain:
       return ADA.client$
+    case ZECChain:
+      return ZEC.client$
     default:
       return Rx.of(O.none) // Add a default case to handle unsupported chains
   }
@@ -136,6 +138,8 @@ export const clientByAsset$ = (asset: AnyAsset, protocol: Chain): XChainClient$ 
       return ZEC.client$
     case ADAChain:
       return ADA.client$
+    case ZECChain:
+      return ZEC.client$
     default:
       return Rx.of(O.none) // Add a default case to handle unsupported chains
   }

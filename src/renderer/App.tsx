@@ -51,10 +51,10 @@ export const App = (): JSX.Element => {
                             <ArbProvider>
                               <DogeProvider>
                                 <KujiProvider>
-                                  <ZcashProvider>
-                                    <AdaProvider>
-                                      <SolProvider>
-                                        <XrdProvider>
+                                  <AdaProvider>
+                                    <SolProvider>
+                                      <XrdProvider>
+                                        <ZcashProvider>
                                           <DashProvider>
                                             <CosmosProvider>
                                               <MidgardProvider>
@@ -82,10 +82,10 @@ export const App = (): JSX.Element => {
                                               </MidgardProvider>
                                             </CosmosProvider>
                                           </DashProvider>
-                                        </XrdProvider>
-                                      </SolProvider>
-                                    </AdaProvider>
-                                  </ZcashProvider>
+                                        </ZcashProvider>
+                                      </XrdProvider>
+                                    </SolProvider>
+                                  </AdaProvider>
                                 </KujiProvider>
                               </DogeProvider>
                             </ArbProvider>

@@ -116,8 +116,8 @@ export const createBalancesService = ({
     [RadixChain]: XRD.reloadBalances,
     [SOLChain]: SOL.reloadBalances,
     [BASEChain]: BASE.reloadBalances,
-    [ZECChain]: ZEC.reloadBalances,
-    [ADAChain]: ADA.reloadBalances
+    [ADAChain]: ADA.reloadBalances,
+    [ZECChain]: ZEC.reloadBalances
   }
 
   const reloadBalancesByChain =

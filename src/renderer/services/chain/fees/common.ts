@@ -385,6 +385,11 @@ export const utxoFeesWithRates$ = (asset: Asset, address: string): FeesWithRates
         ADA.feesWithRates$(address),
         liveData.map((feesWithRates) => feesWithRates)
       )
+    case ZECChain:
+      return FP.pipe(
+        ZEC.feesWithRates$(address),
+        liveData.map((feesWithRates) => feesWithRates)
+      )
     default:
       return FP.pipe(
         BTC.feesWithRates$(address),
@@ -409,6 +414,8 @@ export const reloadUtxoFeesWithRates$ = (asset: Asset) => {
       return FP.pipe(ZEC.reloadFeesWithRates)
     case ADAChain:
       return FP.pipe(ADA.reloadFeesWithRates)
+    case ZECChain:
+      return FP.pipe(ZEC.reloadFeesWithRates)
     default:
       return FP.pipe(BTC.reloadFeesWithRates)
   }
