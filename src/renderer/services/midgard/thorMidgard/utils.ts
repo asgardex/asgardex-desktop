@@ -1,5 +1,5 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { ZEC_DECIMAL, ZECChain } from '@mayaprotocol/xchain-zcash'
+import { ZEC_DECIMAL, ZECChain } from '@xchainjs/xchain-zcash'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AssetAVAX, AVAX_GAS_ASSET_DECIMAL, AVAXChain } from '@xchainjs/xchain-avax'
 import { AssetBETH, BASE_GAS_ASSET_DECIMAL, BASEChain } from '@xchainjs/xchain-base'

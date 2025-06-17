@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { ZECChain } from '@mayaprotocol/xchain-zcash'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 import { BTCChain } from '@xchainjs/xchain-bitcoin'
 import { BCHChain } from '@xchainjs/xchain-bitcoincash'
 import { ADAChain } from '@xchainjs/xchain-cardano'

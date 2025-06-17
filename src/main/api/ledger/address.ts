@@ -1,5 +1,5 @@
 import * as Transport from '@ledgerhq/hw-transport'
-import { ZECChain } from '@mayaprotocol/xchain-zcash'
+import { ZECChain } from '@xchainjs/xchain-zcash'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'

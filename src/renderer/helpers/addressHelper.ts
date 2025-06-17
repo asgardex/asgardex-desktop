@@ -1,4 +1,4 @@
-import { getPrefix as getZcashPrefix, ZECChain } from '@mayaprotocol/xchain-zcash'
+import { getPrefix as getZcashPrefix, ZECChain } from '@xchainjs/xchain-zcash'
 import { ARBChain } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain } from '@xchainjs/xchain-avax'
 import { BASEChain } from '@xchainjs/xchain-base'

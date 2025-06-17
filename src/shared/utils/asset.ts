@@ -1,4 +1,4 @@
-import { AssetZEC } from '@mayaprotocol/xchain-zcash'
+import { AssetZEC } from '@xchainjs/xchain-zcash'
 import { AssetARB, AssetAETH } from '@xchainjs/xchain-arbitrum'
 import { AssetAVAX } from '@xchainjs/xchain-avax'
 import { AssetBETH } from '@xchainjs/xchain-base'

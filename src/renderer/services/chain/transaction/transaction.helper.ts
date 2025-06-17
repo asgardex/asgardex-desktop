@@ -1,4 +1,4 @@
-import { ZEC_DECIMAL, ZECChain } from '@mayaprotocol/xchain-zcash'
+import { ZEC_DECIMAL, ZECChain } from '@xchainjs/xchain-zcash'
 import { ARBChain, ARB_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-arbitrum'
 import { AVAXChain, AVAX_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-avax'
 import { BASEChain, BASE_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-base'

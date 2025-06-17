@@ -6,7 +6,7 @@ import {
   AssetZEC,
   ZEC_DECIMAL,
   zcashExplorerProviders
-} from '@mayaprotocol/xchain-zcash'
+} from '@xchainjs/xchain-zcash'
 import { Network } from '@xchainjs/xchain-client'
 import { NownodesProvider, UtxoOnlineDataProviders } from '@xchainjs/xchain-utxo-providers'
 import { function as FP, option as O } from 'fp-ts'
