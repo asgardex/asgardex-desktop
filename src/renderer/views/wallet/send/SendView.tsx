@@ -94,8 +94,8 @@ export const SendView = (): JSX.Element => {
         asset.asset.type === AssetType.SYNTH
           ? MAYAChain
           : asset.asset.type === AssetType.SECURED
-            ? THORChain
-            : asset.asset.chain
+          ? THORChain
+          : asset.asset.chain
       if (!isSupportedChain(chain)) {
         return (
           <h1>
@@ -186,8 +186,8 @@ export const SendView = (): JSX.Element => {
                 selectedAsset.asset.type === AssetType.SYNTH
                   ? MAYAChain
                   : selectedAsset.asset.type === AssetType.SECURED
-                    ? THORChain
-                    : selectedAsset.asset.chain,
+                  ? THORChain
+                  : selectedAsset.asset.chain,
                 selectedAsset.walletType
               )}></RefreshButton>
           </Row>

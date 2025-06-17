@@ -122,30 +122,30 @@ export const createBalancesService = ({
 
   const reloadBalancesByChain =
     (chain: Chain, walletType: WalletType): FP.Lazy<void> =>
-      () => {
-        userChains$
-          .pipe(
-            RxOp.take(1),
-            RxOp.map((enabledChains) => {
-              if (!enabledChains.includes(chain)) {
-                return FP.constVoid
-              }
-
-              const reloadBalances = chainReloadBalances[chain]
-              if (!reloadBalances) {
-                return FP.constVoid
-              }
-
-              return () => reloadBalances(walletType) // Pass walletType dynamically
-            }),
-            RxOp.shareReplay(1) // Cache the latest result for multiple subscribers
-          )
-          .subscribe((reloadFunction) => {
-            if (reloadFunction !== FP.constVoid) {
-              reloadFunction()
+    () => {
+      userChains$
+        .pipe(
+          RxOp.take(1),
+          RxOp.map((enabledChains) => {
+            if (!enabledChains.includes(chain)) {
+              return FP.constVoid
             }
-          })
-      }
+
+            const reloadBalances = chainReloadBalances[chain]
+            if (!reloadBalances) {
+              return FP.constVoid
+            }
+
+            return () => reloadBalances(walletType) // Pass walletType dynamically
+          }),
+          RxOp.shareReplay(1) // Cache the latest result for multiple subscribers
+        )
+        .subscribe((reloadFunction) => {
+          if (reloadFunction !== FP.constVoid) {
+            reloadFunction()
+          }
+        })
+    }
 
   const getBalancesServiceByChain = ({
     chain,

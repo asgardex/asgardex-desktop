@@ -55,12 +55,12 @@ const clientState$: ClientState$ = FP.pipe(
                 network === Network.Testnet
                   ? [] // No providers for testnet
                   : [
-                    {
-                      [Network.Testnet]: undefined,
-                      [Network.Stagenet]: mainnetNownodesProvider,
-                      [Network.Mainnet]: mainnetNownodesProvider
-                    }
-                  ]
+                      {
+                        [Network.Testnet]: undefined,
+                        [Network.Stagenet]: mainnetNownodesProvider,
+                        [Network.Mainnet]: mainnetNownodesProvider
+                      }
+                    ]
 
               const zecInitParams = {
                 ...defaultZECParams,
