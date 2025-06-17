@@ -658,7 +658,6 @@ export const WalletSettings = (props: Props): JSX.Element => {
       FP.pipe(
         oWalletAccounts,
         O.map((walletAccounts) => {
-          console.log(walletAccounts)
           return FP.pipe(
             walletAccounts,
             A.filter(({ chain }) =>
