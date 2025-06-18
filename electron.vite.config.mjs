@@ -59,19 +59,7 @@ export default defineConfig(async ({ mode }) => {
           output: {
             manualChunks: {
               vendor: ['react', 'react-dom', 'react-router-dom'],
-              crypto: ['crypto-browserify', 'stream-browserify', 'readable-stream'],
-              xchain: [
-                '@xchainjs/xchain-wallet',
-                '@xchainjs/xchain-doge',
-                '@xchainjs/xchain-litecoin',
-                '@xchainjs/xchain-bitcoin',
-                '@xchainjs/xchain-ethereum',
-                '@xchainjs/xchain-cosmos',
-                '@xchainjs/xchain-thorchain',
-                '@xchainjs/xchain-client',
-                '@xchainjs/xchain-crypto',
-                '@xchainjs/xchain-util'
-              ]
+              crypto: ['crypto-browserify', 'stream-browserify', 'readable-stream']
             }
           },
           plugins: [
