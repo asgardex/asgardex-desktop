@@ -272,7 +272,7 @@ export const BondsTable = ({
       onClose: () => setNodeToRemove(O.none),
       onSuccess: () => removeNode(nodeAddress),
       content: (
-        <Label align="center" size="big">
+        <Label size="big">
           <FormattedMessage
             id="bonds.node.removeMessage"
             values={{

@@ -43,7 +43,7 @@ export const createTransactionService = (client$: Client$, network$: Network$): 
       sequenceSOption({ router: params.router }),
       O.fold(
         () => failure$(`Invalid values: Asset ${params.asset} / router address ${params.router}`),
-        ({ router }) =>
+        ({ router }): TxHashLD =>
           Rx.of(null).pipe(
             // Start the pipeline with sender address
             RxOp.switchMap(() => Rx.from(client.getAddressAsync(params.walletIndex))),

@@ -27,13 +27,6 @@ export const AssetIcon = styled(AssetIconUI)`
   `}
 `
 
-export const Description = styled.p`
-  font-family: 'MainFontRegular';
-  font-size: 12;
-  text-align: center;
-  color: ${palette('text', 2)};
-`
-
 export const AddressTitle = styled.p`
   font-family: 'MainFontBold';
   font-size: 10px;

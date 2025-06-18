@@ -10,9 +10,8 @@ import * as RxOp from 'rxjs/operators'
 
 import { isEthAsset } from '../../helpers/assetHelper'
 import { observableState } from '../../helpers/stateHelper'
-import { FeeLD } from '../chain/types'
-import * as C from '../clients'
-import { FeesLD } from '../clients'
+import type { FeeLD } from '../chain/types'
+import type { FeesLD } from '../clients'
 import { ERC20_OUT_TX_GAS_LIMIT, ETH_OUT_TX_GAS_LIMIT, EVMZeroAddress } from '../evm/const'
 import { FeesService, PoolInTxFeeParams, ApproveFeeHandler, ApproveParams, TxParams, Client$ } from '../evm/types'
 
@@ -65,14 +64,14 @@ export const createFeesService = (client$: Client$): FeesService => {
   /**
    * Fees for sending txs into pool on Ethereum
    **/
-  const poolInTxFees$ = ({ address, abi, func, params }: PoolInTxFeeParams): C.FeesLD =>
+  const poolInTxFees$ = ({ address, abi, func, params }: PoolInTxFeeParams): FeesLD =>
     client$.pipe(
       RxOp.switchMap((oClient) =>
         FP.pipe(
           oClient,
           O.fold(
             () => Rx.of(RD.initial),
-            (client) =>
+            (client): FeesLD =>
               Rx.combineLatest([
                 client.estimateCall({ contractAddress: address, abi, funcName: func, funcParams: params }),
                 client.estimateGasPrices()
@@ -95,14 +94,14 @@ export const createFeesService = (client$: Client$): FeesService => {
   /**
    * Fees for sending txs out of a pool on Ethereum
    **/
-  const poolOutTxFee$ = (asset: Asset): C.FeesLD =>
+  const poolOutTxFee$ = (asset: Asset): FeesLD =>
     client$.pipe(
       RxOp.switchMap((oClient) =>
         FP.pipe(
           oClient,
           O.fold(
             () => Rx.of(RD.initial),
-            (client) => {
+            (client): FeesLD => {
               const gasLimit = isEthAsset(asset) ? ETH_OUT_TX_GAS_LIMIT : ERC20_OUT_TX_GAS_LIMIT
               return Rx.from(client.estimateGasPrices()).pipe(
                 RxOp.map<GasPrices, Fees>((gasPrices) => ({
@@ -131,7 +130,7 @@ export const createFeesService = (client$: Client$): FeesService => {
           oClient,
           O.fold(
             () => Rx.of(RD.initial),
-            (client) =>
+            (client): FeeLD =>
               Rx.combineLatest([
                 client.estimateApprove({ contractAddress, spenderAddress, fromAddress }),
                 client.estimateGasPrices()

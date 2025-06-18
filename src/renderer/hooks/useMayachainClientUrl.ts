@@ -70,7 +70,14 @@ export const useMayachainClientUrl = (): {
       RxAjax.ajax(`${url}/health`),
       RxOp.map(({ response }) => {
         // Empty result object means no error
-        if (response.result && typeof response.result === 'object' && Object.keys(response.result).length === 0)
+        if (
+          response &&
+          typeof response === 'object' &&
+          'result' in response &&
+          response.result &&
+          typeof response.result === 'object' &&
+          Object.keys(response.result).length === 0
+        )
           return RD.success(url)
 
         return RD.failure(
