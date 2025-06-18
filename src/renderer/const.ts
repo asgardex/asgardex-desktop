@@ -19,16 +19,7 @@ import { THORChain } from '@xchainjs/xchain-thorchain'
 import { assetAmount, bn, assetToString, baseAmount, Chain, AssetType, TokenAsset } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
 
-import {
-  AssetBTC,
-  AssetETH,
-  AssetRuneNative,
-  AssetARB,
-  AssetAVAX,
-  AssetCacao,
-  AssetBSC,
-  AssetZEC
-} from '../shared/utils/asset'
+import { AssetBTC, AssetETH, AssetRuneNative, AssetARB, AssetAVAX, AssetCacao, AssetBSC } from '../shared/utils/asset'
 import { EnabledChain } from '../shared/utils/chain'
 import { WalletType } from '../shared/wallet/types'
 import { GetPoolsPeriodEnum, PoolData } from './services/midgard/midgardTypes'
@@ -196,7 +187,7 @@ export const DEFAULT_USER_ASSETS = [
   AssetUSDCARB
 ]
 
-export const DEFAULT_PRICE_ASSETS: PricePoolAssets = [AssetRuneNative, AssetETH, AssetBTC, AssetCacao, AssetZEC]
+export const DEFAULT_PRICE_ASSETS: PricePoolAssets = [AssetRuneNative, AssetETH, AssetBTC, AssetCacao]
 
 // Weight of chains
 // Needed for ordering chain related things (wallets, balances etc.)
