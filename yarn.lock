@@ -6457,15 +6457,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xchainjs/xchain-thornode@npm:1.0.0":
-  version: 1.0.0
-  resolution: "@xchainjs/xchain-thornode@npm:1.0.0"
-  dependencies:
-    axios: "npm:1.8.4"
-  checksum: 10/50617f35cadf7f4f23cc137352820ec3c1bdeb40d0e333ee9e95afc5c7ef306137dec8baeaf2d2cbf55006df160e6cbdc58275471f0f0f6998fb9192c71dd1cf
-  languageName: node
-  linkType: hard
-
 "@xchainjs/xchain-thornode@npm:1.0.1":
   version: 1.0.1
   resolution: "@xchainjs/xchain-thornode@npm:1.0.1"
@@ -7081,7 +7072,7 @@ __metadata:
     "@xchainjs/xchain-solana": "npm:1.0.1"
     "@xchainjs/xchain-thorchain": "npm:3.0.5"
     "@xchainjs/xchain-thorchain-query": "npm:2.0.2"
-    "@xchainjs/xchain-thornode": "npm:1.0.0"
+    "@xchainjs/xchain-thornode": "npm:1.0.1"
     "@xchainjs/xchain-util": "npm:2.0.0"
     "@xchainjs/xchain-utxo": "npm:2.0.1"
     "@xchainjs/xchain-utxo-providers": "npm:2.0.1"

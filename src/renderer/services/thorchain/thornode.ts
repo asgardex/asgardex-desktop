@@ -21,7 +21,9 @@ import {
   RUNEPoolApi,
   RUNEProvider,
   TradeAccountApi,
-  TradeAccountResponse
+  TradeAccountResponse,
+  TCYClaimersApi,
+  TCYClaimer
 } from '@xchainjs/xchain-thornode'
 import {
   Address,
@@ -70,7 +72,9 @@ import {
   RunePoolProvider,
   TradeAccount,
   TradeAccountLD,
-  LiquidityProvider
+  LiquidityProvider,
+  TcyClaimLD,
+  TcyClaim
 } from './types'
 
 const height: number | undefined = undefined
@@ -389,6 +393,33 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
       ),
       RxOp.startWith(RD.pending)
     )
+  const apiGetTcyClaim$ = (address: Address): LiveData<Error, TCYClaimer> =>
+    FP.pipe(
+      thornodeUrl$,
+      liveData.chain((basePath) =>
+        FP.pipe(
+          Rx.from(new TCYClaimersApi(getThornodeAPIConfiguration(basePath)).tcyClaimer(address)),
+          RxOp.map((response: AxiosResponse<TCYClaimer>) => RD.success(response.data)), // Extract data from AxiosResponse
+          RxOp.catchError((e: Error) => Rx.of(RD.failure(e)))
+        )
+      )
+    )
+  const { stream$: reloadTcyClaim$, trigger: reloadTcyClaim } = triggerStream()
+
+  const getTcyClaim$ = (address: Address): TcyClaimLD =>
+    FP.pipe(
+      reloadTcyClaim$,
+      RxOp.debounceTime(300),
+      RxOp.switchMap((_) => apiGetTcyClaim$(address)),
+      liveData.map((claim): TcyClaim => {
+        const asset = assetFromStringEx(claim.asset)
+        const amount = baseAmount(bnOrZero(claim.amount), THORCHAIN_DECIMAL)
+        const l1Address = claim.l1_address
+        return { asset, amount, l1Address }
+      }),
+      RxOp.catchError((): TcyClaimLD => Rx.of(RD.failure(Error(`Failed to load claim info for ${address} `)))),
+      RxOp.startWith(RD.pending)
+    )
 
   const apiGetMimir$: MimirLD = FP.pipe(
     thornodeUrl$,
@@ -672,6 +703,8 @@ export const createThornodeService$ = (network$: Network$, clientUrl$: ClientUrl
     getThorchainPool$,
     reloadThorchainPool,
     getTradeAccount$,
-    reloadTradeAccount
+    reloadTradeAccount,
+    getTcyClaim$,
+    reloadTcyClaim
   }
 }

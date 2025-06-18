@@ -225,6 +225,15 @@ export type LiquidityProviderLD = LiveData<Error, O.Option<LiquidityProvider>>
 export type LiquidityProviderRD = RD.RemoteData<Error, O.Option<LiquidityProvider>>
 export type LiquidityProvidersRD = RD.RemoteData<Error, LiquidityProvider[]>
 
+export type TcyClaim = {
+  asset: AnyAsset
+  amount: BaseAmount
+  l1Address?: Address
+}
+
+export type TcyClaimLD = LiveData<Error, TcyClaim>
+export type TcyClaimRD = RD.RemoteData<Error, TcyClaim>
+
 export type LiquidityProviderHasAsymAssets = { dexAsset: boolean; asset: boolean }
 export type LiquidityProviderHasAsymAssetsRD = RD.RemoteData<Error, LiquidityProviderHasAsymAssets>
 

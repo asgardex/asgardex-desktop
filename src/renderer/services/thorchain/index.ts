@@ -43,7 +43,9 @@ const {
   getThorchainPool$,
   reloadThorchainPool,
   getTradeAccount$,
-  reloadTradeAccount
+  reloadTradeAccount,
+  getTcyClaim$,
+  reloadTcyClaim
 } = createThornodeService$(network$, clientUrl$)
 
 const { txs$, tx$, txStatus$, subscribeTx, resetTx, sendTx, txRD$, sendPoolTx$ } = createTransactionService(
@@ -104,5 +106,7 @@ export {
   getThorchainPool$,
   reloadThorchainPool,
   getTradeAccount$,
-  reloadTradeAccount
+  reloadTradeAccount,
+  getTcyClaim$,
+  reloadTcyClaim
 }

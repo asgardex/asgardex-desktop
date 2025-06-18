@@ -15,6 +15,7 @@ import { Tooltip } from '../../../components/uielements/common/Common.styles'
 import { InputBigNumber } from '../../../components/uielements/input'
 import { Slider } from '../../../components/uielements/slider'
 import { AssetsNav } from '../../../components/wallet/assets'
+import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { TcyClaimModal } from './TcyClaimModal'
@@ -52,12 +53,15 @@ export const TcyView = () => {
   const [selectedAsset, setSelectedAsset] = useState<TcyInfo>()
   const [isClaimModalVisible, setClaimModalVisible] = useState(false)
   const [isPasswordModalVisible, setPasswordModalVisible] = useState(false)
+  const { reloadTcyClaim, getTcyClaim$ } = useThorchainContext()
   const intl = useIntl()
   const {
     keystoreService: { validatePassword$ }
   } = useWalletContext()
 
-  const refreshHandler = useCallback(async () => {}, [])
+  const refreshHandler = useCallback(async () => {
+    reloadTcyClaim()
+  }, [reloadTcyClaim])
 
   const handleClaim = useCallback((tcyInfo: TcyInfo) => {
     setSelectedAsset(tcyInfo)
