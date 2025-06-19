@@ -90,14 +90,11 @@ export const TcyView = () => {
   useEffect(() => {
     if (allBalances.length > 0) {
       const subscriptions = allBalances.map(({ walletAddress }) =>
-        getTcyClaim$(walletAddress).subscribe(
-          (rd: RemoteData<Error, TcyClaim>) => {
-            if (isSuccess(rd)) {
-              setTcyClaimPos((prev) => [...prev.filter((c) => c.l1Address !== walletAddress), rd.value])
-            }
-          },
-          (error) => console.error(`Error fetching TCY claim for ${walletAddress}:`, error)
-        )
+        getTcyClaim$(walletAddress).subscribe((rd: RemoteData<Error, TcyClaim>) => {
+          if (isSuccess(rd)) {
+            setTcyClaimPos((prev) => [...prev.filter((c) => c.l1Address !== walletAddress), rd.value])
+          }
+        })
       )
       return () => subscriptions.forEach((sub) => sub.unsubscribe())
     }
