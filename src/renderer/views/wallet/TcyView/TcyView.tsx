@@ -1,11 +1,12 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { InformationCircleIcon, RocketLaunchIcon } from '@heroicons/react/20/solid'
-import { AssetBTC } from '@xchainjs/xchain-bitcoin'
-import { AssetDOGE } from '@xchainjs/xchain-doge'
-import { AssetETH } from '@xchainjs/xchain-ethereum'
-import { AssetTCY } from '@xchainjs/xchain-thorchain'
+import { isSuccess, RemoteData } from '@devexperts/remote-data-ts'
+import { InformationCircleIcon } from '@heroicons/react/20/solid'
+import { AssetCacao } from '@xchainjs/xchain-mayachain'
+import { AssetRuneNative, AssetTCY } from '@xchainjs/xchain-thorchain'
 import clsx from 'clsx'
+import { function as FP, option as O } from 'fp-ts'
+import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
 import { WalletPasswordConfirmationModal } from '../../../components/modal/confirmation'
@@ -17,7 +18,12 @@ import { Slider } from '../../../components/uielements/slider'
 import { AssetsNav } from '../../../components/wallet/assets'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
+import { filterWalletBalancesByAssets } from '../../../helpers/walletHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
+import { WalletBalances } from '../../../services/clients'
+import { TcyClaim } from '../../../services/thorchain/types'
+import { balancesState$ } from '../../../services/wallet'
+import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { TcyClaimModal } from './TcyClaimModal'
 import { TcyInfo, TcyOperation } from './types'
 
@@ -29,23 +35,23 @@ const tabTitle = {
   [TcyOperation.Unstake]: 'tcy.unstake'
 }
 
-const mockData: TcyInfo[] = [
-  {
-    asset: AssetBTC,
-    amount: 0,
-    isClaimed: false
-  },
-  {
-    asset: AssetETH,
-    amount: 0,
-    isClaimed: false
-  },
-  {
-    asset: AssetDOGE,
-    amount: 0,
-    isClaimed: false
-  }
-]
+// const mockData: TcyInfo[] = [
+//   {
+//     asset: AssetBTC,
+//     amount: 0,
+//     isClaimed: false
+//   },
+//   {
+//     asset: AssetETH,
+//     amount: 0,
+//     isClaimed: false
+//   },
+//   {
+//     asset: AssetDOGE,
+//     amount: 0,
+//     isClaimed: false
+//   }
+// ]
 
 export const TcyView = () => {
   const { network } = useNetwork()
@@ -54,10 +60,48 @@ export const TcyView = () => {
   const [isClaimModalVisible, setClaimModalVisible] = useState(false)
   const [isPasswordModalVisible, setPasswordModalVisible] = useState(false)
   const { reloadTcyClaim, getTcyClaim$ } = useThorchainContext()
+
+  const [tcyClaimPos, setTcyClaimPos] = useState<TcyClaim[]>([])
   const intl = useIntl()
   const {
     keystoreService: { validatePassword$ }
   } = useWalletContext()
+
+  const [balancesState] = useObservableState(
+    () =>
+      balancesState$({
+        ...DEFAULT_BALANCES_FILTER
+      }),
+    INITIAL_BALANCES_STATE
+  )
+
+  const { balances: oWalletBalances } = balancesState
+
+  const allBalances: WalletBalances = useMemo(
+    () =>
+      FP.pipe(
+        oWalletBalances,
+        O.map((balances) => filterWalletBalancesByAssets(balances, [AssetRuneNative, AssetCacao])),
+        O.getOrElse<WalletBalances>(() => [])
+      ),
+    [oWalletBalances]
+  )
+
+  useEffect(() => {
+    if (allBalances.length > 0) {
+      const subscriptions = allBalances.map(({ walletAddress }) =>
+        getTcyClaim$(walletAddress).subscribe(
+          (rd: RemoteData<Error, TcyClaim>) => {
+            if (isSuccess(rd)) {
+              setTcyClaimPos((prev) => [...prev.filter((c) => c.l1Address !== walletAddress), rd.value])
+            }
+          },
+          (error) => console.error(`Error fetching TCY claim for ${walletAddress}:`, error)
+        )
+      )
+      return () => subscriptions.forEach((sub) => sub.unsubscribe())
+    }
+  }, [allBalances, getTcyClaim$])
 
   const refreshHandler = useCallback(async () => {
     reloadTcyClaim()
@@ -84,10 +128,6 @@ export const TcyView = () => {
       <AssetsNav />
 
       <div className="relative grid grid-cols-8 gap-2 bg-bg1 dark:bg-bg1d rounded-b-lg space-x-0 space-y-2 sm:space-x-2 sm:space-y-0 py-8 px-4 sm:px-8">
-        <div className="absolute w-full h-full backdrop-blur z-20 flex flex-col items-center justify-center gap-y-2 p-8">
-          <RocketLaunchIcon className="cursor-pointer text-text1 dark:text-text1d w-8 h-8" />
-          <span className="text-lg text-text1 dark:text-text1d">Coming Soon</span>
-        </div>
         <div className="col-span-8 md:col-span-5">
           <div className="flex flex-col py-4 w-full border border-solid border-gray0 dark:border-gray0d rounded-lg ">
             <div className="flex flex-row space-x-4 px-4 pb-4 mb-4 border-b border-solid border-gray0 dark:border-gray0d">
@@ -107,18 +147,20 @@ export const TcyView = () => {
                     {intl.formatMessage({ id: 'tcy.claimNotice' })}
                   </span>
                   <div className="mt-4 border border-solid border-gray0 dark:border-gray0d rounded-lg">
-                    {mockData.map((tcyData, index) => (
+                    {tcyClaimPos.map((tcyData, index) => (
                       <div key={index} className="flex items-center justify-between px-4">
                         <div className="flex items-center space-x-2">
                           <div className="min-w-[120px]">
                             <AssetData asset={tcyData.asset} network={network} />
                           </div>
-                          <span className="text-text2 dark:text-text2d">{tcyData.amount}</span>
+                          <span className="text-text2 dark:text-text2d">{tcyData.amount.amount().toNumber()}</span>
                         </div>
-                        {!tcyData.isClaimed && (
+                        {!tcyData.l1Address && (
                           <FlatButton
                             className="p-2 bg-turquoise text-white cursor-pointer rounded-lg text-11 uppercase"
-                            onClick={() => handleClaim(tcyData)}>
+                            onClick={() =>
+                              handleClaim({ asset: tcyData.asset, amount: tcyData.amount, isClaimed: false })
+                            }>
                             {intl.formatMessage({ id: 'tcy.claim' })}
                           </FlatButton>
                         )}
