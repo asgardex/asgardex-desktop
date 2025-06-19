@@ -12,7 +12,7 @@
 
 ## Add
 
-- Add Zcash [#770] (https://github.com/asgardex/asgardex-desktop/pull/770)
+- Add Zcash [#770](https://github.com/asgardex/asgardex-desktop/pull/770)
 
 # 1.40.1 (2025-6-28)
 
