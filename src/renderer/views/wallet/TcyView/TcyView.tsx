@@ -2,13 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { isSuccess, RemoteData } from '@devexperts/remote-data-ts'
 import { InformationCircleIcon } from '@heroicons/react/20/solid'
-import { AssetCacao } from '@xchainjs/xchain-mayachain'
-import { AssetRuneNative, AssetTCY } from '@xchainjs/xchain-thorchain'
+import { AssetTCY, THORChain } from '@xchainjs/xchain-thorchain'
 import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
+import { getChainsForDex } from '../../../../shared/utils/chain'
 import { WalletPasswordConfirmationModal } from '../../../components/modal/confirmation'
 import { AssetData } from '../../../components/uielements/assets/assetData'
 import { FlatButton, RefreshButton } from '../../../components/uielements/button'
@@ -18,6 +18,7 @@ import { Slider } from '../../../components/uielements/slider'
 import { AssetsNav } from '../../../components/wallet/assets'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
+import { getChainAsset } from '../../../helpers/chainHelper'
 import { filterWalletBalancesByAssets } from '../../../helpers/walletHelper'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { WalletBalances } from '../../../services/clients'
@@ -81,7 +82,7 @@ export const TcyView = () => {
     () =>
       FP.pipe(
         oWalletBalances,
-        O.map((balances) => filterWalletBalancesByAssets(balances, [AssetRuneNative, AssetCacao])),
+        O.map((balances) => filterWalletBalancesByAssets(balances, getChainsForDex(THORChain).map(getChainAsset))),
         O.getOrElse<WalletBalances>(() => [])
       ),
     [oWalletBalances]

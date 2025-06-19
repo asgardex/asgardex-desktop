@@ -44,7 +44,7 @@ export const TcyClaimModal = (props: Props) => {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-14 text-text2 dark:text-text2d">Claimable Amount:</span>
-              <span className="text-14 text-text2 dark:text-text2d">{tcyInfo.amount}</span>
+              <span className="text-14 text-text2 dark:text-text2d">{tcyInfo.amount.amount().toNumber()}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-14 text-text2 dark:text-text2d">Memo:</span>
