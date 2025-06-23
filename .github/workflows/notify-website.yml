@@ -4,6 +4,9 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read # Restrict to read-only access for repo contents
+
 jobs:
   notify:
     runs-on: ubuntu-latest
