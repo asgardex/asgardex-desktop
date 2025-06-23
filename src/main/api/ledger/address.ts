@@ -33,7 +33,7 @@ import { getEVMAddress, verifyEVMAddress } from './evm/address'
 import { getAddress as getLTCAddress, verifyAddress as verifyLTCAddress } from './litecoin/address'
 import { getAddress as getTHORAddress, verifyAddress as verifyTHORAddress } from './thorchain/address'
 
-const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid')
+const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid-singleton')
 
 const handleEVMChain = (
   chain: Chain,

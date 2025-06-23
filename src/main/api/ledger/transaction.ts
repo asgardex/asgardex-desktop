@@ -37,7 +37,7 @@ import * as ETH from './ethereum/transaction'
 import * as LTC from './litecoin/transaction'
 import * as THOR from './thorchain/transaction'
 
-const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid')
+const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid-singleton')
 
 const chainSendFunctions: Record<
   Chain,

@@ -2,7 +2,8 @@ import { AVAXChain, AVAX_DECIMAL, AVAX_GAS_ASSET_DECIMAL, AssetAVAX, UPPER_FEE_B
 import { ExplorerProvider, Network } from '@xchainjs/xchain-client'
 import { EVMClientParams } from '@xchainjs/xchain-evm'
 import { EtherscanProviderV2, RoutescanProvider } from '@xchainjs/xchain-evm-providers'
-import { BigNumber, ethers } from 'ethers'
+import BigNumber from 'bignumber.js'
+import { JsonRpcProvider } from 'ethers'
 
 import { etherscanApiKey } from '../api/etherscan'
 import { envOrDefault } from '../utils/env'
@@ -13,17 +14,14 @@ export const ankrApiKey = envOrDefault(import.meta.env.VITE_ANKR_API_KEY, '')
 
 // =====Ethers providers=====
 // Define JSON-RPC providers for mainnet and testnet
-const AVALANCHE_MAINNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider(
-  `https://rpc.ankr.com/avalanche/${ankrApiKey}`,
-  { name: 'avalanche', chainId: 43114 }
-)
-const AVALANCHE_TESTNET_ETHERS_PROVIDER = new ethers.providers.JsonRpcProvider(
-  `https://rpc.ankr.com/avalanche_fuji/${ankrApiKey}`,
-  {
-    name: 'fuji',
-    chainId: 43113
-  }
-)
+const AVALANCHE_MAINNET_ETHERS_PROVIDER = new JsonRpcProvider(`https://rpc.ankr.com/avalanche/${ankrApiKey}`, {
+  name: 'avalanche',
+  chainId: 43114
+})
+const AVALANCHE_TESTNET_ETHERS_PROVIDER = new JsonRpcProvider(`https://rpc.ankr.com/avalanche_fuji/${ankrApiKey}`, {
+  name: 'fuji',
+  chainId: 43113
+})
 
 const ethersJSProviders = {
   [Network.Mainnet]: AVALANCHE_MAINNET_ETHERS_PROVIDER,
@@ -106,22 +104,22 @@ const ethRootDerivationPaths = {
 
 const defaults = {
   [Network.Mainnet]: {
-    approveGasLimit: BigNumber.from(200000),
-    transferGasAssetGasLimit: BigNumber.from(23000),
-    transferTokenGasLimit: BigNumber.from(100000),
-    gasPrice: BigNumber.from(30)
+    approveGasLimit: new BigNumber(200000),
+    transferGasAssetGasLimit: new BigNumber(23000),
+    transferTokenGasLimit: new BigNumber(100000),
+    gasPrice: new BigNumber(30)
   },
   [Network.Testnet]: {
-    approveGasLimit: BigNumber.from(200000),
-    transferGasAssetGasLimit: BigNumber.from(23000),
-    transferTokenGasLimit: BigNumber.from(100000),
-    gasPrice: BigNumber.from(30)
+    approveGasLimit: new BigNumber(200000),
+    transferGasAssetGasLimit: new BigNumber(23000),
+    transferTokenGasLimit: new BigNumber(100000),
+    gasPrice: new BigNumber(30)
   },
   [Network.Stagenet]: {
-    approveGasLimit: BigNumber.from(200000),
-    transferGasAssetGasLimit: BigNumber.from(23000),
-    transferTokenGasLimit: BigNumber.from(100000),
-    gasPrice: BigNumber.from(30)
+    approveGasLimit: new BigNumber(200000),
+    transferGasAssetGasLimit: new BigNumber(23000),
+    transferTokenGasLimit: new BigNumber(100000),
+    gasPrice: new BigNumber(30)
   }
 }
 export const defaultAvaxParams: EVMClientParams = {

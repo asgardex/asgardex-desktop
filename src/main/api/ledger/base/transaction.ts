@@ -11,7 +11,8 @@ import {
   baseAmount,
   TokenAsset
 } from '@xchainjs/xchain-util'
-import { ethers } from 'ethers'
+import { BigNumber } from 'bignumber.js'
+import { Contract, getAddress, ZeroAddress } from 'ethers'
 import { either as E } from 'fp-ts'
 
 import { isBaseAsset, isEVMTokenAsset } from '../../../../renderer/helpers/assetHelper'
@@ -136,19 +137,19 @@ export const deposit = async ({
 
     const isERC20 = isEVMTokenAsset(asset as TokenAsset)
     const checkSummedContractAddress = isERC20
-      ? ethers.utils.getAddress(getContractAddressFromAsset(asset as TokenAsset))
-      : ethers.constants.AddressZero
+      ? getAddress(getContractAddressFromAsset(asset as TokenAsset))
+      : ZeroAddress
     const provider = ledgerClient.getProvider()
     const blockTime = await getBlocktime(provider)
     const expiration = blockTime + DEPOSIT_EXPIRATION_OFFSET
     const depositParams = [recipient, checkSummedContractAddress, amount.amount().toFixed(), memo, expiration]
 
-    const routerContract = new ethers.Contract(router, abi.router)
+    const routerContract = new Contract(router, abi.router)
     const nativeAsset = ledgerClient.getAssetInfo()
 
     const gasPrices = await ledgerClient.estimateGasPrices()
 
-    const unsignedTx = await routerContract.populateTransaction.depositWithExpiry(...depositParams)
+    const unsignedTx = await routerContract.getFunction('depositWithExpiry').populateTransaction(...depositParams)
 
     const hash = await ledgerClient.transfer({
       walletIndex,
@@ -158,7 +159,7 @@ export const deposit = async ({
       recipient: router,
       gasPrice: gasPrices[feeOption],
       isMemoEncoded: true,
-      gasLimit: ethers.BigNumber.from(160000)
+      gasLimit: new BigNumber(160000)
     })
     return E.right(hash)
   } catch (error) {
