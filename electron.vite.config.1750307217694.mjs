@@ -1,0 +1,363 @@
+// electron.vite.config.mjs
+import path from 'path'
+import inject from '@rollup/plugin-inject'
+import typescript from '@rollup/plugin-typescript'
+import react from '@vitejs/plugin-react'
+import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
+import simpleGit from 'simple-git'
+import svgr from 'vite-plugin-svgr'
+import wasm from 'vite-plugin-wasm'
+
+// package.json
+var package_default = {
+  name: 'asgardex',
+  productName: 'ASGARDEX',
+  version: '1.40.1',
+  description: 'WALLET AND EXCHANGE CLIENT FOR THORCHAIN, MAYACHAIN, CHAINFLIP',
+  main: 'build/main/electron.js',
+  scripts: {
+    dev: 'electron-vite dev',
+    'force-rebuild-native-deps': 'rimraf ./node_modules/prebuild-install',
+    preview: 'cross-env VITE_NODE_ENV=production electron-vite preview',
+    build: 'cross-env VITE_NODE_ENV=production NODE_OPTIONS="--max-old-space-size=8192" CI=false electron-vite build',
+    'build:dev': 'cross-env VITE_NODE_ENV=development CI=false electron-vite build --mode development',
+    test: 'vitest --config vite.test.config.ts',
+    package: 'yarn build && yarn package:electron',
+    'package:electron':
+      'yarn force-rebuild-native-deps && electron-builder build -c.extraMetadata.main=build/main/electron.js --config .electronbuildrc.config.js',
+    'package:ci': 'yarn postinstall && yarn build && yarn package:electron --publish always',
+    postinstall:
+      'git config blame.ignoreRevsFile .git-blame-ignore-revs && yarn force-rebuild-native-deps && electron-builder install-app-deps',
+    lint: 'trunk check --filter=eslint --filter=prettier',
+    'check:trunk': 'cross-env-shell ./scripts/trunk-check.sh',
+    'check:yarn-lock': 'cross-env-shell ./scripts/check-lockfile.sh',
+    'generate:erc20whitelist':
+      './node_modules/.bin/ts-node --project tsconfig.scripts.json ./scripts/generateERC20Whitelist.ts',
+    'generate:arberc20whitelist': 'npm run generate:erc20whitelist -- ARB',
+    'generate:avaxerc20whitelist': 'npm run generate:erc20whitelist -- AVAX',
+    'generate:bscerc20whitelist': 'npm run generate:erc20whitelist -- BSC',
+    'generate:etherc20whitelist': 'npm run generate:erc20whitelist -- ETH',
+    'generate:baseErc20whitelist': 'npm run generate:erc20whitelist -- BASE',
+    storybook: 'NODE_OPTIONS="--max-old-space-size=4096" storybook dev -p 9009 ',
+    'build-storybook': 'NODE_OPTIONS="--max-old-space-size=8192" storybook build',
+    analyze: `NODE_OPTIONS="--max-old-space-size=12000" yarn build:dev && source-map-explorer 'build/renderer/assets/*.js'`
+  },
+  repository: {
+    type: 'git',
+    url: 'https://github.com/asgardex/asgardex-desktop'
+  },
+  author: {
+    name: 'ASGARDEX Maintainers',
+    email: 'accounts@thorchain.org',
+    url: 'https://asgardex.com/'
+  },
+  contributors: [
+    {
+      name: 'THORChain Admin',
+      email: 'accounts@thorchain.org',
+      url: 'https://thorchain.org'
+    }
+  ],
+  license: 'MIT',
+  bugs: {
+    url: 'https://github.com/asgardex/asgardex-desktop/issues'
+  },
+  keywords: [
+    'thorchain',
+    'asgardex',
+    'thornode',
+    'bitcoin',
+    'bitcoin cash',
+    'litecoin',
+    'ethereum',
+    'binance chain',
+    'doge',
+    'cosmos',
+    'bsc',
+    'avax',
+    'mayachain',
+    'dash',
+    'kujira',
+    'arb'
+  ],
+  workspaces: ['asgardex-desktop'],
+  homepage: 'https://thorchain.org',
+  dependencies: {
+    '@asgardex/asgardex-theme': '^0.1.3',
+    '@chainflip/sdk': '^1.7.0',
+    '@devexperts/remote-data-ts': '^2.1.1',
+    '@devexperts/rx-utils': '^1.0.0-alpha.14',
+    '@devexperts/utils': '^1.0.0-alpha.14',
+    '@ethersproject/abstract-provider': '^5.7.0',
+    '@headlessui/react': '^2.2.4',
+    '@heroicons/react': '^2.2.0',
+    '@ledgerhq/hw-transport': '^6.30.1',
+    '@ledgerhq/hw-transport-node-hid-singleton': '^6.30.1',
+    '@mayaprotocol/zcash-js': '^1.0.7',
+    '@reduxjs/toolkit': '^2.3.0',
+    '@xchainjs/xchain-aggregator': '2.0.9',
+    '@xchainjs/xchain-arbitrum': '2.0.2',
+    '@xchainjs/xchain-avax': '2.0.2',
+    '@xchainjs/xchain-base': '1.0.2',
+    '@xchainjs/xchain-bitcoin': '2.0.1',
+    '@xchainjs/xchain-bitcoincash': '2.0.1',
+    '@xchainjs/xchain-bsc': '2.0.3',
+    '@xchainjs/xchain-cardano': '1.1.0',
+    '@xchainjs/xchain-client': '2.0.1',
+    '@xchainjs/xchain-cosmos': '3.0.1',
+    '@xchainjs/xchain-crypto': '1.0.0',
+    '@xchainjs/xchain-dash': '2.0.1',
+    '@xchainjs/xchain-doge': '2.0.1',
+    '@xchainjs/xchain-ethereum': '2.0.3',
+    '@xchainjs/xchain-evm': '2.0.2',
+    '@xchainjs/xchain-evm-providers': '2.0.2',
+    '@xchainjs/xchain-kujira': '2.0.1',
+    '@xchainjs/xchain-litecoin': '2.0.1',
+    '@xchainjs/xchain-mayachain': '3.0.1',
+    '@xchainjs/xchain-mayachain-query': '2.0.3',
+    '@xchainjs/xchain-mayamidgard': '1.0.0',
+    '@xchainjs/xchain-mayanode': '1.0.0',
+    '@xchainjs/xchain-midgard': '1.0.0',
+    '@xchainjs/xchain-radix': '2.0.1',
+    '@xchainjs/xchain-solana': '1.0.1',
+    '@xchainjs/xchain-thorchain': '3.0.5',
+    '@xchainjs/xchain-thorchain-query': '2.0.2',
+    '@xchainjs/xchain-thornode': '1.0.1',
+    '@xchainjs/xchain-util': '2.0.0',
+    '@xchainjs/xchain-utxo': '2.0.1',
+    '@xchainjs/xchain-utxo-providers': '2.0.1',
+    '@xchainjs/xchain-wallet': '2.0.6',
+    '@xchainjs/xchain-zcash': '1.0.2',
+    antd: '^4.20.7',
+    axios: '1.8.4',
+    'bignumber.js': '9.0.0',
+    clsx: '^2.1.1',
+    dotenv: '16.4.5',
+    echarts: '^5.5.1',
+    'echarts-for-react': '^3.0.2',
+    'electron-debug': '^3.2.0',
+    'electron-log': '^4.4.8',
+    'electron-updater': '6.3.4',
+    'electron-window-state': '^5.0.3',
+    ethers: '5.7.2',
+    'fp-ts': '^2.12.1',
+    'fp-ts-rxjs': '^0.6.15',
+    'fs-extra': '^10.1.0',
+    'io-ts': '^2.2.16',
+    'io-ts-types': '^0.5.19',
+    lodash: '^4.17.21',
+    'lodash.shuffle': '^4.2.0',
+    'observable-hooks': '^4.2.1',
+    qrcode: '^1.5.3',
+    'rc-table': '^7.48.0',
+    react: '^18.2.0',
+    'react-dom': '^18.2.0',
+    'react-hook-form': '^7.34.0',
+    'react-intl': '^6.0.4',
+    'react-redux': '^9.1.2',
+    'react-router-dom': '^6.6.1',
+    'redux-logger': '^3.0.6',
+    rxjs: '^6.6.7',
+    'styled-components': '^5.3.5',
+    'styled-theme': '^0.3.3',
+    uuid: '^8.3.2'
+  },
+  devDependencies: {
+    '@chromatic-com/storybook': '3',
+    '@electron/notarize': '^2.5.0',
+    '@eslint/compat': '1.1.1',
+    '@eslint/eslintrc': '^3.3.1',
+    '@eslint/js': '^8.57.1',
+    '@rollup/plugin-inject': '^5.0.5',
+    '@rollup/plugin-typescript': '^12.1.2',
+    '@storybook/addon-docs': '^8.6.12',
+    '@storybook/addon-essentials': '^8.6.12',
+    '@storybook/addon-viewport': '^8.6.12',
+    '@storybook/builder-vite': '^8.6.12',
+    '@storybook/cli': '^8.6.12',
+    '@storybook/react': '^8.6.12',
+    '@storybook/react-vite': '^8.6.12',
+    '@storybook/test': '^8.6.12',
+    '@tsconfig/node16': '^16.1.3',
+    '@types/electron-devtools-installer': '^2.2.2',
+    '@types/eslint-plugin-jsx-a11y': '^6',
+    '@types/fs-extra': '^9.0.13',
+    '@types/lodash': '^4',
+    '@types/lodash.shuffle': '^4.2.7',
+    '@types/node': '^22.14',
+    '@types/prettier': '^2.7.3',
+    '@types/qrcode': '^1.4.2',
+    '@types/react': '^18.0.15',
+    '@types/react-dom': '^18.0.6',
+    '@types/redux-logger': '^3',
+    '@types/styled-components': '^5.1.25',
+    '@typescript-eslint/eslint-plugin': '^7.18.0',
+    '@typescript-eslint/parser': '^7.18.0',
+    '@vitejs/plugin-react': '^4.4.1',
+    '@vitest/ui': '^3.1.3',
+    ansis: '^1.5.5',
+    assert: '^2.1.0',
+    autoprefixer: '^10.4.8',
+    buffer: '^6.0.3',
+    'cross-env': '^7.0.3',
+    'crypto-browserify': '^3.12.0',
+    electron: '^35',
+    'electron-builder': '^24.13.3',
+    'electron-devtools-installer': '^3.2.0',
+    'electron-vite': '^3.1.0',
+    eslint: '^8.57.0',
+    'eslint-config-prettier': '^8.5.0',
+    'eslint-import-resolver-typescript': '^4.3.5',
+    'eslint-plugin-import': '^2.31.0',
+    'eslint-plugin-jsx-a11y': '^6.10.2',
+    'eslint-plugin-prettier': '^4.0.0',
+    'eslint-plugin-react': '^7.37.5',
+    'eslint-plugin-react-hooks': '^5.2.0',
+    'eslint-plugin-security': '^3.0.1',
+    'eslint-plugin-unused-imports': '^4.1.4',
+    'happy-dom': '^17.4.6',
+    husky: '^8.0.1',
+    'lint-staged': '^13.0.0',
+    postcss: '8.4.47',
+    'prebuild-install': '^7.1.3',
+    prettier: '^2.6.2',
+    process: '^0.11.10',
+    'react-error-overlay': '^6.0.11',
+    rimraf: '5.0.10',
+    'rollup-plugin-visualizer': '^5.14.0',
+    'simple-git': '^3.27.0',
+    'source-map-explorer': '^2.5.2',
+    storybook: '^8.6.12',
+    'stream-browserify': '^3.0.0',
+    tailwindcss: '^3.1.7',
+    'ts-node': '10.9.2',
+    typescript: '5.8.3',
+    vite: '^6.3.5',
+    'vite-plugin-svgr': '^4.3.0',
+    'vite-plugin-wasm': '^3.4.1',
+    vitest: '^3.1.3'
+  },
+  resolutions: {
+    secp256k1: '4.0.3',
+    '@types/react': '^18.3.22',
+    typescript: '^5.8.3',
+    'bn.js': '4.12.0'
+  },
+  packageManager: 'yarn@4.2.2'
+}
+
+// electron.vite.config.mjs
+var __electron_vite_injected_dirname = '/Users/dev/Documents/asgardex-desktop'
+var git = simpleGit()
+var electron_vite_config_default = defineConfig(async ({ mode }) => {
+  const commitHash = (await git.revparse(['--short', 'HEAD'])).trim()
+  return {
+    main: {
+      build: {
+        sourcemap: mode === 'development',
+        outDir: 'build/main',
+        lib: { entry: 'src/main/electron.ts' }
+      },
+      resolve: {
+        extensions: ['.ts', '.js']
+      },
+      plugins: [
+        typescript({ tsconfig: './tsconfig.main.json' }),
+        externalizeDepsPlugin({
+          include: ['@ledgerhq/hw-transport-node-hid', '@ledgerhq/hw-transport', 'node-hid', 'usb']
+        })
+      ],
+      define: {
+        $COMMIT_HASH: JSON.stringify(commitHash || 'dev'),
+        $VERSION: JSON.stringify(package_default.version),
+        $IS_DEV: JSON.stringify(process.env.NODE_ENV !== 'production')
+      }
+    },
+    preload: {
+      build: {
+        lib: { entry: 'src/main/preload.ts' },
+        outDir: 'build/preload',
+        sourcemap: mode === 'development'
+      },
+      plugins: [externalizeDepsPlugin()],
+      resolve: {
+        extensions: ['.ts', '.js']
+      }
+    },
+    renderer: {
+      input: 'src/renderer/index.html',
+      assetsInclude: ['**/*.wasm'],
+      build: {
+        sourcemap: mode === 'development',
+        outDir: 'build/renderer',
+        rollupOptions: {
+          output: {
+            manualChunks: {
+              vendor: ['react', 'react-dom', 'react-router-dom'],
+              crypto: ['crypto-browserify', 'stream-browserify', 'readable-stream'],
+              xchain: [
+                '@xchainjs/xchain-wallet',
+                '@xchainjs/xchain-doge',
+                '@xchainjs/xchain-litecoin',
+                '@xchainjs/xchain-bitcoin',
+                '@xchainjs/xchain-ethereum',
+                '@xchainjs/xchain-cosmos',
+                '@xchainjs/xchain-thorchain',
+                '@xchainjs/xchain-client',
+                '@xchainjs/xchain-crypto',
+                '@xchainjs/xchain-util'
+              ]
+            }
+          },
+          plugins: [
+            inject({
+              Buffer: ['buffer', 'Buffer']
+            })
+          ]
+        },
+        commonjsOptions: {
+          transformMixedEsModules: true,
+          include: [/node_modules/, /@mayaprotocol\/zcash-js/]
+        }
+      },
+      resolve: {
+        alias: {
+          process: 'process/browser',
+          stream: 'stream-browserify',
+          crypto: 'crypto-browserify',
+          path: path.resolve(__electron_vite_injected_dirname, 'empty.js'),
+          url: path.resolve(__electron_vite_injected_dirname, 'empty.js'),
+          https: path.resolve(__electron_vite_injected_dirname, 'empty.js'),
+          http: path.resolve(__electron_vite_injected_dirname, 'empty.js'),
+          zlib: path.resolve(__electron_vite_injected_dirname, 'empty.js'),
+          fs: path.resolve(__electron_vite_injected_dirname, 'empty.js'),
+          // Force @mayaprotocol/zcash-js to use CommonJS build instead of browser bundle
+          '@mayaprotocol/zcash-js': path.resolve(
+            __electron_vite_injected_dirname,
+            'node_modules/@mayaprotocol/zcash-js/dist/src/index.js'
+          )
+        }
+      },
+      optimizeDeps: {
+        include: ['process', 'buffer', '@mayaprotocol/zcash-js'],
+        esbuildOptions: {
+          inject: ['./src/shims/buffer-shim.js']
+        }
+      },
+      plugins: [wasm(), react(), svgr(), typescript()],
+      define: {
+        'process.env': {},
+        // TODO: Fix from xchain
+        global: 'globalThis',
+        $COMMIT_HASH: JSON.stringify(commitHash || 'dev'),
+        $VERSION: JSON.stringify(package_default.version),
+        $IS_DEV: JSON.stringify(process.env.NODE_ENV !== 'production')
+      },
+      server: {
+        port: 3e3,
+        host: true
+      }
+    }
+  }
+})
+export { electron_vite_config_default as default }
