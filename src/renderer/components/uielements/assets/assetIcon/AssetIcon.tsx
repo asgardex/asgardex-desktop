@@ -9,7 +9,7 @@ import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { isTCYAsset, THORChain } from '@xchainjs/xchain-thorchain'
-import { AnyAsset, isSecuredAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
+import { AnyAsset, AssetType, isSecuredAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 
 import { AssetSOLUSDC } from '../../../../const'
@@ -103,6 +103,7 @@ const chainIconMap = (asset: AnyAsset): string | null => {
     case SOLChain:
       return solIcon
     case THORChain:
+      if (asset.type === AssetType.NATIVE) return null
       return runeIcon
     default:
       return null // return null if no chain matches
