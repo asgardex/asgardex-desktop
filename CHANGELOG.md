@@ -1,6 +1,12 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
-# 1.40.2 (2025-7-20)
+# 1.40.3 (2025-6-28)
+
+## Add
+
+- Add Ripple [#781](https://github.com/asgardex/asgardex-desktop/pull/781)
+
+# 1.40.2 (2025-6-20)
 
 ## Update/Fixes
 
