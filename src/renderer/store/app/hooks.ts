@@ -31,10 +31,34 @@ export const useApp = () => {
     [dispatch]
   )
 
+  const setStreamingSlip = useCallback(
+    (slip: number) => {
+      dispatch(actions.setStreamingSlip(slip))
+    },
+    [dispatch]
+  )
+
+  const setInstantSlip = useCallback(
+    (slip: number) => {
+      dispatch(actions.setInstantSlip(slip))
+    },
+    [dispatch]
+  )
+
+  const setTradeSlip = useCallback(
+    (slip: number) => {
+      dispatch(actions.setTradeSlip(slip))
+    },
+    [dispatch]
+  )
+
   return {
     ...appState,
     changePrivateData,
     setIsWhitelistModalOpen,
-    setProtocol
+    setProtocol,
+    setStreamingSlip,
+    setInstantSlip,
+    setTradeSlip
   }
 }
