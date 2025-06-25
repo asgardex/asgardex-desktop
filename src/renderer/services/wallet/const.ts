@@ -13,6 +13,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { ZECChain } from '@xchainjs/xchain-zcash'
@@ -52,7 +53,8 @@ export const DEFAULT_BALANCES_FILTER: BalancesStateFilter = {
   [SOLChain]: 'all',
   [BASEChain]: 'all',
   [ADAChain]: 'all',
-  [ZECChain]: 'all'
+  [ZECChain]: 'all',
+  [XRPChain]: 'all'
 }
 
 export const INITIAL_LOAD_TXS_PROPS: LoadTxsParams = {

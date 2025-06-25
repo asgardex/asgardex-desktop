@@ -14,6 +14,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Chain } from '@xchainjs/xchain-util'
@@ -46,6 +47,7 @@ import * as KUJI from '../kuji'
 import * as LTC from '../litecoin'
 import * as MAYA from '../mayachain'
 import * as XRD from '../radix'
+import * as XRP from '../ripple'
 import * as SOL from '../solana'
 import * as THOR from '../thorchain'
 import * as ZEC from '../zcash'
@@ -92,6 +94,7 @@ export const createBalancesService = ({
       if (enabledChains.includes(GAIAChain)) COSMOS.reloadBalances(DEFAULT_WALLET_TYPE)
       if (enabledChains.includes(KUJIChain)) KUJI.reloadBalances()
       if (enabledChains.includes(ADAChain)) ADA.reloadBalances()
+      if (enabledChains.includes(XRPChain)) XRP.reloadBalances()
       if (enabledChains.includes(RadixChain)) XRD.reloadBalances()
       if (enabledChains.includes(SOLChain)) SOL.reloadBalances()
       if (enabledChains.includes(ZECChain)) ZEC.reloadBalances(DEFAULT_WALLET_TYPE)
@@ -117,7 +120,8 @@ export const createBalancesService = ({
     [SOLChain]: SOL.reloadBalances,
     [BASEChain]: BASE.reloadBalances,
     [ADAChain]: ADA.reloadBalances,
-    [ZECChain]: ZEC.reloadBalances
+    [ZECChain]: ZEC.reloadBalances,
+    [XRPChain]: XRP.reloadBalances
   }
 
   const reloadBalancesByChain =
@@ -315,6 +319,13 @@ export const createBalancesService = ({
             resetReloadBalances: () => ZEC.resetReloadBalances(walletType),
             balances$: ZEC.balances$({ walletType, walletAccount, walletIndex, hdMode }),
             reloadBalances$: ZEC.reloadBalances$
+          }
+        case XRPChain:
+          return {
+            reloadBalances: () => XRP.reloadBalances(),
+            resetReloadBalances: () => XRP.resetReloadBalances(),
+            balances$: XRP.balances$({ walletType, walletAccount, walletIndex, hdMode }),
+            reloadBalances$: XRP.reloadBalances$
           }
         default:
           return {
@@ -1132,6 +1143,40 @@ export const createBalancesService = ({
   })
 
   /**
+   * Transforms XRP balances into `ChainBalance`
+   */
+  const xrpChainBalance$: ChainBalance$ = Rx.combineLatest([
+    XRP.addressUI$,
+    getChainBalance$({
+      chain: XRPChain,
+      walletType: WalletType.Keystore,
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
+      walletIndex: 0, // walletIndex=0 (as long as we don't support HD wallets for keystore)
+      hdMode: 'default',
+      walletBalanceType: 'all'
+    })
+  ]).pipe(
+    RxOp.map<[O.Option<WalletAddress>, WalletBalancesRD], ChainBalance>(([oWalletAddress, balances]) => ({
+      walletType: WalletType.Keystore,
+      chain: XRPChain,
+      walletAddress: addressFromOptionalWalletAddress(oWalletAddress),
+      walletAccount: 0, // walletAccount=0 (as long as we don't support HD wallets for keystore)
+      walletIndex: 0, // Always 0 as long as we don't support HD wallets for keystore
+      balances,
+      balancesType: 'all'
+    }))
+  )
+
+  /**
+   * XRP Ledger balances
+   */
+  const xrpLedgerChainBalance$: ChainBalance$ = ledgerChainBalance$({
+    chain: XRPChain,
+    walletBalanceType: 'all',
+    getBalanceByAddress$: XRP.getBalanceByAddress$
+  })
+
+  /**
    * List of `ChainBalances` for all available chains (order is important)
    *
    * It includes keystore + Ledger balances
@@ -1155,7 +1200,8 @@ export const createBalancesService = ({
     XRD: [xrdChainBalance$, xrdLedgerChainBalance$],
     SOL: [solChainBalance$, solLedgerChainBalance$],
     BASE: [baseChainBalance$, baseLedgerChainBalance$],
-    ZEC: [zecChainBalance$, zecLedgerChainBalance$]
+    ZEC: [zecChainBalance$, zecLedgerChainBalance$],
+    XRP: [xrpChainBalance$, xrpLedgerChainBalance$]
   }
 
   // Combine enabled chains with their corresponding balance observables

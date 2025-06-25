@@ -16,6 +16,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { AssetType, baseAmount } from '@xchainjs/xchain-util'
@@ -128,6 +129,7 @@ export const SendView = (): JSX.Element => {
         case DASHChain:
         case LTCChain:
         case ZECChain:
+        case XRPChain:
           return (
             <SendViewUTXO
               asset={asset}

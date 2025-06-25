@@ -107,6 +107,7 @@
     "@xchainjs/xchain-mayanode": "1.0.0",
     "@xchainjs/xchain-midgard": "1.0.0",
     "@xchainjs/xchain-radix": "2.0.1",
+    "@xchainjs/xchain-ripple": "1.0.2",
     "@xchainjs/xchain-solana": "1.0.1",
     "@xchainjs/xchain-thorchain": "3.0.5",
     "@xchainjs/xchain-thorchain-query": "2.0.2",
