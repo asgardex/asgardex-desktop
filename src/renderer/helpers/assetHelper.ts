@@ -1,6 +1,7 @@
 import { Network } from '@xchainjs/xchain-client'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
+import { AssetXRP } from '@xchainjs/xchain-ripple'
 import {
   Address,
   AnyAsset,
@@ -187,6 +188,12 @@ export const isAdaAsset = (asset: AnyAsset): boolean =>
  */
 export const isXrdAsset = (asset: AnyAsset): boolean =>
   asset.chain === AssetXRD.chain && asset.symbol.toUpperCase() === AssetXRD.symbol.toUpperCase()
+
+/**
+ * Checks whether an asset is a Ripple asset
+ */
+export const isXrpAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetXRP.chain && asset.symbol.toUpperCase() === AssetXRP.symbol.toUpperCase()
 
 /**
  * Checks whether an asset is a Solana asset

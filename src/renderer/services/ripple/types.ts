@@ -1,10 +1,8 @@
-import { Address } from 'cluster'
 import { Client } from '@xchainjs/xchain-ripple'
-import { BaseAmount, AnyAsset } from '@xchainjs/xchain-util'
+import { BaseAmount, AnyAsset, Address } from '@xchainjs/xchain-util'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
 import * as C from '../clients'
-import { TxHashLD } from '../wallet/types'
 
 export type Client$ = C.Client$<Client>
 
@@ -25,8 +23,4 @@ export type SendTxParams = {
   sender?: Address
 }
 
-export type SendPoolTxParams = SendTxParams
-
-export type TransactionService = {
-  sendPoolTx$: (params: SendPoolTxParams) => TxHashLD
-} & C.TransactionService<SendTxParams>
+export type TransactionService = C.TransactionService<SendTxParams>

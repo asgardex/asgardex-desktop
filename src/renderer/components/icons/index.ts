@@ -16,6 +16,7 @@ import btcIcon from '../../assets/svg/asset-btc.svg?url'
 import dashIcon from '../../assets/svg/asset-dash.svg?url'
 import ethIcon from '../../assets/svg/asset-eth.svg?url'
 import xrdIcon from '../../assets/svg/asset-radix.svg?url'
+import xrpIcon from '../../assets/svg/asset-ripple.svg?url'
 import runeIcon from '../../assets/svg/asset-rune.svg'
 import solIcon from '../../assets/svg/asset-sol.svg?url'
 import tcyIcon from '../../assets/svg/asset-tcy.svg?url'
@@ -59,5 +60,6 @@ export {
   mayaIconT,
   xrdIcon,
   solIcon,
-  baseIcon
+  baseIcon,
+  xrpIcon
 }
