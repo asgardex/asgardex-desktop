@@ -106,7 +106,7 @@
     "@xchainjs/xchain-mayanode": "1.0.1",
     "@xchainjs/xchain-midgard": "1.0.1",
     "@xchainjs/xchain-radix": "2.0.2",
-    "@xchainjs/xchain-ripple": "1.0.2",
+    "@xchainjs/xchain-ripple": "1.0.3",
     "@xchainjs/xchain-solana": "1.0.2",
     "@xchainjs/xchain-thorchain": "3.0.6",
     "@xchainjs/xchain-thorchain-query": "2.0.3",
@@ -229,7 +229,8 @@
     "secp256k1": "4.0.3",
     "@types/react": "^18.3.22",
     "typescript": "^5.8.3",
-    "bn.js": "4.12.0"
+    "bn.js": "4.12.0",
+    "bigint-buffer": "1.0.1"
   },
   "packageManager": "yarn@4.2.2"
 }
