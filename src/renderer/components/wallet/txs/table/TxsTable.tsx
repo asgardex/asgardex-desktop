@@ -1,6 +1,7 @@
 import { useMemo, useCallback, useRef } from 'react'
 
 import * as RD from '@devexperts/remote-data-ts'
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 import { Network, Tx, TxsPage } from '@xchainjs/xchain-client'
 import { Address, baseToAsset, Chain, formatAssetAmount } from '@xchainjs/xchain-util'
 import { Grid, Col, Row } from 'antd'
@@ -16,7 +17,6 @@ import { CustomFormattedDate } from '../../../poolActionsHistory/PoolActionsHist
 import { ErrorView } from '../../../shared/error'
 import { AddressEllipsis } from '../../../uielements/addressEllipsis'
 import { ReloadButton } from '../../../uielements/button'
-import * as CommonStyled from '../../../uielements/common/Common.styles'
 import { Pagination } from '../../../uielements/pagination'
 import * as Styled from './TxsTable.styles'
 
@@ -186,7 +186,9 @@ export const TxsTable = (props: Props): JSX.Element => {
   )
 
   const renderLinkColumn = useCallback(
-    ({ hash }: Tx) => <CommonStyled.ExternalLinkIcon onClick={() => clickTxLinkHandler(hash)} />,
+    ({ hash }: Tx) => (
+      <ArrowTopRightOnSquareIcon className="cursor-pointer w-6 h-6" onClick={() => clickTxLinkHandler(hash)} />
+    ),
     [clickTxLinkHandler]
   )
   const linkColumn: ColumnType<Tx> = useMemo(

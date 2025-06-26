@@ -6,6 +6,7 @@ import { ADAChain } from '@xchainjs/xchain-cardano'
 import { DASHChain } from '@xchainjs/xchain-dash'
 import { DOGEChain } from '@xchainjs/xchain-doge'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { AnyAsset } from '@xchainjs/xchain-util'
 import { ZECChain } from '@xchainjs/xchain-zcash'
 import { useIntl } from 'react-intl'
@@ -49,6 +50,8 @@ export const ShowDetails = ({
         return 'zats/vB'
       case ADAChain:
         return 'lovelances/Byte'
+      case XRPChain:
+        return 'drops'
       default:
         return asset.chain
     }

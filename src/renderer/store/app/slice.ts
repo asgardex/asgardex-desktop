@@ -7,7 +7,10 @@ import { AppState } from './types'
 const initialState: AppState = {
   isPrivate: false,
   isWhitelistModalOpen: false,
-  protocol: THORChain
+  protocol: THORChain,
+  streamingSlip: 0.5,
+  instantSlip: 0.5,
+  tradeSlip: 0.5
 }
 
 const slice = createSlice({
@@ -22,6 +25,15 @@ const slice = createSlice({
     },
     setProtocol(state, action: PayloadAction<Chain>) {
       state.protocol = action.payload
+    },
+    setStreamingSlip(state, action: PayloadAction<number>) {
+      state.streamingSlip = action.payload
+    },
+    setInstantSlip(state, action: PayloadAction<number>) {
+      state.instantSlip = action.payload
+    },
+    setTradeSlip(state, action: PayloadAction<number>) {
+      state.tradeSlip = action.payload
     }
   }
 })

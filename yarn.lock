@@ -5865,6 +5865,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@xchainjs/xchain-client@npm:2.0.1":
+  version: 2.0.1
+  resolution: "@xchainjs/xchain-client@npm:2.0.1"
+  dependencies:
+    "@xchainjs/xchain-crypto": "npm:1.0.0"
+    "@xchainjs/xchain-util": "npm:2.0.0"
+    axios: "npm:1.8.4"
+  checksum: 10/6b811fe2b209dd455b29d0d6f87b13bccc2c02f5ff288a8399833381b8d9d8e3253292491496504775b84d9faceae4204429337826ae06812ceab17431725678
+  languageName: node
+  linkType: hard
+
 "@xchainjs/xchain-client@npm:2.0.2":
   version: 2.0.2
   resolution: "@xchainjs/xchain-client@npm:2.0.2"
@@ -5918,6 +5929,20 @@ __metadata:
     cosmjs-types: "npm:0.9.0"
     protobufjs: "npm:6.11.4"
   checksum: 10/dd15b4ff4466ec3a67b4c6c7abf484a7d777bd63da55ef05f1002221a33c9c180c4ee93d094c3c179c5d67dd144d1895d316d4d3b79f47d7aad86b7f5824fb7b
+  languageName: node
+  linkType: hard
+
+"@xchainjs/xchain-crypto@npm:1.0.0":
+  version: 1.0.0
+  resolution: "@xchainjs/xchain-crypto@npm:1.0.0"
+  dependencies:
+    bech32: "npm:^2.0.0"
+    bip39: "npm:^3.1.0"
+    crypto-js: "npm:4.2.0"
+    foundry-primitives-xchainjs: "github:xchainjs/foundry-primitives-js#master"
+    hdkey: "npm:^2.1.0"
+    uuid: "npm:^9.0.0"
+  checksum: 10/485489857c59b2463ddedf0327982109993ec37a99934e780054236aed42fd43337135cd0498b74d6f734931711bb66a563f01a5e3ba144465c4a9fb78786559
   languageName: node
   linkType: hard
 
@@ -6190,6 +6215,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@xchainjs/xchain-ripple@npm:1.0.2":
+  version: 1.0.2
+  resolution: "@xchainjs/xchain-ripple@npm:1.0.2"
+  dependencies:
+    "@xchainjs/xchain-client": "npm:2.0.1"
+    "@xchainjs/xchain-crypto": "npm:1.0.0"
+    "@xchainjs/xchain-util": "npm:2.0.0"
+    xrpl: "npm:^4.3.0"
+  checksum: 10/551b5be431488201dbd7625703028c335fc7545eac6044b78a945a0be83ac1252aee9a57014453513dbb6181f56e47de8f5050aa82500c50bc9ed64c8572186a
+  languageName: node
+  linkType: hard
+
 "@xchainjs/xchain-ripple@npm:1.0.3":
   version: 1.0.3
   resolution: "@xchainjs/xchain-ripple@npm:1.0.3"
@@ -6309,6 +6346,15 @@ __metadata:
   dependencies:
     axios: "npm:1.8.4"
   checksum: 10/04c7a8fbf11bc67dd22e042b3ae5087f895e1218edf4fe9e9da0a141118e5550bef203ca6809a166da0528fe51f881e1795f2f1ace3a7377bb979732581099b7
+  languageName: node
+  linkType: hard
+
+"@xchainjs/xchain-util@npm:2.0.0":
+  version: 2.0.0
+  resolution: "@xchainjs/xchain-util@npm:2.0.0"
+  dependencies:
+    bignumber.js: "npm:9.0.0"
+  checksum: 10/9d4d6b743fcfa0e639318caafcc4b2c369e38e6981f274ead75b2746d017e6813c90f08c100786f888d1e2134f9f77ea6e443b14d44f301b254bf4607a073595
   languageName: node
   linkType: hard
 
@@ -6936,6 +6982,7 @@ __metadata:
     "@xchainjs/xchain-mayanode": "npm:1.0.1"
     "@xchainjs/xchain-midgard": "npm:1.0.1"
     "@xchainjs/xchain-radix": "npm:2.0.2"
+    "@xchainjs/xchain-ripple": "npm:1.0.2"
     "@xchainjs/xchain-solana": "npm:1.0.2"
     "@xchainjs/xchain-thorchain": "npm:3.0.6"
     "@xchainjs/xchain-thorchain-query": "npm:2.0.3"
@@ -7370,6 +7417,13 @@ __metadata:
     bindings: "npm:^1.3.0"
     node-gyp: "npm:latest"
   checksum: 10/be70c7ad00f5e1a4739251755ef35fe8f183ec34782353cfde0820dcc7c84eefa647c12d75c003650a19c333a0528fde2d4fb9d0c41c724c27cd6b0245d20987
+  languageName: node
+  linkType: hard
+
+"bignumber.js@npm:9.0.0":
+  version: 9.0.0
+  resolution: "bignumber.js@npm:9.0.0"
+  checksum: 10/7406d0d11dfdd2183e19be745f0d5913e3773ded5fbca2a310221e719f15fd8ec6b8d7991031a6081a6276a8e12e27d58ead60f73dcbb9d697ebe9e2dd0ad7e0
   languageName: node
   linkType: hard
 
@@ -11223,6 +11277,18 @@ __metadata:
   dependencies:
     function-bind: "npm:^1.1.2"
   checksum: 10/7898a9c1788b2862cf0f9c345a6bec77ba4a0c0983c7f19d610c382343d4f98fa260686b225dfb1f88393a66679d2ec58ee310c1d6868c081eda7918f32cc70a
+  languageName: node
+  linkType: hard
+
+"hdkey@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "hdkey@npm:2.1.0"
+  dependencies:
+    bs58check: "npm:^2.1.2"
+    ripemd160: "npm:^2.0.2"
+    safe-buffer: "npm:^5.1.1"
+    secp256k1: "npm:^4.0.0"
+  checksum: 10/c4ee2189ea3d87070ebd14ad7368e292b1e0b30e4d8a107eb8f33624634df6e57b8a3b2cda65b3bd97e88474f6798cfdbe7b63b6037429f0e169321d84a0db58
   languageName: node
   linkType: hard
 

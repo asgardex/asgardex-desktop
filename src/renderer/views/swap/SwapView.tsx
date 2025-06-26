@@ -679,7 +679,7 @@ const SuccessTradeRouteView = ({
 
   const sourceAssetDecimal$: AssetWithDecimalLD = useMemo(() => {
     // Check the condition to skip fetching
-    if (sourceAsset.type === AssetType.SYNTH) {
+    if (sourceAsset.type === AssetType.TRADE) {
       // Resolve `getDecimal` and return the observable
       return Rx.from(getDecimal(AssetRuneNative)).pipe(
         RxOp.map((decimal) =>

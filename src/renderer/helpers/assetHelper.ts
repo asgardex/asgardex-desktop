@@ -1,6 +1,8 @@
 import { Network } from '@xchainjs/xchain-client'
 import { getTokenAddress } from '@xchainjs/xchain-evm'
 import { CACAO_DECIMAL } from '@xchainjs/xchain-mayachain'
+import { AssetXRP } from '@xchainjs/xchain-ripple'
+import { THORChain } from '@xchainjs/xchain-thorchain'
 import {
   Address,
   AnyAsset,
@@ -71,6 +73,12 @@ export const THORCHAIN_DECIMAL = 8
  * Checks whether an asset is an RuneNative asset
  */
 export const isRuneNativeAsset = (asset: AnyAsset): boolean => eqAsset.equals(asset, AssetRuneNative)
+
+/**
+ * Checks whether an asset is an RUJI asset
+ */
+export const isRujiAsset = (asset: AnyAsset): boolean =>
+  asset.chain === THORChain && asset.symbol.toUpperCase() === 'RUJI'
 
 /**
  * Checks whether an asset is a Rune (native or non-native) asset
@@ -187,6 +195,12 @@ export const isAdaAsset = (asset: AnyAsset): boolean =>
  */
 export const isXrdAsset = (asset: AnyAsset): boolean =>
   asset.chain === AssetXRD.chain && asset.symbol.toUpperCase() === AssetXRD.symbol.toUpperCase()
+
+/**
+ * Checks whether an asset is a Ripple asset
+ */
+export const isXrpAsset = (asset: AnyAsset): boolean =>
+  asset.chain === AssetXRP.chain && asset.symbol.toUpperCase() === AssetXRP.symbol.toUpperCase()
 
 /**
  * Checks whether an asset is a Solana asset

@@ -15,6 +15,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { getPrefix as getLitecoinPrefix, LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain, getPrefix as getMayachainPrefix } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { getPrefix as getThorchainPrefix, THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Chain } from '@xchainjs/xchain-util'
@@ -50,7 +51,8 @@ const chainPrefixLengthFunctions: Record<Chain, (network: Network) => number> = 
   [RadixChain]: () => 'account_'.length,
   [SOLChain]: () => 0,
   [ADAChain]: () => 'addr'.length,
-  [ZECChain]: (network: Network) => getZcashPrefix(network).length
+  [ZECChain]: (network: Network) => getZcashPrefix(network).length,
+  [XRPChain]: () => 'r'.length
 }
 
 export const getAddressPrefixLength = (chain: Chain, network: Network): number => {

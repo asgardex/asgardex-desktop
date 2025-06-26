@@ -1,10 +1,11 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import {
   ArrowDownOnSquareIcon,
   ArrowRightOnRectangleIcon,
   ArrowsRightLeftIcon,
   ArrowUpOnSquareIcon,
+  ArrowTopRightOnSquareIcon,
   ChartPieIcon
 } from '@heroicons/react/24/outline'
 import { AssetBTC } from '@xchainjs/xchain-bitcoin'
@@ -12,7 +13,6 @@ import { Network } from '@xchainjs/xchain-client'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, assetToString, AssetType, Chain, AnyAsset } from '@xchainjs/xchain-util'
-import { Row, Col } from 'antd'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
@@ -32,10 +32,10 @@ import { WarningView } from '../../shared/warning'
 import { AssetInfo } from '../../uielements/assets/assetInfo'
 import { BackLinkButton, FlatButton, RefreshButton, TextButton } from '../../uielements/button'
 import { ActionIconButton } from '../../uielements/button/ActionIconButton'
+import { Label } from '../../uielements/label'
 import { QRCodeModal } from '../../uielements/qrCodeModal'
 import { InteractType } from '../txs/interact/Interact.types'
 import { TxsTable } from '../txs/table'
-import * as Styled from './AssetDetails.styles'
 
 export type Props = {
   walletType: WalletType
@@ -51,6 +51,7 @@ export type Props = {
   network: Network
   haltedChainsThor: Chain[]
   haltedChainsMaya: Chain[]
+  price?: string
 }
 
 export const AssetDetails = (props: Props): JSX.Element => {
@@ -67,7 +68,8 @@ export const AssetDetails = (props: Props): JSX.Element => {
     disableSend,
     network,
     haltedChainsThor,
-    haltedChainsMaya
+    haltedChainsMaya,
+    price
   } = props
   const [currentPage, setCurrentPage] = useState(1)
   const [showQRModal, setShowQRModal] = useState(false)
@@ -171,16 +173,18 @@ export const AssetDetails = (props: Props): JSX.Element => {
   return (
     <>
       {renderQRCodeModal}
-      <Row justify="space-between">
-        <Col>
-          <BackLinkButton path={walletRoutes.assets.path()} />
-        </Col>
-        <Col>
-          <RefreshButton onClick={refreshHandler} />
-        </Col>
-      </Row>
+      <div className="flex items-start justify-between">
+        <BackLinkButton path={walletRoutes.assets.path()} />
+        <RefreshButton onClick={refreshHandler} />
+      </div>
       <div className="flex flex-col space-y-8 rounded-xl bg-bg1 p-8 dark:bg-bg1d">
-        <AssetInfo walletInfo={O.some({ walletType })} asset={O.some(asset)} assetsWB={oBalances} network={network} />
+        <AssetInfo
+          walletInfo={O.some({ walletType })}
+          asset={O.some(asset)}
+          assetsWB={oBalances}
+          price={price}
+          network={network}
+        />
 
         <div className="w-full">
           <div className="flex flex-col items-center justify-center space-x-0 space-y-1 sm:flex-row sm:space-x-2 sm:space-y-0">
@@ -220,18 +224,16 @@ export const AssetDetails = (props: Props): JSX.Element => {
           </div>
         </div>
       </div>
-      <Row>
-        <Col span={24}>
-          <TextButton
-            className="px-0 pb-20px pt-40px !font-mainSemiBold !text-18"
-            size="large"
-            color="neutral"
-            onClick={openExplorerAddressUrl}>
-            {intl.formatMessage({ id: 'wallet.txs.history' })}
-            <Styled.TableHeadlineLinkIcon />
+      <div>
+        <div>
+          <TextButton className="!px-0 pb-20px pt-40px" size="large" color="neutral" onClick={openExplorerAddressUrl}>
+            <Label size="large" weight="bold">
+              {intl.formatMessage({ id: 'wallet.txs.history' })}
+            </Label>
+            <ArrowTopRightOnSquareIcon className="w-6 h-6 ml-2 text-text1 dark:text-text1d" />
           </TextButton>
-        </Col>
-        <Col span={24}>
+        </div>
+        <div>
           {asset.type === AssetType.SYNTH || asset.type === AssetType.SECURED || asset === AssetRuneNative ? (
             <WarningView
               subTitle={intl.formatMessage(
@@ -245,7 +247,7 @@ export const AssetDetails = (props: Props): JSX.Element => {
               extra={
                 <FlatButton size="normal" color="neutral" onClick={openExplorerAddressUrl}>
                   {intl.formatMessage({ id: 'wallet.txs.history' })}
-                  <Styled.TableHeadlineLinkIcon />
+                  <ArrowTopRightOnSquareIcon className="w-6 h-6 ml-2 text-text1 dark:text-text1d" />
                 </FlatButton>
               }
             />
@@ -260,8 +262,8 @@ export const AssetDetails = (props: Props): JSX.Element => {
               reloadHandler={reloadTxs}
             />
           )}
-        </Col>
-      </Row>
+        </div>
+      </div>
     </>
   )
 }

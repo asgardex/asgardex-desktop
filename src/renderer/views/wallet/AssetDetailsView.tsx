@@ -143,7 +143,7 @@ export const AssetDetailsView = (): JSX.Element => {
     oSelectedAsset,
     O.fold(
       () => <LoadingView size="large" />,
-      ({ asset, walletAddress, walletType }) => (
+      ({ asset, walletAddress, walletType, price }) => (
         <AssetDetails
           walletType={walletType}
           txsPageRD={txsRD}
@@ -161,6 +161,7 @@ export const AssetDetailsView = (): JSX.Element => {
           network={network}
           haltedChainsThor={haltedChainsThor}
           haltedChainsMaya={haltedChainsMaya}
+          price={price}
         />
       )
     )

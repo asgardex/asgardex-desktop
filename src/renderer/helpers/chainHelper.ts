@@ -13,6 +13,7 @@ import { AssetKUJI, KUJIChain } from '@xchainjs/xchain-kujira'
 import { AssetLTC, LTCChain, UPPER_FEE_BOUND as UPPER_FEE_BOUNDLTC } from '@xchainjs/xchain-litecoin'
 import { AssetCacao, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { AssetXRD, RadixChain } from '@xchainjs/xchain-radix'
+import { AssetXRP, XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLAsset, SOLChain } from '@xchainjs/xchain-solana'
 import { AssetRuneNative, THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Chain } from '@xchainjs/xchain-util'
@@ -40,7 +41,8 @@ const chainAssets: Record<Chain, Asset> = {
   SOL: SOLAsset,
   BASE: AssetBETH,
   ADA: ADAAsset,
-  ZEC: AssetZEC
+  ZEC: AssetZEC,
+  XRP: AssetXRP
 }
 
 export const getChainAsset = (chain: Chain): Asset => {
@@ -76,6 +78,10 @@ export const getChainFeeBounds = (chain: Chain): number => {
  * Check whether chain is BTC chain
  */
 export const isBtcChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), BTCChain)
+/**
+ * Check whether chain is XRP chain
+ */
+export const isXrpChain = (chain: Chain): boolean => eqChain.equals(chain.toUpperCase(), XRPChain)
 
 /**
  * Check whether chain is LTC chain
@@ -204,6 +210,8 @@ export const getChain = (chain: string): Chain => {
       return ZECChain
     case 'ADA':
       return ADAChain
+    case 'XRP':
+      return XRPChain
     default:
       throw Error('Unknown chain')
   }

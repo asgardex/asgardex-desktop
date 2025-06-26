@@ -30,6 +30,7 @@ import { UserBondProvidersProvider } from './contexts/UserBondProvidersContext'
 import { UserNodesProvider } from './contexts/UserNodesContext'
 import { WalletProvider } from './contexts/WalletContext'
 import { XrdProvider } from './contexts/XrdContext'
+import { XrpProvider } from './contexts/XrpContext'
 import { ZcashProvider } from './contexts/ZcashContext'
 import { store } from './store/store'
 import { AppView } from './views/app/AppView'
@@ -55,33 +56,35 @@ export const App = (): JSX.Element => {
                                     <SolProvider>
                                       <XrdProvider>
                                         <ZcashProvider>
-                                          <DashProvider>
-                                            <CosmosProvider>
-                                              <MidgardProvider>
-                                                <ThorchainQueryProvider>
-                                                  <MayachainProvider>
-                                                    <MayachainQueryProvider>
-                                                      <MayaMidgardProvider>
-                                                        <UserNodesProvider>
-                                                          <UserBondProvidersProvider>
-                                                            <ChainflipProvider>
-                                                              <I18nProvider>
-                                                                <Router>
-                                                                  <ThemeProvider>
-                                                                    <AppView />
-                                                                  </ThemeProvider>
-                                                                </Router>
-                                                              </I18nProvider>
-                                                            </ChainflipProvider>
-                                                          </UserBondProvidersProvider>
-                                                        </UserNodesProvider>
-                                                      </MayaMidgardProvider>
-                                                    </MayachainQueryProvider>
-                                                  </MayachainProvider>
-                                                </ThorchainQueryProvider>
-                                              </MidgardProvider>
-                                            </CosmosProvider>
-                                          </DashProvider>
+                                          <XrpProvider>
+                                            <DashProvider>
+                                              <CosmosProvider>
+                                                <MidgardProvider>
+                                                  <ThorchainQueryProvider>
+                                                    <MayachainProvider>
+                                                      <MayachainQueryProvider>
+                                                        <MayaMidgardProvider>
+                                                          <UserNodesProvider>
+                                                            <UserBondProvidersProvider>
+                                                              <ChainflipProvider>
+                                                                <I18nProvider>
+                                                                  <Router>
+                                                                    <ThemeProvider>
+                                                                      <AppView />
+                                                                    </ThemeProvider>
+                                                                  </Router>
+                                                                </I18nProvider>
+                                                              </ChainflipProvider>
+                                                            </UserBondProvidersProvider>
+                                                          </UserNodesProvider>
+                                                        </MayaMidgardProvider>
+                                                      </MayachainQueryProvider>
+                                                    </MayachainProvider>
+                                                  </ThorchainQueryProvider>
+                                                </MidgardProvider>
+                                              </CosmosProvider>
+                                            </DashProvider>
+                                          </XrpProvider>
                                         </ZcashProvider>
                                       </XrdProvider>
                                     </SolProvider>

@@ -28,6 +28,7 @@ import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
 import { MAYAChain } from '@xchainjs/xchain-mayachain'
 import { RadixChain } from '@xchainjs/xchain-radix'
+import { XRPChain } from '@xchainjs/xchain-ripple'
 import { SOLChain } from '@xchainjs/xchain-solana'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Asset, Address, Chain } from '@xchainjs/xchain-util'
@@ -229,7 +230,8 @@ export const WalletSettings = (props: Props): JSX.Element => {
     [RadixChain]: 0,
     [SOLChain]: 0,
     [ADAChain]: 0,
-    [ZECChain]: 0
+    [ZECChain]: 0,
+    [XRPChain]: 0
   })
   const [walletAccountMap, setWalletAccountMap] = useState<Record<EnabledChain, number>>({
     [BTCChain]: 0,
@@ -249,7 +251,8 @@ export const WalletSettings = (props: Props): JSX.Element => {
     [RadixChain]: 0,
     [SOLChain]: 0,
     [ADAChain]: 0,
-    [ZECChain]: 0
+    [ZECChain]: 0,
+    [XRPChain]: 0
   })
 
   const {

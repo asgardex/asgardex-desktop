@@ -8,8 +8,8 @@ import { BSCChain } from '@xchainjs/xchain-bsc'
 import { Network } from '@xchainjs/xchain-client'
 import { ETHChain } from '@xchainjs/xchain-ethereum'
 import { SOLChain } from '@xchainjs/xchain-solana'
-import { isTCYAsset } from '@xchainjs/xchain-thorchain'
-import { AnyAsset, isSecuredAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
+import { isTCYAsset, THORChain } from '@xchainjs/xchain-thorchain'
+import { AnyAsset, AssetType, isSecuredAsset, isSynthAsset, isTradeAsset } from '@xchainjs/xchain-util'
 import { function as FP, option as O } from 'fp-ts'
 
 import { AssetSOLUSDC } from '../../../../const'
@@ -29,6 +29,7 @@ import {
   iconUrlInAVAXERC20Whitelist,
   iconUrlInBSCERC20Whitelist,
   isCacaoAsset,
+  isRujiAsset,
   isMayaAsset,
   isDashAsset,
   isKujiAsset,
@@ -40,7 +41,8 @@ import {
   isSolAsset,
   isBaseAsset,
   iconUrlInBASEERC20Whitelist,
-  isAdaAsset
+  isAdaAsset,
+  isXrpAsset
 } from '../../../../helpers/assetHelper'
 import {
   isArbChain,
@@ -73,7 +75,9 @@ import {
   xrdIcon,
   solIcon,
   baseIcon,
-  tcyIcon
+  tcyIcon,
+  xrpIcon,
+  rujiIcon
 } from '../../../icons'
 import * as Styled from './AssetIcon.styles'
 import { Size } from './AssetIcon.types'
@@ -100,6 +104,9 @@ const chainIconMap = (asset: AnyAsset): string | null => {
       return bscIcon
     case SOLChain:
       return solIcon
+    case THORChain:
+      if (asset.type === AssetType.NATIVE) return null
+      return runeIcon
     default:
       return null // return null if no chain matches
   }
@@ -132,6 +139,10 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
     if (isRuneNativeAsset(asset)) {
       return runeIcon
     }
+    // RUJI
+    if (isRujiAsset(asset)) {
+      return rujiIcon
+    }
     // TCY
     if (isTCYAsset(asset)) {
       return tcyIcon
@@ -143,6 +154,10 @@ export const AssetIcon = ({ asset, size = 'small', className = '', network }: Pr
     // Dash
     if (isDashAsset(asset)) {
       return dashIcon
+    }
+    // XRP
+    if (isXrpAsset(asset)) {
+      return xrpIcon
     }
     // ZEC
     if (isZecAsset(asset)) {
