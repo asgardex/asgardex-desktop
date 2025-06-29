@@ -1,16 +1,9 @@
 import * as RD from '@devexperts/remote-data-ts'
-import { instanceObservable } from '@devexperts/rx-utils/dist/observable.utils'
-import { getLiveDataM } from '@devexperts/utils/dist/adt/live-data.utils'
-import { FoldableValue2 } from '@devexperts/utils/dist/typeclasses/foldable-value/foldable-value'
-import {
-  CoproductLeft,
-  coproductMapLeft
-} from '@devexperts/utils/dist/typeclasses/product-left-coproduct-left/product-left-coproduct-left.utils'
-
-import type { filterable as Fi, monadThrow as MT } from 'fp-ts'
-import { apply, array as A, option as O, pipeable as P } from 'fp-ts'
+import type { monadThrow as MT } from 'fp-ts'
+import { applicative, apply, array as A, option as O, pipeable as P } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
+import { instanceObservable } from './instanceObservable'
 
 const { sequenceS, sequenceT } = apply
 const { pipeable } = P
@@ -25,15 +18,11 @@ declare module 'fp-ts/lib/HKT' {
   }
 }
 
-const foldableValueRemoteData: FoldableValue2<typeof RD.remoteData.URI> & MT.MonadThrow2<typeof RD.remoteData.URI> = {
-  ...RD.remoteData,
-  foldValue: (fa, onNever, onValue) => (RD.isSuccess(fa) ? onValue(fa.value) : onNever(fa)),
-  throwError: RD.failure
-}
-
-export const instanceLiveData: MT.MonadThrow2<URIType> & CoproductLeft<URIType> & Fi.Filterable2<URIType> = {
+export const instanceLiveData: MT.MonadThrow2<URIType> = {
   URI,
-  ...getLiveDataM(instanceObservable, foldableValueRemoteData)
+  ...applicative.getApplicativeComposition(instanceObservable, RD.remoteData),
+  chain: (o, f) => o.pipe(RxOp.switchMap((rd) => (RD.isSuccess(rd) ? f(rd.value) : Rx.of(rd)))),
+  throwError: (e) => Rx.of(RD.failure(e))
 }
 
 export const liveData = {
@@ -42,7 +31,6 @@ export const liveData = {
   sequenceS: sequenceS(instanceLiveData),
   sequenceT: sequenceT(instanceLiveData),
   sequenceArray: A.sequence(instanceLiveData),
-  combine: coproductMapLeft(instanceLiveData),
   mapLeft:
     <L, V, A>(f: (l: L) => V) =>
     (fla: LiveData<L, A>): LiveData<V, A> =>
