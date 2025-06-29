@@ -699,7 +699,7 @@ export const TradeSwap = ({
           const affiliateBps = ASGARDEX_ADDRESS === walletAddress ? undefined : applyBps
           const streamingInt = isStreaming ? streamingInterval : 0
           const streaminQuant = isStreaming ? streamingQuantity : 0
-          const toleranceBps = isStreaming || network === Network.Stagenet ? 1000 : slipTolerance * 100 // convert to basis points
+          const toleranceBps = slipTolerance * 100 // convert to basis points
           return {
             fromAsset: fromAsset,
             destinationAsset: destinationAsset,
