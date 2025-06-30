@@ -11,11 +11,11 @@ import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { mockWalletAddress } from '../../helpers/test/testWalletHelper'
 import { DEFAULT_MIMIR_HALT } from '../../services/thorchain/const'
 import { KeystoreState } from '../../services/wallet/types'
-import { SymDepositView } from '../../views/deposit/add/SymDepositView'
-import { ShareView } from '../../views/deposit/share/ShareView'
-import { WithdrawDepositView } from '../../views/deposit/withdraw/WithdrawDepositView'
 import { Protocol } from '../uielements/protocolSwitch/types'
 import { Deposit, Props as DepositProps } from './Deposit'
+import { SymDepositView } from 'views/deposit/add/SymDepositView'
+import { ShareView } from 'views/deposit/share/ShareView'
+import { WithdrawDepositView } from 'views/deposit/withdraw/WithdrawDepositView'
 
 const keystoreStateLocked: KeystoreState = O.some({ id: 123, name: 'My Wallet' })
 

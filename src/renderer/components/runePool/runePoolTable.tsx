@@ -4,11 +4,11 @@ import { useIntl } from 'react-intl'
 import { ZERO_BN } from '../../const'
 import { isUSDAsset } from '../../helpers/assetHelper'
 import { hiddenString } from '../../helpers/stringHelper'
-import { ParentProps } from '../../views/wallet/RunepoolView'
 import * as Styled from '../PoolShares/PoolShares.styles'
 import { AssetIcon } from '../uielements/assets/assetIcon'
 import { ManageButton } from '../uielements/button/ManageButton'
 import { InteractType } from '../wallet/txs/interact/Interact.types'
+import { ParentProps } from 'views/wallet/RunepoolView'
 
 export const RunePoolTable = ({ assetDetails }: ParentProps): JSX.Element => {
   const intl = useIntl()

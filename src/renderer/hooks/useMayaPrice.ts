@@ -8,8 +8,8 @@ import { ONE_CACAO_BASE_AMOUNT } from '../../shared/mock/amount'
 import { sequenceTOption } from '../helpers/fpHelpers'
 import { pricePoolSelector } from '../services/midgard/mayaMigard/utils'
 import { PriceRD } from '../services/midgard/midgardTypes'
-import { getValueOfRuneInAsset } from '../views/pools/Pools.utils'
 import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
+import { getValueOfRuneInAsset } from 'views/pools/Pools.utils'
 
 export const useMayaPrice = () => {
   const {

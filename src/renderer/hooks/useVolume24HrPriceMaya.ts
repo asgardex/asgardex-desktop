@@ -9,8 +9,8 @@ import { sequenceTRD } from '../helpers/fpHelpers'
 import { triggerStream } from '../helpers/stateHelper'
 import { GetLiquidityHistoryIntervalEnum, GetSwapHistoryIntervalEnum, PriceRD } from '../services/midgard/midgardTypes'
 import { AssetWithAmount } from '../types/asgardex'
-import { getValueOfRuneInAsset } from '../views/pools/Pools.utils'
 import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
+import { getValueOfRuneInAsset } from 'views/pools/Pools.utils'
 
 const { stream$: reloadHistory$, trigger: reloadHistory } = triggerStream()
 

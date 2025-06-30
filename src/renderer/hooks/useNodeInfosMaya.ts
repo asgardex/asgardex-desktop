@@ -6,7 +6,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { NodeInfo as NodeInfoMaya } from '../services/mayachain/types'
-import { WalletAddressInfo } from '../views/bonds/types'
+import { WalletAddressInfo } from 'views/bonds/types'
 
 export type ExtendedNodeInfoMaya = NodeInfoMaya & {
   isUserStoredNodeAddress: boolean

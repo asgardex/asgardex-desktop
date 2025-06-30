@@ -42,7 +42,6 @@ import { eqAsset, eqChain, eqOAddress } from '../../../helpers/fp/eq'
 import { ordPricePool } from '../../../helpers/fp/ord'
 import { getDeepestPool, RUNE_POOL_ADDRESS, RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
 import { AssetWithAmount } from '../../../types/asgardex'
-import { PricePoolAssets, PricePoolAsset } from '../../../views/pools/Pools.types'
 import { InboundAddress } from '../../thorchain/types'
 import {
   PoolAssetDetails as PoolAssetsDetail,
@@ -61,6 +60,7 @@ import {
   PricePool,
   PoolData
 } from '../midgardTypes'
+import { PricePoolAssets, PricePoolAsset } from 'views/pools/Pools.types'
 
 export const getPricePools = (details: PoolDetails, whitelist: PricePoolAssets): PricePools => {
   const oUSDPricePool: O.Option<PricePool> = FP.pipe(

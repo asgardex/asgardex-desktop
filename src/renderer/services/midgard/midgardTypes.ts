@@ -24,9 +24,9 @@ type NonEmptyArray<T> = nonEmptyArray.NonEmptyArray<T>
 
 import { LiveData } from '../../helpers/rx/liveData'
 import { AssetWithAmount, DepositType } from '../../types/asgardex'
-import { PricePoolAsset } from '../../views/pools/Pools.types'
 import { Memo, PoolFeeLD } from '../chain/types'
 import { ApiError } from '../wallet/types'
+import { PricePoolAsset } from 'views/pools/Pools.types'
 
 // Common Types
 export type PoolAsset = string

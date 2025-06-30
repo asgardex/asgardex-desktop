@@ -7,7 +7,6 @@ import * as Rx from 'rxjs'
 
 import { LiveData } from '../../../helpers/rx/liveData'
 import { AssetWithAmount } from '../../../types/asgardex'
-import { PricePoolAsset } from '../../../views/pools/Pools.types'
 import { PoolFeeLD } from '../../chain/types'
 import { ApiError } from '../../wallet/types'
 import {
@@ -34,6 +33,7 @@ import {
   TxType,
   ValidatePoolLD
 } from '../midgardTypes'
+import { PricePoolAsset } from 'views/pools/Pools.types'
 
 export type PoolAsset = string
 

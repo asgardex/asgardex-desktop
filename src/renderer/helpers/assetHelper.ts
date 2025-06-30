@@ -51,12 +51,12 @@ import { AVAX_TOKEN_WHITELIST } from '../types/generated/thorchain/avaxerc20whit
 import { BASE_TOKEN_WHITELIST } from '../types/generated/thorchain/baseerc20whitelist'
 import { BSC_TOKEN_WHITELIST } from '../types/generated/thorchain/bscerc20whitelist'
 import { ETH_TOKEN_WHITELIST } from '../types/generated/thorchain/etherc20whitelist'
-import { PricePoolAsset } from '../views/pools/Pools.types'
 import { getEVMChecksumAddress } from './addressHelper'
 import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isEthChain, isLtcChain } from './chainHelper'
 import { isEvmChain, isEvmChainAsset } from './evmHelper'
 import { eqAsset, eqString } from './fp/eq'
 import { sequenceTOption } from './fpHelpers'
+import { PricePoolAsset } from 'views/pools/Pools.types'
 
 /**
  * Decimal for any asset handled by THORChain and provided by Midgard

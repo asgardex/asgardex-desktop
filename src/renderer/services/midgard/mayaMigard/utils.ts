@@ -42,7 +42,6 @@ import { eqAsset, eqChain, eqOAddress } from '../../../helpers/fp/eq'
 import { ordPricePool } from '../../../helpers/fp/ord'
 import { getDeepestPool, MAYA_POOL_ADDRESS, MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
 import { AssetWithAmount } from '../../../types/asgardex'
-import { PricePoolAssets, PricePoolAsset } from '../../../views/pools/Pools.types'
 import { KUJI_DECIMAL } from '../../kuji/const'
 import { InboundAddress } from '../../mayachain/types'
 import {
@@ -61,6 +60,7 @@ import {
   PoolData
 } from '../midgardTypes'
 import { PoolDetails, PoolsStateRD } from './types'
+import { PricePoolAssets, PricePoolAsset } from 'views/pools/Pools.types'
 
 export const getPricePools = (details: PoolDetails, whitelist: PricePoolAssets): PricePools => {
   const oUSDPricePool: O.Option<PricePool> = FP.pipe(

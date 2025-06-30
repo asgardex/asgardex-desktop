@@ -13,9 +13,9 @@ import { useIntl } from 'react-intl'
 import { isLedgerWallet } from '../../../../../shared/utils/guard'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { walletTypeToI18n } from '../../../../services/wallet/util'
-import { PricePoolAsset } from '../../../../views/pools/Pools.types'
 import { AssetIcon } from '../assetIcon'
 import * as Styled from './AssetData.styles'
+import { PricePoolAsset } from 'views/pools/Pools.types'
 
 /**
  * AssetData - Component to show data of an asset:

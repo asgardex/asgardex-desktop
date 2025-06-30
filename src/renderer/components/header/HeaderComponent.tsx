@@ -26,7 +26,6 @@ import {
 import { MimirRD } from '../../services/thorchain/types'
 import { ChangeKeystoreWalletHandler, KeystoreState, KeystoreWalletsUI } from '../../services/wallet/types'
 import { isLocked } from '../../services/wallet/util'
-import { PricePoolAsset, PricePoolAssets } from '../../views/pools/Pools.types'
 import { Label } from '../uielements/label'
 import * as Styled from './HeaderComponent.styles'
 import { HeaderLock } from './lock/'
@@ -42,6 +41,7 @@ import SwapIcon from 'assets/svg/icon-swap.svg?react'
 import WalletIcon from 'assets/svg/icon-wallet.svg?react'
 import { useThemeContext } from 'contexts/ThemeContext'
 import { useBreakpoint } from 'hooks/useBreakpoint'
+import { PricePoolAsset, PricePoolAssets } from 'views/pools/Pools.types'
 
 enum TabKey {
   POOLS = 'POOLS',

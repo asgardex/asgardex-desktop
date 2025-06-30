@@ -12,18 +12,18 @@ import { PoolDetails as PoolDetailsMaya } from '../services/midgard/mayaMigard/t
 import { PoolAddress, PoolData, PoolDetails, PricePool } from '../services/midgard/midgardTypes'
 import { getPoolDetail, toPoolData } from '../services/midgard/thorMidgard/utils'
 import { MimirHalt } from '../services/thorchain/types'
-import { PoolTableRowData, PoolTableRowsData } from '../views/pools/Pools.types'
-import {
-  getPoolTableRowData,
-  getValueOfAsset1InAsset2,
-  getValueOfAssetInRune,
-  getValueOfRuneInAsset
-} from '../views/pools/Pools.utils'
 import { to1e8BaseAmount, isRuneAsset } from './assetHelper'
 import { eqAsset, eqChain, eqString } from './fp/eq'
 import { ordBaseAmount } from './fp/ord'
 import { sequenceTOption, sequenceTOptionFromArray } from './fpHelpers'
 import { emptyString } from './stringHelper'
+import { PoolTableRowData, PoolTableRowsData } from 'views/pools/Pools.types'
+import {
+  getPoolTableRowData,
+  getValueOfAsset1InAsset2,
+  getValueOfAssetInRune,
+  getValueOfRuneInAsset
+} from 'views/pools/Pools.utils'
 
 export const sortByDepth = (a: { depthPrice: BaseAmount }, b: { depthPrice: BaseAmount }) =>
   ordBaseAmount.compare(a.depthPrice, b.depthPrice)

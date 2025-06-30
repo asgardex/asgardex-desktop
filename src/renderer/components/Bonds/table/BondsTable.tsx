@@ -20,7 +20,6 @@ import {
   Providers as MayaProviders
 } from '../../../services/mayachain/types'
 import { NodeInfo as ThorNodeInfo, NodeInfos as ThorNodeInfos, Providers } from '../../../services/thorchain/types'
-import { WalletAddressInfo } from '../../../views/bonds/types'
 import { ConfirmationModal } from '../../modal/confirmation'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import { BaseButton, TextButton } from '../../uielements/button'
@@ -33,6 +32,7 @@ import RemoveIcon from 'assets/svg/icon-remove.svg?react'
 import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
 import { useMimirConstants } from 'hooks/useMimirConstants'
 import { usePricePoolMaya } from 'hooks/usePricePoolMaya'
+import { WalletAddressInfo } from 'views/bonds/types'
 
 type Props = {
   nodes: ThorNodeInfos | MayaNodeInfos

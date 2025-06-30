@@ -6,7 +6,7 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { NodeInfo as NodeInfoThor } from '../services/thorchain/types'
-import { WalletAddressInfo } from '../views/bonds/types'
+import { WalletAddressInfo } from 'views/bonds/types'
 
 export type ExtendedNodeInfoThor = NodeInfoThor & {
   isUserStoredNodeAddress: boolean

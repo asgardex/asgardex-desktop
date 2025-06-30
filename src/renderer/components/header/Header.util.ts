@@ -4,7 +4,7 @@ import { function as FP, option as O } from 'fp-ts'
 import * as API from '../../helpers/apiHelper'
 import { isUSDAsset } from '../../helpers/assetHelper'
 import { OnlineStatus } from '../../services/app/types'
-import { PricePoolAsset } from '../../views/pools/Pools.types'
+import { PricePoolAsset } from 'views/pools/Pools.types'
 
 export const toHeaderCurrencyLabel = (asset: PricePoolAsset): string => {
   // special case USD* assets

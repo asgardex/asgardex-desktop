@@ -3,11 +3,11 @@ import { useMemo } from 'react'
 import { array as A, function as FP, option as O } from 'fp-ts'
 
 import { SelectedPricePoolAsset } from '../../../services/midgard/midgardTypes'
-import { PricePoolAsset, PricePoolAssets } from '../../../views/pools/Pools.types'
 import { DownIcon } from '../../icons'
 import { Dropdown } from '../../uielements/dropdown'
 import { Label } from '../../uielements/label'
 import { toHeaderCurrencyLabel } from '../Header.util'
+import { PricePoolAsset, PricePoolAssets } from 'views/pools/Pools.types'
 
 export type Props = {
   isDesktopView: boolean

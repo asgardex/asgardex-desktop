@@ -15,7 +15,6 @@ import { sequenceTOption } from '../../../helpers/fpHelpers'
 import { LiveData, liveData } from '../../../helpers/rx/liveData'
 import { observableState, triggerStream, TriggerStream$ } from '../../../helpers/stateHelper'
 import { roundUnixTimestampToMinutes } from '../../../helpers/timeHelper'
-import { PricePoolAsset } from '../../../views/pools/Pools.types'
 import { network$ } from '../../app/service'
 import { PoolFeeLD } from '../../chain/types'
 import { InboundAddresses, InboundAddressesLD } from '../../thorchain/types'
@@ -73,6 +72,7 @@ import {
   toPoolsData,
   poolsPeriodToPoolPeriod
 } from './utils'
+import { PricePoolAsset } from 'views/pools/Pools.types'
 
 const PRICE_POOL_KEY = 'asgdx-price-pool'
 

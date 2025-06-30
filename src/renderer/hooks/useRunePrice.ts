@@ -8,8 +8,8 @@ import { ONE_RUNE_BASE_AMOUNT } from '../../shared/mock/amount'
 import { sequenceTOption } from '../helpers/fpHelpers'
 import { PriceRD } from '../services/midgard/midgardTypes'
 import { pricePoolSelector } from '../services/midgard/thorMidgard/utils'
-import { getValueOfRuneInAsset } from '../views/pools/Pools.utils'
 import { useMidgardContext } from 'contexts/MidgardContext'
+import { getValueOfRuneInAsset } from 'views/pools/Pools.utils'
 
 export const useRunePrice = () => {
   const {

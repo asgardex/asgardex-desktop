@@ -12,19 +12,19 @@ import { MimirHalt } from '../services/mayachain/types'
 import { PoolDetails } from '../services/midgard/mayaMigard/types'
 import { getPoolDetail, toPoolData } from '../services/midgard/mayaMigard/utils'
 import { PoolAddress, PoolData, PricePool } from '../services/midgard/midgardTypes'
-import { PoolTableRowData, PoolTableRowsData } from '../views/pools/Pools.types'
-import {
-  getPoolTableRowDataMaya,
-  getValueOfAsset1InAsset2,
-  getValueOfAssetInRune,
-  getValueOfRuneInAsset
-} from '../views/pools/Pools.utils'
 import { convertBaseAmountDecimal, isCacaoAsset, isMayaAsset, to1e10BaseAmount, to1e8BaseAmount } from './assetHelper'
 import { eqAsset, eqChain, eqString } from './fp/eq'
 import { ordBaseAmount } from './fp/ord'
 import { sequenceTOption, sequenceTOptionFromArray } from './fpHelpers'
 import { emptyString } from './stringHelper'
 import { MayaScanPrice, MayaScanPriceRD } from 'hooks/useMayascanPrice'
+import { PoolTableRowData, PoolTableRowsData } from 'views/pools/Pools.types'
+import {
+  getPoolTableRowDataMaya,
+  getValueOfAsset1InAsset2,
+  getValueOfAssetInRune,
+  getValueOfRuneInAsset
+} from 'views/pools/Pools.utils'
 
 export const sortByDepth = (a: { depthPrice: BaseAmount }, b: { depthPrice: BaseAmount }) =>
   ordBaseAmount.compare(a.depthPrice, b.depthPrice)
