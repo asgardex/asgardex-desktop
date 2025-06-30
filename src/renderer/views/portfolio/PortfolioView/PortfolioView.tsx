@@ -20,11 +20,6 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { EnabledChain } from '../../../../shared/utils/chain'
-import { RefreshButton } from '../../../components/uielements/button'
-import { PieChart } from '../../../components/uielements/charts'
-import { ProtocolSwitch } from '../../../components/uielements/protocolSwitch'
-import { Protocol } from '../../../components/uielements/protocolSwitch/types'
-import { RadioGroup } from '../../../components/uielements/radioGroup'
 import { AssetUSDC, DEFAULT_WALLET_TYPE } from '../../../const'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
@@ -59,6 +54,11 @@ import { getValueOfRuneInAsset } from '../../pools/Pools.utils'
 import * as H from '../../wallet/PoolShareView.helper'
 import * as Styled from './PortfolioView.style'
 import { PortfolioTabKey } from './utils'
+import { RefreshButton } from 'components/uielements/button'
+import { PieChart } from 'components/uielements/charts'
+import { ProtocolSwitch } from 'components/uielements/protocolSwitch'
+import { Protocol } from 'components/uielements/protocolSwitch/types'
+import { RadioGroup } from 'components/uielements/radioGroup'
 
 const CardItem = ({
   title,

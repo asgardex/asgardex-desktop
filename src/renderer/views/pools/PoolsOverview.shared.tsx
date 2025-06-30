@@ -6,13 +6,13 @@ import { ColumnType } from 'antd/lib/table'
 import clsx from 'clsx'
 import * as FP from 'fp-ts/function'
 
-import { ErrorView } from '../../components/shared/error'
-import { AssetIcon } from '../../components/uielements/assets/assetIcon'
-import { AssetLabel } from '../../components/uielements/assets/assetLabel'
-import { ReloadButton, TextButton } from '../../components/uielements/button'
-import { Label } from '../../components/uielements/label'
 import { ordBaseAmount } from '../../helpers/fp/ord'
 import { sortByDepth } from '../../helpers/poolHelper'
+import { ErrorView } from 'components/shared/error'
+import { AssetIcon } from 'components/uielements/assets/assetIcon'
+import { AssetLabel } from 'components/uielements/assets/assetLabel'
+import { ReloadButton, TextButton } from 'components/uielements/button'
+import { Label } from 'components/uielements/label'
 
 const renderWatchColumn = ({
   data: { watched },

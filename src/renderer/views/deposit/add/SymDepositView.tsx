@@ -14,8 +14,6 @@ import { useNavigate } from 'react-router-dom'
 import { AssetRuneNative } from '../../../../shared/utils/asset'
 import { isLedgerWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
-import { SymDeposit } from '../../../components/deposit/add'
-import { Alert } from '../../../components/uielements/alert'
 import { ASYM_DEPOSIT_TOOL_URL, ZERO_POOL_DATA } from '../../../const'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useEvmContext } from '../../../contexts/EvmContext'
@@ -41,6 +39,8 @@ import { toPoolData } from '../../../services/midgard/thorMidgard/utils'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { useApp } from '../../../store/app/hooks'
 import { Props } from './SymDepositView.types'
+import { SymDeposit } from 'components/deposit/add'
+import { Alert } from 'components/uielements/alert'
 
 export const SymDepositView = (props: Props) => {
   const {

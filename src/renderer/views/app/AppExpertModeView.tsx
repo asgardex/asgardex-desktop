@@ -3,12 +3,12 @@ import { useCallback } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { useObservableState } from 'observable-hooks'
 
-import { AppExpertMode } from '../../components/settings/AppExpertMode'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useMayachainClientUrl } from '../../hooks/useMayachainClientUrl'
 import { useNetwork } from '../../hooks/useNetwork'
 import { useThorchainClientUrl } from '../../hooks/useThorchainClientUrl'
+import { AppExpertMode } from 'components/settings/AppExpertMode'
 
 export const AppExpertModeView = (): JSX.Element => {
   const { network } = useNetwork()

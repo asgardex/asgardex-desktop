@@ -24,7 +24,6 @@ import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 
 import { isSupportedChain } from '../../../../shared/utils/chain'
-import { DEFAULT_FEE_OPTION } from '../../../components/wallet/txs/send/Send.const'
 import { LiveData, liveData } from '../../../helpers/rx/liveData'
 import * as ARB from '../../arb'
 import * as AVAX from '../../avax'
@@ -47,6 +46,7 @@ import * as THOR from '../../thorchain'
 import { ApiError, ErrorId, TxHashLD, TxLD } from '../../wallet/types'
 import * as ZEC from '../../zcash'
 import { SendPoolTxParams, SendTxParams } from '../types'
+import { DEFAULT_FEE_OPTION } from 'components/wallet/txs/send/Send.const'
 
 // helper to create `RemoteData<ApiError, never>` observable
 const txFailure$ = (msg: string): LiveData<ApiError, never> =>

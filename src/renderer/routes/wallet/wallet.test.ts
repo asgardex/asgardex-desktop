@@ -1,5 +1,5 @@
-import { InteractType } from '../../components/wallet/txs/interact/Interact.types'
 import { base, imports, locked, assets, bonds, assetDetail, send, poolShares, history, interact } from './wallet'
+import { InteractType } from 'components/wallet/txs/interact/Interact.types'
 
 describe('Wallet routes', () => {
   describe('base routes', () => {

@@ -1,5 +1,5 @@
-import { InteractType } from '../../components/wallet/txs/interact/Interact.types'
 import { Route } from '../types'
+import { InteractType } from 'components/wallet/txs/interact/Interact.types'
 
 export * as imports from './imports'
 

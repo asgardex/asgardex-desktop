@@ -1,7 +1,7 @@
 import { useIntl } from 'react-intl'
 
-import { LayoutlessWrapper } from '../../../components/LayoutlessWrapper'
 import { PhraseView } from './PhraseView'
+import { LayoutlessWrapper } from 'components/LayoutlessWrapper'
 
 export const CreateView = () => {
   const intl = useIntl()

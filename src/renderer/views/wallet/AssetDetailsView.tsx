@@ -9,8 +9,6 @@ import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { LoadingView } from '../../components/shared/loading'
-import { AssetDetails } from '../../components/wallet/assets'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../contexts/WalletContext'
@@ -25,6 +23,8 @@ import { TxsPageRD } from '../../services/clients'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/wallet/const'
 import { SelectedWalletAsset } from '../../services/wallet/types'
 import { useApp } from '../../store/app/hooks'
+import { LoadingView } from 'components/shared/loading'
+import { AssetDetails } from 'components/wallet/assets'
 
 export const AssetDetailsView = (): JSX.Element => {
   const { mimirHalt } = useThorchainMimirHalt()

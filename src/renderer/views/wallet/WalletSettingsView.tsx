@@ -31,7 +31,6 @@ import { LedgerErrorId } from '../../../shared/api/types'
 import { DEFAULT_EVM_HD_MODE, EvmHDMode } from '../../../shared/evm/types'
 import { isSupportedChain } from '../../../shared/utils/chain'
 import { HDMode } from '../../../shared/wallet/types'
-import { WalletSettings } from '../../components/settings'
 import { useAdaContext } from '../../contexts/AdaContext'
 import { useArbContext } from '../../contexts/ArbContext'
 import { useAvaxContext } from '../../contexts/AvaxContext'
@@ -82,6 +81,7 @@ import { useLedger } from '../../hooks/useLedger'
 import { useNetwork } from '../../hooks/useNetwork'
 import { LedgerAddressLD, KeystoreUnlocked, VerifiedLedgerAddressLD } from '../../services/wallet/types'
 import { walletAccount$ } from './WalletSettingsView.helper'
+import { WalletSettings } from 'components/settings'
 
 type Props = {
   keystoreUnlocked: KeystoreUnlocked

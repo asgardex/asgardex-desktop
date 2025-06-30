@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
-import { Tabs as TabsUI } from '../../components/tabs/Tabs'
+import { Tabs as TabsUI } from 'components/tabs/Tabs'
 
 export const Tabs = styled(TabsUI)`
   padding-top: 0;

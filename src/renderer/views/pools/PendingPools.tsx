@@ -10,11 +10,6 @@ import { array as A, function as FP, option as O, predicate as P } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
-import { AssetsFilter } from '../../components/AssetsFilter'
-import { ProtocolLimit, IncentivePendulum } from '../../components/pool'
-import { ManageButton } from '../../components/uielements/button'
-import { Label } from '../../components/uielements/label'
-import { Table } from '../../components/uielements/table'
 import { useAppContext } from '../../contexts/AppContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
@@ -46,6 +41,11 @@ import {
   isEmptyPool
 } from './Pools.utils'
 import * as Shared from './PoolsOverview.shared'
+import { AssetsFilter } from 'components/AssetsFilter'
+import { ProtocolLimit, IncentivePendulum } from 'components/pool'
+import { ManageButton } from 'components/uielements/button'
+import { Label } from 'components/uielements/label'
+import { Table } from 'components/uielements/table'
 
 export const PendingPools = (): JSX.Element => {
   const { protocol } = useApp()

@@ -3,12 +3,12 @@ import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { Protocol } from '@xchainjs/xchain-aggregator/lib/types'
 import clsx from 'clsx'
 
-import { ProviderIcon } from '../../components/swap/ProviderIcon'
-import { SwitchButton } from '../../components/uielements/button/SwitchButton'
-import { Dropdown } from '../../components/uielements/dropdown'
-import { Label } from '../../components/uielements/label'
 import { useAggregator } from '../../store/aggregator/hooks'
 import { useApp } from '../../store/app/hooks'
+import { ProviderIcon } from 'components/swap/ProviderIcon'
+import { SwitchButton } from 'components/uielements/button/SwitchButton'
+import { Dropdown } from 'components/uielements/dropdown'
+import { Label } from 'components/uielements/label'
 
 type SectionProps = {
   title: string

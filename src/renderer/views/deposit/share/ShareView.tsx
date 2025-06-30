@@ -13,8 +13,6 @@ import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
-import { EmptyResult } from '../../../components/shared/result/EmptyResult'
-import { PoolShare as PoolShareUI } from '../../../components/uielements/poolShare'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { to1e8BaseAmount } from '../../../helpers/assetHelper'
@@ -26,6 +24,8 @@ import { PoolDetailRD, PoolShareRD, PoolShare } from '../../../services/midgard/
 import { toPoolData } from '../../../services/midgard/thorMidgard/utils'
 import { AssetWithDecimal } from '../../../types/asgardex'
 import { getValueOfAsset1InAsset2, getValueOfRuneInAsset } from '../../pools/Pools.utils'
+import { EmptyResult } from 'components/shared/result/EmptyResult'
+import { PoolShare as PoolShareUI } from 'components/uielements/poolShare'
 
 export type ShareViewProps = {
   protocol: Chain

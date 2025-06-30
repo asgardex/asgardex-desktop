@@ -5,8 +5,8 @@ import { ArrowPathIcon as SyncOutlined } from '@heroicons/react/20/solid'
 import * as FP from 'fp-ts/function'
 import { useIntl } from 'react-intl'
 
-import { BorderButton } from '../../components/uielements/button'
 import * as Styled from './AppView.styles'
+import { BorderButton } from 'components/uielements/button'
 
 interface ErrorAlertProps {
   apiEndpoint: RD.RemoteData<Error, unknown>

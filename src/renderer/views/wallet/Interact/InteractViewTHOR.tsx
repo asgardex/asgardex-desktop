@@ -8,13 +8,6 @@ import { useNavigate, useParams } from 'react-router-dom'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { ErrorView } from '../../../components/shared/error'
-import { LoadingView } from '../../../components/shared/loading'
-import { BackLinkButton, RefreshButton } from '../../../components/uielements/button'
-import { Interact } from '../../../components/wallet/txs/interact'
-import { getInteractTypeFromNullableString } from '../../../components/wallet/txs/interact/Interact.helpers'
-import { InteractType } from '../../../components/wallet/txs/interact/Interact.types'
-import { InteractFormThor } from '../../../components/wallet/txs/interact/InteractFormThor'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useThorchainContext } from '../../../contexts/ThorchainContext'
@@ -33,6 +26,13 @@ import { NodeInfosRD, RunePoolProviderRD, ThorchainLastblockRD } from '../../../
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAssetRD } from '../../../services/wallet/types'
+import { ErrorView } from 'components/shared/error'
+import { LoadingView } from 'components/shared/loading'
+import { BackLinkButton, RefreshButton } from 'components/uielements/button'
+import { Interact } from 'components/wallet/txs/interact'
+import { getInteractTypeFromNullableString } from 'components/wallet/txs/interact/Interact.helpers'
+import { InteractType } from 'components/wallet/txs/interact/Interact.types'
+import { InteractFormThor } from 'components/wallet/txs/interact/InteractFormThor'
 
 export const InteractViewTHOR = () => {
   const { interactType: routeInteractType } = useParams<walletRoutes.BondParams>()

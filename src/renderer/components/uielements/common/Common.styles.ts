@@ -3,7 +3,7 @@ import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
-import { Label as UILabel } from '../../../components/uielements/label'
+import { Label as UILabel } from 'components/uielements/label'
 
 export const ExternalLinkIcon = styled(ArrowTopRightOnSquareIcon)`
   svg {

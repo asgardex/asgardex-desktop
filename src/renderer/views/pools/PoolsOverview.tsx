@@ -6,12 +6,12 @@ import { function as FP, array as A } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import { useMatch, useNavigate } from 'react-router'
 
-import { ProtocolSwitch } from '../../components/uielements/protocolSwitch'
 import * as poolsRoutes from '../../routes/pools'
 import { PoolType } from '../../services/midgard/midgardTypes'
 import { useApp } from '../../store/app/hooks'
 import { ActivePools } from './ActivePools'
 import { PendingPools } from './PendingPools'
+import { ProtocolSwitch } from 'components/uielements/protocolSwitch'
 
 type TabType = PoolType
 

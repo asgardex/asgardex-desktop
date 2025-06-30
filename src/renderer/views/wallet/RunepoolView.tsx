@@ -19,10 +19,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
 import { WalletType } from '../../../shared/wallet/types'
-import { RunePoolTable } from '../../components/runePool/runePoolTable'
-import { RefreshButton } from '../../components/uielements/button'
-import { Label } from '../../components/uielements/label'
-import { AssetsNav } from '../../components/wallet/assets'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useChainContext } from '../../contexts/ChainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
@@ -42,6 +38,10 @@ import { balancesState$, setSelectedAsset } from '../../services/wallet'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../services/wallet/const'
 import { WalletBalance } from '../../services/wallet/types'
 import { useApp } from '../../store/app/hooks'
+import { RunePoolTable } from 'components/runePool/runePoolTable'
+import { RefreshButton } from 'components/uielements/button'
+import { Label } from 'components/uielements/label'
+import { AssetsNav } from 'components/wallet/assets'
 
 type AssetProps = {
   key: Chain

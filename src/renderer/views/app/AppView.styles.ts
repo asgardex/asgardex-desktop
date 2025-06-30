@@ -2,8 +2,8 @@ import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
-import { Alert as UIAlert } from '../../components/uielements/alert'
 import { media } from '../../helpers/styleHelper'
+import { Alert as UIAlert } from 'components/uielements/alert'
 
 // AppWrapper styled component
 export const AppWrapper = styled.div`

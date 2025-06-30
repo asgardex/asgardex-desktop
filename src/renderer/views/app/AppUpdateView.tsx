@@ -4,8 +4,8 @@ import * as RD from '@devexperts/remote-data-ts'
 import { function as FP, option as O } from 'fp-ts'
 
 import { ExternalUrl } from '../../../shared/const'
-import { AppUpdate, AppUpdateModalProps } from '../../components/app'
 import { useAppUpdate } from '../../hooks/useAppUpdate'
+import { AppUpdate, AppUpdateModalProps } from 'components/app'
 
 const ONE_HOUR_PERIOD = 1000 * 60 * 60
 

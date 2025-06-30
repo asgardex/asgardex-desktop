@@ -7,11 +7,11 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
 import { isSupportedChain } from '../../../../shared/utils/chain'
-import { LoadingView } from '../../../components/shared/loading'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { SelectedWalletAsset } from '../../../services/wallet/types'
 import { InteractViewMAYA } from './InteractViewMAYA'
 import { InteractViewTHOR } from './InteractViewTHOR'
+import { LoadingView } from 'components/shared/loading'
 
 export const InteractView = () => {
   const intl = useIntl()

@@ -12,9 +12,6 @@ import { useParams } from 'react-router-dom'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { Deposit } from '../../components/deposit'
-import { ErrorView } from '../../components/shared/error'
-import { BackLinkButton, RefreshButton } from '../../components/uielements/button'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { useChainContext } from '../../contexts/ChainContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
@@ -34,6 +31,9 @@ import { useApp } from '../../store/app/hooks'
 import { SymDepositView } from './add/SymDepositView'
 import { ShareView } from './share/ShareView'
 import { WithdrawDepositView } from './withdraw/WithdrawDepositView'
+import { Deposit } from 'components/deposit'
+import { ErrorView } from 'components/shared/error'
+import { BackLinkButton, RefreshButton } from 'components/uielements/button'
 
 export const DepositView = () => {
   const { protocol } = useApp()

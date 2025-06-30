@@ -6,10 +6,10 @@ import { function as FP, array as A, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { chainToString, DEFAULT_ENABLED_CHAINS } from '../../../shared/utils/chain'
-import { Alert } from '../../components/uielements/alert'
 import { unionChains } from '../../helpers/fp/array'
 import { rdAltOnPending } from '../../helpers/fpHelpers'
 import { MimirHalt } from '../../services/thorchain/types'
+import { Alert } from 'components/uielements/alert'
 
 type HaltedChainsWarningProps = {
   haltedChainsRD: RD.RemoteData<Error, Chain[]>

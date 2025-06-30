@@ -1,8 +1,8 @@
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
-import { Label } from '../../../components/uielements/label'
 import { media } from '../../../helpers/styleHelper'
+import { Label } from 'components/uielements/label'
 
 export const Title = styled(Label)`
   padding: 0 4px;

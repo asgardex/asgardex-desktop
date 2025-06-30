@@ -27,7 +27,6 @@ import { useIntl } from 'react-intl'
 
 import { TrustedAddresses } from '../../../../shared/api/types'
 import { isChainOfMaya, isSupportedChain } from '../../../../shared/utils/chain'
-import { BackLinkButton, RefreshButton } from '../../../components/uielements/button'
 import { useMidgardContext } from '../../../contexts/MidgardContext'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { useWalletContext } from '../../../contexts/WalletContext'
@@ -36,6 +35,7 @@ import { userAddresses$ } from '../../../services/storage/userAddresses'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { SelectedWalletAsset } from '../../../services/wallet/types'
 import { SendViewCOSMOS, SendViewEVM, SendViewUTXO } from './index'
+import { BackLinkButton, RefreshButton } from 'components/uielements/button'
 
 export const SendView = (): JSX.Element => {
   const intl = useIntl()

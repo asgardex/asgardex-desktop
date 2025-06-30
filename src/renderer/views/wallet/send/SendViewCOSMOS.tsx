@@ -14,7 +14,6 @@ import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 
 import { TrustedAddresses } from '../../../../shared/api/types'
-import { SendFormCOSMOS } from '../../../components/wallet/txs/send'
 import { useChainContext } from '../../../contexts/ChainContext'
 import { useCosmosContext } from '../../../contexts/CosmosContext'
 import { useKujiContext } from '../../../contexts/KujiContext'
@@ -36,6 +35,7 @@ import { PoolAddress } from '../../../services/midgard/midgardTypes'
 import { ZERO_ADDRESS } from '../../../services/solana/fees'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAsset, WalletBalance } from '../../../services/wallet/types'
+import { SendFormCOSMOS } from 'components/wallet/txs/send'
 
 type Props = {
   asset: SelectedWalletAsset

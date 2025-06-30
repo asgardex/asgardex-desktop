@@ -5,14 +5,14 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { LayoutlessWrapper } from '../../../components/LayoutlessWrapper'
-import { ImportKeystore } from '../../../components/wallet/keystore'
 import { useWalletContext } from '../../../contexts/WalletContext'
 import { getWalletNamesFromKeystoreWallets } from '../../../helpers/walletHelper'
 import { useKeystoreClientStates } from '../../../hooks/useKeystoreClientStates'
 import { useKeystoreWallets } from '../../../hooks/useKeystoreWallets'
 import * as walletRoutes from '../../../routes/wallet'
 import { generateKeystoreId } from '../../../services/wallet/util'
+import { LayoutlessWrapper } from 'components/LayoutlessWrapper'
+import { ImportKeystore } from 'components/wallet/keystore'
 
 export const ImportKeystoreView = (): JSX.Element => {
   const intl = useIntl()

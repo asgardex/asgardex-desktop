@@ -15,7 +15,6 @@ import { map } from 'rxjs/operators'
 import * as RxOp from 'rxjs/operators'
 
 import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
-import { Withdraw } from '../../../components/deposit/withdraw'
 import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../const'
 import { useAppContext } from '../../../contexts/AppContext'
 import { useChainContext } from '../../../contexts/ChainContext'
@@ -32,6 +31,7 @@ import { PoolShare, PoolsDataMap } from '../../../services/midgard/midgardTypes'
 import { DEFAULT_BALANCES_FILTER } from '../../../services/wallet/const'
 import { getBalanceByAsset } from '../../../services/wallet/util'
 import { Props } from './WithdrawDepositView.types'
+import { Withdraw } from 'components/deposit/withdraw'
 
 export const WithdrawDepositView = (props: Props): JSX.Element => {
   const {

@@ -18,11 +18,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { Bonds } from '../../components/Bonds'
-import { Spin } from '../../components/shared/loading'
-import { BaseButton, RefreshButton } from '../../components/uielements/button'
-import { Label } from '../../components/uielements/label'
-import { ProtocolSwitch } from '../../components/uielements/protocolSwitch'
 import { useAppContext } from '../../contexts/AppContext'
 import { useMayachainContext } from '../../contexts/MayachainContext'
 import { useMidgardContext } from '../../contexts/MidgardContext'
@@ -49,6 +44,11 @@ import { WalletBalances } from '../../services/wallet/types'
 import { useApp } from '../../store/app/hooks'
 import { getValueOfRuneInAsset } from '../pools/Pools.utils'
 import { WalletAddressInfo } from './types'
+import { Bonds } from 'components/Bonds'
+import { Spin } from 'components/shared/loading'
+import { BaseButton, RefreshButton } from 'components/uielements/button'
+import { Label } from 'components/uielements/label'
+import { ProtocolSwitch } from 'components/uielements/protocolSwitch'
 
 enum LabelView {
   Connected = 'Connected',

@@ -7,12 +7,12 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { WalletAddress } from '../../shared/wallet/types'
-import { Filter } from '../components/poolActionsHistory/types'
 import { useMidgardContext } from '../contexts/MidgardContext'
 import { liveData } from '../helpers/rx/liveData'
 import { observableState, triggerStream } from '../helpers/stateHelper'
 import { LoadActionsParams } from '../services/midgard/midgardTypes'
 import { ActionsPage, ActionsPageRD } from '../services/midgard/thorMidgard/types'
+import { Filter } from 'components/poolActionsHistory/types'
 
 export const useMidgardHistoryActions = (itemsPerPage = 10) => {
   const {

@@ -2,10 +2,10 @@ import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 
-import { AssetData } from '../../../components/uielements/assets/assetData'
-import { BaseButton, FlatButton } from '../../../components/uielements/button'
 import { useNetwork } from '../../../hooks/useNetwork'
 import { TcyInfo } from './types'
+import { AssetData } from 'components/uielements/assets/assetData'
+import { BaseButton, FlatButton } from 'components/uielements/button'
 
 export type Props = {
   isVisible: boolean

@@ -3,7 +3,6 @@ import { THORChain } from '@xchainjs/xchain-thorchain'
 import { BaseAmount, Chain } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O } from 'fp-ts'
 
-import { PoolShareTableData } from '../../components/PoolShares/PoolShares.types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { THORCHAIN_DECIMAL } from '../../helpers/assetHelper'
 import { isPoolDetails } from '../../helpers/poolHelper'
@@ -16,6 +15,7 @@ import {
 import { PoolData, PoolDetails, PoolShares } from '../../services/midgard/midgardTypes'
 import { getPoolDetail, toPoolData } from '../../services/midgard/thorMidgard/utils'
 import { getValueOfAsset1InAsset2, getValueOfRuneInAsset } from '../pools/Pools.utils'
+import { PoolShareTableData } from 'components/PoolShares/PoolShares.types'
 
 export const getSharesTotal = (
   shares: PoolShares,

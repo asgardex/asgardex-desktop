@@ -3,12 +3,12 @@ import * as A from 'antd'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
-import { Label as UILabel } from '../../../components/uielements/label'
 import {
   WalletTypeLabel as WalletTypeLabelUI,
   AssetSynthLabel as AssetSynthLabelUI,
   AssetSecuredLabel as AssetSecuredLabelUI
 } from '../../uielements/common/Common.styles'
+import { Label as UILabel } from '../../uielements/label'
 import { Table as UITable } from '../../uielements/table'
 
 export const Table = styled(UITable)`

@@ -10,10 +10,6 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { WalletType } from '../../../shared/wallet/types'
-import { RefreshButton } from '../../components/uielements/button'
-import { AssetsNav } from '../../components/wallet/assets'
-import { TotalAssetValue } from '../../components/wallet/assets/TotalAssetValue'
-import { TradeAssetsTableCollapsable } from '../../components/wallet/assets/TradeAssetsTableCollapsable'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { useMidgardContext } from '../../contexts/MidgardContext'
 import { useThorchainContext } from '../../contexts/ThorchainContext'
@@ -26,6 +22,10 @@ import { TradeAccount } from '../../services/thorchain/types'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ChainBalance, SelectedWalletAsset } from '../../services/wallet/types'
 import { useApp } from '../../store/app/hooks'
+import { RefreshButton } from 'components/uielements/button'
+import { AssetsNav } from 'components/wallet/assets'
+import { TotalAssetValue } from 'components/wallet/assets/TotalAssetValue'
+import { TradeAssetsTableCollapsable } from 'components/wallet/assets/TradeAssetsTableCollapsable'
 
 export const TradeAssetsView = (): JSX.Element => {
   const intl = useIntl()
