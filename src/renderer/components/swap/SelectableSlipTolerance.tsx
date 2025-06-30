@@ -19,7 +19,6 @@ type Props = {
 export const SelectableSlipTolerance = ({ onChange, value }: Props): JSX.Element => {
   const changeSlipToleranceHandler = useCallback(
     (slipTolerance: SlipTolerance) => {
-      // TODO (@veado) Move storage to services/app, there is already a `changeSlipTolerance` state
       localStorage.setItem(SLIP_TOLERANCE_KEY, slipTolerance.toString())
       onChange(slipTolerance)
     },
