@@ -75,6 +75,19 @@ export default defineConfig(async ({ mode }) => {
       },
       resolve: {
         alias: {
+          assets: path.resolve(__dirname, 'src/renderer/assets'),
+          components: path.resolve(__dirname, 'src/renderer/components'),
+          contexts: path.resolve(__dirname, 'src/renderer/contexts'),
+          helpers: path.resolve(__dirname, 'src/renderer/helpers'),
+          hooks: path.resolve(__dirname, 'src/renderer/hooks'),
+          i18n: path.resolve(__dirname, 'src/renderer/i18n'),
+          routes: path.resolve(__dirname, 'src/renderer/routes'),
+          services: path.resolve(__dirname, 'src/renderer/services'),
+          settings: path.resolve(__dirname, 'src/renderer/settings'),
+          store: path.resolve(__dirname, 'src/renderer/store'),
+          types: path.resolve(__dirname, 'src/renderer/types'),
+          views: path.resolve(__dirname, 'src/renderer/views'),
+
           process: 'process/browser',
           stream: 'stream-browserify',
           crypto: 'crypto-browserify',

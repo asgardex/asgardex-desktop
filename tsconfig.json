@@ -5,6 +5,7 @@
     "lib": ["dom", "dom.iterable", "esnext", "esnext.intl", "es2017.intl", "es2018.intl"],
     "module": "esnext",
     "allowJs": true,
+    "baseUrl": "./src",
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -16,7 +17,21 @@
     "noEmitOnError": true,
     "jsx": "react-jsx",
     "isolatedModules": true,
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals"],
+    "paths": {
+      "assets/*": ["renderer/assets/*"],
+      "components/*": ["renderer/components/*"],
+      "contexts/*": ["renderer/contexts/*"],
+      "helpers/*": ["renderer/helpers/*"],
+      "hooks/*": ["renderer/hooks/*"],
+      "i18n/*": ["renderer/i18n/*"],
+      "routes/*": ["renderer/routes/*"],
+      "services/*": ["renderer/services/*"],
+      "settings/*": ["renderer/settings/*"],
+      "store/*": ["renderer/store/*"],
+      "types/*": ["renderer/types/*"],
+      "views/*": ["renderer/views/*"],
+    }
   },
   "include": ["src/shared", "src/renderer", "src/setupTests.ts", "./jest-setup.ts", "src/vite-env.d.ts"],
   "exclude": ["src/main/"]
