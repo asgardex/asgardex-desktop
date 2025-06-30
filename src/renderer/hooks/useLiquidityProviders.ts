@@ -5,8 +5,6 @@ import { THORChain } from '@xchainjs/xchain-thorchain'
 import { Address, Chain, AnyAsset } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O } from 'fp-ts'
 
-import { useMayachainContext } from '../contexts/MayachainContext'
-import { useThorchainContext } from '../contexts/ThorchainContext'
 import { eqAddress, eqOString } from '../helpers/fp/eq'
 import { sequenceTOption } from '../helpers/fpHelpers'
 import {
@@ -19,6 +17,8 @@ import {
   PendingAssetsRD
 } from '../services/thorchain/types'
 import { AssetsWithAmount1e8 } from '../types/asgardex'
+import { useMayachainContext } from 'contexts/MayachainContext'
+import { useThorchainContext } from 'contexts/ThorchainContext'
 
 export const useLiquidityProviders = ({
   asset,

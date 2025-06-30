@@ -5,12 +5,12 @@ import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { useMidgardContext } from '../contexts/MidgardContext'
 import { sequenceTRD } from '../helpers/fpHelpers'
 import { triggerStream } from '../helpers/stateHelper'
 import { GetLiquidityHistoryIntervalEnum, GetSwapHistoryIntervalEnum, PriceRD } from '../services/midgard/midgardTypes'
 import { AssetWithAmount } from '../types/asgardex'
 import { getValueOfRuneInAsset } from '../views/pools/Pools.utils'
+import { useMidgardContext } from 'contexts/MidgardContext'
 
 const { stream$: reloadHistory$, trigger: reloadHistory } = triggerStream()
 

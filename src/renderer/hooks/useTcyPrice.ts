@@ -4,7 +4,7 @@ import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { useMidgardContext } from '../contexts/MidgardContext'
+import { useMidgardContext } from 'contexts/MidgardContext'
 
 export const useTcyPrice = () => {
   const {

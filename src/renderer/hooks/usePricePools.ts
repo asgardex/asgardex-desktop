@@ -3,9 +3,9 @@ import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
 
-import { useMidgardContext } from '../contexts/MidgardContext'
 import { liveData } from '../helpers/rx/liveData'
 import { PricePools } from '../services/midgard/midgardTypes'
+import { useMidgardContext } from 'contexts/MidgardContext'
 
 export const usePricePools = () => {
   const {

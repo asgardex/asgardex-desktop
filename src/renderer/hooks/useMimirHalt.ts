@@ -6,7 +6,6 @@ import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { useThorchainContext } from '../contexts/ThorchainContext'
 import { sequenceTRD } from '../helpers/fpHelpers'
 import { userChains$ } from '../services/storage/userChains'
 import { DEFAULT_MIMIR_HALT } from '../services/thorchain/const'
@@ -18,6 +17,7 @@ import {
   MimirHaltLpGlobal,
   LastblockItems
 } from '../services/thorchain/types'
+import { useThorchainContext } from 'contexts/ThorchainContext'
 
 /**
  * Helper to check Mimir status by given Mimir value and last height

@@ -3,8 +3,8 @@ import { useState, useEffect } from 'react'
 import { isSuccess } from '@devexperts/remote-data-ts'
 import { assetToString } from '@xchainjs/xchain-util'
 
-import { useMayachainContext } from '../contexts/MayachainContext'
 import { MayanodePool, MayanodePoolsLD } from '../services/mayachain/types' // Ensure MayanodePool is imported
+import { useMayachainContext } from 'contexts/MayachainContext'
 
 export const useBondableAssets = (): string[] => {
   const { getMayanodePools } = useMayachainContext()

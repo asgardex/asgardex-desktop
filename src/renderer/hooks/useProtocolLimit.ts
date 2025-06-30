@@ -4,9 +4,9 @@ import { function as FP } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
 
-import { useMidgardContext } from '../contexts/MidgardContext'
 import { THORCHAIN_DECIMAL } from '../helpers/assetHelper'
 import { liveData } from '../helpers/rx/liveData'
+import { useMidgardContext } from 'contexts/MidgardContext'
 
 type Limit = {
   reached: boolean

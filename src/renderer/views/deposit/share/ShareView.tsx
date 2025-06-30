@@ -13,8 +13,6 @@ import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
-import { useMidgardContext } from '../../../contexts/MidgardContext'
-import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { to1e8BaseAmount } from '../../../helpers/assetHelper'
 import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../../helpers/poolHelperMaya'
@@ -26,6 +24,8 @@ import { AssetWithDecimal } from '../../../types/asgardex'
 import { getValueOfAsset1InAsset2, getValueOfRuneInAsset } from '../../pools/Pools.utils'
 import { EmptyResult } from 'components/shared/result/EmptyResult'
 import { PoolShare as PoolShareUI } from 'components/uielements/poolShare'
+import { useMidgardContext } from 'contexts/MidgardContext'
+import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
 
 export type ShareViewProps = {
   protocol: Chain

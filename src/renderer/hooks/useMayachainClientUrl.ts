@@ -11,11 +11,11 @@ import * as RxAjax from 'rxjs/ajax'
 import * as RxOp from 'rxjs/operators'
 
 import { NodeUrl } from '../../shared/api/types'
-import { useMayachainContext } from '../contexts/MayachainContext'
 import { LiveData } from '../helpers/rx/liveData'
 import { DEFAULT_CLIENT_URL } from '../services/mayachain/const'
 import { getMayanodeAPIConfiguration } from '../services/mayachain/mayanode'
 import { useNetwork } from './useNetwork'
+import { useMayachainContext } from 'contexts/MayachainContext'
 
 export const useMayachainClientUrl = (): {
   rpc: string

@@ -7,9 +7,9 @@ import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { useChainContext } from '../contexts/ChainContext'
 import { eqOChain } from '../helpers/fp/eq'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../services/clients'
+import { useChainContext } from 'contexts/ChainContext'
 
 const explorerTxUrl = (oClient: O.Option<XChainClient>, txHash: TxHash) =>
   FP.pipe(

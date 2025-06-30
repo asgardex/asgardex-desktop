@@ -6,9 +6,9 @@ import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { useThorchainContext } from '../contexts/ThorchainContext'
 import { eqError } from '../helpers/fp/eq'
 import { LiveData, liveData } from '../helpers/rx/liveData'
+import { useThorchainContext } from 'contexts/ThorchainContext'
 
 const eqMaxSynthPerPoolDepthRD = RD.getEq<Error, number>(eqError, N.Eq)
 

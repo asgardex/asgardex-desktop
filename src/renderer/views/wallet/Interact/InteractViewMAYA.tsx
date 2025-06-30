@@ -9,10 +9,6 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { DEFAULT_WALLET_TYPE } from '../../../const'
-import { useMayachainContext } from '../../../contexts/MayachainContext'
-import { useMayachainQueryContext } from '../../../contexts/MayachainQueryContext'
-import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
-import { useWalletContext } from '../../../contexts/WalletContext'
 import { eqOSelectedWalletAsset } from '../../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../../helpers/fpHelpers'
 import { liveData } from '../../../helpers/rx/liveData'
@@ -36,6 +32,10 @@ import { Interact } from 'components/wallet/txs/interact'
 import { getInteractTypeFromNullableString } from 'components/wallet/txs/interact/Interact.helpers'
 import { InteractType } from 'components/wallet/txs/interact/Interact.types'
 import { InteractFormMaya } from 'components/wallet/txs/interact/InteractFormMaya'
+import { useMayachainContext } from 'contexts/MayachainContext'
+import { useMayachainQueryContext } from 'contexts/MayachainQueryContext'
+import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
+import { useWalletContext } from 'contexts/WalletContext'
 
 export const InteractViewMAYA = () => {
   const { interactType: routeInteractType } = useParams<walletRoutes.InteractParams>()

@@ -6,7 +6,6 @@ import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { useMayachainContext } from '../contexts/MayachainContext'
 import { sequenceTRD } from '../helpers/fpHelpers'
 import { DEFAULT_MIMIR_HALT } from '../services/mayachain/const'
 import {
@@ -18,6 +17,7 @@ import {
   MimirHaltTradingGlobal
 } from '../services/mayachain/types'
 import { userChains$ } from '../services/storage/userChains'
+import { useMayachainContext } from 'contexts/MayachainContext'
 
 /**
  * Helper to check Mimir status by given Mimir value and last height

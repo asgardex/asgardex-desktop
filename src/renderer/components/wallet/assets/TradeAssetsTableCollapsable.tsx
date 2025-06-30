@@ -26,8 +26,6 @@ import { chainToString, EnabledChain } from '../../../../shared/utils/chain'
 import { isKeystoreWallet } from '../../../../shared/utils/guard'
 import { WalletType } from '../../../../shared/wallet/types'
 import { CHAIN_WEIGHTS_THOR, ZERO_BASE_AMOUNT } from '../../../const'
-import { useChainContext } from '../../../contexts/ChainContext'
-import { useWalletContext } from '../../../contexts/WalletContext'
 import { truncateAddress } from '../../../helpers/addressHelper'
 import { isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
 import { Action, getTradeMemo } from '../../../helpers/memoHelper'
@@ -52,6 +50,8 @@ import { ViewTxButton } from '../../uielements/button'
 import { Action as ActionButtonAction, ActionButton } from '../../uielements/button/ActionButton'
 import { IconButton } from '../../uielements/button/IconButton'
 import * as Styled from './AssetsTableCollapsable.styles'
+import { useChainContext } from 'contexts/ChainContext'
+import { useWalletContext } from 'contexts/WalletContext'
 
 const { Panel } = StyledCollapse
 

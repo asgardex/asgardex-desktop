@@ -5,11 +5,11 @@ import { array as A, function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useNavigate, matchPath, useLocation } from 'react-router-dom'
 
-import { useAppContext } from '../contexts/AppContext'
 import * as poolsRoutes from '../routes/pools'
 import * as walletRoutes from '../routes/wallet'
 import { ChangeNetworkHandler } from '../services/app/types'
 import { DEFAULT_NETWORK } from '../services/const'
+import { useAppContext } from 'contexts/AppContext'
 
 // TODO (@veado)
 // 1. Extract into helper/routes + test

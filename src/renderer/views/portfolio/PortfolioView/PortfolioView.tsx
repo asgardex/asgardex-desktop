@@ -21,8 +21,6 @@ import { useNavigate } from 'react-router-dom'
 
 import { EnabledChain } from '../../../../shared/utils/chain'
 import { AssetUSDC, DEFAULT_WALLET_TYPE } from '../../../const'
-import { useMidgardContext } from '../../../contexts/MidgardContext'
-import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { isUSDAsset } from '../../../helpers/assetHelper'
 import { getCurrencyFormat } from '../../../helpers/numberHelper'
 import { RUNE_PRICE_POOL } from '../../../helpers/poolHelper'
@@ -59,6 +57,8 @@ import { PieChart } from 'components/uielements/charts'
 import { ProtocolSwitch } from 'components/uielements/protocolSwitch'
 import { Protocol } from 'components/uielements/protocolSwitch/types'
 import { RadioGroup } from 'components/uielements/radioGroup'
+import { useMidgardContext } from 'contexts/MidgardContext'
+import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
 
 const CardItem = ({
   title,

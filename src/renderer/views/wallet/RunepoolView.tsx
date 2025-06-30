@@ -20,10 +20,6 @@ import { useIntl } from 'react-intl'
 
 import { WalletType } from '../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE } from '../../const'
-import { useChainContext } from '../../contexts/ChainContext'
-import { useMidgardContext } from '../../contexts/MidgardContext'
-import { useThorchainContext } from '../../contexts/ThorchainContext'
-import { useWalletContext } from '../../contexts/WalletContext'
 import { isUSDAsset } from '../../helpers/assetHelper'
 import { sequenceTRD } from '../../helpers/fpHelpers'
 import * as PoolHelpers from '../../helpers/poolHelper'
@@ -42,6 +38,10 @@ import { RunePoolTable } from 'components/runePool/runePoolTable'
 import { RefreshButton } from 'components/uielements/button'
 import { Label } from 'components/uielements/label'
 import { AssetsNav } from 'components/wallet/assets'
+import { useChainContext } from 'contexts/ChainContext'
+import { useMidgardContext } from 'contexts/MidgardContext'
+import { useThorchainContext } from 'contexts/ThorchainContext'
+import { useWalletContext } from 'contexts/WalletContext'
 
 type AssetProps = {
   key: Chain

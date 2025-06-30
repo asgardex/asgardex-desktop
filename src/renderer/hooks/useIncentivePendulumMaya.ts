@@ -5,8 +5,8 @@ import { function as FP } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
 
-import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
 import { Color, IncentivePendulum, IncentivePendulumRD } from './useIncentivePendulum'
+import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
 
 export const getIncentivePendulum = (totalPooledRune: string, totalActiveBond: string): IncentivePendulum => {
   const totalActiveBondAmount = baseAmount(totalActiveBond, CACAO_DECIMAL)

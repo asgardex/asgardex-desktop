@@ -5,7 +5,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import { useWalletContext } from '../../../contexts/WalletContext'
 import { getWalletNamesFromKeystoreWallets } from '../../../helpers/walletHelper'
 import { useKeystoreClientStates } from '../../../hooks/useKeystoreClientStates'
 import { useKeystoreWallets } from '../../../hooks/useKeystoreWallets'
@@ -13,6 +12,7 @@ import * as walletRoutes from '../../../routes/wallet'
 import { generateKeystoreId } from '../../../services/wallet/util'
 import { LayoutlessWrapper } from 'components/LayoutlessWrapper'
 import { ImportPhrase } from 'components/wallet/phrase'
+import { useWalletContext } from 'contexts/WalletContext'
 
 export const ImportPhraseView = (): JSX.Element => {
   const intl = useIntl()

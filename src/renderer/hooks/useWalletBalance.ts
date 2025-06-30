@@ -6,14 +6,14 @@ import * as RxOp from 'rxjs/operators'
 
 import { EnabledChain } from '../../shared/utils/chain'
 import { ZERO_BASE_AMOUNT } from '../const'
-import { useMidgardContext } from '../contexts/MidgardContext'
-import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
-import { useWalletContext } from '../contexts/WalletContext'
 import { to1e8BaseAmount } from '../helpers/assetHelper'
 import { getPoolPriceValue } from '../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../helpers/poolHelperMaya'
 import { userChains$ } from '../services/storage/userChains'
 import { MayaScanPriceRD } from './useMayascanPrice'
+import { useMidgardContext } from 'contexts/MidgardContext'
+import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
+import { useWalletContext } from 'contexts/WalletContext'
 
 export const useTotalWalletBalance = (mayaScanPriceRD: MayaScanPriceRD) => {
   const { chainBalances$ } = useWalletContext()

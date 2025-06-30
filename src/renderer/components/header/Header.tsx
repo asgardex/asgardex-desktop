@@ -2,9 +2,6 @@ import * as RD from '@devexperts/remote-data-ts'
 import { option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 
-import { useMidgardContext } from '../../contexts/MidgardContext'
-import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
-import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { useKeystoreState } from '../../hooks/useKeystoreState'
 import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
 import { useMayachainClientUrl } from '../../hooks/useMayachainClientUrl'
@@ -18,6 +15,9 @@ import { useVolume24PriceMaya } from '../../hooks/useVolume24HrPriceMaya'
 import { useVolume24Price } from '../../hooks/useVolume24Price'
 import { SelectedPricePoolAsset } from '../../services/midgard/midgardTypes'
 import { HeaderComponent } from './HeaderComponent'
+import { useMidgardContext } from 'contexts/MidgardContext'
+import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
+import { useThorchainContext } from 'contexts/ThorchainContext'
 
 export const Header = (): JSX.Element => {
   const { lock, state: keystoreState, change$: changeWalletHandler$ } = useKeystoreState()

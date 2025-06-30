@@ -7,12 +7,12 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { WalletAddress } from '../../shared/wallet/types'
-import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
 import { liveData } from '../helpers/rx/liveData'
 import { observableState, triggerStream } from '../helpers/stateHelper'
 import { ActionsPage, ActionsPageRD } from '../services/midgard/mayaMigard/types'
 import { LoadActionsParams } from '../services/midgard/midgardTypes'
 import { Filter } from 'components/poolActionsHistory/types'
+import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
 
 export const useMayaMidgardHistoryActions = (itemsPerPage = 10) => {
   const {

@@ -9,8 +9,6 @@ import * as RxOp from 'rxjs/operators'
 
 import { EnabledChain } from '../../../../shared/utils/chain'
 import { WalletAddress, WalletAddresses } from '../../../../shared/wallet/types'
-import { useChainContext } from '../../../contexts/ChainContext'
-import { useWalletContext } from '../../../contexts/WalletContext'
 import { eqString } from '../../../helpers/fp/eq'
 import { ordWalletAddressByChain } from '../../../helpers/fp/ord'
 import { useMayaMidgardHistoryActions } from '../../../hooks/useMayaMidgardHistoryActions'
@@ -28,6 +26,8 @@ import { WalletPoolActionsHistoryHeader } from 'components/poolActionsHistory/Wa
 import { RefreshButton } from 'components/uielements/button'
 import { ProtocolSwitch } from 'components/uielements/protocolSwitch'
 import { AssetsNav } from 'components/wallet/assets'
+import { useChainContext } from 'contexts/ChainContext'
+import { useWalletContext } from 'contexts/WalletContext'
 
 const HISTORY_FILTERS: Filter[] = ['ALL', 'SEND', 'DEPOSIT', 'SWAP', 'WITHDRAW', 'DONATE', 'REFUND', 'RUNEPOOLDEPOSIT']
 

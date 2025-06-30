@@ -21,10 +21,6 @@ import { useNavigate } from 'react-router-dom'
 import { AssetCacao, AssetRuneNative } from '../../../shared/utils/asset'
 import { WalletType } from '../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE } from '../../const'
-import { useAppContext } from '../../contexts/AppContext'
-import { useMidgardContext } from '../../contexts/MidgardContext'
-import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
-import { useWalletContext } from '../../contexts/WalletContext'
 import { ordBaseAmount, ordNumber } from '../../helpers/fp/ord'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
@@ -51,6 +47,10 @@ import { Action as ActionButtonAction, ActionButton } from 'components/uielement
 import { Label } from 'components/uielements/label'
 import { PoolsPeriodSelector } from 'components/uielements/pools/PoolsPeriodSelector'
 import { Table } from 'components/uielements/table'
+import { useAppContext } from 'contexts/AppContext'
+import { useMidgardContext } from 'contexts/MidgardContext'
+import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
+import { useWalletContext } from 'contexts/WalletContext'
 
 export const ActivePools = (): JSX.Element => {
   const navigate = useNavigate()

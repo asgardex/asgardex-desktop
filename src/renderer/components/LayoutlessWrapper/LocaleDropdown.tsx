@@ -6,10 +6,10 @@ import { useObservableState } from 'observable-hooks'
 
 import { DEFAULT_LOCALE } from '../../../shared/i18n/const'
 import { Locale } from '../../../shared/i18n/types'
-import { useI18nContext } from '../../contexts/I18nContext'
 import { LOCALES } from '../../i18n'
 import { DownIcon } from '../icons'
 import { Dropdown } from '../uielements/dropdown'
+import { useI18nContext } from 'contexts/I18nContext'
 
 export const LocaleDropdown = () => {
   const { changeLocale, locale$ } = useI18nContext()

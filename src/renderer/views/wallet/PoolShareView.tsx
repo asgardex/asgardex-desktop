@@ -11,9 +11,6 @@ import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 import * as RxOp from 'rxjs/operators'
 
-import { useChainContext } from '../../contexts/ChainContext'
-import { useMidgardContext } from '../../contexts/MidgardContext'
-import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
 import { sequenceTOption } from '../../helpers/fpHelpers'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
@@ -29,6 +26,9 @@ import { ErrorView } from 'components/shared/error'
 import { Button, RefreshButton } from 'components/uielements/button'
 import { ProtocolSwitch } from 'components/uielements/protocolSwitch'
 import { AssetsNav, TotalAssetValue } from 'components/wallet/assets'
+import { useChainContext } from 'contexts/ChainContext'
+import { useMidgardContext } from 'contexts/MidgardContext'
+import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
 
 export const PoolShareView = (): JSX.Element => {
   const intl = useIntl()

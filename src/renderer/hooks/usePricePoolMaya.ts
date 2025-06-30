@@ -1,7 +1,7 @@
 import { useObservableState } from 'observable-hooks'
 
-import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
 import { MAYA_PRICE_POOL } from '../helpers/poolHelperMaya'
+import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
 
 export const usePricePoolMaya = () => {
   const {

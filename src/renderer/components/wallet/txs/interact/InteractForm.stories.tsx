@@ -10,13 +10,13 @@ import * as Rx from 'rxjs'
 import { getMockRDValueFactory, RDStatus } from '../../../../../shared/mock/rdByStatus'
 import { mockValidatePassword$ } from '../../../../../shared/mock/wallet'
 import { WalletType } from '../../../../../shared/wallet/types'
-import { useThorchainQueryContext } from '../../../../contexts/ThorchainQueryContext'
 import { mockWalletBalance } from '../../../../helpers/test/testWalletHelper'
 import { FeeRD } from '../../../../services/chain/types'
 import { InteractStateHandler, NodeStatusEnum, RunePoolProvider } from '../../../../services/thorchain/types'
 import { ApiError, ErrorId, WalletBalance } from '../../../../services/wallet/types'
 import { InteractType } from './Interact.types'
 import { InteractFormThor as Component } from './InteractFormThor'
+import { useThorchainQueryContext } from 'contexts/ThorchainQueryContext'
 
 type Args = {
   interactType: InteractType

@@ -10,11 +10,6 @@ import { array as A, function as FP, option as O, predicate as P } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
-import { useAppContext } from '../../contexts/AppContext'
-import { useMayachainContext } from '../../contexts/MayachainContext'
-import { useMidgardContext } from '../../contexts/MidgardContext'
-import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
-import { useThorchainContext } from '../../contexts/ThorchainContext'
 import { getPoolTableRowsData, isPoolDetails } from '../../helpers/poolHelper'
 import { getPoolTableRowsData as getPoolTableRowsDataMaya } from '../../helpers/poolHelperMaya'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
@@ -46,6 +41,11 @@ import { ProtocolLimit, IncentivePendulum } from 'components/pool'
 import { ManageButton } from 'components/uielements/button'
 import { Label } from 'components/uielements/label'
 import { Table } from 'components/uielements/table'
+import { useAppContext } from 'contexts/AppContext'
+import { useMayachainContext } from 'contexts/MayachainContext'
+import { useMidgardContext } from 'contexts/MidgardContext'
+import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
+import { useThorchainContext } from 'contexts/ThorchainContext'
 
 export const PendingPools = (): JSX.Element => {
   const { protocol } = useApp()

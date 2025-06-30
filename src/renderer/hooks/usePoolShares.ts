@@ -8,15 +8,15 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { getChainsForDex } from '../../shared/utils/chain'
-import { useChainContext } from '../contexts/ChainContext'
-import { useMidgardContext } from '../contexts/MidgardContext'
-import { useMidgardMayaContext } from '../contexts/MidgardMayaContext'
-import { useWalletContext } from '../contexts/WalletContext'
 import { addressFromWalletAddress } from '../helpers/walletHelper'
 import { WalletAddress$ } from '../services/clients'
 import { PoolShares } from '../services/midgard/midgardTypes'
 import { userChains$ } from '../services/storage/userChains'
 import { ledgerAddressToWalletAddress } from '../services/wallet/util'
+import { useChainContext } from 'contexts/ChainContext'
+import { useMidgardContext } from 'contexts/MidgardContext'
+import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
+import { useWalletContext } from 'contexts/WalletContext'
 
 export const usePoolShares = (protocol: Chain) => {
   const {

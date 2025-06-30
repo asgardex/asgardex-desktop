@@ -53,7 +53,6 @@ import {
 import { isLedgerWallet } from '../../../shared/utils/guard'
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
-import { useChainflipContext } from '../../contexts/ChainflipContext'
 import {
   max1e8BaseAmount,
   convertBaseAmountDecimal,
@@ -117,6 +116,7 @@ import * as Utils from './Swap.utils'
 import SwapExpiryProgressBar from './SwapExpiryProgressBar'
 import { SwapRoute } from './SwapRoute'
 import { SwapTxModal } from './SwapTxModal'
+import { useChainflipContext } from 'contexts/ChainflipContext'
 
 const ErrorLabel = ({ children, className }: { children: React.ReactNode; className?: string }): JSX.Element => (
   <div

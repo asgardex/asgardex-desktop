@@ -7,9 +7,9 @@ import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { useChainContext } from '../contexts/ChainContext'
 import { eqOChain } from '../helpers/fp/eq'
 import { OpenAddressUrl } from '../services/clients'
+import { useChainContext } from 'contexts/ChainContext'
 
 export const useOpenAddressUrl = (oChain: O.Option<Chain>): OpenAddressUrl => {
   const { clientByChain$ } = useChainContext()

@@ -5,11 +5,11 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { ONE_RUNE_BASE_AMOUNT } from '../../shared/mock/amount'
-import { useMidgardContext } from '../contexts/MidgardContext'
 import { sequenceTOption } from '../helpers/fpHelpers'
 import { PriceRD } from '../services/midgard/midgardTypes'
 import { pricePoolSelector } from '../services/midgard/thorMidgard/utils'
 import { getValueOfRuneInAsset } from '../views/pools/Pools.utils'
+import { useMidgardContext } from 'contexts/MidgardContext'
 
 export const useRunePrice = () => {
   const {

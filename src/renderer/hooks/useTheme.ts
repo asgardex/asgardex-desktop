@@ -4,7 +4,7 @@ import { function as FP } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
 
-import { useThemeContext } from '../contexts/ThemeContext'
+import { useThemeContext } from 'contexts/ThemeContext'
 
 export const useTheme = (): { isLight: boolean; theme: Theme; toggle: FP.Lazy<void> } => {
   const { themeType$, toggleTheme: toggle } = useThemeContext()

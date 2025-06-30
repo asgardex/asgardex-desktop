@@ -16,11 +16,6 @@ import * as RxOp from 'rxjs/operators'
 
 import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
 import { ZERO_BASE_AMOUNT, ZERO_BN } from '../../../const'
-import { useAppContext } from '../../../contexts/AppContext'
-import { useChainContext } from '../../../contexts/ChainContext'
-import { useMidgardContext } from '../../../contexts/MidgardContext'
-import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
-import { useWalletContext } from '../../../contexts/WalletContext'
 import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { getAssetPoolPrice } from '../../../helpers/poolHelper'
 import * as ShareHelpers from '../../../helpers/poolShareHelper'
@@ -32,6 +27,11 @@ import { DEFAULT_BALANCES_FILTER } from '../../../services/wallet/const'
 import { getBalanceByAsset } from '../../../services/wallet/util'
 import { Props } from './WithdrawDepositView.types'
 import { Withdraw } from 'components/deposit/withdraw'
+import { useAppContext } from 'contexts/AppContext'
+import { useChainContext } from 'contexts/ChainContext'
+import { useMidgardContext } from 'contexts/MidgardContext'
+import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
+import { useWalletContext } from 'contexts/WalletContext'
 
 export const WithdrawDepositView = (props: Props): JSX.Element => {
   const {

@@ -11,9 +11,6 @@ import * as RxOp from 'rxjs/operators'
 
 import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
-import { useMidgardContext } from '../../contexts/MidgardContext'
-import { useThorchainContext } from '../../contexts/ThorchainContext'
-import { useWalletContext } from '../../contexts/WalletContext'
 import { to1e8BaseAmount } from '../../helpers/assetHelper'
 import { getPoolPriceValue, RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
@@ -26,6 +23,9 @@ import { RefreshButton } from 'components/uielements/button'
 import { AssetsNav } from 'components/wallet/assets'
 import { TotalAssetValue } from 'components/wallet/assets/TotalAssetValue'
 import { TradeAssetsTableCollapsable } from 'components/wallet/assets/TradeAssetsTableCollapsable'
+import { useMidgardContext } from 'contexts/MidgardContext'
+import { useThorchainContext } from 'contexts/ThorchainContext'
+import { useWalletContext } from 'contexts/WalletContext'
 
 export const TradeAssetsView = (): JSX.Element => {
   const intl = useIntl()

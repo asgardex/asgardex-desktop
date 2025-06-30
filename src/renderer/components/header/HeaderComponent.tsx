@@ -10,7 +10,6 @@ import { useIntl } from 'react-intl'
 import { useMatch, Link, useNavigate, useLocation } from 'react-router-dom'
 import { palette, size } from 'styled-theme'
 
-import { useThemeContext } from '../../contexts/ThemeContext'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
 import * as appRoutes from '../../routes/app'
 import * as poolsRoutes from '../../routes/pools'
@@ -42,6 +41,7 @@ import CloseIcon from 'assets/svg/icon-close.svg?react'
 import MenuIcon from 'assets/svg/icon-menu.svg?react'
 import SwapIcon from 'assets/svg/icon-swap.svg?react'
 import WalletIcon from 'assets/svg/icon-wallet.svg?react'
+import { useThemeContext } from 'contexts/ThemeContext'
 
 enum TabKey {
   POOLS = 'POOLS',

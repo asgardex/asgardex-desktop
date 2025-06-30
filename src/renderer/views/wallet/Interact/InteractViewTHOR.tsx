@@ -9,10 +9,6 @@ import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
 import { DEFAULT_WALLET_TYPE } from '../../../const'
-import { useMidgardContext } from '../../../contexts/MidgardContext'
-import { useThorchainContext } from '../../../contexts/ThorchainContext'
-import { useThorchainQueryContext } from '../../../contexts/ThorchainQueryContext'
-import { useWalletContext } from '../../../contexts/WalletContext'
 import { eqOSelectedWalletAsset } from '../../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../../helpers/fpHelpers'
 import { liveData } from '../../../helpers/rx/liveData'
@@ -33,6 +29,10 @@ import { Interact } from 'components/wallet/txs/interact'
 import { getInteractTypeFromNullableString } from 'components/wallet/txs/interact/Interact.helpers'
 import { InteractType } from 'components/wallet/txs/interact/Interact.types'
 import { InteractFormThor } from 'components/wallet/txs/interact/InteractFormThor'
+import { useMidgardContext } from 'contexts/MidgardContext'
+import { useThorchainContext } from 'contexts/ThorchainContext'
+import { useThorchainQueryContext } from 'contexts/ThorchainQueryContext'
+import { useWalletContext } from 'contexts/WalletContext'
 
 export const InteractViewTHOR = () => {
   const { interactType: routeInteractType } = useParams<walletRoutes.BondParams>()

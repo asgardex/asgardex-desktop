@@ -2,7 +2,6 @@ import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
 
-import { useWalletContext } from '../contexts/WalletContext'
 import { INITIAL_KEYSTORE_STATE } from '../services/wallet/const'
 import {
   KeystoreState,
@@ -12,6 +11,7 @@ import {
   RenameKeystoreWalletHandler
 } from '../services/wallet/types'
 import { getPhrase, getWalletName, isLocked } from '../services/wallet/util'
+import { useWalletContext } from 'contexts/WalletContext'
 
 export const useKeystoreState = (): {
   state: KeystoreState

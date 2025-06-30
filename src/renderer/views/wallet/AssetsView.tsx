@@ -11,9 +11,6 @@ import { useNavigate } from 'react-router-dom'
 
 import { DEFAULT_ENABLED_CHAINS, EnabledChain } from '../../../shared/utils/chain'
 import { CHAIN_WEIGHTS_THOR, DEFAULT_WALLET_TYPE } from '../../const'
-import { useMidgardContext } from '../../contexts/MidgardContext'
-import { useMidgardMayaContext } from '../../contexts/MidgardMayaContext'
-import { useWalletContext } from '../../contexts/WalletContext'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { useObserveMayaScanPrice } from '../../hooks/useMayascanPrice'
@@ -34,6 +31,9 @@ import type { AssetAction } from 'components/wallet/assets/AssetsTableCollapsabl
 import { AssetsTableCollapsable } from 'components/wallet/assets/AssetsTableCollapsable'
 import { TotalAssetValue } from 'components/wallet/assets/TotalAssetValue'
 import { InteractType } from 'components/wallet/txs/interact/Interact.types'
+import { useMidgardContext } from 'contexts/MidgardContext'
+import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
+import { useWalletContext } from 'contexts/WalletContext'
 
 export const AssetsView = (): JSX.Element => {
   const navigate = useNavigate()

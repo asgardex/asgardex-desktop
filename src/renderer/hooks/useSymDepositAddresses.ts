@@ -9,9 +9,9 @@ import * as RxOp from 'rxjs/operators'
 
 import { isLedgerWallet } from '../../shared/utils/guard'
 import { WalletAddress, WalletType } from '../../shared/wallet/types'
-import { useChainContext } from '../contexts/ChainContext'
-import { useWalletContext } from '../contexts/WalletContext'
 import { ledgerAddressToWalletAddress } from '../services/wallet/util'
+import { useChainContext } from 'contexts/ChainContext'
+import { useWalletContext } from 'contexts/WalletContext'
 
 /**
  * Hook to provide wallet addresses needed for sym. deposit

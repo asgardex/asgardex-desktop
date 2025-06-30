@@ -11,11 +11,11 @@ import * as RxAjax from 'rxjs/ajax'
 import * as RxOp from 'rxjs/operators'
 
 import { NodeUrl } from '../../shared/api/types'
-import { useThorchainContext } from '../contexts/ThorchainContext'
 import { LiveData } from '../helpers/rx/liveData'
 import { DEFAULT_CLIENT_URL } from '../services/thorchain/const'
 import { getThornodeAPIConfiguration } from '../services/thorchain/thornode'
 import { useNetwork } from './useNetwork'
+import { useThorchainContext } from 'contexts/ThorchainContext'
 
 export const useThorchainClientUrl = (): {
   rpc: string

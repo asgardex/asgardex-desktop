@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import * as RD from '@devexperts/remote-data-ts'
 import { useObservableState } from 'observable-hooks'
 
-import { useThorchainContext } from '../contexts/ThorchainContext'
+import { useThorchainContext } from 'contexts/ThorchainContext'
 
 export const useMimirConstants = (keys: string[]): { [key: string]: number } => {
   const { mimir$ } = useThorchainContext() // Assume mimir$ is of type MimirLD

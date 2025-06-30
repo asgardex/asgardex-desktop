@@ -7,10 +7,10 @@ import * as RxOp from 'rxjs/operators'
 
 import { KeystoreId } from '../../shared/api/types'
 import { HDMode, WalletAddress } from '../../shared/wallet/types'
-import { useWalletContext } from '../contexts/WalletContext'
 import { LedgerAddress } from '../services/wallet/types'
 import { ledgerAddressToWalletAddress } from '../services/wallet/util'
 import { useNetwork } from './useNetwork'
+import { useWalletContext } from 'contexts/WalletContext'
 
 export const useLedger = (chain: Chain, id: KeystoreId) => {
   const { network } = useNetwork()

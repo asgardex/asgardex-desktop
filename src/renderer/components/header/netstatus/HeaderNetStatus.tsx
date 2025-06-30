@@ -5,7 +5,6 @@ import { function as FP, array as A, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
-import { useAppContext } from '../../../contexts/AppContext'
 import { OnlineStatus } from '../../../services/app/types'
 import {
   MidgardStatusRD as MidgardMayaStatusRD,
@@ -19,6 +18,7 @@ import { ConnectionStatus } from '../../shared/icons'
 import { Dropdown } from '../../uielements/dropdown'
 import { Label } from '../../uielements/label'
 import { headerNetStatusSubheadline, headerNetStatusColor, HeaderNetStatusColor } from '../Header.util'
+import { useAppContext } from 'contexts/AppContext'
 
 type MenuItem = {
   key: string

@@ -6,9 +6,9 @@ import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import * as RxOp from 'rxjs/operators'
 
-import { useChainContext } from '../contexts/ChainContext'
 import { eqChain } from '../helpers/fp/eq'
 import { AddressValidation, AddressValidationAsync } from '../services/clients'
+import { useChainContext } from 'contexts/ChainContext'
 
 export const useValidateAddress = (
   chain: Chain

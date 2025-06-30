@@ -4,8 +4,8 @@ import { AnyAsset } from '@xchainjs/xchain-util'
 import { useObservableState } from 'observable-hooks'
 
 import { PoolsWatchList } from '../../shared/api/io'
-import { useMidgardContext } from '../contexts/MidgardContext'
 import { useNetwork } from './useNetwork'
+import { useMidgardContext } from 'contexts/MidgardContext'
 
 export const usePoolWatchlist = () => {
   const {

@@ -7,9 +7,6 @@ import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 
 import { TrustedAddresses } from '../../../../shared/api/types'
-import { useChainContext } from '../../../contexts/ChainContext'
-import { useEvmContext } from '../../../contexts/EvmContext'
-import { useWalletContext } from '../../../contexts/WalletContext'
 import { getChainAsset } from '../../../helpers/chainHelper'
 import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
 import { useObserveMayaScanPrice } from '../../../hooks/useMayascanPrice'
@@ -22,6 +19,9 @@ import { PoolAddress, PoolDetails } from '../../../services/midgard/midgardTypes
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
 import { SelectedWalletAsset, WalletBalance } from '../../../services/wallet/types'
 import { SendFormEVM } from 'components/wallet/txs/send'
+import { useChainContext } from 'contexts/ChainContext'
+import { useEvmContext } from 'contexts/EvmContext'
+import { useWalletContext } from 'contexts/WalletContext'
 
 type Props = {
   asset: SelectedWalletAsset

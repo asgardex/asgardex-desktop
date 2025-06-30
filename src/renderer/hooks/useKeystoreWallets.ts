@@ -2,8 +2,8 @@ import * as RD from '@devexperts/remote-data-ts'
 import { function as FP } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 
-import { useWalletContext } from '../contexts/WalletContext'
 import { KeystoreWalletsRD, KeystoreWalletsUI } from '../services/wallet/types'
+import { useWalletContext } from 'contexts/WalletContext'
 
 export const useKeystoreWallets = (): {
   walletsPersistentRD: KeystoreWalletsRD

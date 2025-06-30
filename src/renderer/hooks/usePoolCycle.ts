@@ -6,10 +6,10 @@ import { useObservableState } from 'observable-hooks'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
 
-import { useThorchainContext } from '../contexts/ThorchainContext'
 import { eqApiError } from '../helpers/fp/eq'
 import { LiveData, liveData } from '../helpers/rx/liveData'
 import { ApiError, ErrorId } from '../services/wallet/types'
+import { useThorchainContext } from 'contexts/ThorchainContext'
 
 type PoolCycleRD = RD.RemoteData<ApiError, number>
 type PoolCycleLD = LiveData<ApiError, number>

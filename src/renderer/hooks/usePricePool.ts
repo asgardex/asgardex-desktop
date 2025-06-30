@@ -1,7 +1,7 @@
 import { useObservableState } from 'observable-hooks'
 
-import { useMidgardContext } from '../contexts/MidgardContext'
 import { RUNE_PRICE_POOL } from '../helpers/poolHelper'
+import { useMidgardContext } from 'contexts/MidgardContext'
 
 export const usePricePool = () => {
   const {

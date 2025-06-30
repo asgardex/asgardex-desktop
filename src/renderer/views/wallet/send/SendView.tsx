@@ -27,15 +27,15 @@ import { useIntl } from 'react-intl'
 
 import { TrustedAddresses } from '../../../../shared/api/types'
 import { isChainOfMaya, isSupportedChain } from '../../../../shared/utils/chain'
-import { useMidgardContext } from '../../../contexts/MidgardContext'
-import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
-import { useWalletContext } from '../../../contexts/WalletContext'
 import { PoolAddress } from '../../../services/midgard/midgardTypes'
 import { userAddresses$ } from '../../../services/storage/userAddresses'
 import { reloadBalancesByChain } from '../../../services/wallet'
 import { SelectedWalletAsset } from '../../../services/wallet/types'
 import { SendViewCOSMOS, SendViewEVM, SendViewUTXO } from './index'
 import { BackLinkButton, RefreshButton } from 'components/uielements/button'
+import { useMidgardContext } from 'contexts/MidgardContext'
+import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
+import { useWalletContext } from 'contexts/WalletContext'
 
 export const SendView = (): JSX.Element => {
   const intl = useIntl()
