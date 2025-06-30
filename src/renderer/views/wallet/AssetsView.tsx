@@ -13,7 +13,6 @@ import { DEFAULT_ENABLED_CHAINS, EnabledChain } from '../../../shared/utils/chai
 import { CHAIN_WEIGHTS_THOR, DEFAULT_WALLET_TYPE } from '../../const'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
-import * as walletRoutes from '../../routes/wallet'
 import { userChains$ } from '../../services/storage/userChains'
 import { reloadBalancesByChain } from '../../services/wallet'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
@@ -34,6 +33,7 @@ import { useObserveMayaScanPrice } from 'hooks/useMayascanPrice'
 import { useThorchainMimirHalt } from 'hooks/useMimirHalt'
 import { useNetwork } from 'hooks/useNetwork'
 import { useTotalWalletBalance } from 'hooks/useWalletBalance'
+import * as walletRoutes from 'routes/wallet'
 
 export const AssetsView = (): JSX.Element => {
   const navigate = useNavigate()

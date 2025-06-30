@@ -5,8 +5,8 @@ import { array as A, function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import { Link, matchPath, useLocation } from 'react-router-dom'
 
-import * as walletRoutes from '../../../routes/wallet'
 import * as Styled from './AssetsNav.styles'
+import * as walletRoutes from 'routes/wallet'
 
 enum MenuKey {
   ASSETS = 'assets',

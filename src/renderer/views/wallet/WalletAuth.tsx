@@ -3,10 +3,10 @@ import React from 'react'
 import { useObservableState } from 'observable-hooks'
 import { Navigate, useLocation } from 'react-router-dom'
 
-import { ReferrerState } from '../../routes/types'
-import * as walletRoutes from '../../routes/wallet'
 import { hasImportedKeystore, isLocked } from '../../services/wallet/util'
 import { useWalletContext } from 'contexts/WalletContext'
+import { ReferrerState } from 'routes/types'
+import * as walletRoutes from 'routes/wallet'
 
 export const WalletAuth = ({ children }: { children: JSX.Element }): JSX.Element => {
   const { keystoreService } = useWalletContext()

@@ -56,7 +56,6 @@ import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isEthChain, isLtcCh
 import { isEvmChain, isEvmChainAsset } from './evmHelper'
 import { eqAsset, eqString } from './fp/eq'
 import { sequenceTOption } from './fpHelpers'
-import { PricePoolAsset } from 'views/pools/Pools.types'
 
 /**
  * Decimal for any asset handled by THORChain and provided by Midgard
@@ -463,7 +462,7 @@ export const getEVMAssetAddress = (asset: AnyAsset): O.Option<Address> =>
 export const isEVMTokenAsset: (asset: TokenAsset) => boolean = FP.flow(getEVMTokenAddress, O.isSome)
 
 // Type guard for `PricePoolAsset`
-export const isPricePoolAsset = (asset: AnyAsset): asset is PricePoolAsset =>
+export const isPricePoolAsset = (asset: AnyAsset): asset is AnyAsset =>
   // all of PoolAsset except BSC.BNB -> see `PricePoolAsset`
   [...DEFAULT_PRICE_ASSETS, ...USD_PRICE_ASSETS].includes(asset)
 

@@ -21,8 +21,6 @@ import { chainToString, isChainOfMaya, isChainOfThor } from '../../../../shared/
 import { WalletType } from '../../../../shared/wallet/types'
 import { DEFAULT_WALLET_TYPE } from '../../../const'
 import * as AssetHelper from '../../../helpers/assetHelper'
-import * as poolsRoutes from '../../../routes/pools'
-import * as walletRoutes from '../../../routes/wallet'
 import { OpenExplorerTxUrl, TxsPageRD } from '../../../services/clients'
 import { MAX_ITEMS_PER_PAGE } from '../../../services/const'
 import { EMPTY_LOAD_TXS_HANDLER } from '../../../services/wallet/const'
@@ -36,6 +34,8 @@ import { Label } from '../../uielements/label'
 import { QRCodeModal } from '../../uielements/qrCodeModal'
 import { InteractType } from '../txs/interact/Interact.types'
 import { TxsTable } from '../txs/table'
+import * as poolsRoutes from 'routes/pools'
+import * as walletRoutes from 'routes/wallet'
 
 export type Props = {
   walletType: WalletType

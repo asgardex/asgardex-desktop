@@ -4,9 +4,9 @@ import { FolderPlusIcon, FolderOpenIcon } from '@heroicons/react/20/solid'
 import { useIntl } from 'react-intl'
 import { useLocation, useNavigate } from 'react-router-dom'
 
-import * as walletRoutes from '../../../routes/wallet'
 import { Button } from '../../uielements/button'
 import * as Styled from './AddWallet.styles'
+import * as walletRoutes from 'routes/wallet'
 
 export type Props = { isLocked?: boolean }
 

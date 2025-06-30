@@ -10,9 +10,6 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { KeystoreId } from '../../../../shared/api/types'
 import { emptyString } from '../../../helpers/stringHelper'
 import { getUrlSearchParam } from '../../../helpers/url.helper'
-import * as appRoutes from '../../../routes/app'
-import { ReferrerState } from '../../../routes/types'
-import * as walletRoutes from '../../../routes/wallet'
 import {
   ChangeKeystoreWalletHandler,
   ChangeKeystoreWalletRD,
@@ -26,6 +23,9 @@ import { BackLinkButton, BorderButton, FlatButton } from '../../uielements/butto
 import { InputPasswordTW } from '../../uielements/input'
 import { WalletSelector } from '../../uielements/wallet'
 import { useSubscriptionState } from 'hooks/useSubscriptionState'
+import * as appRoutes from 'routes/app'
+import { ReferrerState } from 'routes/types'
+import * as walletRoutes from 'routes/wallet'
 
 type FormData = {
   password: string

@@ -13,7 +13,6 @@ import { eqOSelectedWalletAsset } from '../../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../../helpers/fpHelpers'
 import { liveData } from '../../../helpers/rx/liveData'
 import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
-import * as walletRoutes from '../../../routes/wallet'
 import { FeeRD } from '../../../services/chain/types'
 import { getNodeInfos$ } from '../../../services/mayachain'
 import { NodeInfosRD } from '../../../services/mayachain/types'
@@ -36,6 +35,7 @@ import { useNetwork } from 'hooks/useNetwork'
 import { useOpenExplorerTxUrl } from 'hooks/useOpenExplorerTxUrl'
 import { usePoolShares } from 'hooks/usePoolShares'
 import { useValidateAddress } from 'hooks/useValidateAddress'
+import * as walletRoutes from 'routes/wallet'
 
 export const InteractViewMAYA = () => {
   const { interactType: routeInteractType } = useParams<walletRoutes.InteractParams>()

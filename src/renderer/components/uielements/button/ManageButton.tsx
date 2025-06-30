@@ -7,12 +7,12 @@ import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
 import { DEFAULT_WALLET_TYPE } from '../../../const'
-import * as poolsRoutes from '../../../routes/pools'
-import * as walletRoutes from '../../../routes/wallet'
 import { InteractType } from '../../wallet/txs/interact/Interact.types'
 import { BorderButton } from './BorderButton'
 import { FlatButton } from './FlatButton'
 import type { Props as ButtonProps } from './FlatButton'
+import * as poolsRoutes from 'routes/pools'
+import * as walletRoutes from 'routes/wallet'
 
 type ButtonVariant = 'runePool' | 'savers' | 'manage'
 

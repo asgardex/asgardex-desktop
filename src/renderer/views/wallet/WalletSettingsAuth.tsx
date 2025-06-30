@@ -5,12 +5,12 @@ import { useObservableState } from 'observable-hooks'
 import { useLocation, useNavigate } from 'react-router-dom'
 import * as RxOp from 'rxjs/operators'
 
-import * as walletRoutes from '../../routes/wallet'
 import { INITIAL_KEYSTORE_STATE } from '../../services/wallet/const'
 import { isKeystoreUnlocked } from '../../services/wallet/types'
 import { WalletSettingsView } from './WalletSettingsView'
 import { UnlockWalletSettings } from 'components/settings'
 import { useWalletContext } from 'contexts/WalletContext'
+import * as walletRoutes from 'routes/wallet'
 
 export const WalletSettingsAuth = (): JSX.Element => {
   const navigate = useNavigate()

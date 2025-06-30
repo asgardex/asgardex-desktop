@@ -24,7 +24,6 @@ import { DEFAULT_WALLET_TYPE } from '../../const'
 import { ordBaseAmount, ordNumber } from '../../helpers/fp/ord'
 import * as PoolHelpers from '../../helpers/poolHelper'
 import * as PoolHelpersMaya from '../../helpers/poolHelperMaya'
-import * as poolsRoutes from '../../routes/pools'
 import { DEFAULT_NETWORK } from '../../services/const'
 import { PoolsState as MayaPoolState } from '../../services/midgard/mayaMigard/types'
 import { GetPoolsPeriodEnum, PoolsState, DEFAULT_POOL_FILTERS } from '../../services/midgard/midgardTypes'
@@ -51,6 +50,7 @@ import { usePoolWatchlist } from 'hooks/usePoolWatchlist'
 import { usePricePool } from 'hooks/usePricePool'
 import { usePricePoolMaya } from 'hooks/usePricePoolMaya'
 import { useProtocolLimit } from 'hooks/useProtocolLimit'
+import * as poolsRoutes from 'routes/pools'
 
 export const ActivePools = (): JSX.Element => {
   const navigate = useNavigate()

@@ -13,7 +13,6 @@ import { eqOSelectedWalletAsset } from '../../../helpers/fp/eq'
 import { sequenceTOption, sequenceTRD } from '../../../helpers/fpHelpers'
 import { liveData } from '../../../helpers/rx/liveData'
 import { getWalletBalanceByAddressAndAsset } from '../../../helpers/walletHelper'
-import * as walletRoutes from '../../../routes/wallet'
 import { FeeRD } from '../../../services/chain/types'
 import { NodeInfosRD, RunePoolProviderRD, ThorchainLastblockRD } from '../../../services/thorchain/types'
 import { reloadBalancesByChain } from '../../../services/wallet'
@@ -33,6 +32,7 @@ import { useWalletContext } from 'contexts/WalletContext'
 import { useNetwork } from 'hooks/useNetwork'
 import { useOpenExplorerTxUrl } from 'hooks/useOpenExplorerTxUrl'
 import { useValidateAddress } from 'hooks/useValidateAddress'
+import * as walletRoutes from 'routes/wallet'
 
 export const InteractViewTHOR = () => {
   const { interactType: routeInteractType } = useParams<walletRoutes.BondParams>()

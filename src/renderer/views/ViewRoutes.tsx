@@ -1,11 +1,5 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
-import * as appRoutes from '../routes/app'
-import * as bondsRoutes from '../routes/bonds'
-import * as playgroundRoutes from '../routes/playground'
-import * as poolsRoutes from '../routes/pools'
-import * as portfolioRoutes from '../routes/portfolio'
-import * as walletRoutes from '../routes/wallet'
 import { AppSettings } from './app/AppSettings'
 import { BondsView } from './bonds/BondsView'
 import { DepositView } from './deposit/DepositView'
@@ -29,6 +23,12 @@ import { TcyView } from './wallet/TcyView'
 import { TradeAssetsView } from './wallet/TradeAssetsView'
 import { UnlockView } from './wallet/UnlockView'
 import { WalletAuth } from './wallet/WalletAuth'
+import * as appRoutes from 'routes/app'
+import * as bondsRoutes from 'routes/bonds'
+import * as playgroundRoutes from 'routes/playground'
+import * as poolsRoutes from 'routes/pools'
+import * as portfolioRoutes from 'routes/portfolio'
+import * as walletRoutes from 'routes/wallet'
 
 export const ViewRoutes = (): JSX.Element => {
   const location = useLocation()

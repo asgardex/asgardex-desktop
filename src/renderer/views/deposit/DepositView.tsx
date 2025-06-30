@@ -15,7 +15,6 @@ import * as RxOp from 'rxjs/operators'
 import { DEFAULT_WALLET_TYPE } from '../../const'
 import { getAssetFromNullableString } from '../../helpers/assetHelper'
 import { sequenceTOption } from '../../helpers/fpHelpers'
-import { DepositRouteParams } from '../../routes/pools/deposit'
 import { AssetWithDecimalLD, AssetWithDecimalRD } from '../../services/chain/types'
 import { PoolDetailRD as PoolDetailMayaRD } from '../../services/midgard/mayaMigard/types'
 import { PoolDetailRD, PoolSharesLD, PoolSharesRD } from '../../services/midgard/midgardTypes'
@@ -34,6 +33,7 @@ import { useThorchainContext } from 'contexts/ThorchainContext'
 import { useWalletContext } from 'contexts/WalletContext'
 import { useThorchainMimirHalt } from 'hooks/useMimirHalt'
 import { useSymDepositAddresses } from 'hooks/useSymDepositAddresses'
+import { DepositRouteParams } from 'routes/pools/deposit'
 
 export const DepositView = () => {
   const { protocol } = useApp()

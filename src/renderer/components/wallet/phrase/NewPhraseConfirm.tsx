@@ -9,12 +9,12 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { isError } from '../../../../shared/utils/guard'
 import { isSelectedFactory, sortedSelected } from '../../../helpers/array'
-import * as walletRoutes from '../../../routes/wallet'
 import { FlatButton, TextButton } from '../../uielements/button'
 import { Phrase } from './index'
 import * as NewPhraseStyled from './NewPhrase.styles'
 import { checkPhraseConfirmWordsFactory } from './NewPhraseConfirm.helper'
 import { WordType } from './NewPhraseConfirm.types'
+import * as walletRoutes from 'routes/wallet'
 
 export const NewPhraseConfirm = ({ mnemonic, onConfirm }: { mnemonic: string; onConfirm: () => Promise<void> }) => {
   const [wordsList, setWordsList] = useState<WordType[]>([])

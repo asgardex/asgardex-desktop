@@ -42,7 +42,6 @@ import { isEvmChain } from '../../../helpers/evmHelper'
 import { getDeepestPool, getPoolPriceValue, getSecondDeepestPool } from '../../../helpers/poolHelper'
 import { getPoolPriceValue as getPoolPriceValueM } from '../../../helpers/poolHelperMaya'
 import { hiddenString, noDataString } from '../../../helpers/stringHelper'
-import * as poolsRoutes from '../../../routes/pools'
 import { WalletBalancesRD } from '../../../services/clients'
 import { PoolDetails as PoolDetailsMaya } from '../../../services/midgard/mayaMigard/types'
 import { PoolDetails, PoolsDataMap, PricePool } from '../../../services/midgard/midgardTypes'
@@ -68,6 +67,7 @@ import { QRCodeModal } from '../../uielements/qrCodeModal/QRCodeModal'
 import * as Styled from './AssetsTableCollapsable.styles'
 import { useBreakpoint } from 'hooks/useBreakpoint'
 import { calculateMayaValueInUSD, MayaScanPriceRD } from 'hooks/useMayascanPrice'
+import * as poolsRoutes from 'routes/pools'
 
 const { Panel } = Collapse
 

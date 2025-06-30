@@ -23,7 +23,6 @@ import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
 import { hiddenString } from '../../helpers/stringHelper'
 import { filterWalletBalancesByAssets } from '../../helpers/walletHelper'
-import * as walletRoutes from '../../routes/wallet'
 import { DEFAULT_NETWORK } from '../../services/const'
 import { NodeInfo as NodeInfoMaya, Providers as MayaProviders } from '../../services/mayachain/types'
 import { NodeInfo as NodeInfoThor } from '../../services/thorchain/types'
@@ -49,6 +48,7 @@ import { useWalletContext } from 'contexts/WalletContext'
 import { useThorNodeInfos } from 'hooks/useNodeInfos'
 import { useMayaNodeInfos } from 'hooks/useNodeInfosMaya'
 import { useValidateAddress } from 'hooks/useValidateAddress'
+import * as walletRoutes from 'routes/wallet'
 
 enum LabelView {
   Connected = 'Connected',

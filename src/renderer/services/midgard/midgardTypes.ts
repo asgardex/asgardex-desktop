@@ -26,7 +26,6 @@ import { LiveData } from '../../helpers/rx/liveData'
 import { AssetWithAmount, DepositType } from '../../types/asgardex'
 import { Memo, PoolFeeLD } from '../chain/types'
 import { ApiError } from '../wallet/types'
-import { PricePoolAsset } from 'views/pools/Pools.types'
 
 // Common Types
 export type PoolAsset = string
@@ -196,7 +195,7 @@ export type PendingPoolsStateLD = LiveData<Error, PendingPoolsState>
 export type SelectedPoolAsset = O.Option<AnyAsset>
 export type SelectedPoolChain = O.Option<Chain>
 
-export type SelectedPricePoolAsset = O.Option<PricePoolAsset>
+export type SelectedPricePoolAsset = O.Option<AnyAsset>
 
 export type SelectedPricePool = PricePool
 
@@ -217,7 +216,7 @@ export type PoolData = {
 }
 // TODO (@asgdx-team) Move all PricePool* types into `src/renderer/services/midgard/types.ts`
 export type PricePool = {
-  readonly asset: PricePoolAsset
+  readonly asset: AnyAsset
   readonly poolData: PoolData
 }
 export type PricePools = NonEmptyArray<PricePool>
@@ -297,7 +296,7 @@ export type PoolsService = {
   poolsState$: LiveData<Error, PoolsState>
   pendingPoolsState$: LiveData<Error, PendingPoolsState>
   allPoolDetails$: LiveData<Error, PoolDetails>
-  setSelectedPricePoolAsset: (asset: PricePoolAsset) => void
+  setSelectedPricePoolAsset: (asset: AnyAsset) => void
   selectedPricePoolAsset$: Rx.Observable<SelectedPricePoolAsset>
   selectedPricePool$: Rx.Observable<SelectedPricePool>
   selectedPricePoolAssetSymbol$: Rx.Observable<O.Option<string>>

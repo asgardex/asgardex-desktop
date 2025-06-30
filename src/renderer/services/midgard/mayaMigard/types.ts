@@ -33,7 +33,6 @@ import {
   TxType,
   ValidatePoolLD
 } from '../midgardTypes'
-import { PricePoolAsset } from 'views/pools/Pools.types'
 
 export type PoolAsset = string
 
@@ -95,7 +94,7 @@ export type PoolsService = {
   poolsState$: LiveData<Error, PoolsState>
   pendingPoolsState$: LiveData<Error, PendingPoolsState>
   allPoolDetails$: LiveData<Error, PoolDetails>
-  setSelectedPricePoolAsset: (asset: PricePoolAsset) => void
+  setSelectedPricePoolAsset: (asset: AnyAsset) => void
   selectedPricePoolAsset$: Rx.Observable<SelectedPricePoolAsset>
   selectedPricePool$: Rx.Observable<SelectedPricePool>
   selectedPricePoolAssetSymbol$: Rx.Observable<O.Option<string>>

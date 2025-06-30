@@ -19,7 +19,6 @@ import { hasLedgerAddress } from '../../../helpers/addressHelper'
 import { isRuneNativeAsset } from '../../../helpers/assetHelper'
 import { sequenceTRD } from '../../../helpers/fpHelpers'
 import * as PoolHelpers from '../../../helpers/poolHelper'
-import * as poolsRoutes from '../../../routes/pools'
 import { PoolAddress, PoolAssetsRD } from '../../../services/midgard/midgardTypes'
 import { toPoolData } from '../../../services/midgard/thorMidgard/utils'
 import { DEFAULT_BALANCES_FILTER, INITIAL_BALANCES_STATE } from '../../../services/wallet/const'
@@ -41,6 +40,7 @@ import { useOpenExplorerTxUrl } from 'hooks/useOpenExplorerTxUrl'
 import { usePricePool } from 'hooks/usePricePool'
 import { usePricePoolMaya } from 'hooks/usePricePoolMaya'
 import { useProtocolLimit } from 'hooks/useProtocolLimit'
+import * as poolsRoutes from 'routes/pools'
 
 export const SymDepositView = (props: Props) => {
   const {
