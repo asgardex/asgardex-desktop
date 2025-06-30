@@ -426,7 +426,7 @@ export const Swap = ({
     return O.fold(
       () => '',
       (recipientAddress: string) => {
-        const toleranceBps = undefined
+        const toleranceBps = slipTolerance * 100
         const affiliateName = getAsgardexThorname(network)
         const affiliateBps = getAsgardexAffiliateFee(network)
 
@@ -441,7 +441,7 @@ export const Swap = ({
         })
       }
     )(oRecipientAddress)
-  }, [oRecipientAddress, targetAsset, streamingInterval, streamingQuantity, network])
+  }, [oRecipientAddress, slipTolerance, network, targetAsset, streamingInterval, streamingQuantity])
 
   const [swapFeesRD] = useObservableState<SwapFeesRD>(() => {
     return FP.pipe(
