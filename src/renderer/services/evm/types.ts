@@ -2,7 +2,7 @@ import * as RD from '@devexperts/remote-data-ts'
 import { FeeOption, Network, XChainClient } from '@xchainjs/xchain-client'
 import ClientKeystore, { TxParams as BaseEvmTxParams } from '@xchainjs/xchain-evm'
 import { Address, AnyAsset, Asset, BaseAmount, TokenAsset } from '@xchainjs/xchain-util'
-import { ethers } from 'ethers'
+import { InterfaceAbi } from 'ethers'
 import { option as O } from 'fp-ts'
 
 import { HDMode, WalletType } from '../../../shared/wallet/types'
@@ -58,7 +58,7 @@ export type IsApproveParams = { contractAddress: Address; spenderAddress: Addres
 
 export type PoolInTxFeeParams = {
   address: Address
-  abi: ethers.ContractInterface
+  abi: InterfaceAbi
   func: string
   params: Array<unknown>
 }

@@ -2,7 +2,7 @@ import { UPPER_FEE_BOUND as BASE_UPPER_FEE_BOUND } from '@xchainjs/xchain-base'
 import { FeeOption, Network, TxHash } from '@xchainjs/xchain-client'
 import { defaultEthParams, UPPER_FEE_BOUND } from '@xchainjs/xchain-ethereum'
 import { ClientLedger, LedgerSigner } from '@xchainjs/xchain-evm'
-import { ethers } from 'ethers'
+import { EtherscanProvider } from 'ethers'
 
 import { IPCLedgerApproveERC20TokenParams } from '../../../../shared/api/io'
 import { defaultArbParams } from '../../../../shared/arb/const'
@@ -12,7 +12,7 @@ import { defaultBscParams } from '../../../../shared/bsc/const'
 import { getDerivationPath, getDerivationPaths } from '../../../../shared/evm/ledger'
 import { ETH_MAINNET_ETHERS_PROVIDER, ETH_TESTNET_ETHERS_PROVIDER, createEthProviders } from '../ethereum/common'
 
-const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid')
+const TransportNodeHidSingleton = require('@ledgerhq/hw-transport-node-hid-singleton')
 
 const LOWER_FEE_BOUND = 1000000
 
@@ -33,14 +33,14 @@ export const approveLedgerERC20Token = async ({
       clientParams = {
         ...defaultEthParams,
         providers: {
-          mainnet: new ethers.providers.EtherscanProvider('homestead', apiKey),
+          mainnet: new EtherscanProvider('homestead', apiKey),
           testnet: ETH_TESTNET_ETHERS_PROVIDER,
           stagenet: ETH_MAINNET_ETHERS_PROVIDER
         },
         dataProviders: [createEthProviders(apiKey)],
         signer: new LedgerSigner({
           transport,
-          provider: new ethers.providers.EtherscanProvider('homestead', apiKey),
+          provider: new EtherscanProvider('homestead', apiKey),
           derivationPath: getDerivationPath(walletAccount, hdMode)
         }),
         rootDerivationPaths: getDerivationPaths(walletAccount, hdMode),

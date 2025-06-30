@@ -27,7 +27,7 @@ export default defineConfig(async ({ mode }) => {
       plugins: [
         typescript({ tsconfig: './tsconfig.main.json' }),
         externalizeDepsPlugin({
-          include: ['@ledgerhq/hw-transport-node-hid', '@ledgerhq/hw-transport', 'node-hid', 'usb']
+          include: ['@ledgerhq/hw-transport-node-hid-singleton', '@ledgerhq/hw-transport', 'node-hid', 'usb']
         })
       ],
       define: {
@@ -78,6 +78,7 @@ export default defineConfig(async ({ mode }) => {
           process: 'process/browser',
           stream: 'stream-browserify',
           crypto: 'crypto-browserify',
+          assert: 'assert',
           path: path.resolve(__dirname, 'empty.js'),
           url: path.resolve(__dirname, 'empty.js'),
           https: path.resolve(__dirname, 'empty.js'),
@@ -89,7 +90,7 @@ export default defineConfig(async ({ mode }) => {
         }
       },
       optimizeDeps: {
-        include: ['process', 'buffer', '@mayaprotocol/zcash-js'],
+        include: ['process', 'buffer', 'assert', '@mayaprotocol/zcash-js'],
         esbuildOptions: {
           inject: ['./src/shims/buffer-shim.js']
         }

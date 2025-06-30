@@ -3,7 +3,7 @@ import { Fees, FeeType, Protocol } from '@xchainjs/xchain-client'
 import { ETH_GAS_ASSET_DECIMAL } from '@xchainjs/xchain-ethereum'
 import { getFee, GasPrices, Client } from '@xchainjs/xchain-evm'
 import { Asset, baseAmount } from '@xchainjs/xchain-util'
-import { ethers } from 'ethers'
+import BigNumber from 'bignumber.js'
 import { function as FP, option as O } from 'fp-ts'
 import * as Rx from 'rxjs'
 import * as RxOp from 'rxjs/operators'
@@ -76,7 +76,7 @@ export const createFeesService = (client$: Client$): FeesService => {
                 client.estimateCall({ contractAddress: address, abi, funcName: func, funcParams: params }),
                 client.estimateGasPrices()
               ]).pipe(
-                RxOp.map<[ethers.BigNumber, GasPrices], Fees>(([gasLimit, gasPrices]) => ({
+                RxOp.map<[BigNumber, GasPrices], Fees>(([gasLimit, gasPrices]) => ({
                   type: FeeType.PerByte,
                   average: getFee({ gasPrice: gasPrices.average, gasLimit, decimals: ETH_GAS_ASSET_DECIMAL }),
                   fast: getFee({ gasPrice: gasPrices.fast, gasLimit, decimals: ETH_GAS_ASSET_DECIMAL }),
