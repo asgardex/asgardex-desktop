@@ -8,7 +8,6 @@ import { array as A, function as FP, option as O, ord as Ord } from 'fp-ts'
 
 import { PoolsWatchList } from '../../shared/api/io'
 import { ONE_CACAO_BASE_AMOUNT } from '../../shared/mock/amount'
-import { MayaScanPrice, MayaScanPriceRD } from '../hooks/useMayascanPrice'
 import { MimirHalt } from '../services/mayachain/types'
 import { PoolDetails } from '../services/midgard/mayaMigard/types'
 import { getPoolDetail, toPoolData } from '../services/midgard/mayaMigard/utils'
@@ -25,6 +24,7 @@ import { eqAsset, eqChain, eqString } from './fp/eq'
 import { ordBaseAmount } from './fp/ord'
 import { sequenceTOption, sequenceTOptionFromArray } from './fpHelpers'
 import { emptyString } from './stringHelper'
+import { MayaScanPrice, MayaScanPriceRD } from 'hooks/useMayascanPrice'
 
 export const sortByDepth = (a: { depthPrice: BaseAmount }, b: { depthPrice: BaseAmount }) =>
   ordBaseAmount.compare(a.depthPrice, b.depthPrice)

@@ -80,10 +80,6 @@ import {
   getWalletTypeLabel,
   hasLedgerInBalancesByAsset
 } from '../../helpers/walletHelper'
-import { useOpenExplorerTxUrl } from '../../hooks/useOpenExplorerTxUrl'
-import { usePricePool } from '../../hooks/usePricePool'
-import { usePricePoolMaya } from '../../hooks/usePricePoolMaya'
-import { useSubscriptionState } from '../../hooks/useSubscriptionState'
 import { INITIAL_SWAP_STATE } from '../../services/chain/const'
 import { getZeroSwapFees } from '../../services/chain/fees/swap'
 import { SwapTxParams, SwapFeesRD, SwapFees, FeeRD, SwapTxState, SendTxParams } from '../../services/chain/types'
@@ -117,6 +113,10 @@ import SwapExpiryProgressBar from './SwapExpiryProgressBar'
 import { SwapRoute } from './SwapRoute'
 import { SwapTxModal } from './SwapTxModal'
 import { useChainflipContext } from 'contexts/ChainflipContext'
+import { useOpenExplorerTxUrl } from 'hooks/useOpenExplorerTxUrl'
+import { usePricePool } from 'hooks/usePricePool'
+import { usePricePoolMaya } from 'hooks/usePricePoolMaya'
+import { useSubscriptionState } from 'hooks/useSubscriptionState'
 
 const ErrorLabel = ({ children, className }: { children: React.ReactNode; className?: string }): JSX.Element => (
   <div

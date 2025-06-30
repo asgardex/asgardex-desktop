@@ -50,7 +50,6 @@ import { isEvmChain } from '../../helpers/evmHelper'
 import { eqChain, eqString } from '../../helpers/fp/eq'
 import { emptyString } from '../../helpers/stringHelper'
 import { getWalletNamesFromKeystoreWallets, isEnabledLedger } from '../../helpers/walletHelper'
-import { useSubscriptionState } from '../../hooks/useSubscriptionState'
 import * as appRoutes from '../../routes/app'
 import * as walletRoutes from '../../routes/wallet'
 import { userAddresses$, addAddress, removeAddress } from '../../services/storage/userAddresses'
@@ -88,6 +87,7 @@ import { AssetIcon } from 'components/uielements/assets/assetIcon'
 import { QRCodeModal } from 'components/uielements/qrCodeModal/QRCodeModal'
 import { EditableWalletName } from 'components/uielements/wallet/EditableWalletName'
 import { PhraseCopyModal } from 'components/wallet/phrase/PhraseCopyModal'
+import { useSubscriptionState } from 'hooks/useSubscriptionState'
 
 const ActionButton = ({
   className,

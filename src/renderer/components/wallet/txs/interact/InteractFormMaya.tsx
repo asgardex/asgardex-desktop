@@ -40,10 +40,6 @@ import {
   getWhitelistMemo
 } from '../../../../helpers/memoHelper'
 import { getUSDValue } from '../../../../helpers/poolHelperMaya'
-import { useBondableAssets } from '../../../../hooks/useBondableAssets'
-import { useNetwork } from '../../../../hooks/useNetwork'
-import { usePricePoolMaya } from '../../../../hooks/usePricePoolMaya'
-import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { FeeRD } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../services/clients'
 import { INITIAL_INTERACT_STATE } from '../../../../services/mayachain/const'
@@ -73,6 +69,10 @@ import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
 import * as Styled from './Interact.styles'
 import { InteractType } from './Interact.types'
+import { useBondableAssets } from 'hooks/useBondableAssets'
+import { useNetwork } from 'hooks/useNetwork'
+import { usePricePoolMaya } from 'hooks/usePricePoolMaya'
+import { useSubscriptionState } from 'hooks/useSubscriptionState'
 
 type FormValues = {
   memo: string

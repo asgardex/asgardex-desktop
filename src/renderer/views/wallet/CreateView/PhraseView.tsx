@@ -3,11 +3,11 @@ import { useMemo, useState } from 'react'
 import { function as FP, option as O } from 'fp-ts'
 
 import { getWalletNamesFromKeystoreWallets } from '../../../helpers/walletHelper'
-import { useKeystoreWallets } from '../../../hooks/useKeystoreWallets'
 import { generateKeystoreId } from '../../../services/wallet/util'
 import { NewPhraseConfirm, NewPhraseGenerate } from 'components/wallet/phrase'
 import { PhraseInfo } from 'components/wallet/phrase/Phrase.types'
 import { useWalletContext } from 'contexts/WalletContext'
+import { useKeystoreWallets } from 'hooks/useKeystoreWallets'
 
 export const PhraseView = () => {
   const { keystoreService } = useWalletContext()

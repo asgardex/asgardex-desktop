@@ -54,7 +54,6 @@ import {
   isSolChain
 } from '../../../../helpers/chainHelper'
 import { getIntFromName, rainbowStop } from '../../../../helpers/colorHelpers'
-import { useRemoteImage } from '../../../../hooks/useRemoteImage'
 import {
   arbIcon,
   atomIcon,
@@ -81,6 +80,7 @@ import {
 } from '../../../icons'
 import * as Styled from './AssetIcon.styles'
 import { Size } from './AssetIcon.types'
+import { useRemoteImage } from 'hooks/useRemoteImage'
 
 export type ComponentProps = {
   size?: Size

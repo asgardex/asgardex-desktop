@@ -12,14 +12,14 @@ import { useIntl } from 'react-intl'
 import '../../uielements/input/overrides.css'
 
 import { defaultWalletName } from '../../../../shared/utils/wallet'
-import { KeystoreClientStates } from '../../../hooks/useKeystoreClientStates'
-import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import { MAX_WALLET_NAME_CHARS } from '../../../services/wallet/const'
 import { ImportingKeystoreStateRD, ImportKeystoreParams, LoadKeystoreLD } from '../../../services/wallet/types'
 import { InnerForm } from '../../shared/form/Form.styles'
 import { BorderButton, FlatButton } from '../../uielements/button'
 import { InputPassword, Input } from '../../uielements/input'
 import { Label } from '../../uielements/label'
+import { KeystoreClientStates } from 'hooks/useKeystoreClientStates'
+import { useSubscriptionState } from 'hooks/useSubscriptionState'
 
 export type Props = {
   walletId: number

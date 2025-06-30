@@ -13,8 +13,6 @@ import { WalletType } from '../../../shared/wallet/types'
 import { ZERO_BASE_AMOUNT } from '../../const'
 import { to1e8BaseAmount } from '../../helpers/assetHelper'
 import { getPoolPriceValue, RUNE_PRICE_POOL } from '../../helpers/poolHelper'
-import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
-import { useNetwork } from '../../hooks/useNetwork'
 import { TradeAccount } from '../../services/thorchain/types'
 import { INITIAL_BALANCES_STATE, DEFAULT_BALANCES_FILTER } from '../../services/wallet/const'
 import { ChainBalance, SelectedWalletAsset } from '../../services/wallet/types'
@@ -26,6 +24,8 @@ import { TradeAssetsTableCollapsable } from 'components/wallet/assets/TradeAsset
 import { useMidgardContext } from 'contexts/MidgardContext'
 import { useThorchainContext } from 'contexts/ThorchainContext'
 import { useWalletContext } from 'contexts/WalletContext'
+import { useThorchainMimirHalt } from 'hooks/useMimirHalt'
+import { useNetwork } from 'hooks/useNetwork'
 
 export const TradeAssetsView = (): JSX.Element => {
   const intl = useIntl()

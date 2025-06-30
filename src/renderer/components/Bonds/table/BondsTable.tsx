@@ -14,8 +14,6 @@ import { FormattedMessage, useIntl } from 'react-intl'
 
 import { truncateAddress } from '../../../helpers/addressHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
-import { useMimirConstants } from '../../../hooks/useMimirConstants'
-import { usePricePoolMaya } from '../../../hooks/usePricePoolMaya'
 import {
   NodeInfo as MayaNodeInfo,
   NodeInfos as MayaNodeInfos,
@@ -33,6 +31,8 @@ import * as Styled from './BondsTable.styles'
 import * as H from './helpers'
 import RemoveIcon from 'assets/svg/icon-remove.svg?react'
 import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
+import { useMimirConstants } from 'hooks/useMimirConstants'
+import { usePricePoolMaya } from 'hooks/usePricePoolMaya'
 
 type Props = {
   nodes: ThorNodeInfos | MayaNodeInfos

@@ -1,6 +1,6 @@
-import { useKeystoreState } from '../../hooks/useKeystoreState'
-import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
 import { UnlockForm } from 'components/wallet/unlock'
+import { useKeystoreState } from 'hooks/useKeystoreState'
+import { useKeystoreWallets } from 'hooks/useKeystoreWallets'
 
 export const UnlockView = (): JSX.Element => {
   const { state: keystore, unlock, remove, change$ } = useKeystoreState()

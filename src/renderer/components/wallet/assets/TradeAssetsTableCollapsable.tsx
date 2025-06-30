@@ -31,8 +31,6 @@ import { isRuneNativeAsset, isUSDAsset } from '../../../helpers/assetHelper'
 import { Action, getTradeMemo } from '../../../helpers/memoHelper'
 import { getDeepestPool, getPoolPriceValue } from '../../../helpers/poolHelper'
 import { hiddenString } from '../../../helpers/stringHelper'
-import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
-import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import * as poolsRoutes from '../../../routes/pools'
 import { INITIAL_WITHDRAW_STATE } from '../../../services/chain/const'
 import { TradeWithdrawParams, WithdrawState } from '../../../services/chain/types'
@@ -52,6 +50,8 @@ import { IconButton } from '../../uielements/button/IconButton'
 import * as Styled from './AssetsTableCollapsable.styles'
 import { useChainContext } from 'contexts/ChainContext'
 import { useWalletContext } from 'contexts/WalletContext'
+import { useOpenExplorerTxUrl } from 'hooks/useOpenExplorerTxUrl'
+import { useSubscriptionState } from 'hooks/useSubscriptionState'
 
 const { Panel } = StyledCollapse
 

@@ -8,7 +8,6 @@ import { AssetTCY } from '@xchainjs/xchain-thorchain'
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
-import { useNetwork } from '../../../hooks/useNetwork'
 import { TcyClaimModal } from './TcyClaimModal'
 import { TcyInfo, TcyOperation } from './types'
 import { WalletPasswordConfirmationModal } from 'components/modal/confirmation'
@@ -19,6 +18,7 @@ import { InputBigNumber } from 'components/uielements/input'
 import { Slider } from 'components/uielements/slider'
 import { AssetsNav } from 'components/wallet/assets'
 import { useWalletContext } from 'contexts/WalletContext'
+import { useNetwork } from 'hooks/useNetwork'
 
 const tcyTabs = [TcyOperation.Claim, TcyOperation.Stake, TcyOperation.Unstake]
 

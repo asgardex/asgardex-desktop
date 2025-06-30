@@ -7,11 +7,11 @@ import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { isEvmChain } from '../../helpers/evmHelper'
-import { useNetwork } from '../../hooks/useNetwork'
 import { SwapTxState } from '../../services/chain/types'
 import { GetExplorerTxUrl, OpenExplorerTxUrl } from '../../services/clients'
 import { TxModal } from '../modal/tx'
 import { ViewTxButton } from '../uielements/button'
+import { useNetwork } from 'hooks/useNetwork'
 
 export type SwapTxModalProps = {
   swapState: SwapTxState

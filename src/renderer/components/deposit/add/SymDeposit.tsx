@@ -49,7 +49,6 @@ import { getUSDValue } from '../../../helpers/poolHelperMaya'
 import { LiveData } from '../../../helpers/rx/liveData'
 import { emptyString, hiddenString, loadingString, noDataString } from '../../../helpers/stringHelper'
 import * as WalletHelper from '../../../helpers/walletHelper'
-import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import { INITIAL_DEPOSIT_STATE, INITIAL_SYM_DEPOSIT_STATE } from '../../../services/chain/const'
 import {
   SymDepositState,
@@ -113,6 +112,7 @@ import { AssetMissmatchWarning } from './AssetMissmatchWarning'
 import { AsymAssetsWarning } from './AsymAssetsWarning'
 import * as Helper from './Deposit.helper'
 import { PendingAssetsWarning } from './PendingAssetsWarning'
+import { useSubscriptionState } from 'hooks/useSubscriptionState'
 
 export type Props = {
   asset: AssetWithDecimal

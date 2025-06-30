@@ -54,10 +54,6 @@ import {
   isXrpChain
 } from '../../helpers/chainHelper'
 import { sequenceTOptionFromArray } from '../../helpers/fpHelpers'
-import { useKeystoreState } from '../../hooks/useKeystoreState'
-import { useKeystoreWallets } from '../../hooks/useKeystoreWallets'
-import { useLedger } from '../../hooks/useLedger'
-import { useNetwork } from '../../hooks/useNetwork'
 import { LedgerAddressLD, KeystoreUnlocked, VerifiedLedgerAddressLD } from '../../services/wallet/types'
 import { walletAccount$ } from './WalletSettingsView.helper'
 import { WalletSettings } from 'components/settings'
@@ -82,6 +78,10 @@ import { useWalletContext } from 'contexts/WalletContext'
 import { useXrdContext } from 'contexts/XrdContext'
 import { useXrpContext } from 'contexts/XrpContext'
 import { useZcashContext } from 'contexts/ZcashContext'
+import { useKeystoreState } from 'hooks/useKeystoreState'
+import { useKeystoreWallets } from 'hooks/useKeystoreWallets'
+import { useLedger } from 'hooks/useLedger'
+import { useNetwork } from 'hooks/useNetwork'
 
 type Props = {
   keystoreUnlocked: KeystoreUnlocked

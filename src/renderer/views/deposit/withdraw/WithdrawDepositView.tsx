@@ -20,7 +20,6 @@ import { THORCHAIN_DECIMAL } from '../../../helpers/assetHelper'
 import { getAssetPoolPrice } from '../../../helpers/poolHelper'
 import * as ShareHelpers from '../../../helpers/poolShareHelper'
 import { liveData } from '../../../helpers/rx/liveData'
-import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
 import { DEFAULT_NETWORK } from '../../../services/const'
 import { PoolShare, PoolsDataMap } from '../../../services/midgard/midgardTypes'
 import { DEFAULT_BALANCES_FILTER } from '../../../services/wallet/const'
@@ -32,6 +31,7 @@ import { useChainContext } from 'contexts/ChainContext'
 import { useMidgardContext } from 'contexts/MidgardContext'
 import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
 import { useWalletContext } from 'contexts/WalletContext'
+import { useOpenExplorerTxUrl } from 'hooks/useOpenExplorerTxUrl'
 
 export const WithdrawDepositView = (props: Props): JSX.Element => {
   const {

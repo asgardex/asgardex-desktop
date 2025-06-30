@@ -5,7 +5,6 @@ import { Network } from '@xchainjs/xchain-client'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
-import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { OpenExplorerTxUrl } from '../../services/clients'
 import { Action, ActionsPage, ActionsPageRD } from '../../services/midgard/thorMidgard/types'
 import { ErrorView } from '../shared/error'
@@ -15,6 +14,7 @@ import { TxDetail } from '../uielements/txDetail'
 import { DEFAULT_PAGE_SIZE } from './PoolActionsHistory.const'
 import * as H from './PoolActionsHistory.helper'
 import * as Styled from './PoolActionsHistoryList.styles'
+import { useBreakpoint } from 'hooks/useBreakpoint'
 
 type Props = {
   network: Network

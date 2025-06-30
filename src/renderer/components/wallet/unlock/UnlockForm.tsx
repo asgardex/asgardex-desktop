@@ -10,7 +10,6 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { KeystoreId } from '../../../../shared/api/types'
 import { emptyString } from '../../../helpers/stringHelper'
 import { getUrlSearchParam } from '../../../helpers/url.helper'
-import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import * as appRoutes from '../../../routes/app'
 import { ReferrerState } from '../../../routes/types'
 import * as walletRoutes from '../../../routes/wallet'
@@ -26,6 +25,7 @@ import { RemoveWalletConfirmationModal } from '../../modal/confirmation/RemoveWa
 import { BackLinkButton, BorderButton, FlatButton } from '../../uielements/button'
 import { InputPasswordTW } from '../../uielements/input'
 import { WalletSelector } from '../../uielements/wallet'
+import { useSubscriptionState } from 'hooks/useSubscriptionState'
 
 type FormData = {
   password: string

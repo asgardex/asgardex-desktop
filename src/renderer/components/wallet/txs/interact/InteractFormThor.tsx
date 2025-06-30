@@ -41,9 +41,6 @@ import {
 } from '../../../../helpers/memoHelper'
 import { getPoolPriceValue } from '../../../../helpers/poolHelper'
 import { emptyString } from '../../../../helpers/stringHelper'
-import { useMimirConstants } from '../../../../hooks/useMimirConstants'
-import { usePricePool } from '../../../../hooks/usePricePool'
-import { useSubscriptionState } from '../../../../hooks/useSubscriptionState'
 import { FeeRD } from '../../../../services/chain/types'
 import { AddressValidation, GetExplorerTxUrl, OpenExplorerTxUrl } from '../../../../services/clients'
 import { INITIAL_INTERACT_STATE } from '../../../../services/thorchain/const'
@@ -74,6 +71,9 @@ import { validateTxAmountInput } from '../TxForm.util'
 import * as H from './Interact.helpers'
 import * as Styled from './Interact.styles'
 import { InteractType } from './Interact.types'
+import { useMimirConstants } from 'hooks/useMimirConstants'
+import { usePricePool } from 'hooks/usePricePool'
+import { useSubscriptionState } from 'hooks/useSubscriptionState'
 
 type FormValues = {
   memo: string

@@ -10,7 +10,6 @@ import { ColumnsType, ColumnType } from 'antd/lib/table'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl, FormattedTime } from 'react-intl'
 
-import { useBreakpoint } from '../../../../hooks/useBreakpoint'
 import { TxsPageRD } from '../../../../services/clients'
 import { MAX_ITEMS_PER_PAGE } from '../../../../services/const'
 import { RESERVE_MODULE_ADDRESS } from '../../../../services/thorchain/const'
@@ -22,6 +21,7 @@ import { ReloadButton } from '../../../uielements/button'
 import { Label } from '../../../uielements/label'
 import { Pagination } from '../../../uielements/pagination'
 import * as Styled from './TxsTable.styles'
+import { useBreakpoint } from 'hooks/useBreakpoint'
 
 type Props = {
   txsPageRD: TxsPageRD

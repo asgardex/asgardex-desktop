@@ -11,10 +11,10 @@ import { AssetMaya, AssetRuneNative } from '../../../../../shared/utils/asset'
 import { WalletType } from '../../../../../shared/wallet/types'
 import { AssetUSDC } from '../../../../const'
 import { mockWalletBalance } from '../../../../helpers/test/testWalletHelper'
-import { MayaScanPrice, MayaScanPriceRD } from '../../../../hooks/useMayascanPrice'
 import { FeeRD, SendTxStateHandler } from '../../../../services/chain/types'
 import { ApiError, ErrorId, WalletBalance } from '../../../../services/wallet/types'
 import { SendFormCOSMOS as Component } from './SendFormCOSMOS'
+import { MayaScanPrice, MayaScanPriceRD } from 'hooks/useMayascanPrice'
 
 type Args = {
   txRDStatus: RDStatus

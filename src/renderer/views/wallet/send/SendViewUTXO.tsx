@@ -8,10 +8,6 @@ import { useObservableState } from 'observable-hooks'
 
 import { TrustedAddresses } from '../../../../shared/api/types'
 import { getWalletBalanceByAddress } from '../../../helpers/walletHelper'
-import { useObserveMayaScanPrice } from '../../../hooks/useMayascanPrice'
-import { useNetwork } from '../../../hooks/useNetwork'
-import { useOpenExplorerTxUrl } from '../../../hooks/useOpenExplorerTxUrl'
-import { useValidateAddress } from '../../../hooks/useValidateAddress'
 import { WalletBalances } from '../../../services/clients'
 import { PoolDetails as PoolDetailsMaya } from '../../../services/midgard/mayaMigard/types'
 import { PoolAddress, PoolDetails } from '../../../services/midgard/midgardTypes'
@@ -21,6 +17,10 @@ import { SelectedWalletAsset, WalletBalance } from '../../../services/wallet/typ
 import { SendFormUTXO } from 'components/wallet/txs/send'
 import { useChainContext } from 'contexts/ChainContext'
 import { useWalletContext } from 'contexts/WalletContext'
+import { useObserveMayaScanPrice } from 'hooks/useMayascanPrice'
+import { useNetwork } from 'hooks/useNetwork'
+import { useOpenExplorerTxUrl } from 'hooks/useOpenExplorerTxUrl'
+import { useValidateAddress } from 'hooks/useValidateAddress'
 
 type Props = {
   asset: SelectedWalletAsset

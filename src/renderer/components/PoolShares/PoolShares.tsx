@@ -10,7 +10,6 @@ import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import * as PoolHelpers from '../../helpers/poolHelper'
-import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { MimirHalt } from '../../services/thorchain/types'
 import { useApp } from '../../store/app/hooks'
 import { AssetLabel } from '../uielements/assets/assetLabel'
@@ -18,6 +17,7 @@ import { Tooltip } from '../uielements/common/Common.styles'
 import { Label } from '../uielements/label'
 import * as Styled from './PoolShares.styles'
 import { PoolShareTableRowData, PoolShareTableData } from './PoolShares.types'
+import { useBreakpoint } from 'hooks/useBreakpoint'
 
 export type Props = {
   data: PoolShareTableData

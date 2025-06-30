@@ -5,10 +5,10 @@ import { useObservableState } from 'observable-hooks'
 import { ExternalUrl } from '../../../shared/const'
 import { DEFAULT_LOCALE } from '../../../shared/i18n/const'
 import { envOrDefault } from '../../../shared/utils/env'
-import { useAppUpdate } from '../../hooks/useAppUpdate'
-import { useNetwork } from '../../hooks/useNetwork'
 import { AppGeneralSettings } from 'components/settings/AppGeneralSettings'
 import { useI18nContext } from 'contexts/I18nContext'
+import { useAppUpdate } from 'hooks/useAppUpdate'
+import { useNetwork } from 'hooks/useNetwork'
 
 export const AppGeneralSettingsView = (): JSX.Element => {
   const { network, changeNetwork } = useNetwork()

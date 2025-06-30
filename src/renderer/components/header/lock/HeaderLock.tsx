@@ -10,7 +10,6 @@ import { useNavigate } from 'react-router-dom'
 
 import { KeystoreId } from '../../../../shared/api/types'
 import { truncateMiddle } from '../../../helpers/stringHelper'
-import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import * as walletRoutes from '../../../routes/wallet'
 import {
   ChangeKeystoreWalletHandler,
@@ -22,6 +21,7 @@ import * as WU from '../../../services/wallet/util'
 import { LockIcon, UnlockIcon } from '../../icons'
 import { BaseButton } from '../../uielements/button'
 import { Tooltip } from '../../uielements/common/Common.styles'
+import { useSubscriptionState } from 'hooks/useSubscriptionState'
 
 type WalletData = { id: KeystoreId; name: string }
 

@@ -7,7 +7,6 @@ import { useIntl } from 'react-intl'
 
 import { WalletAddress, WalletType } from '../../../shared/wallet/types'
 import { eqAddress, eqOAddress } from '../../helpers/fp/eq'
-import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { PoolDetailRD as PoolDetailMayaRD } from '../../services/midgard/mayaMigard/types'
 import { PoolDetailRD, PoolShareRD, PoolSharesRD } from '../../services/midgard/midgardTypes'
 import { getSharesByAssetAndType } from '../../services/midgard/thorMidgard/utils'
@@ -20,6 +19,7 @@ import { ShareViewProps } from '../../views/deposit/share/ShareView'
 import { Props as WidthdrawContentProps } from '../../views/deposit/withdraw/WithdrawDepositView.types'
 import { AddWallet } from '../wallet/add'
 import * as Styled from './Deposit.styles'
+import { useBreakpoint } from 'hooks/useBreakpoint'
 
 type TabKey = 'deposit-sym' | 'deposit-saver' | 'withdraw-sym' | 'withdraw-saver-asset'
 

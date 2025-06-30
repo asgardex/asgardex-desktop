@@ -3,8 +3,8 @@ import { useMemo } from 'react'
 import ReactECharts from 'echarts-for-react'
 
 import { hiddenString } from '../../../helpers/stringHelper'
-import { useTheme } from '../../../hooks/useTheme'
 import { ChartColors } from './utils'
+import { useTheme } from 'hooks/useTheme'
 
 type ChartProps = {
   chartData: {

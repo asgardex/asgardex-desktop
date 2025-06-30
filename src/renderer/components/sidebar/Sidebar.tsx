@@ -1,5 +1,5 @@
-import { useNetwork } from '../../hooks/useNetwork'
 import { SidebarComponent } from './SidebarComponent'
+import { useNetwork } from 'hooks/useNetwork'
 
 type Props = {
   commitHash?: string

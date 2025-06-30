@@ -1,9 +1,9 @@
 import { ArrowDownTrayIcon } from '@heroicons/react/24/outline'
 import { useIntl } from 'react-intl'
 
-import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { Button } from '../uielements/button'
 import { ExternalLinkIcon } from '../uielements/common/Common.styles'
+import { useBreakpoint } from 'hooks/useBreakpoint'
 
 export type AppUpdateModalProps =
   | {

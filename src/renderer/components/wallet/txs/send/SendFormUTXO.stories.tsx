@@ -12,11 +12,11 @@ import { WalletType } from '../../../../../shared/wallet/types'
 import { AssetUSDC } from '../../../../const'
 import { THORCHAIN_DECIMAL } from '../../../../helpers/assetHelper'
 import { mockWalletBalance } from '../../../../helpers/test/testWalletHelper'
-import { MayaScanPrice, MayaScanPriceRD } from '../../../../hooks/useMayascanPrice'
 import { SendTxStateHandler } from '../../../../services/chain/types'
 import { FeesWithRatesRD } from '../../../../services/utxo/types'
 import { ApiError, ErrorId, WalletBalance } from '../../../../services/wallet/types'
 import { SendFormUTXO as Component } from './SendFormUTXO'
+import { MayaScanPrice, MayaScanPriceRD } from 'hooks/useMayascanPrice'
 
 type Args = {
   txRDStatus: RDStatus

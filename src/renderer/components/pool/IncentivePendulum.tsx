@@ -9,8 +9,8 @@ import clsx from 'clsx'
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
-import { IncentivePendulumRD } from '../../hooks/useIncentivePendulum'
 import { Tooltip } from '../uielements/common/Common.styles'
+import { IncentivePendulumRD } from 'hooks/useIncentivePendulum'
 
 export type Props = {
   incentivePendulum: IncentivePendulumRD

@@ -68,7 +68,6 @@ import {
   hasLedgerInBalancesByAsset,
   transformTradeAccountToWalletBalance
 } from '../../helpers/walletHelper'
-import { useSubscriptionState } from '../../hooks/useSubscriptionState'
 import { ChangeSlipToleranceHandler } from '../../services/app/types'
 import { INITIAL_SWAP_STATE } from '../../services/chain/const'
 import {
@@ -109,6 +108,7 @@ import { EditableAddress } from './EditableAddress'
 import { SelectableSlipTolerance } from './SelectableSlipTolerance'
 import { SwapAsset } from './Swap.types'
 import * as Utils from './Swap.utils'
+import { useSubscriptionState } from 'hooks/useSubscriptionState'
 
 const ErrorLabel: React.FC<{
   children: React.ReactNode

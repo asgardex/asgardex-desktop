@@ -6,7 +6,6 @@ import { ColumnsType, ColumnType } from 'antd/lib/table'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
-import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { OpenExplorerTxUrl } from '../../services/clients'
 import { ActionsPage, Action, ActionsPageRD } from '../../services/midgard/thorMidgard/types'
 import { ApiError } from '../../services/wallet/types'
@@ -18,6 +17,7 @@ import { TxDetail } from '../uielements/txDetail'
 import { DEFAULT_PAGE_SIZE } from './PoolActionsHistory.const'
 import * as H from './PoolActionsHistory.helper'
 import * as Styled from './PoolActionsHistoryTable.styles'
+import { useBreakpoint } from 'hooks/useBreakpoint'
 
 export type Props = {
   network: Network

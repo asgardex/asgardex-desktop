@@ -14,7 +14,6 @@ import { useIntl } from 'react-intl'
 
 import { getChainAsset } from '../../helpers/chainHelper'
 import { emptyString } from '../../helpers/stringHelper'
-import { useNetwork } from '../../hooks/useNetwork'
 import { EVMChains } from '../../services/evm/const'
 import { addAsset, removeAsset, getUserAssetsByChain$ } from '../../services/storage/userChainTokens'
 import { ARB_TOKEN_WHITELIST } from '../../types/generated/mayachain/arberc20whitelist'
@@ -28,6 +27,7 @@ import { SwitchButton } from '../uielements/button/SwitchButton'
 import { InputSearch } from '../uielements/input'
 import { Label } from '../uielements/label'
 import { HeadlessModal } from '../uielements/modal/Modal'
+import { useNetwork } from 'hooks/useNetwork'
 
 type Props = {
   open: boolean

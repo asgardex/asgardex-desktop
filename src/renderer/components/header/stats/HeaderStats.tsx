@@ -9,11 +9,11 @@ import { function as FP } from 'fp-ts'
 
 import { abbreviateNumber } from '../../../helpers/numberHelper'
 import { loadingString } from '../../../helpers/stringHelper'
-import { useBreakpoint } from '../../../hooks/useBreakpoint'
-import { useNetwork } from '../../../hooks/useNetwork'
 import { PriceRD } from '../../../services/midgard/midgardTypes'
 import { AssetIcon } from '../../uielements/assets/assetIcon'
 import * as Styled from './HeaderStats.styles'
+import { useBreakpoint } from 'hooks/useBreakpoint'
+import { useNetwork } from 'hooks/useNetwork'
 
 export type Props = {
   runePrice: PriceRD

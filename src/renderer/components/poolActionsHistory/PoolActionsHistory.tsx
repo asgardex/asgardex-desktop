@@ -4,11 +4,11 @@ import * as RD from '@devexperts/remote-data-ts'
 import { Network } from '@xchainjs/xchain-client'
 import { function as FP, option as O } from 'fp-ts'
 
-import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { OpenExplorerTxUrl } from '../../services/clients'
 import { ActionsPage, ActionsPageRD } from '../../services/midgard/thorMidgard/types'
 import { PoolActionsHistoryList } from './PoolActionsHistoryList'
 import { PoolActionsHistoryTable, Props as PoolActionsHistoryTableProps } from './PoolActionsHistoryTable'
+import { useBreakpoint } from 'hooks/useBreakpoint'
 
 type Props = {
   network: Network

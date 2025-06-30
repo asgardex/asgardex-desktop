@@ -27,7 +27,6 @@ import { getTwoSigfigAssetAmount, to1e8BaseAmount } from '../../../helpers/asset
 import { eqAsset } from '../../../helpers/fp/eq'
 import { getWithdrawMemo } from '../../../helpers/memoHelper'
 import * as PoolHelpers from '../../../helpers/poolHelper'
-import { useSubscriptionState } from '../../../hooks/useSubscriptionState'
 import { INITIAL_WITHDRAW_STATE } from '../../../services/chain/const'
 import { getZeroWithdrawFees } from '../../../services/chain/fees'
 import {
@@ -53,6 +52,7 @@ import { Fees, UIFeesRD } from '../../uielements/fees'
 import { CopyLabel, Label } from '../../uielements/label'
 import * as Helper from './Withdraw.helper'
 import * as Styled from './Withdraw.styles'
+import { useSubscriptionState } from 'hooks/useSubscriptionState'
 
 export type Props = {
   asset: AssetWithDecimal

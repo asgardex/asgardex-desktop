@@ -6,8 +6,8 @@ import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
 import { AssetRuneNative } from '../../../shared/utils/asset'
-import { LimitRD } from '../../hooks/useProtocolLimit'
 import { Alert } from '../uielements/alert'
+import { LimitRD } from 'hooks/useProtocolLimit'
 
 type Props = {
   limit: LimitRD

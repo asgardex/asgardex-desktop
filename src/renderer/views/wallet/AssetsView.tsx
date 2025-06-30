@@ -13,10 +13,6 @@ import { DEFAULT_ENABLED_CHAINS, EnabledChain } from '../../../shared/utils/chai
 import { CHAIN_WEIGHTS_THOR, DEFAULT_WALLET_TYPE } from '../../const'
 import { RUNE_PRICE_POOL } from '../../helpers/poolHelper'
 import { MAYA_PRICE_POOL } from '../../helpers/poolHelperMaya'
-import { useObserveMayaScanPrice } from '../../hooks/useMayascanPrice'
-import { useThorchainMimirHalt } from '../../hooks/useMimirHalt'
-import { useNetwork } from '../../hooks/useNetwork'
-import { useTotalWalletBalance } from '../../hooks/useWalletBalance'
 import * as walletRoutes from '../../routes/wallet'
 import { userChains$ } from '../../services/storage/userChains'
 import { reloadBalancesByChain } from '../../services/wallet'
@@ -34,6 +30,10 @@ import { InteractType } from 'components/wallet/txs/interact/Interact.types'
 import { useMidgardContext } from 'contexts/MidgardContext'
 import { useMidgardMayaContext } from 'contexts/MidgardMayaContext'
 import { useWalletContext } from 'contexts/WalletContext'
+import { useObserveMayaScanPrice } from 'hooks/useMayascanPrice'
+import { useThorchainMimirHalt } from 'hooks/useMimirHalt'
+import { useNetwork } from 'hooks/useNetwork'
+import { useTotalWalletBalance } from 'hooks/useWalletBalance'
 
 export const AssetsView = (): JSX.Element => {
   const navigate = useNavigate()

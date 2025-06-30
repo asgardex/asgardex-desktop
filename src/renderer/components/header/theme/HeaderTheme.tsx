@@ -3,9 +3,9 @@ import { useCallback, useMemo } from 'react'
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
-import { useTheme } from '../../../hooks/useTheme'
 import { Label } from '../../uielements/label'
 import * as Styled from './HeaderTheme.styles'
+import { useTheme } from 'hooks/useTheme'
 
 export type Props = {
   onPress?: FP.Lazy<void>

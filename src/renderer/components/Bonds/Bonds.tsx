@@ -11,8 +11,6 @@ import clsx from 'clsx'
 import { function as FP, option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
-import { ExtendedNodeInfoThor } from '../../hooks/useNodeInfos'
-import { ExtendedNodeInfoMaya } from '../../hooks/useNodeInfosMaya'
 import { AddressValidation } from '../../services/clients'
 import { NodeInfos as NodeInfosMaya } from '../../services/mayachain/types'
 import { NodeInfos } from '../../services/thorchain/types'
@@ -22,6 +20,8 @@ import { ErrorView } from '../shared/error'
 import { InnerForm } from '../shared/form'
 import { Button, FilterButton, ReloadButton } from '../uielements/button'
 import { BondsTable } from './table'
+import { ExtendedNodeInfoThor } from 'hooks/useNodeInfos'
+import { ExtendedNodeInfoMaya } from 'hooks/useNodeInfosMaya'
 
 type Props = {
   nodesThor: RD.RemoteData<Error, ExtendedNodeInfoThor[]>

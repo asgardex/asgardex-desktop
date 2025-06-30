@@ -3,9 +3,9 @@ import { useCallback, useState, useEffect } from 'react'
 import { Progress } from 'antd'
 import clsx from 'clsx'
 
-import useInterval, { INACTIVE_INTERVAL } from '../../../hooks/useInterval'
 import { RefundIcon } from '../../icons/timerIcons'
 import * as Styled from './TxTimer.styles'
+import useInterval, { INACTIVE_INTERVAL } from 'hooks/useInterval'
 
 export type Props = {
   className?: string
