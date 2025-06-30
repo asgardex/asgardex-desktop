@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 
 import clsx from 'clsx'
-import ChainflipIcon from '../../assets/png/asset-flip.png'
-import MayaIcon from '../../assets/png/asset-maya.png'
-import ThorchainIcon from '../../assets/svg/asset-rune.svg?url'
+import ChainflipIcon from 'assets/png/asset-flip.png'
+import MayaIcon from 'assets/png/asset-maya.png'
+import ThorchainIcon from 'assets/svg/asset-rune.svg?url'
 
 type Props = {
   className?: string

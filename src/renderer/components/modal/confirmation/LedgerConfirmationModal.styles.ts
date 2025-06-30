@@ -2,10 +2,10 @@ import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import styled from 'styled-components'
 import { palette } from 'styled-theme'
 
-import LedgerConnectUI from '../../../assets/svg/ledger-device-connect.svg?react'
 import { media } from '../../../helpers/styleHelper'
 import { AssetIcon as AssetIconUI } from '../../uielements/assets/assetIcon'
 import { CopyLabel as CopyLabelUI } from '../../uielements/label'
+import LedgerConnectUI from 'assets/svg/ledger-device-connect.svg?react'
 
 export const LedgerConnect = styled(LedgerConnectUI)`
   transform: scale(0.65, 0.65);

@@ -10,10 +10,6 @@ import { useIntl } from 'react-intl'
 import { useMatch, Link, useNavigate, useLocation } from 'react-router-dom'
 import { palette, size } from 'styled-theme'
 
-import CloseIcon from '../../assets/svg/icon-close.svg?react'
-import MenuIcon from '../../assets/svg/icon-menu.svg?react'
-import SwapIcon from '../../assets/svg/icon-swap.svg?react'
-import WalletIcon from '../../assets/svg/icon-wallet.svg?react'
 import { useThemeContext } from '../../contexts/ThemeContext'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
 import * as appRoutes from '../../routes/app'
@@ -42,6 +38,10 @@ import { HeaderPriceSelector } from './price'
 import { HeaderSettings } from './settings'
 import { HeaderStats } from './stats/HeaderStats'
 import { HeaderTheme } from './theme'
+import CloseIcon from 'assets/svg/icon-close.svg?react'
+import MenuIcon from 'assets/svg/icon-menu.svg?react'
+import SwapIcon from 'assets/svg/icon-swap.svg?react'
+import WalletIcon from 'assets/svg/icon-wallet.svg?react'
 
 enum TabKey {
   POOLS = 'POOLS',

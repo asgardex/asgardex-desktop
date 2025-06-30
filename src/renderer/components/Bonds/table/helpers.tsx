@@ -8,7 +8,6 @@ import { Col } from 'antd'
 import { option as O } from 'fp-ts'
 import { useIntl } from 'react-intl'
 import { AssetCacao, AssetRuneNative } from '../../../../shared/utils/asset'
-import RemoveIcon from '../../../assets/svg/icon-remove.svg?react'
 import { getUSDValue } from '../../../helpers/poolHelperMaya'
 import {
   LiquidityProviderForPool,
@@ -21,6 +20,7 @@ import { PricePool } from '../../../services/midgard/midgardTypes'
 import { NodeInfo, NodeStatusEnum } from '../../../services/thorchain/types'
 import { AddressEllipsis } from '../../uielements/addressEllipsis'
 import { Label } from '../../uielements/label'
+import RemoveIcon from 'assets/svg/icon-remove.svg?react'
 
 export const NodeAddress = ({ address, network }: { address: Address; network: Network }) => (
   <Col xs={18} lg={20} xl={24}>

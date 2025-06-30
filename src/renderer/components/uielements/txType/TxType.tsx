@@ -2,16 +2,16 @@ import { PlusCircleIcon, MinusCircleIcon, BeakerIcon, XMarkIcon } from '@heroico
 import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 
-import DonateIcon from '../../../assets/svg/tx-donate.svg?react'
-import RefundIcon from '../../../assets/svg/tx-refund.svg?react'
-import RunePoolIcon from '../../../assets/svg/tx-runePool.svg?react'
-import SendIcon from '../../../assets/svg/tx-send.svg?react'
-import DepositIcon from '../../../assets/svg/tx-stake.svg?react'
-import SwapIcon from '../../../assets/svg/tx-swap.svg?react'
-import WithdrawIcon from '../../../assets/svg/tx-withdraw.svg?react'
 import { getTxTypeI18n } from '../../../helpers/actionsHelper'
 import { TxType as MidgardTxType } from '../../../services/midgard/midgardTypes'
 import { Label } from '../label'
+import DonateIcon from 'assets/svg/tx-donate.svg?react'
+import RefundIcon from 'assets/svg/tx-refund.svg?react'
+import RunePoolIcon from 'assets/svg/tx-runePool.svg?react'
+import SendIcon from 'assets/svg/tx-send.svg?react'
+import DepositIcon from 'assets/svg/tx-stake.svg?react'
+import SwapIcon from 'assets/svg/tx-swap.svg?react'
+import WithdrawIcon from 'assets/svg/tx-withdraw.svg?react'
 
 type Props = {
   type: MidgardTxType

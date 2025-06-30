@@ -7,11 +7,11 @@ import { function as FP } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { useIntl } from 'react-intl'
 
-import WalletIcon from '../../../assets/svg/icon-wallet.svg?react'
 import { ValidatePasswordLD } from '../../../services/wallet/types'
 import { BaseButton } from '../../uielements/button'
 import { InputPassword } from '../../uielements/input'
 import { Label } from '../../uielements/label'
+import WalletIcon from 'assets/svg/icon-wallet.svg?react'
 
 type PasswordModalProps = {
   visible: boolean

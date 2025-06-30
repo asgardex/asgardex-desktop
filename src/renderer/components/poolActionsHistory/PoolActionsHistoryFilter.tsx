@@ -5,12 +5,12 @@ import clsx from 'clsx'
 import { array as A, function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
-import AllIcon from '../../assets/svg/filter-all.svg?react'
 import { getTxTypeI18n } from '../../helpers/actionsHelper'
 import { Dropdown } from '../uielements/dropdown'
 import { Label } from '../uielements/label'
 import { TxType } from '../uielements/txType'
 import { Filter } from './types'
+import AllIcon from 'assets/svg/filter-all.svg?react'
 
 type Props = {
   className?: string

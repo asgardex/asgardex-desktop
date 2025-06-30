@@ -5,10 +5,10 @@ import clsx from 'clsx'
 import { useIntl } from 'react-intl'
 import { useNavigate } from 'react-router-dom'
 
-import FolderKeyIcon from '../../../assets/svg/folder-key.svg?react'
-import AsgardexLogo from '../../../assets/svg/logo-asgardex.svg?react'
-import SproutIcon from '../../../assets/svg/sprout.svg?react'
 import * as walletRoutes from '../../../routes/wallet'
+import FolderKeyIcon from 'assets/svg/folder-key.svg?react'
+import AsgardexLogo from 'assets/svg/logo-asgardex.svg?react'
+import SproutIcon from 'assets/svg/sprout.svg?react'
 import { HeaderTheme } from 'components/header/theme'
 import { LocaleDropdown } from 'components/LayoutlessWrapper/LocaleDropdown'
 

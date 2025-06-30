@@ -12,7 +12,6 @@ import { function as FP, option as O } from 'fp-ts'
 import { useObservableState } from 'observable-hooks'
 import { FormattedMessage, useIntl } from 'react-intl'
 
-import RemoveIcon from '../../../assets/svg/icon-remove.svg?react'
 import { useMidgardMayaContext } from '../../../contexts/MidgardMayaContext'
 import { truncateAddress } from '../../../helpers/addressHelper'
 import { getChainAsset } from '../../../helpers/chainHelper'
@@ -33,6 +32,7 @@ import { Label } from '../../uielements/label'
 import { BondProviderInfo } from './BondProviderInfo'
 import * as Styled from './BondsTable.styles'
 import * as H from './helpers'
+import RemoveIcon from 'assets/svg/icon-remove.svg?react'
 
 type Props = {
   nodes: ThorNodeInfos | MayaNodeInfos

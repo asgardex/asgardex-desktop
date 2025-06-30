@@ -14,13 +14,13 @@ import clsx from 'clsx'
 import { function as FP } from 'fp-ts'
 import { useIntl } from 'react-intl'
 
-import WalletIcon from '../../../../assets/svg/icon-wallet.svg?react'
 import { isUSDAsset } from '../../../../helpers/assetHelper'
 import { AssetWithAmount, FixmeType } from '../../../../types/asgardex'
 import { Button } from '../../button'
 import { CheckButton } from '../../button/CheckButton'
 import { InputBigNumber } from '../../input'
 import { AssetSelect } from '../assetSelect'
+import WalletIcon from 'assets/svg/icon-wallet.svg?react'
 
 const ASSET_SELECT_BUTTON_WIDTH = 'w-[190px]'
 
