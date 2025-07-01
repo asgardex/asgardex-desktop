@@ -5,6 +5,14 @@
 ## Add
 
 - Add Ripple [#781](https://github.com/asgardex/asgardex-desktop/pull/781)
+- Add tolerance adjustment to streaming params [#799](https://github.com/asgardex/asgardex-desktop/pull/799)
+- Add price of asset in Asset Detail [#787](https://github.com/asgardex/asgardex-desktop/pull/787)
+
+## Update/Fixes
+
+- Fix Ruji [#802](https://github.com/asgardex/asgardex-desktop/pull/802)
+- Fix target asset list []()
+-
 
 # 1.40.2 (2025-6-20)
 

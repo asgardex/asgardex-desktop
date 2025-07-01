@@ -1201,9 +1201,9 @@ export const Swap = ({
   // Check to see slippage greater than tolerance
   // This is handled by thornode
   const isCausedSlippage = useMemo(() => {
-    const result = isStreaming ? false : swapSlippage > slipTolerance
+    const result = swapSlippage > slipTolerance
     return result
-  }, [swapSlippage, slipTolerance, isStreaming])
+  }, [swapSlippage, slipTolerance])
 
   const [rateDirection, setRateDirection] = useState(RateDirection.Source)
 
@@ -1559,28 +1559,27 @@ export const Swap = ({
             // Keep native Rune or Cacao assets as is
             return [asset]
           }
-          if (isMayaSupportedAsset(asset, poolDetailsMaya) && isMayaSupportedAsset(sourceAsset, poolDetailsMaya)) {
-            // Synthesize MAYAChain assets
-            return [
-              asset,
-              {
-                ...asset,
-                type: AssetType.SYNTH,
-                synth: true
-              } as SynthAsset
-            ]
-          }
+
+          const assets: AnyAsset[] = [asset] // Start with base asset
+
+          // Add SECURED asset for ThorChain if supported
           if (isTCSupportedAsset(asset, poolDetailsThor) && isTCSupportedAsset(sourceAsset, poolDetailsThor)) {
-            // Create secured assets for ThorChain
-            return [
-              asset,
-              {
-                ...asset,
-                type: AssetType.SECURED
-              } as SecuredAsset
-            ]
+            assets.push({
+              ...asset,
+              type: AssetType.SECURED
+            } as SecuredAsset)
           }
-          return [asset]
+
+          // Add SYNTH asset for MAYAChain if supported
+          if (isMayaSupportedAsset(asset, poolDetailsMaya) && isMayaSupportedAsset(sourceAsset, poolDetailsMaya)) {
+            assets.push({
+              ...asset,
+              type: AssetType.SYNTH,
+              synth: true
+            } as SynthAsset)
+          }
+
+          return assets
         }),
         A.filter((asset) => !eqAsset.equals(asset, sourceAsset)),
         (assets) => unionAssets(assets)(assets)

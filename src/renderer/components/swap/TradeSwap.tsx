@@ -759,7 +759,7 @@ export const TradeSwap = ({
             amount: new CryptoAmount(convertBaseAmountDecimal(amountToSwapMax1e8, sourceAssetDecimal), sourceAsset),
             streamingInterval: isStreaming ? streamingInterval : 0,
             streamingQuantity: isStreaming ? streamingQuantity : 0,
-            toleranceBps: isStreaming || network === Network.Stagenet ? 1000 : slipTolerance * 100, // convert to basis points
+            toleranceBps: slipTolerance * 100, // convert to basis points
             affiliateAddress: affiliateName,
             affiliateBps: affiliateName ? applyBps ?? 0 : undefined
           }
@@ -1033,9 +1033,9 @@ export const TradeSwap = ({
   // Check to see slippage greater than tolerance
   // This is handled by thornode
   const isCausedSlippage = useMemo(() => {
-    const result = isStreaming ? false : swapSlippage > slipTolerance
+    const result = swapSlippage > slipTolerance
     return result
-  }, [swapSlippage, slipTolerance, isStreaming])
+  }, [swapSlippage, slipTolerance])
 
   type RateDirection = 'fromSource' | 'fromTarget'
   const [rateDirection, setRateDirection] = useState<RateDirection>('fromSource')
