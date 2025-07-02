@@ -10,9 +10,83 @@ import type {
   StoreFileName
 } from '../shared/api/types'
 import { getStoreFilesIPCMessages } from '../shared/ipc/fileStore'
+
+import { DKLS } from '../vultisig/core/mpc/dkls/dkls'
+import { KeygenOperation } from '../vultisig/core/mpc/keygen/KeygenOperation'
+import { Schnorr } from '../vultisig/core/mpc/schnorr/schnorrKeygen'
+import __wbg_init_dkls from '../vultisig/lib/dkls/vs_wasm'
+import dklsWasmUrl from '../vultisig/lib/dkls/vs_wasm_bg.wasm'
+import __wbg_init_schnorr from '../vultisig/lib/schnorr/vs_schnorr_wasm'
+import schnorrWasmUrl from '../vultisig/lib/schnorr/vs_schnorr_wasm_bg.wasm'
+
 import { apiHDWallet } from './api/hdwallet'
 import { apiLang } from './api/lang'
 import IPCMessages from './ipc/messages'
+
+let dklsInstance: DKLS | null = null
+let schnorrInstance: Schnorr | null = null
+
+type WasmParam = {
+  keygenOperation: KeygenOperation
+  isInitiateDevice: boolean
+  serverURL: string
+  sessionId: string
+  localPartyId: string
+  keygenCommittee: string[]
+  oldKeygenCommittee: string[]
+  hexEncryptionKey: string
+  localUI?: string
+  publicKey?: string
+  chainCode?: string
+}
+
+contextBridge.exposeInMainWorld('vultisig', {
+  initDKLSWasm: async () => {
+    await __wbg_init_dkls({ module_or_path: dklsWasmUrl })
+  },
+  initSchnorrWasm: async () => {
+    await __wbg_init_schnorr({ module_or_path: schnorrWasmUrl })
+  },
+  initDKLS: (params: WasmParam) => {
+    dklsInstance = new DKLS(
+      params.keygenOperation,
+      params.isInitiateDevice,
+      params.serverURL,
+      params.sessionId,
+      params.localPartyId,
+      params.keygenCommittee,
+      params.oldKeygenCommittee,
+      params.hexEncryptionKey,
+      params.localUI,
+      params.publicKey,
+      params.chainCode
+    )
+  },
+  initSchnorr: (params: WasmParam & { setupMessage: Uint8Array }) => {
+    schnorrInstance = new Schnorr(
+      params.keygenOperation,
+      params.isInitiateDevice,
+      params.serverURL,
+      params.sessionId,
+      params.localPartyId,
+      params.keygenCommittee,
+      params.oldKeygenCommittee,
+      params.hexEncryptionKey,
+      params.setupMessage,
+      params.localUI,
+      params.publicKey,
+      params.chainCode
+    )
+  },
+  startDKLSKeygenWithRetry: async () => {
+    if (!dklsInstance) throw new Error('DKLS not initialized')
+    return await dklsInstance.startKeygenWithRetry()
+  },
+  startSchnorrKeygenWithRetry: async () => {
+    if (!schnorrInstance) throw new Error('Schnorr not initialized')
+    return await schnorrInstance.startKeygenWithRetry()
+  }
+})
 
 // ContextBridge is used here to expose custom api objects on `window`
 // to be accessible at `renderer` processes,

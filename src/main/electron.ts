@@ -120,7 +120,8 @@ const initMainWindow = async () => {
       // `allowRunningInsecureContent` needs to set to `true`,
       // it will be changed to `false` whenever `webSecurity` is `true`
       // @see https://www.electronjs.org/docs/latest/api/browser-window#new-browserwindowoptions
-      allowRunningInsecureContent: false
+      allowRunningInsecureContent: false,
+      sandbox: false
     }
   })
 

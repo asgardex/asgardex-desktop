@@ -5,6 +5,7 @@ import typescript from '@rollup/plugin-typescript'
 import react from '@vitejs/plugin-react'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import simpleGit from 'simple-git'
+import { normalizePath } from 'vite'
 import svgr from 'vite-plugin-svgr'
 import wasm from 'vite-plugin-wasm'
 
@@ -14,6 +15,7 @@ const git = simpleGit()
 
 export default defineConfig(async ({ mode }) => {
   const commitHash = (await git.revparse(['--short', 'HEAD'])).trim()
+  const { viteStaticCopy } = await import('vite-plugin-static-copy')
   return {
     main: {
       build: {
@@ -43,6 +45,7 @@ export default defineConfig(async ({ mode }) => {
         outDir: 'build/preload',
         sourcemap: mode === 'development'
       },
+      assetsInclude: ['**/*.wasm'],
       plugins: [externalizeDepsPlugin()],
       resolve: {
         extensions: ['.ts', '.js']
@@ -84,7 +87,6 @@ export default defineConfig(async ({ mode }) => {
           https: path.resolve(__dirname, 'empty.js'),
           http: path.resolve(__dirname, 'empty.js'),
           zlib: path.resolve(__dirname, 'empty.js'),
-          fs: path.resolve(__dirname, 'empty.js'),
           // Force @mayaprotocol/zcash-js to use CommonJS build instead of browser bundle
           '@mayaprotocol/zcash-js': path.resolve(__dirname, 'node_modules/@mayaprotocol/zcash-js/dist/src/index.js')
         }
@@ -95,7 +97,22 @@ export default defineConfig(async ({ mode }) => {
           inject: ['./src/shims/buffer-shim.js']
         }
       },
-      plugins: [wasm(), react(), svgr(), typescript()],
+      plugins: [
+        wasm(),
+        react(),
+        svgr(),
+        typescript(),
+        viteStaticCopy({
+          targets: [
+            {
+              src: normalizePath(
+                path.resolve(__dirname, 'node_modules/@trustwallet/wallet-core/dist/lib/wallet-core.wasm')
+              ),
+              dest: ''
+            }
+          ]
+        })
+      ],
       define: {
         'process.env': {}, // TODO: Fix from xchain
         global: 'globalThis',

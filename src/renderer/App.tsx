@@ -1,3 +1,4 @@
+import { useCallback, useEffect } from 'react'
 import { Provider } from 'react-redux'
 import { HashRouter as Router } from 'react-router-dom'
 
@@ -36,6 +37,25 @@ import { store } from './store/store'
 import { AppView } from './views/app/AppView'
 
 export const App = (): JSX.Element => {
+  const initWasm = useCallback(async () => {
+    console.log('INSIDE INIT')
+    try {
+      console.log('Initializing DKLS WASM...')
+      await window.vultisig.initDKLSWasm()
+      console.log('DKLS WASM Initialized')
+
+      console.log('Initializing Schnorr WASM...')
+      await window.vultisig.initSchnorrWasm()
+      console.log('Schnorr WASM Initialized')
+    } catch (err) {
+      console.error('WASM Init Error:', err)
+    }
+  }, [])
+
+  useEffect(() => {
+    initWasm()
+  }, [initWasm])
+
   return (
     <Provider store={store}>
       <AppProvider>

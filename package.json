@@ -82,6 +82,7 @@
     "@ledgerhq/hw-transport-node-hid-singleton": "^6.31.6",
     "@mayaprotocol/zcash-js": "^1.0.7",
     "@reduxjs/toolkit": "^2.3.0",
+    "@trustwallet/wallet-core": "^4.3.6",
     "@xchainjs/xchain-aggregator": "2.0.14",
     "@xchainjs/xchain-arbitrum": "2.0.6",
     "@xchainjs/xchain-avax": "2.0.6",
@@ -221,6 +222,7 @@
     "ts-node": "10.9.2",
     "typescript": "5.8.3",
     "vite": "^6.3.5",
+    "vite-plugin-static-copy": "^3.1.0",
     "vite-plugin-svgr": "^4.3.0",
     "vite-plugin-wasm": "^3.4.1",
     "vitest": "^3.1.3"

@@ -194,5 +194,46 @@ declare global {
     apiAssetStorage: ApiFileStoreService<StoreFileData<'userAssets'>>
     apiPoolsStorage: ApiFileStoreService<StoreFileData<'pools'>>
     apiAppUpdate: ApiAppUpdate
+    vultisig: {
+      initDKLSWasm: () => Promise<void>
+      initSchnorrWasm: () => Promise<void>
+      initDKLS: (params: {
+        keygenOperation: { create: true } | { reshare: 'regular' | 'migrate' | 'plugin' }
+        isInitiateDevice: boolean
+        serverURL: string
+        sessionId: string
+        localPartyId: string
+        keygenCommittee: string[]
+        oldKeygenCommittee: string[]
+        hexEncryptionKey: string
+        localUI?: string
+        publicKey?: string
+        chainCode?: string
+      }) => void
+      initSchnorr: (params: {
+        keygenOperation: { create: true } | { reshare: 'regular' | 'migrate' | 'plugin' }
+        isInitiateDevice: boolean
+        serverURL: string
+        sessionId: string
+        localPartyId: string
+        keygenCommittee: string[]
+        oldKeygenCommittee: string[]
+        hexEncryptionKey: string
+        setupMessage: Uint8Array
+        localUI?: string
+        publicKey?: string
+        chainCode?: string
+      }) => void
+      startDKLSKeygenWithRetry: () => Promise<{
+        keyshare: string
+        publicKey: string
+        chaincode: string
+      }>
+      startSchnorrKeygenWithRetry: () => Promise<{
+        keyshare: string
+        publicKey: string
+        chaincode: string
+      }>
+    }
   }
 }
