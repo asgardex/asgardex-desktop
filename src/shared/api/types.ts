@@ -234,6 +234,7 @@ declare global {
         publicKey: string
         chaincode: string
       }>
+      getSetupMessage: () => Uint8Array<ArrayBufferLike>
     }
   }
 }

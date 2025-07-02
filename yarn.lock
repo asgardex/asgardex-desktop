@@ -1315,6 +1315,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@bufbuild/protobuf@npm:^2.6.0":
+  version: 2.6.0
+  resolution: "@bufbuild/protobuf@npm:2.6.0"
+  checksum: 10/2a5f4e0d30c77cc9cb8e3e7d2a809decdfd746f10259fb0b6c17844186dcf17740e7f45445c64aef4e7fd17a4ab0e5084a05659c94fc7e0540cd37079c5c5a9a
+  languageName: node
+  linkType: hard
+
 "@chainflip/bitcoin@npm:^1.1.1":
   version: 1.1.1
   resolution: "@chainflip/bitcoin@npm:1.1.1"
@@ -4713,6 +4720,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/query-core@npm:5.81.5":
+  version: 5.81.5
+  resolution: "@tanstack/query-core@npm:5.81.5"
+  checksum: 10/a324ab3380c1c282b95520de8b74af537cfe6b44ae06b6639b3e7a70757c81c2db03f765c27aa770d6c44ef8e1f7cbba243863021ded53fff965a522d1e5f698
+  languageName: node
+  linkType: hard
+
+"@tanstack/react-query@npm:^5.81.5":
+  version: 5.81.5
+  resolution: "@tanstack/react-query@npm:5.81.5"
+  dependencies:
+    "@tanstack/query-core": "npm:5.81.5"
+  peerDependencies:
+    react: ^18 || ^19
+  checksum: 10/35c75cf902938a76d468c0e1f08d738afc989ddc3728c4d2c00b16975870500da98aea21c1a682726abb3ef5f6348cb739335e3b940224ccc527b27dddc20fd4
+  languageName: node
+  linkType: hard
+
 "@tanstack/react-virtual@npm:^3.13.9":
   version: 3.13.10
   resolution: "@tanstack/react-virtual@npm:3.13.10"
@@ -6864,6 +6889,7 @@ __metadata:
   resolution: "asgardex@workspace:."
   dependencies:
     "@asgardex/asgardex-theme": "npm:^0.1.3"
+    "@bufbuild/protobuf": "npm:^2.6.0"
     "@chainflip/sdk": "npm:^1.7.0"
     "@chromatic-com/storybook": "npm:3"
     "@devexperts/remote-data-ts": "npm:^2.1.1"
@@ -6889,6 +6915,7 @@ __metadata:
     "@storybook/react": "npm:^8.6.12"
     "@storybook/react-vite": "npm:^8.6.12"
     "@storybook/test": "npm:^8.6.12"
+    "@tanstack/react-query": "npm:^5.81.5"
     "@trustwallet/wallet-core": "npm:^4.3.6"
     "@tsconfig/node16": "npm:^16.1.3"
     "@types/electron-devtools-installer": "npm:^2.2.2"
@@ -6947,6 +6974,7 @@ __metadata:
     autoprefixer: "npm:^10.4.8"
     axios: "npm:1.8.4"
     bignumber.js: "npm:^9.0.0"
+    bip32: "npm:^5.0.0-rc.0"
     buffer: "npm:^6.0.3"
     clsx: "npm:^2.1.1"
     cross-env: "npm:^7.0.3"
@@ -6992,6 +7020,7 @@ __metadata:
     rc-table: "npm:^7.48.0"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
+    react-dropzone: "npm:^14.3.8"
     react-error-overlay: "npm:^6.0.11"
     react-hook-form: "npm:^7.34.0"
     react-intl: "npm:^6.0.4"
@@ -7008,6 +7037,7 @@ __metadata:
     styled-components: "npm:^5.3.5"
     styled-theme: "npm:^0.3.3"
     tailwindcss: "npm:^3.1.7"
+    tiny-secp256k1: "npm:^2.2.4"
     ts-node: "npm:10.9.2"
     typescript: "npm:5.8.3"
     uuid: "npm:^8.3.2"
@@ -7120,6 +7150,13 @@ __metadata:
   version: 1.0.0
   resolution: "at-least-node@npm:1.0.0"
   checksum: 10/463e2f8e43384f1afb54bc68485c436d7622acec08b6fad269b421cb1d29cebb5af751426793d0961ed243146fe4dc983402f6d5a51b720b277818dbf6f2e49e
+  languageName: node
+  linkType: hard
+
+"attr-accept@npm:^2.2.4":
+  version: 2.2.5
+  resolution: "attr-accept@npm:2.2.5"
+  checksum: 10/474b1c53e62c5b881c745d1f098196f190c8b493245e95d4b0fea9298d3acb56f551868fc12806885277e55e9d8ad3c5963e92d93456f4e4081dfc5190977bfd
   languageName: node
   linkType: hard
 
@@ -7462,6 +7499,19 @@ __metadata:
     typeforce: "npm:^1.11.5"
     wif: "npm:^2.0.6"
   checksum: 10/f2da719618b26e2fdec3d0bc4945cf7dc435ff93eaeebc0b6b70b8911e7a33128cf77c4c0bce45be679c5f2a96aa5128dbed329193a9f88d755ff9c90185b6a0
+  languageName: node
+  linkType: hard
+
+"bip32@npm:^5.0.0-rc.0":
+  version: 5.0.0-rc.0
+  resolution: "bip32@npm:5.0.0-rc.0"
+  dependencies:
+    "@noble/hashes": "npm:^1.2.0"
+    "@scure/base": "npm:^1.1.1"
+    uint8array-tools: "npm:^0.0.8"
+    valibot: "npm:^0.37.0"
+    wif: "npm:^5.0.0"
+  checksum: 10/c3f9828f791e337f1873b7939e1824fdcb93130788e2152df60dde4342f3ed477688d7fa427437af26c69ef839bd7eabfb1a52e1b3c01155da5df24b80186a19
   languageName: node
   linkType: hard
 
@@ -10510,6 +10560,15 @@ __metadata:
   dependencies:
     flat-cache: "npm:^3.0.4"
   checksum: 10/099bb9d4ab332cb93c48b14807a6918a1da87c45dce91d4b61fd40e6505d56d0697da060cb901c729c90487067d93c9243f5da3dc9c41f0358483bfdebca736b
+  languageName: node
+  linkType: hard
+
+"file-selector@npm:^2.1.0":
+  version: 2.1.2
+  resolution: "file-selector@npm:2.1.2"
+  dependencies:
+    tslib: "npm:^2.7.0"
+  checksum: 10/2a6be0e1904df85f8705a5171fd3b93c1b1ff2ad0143556adb78ac4de899bfc0ba1a20083b4febd4f7000759ec9119a31af76a057e29dd9215907da69ac95e50
   languageName: node
   linkType: hard
 
@@ -15073,6 +15132,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-dropzone@npm:^14.3.8":
+  version: 14.3.8
+  resolution: "react-dropzone@npm:14.3.8"
+  dependencies:
+    attr-accept: "npm:^2.2.4"
+    file-selector: "npm:^2.1.0"
+    prop-types: "npm:^15.8.1"
+  peerDependencies:
+    react: ">= 16.8 || 18.0.0"
+  checksum: 10/31d5089c2acb4528a279761473a00a1c148b78ae41a6ac49ed09ee94f1d44595437188308ec838debfa0d08082893b170dc072e680aca00469793a05d61b07f2
+  languageName: node
+  linkType: hard
+
 "react-error-overlay@npm:^6.0.11":
   version: 6.0.11
   resolution: "react-error-overlay@npm:6.0.11"
@@ -17024,6 +17096,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tiny-secp256k1@npm:^2.2.4":
+  version: 2.2.4
+  resolution: "tiny-secp256k1@npm:2.2.4"
+  dependencies:
+    uint8array-tools: "npm:0.0.7"
+  checksum: 10/3f29104fcd6b17aefe8f3ce2fd3aa69cd2fb4b1c96e2e2f51d709dbea518705a9a706433c98d6f413f2d46555f4be0e1fd02b1727492a20d98d23ab848ff187d
+  languageName: node
+  linkType: hard
+
 "tiny-typed-emitter@npm:^2.1.0":
   version: 2.1.0
   resolution: "tiny-typed-emitter@npm:2.1.0"
@@ -17265,7 +17346,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:2, tslib@npm:^2.0.1, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.4.0, tslib@npm:^2.8.0":
+"tslib@npm:2, tslib@npm:^2.0.1, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.4.0, tslib@npm:^2.7.0, tslib@npm:^2.8.0":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 10/3e2e043d5c2316461cb54e5c7fe02c30ef6dccb3384717ca22ae5c6b5bc95232a6241df19c622d9c73b809bea33b187f6dbc73030963e29950c2141bc32a79f7
@@ -17809,6 +17890,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"valibot@npm:^0.37.0":
+  version: 0.37.0
+  resolution: "valibot@npm:0.37.0"
+  peerDependencies:
+    typescript: ">=5"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 10/c55132b60fa0e23b36327b263777065bfb5355dfb454393c39745659984950943ccbf5ff44010a28bcf4696200da29225af4515ac0e584e86554a8540628a579
+  languageName: node
+  linkType: hard
+
 "valibot@npm:^0.38.0":
   version: 0.38.0
   resolution: "valibot@npm:0.38.0"
@@ -18179,6 +18272,15 @@ __metadata:
   dependencies:
     bs58check: "npm:<3.0.0"
   checksum: 10/c8d7581664532d9ab6d163ee5194a9bec71b089a6e50d54d6ec57a9bd714fcf84bc8d9f22f4cfc7c297fc6ad10b973b8e83eca5c41240163fc61f44b5154b7da
+  languageName: node
+  linkType: hard
+
+"wif@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "wif@npm:5.0.0"
+  dependencies:
+    bs58check: "npm:^4.0.0"
+  checksum: 10/3af0d4e9f1d1b35672b860470b6545f34f77b4a804e06ccae2f06f43c96a31fba859cf64889344eded621433eb609fc4c95aa28d62c02057372232b85231e414
   languageName: node
   linkType: hard
 

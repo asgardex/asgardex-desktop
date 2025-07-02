@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Provider } from 'react-redux'
 import { HashRouter as Router } from 'react-router-dom'
 
@@ -35,6 +36,17 @@ import { XrpProvider } from './contexts/XrpContext'
 import { ZcashProvider } from './contexts/ZcashContext'
 import { store } from './store/store'
 import { AppView } from './views/app/AppView'
+import { WalletCoreProvider } from './vultisig/core/ui/chain/providers/WalletCoreProvider'
+import { CreateVaultKeygenActionProvider } from './vultisig/core/ui/mpc/keygen/create/CreateVaultKeygenActionProvider'
+import { queryKeyHashFn } from './vultisig/lib/ui/query/utils/queryKeyHashFn'
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      queryKeyHashFn
+    }
+  }
+})
 
 export const App = (): JSX.Element => {
   const initWasm = useCallback(async () => {
@@ -58,71 +70,77 @@ export const App = (): JSX.Element => {
 
   return (
     <Provider store={store}>
-      <AppProvider>
-        <WalletProvider>
-          <ChainProvider>
-            <ThorchainProvider>
-              <BitcoinProvider>
-                <LitecoinProvider>
-                  <BitcoinCashProvider>
-                    <EthereumProvider>
-                      <AvaxProvider>
-                        <BaseProvider>
-                          <BscProvider>
-                            <ArbProvider>
-                              <DogeProvider>
-                                <KujiProvider>
-                                  <AdaProvider>
-                                    <SolProvider>
-                                      <XrdProvider>
-                                        <ZcashProvider>
-                                          <XrpProvider>
-                                            <DashProvider>
-                                              <CosmosProvider>
-                                                <MidgardProvider>
-                                                  <ThorchainQueryProvider>
-                                                    <MayachainProvider>
-                                                      <MayachainQueryProvider>
-                                                        <MayaMidgardProvider>
-                                                          <UserNodesProvider>
-                                                            <UserBondProvidersProvider>
-                                                              <ChainflipProvider>
-                                                                <I18nProvider>
-                                                                  <Router>
-                                                                    <ThemeProvider>
-                                                                      <AppView />
-                                                                    </ThemeProvider>
-                                                                  </Router>
-                                                                </I18nProvider>
-                                                              </ChainflipProvider>
-                                                            </UserBondProvidersProvider>
-                                                          </UserNodesProvider>
-                                                        </MayaMidgardProvider>
-                                                      </MayachainQueryProvider>
-                                                    </MayachainProvider>
-                                                  </ThorchainQueryProvider>
-                                                </MidgardProvider>
-                                              </CosmosProvider>
-                                            </DashProvider>
-                                          </XrpProvider>
-                                        </ZcashProvider>
-                                      </XrdProvider>
-                                    </SolProvider>
-                                  </AdaProvider>
-                                </KujiProvider>
-                              </DogeProvider>
-                            </ArbProvider>
-                          </BscProvider>
-                        </BaseProvider>
-                      </AvaxProvider>
-                    </EthereumProvider>
-                  </BitcoinCashProvider>
-                </LitecoinProvider>
-              </BitcoinProvider>
-            </ThorchainProvider>
-          </ChainProvider>
-        </WalletProvider>
-      </AppProvider>
+      <QueryClientProvider client={queryClient}>
+        <WalletCoreProvider>
+          <CreateVaultKeygenActionProvider>
+            <AppProvider>
+              <WalletProvider>
+                <ChainProvider>
+                  <ThorchainProvider>
+                    <BitcoinProvider>
+                      <LitecoinProvider>
+                        <BitcoinCashProvider>
+                          <EthereumProvider>
+                            <AvaxProvider>
+                              <BaseProvider>
+                                <BscProvider>
+                                  <ArbProvider>
+                                    <DogeProvider>
+                                      <KujiProvider>
+                                        <AdaProvider>
+                                          <SolProvider>
+                                            <XrdProvider>
+                                              <ZcashProvider>
+                                                <XrpProvider>
+                                                  <DashProvider>
+                                                    <CosmosProvider>
+                                                      <MidgardProvider>
+                                                        <ThorchainQueryProvider>
+                                                          <MayachainProvider>
+                                                            <MayachainQueryProvider>
+                                                              <MayaMidgardProvider>
+                                                                <UserNodesProvider>
+                                                                  <UserBondProvidersProvider>
+                                                                    <ChainflipProvider>
+                                                                      <I18nProvider>
+                                                                        <Router>
+                                                                          <ThemeProvider>
+                                                                            <AppView />
+                                                                          </ThemeProvider>
+                                                                        </Router>
+                                                                      </I18nProvider>
+                                                                    </ChainflipProvider>
+                                                                  </UserBondProvidersProvider>
+                                                                </UserNodesProvider>
+                                                              </MayaMidgardProvider>
+                                                            </MayachainQueryProvider>
+                                                          </MayachainProvider>
+                                                        </ThorchainQueryProvider>
+                                                      </MidgardProvider>
+                                                    </CosmosProvider>
+                                                  </DashProvider>
+                                                </XrpProvider>
+                                              </ZcashProvider>
+                                            </XrdProvider>
+                                          </SolProvider>
+                                        </AdaProvider>
+                                      </KujiProvider>
+                                    </DogeProvider>
+                                  </ArbProvider>
+                                </BscProvider>
+                              </BaseProvider>
+                            </AvaxProvider>
+                          </EthereumProvider>
+                        </BitcoinCashProvider>
+                      </LitecoinProvider>
+                    </BitcoinProvider>
+                  </ThorchainProvider>
+                </ChainProvider>
+              </WalletProvider>
+            </AppProvider>
+          </CreateVaultKeygenActionProvider>
+        </WalletCoreProvider>
+      </QueryClientProvider>
     </Provider>
   )
 }

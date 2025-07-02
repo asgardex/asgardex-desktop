@@ -22,6 +22,7 @@ import PoolIcon from '../../assets/svg/icon-pools.svg?react'
 import PortfolioIcon from '../../assets/svg/icon-portfolio.svg?react'
 import SwapIcon from '../../assets/svg/icon-swap.svg?react'
 import TwitterIcon from '../../assets/svg/icon-twitter.svg?react'
+import VultisigIcon from '../../assets/svg/icon-vultisig.svg?react'
 import WalletIcon from '../../assets/svg/icon-wallet.svg?react'
 import AsgardexLogo from '../../assets/svg/logo-asgardex.svg?react'
 import ThorChainIcon from '../../assets/svg/logo-thorchain.svg?react'
@@ -31,6 +32,7 @@ import * as bondsRoutes from '../../routes/bonds'
 import * as playgroundRoutes from '../../routes/playground'
 import * as poolsRoutes from '../../routes/pools'
 import * as portfolioRoutes from '../../routes/portfolio'
+import * as vultisigRoutes from '../../routes/vultisig'
 import * as walletRoutes from '../../routes/wallet'
 import { mayaIconT } from '../icons'
 import { Tooltip } from '../uielements/common/Common.styles'
@@ -65,6 +67,7 @@ enum TabKey {
   PORTFOLIO = 'PORTFOLIO',
   POOLS = 'POOLS',
   SETTINGS = 'SETTINGS',
+  VULTISIG = 'VULTISIG',
   UNKNOWN = 'UNKNOWN'
 }
 
@@ -95,6 +98,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
   const matchWalletRoute = useMatch({ path: walletRoutes.base.path(), end: false })
   const matchSettingsRoute = useMatch({ path: appRoutes.settings.path(), end: false })
   const matchSwapRoute = useMatch({ path: poolsRoutes.swapBase.template, end: false })
+  const matchVultisigRoute = useMatch({ path: vultisigRoutes.base.path(), end: false })
 
   const activeKey: TabKey = useMemo(() => {
     if (matchBondsRoute) {
@@ -109,10 +113,20 @@ export const SidebarComponent = (props: Props): JSX.Element => {
       return TabKey.WALLET
     } else if (matchSettingsRoute) {
       return TabKey.SETTINGS
+    } else if (matchVultisigRoute) {
+      return TabKey.VULTISIG
     } else {
       return TabKey.UNKNOWN
     }
-  }, [matchBondsRoute, matchPoolsRoute, matchPortfolioRoute, matchWalletRoute, matchSettingsRoute, matchSwapRoute])
+  }, [
+    matchBondsRoute,
+    matchSwapRoute,
+    matchPoolsRoute,
+    matchPortfolioRoute,
+    matchWalletRoute,
+    matchSettingsRoute,
+    matchVultisigRoute
+  ])
 
   const items: Tab[] = useMemo(
     () => [
@@ -156,6 +170,12 @@ export const SidebarComponent = (props: Props): JSX.Element => {
         label: intl.formatMessage({ id: 'common.settings' }),
         path: appRoutes.settings.path(),
         icon: SettingsIcon
+      },
+      {
+        key: TabKey.VULTISIG,
+        label: 'Vultisig',
+        path: vultisigRoutes.setupVault.path(),
+        icon: VultisigIcon
       }
     ],
     [intl]
@@ -180,7 +200,7 @@ export const SidebarComponent = (props: Props): JSX.Element => {
               )}
               onClick={() => navigate(path)}>
               <div className="flex flex-row items-center py-3 pl-4">
-                <Icon className="w-8 pr-5px" />
+                <Icon className="w-8 h-8 pr-5px" />
                 <span>{label}</span>
               </div>
             </div>

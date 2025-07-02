@@ -85,6 +85,10 @@ contextBridge.exposeInMainWorld('vultisig', {
   startSchnorrKeygenWithRetry: async () => {
     if (!schnorrInstance) throw new Error('Schnorr not initialized')
     return await schnorrInstance.startKeygenWithRetry()
+  },
+  getSetupMessage: () => {
+    if (!dklsInstance) throw new Error('DKLS not initialized')
+    return dklsInstance.getSetupMessage()
   }
 })
 

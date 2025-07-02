@@ -5,6 +5,7 @@ import * as bondsRoutes from '../routes/bonds'
 import * as playgroundRoutes from '../routes/playground'
 import * as poolsRoutes from '../routes/pools'
 import * as portfolioRoutes from '../routes/portfolio'
+import * as vultisigRoutes from '../routes/vultisig'
 import * as walletRoutes from '../routes/wallet'
 import { AppSettings } from './app/AppSettings'
 import { BondsView } from './bonds/BondsView'
@@ -14,6 +15,15 @@ import { PlaygroundView } from './playground/PlaygroundView'
 import { PoolsOverview } from './pools/PoolsOverview'
 import { PortfolioView } from './portfolio/PortfolioView'
 import { SwapView } from './swap/SwapView'
+import { EmailConfirmation } from './vultisig/EmailConfirmation'
+import { FastKeygenView } from './vultisig/FastKeygenView'
+import { FastVaultView } from './vultisig/FastVaultView'
+import { ImportVaultView } from './vultisig/ImportVaultView'
+import { KeygenFlowView } from './vultisig/KeygenFlow'
+import { VultisigSetupView } from './vultisig/SetupView'
+import { VaultBackupFlow } from './vultisig/VaultBackupFlow'
+import { VaultView } from './vultisig/VaultView'
+import { WaitForServerStepView } from './vultisig/WaitForServerStep'
 import { AssetDetailsView } from './wallet/AssetDetailsView'
 import { AssetsView } from './wallet/AssetsView'
 import { CreateView } from './wallet/CreateView'
@@ -68,6 +78,16 @@ export const ViewRoutes = (): JSX.Element => {
           </WalletAuth>
         }
       />
+      {/* vultisig routes */}
+      <Route path={vultisigRoutes.setupVault.template} element={<VultisigSetupView />} />
+      <Route path={vultisigRoutes.setupFastVault.template} element={<FastVaultView />} />
+      <Route path={vultisigRoutes.waitForServer.template} element={<WaitForServerStepView />} />
+      <Route path={vultisigRoutes.fastKeygen.template} element={<FastKeygenView />} />
+      <Route path={vultisigRoutes.keygenFlow.template} element={<KeygenFlowView />} />
+      <Route path={vultisigRoutes.emailConfirmation.template} element={<EmailConfirmation />} />
+      <Route path={vultisigRoutes.vaultBackup.template} element={<VaultBackupFlow />} />
+      <Route path={vultisigRoutes.importVault.template} element={<ImportVaultView />} />
+      <Route path={vultisigRoutes.vault.template} element={<VaultView />} />
       {/* wallet routes */}
       <Route path={walletRoutes.noWallet.template} element={<NoWalletView />} />
       <Route path={`${walletRoutes.create.base.template}/*`} element={<CreateView />} />
