@@ -1,5 +1,14 @@
 <!-- markdownlint-disable MD024 MD025 -->
 
+# 1.40.4 (2025-7-3)
+
+## Add
+
+## Update/Fixes
+
+- Fix Ruji swaps [#808](https://github.com/asgardex/asgardex-desktop/pull/808)
+- Fix chainflip swaps [#810](https://github.com/asgardex/asgardex-desktop/pull/810)
+
 # 1.40.3 (2025-6-28)
 
 ## Add
