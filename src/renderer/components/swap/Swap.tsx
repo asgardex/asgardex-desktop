@@ -63,7 +63,8 @@ import {
   isRuneNativeAsset,
   isCacaoAsset,
   isEVMTokenAsset,
-  getEVMTokenAddressForChain
+  getEVMTokenAddressForChain,
+  isRujiAsset
 } from '../../helpers/assetHelper'
 import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isLtcChain } from '../../helpers/chainHelper'
 import { isEvmChainToken } from '../../helpers/evmHelper'
@@ -1125,7 +1126,8 @@ export const Swap = ({
           !isTradeAsset(sourceAsset) &&
           !isSynthAsset(sourceAsset) &&
           !isSecuredAsset(sourceAsset) &&
-          !isTCYAsset(sourceAsset)
+          !isTCYAsset(sourceAsset) &&
+          !isRujiAsset(sourceAsset)
         ) {
           if (sourceChainAssetAmount.lt(amountToSwap.plus(swapFees.inFee.amount))) {
             amountToSwap = sourceChainAssetAmount.minus(swapFees.inFee.amount)
@@ -1157,6 +1159,8 @@ export const Swap = ({
     sourceChainAssetAmount,
     swapFees.inFee.amount
   ])
+
+  console.log(oSwapParams)
 
   const oCFSwapParams: O.Option<SendTxParams> = useMemo(() => {
     return FP.pipe(
