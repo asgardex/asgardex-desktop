@@ -1090,7 +1090,9 @@ export const Swap = ({
       oQuoteProtocol,
       O.chain((txDetails) => {
         // Disable slippage protection temporary for Ledger/BTC (see https://github.com/thorchain/asgardex-electron/issues/2068)
-        return !disableSlippage && swapResultAmountMax.baseAmount.gt(zeroTargetBaseAmountMax1e8)
+        return !disableSlippage &&
+          swapResultAmountMax.baseAmount.gt(zeroTargetBaseAmountMax1e8) &&
+          txDetails.protocol !== 'Chainflip'
           ? O.some(Utils.getSwapLimit1e8(txDetails.memo))
           : O.none
       })
