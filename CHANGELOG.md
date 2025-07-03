@@ -12,7 +12,6 @@
 
 - Fix Ruji [#802](https://github.com/asgardex/asgardex-desktop/pull/802)
 - Fix target asset list [#803](https://github.com/asgardex/asgardex-desktop/pull/803)
--
 
 # 1.40.2 (2025-6-20)
 
