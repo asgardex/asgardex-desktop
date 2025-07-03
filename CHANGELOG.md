@@ -9,7 +9,6 @@
 - Fix Ruji swaps [#808](https://github.com/asgardex/asgardex-desktop/pull/808)
 - Fix chainflip swaps [#810](https://github.com/asgardex/asgardex-desktop/pull/810)
 
-
 # 1.40.3 (2025-6-28)
 
 ## Add
@@ -22,7 +21,6 @@
 
 - Fix Ruji [#802](https://github.com/asgardex/asgardex-desktop/pull/802)
 - Fix target asset list [#803](https://github.com/asgardex/asgardex-desktop/pull/803)
-
 
 # 1.40.2 (2025-6-20)
 
