@@ -3,10 +3,15 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { getHexEncodedRandomBytes } from '../../vultisig/lib/utils/crypto/getHexEncodedRandomBytes'
 import { generateLocalPartyId } from '../../vultisig/mpc/devices/localPartyId'
+import { KeygenOperation } from '../../vultisig/mpc/keygen/KeygenOperation'
 import { State, VaultWithCoin } from './types'
 
 const initialState: State = {
-  vaultName: '',
+  name: '',
+  password: '',
+  email: '',
+
+  keygenOperation: { create: true },
   localPartyId: '',
   sessionId: '',
   hexChainCode: '',
@@ -31,10 +36,19 @@ const slice = createSlice({
       state.peers = payload
     },
     setVaultName(state, { payload }: PayloadAction<string>) {
-      state.vaultName = payload
+      state.name = payload
+    },
+    setEmail(state, { payload }: PayloadAction<string>) {
+      state.email = payload
+    },
+    setPassword(state, { payload }: PayloadAction<string>) {
+      state.password = payload
     },
     setVault(state, { payload }: PayloadAction<VaultWithCoin>) {
       state.vault = payload
+    },
+    setKeygenOperation(state, { payload }: PayloadAction<KeygenOperation>) {
+      state.keygenOperation = payload
     }
   }
 })

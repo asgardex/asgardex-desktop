@@ -12,10 +12,11 @@ export const useMpcPeerOptionsQuery = () => {
     queryKey: ['peerOptions', sessionId, serverUrl],
     queryFn: async () => {
       const response = await queryUrl<string[]>(`${serverUrl}/${sessionId}`)
-      console.log('RESP - ', response, localPartyId)
+
       if (response.length === 0) {
         throw new Error('No peers found')
       }
+
       return without(withoutDuplicates(response), localPartyId)
     },
     ...pollingQueryOptions(2000)

@@ -21,7 +21,6 @@ export const SaveVaultStep: React.FC<ValueProp<Vault> & OnFinishProp & TitleProp
 
   useEffect(() => {
     mutate(value)
-    console.log('SAVE VAULT - ', value.name)
     setVault(value)
   }, [mutate, value, setVault])
 

@@ -25,7 +25,6 @@ export const KeygenFlowView = () => {
 
   useEffect(() => {
     if (keygenMutationState.isSuccess && keygenMutationState.data) {
-      console.log('KEYGEN FLOW - ', keygenMutationState.data.name)
       setVault(keygenMutationState.data)
 
       navigate(vultisigRoutes.emailConfirmation.path())

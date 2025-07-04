@@ -11,7 +11,6 @@ import { DecryptVaultContainerStep } from './DecryptVaultContainerStep'
 import { SaveImportedVaultStep } from './SaveImportedVaultStep'
 
 export const ProcessVaultContainer = ({ value }: { value: VaultContainer }) => {
-  console.log('PROCESS VAULT CONTAINER')
   const { vault: vaultAsBase64String, isEncrypted } = value
   if (isEncrypted) {
     return (

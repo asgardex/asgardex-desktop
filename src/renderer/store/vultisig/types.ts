@@ -1,10 +1,16 @@
 import { Chain } from '../../vultisig/core/chain/Chain'
 import { Vault } from '../../vultisig/core/ui/vault/Vault'
+import { KeygenOperation } from '../../vultisig/mpc/keygen/KeygenOperation'
 
 export type VaultWithCoin = Vault & Partial<{ coins: { chain: Chain; address: string }[] }>
 
 export type State = {
-  vaultName: string
+  name: string
+  password: string
+  email: string
+
+  keygenOperation: KeygenOperation
+
   localPartyId: string
   sessionId: string
   hexChainCode: string

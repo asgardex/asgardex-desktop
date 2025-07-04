@@ -10,7 +10,6 @@ type DecryptVaultViewProps = {
 }
 
 export const DecryptVaultView = ({ isPending, error, onSubmit }: DecryptVaultViewProps) => {
-  console.log('DECRYPT VAULT VIEW')
   const [password, setPassword] = useState('')
 
   return (

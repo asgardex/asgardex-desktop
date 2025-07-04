@@ -17,9 +17,9 @@ import { PortfolioView } from './portfolio/PortfolioView'
 import { SwapView } from './swap/SwapView'
 import { EmailConfirmation } from './vultisig/EmailConfirmation'
 import { FastKeygenView } from './vultisig/FastKeygenView'
-import { FastVaultView } from './vultisig/FastVaultView'
 import { ImportVaultView } from './vultisig/ImportVaultView'
 import { KeygenFlowView } from './vultisig/KeygenFlow'
+import { SetupFastVaultView } from './vultisig/SetupFastVaultView'
 import { VultisigSetupView } from './vultisig/SetupView'
 import { VaultBackupFlow } from './vultisig/VaultBackupFlow'
 import { VaultView } from './vultisig/VaultView'
@@ -80,7 +80,7 @@ export const ViewRoutes = (): JSX.Element => {
       />
       {/* vultisig routes */}
       <Route path={vultisigRoutes.setupVault.template} element={<VultisigSetupView />} />
-      <Route path={vultisigRoutes.setupFastVault.template} element={<FastVaultView />} />
+      <Route path={vultisigRoutes.setupFastVault.template} element={<SetupFastVaultView />} />
       <Route path={vultisigRoutes.waitForServer.template} element={<WaitForServerStepView />} />
       <Route path={vultisigRoutes.fastKeygen.template} element={<FastKeygenView />} />
       <Route path={vultisigRoutes.keygenFlow.template} element={<KeygenFlowView />} />

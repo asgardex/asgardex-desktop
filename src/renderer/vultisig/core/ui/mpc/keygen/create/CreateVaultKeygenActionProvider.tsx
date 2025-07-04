@@ -11,7 +11,7 @@ import { KeygenAction, KeygenActionProvider } from '../state/keygenAction'
 export const CreateVaultKeygenActionProvider = ({ children }: ChildrenProp) => {
   //   const vaultName = useKeygenVaultName()
   const isInitiatingDevice = true
-  const { localPartyId, sessionId, mpcServerUrl: serverURL, hexEncryptionKey, vaultName } = useVultisig()
+  const { localPartyId, sessionId, mpcServerUrl: serverURL, hexEncryptionKey, name } = useVultisig()
 
   //   const vaultOrders = useVaultOrders()
   const vaultOrders = useMemo(() => [1], [])
@@ -29,8 +29,6 @@ export const CreateVaultKeygenActionProvider = ({ children }: ChildrenProp) => {
         isBackedUp: false
       }
 
-      console.log('SIGNERS - ', signers)
-
       window.vultisig.initDKLS({
         keygenOperation: { create: true },
         isInitiateDevice: isInitiatingDevice,
@@ -42,8 +40,6 @@ export const CreateVaultKeygenActionProvider = ({ children }: ChildrenProp) => {
         hexEncryptionKey
       })
       const dklsResult = await window.vultisig.startDKLSKeygenWithRetry()
-
-      console.log('DKLS RESULT - ', dklsResult)
 
       onStepChange('eddsa')
 
@@ -71,7 +67,7 @@ export const CreateVaultKeygenActionProvider = ({ children }: ChildrenProp) => {
       }
 
       const vault = {
-        name: vaultName,
+        name: name,
         publicKeys,
         createdAt: Date.now(),
         hexChainCode: dklsResult.chaincode,
@@ -80,8 +76,6 @@ export const CreateVaultKeygenActionProvider = ({ children }: ChildrenProp) => {
         lastPasswordVerificationTime: hasServer(signers) ? Date.now() : undefined,
         ...sharedFinalVaultFields
       }
-
-      console.log('VAULT - ', vaultName)
 
       await setKeygenComplete({
         serverURL,
@@ -97,7 +91,7 @@ export const CreateVaultKeygenActionProvider = ({ children }: ChildrenProp) => {
 
       return vault
     },
-    [hexEncryptionKey, isInitiatingDevice, localPartyId, serverURL, sessionId, vaultName, vaultOrders]
+    [hexEncryptionKey, isInitiatingDevice, localPartyId, serverURL, sessionId, name, vaultOrders]
   )
 
   return <KeygenActionProvider value={keygenAction}>{children}</KeygenActionProvider>

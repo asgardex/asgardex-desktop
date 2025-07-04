@@ -4,13 +4,14 @@ import clsx from 'clsx'
 import { useNavigate } from 'react-router-dom'
 import { Label } from '../../../components/uielements/label'
 import * as vultisigRoutes from '../../../routes/vultisig'
-import { useVultisig } from '../../../store/vultisig/hooks'
+import { useKeygenOperation, useVultisig } from '../../../store/vultisig/hooks'
 import { isServer } from '../../../vultisig/mpc/devices/localPartyId'
 import { useMpcPeerOptionsQuery } from '../../../vultisig/mpc/devices/queries/useMpcPeerOptionsQuery'
 import { pluginPeersConfig } from '../../../vultisig/mpc/fast/config'
 
 export const WaitForServerStepView = () => {
   const navigate = useNavigate()
+  const { keygenOperation } = useKeygenOperation()
   const { setFastVaultPeers } = useVultisig()
 
   const peersQuery = useMpcPeerOptionsQuery()
@@ -21,7 +22,7 @@ export const WaitForServerStepView = () => {
 
   const onPeersChange = useCallback(
     (peers: string[]) => {
-      const isPluginReshare = false
+      const isPluginReshare = 'reshare' in keygenOperation && keygenOperation.reshare === 'plugin'
 
       const shouldFinish = !isPluginReshare || peers.length >= pluginPeersConfig.minimumJoinedParties
 
@@ -35,7 +36,7 @@ export const WaitForServerStepView = () => {
         handleFastVault()
       }
     },
-    [setFastVaultPeers, handleFastVault]
+    [keygenOperation, handleFastVault, setFastVaultPeers]
   )
 
   useEffect(() => {

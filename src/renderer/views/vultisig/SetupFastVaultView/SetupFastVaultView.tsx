@@ -1,23 +1,22 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 import clsx from 'clsx'
 
 import { useNavigate } from 'react-router-dom'
 import { BaseButton } from '../../../components/uielements/button'
 import { Input } from '../../../components/uielements/input/Input'
 import * as vultisigRoutes from '../../../routes/vultisig'
-import { useVultisig } from '../../../store/vultisig/hooks'
+import { useEmail, usePassword, useVaultName, useVultisig } from '../../../store/vultisig/hooks'
 import { setupVaultWithServer } from '../../../vultisig/core/mpc/fast/api/setupVaultWithServer'
 import { generateLocalPartyId } from '../../../vultisig/mpc/devices/localPartyId'
 
-export const FastVaultView = () => {
+export const SetupFastVaultView = () => {
   const navigate = useNavigate()
 
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPwd] = useState('')
-  const [hint, setHint] = useState('')
+  const { name, setName } = useVaultName()
+  const { email, setEmail } = useEmail()
+  const { password, setPassword } = usePassword()
 
-  const { sessionId, hexChainCode, hexEncryptionKey, initFastVault, setVaultName } = useVultisig()
+  const { sessionId, hexChainCode, hexEncryptionKey, initFastVault } = useVultisig()
 
   useEffect(() => {
     initFastVault()
@@ -25,7 +24,6 @@ export const FastVaultView = () => {
   }, [])
 
   const handleCreate = useCallback(async () => {
-    setVaultName(name)
     await setupVaultWithServer({
       name,
       encryption_password: password,
@@ -38,7 +36,7 @@ export const FastVaultView = () => {
     })
 
     navigate(vultisigRoutes.waitForServer.path())
-  }, [email, hexChainCode, hexEncryptionKey, name, navigate, password, sessionId, setVaultName])
+  }, [email, hexChainCode, hexEncryptionKey, name, navigate, password, sessionId])
 
   return (
     <div
@@ -51,9 +49,9 @@ export const FastVaultView = () => {
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) => setPwd(e.target.value)}
+          onChange={(e) => setPassword(e.target.value)}
         />
-        <Input uppercase={false} placeholder="Hint" value={hint} onChange={(e) => setHint(e.target.value)} />
+
         <BaseButton className="rounded px-4 py-2 bg-turquoise text-white hover:bg-turquoise/80" onClick={handleCreate}>
           Create
         </BaseButton>
