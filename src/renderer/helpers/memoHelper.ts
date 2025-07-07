@@ -246,7 +246,9 @@ const assetCodes: AssetCodes = {
   'BCH.BCH': 'c',
   'AVAX.AVAX': 'a',
   'BSC.BNB': 's',
-  'BASE.ETH': 'f'
+  'BASE.ETH': 'f',
+  'XRP.XRP': 'x',
+  'TRON.TRX': 'tr'
 }
 
 const shortenMemo = (input: string): string => {
