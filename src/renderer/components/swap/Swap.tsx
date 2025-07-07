@@ -66,7 +66,7 @@ import {
   getEVMTokenAddressForChain,
   isRujiAsset
 } from '../../helpers/assetHelper'
-import { getChainAsset, isBchChain, isBtcChain, isDogeChain, isLtcChain } from '../../helpers/chainHelper'
+import { getChainAsset } from '../../helpers/chainHelper'
 import { isEvmChainToken } from '../../helpers/evmHelper'
 import { unionAssets } from '../../helpers/fp/array'
 import { eqAsset, eqBaseAmount, eqOAsset, eqAddress, eqOApproveParams } from '../../helpers/fp/eq'
@@ -1078,27 +1078,19 @@ export const Swap = ({
     )
   }, [oPriceSwapFees1e8])
 
-  // Disable slippage selection temporary for Ledger/BTC (see https://github.com/thorchain/asgardex-electron/issues/2068)
-  const disableSlippage = useMemo(
-    () =>
-      (isBtcChain(sourceChain) || isLtcChain(sourceChain) || isBchChain(sourceChain) || isDogeChain(sourceChain)) &&
-      useSourceAssetLedger,
-    [useSourceAssetLedger, sourceChain]
-  )
-
   const swapLimit1e8: O.Option<BaseAmount> = useMemo(() => {
     return FP.pipe(
       oQuoteProtocol,
       O.chain((txDetails) => {
         // Disable slippage protection temporary for Ledger/BTC (see https://github.com/thorchain/asgardex-electron/issues/2068)
-        return !disableSlippage &&
-          swapResultAmountMax.baseAmount.gt(zeroTargetBaseAmountMax1e8) &&
-          txDetails.protocol !== 'Chainflip'
+        return swapResultAmountMax.baseAmount.gt(zeroTargetBaseAmountMax1e8) &&
+          txDetails.protocol !== 'Chainflip' &&
+          !quoteOnly
           ? O.some(Utils.getSwapLimit1e8(txDetails.memo))
           : O.none
       })
     )
-  }, [oQuoteProtocol, disableSlippage, swapResultAmountMax, zeroTargetBaseAmountMax1e8])
+  }, [oQuoteProtocol, swapResultAmountMax.baseAmount, zeroTargetBaseAmountMax1e8, quoteOnly])
 
   const oSwapParams: O.Option<SwapTxParams> = useMemo(() => {
     const oPoolAddress: O.Option<PoolAddress> = FP.pipe(
@@ -1161,8 +1153,6 @@ export const Swap = ({
     sourceChainAssetAmount,
     swapFees.inFee.amount
   ])
-
-  console.log(oSwapParams)
 
   const oCFSwapParams: O.Option<SendTxParams> = useMemo(() => {
     return FP.pipe(
@@ -1997,14 +1987,12 @@ export const Swap = ({
 
     const amountMax1e8 = max1e8BaseAmount(amount)
 
-    return disableSlippage
-      ? noDataString
-      : `${formatAssetAmountCurrency({
-          asset: targetAsset,
-          amount: baseToAsset(amountMax1e8),
-          trimZeros: true
-        })}`
-  }, [swapLimit1e8, disableSlippage, targetAsset, targetAssetDecimal])
+    return `${formatAssetAmountCurrency({
+      asset: targetAsset,
+      amount: baseToAsset(amountMax1e8),
+      trimZeros: true
+    })}`
+  }, [swapLimit1e8, targetAsset, targetAssetDecimal])
 
   const uiApproveFeesRD: UIFeesRD = useMemo(
     () =>
@@ -2601,46 +2589,24 @@ export const Swap = ({
                     {showDetails && (
                       <>
                         <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div
-                            className={`flex items-center ${
-                              disableSlippage ? 'text-warning0 dark:text-warning0d' : ''
-                            }`}>
+                          <div className={`flex items-center `}>
                             {intl.formatMessage({ id: 'swap.slip.tolerance' })}
-                            {disableSlippage ? (
-                              <InfoIcon
-                                className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                                tooltip={intl.formatMessage({ id: 'swap.slip.tolerance.ledger-disabled.info' })}
-                                color="warning"
-                              />
-                            ) : (
-                              <InfoIcon
-                                className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                                tooltip={intl.formatMessage({ id: 'swap.slip.tolerance.info' })}
-                              />
-                            )}
+
+                            <InfoIcon
+                              className="ml-[3px] h-[15px] w-[15px] text-inherit"
+                              tooltip={intl.formatMessage({ id: 'swap.slip.tolerance.info' })}
+                            />
                           </div>
                           <div>
-                            {/* we don't show slippage tolerance whenever slippage is disabled (e.g. due memo restriction for Ledger BTC) */}
-                            {disableSlippage ? (
-                              <>{noDataString}</>
-                            ) : (
-                              <SelectableSlipTolerance value={slipTolerance} onChange={changeSlipTolerance} />
-                            )}
+                            <SelectableSlipTolerance value={slipTolerance} onChange={changeSlipTolerance} />
                           </div>
                         </div>
                         <div className="flex w-full justify-between pl-10px text-[12px]">
-                          <div
-                            className={`flex items-center ${
-                              disableSlippage ? 'text-warning0 dark:text-warning0d' : ''
-                            }`}>
+                          <div className={`flex items-center `}>
                             {intl.formatMessage({ id: 'swap.min.result.protected' })}
                             <InfoIcon
                               className="ml-[3px] h-[15px] w-[15px] text-inherit"
-                              tooltip={
-                                disableSlippage
-                                  ? intl.formatMessage({ id: 'swap.slip.tolerance.ledger-disabled.info' })
-                                  : intl.formatMessage({ id: 'swap.min.result.info' }, { tolerance: slipTolerance })
-                              }
+                              tooltip={intl.formatMessage({ id: 'swap.min.result.info' }, { tolerance: slipTolerance })}
                             />
                           </div>
                           <div>{swapMinResultLabel}</div>
