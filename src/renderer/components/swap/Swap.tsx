@@ -1082,7 +1082,6 @@ export const Swap = ({
     return FP.pipe(
       oQuoteProtocol,
       O.chain((txDetails) => {
-        // Disable slippage protection temporary for Ledger/BTC (see https://github.com/thorchain/asgardex-electron/issues/2068)
         return swapResultAmountMax.baseAmount.gt(zeroTargetBaseAmountMax1e8) &&
           txDetails.protocol !== 'Chainflip' &&
           !quoteOnly
